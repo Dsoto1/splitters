@@ -1378,6 +1378,7 @@ async function editoruxFlow(browser) {
   await page.context().close();
   await editorInterfaceChecks(browser);
   await editorLayoutChecks(browser);
+  await editorSelectionSyncChecks(browser);
   await editorThemeViewChecks(browser);
   await editorTourChecks(browser);
 }
@@ -1387,6 +1388,130 @@ async function editoruxFlow(browser) {
  * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
+/**
+ * MapMaker UI spec Phase 2, the one selection (shared editor/selectionState.ts): a pick in the outliner selects in the
+ * view (outline and gizmo) and the inspector, and a pick in the view lights the outliner's row and scrolls it into view;
+ * a moving build is picked whole from the outliner as from the view (Alt: one part); a level change keeps the selection.
+ * Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSelectionSyncChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // 300 crates in rows to the north (a long outliner list), one barrel by the camera, and a moving build.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    const crates = Array.from({ length: 300 }, (_, i) => prop(`e2e_c${String(i).padStart(3, '0')}`, 'core.crate', [-30 + (i % 30) * 2, 0, 20 + Math.floor(i / 30) * 2]));
+    ed.run('Setup', { kind: 'addEntities', entities: [
+      ...crates,
+      prop('e2e_barrel', 'kit.drum.steel', [4, 0, 2]),
+      { id: 'e2e_lift', kind: 'block', position: [-6, 0, 4], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+      { id: 'e2e_mover', kind: 'mover', position: [-6, 0, 4], yaw: 0, blocks: ['e2e_lift'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+    ] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 2 });
+  });
+  await frames(page, 5);
+  const state = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const g = ed.view.gizmo?.getBoundingInfo().boundingBox.minimumWorld;
+    const list = document.getElementById('ed-ol-list');
+    const on = [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => ({ id: el.dataset.id, top: el.offsetTop }));
+    return {
+      sel: [...ed.selection.entities],
+      gizmo: g ? [Math.round(g.x * 10) / 10, Math.round(g.z * 10) / 10] : null,
+      head: document.querySelector('#ed-inspector h2')?.textContent ?? '',
+      x: document.getElementById('ed-insp-x')?.value ?? null,
+      on,
+      view: list ? [list.scrollTop, list.scrollTop + list.clientHeight] : null,
+      status: document.getElementById('ed-sel')?.textContent ?? '',
+    };
+  });
+  const shown = (s, id) => s.on.some((r) => r.id === id && r.top >= s.view[0] - 1 && r.top + 22 <= s.view[1] + 1);
+
+  // Outliner → view and inspector: a row clicked selects the thing, its gizmo stands on it, the inspector shows it.
+  const row = '#ed-ol-list .ed-ol-item[data-id="e2e_barrel"]';
+  await page.fill('#ed-ol-search', 'drum');
+  await page.waitForSelector(row, { timeout: T(5000) });
+  await page.click(`${row} .nm`);
+  await frames(page, 3);
+  let s = await state();
+  check(s.sel.join() === 'e2e_barrel' && s.gizmo && Math.abs(s.gizmo[0] - 4) < 0.5 && Math.abs(s.gizmo[1] - 2) < 0.5 && s.x === '4' && s.on.some((r) => r.id === 'e2e_barrel'), `a row clicked in the outliner selects in the view (gizmo) and the inspector, and stays lit (${JSON.stringify(s)})`);
+  await page.fill('#ed-ol-search', '');
+  await frames(page, 3);
+  await shot('selection-synced');
+
+  // View → outliner: a click on a crate far down the list lights its row and scrolls it into view.
+  const far = 'e2e_c287';
+  await page.evaluate((id) => window.__editor.view.focus({ x: [...window.__editor.doc.entities].find((e) => e.id === id).position[0], y: 0, z: 40 }), far);
+  await frames(page, 5);
+  const p = await page.evaluate((id) => {
+    const e = window.__editor.doc.entities.find((x) => x.id === id);
+    return window.__editor.view.project({ x: e.position[0], y: 0.4, z: e.position[2] });
+  }, far);
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === far && shown(s, far), `a thing clicked in the view lights its outliner row and scrolls it into view (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  // The same from a programmatic pick (a problem's "select", the budget pill): through the one setter.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === 'e2e_c003' && shown(s, 'e2e_c003') && s.head.length > 0, `any pick lights and shows its row (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  const rev0 = await page.evaluate(() => window.__editor.selectionRev);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  check((await page.evaluate(() => window.__editor.selectionRev)) === rev0, 'the same selection again is no change (its revision stands)');
+
+  // A moving build from the outliner: whole, as a click in the view picks it; Alt-click: the part alone.
+  await page.fill('#ed-ol-search', 'block');
+  const lift = '#ed-ol-list .ed-ol-item[data-id="e2e_lift"] .nm';
+  await page.waitForSelector(lift, { timeout: T(5000) });
+  await page.click(lift);
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 2 && s.sel.includes('e2e_mover') && /moving build/i.test(await page.textContent('#ed-inspector')), `a moving build's part clicked in the outliner selects the whole build (${JSON.stringify(s.sel)})`);
+  await page.click(lift, { modifiers: ['Alt'] });
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_lift', `Alt-click in the outliner picks the part alone (${JSON.stringify(s.sel)})`);
+  await page.fill('#ed-ol-search', '');
+
+  // A level change keeps the selection and says where it is; deleting it clears it everywhere.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_barrel' && /another level/.test(s.status), `a level change keeps the selection and the status bar says so (${s.status})`);
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await page.evaluate(() => window.__editor.edits.deleteSelection());
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 0 && !s.gizmo && s.on.length === 0 && !!(await page.$('#ed-insp-empty')), `deleting the selection clears it in the view, the outliner and the inspector (${JSON.stringify(s)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  check((await state()).sel.length === 0, 'undoing the delete brings the barrel back, unselected (the selection is not part of undo)');
+
+  // The numeric fields, for the record: a thing's X / Height / Z and Facing.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await frames(page, 3);
+  const fields = await page.evaluate(() => ['ed-insp-x', 'ed-insp-y', 'ed-insp-z', 'ed-insp-facing'].map((id) => document.getElementById(id)?.value ?? null));
+  check(fields.every((v) => v !== null), `a thing's inspector has X, Height, Z and Facing fields (${fields.join(', ')})`);
+  await page.evaluate(() => document.getElementById('ed-insp-x')?.scrollIntoView({ block: 'center' }));
+  await shot('numeric-fields');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTourChecks(browser) {
   const shots = process.env.E2E_SHOTS;
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });

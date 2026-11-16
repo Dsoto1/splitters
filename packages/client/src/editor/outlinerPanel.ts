@@ -91,10 +91,14 @@ export class OutlinerPanel {
     this.list.append(this.spacer);
     this.list.addEventListener('scroll', () => {
       this.inView = false;
+      this.top = this.list.scrollTop;
       this.draw();
     });
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(() => (this.inView = false)).observe(this.list);
+      new ResizeObserver((entries) => {
+        this.inView = false;
+        this.height = entries[entries.length - 1]?.contentRect.height ?? this.height;
+      }).observe(this.list);
       this.watchesSize = true;
     }
     this.list.addEventListener('click', (e) => this.onClick(e));
@@ -239,6 +243,29 @@ export class OutlinerPanel {
     if (frag.childNodes.length) this.list.append(frag);
   }
 
+  /** The list's scroll and height as last seen (scroll events, the size watcher): `reveal` reads these, not the page. */
+  private top = 0;
+  private height = 0;
+  private revealFrame = 0;
+
+  /**
+   * The selection changed somewhere else (the view, a problem's "select", the budget pill): scroll the list so the
+   * first selected thing's row is in view (MapMaker UI spec Phase 2, the views in step). Nothing is read from the page
+   * on the selection's path: where the row is comes from the rows and the scroll last seen, and only a row out of view
+   * scrolls, at the next frame. A row under a folded heading or hidden by the search stays where it is.
+   */
+  reveal(): void {
+    if (!this.open || !this.watchesSize || !this.height) return;
+    const sel = this.app.selection;
+    const first = sel.tiles[0] ?? sel.entities[0] ?? sel.setPieces?.[0];
+    if (!first) return;
+    const i = this.rows.findIndex((r) => r.type === 'item' && r.entry.id === first);
+    if (i < 0 || (i * ROW >= this.top && (i + 1) * ROW <= this.top + this.height)) return;
+    const to = Math.max(0, Math.round(i * ROW - this.height / 2 + ROW / 2));
+    cancelAnimationFrame(this.revealFrame);
+    this.revealFrame = requestAnimationFrame(() => (this.list.scrollTop = to));
+  }
+
   /** The stretch of rows last drawn, and how many rows the list had then. */
   private window: { start: number; end: number; count: number } | null = null;
 
@@ -273,7 +300,8 @@ export class OutlinerPanel {
     const sel = e.shiftKey ? mergeSelections(this.app.selection, one) : one;
     this.app.setTool({ kind: 'select' });
     if (entry.level !== this.app.level && !this.app.showAll) this.app.setLevel(entry.level, true);
-    this.app.setSelection(sel);
+    // As a click in the view: a group or a moving build comes whole, Alt picks just this one.
+    this.app.setSelection(sel, e.altKey);
     this.app.focusSelection();
     this.draw(true);
   }

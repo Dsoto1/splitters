@@ -25,6 +25,7 @@ const cmd = (c: EditCommand | { error: string }): EditCommand => {
 };
 const ent = (d: MapDocument, id: string) => d.entities.find((e) => e.id === id)!;
 const things = (ids: string[]): Selection => ({ tiles: [], entities: ids });
+const yaw = (d: MapDocument, id: string) => (ent(d, id) as { yaw: number }).yaw;
 
 /** A moving build: a mover carrying a block and a prop, beside two rooms. */
 function buildMap(): MapDocument {
@@ -93,9 +94,9 @@ describe('transformCommand (MapMaker UI spec Phase 2)', () => {
     const doc = buildMap();
     const sel = wholeSelection(doc, things(['mover_1']));
     const after = applyCommand(doc, cmd(transformCommand(doc, sel, { face: { id: 'mover_1', deg: 90 } })));
-    expect(ent(after, 'mover_1').yaw).toBeCloseTo(Math.PI / 2, 3);
-    expect(ent(after, 'lift_1').yaw).toBeCloseTo(Math.PI / 2, 3);
-    expect(ent(after, 'crate_1').yaw).toBeCloseTo(Math.PI / 2, 3);
+    expect(yaw(after, 'mover_1')).toBeCloseTo(Math.PI / 2, 3);
+    expect(yaw(after, 'lift_1')).toBeCloseTo(Math.PI / 2, 3);
+    expect(yaw(after, 'crate_1')).toBeCloseTo(Math.PI / 2, 3);
     const ring = applyCommand(doc, cmd(transformCommand(doc, sel, { turn: Math.PI / 2 })));
     expect(ring.entities).toEqual(after.entities);
     expect(transformCommand(after, sel, { face: { id: 'mover_1', deg: 90 } })).toEqual({ error: 'already facing 90°' });

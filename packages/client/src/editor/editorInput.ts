@@ -5,7 +5,8 @@ import {
   groupOf,
   levelName,
   matchEditorKey,
-  moveCommand,
+  coreCatalog,
+  transformCommand,
   moveEntitiesCommand,
   moverGroupOf,
   placementCells,
@@ -187,8 +188,9 @@ export class EditorInput {
     // Tiles and set pieces move cell by cell (their outlines show where they'd land, red where they can't).
     const byCell = this.app.selection.tiles.length > 0 || this.app.selPieces().length > 0;
     if (byCell) {
-      const preview = moveCommand(this.app.doc, this.app.selection, cellOffset[0], cellOffset[1], 0);
-      this.app.view.setOutlines(this.app.doc, this.app.selection.tiles, [cellOffset[0], cellOffset[1], 0], 'error' in preview, this.app.selectedPieceOutlines());
+      // Red where the release would be refused: the same command (and set-piece library) the release runs.
+      const preview = cellOffset[0] || cellOffset[1] ? transformCommand(this.app.doc, this.app.selection, { by: { cells: [cellOffset[0], cellOffset[1], 0] } }, coreCatalog, this.app.placeLib) : null;
+      this.app.view.setOutlines(this.app.doc, this.app.selection.tiles, [cellOffset[0], cellOffset[1], 0], !!preview && 'error' in preview, this.app.selectedPieceOutlines());
     }
     // Things follow the pointer as you drag (with tiles, cell by cell), so every kind previews where it lands.
     if (this.app.selection.entities.length) {
@@ -203,12 +205,13 @@ export class EditorInput {
     const d = this.drag;
     this.drag = null;
     if (!d || !d.moved) return;
+    // One undo step, through the shared transform command (as a nudge or a typed X/Z would move it).
     if (this.app.selection.tiles.length || this.app.selPieces().length) {
       const [dx, dy] = d.cellOffset;
-      if (dx || dy) this.app.run('Move', moveCommand(this.app.doc, this.app.selection, dx, dy, 0));
+      if (dx || dy) this.app.transform('Move', { by: { cells: [dx, dy, 0] } });
     } else {
       const [dx, dz] = d.freeOffset;
-      if (dx || dz) this.app.run('Move', moveEntitiesCommand(this.app.doc, this.app.selection.entities, dx, 0, dz));
+      if (dx || dz) this.app.transform('Move', { by: { metres: [dx, 0, dz] } });
     }
     this.app.updateSelectionVisuals();
   }

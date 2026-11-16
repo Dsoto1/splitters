@@ -38,7 +38,11 @@ import {
   terrainUnderFloors,
   turnByCommand,
   turnLabel,
-  withGroups,
+  transformCommand,
+  pruneSelection,
+  sameSelection,
+  wholeSelection,
+  type Transform,
   withGroupsTidied,
   withPathsLaid,
   type BotHintKind,
@@ -246,7 +250,17 @@ export class EditorApp {
   pointerAt: { x: number; y: number } | null = null;
   /** Pointer ray, for picking what is under the cursor. */
   ray: { origin: Vec3; dir: Vec3 } | null = null;
-  selection: Selection = emptySelection();
+  /**
+   * The one selection (MapMaker UI spec Phase 2; shared editor/selectionState.ts): the viewport, outliner, inspector,
+   * status bar and plan view all read it, and every write goes through `setSelection` (or, where the panels are
+   * redrawn straight after anyway, `adoptSelection`). `selectionRev` counts its changes, so a view that draws it
+   * compares a number, not every id.
+   */
+  private sel: Selection = emptySelection();
+  selectionRev = 0;
+  get selection(): Selection {
+    return this.sel;
+  }
   hoverPoint: Vec3 | null = null;
   /** The hover point is on the terrain (nearer than the level plane). */
   hoverOnTerrain = false;
@@ -398,7 +412,7 @@ export class EditorApp {
         project: (p) => this.view.projectInView(p),
         onPlane: (y) => (this.pointerAt ? this.view.pickPlane(this.pointerAt.x, this.pointerAt.y, y) : null),
         preview: (turn) => this.previewTurn(turn),
-        commit: (turn) => this.run(`Turn ${turnLabel(turn)}`, turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib)),
+        commit: (turn) => this.transform(`Turn ${turnLabel(turn)}`, { turn }),
         draw: (r) => this.view.setRing(r ? this.selectionCenter() : null, r),
       },
       $('editor'),
@@ -409,6 +423,7 @@ export class EditorApp {
       level: () => this.level,
       ground: () => this.shownGround,
       selected: () => new Set([...this.selection.tiles, ...this.selection.entities, ...this.selPieces()]),
+      selectionRev: () => this.selectionRev,
       showAll: () => this.showAll,
       setShowAll: (on) => this.setShowAll(on, true),
       toast: (t, bad) => this.toast(t, bad),
@@ -621,12 +636,8 @@ export class EditorApp {
     }
     if (docChanged) {
       this.renderedRevision = rev;
-      const pieces = this.selPieces().filter((id) => !!this.placementOf(id));
-      this.selection = {
-        tiles: this.selection.tiles.filter((id) => this.doc.classicStructure.tiles.some((t) => t.id === id)),
-        entities: this.selection.entities.filter((id) => this.doc.entities.some((e) => e.id === id)),
-        ...(pieces.length ? { setPieces: pieces } : {}),
-      };
+      // What the edit removed leaves the selection (the rest stays selected); the panels below are redrawn anyway.
+      if (this.adoptSelection(pruneSelection(this.doc, this.selection))) this.outliner.draw(true);
       this.pieces.renderMyPieces();
       this.updateSelectionVisuals();
       this.topBar.syncToolbar();
@@ -649,6 +660,14 @@ export class EditorApp {
   }
 
   // ---------------------------------------------------------------- editing
+
+  /**
+   * Move or turn the selection through the shared transform command (shared editor/transform.ts): the drag, the nudges,
+   * the rotate ring, the quick facings and the inspector's position and facing fields, so each gives the same result.
+   */
+  transform(label: string, t: Transform): boolean {
+    return this.run(label, transformCommand(this.doc, this.selection, t, coreCatalog, this.placeLib));
+  }
 
   run(label: string, cmd: EditCommand | { error: string }): boolean {
     if ('error' in cmd) {
@@ -796,15 +815,26 @@ export class EditorApp {
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
   setSelection(sel: Selection, single = false, keepHint = false): void {
     if (!keepHint) this.hints.deselect();
-    // Locked things (the outliner's padlock, editor-only) can't be selected.
-    this.selection = this.outliner.selectable(single ? sel : withGroups(this.doc, sel));
+    // Made whole wherever the pick came from (groups, moving builds; Alt: `single`); locked things (the outliner's
+    // padlock, editor-only) can't be selected.
+    const changed = this.adoptSelection(wholeSelection(this.doc, sel, { single, blocked: this.outliner.locked }));
     // Something selected: the dock shows it (Map settings step aside). A hidden or compact dock stays as it is.
     if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
     this.topBar.syncToolbar();
     this.outliner.draw(true);
+    // Picked anywhere else (the view, a problem, the budget pill): the outliner scrolls its row into view.
+    if (changed) this.outliner.reveal();
     this.statusBar.update();
+  }
+
+  /** Store a selection without redrawing (the caller redraws): true when it changed (its revision is bumped). */
+  adoptSelection(sel: Selection): boolean {
+    if (sel === this.sel || sameSelection(sel, this.sel)) return false;
+    this.sel = sel;
+    this.selectionRev++;
+    return true;
   }
 
   updateSelectionVisuals(offset?: [number, number, number], bad = false): void {

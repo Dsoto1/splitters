@@ -12,8 +12,6 @@ import {
   flipCommand,
   groupCommand,
   mirrorSetPieceCommand,
-  moveCommand,
-  moveEntitiesCommand,
   normalizeYaw,
   pasteCommand,
   pasteNote,
@@ -103,11 +101,11 @@ export class SelectionEdits {
   nudge(dx: number, dy: number, dz: number): void {
     if (!this.app.selCount()) return;
     // Tiles and set pieces move by whole cells (and things with them); things alone by half a metre.
+    // Through the shared transform command, as a drag or a typed X/Z: each press one undo step.
     if (this.app.selection.tiles.length || this.app.selPieces().length || dz !== 0) {
-      this.app.run('Move', moveCommand(this.app.doc, this.app.selection, dx, dy, dz));
-      if (dz) this.app.setLevel(this.app.level + dz);
+      if (this.app.transform('Move', { by: { cells: [dx, dy, dz] } }) && dz) this.app.setLevel(this.app.level + dz);
     } else {
-      this.app.run('Move', moveEntitiesCommand(this.app.doc, this.app.selection.entities, dx * 0.5, 0, dy * 0.5));
+      this.app.transform('Move', { by: { metres: [dx * 0.5, 0, dy * 0.5] } });
     }
   }
 
