@@ -148,6 +148,7 @@ export class Hud {
     this.weaponName.textContent = '';
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
+    this.optic.hidden = true;
     this.scoreboard.hidden = true;
     this.scoreboard.parentElement?.classList.remove('sb-up');
     this.board.clear();
@@ -657,6 +658,21 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
+  /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
+  private readonly optic = $('optic');
+  private opticKey = '';
+  setOptic(o: { lens: number; blend: number; reticle: string } | null): void {
+    const key = o ? `${o.lens.toFixed(4)}|${o.blend.toFixed(3)}|${o.reticle}` : '';
+    if (key === this.opticKey) return;
+    this.opticKey = key;
+    this.optic.hidden = !o;
+    if (!o) return;
+    this.optic.style.setProperty('--r', `${(o.lens * 50).toFixed(3)}vh`);
+    // The shade and reticle come in over the second half of the eye's move (a fade, never a flash).
+    this.optic.style.setProperty('--o', Math.max(0, Math.min(1, (o.blend - 0.4) / 0.6)).toFixed(3));
+    this.optic.dataset.reticle = o.reticle;
+  }
+
   /** While out of play: what you're watching ("Watching Ana", "Free camera") and the controls for it (null hides it). */
   setSpectating(title: string | null, hint = ''): void {
     let el = document.getElementById('spectating');
@@ -719,9 +735,11 @@ export class Hud {
 
   /** Breath meter under the scope (spent: it has to recover before you can hold again). */
   setBreath(breath: number, spent: boolean): void {
-    if (this.scope.hidden) return;
-    this.scope.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
-    this.scope.classList.toggle('spent', spent);
+    for (const el of [this.scope, this.optic]) {
+      if (el.hidden) continue;
+      el.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
+      el.classList.toggle('spent', spent);
+    }
   }
 
   setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {

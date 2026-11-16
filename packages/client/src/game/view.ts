@@ -32,6 +32,7 @@ import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
+import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
@@ -156,6 +157,7 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
+import { DEFAULT_RELIEF } from './opticView.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -481,6 +483,43 @@ export class GameView {
   firstPersonEye = false;
   /** The gun is hidden this frame (scoped, third person, dead): the full body is too. */
   private viewHidden = true;
+  /** Between the camera and the gun: squashed across the view axis through an optic (setOptic). */
+  private readonly opticRoot: TransformNode;
+  /** The depth-only disc on an optic's glass (the gun's rendering group draws it first). */
+  private opticMask: Mesh | null = null;
+  /** How far the eye is onto the optic (0..1; opticView.ts). */
+  private opticBlend = 0;
+
+  /**
+   * Looking through the held gun's optic (opticView.ts): `squash` across the view axis for the gun (the camera's
+   * field of view is the session's), `blend` how far the eye is onto it; null or blend 0: the plain sights.
+   */
+  setOptic(o: { squash: number; blend: number } | null): void {
+    const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
+    const optic = def?.view.optic;
+    const on = !!o && o.blend > 0 && !!optic;
+    this.opticBlend = on ? o!.blend : 0;
+    const k = on ? o!.squash : 1;
+    this.opticRoot.scaling.set(k, k, 1);
+    if (on && optic && !this.opticMask) {
+      const mask = CreateDisc('opticMask', { radius: 1, tessellation: 48, sideOrientation: MeshClass.DOUBLESIDE }, this.scene);
+      const mat = new StandardMaterial('opticMaskMat', this.scene);
+      mat.disableColorWrite = true;
+      mat.disableLighting = true;
+      mask.material = mat;
+      mask.renderingGroupId = 1;
+      mask.isPickable = false;
+      mask.parent = this.viewRoot;
+      this.opticMask = mask;
+    }
+    if (this.opticMask) {
+      this.opticMask.setEnabled(on && !this.viewHidden);
+      if (on && optic) {
+        this.opticMask.position.set(optic.eye[0], optic.eye[1], optic.eye[2]);
+        this.opticMask.scaling.setAll(optic.radius);
+      }
+    }
+  }
   /** The camera before any shake (the full body stands under the steady eye). */
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
@@ -578,8 +617,17 @@ export class GameView {
     this.sunLight = sun;
     sun.intensity = 0.6;
 
+    // The gun hangs under a node that squashes it across the view axis while looking through an optic (opticView.ts).
+    this.opticRoot = new TransformNode('opticRoot', this.scene);
+    this.opticRoot.parent = this.camera;
     this.viewRoot = new TransformNode('viewRoot', this.scene);
-    this.viewRoot.parent = this.camera;
+    this.viewRoot.parent = this.opticRoot;
+    // The optic's depth-only disc goes first in the gun's rendering group, so the tube behind the glass never draws.
+    this.scene.setRenderingOrder(1, (a, b) => {
+      const ma = a.getMesh() === this.opticMask;
+      const mb = b.getMesh() === this.opticMask;
+      return ma === mb ? RenderingGroup.PainterSortCompare(a, b) : ma ? -1 : 1;
+    });
     this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
     this.skyEffects = new SkyEffects(this.scene, this.camera, this.atmosphere.quality);
     // Rain and snow fade out under a roof: a ray up from the camera against the level's shapes.
@@ -1867,7 +1915,7 @@ export class GameView {
     this.fpArms?.anim?.dispose();
     this.fpArms?.root.dispose();
     const root = new TransformNode('fpArms', this.scene);
-    root.parent = this.camera;
+    root.parent = this.opticRoot;
     const arms = { look, anim: null as CharacterAnimator | null, root };
     this.fpArms = arms;
     void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArmsChar').then((ch) => {
@@ -2009,7 +2057,7 @@ export class GameView {
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.viewHidden = o.hidden || !def;
     // Full body: your own character's hands hold the gun instead of the arms.
-    const arms = !o.hidden && !!def && !this.fpBody;
+    const arms = !o.hidden && !!def && !this.fpBody && this.opticBlend === 0;
     this.fpArms?.root.setEnabled(arms);
     if (arms && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
@@ -2019,25 +2067,31 @@ export class GameView {
     this.bobPhase += dt * 9 * pace;
     this.bobAmount += (Math.min(1, pace) - this.bobAmount) * Math.min(1, dt * 8);
     const ads = o.ads ?? 0;
-    const bob = this.bobAmount * (1 - ads * 0.8);
+    // Through an optic the gun holds still on the eye: no bob or kick (the camera's recoil still moves the view).
+    const still = 1 - this.opticBlend;
+    const bob = this.bobAmount * (1 - ads * 0.8) * still;
     const [vx, vy, vz] = def.view.viewOffset;
     // Aiming down the sights: the gun comes to the centre with the top of the receiver (where
     // the sight sits) just under the eye line, and far enough forward that the stock stays
     // out of view, so you look along the gun at the target (see the red dot on the HUD).
-    const adsY = -(this.sightTop + 0.006);
-    const adsZ = Math.max(vz, 0.2 - this.stockZ);
-    const x = vx * (1 - ads);
+    // A gun with an optic brings its eyepiece onto the eye instead, its relief in front of it (opticView.ts).
+    const optic = def.view.optic;
+    const adsX = optic ? -optic.eye[0] : 0;
+    const adsY = optic ? -optic.eye[1] : -(this.sightTop + 0.006);
+    const adsZ = optic ? (optic.relief ?? DEFAULT_RELIEF) - optic.eye[2] : Math.max(vz, 0.2 - this.stockZ);
+    const x = vx + (adsX - vx) * ads;
     const y = vy + (adsY - vy) * ads;
     const z = vz + (adsZ - vz) * ads;
     // A melee weapon's barrel kicks like a heavy gun (back and up), not a swing.
     const melee = def.kind === 'melee' && !this.kickShot;
     const heavy = this.kickShot ? 2.6 : 1;
+    const kick = this.kickAmount * still;
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
       y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
-      z - this.kickAmount * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
+      z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
-    this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
+    this.viewRoot.rotation.set(-kick * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, melee ? kick * 0.5 : 0, o.reload * 0.4);
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -2544,7 +2598,7 @@ export class GameView {
       // Your own arms aren't needed while the body holds the gun.
       this.fpArms?.root.setEnabled(false);
     }
-    const shown = !this.viewHidden;
+    const shown = !this.viewHidden && this.opticBlend === 0;
     a.root.setEnabled(shown);
     fp.rig.setEnabled(shown);
     anim.setDormant(!shown);
