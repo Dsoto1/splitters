@@ -98,8 +98,10 @@ describe('map format v39: race mode\'s dead track settings dropped', () => {
         if (!r.ok) continue;
         // (As played the map is expanded, so only the map as made hashes to its stamp.)
         if (forEditing) expect(releaseCurrent(r.map), f).toBe(true);
-        // (A stamp from v39 on needed no carrying: it keeps its own format; one from before is carried to today's.)
-        const schemaVersion = file.metadata.release.schemaVersion >= 39 ? file.metadata.release.schemaVersion : MAP_FORMAT_VERSION;
+        // (A stamp from v39 on needed no carrying: it keeps its own format; one from before is carried to today's. So is
+        // one from before v45 on a map with terrain: v45 stores the same ground as base and painted cells.)
+        const v = file.metadata.release.schemaVersion;
+        const schemaVersion = v < 39 || (v < 45 && (file as { terrain?: unknown }).terrain) ? MAP_FORMAT_VERSION : v;
         expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion });
         // Exporting again keeps the version.
         if (forEditing) expect(stampMapRelease(r.map).metadata.release!.versionId).toBe(file.metadata.release.versionId);

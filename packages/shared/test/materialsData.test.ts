@@ -28,7 +28,8 @@ function materials() {
       terrain: terrainMaterialFor(material.id),
     })),
     palette: coreMaterials.all().map((m) => m.id),
-    themes: CORE_THEMES.map((theme) => ({ theme, found: coreThemes.get(theme.id) === theme })),
+    // A theme's matching Ground theme (`ground`, painting Phase 4) came after the fixture: everything else is as it was.
+    themes: CORE_THEMES.map((theme) => ({ theme: (({ ground: _g, ...rest }) => rest)(theme), found: coreThemes.get(theme.id) === theme })),
     themeOrder: coreThemes.all().map((t) => t.id),
     tints: TINT_SWATCHES,
     slots: { SURFACE_SLOTS, SURFACE_SLOT_LABELS },

@@ -24,8 +24,8 @@ import {
   setPieceParts,
   STYLE_PACKS,
   stylePackHas,
-  TERRAIN_MATERIALS,
-  TERRAIN_SURFACES,
+  GROUND_MATERIALS,
+  terrainGroundTheme,
   TILE_CATEGORIES,
   TINT_SWATCHES,
   type GlassKind,
@@ -38,7 +38,6 @@ import {
   type SetPieceDefinition,
   type SetPiecePlacement,
   type StylePack,
-  type TerrainMaterial,
   type TileDefinition
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
@@ -422,17 +421,16 @@ export class PaletteBuilder {
   }
 
   /**
-   * Ground paint's list in order (plan: the Ground theme's list first; until Phase 4 brings the Ground theme): the
-   * grounds this map's terrain has, its main ground first, then those the Structure theme's packs use, under "This
-   * map's grounds"; then "Other grounds".
+   * Ground paint's list in order (painting Phase 4): the Base chip (back to following the Ground theme), then the
+   * Ground theme's grounds and those this terrain has painted, under "Ground theme: …"; then "Other grounds".
    */
   renderGroundOrder(): void {
     const box = document.getElementById('ed-tr-materials');
     if (!box) return;
     const terrain = this.app.doc.terrain;
     this.viewTerrain = terrain;
-    const cards = new Map([...box.querySelectorAll<HTMLElement>('[data-ground]')].map((b) => [b.dataset.ground as TerrainMaterial, b]));
-    const { order, lead } = themeGroundOrder(TERRAIN_MATERIALS, terrain?.materials ?? null, (g) => TERRAIN_SURFACES[g], this.themePacks());
+    const cards = new Map([...box.querySelectorAll<HTMLElement>('[data-ground]')].map((b) => [b.dataset.ground!, b]));
+    const { order, lead } = themeGroundOrder(GROUND_MATERIALS, terrain);
     const head = (text: string) => {
       const h = document.createElement('div');
       h.className = 'mat-cat';
@@ -440,7 +438,9 @@ export class PaletteBuilder {
       return h;
     };
     const els = order.map((g) => cards.get(g)).filter((b): b is HTMLElement => !!b);
-    const want = lead > 0 && lead < els.length ? [head("This map's grounds"), ...els.slice(0, lead), head('Other grounds'), ...els.slice(lead)] : els;
+    const base = cards.get('base');
+    const theme = terrain ? terrainGroundTheme(terrain).displayName : '';
+    const want = [...(base ? [base] : []), ...(lead > 0 && lead < els.length ? [head(`Ground theme: ${theme}`), ...els.slice(0, lead), head('Other grounds'), ...els.slice(lead)] : els)];
     const now = [...box.children];
     const same = now.length === want.length && want.every((el, i) => (el.classList.contains('mat-cat') ? now[i]!.classList.contains('mat-cat') && now[i]!.textContent === el.textContent : now[i] === el));
     if (!same) box.replaceChildren(...want);

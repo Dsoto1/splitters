@@ -11,7 +11,6 @@ export * from './map/zfight.ts';
 export * from './map/propFaces.ts';
 export * from './map/terrain.ts';
 export * from './map/borderCoast.ts';
-export * from './map/terrainPaint.ts';
 export * from './map/track.ts';
 export * from './map/settle.ts';
 export * from './map/indoors.ts';
