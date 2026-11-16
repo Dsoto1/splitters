@@ -29,6 +29,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
 
 - **Claimed (a helper of lane A's lead, 2026-11-16): St. John's step 3, Scott Johnston / Hazelwood, with the slim dorm room doors** (QUEUE; `docs/map-briefs/st_johns/PLAN_2026-11-12.md` §3.5; owner 2026-11-15: slim the room doors, lumped into step 3), branch `wip/stjohns-3`. **Claimed: map format v42** (set piece options: a definition's `options`, a part's `when`, a placement's `overrides.options`; an identity step in `migrate.ts`). Files: `map/schema.ts`, `map/setPieces.ts`, `map/setPieceCheck.ts`, `editor/setPieceTools.ts` (an Options section), new `sim/passages.ts` (walking links through the slim open door; `navLinks`), `content/kitprops/door.json` (slim Oak Doors), `content/setpieces/academy.json` (Room doors option; the turret, `hall_centre`), the red trim facade, `maps/st_johns.json` (through MapMaker), their tests.
 
+- **Claimed (a helper of lane A's lead, 2026-11-16): e2e `hostgame` / `dedicatedhost` red after the admin's restart** (a real bug on main, not a flake: the owner's page silent 20 s then dropped, the friend's `window.__cs` the ended-match stub), branch `wip/hostflows-fix`. Files: `packages/client/src/game/session.ts` (`dropTestHooks`, the test hooks' install) and whatever the restart path turns out to need; e2e flows unchanged.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
