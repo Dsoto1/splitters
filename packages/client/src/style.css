@@ -1119,6 +1119,14 @@ img:not([src]) { visibility: hidden; }
 #throwable:empty { display: none; }
 #ammo-alt { font: 600 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
 #ammo-alt:empty { display: none; }
+#fire-mode { display: flex; align-items: center; gap: 6px; margin-top: 2px; font: 600 10px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text, #e8ecf4); }
+#fire-mode:empty { display: none; }
+#fire-mode .pips { display: flex; gap: 2px; }
+#fire-mode .pips i { display: block; width: 3px; height: 9px; background: var(--orange); border-radius: 1px; }
+#fire-mode .pips i.auto { width: 14px; }
+#fire-mode kbd { font: 600 9px var(--font-display); padding: 0 4px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 3px; color: var(--muted); }
+#fire-mode.switched { animation: fire-mode-switch 0.22s ease-out; }
+@keyframes fire-mode-switch { from { transform: scale(1.18); } to { transform: scale(1); } }
 img.wicon { height: 18px; width: auto; vertical-align: middle; margin: 0 4px; filter: drop-shadow(0 1px 1px #000); }
 img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .loadout span { display: flex; align-items: center; }

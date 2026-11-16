@@ -552,6 +552,29 @@ export class Hud {
     this.altEl.textContent = '';
   }
 
+  /** The held weapon's fire mode readout (U switches), or null for a weapon with one mode. */
+  private readonly fireModeEl = $('fire-mode');
+  private lastFireMode = '';
+  setFireMode(f: { label: string; mode: string; burst: { count: number } | null } | null, count = 1): void {
+    const key = f ? `${f.label}|${count}` : '';
+    if (key === this.lastFireMode) return;
+    const switched = !!f && !!this.lastFireMode && this.lastFireMode.split('|')[0] !== f.label;
+    this.lastFireMode = key;
+    if (!f) {
+      this.fireModeEl.innerHTML = '';
+      return;
+    }
+    // Pips: one round for Single, the burst's count, a long bar for Auto; then the mode's name and its key.
+    const pips = f.mode === 'auto' ? '<i class="auto"></i>' : '<i></i>'.repeat(f.burst?.count ?? 1);
+    this.fireModeEl.innerHTML = `<span class="pips">${pips}</span>${escapeHtml(f.label)}<kbd>U</kbd>`;
+    // A short nudge on a switch (a size change only: nothing brightens, Reduce flashing or not).
+    if (switched) {
+      this.fireModeEl.classList.remove('switched');
+      void this.fireModeEl.offsetWidth;
+      this.fireModeEl.classList.add('switched');
+    }
+  }
+
   setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false): void {
     if (driving) {
       this.weaponName.textContent = 'Driving';

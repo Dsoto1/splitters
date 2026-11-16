@@ -73,6 +73,7 @@ import {
   type HoldKind,
   type CarryOver,
   weaponByCode,
+  fireModeCount,
   DESTRUCTIBLE_SPECS,
   glassAt,
   NPC_ROLES,
@@ -3148,6 +3149,11 @@ export class GameSession {
         const next = inSlot[(i + 1) % inSlot.length];
         if (next) this.requestWeapon(next);
       }
+      // U: the held weapon's next fire mode (spec §36), with the selector's click; the mode rides in the next input.
+      if (this.input.takeFireModeSwitch() && local.alive && !this.seat) {
+        const mode = local.cycleFireMode();
+        if (mode) this.sfx.fireModeClick();
+      }
       this.updateWheel(local, building);
       this.updateOrderWheel(local);
       this.touch?.update();
@@ -3409,6 +3415,7 @@ export class GameSession {
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
+      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? local.fireMode() : null, local.weapon ? fireModeCount(local.weapon) : 1);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
       const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
