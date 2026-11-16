@@ -11,9 +11,9 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * The cost of driving (docs/DRIVING_PHYSICS_PLAN.md, "Cost"): eight Troop Buggies, each with a driver weaving flat out,
  * on a big map (Norman Shores: terrain and a few thousand colliders), the whole match step timed per tick, by drive:
  * the classic, driving physics 3's own hull solver (`own`) and the Rapier body (driving physics 4, the default).
- * DRIVE_TRACE=<dir> runs it and writes cost-8.txt there.
+ * DRIVE_TRACE=<dir> runs it and writes cost-8.txt there. Eight open places (level ground, 30 m clear ahead) are found first.
  */
-function run(file: string, drive: 'classic' | 'own' | 'rigid', ticks: number): { mean: number; p95: number; chassis: number; dist: number } {
+function run(file: string, drive: 'classic' | 'own' | 'rigid', ticks: number): { n: number; mean: number; p95: number; chassis: number; dist: number } {
   const r = loadMap(readFileSync(fileURLToPath(new URL(`../../../maps/${file}.json`, import.meta.url)), 'utf8'));
   if (!r.ok) throw new Error(file);
   const first = r.map.entities.find((e: MapEntity) => e.kind === 'mount' && (e as { model: string }).model === 'troop_buggy')!;
