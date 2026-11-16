@@ -47,7 +47,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (the character leak `wip/char-leak` and lane B's painting Phase 4 `wip/painting-4`, check/train-20261116-184637 at d352eb40; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/paint-list-fix` · run 43928449682 (the cut-off Paint list, item 1 of the MapMaker bugs of 2026-11-16, alone first; at 5c7c6627; full suite: e2e/run.mjs changed)
+- (none)
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
