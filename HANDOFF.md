@@ -16,7 +16,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (St. John's step 4; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- (none)
+- `wip/drive-physics-3` · 43888341752 (driving physics 3, landing A on its own: bots shoot drivers of open vehicles, and see and shoot through bars, barred gates and fences; a helper of lane A's lead)
 
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 
