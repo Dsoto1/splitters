@@ -35,6 +35,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-4` · 0b374126 · 43877348385 (lane A: St. John's step 4)
 
 ## Bugs
 - S · A · Beam and particle weapons (the freeze gun, lasers, our own effects) don't stay on the muzzle while you move: the beam glides behind and looks strange (owner, 2026-11-16). Make effects that start at the muzzle follow the gun every frame (first and third person), checked on every beam, laser, flame and spray weapon.
