@@ -56,6 +56,7 @@ export { MATCH_PLAY } from './content/matchPlay.generated.ts';
 export { spawnProtection } from './sim/spawns.ts';
 export { MEASURED_HITBOXES } from './content/hitboxes.generated.ts';
 export * from './sim/gunplay.ts';
+export * from './sim/fireModes.ts';
 export * from './sim/surfaceTypes.ts';
 export * from './sim/impact.ts';
 export * from './sim/trajectory.ts';

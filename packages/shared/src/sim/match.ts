@@ -111,6 +111,7 @@ import {
   RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
+import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
@@ -184,6 +185,8 @@ export interface WeaponState {
   overheated?: boolean;
   /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
   firedTick?: number;
+  /** The fire mode it is set to (index into its `fireModes`, sim/fireModes.ts; absent: its first). */
+  mode?: number;
   /** A magazine is in but no round is chambered (an empty reload stopped before the bolt). */
   unchambered?: boolean;
   /** Mounted guns with limited ammunition (SeatDef.ammo): rounds aboard, and ticks toward the next one back. */
@@ -452,6 +455,8 @@ export interface Combatant {
   semiLatch: boolean;
   burstLeft: number;
   burstTimer: number;
+  /** Ticks between a burst's rounds (the mode it was fired in: a mode switch mid-burst doesn't change it). */
+  burstEvery?: number;
   bloom: number;
   /** Mechanical recoil offset, spray and sights (gunplay.ts), counted in applied inputs like the timers. */
   gun: GunState;
@@ -3268,6 +3273,9 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      // The fire mode the player wants for the gun in hand (spec §36): part of the input, so prediction replays it.
+      if (!gun && input.fireMode !== undefined && def.fireModes) held.mode = clampFireMode(def, input.fireMode);
+      const firing = firingOf(def, gun ? 0 : held.mode);
       c.thirdPerson = c.kind === 'human' && !c.mount && (input.buttons & BUTTON_THIRD_PERSON) !== 0;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
@@ -3297,23 +3305,22 @@ export class Match {
         // The rest of a burst follows on its own timer.
         if (--c.burstTimer <= 0) {
           if (!frozen && c.reloadTicks === 0 && spendRound(held)) {
-            this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+            this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
             fired = true;
             c.burstLeft--;
-            c.burstTimer = def.burst?.intervalTicks ?? 1;
+            c.burstTimer = c.burstEvery ?? def.burst?.intervalTicks ?? 1;
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
         if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
         else if (spendRound(held)) {
-          const mode = def.fireMode ?? 'auto';
-          c.fireCooldown = def.fireIntervalTicks;
-          c.semiLatch = mode !== 'auto';
-          this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+          c.fireCooldown = firing.interval;
+          c.semiLatch = firing.mode !== 'auto';
+          this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
           fired = true;
-          if (mode === 'burst' && def.burst) {
-            c.burstLeft = def.burst.count - 1;
-            c.burstTimer = def.burst.intervalTicks;
+          if (firing.burst) {
+            c.burstLeft = firing.burst.count - 1;
+            c.burstTimer = c.burstEvery = firing.burst.intervalTicks;
           }
           if (def.windupResets) c.windup = 0;
         }
@@ -3353,7 +3360,7 @@ export class Match {
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
       // Aim settles back after the recoil along the weapon's curve; the spray recovers.
-      if (!fired) recoilIdle(c.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
+      if (!fired) recoilIdle(c.gun, firing.kick, gp.accuracy, firing.interval);
       // Classes: G is the class's ability (sentry, overcharge, cloak) when it has one.
       if (input.buttons & BUTTON_THROW && !frozen && !gun && c.cls && this.classes?.useAbility(c)) {
         // Used.
@@ -3508,7 +3515,7 @@ export class Match {
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
     // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
-    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, gp.kick);
+    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
     else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
@@ -7906,6 +7913,8 @@ interface Trigger {
   headshot?: number;
   /** Second triggers: their own kick and falloff (AltFire). */
   kick?: KickSpec;
+  /** The primary trigger's recoil in the fire mode it was pulled in (sim/fireModes.ts). */
+  modeKick?: KickSpec | null;
   falloff?: FalloffSpec;
 }
 
@@ -7960,8 +7969,9 @@ function aimSpread(c: Combatant, def: Trigger, spread: number): number {
   return spread + (w.view.zoomFov < 0.5 ? 0.05 : 0.012);
 }
 
-function primaryTrigger(def: WeaponDefinition): Trigger {
+function primaryTrigger(def: WeaponDefinition, firing?: Firing): Trigger {
   return {
+    ...(firing && firing.index > 0 ? { modeKick: firing.kick } : {}),
     id: def.id,
     kind: def.kind,
     damage: def.damage,

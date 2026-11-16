@@ -68,6 +68,11 @@ export interface PlayerInput {
   weapon?: number;
   /** Server tick the player was looking at when this input was made (lag compensation). */
   viewTick?: number;
+  /**
+   * The fire mode wanted for the held weapon (index into its `fireModes`, sim/fireModes.ts), sent with every input
+   * while a weapon with modes is held; absent: keep the mode it has. Older hosts ignore it (the first mode).
+   */
+  fireMode?: number;
   /** A quick message (1-QUICK_MESSAGES.length) or emote (EMOTE_DANCE) sent with this input. */
   say?: number;
   /** Fort Wars Builder: the piece picked (FORT_PIECE_KINDS index) plus quarter turns × 16. */
@@ -276,6 +281,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     weapon: Math.max(0, Math.min(255, Math.trunc(finite(i.weapon ?? 0)))),
     ...(i.say ? { say: Math.max(0, Math.min(255, Math.trunc(finite(i.say)))) } : {}),
     viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
+    ...(i.fireMode !== undefined ? { fireMode: Math.max(0, Math.min(3, Math.trunc(finite(i.fireMode)))) } : {}),
     ...(i.build ? { build: Math.max(0, Math.min(63, Math.trunc(finite(i.build)))) } : {}),
     ...(Array.isArray(i.rc) ? { rc: [Math.max(-0.5, Math.min(0.5, finite(i.rc[0]))), Math.max(-0.5, Math.min(0.5, finite(i.rc[1])))] as [number, number] } : {}),
   };
