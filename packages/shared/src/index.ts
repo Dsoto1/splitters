@@ -133,6 +133,8 @@ export * from './editor/pathEdit.ts';
 export * from './editor/groundFit.ts';
 export * from './editor/propRandom.ts';
 export * from './editor/turnRing.ts';
+export * from './editor/transform.ts';
+export * from './editor/selectionState.ts';
 export * from './editor/playFromHere.ts';
 export * from './editor/planView.ts';
 export * from './editor/cardShot.ts';
