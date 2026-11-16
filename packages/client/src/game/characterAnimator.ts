@@ -153,11 +153,15 @@ const COARSE_FULL_EVERY = 4;
 /** Limb joints (arms, hands, legs, feet): a cheap ragdoll leaves them to a limp pose. */
 const LIMB = /^(clavicle|upperarm|lowerarm|hand|index|middle|ring|pinky|thumb|thigh|calf|foot|ball)_/;
 /** A hit flinch: how long it lasts (s), how fast it peaks (s), and how far each body part goes at full strength (radians). */
-const FLINCH_SECONDS = 0.42;
+// Punchier (owner, 2026-11-16): bigger and a little longer (0.42 s, head 0.55, twist 0.38, buckle 0.22 before).
+const FLINCH_SECONDS = 0.5;
 const FLINCH_PEAK = 0.05;
-const FLINCH_HEAD = 0.55;
-const FLINCH_TWIST = 0.38;
-const FLINCH_BUCKLE = 0.22;
+/** Reduce flashing: the flinch eases in over this long instead of snapping (no rapid jolt). */
+const FLINCH_CALM_PEAK = 0.1;
+const FLINCH_SETTLE = 0.13;
+const FLINCH_HEAD = 0.7;
+const FLINCH_TWIST = 0.5;
+const FLINCH_BUCKLE = 0.3;
 /** The procedural kick (the library has no kick clip): length (s), thigh raise and lean back at its height (radians). */
 const KICK_SECONDS = 0.5;
 const KICK_THIGH = 1.35;
@@ -1129,7 +1133,7 @@ export class CharacterAnimator {
   }
 
   /** Body part hit (0 torso, 1 head, 2 legs), which way the round went (world), how hard (0..1), and when (ms). */
-  private flinchState: { zone: number; dir: Vector3; amount: number; t0: number } | null = null;
+  private flinchState: { zone: number; dir: Vector3; amount: number; t0: number; peak: number } | null = null;
   private kickAt = -1e9;
 
   /**
@@ -1138,11 +1142,11 @@ export class CharacterAnimator {
    * buckles the body a little. Arcade-light: a fraction of a second, no
    * lockout (docs/GUNPLAY_SPEC.md, "Stopping power").
    */
-  flinch(zone: number, dir: { x: number; y: number; z: number }, strength: number): void {
+  flinch(zone: number, dir: { x: number; y: number; z: number }, strength: number, calm = false): void {
     if (this.dead || this.dormant) return;
     const now = performance.now();
     const left = this.flinchState ? this.flinchAmount(now) : 0;
-    this.flinchState = { zone, dir: new Vector3(dir.x, 0, dir.z).normalize(), amount: Math.min(1, Math.max(left, strength)), t0: now };
+    this.flinchState = { zone, dir: new Vector3(dir.x, 0, dir.z).normalize(), amount: Math.min(1, Math.max(left, strength)), t0: now, peak: calm ? FLINCH_CALM_PEAK : FLINCH_PEAK };
   }
 
   private flinchAmount(now: number): number {
@@ -1150,7 +1154,11 @@ export class CharacterAnimator {
     if (!f) return 0;
     const t = (now - f.t0) / 1000;
     if (t >= FLINCH_SECONDS) return 0;
-    return f.amount * (t < FLINCH_PEAK ? t / FLINCH_PEAK : Math.exp(-(t - FLINCH_PEAK) / 0.1));
+    if (t < f.peak) {
+      const u = t / f.peak;
+      return f.amount * (f.peak > FLINCH_PEAK ? u * u * (3 - 2 * u) : u);
+    }
+    return f.amount * Math.exp(-(t - f.peak) / FLINCH_SETTLE);
   }
 
   /** Rotate a joint about a world axis by `angle` (after the clips). */

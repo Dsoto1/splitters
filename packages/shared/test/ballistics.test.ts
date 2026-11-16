@@ -138,8 +138,16 @@ describe('ballistic bullets', () => {
     const physics = match.physics;
     const flat = traceBullet({ x: 0, y: 1.2, z: 0 }, viewDirection(Math.PI / 2, 0), bulletPhysics(pistol), 400, (o, dir, len) => physics.raycastWorld(o, dir, len));
     expect(flat.hit).toBe(true);
-    // From 1.2 m up, with 9.81 m/s² and 375 m/s, it comes down roughly 8 + 375 · √(2 · 1.2 / 9.81) m away.
-    const expected = NEAR_INSTANT_M + 375 * Math.sqrt((2 * 1.2) / 9.81);
+    // From 1.2 m up it comes down where its flight (drag included: flightTo) has dropped 1.2 m.
+    let lo = NEAR_INSTANT_M;
+    let hi = 400;
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (flightTo(pistol, mid).drop < 1.2) lo = mid;
+      else hi = mid;
+    }
+    const expected = lo;
+    expect(expected).toBeLessThan(NEAR_INSTANT_M + 375 * Math.sqrt((2 * 1.2) / 9.81) - 20); // shorter than without drag
     expect(flat.end.x).toBeGreaterThan(expected - 8);
     expect(flat.end.x).toBeLessThan(expected + 8);
     expect(flat.time).toBeGreaterThan(0.25);
@@ -147,8 +155,8 @@ describe('ballistic bullets', () => {
   });
 
   it('a round aimed at a still target far off lands low; holding over for the drop lands it', () => {
-    // Aim dead on the head at 150 m with the pistol: the drop takes it into the body.
-    const { d, a, others } = setup([[150, 0, 0]], 'core.pistol');
+    // Aim dead on the head at 100 m with the pistol (it reaches 110 m): the drop takes it into the body.
+    const { d, a, others } = setup([[100, 0, 0]], 'core.pistol');
     const b = others[0]!;
     const head = { x: b.move.pos.x, y: b.move.pos.y + 1.66, z: b.move.pos.z };
     const shoot = (pitchUp: number) => {
@@ -161,11 +169,11 @@ describe('ballistic bullets', () => {
     const level = shoot(0);
     expect(level).toHaveLength(1);
     const p = gunplayOf(getWeapon('core.pistol')).ballistic!;
-    const drop = flightTo(p, 150).drop;
+    const drop = flightTo(p, 100).drop;
     // Aimed at the head, it landed lower by about the drop (the cone of a settled pistol is tiny).
     expect(level[0]!.to[1]).toBeLessThan(head.y - drop * 0.5);
     // Hold over by the drop: it lands at head height.
-    const held = shoot(Math.atan2(drop, 150));
+    const held = shoot(Math.atan2(drop, 100));
     expect(Math.abs(held[0]!.to[1] - head.y)).toBeLessThan(0.35);
   });
 

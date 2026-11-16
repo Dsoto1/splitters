@@ -542,6 +542,31 @@ Possible behavior:
 **Custom**
 - Creator-controlled health/damage multipliers.
 
+As built (`gunplay.ts` `LETHALITY_HEALTH`): Arcade 1.4× effective health, Standard 1×, Tactical 0.72×, applied as one
+damage multiple so every gun keeps its shape. Re-read 2026-11-16 with the clearer ranges: unchanged.
+
+**Body TTK at Standard, ideal aim** (seconds, body shots to kill in brackets; `pnpm gun-report`, docs/gunplay-audit.json;
+before → after the clearer ranges and damage by impact speed of 2026-11-16). Arcade multiplies the shots by about 1.4,
+Tactical by about 0.72.
+
+| Gun | 10 m | 25 m | 50 m | 100 m |
+|---|---|---|---|---|
+| Pistol | .67 (5) | .70 (5) | 1.10 (7) → **1.78 (11)** | 1.23 (7) → **1.97 (11)** |
+| Heavy Revolver | .67 (2) | .72 (2) | .80 (2) | .97 → **1.00** (2) |
+| Hand Cannon | .50 (2) | .55 (2) | 1.13 (3) → **1.63 (4)** | 1.30 (3) → **2.33 (5)** |
+| Machine Pistol | .75 (16) | 2.43 (29) → **3.03 (41)** | 2.50 (29) → **3.12 (41)** | – (reach 60 m) |
+| Pulse Pistol | .60 (5) | .75 (6) | 1.35 (10) → **1.95 (14)** | 1.35 (10) → **– (reach 90 m)** |
+| SMG | .40 (7) | .63 (10) → **.83 (13)** | .90 (13) → **1.37 (20)** | 1.02 (13) → **1.53 (20)** |
+| Assault Rifle | .50 (6) | .52 (6) | .75 (8) | 1.00 (10) |
+| Burst Rifle | .53 (6) | .55 (6) | .92 (8) | 1.30 (11) |
+| Battle Rifle | .60 (4) | .62 (4) | .83 (5) | 1.10 (6) |
+| Spin Gun (LMG) | .55 (12) | .57 (12) | .65 (13) | .87 (16) |
+| Marksman Rifle | .60 (3) | .62 (3) | .63 (3) | 1.00 (4) |
+| Precision Rifle | .83 (2) | .85 (2) | .87 (2) | .92 (2) |
+| Shotgun | .75 (2) | – | – | – |
+
+The long guns did not move: at Standard damage by impact speed gives exactly the old distances (§37).
+
 Important:
 
 **Do not rebalance every gun separately for these modes.** Apply systemic modifiers so relative weapon identity remains intact.
@@ -1032,6 +1057,22 @@ Arcade-light, server-authoritative (`packages/shared/src/sim/impact.ts`):
   the same movement, so suppressing fire slows a push.
 - `knockback` stays for weapons that deliberately shove hard (the Battle Axe,
   the railgun), on top.
+
+**Punchier (owner, 2026-11-16: "punchier please").** Measured in the sim (one full hit at 5 m on a standing
+target; `impact.test.ts`). Shove 4.4 m/s at power 1 (was 3.6); powers shotgun and sniper 1.0 (0.8, 0.9), revolvers
+0.75 (0.45), the Battle Rifle 0.6 (a rifle's 0.3), rifle 0.3, pistol 0.12 (0.15), SMG 0.1 (0.12): the heavy hitters
+most, rifles a little more, SMGs and pistols as light as before. Ground travel of one hit, before → after: SMG
+5 → 5 cm, pistol 6 → 6 cm, rifle 12 → 16 cm, Battle Rifle 12 → 31 cm, shotgun 33 → 52 cm, Precision Rifle 38 → 52 cm,
+Marksman 37 → 52 cm, Hand Cannon 62 → 82 cm and Heavy Revolver 90 → 131 cm (their own `knockback` on top). **In the
+air** a body takes 1.5× the shove (`IMPACT.airShove`) and, with no ground grip, carries it until it lands: a shotgun
+blast on a jumping player 1.5 → 3.4 m. Stagger: slow 48 % at power 1 (42 %), 0.12–0.5 s (0.12–0.42). **The no-stun-lock
+caps are unchanged** (slow 50 %, window 0.6 s, immunity 0.5 s); the shove's own cap grew with the shove (5.5 m/s, was
+4.5) so one blast is never cut. The **drawn flinch** is bigger (head 0.7 rad, twist 0.5, buckle 0.3) and lasts 0.5 s,
+and heavy hits (power 0.6 and up: the Battle Rifle, revolvers, shotguns, snipers) play the hit clip. The **player who
+is hit** gets a small camera kick (`client/src/game/hitKick.ts`): presentation only (split recoil, §29: the aim does
+not move), up about 1.3° for a full power-1 hit and a little away from the round, capped at 1.8° however many rounds
+land, gone in 0.6 s. Reduce flashing: both the kick (0.55×, eased in over 90 ms, slower to settle) and the flinch
+(eased in over 100 ms) lose their snap. Damage by impact speed (§37) scales the shove with the damage.
 - The **flinch** is drawn only (`characterAnimator.flinch`): head hits snap
   the head back, torso hits twist the shoulders away from the round, leg hits
   buckle the body; a heavy hit (stopping power × 2.2 or damage/25 of 1.6+) plays
@@ -1446,6 +1487,57 @@ Minimal falloff within intended map ranges.
 Effective damage loss emerges through both pellet dispersion and per-pellet range tuning.
 
 Players should be able to learn effective ranges visually and experientially.
+
+### Implementation: damage by impact speed and clearer ranges (owner, 2026-11-16)
+
+**Damage by impact speed** (`gunplay.ts` `impactFalloff`, `Match.bulletFalloff`). Bullets fly with drag by family
+(share of speed lost a second: pistol 1.5, machine pistol 1.8, SMG 1.5, revolver 0.6, rifle 0.6, LMG 0.6, Battle
+Rifle 0.5, marksman 0.45, precision 0.3). Under **Standard and Advanced** ballistics a round's damage (and so its
+shove) follows its speed when it strikes over its muzzle speed, on each gun's own curve: the speed its round has at
+Standard at the falloff's start is full damage, the speed at its end is the floor, in between the falloff's own shape.
+Under the sim's drag, speed falls linearly with distance (v/v0 = 1 − drag (x − 8) / (v0 q), q = 1 − drag/120), so at
+Standard **every gun keeps its tuned kill distances exactly**. **Advanced** (0.8× velocity, 1.5× drag) loses speed
+and so damage about 1.9 times as fast; **Arcade** keeps the distance falloff. Penetration, water and ricochets take
+their own damage share (`scale`) and lower the speed reference with it, so nothing counts twice. Drawn rounds (yours
+and others') fly with the same drag.
+
+| Gun | Muzzle (m/s) | Drag | Full damage at or above | Floor at or below | Floor | Advanced: full → floor | Speed at its reach |
+|---|---|---|---|---|---|---|---|
+| Pistol | 375 | 1.5 | 96 % (18 m) | 85 % (45 m) | 40 % | 13–28 m | 59 % at 110 m |
+| Machine Pistol | 360 | 1.8 | 100 % (8 m) | 91 % (25 m) | 35 % | 8–17 m | 74 % at 60 m |
+| SMG | 400 | 1.5 | 97 % (15 m) | 90 % (35 m) | 35 % | 12–22 m | 65 % at 100 m |
+| Hand Cannon | 300 | 0.6 | 98 % (20 m) | 91 % (55 m) | 40 % | 14–33 m | 79 % at 110 m |
+| Heavy Revolver | 300 | 0.6 | 97 % (25 m) | 90 % (60 m) | 70 % | 17–36 m | 41 % at 300 m |
+| Assault / Burst Rifle | 820 | 0.6 | 99 % (25 m) | 95 % (70 m) | 60 % | 17–41 m | 64 % at 500 m |
+| Battle Rifle | 880 | 0.5 | 98 % (40 m) | 95 % (100 m) | 75 % | 25–57 m | 66 % at 600 m |
+| Spin Gun (LMG) | 760 | 0.6 | 98 % (30 m) | 94 % (80 m) | 70 % | 20–46 m | 77 % at 300 m |
+| Marksman Rifle | 900 | 0.45 | 97 % (60 m) | 93 % (150 m) | 85 % | 36–84 m | 89 % at 220 m |
+| Precision Rifle | 950 | 0.3 | 96 % (150 m) | 91 % (300 m) | 90 % | 84–164 m | 69 % at 1000 m |
+
+Shotguns (hitscan pellets), the Pulse Pistol and other hitscan guns keep the distance falloff under every rule.
+
+**Clearer ranges.** Close-range guns reach less far and fade to a low floor; rifles, the LMG, the Battle Rifle and
+the snipers stay long. Each gun's best range is in its weapon file (`notes.range`) and `impactSpeed.test.ts` checks it
+against the data and the sim (the stated body shots at the best range, at Standard).
+
+| Gun | Best range (full damage) | Body shots there | Floor (by) | Reach (before) |
+|---|---|---|---|---|
+| Pistol | 18 m | 5 | 40 % (45 m), was 65 % | 110 m (250) |
+| SMG | 15 m | 7 | 35 % (35 m), was 55 % | 100 m (200) |
+| Machine Pistol | 8 m | 15 | 35 % (25 m), was 50 % | 60 m (60: already short) |
+| Pulse Pistol | 15 m | 5 | 30 % (45 m), was 45 % | 90 m (110) |
+| Hand Cannon | 20 m | 2 | 40 % (55 m), was 70 % from 60 m | 110 m (140) |
+| Heavy Revolver | 25 m | 2 | 70 % (60 m) | 300 m (benchmark B, a head shot kills at any range) |
+| Assault Rifle | 25 m | 6 | 60 % (70 m) | 500 m |
+| Burst Rifle | 25 m | 6 | 60 % (70 m) | 160 m |
+| Battle Rifle | 40 m | 4 | 75 % (100 m) | 600 m |
+| Spin Gun (LMG) | 30 m | 12 | 70 % (80 m) | 300 m |
+| Marksman Rifle | 60 m | 3 | 85 % (150 m) | 220 m |
+| Precision Rifle | 150 m | 2 | 90 % (300 m) | 1000 m |
+| Shotgun / Sawed-Off / Auto | 8 m | 1 / 1 / 2 blasts | 25 % (28 m) | 40 / 25 / 40 m |
+
+Bots' weapon bands were re-measured (`pnpm gun-report --bands`): the Pistol and Pulse Pistol 45 → 37.5 m, the SMG
+27.5 → 22.5 m; the long guns' bands did not move. The Hand Cannon's hand-set stand-off is 3–30 m (was 35).
 
 ---
 
