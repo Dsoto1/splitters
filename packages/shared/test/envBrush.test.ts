@@ -202,7 +202,7 @@ describe('environment brush: a preset\'s ground is never a silent no-op (owner, 
     expect(onGrass.wrongGround).toBe(onGrass.filtered);
     // Sand under the same spot: the preset's ground, so it paints.
     const t = doc.terrain!;
-    const sand = { ...doc, terrain: { ...t, materials: t.materials.map(() => 3) } };
+    const sand = { ...doc, terrain: { ...t, materials: t.materials.map(() => 1), grounds: ['core.pbr_sand'] } };
     expect(groundSampler(sand.terrain)(-40, 0)?.material).toBe('sand');
     const onSand = envBrushDab(sand, arid, -40, 0, ctx(sand));
     expect(onSand.plants.length).toBeGreaterThan(3);
