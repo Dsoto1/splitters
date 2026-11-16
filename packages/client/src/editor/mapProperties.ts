@@ -19,6 +19,10 @@ import {
   castLooks,
   CHARACTER_GROUPS,
   coreThemes,
+  coreMaterials,
+  groundThemes,
+  terrainGroundTheme,
+  type GroundThemeDefinition,
   DEFAULT_BLOOD,
   fitBounds,
   getWeaponSet,
@@ -66,7 +70,8 @@ import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
-import { changeStructureTheme } from './themeChangeDialog.ts';
+import { changeGroundTheme, changeStructureTheme } from './themeChangeDialog.ts';
+import { groundThemeLabel } from './editorParts.ts';
 
 /** Map properties, the inspector with nothing selected: name, theme, players, modes, teams, weapons, bots, time and weather, layers, blood, physics, the boundary, and Environment → Sky's backdrop (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapProperties {
@@ -534,6 +539,33 @@ export class MapProperties {
     // Through the warning (painting Phase 2): counts, then Change, Keep current look or Cancel (the select goes back).
     theme.addEventListener('change', () => changeStructureTheme(this.app, theme.value, () => (theme.value = this.app.doc.classicStructure.theme)));
     el.append(row('Structure theme', theme));
+    // The Ground theme (painting Phase 4): the base ground every unpainted terrain cell shows, through its own warning.
+    const ground = document.createElement('select');
+    ground.id = 'ed-prop-ground-theme';
+    const terrain = doc.terrain;
+    const now = terrain ? terrainGroundTheme(terrain).id : '';
+    const suits = groundThemes.all().filter((g) => g.suits.includes(doc.classicStructure.theme));
+    const add = (label: string, list: GroundThemeDefinition[]) => {
+      if (!list.length) return;
+      const og = document.createElement('optgroup');
+      og.label = label;
+      for (const g of list) og.append(new Option(groundThemeLabel(g), g.id, false, g.id === now));
+      ground.append(og);
+    };
+    add(`Suits ${coreThemes.get(doc.classicStructure.theme)?.displayName ?? 'this theme'}`, suits);
+    add('Other Ground themes', groundThemes.all().filter((g) => !suits.includes(g)));
+    ground.disabled = !terrain;
+    ground.title = terrain ? 'The base ground every terrain cell you haven\'t painted shows, and the grounds Ground paint offers first. A change asks first, with what it would change; painted ground stays.' : 'The map has no terrain: Environment → Terrain makes one';
+    ground.addEventListener('change', () => changeGroundTheme(this.app, ground.value, () => (ground.value = this.app.doc.terrain ? terrainGroundTheme(this.app.doc.terrain).id : '')));
+    el.append(row('Ground theme', ground));
+    if (terrain) {
+      const g = terrainGroundTheme(terrain);
+      const painted = new Set(terrain.materials.filter((m) => m > 0 && terrain.grounds?.[m - 1]).map((m) => terrain.grounds![m - 1]));
+      painted.delete(g.base);
+      const note = small(`base ${coreMaterials.get(g.base)?.displayName ?? g.base} · ${1 + painted.size} ground${painted.size ? 's' : ''}`);
+      note.id = 'ed-prop-ground-note';
+      el.append(note);
+    } else el.append(small('No terrain: Environment → Terrain makes one.'));
     const desc = document.createElement('textarea');
     desc.rows = 3;
     desc.value = doc.metadata.description;

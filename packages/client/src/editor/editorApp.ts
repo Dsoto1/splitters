@@ -438,7 +438,7 @@ export class EditorApp {
     new ResizeObserver(() => fitTopBar(top)).observe(top);
     new MutationObserver(() => fitTopBar(top)).observe($('ed-title-name'), { childList: true, characterData: true, subtree: true });
     void document.fonts?.ready.then(() => fitTopBar(top));
-    this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
+    this.history = new EditHistory(starterMap(STARTER_TERRAIN));
     // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
     this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
     this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
@@ -473,7 +473,7 @@ export class EditorApp {
    */
   startFresh(): void {
     if (this.saving.autosaveTimer !== undefined) this.saving.flushDraft();
-    this.saving.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
+    this.saving.replaceDocument(starterMap(STARTER_TERRAIN));
     const drafts = listDrafts().length;
     this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
     this.tour.maybeStart();
