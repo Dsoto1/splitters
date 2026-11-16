@@ -199,6 +199,38 @@ layout". Files are under `packages/client/src/editor/`.
 ### Phase 2 — Unified selection + Outliner/Inspector
 Implement selection controller and synchronized highlight across 3D viewport, outliner, and inspector. Add reliable object-focused properties and transform commands.
 
+**Phase 2: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-2`, 2026-11-16; no map format change).** The audit's
+§4–5 plan, kept to its scope. Files under `packages/client/src/editor/` unless shared.
+
+- **One selection** (shared `editor/selectionState.ts`): `EditorApp.selection` is read-only now; every write goes through
+  `setSelection` (or `adoptSelection` where the panels are redrawn straight after: an edit's prune in `refresh`, opening a
+  map in `mapSaving.ts`). `selectionRev` counts changes; the plan view redraws on it instead of joining every id each
+  frame. Rules, pure and tested: `wholeSelection` (groups **and moving builds** whole wherever the pick came from: the
+  view, the outliner, a problem's select, the budget pill; Alt keeps one; locks left out), `pruneSelection` (ids an edit
+  removed dropped, the same object when none went; a stale pick selects only what is there), `sameSelection`.
+- **Views in step**: a pick in the outliner selects in the view and the inspector (as before), the outliner passes Alt
+  through, and a pick anywhere else scrolls the outliner to the row (`OutlinerPanel.reveal`, also when its search is
+  cleared). It reads nothing from the page on the selection path: the row's place comes from the rows and the scroll and
+  height last seen (scroll events, the size watcher), and only an out-of-view row scrolls, at the next frame. A level
+  change keeps the selection (status bar, Phase 1). The bot-hint pin, path point and route point are left as they are;
+  `setSelection` still lets the pin go.
+- **The shared transform command** (shared `editor/transform.ts`, `transformCommand(doc, sel, t)`; `EditorApp.transform`):
+  `{ by: { cells } | { metres } }`, `{ set: { id, axis, value } }`, `{ turn }`, `{ face: { id, deg } }`. Tiles and set
+  pieces by whole cells through the layout check (`moveCommand`), things through `moveEntitiesCommand` (millimetres,
+  re-bedding on the terrain), turns through `turnByCommand`; one command, one undo step. Callers: the drag's release (and
+  its red preview, now with the same set-piece library), the arrow-key nudges, the rotate ring, the quick facings, and
+  the inspector's X / Height / Z, Facing (things) and X / Y / Level (tiles, set pieces), ids `ed-insp-x|y|z|facing`.
+  Behaviour change: things carried by a tile drag are re-bedded on the terrain like a drag of things alone.
+- **The QUEUE bug, confirmed then fixed**: on the base build the e2e check typed X = 10.123456 and kept it unrounded, left
+  a crate on a 1-in-10 slope 1 m into the ground (5.82 where a nudge gives 6.82), and moved a mover without its lift and
+  barrel. All three now behave like the nudge.
+- **Number fields** (`editorDom.numberInput`): Enter/Tab/blur commit, Esc puts the value back without an edit, an
+  empty or unreadable value is put back, an unchanged value commits nothing.
+- **Not done (later phases):** breadcrumbs, `focus`/`child` selection (Tile View, Phase 4), the minimap (Phase 3).
+- **Tests:** shared `test/transform.test.ts` (rounding, re-bedding, a mover with its parts, Facing on a build, cells and
+  the layout check, undo as one step each, the selection rules); e2e `editorTransformChecks` (`editortools`) and
+  `editorSelectionSyncChecks` (`editorux`). No baseline moved.
+
 ### Phase 3 — Live minimap
 Implement level-aware overhead projection, camera marker, selection highlighting, navigation, fit/zoom/pan, and layer toggles. Keep the minimap independently usable in compact mode.
 

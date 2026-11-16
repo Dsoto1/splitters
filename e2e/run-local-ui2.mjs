@@ -1447,7 +1447,9 @@ async function editorSelectionSyncChecks(browser) {
   let s = await state();
   check(s.sel.join() === 'e2e_barrel' && s.gizmo && Math.abs(s.gizmo[0] - 4) < 0.5 && Math.abs(s.gizmo[1] - 2) < 0.5 && s.x === '4' && s.on.some((r) => r.id === 'e2e_barrel'), `a row clicked in the outliner selects in the view (gizmo) and the inspector, and stays lit (${JSON.stringify(s)})`);
   await page.fill('#ed-ol-search', '');
-  await frames(page, 3);
+  await frames(page, 5);
+  s = await state();
+  check(shown(s, 'e2e_barrel'), `the search cleared, the list comes back to the selected row (${JSON.stringify({ on: s.on, view: s.view })})`);
   await shot('selection-synced');
 
   // View → outliner: a click on a crate far down the list lights its row and scrolls it into view.
