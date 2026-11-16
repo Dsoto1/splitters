@@ -730,7 +730,8 @@ export class Hud {
     const on = amount > 0.6;
     dot.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
     const cross = document.getElementById('crosshair');
-    if (cross) cross.style.opacity = String(1 - Math.min(1, amount * 1.6));
+    // Through an optic its reticle is the aim (the crosshair would sit on top of it).
+    if (cross) cross.style.opacity = this.optic.hidden ? String(1 - Math.min(1, amount * 1.6)) : '0';
   }
 
   /** Breath meter under the scope (spent: it has to recover before you can hold again). */
