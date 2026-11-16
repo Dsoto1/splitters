@@ -279,7 +279,12 @@ export class MinimapPanel {
       }
     }
     const ground = app.shownGround;
-    const markers = planMarkers(doc, level, ground ? (x, z) => terrainHeightAt(ground, x, z) : undefined).filter((m) => !(m.kind === 'spawn' ? hidden.has('spawn') : m.kind === 'pickup' ? hidden.has('pickup') : hidden.has('logic')) && !app.view.outlinerHidden(m.id));
+    const items = new Map<string, string>();
+    for (const e of doc.entities) if (e.kind === 'pickup') items.set(e.id, e.item);
+    const markers = planMarkers(doc, level, ground ? (x, z) => terrainHeightAt(ground, x, z) : undefined)
+      .filter((m) => !(m.kind === 'spawn' ? hidden.has('spawn') : m.kind === 'pickup' ? hidden.has('pickup') : hidden.has('logic')) && !app.view.outlinerHidden(m.id))
+      // A pickup in its item's colour (as the plan view), worked out here rather than per draw.
+      .map((m) => (m.kind === 'pickup' ? { ...m, color: itemColor(items.get(m.id) ?? '') || m.color } : m));
     this.bake = { canvas, area, fit, scale, doc, level, layers, markers, id: ++this.bakes };
     if (this.levelChip.textContent !== levelName(level)) this.levelChip.textContent = levelName(level);
     this.drawnKey = '';
@@ -296,7 +301,8 @@ export class MinimapPanel {
     const yaw = app.plan.on ? 0 : app.view.yaw;
     const f = minimapFrame(b.fit, w, h, this.zoom, this.zoom > 1 ? (this.panned ?? { x: cam.x, z: cam.z }) : null);
     const s = planScale(f, h);
-    const selKey = `${b.id}|${app.selectionRev}|${w}x${h}|${f.cx.toFixed(2)},${f.cz.toFixed(2)},${f.halfH.toFixed(3)}`;
+    // (The selection's marks follow an edit at once; the picture under them a moment after the edits pause.)
+    const selKey = `${b.id}|${app.selectionRev}|${app.history.revision}|${w}x${h}|${f.cx.toFixed(2)},${f.cz.toFixed(2)},${f.halfH.toFixed(3)}`;
     const key = `${selKey}|${Math.round(cam.x * s)},${Math.round(cam.z * s)},${Math.round(yaw * 30)}`;
     if (key === this.drawnKey) return;
     const now = performance.now();
@@ -349,16 +355,11 @@ export class MinimapPanel {
         g.stroke();
         g.globalAlpha = 1;
       }
-      drawIcon(g, m, p.x, p.y, r, m.kind === 'pickup' ? itemColor(this.pickupItem(m.id) ?? '') || m.color : m.color, 0.7);
+      drawIcon(g, m, p.x, p.y, r, m.color, 0.7);
     }
     this.drawSelection(g, P, r);
     this.drawCamera(g, f, w, h, cam.x, cam.z, yaw);
     this.drawCompass(g, w, h, s);
-  }
-
-  private pickupItem(id: string): string | undefined {
-    const e = this.app.viewDoc.entities.find((x) => x.id === id);
-    return e?.kind === 'pickup' ? e.item : undefined;
   }
 
   /** The selection: cyan outlines (a ring for a thing), dashed where it is only on another level. */
