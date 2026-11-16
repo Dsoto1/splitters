@@ -35,7 +35,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- (none)
 - `wip/drive-physics-3` · b39490b3 · 43888341752 (lane A; driving physics 3 landing A: bots shoot drivers of open vehicles, and see and shoot through bars, barred gates and fences)
 - `wip/drive-physics-3b` · 2f1cb31f · 43896833694 (lane A; driving physics 3 landing B, contains landing A: no step-up on terrain facets, the snag diagnosis and Rapier evaluation, the plan and owner questions in docs/DRIVING_PHYSICS_PLAN.md)
 
