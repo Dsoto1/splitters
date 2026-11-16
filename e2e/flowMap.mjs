@@ -204,7 +204,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
-  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
   [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],
