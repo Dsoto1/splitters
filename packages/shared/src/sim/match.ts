@@ -102,7 +102,7 @@ import { TrackDriver, type DrivenVehicle } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
+import { DEFAULT_LOOK, botLookOrder, getLook } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
 import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
@@ -1525,12 +1525,27 @@ export class Match {
     return this.rules.botCast ?? validBotCast(this.map.botCast);
   }
 
-  /** A random bot's look for its slot: spread across the looks the bot-characters setting allows (all: the whole roster, as ever). */
+  /** Each cast's deal (botLookOrder over castLooks), by cast key. */
+  private botDeals = new Map<string, string[]>();
+
+  /**
+   * A random bot's look for its slot: the match's own shuffle of the looks the bot-characters setting allows (all:
+   * the whole core roster), each bot a different look until the pool runs out. The deal starts at the slot's place
+   * and steps past looks other random bots already wear (a set's hand picks and away players' bodies count too).
+   */
   botLook(slot: number): string {
     const cast = this.botCast;
-    if (!cast.length) return lookForBot(slot);
-    const pool = castLooks(cast);
-    return pool[(slot + 1) % pool.length]!.id;
+    const key = cast.join(',');
+    let order = this.botDeals.get(key);
+    if (!order) this.botDeals.set(key, (order = botLookOrder(castLooks(cast), this.seed)));
+    const worn = new Set<string>();
+    for (const c of this.combatants()) if (c.kind === 'bot' && c.slot !== slot) worn.add(c.ownLook ?? c.look);
+    const start = slot % order.length;
+    for (let k = 0; k < order.length; k++) {
+      const id = order[(start + k) % order.length]!;
+      if (!worn.has(id)) return id;
+    }
+    return order[start]!;
   }
 
   /**

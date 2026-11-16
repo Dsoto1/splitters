@@ -560,8 +560,34 @@ export function botLookFrom(roster: readonly Pick<CharacterLook, 'id' | 'tier'>[
   return pool[(index + 1) % pool.length]!.id;
 }
 
-/** A stable look for a Player Bot, spread across the core roster. */
+/** A stable look for a Player Bot, spread across the core roster, in roster order (a match deals its own: botLookOrder). */
 export const lookForBot = (index: number): string => botLookFrom(PICKABLE_LOOKS, index);
+
+/**
+ * The order a match deals random bots' looks from a pool (owner, 2026-11-16: "make sure they are indeed random and
+ * not the first 60+ in the list"): a shuffle seeded by the match seed, so host and dedicated host deal the same cast
+ * for the same seed (clients get each look in the roster) and matches differ. Seed 1 (tests and `?test=1`, as bot
+ * names) keeps the roster order, rotated by one as botLookFrom.
+ */
+export function botLookOrder<T extends { id: string }>(pool: readonly T[], seed: number): string[] {
+  const ids = pool.map((l) => l.id);
+  if (!ids.length) return ids;
+  if (seed === 1) return [...ids.slice(1), ids[0]!];
+  // mulberry32 (math.ts createRng), salted so the deal is not the match's other rolls.
+  let s = (Math.imul(seed | 0, 0x9e3779b1) ^ 0x5bd1e995) >>> 0;
+  const rnd = (): number => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
+  }
+  return ids;
+}
 
 /** Material families that take a shared texture, by material-name prefix. */
 const FAMILIES: readonly [RegExp, string][] = [
