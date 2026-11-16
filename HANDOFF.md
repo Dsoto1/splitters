@@ -14,7 +14,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `wip/drive-physics-3b` · 43896833694 (driving physics 3 landing B, on top of A: no step-up on terrain facets, the snag diagnosis, the Rapier evaluation and the plan with owner questions in docs/DRIVING_PHYSICS_PLAN.md; a helper of lane A's lead)
+- (none)
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
