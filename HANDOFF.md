@@ -14,7 +14,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- (none)
+- `wip/mapmaker-ui-2` · 43873164276 (MapMaker UI spec Phase 2; carries painting Phase 3; a helper of lane B's splitters22)
 
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 
