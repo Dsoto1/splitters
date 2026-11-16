@@ -5,7 +5,7 @@
   "order": 43,
   "name": "Customs Agent Zhao",
   "look": "core.zhao",
-  "group": "folk",
+  "group": "agents",
   "nameTheme": "townsfolk",
   "bio": "Thirty years at customs. Nothing gets past him, and nobody gets through.",
   "body": "male",

@@ -217,7 +217,7 @@ describe('Ancient pack demo maps', () => {
   it("Sandfall Colosseum's follow-ups (owner, 2026-11-09): fewer collision boxes, the portcullis gates on winches, Deathmatch, side-walled tunnels", () => {
     const map = load('sandfall_colosseum');
     // The stands' inner arcades and the east and west facades went (solid fill in their place): about 31,700 before,
-    // 22,240 as a square; the octagon's corners (phase 4) took it to about 17,900.
+    // 22,240 as a square; the octagon's corners (phase 4) took it to about 17,900, their gallery stairs (phase 5) to 18,240.
     expect(buildMapGeometry(map).length).toBeLessThan(20_000);
     // The ten fill blocks stop at the three kept bays of each stand (24 m along it).
     const fill = map.entities.filter((e): e is Extract<MapEntity, { kind: 'block' }> => e.kind === 'block' && !!e.name?.startsWith('Stand fill'));

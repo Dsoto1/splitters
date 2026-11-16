@@ -5,7 +5,7 @@
   "order": 92,
   "name": "Alien Encounter",
   "look": "core.alienencounter",
-  "group": "creatures",
+  "group": "space",
   "nameTheme": "alien",
   "bio": "Small, green and absolutely sure you started it.",
   "body": "male",

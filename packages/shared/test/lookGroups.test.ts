@@ -26,7 +26,8 @@ describe("Character Select's groups", () => {
   it('a retired preset sorts as its replacement; NPC skins not offered still sort; a design of yours has none', () => {
     for (const [old, now] of Object.entries(RETIRED_LOOKS)) expect(lookGroup(old)).toBe(lookGroup(now));
     for (const l of NPC_LOOKS) expect(isCharacterGroup(lookGroup(l.id)), l.id).toBe(true);
-    expect(lookGroup('npc:trooper')).toBe('soldiers');
+    expect(lookGroup('npc:trooper')).toBe('agents');
+    expect(lookGroup('npc:gunner')).toBe('soldiers');
     expect(lookGroup('npc:imp')).toBe('creatures');
     const mine = encodeLook({ body: 'male', parts: ['ranger_torso_m', 'ranger_legs_m', 'ranger_feet_m'], hair: [], colorways: [], skin: null, hairColor: null });
     expect(lookGroup(mine)).toBeNull();
@@ -41,7 +42,22 @@ describe("Character Select's groups", () => {
     const at = (g: string) => CORE_LOOKS.filter((l) => l.group === g).map((l) => l.id);
     expect(at('horror')).toEqual(expect.arrayContaining(['core.shambler', 'core.rattles', 'core.bonejack', 'core.punkin']));
     expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.biscuit', 'core.shiba', 'core.teddy']));
-    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.aldric', 'core.merrow']));
-    expect(at('creatures')).toEqual(expect.arrayContaining(['core.visitor', 'core.emeraldrobot', 'core.t350']));
+    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.anubis']));
+    expect(at('folk')).toEqual(expect.arrayContaining(['core.aldric', 'core.merrow', 'core.hazmat']));
+    expect(at('creatures')).toEqual(expect.arrayContaining(['core.snikkit', 'core.trex', 'core.grizzelda']));
+    expect(at('machines')).toEqual(expect.arrayContaining(['core.emeraldrobot', 'core.t350', 'core.botboy']));
+    expect(at('space')).toEqual(expect.arrayContaining(['core.visitor', 'core.astronaut', 'core.spacemarine']));
+    expect(at('agents')).toEqual(expect.arrayContaining(['core.stealthop', 'core.zhao']));
+  });
+
+  it("the owner's categories, in order (Roster Board, 2026-11-14/15)", () => {
+    expect(CHARACTER_GROUPS.map((g) => `${g.id}:${g.label}`)).toEqual([
+      'soldiers:Soldiers', 'folk:Everyday Folk', 'space:Outer Space', 'agents:Agents & Spies', 'legends:Legends',
+      'creatures:Creatures', 'animals:Animalia', 'machines:Machines', 'horror:Horrors',
+    ]);
+    // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
+    for (const id of ['core.unclebao', 'core.rustymech']) expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
+    expect(RETIRED_LOOKS['core.unclebao']).toBe('core.oldtimer');
+    expect(RETIRED_LOOKS['core.rustymech']).toBe('core.t350');
   });
 });

@@ -2,6 +2,8 @@ import { COUNT_NAMES, perfProbe, type FrameSample } from './perfProbe.ts';
 import { HITCH_MS, SPLIT_KEYS, avg, frameCounts, frameSplit, pct, gpuName, type DrawCounts, type FrameSplit } from './perfOverlay.ts';
 import { currentFrameCap, loadGraphicsQuality, loadRenderScale } from './graphicsSettings.ts';
 import type { ServerStats } from '@tiletrigger/shared';
+import { memorySample, memorySnapshots, type MemorySample } from '../memoryReadout.ts';
+import { TOLL_MS, TOLL_SECONDS, tabSlowingTold } from './tabToll.ts';
 
 /**
  * Level 2 of the performance tools (docs/PERF_TOOLS.md): a whole match recorded while "Record performance" is
@@ -32,7 +34,12 @@ export interface RecorderContext {
   server: ServerStats | null;
   /** Shader programs built so far (new ones mid-match are first-sight stalls). */
   shaders: number;
+  /** The last second's time outside our script, ms a frame on late frames (tabToll.ts). */
+  outsideMs: number;
 }
+
+/** The memory readout's figures in each second's row (fix 3a), in order. */
+const MEMORY_FIELDS = ['heapMB', 'heapTotalMB', 'scenes', 'meshes', 'materials', 'geometries', 'textures', 'gpuTextures', 'gpuTextureMB', 'renderTargets', 'skeletons', 'domNodes', 'workers'] as const satisfies readonly (keyof MemorySample)[];
 
 /** The per-second row's fields, in order (the file names them once). */
 const SECOND_FIELDS = [
@@ -52,6 +59,8 @@ const SECOND_FIELDS = [
   'shadersNew',
   'serverTickAvg',
   'serverTickMax',
+  'outsideMs',
+  ...MEMORY_FIELDS,
 ] as const;
 
 const round = (x: number, d = 2) => Math.round(x * 10 ** d) / 10 ** d;
@@ -173,6 +182,8 @@ export class PerfRecorder {
       dt: round(f.dt, 1),
       busy: round(busy, 1),
       outside: round(Math.max(0, f.dt - busy), 1),
+      // The worn-down tab's toll at the time (fix 3d): its last second, and whether the match has said a reload helps.
+      tab: { outsideMs: round(x.outsideMs, 1), slowing: tabSlowingTold() },
       split: Object.fromEntries(SPLIT_KEYS.map((k) => [k, round(split[k], 2)])),
       pos: x.pos?.map((v) => round(v, 1)) ?? null,
       map: x.map,
@@ -216,6 +227,8 @@ export class PerfRecorder {
       shadersNew,
       x.server ? round(x.server.tickMsAvg) : -1,
       x.server ? round(x.server.tickMsMax) : -1,
+      round(x.outsideMs, 1),
+      ...((m) => MEMORY_FIELDS.map((k) => m[k] ?? -1))(memorySample()),
     ]);
   }
 
@@ -251,6 +264,8 @@ export class PerfRecorder {
       secondFields: SECOND_FIELDS,
       perSecond: this.seconds,
       hitches: this.hitches,
+      // The memory readout's snapshots in this recording (a Test start, Back to MapMaker) and the page's limit.
+      memory: { limitMB: memorySample().heapLimitMB, snapshots: memorySnapshots.filter((m) => m.t * 1000 >= this.t0), tabSlowing: { told: tabSlowingTold(), overMs: TOLL_MS, forSeconds: TOLL_SECONDS } },
     };
   }
 }

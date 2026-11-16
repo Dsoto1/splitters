@@ -22,6 +22,8 @@
 // own mirror image across the diagonal, and a mirrored corner is a turned one (map/setPieces.ts tileDiagonalMirror).
 //
 // Phase 3 adds the gate: the ground and attic storeys' gate option and the gatehouse tower (see "the gate" below).
+// Phase 5 adds a stair from the ground gallery up into the middle one in each half of the diagonal ("the gallery
+// stairs" below), in the ground storey (plain and gate) and the middle one's floor.
 
 const R2 = Math.SQRT2;
 const T = Math.tan(Math.PI / 8);
@@ -234,8 +236,9 @@ function gallery(t, f, b, y, opts = {}) {
   // Back: Round arches (blind against the fill, or open into the facade's arcade), thickness in front of the line.
   const end = opts.backTo ?? b;
   wedgeRun(t, b, xm(end), 12, 'arch_round', y, { plain: true });
-  // (With the gate, five bays: one arch on the centre line, the passage's way on into the fill.)
-  diagRun(t, b, -um(end), um(end), 'arch_round', y, { plain: true, ...(opts.gate ? { bays: 5 } : {}) });
+  // (The ground gallery's has five bays, plain or gate: one arch on the centre line, the gate passage's way on into the
+  // fill, and the second from each mitre the way up the gallery stair.)
+  diagRun(t, b, -um(end), um(end), 'arch_round', y, { plain: true, ...(opts.backBays ? { bays: opts.backBays } : {}) });
   // The vault (as a vaulted room's: springing 3.02 m, crown 3.29 m, 0.5 m in from each wall).
   for (const s of vaultStrips(f + WALL, b - WALL, y + 3.02, y + 3.29)) {
     const mid = (s.y0 + s.y1) / 2;
@@ -479,6 +482,45 @@ const SLITS = { proud: 0.03, w: 0.2, h: 1.6, at: [6, 14, 22, 29.5], cols: [7.5],
 /** How far the string course stands proud of the faces. */
 const STRING_COURSE = 0.15;
 
+// ---------------------------------------------------------------- the gallery stairs (phase 5)
+
+// The way up from the ground gallery into the middle one (owner's phase-4 answer 1a: without it the middle gallery
+// ring was sealed). One in each half of the diagonal (so each tile stays its own mirror image), in the ground storey
+// for the plain corner and the gate alike: through the ground gallery's back wall at its second arch from the mitre,
+// 16 steps up along the depth through the fill to a landing at 4 m under the middle gallery's front wall, then 16 steps
+// along the gallery toward the centre line, up through a hole in its floor (the mid tile's), a parapet round the hole.
+// The diagonal's frame, west half (the east half is its mirror, flipU).
+
+/**
+ * The stair: `u0`..`u1` the lower flight's width (inside the arch at u -14.35, its 3.2 m opening; 0.25 m clear of the
+ * north wedge's fill, which reaches u -15.6 at depth 18.3), from the back wall `v0` to the landing at `land`; the upper
+ * flight between the middle gallery's front wall's face `w0` and `w1`, from u1 to `top`; the parapet `rail` thick and
+ * `railH` high; the ground gallery's back wall in `bays` bays (the gate's five, so the arch is where both have it).
+ */
+const GSTAIR = { u0: -15.35, u1: -12.95, v0: 16, land: 24, w0: 24.5, w1: 26.9, top: -4.95, rail: 0.2, railH: 1, bays: 5 };
+/** The fill carved out over the lower flight, the landing and the upper flight (the fill under them is their floor). */
+const STAIR_HOLES = [
+  { u0: GSTAIR.u0, u1: GSTAIR.u1, v0: GSTAIR.v0, v1: GSTAIR.land, y0: 0, y1: 7 },
+  { u0: GSTAIR.u0, u1: GSTAIR.u1, v0: GSTAIR.land, v1: GSTAIR.w1, y0: 4, y1: 7.5 },
+  { u0: GSTAIR.u1, u1: GSTAIR.top, v0: GSTAIR.w0, v1: GSTAIR.w1, y0: 4, y1: 7.5 },
+];
+/** The hole in the middle gallery's floor over the upper flight. */
+const STAIR_TOP = { u0: GSTAIR.u1, u1: GSTAIR.top, v0: GSTAIR.w0, v1: GSTAIR.w1, y0: 7.5, y1: 8 };
+
+/** The two flights (ground storey). */
+function stairParts(t) {
+  const s = GSTAIR;
+  t.diag.push({ flight: { axis: 'z', dir: 1, from: DV(s.v0), across: [DU(s.u0), DU(s.u1)], steps: 16 } });
+  t.diag.push({ flight: { axis: 'x', dir: 1, from: DU(s.u1), across: [DV(s.w0), DV(s.w1)], steps: 16, base: 4, floor: 4 } });
+}
+
+/** The parapet round the hole in the middle gallery's floor: along its side toward the gallery and across its foot (8 m up, in the mid tile's own heights). */
+function stairRail(t) {
+  const s = GSTAIR;
+  t.diag.push(diagBox(s.w1, s.w1 + s.rail, 8, 8 + s.railH, s.u1 - s.rail, s.top, 'wall'));
+  t.diag.push(diagBox(s.w0, s.w1, 8, 8 + s.railH, s.u1 - s.rail, s.u1, 'wall'));
+}
+
 // ---------------------------------------------------------------- the four tiles
 
 function groundParts(gate = false) {
@@ -487,22 +529,25 @@ function groundParts(gate = false) {
   for (const [d0, d1, top, kind] of PODIUM) podiumBand(t, d0, d1, 0, top, kind, gate);
   podiumBand(t, PARAPET[0], PARAPET[1], PARAPET[2], PARAPET[3], 'wall', gate);
   // The podium's gallery and the first tier of rows over it.
-  gallery(t, 8, 16, 0, { floor: true, gate });
+  gallery(t, 8, 16, 0, { floor: true, gate, backBays: GSTAIR.bays });
   rows(t, 0, 7);
-  // Fill under the upper tiers (the mid gallery's floor slab is the mid tile's); the gate's passage and stair wells are
-  // carved out of it.
-  const holes = gate ? GATE_HOLES : [];
+  // Fill under the upper tiers (the mid gallery's floor slab is the mid tile's); the gallery stairs, and the gate's
+  // passage and stair wells, are carved out of it.
+  const holes = gate ? [...STAIR_HOLES, ...GATE_HOLES] : STAIR_HOLES;
   carvedBand(t, 16, 24, 0, 8, 'solid', holes);
   carvedBand(t, 24, 32, 0, 7.5, 'solid', holes);
   carvedBand(t, 32, 48, 0, 8, 'solid', holes);
   arcade(t, 0, 'ground', gate ? { innerBays: 9 } : {});
+  stairParts(t);
   if (gate) gateParts(t);
   return t;
 }
 
 function midParts() {
   const t = sectors();
-  band(t, 24, 32, 7.5, 8, 'floor');
+  // The gallery's floor, the gallery stair's hole in it and the parapet round the hole.
+  carvedBand(t, 24, 32, 7.5, 8, 'floor', [STAIR_TOP]);
+  stairRail(t);
   gallery(t, 24, 32, 8);
   rows(t, 8, 23);
   band(t, 32, 40, 8, 16, 'solid');
@@ -603,8 +648,8 @@ function assemble(t) {
 }
 
 const TILES = [
-  ['ground', 'Arena Corner (Ground)', 'The ground storeys of a 45° corner of the stands (levels 0-1): the 2 m podium wall, its walkway and seats on the diagonal, the vaulted gallery behind them turning the corner, the first tier of rows, solid fill under the upper tiers and the facade\'s ground arcade', groundParts],
-  ['mid', 'Arena Corner (Middle)', 'The middle tier of a 45° corner of the stands (levels 2-3): rows round the corner with an aisle up each mitre and the centre line, the gallery under their back half turning the corner, the facade\'s second arcade', midParts],
+  ['ground', 'Arena Corner (Ground)', 'The ground storeys of a 45° corner of the stands (levels 0-1): the 2 m podium wall, its walkway and seats on the diagonal, the vaulted gallery behind them turning the corner with a stair up into the middle gallery either side of the diagonal, the first tier of rows, solid fill under the upper tiers and the facade\'s ground arcade', groundParts],
+  ['mid', 'Arena Corner (Middle)', 'The middle tier of a 45° corner of the stands (levels 2-3): rows round the corner with an aisle up each mitre and the centre line, the gallery under their back half turning the corner (the stairs up from the ground gallery come up through its floor), the facade\'s second arcade', midParts],
   ['upper', 'Arena Corner (Upper)', 'The upper tier of a 45° corner of the stands (levels 4-5): rows round the corner, a vomitorium on the centre line from the gallery behind, aisles up each mitre and either side of it, the facade\'s third arcade', upperParts],
   ['attic', 'Arena Corner (Attic)', 'The attic walk round a 45° corner of the stands (levels 6-7): the walkway behind the highest seats, windows in the outer wall, the roof', atticParts],
 ];
@@ -634,7 +679,7 @@ function storeyTile(key, displayName, blurb, parts, gate = false) {
 }
 
 const GATE_NOTES = {
-  ground: 'a Gladiator Gate on the diagonal (passage 3.2 m wide and 3 m clear under the gatehouse, where a portcullis hangs 1 m in from the podium\'s face, then 3.4 m through the fill), out through the facade\'s middle arch; a stair well either side of it from the passage down to level -1, whose foot landing meets the north side (and, mirrored, the east side) of tile cell 2, 2, -1, the hypogeum ring\'s corner, through a 3.6 m opening; a short stair of eight steps up the podium wall either side of the mouth, open with the portcullis down (owner 4b). The wells hang a level under the tile\'s cells (no cell at level -1 is claimed: put the hypogeum\'s tunnels there); its bore takes the ground out round them.',
+  ground: 'a Gladiator Gate on the diagonal (passage 3.2 m wide and 3 m clear under the gatehouse, where a portcullis hangs 1 m in from the podium\'s face, then 3.4 m through the fill), out through the facade\'s middle arch; a stair well either side of it from the passage down to level -1, whose foot landing meets the north side (and, mirrored, the east side) of tile cell 2, 2, -1, the hypogeum ring\'s corner, through a 3.6 m opening; a short stair of eight steps up the podium wall either side of the mouth, open with the portcullis down (owner 4b); the plain storey\'s two gallery stairs up into the middle gallery (phase 5). The wells hang a level under the tile\'s cells (no cell at level -1 is claimed: put the hypogeum\'s tunnels there); its bore takes the ground out round them.',
   attic: 'the walk and the roof open into the gatehouse tower (core.arena_corner_tower) over the facade\'s middle three bays: no windows or parapet there.',
 };
 
@@ -686,6 +731,6 @@ export function arenaCornerTiles() {
 }
 
 const GATE_BLURBS = {
-  ground: 'The ground storeys of a 45° corner of the stands with a Gladiator Gate on its diagonal: a passage 3.2 m wide from the sand out under the stand and through the facade (hang a portcullis in its mouth), a stair well either side of it down to the hypogeum a level below, a short stair up the podium wall either side of the gate',
+  ground: 'The ground storeys of a 45° corner of the stands with a Gladiator Gate on its diagonal: a passage 3.2 m wide from the sand out under the stand and through the facade (hang a portcullis in its mouth), a stair well either side of it down to the hypogeum a level below, a short stair up the podium wall either side of the gate, a stair up into the middle gallery either side of the diagonal',
   attic: 'The attic walk round a 45° corner of the stands, open in the middle into the gatehouse tower over the gate (core.arena_corner_tower)',
 };

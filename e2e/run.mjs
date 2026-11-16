@@ -408,10 +408,24 @@ async function editorFlow(browser) {
   await page.click('#ed-quit-cancel');
   check(!(await page.evaluate(() => document.getElementById('ed-quit-dialog').open || document.getElementById('editor').hidden)), 'Cancel stays in MapMaker');
   await page.waitForFunction((id) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(id), id, { timeout: T(10000) });
+  // A reload of the tab (or Chrome's "Aw, Snap!") comes back to the map being made, its unsaved changes included.
   await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  d = await doc();
+  const dirtyAfterReload = await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on') && !document.getElementById('editor').hidden && document.getElementById('menu').hidden);
+  check(d.metadata.id === id && d.metadata.name === 'Draft Edit' && d.classicStructure.tiles.length === 3 && dirtyAfterReload, `a reload in MapMaker reopens the map being made, its unsaved draft still unsaved (${d.metadata.name}, ${d.classicStructure.tiles.length} tiles, unsaved ${dirtyAfterReload})`);
+  // A reload during its Test comes back to MapMaker on the map too, not into the Test or the menu.
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
+  await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  const fromTest = await page.evaluate(() => ({ id: window.__editor?.doc.metadata.id, name: window.__editor?.doc.metadata.name, editor: !document.getElementById('editor').hidden, menu: !document.getElementById('menu').hidden, test: !!window.__cs?.local }));
+  check(fromTest.id === id && fromTest.name === 'Draft Edit' && fromTest.editor && !fromTest.menu && !fromTest.test, `a reload during MapMaker's Test comes back to MapMaker with the map open (${JSON.stringify(fromTest)})`);
+  // Coming in afresh (not a reload) still opens the blank starter map, the draft kept in Open….
+  await page.goto(page.url());
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   d = await doc();
-  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'reopening MapMaker shows the blank starter map');
+  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'opening MapMaker afresh shows the blank starter map');
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map') && t.includes('Saved')), 'saved map is listed in the library');
@@ -1665,6 +1679,8 @@ async function editorLayoutChecks(browser) {
   const theme0 = (await doc()).classicStructure.theme;
   const otherTheme = await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].map((o) => o.value).find((v) => v !== t), theme0);
   await page.selectOption('#ed-prop-theme', otherTheme);
+  // The warning before a theme change (painting Phase 2): Change.
+  if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
   await page.waitForFunction((t) => window.__editor.doc.classicStructure.theme === t, otherTheme, { timeout: T(5000) }).catch(() => {});
   const general = { theme: (await doc()).classicStructure.theme, undo: await undoLabel() };
   await page.click('#ed-undo');
@@ -1852,6 +1868,7 @@ async function editorLayoutChecks(browser) {
 
   // ---- The old controls from their places: the top bar's theme and Snap, the rail's collapse, the problems pill.
   await page.selectOption('#ed-theme', otherTheme);
+  if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
   const themeTop = (await doc()).classicStructure.theme === otherTheme && (await undoLabel()) === 'Change theme';
   await page.click('#ed-undo');
   await page.selectOption('#ed-snap', 'coarse');
@@ -2043,6 +2060,7 @@ async function editorPiecePaintChecks(browser) {
 
 async function editortoolsFlow(browser) {
   await editorPaintChecks(browser);
+  await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
@@ -2177,6 +2195,186 @@ async function editorPaintChecks(browser) {
   check(await page.evaluate((c) => window.__editor.doc.terrain.materials.join('') === c, cells0), 'undo takes the ground paint back');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+}
+
+/**
+ * The layers on the cursor and the warning before a Structure theme change (docs/MAPMAKER_PAINTING_PLAN.md Phase 2):
+ * Map settings' Structure theme, the top bar's theme and the palette's "Use theme" all open one dialog, its counts
+ * those of themeChangeImpact; Cancel changes nothing, Change and Keep current look are one undo step each, and Keep
+ * leaves nothing that would still change. Structure paint's card names the surface and its three layers, the one
+ * shown marked; Ground paint names the ground layer under it. A dialog, not a bright moment: nothing for `flashing`.
+ */
+async function editorThemeWarningChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editortools-paint2-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const json = () => page.evaluate(() => JSON.stringify(window.__editor.doc));
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel ?? null);
+  const status = () => page.evaluate(() => document.getElementById('ed-target').textContent);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  // Imperial: a plain room, a room with painted walls, a block, a Cage Block on the theme's look and one with its own (Military).
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, position, size) => ({ id, kind: 'block', position, size, yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' },
+        { kind: 'addTiles', tiles: [{ id: 'tw_plain', tile: 'core.room', x: -3, y: 2, z: 0, rotation: 0 }, { id: 'tw_painted', tile: 'core.room', x: -5, y: 2, z: 0, rotation: 0, surfaces: { walls: { material: 'core.pbr_brick_old', tint: null } } }] },
+        { kind: 'addEntities', entities: [block('tw_blk', [-20, 0, 0], [2, 2, 2])] },
+        { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }, { id: 'cage_own', piece: 'setpiece.cage_block', x: 6, y: -3, z: 0, rotation: 0, mirror: false, pack: 'military' }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await settle();
+  const dialogCounts = () =>
+    page.evaluate(() => {
+      const d = document.getElementById('ed-theme-dialog');
+      if (!d?.open) return null;
+      const n = (id) => {
+        const b = d.querySelector(`[data-count="${id}"] b`);
+        return b ? Number(b.textContent.match(/[\d,]+/)[0].replace(/,/g, '')) : 0;
+      };
+      return { surfaces: n('surfaces'), pieces: n('pieces'), painted: n('painted'), ownlook: n('ownlook'), sky: !!d.querySelector('[data-count="sky"]'), button: document.getElementById('ed-theme-change').textContent, title: document.getElementById('ed-theme-title').textContent };
+    });
+  const expected = (to) =>
+    page.evaluate((to) => {
+      const i = window.__editor.themeImpact(to);
+      return { surfaces: i.surfacesChange, pieces: i.piecesChange, painted: i.surfacesPainted, ownlook: i.piecesOwnLook, sky: i.skyFollows };
+    }, to);
+  const same = (c, e) => c && c.surfaces === e.surfaces && c.pieces === e.pieces && c.painted === e.painted && c.ownlook === e.ownlook && c.sky === e.sky && c.button === `Change ${e.surfaces + e.pieces} things`;
+  const waitDialog = () => page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(5000) }).then(() => true, () => false);
+
+  // ---- Map settings' Structure theme: the dialog, its counts; Cancel changes nothing and puts the select back.
+  await openMapSettings(page);
+  const rowLabel = await page.evaluate(() => document.getElementById('ed-prop-theme').closest('label, .row, div')?.textContent ?? '');
+  const before = await json();
+  const undo0 = await undoLabel();
+  const want = await expected('core.industrial');
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  const opened = await waitDialog();
+  const c1 = await dialogCounts();
+  check(opened && same(c1, want) && want.surfaces > 0 && want.pieces === 1 && want.painted >= 1 && want.ownlook === 1 && /Structure theme/.test(rowLabel) && /Change the Structure theme to Industrial/.test(c1.title), `Map settings' Structure theme asks first, with the counts of themeChangeImpact (${JSON.stringify({ c1, want, rowLabel })})`);
+  await shot('warning');
+  await page.click('#ed-theme-cancel');
+  await settle();
+  const cancelled = { same: (await json()) === before, undo: await undoLabel(), select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.getElementById('ed-theme-dialog')) };
+  check(cancelled.same && cancelled.undo === undo0 && cancelled.select === 'core.imperial' && !cancelled.open, `Cancel changes nothing and puts the select back (${JSON.stringify(cancelled)})`);
+
+  // ---- Change: the theme and everything that follows it, one undo step.
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  await waitDialog();
+  await page.click('#ed-theme-change');
+  await settle();
+  const changed = { theme: (await doc()).classicStructure.theme, undo: await undoLabel(), painted: (await doc()).classicStructure.tiles.find((t) => t.id === 'tw_painted').surfaces?.walls?.material, plain: (await doc()).classicStructure.tiles.find((t) => t.id === 'tw_plain').surfaces ?? null };
+  await page.click('#ed-undo');
+  await settle();
+  check(changed.theme === 'core.industrial' && changed.undo === 'Change theme' && changed.painted === 'core.pbr_brick_old' && changed.plain === null && (await json()) === before, `Change changes the theme (your paint stays), one undo step (${JSON.stringify(changed)})`);
+
+  // ---- Keep current look: the theme changes, what is built is pinned as paint (nothing left to change back), one undo step.
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  await waitDialog();
+  await page.click('#ed-theme-keep');
+  await settle();
+  const kept = await page.evaluate(() => {
+    const ed = window.__editor;
+    const back = ed.themeImpact('core.imperial');
+    return { theme: ed.doc.classicStructure.theme, undo: ed.history.undoLabel, plain: !!ed.doc.classicStructure.tiles.find((t) => t.id === 'tw_plain').surfaces, block: ed.doc.entities.find((e) => e.id === 'tw_blk').material, cage: !!ed.doc.setPieces.find((p) => p.id === 'cage').overrides, back: back.surfacesChange + back.piecesChange };
+  });
+  await page.click('#ed-undo');
+  await settle();
+  check(kept.theme === 'core.industrial' && kept.undo === 'Change theme, keep the look' && kept.plain && kept.block && kept.cage && kept.back === 0 && (await json()) === before, `Keep current look changes the theme and pins today's look as paint (nothing would change going back), one undo step (${JSON.stringify(kept)})`);
+
+  // ---- The top bar's theme: the same dialog; Esc is Cancel.
+  await page.selectOption('#ed-theme', 'core.industrial');
+  const top = { opened: await waitDialog(), counts: await dialogCounts() };
+  await page.keyboard.press('Escape');
+  await settle();
+  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')) };
+  check(top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open, `the top bar's theme opens the same warning; Esc cancels (${JSON.stringify({ top, topAfter })})`);
+
+  // ---- The palette's "Use theme": the same dialog, then Change.
+  await page.selectOption('#ed-pack', 'military');
+  await settle();
+  const useTo = await page.evaluate(() => document.getElementById('ed-pack-theme').textContent);
+  await page.click('#ed-pack-theme');
+  const use = { opened: await waitDialog(), counts: await dialogCounts() };
+  await page.click('#ed-theme-change');
+  await settle();
+  const useTheme = (await doc()).classicStructure.theme;
+  const useWant = await page.evaluate((t) => {
+    // The counts it showed, as themeChangeImpact gives them from the map before the change.
+    window.__editor.undo();
+    const i = window.__editor.themeImpact(t);
+    return { surfaces: i.surfacesChange, pieces: i.piecesChange, painted: i.surfacesPainted, ownlook: i.piecesOwnLook, sky: i.skyFollows };
+  }, useTheme);
+  await page.selectOption('#ed-pack', '');
+  check(use.opened && same(use.counts, useWant) && useTheme !== 'core.imperial' && (await json()) === before && new RegExp(useTo.replace(/^Use theme \((.*)\)$/, '$1')).test(use.counts.title), `the palette's "Use theme" opens the same warning, and Change changes the theme (${JSON.stringify({ useTo, use, useTheme })})`);
+
+  // ---- Structure paint's card: the surface, base Structure theme → set piece look → your paint, the shown one marked.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setTool({ kind: 'paint' });
+    ed.paint.pieceScope = 'piece';
+    ed.paint.paintStyle = { material: 'core.pbr_checker', tint: null };
+    ed.view.yaw = 0;
+    ed.view.pitch = -0.15;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(16, 1.7, -26.5);
+  });
+  await settle();
+  await hover(16, 0, -23);
+  const card = await page.evaluate(() => {
+    const tip = document.getElementById('ed-tip');
+    return { shown: !tip.hidden, cls: tip.className, head: tip.querySelector('b')?.textContent, layers: [...tip.querySelectorAll('.ed-layer')].map((l) => l.dataset.layer + (l.classList.contains('shown') ? '*' : '')), text: tip.textContent, status: document.getElementById('ed-target').textContent };
+  });
+  check(card.shown && /ed-paint-card/.test(card.cls) && /^Floor · .*Cage Block/.test(card.head) && JSON.stringify(card.layers) === '["base","look*","paint"]' && /Imperial Arena/.test(card.text) && /\(the theme's\)/.test(card.text) && /Click paints Marble Checker across this Cage Block/.test(card.text) && /Structure theme Imperial Arena: .* → Set piece look .*✓ → Your paint: none/.test(card.status), `Structure paint's card names the surface and its layers, the set piece look shown (${JSON.stringify(card)})`);
+  await shot('cursor-look');
+  // Painted across the piece: your paint shows.
+  const at = await hover(16, 0, -23);
+  await page.mouse.click(at.x, at.y);
+  await settle();
+  await hover(16, 0, -23.2);
+  const painted = await page.evaluate(() => [...document.querySelectorAll('#ed-tip .ed-layer')].map((l) => l.dataset.layer + (l.classList.contains('shown') ? '*' : '')));
+  check(JSON.stringify(painted) === '["base","look","paint*"]', `after a click, your paint is the layer shown (${JSON.stringify(painted)})`);
+  await shot('cursor-paint');
+  // Over bare ground: it names the ground and says a click does nothing.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.view.camera.position.set(-30, 6, -30);
+    ed.view.pitch = -0.6;
+    ed.view.applyCamera();
+  });
+  await settle();
+  await hover(-30, 0, -20);
+  const groundCard = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, text: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }));
+  check(/^Ground · .*main ground/.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
+  await shot('cursor-ground');
+  // Ground paint names the ground layer: the main ground, or painted.
+  await page.keyboard.press('Shift+KeyB');
+  await settle();
+  await hover(-30, 0, -20);
+  const gp = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, status: document.getElementById('ed-target').textContent }));
+  check(/^Ground · .*\(the map's main ground\)/.test(gp.head) && /Ground paint · Ground · .*main ground.* · click paints/.test(gp.status), `Ground paint names the ground layer and that it is the main ground (${JSON.stringify(gp)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
 }
 
 /**
@@ -4060,7 +4258,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,agents,legends,creatures,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -4074,11 +4272,11 @@ async function offlineFlow(browser) {
   await settled('soldiers');
   await page.keyboard.press('e');
   await page.keyboard.press('e');
-  const twoOn = await settled('folk');
-  check(twoOn.on === 'folk' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
+  const twoOn = await settled('space');
+  check(twoOn.on === 'space' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
   await page.keyboard.press('q');
-  const back1 = await settled('legends');
-  check(back1.on === 'legends', `Q scrolls back a section (${JSON.stringify(back1)})`);
+  const back1 = await settled('folk');
+  check(back1.on === 'folk', `Q scrolls back a section (${JSON.stringify(back1)})`);
   await page.click('.char-chip[data-section="creatures"]');
   const chipJump = await settled('creatures');
   check(chipJump.on === 'creatures', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
@@ -4088,7 +4286,7 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => document.querySelector('.char-grid').scrollTop === 0 && document.querySelector('.char-chip.on')?.dataset.section === 'soldiers', null, { timeout: T(5000) }).catch(() => {});
   const wheeled = await section();
   check(wheeled.on === 'soldiers' && wheeled.top === 0, `the mouse wheel scrolls across sections and the strip follows (${JSON.stringify(wheeled)})`);
-  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Knights & Legends.
+  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Everyday Folk.
   const lastSoldier = await page.$eval('.char-sec[data-section="soldiers"] .char-tile:last-child', (t) => t.dataset.look);
   await page.focus(`.char-tile[data-look="${lastSoldier}"]`);
   await page.keyboard.press('ArrowDown');
@@ -4096,7 +4294,7 @@ async function offlineFlow(browser) {
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowRight');
   const after = await page.evaluate(() => document.activeElement?.closest('.char-sec')?.dataset.section);
-  check(below === 'legends' && after === 'legends', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
+  check(below === 'folk' && after === 'folk', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
   // Hovering only highlights, a click shows them, and only Choose (Enter / A again, a double-click) makes them
   // yours. Leaving without it keeps your character.
   const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));

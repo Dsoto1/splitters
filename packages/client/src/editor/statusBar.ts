@@ -1,6 +1,16 @@
 import { entityLevelOf, levelName, type MapDocument, type Selection } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+import { memoryLine, memorySample } from '../memoryReadout.ts';
+
+/** MapMaker's memory readout in the status bar (fix 3a): behind a debug flag, `?memory=1` or `localStorage['tiletrigger.memoryReadout'] = '1'`. */
+function memoryFlag(): boolean {
+  try {
+    return new URLSearchParams(location.search).get('memory') === '1' || localStorage.getItem('tiletrigger.memoryReadout') === '1';
+  } catch {
+    return false;
+  }
+}
 
 /** How many selected things are on a level other than `level` (tiles and set pieces by their level, things by height). */
 export function otherLevelCount(doc: MapDocument, sel: Selection, level: number): number {
@@ -62,7 +72,27 @@ export class StatusBar {
   private shownSel = '';
   private shownCounts = '';
 
+  private readonly memory = memoryFlag();
+  private memoryAt = 0;
+
   constructor(readonly app: EditorApp) {}
+
+  /** Each frame: with the debug flag on, the memory readout once a second (script memory short, the rest its tooltip). */
+  memoryTick(): void {
+    if (!this.memory) return;
+    const now = performance.now();
+    if (now - this.memoryAt < 1000) return;
+    this.memoryAt = now;
+    let el = document.getElementById('ed-memory');
+    if (!el) {
+      el = document.createElement('span');
+      el.id = 'ed-memory';
+      $('ed-status').before(el);
+    }
+    const s = memorySample();
+    el.textContent = s.heapMB !== null ? `${Math.round(s.heapMB)} MB script · ${s.gpuTextures} textures` : `${s.gpuTextures} textures · ${s.meshes} meshes`;
+    el.title = memoryLine(s);
+  }
 
   mount(): void {
     $('ed-status').addEventListener('click', () => this.app.dock.showProblems());

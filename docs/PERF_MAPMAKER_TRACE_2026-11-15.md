@@ -255,3 +255,63 @@ Read by the same helper. Three files from the owner's Drive (not in the repo):
 5. **The ad-blocking extension:** for that check, turn it off for the site?
    - a) **Yes, for the check only (recommended: it rules it out)**
    - b) No, keep it as players will have it
+
+## 10. Fix 3a-3d done: what the repeat probe found (2026-11-15, `wip/mem-leak`)
+
+By a helper of lane A's lead. The probe (`tools/perf/memory-probe.mjs`, docs/PERF_TOOLS.md) ran on this box's
+software GPU: MapMaker on **Iron Maw Remix** (the official Iron Maw opened as a remix: 990 things; the owner's own
+remix is not in the repo), 10 rounds of a small edit → Test with 15 bots for 20 s → Back to MapMaker, then 10 plain
+matches from the menu (Iron Maw, Team Deathmatch, 15 bots, 20 s each). After each round it collects garbage twice and
+reads Chrome's script heap, the page's DOM and listeners, the engine's live objects, and the objects still in the
+heap that are disposed.
+
+### In plain English
+
+- **Every Test left the whole match behind, and every match left its models' pictures on the graphics card.** Two
+  separate leaks, both fixed:
+  1. **The ended match stayed in memory.** After Back to MapMaker the match's scene (disposed, but still reachable)
+     held about **200 MB of script memory** under MapMaker until the next Test replaced it, or for good when it was
+     the first scene to build a shader. What held it: the engine's shader cache (each compiled shader kept the
+     callbacks it was built with, and through them its material and scene) and the page's test hooks
+     (`window.__cs`, `__flashHold`, `__sim`/`__give`, `__match`), which are set in every match, not only in tests.
+  2. **Textures piled up on the graphics card.** A model file that finished loading after its match ended (guns,
+     characters, props still coming in when you left) was never disposed: its textures stayed in the engine for the
+     rest of the tab's life. On Iron Maw that was **about 16 textures (36 MB of video memory) per short Test**,
+     growing with every map, character and gun seen. This is the likeliest wear on the owner's tab: video memory
+     filling until the driver pages, then "Aw, Snap!".
+- **After the fixes the probe is flat**: script memory back in MapMaker 349 → 351 MB over 10 Tests (0.2 MB a round),
+  textures on the card 178 every round; 10 plain matches 377 → 384 MB, settling by the fourth.
+- **What it doesn't change:** MapMaker stays loaded under a Test (about 300 MB of script memory and 330 MB of
+  textures on Iron Maw; a Test adds about 400 MB and 440 MB more while it runs). Freeing MapMaker's heavy parts during
+  a Test would make Back to MapMaker slower; not done (a follow-up if the owner's long-session recording still climbs).
+- **Test start, a side effect:** the textures that leaked were also, by accident, a cache: a second Test found its
+  guns' and characters' textures still on the card. Now each Test loads them again (from the browser's cache: no
+  download, but decoding and uploading). For the Test start work (fix 5): keep a deliberate, bounded cache if it
+  matters.
+
+### Numbers (Iron Maw Remix, 15 bots; MapMaker with the map open: 297 MB script, 178 textures on the card, 346 MB)
+
+| After each round | Before (5 rounds of 10 s) | Shader-cache and hook fix only (7 rounds) | Both fixes (10 rounds) |
+|---|---|---|---|
+| Script memory back in MapMaker | 558, 560, 487, 510, 682 MB | 474, 342, 342, 342, 344, 344, 344 MB | 349, 350, 350, 350, 351, 351, 351, 351, 351, 351 MB |
+| Disposed scenes still in the heap | 1 (the last match; 648 of its materials) | 0 after the first round | 0 |
+| Textures on the graphics card | 178, 178, 178, 224, 224 | 178, 200, 205, 236, 283, 288, 293 (346 → 600 MB) | 178 every round |
+| DOM nodes, listeners | flat | flat | flat |
+
+Plain matches back to back (after both fixes): script memory at the menu 377, 380, 382, 383, 383, 383, 383, 383, 384, 384 MB;
+textures on the card 178 throughout; DOM nodes +12 and listeners +4 a match (the menu footer's fullscreen hint kept
+every old footer alive: fixed with the rest). On Sandgate (a short check of the texture fix): textures 68 → 102 →
+104 → 107 after three Tests before, 71 → 71 → 71 → 71 after.
+
+Not leaks, found on the way: the match setup panel last shown stays referenced by the menu (one copy, about 3,000
+nodes); a Test's loading waits (`prewarm`'s capped races, up to 25 s) keep the ended match alive until they time out.
+
+### What changed
+
+- `effectScrub.ts`: when a match's scene is disposed (`GameView.dispose`), every compiled shader drops the
+  build-time callbacks that held its material (they never run again for a compiled shader).
+- The test hooks are taken off when their match ends (`session.exit`, `LocalTransport.close`); `__flashHold` is
+  defined once, outside the view.
+- `content/sceneGone.ts`: a model file (models, characters, gear, creatures, environment species) that loads after
+  its scene went is disposed at once.
+- 3a (the readout), 3d (the note) and the reload back to MapMaker are in docs/PERF_TOOLS.md, "Reading the overlay".

@@ -210,6 +210,31 @@ describe.each([0, 1, 2, 3] as Rotation[])('the corner between straight stands, t
     nav.destroy();
   });
 
+  it('bots climb each gallery stair (phase 5) from the ground gallery into the middle gallery and back down, either side of the diagonal', () => {
+    const nav = navOf(map);
+    for (const s of [-1, 1]) {
+      const side = s < 0 ? 'west' : 'east';
+      // From the ground gallery behind the stair's arch to the middle gallery over it: through the arch, up the flight
+      // along the depth to the landing, up the flight along the gallery and out of the hole in its floor.
+      const ground = onDiagonal(k, 10 * s, 12, 0);
+      const mid = onDiagonal(k, 10 * s, 29, 8);
+      const up = route(nav, ground, mid);
+      expect(up, `up the ${side} stair`).not.toBeNull();
+      // By its own stair (the other one, or round by the straight stands, is twice as far), under the seats.
+      expect(pathLength(up!), `up the ${side} stair`).toBeLessThan(40);
+      for (const p of up!) expect(p.y, `up the ${side} stair: ${JSON.stringify(p)}`).toBeLessThan(8.6);
+      const down = route(nav, mid, ground);
+      expect(down, `down the ${side} stair`).not.toBeNull();
+      expect(pathLength(down!), `down the ${side} stair`).toBeLessThan(40);
+      // The parapet: a fall into the hole from the gallery beside it is blocked.
+      const physics = physicsOf(map);
+      // (Toward the sand, -v: (-1, -1) / √2 before the turn.)
+      const [dx, dz] = rotateXZ(-Math.SQRT1_2, -Math.SQRT1_2, k);
+      expect(physics.raycastHit(onDiagonal(k, 9 * s, 28, 8.5), { x: dx, y: 0, z: dz }, 3), `the ${side} parapet`).not.toBeNull();
+    }
+    nav.destroy();
+  });
+
   it("the rows, walkways and floors meet the straight bays' flush on both sides", () => {
     const physics = physicsOf(map);
     const top = (x: number, z: number) => {

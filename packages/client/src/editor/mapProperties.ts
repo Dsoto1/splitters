@@ -37,7 +37,6 @@ import {
   resolveBackdrop,
   SCENERY_IDS,
   SCENERY_LABELS,
-  setThemeCommand,
   setupFamily,
   SKIES,
   SKY_IDS,
@@ -67,6 +66,7 @@ import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
+import { changeStructureTheme } from './themeChangeDialog.ts';
 
 /** Map properties, the inspector with nothing selected: name, theme, players, modes, teams, weapons, bots, time and weather, layers, blood, physics, the boundary, and Environment → Sky's backdrop (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class MapProperties {
@@ -530,8 +530,10 @@ export class MapProperties {
     const theme = document.createElement('select');
     theme.id = 'ed-prop-theme';
     for (const t of coreThemes.all()) theme.append(new Option(t.displayName, t.id, false, t.id === doc.classicStructure.theme));
-    theme.addEventListener('change', () => this.app.run('Change theme', setThemeCommand(this.app.doc, theme.value)));
-    el.append(row('Theme', theme));
+    theme.title = 'The base look of every wall, floor, trim and roof nothing paints (and of set pieces without a look of their own). A change asks first, with what it would change.';
+    // Through the warning (painting Phase 2): counts, then Change, Keep current look or Cancel (the select goes back).
+    theme.addEventListener('change', () => changeStructureTheme(this.app, theme.value, () => (theme.value = this.app.doc.classicStructure.theme)));
+    el.append(row('Structure theme', theme));
     const desc = document.createElement('textarea');
     desc.rows = 3;
     desc.value = doc.metadata.description;

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, w
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { KeyedLimiter, isMapId, isRetiredMap, loadMap, mapContentHash, playableModes, serializeMap, validateMap, type MapDocument } from '@tiletrigger/shared';
+import { KeyedLimiter, isMapId, isRetiredMap, loadMap, mapContentHash, playableModes, publishedRelease, serializeMap, validateMap, type MapDocument, type PublishedRelease } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 import type { VerifiedUser } from './auth.ts';
 
@@ -45,6 +45,11 @@ export interface PublishedEntry {
   hash: string;
   /** Not one of the maps built into the site: an official map added by publishing. */
   added: boolean;
+  /**
+   * The published file's own release block (map ID, version ID, revision; `current`: it describes this content), so
+   * the site, hosts and the nightly workflow can tell an older publish from a newer one (shared publishedChoice.ts).
+   */
+  release?: PublishedRelease;
 }
 
 export interface PublishedVersion {
@@ -181,6 +186,8 @@ export class PublishedMaps {
     const id = map.metadata.id;
     const m = map.metadata;
     const entry: PublishedEntry = { id, name: m.name, description: m.description, author: m.author, recommendedPlayers: m.recommendedPlayers, modes: playableModes(map), at, hash: mapContentHash(map), added: !this.builtIn.has(id) };
+    const release = publishedRelease(map);
+    if (release) entry.release = release;
     this.entries.set(id, entry);
     this.suite?.add(id);
     return entry;

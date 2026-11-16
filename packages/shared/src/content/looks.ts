@@ -114,14 +114,20 @@ export interface GripTune {
  * Character Select's groups, by what a character is (not how its look was built), in tab order. Every
  * built-in look names one: the presets below, the whole-body manifests (`group` in content/characters/*.json,
  * whose checker keeps the same list) and the NPC skins (NPC_ROLE_SPECS). Designs of yours go under Yours.
+ * The owner's Roster Board, 2026-11-14/15: Knights & Legends became Legends (`legends`), Creatures & Machines split
+ * into Creatures (`creatures`) and Machines, Animals renamed Animalia (`animals`), Undead & Horror renamed Horrors
+ * (`horror`); Outer Space and Agents & Spies are new.
  */
 export const CHARACTER_GROUPS = [
   { id: 'soldiers', label: 'Soldiers' },
-  { id: 'legends', label: 'Knights & Legends' },
   { id: 'folk', label: 'Everyday Folk' },
-  { id: 'horror', label: 'Undead & Horror' },
-  { id: 'animals', label: 'Animals' },
-  { id: 'creatures', label: 'Creatures & Machines' },
+  { id: 'space', label: 'Outer Space' },
+  { id: 'agents', label: 'Agents & Spies' },
+  { id: 'legends', label: 'Legends' },
+  { id: 'creatures', label: 'Creatures' },
+  { id: 'animals', label: 'Animalia' },
+  { id: 'machines', label: 'Machines' },
+  { id: 'horror', label: 'Horrors' },
 ] as const;
 export type CharacterGroup = (typeof CHARACTER_GROUPS)[number]['id'];
 export const CHARACTER_GROUP_LABELS = Object.fromEntries(CHARACTER_GROUPS.map((g) => [g.id, g.label])) as Record<CharacterGroup, string>;
@@ -248,6 +254,10 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-06 (after the intake that gave it the light-blue astronaut): Capt. Nova off the roster (files,
   // manifest and portrait kept); saved choices and bot sets play Spacewalker, the nearest astronaut.
   'core.nova': 'core.astronaut',
+  // Owner's Roster Board, 2026-11-14 (flagged Remove): off the roster (files, manifests and portraits kept); saved
+  // choices and bot sets play the nearest kept look: Uncle Bao the Old Timer, the Rusty Mech T-TreeFitty (a large robot).
+  'core.unclebao': 'core.oldtimer',
+  'core.rustymech': 'core.t350',
 };
 
 /**

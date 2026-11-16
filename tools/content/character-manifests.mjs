@@ -50,7 +50,7 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 /** A character's tier (CHARACTER_TIERS in packages/shared/src/content/looks.ts; a test keeps them equal): left out, core. */
 export const TIERS = ['core', 'experimental'];
-export const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
+export const GROUPS = ['soldiers', 'folk', 'space', 'agents', 'legends', 'creatures', 'animals', 'machines', 'horror'];
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
 export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 /**

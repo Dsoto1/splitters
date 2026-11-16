@@ -94,20 +94,30 @@ built. The groups are `CHARACTER_GROUPS` in looks.ts (section order and labels);
 every built-in look names exactly one, and a unit test
 (`packages/shared/test/lookGroups.test.ts`) keeps it that way:
 
+The owner's Roster Board (2026-11-14, categories decided 2026-11-15) set these nine, in this order. Knights &
+Legends became Legends (`legends`), Creatures & Machines split into Creatures (`creatures`) and Machines (`machines`),
+Animals renamed Animalia (`animals`, the board's Animalia merged in), Undead & Horror renamed Horrors (`horror`, the
+board's Supernatural merged in), the board's Future merged into Outer Space; its "other" was empty and dropped.
+Retired looks (Capt. Nova, Bamboo, Uncle Bao, the Rusty Mech and the earlier ones in `RETIRED_LOOKS`) sort as the
+look they play.
+
 | Group (`id`) | Who |
 |---|---|
-| Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Sgt. Pruitt, Space Marine, Spacewalker, Starfarer, Tactical Soldier, Trooper (NPC skin), Vanguard, Warden (Capt. Nova retired 2026-11-06: its saved choices and bot sets play Spacewalker) |
-| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Goblin Warlord, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
-| Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Biker Gang Girl, Brawler, Cap'n Barnacle, Chef Basile, The Butcher, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Old Timer, Pathfinder, Patches, Saint Nick, Sprout, The Dapper, Tracker, Umpire, Uncle Bao, Wayfarer |
-| Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), The Masked Figure, Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
-| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Fishy Fred (small; name a placeholder), Greyfang, Hyena Warrior, Scamp, Shellback (standard size since 2026-11-06; it came in large), Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
-| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Cool Hands Rex (large; bot names from the gangster theme), Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
+| Soldiers (`soldiers`) | Azure Sentinel, Desert Ranger, Flt. Lt. Ember, Gas Mask Engineer, Grunt '68, Pemberton, Sentinel in Green, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
+| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Scary Larry, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
+| Outer Space (`space`) | Alien Biker, Alien Encounter, Astronaut Explorer, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Space Marine, Spacewalker, Spud Marshal, Star Voyager, Starfarer, Steampunk Warrior, Steel Guardian, The Visitor |
+| Agents & Spies (`agents`) | Customs Agent Zhao, Dummy (NPC skin), Kenji, Santa, Stealth Operative |
+| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Shadow Enforcer, Sun Warrior, The Hollow Pilgrim, The Purple Comet |
+| Creatures (`creatures`) | Cool Hands Rex, Goblin Gunslinger, Goblin Warlord, Goblina, Pink Mantis, Snikkit |
+| Animalia (`animals`) | Bandit, Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Salamander Warlord, Scamp, Seetah J. Chloth, Shellback, Shiba, Teddy, Warrior of the Skies |
+| Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, T-TreeFitty |
+| Horrors (`horror`) | Bonejack, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Punkin, Rattles, Shambler, Spiked Skeleton Biker, Sugar Skull, The Masked Figure, Zombie Soldier A |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
 copied into characters.generated.ts); an NPC skin gets it from
-`NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures & Machines, the zombie
-→ Undead & Horror, the soldier roles → Soldiers). `lookGroup(id)` reads any of
+`NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures, the zombie → Horrors,
+the Dummy (trooper) → Agents & Spies, the other soldier roles → Soldiers). `lookGroup(id)` reads any of
 them; a design of yours has none and goes under **Yours**. The screen is one
 grid that scrolls through the sections in that order (each group with anyone
 in it, its characters by name, then Yours with **Design new**), each under a
@@ -671,7 +681,7 @@ repo; they live in a downloads dir outside it.
 | `kind`, `use` | `character` (rides our rig) or `creature` (not built here: creatures keep their own rigs); `player`, `npc` or `player+npc`. An NPC-only character gets a look (`WHOLE_BODY_NPC_LOOKS`) but isn't on the roster; NPC roles name looks in `NPC_ROLE_SPECS` by hand. |
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
-| `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `group` | What the character is, for Character Select's sections: `soldiers`, `folk`, `space`, `agents`, `legends`, `creatures`, `animals`, `machines` or `horror` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
 | `tier` | `core` or `experimental` (left out: core): an experimental character sits under its own heading in Character Select and is never a bot's, a random character's or Roulette's pick (see Looks, Tier). |
 | `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
