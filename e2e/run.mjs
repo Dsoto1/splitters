@@ -1381,6 +1381,7 @@ async function editoruxFlow(browser) {
   await editorSelectionSyncChecks(browser);
   await editorThemeViewChecks(browser);
   await editorAssetsFitChecks(browser);
+  await editorTallWallChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -2312,6 +2313,74 @@ async function editorAssetsFitChecks(browser) {
     livePages.delete(page);
     await context.close();
   }
+}
+
+/**
+ * Tall wall styles (owner, 2026-11-16: a Grand arch on an inside edge on Level 2 rose through Level 3's floor and the
+ * roof): on an inside wall with rooms over both sides, the Walls tool's hover card says it can't go there before the
+ * click, a click is refused with the same words and changes nothing, and a one-storey arch goes in; validation warns
+ * on one already in a map.
+ */
+async function editorTallWallChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // Two rooms side by side on Level 1 (x 16 and 24 m), rooms over both on Level 2; the Walls tool with the Grand arch,
+  // looking from inside the west room at the wall between them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const tiles = [];
+    for (const z of [1, 2]) for (const x of [2, 3]) tiles.push({ id: `tw${x}_${z}`, tile: 'core.room', x, y: 0, z, rotation: 0 });
+    ed.history.execute('Place', { kind: 'addTiles', tiles });
+    ed.setLevel(1, true);
+    ed.setTool({ kind: 'edge', style: 'arch_grand' });
+    const v = ed.view;
+    // (Off the middle: an Auto side between two rooms is a doorway there.)
+    v.camera.position.set(13, 6, 1);
+    v.yaw = Math.atan2(19.4 - 13, -3 - 1);
+    v.pitch = Math.atan2(6.5 - 6, Math.hypot(19.4 - 13, 4));
+    v.applyCamera();
+  });
+  await frames(page, 4);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 19.4, y: 6.5, z: -3 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  const card = await page.evaluate(() => ({ tip: document.getElementById('ed-tip')?.hidden ? '' : document.getElementById('ed-tip')?.textContent ?? '', status: document.getElementById('ed-target').textContent, edge: window.__editor.paint.hoverEdge }));
+  if (shots) await page.screenshot({ path: `${shots}/editorux-tall-wall-card.png` }).catch(() => {});
+  const before = await page.evaluate(() => JSON.stringify(window.__editor.doc.classicStructure.tiles));
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ tiles: JSON.stringify(window.__editor.doc.classicStructure.tiles), toast: document.getElementById('ed-toast')?.textContent ?? '' }));
+  check(card.edge?.cell?.join() === '2,0,1' && card.edge.side === 'E' && /Grand arch/.test(card.tip) && /would rise through Level 2's floor/.test(card.tip) && /can't build/.test(card.status), `the Walls tool's card says a Grand arch can't go under Level 2's rooms before the click (${JSON.stringify(card)})`);
+  check(after.tiles === before && /would rise through Level 2's floor/.test(after.toast), `a click there is refused with the same words and changes nothing (${after.toast})`);
+  // A one-storey arch goes in on the same side.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'edge', style: 'arch_round' }));
+  await page.mouse.move(p.x + 1, p.y);
+  await frames(page, 3);
+  const roundTip = await page.evaluate(() => document.getElementById('ed-tip')?.textContent ?? '');
+  await page.mouse.click(p.x + 1, p.y);
+  await frames(page, 2);
+  const round = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.flatMap((t) => Object.values(t.edges ?? {})));
+  check(/Click to build/.test(roundTip) && round.join() === 'arch_round', `a Round arch builds on that side (${roundTip}; ${round.join(', ')})`);
+  // One forced into the map: the validation list warns about it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.classicStructure.tiles.find((x) => x.id === 'tw2_1');
+    ed.history.execute('Force', { kind: 'updateTiles', before: [t], after: [{ ...t, edges: { '0,0,0:E': 'arch_grand' } }] });
+  });
+  await page.waitForFunction(() => window.__editor.checks.allIssues().some((i) => i.code === 'edge.tall'), null, { timeout: T(10000) }).catch(() => {});
+  const warned = await page.evaluate(() => window.__editor.checks.allIssues().filter((i) => i.code === 'edge.tall').map((i) => `${i.severity}: ${i.message}`));
+  check(warned.length === 1 && /^warning: .*Grand arch.*rises through Level 2's floor/.test(warned[0]), `validation warns on a Grand arch already under Level 2's rooms (${warned.join('; ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await context.close();
 }
 
 /**
@@ -3408,6 +3477,27 @@ async function editorEnvironmentChecks(browser) {
   await stroke([12, -6], [28, 6]);
   const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
   check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  // Arid on grass (owner, 2026-11-16: "didn't seem to work"): its ground (sand, dirt, gravel, stone) is said on the
+  // brush card and under the pointer before the click, a stroke on grass says why it painted nothing, and "Paint on
+  // any ground" paints its dry acacias, laurels and grass there.
+  await page.selectOption('#ed-env-preset', 'arid');
+  await look(-25, -25);
+  const card = await page.evaluate(() => document.getElementById('ed-env-ground')?.textContent ?? '');
+  const onGrass = await at(-25, 0, -25);
+  await page.mouse.move(onGrass.x, onGrass.y);
+  await frames(page, 3);
+  const aridHover = await page.textContent('#ed-target');
+  const beforeArid = await envCount();
+  await stroke([-35, -28], [-15, -22]);
+  const sArid = await page.evaluate(() => window.__envStroke);
+  const aridToast = await page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  check(/sand, dirt, gravel or stone/.test(card) && /paints only on .*not on grass here/.test(aridHover) && (await envCount()) === beforeArid && sArid?.wrongGround > 0 && /Paint on any ground/.test(aridToast), `Arid on grass: the card and the pointer say its ground first, a stroke paints nothing and says why (${JSON.stringify({ card, aridHover, aridToast, wrongGround: sArid?.wrongGround })})`);
+  await page.click('#ed-env-any-ground');
+  await stroke([-35, -28], [-15, -22]);
+  const arid = await page.evaluate((n) => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).slice(n).map((e) => `${e.model}#${e.variant ?? 0}`), beforeArid);
+  const dry = arid.filter((m) => /env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#1$/.test(m));
+  check(arid.length > 5 && !(await page.isVisible('#ed-env-ground')) && dry.length > 0 && arid.every((m) => !/env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#0$/.test(m)), `"Paint on any ground" paints Arid on grass, its acacias, laurels and grass dry (${arid.length} painted, ${dry.length} dry: ${[...new Set(arid)].join(', ')})`);
+  await shot('arid-grass');
   await page.selectOption('#ed-env-preset', 'alpine');
   await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
   await look(52, 0, 24);

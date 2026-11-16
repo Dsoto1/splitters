@@ -1,5 +1,6 @@
 import { SIDE_DIRS, coreCatalog, type EdgeStyle, type Side, type TileCatalog, type TileDefinition } from '../map/catalog.ts';
-import { buildOccupancy, canAddFloor, cellKey, cellSlab, edgeKey, localCellKey, localSide, rotateXZ, type CellOccupant } from '../map/geometry.ts';
+import { buildOccupancy, canAddFloor, cellKey, cellSlab, edgeKey, localCellKey, localSide, rotateXZ, tallEdgeBlock, type CellOccupant } from '../map/geometry.ts';
+import { EDGE_STYLE_LABELS } from '../map/tileOptions.ts';
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
@@ -1206,6 +1207,8 @@ export function setEdgeCommand(doc: MapDocument, target: EdgeTarget, style: Edge
   const [dx, dy] = SIDE_DIRS[target.side];
   const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
   if (there?.placement === here.placement) return { error: 'that side is inside one piece' };
+  const tall = tallEdgeRefusal(doc, target, style, cells);
+  if (tall) return { error: tall };
   const withEdge = (t: TilePlacement, key: string, value: EdgeStyle | null): TilePlacement => {
     const edges = { ...(t.edges ?? {}) };
     if (value === null || value === 'auto') delete edges[key];
@@ -1223,6 +1226,20 @@ export function setEdgeCommand(doc: MapDocument, target: EdgeTarget, style: Edge
     }
   }
   return { kind: 'updateTiles', before, after };
+}
+
+/**
+ * Why a style taller than one storey (Grand arch, Gate arch, High wall, Towering wall) can't go on this side: it would
+ * rise through the floor of the level above or a roof (map/geometry.ts tallEdgeBlock); null when it stands clear or is
+ * one storey. MapMaker refuses it with this, and its hover card says it before the click.
+ */
+export function tallEdgeRefusal(doc: MapDocument, target: EdgeTarget, style: EdgeStyle, cells: Map<string, CellOccupant> = buildOccupancy(doc).cells): string | null {
+  if (style === 'auto' || style === 'open') return null;
+  const { cellSize, levelHeight } = doc.classicStructure;
+  const block = tallEdgeBlock(cells, target.cell[0], target.cell[1], target.cell[2], target.side, style, cellSize, levelHeight);
+  if (!block) return null;
+  const through = block.what === 'roof' ? `the roof over ${levelName(block.level - 1)}` : `${levelName(block.level)}'s floor`;
+  return `${EDGE_STYLE_LABELS[style]} would rise through ${through} here: use it under an open storey (a two-storey hall), or a one-storey style (Round arch, Archway)`;
 }
 
 /** The effective edge choice stored for a cell side (its own, else the neighbour's), or `auto`. */
