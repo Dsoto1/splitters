@@ -32,13 +32,11 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- M · A · Battle Rifle: fire modes, full-quality model, real 3-4x scope (`wip/battle-rifle`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/battle-rifle` · bfbb90e4 · 43927763117 (lane A: the Battle Rifle's fire modes, model, optic)
 
 - `wip/paint-list-fix` · 5c7c6627 · 43928449682 (lane B: the Assets panel's cut-off Paint list, item 1 of the MapMaker bugs of 2026-11-16)
 - `wip/random-bots` · 7edcdadd · 43937153341 (lane A: random bots are random, a per-match shuffle of the allowed looks from the match seed; green on attempt 2, attempt 1 red only on the editor flow's "TEST starts within the 3 s budget" timing, 4.1 s and 3.6 s on a loaded runner, with seed 1 dealing the same looks as before; the branch tip adds a merge of main whose HANDOFF side is main's)
@@ -161,6 +159,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-16 · A · The Battle Rifle (`wip/battle-rifle`, train `check/train-20261116-193406` at 9d06e486): fire modes Single / 3-round Burst on U (shared `sim/fireModes.ts`, predicted, bots pick by range), the full-quality held model (60,000 triangles for your hands, the download's own metal and roughness), and a real 3.5x optic through the model's own scope (`game/opticView.ts`).
 - 2026-11-16 · A · Characters no longer leak (`wip/char-leak`, train `check/train-20261116-184637` at d352eb40): a body's cloned materials and texture copies are freed with it (`content/ownedAssets.ts`); 50 bodies made and freed leave the scene where it was (before: 21 → 111 materials, 24 → 94 textures); a 900 s Flavius Rule match: leftover materials 0 → 31 before, 0 throughout after. The worn-down tab's main cause.
 - 2026-11-16 · B · MapMaker painting Phase 4, the Ground theme (`wip/painting-4`, same train; map format v45).
 - 2026-11-16 · A · Beams stay on the muzzle (`wip/beam-muzzle`, landed in train `check/train-20261116-173817` at b4dfded7): the freeze ray, laser rifle, Pulse Pistol, railgun rail and the Arc Caster's beam and lightning now start on the live muzzle every frame, first and third person (they were captured once and trailed 50-120 cm); `game/muzzleAnchor.ts`, placed after every gun in the scene's before-render.
