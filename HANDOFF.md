@@ -50,6 +50,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the Battle Rifle in a train** (`check/train-20261116-193406` at 9d06e486, run 43940687127, green on attempt 2: attempt 1 red only on `hostgame`, fixed on lane B's `wip/hostgame-spectate`; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): fire modes (Single / Burst, U), the full-quality held model, the real 3.5x optic. Notes under its claim on the branch.
 
+**Landing now: train** (`wip/hostgame-spectate`, `wip/paint-list-fix`, `wip/random-bots`, `wip/dropship-model`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `wip/mapmaker-bugs-1116` · run 43951375401 (`check/mapmaker-bugs-1116` at a3f2dca1; the Arid preset, tall wall styles under floors, plus the Paint list fix; a helper of lane B's splitters22; full suite: e2e/run.mjs and palette pictures changed)
 - **Lead (lane B's splitters22), 2026-11-16 20:35: two branches for one flake.** `wip/hostgame-friend` (pushed from lane A's lead's session, though its claim says lane B) and lane B's `wip/hostgame-spectate` found the same cause. Lane B's is green (8c1d7ffe, run 43948075116; e2e only: the hosted round held open, as `handoff` does) and is on Ready to land; `wip/hostgame-friend`'s run 43940333168 was red (`listen` used in `hostcontrolsFlow` but defined only in `hostgameFlow`, run.mjs). Please stop `wip/hostgame-friend` unless it carries something more (the friend's first-join link loss is a separate, rarer flake if anyone wants it).
