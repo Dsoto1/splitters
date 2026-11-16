@@ -388,3 +388,5 @@ These are the recommended options from `docs/MAPMAKER_UI_AUDIT.md` §10. They ar
 
 ## Owner's answers on Phase 1 as built (2026-11-14: "Recs")
 1a: between 900 and 1,100 px the right dock starts expanded. 2a: the left rail's 44 px comes from the palette. 3a: the map is renamed in Map settings (the title opens them); no inline rename. 4a: Dress all and Settle all stay in the ⋯ menu only.
+
+**The owner's answers on Phase 3 (2026-11-16, "1a 2a 3a"):** the dock opens on the Outliner tab; a click on a thing in the minimap selects and frames it, like the Outliner; the minimap follows View → Map layers (no toggles of its own). All as built.
