@@ -107,8 +107,8 @@ export interface RigidSetup extends RigidTuning {
 
 /** What the chassis asks of the world (PhysicsWorld.chassisWorld on the host, the same over the prediction physics). */
 export interface ChassisWorld {
-  /** First hit along `dir` (unit) within `len`: distance and the surface normal there. */
-  ray(origin: Vec3, dir: Vec3, len: number): { dist: number; normal: Vec3 } | null;
+  /** First hit along `dir` (unit) within `len`: distance, the surface normal there, and whether it is the terrain. */
+  ray(origin: Vec3, dir: Vec3, len: number): { dist: number; normal: Vec3; terrain?: boolean } | null;
   /** Move the hull's capsule (its middle at `centre`, turned by `q`) by `delta`: what it got and the normals it met. */
   sweep(centre: Vec3, q: RigidState['q'], delta: Vec3): { moved: Vec3; normals: Vec3[] };
 }
@@ -176,8 +176,9 @@ export interface RigidTraceTick {
   rollCorners: number;
   hardCorners: number;
   cornerDepth: number;
-  /** Wheels lifted by the step-up (front ray) at least one substep. */
+  /** Wheels whose tyre front (the ray ahead of the hub) carried them at least one substep, and those lifted as a step. */
   stepUps: number;
+  stepSnaps: number;
   /** Where the hull's corner rays met something (a hard corner or a rolled-up one), and the surface's normal. */
   corners: { at: Vec3; n: Vec3; roll: boolean }[];
   /** Velocity the 92 % speed keep added (m/s). */
@@ -329,6 +330,8 @@ interface WheelHit {
   /** A point on the ground and its normal. */
   p: Vec3;
   n: Vec3;
+  /** On the terrain (whose facets are never a step to lift onto). */
+  terrain: boolean;
 }
 
 interface HullHit {
@@ -444,8 +447,9 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     return out;
   }
   const fallSpeed = -s.vel.y;
-  const tr: RigidTraceTick | null = rigidTrace.sink ? { vel0: { ...s.vel }, spin0: { ...s.spin }, vel1: s.vel, spin1: s.spin, pos: s.pos, contact: 0, bump: 0, bumpDepth: 0, rollCorners: 0, hardCorners: 0, cornerDepth: 0, corners: [], stepUps: 0, keep: 0, sliding: 0, airLevel: 0, sweepBlocked: 0, sweepImpact: 0, sweepNormals: [], sweepStuck: false } : null;
+  const tr: RigidTraceTick | null = rigidTrace.sink ? { vel0: { ...s.vel }, spin0: { ...s.spin }, vel1: s.vel, spin1: s.spin, pos: s.pos, contact: 0, bump: 0, bumpDepth: 0, rollCorners: 0, hardCorners: 0, cornerDepth: 0, corners: [], stepUps: 0, stepSnaps: 0, keep: 0, sliding: 0, airLevel: 0, sweepBlocked: 0, sweepImpact: 0, sweepNormals: [], sweepStuck: false } : null;
   const stepped = tr ? new Set<number>() : null;
+  const snapped = tr ? new Set<number>() : null;
   // ---- rays, once a tick
   const up0 = rotate(s.q, v3(0, 1, 0));
   const down0 = scale(up0, -1);
@@ -462,7 +466,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     const a = add(s.pos, rotate(s.q, v3(x, t.hubY + start, z)));
     const h = world.ray(a, down0, reach);
     // (A ray that starts inside something, the front one in a wall, found no ground: not a step to climb.)
-    return h && h.dist > 1e-3 && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal } : null;
+    return h && h.dist > 1e-3 && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal, terrain: !!h.terrain } : null;
   };
   for (let i = 0; i < n; i++) {
     const [x, z] = t.points[i]!;
@@ -558,9 +562,12 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         // the hub, so the tyre lifts onto it as its front reaches it (the classic drive's step-up); anything taller
         // only meets the tyre's round front.
         const rise = t.radius - fd - x_;
-        const step = rise > 0.02 && rise <= STEP_UP && x_ > -t.travel && fh.n.y > STEP_FLAT && (!hit || hit.n.y > STEP_FLAT);
+        // (Not on the terrain: two of its facets at different heights are a slope's bend, which the tyre's round front rides,
+        // not a step to snap up onto; lifting onto them jolted the buggy on rough ground: driving physics 3.)
+        const step = !fh.terrain && rise > 0.02 && rise <= STEP_UP && x_ > -t.travel && fh.n.y > STEP_FLAT && (!hit || hit.n.y > STEP_FLAT);
         const fx = step ? t.radius - fd : Math.sqrt(t.radius * t.radius - ahead * ahead) - fd;
         if (fx > x_ + 0.01) {
+          if (tr && step) snapped!.add(i);
           hit = fh;
           un = fu;
           d = t.radius - fx;
@@ -781,6 +788,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     tr.pos = { ...s.pos };
     tr.contact = contact;
     tr.stepUps = stepped!.size;
+    tr.stepSnaps = snapped!.size;
     rigidTrace.sink!(tr);
   }
   return out;

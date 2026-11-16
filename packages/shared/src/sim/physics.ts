@@ -599,17 +599,19 @@ export class PhysicsWorld {
    * out `skip`: the distance and the surface normal there (facing back along the ray), or null within maxDist.
    * Rigid vehicles' wheel and hull rays (sim/wheelPhysics.ts).
    */
-  groundRay(origin: Vec3, dir: Vec3, maxDist: number, skip: RAPIER.Collider): { dist: number; normal: Vec3 } | null {
+  groundRay(origin: Vec3, dir: Vec3, maxDist: number, skip: RAPIER.Collider): { dist: number; normal: Vec3; terrain: boolean } | null {
     const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, GROUND_QUERY, skip);
     if (!hit) return null;
     const n = hit.normal;
+    // (The terrain: a heightfield's facets, never a step's riser.)
+    const terrain = hit.collider.collisionGroups() >>> 16 === GROUP_TERRAIN;
     // Started inside a solid: Rapier gives a zero normal; point it back along the ray.
-    if (n.x === 0 && n.y === 0 && n.z === 0) return { dist: hit.timeOfImpact, normal: { x: -dir.x, y: -dir.y, z: -dir.z } };
-    return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z } };
+    if (n.x === 0 && n.y === 0 && n.z === 0) return { dist: hit.timeOfImpact, normal: { x: -dir.x, y: -dir.y, z: -dir.z }, terrain };
+    return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z }, terrain };
   }
 
   /** The queries a rigid vehicle's step makes (wheelPhysics.ts ChassisWorld), against everything but its own box. */
-  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3 } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
+  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3; terrain: boolean } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
     return { ray: (o, d, len) => this.groundRay(o, d, len, body), sweep: (c, q, d) => this.sweepChassis(probe, body, c, q, d) };
   }
 

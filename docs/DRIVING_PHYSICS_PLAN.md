@@ -139,6 +139,133 @@ uneven terrain". Also: "they didn't see me until i shot at them".
 - **Lag** (the harness, after all of the above): at 100 and 150 ms with jitter the prediction stays within 2 mm of
   the host, no corrections; with 2 % loss 4 corrections, the worst 24 cm (faded); Canyon 6, the worst 5 cm.
 
+## Driving physics 3: the owner's second drive (2026-11-16, `wip/drive-physics-3`, `wip/drive-physics-3b`)
+
+Owner: "It still feels chunky, we seem to get snagged on invisible elements that cause the buggy to stutter or act like
+it hit something. hitting rocks is clunky and landing jumps dont feel good, they feel.. programmed. We need physics and
+gravity to determine the movement and landings, and it seems like there is something preventing that."
+
+### A first: bots and drivers, bots and bars (its own landing, `wip/drive-physics-3`)
+
+- **Drivers:** the Troop Buggy's collision box is 1.6 m tall over an open tube frame; a seated rider's feet are on the
+  cushion 0.8 m up, so their chest (about 1.5 m) was inside the box. A round aimed at a driver's middle stopped in the
+  box and hurt the buggy; only head shots got through. Riders of a vehicle that is not sealed are exposed now: a shot
+  into its box goes on to a rider inside it (`Match.openHull`; the vehicle isn't hurt by that round). Bots with only a
+  rifle also counted any enemy vehicle as out of their reach ("outgunned": they took cover, often against the buggy,
+  or went off for a launcher); now only a sealed one (the Tank). Rockfall Canyon, four bots round a stopped driven
+  buggy, 15 s, normal bots: rounds on the driver 15 of 107 (51 into the buggy) before, 25 of 98 after; on foot at the
+  same place 35 of 81. A player aiming at a driver's chest: 0 of 8 hits before, all after.
+- **Bars and fences:** a bot sees someone by one sight line from eye to eye, and bars, a barred gate's bars and a
+  fence's posts and rails were solid to it (the tall fence's middle rail is at eye height): a third of the lines across
+  bars and two in five across the fence were blocked, and a blocked line stays blocked while both stand still. Its
+  "would my round get there" check stopped on a bar too. Those pieces are lattices now (`edgeLattice`, physics
+  `GROUP_LATTICE`): solid to bodies and to the rounds that strike them, never to sight lines, left out of a bot's own
+  check. Also the kit Iron Fence and the chain-link fences and gate (props whose collision is a box). Sight lines
+  across them, 100 sampled: bars 79 → 100, barred gate 93 → 100, fence 61 → 100, chain-link 82 → 100, iron fence
+  98 → 100. Other fence props (the Kenney and Loafbrr fences, the dungeon arch bars) are solid boxes to everyone: a
+  content flag for them is a follow-up.
+
+### B: what makes it stutter (the diagnosis)
+
+`test/driveSnags.test.ts` (DRIVE_TRACE) drives the buggy with an autopilot round each map's open places for four
+minutes, and over 24 clear 40 m lines each (the bumpiest open ground, nothing at hull height, the same start every
+run), with a trace of what acted on the body each tick (`wheelPhysics.ts` `rigidTrace`). A *sharp* tick changes the
+speed by 1 m/s (60 m/s², three times what the engine or brakes do) or the spin by 1.5 rad/s in one tick. Each is put
+down to a visible obstacle (the sweep or a hull corner against a wall, a rock, a prop, sideways on) or to the
+mechanisms that acted.
+
+| Rockfall Canyon, free drive (741 m) | a km |
+|---|---|
+| All sharp ticks | 431 |
+| A visible obstacle hit (walls, rocks, structures) | 213 |
+| **Without a visible cause**, by mechanism (a tick can have several): | 218 |
+| — the bump stop (a wheel's 0.16 m of spring runs out: a hard stop) | 147 |
+| — a hull corner (the underside's, at hub height inside the tyres) on terrain or a floor slab's edge | 97 |
+| — the tyre's front ray (incl. the step-up snap) | 66 |
+| — grip cut / the hull sweep / the 92 % speed keep / a rolled-up corner | 38 / 38 / 30 / 20 |
+
+The Coverage Test (2.7 km, flat ground and built pieces): 20 sharp ticks a km, 8 of them visible obstacles; the rest
+bump stops (11), the step-up (10), the speed keep (6). Landings on the canyon (35): a hull corner decided 22 of
+them, a bump stop 19, the air levelling acted before 4.
+
+**The "invisible elements"**, in order:
+1. **The bump stop.** A wheel has 0.16 m of spring before a hard, instant stop (an impulse: no compliance). On the
+   canyon's ground it bottoms out on most dips and every landing: the single biggest source of stutter.
+2. **The hull's underside corners.** They sit at the axles at hub height, inside the tyres (so a tyre's round front
+   climbs a step), and are hard contacts with friction 0.55: where a tyre's spring runs out on a bump they touch
+   instead, scrub speed and kick the spin. On the canyon they also catch the vertical sides of floor slabs where a tile
+   floor meets the terrain (73 contacts), and the top corners the underside of bridges (66).
+3. **Terrain triangle edges, through the step-up.** The tyre's front ray took the bend between two terrain facets at
+   different heights for a stair step and lifted the tyre up to 0.32 m in a tick. **Fixed** (`wip/drive-physics-3b`):
+   the step-up is for steps (boxes), never the terrain. Clear canyon lines: 69 → 43 sharp ticks a km (step-up snaps
+   15 → 2 a km, bump stops 55 → 31); the Coverage Test's lines unchanged (130 a km: its ramps and kerbs are boxes).
+4. **Not the cause:** the hull capsule (the sweep) only 3 a km against the ground from below; props whose collision
+   is bigger than their mesh weren't found (the props hit fill their meshes); "speed set from outside the step" (the
+   Match) never happened.
+5. **"Programmed" landings and rock hits:** the air levelling (half way to the arc in flight), the 92 % speed keep
+   through knocks and the rolled-up corners (a 1.2 m rock box is driven over: `strip-rock.png`) are scripted on top of
+   the body, as the owner felt.
+
+### B: real rigid-body physics, evaluated
+
+`test/rapierVehicleEval.test.ts` and `driveStrips.test.ts` (DRIVE_TRACE): the Troop Buggy as a Rapier dynamic body on
+`DynamicRayCastVehicleController` (Rapier 0.21, already a dependency), in a small world of its own.
+- **Deterministic on one machine:** two runs with the same inputs, 900 of 900 ticks identical.
+- **Replay from a sent state** (position, rotation and velocities written into the body, then stepped, as the
+  prediction replays): after 6 ticks p50 0, p95 0.75 cm, worst 8.5 cm; after 9 ticks p95 1.2 cm, worst 11 cm. Rapier's
+  contact caches aren't in that state, so contacts replay a little differently (our model: 2 mm worst). A correction
+  of that size fades in a tenth of a second.
+- **Cost:** about 0.3 ms a vehicle step in that small world (our model: 0.08-0.26 ms a whole match step). Against a
+  map's static colliders the broad phase costs more; in a world of its own per vehicle it holds only the colliders
+  round it.
+- **Landings and rock hits by the solver:** frame strips, side on, every third tick (`strip-landing.png`,
+  `strip-rock.png` in the helper's scratchpad): ours lands, rebounds into a wheelie and climbs a 1.2 m rock box; the
+  Rapier body lands on its springs and stops dead against the rock, rocking back. Untuned (its engine and springs are
+  first guesses), so it shows the kind of motion, not the feel.
+
+### B: the plan
+
+It is bigger than one landing. Steps, each checked and driven:
+1. **Now (landed with this):** the step-up never on terrain. The trace and the diagnosis drives stay (DRIVE_TRACE).
+   Lag harness after it: 100 and 150 ms with jitter, worst 2.2 and 2.3 mm, no corrections; 2 % loss 4 corrections, the
+   worst 24 cm; Canyon 6, the worst 15 cm (as before).
+2. **The body in Rapier** (`?drive=rapier`, the current way stays selectable): a dynamic body (the buggy's mass,
+   inertia and centre of mass) on our own sprung raycast wheels and tyres (they are what the owner's answers tuned:
+   grip 1.05, 46°, rear steer) applying forces and impulses, with Rapier resolving the hull's contacts (a convex hull or
+   a few boxes of the real body, not the 1.6 m box). Gone: the bump stop impulse (a progressive bump rubber instead),
+   the underside corners, the sweep, the 92 % keep, the air levelling. Air control stays as small torques from W/S/A/D
+   (answer 3a). A per-vehicle world holding the static colliders within 30 m (rebuilt as it moves), stepped once per
+   driver input as now.
+3. **Prediction:** the driver's client steps the same world; the private state gains nothing new (the body's state is
+   what `vp` carries). The lag harness and the canyon run judge it, as before; the target is no worse than now at 100
+   and 150 ms with jitter (a few cm worst) and with 2 % loss.
+4. **Measure** on the clear lines and the free drive: fewer sharp ticks a km than now, landings decided by contacts
+   (no levelling); then the default, after the owner drives it.
+
+### Owner questions (driving physics 3)
+
+1. **The body: who solves it?**
+   a) Rapier dynamic body, our wheels and tyres as forces, Rapier for the hull's contacts **(recommended)**: the owner's
+      tuning stays, the contacts become real.
+   b) Rapier's own `DynamicRayCastVehicleController` (wheels too): least code, but its tyre model replaces the tuned
+      grip, slopes and drift (they'd be tuned again).
+   c) Keep our own solver and only take out the bump stop and the corners (smaller, but still scripted).
+2. **Arcade help in the air.**
+   a) W/S/A/D air control as small torques only; no levelling **(recommended)**: a jump lands how it was taken.
+   b) Also a gentle self-levelling torque (much weaker than now).
+   c) None at all.
+3. **Rocks and walls.**
+   a) Real contacts: a rock taller than the tyre's reach stops or launches it; low ones it climbs **(recommended)**
+   b) Keep some help rolling over rocks up to the hub's height.
+4. **Prediction error we accept** (now: 2 mm at 100-150 ms; Rapier replays: up to about 10 cm in contacts, faded in
+   0.1 s).
+   a) Up to about 10 cm, faded **(recommended)**
+   b) It must stay at today's few millimetres (then 1c)
+5. **Rolling out.**
+   a) `?drive=rapier` for the owner to try against the current drive, the default after the owner drives it
+      **(recommended)**
+   b) Straight to the default once the measurements hold
+
 ## Netcode
 
 - **Host-authoritative, as now.** The host (a browser, the dedicated server) runs the rigid step; nothing new on AWS.
