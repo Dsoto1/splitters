@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/mapmaker-bugs-1116` · a3f2dca1 · 43951375401 (lane B: the Arid preset never silent, tall wall styles refused under a floor or roof above with a hover card and an `edge.tall` warning, thick arches decorate their real face; carries the Paint list fix)
+- `wip/mapmaker-ui-3` · e28afa75 · 43957774780 (lane B: MapMaker UI spec Phase 3, the live minimap)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)

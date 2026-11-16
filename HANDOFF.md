@@ -54,6 +54,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+**Landing now: train** (`wip/mapmaker-bugs-1116`, `wip/mapmaker-ui-3`; lane B's splitters22, 2026-11-16, 21:55 UTC): please hold code pushes to main until this line goes.
+
 - **Claimed (a helper of lane A's lead, 2026-11-16): random bots are random** (`wip/random-bots`; QUEUE Bugs). Files: shared `content/looks.ts` (`botLookOrder`: a seeded shuffle of the pool), `sim/match.ts` (`botLook` deals from it, skipping looks other bots wear; `recastBots` through it), tests `botLookDeal.test.ts` and `botPhaseD.test.ts` (a profile for each of its six bots), docs/CHARACTERS.md. No map format change.
 - **Claimed (the same helper, 2026-11-16): the Dropship's new model** (`wip/dropship-model`; QUEUE Features). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, `content/guns.json` (pack `meshy-owned-drive-1116`), `vehicles/hover_carrier.glb`, `assets-src/meshy-owned/License.txt`, the generated tables, provenance and the vehicles palette atlas (`pnpm content:rebuild`), tests `dropshipCarrier.test.ts`, `vehicleWedge.test.ts`, `airplane.test.ts`, the resolved-vehicles fixture; docs/VEHICLES.md, docs/CONTENT_PIPELINE.md. No map format change.
 
