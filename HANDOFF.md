@@ -49,6 +49,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the character leak and painting Phase 4 in a train** (`check/train-20261116-184637` at d352eb40, run 43932395138, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). Notes under each claim.
 
+**Landing now: train** (the Battle Rifle, `wip/battle-rifle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `wip/random-bots` · run 43937153341 (`check/random-bots` at 7edcdadd; lane A's helper)
 - `wip/hostgame-friend` · run 43940333168 (`check/hostgame-friend` at f1bc84d3; e2e hostgame: the bots' 15 kills ended the host's match under the flow, so the friend followed into a new session; a helper of lane B's splitters22; full suite: e2e/run.mjs changed)
