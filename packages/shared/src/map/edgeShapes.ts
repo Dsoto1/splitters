@@ -23,6 +23,22 @@ export const shapeOf = (style: ResolvedEdge): EdgeShape | undefined => (style ==
 /** The surface a style's segments and trim are drawn in instead of the walls' and trim's: `metal` (bars, gates, railings). */
 export const edgePaint = (style: ResolvedEdge): 'metal' | undefined => shapeOf(style)?.paint;
 
+/** Thinner than this (m) across its face or in height, a see-through style's piece is a bar, a post or a rail. */
+const LATTICE_PIECE = 0.25;
+
+/**
+ * Whether a collision segment of `style` is part of a lattice you see and shoot between: a bar, post or rail of a
+ * see-through style (bars, the tall fence: `dressing` see-through) or a barred one (`paint` metal: bars, barred gates).
+ * Such a piece still stops bodies and the rounds that strike it, but not sight lines (PhysicsWorld: GROUP_LATTICE), so
+ * bots see, and fire at, someone through the gaps as a player does (owner, 2026-11-16: "bots wont target me or others
+ * when on other side of a fence or bars/door with bars"). A railing's solid 1 m panel is not a lattice.
+ */
+export function edgeLattice(style: ResolvedEdge, seg: readonly [number, number, number, number, number]): boolean {
+  const shape = shapeOf(style);
+  if (!shape || !(shape.paint === 'metal' || shape.dressing?.kind === 'see-through')) return false;
+  return seg[1] - seg[0] <= LATTICE_PIECE || seg[3] - seg[2] <= LATTICE_PIECE;
+}
+
 /** An edge value along a side `half` long each way from its middle, on a level `height` high. */
 function edgeValue(v: EdgeValue, half: number, height: number): number {
   if (typeof v === 'number') return v;

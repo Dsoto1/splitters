@@ -3,6 +3,7 @@ import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorIns
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
+import { getKitFamily, isKitModel } from '../content/kitProps.ts';
 import { envCanBreak, envVariant, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
 import { mapGroundBores, terrainTrianglesCut } from './groundBore.ts';
@@ -10,7 +11,7 @@ import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
 import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
-import { edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
 /**
@@ -46,6 +47,8 @@ export interface WorldBox {
   roof?: true;
   /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels); `metal`: a bar or barred gate (EdgeShape.paint). */
   paint?: 'walls' | 'metal';
+  /** A bar, post or rail of a see-through edge (edgeLattice): it stops bodies and shots, never sight lines. */
+  lattice?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -387,6 +390,13 @@ export function envHalfSize(e: Extract<MapEntity, { kind: 'prop' }>): [number, n
   return envVariant(species, e.variant).size.map((v) => (v * e.scale) / 2) as [number, number, number];
 }
 
+/**
+ * Kit prop generators whose pieces are bars or mesh with gaps (tools/content/kitprops.mjs KINDS): the Iron Fence and
+ * the chain-link fences. Their collision box is a lattice to sight (WorldBox.lattice): bots see you through them, as
+ * you see them; the box still stops bodies, and rounds as the surface does (sheet metal: rifles go through).
+ */
+const LATTICE_KIT_KINDS: ReadonlySet<string> = new Set(['railing', 'chainlink']);
+
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   // Props riding a mover are drawn only (its blocks collide).
@@ -408,8 +418,9 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const s = Math.sin(e.yaw);
     // Boxes turn with the prop (yaw like a mesh's rotation.y: local +Z goes to (sin, cos)), so a prop
     // turned at an angle collides with its own shape, not the much bigger square round it.
+    const lattice = isKitModel(e.model) && LATTICE_KIT_KINDS.has(getKitFamily(e.model)?.kind ?? '') ? ({ lattice: true } as const) : {};
     const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
-      e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id };
+      e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw, ...lattice } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, ...lattice };
     if (def.boxes) {
       for (const [x0, y0, z0, x1, y1, z1] of def.boxes) {
         const cx = ((x0 + x1) / 2) * e.scale;
@@ -576,9 +587,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         }
       } else {
         const metal = edgePaint(style);
-        for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
+        for (const seg of edgeSegments(style, half, levelHeight)) {
+          const [u0, u1, y0, y1, t] = seg;
           const b = sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall');
-          boxes.push(metal ? { ...b, paint: metal } : b);
+          boxes.push({ ...b, ...(metal ? { paint: metal } : {}), ...(edgeLattice(style, seg) ? { lattice: true as const } : {}) });
         }
       }
     }
@@ -995,7 +1007,7 @@ function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: nu
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
-  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}) };
+  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}) };
   if (box.yaw || box.pitch || box.roll) {
     // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;

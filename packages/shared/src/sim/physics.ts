@@ -52,11 +52,14 @@ const GROUP_FIELD = 0x0004;
 /** The terrain: static geometry like the rest, in a group of its own so coarse moves can leave it out. */
 const GROUP_TERRAIN = 0x0008;
 const groups = (membership: number, filter: number): number => ((membership << 16) | filter) >>> 0;
+/** Lattices: see below (SHOT_QUERY, SIGHT_QUERY). */
+const GROUP_LATTICE = 0x0080;
+const LATTICE_COLLIDER_GROUPS = groups(GROUP_LATTICE, 0xffff);
 const WORLD_COLLIDER_GROUPS = groups(GROUP_WORLD, 0xffff);
 const TERRAIN_COLLIDER_GROUPS = groups(GROUP_TERRAIN, 0xffff);
 const PLAYER_COLLIDER_GROUPS = groups(GROUP_PLAYER, 0xffff);
 /** Queries that should only see static map geometry (movement, line of sight, shot occlusion). */
-const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN);
+const WORLD_ONLY_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_LATTICE);
 const FIELD_COLLIDER_GROUPS = groups(GROUP_FIELD, 0xffff);
 /** Breakable glass panes: they stop bodies moving, never shots or sight (shots break them on the way, see sim/glass.ts). */
 const GROUP_GLASS = 0x0010;
@@ -70,16 +73,23 @@ const ARMOR_GLASS_COLLIDER_GROUPS = groups(GROUP_ARMOR_GLASS, 0xffff);
  */
 const GROUP_SHOTS_ONLY = 0x0040;
 const SHOTS_ONLY_COLLIDER_GROUPS = groups(GROUP_SHOTS_ONLY, 0xffff);
-/** Movement queries: static geometry, force fields and glass. */
-const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
+/**
+ * Lattices (map/edgeShapes.ts edgeLattice: the bars, posts and rails of bars, barred gates and fences): solid to bodies
+ * and to shots (a round that strikes a bar stops there), never to sight lines; bots fire through the gaps too
+ * (botShotHit leaves them out), as a player does.
+ */
+/** Movement queries: static geometry, force fields, glass and lattices. */
+const MOVE_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
 /** Coarse moves (moveCharacter with a ground function): everything but the terrain, which the function stands in for. */
-const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_GLASS | GROUP_ARMOR_GLASS);
-/** Shots and thrown things: static geometry, bulletproof glass and shots-only environment shapes. */
-const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS | GROUP_SHOTS_ONLY);
-/** Sight lines and world rays: static geometry and shots-only environment shapes (a thick limb hides you too). */
+const MOVE_NO_TERRAIN_QUERY = groups(0xffff, GROUP_WORLD | GROUP_FIELD | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
+/** Shots and thrown things: static geometry, bulletproof glass, lattices and shots-only environment shapes. */
+const SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS | GROUP_SHOTS_ONLY | GROUP_LATTICE);
+/** A bot's "would my round get there" check (botShotHit): a shot, through a lattice's gaps. */
+const BOT_SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_GLASS | GROUP_SHOTS_ONLY);
+/** Sight lines and world rays: static geometry and shots-only environment shapes (a thick limb hides you too); not lattices. */
 const SIGHT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_SHOTS_ONLY);
 /** What wheels stand on (PhysicsWorld.groundBelow): everything solid but players and force fields. */
-const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
+const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
 const DOWN = { x: 0, y: -1, z: 0 };
 const MAX_SLOPE_TAN = Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180);
 
@@ -99,7 +109,7 @@ export function mergeBoxes(boxes: readonly WorldBox[]): WorldBox[] {
     const other = axis === 0 ? 2 : 0;
     const groups = new Map<string, WorldBox[]>();
     for (const b of flat) {
-      const key = `${k(b.min[1])},${k(b.max[1])},${k(b.min[other])},${k(b.max[other])}`;
+      const key = `${k(b.min[1])},${k(b.max[1])},${k(b.min[other])},${k(b.max[other])}${b.lattice ? ',l' : ''}`;
       let g = groups.get(key);
       if (!g) groups.set(key, (g = []));
       g.push(b);
@@ -182,7 +192,7 @@ export class PhysicsWorld {
       const hz = (b.max[2] - b.min[2]) / 2;
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz)
         .setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz)
-        .setCollisionGroups(WORLD_COLLIDER_GROUPS);
+        .setCollisionGroups(b.lattice ? LATTICE_COLLIDER_GROUPS : WORLD_COLLIDER_GROUPS);
       if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.staticBoxes.set(this.world.createCollider(desc).handle, b);
@@ -532,6 +542,27 @@ export class PhysicsWorld {
     return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
   }
 
+  /** A bot's check that a round fired along `dir` gets `maxDist` (bots/brain.ts clearShot): as raycastHit, through lattices' gaps. */
+  botShotHit(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number } | null {
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, BOT_SHOT_QUERY, this.shotSkip ?? undefined);
+    return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
+  }
+
+  /** As shotLine, through lattices' gaps (bots: whether someone seen through bars is worth a round). */
+  botShotLine(a: Vec3, b: Vec3): boolean {
+    const d = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+    const len = hypot(d.x, d.y, d.z);
+    if (len < 1e-6) return true;
+    return this.botShotHit(a, { x: d.x / len, y: d.y / len, z: d.z / len }, len) === null;
+  }
+
+  /** Like raycastHit, passing through `through` as well (an open vehicle's hull, to the riders inside it). */
+  raycastHitPast(origin: Vec3, dir: Vec3, maxDist: number, through: RAPIER.Collider): { dist: number; handle: number } | null {
+    const h = through.handle;
+    const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY, this.shotSkip ?? undefined, undefined, (c) => c.handle !== h);
+    return hit ? { dist: hit.timeOfImpact, handle: hit.collider.handle } : null;
+  }
+
   /** Like raycastHit, plus the surface normal (for bouncing grenades and sticking mines). */
   raycastNormal(origin: Vec3, dir: Vec3, maxDist: number): { dist: number; handle: number; normal: Vec3 } | null {
     const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, SHOT_QUERY, this.shotSkip ?? undefined);
@@ -568,17 +599,19 @@ export class PhysicsWorld {
    * out `skip`: the distance and the surface normal there (facing back along the ray), or null within maxDist.
    * Rigid vehicles' wheel and hull rays (sim/wheelPhysics.ts).
    */
-  groundRay(origin: Vec3, dir: Vec3, maxDist: number, skip: RAPIER.Collider): { dist: number; normal: Vec3 } | null {
+  groundRay(origin: Vec3, dir: Vec3, maxDist: number, skip: RAPIER.Collider): { dist: number; normal: Vec3; terrain: boolean } | null {
     const hit = this.world.castRayAndGetNormal(this.rayFrom(origin, dir), maxDist, true, undefined, GROUND_QUERY, skip);
     if (!hit) return null;
     const n = hit.normal;
+    // (The terrain: a heightfield's facets, never a step's riser.)
+    const terrain = hit.collider.collisionGroups() >>> 16 === GROUP_TERRAIN;
     // Started inside a solid: Rapier gives a zero normal; point it back along the ray.
-    if (n.x === 0 && n.y === 0 && n.z === 0) return { dist: hit.timeOfImpact, normal: { x: -dir.x, y: -dir.y, z: -dir.z } };
-    return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z } };
+    if (n.x === 0 && n.y === 0 && n.z === 0) return { dist: hit.timeOfImpact, normal: { x: -dir.x, y: -dir.y, z: -dir.z }, terrain };
+    return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z }, terrain };
   }
 
   /** The queries a rigid vehicle's step makes (wheelPhysics.ts ChassisWorld), against everything but its own box. */
-  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3 } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
+  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3; terrain: boolean } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
     return { ray: (o, d, len) => this.groundRay(o, d, len, body), sweep: (c, q, d) => this.sweepChassis(probe, body, c, q, d) };
   }
 
