@@ -125,11 +125,12 @@ describe('the status bar (statusBar)', () => {
 });
 
 describe('the page (index.html)', () => {
-  it("keeps the top bar to the title, files, undo, the 7 tabs, View, Snap, theme, TEST's bots and skill, and play", () => {
-    for (const id of ['ed-title', 'ed-view-btn', 'ed-snap', 'ed-theme', 'ed-bots', 'ed-skill', 'ed-test', 'ed-test-here', 'ed-modes', 'ed-undo', 'ed-redo', 'ed-save']) expect(top, id).toContain(`id="${id}"`);
+  it("keeps the top bar to the title, files, undo, the 7 tabs, View, Snap, the Structure theme chip, TEST's bots and skill, and play", () => {
+    for (const id of ['ed-title', 'ed-view-btn', 'ed-snap', 'ed-theme-chip', 'ed-bots', 'ed-skill', 'ed-test', 'ed-test-here', 'ed-modes', 'ed-undo', 'ed-redo', 'ed-save']) expect(top, id).toContain(`id="${id}"`);
     // Moved: grid, full grid and overlaps to the View menu (built by viewMenu.ts); Plan to View and the Test tab's
-    // bar; Bot test to the Test tab's bar; the problems pill to the status bar; the name field to Map settings.
-    for (const id of ['ed-grid', 'ed-grid-full', 'ed-overlaps', 'ed-plan', 'ed-maptest', 'ed-status', 'ed-name']) expect(top, id).not.toContain(`id="${id}"`);
+    // bar; Bot test to the Test tab's bar; the problems pill to the status bar; the name field to Map settings; the theme select to Map settings
+    // (painting Phase 3: the chip opens it there).
+    for (const id of ['ed-theme', 'ed-grid', 'ed-grid-full', 'ed-overlaps', 'ed-plan', 'ed-maptest', 'ed-status', 'ed-name']) expect(top, id).not.toContain(`id="${id}"`);
     expect(html.slice(html.indexOf('<footer id="ed-bottom">'), html.indexOf('</footer>', html.indexOf('<footer id="ed-bottom">')))).toContain('id="ed-status"');
   });
 
