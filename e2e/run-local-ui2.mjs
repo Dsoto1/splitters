@@ -1404,6 +1404,7 @@ async function editorSelectionSyncChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
   // 300 crates in rows to the north (a long outliner list), one barrel by the camera, and a moving build.
   await page.evaluate(() => {
     const ed = window.__editor;
@@ -1497,9 +1498,13 @@ async function editorSelectionSyncChecks(browser) {
   await frames(page, 3);
   s = await state();
   check(s.sel.length === 0 && !s.gizmo && s.on.length === 0 && !!(await page.$('#ed-insp-empty')), `deleting the selection clears it in the view, the outliner and the inspector (${JSON.stringify(s)})`);
+  await page.evaluate(() => document.activeElement?.blur?.());
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 3);
-  check((await state()).sel.length === 0, 'undoing the delete brings the barrel back, unselected (the selection is not part of undo)');
+  check((await state()).sel.length === 0 && (await doc()).entities.some((e) => e.id === 'e2e_barrel'), 'undoing the delete brings the barrel back, unselected (the selection is not part of undo)');
+  // A stale pick (an id the map no longer has) selects only what is there.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel', 'e2e_gone'] }));
+  check((await state()).sel.join() === 'e2e_barrel', 'a pick naming something the map no longer has selects only what is there');
 
   // The numeric fields, for the record: a thing's X / Height / Z and Facing.
   await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));

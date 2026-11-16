@@ -80,7 +80,10 @@ export class OutlinerPanel {
     this.search.addEventListener('input', () => {
       this.query = this.search.value;
       this.list.scrollTop = 0;
+      this.top = 0;
       this.rebuildRows();
+      // The search cleared: back to the selected thing's row.
+      if (!this.query) this.reveal();
     });
     this.list = document.createElement('div');
     this.list.id = 'ed-ol-list';
