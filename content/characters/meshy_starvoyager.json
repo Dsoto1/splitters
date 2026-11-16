@@ -5,7 +5,7 @@
   "order": 130,
   "name": "Star Voyager",
   "look": "core.starvoyager",
-  "group": "soldiers",
+  "group": "space",
   "nameTheme": "soldier",
   "bio": "Crossed three star systems to get here. Still forgot the snacks.",
   "body": "male",

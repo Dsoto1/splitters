@@ -5,7 +5,7 @@
   "order": 114,
   "name": "Spacewalker",
   "look": "core.astronaut",
-  "group": "soldiers",
+  "group": "space",
   "nameTheme": "soldier",
   "bio": "Six hours outside the airlock without a scratch. Six seconds down here and somebody's shooting.",
   "body": "male",

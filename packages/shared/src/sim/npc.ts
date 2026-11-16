@@ -168,10 +168,11 @@ export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook((id && RETIRED_LOOKS[id]) || id).id);
 /**
  * Character Select's group for each NPC skin (what it is; CHARACTER_GROUPS). The ones not offered there
- * (gunner, heavy, …) have one too, so a saved choice of theirs still sorts.
+ * (gunner, heavy, …) have one too, so a saved choice of theirs still sorts. The Dummy (the trooper mannequin) sits in
+ * Agents & Spies (the owner's Roster Board, 2026-11-14).
  */
 export const NPC_LOOK_GROUPS: Readonly<Record<string, CharacterGroup>> = Object.fromEntries(
-  NPC_LOOKS.map((l) => [l.id, NPC_ROLE_SPECS[l.role].creature ? 'creatures' : l.role === 'zombie' ? 'horror' : 'soldiers']),
+  NPC_LOOKS.map((l) => [l.id, l.role === 'trooper' ? 'agents' : NPC_ROLE_SPECS[l.role].creature ? 'creatures' : l.role === 'zombie' ? 'horror' : 'soldiers']),
 );
 /** What a look is (Character Select's groups): built-in looks and NPC skins have one; a design of yours (or anything unknown) is null. */
 export const lookGroup = (id: string | undefined): CharacterGroup | null => {

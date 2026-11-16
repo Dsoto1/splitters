@@ -5,7 +5,7 @@
   "order": 150,
   "name": "Reef Wanderer",
   "look": "core.alienexplorer",
-  "group": "creatures",
+  "group": "space",
   "nameTheme": "alien",
   "bio": "Came up from an alien sea to see the stars, and stayed for the fights.",
   "body": "male",

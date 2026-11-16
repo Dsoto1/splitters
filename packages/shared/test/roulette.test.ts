@@ -3,6 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BUTTON_FIRE,
+  CHARACTER_GROUPS,
   CORE_LOOKS,
   DEFAULT_ROULETTE_RULES,
   FX_JACKPOT,
@@ -166,7 +167,7 @@ describe('signature loadouts', () => {
       expect(roster.has(look), look).toBe(true);
       expect(getWeapon(w).slot).toBeGreaterThanOrEqual(1);
     }
-    for (const g of ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures']) expect((ROULETTE_DATA.groups as Record<string, string>)[g]).toBeTruthy();
+    for (const g of CHARACTER_GROUPS.map((x) => x.id)) expect((ROULETTE_DATA.groups as Record<string, string>)[g]).toBeTruthy();
   });
 
   it('the knight a spear, a soldier a rifle, an alien a ray gun; a look without its own takes its group’s', () => {
