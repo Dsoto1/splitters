@@ -816,8 +816,8 @@ export class EditorApp {
   setSelection(sel: Selection, single = false, keepHint = false): void {
     if (!keepHint) this.hints.deselect();
     // Made whole wherever the pick came from (groups, moving builds; Alt: `single`); locked things (the outliner's
-    // padlock, editor-only) can't be selected.
-    const changed = this.adoptSelection(wholeSelection(this.doc, sel, { single, blocked: this.outliner.locked }));
+    // padlock, editor-only) can't be selected, and ids the map doesn't have (a stale pick) are left out.
+    const changed = this.adoptSelection(pruneSelection(this.doc, wholeSelection(this.doc, sel, { single, blocked: this.outliner.locked })));
     // Something selected: the dock shows it (Map settings step aside). A hidden or compact dock stays as it is.
     if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
