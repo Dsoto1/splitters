@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/paint-list-fix` · 5c7c6627 · 43928449682 (lane B: the Assets panel's cut-off Paint list, item 1 of the MapMaker bugs of 2026-11-16)
+- `wip/random-bots` · 7edcdadd · 43937153341 (lane A: random bots are random, a per-match shuffle of the allowed looks from the match seed; green on attempt 2, attempt 1 red only on the editor flow's "TEST starts within the 3 s budget" timing, 4.1 s and 3.6 s on a loaded runner, with seed 1 dealing the same looks as before; the branch tip adds a merge of main whose HANDOFF side is main's)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)

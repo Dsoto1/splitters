@@ -52,7 +52,6 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (the Battle Rifle, `wip/battle-rifle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `wip/random-bots` · run 43937153341 (`check/random-bots` at 7edcdadd; lane A's helper)
 - `wip/dropship-model` · run 43941962252 (`check/dropship-model` at 3c1400aa; lane A's helper; full suite: content and shared code)
 - `wip/hostgame-friend` · run 43940333168 (`check/hostgame-friend` at f1bc84d3; e2e hostgame: the bots' 15 kills ended the host's match under the flow, so the friend followed into a new session; a helper of lane B's splitters22; full suite: e2e/run.mjs changed)
 
