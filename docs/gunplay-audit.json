@@ -2458,7 +2458,7 @@
       "ads": null
      },
      "unarmoured.head": {
-      "ideal": 1150,
+      "ideal": 1133,
       "stk": 3,
       "hip": null,
       "ads": null
@@ -2470,7 +2470,7 @@
       "ads": null
      },
      "armoured.head": {
-      "ideal": 2150,
+      "ideal": 2133,
       "stk": 5,
       "hip": null,
       "ads": null
@@ -2478,25 +2478,25 @@
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 2350,
+      "ideal": 2333,
       "stk": 5,
       "hip": null,
       "ads": null
      },
      "unarmoured.head": {
-      "ideal": 1367,
+      "ideal": 1333,
       "stk": 3,
       "hip": null,
       "ads": null
      },
      "armoured.body": {
-      "ideal": 6017,
+      "ideal": 6000,
       "stk": 9,
       "hip": null,
       "ads": null
      },
      "armoured.head": {
-      "ideal": 2367,
+      "ideal": 2333,
       "stk": 5,
       "hip": null,
       "ads": null
@@ -2513,9 +2513,9 @@
     "35": 1083,
     "40": 1100,
     "50": 1633,
-    "60": 2183,
-    "75": 2250,
-    "100": 2350,
+    "60": 2167,
+    "75": 2233,
+    "100": 2333,
     "125": null,
     "150": null
    },
@@ -2541,7 +2541,7 @@
     "15": 517,
     "20": 533,
     "25": 800,
-    "30": 3400,
+    "30": 4733,
     "35": null,
     "40": 6017,
     "50": null,
@@ -2595,11 +2595,11 @@
      "dropCm": 0
     },
     "15": {
-     "flightMs": 24,
+     "flightMs": 23,
      "dropCm": 0
     },
     "20": {
-     "flightMs": 41,
+     "flightMs": 40,
      "dropCm": 1
     },
     "25": {
@@ -2607,40 +2607,40 @@
      "dropCm": 2
     },
     "30": {
-     "flightMs": 76,
+     "flightMs": 75,
      "dropCm": 3
     },
     "35": {
-     "flightMs": 94,
+     "flightMs": 93,
      "dropCm": 4
     },
     "40": {
-     "flightMs": 113,
+     "flightMs": 110,
      "dropCm": 6
     },
     "50": {
-     "flightMs": 151,
-     "dropCm": 11
+     "flightMs": 146,
+     "dropCm": 10
     },
     "60": {
-     "flightMs": 190,
-     "dropCm": 17
+     "flightMs": 183,
+     "dropCm": 16
     },
     "75": {
-     "flightMs": 253,
-     "dropCm": 29
+     "flightMs": 240,
+     "dropCm": 27
     },
     "100": {
-     "flightMs": 366,
-     "dropCm": 58
+     "flightMs": 339,
+     "dropCm": 53
     },
     "125": {
-     "flightMs": 494,
-     "dropCm": 102
+     "flightMs": 444,
+     "dropCm": 89
     },
     "150": {
-     "flightMs": 641,
-     "dropCm": 165
+     "flightMs": 557,
+     "dropCm": 136
     }
    },
    "firstShotMs": 0,
@@ -8500,13 +8500,13 @@
       "ideal": 800,
       "stk": 2,
       "hip": 6600,
-      "ads": 1150
+      "ads": 1133
      },
      "unarmoured.head": {
-      "ideal": 150,
+      "ideal": 133,
       "stk": 1,
-      "hip": 150,
-      "ads": 150
+      "hip": 133,
+      "ads": 133
      },
      "armoured.body": {
       "ideal": 1467,
@@ -8515,33 +8515,33 @@
       "ads": null
      },
      "armoured.head": {
-      "ideal": 817,
+      "ideal": 800,
       "stk": 2,
       "hip": null,
-      "ads": 7883
+      "ads": 7867
      }
     },
     "100": {
      "unarmoured.body": {
-      "ideal": 1017,
+      "ideal": 1000,
       "stk": 2,
       "hip": null,
       "ads": null
      },
      "unarmoured.head": {
-      "ideal": 367,
+      "ideal": 333,
       "stk": 1,
-      "hip": 367,
-      "ads": 367
+      "hip": 333,
+      "ads": 333
      },
      "armoured.body": {
-      "ideal": 2350,
+      "ideal": 2333,
       "stk": 4,
       "hip": null,
       "ads": null
      },
      "armoured.head": {
-      "ideal": 1033,
+      "ideal": 1000,
       "stk": 2,
       "hip": null,
       "ads": null
@@ -8558,11 +8558,11 @@
     "35": 750,
     "40": 767,
     "50": 800,
-    "60": 850,
-    "75": 917,
-    "100": 1017,
-    "125": 1150,
-    "150": 1300
+    "60": 833,
+    "75": 900,
+    "100": 1000,
+    "125": 1100,
+    "150": 1217
    },
    "sweepStk": {
     "5": 2,
@@ -8587,11 +8587,11 @@
     "20": 700,
     "25": 1050,
     "30": 1400,
-    "35": 1425,
-    "40": 2117,
+    "35": 1417,
+    "40": 3375,
     "50": 6600,
-    "60": 6650,
-    "75": null,
+    "60": 7900,
+    "75": 7967,
     "100": null,
     "125": null,
     "150": null
@@ -8640,11 +8640,11 @@
      "dropCm": 0
     },
     "15": {
-     "flightMs": 24,
+     "flightMs": 23,
      "dropCm": 0
     },
     "20": {
-     "flightMs": 41,
+     "flightMs": 40,
      "dropCm": 1
     },
     "25": {
@@ -8652,40 +8652,40 @@
      "dropCm": 2
     },
     "30": {
-     "flightMs": 76,
+     "flightMs": 75,
      "dropCm": 3
     },
     "35": {
-     "flightMs": 94,
+     "flightMs": 93,
      "dropCm": 4
     },
     "40": {
-     "flightMs": 113,
+     "flightMs": 110,
      "dropCm": 6
     },
     "50": {
-     "flightMs": 151,
-     "dropCm": 11
+     "flightMs": 146,
+     "dropCm": 10
     },
     "60": {
-     "flightMs": 190,
-     "dropCm": 17
+     "flightMs": 183,
+     "dropCm": 16
     },
     "75": {
-     "flightMs": 253,
-     "dropCm": 29
+     "flightMs": 240,
+     "dropCm": 27
     },
     "100": {
-     "flightMs": 366,
-     "dropCm": 58
+     "flightMs": 339,
+     "dropCm": 53
     },
     "125": {
-     "flightMs": 494,
-     "dropCm": 102
+     "flightMs": 444,
+     "dropCm": 89
     },
     "150": {
-     "flightMs": 641,
-     "dropCm": 165
+     "flightMs": 557,
+     "dropCm": 136
     }
    },
    "firstShotMs": 0,

@@ -15,7 +15,7 @@ export const FAMILY_DEFAULTS: Readonly<Record<(typeof WEAPON_FAMILIES)[number], 
   },
   // accuracy: A true first shot, but a round fired before the last one's spray has settled (about half a second) is a guess.
   revolver: {
-    ballistic: { velocity: 300, drag: 1, gravityScale: 1, energy: 1800, tracerEvery: 1 },
+    ballistic: { velocity: 300, drag: 0.6, gravityScale: 1, energy: 1800, tracerEvery: 1 },
     accuracy: { base: 0.0005, move: 0.012, air: 0.06, perShot: 0.022, tight: 0, max: 0.06, recovery: 3, ads: 0.5, adsTicks: 10 },
     kick: { pitch: [0.12], yaw: [0.012, -0.008], variance: 0.008, delay: 10, settle: 3.5, rate: 0.06, visual: 1.5 },
     falloff: { start: 25, end: 60, min: 0.7, curve: 'smooth' },

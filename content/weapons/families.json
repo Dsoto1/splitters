@@ -46,7 +46,7 @@
       "legs": 0.8
     },
     "revolver": {
-      "ballistic": { "velocity": 300, "drag": 1.0, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
+      "ballistic": { "velocity": 300, "drag": 0.6, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
       "accuracy": {
         "base": 0.0005,
         "move": 0.012,

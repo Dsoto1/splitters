@@ -1171,7 +1171,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
-     "drag": 1,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1
@@ -4376,7 +4376,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
-     "drag": 1,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1

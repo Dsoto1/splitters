@@ -14,7 +14,7 @@ export const BOT_TTK: Readonly<Record<string, readonly (number | null)[]>> = {
   'core.rockets': [117, 283, 450, 617, 783, 950, 1117, 1283, 1617, 1950, 2450, 3283, null, null],
   'core.plasma': [533, 617, 708, 800, 883, 983, 1075, 1167, 1350, 1533, 1975, 2675, null, null],
   'core.pulse_pistol': [600, 600, 600, 600, 750, 900, 1050, 1350, 1950, 1950, 1950, null, null, null],
-  'core.hand_cannon': [500, 500, 517, 533, 800, 3400, null, 6017, null, null, null, null, null, null],
+  'core.hand_cannon': [500, 500, 517, 533, 800, 4733, null, 6017, null, null, null, null, null, null],
   'core.gilded_pistol': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   'core.flare_gun': [3433, 3600, 3767, 3933, 4100, 4267, 4450, 4617, 4983, 5050, 5500, 6333, null, null],
   'core.machine_pistol': [700, 975, 4617, null, null, null, null, null, null, null, null, null, null, null],
@@ -38,7 +38,7 @@ export const BOT_TTK: Readonly<Record<string, readonly (number | null)[]>> = {
   'core.flamethrower': [900, null, null, null, null, null, null, null, null, null, null, null, null, null],
   'core.freeze_ray': [1650, 1650, 1650, 1650, 1650, 1650, 1650, 1650, null, null, null, null, null, null],
   'core.blast_rockets': [983, 1133, 1317, 1517, 1700, 1900, 2083, 2283, 2667, 3050, 3633, 4583, null, null],
-  'core.revolver': [667, 667, 683, 700, 1050, 1400, 1425, 2117, 6600, 6650, null, null, null, null],
+  'core.revolver': [667, 667, 683, 700, 1050, 1400, 1417, 3375, 6600, 7900, 7967, null, null, null],
   'core.battle_rifle': [600, 600, 600, 600, 617, 617, 617, 633, 1033, 1750, 1467, 7300, null, null],
 };
 

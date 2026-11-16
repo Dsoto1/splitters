@@ -10674,7 +10674,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
  *
  * Then a second scene by day (FLASHING_DAY: flashing-day.json), for the bright moments daylight makes: sprinting out
- * of a lit tunnel into the day, turning round and sprinting back in.
+ * of a lit tunnel into the day, turning round and sprinting back in; the hit camera kick on the tunnel's daylight edge.
  */
 async function flashingFlow(browser) {
   await flashingScene(browser);
@@ -10761,6 +10761,21 @@ const FLASHING_DAY = {
         seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing in the tunnel's mouth looking out
+      // at the daylight (the picture's biggest brightness edge, where a jolt of the view swings most pixels across
+      // it), kicked as by a full-power hit (a shotgun blast or a sniper round) five times a second for the whole
+      // recording, from either side in turn: sustained heavy fire.
+      {
+        name: 'hitkick',
+        label: "the hit camera kick: full-power hits five times a second, standing in the tunnel's mouth looking out at the daylight",
+        weapon: 'core.arc_caster',
+        me: [24, 0, -19],
+        look: { yaw: Math.PI, pitch: 0 },
+        bots: [],
+        at: Object.fromEntries(Array.from({ length: 10 }, (_, k) => [2 + k * 6, () => page.evaluate((side) => window.__cs.view.hitKick(1, side), k % 2 ? 1 : -1)])),
+        seen: () => page.evaluate(() => ({ kick: !!window.__cs.view.hitKickState })),
+        sees: (_on, s) => s.kick,
       },
     ];
   },
