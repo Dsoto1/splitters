@@ -1379,6 +1379,7 @@ async function editoruxFlow(browser) {
   await editorInterfaceChecks(browser);
   await editorLayoutChecks(browser);
   await editorSelectionSyncChecks(browser);
+  await editorMinimapChecks(browser);
   await editorThemeViewChecks(browser);
   await editorTourChecks(browser);
 }
@@ -1388,6 +1389,148 @@ async function editoruxFlow(browser) {
  * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
+/**
+ * MapMaker UI spec Phase 3, the live minimap (editor/minimapPanel.ts): the expanded dock's Minimap | Outliner tabs
+ * (kept in this browser, never in the map); a click on a thing in the minimap selects it in the view, the inspector and
+ * the outliner, and a selection made elsewhere shows on it without a new picture; open ground moves the camera; a
+ * level change shows that level (the selection dashed); an edit makes the picture again only after a pause; the
+ * compact card is the minimap too, and a hidden dock runs none of it. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorMinimapChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-minimap-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const lh = await page.evaluate(() => window.__editor.doc.classicStructure.levelHeight);
+  await page.evaluate((lh) => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14])] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  }, lh);
+  const mm = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.minimap.state();
+    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas').offsetParent, slot: document.getElementById('ed-minimap').parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
+  });
+  const clickAt = async (x, z, mods = {}) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.minimap.clientPoint(x, z), [x, z]);
+    if (!p) return false;
+    if (mods.shift) await page.keyboard.down('Shift');
+    await page.mouse.click(p.x, p.y);
+    if (mods.shift) await page.keyboard.up('Shift');
+    await frames(page, 3);
+    return true;
+  };
+
+  // The expanded dock opens on the Outliner, as before; the Minimap tab shows the minimap in its place and is kept.
+  let s = await mm();
+  check(s.tab === 'outliner' && s.outliner && !s.canvas && !s.visible && s.bakes === 0, `the expanded dock opens on the Outliner and the minimap does nothing while unseen (${JSON.stringify(s)})`);
+  await page.click('#ed-tab-minimap');
+  await page.waitForFunction(() => window.__editor.minimap.state().bakes > 0, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.tab === 'minimap' && !s.outliner && s.canvas && s.visible && s.slot === 'ed-minimap-host' && s.level === 0 && JSON.parse(s.stored).tab === 'minimap' && (await page.getAttribute('#ed-tab-minimap', 'aria-selected')) === 'true', `the Minimap tab shows the live minimap above Properties, and is kept in this browser (${JSON.stringify(s)})`);
+  check(s.w > 150 && s.h > 150, `the minimap has room in the expanded dock (${s.w}×${s.h})`);
+  await shot('expanded');
+
+  // A click on a thing selects it everywhere: the view's gizmo, the inspector, the outliner's row; and frames it.
+  const cam0 = await page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  check(await clickAt(14, 10), 'the barrel has a place on the minimap');
+  s = await mm();
+  const insp = await page.evaluate(() => ({ x: document.getElementById('ed-insp-x')?.value ?? null, gizmo: !!window.__editor.view.gizmo?.isEnabled(), cam: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z } }));
+  check(s.sel.join() === 'mm_barrel' && insp.x === '14' && s.marks.some((m) => m.id === 'mm_barrel' && m.current), `a click on the barrel in the minimap selects it (view, inspector X ${insp.x}) and marks it (${JSON.stringify({ sel: s.sel, marks: s.marks })})`);
+  check(Math.hypot(insp.cam.x - 14, insp.cam.z - 10) < Math.hypot(cam0.x - 14, cam0.z - 10), `and frames it, as a click in the outliner does (${JSON.stringify([cam0, insp.cam])})`);
+  await shot('selected');
+  // Shift adds, as in the outliner.
+  await clickAt(-14, -10, { shift: true });
+  s = await mm();
+  check(s.sel.length === 2 && s.sel.includes('mm_crate') && s.marks.length === 2, `Shift-click in the minimap adds to the selection (${JSON.stringify(s.sel)})`);
+  // The outliner lights the same rows.
+  await page.click('#ed-tab-outliner');
+  await frames(page, 3);
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => el.dataset.id).sort());
+  check(rows.join() === 'mm_barrel,mm_crate', `the outliner shows the minimap's selection (${rows.join()})`);
+  await page.click('#ed-tab-minimap');
+  await frames(page, 3);
+
+  // A selection made elsewhere shows on the minimap without making its picture again.
+  const bakes0 = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_crate'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].id === 'mm_crate' && s.bakes === bakes0, `a selection made in the view shows on the minimap at once, with no new picture (${JSON.stringify({ marks: s.marks, bakes: [bakes0, s.bakes] })})`);
+
+  // Open ground: the camera goes there and the selection stays.
+  await clickAt(30, -30);
+  const cam1 = await page.evaluate(() => {
+    const v = window.__editor.view;
+    const d = { x: Math.sin(v.yaw), z: Math.cos(v.yaw) };
+    // Where the camera looks at the ground (focus stands it 22 m back along the view).
+    return { x: v.camera.position.x + d.x * 22 * Math.cos(0.85), z: v.camera.position.z + d.z * 22 * Math.cos(0.85) };
+  });
+  s = await mm();
+  check(Math.hypot(cam1.x - 30, cam1.z + 30) < 3 && s.sel.join() === 'mm_crate', `a click on open ground moves the camera there and keeps the selection (${JSON.stringify(cam1)})`);
+
+  // An edit: the picture is made again only after the edits pause, not on the edit's own path.
+  const before = (await mm()).bakes;
+  const fresh = await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.transform('Move', { by: { metres: [2, 0, 0] } });
+    ed.frame(0.016);
+    return ed.minimap.state().bakes;
+  });
+  await page.waitForFunction((b) => window.__editor.minimap.state().bakes > b, before, { timeout: T(5000) });
+  check(fresh === before, `an edit doesn't make the minimap's picture on its own path (bakes ${before} → ${fresh} right after it)`);
+
+  // A level change: that level's picture at once; the selection on the ground is dashed; a thing up there is picked.
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await page.waitForFunction(() => window.__editor.minimap.state().level === 1, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === false && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on another level the minimap shows that level and the selection dashed (${JSON.stringify(s.marks)})`);
+  await clickAt(-14, 14);
+  s = await mm();
+  check(s.sel.join() === 'mm_up' && s.marks[0]?.current, `a click on the minimap picks a thing on the level shown (${JSON.stringify(s.sel)})`);
+  await shot('level1');
+  await page.evaluate(() => window.__editor.setLevel(0));
+
+  // Zoom: kept in this browser, never in the map.
+  await page.click('#ed-minimap-in');
+  await page.waitForFunction(() => (JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').minimapZoom ?? 1) > 1, null, { timeout: T(3000) });
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  check(!/minimap/i.test(json), "the minimap's zoom and tab stay out of the map");
+  await page.click('#ed-minimap-fit');
+
+  // Compact: the card is the minimap; a click there selects too. Hidden: none of it runs.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.click('#ed-dock-compact');
+  await frames(page, 4);
+  s = await mm();
+  check(s.visible && s.slot === 'ed-minimap-mini' && s.canvas && s.w > 120, `the compact card shows the minimap (${JSON.stringify({ slot: s.slot, w: s.w, h: s.h })})`);
+  await frames(page, 4);
+  await clickAt(14, 10);
+  s = await mm();
+  check(s.sel.join() === 'mm_barrel', `a click in the compact card's minimap selects (${JSON.stringify(s.sel)})`);
+  await shot('compact');
+  await page.click('#ed-dock-hide');
+  await frames(page, 3);
+  const hiddenBakes = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.transform('Move', { by: { metres: [1, 0, 0] } }));
+  await sleep(1200);
+  s = await mm();
+  check(!s.visible && !s.canvas && s.bakes === hiddenBakes, `a hidden dock runs no minimap (${JSON.stringify({ visible: s.visible, bakes: [hiddenBakes, s.bakes] })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 /**
  * MapMaker UI spec Phase 2, the one selection (shared editor/selectionState.ts): a pick in the outliner selects in the
  * view (outline and gizmo) and the inspector, and a pick in the view lights the outliner's row and scrolls it into view;
