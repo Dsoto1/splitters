@@ -1,4 +1,4 @@
-import { planFrame, planToScreen, type MapDocument, type MapEntity, type PlanArea, type PlanFrame, type Selection } from '@tiletrigger/shared';
+import { planArea, planFrame, planToScreen, type MapDocument, type MapEntity, type PlanArea, type PlanFrame, type Selection } from '@tiletrigger/shared';
 
 /**
  * MapMaker's live minimap (MapMaker UI spec Phase 3, §4.1; docs/MAPMAKER_UI_AUDIT.md §7): its maths, kept apart from
@@ -11,6 +11,32 @@ import { planFrame, planToScreen, type MapDocument, type MapEntity, type PlanAre
 /** The minimap zooms from the whole level (1) in to this many times closer. */
 export const MINIMAP_ZOOM_MIN = 1;
 export const MINIMAP_ZOOM_MAX = 16;
+
+/**
+ * The ground the minimap frames: the playable boundary, else everything built and placed (the plan view's area, props
+ * too: on the minimap nothing placed is out of reach). Terrain beyond is left out (a map's ground can run far past
+ * its play area).
+ */
+export function minimapArea(doc: MapDocument): PlanArea {
+  const a = planArea(doc);
+  if (doc.bounds) return a;
+  let { x0, z0, x1, z1 } = a;
+  for (const e of doc.entities) {
+    if (e.kind !== 'prop') continue;
+    x0 = Math.min(x0, e.position[0] - 3);
+    z0 = Math.min(z0, e.position[2] - 3);
+    x1 = Math.max(x1, e.position[0] + 3);
+    z1 = Math.max(z1, e.position[2] + 3);
+  }
+  return { x0, z0, x1, z1 };
+}
+
+/** The minimap's picture: the framed area and room round it (a third of its size, at least 16 m), for a frame wider or taller than the area. */
+export function pictureArea(a: PlanArea): PlanArea {
+  const mx = Math.max(16, (a.x1 - a.x0) / 3);
+  const mz = Math.max(16, (a.z1 - a.z0) / 3);
+  return { x0: a.x0 - mx, z0: a.z0 - mz, x1: a.x1 + mx, z1: a.z1 + mz };
+}
 
 /** A zoom kept within the minimap's range (anything unreadable: the whole level). */
 export function clampMinimapZoom(z: unknown): number {

@@ -1410,7 +1410,7 @@ async function editorMinimapChecks(browser) {
   await page.evaluate((lh) => {
     const ed = window.__editor;
     const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
-    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14])] });
+    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14]), prop('mm_far', 'core.crate', [40, 0, -40])] });
     ed.setTool({ kind: 'select' });
     ed.setSelection({ tiles: [], entities: [] });
     ed.view.focus({ x: 0, y: 0, z: 0 });
@@ -1418,7 +1418,7 @@ async function editorMinimapChecks(browser) {
   const mm = () => page.evaluate(() => {
     const ed = window.__editor;
     const st = ed.minimap.state();
-    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas').offsetParent, slot: document.getElementById('ed-minimap').parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
+    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas')?.offsetParent, slot: document.getElementById('ed-minimap')?.parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
   });
   const clickAt = async (x, z, mods = {}) => {
     const p = await page.evaluate(([x, z]) => window.__editor.minimap.clientPoint(x, z), [x, z]);
@@ -1490,12 +1490,18 @@ async function editorMinimapChecks(browser) {
   await page.waitForFunction((b) => window.__editor.minimap.state().bakes > b, before, { timeout: T(5000) });
   check(fresh === before, `an edit doesn't make the minimap's picture on its own path (bakes ${before} → ${fresh} right after it)`);
 
-  // A level change: that level's picture at once; the selection on the ground is dashed; a thing up there is picked.
+  // A level change: that level's picture at once. A thing selected up there is dashed on the ground level's minimap
+  // (things on the open ground count on every level), solid on its own, and a click there picks it.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_up'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === false, `a thing selected on another level is marked dashed (${JSON.stringify(s.marks)})`);
   await page.evaluate(() => window.__editor.setLevel(1));
   await page.waitForFunction(() => window.__editor.minimap.state().level === 1, null, { timeout: T(5000) });
   await frames(page, 3);
   s = await mm();
-  check(s.marks.length === 1 && s.marks[0].current === false && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on another level the minimap shows that level and the selection dashed (${JSON.stringify(s.marks)})`);
+  check(s.marks.length === 1 && s.marks[0].current === true && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on its own level the minimap shows that level and the selection solid (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
   await clickAt(-14, 14);
   s = await mm();
   check(s.sel.join() === 'mm_up' && s.marks[0]?.current, `a click on the minimap picks a thing on the level shown (${JSON.stringify(s.sel)})`);

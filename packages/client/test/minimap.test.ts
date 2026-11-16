@@ -3,7 +3,7 @@
 // dock's kept tab and zoom (never in the map).
 import { describe, expect, it } from 'vitest';
 import { newMapDocument, planToScreen, placementCells, type MapDocument, type MapEntity } from '@tiletrigger/shared';
-import { bakeDelay, bakeScale, boxLevel, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader } from '../src/editor/minimapModel.ts';
+import { bakeDelay, bakeScale, boxLevel, minimapArea, pictureArea, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader } from '../src/editor/minimapModel.ts';
 import { parseDockPrefs, serializeDockPrefs } from '../src/editor/dockPrefs.ts';
 
 const area = { x0: -40, z0: -20, x1: 40, z1: 20 };
@@ -55,6 +55,14 @@ describe('the minimap frame', () => {
     const edge = minimapFrame(area, 200, 100, 4, { x: 500, z: -500 });
     expect(edge.cx + edge.halfW).toBeCloseTo(fit.cx + fit.halfW);
     expect(edge.cz - edge.halfH).toBeCloseTo(fit.cz - fit.halfH);
+  });
+
+  it("frames the boundary, else everything placed (props too)", () => {
+    const doc = testMap();
+    const a = minimapArea(doc);
+    expect(a.x1).toBeGreaterThanOrEqual(33);
+    expect(a.z1).toBeGreaterThanOrEqual(13);
+    expect(minimapArea({ ...doc, bounds: { min: [-10, -10], max: [10, 10] } } as MapDocument)).toEqual({ x0: -10, z0: -10, x1: 10, z1: 10 });
   });
 
   it('keeps the zoom between the whole level and 16 times closer', () => {
@@ -148,6 +156,10 @@ describe("the minimap's picture", () => {
     expect(boxLevel({ kind: 'floor', min: [0, 3.8, 0], max: [1, 4, 1] }, 4)).toBe(1);
     expect(boxLevel({ kind: 'wall', min: [0, 4, 0], max: [1, 8, 1] }, 4)).toBe(1);
     expect(boxLevel({ kind: 'solid', min: [0, -4, 0], max: [1, 0, 1] }, 4)).toBe(-1);
+  });
+
+  it('covers room round the framed area, for a frame of another shape', () => {
+    expect(pictureArea(area)).toEqual({ x0: -40 - 80 / 3, z0: -36, x1: 40 + 80 / 3, z1: 36 });
   });
 
   it('is about 3 px a metre, at most 1,600 px on its long side', () => {

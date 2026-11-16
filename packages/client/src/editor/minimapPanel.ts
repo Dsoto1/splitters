@@ -1,8 +1,8 @@
-import { levelName, placementCells, planArea, planMarkers, planPan, planScale, planTiles, planToScreen, screenToPlan, setPieceFootprint, terrainHeightAt, type MapDocument, type PlanArea, type PlanFrame, type PlanMarker, type TerrainData } from '@tiletrigger/shared';
+import { blockBoxes, levelName, placementCells, planMarkers, propBoxes, planPan, planScale, planTiles, planToScreen, screenToPlan, setPieceFootprint, terrainHeightAt, type MapDocument, type PlanArea, type PlanFrame, type PlanMarker, type TerrainData } from '@tiletrigger/shared';
 import { buriedTiles, drawBuriedPassages, drawTerrainPlan, fillBox } from '../frontend/mapPlan.ts';
 import { itemColor } from '../game/pickupVisuals.ts';
 import type { EditorApp } from './editorApp.ts';
-import { bakeDelay, bakeScale, boxLevel, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader, type SelectionMark } from './minimapModel.ts';
+import { bakeDelay, bakeScale, boxLevel, minimapArea, pictureArea, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader, type SelectionMark } from './minimapModel.ts';
 import { mergeSelections } from './outlinerPanel.ts';
 import { drawIcon } from './planView.ts';
 import './minimap.css';
@@ -15,7 +15,10 @@ const CAMERA_REDRAW_MS = 50;
 /** The level's picture, made once per document version, level and layer filter (never per frame or pointer move). */
 interface Bake {
   canvas: HTMLCanvasElement;
+  /** What the picture covers: the framed area with room round it (a wide minimap shows more than the area). */
   area: PlanArea;
+  /** What the minimap frames at zoom 1 (minimapArea). */
+  fit: PlanArea;
   /** Pixels per metre. */
   scale: number;
   doc: MapDocument;
@@ -216,7 +219,8 @@ export class MinimapPanel {
     const doc = app.viewDoc;
     const level = app.level;
     const layers = this.layersKey();
-    const area = planArea(doc);
+    const fit = minimapArea(doc);
+    const area = pictureArea(fit);
     const scale = bakeScale(area);
     const W = Math.max(1, Math.ceil((area.x1 - area.x0) * scale));
     const H = Math.max(1, Math.ceil((area.z1 - area.z0) * scale));
@@ -244,7 +248,9 @@ export class MinimapPanel {
     const floors = [];
     const solids = [];
     const walls = [];
-    for (const b of app.mapBoxes()) {
+    // The level as played (MapMaker's cached boxes), and the breakable props and moving or hidden blocks the match
+    // owns (they stand there too until broken or moved).
+    for (const b of [...app.mapBoxes(), ...propBoxes(doc, true), ...blockBoxes(doc, true)]) {
       if (b.kind === 'barrier' || b.kind === 'trim' || boxLevel(b, lh) !== level || !shown(b.sourceId)) continue;
       if (b.kind === 'floor') floors.push(b);
       else if (b.kind === 'wall') walls.push(b);
@@ -274,7 +280,7 @@ export class MinimapPanel {
     }
     const ground = app.shownGround;
     const markers = planMarkers(doc, level, ground ? (x, z) => terrainHeightAt(ground, x, z) : undefined).filter((m) => !(m.kind === 'spawn' ? hidden.has('spawn') : m.kind === 'pickup' ? hidden.has('pickup') : hidden.has('logic')) && !app.view.outlinerHidden(m.id));
-    this.bake = { canvas, area, scale, doc, level, layers, markers, id: ++this.bakes };
+    this.bake = { canvas, area, fit, scale, doc, level, layers, markers, id: ++this.bakes };
     if (this.levelChip.textContent !== levelName(level)) this.levelChip.textContent = levelName(level);
     this.drawnKey = '';
     this.bakeMs = performance.now() - t0;
@@ -288,7 +294,7 @@ export class MinimapPanel {
     const app = this.app;
     const cam = app.view.camera.position;
     const yaw = app.plan.on ? 0 : app.view.yaw;
-    const f = minimapFrame(b.area, w, h, this.zoom, this.zoom > 1 ? (this.panned ?? { x: cam.x, z: cam.z }) : null);
+    const f = minimapFrame(b.fit, w, h, this.zoom, this.zoom > 1 ? (this.panned ?? { x: cam.x, z: cam.z }) : null);
     const s = planScale(f, h);
     const selKey = `${b.id}|${app.selectionRev}|${w}x${h}|${f.cx.toFixed(2)},${f.cz.toFixed(2)},${f.halfH.toFixed(3)}`;
     const key = `${selKey}|${Math.round(cam.x * s)},${Math.round(cam.z * s)},${Math.round(yaw * 30)}`;
@@ -455,7 +461,7 @@ export class MinimapPanel {
     if (this.zoom <= 1) this.panned = null;
     else if (before && at && sx !== undefined && sy !== undefined && this.bake) {
       // About the pointer: the point under it stays there.
-      const f = minimapFrame(this.bake.area, this.w, this.h, this.zoom, { x: before.cx, z: before.cz });
+      const f = minimapFrame(this.bake.fit, this.w, this.h, this.zoom, { x: before.cx, z: before.cz });
       const after = screenToPlan(f, this.w, this.h, sx, sy);
       this.panned = { x: f.cx + (at.x - after.x), z: f.cz + (at.z - after.z) };
     }

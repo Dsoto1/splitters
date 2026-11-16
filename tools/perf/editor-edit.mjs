@@ -6,6 +6,7 @@
 //   EDIT_URL=<url>     a client already being served (the dev server: readable names in the profile)
 //   CHROMIUM=<path>     another Chromium than Playwright's own
 //   EDIT_QUERY=<query>  more of the page's query (`&perfoff=editlight`: the edit before trace fix 6)
+//   EDIT_DOCK=<state>   the right dock as kept in this browser: `minimap` (expanded, the Minimap tab), `compact`, `hidden`
 //
 // Software rendering is slow here, so frame rate says nothing: each step reports the page's script time (Chrome's
 // ScriptDuration) with the time spent drawing frames (`view.render`) taken off, the longest single stretch of the
@@ -123,6 +124,8 @@ function instrument() {
   wrap(ed, 'mapBoxes', 'mapBoxes');
   wrap(ed.history, 'execute', 'history.execute');
   wrap(ed.history, 'undo', 'history.undo');
+  wrap(ed.minimap, 'makeBake', 'minimap: picture', true);
+  wrap(ed.minimap, 'frame', 'minimap.frame');
 }
 
 const reset = (page) => page.evaluate(() => Object.assign(window.__edit, { parts: {}, render: 0, longest: 0 }));
@@ -162,6 +165,9 @@ async function measure(page, cdp, name, act, first = false) {
 
 async function run(browser, mapName) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  // The dock as a person left it (UI spec Phase 3: the minimap draws only while it can be seen).
+  const dock = { minimap: { right: 'expanded', tab: 'minimap' }, compact: { right: 'compact' }, hidden: { right: 'hidden' } }[process.env.EDIT_DOCK ?? ''];
+  if (dock) await context.addInitScript((d) => localStorage.setItem('tiletrigger.editor.dock', JSON.stringify({ left: 'open', ...d })), dock);
   const page = await context.newPage();
   page.on('pageerror', (e) => console.log(`  page error: ${e.message}`));
   await page.goto(`${CLIENT}/?mode=editor&test=1${QUERY}`);
