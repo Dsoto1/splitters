@@ -74,6 +74,22 @@ describe('groundLayersV45: an old map keeps its ground, cell by cell', () => {
   });
 });
 
+describe('groundLayersV45: a release stamp from before keeps its version', () => {
+  it('Whiteout Station (stamped, with terrain) loads with its versionId and no "changed since it was exported"', () => {
+    const file = JSON.parse(readFileSync(new URL('../../../maps/whiteout_station.json', import.meta.url), 'utf8'));
+    expect(file.metadata.release.schemaVersion).toBeLessThan(45);
+    const r = loadMap(file, undefined, { forEditing: true });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.issues.filter((i) => i.code === 'release.changed')).toEqual([]);
+    expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion: 45 });
+    // A real edit to the ground is a change.
+    const edited = { ...file, terrain: { ...file.terrain, materials: file.terrain.materials.map((m: number, i: number) => (i === 0 ? (m + 1) % 8 : m)) } };
+    const e = loadMap(edited, undefined, { forEditing: true });
+    expect(e.ok && e.issues.some((i) => i.code === 'release.changed')).toBe(true);
+  });
+});
+
 describe('groundLayersV45: the base', () => {
   const migrate = (materials: number[]) => (groundLayersV45({ terrain: { materials } }).terrain as TerrainData);
   it('a tie goes to the earlier layer', () => {

@@ -1,4 +1,5 @@
-import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
+import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument } from './schema.ts';
+import { mapContentHash, releaseCurrent } from './identity.ts';
 import { DEFAULT_GROUND_THEME, TERRAIN_MATERIALS, TERRAIN_SURFACES } from './terrain.ts';
 import { GROUND_THEMES } from './materials.ts';
 
@@ -208,6 +209,33 @@ export function migratePathsV23(doc: Record<string, unknown>): Record<string, un
     });
   }
   return paths.length ? { ...rest, paths } : (({ paths: _none, ...r }) => r)(rest);
+}
+
+/**
+ * A release stamp made before v45 still describes a map whose only change since is v45's (groundLayersV45: the same
+ * ground, stored as base and painted cells). The terrain is put back in the old encoding to check the stamp; one that
+ * matches is carried over to the map as it is now (same mapId, versionId and revision; the new hash and format), as
+ * carryReleaseOverRaceDrop does for v39. Anything else: the map unchanged.
+ */
+export function carryReleaseOverGroundLayers(map: MapDocument): MapDocument {
+  const r = map.metadata.release;
+  if (!r || r.schemaVersion >= 45 || !map.terrain || releaseCurrent(map)) return map;
+  const back = withOldGroundEncoding(map);
+  if (!back || mapContentHash({ ...back, formatVersion: r.schemaVersion as MapDocument['formatVersion'] }) !== r.contentHash) return map;
+  return { ...map, metadata: { ...map.metadata, release: { ...r, contentHash: mapContentHash(map), schemaVersion: MAP_FORMAT_VERSION } } };
+}
+
+/** The map with its terrain as groundLayersV45 found it (the eight layers' indices, no Ground theme), or null when it isn't one that migration made. */
+export function withOldGroundEncoding(map: MapDocument): MapDocument | null {
+  const t = map.terrain;
+  if (!t) return map;
+  const layers = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+  if (!t.grounds || t.grounds.length !== layers.length || t.grounds.some((g, j) => g !== layers[j])) return null;
+  const base = layers.indexOf(GROUND_THEMES.find((g) => g.id === t.groundTheme)?.base ?? '');
+  const { groundTheme: _g, grounds: _l, ...rest } = t;
+  const materials = t.materials.map((m) => (m === 0 ? base : m - 1));
+  if (materials.some((m) => m < 0)) return null;
+  return { ...map, terrain: { ...rest, materials } };
 }
 
 export class MapMigrationError extends Error {}
