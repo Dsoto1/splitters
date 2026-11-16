@@ -174,6 +174,9 @@ export interface ChassisBody {
   hull: RAPIER.Collider;
 }
 
+/** A hull contact this close (m) or closer counts as touching (solveChassis). */
+const CHASSIS_TOUCH = 0.01;
+
 /**
  * Static map collision plus kinematic player capsules. Identical code runs on
  * the server (authoritative) and on the client (prediction), so both must be
@@ -736,7 +739,10 @@ export class PhysicsWorld {
     this.world.contactPairsWith(hull, (other) => {
       if (other.handle === own.handle) return;
       this.world.contactPair(hull, other, (m, flipped) => {
-        if (m.numSolverContacts() === 0) return;
+        // Touching: a contact point within a centimetre (a mesh's manifolds, the terrain's, list no solver contacts).
+        let near = false;
+        for (let i = 0, n = m.numContacts(); i < n && !near; i++) near = m.contactDist(i) < CHASSIS_TOUCH;
+        if (!near) return;
         const n = m.normal();
         // The manifold's normal points from the first collider to the second: out of the hull when it is first.
         const k = flipped ? 1 : -1;
