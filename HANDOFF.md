@@ -3,6 +3,35 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
+
+The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A keeps working, second (owner: "we can still work here but it will be secondary"): it finishes what is in flight (`wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`) and keeps two items, the random bots fix and the Dropship's new model (its file is on lane A's machine); everything else is marked B. Lane A claims in HANDOFF before taking anything more. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
+
+What lane A was holding, for you to pick up:
+1. **Next bugs, in order** (the random bots fix stays with lane A):
+   1. The Arid preset and the cut-off Paint list (owner's screenshot).
+   2. The e2e `hostgame` spectate stub.
+2. **The Dropship's new model stays with lane A** (the owner's own Meshy hover carrier, Meshy, owned; its file is on lane A's machine).
+3. **The Buggy on Rapier:** the owner answered 1a 2a 3a 4a, **5b straight to default**. Plan and questions: `docs/DRIVING_PHYSICS_PLAN.md` ("After the second drive" / the Rapier plan, from `wip/drive-physics-3b`, landed). The snag log and Rapier evaluation are in that doc.
+4. **Flavius Rule speed and memory** (QUEUE Bugs, the "Memory and frame time" line). The owner's three recordings are read there. The texture climb is the character leak lane A is fixing. Next after it:
+   - animation by distance;
+   - what makes up the 1.9 GB heap;
+   - the garbage churn.
+5. **St. John's step 4b** (QUEUE Maps):
+   - the gateway out with a Cadet Post;
+   - the parking strip and the volleyball court;
+   - the spruces and the limestone wall back once small shadow casters are cheap.
+
+   The step 3 and 4 helpers' Playwright MapMaker drivers are in lane A's scratchpad, so rebuild your own. Their pitfalls are noted under the step 4 claim: `?test=1` repeats IDs, path handle names, and clicks on ribbons.
+6. **The tunnel kit, steps 5-8:** paused on `wip/tunnels-5` (8ef1a373). Step 5 code is built; it needs the coverage map, pictures and checks. Map format v44 is claimed for it (v43 is St. John's step 4, landed). The pause note is under its claim.
+7. **The Roster Board artifact** (https://claude.ai/artifact/Fa3zbiwBH8ZF712pYcjKTu) is the owner's character board, kept in step with main by lane A's lead. Version 11; db synced to main bb22eaf1. The seven characters still needing hand or face work are a QUEUE Features line.
+8. **Waiting on the owner:** QUEUE "Waiting on the owner" and the Maps section's "Owner to decide" lines (Verdant Protocol, The Spillway's gatehouses, Iron Maw, Sunken Kingdom, Dustwater, Mercy Ward, new maps).
+
+Lane A's own rules that worked, worth keeping:
+- Bugs jump the queue.
+- Pictures with every landing the owner can see.
+- Owner questions as short numbered multiple choice with a pick marked. The owner reads on a phone, and long options get cut off.
+
 ## For both lanes: check in parallel, land in trains (owner, 2026-11-16, via lane A's lead)
 
 The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full rules. In short:
@@ -13,12 +42,19 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
-**Landing now: train** (driving physics 3 A+B, `wip/drive-physics-3b`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+**Landing now: train** (beams on the muzzle, `wip/beam-muzzle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - (none)
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
+
+- **Claimed (a helper of lane A's lead, 2026-11-16): driving physics 3** (`wip/drive-physics-3`; QUEUE In flight). Landing A first, on its own: bots shoot the driver of an open vehicle, and see and shoot through bars, barred gates and fences. Files: shared `sim/match.ts` (shots into an open vehicle's hull reach its riders: `openHull`), `sim/physics.ts` (`GROUP_LATTICE`: bars, posts and rails solid to bodies and shots, not to sight; `botShotHit`, `botShotLine`, `raycastHitPast`), `map/edgeShapes.ts` (`edgeLattice`), `map/geometry.ts` and `map/catalog.ts` (`WorldBox.lattice`, `LocalBox.lattice`; kit Iron Fence and chain-link props), `bots/brain.ts` (open-vehicle riders not "outgunned"; clear-shot checks through lattices), tests `botsShootDrivers.test.ts`, `botsSeeThroughBars.test.ts`. Then B (the feel): diagnosis and a plan in `docs/DRIVING_PHYSICS_PLAN.md`; `sim/wheelPhysics.ts`, `client/src/game/vehiclePrediction.ts` and their tests if a fix lands. No map format change.
+**Landed: driving physics 3, A and B, in a train** (`check/train-20261116-155801` at 3815c786, run 43902218516, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): bots shoot riders of open vehicles (a shot into an unsealed vehicle's box carries on to its rider; bots count only sealed vehicles as outgunned) and see and shoot through bars, barred gates and fences (they block movement and the bullets that hit them, not sight); the step-up works only on built steps, never terrain; the snag diagnosis, the Rapier evaluation and the plan in docs/DRIVING_PHYSICS_PLAN.md (owner's answers: QUEUE's driving line). The helper's notes are under its claim.
+
+## For lane B's splitters22: a MapMaker bug from the owner (2026-11-16, via lane A's lead)
+
+The owner sent a screenshot: in MapMaker's Assets panel (ENVIRONMENT → Paint, "This map's themes"), the material grid's third column is cut off at the panel's right edge (Grey Stone, Crate, a floor grate, Hex tiles, Light panels), so those materials can't be reached. QUEUE Bugs, top of lane B. Probably from painting Phase 3's palette layout. Please take it next.
 
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 
