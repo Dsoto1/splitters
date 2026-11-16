@@ -9,10 +9,10 @@ The layout of `docs/MAPMAKER_UI_SPEC.md` Phase 1 (owner's answers in the spec). 
 is still there; this says where each one is now.
 
 - **Top bar:** Quit; the **map's title** (a click opens **Map settings**; the name is edited there); New, Open…, Save,
-  Export, Import (Publish for the owner); Undo and Redo; the seven **mode tabs**; **View ▾**; **Snap**; the map's
-  **theme**; TEST's **bots** and **skill** (not saved with the map: the map's own bots are in Map settings → Gameplay →
+  Export, Import (Publish for the owner); Undo and Redo; the seven **mode tabs**; **View ▾**; **Snap**; the
+  **Structure theme** chip (it opens Map settings at the theme: painting Phase 3); TEST's **bots** and **skill** (not saved with the map: the map's own bots are in Map settings → Gameplay →
   Bots); ▶ Here and ▶ PLAY TEST. On a narrow window it tightens in steps (`fitTopBar`, `fit-1`…`fit-7`); at 1280 px and
-  up nothing is cut off. Under about 1,000 px the theme picker goes first (it is in Map settings too), then the bots.
+  up nothing is cut off. Under about 1,000 px the theme chip goes first (the theme is in Map settings), then the bots.
 - **View ▾** (`viewMenu.ts`): Grid, Full grid, Overlaps, **Plan view** (K) and the **map layers** (Tiles, Props,
   Pickups, Logic & traps, Spawn points). They only change what MapMaker shows; none is saved in the map. The arrow keys
   move in the menu, Esc closes it.
@@ -433,7 +433,7 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   core halls, Reactor rooms, Server vaults, Loading docks, Atrium towers, Catwalk bridges, Overlooks, Ramp junctions,
   Courtyard gates, Bunker clusters, Sunken arenas, Plazas and Sea walls), pictured from the palette
   atlas (`thumbs/setpieces.*.webp`), then **My set pieces** (your own, and the map's own that came with it). Search
-  finds pieces by name; the **Style Pack** picker narrows the tab to the pieces made for that pack's look.
+  finds pieces by name; the **Style Pack** picker opens on **This map's themes** (the packs for the map's theme first, marked; nothing hidden), **All pieces** is the catalogue's order, and a pack narrows the tab to the pieces made for that pack's look.
 - **Placing:** pick a piece, then click the map. A see-through **ghost of the whole piece** follows the pointer in its
   real materials, its footprint and ports outlined **green** where it fits and **red** where it doesn't; the hover
   card and the status line say **why** (it overlaps a tile or another set piece, it's past the build limit…). **R**

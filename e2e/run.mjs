@@ -2473,7 +2473,7 @@ async function editorThemeWarningChecks(browser) {
   const top = { opened: await waitDialog(), counts: await dialogCounts() };
   await page.keyboard.press('Escape');
   await settle();
-  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')), noSelect: !document.getElementById('ed-theme') };
+  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')), noSelect: await page.evaluate(() => !document.getElementById('ed-theme')) };
   check(chip.focus === 'ed-prop-theme' && chip.name === 'Imperial Arena' && top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open && topAfter.noSelect, `the top bar's theme chip opens Map settings at the Structure theme, which asks first; Esc cancels (${JSON.stringify({ chip, top, topAfter })})`);
 
   // ---- The palette's "Use theme": the same dialog, then Change.
