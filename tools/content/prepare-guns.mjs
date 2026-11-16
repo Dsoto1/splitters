@@ -66,7 +66,8 @@
 // `normalSize`, default 512, metal/roughness 256, with its `lod`), `<name>.medium.glb` (colour 1024, normal 512,
 // metal/roughness 256) and `<name>.high.glb` (colour 2048, normal 1024, metal/roughness 512: measured, a 1024 one
 // cost 4 MB of video memory a gun and showed nothing more), neither with a lower level of detail (your own gun
-// always draws full detail). The weapon names them in `view.held` (content/weapons).
+// always draws full detail). The weapon names them in `view.held` (content/weapons). `heldTriangles` (and
+// `heldMaxError`, `heldBudget`): the held copies get their own, finer cut of the download (see the build loop).
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -585,13 +586,20 @@ for (const entry of manifest.models) {
   const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
   const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   const from = dir ? (src ?? join(dir, pack.models ?? '.', entry.file)) : null;
-  const made = from ? await build(from, entry, pack) : null;
+  let made = from ? await build(from, entry, pack) : null;
+  // `heldTriangles` (a Meshy `held` entry): the copies in your own hands are cut far less than everyone else's (their
+  // own build of the same download, `heldMaxError`, no lower level of detail), in exactly the world copy's frame (the
+  // same turn, scale and centre), so the hold, muzzle and sight numbers carry over. The world copy keeps `triangles`.
+  if (made && entry.heldTriangles) {
+    const fine = await build(from, { ...entry, triangles: entry.heldTriangles, maxError: entry.heldMaxError ?? entry.maxError, lod: null }, pack, made.place);
+    made = { ...made, tiers: made.tiers.map((t) => (t.tier === 'world' ? t : fine.tiers.find((x) => x.tier === t.tier))) };
+  }
   if (entry.held) {
     // The world copy under the entry's own budget; the held copies under the `held` tier's (sharper maps, more bytes).
     for (const { tier } of HELD_TIERS) {
       const t = made?.tiers.find((x) => x.tier === tier) ?? null;
       const extra = tier === 'world' ? {} : { tier, heldOf: `models/${entry.out}` };
-      record(tierFile(entry.out, tier), tier === 'world' ? entry : { ...entry, budget: 'held' }, pack, t, extra);
+      record(tierFile(entry.out, tier), tier === 'world' ? entry : { ...entry, budget: entry.heldBudget ?? 'held' }, pack, t, extra);
     }
   } else record(entry.out, entry, pack, made);
   if (interior) {

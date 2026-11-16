@@ -84,6 +84,7 @@
   "view": {
     "model": "guns/frontier_rifle.glb",
     "fallback": "weapons/rifle.glb",
+    "held": { "medium": "guns/frontier_rifle.medium.glb", "high": "guns/frontier_rifle.high.glb" },
     "viewOffset": [
       0.21,
       -0.215,

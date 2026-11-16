@@ -1886,6 +1886,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: {
       model: 'guns/frontier_rifle.glb',
       fallback: 'weapons/rifle.glb',
+      held: { medium: 'guns/frontier_rifle.medium.glb', high: 'guns/frontier_rifle.high.glb' },
       viewOffset: [0.21, -0.215, 0.64],
       tracer: '#ffe2a0',
       hold: { style: 'long', grip: [0, -0.075, -0.225], support: [0, -0.07, 0.105], shoulder: [0, 0.01, -0.47] },
