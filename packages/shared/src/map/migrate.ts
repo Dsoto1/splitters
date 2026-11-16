@@ -113,6 +113,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // which is the piece as it was: v41 data is valid as is. The bump is for the other direction: an older build would
   // drop the choice without a word.
   [41, (doc) => ({ ...doc })],
+  // v42 -> v43: a path style `brick` (a red brick walk; map/paths.ts PATH_LOOKS) and the dorm pieces' Room furniture
+  // option (`overrides.options.furniture`; absent = paired). v42 data is valid as is. The bump is for the other
+  // direction: an older build refuses a v43 map outright instead of failing on a style it has never heard of.
+  [42, (doc) => ({ ...doc })],
 ]);
 
 /** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */

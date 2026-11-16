@@ -107,8 +107,8 @@ export interface RigidSetup extends RigidTuning {
 
 /** What the chassis asks of the world (PhysicsWorld.chassisWorld on the host, the same over the prediction physics). */
 export interface ChassisWorld {
-  /** First hit along `dir` (unit) within `len`: distance and the surface normal there. */
-  ray(origin: Vec3, dir: Vec3, len: number): { dist: number; normal: Vec3 } | null;
+  /** First hit along `dir` (unit) within `len`: distance, the surface normal there, and whether it is the terrain. */
+  ray(origin: Vec3, dir: Vec3, len: number): { dist: number; normal: Vec3; terrain?: boolean } | null;
   /** Move the hull's capsule (its middle at `centre`, turned by `q`) by `delta`: what it got and the normals it met. */
   sweep(centre: Vec3, q: RigidState['q'], delta: Vec3): { moved: Vec3; normals: Vec3[] };
 }
@@ -156,6 +156,45 @@ const HULL_FRICTION = 0.55;
 const HULL_BOUNCE = 0.15;
 /** Wheels count only on ground facing at least this much along the chassis' up (else the hull's corners do). */
 const WHEEL_FACING = 0.35;
+
+/**
+ * What each mechanism did in one step, for the driving-feel diagnosis (test/driveSnags.test.ts; docs/DRIVING_PHYSICS_PLAN.md,
+ * "Driving physics 3"). Off (null sink) it costs a null check a step.
+ */
+export interface RigidTraceTick {
+  /** Velocity and spin as the step started and ended. */
+  vel0: Vec3;
+  spin0: Vec3;
+  vel1: Vec3;
+  spin1: Vec3;
+  pos: Vec3;
+  contact: number;
+  /** Bump stops reached (wheels bottomed out), deepest. */
+  bump: number;
+  bumpDepth: number;
+  /** Underside corners rolled up something (a tyre's round front), and hard hull-corner contacts, deepest. */
+  rollCorners: number;
+  hardCorners: number;
+  cornerDepth: number;
+  /** Wheels whose tyre front (the ray ahead of the hub) carried them at least one substep, and those lifted as a step. */
+  stepUps: number;
+  stepSnaps: number;
+  /** Where the hull's corner rays met something (a hard corner or a rolled-up one), and the surface's normal. */
+  corners: { at: Vec3; n: Vec3; roll: boolean }[];
+  /** Velocity the 92 % speed keep added (m/s). */
+  keep: number;
+  /** Wheels past their grip (summed over substeps). */
+  sliding: number;
+  /** The air levelling's angular acceleration (rad/s², the most of the substeps). */
+  airLevel: number;
+  /** The hull sweep: share blocked, speed lost into it, the normals it met. */
+  sweepBlocked: number;
+  sweepImpact: number;
+  sweepNormals: Vec3[];
+  /** The sweep was 'stuck' (ignored). */
+  sweepStuck: boolean;
+}
+export const rigidTrace: { sink: ((t: RigidTraceTick) => void) | null } = { sink: null };
 
 const setups = new WeakMap<MountDef, RigidSetup | null>();
 
@@ -291,6 +330,8 @@ interface WheelHit {
   /** A point on the ground and its normal. */
   p: Vec3;
   n: Vec3;
+  /** On the terrain (whose facets are never a step to lift onto). */
+  terrain: boolean;
 }
 
 interface HullHit {
@@ -314,6 +355,9 @@ function invInertia(s: RigidState, t: RigidSetup, v: Vec3): Vec3 {
  * Hard contacts as impulses (a few sequential passes): each stops the point going further in, pushes it back out at
  * a capped speed (no spring to store a landing and throw it back up), and with `friction` scrubs it along the surface.
  */
+/** The speed the last solveContacts call's keep added (the trace reads it). */
+let keptLast = 0;
+
 function solveContacts(s: RigidState, t: RigidSetup, com: Vec3, stops: Stop[], tickSpeed: number): void {
   const total = stops.map(() => 0);
   // Momentum through a knock on the wheels (a crest, a step, the foot of a slope): a tyre rolls up it rather than
@@ -358,7 +402,10 @@ function solveContacts(s: RigidState, t: RigidSetup, com: Vec3, stops: Stop[], t
     const sign = Math.sign(before);
     const along = dot(s.vel, fwd) * sign;
     const keep = Math.min(speedBefore, Math.abs(tickSpeed)) * KNOCK_KEEP;
-    if (along > 0 && along < keep && fwd.y * sign > -0.2) s.vel = add(s.vel, scale(fwd, (keep - along) * sign));
+    if (along > 0 && along < keep && fwd.y * sign > -0.2) {
+      s.vel = add(s.vel, scale(fwd, (keep - along) * sign));
+      keptLast += keep - along;
+    }
   }
 }
 
@@ -400,6 +447,9 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     return out;
   }
   const fallSpeed = -s.vel.y;
+  const tr: RigidTraceTick | null = rigidTrace.sink ? { vel0: { ...s.vel }, spin0: { ...s.spin }, vel1: s.vel, spin1: s.spin, pos: s.pos, contact: 0, bump: 0, bumpDepth: 0, rollCorners: 0, hardCorners: 0, cornerDepth: 0, corners: [], stepUps: 0, stepSnaps: 0, keep: 0, sliding: 0, airLevel: 0, sweepBlocked: 0, sweepImpact: 0, sweepNormals: [], sweepStuck: false } : null;
+  const stepped = tr ? new Set<number>() : null;
+  const snapped = tr ? new Set<number>() : null;
   // ---- rays, once a tick
   const up0 = rotate(s.q, v3(0, 1, 0));
   const down0 = scale(up0, -1);
@@ -416,7 +466,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     const a = add(s.pos, rotate(s.q, v3(x, t.hubY + start, z)));
     const h = world.ray(a, down0, reach);
     // (A ray that starts inside something, the front one in a wall, found no ground: not a step to climb.)
-    return h && h.dist > 1e-3 && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal } : null;
+    return h && h.dist > 1e-3 && dot(h.normal, up0) > WHEEL_FACING ? { p: add(a, scale(down0, h.dist)), n: h.normal, terrain: !!h.terrain } : null;
   };
   for (let i = 0; i < n; i++) {
     const [x, z] = t.points[i]!;
@@ -446,6 +496,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         roll = !!top && top.dist > 0.02 && dot(top.normal, up0) > 0.5;
       }
       hullHits.push({ corner: c, depth, n: h.normal, at: add(o, d), roll });
+      if (tr) tr.corners.push({ at: add(o, scale(d, h.dist / l)), n: h.normal, roll });
     }
   }
   s.hull = hullHits.length > 0;
@@ -511,9 +562,12 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         // the hub, so the tyre lifts onto it as its front reaches it (the classic drive's step-up); anything taller
         // only meets the tyre's round front.
         const rise = t.radius - fd - x_;
-        const step = rise > 0.02 && rise <= STEP_UP && x_ > -t.travel && fh.n.y > STEP_FLAT && (!hit || hit.n.y > STEP_FLAT);
+        // (Not on the terrain: two of its facets at different heights are a slope's bend, which the tyre's round front rides,
+        // not a step to snap up onto; lifting onto them jolted the buggy on rough ground: driving physics 3.)
+        const step = !fh.terrain && rise > 0.02 && rise <= STEP_UP && x_ > -t.travel && fh.n.y > STEP_FLAT && (!hit || hit.n.y > STEP_FLAT);
         const fx = step ? t.radius - fd : Math.sqrt(t.radius * t.radius - ahead * ahead) - fd;
         if (fx > x_ + 0.01) {
+          if (tr && step) snapped!.add(i);
           hit = fh;
           un = fu;
           d = t.radius - fx;
@@ -536,6 +590,13 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       // Past the bump stop the spring stays at its stop's force; the stop itself is a hard contact (below).
       let fs = g / n + t.k * Math.min(x_, t.bump) + t.c * xdot;
       if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0, wheel: true });
+      if (tr) {
+        if (x_ > t.bump) {
+          tr.bump++;
+          tr.bumpDepth = Math.max(tr.bumpDepth, x_ - t.bump);
+        }
+        if (edge) stepped!.add(i);
+      }
       fs = Math.max(0, fs);
       s.comp[i] = clamp(x_, -t.travel, t.bump);
       const load = fs * (edge ? dot(up, nrm) : un);
@@ -593,6 +654,11 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         const tilted = norm(add(scale(hh.n, 0.55), scale(up, 0.85)));
         stops.push({ at: q, n: tilted, depth: depth * 0.6, friction: 0, wheel: true });
       } else stops.push({ at: q, n: hh.n, depth, friction: HULL_FRICTION });
+      if (tr) {
+        if (hh.roll) tr.rollCorners++;
+        else tr.hardCorners++;
+        tr.cornerDepth = Math.max(tr.cornerDepth, depth);
+      }
     }
     // Angular acceleration: the torque in the body's frame over its inertia, back to the world.
     const tb = unrotate(s.q, torque);
@@ -611,6 +677,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         const ownPitch = input.piloted && airF !== 0;
         const ownRoll = input.piloted && airR !== 0;
         alpha = add(alpha, add(scale(rgt, ownPitch ? 0 : (pitchNow - arc * 0.5) * t.airLevel), scale(fwd, ownRoll ? 0 : roll * t.airLevel * 0.7)));
+        if (tr) tr.airLevel = Math.max(tr.airLevel, Math.hypot(ownPitch ? 0 : (pitchNow - arc * 0.5) * t.airLevel, ownRoll ? 0 : roll * t.airLevel * 0.7));
       }
       const sx = dot(s.spin, rgt);
       const sz = dot(s.spin, fwd);
@@ -636,7 +703,12 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     if (spin > MAX_SPIN) s.spin = scale(s.spin, MAX_SPIN / spin);
     const sp = len(s.vel);
     if (sp > MAX_SPEED) s.vel = scale(s.vel, MAX_SPEED / sp);
+    keptLast = 0;
     if (stops.length) solveContacts(s, t, com, stops, speed0);
+    if (tr) {
+      tr.keep += keptLast;
+      tr.sliding += sliding;
+    }
     // The centre of mass moves; the body turns about it.
     com = add(com, scale(s.vel, h));
     const w = s.spin;
@@ -677,6 +749,12 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     }
   }
 
+  if (tr) {
+    tr.sweepNormals = swept.normals;
+    tr.sweepStuck = wl > 1e-6 && stuck;
+    tr.sweepBlocked = out.blocked;
+    tr.sweepImpact = out.impact;
+  }
   // ---- bookkeeping: air time, landings, tipping over and righting.
   s.contact = contact;
   s.sliding = sliding;
@@ -704,6 +782,15 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   // Resting: nobody aboard, on its wheels and still.
   if (!input.piloted && contact === n && len(s.vel) < 0.08 && len(s.spin) < 0.08 && input.forward === 0 && s.righting === 0) s.rest++;
   else s.rest = 0;
+  if (tr) {
+    tr.vel1 = { ...s.vel };
+    tr.spin1 = { ...s.spin };
+    tr.pos = { ...s.pos };
+    tr.contact = contact;
+    tr.stepUps = stepped!.size;
+    tr.stepSnaps = snapped!.size;
+    rigidTrace.sink!(tr);
+  }
   return out;
 }
 

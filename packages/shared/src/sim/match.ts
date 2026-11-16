@@ -3594,7 +3594,15 @@ export class Match {
         if (world) bodies.push({ handle: world.handle, dist: wallAt, at: add(eye, scale(dir, wallAt)) });
         continue;
       }
-      const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      let shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      if (shot.hitSlot === null && world) {
+        // Into an open vehicle's hull: its riders are exposed (openHull).
+        const open = this.openHull(world.handle, eye, dir, def.range);
+        if (open) {
+          const inside = resolveHitscan(eye, dir, def.range, open.beyond, targets.filter((t) => open.riders.includes(t.slot)));
+          if (inside.hitSlot !== null) shot = inside;
+        }
+      }
       // Shots go through breakable glass, shattering it on the way (sim/glass.ts), and lose a little for each pane.
       const broke = this.scenario.shootGlass(eye, dir, hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
@@ -4190,6 +4198,22 @@ export class Match {
         zone = lastHit.zone;
       }
     }
+    if (!victim && wall && wall.dist < len) {
+      // Into an open vehicle's hull: its riders are exposed (openHull); the round goes on to one inside it.
+      const open = this.openHull(wall.handle, a, u, len);
+      if (open) {
+        let inBest = Math.min(len, open.beyond);
+        for (const t of targets) {
+          if (!open.riders.includes(t.slot) || (t.who && !t.who.alive)) continue;
+          const d = rayTarget(a, u, t, inBest);
+          if (d !== null && d < inBest) {
+            inBest = best = d;
+            victim = t;
+            zone = lastHit.zone;
+          }
+        }
+      }
+    }
     // Water soaks up energy on the way to whatever is hit (spec §8): a pistol round dies in a metre of it,
     // a rifle round comes out the far side slower and weaker.
     const wet = this.liquids.length ? waterSpan(this.liquids, a, u, Math.min(len, best)) : null;
@@ -4687,6 +4711,20 @@ export class Match {
   private seatOf(c: Combatant): SeatDef | null {
     if (!c.mount) return null;
     return this.mounts[c.mount.index]?.def.seats[c.mount.seat] ?? null;
+  }
+
+  /**
+   * A shot that struck `handle`: when it is an open vehicle's hull (not sealed: MountArmour) with riders, how far the
+   * shot could go on through it, and who rides in it. Riders of an open vehicle are exposed: its collision box (the
+   * Troop Buggy's is 1.6 m tall over an open tube frame) stands in for the whole body, and a seated rider's chest is
+   * inside it, so without this every round aimed at a driver's middle stopped in the box (owner, 2026-11-16: "bots not
+   * being able to shoot me ... only me, the driver"). The vehicle is not hurt by a round that hits a rider.
+   */
+  private openHull(handle: number, from: Vec3, dir: Vec3, maxDist: number): { beyond: number; riders: (number | null)[] } | null {
+    const m = this.mountBodies.get(handle);
+    if (!m || !m.alive || m.def.kind !== 'vehicle' || sealedMount(m.def) || !m.seats.some((s) => s !== null)) return null;
+    const next = this.physics.raycastHitPast(from, dir, maxDist, m.body);
+    return { beyond: next?.dist ?? maxDist, riders: m.seats };
   }
 
   /** Aboard a sealed vehicle that still stands (MountArmour.sealed, the Tank): out of reach of everything outside. */

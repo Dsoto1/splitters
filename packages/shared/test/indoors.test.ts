@@ -23,7 +23,8 @@ describe('props indoors', () => {
     const map = bayMap([prop('open', 'kit.crate.wood', 0, 0, 30), prop('edge', 'kit.crate.wood', 0, 8, -4 - INDOOR_MARGIN / 2)]);
     const indoor = indoorProps(map, buildMapGeometry(map));
     const furniture = map.entities.filter((e): e is PropEntity => e.kind === 'prop' && e.id.startsWith('sp_bay_'));
-    expect(furniture.length).toBeGreaterThan(60);
+    // (Room furniture paired since St. John's step 4: 20 props a bay, not 36.)
+    expect(furniture.length).toBeGreaterThan(36);
     expect(furniture.filter((e) => !indoor(e)).map((e) => `${e.id} ${e.model}`)).toEqual([]);
     const byId = (id: string) => map.entities.find((e) => e.id === id) as PropEntity;
     expect(indoor(byId('open'))).toBe(false);
@@ -39,7 +40,7 @@ describe('props indoors', () => {
     const indoor = indoorProps(r.map, buildMapGeometry(r.map));
     const props = r.map.entities.filter((e): e is PropEntity => e.kind === 'prop');
     const smythe = props.filter((e) => e.id.startsWith('sp_') && e.position[0] > 36 && e.position[0] < 60 && e.position[2] > -4 && e.position[2] < 44);
-    expect(smythe.length).toBeGreaterThan(200);
+    expect(smythe.length).toBeGreaterThan(150);
     expect(smythe.filter(indoor).length / smythe.length).toBeGreaterThan(0.95);
     const trees = props.filter((e) => e.model.startsWith('env.') || e.model.includes('tree'));
     expect(trees.length).toBeGreaterThan(50);
