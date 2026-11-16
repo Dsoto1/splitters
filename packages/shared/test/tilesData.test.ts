@@ -85,9 +85,10 @@ function styleMap(): MapDocument {
 
 /**
  * Boxes as the fixture saw them: bars, gates and railings now say they are drawn in the Metal surface (`paint: 'metal'`,
- * map format v41; metalBars.test.ts tests that), which changes no shape.
+ * map format v41; metalBars.test.ts tests that), and the bars, posts and rails of see-through styles that they are a
+ * lattice to sight (`lattice`, 2026-11-16; botsSeeThroughBars.test.ts), which change no shape.
  */
-const shapes = (boxes: WorldBox[]) => boxes.map((b) => (b.paint === 'metal' ? (({ paint: _p, ...rest }) => rest)(b) : b));
+const shapes = (boxes: WorldBox[]) => boxes.map((b) => (b.paint === 'metal' || b.lattice ? (({ paint: _p, lattice: _l, ...rest }) => rest)(b) : b));
 
 /** What a map builds from its tiles and edges: geometry, trim, facades, window glass, validation and room dressing. */
 function built(map: MapDocument) {
