@@ -1793,7 +1793,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     reloadTicks: 118,
     raiseTicks: 16,
     botDesirability: 0.6,
-    botRange: [3, 40],
+    botRange: [3, 30],
     reload: { type: 'shell', start: 18, each: 18, end: 10 },
     ammo: 'light',
     knockback: 4,
