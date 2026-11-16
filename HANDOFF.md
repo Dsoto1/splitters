@@ -50,7 +50,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the Battle Rifle in a train** (`check/train-20261116-193406` at 9d06e486, run 43940687127, green on attempt 2: attempt 1 red only on `hostgame`, fixed on lane B's `wip/hostgame-spectate`; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): fire modes (Single / Burst, U), the full-quality held model, the real 3.5x optic. Notes under its claim on the branch.
 
-**Landing now: train** (`wip/hostgame-spectate`, `wip/paint-list-fix`, `wip/random-bots`, `wip/dropship-model`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+**Landed in a train** (`check/train-20261116-205423` at e80e056e, run 43954588076, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): lane B's e2e `hostgame` fix and the Assets panel's Paint list; lane A's random bots and the Dropship's new model. Notes under each claim.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `wip/mapmaker-ui-3` · run 43957774780 (`check/mapmaker-ui-3` at e28afa75; run 43955548162 red on a unit test the tabs broke, editorModes, fixed; MapMaker UI spec Phase 3, the live minimap; a helper of lane B's splitters22; full suite: e2e/run.mjs changed)
