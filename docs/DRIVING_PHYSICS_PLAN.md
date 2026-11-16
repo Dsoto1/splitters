@@ -65,13 +65,14 @@ A rigid body: position, velocity, orientation (a quaternion) and spin, unit mass
 
 | | |
 |---|---|
-| Springs | 1.5 Hz, damping 0.32, 0.20 m travel, bump stop at 0.16 m (as before) |
+| Springs | 1.4 Hz, damping 0.28 (step 1: 1.5 Hz, 0.32), 0.20 m travel, bump stop at 0.16 m |
 | Centre of mass | 0.85 m over the feet (box 1.6 m tall, hubs 0.42 m) |
-| Inertia | 0.8 of its box's |
+| Inertia | 0.7 of its box's (step 1: 0.8) |
+| Gravity | 0.85 of the players' 20 m/s² (step 1: 1) |
 | Tyres | grip 1.05 × load, 0.75 kept sliding, cornering 9 /s front, 8 /s rear (rear 33 % looser at top speed: `drift` 0.55) |
 | Steering | lock 0.6 rad (was drawn 0.5), 70 % less at top speed; rear steer 0.6 of the front's at a standstill |
-| Engine | 18 m/s, accel 10 m/s² with a 1.7× launch at a standstill, reverse 7 m/s (as before) |
-| Air | levelling 5 rad/s² per rad, air pitch 10 and roll 6 rad/s² |
+| Engine | 18 m/s, accel 10 m/s² with a 2× launch at a standstill (step 1: 1.7×), reverse 7 m/s |
+| Air | levelling 4 rad/s² per rad, air pitch 12 and roll 8 rad/s² (step 1: 5, 10, 6) |
 | Righting | jump, once it has rested 0.3 s tipped (a driver); on its own after 4 s (empty) |
 
 Measured in `packages/shared/test/drivePhysics.test.ts` (DRIVE_TRACE writes the traces):
@@ -83,6 +84,60 @@ Measured in `packages/shared/test/drivePhysics.test.ts` (DRIVE_TRACE writes the 
 - A kicker under the left wheels at 18 m/s rolls it onto its side (roll > 0.5 rad, often all the way); it rights
   stays on its roof until the driver presses jump, then is back on four wheels within 2.5 s; empty, within 8 s.
 - Deterministic: the same inputs give the same states and snapshots.
+
+## After the owner's first drive (2026-11-15, `wip/drive-physics-2`)
+
+The owner drove it on Rockfall Canyon: "bots are not shooting at me and i cant drive up stairs ... i should be able to go
+further up a steep climb if i have enough speed right? ... also feel like its really heavy and hard to hit jumps on
+uneven terrain". Also: "they didn't see me until i shot at them".
+
+- **Bots:** they knew of a vehicle only by sight (in their 110° view, or within 6 m): gunfire was a noise to them, an
+  engine wasn't, so a buggy behind or beside them went unnoticed until its driver fired. Not the rigid buggy (the
+  same with the classic one, measured on the old code too). A driven vehicle is now heard (`Match.noteCombat`): an
+  engine noise twice a second at 2 m/s and up, out to 15 m + 1.5 m per m/s (at most 40 m), the driver as its source.
+  `packages/shared/test/botsHearVehicles.test.ts`: a bot walking away 22 m off fired 0 rounds before, now turns and
+  fights (both drives). A player on foot behind a bot is still unseen until heard or seen, as before.
+- **Steep climbs and momentum.** The rigid step lost most of its speed where the ground turned up: the hull's sweep
+  capsule (out to the tyres' ends) and the underside's corners (at the box's ends, 0.24 m up) met the foot of a slope
+  or a stair before the tyres did, and stopped it flat. Now the capsule ends short of the axles, the underside's
+  corners sit at the axles at hub height (where the tyres are), a corner on something lower than the tyre's top pushes
+  up and back like a tyre's round front (and anything taller is a wall), and a knock on the wheels keeps 92 % of the
+  speed along the heading (of the speed the tick started with). Grip failing only stops the wheels driving; the body
+  keeps its momentum.
+  Up a 50° slab, throttle held, by entry speed (`drivePhysics.test.ts`, "momentum"; the slab's top is 12.3 m up):
+
+  | Entry speed | Step 1 | Now |
+  |---|---|---|
+  | 6 m/s | 2.95 m | 5.71 m |
+  | 12 m/s | 5.84 m | 11.65 m |
+  | 18 m/s | 8.14 m | over the top (12.1 m) |
+
+  It still slides back down from where its speed runs out (grip 1.05: about 46°).
+- **Stairs.** A raycast wheel can't see a step until its hub is over it. Each wheel casts a second ray under the
+  tyre's front (three quarters of its radius ahead, the way it rolls); a step up of up to 0.32 m onto level ground is
+  lifted onto as the tyre's front reaches it (the classic drive's step-up), the tyre grips along the line from the
+  nosing to its hub, and taller things only meet its round front. Walls stay walls: the hull's sweep treats anything
+  steeper than 60° as a wall (at 90° it had slid up a pushing hull), and a ray that starts inside something is no
+  ground. The kit's stairs (core.stairs: 16 steps of 0.25 m by 0.5 m) at a crawl (throttle 0.35): up 4 m in about
+  7 s on the flight; at 0.8 throttle in about a second; a steeper flight (0.2 m by 0.35 m) at speed too; a 1.2 m wall
+  flat out stops it. Cost: 4 more rays a tick while it rolls (8 wheel rays), and one more per underside corner that
+  touches something.
+- **Stuck sweeps.** A hull capsule that started inside something (put there, or squeezed in) was held there for good,
+  wheels spinning at 18 m/s and not moving; now it moves as asked and the corners push it out.
+- **Lighter** (the owner's brief: "bouncy and light, touchy"): gravity 0.85 of the players' on the vehicle, springs
+  1.4 Hz with damping 0.28 (more rebound), inertia 0.7 of the box's, launch 2×, air pitch 12 and roll 8 rad/s² with
+  levelling 4. Measured (`drivingFeel.test.ts` on Rockfall Canyon, and the yard's 1 m kicker):
+
+  | | Step 1 | Now |
+  |---|---|---|
+  | 1 m kicker at 18 m/s: air time, peak | 26 ticks, 1.78 m | 33 ticks, 1.87 m |
+  | Canyon floor, roughest clear 40 m line (3.3 m of ups and downs): mean, slowest | 17.6, 16.8 m/s | 17.6, 16.9 m/s |
+  | Canyon floor, biggest clear crest (0.6 m): mean, slowest, air | 14.3, 7.6 m/s, none | 17.1, 11.0 m/s, 1 tick |
+
+  The canyon's clear floor has no big crests; lower damping and inertia made it wheelie off landings (pitch past
+  1 rad), so the springs stay a little firmer than first tried (0.22 damping, 0.6 inertia).
+- **Lag** (the harness, after all of the above): at 100 and 150 ms with jitter the prediction stays within 2 mm of
+  the host, no corrections; with 2 % loss 4 corrections, the worst 24 cm (faded); Canyon 6, the worst 5 cm.
 
 ## Netcode
 

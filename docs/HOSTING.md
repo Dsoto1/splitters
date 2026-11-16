@@ -763,6 +763,10 @@ What happens:
   `/var/lib/tiletrigger/maps` with every earlier version (the last 50 of each),
   and serves `/api/v1/maps`. Only the accounts in `OWNER_SUBS` can publish,
   roll back or take down, checked against a verified sign-in token.
+- **Publish** stamps the map first (`metadata.release`, as an export does: the
+  same map ID, the next revision, a new version ID when the content changed),
+  so the published file records the version it is. The hub lists each
+  published file's release block with it.
 - The site (`packages/client/src/publishedMaps.ts`) asks the hub for the list
   and uses a published version over the one built into it, everywhere a map
   loads: the map list, matches, MapMaker. A match already running keeps the
@@ -772,8 +776,31 @@ What happens:
   minutes (`packages/host/src/published.ts`); a running server picks a publish
   up at its next map change.
 - The repository's `maps/` catches up once a day: the **Published maps**
-  workflow downloads them to `check/published-maps` and runs CI there; main is
-  fast-forwarded to it once green, like any change.
+  workflow (`tools/ci/publishedMaps.mjs`) downloads them to
+  `check/published-maps` and runs CI there; main is fast-forwarded to it once
+  green, like any change.
+
+**A map changed in the repository wins over an older published copy**
+(owner, 2026-11-15), everywhere above, until you publish again. The rule
+(`packages/shared/src/map/publishedChoice.ts`, `choosePublished`), comparing
+the built-in map with its own release block and the published copy's:
+1. The same content: the built-in map (nothing to download).
+2. The published copy is the version the built-in map records (same content
+   hash, or same version ID) and the built-in map has changed since: built in.
+3. The published file's own release block is of the same map and describes
+   it: a lower revision is older (built in), a higher one newer (published).
+   MapMaker opens the version in use and Publish stamps the next revision, so
+   your publishes count up from the map the game has.
+4. Otherwise by time: published before the built-in map's release, built in;
+   after it, published. A built-in map with no release block always gives way
+   to a publish, as before.
+
+The site reads the built-in maps' records from the map index (worked out at
+build time, `mapIndexPlugin.ts`); hosts and the workflow work them out from
+the files (and read the published file's release block when the hub doesn't
+list it). The workflow skips such a map and logs why ("skipped, the
+repository's map is kept (…)"). MapMaker's Publish dialog, and opening the
+official map, say "the game's version is newer than your last publish".
 
 ## 2. Official servers (later)
 

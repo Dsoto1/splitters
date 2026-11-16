@@ -1,3 +1,4 @@
+import { endedReaders } from './endedHooks.ts';
 import { targetLabel } from './targetLabel.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
@@ -1866,8 +1867,10 @@ export class GameSession {
   private dropTestHooks(): void {
     const w = window as unknown as Record<string, { view?: unknown; map?: unknown } | undefined>;
     // What a test may still read once the match has gone (the end-of-match board's "Next map", the map it was), and
-    // nothing that reaches the session.
-    if (w.__cs?.view === this.view) w.__cs = { ended: true, map: w.__cs.map, slot: this.slot, hud: { nextMap: this.hud.nextMap } } as { map?: unknown };
+    // nothing that reaches the session. The readers a test polls keep their shape, answering "no match": a page
+    // dropped and rejoining (a reconnect, the next map) is between two sessions, and a poll such as
+    // `__cs.phase() === 'playing'` must keep waiting for the next one's hooks, not throw ("phase is not a function").
+    if (w.__cs?.view === this.view) w.__cs = { ended: true, map: w.__cs.map, slot: this.slot, hud: { nextMap: this.hud.nextMap }, ...endedReaders() } as { map?: unknown };
     if (this.tips) delete w.__tips;
     if (this.tutorial) delete w.__tutorial;
   }

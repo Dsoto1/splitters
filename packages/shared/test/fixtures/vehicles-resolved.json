@@ -392,8 +392,8 @@
       "hub": 0.42,
       "travel": 0.2,
       "bump": 0.16,
-      "freq": 1.5,
-      "damping": 0.32,
+      "freq": 1.4,
+      "damping": 0.28,
       "squat": 0.004,
       "lean": 0.0045,
       "tumble": 1.4,
@@ -410,16 +410,17 @@
        9,
        8
       ],
-      "inertia": 0.8,
-      "airLevel": 5,
-      "airPitch": 10,
-      "airRoll": 6,
+      "inertia": 0.7,
+      "airLevel": 4,
+      "airPitch": 12,
+      "airRoll": 8,
       "rightAfter": [
        0.3,
        4
       ],
-      "launch": 1.7,
-      "rearSteer": 0.6
+      "launch": 2,
+      "rearSteer": 0.6,
+      "gravity": 0.85
      }
     },
     "blurb": "Six aboard: a driver, a front passenger, two seated behind them and two standing in the back row, all five riders shooting their own weapons"

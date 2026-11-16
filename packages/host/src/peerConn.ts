@@ -92,6 +92,7 @@ export function peerConn(dc: DataLike, log: (line: string) => void = () => undef
     },
     close: () => close(undefined, LINK_LIMITS.closeWaitMs),
     address: () => remoteAddress(dc),
+    up: () => !closing && linkUp(dc),
     onMessage(cb) {
       dc.on('data', (data) => {
         if (closing) return;
@@ -110,6 +111,17 @@ export function peerConn(dc: DataLike, log: (line: string) => void = () => undef
       else closeHandlers.push(cb);
     },
   };
+}
+
+/** Whether the link's peer connection is up (node-datachannel's polyfill: connectionState, else iceConnectionState). */
+export function linkUp(dc: DataLike): boolean {
+  try {
+    const pc = dc.peerConnection as { connectionState?: string; iceConnectionState?: string } | undefined;
+    const state = pc?.connectionState ?? pc?.iceConnectionState;
+    return dc.open && (state === 'connected' || state === 'completed');
+  } catch {
+    return false;
+  }
 }
 
 /** The player's address when the link is direct; a relayed link only shows the relay's (useless for a ban). */

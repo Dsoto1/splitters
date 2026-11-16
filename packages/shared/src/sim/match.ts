@@ -156,6 +156,10 @@ export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
 /** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
 const DRIVE_WAIT_MAX = 12;
+/** A driven vehicle is heard by bots (an engine noise, Match.noteCombat) when going this fast (m/s), every this many ticks, out to at most this far (m). */
+const ENGINE_HEARD_SPEED = 2;
+const ENGINE_NOISE_TICKS = 30;
+const ENGINE_NOISE_RANGE = 40;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
@@ -811,8 +815,10 @@ export class Match {
   /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
   readonly classes: ClassPlay | null;
 
-  /** The navmesh came from `opts.nav` (built ahead), not built at load. */
+  /** The navmesh came from `opts.nav` (built ahead) or the process's navCache, not built at load. */
   readonly navReused: boolean;
+  /** The navmesh built at load, as data (a browser host keeps it in its storage: client game/navCache.ts); null when reused. Set it to null once kept. */
+  navBuilt: PrebuiltNav | null;
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -824,8 +830,9 @@ export class Match {
      * players and spectators alike, so a match only spectators watch starts
      * once they have), at most START_WAIT_SECONDS, then count down; every
      * later round counts down too. Off (play at once) for headless matches
-     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test): taken
-     * instead of building one when it was built from the same (sim/mapNav.ts navInputKey; `navReused`).
+     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test; a browser
+     * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
+     * `navReused`), as the process's navCache is.
      */
     private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' } = {},
   ) {
@@ -839,6 +846,7 @@ export class Match {
     const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
     this.nav = nav.nav;
     this.navReused = nav.reused;
+    this.navBuilt = nav.built;
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -2718,6 +2726,15 @@ export class Match {
         if (!c.bot || !c.alive || !this.hostile(shooter, c)) continue;
         if (ev.hit.includes(c.slot) || segmentDistance(c.move.pos, from, to, CHEST) < 1.6) c.shotAt = { tick: this.tick, from };
       }
+    }
+    // A vehicle being driven is heard (its engine), twice a second, further the faster it goes: before, bots only knew
+    // of one they could see, so a buggy coming up behind them, or its driver getting out there, went unnoticed until
+    // the driver fired (owner, 2026-11-15).
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.vehicle || m.def.airplane || Math.abs(m.speed) < ENGINE_HEARD_SPEED || (this.tick + m.index) % ENGINE_NOISE_TICKS !== 0) continue;
+      const driver = m.seats[m.def.seats.findIndex((seat) => seat.role === 'driver')];
+      if (driver === null || driver === undefined) continue;
+      this.noises.push({ pos: { ...m.pos }, tick: this.tick, by: driver, range: Math.min(ENGINE_NOISE_RANGE, 15 + Math.abs(m.speed) * 1.5) });
     }
     if (this.noises.length > 48) this.noises.splice(0, this.noises.length - 48);
   }

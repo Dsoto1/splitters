@@ -181,8 +181,8 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     // Up and over the top (14 m at 25 degrees: 5.9 m up).
     expect(easy.top).toBeGreaterThan(5);
     const steep = slope(50);
-    // It gets a little way up on its run-up, then slides back down to the foot, throttle held.
-    expect(steep.top).toBeLessThan(4);
+    // It carries its run-up a little way up, then slides back down, throttle held.
+    expect(steep.top).toBeLessThan(8);
     expect(steep.after).toBeLessThan(steep.top - 0.5);
   });
 
@@ -285,6 +285,84 @@ describe('rigid driving: the controls', () => {
     expect(slide).toBeGreaterThan(1.5);
     d.run(60, { buttons: BUTTON_JUMP });
     expect(Math.abs(d.m.speed)).toBeLessThan(1);
+  });
+});
+
+describe('rigid driving: momentum up steep slopes', () => {
+  /** Up a 50 degree slab from the given entry speed, throttle held: the most it climbs (m up) and its speed at the foot. */
+  const climb = (speed: number, deg = 50) => {
+    const a = (deg * Math.PI) / 180;
+    const L = 16;
+    const x0 = 90;
+    const d = drive([block('slope', x0 + (L / 2) * Math.cos(a) + 0.3 * Math.sin(a), 16, [6, 0.6, L], a, (L / 2) * Math.sin(a) - 0.3 * Math.cos(a))], { at: [8, 0, 16] });
+    d.run(20);
+    let top = 0;
+    let atFoot = 0;
+    for (let k = 0; k < 900; k++) {
+      d.run(1, { forward: d.m.pos.x < x0 - 4 ? speed / 18 : 1 });
+      if (d.m.pos.x < x0 - 3.5) atFoot = d.m.speed;
+      top = Math.max(top, d.m.pos.y);
+    }
+    d.save(`climb${speed}`);
+    return { top, atFoot };
+  };
+
+  it('speed carries it further up a slope too steep to drive up', () => {
+    const r = [6, 12, 18].map((v) => climb(v));
+    if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/climb.txt`, r.map((x, i) => `${[6, 12, 18][i]} m/s (at the foot ${x.atFoot.toFixed(1)}): ${x.top.toFixed(2)} m up`).join('\n'));
+    // (The slab's top is 12.3 m up.)
+    expect(r[0]!.top).toBeLessThan(8);
+    // Clearly further with each step in speed: momentum, not just the tyres.
+    expect(r[1]!.top).toBeGreaterThan(r[0]!.top + 1);
+    expect(r[2]!.top).toBeGreaterThan(Math.min(r[1]!.top + 1.5, 12));
+  });
+});
+
+describe('rigid driving: stairs and walls', () => {
+  /** A flight of `n` steps (`rise` and `run` m, 8 m wide) up toward +x from x 30, a landing on top. */
+  const stairs = (n: number, rise: number, run: number): MapEntity[] => {
+    const out: MapEntity[] = [];
+    for (let i = 0; i < n; i++) out.push(block(`step${i}`, 30 + i * run + run / 2, 16, [8, (i + 1) * rise, run]));
+    out.push(block('landing', 30 + n * run + 5, 16, [8, n * rise, 10]));
+    return out;
+  };
+  const up = (blocks: MapEntity[], forward: number) => {
+    const d = drive(blocks);
+    d.run(20);
+    let top = 0;
+    let at = -1;
+    const goal = Math.max(...blocks.map((b) => ((b as { size: [number, number, number] }).size[1]))) - 0.1;
+    const tr: string[] = [];
+    d.run(1200, { forward }, () => {
+      top = Math.max(top, d.m.pos.y);
+      if (at < 0 && d.m.pos.y > goal) at = d.match.tick;
+      const r = d.m.rigid!;
+      tr.push(`${d.m.pos.x.toFixed(2)} z ${d.m.pos.z.toFixed(2)} y ${d.m.pos.y.toFixed(2)} sp ${d.m.speed.toFixed(2)} p ${d.m.susp!.p.toFixed(2)} yaw ${d.m.yaw.toFixed(2)} comp ${r.comp.map((c) => c.toFixed(2))} hull ${r.hull} c ${r.contact} sl ${r.sliding}`);
+    });
+    if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/stairs-${forward}-${blocks.length}.txt`, tr.join('\n'));
+    return { top, x: d.m.pos.x, up: uprightness(d.m.rigid!), seconds: at < 0 ? Infinity : at / 60 };
+  };
+
+  it("drives up the kit's stairs (0.25 m risers, 0.5 m runs: core.stairs) at a crawl and at speed, and a steeper flight at speed", () => {
+    const res: string[] = [];
+    for (const [rise, run, forward] of [
+      [0.25, 0.5, 0.35],
+      [0.25, 0.5, 0.8],
+      [0.2, 0.35, 0.8],
+    ] as const) {
+      const n = Math.round(4 / rise / (rise === 0.25 ? 1 : 2.5));
+      const r = up(stairs(n, rise, run), forward);
+      res.push(`${n} x ${rise}/${run} at throttle ${forward}: ${r.top.toFixed(2)} m of ${(n * rise).toFixed(2)} in ${r.seconds.toFixed(1)} s, up ${r.up.toFixed(2)}`);
+      expect(r.top, `rise ${rise}, run ${run}, throttle ${forward}`).toBeGreaterThan(n * rise - 0.15);
+      expect(r.up).toBeGreaterThan(0.8);
+    }
+    if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/stairs.txt`, res.join('\n'));
+  });
+
+  it('a wall is still a wall: 1.2 m high, flat out, it does not climb it', () => {
+    const r = up([block('wall', 32, 16, [6, 1.2, 1])], 1);
+    expect(r.top).toBeLessThan(1.1);
+    expect(r.x).toBeLessThan(32);
   });
 });
 

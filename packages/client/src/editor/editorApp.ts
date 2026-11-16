@@ -6,7 +6,10 @@ import {
   budgetCulprits,
   BudgetTracker,
   BUILD_LEVELS,
+  buildMapDecor,
   buildMapGeometry,
+  themeChangeImpact,
+  type ThemeChangeImpact,
   builtInSetPieces,
   coreCatalog,
   EDGE_STYLE_LABELS,
@@ -494,6 +497,16 @@ export class EditorApp {
     return this.boxesFor.boxes;
   }
 
+  /** The map's boxes as drawn (collision and trim), for the theme warning's counts. */
+  drawnBoxes(): WorldBox[] {
+    return [...this.mapBoxes(), ...buildMapDecor(this.viewDoc)];
+  }
+
+  /** What changing the Structure theme to `to` would do: the warning's counts (painting Phase 2; shared editor/paintLayers.ts). */
+  themeImpact(to: string): ThemeChangeImpact {
+    return themeChangeImpact(this.doc, this.setPieceLib, to, this.drawnBoxes());
+  }
+
   /**
    * The ground as MapMaker shows it and the pointer meets it: the document's own ground (which MapMaker changes only
    * by sculpting) with the paths laid in and kept under every floor (EditorView.setMap, as loading plays it), or a
@@ -537,6 +550,8 @@ export class EditorApp {
     this.active = true;
     $('editor').hidden = false;
     this.refresh(true);
+    // A navigation check stopped (or held) while a Test ran.
+    this.checks.resume();
     // The owner (signed in, and listed on the hub) edits our maps as they are and publishes them.
     void isOwner().then((owner) => this.setOwner(owner));
   }
@@ -880,12 +895,20 @@ export class EditorApp {
     return counts;
   }
 
+  /** What the level strip last showed (renderLevels). */
+  private levelsShown = '';
+
   /** The level strip: every level in use plus the ones either side of the current one, top first. */
   private renderLevels(): void {
     const counts = this.levelContents();
     const used = [...counts.keys(), this.level - 1, this.level, this.level + 1, 0];
     const hi = Math.min(16, Math.max(...used));
     const lo = Math.max(-16, Math.min(...used));
+    // Made again only when what it shows changed (fix 6 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md: every edit made
+    // the strip again, 4.2 ms of the owner's 46 ms edit; most edits change no level's count).
+    const shows = `${hi}:${lo}:${this.level}:${this.doc.classicStructure.levelHeight}:${[...counts].sort((a, b) => a[0] - b[0]).join(';')}`;
+    if (perfOn('editlight') && shows === this.levelsShown) return;
+    this.levelsShown = shows;
     const list = $('ed-level-list');
     list.replaceChildren();
     for (let l = hi; l >= lo; l--) {
@@ -989,7 +1012,10 @@ export class EditorApp {
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
     this.tour.note({ kind: 'test' });
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav: perfOn('navhandoff') ? this.checks.prebuilt : null });
+    const nav = perfOn('navhandoff') ? this.checks.prebuilt : null;
+    // The navigation check stops while the Test builds its own navmesh and loads (back in MapMaker it runs again).
+    this.checks.pause();
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav });
   }
 
   toast(message: string, error = false): void {

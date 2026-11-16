@@ -348,8 +348,10 @@ describe('bot drivers on loose, sprung vehicles', () => {
       }
       expect(wp).toBe(course.length);
       expect(top).toBeGreaterThan(max * 0.9);
-      // Sliding a little in the turns, never sideways (a spin-out is past ~0.6 rad).
-      expect(slip).toBeLessThan(0.3);
+      // Sliding a little in the turns, never sideways (a spin-out is past ~0.6 rad). The rigid Troop Buggy is lighter and
+      // looser on purpose (owner, 2026-11-15: "bouncy and light, touchy"; docs/DRIVING_PHYSICS_PLAN.md): its bot
+      // driver powerslides a little wider until step 3 teaches bots to brake for corners.
+      expect(slip).toBeLessThan(model === 'troop_buggy' ? 0.4 : 0.3);
       expect(st.stuck).toBe(false);
     });
   }

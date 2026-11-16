@@ -153,6 +153,33 @@ own `tt:` spans, which only see our script.
 | 6 | S · B | **Cheaper edits**: the outliner updates only the rows an edit touched (5.9 ms); `renderLevels` and the hover card only when what they show changed (7.7 ms); `setMap` skips the level-face and backdrop passes when only props changed | An edit 46 → about 30 ms (two missed frames → one); fewer DOM nodes made |
 | 7 | L · B | **An incremental navmesh for the check** (Recast tiles: rebuild only the tiles round an edit) | The navigation warnings within a second of an edit; nearly no background CPU |
 
+### Fixes 1, 2 and 6: as built (2026-11-16, `wip/navcheck-fast`; a helper of lane B's splitters22)
+
+- **Merged with Scaling 1 (lane B's splitters22, 2026-11-16):** Scaling 1 landed first with a process-wide `navCache` that also hands the check's navmesh to the jump pads' match in the worker, so fix 1's worker change is now belt and braces: the worker still passes the check's navmesh to `flyPads` outright (`padNav`), and the answer is copied as Scaling 1 has it (its navCache keeps the mesh), not transferred. With `?perfoff=padnav` the worker's pad match still finds the navmesh in navCache, so that switch no longer brings back the old double build; `mapHasPads` (no match without pads) and the page fallback's single build are fix 1's own. `padFlight.test.ts` empties navCache where it compares with matches that build their own.
+
+Measured on this box's SwiftShader (4 cores shared with other agents: compare old and new, not with the owner's
+machine). Old = `?perfoff=padnav,editlight` (or `navstop`) on the same build.
+- **Fix 1, one navmesh per check.** The jump pads are flown on the check's own navmesh: the worker keeps a copy of
+  the exported mesh (`result.prebuilt`, whose original still goes to the page for the Test) and `flyPads(map, { nav })`
+  makes each flight's match with it (`Match` option `nav`, imported when `navInputKey` matches; anything else builds as
+  before). `validateMapPlay` (validate-map, the page fallback) does the same. A map without pads makes no match
+  (`mapHasPads`). Same flights, same warnings (`padFlight.test.ts`: both matches of a miss take it, flights equal to
+  a build of their own). Iron Maw (10 pads), in node: the pad flights 3.8-4.3 s → 0.68-0.75 s, the whole check
+  7.2 → 4.0 s (warm) and 10.3 → 6.8 s (cold); Eagle Spires (36 pads) 2.3 → 1.4 s; St. John's (no pads) unchanged.
+  In MapMaker's worker after an edit on Iron Maw: 9.4 / 9.7 s → 6.2 / 5.8 s. `?perfoff=padnav`.
+- **Fix 2, the check stops at Test.** `editorApp.test()` takes `MapChecks.prebuilt` first, then `MapChecks.pause()`:
+  a check still running has its worker terminated (a Recast build can't be interrupted) and none starts during the
+  Test; `show()` (Back to MapMaker) calls `resume()`, which runs the stopped (or held) check again in a new worker. The
+  last navmesh stays `prebuilt`. e2e `editor`: Test pressed the moment a check goes to its worker stops it
+  (`navStops`), and back in MapMaker it runs again to its end. `?perfoff=navstop`.
+- **Fix 6, lighter edits.** The outliner keeps the rows in view that show the same (a row's id, name and level, or a
+  heading's label, count and fold) and only sets their marks; on an edit it doesn't read the list's scroll and height
+  again. The level strip is made again only when its levels or counts change; the hover card only when its text,
+  tone or spot change (no innerHTML and measuring otherwise). Iron Maw, 24 prop moves under a still pointer: elements
+  made per edit 159 → 29; the outliner 1.1 → 0.7 ms, the level strip 0.7 → 0.2 ms, hover 9.8-12 → 7.3-9.8 ms (the pick
+  itself, not the card); the edit's whole `refresh` is 46-51 ms either way here (the view's `setMap` dominates in
+  software; `setMap`'s passes when only props changed were not part of this fix). `?perfoff=editlight`.
+
 ## 7. Questions for the owner
 
 **Owner's answers (2026-11-15): all recommended picks** (1a Test is the slow part, 2a a follow-up recording of both, 3a keep checking after every edit, 4a fix 3 first, then 2, 4, 5). Fix 3 waits on the follow-up recording; the Test-start fixes 4 and 5 (lane A) start meanwhile, fix 2 and fix 1 go to lane B.
