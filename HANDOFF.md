@@ -3,6 +3,35 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
+
+The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A keeps working, second (owner: "we can still work here but it will be secondary"): it finishes what is in flight (`wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`) and keeps two items, the random bots fix and the Dropship's new model (its file is on lane A's machine); everything else is marked B. Lane A claims in HANDOFF before taking anything more. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
+
+What lane A was holding, for you to pick up:
+1. **Next bugs, in order** (the random bots fix stays with lane A):
+   1. The Arid preset and the cut-off Paint list (owner's screenshot).
+   2. The e2e `hostgame` spectate stub.
+2. **The Dropship's new model stays with lane A** (the owner's own Meshy hover carrier, Meshy, owned; its file is on lane A's machine).
+3. **The Buggy on Rapier:** the owner answered 1a 2a 3a 4a, **5b straight to default**. Plan and questions: `docs/DRIVING_PHYSICS_PLAN.md` ("After the second drive" / the Rapier plan, from `wip/drive-physics-3b`, landed). The snag log and Rapier evaluation are in that doc.
+4. **Flavius Rule speed and memory** (QUEUE Bugs, the "Memory and frame time" line). The owner's three recordings are read there. The texture climb is the character leak lane A is fixing. Next after it:
+   - animation by distance;
+   - what makes up the 1.9 GB heap;
+   - the garbage churn.
+5. **St. John's step 4b** (QUEUE Maps):
+   - the gateway out with a Cadet Post;
+   - the parking strip and the volleyball court;
+   - the spruces and the limestone wall back once small shadow casters are cheap.
+
+   The step 3 and 4 helpers' Playwright MapMaker drivers are in lane A's scratchpad, so rebuild your own. Their pitfalls are noted under the step 4 claim: `?test=1` repeats IDs, path handle names, and clicks on ribbons.
+6. **The tunnel kit, steps 5-8:** paused on `wip/tunnels-5` (8ef1a373). Step 5 code is built; it needs the coverage map, pictures and checks. Map format v44 is claimed for it (v43 is St. John's step 4, landed). The pause note is under its claim.
+7. **The Roster Board artifact** (https://claude.ai/artifact/Fa3zbiwBH8ZF712pYcjKTu) is the owner's character board, kept in step with main by lane A's lead. Version 11; db synced to main bb22eaf1. The seven characters still needing hand or face work are a QUEUE Features line.
+8. **Waiting on the owner:** QUEUE "Waiting on the owner" and the Maps section's "Owner to decide" lines (Verdant Protocol, The Spillway's gatehouses, Iron Maw, Sunken Kingdom, Dustwater, Mercy Ward, new maps).
+
+Lane A's own rules that worked, worth keeping:
+- Bugs jump the queue.
+- Pictures with every landing the owner can see.
+- Owner questions as short numbered multiple choice with a pick marked. The owner reads on a phone, and long options get cut off.
+
 ## For both lanes: check in parallel, land in trains (owner, 2026-11-16, via lane A's lead)
 
 The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full rules. In short:
@@ -13,8 +42,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
+**Landing now: train** (beams on the muzzle, `wip/beam-muzzle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
-- (none)
+- `check/painting-4` · run 43923305464 (painting Phase 4, the Ground theme, map format v45; at e7ca4c89)
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
@@ -46,6 +77,7 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
   - **Status (2026-11-15): built, on `wip/painting-1`** (the plan's "Phase 1: as built"). Commits: the bars fix (Metal surface, `ROLE_THEME_SLOT.metal` → metal, `metalBars.test.ts`), then Phase 1 (Structure paint B, Ground paint Shift+B, `editor/paintTargets.ts`, set-piece paint across the piece or one part, brought forward from Phase 5; saved looks stay in Phase 5). Owner's answers (2026-11-15, "1a 2a 3a"): Cage Block bars iron in every look, railings stay in the walls' surface, the tall fence as it was. Shipped maps change only where bars and unthemed metal were the walls or the theme's solids (the 8 maps with bar or barred-gate sides: cinder_foundry, hollowmere_manor, iron_tide, ironhold_prison, norman_shores, obsidian_orb, pump_tower, sandfall_colosseum; blackout, crossroads, iron_maw's Loading Dock; the coverage map); no map file edited. `maps/test_coverage.json` untouched.
 
 - **Claimed: MapMaker painting Phase 4: the Ground theme** (`wip/painting-4`; a helper of lane B's splitters22, 2026-11-16; owner: "Painting phase 4 then minimap"; `docs/MAPMAKER_PAINTING_PLAN.md` Phase 4, format change A). **Claimed: map format v45** (`terrain.groundTheme`, `terrain.grounds`, `materials` 0 = the base; migration `groundLayersV45` in `migrate.ts`; v44 stays the tunnel kit's, so v43 -> v44 is an identity step here and whichever lands second takes the other's comment). Files: `content/materials.json` (`groundThemes`) and its generated tables (`pnpm content:rebuild`), shared `map/schema.ts`, `map/mapKeys.ts`, `map/migrate.ts`, `map/terrain.ts`, `map/terrainPaint.ts`, `map/mirror.ts`, `map/heightGrid.ts`, `editor/paintLayers.ts`, the terrain operations; client `render/mapMeshes.ts`, `render/foliage.ts`, `render/backdrop.ts`, `editor/envBrush.ts`, `editor/terrainTools.ts`, `editor/paintTools.ts`, `editor/mapProperties.ts`, `editor/topBar.ts` (the Ground theme chip), `editor/themeChangeDialog.ts`, `frontend/mapPlan.ts`; tests `paintLooks.test.ts` (+ `tools/` fixture script, fixture written on origin/main first), `groundLayersV45.test.ts`; e2e `editorenv`; the `mapmaker.png` baseline (the chip). No map file hand-edited.
+  - **Status (2026-11-16): built, on `wip/painting-4` / `check/painting-4`** (the plan's "Phase 4: as built"; map format v45 used, next free v46). Ten Ground themes; a cell 0 = base or k = `grounds[k − 1]`; migration `groundLayersV45` (v43 -> v44 identity, kept for the tunnel kit); `paintLooks.test.ts` (fixture written on origin/main first) shows all 94 shipped maps look the same; release stamps from before v45 carried over (`carryReleaseOverGroundLayers`). Map settings' Ground theme row + warning, the top bar's Ground theme chip, the Structure warning's tick box, Ground paint's 21 grounds + Base. Baseline: `mapmaker.png` only. Pictures of the ten Ground themes go to the owner before it lands.
 - **Landed 2026-11-16 (green on `check/train-20261116-132422` at f95acb28, run 43875441007, alone after its 2-hour wait; main fast-forwarded to it plus a docs-only merge; claim and landing lock released):** **MapMaker painting Phase 3: the palette follows the themes** (`wip/painting-3`; a helper of lane B's splitters22, 2026-11-16; `docs/MAPMAKER_PAINTING_PLAN.md` Phase 3, owner all picks). Files: `packages/client/src/editor/paletteBuilder.ts` and the palette's ordering code (`paletteCatalog.ts`), `topBar.ts` (the `ed-theme` select becomes the theme chips, through `themeChangeDialog.ts`), `paintTools.ts` (theme-first paint lists), `terrainTools.ts` if Ground paint's list is built there, `palette.test.ts`, the `editorux` e2e and the `mapmaker.png` baseline (plus any editor baseline the chips move), the plan's "Phase 3: as built". No map format change.
 - **Landed 2026-11-16 (green on `check/mapmaker-ui-2` at 08fda61b, run 43873164276; landed alone after painting Phase 3, which it carries: its code equals the green commit, only docs merged since; main fast-forwarded to it; claim released):** **MapMaker UI spec Phase 2: synced selection and numeric transforms** (`wip/mapmaker-ui-2`, on top of `wip/painting-3`; a helper of lane B's splitters22, 2026-11-16; `docs/MAPMAKER_UI_AUDIT.md` §4–5, QUEUE's inspector X/Z bug folded in). Files: a new shared `packages/shared/src/editor/transform.ts` (one transform command for drags, the ring, the inspector's X/Y/Z fields and nudges) and its test; client `packages/client/src/editor/editorApp.ts` (`setSelection`, a selection revision, `refresh`), `mapSaving.ts` (open/new through the setter), `entityInspector.ts` and `inspector.ts` (numeric fields through the command), `editorInput.ts` (drag end, nudges), `rotateRing.ts`, `planView.ts` (revision counter instead of the per-frame id string), `outlinerPanel.ts`, their tests, the `editor`/`editortools`/`editorux` e2e checks; `docs/MAPMAKER_UI_SPEC.md` / the audit (Phase 2: as built). No map format change expected.
   - **Status (2026-11-16): built on `wip/mapmaker-ui-2`** (on `wip/painting-3`, which it carries until that lands; `docs/MAPMAKER_UI_SPEC.md`, "Phase 2: as built"). Shared `editor/transform.ts` (`transformCommand`: by cells / metres, set one axis of a thing, turn, face) and `editor/selectionState.ts` (`wholeSelection`, `pruneSelection`, `sameSelection`); `EditorApp.selection` is read-only, written through `setSelection` / `adoptSelection`, `selectionRev` for the plan view; the drag, nudges, ring, quick facings and the inspector's X/Height/Z, Facing and X/Y/Level go through the command; the outliner picks moving builds whole (Alt: one) and scrolls to a pick made elsewhere without a layout read; number fields: Esc puts back, empty is refused. The QUEUE X/Z bug confirmed on the base by the new e2e check (unrounded 10.123456; a crate on a slope left 1 m in the ground; a mover moved without its lift) and fixed. No format change, no baseline moved. Not touched: `rotateRing.ts` (the ring's commit is in `editorApp.ts`).
