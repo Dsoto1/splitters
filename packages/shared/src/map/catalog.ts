@@ -23,7 +23,7 @@ import { industrialPackTiles } from './packTilesIndustrial.ts';
 import { orbitalPackTiles } from './packTilesOrbital.ts';
 import { desertPackTiles } from './packTilesDesert.ts';
 import { junglePackTiles } from './packTilesJungle.ts';
-import { edgePaint, edgeSegments, edgeTrimBoxes } from './edgeShapes.ts';
+import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes } from './edgeShapes.ts';
 
 export * from './tileOptions.ts';
 import { SIDES, type Ceiling, type Corner, type EdgeStyle, type Facade, type FloorInsert, type RoomLayout, type TileCategory, type TilePort } from './tileOptions.ts';
@@ -50,6 +50,8 @@ export interface LocalBox {
    * `plain`), which look like the wall around them but never collide.
    */
   paint?: 'walls' | 'metal';
+  /** A bar, post or rail of a see-through wall run (edgeLattice): it stops bodies and shots, never sight lines. */
+  lattice?: true;
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
@@ -630,7 +632,7 @@ export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']>
     const [v0, v1] = across(0, t);
     const b: LocalBox = { min: [u0, base + y0, v0], max: [u1, base + y1, v1] };
     // A plain arch: the steps over the curve are drawn (in the walls' paint) but never collide; one lintel does.
-    bay.push(plain && y0 > 1e-6 ? { ...b, kind: 'trim', paint: 'walls' } : { ...b, kind, ...(metal ? { paint: metal } : {}) });
+    bay.push(plain && y0 > 1e-6 ? { ...b, kind: 'trim', paint: 'walls' } : { ...b, kind, ...(metal ? { paint: metal } : {}), ...(edgeLattice(w.style, g) ? { lattice: true as const } : {}) });
   }
   if (plain) {
     const [v0, v1] = across(0, Math.max(...raised.map((g) => g[4])));
