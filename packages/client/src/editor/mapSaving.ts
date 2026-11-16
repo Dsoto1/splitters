@@ -160,7 +160,7 @@ export class MapSaving {
     this.app.plan.exit();
     this.app.history.reset(doc);
     this.savedRevision = this.app.history.revision;
-    this.app.selection = emptySelection();
+    this.app.adoptSelection(emptySelection());
     this.app.setLevel(0, true);
     this.app.view.focus({ x: 0, y: 0, z: 0 });
     this.app.refresh(true);

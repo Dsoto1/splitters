@@ -5,7 +5,7 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
 | Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) takes the next free number when it lands. |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
@@ -366,6 +366,39 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
 - What it does: the "This map's themes" default, All one click away, theme-first paint lists.
 - Unit test: `palette.test.ts` (client) gains the ordering.
 - E2E (`editorux`): the default shows the theme's packs first, and All shows everything. The `mapmaker.png` baseline is regenerated (`pnpm e2e:baselines`).
+
+**Phase 3: as built (2026-11-16, a helper of lane B's splitters22, `wip/painting-3`).** No map format change.
+- **The palette** (`paletteBuilder.ts` `filterPalette`, `palette.ts` `order`/`mark`, pure rules in `paletteCatalog.ts`):
+  the Style Pack picker's first choice is **This map's themes**, the default (not remembered between sessions). The
+  packs that use the map's Structure theme (`themeStylePacks`: the pack whose own theme it is first, then those that
+  list it) have their tiles, props, set pieces (by the looks they suit) and gameplay pieces put first in each group,
+  and in a prop group within each category, each part in the catalogue's order (`themeRank`, `rankedOrder`); they
+  carry a small steady dot in the tab's colour. **Nothing is hidden**: everything else follows, so search, the
+  Set pieces tab's full list and every tool still reach every piece. A note under the picker names the packs; a theme
+  no pack uses (Prototype, the new map's, and Lab, Station, Neon, Volcano) says so and keeps the catalogue's order.
+  **All pieces** (the second choice, value `''` as before) is the catalogue's order, unmarked; a pack still narrows to
+  its own pieces and offers "Use theme" through the warning. It follows a theme change at once (`syncTheme`, from the
+  top bar's refresh), undo included.
+- **Structure paint's list**: a **This map's themes | All** switch over Materials. This map's themes lists the
+  Structure theme's own slot materials (floor, walls, solids, underside, trim, then its metal or `DEFAULT_METAL`),
+  then the materials of its packs, then Recent (materials picked lately, at most 8), none twice
+  (`themePaintList`); All is every material by kind, as before. Same buttons in both (moved, the rest hidden), so the
+  lit material, search and favourites are the same. Recent is rebuilt as the tab opens or the view changes, never
+  under the pointer.
+- **Ground paint's list**: until the Ground theme (Phase 4), "This map's grounds" are the ground layers the terrain
+  has, most cells first (the main ground leads), then any whose surface the theme's packs list; then "Other grounds"
+  (`themeGroundOrder`). Phase 4 replaces the lead with the Ground theme's list.
+- **The top bar**: the `ed-theme` select is gone; a **Structure theme** chip names the theme and opens Map settings at
+  its Structure theme select (focused), so every change goes through Phase 2's warning (`changeStructureTheme`). The
+  Ground theme chip comes with the Ground theme (Phase 4). Under 1400 px the chip shows the name only; it goes at
+  `fit-6` as the select did.
+- Tests: `palette.test.ts` (the packs for a theme, own first; theme-first order stable within each part, All the
+  catalogue's; Structure paint's three sections; Ground paint's order). E2E `editorux` `editorThemeViewChecks`
+  (Prototype keeps the catalogue's order; Military's pieces first and marked, nothing hidden; All unmarked in order;
+  Structure paint's sections, All, Recent; Ground paint's headings) with screenshots `editorux-themes-*.png`;
+  `editorLayoutChecks` and `editortools`' theme warning use the chip; `editor` picks its materials under All.
+  Baseline regenerated: `mapmaker.png` (the chip in place of the select) only.
+- Nothing flashes: a steady dot and reordered cards.
 
 **Phase 4: the Ground theme (format change A).**
 - What it does:

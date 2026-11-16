@@ -101,14 +101,35 @@ export function fillWhenOpened(select: HTMLSelectElement, groups: ChoiceGroups, 
   for (const reached of ['pointerdown', 'mousedown', 'touchstart', 'focus', 'keydown']) select.addEventListener(reached, fill, { passive: true });
 }
 
+/**
+ * A number field: Enter, Tab or a click away commits (`change`), Esc puts back the value it had and lets go of the
+ * focus without an edit (MapMaker UI spec §8). An empty or unreadable value is put back too, and a value the same as
+ * before commits nothing (no empty undo step).
+ */
 export function numberInput(value: number, step: number, onCommit: (v: number) => void): HTMLInputElement {
   const i = document.createElement('input');
   i.type = 'number';
   i.step = String(step);
   i.value = String(value);
+  // What it shows for the map (as built, or last committed): not read on focus, since a rebuilt inspector puts the
+  // value being typed back into a new field and then focuses it (inspectorKeep.ts).
+  let was = i.value;
+  i.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    e.stopPropagation();
+    i.value = was;
+    i.blur();
+  });
   i.addEventListener('change', () => {
     const v = Number(i.value);
-    if (Number.isFinite(v)) onCommit(v);
+    if (i.value.trim() === '' || !Number.isFinite(v)) {
+      i.value = was;
+      return;
+    }
+    if (v === Number(was)) return;
+    was = i.value;
+    onCommit(v);
   });
   return i;
 }
