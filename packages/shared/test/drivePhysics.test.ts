@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_JUMP, BUTTON_STEER_LOOK, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, tippedOver, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
+import { BUTTON_JUMP, BUTTON_STEER_LOOK, BUTTON_USE, DEFAULT_DEATHMATCH_RULES, MOUNT_DEFS, initPhysics, rigidOf, rigidTrace, tippedOver, uprightness, type MapDocument, type MapEntity, type MatchRules, type PlayerInput, type RigidState } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -181,8 +181,8 @@ describe('rigid driving: jumps, landings, slopes, flips', () => {
     // Up and over the top (14 m at 25 degrees: 5.9 m up).
     expect(easy.top).toBeGreaterThan(5);
     const steep = slope(50);
-    // It carries its run-up a little way up, then slides back down, throttle held.
-    expect(steep.top).toBeLessThan(8);
+    // It carries its run-up (about 9 m/s) a way up, short of the top (10.7 m up), then slides back down, throttle held.
+    expect(steep.top).toBeLessThan(10.2);
     expect(steep.after).toBeLessThan(steep.top - 0.5);
   });
 
@@ -368,6 +368,93 @@ describe('rigid driving: stairs and walls', () => {
     const r = up([block('wall', 32, 16, [6, 1.2, 1])], 1);
     expect(r.top).toBeLessThan(1.1);
     expect(r.x).toBeLessThan(32);
+  });
+});
+
+describe('driving physics 4: the snags (the hull a Rapier body)', () => {
+  /** Along +x at `speed` (held), the sharp ticks (1 m/s or 1.5 rad/s in a tick: driveSnags.test.ts) over x0..x1. */
+  const across = (blocks: MapEntity[], speed: number, x0: number, x1: number) => {
+    const d = drive(blocks);
+    d.run(20);
+    let sharp = 0;
+    let slowest = Infinity;
+    let worstPitch = 0;
+    rigidTrace.sink = (t) => {
+      if (t.pos.x < x0 || t.pos.x > x1) return;
+      const dv = Math.abs(Math.hypot(t.vel1.x, t.vel1.z) - Math.hypot(t.vel0.x, t.vel0.z));
+      const dw = Math.hypot(t.spin1.x - t.spin0.x, t.spin1.y - t.spin0.y, t.spin1.z - t.spin0.z);
+      if (dv >= 1 || dw >= 1.5) sharp++;
+    };
+    try {
+      for (let k = 0; k < 600 && d.m.pos.x < x1; k++)
+        d.run(1, { forward: d.m.speed < speed ? 1 : speed / 18 }, () => {
+          if (d.m.pos.x > x0 && d.m.pos.x < x1) {
+            slowest = Math.min(slowest, d.m.speed);
+            worstPitch = Math.max(worstPitch, Math.abs(d.m.susp!.p));
+          }
+        });
+    } finally {
+      rigidTrace.sink = null;
+    }
+    return { sharp, slowest, worstPitch, x: d.m.pos.x, up: uprightness(d.m.rigid!) };
+  };
+
+  it('a seam between two floor slabs (1 cm apart in height) at 8 m/s: nothing (it froze there on the coverage map once)', () => {
+    const r = across([block('slabA', 40, 16, [8, 0.2, 20], 0, 0), block('slabB', 60, 16, [8, 0.21, 20], 0, 0)], 8, 45, 58);
+    expect(r.sharp).toBe(0);
+    expect(r.slowest).toBeGreaterThan(7);
+    expect(r.x).toBeGreaterThan(58);
+  });
+
+  it('kerbs: a 15 cm kerb across the way at 8 and 16 m/s: a bump on the springs, never a stop', () => {
+    for (const v of [8, 16]) {
+      const r = across([block('kerb', 50, 16, [8, 0.15, 0.6])], v, 46, 56);
+      expect(r.slowest, `${v} m/s`).toBeGreaterThan(v * 0.8);
+      expect(r.up).toBeGreaterThan(0.95);
+      expect(r.sharp, `${v} m/s`).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('a rock taller than the tyres reach (a 1.2 m box) at 12 m/s: stopped or thrown by the contact, never climbed (owner 3a)', () => {
+    const d = drive([block('rock', 40, 16, [1.6, 1.2, 1.6])]);
+    d.run(20);
+    let top = 0;
+    let slowest = Infinity;
+    d.run(240, { forward: d.m.speed < 12 ? 1 : 0.66 }, () => {
+      top = Math.max(top, d.m.pos.y);
+      if (d.m.pos.x > 36) slowest = Math.min(slowest, Math.abs(d.m.speed));
+    });
+    expect(top).toBeLessThan(1.1);
+    expect(slowest).toBeLessThan(6);
+    expect(d.m.pos.x).toBeLessThan(40);
+  });
+
+  it('landings are the springs and the hull: no levelling in the air (owner 2a), and the hull lands it when the springs run out', () => {
+    // Off the 1 m kicker flat out, hands off in the air: the body flies as it left the lip (no torque but the drag).
+    const d = drive([block('ramp', 42, 16, [6, 0.4, 7], 0.3)]);
+    d.run(20);
+    const spins: number[] = [];
+    let landed = false;
+    rigidTrace.sink = (t) => {
+      if (t.contact === 0 && !t.hullContacts) spins.push(Math.hypot(t.spin1.x, t.spin1.z) - Math.hypot(t.spin0.x, t.spin0.z));
+      else if (spins.length > 10) landed = true;
+    };
+    try {
+      for (let k = 0; k < 300 && !landed; k++) d.run(1, { forward: 1 });
+    } finally {
+      rigidTrace.sink = null;
+    }
+    expect(spins.length).toBeGreaterThan(20);
+    // In the air the pitch and roll spin only dies by the small drag (0.15/s): nothing steers it level. (The first tick
+    // still had wheels down in its first substep.)
+    for (const ds of spins.slice(1)) expect(Math.abs(ds)).toBeLessThan(0.05);
+    // Dropped from 9 m onto flat ground, the springs run out and the hull meets the ground (Rapier), then it sits up.
+    const fall = drive([], { at: [20, 9, 16] });
+    let hull = false;
+    fall.run(120, {}, () => (hull ||= fall.m.rigid!.hull));
+    expect(hull).toBe(true);
+    expect(uprightness(fall.m.rigid!)).toBeGreaterThan(0.95);
+    expect(fall.m.rigid!.contact).toBe(4);
   });
 });
 

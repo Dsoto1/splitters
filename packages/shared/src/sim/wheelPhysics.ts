@@ -176,6 +176,8 @@ const HULL_BOUNCE = 0.15;
 const RUBBER = 8;
 const RUBBER_SCALE = 0.04;
 const RUBBER_DAMP = 3;
+/** Share of the rubber's push it gives back as it extends again: it soaks up a landing instead of throwing it back up. */
+const RUBBER_RETURN = 0.2;
 /** The most a wheel pushes, as a multiple of its share of the vehicle's weight. */
 const WHEEL_MOST = 8;
 const EDGE_MOST = 6;
@@ -657,12 +659,13 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       const xdot = -dot(va, hit.n) / un;
       let fs: number;
       if (solve) {
-        // Past the bump stop a progressive bump rubber (stiffening with the square of how far in, and damped), never a
-        // hard stop: what it can't take the hull's own contact with the ground does (Rapier).
+        // Past the bump stop a progressive bump rubber (stiffening with the square of how far in, damped, and giving
+        // back little as it extends), never a hard stop: what it can't take the hull's own contact with the ground does
+        // (Rapier).
         // (Capped: a wheel can't throw the body, as when it is rolled onto them from its side.)
         const u = clamp(x_ - t.bump, 0, RUBBER_SCALE * 2);
         // (A tyre lifting onto a step, its front ray's, pushes at most EDGE_MOST: a stair doesn't kick the body.)
-        fs = Math.min((snap ? EDGE_MOST : WHEEL_MOST) * (g / n), g / n + t.k * x_ + t.c * xdot + (u > 0 ? t.k * RUBBER * u * (1 + u / RUBBER_SCALE) + t.c * RUBBER_DAMP * Math.max(0, xdot) : 0));
+        fs = Math.min((snap ? EDGE_MOST : WHEEL_MOST) * (g / n), g / n + t.k * x_ + t.c * xdot + (u > 0 ? t.k * RUBBER * u * (1 + u / RUBBER_SCALE) * (xdot >= 0 ? 1 : RUBBER_RETURN) + t.c * RUBBER_DAMP * Math.max(0, xdot) : 0));
         if (tr && u > 0) tr.rubber++;
       } else {
         // Past the bump stop the spring stays at its stop's force; the stop itself is a hard contact (below).
@@ -670,7 +673,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0, wheel: true });
       }
       if (tr) {
-        if (x_ > t.bump) {
+        if (x_ > t.bump && !solve) {
           tr.bump++;
           tr.bumpDepth = Math.max(tr.bumpDepth, x_ - t.bump);
         }
@@ -782,8 +785,10 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     if (spin > MAX_SPIN) s.spin = scale(s.spin, MAX_SPIN / spin);
     const sp = len(s.vel);
     if (sp > MAX_SPEED) s.vel = scale(s.vel, MAX_SPEED / sp);
-    if (solve) {
-      // Rapier moves the body by its velocity and resolves the hull's contacts (driving physics 4).
+    // Rapier moves the body by its velocity and resolves the hull's contacts (driving physics 4): on the tick's last
+    // substep, and on each while the hull touches something; the others move it here (half the cost: a hull step is
+    // most of a rigid vehicle's).
+    if (solve && (sub_ === SUBSTEPS - 1 || s.hull)) {
       const velIn = s.vel;
       const hit = solve(s, h);
       com = add(s.pos, rotate(s.q, comAt));
@@ -848,7 +853,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     }
   }
 
-  if (tr) {
+  if (tr && !solve) {
     tr.sweepNormals = swept.normals;
     tr.sweepStuck = wl > 1e-6 && stuck;
     tr.sweepBlocked = out.blocked;
