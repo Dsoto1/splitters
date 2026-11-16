@@ -18,7 +18,7 @@ Spaceships and Tank Pack (all CC0).
 | Supply Buggy (`supply_buggy`) | 2 (driver, passenger) | The sci-fi buggy. A supply carrier: players on foot at its tailgate press Use to resupply (every carried gun's reserve and underbarrel rounds full, grenades topped up), ten times, then it is empty until it respawns; each player waits 4 s between two (`resupply`, sim/resupply.ts) |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
-| Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
+| Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier, the owner's hover carrier: the pilot in an open cockpit, an all-round door gun standing on the open deck, four riders seated on its side benches |
 | Tank | 3 (driver, cannon, roof gun) | Slow and heavy (1200 health): the cannon fires explosive shells within 35° of the nose, the roof gun works all round |
 | Gun Buggy (`gun_jeep`) | 3 (driver, passenger, roof gunner) | Wheeled light (the Recon Trike): an all-round machine gun on the roof; the driver and passenger sit in the cab, the gunner stands at the gun (380 health). Called the Gun Jeep until 2026-11-13 |
 | Armored Rover (`armored_rover`) | 7 (driver, front passenger, 2 on the bench, rear gun, 2 hanging on the sides) | Wheeled heavy: slow, grippy and 900 health; the rear gunner covers ±90° behind from the roof rack; the passenger beside the driver and the two on the bench sit inside, and one rider hangs on each side, standing on the sill by the doors. All riders but the driver and gunner shoot their own weapons |
@@ -74,7 +74,13 @@ Spaceships and Tank Pack (all CC0).
   and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
   long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
-  Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
+  Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`; the Imperial is now the Dropship's fallback.
+  The **Dropship** (2026-11-16) is the owner's own Meshy hover carrier (Meshy, owned: "I made it on Meshy";
+  `vehicles/hover_carrier.glb`, pack `meshy-owned-drive-1116` in `content/guns.json`: 10k triangles plus a 2.5k one
+  from 40 m, 1024 px colour map, 0.83 MB, 9.6 m long): an open cockpit at the nose and an open sunken deck behind it
+  with a bench along each side. Its box, seats and cockpit eye were refitted to it (measured on the model:
+  `content/vehicles/dropship.json` notes); the drop route's dropship (`dropship_drop`) shares the model, its 12 riders
+  seated six a side on the benches. Kept as `dropship` on the owner's word ("replaces the Dropship's look"), not a new id.
   **Ids name bodies** (owner, 2026-11-13): a vehicle's id stays with its model for good; a new body or a new job is a
   new id, and a retired id loads as its replacement (sim/mounts.ts RETIRED_MOUNTS). The id `buggy` named the Off-Road
   Beast until 2026-11-11 and the sci-fi buggy until 2026-11-13; it is retired to the Troop Buggy (the official maps'

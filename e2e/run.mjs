@@ -1380,6 +1380,7 @@ async function editoruxFlow(browser) {
   await editorLayoutChecks(browser);
   await editorSelectionSyncChecks(browser);
   await editorThemeViewChecks(browser);
+  await editorAssetsFitChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -2260,6 +2261,57 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
   const undone = (await doc()).entities.find((e) => e.id === 'gate_keep_a');
   check(JSON.stringify(shown) === JSON.stringify(['pack', ['Pack effect', 'Painted']]) && painted === 'painted' && undone && !('swirl' in undone), `a portal's inspector picks its swirl (pack effect or painted), one undo step (${JSON.stringify({ shown, painted, undone: undone?.swirl ?? null })})`);
   await page.keyboard.press('Escape');
+}
+
+/**
+ * The Assets panel fits its window (owner, 2026-11-16: Structure paint's third column was cut off at 1440-2000 px with
+ * no scrollbar): at a few window widths (the panel is 175-275 px inside), every piece, material, ground and swatch on
+ * every tab (Structure paint in both its views) lies wholly inside the panel's width.
+ */
+async function editorAssetsFitChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  for (const width of [1100, 1440, 2000]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?mode=editor&test=1`);
+    await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+    page.once('dialog', (d) => d.accept());
+    await newMap(page, 96);
+    const outside = () =>
+      page.evaluate(() => {
+        const pal = document.getElementById('ed-palette');
+        const box = pal.getBoundingClientRect();
+        const right = box.left + pal.clientLeft + pal.clientWidth;
+        const out = [];
+        let n = 0;
+        for (const el of pal.querySelectorAll('.ed-pane:not([hidden]) :is(.mat-btn, .tile-btn, .swatch, [data-material], [data-ground])')) {
+          const b = el.getBoundingClientRect();
+          if (!b.width || !el.offsetParent) continue;
+          n++;
+          if (b.left < box.left - 0.5 || b.right > right + 0.5) out.push(`${el.dataset.material ?? el.dataset.ground ?? el.textContent.trim().slice(0, 24)} (${Math.round(b.left)}-${Math.round(b.right)} of ${Math.round(box.left)}-${Math.round(right)})`);
+        }
+        return { n, out };
+      });
+    const seen = [];
+    const bad = [];
+    for (const [ws, pane] of [['build', 'tiles'], ['build', 'setpieces'], ['build', 'advanced'], ['props', 'props'], ['props', 'lights'], ['entities', 'entities'], ['entities', 'npcs'], ['entities', 'vehicles'], ['entities', 'scenario'], ['environment', 'paint'], ['environment', 'paint:all'], ['environment', 'plants'], ['environment', 'terrain'], ['environment', 'sky']]) {
+      await page.click(`#ed-modes [data-ws="${ws}"]`);
+      if (pane === 'paint:all') await page.click('#ed-mat-view [data-mv="all"]');
+      else await page.click(`#ed-pal-tabs [data-pane="${pane}"]`);
+      await frames(page, 3);
+      const r = await outside();
+      seen.push(`${pane} ${r.n}`);
+      if (r.out.length) bad.push(`${pane}: ${r.out.slice(0, 4).join(', ')}${r.out.length > 4 ? ` +${r.out.length - 4}` : ''}`);
+      if (shots && pane === 'paint') await page.screenshot({ path: `${shots}/editorux-assets-fit-${width}.png` }).catch(() => {});
+    }
+    check(bad.length === 0, `at ${width} px every item in the Assets panel lies inside it (${bad.join('; ') || seen.join(', ')})`);
+    check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+    livePages.delete(page);
+    await context.close();
+  }
 }
 
 /**
@@ -12606,6 +12658,14 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the round: its bots reach Deathmatch's score limit (15) in a few minutes, and a slow run gets there
+  // mid-flow; the host then travels to the next map, the friend follows it, and between the two sessions the
+  // friend's `__cs` is the ended-match stub (no `spectate`, "spectator false, following -1"), then another map
+  // (not `phase0_arena` for Host this map). On CI the flow takes up to 9 minutes: no time limit either.
+  await sim(host, (m) => {
+    m.rules.scoreLimit = 0;
+    m.phaseEndTick = Infinity;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
