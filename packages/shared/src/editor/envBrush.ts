@@ -2,7 +2,7 @@ import { ENV_SPECIES, envVariant, getEnvSpecies, isEnvModel, type EnvCategory, t
 import { createRng } from '../math.ts';
 import type { MapDocument, MapEntity, PropEntity } from '../map/schema.ts';
 import { settledPropY } from '../map/settle.ts';
-import { TERRAIN_MATERIALS, terrainHeightAt, type TerrainData, type TerrainMaterial } from '../map/terrain.ts';
+import { cellKind, terrainHeightAt, type TerrainData, type TerrainMaterial } from '../map/terrain.ts';
 import { pathGeometry } from '../map/track.ts';
 import { placementCells } from './operations.ts';
 import { allowedScale } from './propRandom.ts';
@@ -225,7 +225,7 @@ export function blockingPlacement(doc: MapDocument, model: string, x: number, z:
   return keepClearHit(zones, x, z, envImpact(model, variant).reach * scale);
 }
 
-/** The ground under a point: its height, slope (degrees) and terrain material (null off the terrain or on a floor). */
+/** The ground under a point: its height, slope (degrees) and the kind of ground it is (terrain.ts groundKind; null off the terrain or on a floor). */
 export interface GroundSample {
   y: number;
   slope: number;
@@ -245,7 +245,7 @@ export function groundSampler(t: TerrainData | null, floorY = 0): (x: number, z:
     const slope = (Math.atan(Math.hypot(gx, gz)) * 180) / Math.PI;
     const c = Math.min(t.cols - 2, Math.floor((x - t.origin[0]) / t.spacing));
     const r = Math.min(t.rows - 2, Math.floor((z - t.origin[1]) / t.spacing));
-    const material = TERRAIN_MATERIALS[t.materials[r * (t.cols - 1) + c] ?? 0] ?? null;
+    const material = cellKind(t, r * (t.cols - 1) + c);
     return { y, slope, material };
   };
 }

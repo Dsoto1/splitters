@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CORE_PROPS, DEFAULT_METAL, SCENARIO_PALETTE, STYLE_PACKS, TERRAIN_MATERIALS, TERRAIN_SURFACES, coreCatalog, coreMaterials, coreThemes, getStylePack } from '@tiletrigger/shared';
+import { CORE_PROPS, DEFAULT_METAL, GROUND_MATERIALS, SCENARIO_PALETTE, STYLE_PACKS, coreCatalog, groundThemes, coreMaterials, coreThemes, getStylePack } from '@tiletrigger/shared';
 import { matchScore, searchFields } from '../src/editor/paletteSearch.ts';
 import { PROP_GROUPS, atlasGroup, pictureKeys, propGroup, rankedOrder, scenarioGroup, themeGroundOrder, themePaintList, themeRank, themeStylePacks } from '../src/editor/paletteCatalog.ts';
 import { atlasManifest, type AtlasIndex } from '../src/editor/paletteAtlas.ts';
@@ -131,20 +131,18 @@ describe("the palette follows the map's themes (painting Phase 3)", () => {
     expect(proto.recent.length).toBe(8);
   });
 
-  it("Ground paint's list: the map's grounds first (most cells first), then the theme's packs' grounds, then the rest", () => {
-    const g = (name: string) => TERRAIN_MATERIALS.indexOf(name as (typeof TERRAIN_MATERIALS)[number]);
-    const surface = (m: (typeof TERRAIN_MATERIALS)[number]) => TERRAIN_SURFACES[m];
-    const cells = [g('sand'), g('sand'), g('sand'), g('gravel'), g('sand'), g('gravel'), g('stone')];
-    const none = themeGroundOrder(TERRAIN_MATERIALS, cells, surface, []);
-    expect(none.order.slice(0, 3)).toEqual(['sand', 'gravel', 'stone']);
-    expect(none.lead).toBe(3);
-    expect(none.order.slice(3)).toEqual(TERRAIN_MATERIALS.filter((m) => !['sand', 'gravel', 'stone'].includes(m)));
-    // A pack whose materials hold a ground's surface puts it right after the map's own.
-    const fake = { ...STYLE_PACKS[0]!, materials: [TERRAIN_SURFACES.snow] };
-    const withPack = themeGroundOrder(TERRAIN_MATERIALS, cells, surface, [fake]);
-    expect(withPack.order.slice(0, 4)).toEqual(['sand', 'gravel', 'stone', 'snow']);
-    expect(withPack.lead).toBe(4);
-    // No terrain: the layers in their own order, nothing leads.
-    expect(themeGroundOrder(TERRAIN_MATERIALS, null, surface, [])).toEqual({ order: [...TERRAIN_MATERIALS], lead: 0 });
+  it("Ground paint's list: the Ground theme's grounds first, then the grounds the map painted, then the rest", () => {
+    const quarry = groundThemes.get('ground.quarry')!;
+    // Base (0) cells, two painted Packed Snow, one painted Gravel (the theme lists it already).
+    const terrain = { groundTheme: 'ground.quarry', grounds: ['core.packed_snow', 'core.pbr_gravel', 'core.lake_ice'], materials: [0, 0, 1, 1, 2, 0] };
+    const { order, lead } = themeGroundOrder(GROUND_MATERIALS, terrain);
+    expect(order.slice(0, quarry.grounds.length)).toEqual([...quarry.grounds]);
+    expect(order[quarry.grounds.length]).toBe('core.packed_snow');
+    // Lake Ice is in the list but no cell uses it: it stays with the rest.
+    expect(lead).toBe(quarry.grounds.length + 1);
+    expect(order.slice(lead)).toEqual(GROUND_MATERIALS.filter((g) => !order.slice(0, lead).includes(g)));
+    expect(new Set(order).size).toBe(GROUND_MATERIALS.length);
+    // No terrain: every ground in its own order, nothing leads.
+    expect(themeGroundOrder(GROUND_MATERIALS, null)).toEqual({ order: [...GROUND_MATERIALS], lead: 0 });
   });
 });

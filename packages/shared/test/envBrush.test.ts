@@ -42,9 +42,9 @@ function hillside(): TerrainData {
   for (let r = 0; r < t.rows - 1; r++)
     for (let c = 0; c < t.cols - 1; c++) {
       const x = t.origin[0] + (c + 0.5) * t.spacing;
-      materials[r * (t.cols - 1) + c] = x > 40 ? 2 : 0; // stone : grass
+      materials[r * (t.cols - 1) + c] = x > 40 ? 1 : 0; // painted Mossy Rock (stone) : the base, Grass
     }
-  return { ...t, heights, materials };
+  return { ...t, heights, materials, grounds: ['core.pbr_rock'] };
 }
 
 function map(t: TerrainData | null = hillside()): MapDocument {
