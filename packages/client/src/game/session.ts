@@ -2232,7 +2232,9 @@ export class GameSession {
             // Lightning by its source (content/vfx.json map.arcs): an arc sentry, an electric fence (no shooter) or a gun.
             // With flashing reduced, each source holds one steady beam (keyed by it; a fence's by where it struck).
             const source = ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default';
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined);
+            // A gun's lightning leaves the shooter's muzzle and stays on it (yours: the gun in your hands).
+            const anchor = ev.m === undefined && ev.s >= 0 ? this.view.muzzleAnchor({ local: ev.s === this.slot, slot: ev.s }) : null;
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined, anchor);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -3255,7 +3257,7 @@ export class GameSession {
           const muzzle = this.view.localMuzzle();
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
-          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
