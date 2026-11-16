@@ -15,7 +15,6 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/stjohns-4` · 0b374126 · run 43877348385 (St. John's step 4; a helper of lane A's lead)
-- `wip/mapmaker-ui-2` · 43873164276 (MapMaker UI spec Phase 2; carries painting Phase 3; a helper of lane B's splitters22)
 
 **Landing now: train** (lane B's splitters22, 2026-11-16, 13:25 UTC; painting Phase 3, alone after its 2-hour wait), please hold code pushes to main.
 
