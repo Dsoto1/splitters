@@ -6237,11 +6237,9 @@ async function beamMuzzleChecks(browser) {
     await page.evaluate((w) => window.__give(w), id);
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
-  // Your character's gun in third person loads in real time too: once there and back.
+  // Third person first: your character's gun in its hands loads in real time too.
   await page.keyboard.press('KeyH');
-  const tpReady = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
-  await page.keyboard.press('KeyH');
-  await page.waitForFunction(() => !window.__cs.thirdPerson(), null, { timeout: T(10000) }).catch(() => {});
+  const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
   await page.evaluate(() => window.__frameClock.freeze());
   /** `frames` frames of strafing, turning and jumping, firing: the worst and median start-to-muzzle distance (cm). */
   const run = (o) =>
@@ -6278,14 +6276,12 @@ async function beamMuzzleChecks(browser) {
     }, o);
   const stepUntil = (fn, arg) => page.evaluate(([src, arg]) => { const ok = eval(src); for (let i = 0; i < 120 && !ok(arg); i++) window.__frameClock.step(1000 / 60); return ok(arg); }, [fn.toString(), arg]);
   const ok = (r) => r.frames >= 60 && r.worst !== null && r.worst < 3;
-  const fp = await run({ third: false, frames: 150 });
-  check(ok(fp), `the freeze ray's beam stays on the muzzle while you strafe, turn and jump (first person, Reduce flashing on: ${JSON.stringify(fp)} cm)`);
-  await page.keyboard.press('KeyH');
-  const tpOn = await stepUntil(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot));
   const tp = await run({ third: true, frames: 150 });
-  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person (${tpOn ? JSON.stringify(tp) : `no third person (its gun ready before: ${tpReady})`} cm)`);
+  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person while you strafe, turn and jump (${tpOn ? JSON.stringify(tp) : 'no third person'} cm)`);
   await page.keyboard.press('KeyH');
-  await stepUntil(() => !window.__cs.thirdPerson());
+  const fpOn = await stepUntil(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+  const fp = await run({ third: false, frames: 150 });
+  check(fpOn && ok(fp), `the freeze ray's beam stays on the muzzle in first person (Reduce flashing on: ${fpOn ? JSON.stringify(fp) : 'no first person'} cm)`);
   await page.evaluate(() => window.__give('core.laser_rifle'));
   const laserIn = await stepUntil((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, 'core.laser_rifle');
   const setFlashing = (on) =>
