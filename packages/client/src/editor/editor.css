@@ -325,7 +325,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 
 /* Hover card beside the pointer. */
 #ed-tip {
-  position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; gap: 1px; min-width: 150px; padding: 7px 10px;
+  position: absolute; z-index: 5; pointer-events: none; display: flex; flex-direction: column; gap: 1px; min-width: 150px; max-width: 320px; padding: 7px 10px;
   background: rgba(11, 15, 26, 0.92); border: 1px solid rgba(0, 209, 255, 0.35); border-left: 3px solid var(--cyan); border-radius: 4px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); font-size: 12px; color: var(--muted);
 }

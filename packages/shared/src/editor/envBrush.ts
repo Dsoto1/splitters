@@ -107,6 +107,12 @@ export function presetSpecies(id: EnvPresetId): EnvBrushSpecies[] {
   });
 }
 
+/** Whether the brush's ground filter lets it paint on `material` (null: a floor or off the terrain, always allowed). */
+export function groundAllowed(brush: EnvBrush, material: TerrainMaterial | null): boolean {
+  const mats = brush.filters.materials;
+  return mats === null || material === null || mats.includes(material);
+}
+
 /** The brush with a preset picked: its mix, density and ground; size, turn, radius, seed and the other filters kept. */
 export function withPreset(brush: EnvBrush, id: EnvPresetId): EnvBrush {
   const p = ENV_PRESETS[id];
@@ -275,6 +281,8 @@ export interface EnvDabResult {
   plants: NewProp[];
   /** Turned away by slope, altitude, ground material or a building. */
   filtered: number;
+  /** Of those, turned away by the ground material alone (the brush's ground filter: a preset's ground, MapMaker says so). */
+  wrongGround: number;
   /** Held back to keep spawns, routes and objectives clear. */
   keptClear: number;
   /** The first zone a plant was held back from (the status line names it). */
@@ -298,7 +306,7 @@ export interface EnvDabContext {
  * within itself; undergrowth keeps off trunks), filtered, kept clear and within budget. Deterministic.
  */
 export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: number, ctx: EnvDabContext): EnvDabResult {
-  const result: EnvDabResult = { plants: [], filtered: 0, keptClear: 0, clearOf: null, overBudget: false };
+  const result: EnvDabResult = { plants: [], filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null, overBudget: false };
   const mix = brush.species.map((m) => ({ m, s: getEnvSpecies(m.model) })).filter((x): x is { m: EnvBrushSpecies; s: EnvSpeciesData } => !!x.s && x.m.weight > 0);
   const total = mix.reduce((n, x) => n + x.m.weight, 0);
   if (!mix.length || total <= 0) return result;
@@ -322,7 +330,6 @@ export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: num
   const tries = target * 4;
   const [smin, smax] = brush.size[0] <= brush.size[1] ? brush.size : [brush.size[1], brush.size[0]];
   const [amin, amax] = brush.filters.altitude;
-  const mats = brush.filters.materials;
   for (let i = 0; i < tries && result.plants.length < target; i++) {
     // Every try draws the same numbers, so one filter's verdict never shifts the next try's plant.
     const a = rand() * Math.PI * 2;
@@ -343,9 +350,12 @@ export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: num
       continue;
     }
     const steepest = Math.min(brush.filters.slope[1], s.placement.maxSlopeDegrees);
-    const offGround = g.slope < brush.filters.slope[0] || g.slope > steepest || (amin !== null && g.y < amin) || (amax !== null && g.y > amax) || (mats !== null && g.material !== null && !mats.includes(g.material));
-    if (offGround || built.has(`${Math.round(px / cs)},${Math.round(pz / cs)}`)) {
+    const offShape = g.slope < brush.filters.slope[0] || g.slope > steepest || (amin !== null && g.y < amin) || (amax !== null && g.y > amax);
+    const offMaterial = !groundAllowed(brush, g.material);
+    const inside = built.has(`${Math.round(px / cs)},${Math.round(pz / cs)}`);
+    if (offShape || offMaterial || inside) {
       result.filtered++;
+      if (offMaterial && !offShape && !inside) result.wrongGround++;
       continue;
     }
     const [lo, hi] = allowedScale(s.id);

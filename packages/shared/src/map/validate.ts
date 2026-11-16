@@ -7,10 +7,10 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
-import { SIDE_DIRS } from './tileOptions.ts';
+import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
 import { PLAYER } from '../sim/constants.ts';
 import { terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
@@ -402,6 +402,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...glassIssues(map, catalog));
+  issues.push(...tallEdgeIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
   if (stored.metadata.release && !releaseCurrent(stored)) {
@@ -417,6 +418,40 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });
 
   return issues;
+}
+
+/** Level names as MapMaker shows them (editor/operations.ts levelName). */
+const levelWord = (z: number) => (z === 0 ? 'Ground' : z > 0 ? `Level ${z}` : z === -1 ? 'Basement' : `Basement ${-z}`);
+
+/**
+ * Tall wall styles (two storeys and more: Grand arch, Gate arch, High wall, Towering wall) that rise through a floor or
+ * a roof over their side (geometry.ts tallEdgeBlock): a warning each (MapMaker refuses new ones; owner, 2026-11-16).
+ */
+export function tallEdgeIssues(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+  const tiles = map.classicStructure.tiles;
+  if (!tiles.some((t) => t.edges && Object.values(t.edges).some((s) => s !== 'auto' && s !== 'open'))) return [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const { cells } = buildOccupancy(map, catalog);
+  const out: ValidationIssue[] = [];
+  const seen = new Set<string>();
+  for (const [key, occ] of cells) {
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const [, side] of cellSides(occ)) {
+      const style = resolveEdge(cells, x, y, z, side);
+      if (style === 'none' || edgeStoreys(style, half, levelHeight) <= 1) continue;
+      // One wall, two cells: count it once.
+      const [dx, dy] = SIDE_DIRS[side];
+      const wall = `${[`${x},${y}`, `${x + dx},${y + dy}`].sort().join('|')}|${z}`;
+      if (seen.has(wall)) continue;
+      seen.add(wall);
+      const block = tallEdgeBlock(cells, x, y, z, side, style, cellSize, levelHeight);
+      if (!block) continue;
+      const through = block.what === 'roof' ? `the roof over ${levelWord(block.level - 1)}` : `${levelWord(block.level)}'s floor`;
+      out.push({ severity: 'warning', code: 'edge.tall', message: `tile ${occ.placement.id}: ${EDGE_STYLE_LABELS[style]} on its ${side} side (${levelWord(z)}) rises through ${through}; use a one-storey style there, or open the storey above`, targetId: occ.placement.id });
+    }
+  }
+  return out;
 }
 
 /** Glass options that do nothing: glass on a side with no window, glass on a block that isn't plain solid. */
