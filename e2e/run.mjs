@@ -390,6 +390,40 @@ async function editorFlow(browser) {
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
+  // A navigation check still running when Test starts is stopped (it built a navmesh beside the Test's own: trace fix
+  // 2, docs/PERF_MAPMAKER_TRACE_2026-11-15.md), and runs again back in MapMaker. Test is pressed the moment the check
+  // goes to its worker (a worker can't answer within that task, so the check is caught running).
+  const nudge = (dx) =>
+    page.evaluate((dx) => {
+      const ed = window.__editor;
+      const e = ed.doc.entities.find((x) => x.kind === 'spawn');
+      ed.run('Move', { kind: 'updateEntities', before: [e], after: [{ ...e, position: [e.position[0] + dx, e.position[1], e.position[2]] }] });
+    }, dx);
+  await page.evaluate(() => {
+    const checks = window.__editor.checks;
+    const send = checks.checkNavigation;
+    checks.checkNavigation = function (...a) {
+      send.apply(this, a);
+      if (this.navRunning && !window.__navTestPressed) {
+        window.__navTestPressed = { stopsBefore: this.navStops };
+        window.__editor.test();
+        window.__navTestPressed.after = { stops: this.navStops, running: this.navRunning, worker: !!this.navWorker };
+      }
+    };
+  });
+  await nudge(0.25);
+  const stopped = await page.waitForFunction(() => window.__navTestPressed?.after && document.getElementById('editor').hidden && window.__cs?.local, null, { timeout: T(30000) }).then(() => page.evaluate(() => window.__navTestPressed), () => null);
+  check(stopped && stopped.after.stops === stopped.stopsBefore + 1 && !stopped.after.running && !stopped.after.worker, `Test stops the navigation check still running (${JSON.stringify(stopped)})`);
+  await frames(page, 10);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  // Back in MapMaker the stopped check runs again, in a new worker, to its end.
+  const rechecked = await page.waitForFunction(() => !window.__editor.checks.navRunning && !!window.__editor.checks.navWorker, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(rechecked, 'back in MapMaker, the stopped navigation check runs again to its end');
+  await page.evaluate(() => {
+    delete window.__editor.checks.checkNavigation;
+  });
+  await nudge(-0.25);
 
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
