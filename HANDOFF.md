@@ -5,14 +5,13 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 ## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
 
-The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A only finishes and lands what is in flight: `wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`. Every other open item in QUEUE is now marked B. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
+The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A keeps working, second (owner: "we can still work here but it will be secondary"): it finishes what is in flight (`wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`) and keeps two items, the random bots fix and the Dropship's new model (its file is on lane A's machine); everything else is marked B. Lane A claims in HANDOFF before taking anything more. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
 
 What lane A was holding, for you to pick up:
-1. **Next bugs, in order:**
-   1. Random bots aren't random. `Match.botLook` gives slot n the roster's (n+1)-th look: shuffle per match from the seed.
-   2. The Arid preset and the cut-off Paint list (owner's screenshot).
-   3. The e2e `hostgame` spectate stub.
-2. **The Dropship's new model:** the owner's own Meshy hover carrier, recorded as **Meshy, owned**. File: `/home/user/meshy-drive/owner-2026-11-16-hovercarrier/`, only on lane A's machine. Ask the owner to share it again if your container can't see it. QUEUE Features has the brief.
+1. **Next bugs, in order** (the random bots fix stays with lane A):
+   1. The Arid preset and the cut-off Paint list (owner's screenshot).
+   2. The e2e `hostgame` spectate stub.
+2. **The Dropship's new model stays with lane A** (the owner's own Meshy hover carrier, Meshy, owned; its file is on lane A's machine).
 3. **The Buggy on Rapier:** the owner answered 1a 2a 3a 4a, **5b straight to default**. Plan and questions: `docs/DRIVING_PHYSICS_PLAN.md` ("After the second drive" / the Rapier plan, from `wip/drive-physics-3b`, landed). The snag log and Rapier evaluation are in that doc.
 4. **Flavius Rule speed and memory** (QUEUE Bugs, the "Memory and frame time" line). The owner's three recordings are read there. The texture climb is the character leak lane A is fixing. Next after it:
    - animation by distance;
