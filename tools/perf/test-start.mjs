@@ -2,7 +2,7 @@
 //
 //   node tools/perf/test-start.mjs [map names as the Open dialog lists them…]      (after `pnpm build`)
 //   START_RUNS=<n>       runs a map and a variant (default 2; the first page load of a run pays for the cold cache)
-//   START_VARIANTS=a,b   `?perfoff=` values to compare, `-` for none, `+` between switches (default: `-,navhandoff+startslices`)
+//   START_VARIANTS=a,b   `?perfoff=` values to compare, `-` for none, `+` between switches (default: `-,navhandoff+startslices+navcache`)
 //   START_PORT / START_URL / CHROMIUM   as tools/perf/editor-edit.mjs
 //   START_JSON=<file>    the numbers as JSON
 //
@@ -20,7 +20,7 @@ const PORT = process.env.START_PORT ?? '4991';
 const CLIENT = process.env.START_URL ?? `http://localhost:${PORT}`;
 const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ['Iron Maw'];
 const RUNS = Number(process.env.START_RUNS ?? 2);
-const VARIANTS = (process.env.START_VARIANTS ?? '-,navhandoff+startslices').split(',');
+const VARIANTS = (process.env.START_VARIANTS ?? '-,navhandoff+startslices+navcache').split(',');
 const RECORD_MS = 20000;
 
 const server = process.env.START_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });

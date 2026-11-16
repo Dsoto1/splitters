@@ -3,7 +3,7 @@ import { blockBoxes, boxesRay, buildMapGeometry, mapKillY, mapTerrainMesh, propB
 import { environmentNavTriangles, environmentShapes, joinTriangles, type EnvWorldShape } from '../map/environment.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
-import { NavWorld, validateNavigation, type DropOptions, type NavExport } from '../nav/index.ts';
+import { NavWorld, navSettingsKey, validateNavigation, type DropOptions, type NavExport } from '../nav/index.ts';
 import { auditNavigation, type NavAudit } from '../nav/audit.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import { LIQUID_SPECS, SWIM_DEPTH, liquidAt, mapLiquids } from './liquids.ts';
@@ -121,6 +121,7 @@ function hashWords(words: Uint32Array, seed: [number, number]): [number, number]
 export function navInputKey(map: MapDocument, geometry: readonly WorldBox[], envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }): string {
   const terrain = mapTerrainMesh(map);
   const text = JSON.stringify([
+    navSettingsKey(),
     phys.gravity,
     phys.fallDamage,
     mapKillY(geometry, map),
@@ -144,25 +145,121 @@ export function navInputKey(map: MapDocument, geometry: readonly WorldBox[], env
 /** Bump when buildMapNav's inputs change (so an old key can't match a new build). */
 const NAV_KEY_VERSION = 1;
 
+/** A match's navmesh key (navInputKey) for `map` under `rules`, worked out as the match works it out (a store's lookup before the match). */
+export function mapNavKey(map: MapDocument, rules: MatchRules): string {
+  const geometry = buildMapGeometry(map);
+  return navInputKey(map, geometry, environmentShapes(map), matchPhysics(rules, map));
+}
+
 /** A navmesh built ahead (MapMaker's navigation check), with the key of what it was built from (navInputKey). */
 export interface PrebuiltNav {
   key: string;
   nav: NavExport;
 }
 
+/** Bytes a navmesh export holds (its Detour tile, most of it; the parkour links at a rough 100 bytes each). */
+export const navExportBytes = (n: NavExport): number => n.mesh.byteLength + (n.walkReach?.byteLength ?? 0) + n.parkour.length * 100 + n.spawnSeeds.length * 24;
+
 /**
- * The navmesh a match builds at load (buildMapNav), or `prebuilt`'s when its key is this map's: the same NavWorld,
- * without the build (seconds on a big map). `reused` says which.
+ * Navmeshes kept between matches in this process (docs/SCALING_STUDY_2026-11-15.md, recommended order 1): the next
+ * match of the same map (the same key: navInputKey, what the build reads, with the navmesh's settings) takes its
+ * navmesh from here instead of building it. The most recently used first; past `maxEntries` or `maxBytes` the
+ * oldest go. A dedicated host keeps them as long as it runs; a browser host also keeps them in its own storage
+ * (client game/navCache.ts).
  */
-export function loadMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, prebuilt?: PrebuiltNav | null): { nav: NavWorld; reused: boolean } {
-  if (prebuilt && prebuilt.key === navInputKey(map, geometry, envShapes, phys)) {
-    try {
-      return { nav: NavWorld.import(prebuilt.nav), reused: true };
-    } catch {
-      // Data that doesn't import (another build's): built here, as without it.
+export class NavCache {
+  private readonly entries = new Map<string, { nav: NavExport; size: number }>();
+  private bytes = 0;
+  hits = 0;
+  misses = 0;
+
+  constructor(
+    readonly maxEntries = 6,
+    readonly maxBytes = 96 * 1024 * 1024,
+  ) {}
+
+  get size(): number {
+    return this.entries.size;
+  }
+
+  get(key: string): NavExport | undefined {
+    const e = this.entries.get(key);
+    if (!e) return undefined;
+    this.drop(key);
+    // (Its data sent away to another thread, transferred: gone here.)
+    if (!e.nav.mesh.byteLength) return undefined;
+    // (Most recently used last: Map keeps insertion order.)
+    this.entries.set(key, e);
+    this.bytes += e.size;
+    return e.nav;
+  }
+
+  put(key: string, nav: NavExport): void {
+    const size = navExportBytes(nav);
+    if (size > this.maxBytes) return;
+    this.drop(key);
+    this.entries.set(key, { nav, size });
+    this.bytes += size;
+    for (const k of this.entries.keys()) {
+      if (this.entries.size <= this.maxEntries && this.bytes <= this.maxBytes) break;
+      this.drop(k);
     }
   }
-  return { nav: buildMapNav(map, geometry, physics, envShapes, phys), reused: false };
+
+  private drop(key: string): void {
+    const e = this.entries.get(key);
+    if (!e) return;
+    this.entries.delete(key);
+    this.bytes -= e.size;
+  }
+
+  clear(): void {
+    this.entries.clear();
+    this.bytes = 0;
+  }
+}
+
+/**
+ * This build of the navigation code, for a store that outlives it (a browser host's: client game/navCache.ts): the
+ * name of the file this code runs from (in the game's build its name carries a hash of its code).
+ */
+export function navBuildId(): string {
+  try {
+    return new URL(import.meta.url).pathname.split('/').pop() ?? '';
+  } catch {
+    return '';
+  }
+}
+
+/** This process's navmeshes (every match of a map takes from it: loadMapNav). */
+export const navCache = new NavCache();
+
+/**
+ * The navmesh a match builds at load (buildMapNav), or the same NavWorld without the build (seconds on a big map):
+ * `prebuilt`'s when its key is this map's (MapMaker's check, a browser host's storage), else navCache's. `reused`
+ * says which; `built` is a fresh build's export (also put in navCache), for a store that keeps it longer.
+ */
+export function loadMapNav(map: MapDocument, geometry: readonly WorldBox[], physics: PhysicsWorld, envShapes: readonly EnvWorldShape[], phys: { gravity: number; fallDamage: boolean }, prebuilt?: PrebuiltNav | null, cache: NavCache | null = navCache): { nav: NavWorld; reused: boolean; built: PrebuiltNav | null } {
+  const key = prebuilt || cache ? navInputKey(map, geometry, envShapes, phys) : '';
+  for (const data of [prebuilt?.key === key ? prebuilt.nav : undefined, cache?.get(key)]) {
+    if (!data) continue;
+    try {
+      const nav = NavWorld.import(data);
+      if (cache) {
+        cache.hits++;
+        if (data === prebuilt?.nav) cache.put(key, data);
+      }
+      return { nav, reused: true, built: null };
+    } catch {
+      // Data that doesn't import (another build's): the next, or built here.
+    }
+  }
+  const nav = buildMapNav(map, geometry, physics, envShapes, phys);
+  if (!cache) return { nav, reused: false, built: null };
+  cache.misses++;
+  const built = { key, nav: nav.export() };
+  cache.put(key, built.nav);
+  return { nav, reused: false, built };
 }
 
 /**
@@ -175,6 +272,8 @@ export function validateMapNavigation(map: MapDocument, official: boolean, opts:
   try {
     // (`prebuilt`: the navmesh as built, before the checks read it, for a match of this map: MapMaker's Test.)
     const prebuilt = opts.prebuilt ? { key: navInputKey(map, built.geometry, built.envShapes, built.phys), nav: built.nav.export() } : null;
+    // (And for a match of this map in this process: the jump pads' flights after the check take it from navCache.)
+    if (prebuilt) navCache.put(prebuilt.key, prebuilt.nav);
     const drop = { ...dropOptions(map, built.physics, built.geometry, built.phys), official };
     const audit = auditNavigation(map, built.nav, built.physics, drop);
     // Bot hints (v33) off the navmesh: warnings (map/botHints.ts).
