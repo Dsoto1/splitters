@@ -29,7 +29,8 @@ import { FoliageVisuals } from '../foliage.ts';
 import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
 import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
-import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
+import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
+import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
@@ -593,6 +594,8 @@ export class GameView {
     installFlashHold();
     this.vfx = new GodotVfx(this.scene);
     this.steadyArcs = new SteadyArcs(this.scene);
+    // Effects on a gun's muzzle are placed once every gun is, just before the frame is drawn (followMuzzles).
+    this.scene.onBeforeRenderObservable.add(() => this.followMuzzles(performance.now()));
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
@@ -1231,13 +1234,25 @@ export class GameView {
     return { x: p.x, y: p.y, z: p.z };
   }
 
-  /** World position of a remote player's muzzle, or null when their gun isn't drawn. */
+  /** World position of a remote player's muzzle, or null when their gun isn't drawn (or not yet in their hands). */
   muzzleOf(slot: number): Vec3 | null {
     const m = this.avatars.get(slot)?.muzzle;
-    if (!m || m.node.isDisposed()) return null;
+    if (!m || m.node.isDisposed() || !m.node.isEnabled(false)) return null;
     m.node.computeWorldMatrix(true);
     const p = Vector3.TransformCoordinates(m.local, m.node.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /**
+   * The muzzle an effect leaves, asked each frame it draws (muzzleAnchor.ts): yours (`local`) is the first-person
+   * gun's, else your character's held gun in third person (`slot`, yours); anyone else's is their character's held
+   * gun. Null when there's no gun to follow (a turret, a fence).
+   */
+  muzzleAnchor(o: { local?: boolean; slot?: number }): MuzzleAnchor | null {
+    const slot = o.slot !== undefined && o.slot >= 0 ? o.slot : null;
+    // Yours in third person: your drawn character's gun (not while it's hidden for first person, or scoped in).
+    if (o.local) return () => this.localMuzzle() ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot));
+    return slot === null ? null : () => this.muzzleOf(slot);
   }
 
   /**
@@ -1248,9 +1263,13 @@ export class GameView {
    */
   shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
     if (o.def?.view.beam) {
+      // A beam stays on the gun's muzzle while it shows, however you move (muzzleAnchor.ts); with no gun drawn it
+      // starts just under the eye. Its far end stays where the shot landed.
+      const anchor = this.muzzleAnchor(o);
+      const from = anchor?.() ?? o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.08, z: o.eye.z };
       // Reduce flashing: a fast-firing beam (the Arc Caster, lasers) holds one steady beam instead of one per shot.
-      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? 'me' : (o.slot ?? 'other')}`, [o.muzzle ?? o.eye, o.to], o.def.view.tracer);
-      else this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
+      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? 'me' : (o.slot ?? 'other')}`, [from, o.to], o.def.view.tracer, undefined, anchor);
+      else this.addShot(o.def, from, o.to, o.color, undefined, anchor);
       this.landRound(o);
       return;
     }
@@ -1440,18 +1459,6 @@ export class GameView {
       this.vfx.update(dt * 1000);
     }
     this.impacts.update(wall);
-    this.steadyArcs.update(now);
-    // Remote muzzle flashes follow the guns.
-    for (const a of this.avatars.values()) {
-      if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
-      if (!a.flash) continue;
-      const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
-      a.flash.setEnabled(on);
-      if (on && a.muzzle) {
-        a.muzzle.node.computeWorldMatrix(true);
-        a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
-      }
-    }
     if (prof) t = perfProbe.add(SYS.fx, t);
     for (const a of this.avatars.values()) if (a.fall && !a.ragdoll) this.stepFall(a, dt);
     for (const c of this.corpses) if (c.a.fall && !c.a.ragdoll) this.stepFall(c.a, dt);
@@ -4065,9 +4072,15 @@ export class GameView {
     return smokeBlocks({ x: e.x, y: e.y, z: e.z }, at, this.smoke);
   }
 
-  /** A solid beam (lasers, rails, freeze rays) that thins away. */
-  addBeam(from: Vec3, to: Vec3, color: string, width = 0.05, ttlMs = 110): void {
-    const mesh = createBeam(this.scene, from, to, color, width);
+  /** A solid beam (lasers, rails, freeze rays) that thins away; `anchor`: its start stays on that gun's muzzle (muzzleAnchor.ts). */
+  addBeam(from: Vec3, to: Vec3, color: string, width = 0.05, ttlMs = 110, anchor?: MuzzleAnchor | null): void {
+    const mesh = createBeam(this.scene, color, width);
+    const start = following(from, anchor);
+    layBeam(mesh, start(), to);
+    if (anchor) {
+      const lay = () => (mesh.isDisposed() ? this.onMuzzle.delete(lay) : layBeam(mesh, start(), to));
+      this.onMuzzle.add(lay);
+    }
     this.effects.push({
       mesh,
       born: performance.now(),
@@ -4108,12 +4121,14 @@ export class GameView {
     const muzzle = from();
     place();
     this.lastRope = { from: { ...last }, muzzle: !!muzzle };
+    // On the muzzle as drawn this frame (followMuzzles).
+    const follow = () => (mesh.isDisposed() ? this.onMuzzle.delete(follow) : place());
+    this.onMuzzle.add(follow);
     this.effects.push({
       mesh,
       born: performance.now(),
       ttl: ttlMs,
       update: (f) => {
-        place();
         mesh.scaling.x = mesh.scaling.z = 1 - f * 0.6;
       },
     });
@@ -4125,11 +4140,15 @@ export class GameView {
    * fence or a gun). Each bolt plays a few times faster than the pack's, to last about as long as the game's gap
    * between arcs. Where the pack can't play (not in yet, or too many effects at once) the plain jagged line does.
    */
-  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default', key?: string): void {
-    // Reduce flashing: one steady beam per source instead of a new crackling bolt each arc (steadyArcs.ts).
+  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default', key?: string, anchor?: MuzzleAnchor | null): void {
+    // A gun's lightning leaves its muzzle (the event's first point is the shooter's eye on the host, a moment ago).
+    const muzzle = anchor?.();
+    if (muzzle && pts.length > 1) pts = [muzzle, ...pts.slice(1)];
+    // Reduce flashing: one steady beam per source instead of a new crackling bolt each arc (steadyArcs.ts), its
+    // start kept on the gun's muzzle.
     if (reduceFlashing()) {
       const first = pts[0];
-      this.steadyArcs.hit(key ?? (source === 'fence' && first ? `fence:${Math.round(first.x)},${Math.round(first.z)}` : source), pts, color);
+      this.steadyArcs.hit(key ?? (source === 'fence' && first ? `fence:${Math.round(first.x)},${Math.round(first.z)}` : source), pts, color, undefined, anchor ?? null);
       return;
     }
     const fx = arcFx(source);
@@ -4164,13 +4183,13 @@ export class GameView {
     }
   }
 
-  /** A shot's trail: beam weapons draw beams, everything else tracers. */
-  addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
+  /** A shot's trail: beam weapons draw beams (kept on `anchor`'s muzzle), everything else tracers. */
+  addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90, anchor?: MuzzleAnchor | null): void {
     if (def?.id === 'core.railgun') {
       // A thick glowing rail that lingers, with a hot white core that snaps off first.
-      this.addBeam(from, to, def.view.tracer, 0.14, 750);
-      this.addBeam(from, to, '#ffffff', 0.04, 220);
-    } else if (def?.view.beam) this.addBeam(from, to, def.view.tracer, 0.04, 90);
+      this.addBeam(from, to, def.view.tracer, 0.14, 750, anchor);
+      this.addBeam(from, to, '#ffffff', 0.04, 220, anchor);
+    } else if (def?.view.beam) this.addBeam(from, to, def.view.tracer, 0.04, 90, anchor);
     else this.addTracer(from, to, color, ttlMs);
   }
 
@@ -4209,6 +4228,31 @@ export class GameView {
     let characters = 0;
     for (const a of this.avatars.values()) if (a.anim && !a.culled) characters++;
     return { draws: counter?.current ?? 0, meshes: this.scene.getActiveMeshes().length, casters: this.atmosphere.casterCount, characters, effects: this.vfx.count + this.effects.length };
+  }
+
+  /** Beams laid from a gun's muzzle again each frame (addBeam with an anchor); each goes with its mesh. */
+  private readonly onMuzzle = new Set<() => void>();
+
+  /**
+   * Everything drawn on a gun's muzzle, placed where the guns are this frame: beams (addBeam's, and the steady ones
+   * of Reduce flashing) and other players' flashes. Run just before the frame is drawn (the scene's before-render),
+   * once the camera, your first-person gun and the characters' held guns have all been placed: the characters put
+   * the gun in their hands after their animations, inside the scene's render. Run earlier (with the effects'
+   * physics, in setCamera) it used the guns of the frame before, and a beam's start lagged behind the muzzle.
+   */
+  private followMuzzles(now: number): void {
+    for (const lay of this.onMuzzle) lay();
+    this.steadyArcs.update(now);
+    for (const a of this.avatars.values()) {
+      if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
+      if (!a.flash) continue;
+      const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
+      a.flash.setEnabled(on);
+      if (on && a.muzzle) {
+        a.muzzle.node.computeWorldMatrix(true);
+        a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
+      }
+    }
   }
 
   /** Rooms without lamp light (phones on Low): see render. */
