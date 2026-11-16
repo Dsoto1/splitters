@@ -1,4 +1,5 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
+import { hostSilent } from './hostSilence.ts';
 import { BROWSER_HOST_MAX_GUESTS, MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, isJoinCode, parseCheckpoint, sanitizeName, type ClientMessage, type MatchCheckpoint, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
 import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from '@tiletrigger/shared/peerZip';
@@ -21,8 +22,6 @@ import { accessToken } from '../account.ts';
  * PeerJS: the game uses it through the Signaling interface (transport.ts).
  */
 const PREFIX = 'tiletrigger-';
-/** A friend's browser host that sends nothing for this long has dropped (it streams snapshots all the time). */
-const HOST_SILENT_MS = 20_000;
 export { makeJoinCode };
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
@@ -359,8 +358,9 @@ export class PeerTransport implements Transport {
           // This page stalled (a long frame, a sleeping tab): the silence was ours, not the host's.
           if (now - tickAt > 3000) heardAt = now;
           tickAt = now;
-          // A player's browser host streams 20 snapshots a second and answers every ping: silence this long is a dropped host.
-          if (!this.dedicated && now - heardAt > HOST_SILENT_MS) return hostLost('silent');
+          // A host streams 20 snapshots a second and answers every ping: silence this long is a dropped host (a
+          // dedicated one: a link it has dropped, so we reconnect).
+          if (hostSilent(now, heardAt, this.dedicated)) return hostLost('silent');
           this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) });
         }, 1000);
       });
