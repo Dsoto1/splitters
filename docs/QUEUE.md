@@ -42,6 +42,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - `wip/random-bots` · 7edcdadd · 43937153341 (lane A: random bots are random, a per-match shuffle of the allowed looks from the match seed; green on attempt 2, attempt 1 red only on the editor flow's "TEST starts within the 3 s budget" timing, 4.1 s and 3.6 s on a loaded runner, with seed 1 dealing the same looks as before; the branch tip adds a merge of main whose HANDOFF side is main's)
 - `wip/dropship-model` · 3c1400aa · 43941962252 (lane A: the Dropship's new model, the owner's own Meshy hover carrier, Meshy, owned; full suite green on attempt 1, the vehicles, coverage and editor flows included)
 - `wip/hostgame-spectate` · 8c1d7ffe · 43948075116 (lane B: e2e hostgame's round ended mid-flow, the host's bots reached the score limit and the friend travelled to the next map; the flow now holds the round open, as handoff does; e2e only, 5/11 → 12/12 locally)
+- `wip/mapmaker-bugs-1116` · a3f2dca1 · 43951375401 (lane B: the Arid preset never silent, tall wall styles refused under a floor or roof above with a hover card and an `edge.tall` warning, thick arches decorate their real face; carries the Paint list fix)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
