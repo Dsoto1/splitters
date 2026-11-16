@@ -12407,6 +12407,14 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the round: its bots reach Deathmatch's score limit (15) in a few minutes, and a slow run gets there
+  // mid-flow; the host then travels to the next map, the friend follows it, and between the two sessions the
+  // friend's `__cs` is the ended-match stub (no `spectate`, "spectator false, following -1"), then another map
+  // (not `phase0_arena` for Host this map). On CI the flow takes up to 9 minutes: no time limit either.
+  await sim(host, (m) => {
+    m.rules.scoreLimit = 0;
+    m.phaseEndTick = Infinity;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
