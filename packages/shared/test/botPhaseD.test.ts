@@ -148,7 +148,7 @@ describe('the debug view (item 4)', () => {
   it("a frame lists every bot with its state, route, scores and why it stopped, and collects failed searches", () => {
     const m = map('sandgate');
     const match = new Match(m, { ...rulesForMode(m, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [3, 3] }, 2);
-    for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i]!, BOT_DIFFICULTIES.normal, true);
+    for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, true);
     for (let t = 0; t < TICK_RATE * 8; t++) match.step();
     let f: BotDebugFrame = match.botDebugFrame();
     expect(f.bots.length).toBe(6);
