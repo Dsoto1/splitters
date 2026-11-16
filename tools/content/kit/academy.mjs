@@ -24,7 +24,7 @@
 // Level 1 keeps the outline (frame, leaf, straps; desk, hutch and shelves; case and door); level 2 is a few boxes.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, bar, box, hex, quad, quadN, scale3, standIn, triN } from './geom.mjs';
+import { Mesh, bar, box, disc, hex, lathe, quad, quadN, scale3, standIn, triN } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
@@ -413,5 +413,63 @@ export function closetFrontMesh(seed, size, g, look, level) {
     const hx = right ? xa : xb - 0.02;
     for (const y of [ya + 0.2, yb - 0.26]) box(m, [hx, y, zd], [hx + 0.02, y + 0.07, Z], metal, ['nz']);
   }
+  return m;
+}
+
+// ---------------------------------------------------------------- the conical roof
+
+/**
+ * A turret's conical roof (St. John's step 3; docs/map-briefs/st_johns): a shingled cone over a short eaves skirt, a
+ * finial on top. It fills its bounds: [-w/2, w/2] × [0, h] × [-d/2, d/2], round in plan (w = d), the eaves' ring
+ * touching the box's sides. Settings `g`: `segments` per level, `eaves` (the skirt's height, m), `finial` (its height,
+ * m). `look`: `roof` (hex: the shingles), `trim` (hex: the finial), `jitter` (shingle courses' tone), `grime`.
+ * Collides as three stacked boxes, a stepped cone (nobody stands on it; shots stop at it).
+ */
+export function spireMesh(seed, size, g, look, level) {
+  const [w, h] = size;
+  const R = w / 2;
+  const seg = g.segments[Math.min(level, g.segments.length - 1)];
+  const eaves = g.eaves ?? 0.25;
+  const fin = g.finial ?? 0.9;
+  const top = h - fin;
+  const roof = hex(look.roof);
+  const trim = hex(look.trim ?? '#2a2c30');
+  const r = rng(seed);
+  const m = new Mesh();
+  if (level === 0) {
+    const H = top - eaves;
+    m.boxes = [0, 1, 2].map((k) => {
+      const rr = R * (1 - k / 3) * 0.92;
+      return [-rr, k === 0 ? 0 : eaves + (H * k) / 3, -rr, rr, eaves + (H * (k + 1)) / 3, rr];
+    });
+  }
+  // Courses of shingles: a band of tone each, darker under each course's lip (a step in the profile at level 0).
+  const courses = level === 0 ? 9 : level === 1 ? 4 : 1;
+  const tones = Array.from({ length: courses + 1 }, () => 1 + r.range(-1, 1) * (look.jitter ?? 0.06));
+  const prof = [[R * 0.97, 0], [R, eaves * 0.4], [R, eaves]];
+  const H = top - eaves;
+  for (let k = 0; k < courses; k++) {
+    const y0 = eaves + (H * k) / courses;
+    const y1 = eaves + (H * (k + 1)) / courses;
+    const ra = R * (1 - k / courses) * 0.96;
+    const rb = R * (1 - (k + 1) / courses) * 0.96;
+    if (level === 0 && k > 0) prof.push([ra * 1.04, y0]);
+    prof.push([ra, y0 + (level === 0 ? 0.02 : 0)]);
+    if (k === courses - 1) prof.push([Math.max(0.02, rb), y1]);
+  }
+  const grime = look.grime ?? 0.2;
+  const shade = (p, n, row) => {
+    const band = Math.min(courses, Math.max(0, Math.floor(((p[1] - eaves) / Math.max(0.01, H)) * courses)));
+    const low = p[1] < eaves + 0.01 ? 0.7 : 1;
+    return scale3(roof, tones[band] * low * (1 - grime * 0.3 * (1 - p[1] / h)));
+  };
+  lathe(m, prof, seg, shade, { hard: [2] });
+  // The eaves' underside, a dark ring.
+  disc(m, R * 0.97, 0.002, seg, scale3(roof, 0.35), { down: true });
+  // The finial: a rod, a ball, a spike.
+  if (level < 2) {
+    const s2 = Math.max(6, seg / 2);
+    lathe(m, [[0.05, top - 0.05], [0.05, top + fin * 0.45], [0.11, top + fin * 0.5], [0.12, top + fin * 0.58], [0.11, top + fin * 0.66], [0.035, top + fin * 0.7], [0.01, h]], s2, () => trim);
+  } else lathe(m, [[0.06, top], [0.01, h]], 4, () => trim);
   return m;
 }

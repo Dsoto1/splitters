@@ -134,6 +134,23 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     chains: [[[-7, 0, 8], [0, 0, 7], [3, 0, 4]], [[0, 0, 7], [-2.5, 4, 3], [0, 4, 8], [-3.2, 4, 8], [3, 4, 4]]],
     climbs: [{ from: [-1.75, 0.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }],
   },
+  // St. John's step 3 (Scott Johnston / Hazelwood): the hall's centre on three floors, the round turret.
+  'setpiece.hall_centre': {
+    // Along the hall on every floor; in under the arch to the hall; up the first stair, then the second; into the north
+    // rooms on every floor; the room over the first stair.
+    chains: [
+      ...[0, 4, 8].map((y): P3[] => [[-3.5, y, 4], [4, y, 4], [11.5, y, 4]]),
+      [[8, 0, -14], [8, 0, -8], [8, 0, 0], [4, 0, 4]],
+      [[0, 0, 0], [0, 4, 0], [4, 4, 4]],
+      [[8, 4, 0], [8, 8, 0], [4, 8, 4], [0, 8, -8]],
+      ...[0, 4, 8].flatMap((y) => [-2, 2, 6, 10].map((cx): P3[] => [[4, y, 4], [cx, y, 8.3], [4, y, 4]])),
+    ],
+  },
+  'setpiece.corner_turret_round': {
+    // Round it on the ground (it is solid: nobody gets in).
+    chains: [[[-3, 0, -3.5], [-3, 0, 3.5], [3.5, 0, 3.5]]],
+    shut: { from: [-3, 0, -3.5], to: [[2.25, 0, -2.25]] },
+  },
   'setpiece.corner_tower_square': {
     // In at the door, up the ladder to the lookout and down again.
     chains: [[[1.2, 0, -7], [1.2, 0, -2.6], [1.2, 11.8, -0.6], [1.2, 0, -7]]],

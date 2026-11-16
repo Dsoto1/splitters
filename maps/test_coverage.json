@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 39,
+  "formatVersion": 42,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_gjtyijhdzfey32zt",
-      "revision": 35,
-      "contentHash": "sha256:e0ff1a8f9c5e9d19d72a7efa98446b199269de22c8bacbdd2ef5df5c477a8c71",
-      "schemaVersion": 39,
-      "releasedAt": "2026-11-15T06:57:17.485Z"
+      "versionId": "v_jmudmoagdpwato62",
+      "revision": 36,
+      "contentHash": "sha256:735f2a8f85ba3a5e9df99f551eb884089087910f84e88f64aac6e5cabb89c4f6",
+      "schemaVersion": 42,
+      "releasedAt": "2026-11-16T01:35:02.863Z"
     },
     "testOnly": true
   },
@@ -6650,6 +6650,34 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    },
+    {
+      "id": "setpiece_4tw978dgz3",
+      "piece": "setpiece.hall_centre",
+      "x": -7,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_58q7mf5eb8",
+      "piece": "setpiece.corner_turret_round",
+      "x": -4,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "top": "red"
+        }
+      }
     }
   ]
 }

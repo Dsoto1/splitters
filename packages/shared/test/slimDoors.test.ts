@@ -1,6 +1,6 @@
 // Slim room doors (owner, 2026-11-15: "the doors to each room … are a bit wide, we should move the frame in"): the dorm
 // pieces' Room doors option (map format v42, set piece options) and the passage bots walk through (sim/passages.ts).
-// Each room's 2 m doorway is brought in to 1.2 m by a jamb either side, with a 1.2 m Oak Door in it. 1.2 m is narrower
+// Each room's 2 m doorway is brought in to 1.2 m (the piers either side 0.4 m wider, or a jamb in a thin wall), with a 1.2 m Oak Door in it. 1.2 m is narrower
 // than the navmesh keeps open (it stays 0.8 m off walls), so the open slim door is a passage: a walking link through
 // its frame. Here: the option swaps exactly the door parts; the doorway is 1.2 m; without the links the rooms are cut
 // off and with them every open room is reached in every turn; a body that follows the route's corners walks in and
@@ -43,7 +43,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 const library = builtInSetPieces();
 const ROTATIONS = [0, 1, 2, 3] as Rotation[];
 const SLIM = { options: { roomDoors: 'slim' } };
-const DOOR_PIECES = ['setpiece.dorm_bay', 'setpiece.dorm_bay_closed', 'setpiece.dorm_corner_bay', 'setpiece.dorm_entry_bay', 'setpiece.dorm_office_bay'];
+const DOOR_PIECES = ['setpiece.dorm_bay', 'setpiece.dorm_bay_closed', 'setpiece.dorm_corner_bay', 'setpiece.dorm_entry_bay', 'setpiece.dorm_office_bay', 'setpiece.hall_centre'];
 
 function mapOf(placements: SetPiecePlacement[], spawns: [number, number, number][] = [[-160, 0, -160]], ground = true): MapDocument {
   const map = makeMap([{ id: 'home', tile: 'core.room', x: -20, y: -20, z: 0, rotation: 0 }], spawns);
@@ -105,7 +105,9 @@ describe('the Room doors option', () => {
       expect(n, id).toBeGreaterThan(0);
       expect(doors(slim.entities, false), id).toHaveLength(0);
       expect(doors(slim.entities, true), id).toHaveLength(n);
-      expect(slim.entities.filter((e) => e.kind === 'block').length - wide.entities.filter((e) => e.kind === 'block').length, id).toBe(2 * n);
+      // The closet-deep walls' piers each side of a doorway are swapped for ones 0.4 m wider (as many blocks); the
+      // office bay's thin walls get a jamb either side of each door instead.
+      expect(slim.entities.filter((e) => e.kind === 'block').length - wide.entities.filter((e) => e.kind === 'block').length, id).toBe(id === 'setpiece.dorm_office_bay' ? 2 * n : 0);
       // The tiles and everything else stay as they are.
       expect(JSON.stringify(slim.tiles)).toBe(JSON.stringify(wide.tiles));
     }

@@ -109,7 +109,7 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // valid as is. The bump is for the other direction: an older build would drop the paint without a word.
   [40, (doc) => ({ ...doc })],
   // v41 -> v42: set piece options (map/schema.ts SetPieceOption): a definition's named choices, its parts' `when`, and
-  // a placement's `overrides.options` (a dorm bay's room doors wide or slim). Absent = every option's first choice,
+  // a placement's `overrides.options` (a dorm bay's room doors wide or slim); and the facade `collegiate_red`. Absent = every option's first choice,
   // which is the piece as it was: v41 data is valid as is. The bump is for the other direction: an older build would
   // drop the choice without a word.
   [41, (doc) => ({ ...doc })],
