@@ -55,6 +55,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landed: punchier hits, damage by speed and clearer ranges in a train** (`check/train-20261116-224557` at e41aa635, run 43973163585, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). Follow-up: the Heavy Revolver's short range (owner: "short range yes"), `wip/revolver-range`.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `wip/revolver-range` · run 43982223065 (`check/revolver-range` at 82581817; the Heavy Revolver's short range; a helper of lane A's lead)
 
 **Landing now: train** (`wip/mapmaker-bugs-1116`, `wip/mapmaker-ui-3`; lane B's splitters22, 2026-11-16, 21:55 UTC): please hold code pushes to main until this line goes.
 
