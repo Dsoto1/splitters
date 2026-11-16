@@ -481,3 +481,5 @@ Claim `maps/sandfall_colosseum.json` in HANDOFF first. Drive the real MapMaker o
 4. Publishing: (a) the owner republishes from MapMaker once phase 4 lands.
 
 Phase 5 is therefore only the gallery stairs.
+
+**Owner, 2026-11-15, on the stairs' lighting:** "Leave": no candles on the gallery stairs (Flavius Rule stays at 245 of 256 lights; the gate corner's 18-light cap unchanged).
