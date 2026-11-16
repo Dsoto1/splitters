@@ -18,7 +18,7 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const FILE = 'content/roulette.json';
 const GENERATED = 'packages/shared/src/content/roulette.generated.ts';
 /** Character Select's groups: the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (and GROUPS in character-manifests.mjs). */
-const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
+const GROUPS = ['soldiers', 'folk', 'space', 'agents', 'legends', 'creatures', 'animals', 'machines', 'horror'];
 
 const { num, int, str, map, obj } = shape;
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));

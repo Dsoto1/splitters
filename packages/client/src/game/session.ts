@@ -212,8 +212,9 @@ import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
-import { loadFirstPersonMode } from './graphicsSettings.ts';
+import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
+import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
@@ -608,6 +609,8 @@ export class GameSession {
   private fps = 0;
   private fpsAt = performance.now();
   private frameMs = 0;
+  /** The worn-down tab's toll each frame (fix 3d): two clock reads a frame. */
+  readonly toll = new TabToll();
   /** The performance overlay's measurements (on while it shows). */
   private readonly perf = new PerfOverlay();
   /** The match recording while "Record performance" is on (perfRecorder.ts). */
@@ -624,6 +627,7 @@ export class GameSession {
       pos: this.local ? [this.local.state.pos.x, this.local.state.pos.y, this.local.state.pos.z] : [cam.x, cam.y, cam.z],
       server: this.serverStats,
       shaders: this.view.shaderCount(),
+      outsideMs: this.toll.lastSecondMs,
     };
   }
   /** Stop the recording and download it. */
@@ -1850,7 +1854,22 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
+    this.dropTestHooks();
     this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined), end);
+  }
+
+  /**
+   * The page's automation hooks (`window.__cs`, `__tips`, `__tutorial`) hold this session: its view, scene, HUD and
+   * everything they reach. Left in place after the match they kept the whole match alive under MapMaker (Iron Maw
+   * with 15 bots: about 220 MB of script memory and a disposed scene per Test; the memory probe, fix 3c).
+   */
+  private dropTestHooks(): void {
+    const w = window as unknown as Record<string, { view?: unknown; map?: unknown } | undefined>;
+    // What a test may still read once the match has gone (the end-of-match board's "Next map", the map it was), and
+    // nothing that reaches the session.
+    if (w.__cs?.view === this.view) w.__cs = { ended: true, map: w.__cs.map, slot: this.slot, hud: { nextMap: this.hud.nextMap } } as { map?: unknown };
+    if (this.tips) delete w.__tips;
+    if (this.tutorial) delete w.__tutorial;
   }
 
   /** The map as the welcome brought it (before this page added anything to it), for hosting the match again. */
@@ -3085,6 +3104,13 @@ export class GameSession {
   frame(): void {
     if (this.closed) return;
     const t0 = performance.now();
+    this.drawFrame(t0);
+    // A tab that has slowed (time outside our frame on late frames, 30 s over 8 ms): say once that a reload helps.
+    // Not in a browser test's match (CI draws in software: every frame is late there).
+    if (this.toll.frame(t0, performance.now(), currentFrameCap(), document.hidden) && !testMode()) this.hud.showMessage(TAB_SLOWING_TEXT, 10);
+  }
+
+  private drawFrame(t0: number): void {
     if (!$('pause').hidden) {
       this.pauseMenu.pollPad();
       this.drawPause();
@@ -3563,6 +3589,7 @@ export class GameSession {
       this.showStats,
       {
         ...(this.showStats ? this.perf.lines() : {}),
+        ...(this.showStats ? { tab: `outside our script ${this.toll.lastSecondMs.toFixed(1)} ms a frame (late frames)${this.toll.streak >= 5 ? `, over 8 ms for ${this.toll.streak} s: the tab is slowing, a reload helps` : ''}` } : {}),
         renderer: this.opts.rendererKind,
         match: this.opts.transport.label,
         ...(this.showStats ? {} : { fps: this.fps.toFixed(0), frame: `${this.frameMs.toFixed(1)} ms` }),

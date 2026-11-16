@@ -1,6 +1,6 @@
-import { serializeMap, validateMap, type MapDocument } from '@tiletrigger/shared';
+import { serializeMap, stampMapRelease, validateMap, type MapDocument } from '@tiletrigger/shared';
 import { accessToken } from '../account.ts';
-import { forgetPublished, hubApi, publishedMaps, type PublishedEntry } from '../publishedMaps.ts';
+import { builtInNewerThanPublished, forgetPublished, hubApi, hubPublishedMaps, type PublishedEntry } from '../publishedMaps.ts';
 
 /**
  * The owner's MapMaker tools (docs/HOSTING.md, "Publishing maps"): publish the
@@ -43,11 +43,18 @@ async function body(map: MapDocument): Promise<{ data: BodyInit; gzip: boolean }
   return { data: await new Response(stream).blob(), gzip: true };
 }
 
-export async function publishMap(map: MapDocument): Promise<PublishedEntry> {
+/**
+ * Publish a map, stamped first (map/identity.ts: the same map ID, the next revision and a new version ID when the
+ * content changed), so the published file records the version it is and the nightly workflow brings that record into
+ * the repository: the site, hosts and the workflow then agree on which version is newer (shared publishedChoice.ts).
+ * Returns the hub's entry and the stamped map (the editor keeps its release block, as after an export).
+ */
+export async function publishMap(unstamped: MapDocument): Promise<PublishedEntry & { stamped: MapDocument }> {
+  const map = stampMapRelease(unstamped);
   const { data, gzip } = await body(map);
   const res = await call(`maps/${map.metadata.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', ...(gzip ? { 'Content-Encoding': 'gzip' } : {}) }, body: data });
   forgetPublished();
-  return (await res.json()) as PublishedEntry;
+  return { ...((await res.json()) as PublishedEntry), stamped: map };
 }
 
 export async function mapVersions(id: string): Promise<PublishedVersion[]> {
@@ -84,8 +91,10 @@ export async function openPublishDialog(dialog: HTMLDialogElement, host: Publish
   const doc = host.doc();
   const id = doc.metadata.id;
   const errors = validateMap(doc).filter((i) => i.severity === 'error');
-  const published = (await publishedMaps()).get(id);
+  const published = (await hubPublishedMaps()).get(id);
   const replaces = host.builtIn(id) || !!published;
+  // The game's own version is newer than the published one (changed in the repository since): the game uses it.
+  const newer = await builtInNewerThanPublished(id);
   const status = el('p', { className: 'ed-publish-status' });
   const go = el('button', { className: 'primary', textContent: replaces ? 'Publish the new version' : 'Publish as a new map', disabled: errors.length > 0 });
   const versions = el('div', { className: 'ed-publish-versions' });
@@ -98,6 +107,7 @@ export async function openPublishDialog(dialog: HTMLDialogElement, host: Publish
         ? `This replaces the official ${published?.name ?? doc.metadata.name} (${id}) for everyone: the map list, new matches, MapMaker and Host Services. Matches already running finish on the version they started with. Every earlier version is kept below.`
         : `This adds ${doc.metadata.name} (${id}) as a new official map for everyone. You can take it down again.`,
     }),
+    ...(newer ? [el('p', { className: 'ed-publish-newer', textContent: "The game's version is newer than your last publish, so the game uses it, not the published one, until you publish again." })] : []),
     ...(errors.length ? [el('p', { className: 'ed-publish-errors', textContent: `Fix ${errors.length} error${errors.length > 1 ? 's' : ''} first: ${errors.slice(0, 3).map((e) => e.message).join('; ')}` })] : []),
     status,
     el('div', { className: 'ed-dialog-actions' }, go, close),
@@ -108,6 +118,8 @@ export async function openPublishDialog(dialog: HTMLDialogElement, host: Publish
     status.textContent = 'Publishing…';
     publishMap(host.doc()).then(
       (e) => {
+        // Keep the identity Publish stamped (as after an export), so the next publish or export continues it.
+        if (e.stamped.metadata.release) host.doc().metadata.release = e.stamped.metadata.release;
         status.textContent = `Published ${e.name}.`;
         host.toast(`Published ${e.name} for everyone`);
         void fillVersions();
@@ -119,7 +131,7 @@ export async function openPublishDialog(dialog: HTMLDialogElement, host: Publish
     );
   });
   const fillVersions = async (): Promise<void> => {
-    if (!replaces && !(await publishedMaps()).has(id)) return void versions.replaceChildren();
+    if (!replaces && !(await hubPublishedMaps()).has(id)) return void versions.replaceChildren();
     let list: PublishedVersion[] = [];
     try {
       list = await mapVersions(id);
@@ -150,7 +162,7 @@ export async function openPublishDialog(dialog: HTMLDialogElement, host: Publish
         (e: Error) => host.toast(`Couldn't: ${e.message}`, true),
       );
     });
-    const now = (await publishedMaps()).has(id);
+    const now = (await hubPublishedMaps()).has(id);
     versions.replaceChildren(el('h3', { textContent: 'Published versions' }), rows.length ? el('ul', {}, ...rows) : el('p', { textContent: 'None yet.' }), ...(now ? [down] : []));
   };
   dialog.showModal();

@@ -5,7 +5,7 @@
   "order": 33,
   "name": "Botboy",
   "look": "core.botboy",
-  "group": "creatures",
+  "group": "machines",
   "nameTheme": "robot",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",

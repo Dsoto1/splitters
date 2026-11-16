@@ -1,5 +1,6 @@
 import { COUNT, SYS, perfProbe, type FrameSample } from './perfProbe.ts';
 import { currentFrameCap, loadGraphicsQuality, loadRenderScale } from './graphicsSettings.ts';
+import { memoryLine } from '../memoryReadout.ts';
 
 export { loadPerfOverlay, savePerfOverlay } from './perfPrefs.ts';
 
@@ -139,6 +140,18 @@ const onWorker = (frames: readonly FrameSample[]) => frames.every((f) => f.ticks
 export class PerfOverlay {
   private counts: DrawCounts[] = [];
   private shown = false;
+  /** The memory readout (fix 3a), read once a second while shown. */
+  private memoryAt = 0;
+  private memoryText = '';
+
+  private memory(): string {
+    const now = performance.now();
+    if (now - this.memoryAt >= 1000) {
+      this.memoryAt = now;
+      this.memoryText = memoryLine();
+    }
+    return this.memoryText;
+  }
 
   /** Show or hide: the frame probe runs while shown (or while a recording or a trace wants it). */
   set visible(on: boolean) {
@@ -196,6 +209,7 @@ export class PerfOverlay {
       systems: `characters ${sp('characters')} (clips ${sp('charAnim')}, skinning ${sp('charSkin')}) · effects ${sp('effects')} · ragdolls ${sp('ragdolls')} · flames ${sp('flames')} · hud ${sp('hud')} · other game ${sp('game')} ms`,
       drawn: `${c('draws')} draws · ${c('meshes')} meshes · ${c('casters')} shadow casters`,
       '': `${c('characters')} characters (${cn('animated')} animated, ${cn('skinned')} skinned a frame) · ${c('effects')} effects · ${cn('lasting')} lasting · ${cn('ragdolls')} ragdolls awake`,
+      memory: this.memory(),
       gpu: gpuName(),
       report: 'Pause → Settings → Copy performance report',
     };
@@ -245,6 +259,7 @@ export class PerfOverlay {
       `people    ${count('characters')} characters drawn`,
       `effects   ${count('effects')}`,
       `per frame ${(['animated', 'skinned', 'ragdolls', 'lasting', 'built'] as const).map((k) => `${k} ${perFrame(k)}`).join(', ')}`,
+      `memory    ${memoryLine()}`,
     ].join('\n');
   }
 }

@@ -458,6 +458,9 @@ export class FrontEnd {
   /** The character shown on Character Select (clicked, not yet chosen): `look` changes only when it's confirmed. */
   private previewed: string | null = null;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
+  /** The footer's fullscreen hint label shown now, and whether the page listener for it is on. */
+  private fsLabel: HTMLElement | null = null;
+  private fsWatched = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -600,9 +603,14 @@ export class FrontEnd {
     const groups = [group('moves', moves), ...(acts.length ? [group('acts', acts)] : [])];
     if (fullscreenSupported()) {
       const fs = hintButton('hint-fullscreen', glyphs('F11'), isFullscreen() ? 'Exit fullscreen' : 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
-      const label = fs.lastElementChild as HTMLElement;
-      const update = () => (fs.isConnected ? (label.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen') : document.removeEventListener('fullscreenchange', update));
-      document.addEventListener('fullscreenchange', update);
+      // One page listener names the current button (one per screen shown kept every old footer alive until fullscreen changed).
+      this.fsLabel = fs.lastElementChild as HTMLElement;
+      if (!this.fsWatched) {
+        this.fsWatched = true;
+        document.addEventListener('fullscreenchange', () => {
+          if (this.fsLabel?.isConnected) this.fsLabel.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen';
+        });
+      }
       groups.push(group('util', [fs]));
     }
     return groups;

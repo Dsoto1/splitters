@@ -5,7 +5,7 @@
   "order": 89,
   "name": "Field Medic Automaton",
   "look": "core.medicautomaton",
-  "group": "creatures",
+  "group": "machines",
   "nameTheme": "robot",
   "bio": "Patches you up, then patches you out. Bedside manner not installed.",
   "body": "male",

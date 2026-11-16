@@ -6,7 +6,10 @@ import {
   budgetCulprits,
   BudgetTracker,
   BUILD_LEVELS,
+  buildMapDecor,
   buildMapGeometry,
+  themeChangeImpact,
+  type ThemeChangeImpact,
   builtInSetPieces,
   coreCatalog,
   EDGE_STYLE_LABELS,
@@ -102,6 +105,7 @@ import { LeftRail } from './leftRail.ts';
 import { MapSettingsView } from './mapSettingsView.ts';
 import { RightDock } from './rightDock.ts';
 import { StatusBar } from './statusBar.ts';
+import type { EditorResume } from '../editorResume.ts';
 import { ToolBar } from './toolBar.ts';
 import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
@@ -460,6 +464,14 @@ export class EditorApp {
     this.tour.maybeStart();
   }
 
+  /**
+   * Entering MapMaker after a reload of the tab while it was open (editorResume.ts): the map being made, its unsaved
+   * changes included; a blank starter when there is nothing to come back to.
+   */
+  async resume(r: EditorResume): Promise<void> {
+    if (!(await this.saving.resume(r).catch(() => false))) this.startFresh();
+  }
+
   get doc(): MapDocument {
     return this.history.doc;
   }
@@ -483,6 +495,16 @@ export class EditorApp {
     const doc = this.viewDoc;
     if (this.boxesFor?.doc !== doc) this.boxesFor = { doc, boxes: buildMapGeometry(doc) };
     return this.boxesFor.boxes;
+  }
+
+  /** The map's boxes as drawn (collision and trim), for the theme warning's counts. */
+  drawnBoxes(): WorldBox[] {
+    return [...this.mapBoxes(), ...buildMapDecor(this.viewDoc)];
+  }
+
+  /** What changing the Structure theme to `to` would do: the warning's counts (painting Phase 2; shared editor/paintLayers.ts). */
+  themeImpact(to: string): ThemeChangeImpact {
+    return themeChangeImpact(this.doc, this.setPieceLib, to, this.drawnBoxes());
   }
 
   /**
@@ -573,6 +595,7 @@ export class EditorApp {
     this.notes.frame();
     this.hints.frame();
     this.plan.update();
+    this.statusBar.memoryTick();
     this.view.render();
   }
 

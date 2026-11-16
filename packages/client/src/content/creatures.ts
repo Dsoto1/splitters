@@ -4,6 +4,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { CREATURE_SPECS, type CreatureModel, type CreatureSpec } from '@tiletrigger/shared';
 import { gone, type CharacterSpec } from './characters.ts';
@@ -44,7 +45,7 @@ export class CreatureLibrary {
   private load(kind: CreatureModel): Promise<AssetContainer> {
     let p = this.files.get(kind);
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
       this.files.set(kind, p);
     }
     return p;

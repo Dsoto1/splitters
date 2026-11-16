@@ -163,6 +163,7 @@ import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 import { COUNT, SYS, perfProbe } from './perfProbe.ts';
 import { Effect } from '@babylonjs/core/Materials/effect';
+import { scrubCompiledEffects } from '../effectScrub.ts';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
@@ -589,8 +590,7 @@ export class GameView {
     // made it trail the muzzle by a frame whenever you moved.
     this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
     void loadMuzzleFlashes();
-    // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
-    Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
+    installFlashHold();
     this.vfx = new GodotVfx(this.scene);
     this.steadyArcs = new SteadyArcs(this.scene);
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
@@ -4260,10 +4260,24 @@ export class GameView {
     this.blood.dispose();
     this.impacts.dispose();
     this.environment?.dispose();
+    const engine = this.scene.getEngine();
     this.scene.dispose();
+    // The engine's shader cache would keep this scene reachable through the effects it compiled (effectScrub.ts).
+    scrubCompiledEffects(engine);
     this.physics?.free();
     this.physics = null;
   }
+}
+
+/**
+ * Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot). Defined once, out here:
+ * defined in the view's constructor its two arrows held that view (and its whole scene) after the match ended.
+ */
+let flashHoldInstalled = false;
+function installFlashHold(): void {
+  if (flashHoldInstalled) return;
+  flashHoldInstalled = true;
+  Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
 }
 
 /**

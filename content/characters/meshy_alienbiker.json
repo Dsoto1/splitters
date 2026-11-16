@@ -5,7 +5,7 @@
   "order": 90,
   "name": "Alien Biker",
   "look": "core.alienbiker",
-  "group": "creatures",
+  "group": "space",
   "nameTheme": "alien",
   "bio": "Crossed four galaxies for the open road. Still can't find parking.",
   "body": "male",
