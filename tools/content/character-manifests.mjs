@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -187,6 +187,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.lod === undefined || (typeof x.lod === 'number' && x.lod >= 0.15 && x.lod <= 0.6), 'fixes.lod: 0.15–0.6 (the share of the body\'s triangles its low-detail copy keeps; 0.3 unless set)');
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
   need(x.fingers === undefined || x.fingers === 'own' || x.fingers === 'fit', "fixes.fingers: 'own' (a rigged download's own finger joints and weights, where its finger chains are whole; the default) or 'fit' (re-fitted from the mesh, hands.mjs)");
+  // `rejoint`: rig joints moved along their bone toward their parent (skinfix.mjs moveJoints): { <rig joint>: share }.
+  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && typeof v === 'number' && v >= 0.3 && v <= 1)), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share (0.3–1) of the way from its parent it sits at }');
   if (x.hold !== undefined) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
@@ -401,6 +403,7 @@ export function buildSpec(m) {
     lod: x.lod,
     normalSize: x.normalSize,
     fingers: x.fingers,
+    rejoint: x.rejoint,
     joints,
   };
 }

@@ -8162,8 +8162,17 @@ async function vehiclesFlow(browser) {
   check(rigid.rigid && rigid.predicted && rigid.off !== null && rigid.off < rigid.ahead && rigid.worst < 1.5, `the buggy drives as a rigid body and your own is predicted, with the host's (${JSON.stringify(rigid)})`);
   // Dropped from 8 m leaning half a radian: it falls, lands (on its wheels, or tips and rights itself) and ends up
   // on four wheels; the drawn body leans with the sim's roll (the snapshot's ms) on the way. Logged every tick.
+  // The throttle is let go first, and the drop waits until the match has driven the buggy on a released input: air
+  // control works on what changed since take-off (wheelPhysics.ts `airIn`), so a throttle input of the drive above
+  // still on its way when it left the ground made the fall "let go of W in the air", a 12 rad/s² nose-up for the whole
+  // second it falls (1 to 15 such inputs: roll 0.9-1.8 rad, as against 0.5), and on CI it came down on its side.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.waitForFunction(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+    return !!m && m.drive.forward === 0 && m.drive.right === 0 && !m.driveQueue?.length;
+  }, null, { timeout: T(20000) }).catch(() => {});
   await page.evaluate(() => {
-    window.__autoInput = { buttons: 0 };
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
     const m = match.mounts[me.mount.index];
@@ -8823,16 +8832,50 @@ async function arcTurretChecks(browser) {
       draw(pts, color);
     };
   });
+  // The wind-up is judged in match ticks, where the match runs: every tick from the step in logs the turret's charge
+  // and your health. (Reading your health once this page draws it charging raced the match: a page drawing a frame
+  // every quarter second runs 15 ticks a frame and draws a snapshot behind, so the 45-tick wind-up could be over, and
+  // the first hit in, before the read. `seen`: match ticks into the wind-up by the time this page showed it.)
   const start = await sim(page, (m, me, a) => {
     me.move = { pos: { x: a[0] + 11, y: 0.5, z: a[2] }, velY: 0, grounded: false };
+    const turret = m.mounts.find((x) => x.def.id === 'sentry_arc');
+    const log = (m.__arcLog = { windUp: Math.round(turret.def.sentry.arc.windUpSeconds * 60), ticks: 0, first: -1, full: -1, hit: -1, hitCharge: -1, start: me.health });
+    const step = m.step;
+    m.__arcStep = step;
+    m.step = function () {
+      const out = step.call(this);
+      const st = turret.arc;
+      if (st?.target === me.slot) {
+        if (log.first < 0 && st.charge > 0) log.first = log.ticks;
+        if (log.full < 0 && st.charge >= log.windUp) log.full = log.ticks;
+      }
+      if (log.hit < 0 && me.health < log.start) {
+        log.hit = log.ticks;
+        log.hitCharge = st?.charge ?? -1;
+      }
+      log.ticks++;
+      return out;
+    };
     return me.health;
   }, at);
-  const charged = await page.waitForFunction(() => [...window.__cs.mounts.mounts.values()].some((x) => x.def.id === 'sentry_arc' && x.charging), null, { timeout: T(20000) }).then(() => true, () => false);
-  const during = await sim(page, (m, me) => me.health);
-  const orb = (await arcState())?.orb ?? 0;
-  check(charged && during === start, `it winds up on you first: charging, no damage yet (${JSON.stringify({ charged, health: [start, during] })})`);
-  check(orb > 0, `its charge orb is drawn while it winds up (${orb})`);
+  // Its charge orb is drawn while this page shows it winding up.
+  const orb = await page
+    .waitForFunction(() => {
+      const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'sentry_arc' && x.charging);
+      const orb = m ? window.__cs.view.chargeOrb(m.index) : 0;
+      return orb > 0 ? orb : null;
+    }, null, { timeout: T(20000) })
+    .then((h) => h.jsonValue(), () => 0);
+  // (How far the match was by the time this page showed it: the old check read your health here.)
+  const seen = await sim(page, (m) => m.__arcLog.ticks - m.__arcLog.first);
   const locked = await meWait(page, (m, me, s) => me.health < s, start, 4, T(60000));
+  const wind = await sim(page, (m) => {
+    m.step = m.__arcStep;
+    return m.__arcLog;
+  });
+  // Charging began on you, ran the whole wind-up, and the first hit came only after it.
+  check(wind.first >= 0 && wind.full >= wind.first + wind.windUp - 1 && (wind.hit < 0 || wind.hit >= wind.full), `it winds up on you first: charging, no damage yet (${JSON.stringify({ ...wind, seen })})`);
+  check(orb > 0, `its charge orb is drawn while it winds up (${orb})`);
   await page.waitForFunction(() => window.__arcs > 0, null, { timeout: T(10000) }).catch(() => {});
   const fired = { ...(await arcState()), arcs: await page.evaluate(() => window.__arcs), health: await sim(page, (m, me) => me.health) };
   check(locked && fired.arcs > 0, `then its arc locks on: you take hits, and the arc is drawn in its colour (${JSON.stringify(fired)})`);

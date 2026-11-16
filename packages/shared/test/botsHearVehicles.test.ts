@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, BUTTON_USE, CORE_BOT_PROFILES, DEFAULT_RULES, initPhysics, type MapDocument, type MapEntity, type PlayerInput } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
@@ -45,6 +46,27 @@ describe('bots hear a driven vehicle', () => {
         bot.health = 100;
       }
       expect(shots).toBeGreaterThan(5);
+      // Out of the buggy, on foot beside it: they keep on at you, not at the empty buggy (owner: "after i got out ...
+      // they didn't see me until i shot at them"). Its magazine is full again (the buggy took the last ones).
+      send({ buttons: BUTTON_USE });
+      match.step();
+      expect(me.mount).toBeFalsy();
+      for (const w of bot.weapons.values()) w.mag = Math.max(w.mag, 30);
+      let on = -1;
+      let hits = 0;
+      for (let k = 0; k < 300; k++) {
+        send();
+        const before = me.health;
+        match.step();
+        if (me.health < before) hits++;
+        if (on < 0 && (bot as unknown as { bot: { targetSlot?: number } }).bot.targetSlot === me.slot) on = k;
+        me.health = 100;
+        bot.health = 100;
+      }
+      if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/out-of-buggy-${drive}.txt`, `on foot: the bot on you after ${(on / 60).toFixed(2)} s, hit ${hits} times in 5 s`);
+      expect(on).toBeGreaterThanOrEqual(0);
+      expect(on).toBeLessThan(60);
+      expect(hits).toBeGreaterThan(3);
     }, 60_000);
   }
 });

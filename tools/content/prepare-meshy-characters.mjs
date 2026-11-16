@@ -55,7 +55,7 @@ import { buildSpec, jointsFromLandmarks, readManifests } from './character-manif
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
-import { bindRigid, bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
+import { bindRigid, bodySkin, fingerSkin, fixBodySkin, moveJoints } from './skinfix.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs';
 import { addLowDetail } from './character-lod.mjs';
@@ -313,6 +313,18 @@ async function readMeshy(file, ual, c) {
     metalRough,
     ownNormalMap,
   };
+  // Joints moved along their bone toward their parent (`fixes.rejoint`, skinfix.mjs), in the download's own pose, with
+  // the skin past the new place handed to the joint: a rig whose shoulders sat out at a robe's seam.
+  if (c.rejoint) {
+    const restAt = (v) => {
+      let p = [0, 0, 0];
+      for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
+      return p;
+    };
+    const done = moveJoints({ count: verts.count, at: restAt, J, W, rest, parent, rigOf: skel.rig ?? names.map((n) => JOINT_MAP[n]), moves: c.rejoint });
+    const cm = (a, b) => (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 100).toFixed(1);
+    for (const r of done) console.log(`  rejoint: ${r.joint} moved ${cm(r.from, r.to)} cm toward its parent, ${r.moved} vertices handed to it (limb radius ${(r.radius * 100).toFixed(1)} cm)`);
+  }
   return pose(skel, verts, ual, c);
 }
 
