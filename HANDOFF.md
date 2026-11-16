@@ -13,8 +13,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
+**Landing now: train** (St. John's step 4; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/stjohns-4` · 0b374126 · run 43877348385 (St. John's step 4; a helper of lane A's lead)
+- `wip/drive-physics-3` · 43888341752 (driving physics 3, landing A on its own: bots shoot drivers of open vehicles, and see and shoot through bars, barred gates and fences; a helper of lane A's lead)
 
 - **Claimed (a helper of lane A's lead, 2026-11-16): driving physics 3** (`wip/drive-physics-3`; QUEUE In flight). Landing A first, on its own: bots shoot the driver of an open vehicle, and see and shoot through bars, barred gates and fences. Files: shared `sim/match.ts` (shots into an open vehicle's hull reach its riders: `openHull`), `sim/physics.ts` (`GROUP_LATTICE`: bars, posts and rails solid to bodies and shots, not to sight; `botShotHit`, `botShotLine`, `raycastHitPast`), `map/edgeShapes.ts` (`edgeLattice`), `map/geometry.ts` and `map/catalog.ts` (`WorldBox.lattice`, `LocalBox.lattice`; kit Iron Fence and chain-link props), `bots/brain.ts` (open-vehicle riders not "outgunned"; clear-shot checks through lattices), tests `botsShootDrivers.test.ts`, `botsSeeThroughBars.test.ts`. Then B (the feel): diagnosis and a plan in `docs/DRIVING_PHYSICS_PLAN.md`; `sim/wheelPhysics.ts`, `client/src/game/vehiclePrediction.ts` and their tests if a fix lands. No map format change.
 **Landing now: train** (lane B's splitters22, 2026-11-16, 13:25 UTC; painting Phase 3, alone after its 2-hour wait), please hold code pushes to main.
