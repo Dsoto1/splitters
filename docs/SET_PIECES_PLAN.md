@@ -721,6 +721,47 @@ corner on two floors, a long arm of Dorm Bays with the entry bay, the upper-door
 the hall end to end on both floors, rooms off both arms, the lounge, both stairs, the side entry, across the bridge,
 up the tower's ladder.
 
+## As built: part 9 (Scott Johnston / Hazelwood's pieces, slim room doors; 2026-11-16)
+St. John's step 3 (docs/map-briefs/st_johns/PLAN_2026-11-12.md, 3.5, and its "4c"): the pieces the three-floor hall
+needed, in `academy.json`, and the owner's slim room doors (2026-11-15: "the doors to each room … are a bit wide, we
+should move the frame in").
+
+| Piece | Cells, levels | Mirror | What it is |
+|---|---|---|---|
+| Hall Centre (3 floors) (`setpiece.hall_centre`) | 2 × 3, levels 0-2 | none | Two cells of hall on three floors with a block a cell forward of them. North of the hall the Dorm Bay's rooms (four a floor, Room doors option); south an open landing the width of both cells through two 6 m openings (the Dorm Entry Bay's piers). The forward block: a Stairwell west (ground to first floor), the entrance hall east under a Round arch (benches, plants), a second Stairwell over the entrance hall (first to second floor), a room over the first with twin sashes; the stairs open north onto the landings. Facade on its outer sides; a twin sash and an arched window high up. 10 lights. |
+| Round Corner Turret (`setpiece.corner_turret_round`) | 1 × 1, levels 0-4 | free | A solid round turret 3 m across in the cell's south-east corner (its centre 1.75 m in from the east and south edges): twelve turned blocks of the look's stone to a dressed cornice at 14 m, a cap; option **Top**: merlons on every other face, or the Conical Turret Roof in slate or red shingle (`kit.roof.cone`, 4.6 m). 26-32 parts in play. |
+
+**Room doors** (set piece options, map format v42; CONTENT_PIPELINE.md, "Set pieces"): Dorm Bay, Dorm Bay (two rooms
+shut), Dorm Corner Bay, Dorm Entry Bay, Dorm Office Bay and the Hall Centre offer Wide (2 m, as built before: the
+default) and Slim. Slim swaps each room doorway's two piers (in the closet-deep walls) for piers 0.4 m wider, so the
+doorway is 1.2 m and the wall the same number of blocks; the office bay's 0.12 m walls get a jamb 0.4 m wide either side
+of each door instead. The door is the Slim Oak Door (1.2 m, the same leaves; shut, ajar and open where the wide one
+was). **Bots:** 1.2 m is narrower than the navmesh keeps open (0.8 m off walls closes anything under about 1.8 m), so the
+open slim door is a passage (`sim/passages.ts`): a walking link each way through its frame, 1.6 m either side. Shut
+rooms stay shut. `slimDoors.test.ts`: the doorway is 1.2 m between the piers; without the links the rooms are off the
+navmesh and with them every open room is reached and left in every turn; a body that follows the route's corners as
+bots do (0.45 m) walks in and out; bots in a match ordered to Hold in a room get into it. The academy walks
+(`setPiecesAcademy.test.ts`) run every piece with the slim doors too.
+
+What they needed to know:
+- **A map as played holds at most 4,096 entities** (`SET_PIECE_PLAYED_MAX`, the schema's cap). A Dorm Bay is about
+  50 entities as played (14 blocks, 36 props, a light), a closed one 45, the Hall Centre 200. Scott Johnston /
+  Hazelwood at the plan's 9 cells and the first turret (97 blocks each) put St. John's at 4,634; the hall is 8 cells
+  (four Dorm Bays a floor, not five), the turret 25 blocks and its top, the slim doors no extra blocks, the centre
+  10 lights: St. John's is at about 4,070. **The halls still to come will only fit by taking out more old blocks
+  than they add** (Stangeland / Cord's 234, Welles's 330, DeKoven's 330 and the chapel's 191 are still there), or
+  with a lighter dorm room (the bunk alone is 12 collision boxes but one entity; the chairs and closet fronts are 16
+  props a bay).
+- **A stair to every floor in the centre** alternates cells, as the three-floor end bay does: a Stairwell takes two
+  levels of its cell.
+- **Turned blocks are fine in a set piece:** an untilted block keeps any yaw; a quarter turn of the placement swaps its
+  width and depth (the same box turned 90°).
+
+Tests: `setPiecesAcademy.test.ts` walks both in every turn (the centre: the hall on every floor, in under the arch, up
+both stairs, every north room, the room over the stair; the turret: round it, and nobody in it), `setPiecePlay`'s open-
+sided list has both, `slimDoors.test.ts`. The coverage map has both (the centre with slim doors, the turret with the
+red cone), placed in MapMaker.
+
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks
    and validation.

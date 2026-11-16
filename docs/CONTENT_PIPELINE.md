@@ -825,6 +825,21 @@ frame, size and collision as the Oak Door's shut and open families, with painted
 one tall pane, an upright pull bar). Generator settings `leaf: 'framed' | 'shop'` and `handle: 'knob' | 'pull'`.
 A door that opens by itself is still the Door entity; a new door style there would be a schema change.
 
+**Slim Oak Doors** (St. John's step 3; owner, 2026-11-15: the room doors were a bit wide): `kit.door.oak_slim`
+(shut), `kit.door.oak_slim_ajar` and `kit.door.oak_slim_open`, the same door and leaves 1.2 m wide (sizes 1.2 × 2.6 ×
+0.16, × 1.0 and × 1.2 m; the open one's frame 0.52 m behind its centre). They stand in a doorway brought in to 1.2 m
+(the dorm pieces' Room doors option, Slim: the piers either side 0.4 m wider). 1.2 m is narrower than the bots'
+navmesh keeps open (it stays 0.8 m off walls, so it closes any gap under about 1.8 m), so the open slim door is a
+**passage**: its family says `"passage": { "frame": -0.52 }` (the frame's z in the prop's own frame), and
+`sim/passages.ts` gives a straight walking link each way through it, from 1.6 m before the frame to 1.6 m beyond
+(`navLinks`). A body (0.4 m round) walks through on it; a shut or ajar door says nothing (no way in). Any kit family
+can say `passage` for a doorway of its own narrower than the navmesh.
+
+**Conical Turret Roof** (`kit.roof.cone`, `content/kitprops/roof.json`, generator kind `spire` in `kit/academy.mjs`):
+a shingled cone 3.4 m across and 4.6 m to its finial's tip over a short eaves skirt, nine courses; variants `slate`
+and `red`; collides as three stacked boxes. It caps the Round Corner Turret (`setpiece.corner_turret_round`) or any
+round tower.
+
 #### The dome kit
 
 Desert City domes built from parts, from the owner's reference sheet (2026-11-12): `tools/content/kit/dome.mjs`,
@@ -973,8 +988,17 @@ takes each role from its overrides, else its pack (its own `pack`, else the pack
 piece's `roles`; a material role nothing gives leaves the part's surface to the theme (stone: walls, trim: trim, floor
 and paving: floor, roof: roof, wood and metal: solids).
 
+**Options** (map format v42): a piece may list `options`, each a `name` (camelCase), a `label` and two to eight
+`choices` (`value`, `label`, `blurb`); the first choice is the default. A part with `when` (`{ "roomDoors": "slim" }`)
+is in the piece only while every option it names has that value, so a choice swaps parts in and out (`map/setPieces.ts`
+`placementOptions`, `partInPlay`); a placement sets one in `overrides.options` (MapMaker's set piece inspector,
+Options). Parts that differ by a choice go at the end of the list like any new part, and a part's first-choice twin
+gets `when` for the first choice. The content check expands each choice of each option in every turn and pack; a
+placement naming a choice the piece doesn't offer is a warning and plays as the first. The academy's dorm pieces offer
+Room doors (Wide, Slim) and the Round Corner Turret Top (merlons, slate cone, red shingle cone).
+
 **Placements** (map format v27, `setPieces` on the map: `id`, `piece`, `x`, `y`, `z`, `rotation`, `mirror`, `pack`,
-`overrides` with `roles` and `hide` by part index) expand at load into ordinary tiles and entities
+`overrides` with `roles`, `hide` by part index, `paint` (v41) and `options` (v42)) expand at load into ordinary tiles and entities
 (`map/setPieces.ts` `expandSetPieces`), with ids `sp_<placement id>_<part index>`: a placement's id is at most 48
 characters, so with at most 1024 parts every part's id stays a StableId (64). The mirror swaps east and west in place
 over the footprint (dx → W − dx, W the footprint's least plus greatest dx), then the turn goes clockwise about the

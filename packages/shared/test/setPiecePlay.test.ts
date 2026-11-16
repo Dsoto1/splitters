@@ -72,6 +72,8 @@ const OPEN_SIDED = [
   'setpiece.concrete_frame',
   // A tower of blocks: its door is in its own block walls, not a tile's edge (setPiecesAcademy.test.ts walks it).
   'setpiece.corner_tower_square',
+  // A round turret of blocks, solid (setPiecesAcademy.test.ts walks round it).
+  'setpiece.corner_turret_round',
   'setpiece.concrete_frame_2',
   'setpiece.courtyard_gate_wall',
   'setpiece.crossroads_plaza',
@@ -81,6 +83,7 @@ const OPEN_SIDED = [
   'setpiece.dorm_corner_bay',
   'setpiece.dorm_entry_bay',
   'setpiece.dorm_office_bay',
+  'setpiece.hall_centre',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
   'setpiece.parking_deck_bay',

@@ -34,6 +34,8 @@ import {
   type SetPieceLibrary,
   type SetPiecePlacement,
   type WorldBox,
+  partInPlay,
+  placementOptions,
 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
@@ -251,7 +253,9 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
             expect(errors, `${def.id} ${rotation} ${mirror} ${pack}`).toEqual([]);
             const ex = expandSetPieces(doc, shipped);
             const parts = [...ex.map.classicStructure.tiles, ...ex.map.entities].filter((x) => x.id.startsWith('sp_'));
-            expect(parts.length).toBe(def.parts.length);
+            // (Every part but those for an option's other choices: map/setPieces.ts partInPlay.)
+            const options = placementOptions(doc.setPieces![0]!, def);
+            expect(parts.length).toBe(def.parts.filter((p) => partInPlay(p, options)).length);
             for (const x of parts) {
               expect(x.id).toMatch(/^sp_piece_1_\d+$/);
               expect(StableId.safeParse(x.id).success).toBe(true);
