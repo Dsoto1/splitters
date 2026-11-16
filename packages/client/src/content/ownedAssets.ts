@@ -19,10 +19,15 @@ export class OwnedAssets {
   private readonly materials = new Set<Material>();
   private readonly textures = new Set<BaseTexture>();
 
-  constructor(private readonly scene: Scene) {}
+  /** `on` false (`?perfoff=bodyclones`, measuring against the old code): tracks nothing, so frees nothing. */
+  constructor(
+    private readonly scene: Scene,
+    private readonly on = true,
+  ) {}
 
   /** Run `fn` and keep every material and texture it adds to the scene as this body's own. */
   track<T>(fn: () => T): T {
+    if (!this.on) return fn();
     // New materials are pushed onto the end of the scene's list (the scene tells its observers only on a later tick);
     // new textures are announced at once.
     const before = this.scene.materials.length;

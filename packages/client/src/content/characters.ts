@@ -24,6 +24,7 @@ import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
 import { OwnedAssets } from './ownedAssets.ts';
+import { perfOn } from '../game/perfSwitches.ts';
 import type { ClipLoop } from '../game/gait.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes (further through a scope: setCharacterLodZoom). */
@@ -259,7 +260,7 @@ export class CharacterLibrary {
     const partOf = new Map<AbstractMesh, number>();
     const owned: { dispose(): void }[] = [];
     /** The materials and textures this body cloned for itself (its parts' instancing, the atlas): freed with it, nothing shared. */
-    const own = new OwnedAssets(this.scene);
+    const own = new OwnedAssets(this.scene, perfOn('bodyclones'));
     let joints: Map<string, TransformNode>;
     let clips: Map<Clip, AnimationGroup>;
     let body: CharacterInstance['body'];
