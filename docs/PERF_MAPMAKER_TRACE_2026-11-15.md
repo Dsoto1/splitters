@@ -155,6 +155,8 @@ own `tt:` spans, which only see our script.
 
 ### Fixes 1, 2 and 6: as built (2026-11-16, `wip/navcheck-fast`; a helper of lane B's splitters22)
 
+- **Merged with Scaling 1 (lane B's splitters22, 2026-11-16):** Scaling 1 landed first with a process-wide `navCache` that also hands the check's navmesh to the jump pads' match in the worker, so fix 1's worker change is now belt and braces: the worker still passes the check's navmesh to `flyPads` outright (`padNav`), and the answer is copied as Scaling 1 has it (its navCache keeps the mesh), not transferred. With `?perfoff=padnav` the worker's pad match still finds the navmesh in navCache, so that switch no longer brings back the old double build; `mapHasPads` (no match without pads) and the page fallback's single build are fix 1's own. `padFlight.test.ts` empties navCache where it compares with matches that build their own.
+
 Measured on this box's SwiftShader (4 cores shared with other agents: compare old and new, not with the owner's
 machine). Old = `?perfoff=padnav,editlight` (or `navstop`) on the same build.
 - **Fix 1, one navmesh per check.** The jump pads are flown on the check's own navmesh: the worker keeps a copy of

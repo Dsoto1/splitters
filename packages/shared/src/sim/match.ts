@@ -811,8 +811,10 @@ export class Match {
   /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
   readonly classes: ClassPlay | null;
 
-  /** The navmesh came from `opts.nav` (built ahead), not built at load. */
+  /** The navmesh came from `opts.nav` (built ahead) or the process's navCache, not built at load. */
   readonly navReused: boolean;
+  /** The navmesh built at load, as data (a browser host keeps it in its storage: client game/navCache.ts); null when reused. Set it to null once kept. */
+  navBuilt: PrebuiltNav | null;
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -824,8 +826,9 @@ export class Match {
      * players and spectators alike, so a match only spectators watch starts
      * once they have), at most START_WAIT_SECONDS, then count down; every
      * later round counts down too. Off (play at once) for headless matches
-     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test): taken
-     * instead of building one when it was built from the same (sim/mapNav.ts navInputKey; `navReused`).
+     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test; a browser
+     * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
+     * `navReused`), as the process's navCache is.
      */
     private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' } = {},
   ) {
@@ -839,6 +842,7 @@ export class Match {
     const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
     this.nav = nav.nav;
     this.navReused = nav.reused;
+    this.navBuilt = nav.built;
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')

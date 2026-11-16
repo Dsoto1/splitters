@@ -79,10 +79,10 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest, transfer?:
       const result = mod.validateMapNavigation(map, false, { computed: m.computed, prebuilt: true });
       const built = result.prebuilt;
       // The pads are flown on the same navmesh (fix 1 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md: a flight's match
-      // built it again, 40 % of the check): a copy of its mesh stays here, as the original goes to the page.
-      if (built && m.padNav !== false && mod.mapHasPads(map)) padNav = { key: built.key, nav: { ...built.nav, mesh: built.nav.mesh.slice() } };
-      const mesh = built?.nav.mesh;
-      post({ k: 'nav', token: m.token, result }, mesh ? [mesh.buffer as ArrayBuffer] : []);
+      // built it again, 40 % of the check); Scaling 1's navCache would also hand it over, this says so outright.
+      if (built && m.padNav !== false && mod.mapHasPads(map)) padNav = built;
+      // (Copied, not transferred: this worker's navCache keeps it too, for the jump pads' match below.)
+      post({ k: 'nav', token: m.token, result });
     } catch (e) {
       post({ k: 'navFailed', token: m.token, error: (e as Error).message });
       return;
