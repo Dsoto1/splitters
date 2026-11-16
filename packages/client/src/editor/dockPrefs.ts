@@ -4,7 +4,7 @@
  * read back safely. The DOM side is rightDock.ts and leftRail.ts; this module has none, so it is tested headless.
  */
 
-/** The right dock: Outliner, Properties and Validation (expanded), the minimap only (compact), or gone (hidden). */
+/** The right dock: Minimap | Outliner, Properties and Validation (expanded), the minimap only (compact), or gone (hidden). */
 export type DockState = 'expanded' | 'compact' | 'hidden';
 
 export interface DockPrefs {
@@ -13,7 +13,14 @@ export interface DockPrefs {
   width?: number;
   /** The asset browser beside the rail, or only the rail. */
   left: 'open' | 'rail';
+  /** The expanded dock's top tab (UI spec Phase 3): absent, the Outliner. */
+  tab?: DockTab;
+  /** The minimap's zoom (1: the whole level; minimapModel.ts); absent, 1. */
+  minimapZoom?: number;
 }
+
+/** The expanded dock's tabs above Properties: the minimap or the outliner. */
+export type DockTab = 'minimap' | 'outliner';
 
 export const DOCK_KEY = 'tiletrigger.editor.dock';
 /** The two edge tabs' fold before Phase 1 (`{ pal?: boolean, right?: boolean }`), read once to carry it over. */
@@ -41,7 +48,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
       const v = JSON.parse(raw) as Record<string, unknown>;
       if (v && typeof v === 'object') {
         const width = typeof v.width === 'number' && Number.isFinite(v.width) ? Math.round(v.width) : undefined;
-        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}) };
+        const zoom = typeof v.minimapZoom === 'number' && Number.isFinite(v.minimapZoom) && v.minimapZoom > 1 ? Math.min(16, Math.round(v.minimapZoom * 100) / 100) : undefined;
+        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}), ...(v.tab === 'minimap' ? { tab: 'minimap' as const } : {}), ...(zoom ? { minimapZoom: zoom } : {}) };
       }
     }
   } catch {
@@ -60,7 +68,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
 
 /** As stored: the same state always writes the same text. */
 export function serializeDockPrefs(p: DockPrefs): string {
-  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}) });
+  const zoom = p.minimapZoom && p.minimapZoom > 1 ? Math.min(16, Math.round(p.minimapZoom * 100) / 100) : 0;
+  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}), ...(p.tab === 'minimap' ? { tab: 'minimap' } : {}), ...(zoom ? { minimapZoom: zoom } : {}) });
 }
 
 /** Shift+\: expanded, then compact, then hidden, then expanded again. */

@@ -132,13 +132,17 @@ function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number, sur
 
 /**
  * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
- * wall's inner face, standing off it from `from` (the style's trimFrom, else the wall thickness); an arch's soffit
+ * wall's inner face, standing off it from `from` (the style's trimFrom, else its thickest piece's thickness); an arch's soffit
  * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
  * boundary), for a side nothing is built beyond.
  */
 export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
   const shape = shapeOf(style);
-  const from = shape?.trimFrom ?? WALL_THICKNESS;
+  // The wall's own face: a style with thicker piers (the Grand arch's 0.8 m, the Gate arch's 1.2 m) dresses that face,
+  // not one buried inside it, and its arch's soffit runs through the whole thickness (owner, 2026-11-16: the Grand
+  // arch's curve showed as a coarse staircase of its collision steps).
+  const thickest = Math.max(WALL_THICKNESS, ...(shape?.segments ?? []).map((g) => g.t ?? WALL_THICKNESS));
+  const from = shape?.trimFrom ?? thickest;
   const out: SideTrim[] = [];
   const own = (p: { surface?: { material: string; tint?: string } }) => (p.surface ? { surface: { material: p.surface.material, tint: p.surface.tint ?? null } } : {});
   const at = (u0: number, u1: number, y0: number, y1: number, depth: number, surface: Pick<SideTrim, 'surface'> = {}) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth, ...surface });
@@ -162,7 +166,7 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
       at(u0 - 0.1, u0, y0, y1, 0.05);
       at(u1, u1 + 0.1, y0, y1, 0.05);
     } else if ('arch' in p) {
-      out.push(...archTrim(p.arch, from, false, Math.min(from, WALL_THICKNESS), own(p)));
+      out.push(...archTrim(p.arch, from, false, Math.min(from, thickest), own(p)));
       if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0, own(p)));
     } else if ('v' in p) {
       // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.

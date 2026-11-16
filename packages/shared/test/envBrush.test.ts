@@ -11,6 +11,7 @@ import {
   envEraseDab,
   envImpact,
   getEnvSpecies,
+  groundAllowed,
   groundSampler,
   keepClearZones,
   loadMap,
@@ -185,6 +186,31 @@ describe('environment brush: budget, erase, presets', () => {
     const alpine = withPreset(brush(), 'alpine');
     expect(alpine.filters.materials).toContain('snow');
     expect(alpine.species.find((m) => m.model === 'env.conifer.spruce')!.weight).toBeGreaterThan(0);
+  });
+});
+
+describe('environment brush: a preset\'s ground is never a silent no-op (owner, 2026-11-16: Arid on grass)', () => {
+  it('Arid on grass places nothing and counts every try as the wrong ground; on sand, or with any ground, it paints its dry mix', () => {
+    const doc = map();
+    const arid = { ...withPreset(brush({ radius: 12 }), 'arid'), density: 6 };
+    expect(arid.filters.materials).toEqual(['sand', 'dirt', 'gravel', 'stone']);
+    expect(groundAllowed(arid, 'grass')).toBe(false);
+    expect(groundAllowed(arid, null)).toBe(true);
+    const onGrass = envBrushDab(doc, arid, -40, 0, ctx(doc));
+    expect(onGrass.plants).toEqual([]);
+    expect(onGrass.wrongGround).toBeGreaterThan(0);
+    expect(onGrass.wrongGround).toBe(onGrass.filtered);
+    // Sand under the same spot: the preset's ground, so it paints.
+    const t = doc.terrain!;
+    const sand = { ...doc, terrain: { ...t, materials: t.materials.map(() => 1), grounds: ['core.pbr_sand'] } };
+    expect(groundSampler(sand.terrain)(-40, 0)?.material).toBe('sand');
+    const onSand = envBrushDab(sand, arid, -40, 0, ctx(sand));
+    expect(onSand.plants.length).toBeGreaterThan(3);
+    expect(onSand.wrongGround).toBe(0);
+    // "Paint on any ground": the filter off, it paints on grass too, its acacias, laurels and grass the dry variant.
+    const any = envBrushDab(doc, { ...arid, filters: { ...arid.filters, materials: null } }, -40, 0, ctx(doc)).plants;
+    expect(any.length).toBeGreaterThan(3);
+    for (const p of any) if (['env.broadleaf.acacia', 'env.shrub.laurel', 'env.grass.clump'].includes(p.model)) expect(p.variant).toBe(1);
   });
 });
 

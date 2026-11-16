@@ -305,6 +305,50 @@ export function cellHasFloor(occ: CellOccupant): boolean {
   return cellSlab(occ) || !!occ.def.extraFloors?.length;
 }
 
+/** How many storeys an edge style reaches into on a level `height` high: 1 for most, 2 for the Grand arch and the High wall, 3 for the Gate arch (its battlements stand over the storey above), 4 for the Towering wall. */
+export function edgeStoreys(style: ResolvedEdge, half: number, height: number): number {
+  if (style === 'none' || height <= 0) return 1;
+  const top = Math.max(0, ...edgeSegments(style, half, height).map((s) => s[3]));
+  return Math.max(1, Math.ceil(top / height - 0.01));
+}
+
+/** What a tall style would pass through: the level whose floor (or the roof under it) is over the side. */
+export interface TallEdgeBlock {
+  /** The level (z) it would reach into. */
+  level: number;
+  /** A floor or room there, or the roof (a Ceiling) of the room it stands in. */
+  what: 'floor' | 'roof';
+}
+
+/**
+ * Whether a style taller than one storey (`edgeStoreys` > 1) on side `side` of cell (x, y, z) would rise through
+ * something built over that side: the floor of a storey above where that storey has pieces on both sides of the wall
+ * (its upper part would stand inside their room; a tall piece's own storey with no floor of its own there is the room
+ * it is for, and doesn't count), or a roof (a Ceiling) on both sides, where its top would stick out of the middle of
+ * the roof. Null when it stands clear: an outside wall may rise past the storey above's own wall or above
+ * a roof (a high perimeter wall, a parapet), and the lower storey of a two-storey space is what the tall styles are
+ * for (the Grand Gallery). Owner, 2026-11-16: a Grand arch on an inside edge on Level 2 went through Level 3 and the roof.
+ */
+export function tallEdgeBlock(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side, style: ResolvedEdge, cellSize: number, levelHeight: number): TallEdgeBlock | null {
+  const n = edgeStoreys(style, cellSize / 2, levelHeight);
+  if (n <= 1) return null;
+  const [dx, dy] = SIDE_DIRS[side];
+  const sides = [[x, y], [x + dx, y + dy]] as const;
+  for (let k = 1; k < n; k++) {
+    const below = sides.map(([cx, cy]) => cells.get(cellKey(cx, cy, z + k - 1)));
+    const above = sides.map(([cx, cy], i) => {
+      const occ = cells.get(cellKey(cx, cy, z + k));
+      const under = below[i];
+      return occ && !(under && occ.placement === under.placement && !cellHasFloor(occ)) ? occ : undefined;
+    });
+    if (above[0] && above[1]) return { level: z + k, what: 'floor' };
+    if (above[0] || above[1]) continue;
+    const roofed = (o: CellOccupant | undefined) => !!o?.placement.options?.ceiling && o.placement.options.ceiling !== 'open';
+    if (roofed(below[0]) && roofed(below[1])) return { level: z + k, what: 'roof' };
+  }
+  return null;
+}
+
 /**
  * Resolve a cell side: the cell's own choice for that side, else the
  * neighbour's choice for the shared side, else the classic rule (doorway where

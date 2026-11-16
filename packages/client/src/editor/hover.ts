@@ -5,6 +5,7 @@ import {
   EDGE_STYLE_LABELS,
   edgeChoiceAt,
   edgeTargetAt,
+  tallEdgeRefusal,
   entityGhostNote,
   entityLabel,
   FOLIAGE_LEVELS,
@@ -348,6 +349,16 @@ export class Hover {
           if (why) marks.set(lines.push(`${why.tone === 'bad' ? '✗' : 'ℹ'} ${why.text}`) - 1, why.tone === 'bad' ? 'bad' : 'note');
           tone = check.ok ? 'place' : 'bad';
         }
+      } else if (this.app.tool.kind === 'edge' && this.app.paint.hoverEdge) {
+        // Walls & openings: the side about to be built, and (a tall style) why it can't go there, before the click.
+        const e = this.app.paint.hoverEdge;
+        const style = this.app.tool.style;
+        title = EDGE_STYLE_LABELS[style];
+        lines.push(`${{ N: 'North', E: 'East', S: 'South', W: 'West' }[e.side]} side · ${levelName(e.cell[2])} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]}`);
+        const refusal = tallEdgeRefusal(this.app.doc, e, style);
+        if (refusal) marks.set(lines.push(`✗ ${refusal}`) - 1, 'bad');
+        else lines.push('Click to build');
+        tone = refusal ? 'bad' : 'place';
       } else if (this.entityGhost()) {
         // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
         const g = this.entityGhost()!;
@@ -463,7 +474,7 @@ export class Hover {
       const p = this.app.hoverPoint;
       const env = this.app.tool.kind === 'envbrush';
       this.app.view.setBrushRing(p ? this.app.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.app.terrain.brushRadius, env && this.app.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
-      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel();
+      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel(p);
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -494,7 +505,8 @@ export class Hover {
         this.app.view.setFaceHighlight(box, [-dx, 0, -dz]);
         const tileName = coreCatalog.get(tileAt(this.app.doc, gx, gy, gz)?.tile ?? '')?.displayName ?? '';
         const sideName = { N: 'North', E: 'East', S: 'South', W: 'West' }[e.side];
-        $('ed-target').textContent = `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
+        const refusal = tallEdgeRefusal(this.app.doc, e, this.app.tool.style);
+        $('ed-target').textContent = refusal ? `${sideName} side · can't build: ${refusal}` : `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
       } else {
         this.app.view.setFaceHighlight(null, null);
         $('ed-target').textContent = '';

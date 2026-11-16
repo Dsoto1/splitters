@@ -9,7 +9,8 @@ import {
   serializeDockPrefs,
   startingDockState,
   type DockPrefs,
-  type DockState
+  type DockState,
+  type DockTab
 } from './dockPrefs.ts';
 import { mountPanels } from './panels.ts';
 
@@ -18,8 +19,9 @@ const STATE_WORDS: Record<DockState, string> = { expanded: 'expanded', compact: 
 /**
  * The right dock (MapMaker UI spec Phase 1, §2 and §8; the owner's answers 1, 4 and 7). Three states, cycled by
  * Shift+\ and its own buttons, kept in this browser (dockPrefs.ts):
- * - expanded: the Outliner, Properties (the inspector) and Validation, or Map settings in their place;
- * - compact: the minimap only (a placeholder until Phase 3 builds it), in a small card;
+ * - expanded: Minimap | Outliner (tabs, Phase 3; the Outliner unless chosen), Properties (the inspector) and
+ *   Validation, or Map settings in their place;
+ * - compact: the minimap only (minimapPanel.ts), in a small card;
  * - hidden: gone, with an edge tab to bring it back; the view has the window.
  * Its width can be dragged (kept); under 900 px wide it starts compact. Selecting never opens it; asking for Map
  * settings or the problems list does. Folding and showing it only changes classes and one width: the canvas already
@@ -30,6 +32,8 @@ export class RightDock {
   prefs: DockPrefs = parseDockPrefs(null);
   /** Whether the Outliner's panel is unfolded (panels.ts); it draws only while it can be seen. */
   private outlinerFolded = false;
+  /** The expanded dock's top tab (kept with the dock's state). */
+  tab: DockTab = 'outliner';
 
   constructor(readonly app: EditorApp) {}
 
@@ -50,6 +54,8 @@ export class RightDock {
       this.syncOutliner();
     });
     this.outlinerFolded = !folds.isOpen('outliner');
+    this.tab = this.prefs.tab ?? 'outliner';
+    this.mountTabs();
     $('ed-dock-compact').addEventListener('click', () => this.set(this.state === 'compact' ? 'expanded' : 'compact'));
     $('ed-dock-hide').addEventListener('click', () => this.set('hidden'));
     $('ed-dock-expand').addEventListener('click', () => this.set('expanded'));
@@ -110,8 +116,67 @@ export class RightDock {
     $('ed-issues').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+  /** Minimap | Outliner (WAI-ARIA tabs: a click, or the arrow keys, Home and End on a tab). */
+  private mountTabs(): void {
+    const tabs = [...document.querySelectorAll<HTMLButtonElement>('#ed-outliner-panel [role="tab"]')];
+    for (const t of tabs) {
+      t.addEventListener('click', () => this.setTab(t.dataset.tab as DockTab));
+      t.addEventListener('keydown', (e) => {
+        const i = tabs.indexOf(t);
+        const to = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this.setTab(tabs[to]!.dataset.tab as DockTab);
+        tabs[to]!.focus();
+      });
+    }
+    this.applyTab();
+  }
+
+  /** Show the Minimap or the Outliner above Properties (kept in this browser, never in the map). */
+  setTab(tab: DockTab): void {
+    if (tab === this.tab) return;
+    this.tab = tab;
+    this.applyTab();
+    this.syncViews();
+    const want = tab === 'minimap' ? 'minimap' : undefined;
+    if (this.prefs.tab !== want) {
+      if (want) this.prefs.tab = want;
+      else delete this.prefs.tab;
+      this.save();
+    }
+  }
+
+  private applyTab(): void {
+    $('ed-outliner-panel').dataset.tab = this.tab;
+    for (const t of document.querySelectorAll<HTMLButtonElement>('#ed-outliner-panel [role="tab"]')) {
+      const on = t.dataset.tab === this.tab;
+      t.setAttribute('aria-selected', String(on));
+      t.tabIndex = on ? 0 : -1;
+    }
+    $('ed-minimap-host').hidden = this.tab !== 'minimap';
+    $('ed-outliner').hidden = this.tab !== 'outliner';
+  }
+
+  /** The minimap's zoom, kept with the dock (never in the map). */
+  minimapZoom(): number {
+    return this.prefs.minimapZoom ?? 1;
+  }
+
+  setMinimapZoom(z: number): void {
+    const want = z > 1 ? Math.round(z * 100) / 100 : undefined;
+    if (this.prefs.minimapZoom === want) return;
+    if (want) this.prefs.minimapZoom = want;
+    else delete this.prefs.minimapZoom;
+    this.save();
+  }
+
   private syncOutliner(): void {
-    const seen = this.state === 'expanded' && !this.app.mapSettings.isOpen && !this.outlinerFolded;
+    // The minimap: in the compact card, or the expanded dock's Minimap tab while it shows; else nothing of it runs.
+    const panels = this.state === 'expanded' && !this.app.mapSettings.isOpen && !this.outlinerFolded;
+    this.app.minimap.show(this.state === 'compact' ? $('ed-minimap-mini') : panels && this.tab === 'minimap' ? $('ed-minimap-host') : null);
+    const seen = panels && this.tab === 'outliner';
     if (seen === this.app.outliner.open) return;
     // (While MapMaker is still being put together there is no map to list yet: the flag alone.)
     if (!this.app.history) this.app.outliner.open = seen;

@@ -17,6 +17,7 @@ import {
   environmentShapes,
   getEnvSpecies,
   getProp,
+  groundAllowed,
   groundSampler,
   keepClearZones,
   newId,
@@ -81,7 +82,7 @@ export class EnvTools {
   private zones: KeepClearZone[] | null = null;
   private built: Set<string> | null = null;
   private last: { x: number; z: number } | null = null;
-  private stroke = { added: 0, removed: 0, filtered: 0, keptClear: 0, clearOf: null as KeepClearZone | null, overBudget: false, ms: 0, dabs: 0 };
+  private stroke = { added: 0, removed: 0, filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null as KeepClearZone | null, overBudget: false, ms: 0, dabs: 0 };
 
   constructor(private readonly host: EnvHost) {}
 
@@ -210,6 +211,22 @@ export class EnvTools {
       changed(true);
     });
     row('Preset', preset, 'A biome mix and the ground it suits; change any weight below to mix species from any family');
+    // The ground filter a preset sets, said out loud with a way out (owner, 2026-11-16: Arid "didn't seem to work" on grass).
+    if (b.filters.materials) {
+      const g = add(document.createElement('div'));
+      g.id = 'ed-env-ground';
+      g.className = 'ed-note';
+      g.append(`Paints only on ${this.groundWords()}. `);
+      const any = document.createElement('button');
+      any.id = 'ed-env-any-ground';
+      any.textContent = 'Paint on any ground';
+      any.title = 'Tick every ground below: the mix paints wherever the brush goes';
+      any.addEventListener('click', () => {
+        b.filters.materials = null;
+        this.renderPane();
+      });
+      g.append(any);
+    }
     const radius = document.createElement('input');
     radius.type = 'range';
     radius.id = 'ed-env-radius';
@@ -354,11 +371,20 @@ export class EnvTools {
   }
 
   /** The brush in hand: the status line under the pointer. */
-  hoverLabel(): string {
+  hoverLabel(at?: { x: number; z: number }): string {
     const r = this.host.radius();
     if (this.mode === 'erase') return `Erase ${this.eraseAll ? 'every species' : 'the brush species'} · radius ${r} m`;
     const name = this.preset === 'custom' ? 'Custom mix' : ENV_PRESETS[this.preset].label;
+    // Before the click: the ground under the pointer is one the brush's ground filter leaves alone.
+    const under = at ? groundSampler(this.host.ground(), this.host.floorY())(at.x, at.z)?.material : null;
+    if (under && !groundAllowed(this.brush, under)) return `${name} paints only on ${this.groundWords()}: not on ${TERRAIN_MATERIAL_LABELS[under].toLowerCase()} here · "Paint on any ground" in the brush panel`;
     return `Paint ${name} · radius ${r} m · ${this.brush.density} per 100 m² · seed ${this.brush.seed}`;
+  }
+
+  /** The grounds the brush's filter allows, in words ("sand, dirt, gravel or stone"). */
+  private groundWords(): string {
+    const m = (this.brush.filters.materials ?? []).map((x) => TERRAIN_MATERIAL_LABELS[x].toLowerCase());
+    return m.length <= 1 ? (m[0] ?? 'no ground') : `${m.slice(0, -1).join(', ')} or ${m.at(-1)}`;
   }
 
   /** A stroke starts (pointer down with the brush). */
@@ -366,7 +392,7 @@ export class EnvTools {
     this.last = null;
     this.zones = null;
     this.built = null;
-    this.stroke = { added: 0, removed: 0, filtered: 0, keptClear: 0, clearOf: null, overBudget: false, ms: 0, dabs: 0 };
+    this.stroke = { added: 0, removed: 0, filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null, overBudget: false, ms: 0, dabs: 0 };
   }
 
   /** The pointer moved with the brush down: a dab once it has gone 0.8 of the radius from the last (or `first`). */
@@ -402,6 +428,7 @@ export class EnvTools {
       const name = this.preset === 'custom' ? 'plants' : ENV_PRESETS[this.preset].label;
       if (res.plants.length && this.host.run(`Paint ${name}`, { kind: 'addEntities', entities: res.plants.map((e) => ({ ...e, id: newId('prop') })) })) this.stroke.added += res.plants.length;
       this.stroke.filtered += res.filtered;
+      this.stroke.wrongGround += res.wrongGround;
       this.stroke.keptClear += res.keptClear;
       this.stroke.clearOf ??= res.clearOf;
       if (res.overBudget && !this.stroke.overBudget) this.host.toast('The environment budget is full: the brush stops here (see the budget bar)', true);
@@ -416,6 +443,13 @@ export class EnvTools {
     const s = this.stroke;
     if (!s.dabs) return;
     const parts = [s.added ? `${s.added} painted` : '', s.removed ? `${s.removed} erased` : '', s.keptClear ? `${s.keptClear} kept clear of ${s.clearOf?.label ?? 'play'}` : ''].filter(Boolean);
+    // Never a stroke that silently does nothing: the ground filter turned every plant away.
+    if (!s.added && !s.removed && s.wrongGround) {
+      const name = this.preset === 'custom' ? 'This mix' : ENV_PRESETS[this.preset].label;
+      const why = `${name} paints only on ${this.groundWords()}, and none is under the brush`;
+      parts.push('nothing painted: wrong ground');
+      this.host.toast(`${why}: press "Paint on any ground" in the brush panel, or tick this ground under it`, true);
+    }
     this.updateStatus(parts.join(', '));
     (window as unknown as { __envStroke?: typeof s }).__envStroke = { ...s };
     s.dabs = 0;
