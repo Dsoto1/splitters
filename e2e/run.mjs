@@ -1379,7 +1379,10 @@ async function editoruxFlow(browser) {
   await editorInterfaceChecks(browser);
   await editorLayoutChecks(browser);
   await editorSelectionSyncChecks(browser);
+  await editorMinimapChecks(browser);
   await editorThemeViewChecks(browser);
+  await editorAssetsFitChecks(browser);
+  await editorTallWallChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1388,6 +1391,154 @@ async function editoruxFlow(browser) {
  * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
+/**
+ * MapMaker UI spec Phase 3, the live minimap (editor/minimapPanel.ts): the expanded dock's Minimap | Outliner tabs
+ * (kept in this browser, never in the map); a click on a thing in the minimap selects it in the view, the inspector and
+ * the outliner, and a selection made elsewhere shows on it without a new picture; open ground moves the camera; a
+ * level change shows that level (the selection dashed); an edit makes the picture again only after a pause; the
+ * compact card is the minimap too, and a hidden dock runs none of it. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorMinimapChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-minimap-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const lh = await page.evaluate(() => window.__editor.doc.classicStructure.levelHeight);
+  await page.evaluate((lh) => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14]), prop('mm_far', 'core.crate', [40, 0, -40])] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  }, lh);
+  const mm = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.minimap.state();
+    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas')?.offsetParent, slot: document.getElementById('ed-minimap')?.parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
+  });
+  const clickAt = async (x, z, mods = {}) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.minimap.clientPoint(x, z), [x, z]);
+    if (!p) return false;
+    if (mods.shift) await page.keyboard.down('Shift');
+    await page.mouse.click(p.x, p.y);
+    if (mods.shift) await page.keyboard.up('Shift');
+    await frames(page, 3);
+    return true;
+  };
+
+  // The expanded dock opens on the Outliner, as before; the Minimap tab shows the minimap in its place and is kept.
+  let s = await mm();
+  check(s.tab === 'outliner' && s.outliner && !s.canvas && !s.visible && s.bakes === 0, `the expanded dock opens on the Outliner and the minimap does nothing while unseen (${JSON.stringify(s)})`);
+  await page.click('#ed-tab-minimap');
+  await page.waitForFunction(() => window.__editor.minimap.state().bakes > 0, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.tab === 'minimap' && !s.outliner && s.canvas && s.visible && s.slot === 'ed-minimap-host' && s.level === 0 && JSON.parse(s.stored).tab === 'minimap' && (await page.getAttribute('#ed-tab-minimap', 'aria-selected')) === 'true', `the Minimap tab shows the live minimap above Properties, and is kept in this browser (${JSON.stringify(s)})`);
+  check(s.w > 150 && s.h > 150, `the minimap has room in the expanded dock (${s.w}×${s.h})`);
+  await shot('expanded');
+
+  // A click on a thing selects it everywhere: the view's gizmo, the inspector, the outliner's row; and frames it.
+  const cam0 = await page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  check(await clickAt(14, 10), 'the barrel has a place on the minimap');
+  s = await mm();
+  const insp = await page.evaluate(() => ({ x: document.getElementById('ed-insp-x')?.value ?? null, gizmo: !!window.__editor.view.gizmo?.isEnabled(), cam: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z } }));
+  check(s.sel.join() === 'mm_barrel' && insp.x === '14' && s.marks.some((m) => m.id === 'mm_barrel' && m.current), `a click on the barrel in the minimap selects it (view, inspector X ${insp.x}) and marks it (${JSON.stringify({ sel: s.sel, marks: s.marks })})`);
+  check(Math.hypot(insp.cam.x - 14, insp.cam.z - 10) < Math.hypot(cam0.x - 14, cam0.z - 10), `and frames it, as a click in the outliner does (${JSON.stringify([cam0, insp.cam])})`);
+  await shot('selected');
+  // Shift adds, as in the outliner.
+  await clickAt(-14, -10, { shift: true });
+  s = await mm();
+  check(s.sel.length === 2 && s.sel.includes('mm_crate') && s.marks.length === 2, `Shift-click in the minimap adds to the selection (${JSON.stringify(s.sel)})`);
+  // The outliner lights the same rows.
+  await page.click('#ed-tab-outliner');
+  await frames(page, 3);
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => el.dataset.id).sort());
+  check(rows.join() === 'mm_barrel,mm_crate', `the outliner shows the minimap's selection (${rows.join()})`);
+  await page.click('#ed-tab-minimap');
+  await frames(page, 3);
+
+  // A selection made elsewhere shows on the minimap without making its picture again.
+  const bakes0 = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_crate'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].id === 'mm_crate' && s.bakes === bakes0, `a selection made in the view shows on the minimap at once, with no new picture (${JSON.stringify({ marks: s.marks, bakes: [bakes0, s.bakes] })})`);
+
+  // Open ground: the camera goes there and the selection stays.
+  await clickAt(30, -30);
+  const cam1 = await page.evaluate(() => {
+    const v = window.__editor.view;
+    const d = { x: Math.sin(v.yaw), z: Math.cos(v.yaw) };
+    // Where the camera looks at the ground (focus stands it 22 m back along the view).
+    return { x: v.camera.position.x + d.x * 22 * Math.cos(0.85), z: v.camera.position.z + d.z * 22 * Math.cos(0.85) };
+  });
+  s = await mm();
+  check(Math.hypot(cam1.x - 30, cam1.z + 30) < 3 && s.sel.join() === 'mm_crate', `a click on open ground moves the camera there and keeps the selection (${JSON.stringify(cam1)})`);
+
+  // An edit: the picture is made again only after the edits pause, not on the edit's own path.
+  const before = (await mm()).bakes;
+  const fresh = await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.transform('Move', { by: { metres: [2, 0, 0] } });
+    ed.frame(0.016);
+    return ed.minimap.state().bakes;
+  });
+  await page.waitForFunction((b) => window.__editor.minimap.state().bakes > b, before, { timeout: T(5000) });
+  check(fresh === before, `an edit doesn't make the minimap's picture on its own path (bakes ${before} → ${fresh} right after it)`);
+
+  // A level change: that level's picture at once. A thing selected up there is dashed on the ground level's minimap
+  // (things on the open ground count on every level), solid on its own, and a click there picks it.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_up'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === false, `a thing selected on another level is marked dashed (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await page.waitForFunction(() => window.__editor.minimap.state().level === 1, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === true && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on its own level the minimap shows that level and the selection solid (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await clickAt(-14, 14);
+  s = await mm();
+  check(s.sel.join() === 'mm_up' && s.marks[0]?.current, `a click on the minimap picks a thing on the level shown (${JSON.stringify(s.sel)})`);
+  await shot('level1');
+  await page.evaluate(() => window.__editor.setLevel(0));
+
+  // Zoom: kept in this browser, never in the map.
+  await page.click('#ed-minimap-in');
+  await page.waitForFunction(() => (JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').minimapZoom ?? 1) > 1, null, { timeout: T(3000) });
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  check(!/minimap/i.test(json), "the minimap's zoom and tab stay out of the map");
+  await page.click('#ed-minimap-fit');
+
+  // Compact: the card is the minimap; a click there selects too. Hidden: none of it runs.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.click('#ed-dock-compact');
+  await frames(page, 4);
+  s = await mm();
+  check(s.visible && s.slot === 'ed-minimap-mini' && s.canvas && s.w > 120, `the compact card shows the minimap (${JSON.stringify({ slot: s.slot, w: s.w, h: s.h })})`);
+  await frames(page, 4);
+  await clickAt(14, 10);
+  s = await mm();
+  check(s.sel.join() === 'mm_barrel', `a click in the compact card's minimap selects (${JSON.stringify(s.sel)})`);
+  await shot('compact');
+  await page.click('#ed-dock-hide');
+  await frames(page, 3);
+  const hiddenBakes = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.transform('Move', { by: { metres: [1, 0, 0] } }));
+  await sleep(1200);
+  s = await mm();
+  check(!s.visible && !s.canvas && s.bakes === hiddenBakes, `a hidden dock runs no minimap (${JSON.stringify({ visible: s.visible, bakes: [hiddenBakes, s.bakes] })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 /**
  * MapMaker UI spec Phase 2, the one selection (shared editor/selectionState.ts): a pick in the outliner selects in the
  * view (outline and gizmo) and the inspector, and a pick in the view lights the outliner's row and scrolls it into view;
@@ -2260,6 +2411,125 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
   const undone = (await doc()).entities.find((e) => e.id === 'gate_keep_a');
   check(JSON.stringify(shown) === JSON.stringify(['pack', ['Pack effect', 'Painted']]) && painted === 'painted' && undone && !('swirl' in undone), `a portal's inspector picks its swirl (pack effect or painted), one undo step (${JSON.stringify({ shown, painted, undone: undone?.swirl ?? null })})`);
   await page.keyboard.press('Escape');
+}
+
+/**
+ * The Assets panel fits its window (owner, 2026-11-16: Structure paint's third column was cut off at 1440-2000 px with
+ * no scrollbar): at a few window widths (the panel is 175-275 px inside), every piece, material, ground and swatch on
+ * every tab (Structure paint in both its views) lies wholly inside the panel's width.
+ */
+async function editorAssetsFitChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  for (const width of [1100, 1440, 2000]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?mode=editor&test=1`);
+    await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+    page.once('dialog', (d) => d.accept());
+    await newMap(page, 96);
+    const outside = () =>
+      page.evaluate(() => {
+        const pal = document.getElementById('ed-palette');
+        const box = pal.getBoundingClientRect();
+        const right = box.left + pal.clientLeft + pal.clientWidth;
+        const out = [];
+        let n = 0;
+        for (const el of pal.querySelectorAll('.ed-pane:not([hidden]) :is(.mat-btn, .tile-btn, .swatch, [data-material], [data-ground])')) {
+          const b = el.getBoundingClientRect();
+          if (!b.width || !el.offsetParent) continue;
+          n++;
+          if (b.left < box.left - 0.5 || b.right > right + 0.5) out.push(`${el.dataset.material ?? el.dataset.ground ?? el.textContent.trim().slice(0, 24)} (${Math.round(b.left)}-${Math.round(b.right)} of ${Math.round(box.left)}-${Math.round(right)})`);
+        }
+        return { n, out };
+      });
+    const seen = [];
+    const bad = [];
+    for (const [ws, pane] of [['build', 'tiles'], ['build', 'setpieces'], ['build', 'advanced'], ['props', 'props'], ['props', 'lights'], ['entities', 'entities'], ['entities', 'npcs'], ['entities', 'vehicles'], ['entities', 'scenario'], ['environment', 'paint'], ['environment', 'paint:all'], ['environment', 'plants'], ['environment', 'terrain'], ['environment', 'sky']]) {
+      await page.click(`#ed-modes [data-ws="${ws}"]`);
+      if (pane === 'paint:all') await page.click('#ed-mat-view [data-mv="all"]');
+      else await page.click(`#ed-pal-tabs [data-pane="${pane}"]`);
+      await frames(page, 3);
+      const r = await outside();
+      seen.push(`${pane} ${r.n}`);
+      if (r.out.length) bad.push(`${pane}: ${r.out.slice(0, 4).join(', ')}${r.out.length > 4 ? ` +${r.out.length - 4}` : ''}`);
+      if (shots && pane === 'paint') await page.screenshot({ path: `${shots}/editorux-assets-fit-${width}.png` }).catch(() => {});
+    }
+    check(bad.length === 0, `at ${width} px every item in the Assets panel lies inside it (${bad.join('; ') || seen.join(', ')})`);
+    check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+    livePages.delete(page);
+    await context.close();
+  }
+}
+
+/**
+ * Tall wall styles (owner, 2026-11-16: a Grand arch on an inside edge on Level 2 rose through Level 3's floor and the
+ * roof): on an inside wall with rooms over both sides, the Walls tool's hover card says it can't go there before the
+ * click, a click is refused with the same words and changes nothing, and a one-storey arch goes in; validation warns
+ * on one already in a map.
+ */
+async function editorTallWallChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // Two rooms side by side on Level 1 (x 16 and 24 m), rooms over both on Level 2; the Walls tool with the Grand arch,
+  // looking from inside the west room at the wall between them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const tiles = [];
+    for (const z of [1, 2]) for (const x of [2, 3]) tiles.push({ id: `tw${x}_${z}`, tile: 'core.room', x, y: 0, z, rotation: 0 });
+    ed.history.execute('Place', { kind: 'addTiles', tiles });
+    ed.setLevel(1, true);
+    ed.setTool({ kind: 'edge', style: 'arch_grand' });
+    const v = ed.view;
+    // (Off the middle: an Auto side between two rooms is a doorway there.)
+    v.camera.position.set(13, 6, 1);
+    v.yaw = Math.atan2(19.4 - 13, -3 - 1);
+    v.pitch = Math.atan2(6.5 - 6, Math.hypot(19.4 - 13, 4));
+    v.applyCamera();
+  });
+  await frames(page, 4);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 19.4, y: 6.5, z: -3 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  const card = await page.evaluate(() => ({ tip: document.getElementById('ed-tip')?.hidden ? '' : document.getElementById('ed-tip')?.textContent ?? '', status: document.getElementById('ed-target').textContent, edge: window.__editor.paint.hoverEdge }));
+  if (shots) await page.screenshot({ path: `${shots}/editorux-tall-wall-card.png` }).catch(() => {});
+  const before = await page.evaluate(() => JSON.stringify(window.__editor.doc.classicStructure.tiles));
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ tiles: JSON.stringify(window.__editor.doc.classicStructure.tiles), toast: document.getElementById('ed-toast')?.textContent ?? '' }));
+  check(card.edge?.cell?.join() === '2,0,1' && card.edge.side === 'E' && /Grand arch/.test(card.tip) && /would rise through Level 2's floor/.test(card.tip) && /can't build/.test(card.status), `the Walls tool's card says a Grand arch can't go under Level 2's rooms before the click (${JSON.stringify(card)})`);
+  check(after.tiles === before && /would rise through Level 2's floor/.test(after.toast), `a click there is refused with the same words and changes nothing (${after.toast})`);
+  // A one-storey arch goes in on the same side.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'edge', style: 'arch_round' }));
+  await page.mouse.move(p.x + 1, p.y);
+  await frames(page, 3);
+  const roundTip = await page.evaluate(() => document.getElementById('ed-tip')?.textContent ?? '');
+  await page.mouse.click(p.x + 1, p.y);
+  await frames(page, 2);
+  const round = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.flatMap((t) => Object.values(t.edges ?? {})));
+  check(/Click to build/.test(roundTip) && round.join() === 'arch_round', `a Round arch builds on that side (${roundTip}; ${round.join(', ')})`);
+  // One forced into the map: the validation list warns about it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.classicStructure.tiles.find((x) => x.id === 'tw2_1');
+    ed.history.execute('Force', { kind: 'updateTiles', before: [t], after: [{ ...t, edges: { '0,0,0:E': 'arch_grand' } }] });
+  });
+  await page.waitForFunction(() => window.__editor.checks.allIssues().some((i) => i.code === 'edge.tall'), null, { timeout: T(10000) }).catch(() => {});
+  const warned = await page.evaluate(() => window.__editor.checks.allIssues().filter((i) => i.code === 'edge.tall').map((i) => `${i.severity}: ${i.message}`));
+  check(warned.length === 1 && /^warning: .*Grand arch.*rises through Level 2's floor/.test(warned[0]), `validation warns on a Grand arch already under Level 2's rooms (${warned.join('; ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await context.close();
 }
 
 /**
@@ -3356,6 +3626,27 @@ async function editorEnvironmentChecks(browser) {
   await stroke([12, -6], [28, 6]);
   const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
   check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  // Arid on grass (owner, 2026-11-16: "didn't seem to work"): its ground (sand, dirt, gravel, stone) is said on the
+  // brush card and under the pointer before the click, a stroke on grass says why it painted nothing, and "Paint on
+  // any ground" paints its dry acacias, laurels and grass there.
+  await page.selectOption('#ed-env-preset', 'arid');
+  await look(-25, -25);
+  const card = await page.evaluate(() => document.getElementById('ed-env-ground')?.textContent ?? '');
+  const onGrass = await at(-25, 0, -25);
+  await page.mouse.move(onGrass.x, onGrass.y);
+  await frames(page, 3);
+  const aridHover = await page.textContent('#ed-target');
+  const beforeArid = await envCount();
+  await stroke([-35, -28], [-15, -22]);
+  const sArid = await page.evaluate(() => window.__envStroke);
+  const aridToast = await page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  check(/sand, dirt, gravel or stone/.test(card) && /paints only on .*not on grass here/.test(aridHover) && (await envCount()) === beforeArid && sArid?.wrongGround > 0 && /Paint on any ground/.test(aridToast), `Arid on grass: the card and the pointer say its ground first, a stroke paints nothing and says why (${JSON.stringify({ card, aridHover, aridToast, wrongGround: sArid?.wrongGround })})`);
+  await page.click('#ed-env-any-ground');
+  await stroke([-35, -28], [-15, -22]);
+  const arid = await page.evaluate((n) => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).slice(n).map((e) => `${e.model}#${e.variant ?? 0}`), beforeArid);
+  const dry = arid.filter((m) => /env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#1$/.test(m));
+  check(arid.length > 5 && !(await page.isVisible('#ed-env-ground')) && dry.length > 0 && arid.every((m) => !/env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#0$/.test(m)), `"Paint on any ground" paints Arid on grass, its acacias, laurels and grass dry (${arid.length} painted, ${dry.length} dry: ${[...new Set(arid)].join(', ')})`);
+  await shot('arid-grass');
   await page.selectOption('#ed-env-preset', 'alpine');
   await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
   await look(52, 0, 24);
@@ -12591,6 +12882,14 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the round: its bots reach Deathmatch's score limit (15) in a few minutes, and a slow run gets there
+  // mid-flow; the host then travels to the next map, the friend follows it, and between the two sessions the
+  // friend's `__cs` is the ended-match stub (no `spectate`, "spectator false, following -1"), then another map
+  // (not `phase0_arena` for Host this map). On CI the flow takes up to 9 minutes: no time limit either.
+  await sim(host, (m) => {
+    m.rules.scoreLimit = 0;
+    m.phaseEndTick = Infinity;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');

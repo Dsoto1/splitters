@@ -371,8 +371,8 @@ export class PlanView {
   }
 }
 
-/** One plan icon at (x, y), `r` across its middle. */
-function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
+/** One plan icon at (x, y), `r` across its middle (the plan view's and the minimap's). */
+export function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
   g.save();
   g.translate(x, y);
   g.lineWidth = 1.5 * u;
