@@ -111,8 +111,9 @@ export function numberInput(value: number, step: number, onCommit: (v: number) =
   i.type = 'number';
   i.step = String(step);
   i.value = String(value);
+  // What it shows for the map (as built, or last committed): not read on focus, since a rebuilt inspector puts the
+  // value being typed back into a new field and then focuses it (inspectorKeep.ts).
   let was = i.value;
-  i.addEventListener('focus', () => (was = i.value));
   i.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     e.preventDefault();
