@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_bewuojoizbn232ro",
-      "revision": 11,
-      "contentHash": "sha256:606aba1cfdc5b5fd037386813bf895cf8037bd08b3acd64cf22a642b3c87d9e8",
+      "versionId": "v_wjuxgsi7y6ogv6ub",
+      "revision": 12,
+      "contentHash": "sha256:a371edb0e8330f48b94dc4fede4e3488cda781e4873ddb98a07e168e50567aa2",
       "schemaVersion": 43,
-      "releasedAt": "2026-11-16T12:01:44.080Z"
+      "releasedAt": "2026-11-16T12:20:36.889Z"
     }
   },
   "classicStructure": {
@@ -51860,34 +51860,6 @@
       "model": "kit.lamp.post_banner",
       "yaw": 3.142,
       "scale": 1,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_tl30ft0cz1",
-      "position": [
-        -115.5,
-        -0.07,
-        -57.25
-      ],
-      "kind": "prop",
-      "model": "env.broadleaf.oak",
-      "yaw": 0,
-      "scale": 0.75,
-      "solid": true,
-      "tint": null
-    },
-    {
-      "id": "prop_e9ve96z7su",
-      "position": [
-        -108.5,
-        -0.07,
-        -57.25
-      ],
-      "kind": "prop",
-      "model": "env.broadleaf.oak",
-      "yaw": 0,
-      "scale": 0.75,
       "solid": true,
       "tint": null
     },
