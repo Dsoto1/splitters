@@ -92,6 +92,20 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
     const [dx, dy] = SIDE_DIRS[p.side as Side];
     if (inCell(x + dx, y + dy, p.level)) out.push(`ports[${i}]: side ${p.side} of [${x}, ${y}] faces the piece's own cell [${x + dx}, ${y + dy}], not its outside`);
   });
+  // Options: names once each, values once each; a part's `when` names an option and one of its choices.
+  const choiceSets = new Map<string, Set<string>>();
+  for (const o of def.options ?? []) {
+    if (choiceSets.has(o.name)) out.push(`options: ${o.name} is listed twice`);
+    const values = new Set(o.choices.map((c) => c.value));
+    if (values.size !== o.choices.length) out.push(`options.${o.name}: a choice is listed twice`);
+    choiceSets.set(o.name, values);
+  }
+  def.parts.forEach((part, i) => {
+    for (const [k, v] of Object.entries(part.when ?? {})) {
+      if (!choiceSets.has(k)) out.push(`parts[${i}].when: ${k} is not one of the piece's options`);
+      else if (!choiceSets.get(k)!.has(v)) out.push(`parts[${i}].when: ${k} has no choice "${v}"`);
+    }
+  });
   for (const m of def.markers ?? []) {
     for (const i of m.parts) if (i >= def.parts.length) out.push(`markers.${m.name}: part ${i} doesn't exist`);
     if (m.kind === 'doorPair' && (m.parts.length !== 2 || m.parts.some((i) => def.parts[i]?.kind !== 'door'))) out.push(`markers.${m.name}: a door pair is two doors`);

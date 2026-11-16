@@ -80,7 +80,7 @@ export function validate(content, root = ROOT) {
   for (const { file, data } of content.types) {
     for (const k of Object.keys(data)) if (!['$comment', 'type', 'props'].includes(k)) problems.push(`${file}: unknown field "${k}"`);
     const spec = obj({
-      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), 'bounds?': en(['within']), 'collide?': en(['none']), surface: str, detail: str,
+      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), 'bounds?': en(['within']), 'collide?': en(['none']), 'passage?': obj({ frame: num }), surface: str, detail: str,
       'breakable?': obj({ health: num, debris: str, 'blast?': obj({ radius: num, damage: num, edge: num }) }),
       generator: obj({ kind: en(Object.keys(KINDS)) }),
       lods: arr(obj({ distance: num }), 1),
@@ -161,7 +161,7 @@ export async function build(content, families) {
     }
     const size = f.size.map(mm);
     props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: f.collide === 'none' ? null : size, ...(boxes ? { boxes } : {}), ...(f.breakable ? { breakable: { health: f.breakable.health, ...(f.breakable.blast ? { blast: { radius: f.breakable.blast.radius, damage: f.breakable.blast.damage, edge: f.breakable.blast.edge } } : {}), debris: f.breakable.debris } } : {}) });
-    render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants, ...(f.bounds === 'within' ? { within: true } : {}) });
+    render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants, ...(f.bounds === 'within' ? { within: true } : {}), ...(f.passage ? { passage: { frame: f.passage.frame } } : {}) });
   }
   lockFiles.sort((a, b) => (a.file < b.file ? -1 : 1));
   const aliases = Object.entries(m.aliases ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)).map(([from, a]) => ({ from, model: a.model, variant: a.variant, scale: a.scale }));

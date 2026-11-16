@@ -47,7 +47,7 @@ function mapOf(placements: SetPiecePlacement[]): MapDocument {
   if (!r.ok) throw new Error(r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '));
   return r.map;
 }
-const withPiece = (piece: string, rotation: Rotation, mirror = false): MapDocument => mapOf([{ id: 'piece', piece, x: 0, y: 0, z: 0, rotation, mirror, pack: 'collegiate' }]);
+const withPiece = (piece: string, rotation: Rotation, mirror = false, options?: Record<string, string>): MapDocument => mapOf([{ id: 'piece', piece, x: 0, y: 0, z: 0, rotation, mirror, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) }]);
 
 /** A point of the piece's own frame where the placement puts it. */
 function place(p: Vec3, rotation: Rotation, mirror: boolean, W: number): Vec3 {
@@ -148,12 +148,14 @@ describe('the dormitory bays: every way through, every room, every stair, in eve
     it(`${id}: bots path along each chain; players climb; shut rooms stay shut`, { timeout: 240_000 }, () => {
       const def = library.pieces.get(id)!;
       const W = mirrorWidth(def);
-      for (const rotation of ROTATIONS) {
+      // (And with each choice of its options: the slim room doors, sim/passages.ts.)
+      const choices: (Record<string, string> | undefined)[] = [undefined, ...(def.options ?? []).flatMap((o) => o.choices.slice(1).map((c) => ({ [o.name]: c.value })))];
+      for (const options of choices) for (const rotation of ROTATIONS) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
-          const map = withPiece(id, rotation, mirror);
+          const map = withPiece(id, rotation, mirror, options);
           const nav = navOf(map);
           const at = (p: P3) => place(v(p), rotation, mirror, W);
-          const where = `${id} turned ${rotation}${mirror ? ' mirrored' : ''}`;
+          const where = `${id} turned ${rotation}${mirror ? ' mirrored' : ''}${options ? ` ${JSON.stringify(options)}` : ''}`;
           for (const chain of chains) for (let i = 1; i < chain.length; i++) expect(miss(nav, at(chain[i - 1]!), at(chain[i]!)), `${where}: ${chain[i - 1]} → ${chain[i]}`).toBeLessThan(1.2);
           for (const to of shut?.to ?? []) expect(miss(nav, at(shut!.from), at(to)), `${where}: into the shut room at ${to}`).toBeGreaterThan(2);
           nav.destroy();

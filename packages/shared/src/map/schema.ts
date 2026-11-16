@@ -1100,6 +1100,24 @@ export const SetPieceRoleValues = z.object({
 export type SetPieceRoleValues = z.infer<typeof SetPieceRoleValues>;
 export type SetPieceRoleValuesInput = z.input<typeof SetPieceRoleValues>;
 
+/**
+ * A set piece's options (format v42): named choices a placement makes in MapMaker's inspector (`overrides.options`),
+ * such as a dorm bay's room doors, wide or slim. A part with `when` is in the piece only while every option it names
+ * has that value (an option a placement leaves unset is its first choice), so a choice swaps parts in and out. Parts
+ * that differ by a choice are added at the end of the list (indices never change: placements hide and paint by index).
+ */
+export const SetPieceOptionName = z.string().regex(/^[a-z][a-zA-Z0-9]{0,31}$/, 'option names are camelCase, up to 32 characters');
+export const SetPieceOptionValue = z.string().regex(/^[a-z0-9_]{1,32}$/, 'option values are 1-32 lower case letters, digits and _');
+export const SetPieceOption = z.object({
+  name: SetPieceOptionName,
+  label: z.string().min(1).max(40),
+  /** The first is the default (what a placement that says nothing gets, and every placement made before the option). */
+  choices: z.array(z.object({ value: SetPieceOptionValue, label: z.string().min(1).max(60), blurb: z.string().max(240).optional() })).min(2).max(8),
+});
+export type SetPieceOption = z.infer<typeof SetPieceOption>;
+/** Which options a part is in for: `{ "doors": "slim" }` (absent: always). */
+const PartWhen = z.record(SetPieceOptionName, SetPieceOptionValue).optional();
+
 /** A part's value taken from a role: `{ "role": "stone" }`. */
 const MaterialRef = z.object({ role: z.enum(SET_PIECE_MATERIAL_ROLES) });
 const PartSurface = z.union([SurfaceStyle, MaterialRef]);
@@ -1123,14 +1141,23 @@ export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
       facade: z.union([z.enum(FACADES), z.object({ role: z.literal('facade') })]).optional(),
     })
     .optional(),
+  when: PartWhen,
 });
 /** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder or a light, at a position in the piece's frame. */
 export const SetPieceBlockPart = BlockEntity.omit({ id: true }).extend({
   material: z.union([ContentId, MaterialRef]).nullable().default(null),
   glass: z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })]).optional(),
+  when: PartWhen,
 });
-export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.union([z.enum(DOOR_STYLES), z.object({ role: z.literal('door') })]).optional() });
-export const SetPiecePart = z.discriminatedUnion('kind', [SetPieceTilePart, SetPieceBlockPart, PropEntity.omit({ id: true }), SetPieceDoorPart, LadderEntity.omit({ id: true }), LightEntity.omit({ id: true })]);
+export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.union([z.enum(DOOR_STYLES), z.object({ role: z.literal('door') })]).optional(), when: PartWhen });
+export const SetPiecePart = z.discriminatedUnion('kind', [
+  SetPieceTilePart,
+  SetPieceBlockPart,
+  PropEntity.omit({ id: true }).extend({ when: PartWhen }),
+  SetPieceDoorPart,
+  LadderEntity.omit({ id: true }).extend({ when: PartWhen }),
+  LightEntity.omit({ id: true }).extend({ when: PartWhen }),
+]);
 export type SetPiecePart = z.infer<typeof SetPiecePart>;
 /** The kinds of map piece a set piece is made of. */
 export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const;
@@ -1178,6 +1205,8 @@ export const SetPieceDefinition = z.object({
   ports: z.array(SetPiecePort).max(256).default([]),
   parts: z.array(SetPiecePart).min(1).max(1024),
   markers: z.array(SetPieceMarker).max(64).optional(),
+  /** Choices a placement makes (format v42; parts name them in `when`). */
+  options: z.array(SetPieceOption).max(8).optional(),
 });
 export type SetPieceDefinition = z.infer<typeof SetPieceDefinition>;
 export type SetPieceDefinitionInput = z.input<typeof SetPieceDefinition>;
@@ -1203,13 +1232,16 @@ export const SetPiecePlacement = z.object({
   /**
    * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
    * index: a tile part's surfaces (`{ "walls": … }`) or a block part's material (`{ "material": …, "tint": … }`). Paint
-   * wins over the role and the look (MapMaker's Structure paint, "This surface only").
+   * wins over the role and the look (MapMaker's Structure paint, "This surface only"). And (format v42) the piece's
+   * options it sets (`{ "doors": "slim" }`).
    */
   overrides: z
     .object({
       roles: SetPieceRoleValues.optional(),
       hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional(),
       paint: z.record(z.string().regex(/^(0|[1-9]\d{0,3})$/, 'part indices: "0" to "1023"'), z.union([SurfaceStyle, TileSurfaces])).optional(),
+      /** (Format v42) the piece's options this placement sets (its `options`; one left out is its first choice). */
+      options: z.record(SetPieceOptionName, SetPieceOptionValue).optional(),
     })
     .optional(),
 });

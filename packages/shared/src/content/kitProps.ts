@@ -41,6 +41,12 @@ export interface KitFamilyData {
    * its size is the box round the whole build, so its palette picture frames the part itself (frontend/modelThumbs.ts).
    */
   readonly within?: boolean;
+  /**
+   * A doorway bots walk through on a link (content/kitprops `passage`: the slim Oak Door standing open, narrower than
+   * the navmesh keeps open): its frame stands at z = `frame` in the prop's own frame, the way through along z
+   * (sim/passages.ts).
+   */
+  readonly passage?: { readonly frame: number };
 }
 
 /** A retired catalogue prop and what takes its place as played. */

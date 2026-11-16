@@ -1,5 +1,5 @@
 {
-  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door.",
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.2 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.2 m doorway is narrower than the navmesh keeps open.",
   "type": "door",
   "props": [
     {
@@ -263,6 +263,280 @@
           "index": 3,
           "name": "dark",
           "seed": 9984,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim",
+      "displayName": "Slim Oak Door (shut)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Oak Door made to a room door's width, 1.2 × 2.6 × 0.16 m, for a doorway brought in by jambs (a set piece's slim room doors): the same boards, strap hinges, ring handles and four leaves. Collides as its box: a closed room."
+      },
+      "size": [
+        1.2,
+        2.6,
+        0.16
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 0,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13761,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13762,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13763,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13764,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim_ajar",
+      "displayName": "Slim Oak Door (ajar)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Slim Oak Door standing 25° open into the room (+z). Collides as the frame's slab in the doorway, as the shut door does (a closed room); the leaf reaches 0.44 m into the room and does not collide."
+      },
+      "size": [
+        1.2,
+        2.6,
+        1.0
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 25,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13771,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13772,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13773,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13774,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim_open",
+      "displayName": "Slim Oak Door (open)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: the Slim Oak Door standing open against its hinge jamb, its frame 0.52 m behind the prop's centre (−z). No collision, and a passage (frame at z −0.52): 1.2 m is narrower than the navmesh keeps open (it stays 0.8 m off walls), so bots walk through it on a link from 1.6 m before the frame to 1.6 m beyond (sim/passages.ts)."
+      },
+      "size": [
+        1.2,
+        2.6,
+        1.2
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "passage": {
+        "frame": -0.52
+      },
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "plank",
+        "back": 0.52
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13781,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13782,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13783,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13784,
           "look": {
             "wood": "#4e3524",
             "frame": "#3a281c",

@@ -299,6 +299,25 @@ function roleValue<K extends keyof SetPieceRoleValues>(role: K, p: SetPiecePlace
   return p.overrides?.roles?.[role] ?? pack?.roles[role] ?? def.roles?.[role];
 }
 
+// ---------------------------------------------------------------- options
+
+/** Every option of a piece as a placement has it: its own value where that is one of the choices, else the first. */
+export function placementOptions(p: Pick<SetPiecePlacement, 'overrides'>, def: Pick<SetPieceDefinition, 'options'>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const o of def.options ?? []) {
+    const v = p.overrides?.options?.[o.name];
+    out[o.name] = v !== undefined && o.choices.some((c) => c.value === v) ? v : o.choices[0]!.value;
+  }
+  return out;
+}
+
+/** Whether a part is in the piece with these options (its `when` all met; a part without one always is). */
+export function partInPlay(part: { when?: Record<string, string> }, options: Readonly<Record<string, string>>): boolean {
+  if (!part.when) return true;
+  for (const [k, v] of Object.entries(part.when)) if (options[k] !== v) return false;
+  return true;
+}
+
 // ---------------------------------------------------------------- expansion
 
 /** A placement's parts as ordinary map pieces (hidden ones left out), in the map's frame, ids `sp_<id>_<index>`. */
@@ -317,8 +336,9 @@ export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, the
   };
   const tiles: TilePlacement[] = [];
   const entities: MapEntity[] = [];
+  const options = placementOptions(p, def);
   def.parts.forEach((part, i) => {
-    if (hidden.has(i)) return;
+    if (hidden.has(i) || !partInPlay(part, options)) return;
     const id = setPiecePartId(p.id, i);
     // Paint on this one part (format v41) wins over its role and the look: a tile part's surfaces, a block's material.
     const paint = p.overrides?.paint?.[String(i)];
@@ -355,8 +375,9 @@ function placeTilePart(
   facade: Resolve<string | { role: 'facade' }, string>,
   catalog: TileCatalog,
 ): TilePlacement {
-  const { kind: _k, surfaces, glass: glassIn, options, edges, upperFloors, x, y, z, rotation, tile } = part;
+  const { kind: _k, when: _w, surfaces, glass: glassIn, options, edges, upperFloors, x, y, z, rotation, tile } = part;
   void _k;
+  void _w;
   let ax = x;
   let ay = y;
   let rot: number = rotation;
@@ -412,12 +433,14 @@ function placeTilePart(
 function placeEntityPart(
   p: SetPiecePlacement,
   def: SetPieceDefinition,
-  part: Exclude<SetPiecePart, { kind: 'tile' }>,
+  partIn: Exclude<SetPiecePart, { kind: 'tile' }>,
   id: string,
   material: Resolve<SurfaceStyle | { role: SetPieceMaterialRole }, SurfaceStyle>,
   glass: Resolve<string | { role: 'glass' }, 'breakable' | 'reinforced'>,
   doorStyle: Resolve<string | { role: 'door' }, string>,
 ): MapEntity {
+  const { when: _w, ...part } = partIn;
+  void _w;
   const position = placePoint(p, def, part.position);
   const yaw = placeYaw(p, part.yaw);
   if (part.kind === 'block') {
@@ -520,6 +543,9 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
       return !part || (part.kind === 'tile' ? 'material' in v : part.kind !== 'block' || !('material' in v));
     });
     if (misfit.length) issues.push({ severity: 'warning', code: 'setpiece.paint', message: `set piece ${p.id} paints part ${misfit.map(([k]) => k).join(', ')}, which ${def.displayName} has no such surface on (it is left as it is)`, targetId: p.id });
+    // Options (v42) the piece has, to a value it offers.
+    const odd = Object.entries(p.overrides?.options ?? {}).filter(([k, v]) => !def.options?.some((o) => o.name === k && o.choices.some((c) => c.value === v)));
+    if (odd.length) issues.push({ severity: 'warning', code: 'setpiece.option', message: `set piece ${p.id} sets ${odd.map(([k, v]) => `${k} "${v}"`).join(', ')}, which ${def.displayName} doesn't offer (it takes the first choice)`, targetId: p.id });
     const cells = setPieceFootprint(p, def);
     footprints.set(p.id, cells);
     if (cells.some(([x, y, z]) => Math.abs(x) > MAX_TILE_CELL || Math.abs(y) > MAX_TILE_CELL || Math.abs(z) > MAX_TILE_LEVEL)) {

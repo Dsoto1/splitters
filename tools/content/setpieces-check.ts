@@ -62,11 +62,13 @@ for (const def of pieces.values()) {
   const seen = new Set<string>();
   for (const rotation of [0, 1, 2, 3] as Rotation[]) {
     for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
-      for (const pack of [undefined, ...def.packs]) {
-        const doc: MapDocument = { ...base, setPieces: [{ id: 'check_piece', piece: def.id, x: 40, y: 40, z: 2, rotation, mirror, ...(pack ? { pack } : {}) }] };
+      // (And each choice of each option the piece has, the others at their first.)
+      const choices: (Record<string, string> | undefined)[] = [undefined, ...(def.options ?? []).flatMap((o) => o.choices.slice(1).map((c) => ({ [o.name]: c.value })))];
+      for (const [pack, options] of [undefined, ...def.packs].flatMap((pk) => choices.map((c) => [pk, c] as const))) {
+        const doc: MapDocument = { ...base, setPieces: [{ id: 'check_piece', piece: def.id, x: 40, y: 40, z: 2, rotation, mirror, ...(pack ? { pack } : {}), ...(options ? { overrides: { options } } : {}) }] };
         for (const i of validateMap(doc, coreCatalog, library)) {
           if (i.severity !== 'error') continue;
-          const line = `${where.get(def.id)}: placed${rotation ? ` turned ${rotation * 90}°` : ''}${mirror ? ' mirrored' : ''}${pack ? ` in ${pack}` : ''}: ${i.code}: ${i.message}`;
+          const line = `${where.get(def.id)}: placed${rotation ? ` turned ${rotation * 90}°` : ''}${mirror ? ' mirrored' : ''}${pack ? ` in ${pack}` : ''}${options ? ` with ${JSON.stringify(options)}` : ''}: ${i.code}: ${i.message}`;
           if (!seen.has(i.message)) problems.push(line);
           seen.add(i.message);
         }

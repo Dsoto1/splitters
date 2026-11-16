@@ -19,6 +19,8 @@ import {
   mirrorSetPieceCommand,
   placementCells,
   placementPack,
+  placementOptions,
+  partInPlay,
   placeSetPieceCommand,
   replaceTilesWithSetPieceCommand,
   SET_PIECE_MATERIAL_ROLES,
@@ -577,6 +579,36 @@ export class SetPieceTools {
       el.append(head, small("Each comes from its look; pick another here for this piece only."));
       for (const role of roles) el.append(row(ROLE_LABELS[role], this.roleSelect(p, def, role, update)));
     }
+    // Options (format v42): a choice that swaps some of its parts (a dorm bay's room doors, wide or slim).
+    if (def.options?.length) {
+      const head = document.createElement('h3');
+      head.textContent = 'Options';
+      el.append(head);
+      const now = placementOptions(p, def);
+      for (const o of def.options) {
+        const sel = document.createElement('select');
+        sel.dataset.option = o.name;
+        sel.id = `ed-sp-insp-opt-${o.name}`;
+        for (const c of o.choices) sel.append(new Option(c.label, c.value, false, c.value === now[o.name]));
+        const blurb = () => o.choices.find((c) => c.value === sel.value)?.blurb ?? '';
+        sel.title = blurb();
+        sel.addEventListener('change', () => {
+          const options: Record<string, string> = { ...(p.overrides?.options ?? {}) };
+          // The first choice is the default: left unset, as every placement made before the option.
+          if (sel.value === o.choices[0]!.value) delete options[o.name];
+          else options[o.name] = sel.value;
+          const overrides: NonNullable<SetPiecePlacement['overrides']> = { ...(p.overrides ?? {}) };
+          if (Object.keys(options).length) overrides.options = options;
+          else delete overrides.options;
+          const { overrides: _old, ...rest } = p;
+          void _old;
+          update(`Set piece ${o.label.toLowerCase()}`, Object.keys(overrides).length ? { ...rest, overrides } : rest);
+        });
+        el.append(row(o.label, sel));
+        const b = blurb();
+        if (b) el.append(small(b));
+      }
+    }
     const partsHead = document.createElement('h3');
     partsHead.textContent = `Parts (${def.parts.length})`;
     el.append(partsHead, small('Untick a part to leave it out of this piece only. Explode to tiles to edit the parts one by one.'));
@@ -599,7 +631,14 @@ export class SetPieceTools {
         update(box.checked ? 'Show set piece part' : 'Hide set piece part', Object.keys(overrides).length ? { ...rest, overrides } : rest);
       });
       const lab = document.createElement('label');
-      lab.append(box, document.createTextNode(this.partLabel(part)));
+      // A part only one choice of an option has: named with it, and greyed while that choice is off.
+      const when = Object.entries(part.when ?? {}).map(([k, v]) => {
+        const o = def.options?.find((x) => x.name === k);
+        return `${o?.label ?? k}: ${o?.choices.find((c) => c.value === v)?.label ?? v}`;
+      });
+      const live = partInPlay(part, placementOptions(p, def));
+      if (!live) lab.className = 'off';
+      lab.append(box, document.createTextNode(`${this.partLabel(part)}${when.length ? ` (${when.join(', ')})` : ''}`));
       parts.append(lab);
     });
     el.append(parts);

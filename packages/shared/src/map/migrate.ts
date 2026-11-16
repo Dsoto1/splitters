@@ -108,6 +108,11 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // (`overrides.paint`). Absent = as before (bars and railings follow the theme's metal, else iron): v40 data is
   // valid as is. The bump is for the other direction: an older build would drop the paint without a word.
   [40, (doc) => ({ ...doc })],
+  // v41 -> v42: set piece options (map/schema.ts SetPieceOption): a definition's named choices, its parts' `when`, and
+  // a placement's `overrides.options` (a dorm bay's room doors wide or slim). Absent = every option's first choice,
+  // which is the piece as it was: v41 data is valid as is. The bump is for the other direction: an older build would
+  // drop the choice without a word.
+  [41, (doc) => ({ ...doc })],
 ]);
 
 /** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */

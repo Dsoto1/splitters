@@ -4,6 +4,7 @@ import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './const
 import type { GroundHeight, PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 import { mapPortals, portalLinks } from './portals.ts';
+import { passageLinks } from './passages.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 import { grabZipline, rideZipline, startRide, ziplineLinks, mapZiplines, type Zipline } from './zipline.ts';
 import { hypot } from '../math.ts';
@@ -551,6 +552,6 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
 }
 
 /** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, portal pairs both ways and zipline rides. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0], physics: PhysicsWorld, gravity = 1, extra?: ExtraRay): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities), extra), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics)];
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0] & Parameters<typeof passageLinks>[0], physics: PhysicsWorld, gravity = 1, extra?: ExtraRay): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities), extra), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics), ...passageLinks(entities)];
 }
