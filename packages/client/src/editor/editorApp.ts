@@ -108,6 +108,7 @@ import { TopBar } from './topBar.ts';
 import { LeftRail } from './leftRail.ts';
 import { MapSettingsView } from './mapSettingsView.ts';
 import { RightDock } from './rightDock.ts';
+import { MinimapPanel } from './minimapPanel.ts';
 import { StatusBar } from './statusBar.ts';
 import type { EditorResume } from '../editorResume.ts';
 import { ToolBar } from './toolBar.ts';
@@ -173,6 +174,8 @@ export class EditorApp {
   readonly outliner: OutlinerPanel;
   /** MapMaker UI spec Phase 1: the right dock's three states (rightDock.ts), Map settings in it (mapSettingsView.ts), the left rail (leftRail.ts), the contextual tool bar (toolBar.ts), the View menu (viewMenu.ts) and the short status bar (statusBar.ts). */
   readonly dock: RightDock;
+  /** MapMaker UI spec Phase 3: the live minimap, in the dock's Minimap tab and its compact card (minimapPanel.ts). */
+  readonly minimap: MinimapPanel;
   readonly mapSettings: MapSettingsView;
   readonly rail: LeftRail;
   readonly toolBar: ToolBar;
@@ -310,6 +313,7 @@ export class EditorApp {
     this.saving = new MapSaving(this);
     this.outliner = new OutlinerPanel(this, $('ed-outliner'));
     this.dock = new RightDock(this);
+    this.minimap = new MinimapPanel(this, { zoom: () => this.dock.minimapZoom(), setZoom: (z) => this.dock.setMinimapZoom(z) });
     this.mapSettings = new MapSettingsView(this);
     this.rail = new LeftRail(this);
     this.toolBar = new ToolBar(this);
@@ -612,6 +616,7 @@ export class EditorApp {
     this.notes.frame();
     this.hints.frame();
     this.plan.update();
+    this.minimap.frame();
     this.statusBar.memoryTick();
     this.view.render();
   }

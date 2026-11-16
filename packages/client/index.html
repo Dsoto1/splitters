@@ -373,7 +373,7 @@
           <button id="ed-dock-hide" type="button" aria-keyshortcuts="Shift+Backslash" title="Hide the right dock (Shift+\)" aria-label="Hide the right dock">›</button>
         </div>
         <div id="ed-dock-mini" class="ed-dock-mini" hidden>
-          <div class="ed-dock-mini-map" role="img" aria-label="Minimap (coming in a later update)"><span>Minimap</span><small>Coming in a later update</small></div>
+          <div id="ed-minimap-mini" class="ed-minimap-slot"></div>
           <button id="ed-dock-expand" type="button" title="The Outliner and Properties (Shift+\)">Expand</button>
         </div>
         <section id="ed-map-settings" aria-labelledby="ed-ms-title" hidden>
@@ -381,9 +381,9 @@
           <div id="ed-ms-body"></div>
         </section>
         <div id="ed-dock-panels">
-        <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel">
-          <h3 class="ed-panel-head"><button type="button" aria-expanded="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button><span id="ed-ol-count"></span></h3>
-          <div class="ed-panel-body" id="ed-outliner"></div>
+        <section class="ed-panel ed-nav" data-panel="outliner" id="ed-outliner-panel" data-tab="outliner">
+          <h3 class="ed-panel-head ed-nav-head"><button type="button" class="ed-nav-fold" aria-expanded="true" aria-label="Fold the Minimap and Outliner" title="Fold the Minimap and Outliner"></button><span class="ed-nav-tabs" role="tablist" aria-label="Map navigation"><button type="button" role="tab" id="ed-tab-minimap" data-tab="minimap" aria-controls="ed-minimap-host" aria-selected="false" tabindex="-1" title="The level from above: the camera, the selection; click to select or go there">Minimap</button><button type="button" role="tab" id="ed-tab-outliner" data-tab="outliner" aria-controls="ed-outliner" aria-selected="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button></span><span id="ed-ol-count"></span></h3>
+          <div class="ed-panel-body ed-nav-body"><div id="ed-minimap-host" class="ed-minimap-slot" role="tabpanel" aria-labelledby="ed-tab-minimap" hidden></div><div id="ed-outliner" role="tabpanel" aria-labelledby="ed-tab-outliner"></div></div>
         </section>
         <section class="ed-panel" data-panel="inspector">
           <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Properties</button></h3>

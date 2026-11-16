@@ -315,7 +315,8 @@ function rowSig(r: OutlineRow): string {
   return r.type === 'item' ? `i|${r.entry.id}|${r.entry.name}|${r.entry.level}` : `h|${r.type}|${r.key}|${r.label}|${r.count}|${r.open ? 1 : 0}`;
 }
 
-function mergeSelections(a: Selection, b: Selection): Selection {
+/** Shift-click: what was selected and what was clicked (the outliner's and the minimap's). */
+export function mergeSelections(a: Selection, b: Selection): Selection {
   const u = (x: readonly string[], y: readonly string[]) => [...new Set([...x, ...y])];
   const pieces = u(a.setPieces ?? [], b.setPieces ?? []);
   return { tiles: u(a.tiles, b.tiles), entities: u(a.entities, b.entities), ...(pieces.length ? { setPieces: pieces } : {}) };
