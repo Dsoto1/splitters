@@ -47,10 +47,13 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (beams on the muzzle, `wip/beam-muzzle`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 **Landed: beams on the muzzle in a train** (`check/train-20261116-173817` at b4dfded7, run 43920476748, green on attempt 2: attempt 1 red only on `hostgame`, QUEUE Bugs; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). Notes under the helper's claim.
 
-**Landing now: train** (the character leak, `wip/char-leak`; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
+**Landing now: train** (the character leak `wip/char-leak` and lane B's painting Phase 4 `wip/painting-4`, check/train-20261116-184637 at d352eb40; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/paint-list-fix` · run 43928449682 (the cut-off Paint list, item 1 of the MapMaker bugs of 2026-11-16, alone first; at 5c7c6627; full suite: e2e/run.mjs changed)
+- `wip/random-bots` · run 43937153341 (`check/random-bots` at 7edcdadd; lane A's helper)
+
+- **Claimed (a helper of lane A's lead, 2026-11-16): random bots are random** (`wip/random-bots`; QUEUE Bugs). Files: shared `content/looks.ts` (`botLookOrder`: a seeded shuffle of the pool), `sim/match.ts` (`botLook` deals from it, skipping looks other bots wear; `recastBots` through it), tests `botLookDeal.test.ts` and `botPhaseD.test.ts` (a profile for each of its six bots), docs/CHARACTERS.md. No map format change.
+- **Claimed (the same helper, 2026-11-16): the Dropship's new model** (`wip/dropship-model`; QUEUE Features). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, `content/guns.json` (pack `meshy-owned-drive-1116`), `vehicles/hover_carrier.glb`, `assets-src/meshy-owned/License.txt`, the generated tables, provenance and the vehicles palette atlas (`pnpm content:rebuild`), tests `dropshipCarrier.test.ts`, `vehicleWedge.test.ts`, `airplane.test.ts`, the resolved-vehicles fixture; docs/VEHICLES.md, docs/CONTENT_PIPELINE.md. No map format change.
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
