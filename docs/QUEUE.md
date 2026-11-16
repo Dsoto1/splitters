@@ -31,6 +31,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 landed 2026-11-15 (gate corner, stair wells, 45° gatehouse tower); phase 4 in progress: Flavius Rule rebuilt in MapMaker (`wip/flavius-octagon-4`; the owner's phase-3 answers: recs).
+- M · A (a helper of lane A's lead) · Bots and drivers, bots and bars (owner, 2026-11-16): bots never hit the driver of a buggy, and don't target anyone through a fence, bars or a barred gate; then the driving feel ("snagged on invisible elements", landings "programmed"): diagnosis and real rigid-body physics evaluated · `wip/drive-physics-3`, `docs/DRIVING_PHYSICS_PLAN.md`
 
 
 ## Ready to land
