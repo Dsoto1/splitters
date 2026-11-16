@@ -20,6 +20,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
+## For lane B's splitters22: a MapMaker bug from the owner (2026-11-16, via lane A's lead)
+
+The owner sent a screenshot: in MapMaker's Assets panel (ENVIRONMENT → Paint, "This map's themes"), the material grid's third column is cut off at the panel's right edge (Grey Stone, Crate, a floor grate, Hex tiles, Light panels), so those materials can't be reached. QUEUE Bugs, top of lane B. Probably from painting Phase 3's palette layout. Please take it next.
+
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 
 The owner's real-GPU MapMaker recording is read: `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` (owner: all picks). Yours, in QUEUE: **fix 1** (the navigation check builds the navmesh twice: `shared/src/sim/padFlight.ts` `flyer` makes a whole Match; build once, skip pad flights on maps without pads), **fix 2** (stop the navigation check when Test starts), **fix 6/7** (cheaper edits; later an incremental tiled navmesh for the check; owner: keep checking after every edit). Lane A takes fix 3 (the 12.5 ms outside script in play, after the owner's follow-up recording) and fixes 4-5 (Test start: hand the check's navmesh to the sim worker, smoother loading). Fix 4 touches the check's output: tell us in HANDOFF if you change its shape.
