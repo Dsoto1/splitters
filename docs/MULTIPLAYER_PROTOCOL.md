@@ -363,9 +363,13 @@ see then (`client/src/main.ts` `afterHost`, `game/hostLeft.ts`):
   the tab: `pagehide`) sends every friend `{ t: "bye" }` before its links
   close (`LocalTransport.sayGoodbye`). A friend's `PeerTransport` then reports
   the host as `left`; a link that closes without it, or a host silent for 20 s
-  (`HOST_SILENT_MS`: a browser host streams 20 snapshots a second), as
-  `dropped`. Dedicated hosts (`welcome.dedicated`) keep the old behaviour
-  (reconnect for up to a minute: they hold places and come back).
+  (`HOST_SILENT_MS`: a browser host streams 20 snapshots a second; 60 s while
+  the connection itself is up, `HOST_STALLED_SILENT_MS`: the host's page has
+  stalled, e.g. building shaders, it hasn't gone), as `dropped`. Dedicated
+  hosts (`welcome.dedicated`) keep the old behaviour (reconnect for up to a
+  minute: they hold places and come back), and a dedicated host silent for
+  30 s (`DEDICATED_SILENT_MS`, `game/hostSilence.ts`) has dropped us without
+  the close reaching us: the page reconnects into its kept place.
 - **Dropped**: "Reconnecting to host…": rejoining the same code until let in,
   or until the broker says the game is gone (at once when the host's tab closed
   or crashed), for up to a minute (a host whose machine lost its network stays

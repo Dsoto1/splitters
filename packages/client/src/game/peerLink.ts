@@ -134,12 +134,15 @@ function linkFor(conn: DataConnection): RemoteLink {
     },
     close: () => conn.close(),
     // The browser's own network threads keep the connection up while the friend's page is busy.
-    connected: () => {
-      const pc = conn.peerConnection as RTCPeerConnection | undefined;
-      const state = pc?.connectionState ?? pc?.iceConnectionState;
-      return conn.open && (state === 'connected' || state === 'completed');
-    },
+    connected: () => linkUp(conn),
   };
+}
+
+/** Whether a data connection's peer connection is up (it stays up while the page at the other end is busy). */
+function linkUp(conn: DataConnection): boolean {
+  const pc = conn.peerConnection as RTCPeerConnection | undefined;
+  const state = pc?.connectionState ?? pc?.iceConnectionState;
+  return conn.open && (state === 'connected' || state === 'completed');
 }
 
 /** The host side: registers a join code and hands each friend's connection to the match. */
@@ -360,7 +363,7 @@ export class PeerTransport implements Transport {
           tickAt = now;
           // A host streams 20 snapshots a second and answers every ping: silence this long is a dropped host (a
           // dedicated one: a link it has dropped, so we reconnect).
-          if (hostSilent(now, heardAt, this.dedicated)) return hostLost('silent');
+          if (hostSilent(now, heardAt, this.dedicated, linkUp(conn))) return hostLost('silent');
           this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) });
         }, 1000);
       });
