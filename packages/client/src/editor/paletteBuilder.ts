@@ -331,7 +331,7 @@ export class PaletteBuilder {
     const theme = coreThemes.get(this.app.doc.classicStructure.theme)?.displayName ?? this.app.doc.classicStructure.theme;
     const packs = this.themePacks();
     note.textContent = packs.length
-      ? `${theme}'s packs first (marked): ${packs.map((p) => `${p.number} ${p.displayName}`).join(', ')}. The rest follow; All is the catalogue's order.`
+      ? `First (marked with a dot): the packs for the ${theme} theme, ${packs.map((p) => `${p.number} ${p.displayName}`).join(', ')}. Then everything else; All is the catalogue's order.`
       : `No Style Pack uses the ${theme} theme yet: every piece in the catalogue's order.`;
   }
 

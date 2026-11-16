@@ -298,6 +298,8 @@ async function editorFlow(browser) {
   // tab's tool bar, UI Phase 1.)
   await page.click('#ed-modes [data-ws="environment"]');
   await page.click('#ed-tb-paint');
+  // Structure paint's list opens on This map's themes (painting Phase 3); every material is under All, a click away.
+  await page.click('#ed-mat-view [data-mv="all"]');
   await page.click('[data-material="core.red_brick"]');
   const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
   await page.mouse.move(wall.x, wall.y);
@@ -1376,6 +1378,7 @@ async function editoruxFlow(browser) {
   await page.context().close();
   await editorInterfaceChecks(browser);
   await editorLayoutChecks(browser);
+  await editorThemeViewChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1679,7 +1682,11 @@ async function editorLayoutChecks(browser) {
       probe.textContent = el.selectedOptions[0]?.textContent ?? '';
       return getComputedStyle(el).display !== 'none' && probe.getBoundingClientRect().width + 18 <= el.clientWidth;
     };
-    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: whole('ed-theme'), skill: whole('ed-skill'), bots: whole('ed-bots') };
+    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: (() => {
+        // The Structure theme's chip (painting Phase 3) shows the theme's name whole.
+        const chip = document.getElementById('ed-theme-chip-name');
+        return getComputedStyle(document.getElementById('ed-theme-chip')).display !== 'none' && chip.scrollWidth <= chip.clientWidth + 1 && chip.textContent.length > 0;
+      })(), skill: whole('ed-skill'), bots: whole('ed-bots') };
     probe.remove();
     return r;
   });
@@ -1900,10 +1907,16 @@ async function editorLayoutChecks(browser) {
   await page.click('#ed-tb-more');
   check(delOff, 'Delete waits for a selection, on the bar and in the menu');
 
-  // ---- The old controls from their places: the top bar's theme and Snap, the rail's collapse, the problems pill.
-  await page.selectOption('#ed-theme', otherTheme);
+  // ---- The old controls from their places: the top bar's Structure theme chip (it opens Map settings at the theme:
+  // painting Phase 3) and Snap, the rail's collapse, the problems pill.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chipOpens = await page.evaluate(() => document.activeElement?.id === 'ed-prop-theme' && document.getElementById('ed-title').getAttribute('aria-expanded') === 'true');
+  await page.selectOption('#ed-prop-theme', otherTheme);
   if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
-  const themeTop = (await doc()).classicStructure.theme === otherTheme && (await undoLabel()) === 'Change theme';
+  await frames(page, 3);
+  const chipTheme = { opens: chipOpens, theme: (await doc()).classicStructure.theme === otherTheme, undo: await undoLabel(), name: await page.textContent('#ed-theme-chip-name'), want: await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].find((o) => o.value === t)?.textContent, otherTheme) };
+  const themeTop = chipTheme.opens && chipTheme.theme && chipTheme.undo === 'Change theme' && chipTheme.name === chipTheme.want;
   await page.click('#ed-undo');
   await page.selectOption('#ed-snap', 'coarse');
   const snap = await page.evaluate(() => window.__editor.snapMode);
@@ -1915,7 +1928,7 @@ async function editorLayoutChecks(browser) {
   await page.keyboard.press('Backslash');
   const byKey = await page.evaluate(() => !document.getElementById('ed-palette').offsetParent);
   await page.keyboard.press('Backslash');
-  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ themeTop, snap, folded, reopened, byKey })})`);
+  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme chip (it opens Map settings at the Structure theme, and names the theme) and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ chipTheme, snap, folded, reopened, byKey })})`);
   await page.keyboard.press('Shift+Backslash');
   await page.keyboard.press('Shift+Backslash');
   await page.click('#ed-status');
@@ -1935,6 +1948,121 @@ async function editorLayoutChecks(browser) {
   const nOpen = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, settings: !!document.getElementById('ed-prop-name')?.offsetParent }));
   check(n.state === 'compact' && n.card && n.fits && nOpen.state === 'expanded' && nOpen.settings, `at 860 px the dock starts compact and the top bar fits; the title still opens Map settings, expanding it (${JSON.stringify({ n, nOpen })})`);
   await narrow.close();
+}
+
+/**
+ * The palette follows the map's themes (docs/MAPMAKER_PAINTING_PLAN.md, Phase 3): the Style Pack picker opens on This
+ * map's themes, which puts the pieces of the packs that use the map's Structure theme first in each group (marked) and
+ * hides nothing; All, one click away, is the catalogue's order; it follows a theme change at once. Structure paint lists
+ * the theme's slot materials, its packs' materials and Recent, with All a tab away; Ground paint the map's grounds first.
+ */
+async function editorThemeViewChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-themes-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  // Each tile and prop grid's cards in order, which are marked, and how many cards show in the panes.
+  const palette = () =>
+    page.evaluate(() => {
+      const order = window.__editor.palette.keys();
+      const grids = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles, #ed-setpieces .ed-group .tiles')].map((g) => [...g.querySelectorAll(':scope > [data-key]')].map((c) => ({ key: c.dataset.key, first: c.classList.contains('theme-first') })));
+      const inOrder = grids.every((g) => g.every((c, i) => i === 0 || order.indexOf(g[i - 1].key) < order.indexOf(c.key)));
+      // Marked cards lead each run of a grid (a prop group's runs are its categories).
+      const runsLead = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles')].every((g) => {
+        let seenPlain = false;
+        for (const c of g.children) {
+          if (!c.dataset.key) seenPlain = false;
+          else if (!c.classList.contains('theme-first')) seenPlain = true;
+          else if (seenPlain) return false;
+        }
+        return true;
+      });
+      const shown = [...document.querySelectorAll('#ed-palette .ed-pane [data-key]')].filter((c) => !c.hidden).length;
+      const marked = grids.flat().filter((c) => c.first).map((c) => c.key);
+      return { view: document.getElementById('ed-pack').value, note: document.getElementById('ed-pack-note').hidden ? '' : document.getElementById('ed-pack-note').textContent, inOrder, runsLead, shown, marked, mixed: grids.some((g) => g.some((c) => c.first) && g.some((c) => !c.first)) };
+    });
+
+  // A new map's Prototype theme: no pack uses it, so This map's themes (the default) is the catalogue's order.
+  const proto = await palette();
+  check(proto.view === '@themes' && /No Style Pack uses the Prototype theme/.test(proto.note) && proto.inOrder && proto.marked.length === 0, `the palette opens on This map's themes; with no pack for the theme, every piece in the catalogue's order (${JSON.stringify({ ...proto, marked: proto.marked.length })})`);
+
+  // Military: its pack's pieces first in each group, marked; nothing hidden.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.military' });
+  });
+  await settle();
+  const mil = await palette();
+  const order = await page.evaluate(() => {
+    const idx = (k) => [...document.querySelectorAll('#ed-tiles [data-key]')].findIndex((c) => c.dataset.key === k);
+    const sandbag = document.querySelector('[data-key="prop:prop.sandbag_wall"]');
+    return { barracks: idx('tile:military.barracks'), corridor: idx('tile:core.corridor'), sandbagFirst: !!sandbag?.classList.contains('theme-first') };
+  });
+  check(mil.view === '@themes' && /Military Compound/.test(mil.note) && mil.runsLead && mil.mixed && mil.marked.includes('tile:military.barracks') && !mil.marked.includes('tile:core.corridor') && order.sandbagFirst && order.barracks >= 0 && order.barracks < order.corridor && mil.shown === proto.shown, `This map's themes follows a theme change at once: Military Compound's pieces first in each group, marked, nothing hidden (${JSON.stringify({ ...mil, marked: mil.marked.length, order })})`);
+  await page.click('#ed-pal-tabs [data-pane="tiles"]');
+  await page.evaluate(() => (document.getElementById('ed-palette').scrollTop = 0));
+  await shot('default');
+
+  // All, one click away: the catalogue's order, nothing marked, the same pieces.
+  await page.selectOption('#ed-pack', '');
+  await settle();
+  const all = await palette();
+  check(all.view === '' && all.inOrder && all.marked.length === 0 && all.shown === mil.shown && all.note === '', `All shows everything in the catalogue's order, unmarked (${JSON.stringify({ ...all, marked: all.marked.length })})`);
+  await shot('all');
+  await page.selectOption('#ed-pack', '@themes');
+  await settle();
+  const back = await palette();
+  check(back.runsLead && back.marked.length === mil.marked.length, `back to This map's themes: the theme's pieces lead again (${back.marked.length} marked)`);
+  // The top bar's Structure theme chip names the theme.
+  await shot('chip');
+
+  // Structure paint: This map's themes (the theme's slot materials, its packs', Recent), All a tab away.
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-pal-tabs [data-pane="paint"]');
+  await settle();
+  const paint = () =>
+    page.evaluate(() => {
+      const box = document.getElementById('ed-materials');
+      const visible = [...box.children].filter((c) => getComputedStyle(c).display !== 'none');
+      return {
+        view: box.dataset.view,
+        heads: visible.filter((c) => c.classList.contains('mv-head')).map((c) => c.dataset.mv),
+        title: box.querySelector('.mv-head')?.textContent ?? '',
+        mats: visible.filter((c) => c.dataset.material).map((c) => c.dataset.material),
+        total: box.querySelectorAll('[data-material]').length,
+        tab: document.querySelector('#ed-mat-view [aria-pressed="true"]')?.dataset.mv,
+      };
+    });
+  const themed = await paint();
+  check(themed.view === 'theme' && themed.tab === 'theme' && themed.heads.join() === 'theme,packs' && /^Structure theme: /.test(themed.title) && themed.mats.includes('core.pbr_bunker_panels') && themed.mats.length < themed.total / 3 && new Set(themed.mats).size === themed.mats.length, `Structure paint opens on This map's themes: the theme's materials, then its pack's (${JSON.stringify({ ...themed, mats: themed.mats.length })})`);
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint');
+  await page.click('#ed-mat-view [data-mv="all"]');
+  const allMats = await paint();
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint-all');
+  await page.click('[data-material="core.checker"]');
+  await page.click('#ed-mat-view [data-mv="theme"]');
+  const recent = await paint();
+  check(allMats.view === 'all' && allMats.heads.length === 0 && allMats.mats.length === allMats.total && recent.heads.join() === 'theme,packs,recent' && recent.mats.at(-1) === 'core.checker' && (await page.evaluate(() => window.__editor.paint.paintStyle.material)) === 'core.checker', `All lists every material; one picked there shows under Recent in This map's themes (${JSON.stringify({ all: allMats.mats.length, total: allMats.total, recent: recent.heads })})`);
+
+  // Ground paint: the map's grounds first (a new terrain is grass), then the others.
+  await page.click('#ed-pal-tabs [data-pane="terrain"]');
+  await settle();
+  const ground = await page.evaluate(() => [...document.getElementById('ed-tr-materials').children].map((c) => c.dataset.ground ?? `# ${c.textContent}`));
+  check(ground[0] === "# This map's grounds" && ground[1] === 'grass' && ground[2] === '# Other grounds' && ground.filter((g) => !g.startsWith('#')).length === 8, `Ground paint lists the map's grounds first (${ground.join(', ')})`);
+  await page.evaluate(() => document.querySelector('#ed-tr-materials')?.scrollIntoView({ block: 'center' }));
+  await shot('ground');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
 }
 
 /**
@@ -2336,13 +2464,17 @@ async function editorThemeWarningChecks(browser) {
   await settle();
   check(kept.theme === 'core.industrial' && kept.undo === 'Change theme, keep the look' && kept.plain && kept.block && kept.cage && kept.back === 0 && (await json()) === before, `Keep current look changes the theme and pins today's look as paint (nothing would change going back), one undo step (${JSON.stringify(kept)})`);
 
-  // ---- The top bar's theme: the same dialog; Esc is Cancel.
-  await page.selectOption('#ed-theme', 'core.industrial');
+  // ---- The top bar's Structure theme chip (painting Phase 3: the select went) opens Map settings at the theme, so the
+  // same dialog; Esc is Cancel.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chip = await page.evaluate(() => ({ focus: document.activeElement?.id, name: document.getElementById('ed-theme-chip-name').textContent }));
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
   const top = { opened: await waitDialog(), counts: await dialogCounts() };
   await page.keyboard.press('Escape');
   await settle();
-  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')) };
-  check(top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open, `the top bar's theme opens the same warning; Esc cancels (${JSON.stringify({ top, topAfter })})`);
+  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')), noSelect: !document.getElementById('ed-theme') };
+  check(chip.focus === 'ed-prop-theme' && chip.name === 'Imperial Arena' && top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open && topAfter.noSelect, `the top bar's theme chip opens Map settings at the Structure theme, which asks first; Esc cancels (${JSON.stringify({ chip, top, topAfter })})`);
 
   // ---- The palette's "Use theme": the same dialog, then Change.
   await page.selectOption('#ed-pack', 'military');
