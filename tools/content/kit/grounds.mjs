@@ -398,9 +398,10 @@ export function bannerPostMesh(seed, size, g, look, level) {
  */
 export function markerMesh(seed, size, g, look, level) {
   const [w, h, d] = size;
-  const m = new Mesh();
   const stone = hex(look.stone ?? '#2a2b2e');
   const baseC = hex(look.base ?? '#6c6a66');
+  if (level >= 2) return standIn(size, scale3(stone, 1.2), stone);
+  const m = new Mesh();
   const X = w / 2;
   const Z = d / 2;
   const b = g.base;
@@ -428,7 +429,8 @@ export function markerMesh(seed, size, g, look, level) {
       const ny = (dx / L) * 0.012;
       quadN(m, [p[0] - nx, p[1] - ny, z], [q[0] - nx, q[1] - ny, z], [q[0] + nx, q[1] + ny, z], [p[0] + nx, p[1] + ny, z], [0, 0, 1], cut);
     }
-    // A five-pointed star in the middle.
+    // A five-pointed star in the middle (the nearest level only).
+    if (level > 0) return m;
     const cy = (b + h) / 2;
     const R = Math.min(sx, (h - b) / 2) * 0.42;
     const pts = Array.from({ length: 10 }, (_, k) => {
@@ -447,8 +449,9 @@ export function markerMesh(seed, size, g, look, level) {
  */
 export function stoneBenchMesh(seed, size, g, look, level) {
   const [w, h, d] = size;
-  const m = new Mesh();
   const stone = hex(look.stone ?? '#b3ac9d');
+  if (level >= 2) return standIn(size, scale3(stone, 1.06), scale3(stone, 0.9));
+  const m = new Mesh();
   const X = w / 2;
   const Z = d / 2;
   const ys = h - g.slab;

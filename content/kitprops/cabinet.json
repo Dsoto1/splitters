@@ -466,7 +466,7 @@
         {
           "index": 0,
           "name": "oak",
-          "seed": 10001,
+          "seed": 10011,
           "look": {
             "wood": "#a67c4e",
             "metal": "#2a2c30",
