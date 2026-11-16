@@ -12853,7 +12853,6 @@ async function hostcontrolsFlow(browser) {
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
   const friend = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
-  listen(friend, 'friend');
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
   await friend.goto(`${CLIENT}/?join=${code}${peer}`, { waitUntil: 'domcontentloaded' });
   const joined = await friend.waitForFunction(playing, null, { timeout: T(60000) }).then(() => true, () => false);
