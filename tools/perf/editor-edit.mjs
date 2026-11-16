@@ -5,6 +5,7 @@
 //   EDIT_JSON=<file>    the numbers as JSON
 //   EDIT_URL=<url>     a client already being served (the dev server: readable names in the profile)
 //   CHROMIUM=<path>     another Chromium than Playwright's own
+//   EDIT_QUERY=<query>  more of the page's query (`&perfoff=editlight`: the edit before trace fix 6)
 //
 // Software rendering is slow here, so frame rate says nothing: each step reports the page's script time (Chrome's
 // ScriptDuration) with the time spent drawing frames (`view.render`) taken off, the longest single stretch of the
@@ -18,6 +19,8 @@ const PORT = process.env.EDIT_PORT ?? '4191';
 const CLIENT = process.env.EDIT_URL ?? `http://localhost:${PORT}`;
 const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ["St. John's", 'Iron Maw'];
 const PROFILE = process.env.EDIT_PROFILE;
+/** More of the page's query, e.g. `&perfoff=editlight` to measure against the code without a saving (game/perfSwitches.ts). */
+const QUERY = process.env.EDIT_QUERY ?? '';
 if (PROFILE) mkdirSync(PROFILE, { recursive: true });
 
 const server = process.env.EDIT_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
@@ -161,7 +164,7 @@ async function run(browser, mapName) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page = await context.newPage();
   page.on('pageerror', (e) => console.log(`  page error: ${e.message}`));
-  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.goto(`${CLIENT}/?mode=editor&test=1${QUERY}`);
   await page.waitForFunction(() => window.__editor, null, { timeout: 120000 });
   await page.evaluate(() => window.__editor.setOwner?.(true));
   await page.click('#ed-open');

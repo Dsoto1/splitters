@@ -14,6 +14,7 @@ import {
   type Selection,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
+import { perfOn } from '../game/perfSwitches.ts';
 
 /** One row of the list (px): the list draws only the rows in view (outlineWindow), so 4,096 things stay quick. */
 const ROW = 22;
@@ -159,7 +160,8 @@ export class OutlinerPanel {
 
   private rebuildRows(): void {
     this.rows = outlineRows(this.entries, { query: this.query, closed: this.closed });
-    this.spacer.style.height = `${this.rows.length * ROW}px`;
+    const height = `${this.rows.length * ROW}px`;
+    if (this.spacer.style.height !== height) this.spacer.style.height = height;
     this.draw(true);
   }
 
@@ -183,17 +185,38 @@ export class OutlinerPanel {
       }
       return;
     }
-    const { start, end } = outlineWindow(this.list.scrollTop, this.list.clientHeight || 240, ROW, this.rows.length);
+    const light = perfOn('editlight');
+    // An edit (new rows, the same stretch in view): the list's scroll and height aren't read again (that laid the page
+    // out on the spot, straight after the edit rewrote the panels).
+    const same = light && force && this.inView && this.window && this.window.count === this.rows.length;
+    const { start, end } = same ? this.window! : outlineWindow(this.list.scrollTop, this.list.clientHeight || 240, ROW, this.rows.length);
     const key = `${start}:${end}:${this.rows.length}`;
     // (Read from the page just now: the stretch in view stands until the list scrolls or changes size.)
     this.inView = this.watchesSize;
+    this.window = { start, end, count: this.rows.length };
     if (!force && key === this.drawn) return;
     this.drawn = key;
     this.drawnRows = this.rows;
+    // Rows that show the same as before stay (only their marks are set afresh); the rest are made (fix 6 of
+    // docs/PERF_MAPMAKER_TRACE_2026-11-15.md: an edit made every row in view again, 5.9 ms of the owner's 46 ms edit).
+    const kept = new Map<number, HTMLElement>();
+    if (light) for (const el of this.list.children) if (el !== this.spacer) kept.set(Number((el as HTMLElement).dataset.row), el as HTMLElement);
+    const keep = new Set<HTMLElement>();
     const frag = document.createDocumentFragment();
     for (let i = start; i < end; i++) {
       const r = this.rows[i]!;
+      const sig = rowSig(r);
+      const was = kept.get(i);
+      if (was && was.dataset.sig === sig) {
+        if (r.type === 'item') {
+          const cls = itemClass(r.entry.id);
+          if (was.className !== cls) was.className = cls;
+        }
+        keep.add(was);
+        continue;
+      }
       const el = document.createElement('div');
+      el.dataset.sig = sig;
       el.style.top = `${i * ROW}px`;
       el.dataset.row = String(i);
       if (r.type === 'item') {
@@ -211,9 +234,13 @@ export class OutlinerPanel {
       }
       frag.append(el);
     }
-    for (const old of [...this.list.children]) if (old !== this.spacer) old.remove();
-    this.list.append(frag);
+    for (const old of [...this.list.children]) if (old !== this.spacer && !keep.has(old as HTMLElement)) old.remove();
+    // (Rows are placed by their own `top`: their order among the list's children doesn't matter.)
+    if (frag.childNodes.length) this.list.append(frag);
   }
+
+  /** The stretch of rows last drawn, and how many rows the list had then. */
+  private window: { start: number; end: number; count: number } | null = null;
 
   /** The rows the list was last drawn from, and whether the stretch of them in view is still the one drawn. */
   private drawnRows: OutlineRow[] | null = null;
@@ -250,6 +277,11 @@ export class OutlinerPanel {
     this.app.focusSelection();
     this.draw(true);
   }
+}
+
+/** What a row shows (its place, name, level, or a heading's label, count and fold), but not its marks. */
+function rowSig(r: OutlineRow): string {
+  return r.type === 'item' ? `i|${r.entry.id}|${r.entry.name}|${r.entry.level}` : `h|${r.type}|${r.key}|${r.label}|${r.count}|${r.open ? 1 : 0}`;
 }
 
 function mergeSelections(a: Selection, b: Selection): Selection {

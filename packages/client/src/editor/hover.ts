@@ -38,6 +38,7 @@ import {
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml } from './editorDom.ts';
+import { perfOn } from '../game/perfSwitches.ts';
 import { pickRadius, type Hit } from './editorParts.ts';
 import { groundWords } from './paintTools.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
@@ -389,10 +390,19 @@ export class Hover {
       }
     }
     this.app.paths.preview(previewPath);
-    tip.hidden = !title;
-    if (!title || !at) return;
+    if (tip.hidden !== !title) tip.hidden = !title;
+    if (!title || !at) {
+      this.tipShown = null;
+      return;
+    }
+    const tipHtml = html ?? `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
+    // The same card at the same spot (an edit under a still pointer, most pointer moves within a cell): left as it is,
+    // without laying the page out to measure it (fix 6 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md).
+    const shown = `${tone}|${at.x}|${at.y}|${window.innerWidth}|${window.innerHeight}|${tipHtml}`;
+    if (perfOn('editlight') && shown === this.tipShown) return;
+    this.tipShown = shown;
     tip.className = `tone-${tone}`;
-    tip.innerHTML = html ?? `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
+    tip.innerHTML = tipHtml;
     // Beside the pointer, kept inside the window.
     const w = tip.offsetWidth;
     const h = tip.offsetHeight;
@@ -400,6 +410,9 @@ export class Hover {
     tip.style.left = `${at.x + 18 + w > viewRight - 8 ? Math.max(0, at.x - 18 - w) : at.x + 18}px`;
     tip.style.top = `${Math.min(window.innerHeight - h - 44, at.y + 18)}px`;
   }
+
+  /** What the hover card last showed, and where (updateHoverCard). */
+  private tipShown: string | null = null;
 
   updateHoverTarget(): void {
     // Placing tools show what they'd put down, see-through, before you click (first: every other tool hides them).

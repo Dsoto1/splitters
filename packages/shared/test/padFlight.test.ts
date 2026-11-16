@@ -1,8 +1,9 @@
 // Jump pads flown by a player's body (sim/padFlight.ts): validate-map's and MapMaker's `pad.flight` warning.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { PhysicsWorld, buildMapGeometry, initPhysics, mapPads, padLandings, type MapDocument } from '../src/index.ts';
-import { PAD_MISS_M, flyPads, initNavigation, padFlightIssues, validateMapNavigation, validateMapPlay, type PadFlight } from '../src/match.ts';
+import { PAD_MISS_M, flyPads, initNavigation, mapHasPads, padFlightIssues, validateMapNavigation, validateMapPlay, type Match, type PadFlight } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
+import { navCache } from '../src/sim/mapNav.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -68,9 +69,47 @@ describe('jump pads flown by a body', () => {
     expect(padFlightIssues([{ ...base, miss: 3 }])[0]).toMatchObject({ severity: 'warning', code: 'pad.flight', targetId: 'p' });
   });
 
-  it('a map without pads flies nothing', () => {
+  it('a map without pads flies nothing: no match is made', () => {
     const map = padYard();
     map.entities = map.entities.filter((e) => e.kind !== 'pad');
-    expect(flyPads(map)).toEqual([]);
+    expect(mapHasPads(map)).toBe(false);
+    const made: Match[] = [];
+    expect(flyPads(map, { made: (m) => made.push(m) })).toEqual([]);
+    expect(made).toEqual([]);
+    expect(validateMapPlay(map, false)).not.toHaveProperty('prebuilt');
+  });
+
+  it("flies the pads on the navigation check's navmesh, not a second build, and lands the same (trace fix 1)", () => {
+    const map = padYard();
+    // A clean pad first, then the beamed one: its miss is flown again in a match of its own, which takes it too.
+    map.entities.splice(map.entities.findIndex((e) => e.kind === 'pad'), 0, { id: 'pad0', kind: 'pad', position: [2, 0, 2], yaw: Math.PI / 2, power: 14, push: 6 } as MapDocument['entities'][number]);
+    map.entities.push(block('beam_a', [5, 7.925], [1, 8, 3.85], 1.5), block('beam_b', [5, 12.075], [1, 8, 3.85], 1.5));
+    const { prebuilt } = validateMapNavigation(map, false, { prebuilt: true });
+    expect(prebuilt).toBeTruthy();
+    const made: Match[] = [];
+    const flights = flyPads(map, { nav: prebuilt!, made: (m) => made.push(m) });
+    expect(made).toHaveLength(2);
+    expect(made.map((m) => m.navReused)).toEqual([true, true]);
+    // The same flights as matches that build their own navmesh (Scaling 1's process-wide navCache emptied first, or
+    // it would hand them the check's navmesh too).
+    navCache.clear();
+    const own: Match[] = [];
+    expect(flights).toEqual(flyPads(map, { made: (m) => own.push(m) }));
+    // (The first builds it; the miss's own match then takes that build from navCache.)
+    expect(own.map((m) => m.navReused)).toEqual([false, true]);
+    expect(flights.map((f) => f.id)).toEqual(['pad0', 'pad1']);
+    expect(flights[1]!.miss).toBeGreaterThan(PAD_MISS_M);
+  });
+
+  it("a navmesh built from another map is not taken: the flight's match builds its own", () => {
+    const map = padYard();
+    const other = padYard();
+    other.entities.push(block('wall', [14, 18], [2, 3, 2], 0));
+    const { prebuilt } = validateMapNavigation(other, false, { prebuilt: true });
+    navCache.clear();
+    const made: Match[] = [];
+    const [f] = flyPads(map, { nav: prebuilt!, made: (m) => made.push(m) });
+    expect(made.map((m) => m.navReused)).toEqual([false]);
+    expect(f!.miss).toBeLessThan(1);
   });
 });
