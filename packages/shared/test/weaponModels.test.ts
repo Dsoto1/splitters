@@ -11,7 +11,7 @@ import { CORE_WEAPONS, MODEL_FALLBACKS, THROWABLE_DEFS, THROWABLES, heldModel, t
 const PUBLIC = join(__dirname, '../../client/public/models');
 // (A prop under public/props: the Ammo Box Kit's crate, `props/…`, as the model loader and tools/content/weapons.mjs take it.)
 const exists = (path: string) => path.startsWith('procedural/') || existsSync(path.startsWith('props/') ? join(PUBLIC, '..', path) : join(PUBLIC, path));
-const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; bytes: number }[] };
+const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; budget?: string; bytes: number }[] };
 const locked = new Map(lock.files.map((f) => [f.file, f]));
 /** Throwables drawn in code (arsenalVisuals.ts): no model for them in the intake. */
 const DRAWN_IN_CODE = new Set(['airstrike']);
