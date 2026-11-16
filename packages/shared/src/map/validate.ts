@@ -1,6 +1,6 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { isCastId } from '../content/botThemes.ts';
-import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
+import { SURFACE_SLOTS, coreMaterials, coreThemes, groundThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
@@ -12,7 +12,7 @@ import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { SIDE_DIRS } from './tileOptions.ts';
 import { PLAYER } from '../sim/constants.ts';
-import { terrainHeightAt } from './terrain.ts';
+import { DEFAULT_GROUND_THEME, isGroundMaterial, terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
 import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
@@ -308,6 +308,11 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
         issues.push({ severity: 'error', code: 'material.unknown', message: `tile ${t.id} uses unknown material "${style.material}"`, targetId: t.id });
       }
     }
+  }
+  // The ground (map format v45): a Ground theme that exists, and grounds that are ground materials (nothing else draws as ground).
+  if (map.terrain) {
+    if (map.terrain.groundTheme && !groundThemes.get(map.terrain.groundTheme)) issues.push({ severity: 'warning', code: 'ground.theme_unknown', message: `unknown Ground theme "${map.terrain.groundTheme}": the ground shows ${DEFAULT_GROUND_THEME}'s base` });
+    for (const g of map.terrain.grounds ?? []) if (!isGroundMaterial(g)) issues.push({ severity: 'error', code: 'material.unknown', message: `the terrain's grounds name "${g}", which is not a ground material` });
   }
   const blocks = map.entities.filter((e) => e.kind === 'block');
   for (const b of blocks) {

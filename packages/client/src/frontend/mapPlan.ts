@@ -1,4 +1,4 @@
-import { MAX_TEAMS, TERRAIN_MATERIALS, boxFootprint, buildMapGeometry, buriedPassageLines, fitBounds, mapGroundBores, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
+import { MAX_TEAMS, TERRAIN_MATERIALS, TERRAIN_SURFACES, cellGround, coreMaterials, boxFootprint, buildMapGeometry, buriedPassageLines, fitBounds, mapGroundBores, mapTeams, vertexY, type MapDocument, type TerrainData, type WorldBox } from '@tiletrigger/shared';
 
 /** Fill a box's top-down outline (turned boxes as a quad). */
 export function fillBox(g: CanvasRenderingContext2D, b: WorldBox, px: (x: number) => number, py: (z: number) => number): void {
@@ -58,6 +58,20 @@ const GROUND_COLORS: Record<(typeof TERRAIN_MATERIALS)[number], [number, number,
   mud: [77, 61, 44],
 };
 
+const OLD_LAYERS: readonly string[] = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+const planColors = new Map<string, [number, number, number]>();
+/** A ground's top-down colour: the old layers' as they always were, any other ground its material's own colour. */
+function groundColor(id: string): [number, number, number] {
+  let c = planColors.get(id);
+  if (!c) {
+    const old = OLD_LAYERS.indexOf(id);
+    const hex = coreMaterials.get(id)?.base;
+    c = old >= 0 ? GROUND_COLORS[TERRAIN_MATERIALS[old]!] : hex ? [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)] : GROUND_COLORS.grass;
+    planColors.set(id, c);
+  }
+  return c;
+}
+
 /**
  * Paint terrain cells top-down in their ground colours, lighter on high
  * ground, so hills and canyons read on the in-game minimap.
@@ -74,7 +88,7 @@ export function drawTerrainPlan(g: CanvasRenderingContext2D, t: TerrainData, px:
   const size = t.spacing * s + 0.75;
   for (let r = 0; r < t.rows - 1; r++) {
     for (let c = 0; c < t.cols - 1; c++) {
-      const base = GROUND_COLORS[TERRAIN_MATERIALS[t.materials[r * (t.cols - 1) + c]!] ?? 'grass'];
+      const base = groundColor(cellGround(t, r * (t.cols - 1) + c));
       const y = (vertexY(t, c, r) + vertexY(t, c + 1, r + 1) - 2 * t.baseY) * 50; // mean height, cm
       const k = 0.55 + 0.6 * ((y - lo) / range);
       g.fillStyle = `rgb(${Math.min(255, base[0] * k) | 0}, ${Math.min(255, base[1] * k) | 0}, ${Math.min(255, base[2] * k) | 0})`;

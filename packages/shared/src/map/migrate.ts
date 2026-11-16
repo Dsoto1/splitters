@@ -1,4 +1,6 @@
 import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
+import { DEFAULT_GROUND_THEME, TERRAIN_MATERIALS, TERRAIN_SURFACES } from './terrain.ts';
+import { GROUND_THEMES } from './materials.ts';
 
 /** Upgrades a raw document from `from` to `from + 1`. Must not mutate its input. */
 export type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
@@ -117,7 +119,42 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // option (`overrides.options.furniture`; absent = paired). v42 data is valid as is. The bump is for the other
   // direction: an older build refuses a v43 map outright instead of failing on a style it has never heard of.
   [42, (doc) => ({ ...doc })],
+  // v43 -> v44: kept for the tunnel kit's set piece `family` (HANDOFF; its own step lands with it); nothing changes.
+  [43, (doc) => ({ ...doc })],
+  // v44 -> v45: the ground's base layer (docs/MAPMAKER_PAINTING_PLAN.md, "Format change A"; painting Phase 4):
+  // groundLayersV45.
+  [44, groundLayersV45],
 ]);
+
+/**
+ * v44 -> v45: a terrain cell is 0 (the base: it follows the map's Ground theme) or k (painted with the terrain's own
+ * `grounds[k − 1]`), where before it was one of the eight layers (terrain.ts TERRAIN_MATERIALS). Every cell keeps its
+ * look:
+ * 1. `grounds` is the eight layers' materials in their old order (TERRAIN_SURFACES), so old layer j is k = j + 1.
+ * 2. The base is the map's most common layer that is some Ground theme's base (content/materials.json groundThemes,
+ *    the first such theme; on a tie, the earlier layer), and `groundTheme` is that theme. Every shipped map's most
+ *    common layer is one; a terrain with none (all Hex Paving, say) gets DEFAULT_GROUND_THEME and every cell painted.
+ * 3. That layer's cells become 0 (they follow the theme); every other cell keeps its layer, painted.
+ * So a Ground theme change later moves the base cells and leaves the rest as painted (the owner's 6a).
+ */
+export function groundLayersV45(doc: Record<string, unknown>): Record<string, unknown> {
+  const t = doc.terrain as Record<string, unknown> | null | undefined;
+  if (!t || typeof t !== 'object' || !Array.isArray(t.materials)) return { ...doc };
+  const cells = t.materials as unknown[];
+  const counts = new Array<number>(TERRAIN_MATERIALS.length).fill(0);
+  for (const m of cells) if (typeof m === 'number' && counts[m] !== undefined) counts[m]++;
+  let base = -1;
+  let theme = DEFAULT_GROUND_THEME;
+  counts.forEach((n, j) => {
+    const owner = GROUND_THEMES.find((g) => g.base === TERRAIN_SURFACES[TERRAIN_MATERIALS[j]!]);
+    if (!owner || n === 0 || (base >= 0 && n <= counts[base]!)) return;
+    base = j;
+    theme = owner.id;
+  });
+  const grounds = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+  const materials = cells.map((m) => (typeof m === 'number' ? (m === base ? 0 : m + 1) : m));
+  return { ...doc, terrain: { ...t, groundTheme: theme, grounds, materials } };
+}
 
 /** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */
 export const DEAD_RACE_KEYS = ['laps', 'grid', 'vehicle', 'combat'] as const;

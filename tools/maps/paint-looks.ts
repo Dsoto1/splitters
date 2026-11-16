@@ -11,19 +11,17 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, buildMapDecor, buildMapGeometry, cellFoliage, coreMaterials, faceSlot, loadMap, resolveBackdrop, resolveSurface, styleKey, type MapDocument, type TerrainData } from '../../packages/shared/src/index.ts';
+import { buildMapDecor, buildMapGeometry, cellFoliage, cellGround, cellKind, coreMaterials, groundStyle, faceSlot, loadMap, resolveBackdrop, resolveSurface, styleKey, type MapDocument, type TerrainData } from '../../packages/shared/src/index.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const FIXTURE = join(ROOT, 'packages/shared/test/fixtures/paintLooks.json');
 
 const sha = (s: string) => createHash('sha256').update(s).digest('hex').slice(0, 16);
 
-/** Cell `i`'s drawn look and behaviour: material|tint|plant cover|kind. */
+/** Cell `i`'s drawn look and behaviour: material|tint|plant cover|kind (the look as the terrain draws it: groundStyle). */
 function cellLook(t: TerrainData, i: number): string {
-  const kind = TERRAIN_MATERIALS[t.materials[i]!] ?? 'grass';
-  const def = coreMaterials.get(TERRAIN_SURFACES[kind]) ?? coreMaterials.get('core.proto_floor')!;
-  const tint = kind === 'gravel' ? '#8f877b' : null;
-  return `${def.id}|${tint ?? '-'}|${cellFoliage(t, i)}|${kind}`;
+  const style = groundStyle(cellGround(t, i));
+  return `${style.material.id}|${style.tint ?? '-'}|${cellFoliage(t, i)}|${cellKind(t, i)}`;
 }
 
 /** The two hashes of one map as played. */

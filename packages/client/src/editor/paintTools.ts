@@ -20,7 +20,7 @@ import {
   surfaceLayer,
   SURFACE_SLOT_LABELS,
   targetName,
-  TERRAIN_MATERIAL_LABELS,
+  groundThemeDef,
   type EdgeStyle,
   type EdgeTarget,
   type GlassKind,
@@ -102,7 +102,7 @@ export class PaintTools {
     return { name, layers, click: `Click paints ${brush} ${where}. Alt+click picks up ${shown}. Right-click resets to ${below}.`, bad: false };
   }
 
-  /** The ground layer under the pointer (Structure paint over bare ground names it), as "Gravel (the map's main ground)". */
+  /** The ground layer under the pointer (Structure paint over bare ground names it), as "Gravel (Ground theme: Quarry)". */
   groundUnder(): string | null {
     const t = this.app.doc.terrain;
     const p = this.app.hoverPoint;
@@ -217,9 +217,11 @@ export function chainText(l: SurfaceLayers): string {
     .join(' → ');
 }
 
-/** A ground layer as words: "Gravel (the map's main ground)" or "Sand (painted; main ground Gravel)". */
+/** A ground layer as words: "Gravel (Ground theme: Quarry)" or "Sand (painted; Ground theme Quarry: Gravel)". */
 export function groundWords(g: GroundLayer): string {
-  return g.painted ? `${TERRAIN_MATERIAL_LABELS[g.material]} (painted; main ground ${TERRAIN_MATERIAL_LABELS[g.base]})` : `${TERRAIN_MATERIAL_LABELS[g.material]} (the map's main ground)`;
+  const name = (id: string) => coreMaterials.get(id)?.displayName ?? id;
+  const theme = groundThemeDef(g.theme).displayName;
+  return g.painted ? `${name(g.material)} (painted; Ground theme ${theme}: ${name(g.base)})` : `${name(g.material)} (Ground theme: ${theme})`;
 }
 
 const SCOPE_WORDS: Record<PaintScope, string> = { surface: 'on this surface', sameType: 'on every piece of this type', level: 'on this level', all: 'on the whole map' };

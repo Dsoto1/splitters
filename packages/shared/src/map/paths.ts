@@ -1,5 +1,5 @@
 import { pathGeometry, pathUses } from './track.ts';
-import { TERRAIN_MATERIALS, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
+import { TERRAIN_SURFACES, groundIndex, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument, MapPath, PathStyle } from './schema.ts';
 
 /**
@@ -47,8 +47,10 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
   const laid = paths.filter((p) => p.lay && pathDrawn(p) && p.points.length >= 2);
   if (!laid.length) return t;
   const heights = t.heights.slice();
-  const materials = t.materials.slice();
+  let materials = t.materials.slice();
   const foliage = t.foliage.length ? t.foliage.slice() : [];
+  // The path's ground is painted (a ground in the terrain's own list: it doesn't follow the Ground theme).
+  let grounds = t.grounds;
   for (const p of laid) {
     const g = pathGeometry(p);
     const half = p.width / 2;
@@ -98,7 +100,12 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         heights[i] = Math.round(heights[i]! + (want - heights[i]!) * k);
       }
     }
-    const paint = TERRAIN_MATERIALS.indexOf(PATH_LOOKS[p.style].ground);
+    const slot = groundIndex({ ...t, materials, grounds }, TERRAIN_SURFACES[PATH_LOOKS[p.style].ground]);
+    if (slot) {
+      materials = slot.terrain.materials;
+      grounds = slot.terrain.grounds;
+    }
+    const paint = slot ? slot.value : -1;
     for (let r = r0; r < Math.min(r1, t.rows - 1); r++) {
       for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
         const x = t.origin[0] + (c + 0.5) * t.spacing;
@@ -120,7 +127,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
       }
     }
   }
-  return { ...t, heights, materials, foliage };
+  return { ...t, heights, materials, grounds, foliage };
 }
 
 /**

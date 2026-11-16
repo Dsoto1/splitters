@@ -18,7 +18,6 @@ import {
   placementCells,
   rosterSize,
   SCENARIO_PALETTE,
-  TERRAIN_MATERIAL_LABELS,
   groundLayerAt,
   terrainHeightAt,
   terrainRaycast,
@@ -320,12 +319,12 @@ export class Hover {
         tone = `${card.tone} ed-paint-card`;
         html = card.html;
       } else if (this.app.tool.kind === 'terrain' && this.app.terrain.terrainBrush === 'paint' && this.app.terrain.terrainHover && this.app.shownGround) {
-        // Ground paint: the ground layer under it, the map's main ground or painted, and what a click paints.
+        // Ground paint: the ground under it, the Ground theme's base or painted, and what a click paints.
         const h = this.app.terrain.terrainHover;
         const g0 = groundLayerAt(this.app.shownGround, h.x, h.z);
         title = g0 ? `Ground · ${groundWords(g0)}` : 'Ground';
         tone = 'pick';
-        lines.push(`Click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} · radius ${this.app.terrain.brushRadius} m`, 'Buildings stay as they are');
+        lines.push(`Click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} · radius ${this.app.terrain.brushRadius} m`, 'Shift+drag: back to the base · Buildings stay as they are');
       } else if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
         // The set piece about to be placed: what it is, how it's turned and themed, and whether it fits (and why not).
         title = g.def.displayName;
@@ -476,7 +475,7 @@ export class Hover {
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.app.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.app.terrain.brushRadius, colors[this.app.terrain.terrainBrush]);
       const under = t && h && this.app.terrain.terrainBrush === 'paint' ? groundLayerAt(t, h.x, h.z) : null;
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
