@@ -3,6 +3,19 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For both lanes: check in parallel, land in trains (owner, 2026-11-16, via lane A's lead)
+
+The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full rules. In short:
+- A finished branch merges origin/main once, runs `pnpm prepush`, and pushes its own `check/<name>` right away. No turn and no lock, at most 4 runs in flight. List it under "Checking" below while it runs.
+- Green branches go on QUEUE's "Ready to land" (`branch · green sha · run`).
+- One "Landing now: train" at a time runs `tools/ci/train.mjs` over the whole list: one combined run, then `--land`. Run a train at 2 or more ready branches, or after a 2-hour wait.
+- A lone ready branch that is still current with main (docs only added since its green commit) may land alone, and so may a bug fix for a broken main.
+- A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
+- "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
+
+**Checking** (branch · run; remove the line when it turns green or red):
+- (none)
+
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 
 The owner's real-GPU MapMaker recording is read: `docs/PERF_MAPMAKER_TRACE_2026-11-15.md` (owner: all picks). Yours, in QUEUE: **fix 1** (the navigation check builds the navmesh twice: `shared/src/sim/padFlight.ts` `flyer` makes a whole Match; build once, skip pad flights on maps without pads), **fix 2** (stop the navigation check when Test starts), **fix 6/7** (cheaper edits; later an incremental tiled navmesh for the check; owner: keep checking after every edit). Lane A takes fix 3 (the 12.5 ms outside script in play, after the owner's follow-up recording) and fixes 4-5 (Test start: hand the check's navmesh to the sim worker, smoother loading). Fix 4 touches the check's output: tell us in HANDOFF if you change its shape.
@@ -1059,9 +1072,9 @@ The MapMaker lane (other account) is **the main session for the rest of the week
 
 **Landing now: The Hollow Pilgrim's hand** (`wip/pilgrim-hand` → `check/pilgrim-hand`; a helper of lane A's lead, 2026-11-16), please hold code pushes to main. One merge of origin/main, one check run. Files: `content/characters/meshy_hollowpilgrim.json`, its rebuilt model and arms, the lock and provenance, `characters.generated.ts`, `hitboxes.generated.ts` (its row only), `tools/content/skinfix.mjs` (`moveJoints`), `prepare-meshy-characters.mjs`, `character-manifests.mjs` (`fixes.rejoint`), `skinfix.test.mjs`, docs/CHARACTERS.md.
 
-**Next in line: St. John's step 4** (`wip/stjohns-4`; a helper of lane A's lead, 2026-11-16): lighter dorm rooms (paired desks and closet fronts behind a Room furniture option), the grounds' kit props, the Brick walk path style (map format v43), `maps/st_johns.json` (skybridge out, entrance, grounds, the north walk rerouted). Lands after The Hollow Pilgrim's hand.
+**Waiting for its check run (was next in line): St. John's step 4** (`wip/stjohns-4`; a helper of lane A's lead, 2026-11-16): lighter dorm rooms (paired desks and closet fronts behind a Room furniture option), the grounds' kit props, the Brick walk path style (map format v43), `maps/st_johns.json` (skybridge out, entrance, grounds, the north walk rerouted). Lands after The Hollow Pilgrim's hand.
 
-**Next in line after St. John's step 4: MapMaker painting Phase 3, the palette follows the themes** (`check/painting-3` from `wip/painting-3`, green at f0ac190c, run 43853830986; lane B's splitters22, 2026-11-16). Client editor only (`paletteCatalog.ts`, `palette.ts`, `paletteBuilder.ts`, `topBar.ts`, `index.html`, `editor.css`), the `mapmaker.png` baseline; no map format change, no map files.
+**Ready to land (green; see QUEUE): MapMaker painting Phase 3, the palette follows the themes** (`check/painting-3` from `wip/painting-3`, green at f0ac190c, run 43853830986; lane B's splitters22, 2026-11-16). Client editor only (`paletteCatalog.ts`, `palette.ts`, `paletteBuilder.ts`, `topBar.ts`, `index.html`, `editor.css`), the `mapmaker.png` baseline; no map format change, no map files.
 
 **Landed: the e2e `vehicles` flakes, root-caused** (green on `check/vehicles-flow` at 5076287d, run 43835547751, attempt 1; main fast-forwarded to it plus this docs-only commit; a helper of lane A's lead, 2026-11-16; landing lock and claim released). Test-only; no game code changed; players felt neither.
   - **The arc sentry's wind-up** (`arcTurretChecks`): the check waited until the page *drew* the turret charging, then read your health from the match. The page draws a snapshot behind and a slow page runs up to 15 ticks a frame, so the 45-tick wind-up, a whole 2 s lock (20 hits of 5: exactly the 5000 → 4900 CI saw) and the vent could all be over by then, the page showing the *next* wind-up. Measured with the new log's `seen` (match ticks into the wind-up when the page first showed it): 24 to 1,243 here (six runs: 277, 1243, 195, 1219, 24, 232), 428 on CI. Now judged in match ticks where the match runs: a step hook logs the charge and your health every tick; the check needs charging to begin on you, run its whole 45 ticks, and the first hit to come after it (`{"first":448,"full":492,"hit":493}` on CI: hit on the tick after the wind-up). The charge orb check waits on the page drawing it while it shows charging.

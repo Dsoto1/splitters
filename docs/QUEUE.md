@@ -27,6 +27,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Move an item to "Done" in the same commit that lands it. Keep "Done" to the last week; older items live in HANDOFF and CHANGELOG.
 - **Easy-win batches:** a free helper takes 3–5 easy wins and lands them together in one check run.
 - Claims and the landing lock still live in HANDOFF. This file only lists.
+- **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
 - S · A · The Hollow Pilgrim's hand (support hand short of the long guns, sleeves stretch) · `wip/pilgrim-hand` (a helper of lane A's lead, 2026-11-16)
@@ -34,7 +35,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Ready to land
-- (none)
+(`branch · green sha · run`; the next train takes them all in this order)
+- `wip/painting-3` · f0ac190c · 43853830986 (lane B)
 
 ## Bugs
 - M · B · MapMaker painting made clear (owner, 2026-11-15, bumped to the top of lane B: "I shouldn't have multiple locations to design and need more intuitive way to understand layers and hierarchy of the painting tool/textures and warning if I'm about to change my entire map theme"). Found by lane A's lead: (1) **Paint on bare ground swaps the material silently**: terrain takes only its ground layers, so `terrainMaterialFor` picks the nearest (Marble Checker's grey-brown → Gravel), with no message (paintTools.ts `groundPaint`); the owner painted Marble Checker on an Industrial Factory map and got gravel. (2) **The theme select changes every unpainted surface at once**, no warning or preview (mapProperties.ts `ed-prop-theme` → `setThemeCommand`; painted surfaces are kept; undo works). (3) **Set pieces are themed in another place** (Properties: Look, Materials per role, Explode); the Paint tool does not paint them; players cannot make a look of their own. Proposal, one design: Paint names what is under the cursor and where its look comes from (Terrain ground / Floor / Wall / Trim / Roof / Set piece part; the chain theme → look → your paint), offers only what that layer can take (ground layers on terrain, or a clear "the ground takes ground layers: nearest is Gravel" before painting), paints set-piece parts as a per-placement override without exploding, lets players save their own looks; the theme select asks first ("312 surfaces follow the theme and will change; 48 you painted stay", with "Keep the current look", which pins today's materials). A plan to the owner first.
