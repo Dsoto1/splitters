@@ -175,7 +175,7 @@ export interface ChassisBody {
 }
 
 /** A hull contact this close (m) or closer counts as touching (solveChassis). */
-const CHASSIS_TOUCH = 0.01;
+const CHASSIS_TOUCH = 0.03;
 
 /**
  * Static map collision plus kinematic player capsules. Identical code runs on
