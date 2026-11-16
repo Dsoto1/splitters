@@ -312,18 +312,20 @@ describe('rigid driving: momentum up steep slopes', () => {
     if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/climb.txt`, r.map((x, i) => `${[6, 12, 18][i]} m/s (at the foot ${x.atFoot.toFixed(1)}): ${x.top.toFixed(2)} m up`).join('\n'));
     // (The slab's top is 12.3 m up.)
     expect(r[0]!.top).toBeLessThan(8);
-    // Clearly further with each step in speed: momentum, not just the tyres.
+    // Clearly further with speed: momentum, not just the tyres. (Driving physics 4: flat out, the nose meets the slab's
+    // foot hard, a real contact with the 50° face, and it carries about as far as from 12 m/s; driving physics 3's 92 %
+    // speed keep carried it over the top.)
     expect(r[1]!.top).toBeGreaterThan(r[0]!.top + 1);
-    expect(r[2]!.top).toBeGreaterThan(Math.min(r[1]!.top + 1.5, 12));
+    expect(r[2]!.top).toBeGreaterThan(r[0]!.top + 3);
   });
 });
 
 describe('rigid driving: stairs and walls', () => {
-  /** A flight of `n` steps (`rise` and `run` m, 8 m wide) up toward +x from x 30, a landing on top. */
+  /** A flight of `n` steps (`rise` and `run` m, 8 m wide) up toward +x from x 30, a 30 m landing on top. */
   const stairs = (n: number, rise: number, run: number): MapEntity[] => {
     const out: MapEntity[] = [];
     for (let i = 0; i < n; i++) out.push(block(`step${i}`, 30 + i * run + run / 2, 16, [8, (i + 1) * rise, run]));
-    out.push(block('landing', 30 + n * run + 5, 16, [8, n * rise, 10]));
+    out.push(block('landing', 30 + n * run + 15, 16, [8, n * rise, 30]));
     return out;
   };
   const up = (blocks: MapEntity[], forward: number) => {
@@ -331,16 +333,19 @@ describe('rigid driving: stairs and walls', () => {
     d.run(20);
     let top = 0;
     let at = -1;
+    // Upright a second after it got to the top (it then drives on off the landing's far end, a 4 m drop).
+    let upTop = -1;
     const goal = Math.max(...blocks.map((b) => ((b as { size: [number, number, number] }).size[1]))) - 0.1;
     const tr: string[] = [];
     d.run(1200, { forward }, () => {
       top = Math.max(top, d.m.pos.y);
       if (at < 0 && d.m.pos.y > goal) at = d.match.tick;
+      if (at >= 0 && d.match.tick === at + 60) upTop = uprightness(d.m.rigid!);
       const r = d.m.rigid!;
       tr.push(`${d.m.pos.x.toFixed(2)} z ${d.m.pos.z.toFixed(2)} y ${d.m.pos.y.toFixed(2)} sp ${d.m.speed.toFixed(2)} p ${d.m.susp!.p.toFixed(2)} yaw ${d.m.yaw.toFixed(2)} comp ${r.comp.map((c) => c.toFixed(2))} hull ${r.hull} c ${r.contact} sl ${r.sliding}`);
     });
     if (process.env.DRIVE_TRACE) writeFileSync(`${process.env.DRIVE_TRACE}/stairs-${forward}-${blocks.length}.txt`, tr.join('\n'));
-    return { top, x: d.m.pos.x, up: uprightness(d.m.rigid!), seconds: at < 0 ? Infinity : at / 60 };
+    return { top, x: d.m.pos.x, up: at < 0 ? uprightness(d.m.rigid!) : upTop, seconds: at < 0 ? Infinity : at / 60 };
   };
 
   it("drives up the kit's stairs (0.25 m risers, 0.5 m runs: core.stairs) at a crawl and at speed, and a steeper flight at speed", () => {

@@ -83,8 +83,11 @@ export interface LocalMatchOptions {
    * building one when it was built from the same (Match `nav`).
    */
   nav?: PrebuiltNav | null;
-  /** Rigid driving for every vehicle that has it, or the classic driving for all (`?drive=`; MatchOptions.drive). */
-  drive?: 'classic' | 'rigid';
+  /**
+   * Rigid driving for every vehicle that has it, the classic driving for all, or rigid with driving physics 3's own hull
+   * solver instead of the Rapier body (`?drive=`; MatchOptions.drive).
+   */
+  drive?: 'classic' | 'rigid' | 'own';
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */

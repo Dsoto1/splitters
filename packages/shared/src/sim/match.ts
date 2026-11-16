@@ -73,7 +73,7 @@ import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
 import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
-import { PhysicsWorld, type GroundHeight } from './physics.ts';
+import { PhysicsWorld, type ChassisBody, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
 import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid, yawPitchRoll, type RigidSetup, type RigidState } from './wheelPhysics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
@@ -266,6 +266,8 @@ interface MountRt {
   rigidSetup?: RigidSetup;
   rigid?: RigidState;
   chassisProbe?: RAPIER.Collider;
+  /** Driving physics 4: the hull as a Rapier body (PhysicsWorld.createChassisBody); absent with `?drive=own` (the probe's sweep). */
+  chassisBody?: ChassisBody;
   /**
    * The driver's inputs applied this tick: a driven rigid vehicle steps once for each, as the driver's own prediction
    * steps once per input (Match.driveRigid).
@@ -839,7 +841,7 @@ export class Match {
      * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
      * `navReused`), as the process's navCache is.
      */
-    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' } = {},
+    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own' } = {},
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
@@ -4698,11 +4700,14 @@ export class Match {
     // Rigid driving where the vehicle has it on (or the match asks for it: MatchOptions.drive); not afloat.
     const rigid = rigidOf(def);
     const drive = this.opts.drive;
-    if (rigid && !floats && (drive === 'rigid' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
+    if (rigid && !floats && (drive === 'rigid' || drive === 'own' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
       m.rigidSetup = rigid;
       m.rigid = newRigid(rigid, pos, yaw);
       m.rigidSeen = { pos: m.pos, yaw, speed: 0 };
-      m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+      // Driving physics 4: the hull a Rapier body (owner, 2026-11-16: 1a, straight to the default); `?drive=own` keeps
+      // driving physics 3's own hull contacts and sweep, to compare.
+      if (drive === 'own') m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+      else m.chassisBody = this.physics.createChassisBody(rigid.hullPoints, rigid.hullBorder, rigid.com, [1 / rigid.invI[0], 1 / rigid.invI[1], 1 / rigid.invI[2]], rigid.hullFriction);
     }
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
@@ -5737,7 +5742,7 @@ export class Match {
     }
     const piloted = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null) || !!m.ambient;
     const road = roadHandling(this.road, m.pos, false);
-    const world = this.physics.chassisWorld(m.chassisProbe!, m.body);
+    const world = this.physics.chassisWorld(m.chassisProbe ?? null, m.body, m.chassisBody);
     const before = { ...m.pos };
     let landing = 0;
     let blocked = 0;
@@ -7290,7 +7295,7 @@ export class Match {
   private rigidPrivate(c: Combatant): { vp?: number[] } {
     const m = this.mounts[c.mount!.index];
     if (!m?.rigid || !m.alive || m.def.seats[c.mount!.seat]?.role !== 'driver') return {};
-    return { vp: rigidWire(m.index, m.rigid) };
+    return { vp: rigidWire(m.index, m.rigid, !!m.chassisBody) };
   }
 
   /** The owning player's inventory and timers. */
