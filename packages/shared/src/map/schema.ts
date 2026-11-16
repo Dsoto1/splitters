@@ -914,7 +914,7 @@ export type TrackSurface = (typeof TRACK_SURFACES)[number];
 export type RaceVehicle = (typeof RACE_VEHICLES)[number];
 
 /** How a path (paths.ts) looks: its surface, and what the ground under it is painted. */
-export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'gravel', 'dirt', 'sand', 'planks'] as const;
+export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'gravel', 'dirt', 'sand', 'planks', 'brick'] as const;
 export type PathStyle = (typeof PATH_STYLES)[number];
 
 /**
