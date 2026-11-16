@@ -30,6 +30,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- M · A · Battle Rifle: fire modes, full-quality model, real 3-4x scope (owner, 2026-11-16: next in lane A) · `wip/battle-rifle`
 - L · B (lane B's splitters22) · Flavius Rule's corners as a near-regular octagon (owner, 2026-11-14: angled sides about as long as the straight ones, "1 b"; the MapMaker lane builds it, "2 a"): new 45° stand pieces at every tier with stairs, gates and nav; the corner courts, towers and hypogeum stairs rebuilt; a plan first. MapMaker job on `maps/sandfall_colosseum.json`. · plan written: `docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md`; the owner's answers: all recs (lane B's splitters22). Phase 1 landed 2026-11-14 (the `turned`/`wallRun` parts, plain arch collision, oriented doors); phase 2 landed 2026-11-15 (the Arena Corner tiles and set piece); phase 3 landed 2026-11-15 (gate corner, stair wells, 45° gatehouse tower); phase 4 in progress: Flavius Rule rebuilt in MapMaker (`wip/flavius-octagon-4`; the owner's phase-3 answers: recs).
 
 
