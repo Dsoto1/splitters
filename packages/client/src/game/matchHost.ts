@@ -40,6 +40,8 @@ import {
   mapPlayerCaps,
 } from '@tiletrigger/shared';
 import { Zipper } from '@tiletrigger/shared/peerZip';
+import { openNavStore } from './navCache.ts';
+import { perfOn } from './perfSwitches.ts';
 import type { BotDebugFrame, PrebuiltNav } from '@tiletrigger/shared/match';
 
 /** How often (ticks) the bot debug view gets a frame while on: four a second. */
@@ -257,13 +259,30 @@ export class MatchHost {
     const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
     const t0 = performance.now();
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav: this.opts.nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
-    this.loadMs = Math.round(performance.now() - t0);
-    if (this.opts.nav !== undefined) {
-      console.info(`match made in ${this.loadMs} ms (${match.navReused ? "the navigation check's navmesh" : 'navmesh built'})`);
-      // (Its data is the match's now: not kept a second time.)
-      this.opts.nav = null;
+    // The navmesh kept from an earlier match of this map (this browser's storage: navCache.ts), unless MapMaker's
+    // check handed one over; the match takes either only if it was built from the same (Match `nav`).
+    let nav = this.opts.nav ?? null;
+    let from = nav ? "the navigation check's navmesh" : '';
+    const store = perfOn('navcache') ? await openNavStore(mod.navBuildId()).catch(() => null) : null;
+    if (this.stopped) return;
+    if (!nav && store) {
+      const key = mod.mapNavKey(this.map, rules);
+      const kept = await store.get(key);
+      if (this.stopped) return;
+      if (kept) {
+        nav = { key, nav: kept };
+        from = 'the navmesh kept from an earlier match';
+      }
     }
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
+    this.loadMs = Math.round(performance.now() - t0);
+    console.info(`match made in ${this.loadMs} ms (${match.navReused ? from || 'the navmesh kept in this thread' : 'navmesh built'})`);
+    // (The navmesh's data is the match's now: not kept a second time.)
+    this.opts.nav = null;
+    // A navmesh built here is kept for the next match of this map, after the welcome (writing it is no part of the start).
+    const built = match.navBuilt;
+    match.navBuilt = null;
+    if (built && store) setTimeout(() => void store.put(built.key, built.nav), 2000);
     const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
     let me: Combatant;
