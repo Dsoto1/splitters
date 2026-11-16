@@ -4317,7 +4317,13 @@
     "damage": 90,
     "spread": 0.0005,
     "fireIntervalTicks": 40,
-    "range": 300,
+    "range": 110,
+    "falloff": {
+     "start": 25,
+     "end": 65,
+     "min": 0.4,
+     "curve": "smooth"
+    },
     "magazine": 5,
     "reserveMax": 30,
     "pickupAmmo": 10,
@@ -4414,8 +4420,8 @@
     },
     "falloff": {
      "start": 25,
-     "end": 60,
-     "min": 0.7,
+     "end": 65,
+     "min": 0.4,
      "curve": "smooth"
     },
     "head": 1.75,
