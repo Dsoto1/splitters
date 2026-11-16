@@ -13,10 +13,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
 
-**Landing now: train** (St. John's step 4; lane A's lead, 2026-11-16): please hold code pushes to main until this line goes.
-
 **Checking** (branch · run; remove the line when it turns green or red):
 - (none)
+
+**Landed: St. John's step 4 in a train** (`check/train-20261116-140937` at 080b3e0f, run 43882840833, green on attempt 2: attempt 1 red only on `hostgame` in shard 4, the friend's spectate flake and `__cs.spectate` missing from the ended-match stub, QUEUE Easy wins; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). The helper's notes are under its claim.
 
 ## For lane B's splitters22: MapMaker trace fixes for you (2026-11-15, via lane A's lead)
 

@@ -35,7 +35,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-4` · 0b374126 · 43877348385 (lane A: St. John's step 4)
+- (none)
 - `wip/drive-physics-3` · b39490b3 · 43888341752 (lane A; driving physics 3 landing A: bots shoot drivers of open vehicles, and see and shoot through bars, barred gates and fences)
 
 ## Bugs
@@ -104,6 +104,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · A · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-16 · A · St. John's step 4 (`wip/stjohns-4`, landed in train `check/train-20261116-140937` at 080b3e0f): the skybridge out, the entrance (island bed and cairn, gate piers with caged lamps, fieldstone walls, banner lamps; King of the Hill's hill round the cairn), the north walk round Scott Johnston / Hazelwood's forward block, the court's brick walk, the chapel lawn; lighter dorm rooms (paired desks and closet fronts, "Room furniture" option): St. John's 4,068 → 3,761 of 4,096 entities; new grounds kit props and a Brick walk path style (map format v43).
 - 2026-11-16 · A · St. John's step 4 (`wip/stjohns-4`): the skybridge out, the entrance (the drive split round a kerbed bed with the fieldstone cairn, gate piers with caged lamps, low fieldstone walls, the hill at the cairn), Scott Johnston / Hazelwood's north walk round its forward block, a brick walk to the library with stone benches and banner lamp posts, the chapel lawn's marker stone, cannon and shrubs; new kit props and a Brick walk path style (map format v43). Lighter dorm rooms first (paired desks and closet fronts, a Room furniture option): St. John's as played 4,068 → 3,748 entities, 3,761 with the grounds (PLAN 4d).
 - 2026-11-16 · A · The Hollow Pilgrim's hand (`wip/pilgrim-hand`, green on `check/pilgrim-hand` at a5741bc2, run 43859759591): the cause was the download's rig, Meshy's shoulder joints out at the robe's dropped shoulder seam (upper arm 9.7 cm, the arm chain a sixth of its height); new `fixes.rejoint` moves each shoulder 5.3-5.5 cm in along the collarbone with the skin past it; support hand on the handguard (rifle 12 → 6 cm, shotgun 25 → 18, pistol 5 → 2 cm), finger `lanes` 0.8 for the torn index tip (stretch 11x → 5x); grip audit 9 → 3. Other looks unchanged (opt-in; Sun Warrior 0 and Gorilla G 3 as before).
 - 2026-11-16 · A · e2e `vehicles` flakes root-caused (`wip/vehicles-flow`, green on `check/vehicles-flow` at 5076287d): the arc sentry's wind-up was read against what the page drew (a snapshot behind; on a slow page the whole lock had passed), now judged in match ticks; the buggy's 8 m drop picked up a throttle input still in flight, which air control turned into a nose-up for the whole fall, now it waits for the release to reach the match. Test-only; plus a test that bots engage you once out of the buggy.
