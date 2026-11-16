@@ -23,7 +23,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
  * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`, v37 a placed tile's
- * material `family`: the tunnel kit, v39 race mode's dead track settings dropped).
+ * material `family`: the tunnel kit, v39 race mode's dead track settings dropped, v44 a placed set piece's `family`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -1229,6 +1229,12 @@ export const SetPiecePlacement = z.object({
   mirror: z.boolean().default(false),
   /** The role pack that themes it (content/setpieces/roles.json); absent: the one for the map's theme, if any. */
   pack: z.string().regex(/^[a-z0-9_]{2,32}$/).optional(),
+  /**
+   * (Format v44) the material family its tunnel parts are drawn in (the tunnel kit: `brick`, `mine`…), as a placed
+   * tile's `family`: the same shapes and collision, the family's materials and trim. Absent: each part's own. Parts
+   * that don't come in it are left as they are.
+   */
+  family: z.string().regex(/^[a-z][a-z0-9_]*$/).max(32).optional(),
   /**
    * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
    * index: a tile part's surfaces (`{ "walls": … }`) or a block part's material (`{ "material": …, "tint": … }`). Paint

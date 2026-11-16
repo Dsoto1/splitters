@@ -3218,7 +3218,7 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
     displayName: 'Tunnel Shaft',
     family: 'tunnels',
     category: 'Tunnels',
-    blurb: 'A concrete tunnel module with a hatch to the surface and the ladder up to it (3.85 m, on the west wall). For a tunnel a level under flat ground: the hatch comes out level with the ground.',
+    blurb: 'A tunnel module with a hatch to the surface and the ladder up to it (3.85 m, on the west wall), concrete or any family (Family in the inspector). For a tunnel a level under flat ground: the hatch comes out level with the ground.',
     footprint: { cells: [[0, 0]], levels: [0, 0] },
     mirror: 'none',
     ports: [
@@ -3246,6 +3246,28 @@ export const SET_PIECE_DEFS: readonly SetPieceDefinitionInput[] = [
       { kind: 'tile', tile: 'core.tunnel_concrete_riser', x: 0, y: 0, z: 0, rotation: 0 },
       { kind: 'ladder', position: [0, 0, 1.75], yaw: 3.141593, height: 4, width: 0.9 },
       { kind: 'light', position: [0, 7, 0], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 9 },
+    ],
+  },
+  {
+    id: 'setpiece.tunnel_lit_chamber',
+    displayName: 'Lit Tunnel Chamber',
+    family: 'tunnels',
+    category: 'Tunnels',
+    blurb: 'The 2 x 2 tunnel chamber (14 m inside, four columns, an opening on each side) with a real light under each outer fixture: 4 lights. Join tunnels to its openings, or close the rest (Close open ends).',
+    footprint: { cells: [[0, 0], [1, 0], [0, 1], [1, 1]], levels: [0, 0] },
+    mirror: 'none',
+    ports: [
+      { side: 'S', cell: [0, 0], level: 0, kind: 'opening' },
+      { side: 'W', cell: [0, 0], level: 0, kind: 'opening' },
+      { side: 'N', cell: [0, 1], level: 0, kind: 'opening' },
+      { side: 'E', cell: [1, 0], level: 0, kind: 'opening' },
+    ],
+    parts: [
+      { kind: 'tile', tile: 'core.tunnel_concrete_chamber', x: 0, y: 0, z: 0, rotation: 0 },
+      { kind: 'light', position: [4, 3.1, 0.5], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 10 },
+      { kind: 'light', position: [4, 3.1, 7.5], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 10 },
+      { kind: 'light', position: [0.5, 3.1, 4], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 10 },
+      { kind: 'light', position: [7.5, 3.1, 4], fixture: 'none', color: '#ffe6b8', intensity: 1, range: 10 },
     ],
   },
   // design: The deck is 7.24 m wide and 2.56 m deep, against the cell's north edge, its top 0.3 m up: a 0.15 m step in front, so a player walks up and down without jumping and the house's door at ground level stays in reach. Posts 0.2 m square (a block is at least that wide) carry a roof tilted 12 degrees, high at the house, 2.9 m over the deck at its eaves. The rail is eight Board Fence panels (pickets), 1.2 m: cover for a crouching player on the deck. Wood and roof are roles.

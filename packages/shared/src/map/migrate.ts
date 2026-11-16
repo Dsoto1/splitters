@@ -113,6 +113,12 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // which is the piece as it was: v41 data is valid as is. The bump is for the other direction: an older build would
   // drop the choice without a word.
   [41, (doc) => ({ ...doc })],
+  // v42 -> v43: kept for St. John's step 4 (its HANDOFF claim: the path style `brick`); nothing changes.
+  [42, (doc) => ({ ...doc })],
+  // v43 -> v44: a placed set piece's optional `family` (the tunnel kit, Tileset 04 step 5): its tunnel parts drawn in
+  // that material family (a Lit Tunnel Run in brick). Absent = each part's own: v43 data is valid as is. The bump is
+  // for the other direction: an older build would drop the family without a word.
+  [43, (doc) => ({ ...doc })],
 ]);
 
 /** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */
