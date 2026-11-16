@@ -31,6 +31,7 @@
     "sound": "fire.rifle"
   },
   "notes": {
+    "range": "Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
     "model": "The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux (still built): a realistic rifle for the Military set. The kit burst rifle is the fallback."

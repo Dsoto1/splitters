@@ -72,7 +72,7 @@
     "fireMode": "semi",
     "damage": 24,
     "spread": 0.002,
-    "range": 250,
+    "range": 110,
     "magazine": 12,
     "reserveMax": 96,
     "pickupAmmo": 24,
@@ -131,6 +131,7 @@
     "family": "pistol",
     "ballistic": {
      "velocity": 375,
+     "drag": 1.5,
      "gravityScale": 1,
      "energy": 450,
      "tracerEvery": 0,
@@ -171,7 +172,7 @@
     "falloff": {
      "start": 18,
      "end": 45,
-     "min": 0.65,
+     "min": 0.4,
      "curve": "linear"
     },
     "head": 2,
@@ -272,6 +273,7 @@
     "family": "rifle",
     "ballistic": {
      "velocity": 820,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1200,
      "tracerEvery": 3,
@@ -520,6 +522,7 @@
     "family": "precision",
     "ballistic": {
      "velocity": 950,
+     "drag": 0.3,
      "gravityScale": 2.5,
      "energy": 3000,
      "tracerEvery": 1
@@ -659,7 +662,7 @@
     "damage": 15,
     "spread": 0.006,
     "fireIntervalTicks": 4,
-    "range": 200,
+    "range": 100,
     "magazine": 32,
     "reserveMax": 192,
     "pickupAmmo": 64,
@@ -721,6 +724,7 @@
     "family": "smg",
     "ballistic": {
      "velocity": 400,
+     "drag": 1.5,
      "gravityScale": 1,
      "energy": 400,
      "tracerEvery": 3,
@@ -777,7 +781,7 @@
     "falloff": {
      "start": 15,
      "end": 35,
-     "min": 0.55,
+     "min": 0.35,
      "curve": "steep"
     },
     "head": 1.5,
@@ -980,11 +984,11 @@
     "damage": 24,
     "spread": 0.004,
     "fireIntervalTicks": 9,
-    "range": 110,
+    "range": 90,
     "falloff": {
      "start": 15,
      "end": 45,
-     "min": 0.45,
+     "min": 0.3,
      "curve": "linear"
     },
     "magazine": 15,
@@ -1082,7 +1086,7 @@
     "falloff": {
      "start": 15,
      "end": 45,
-     "min": 0.45,
+     "min": 0.3,
      "curve": "linear"
     },
     "head": 2,
@@ -1103,7 +1107,13 @@
     "damage": 58,
     "spread": 0.002,
     "fireIntervalTicks": 30,
-    "range": 140,
+    "range": 110,
+    "falloff": {
+     "start": 20,
+     "end": 55,
+     "min": 0.4,
+     "curve": "smooth"
+    },
     "magazine": 6,
     "reserveMax": 36,
     "pickupAmmo": 12,
@@ -1112,7 +1122,7 @@
     "botDesirability": 0.55,
     "botRange": [
      3,
-     35
+     30
     ],
     "ammo": "light",
     "knockback": 3,
@@ -1161,6 +1171,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
+     "drag": 1,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1
@@ -1198,9 +1209,9 @@
      "in": 1
     },
     "falloff": {
-     "start": 25,
-     "end": 60,
-     "min": 0.7,
+     "start": 20,
+     "end": 55,
+     "min": 0.4,
      "curve": "smooth"
     },
     "head": 1.75,
@@ -1491,6 +1502,7 @@
     "family": "machine_pistol",
     "ballistic": {
      "velocity": 360,
+     "drag": 1.8,
      "gravityScale": 1,
      "energy": 350,
      "tracerEvery": 4
@@ -1532,7 +1544,7 @@
     "falloff": {
      "start": 8,
      "end": 25,
-     "min": 0.5,
+     "min": 0.35,
      "curve": "steep"
     },
     "head": 1.5,
@@ -1618,6 +1630,7 @@
     "family": "rifle",
     "ballistic": {
      "velocity": 820,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1200,
      "tracerEvery": 3,
@@ -1825,6 +1838,7 @@
     "family": "marksman",
     "ballistic": {
      "velocity": 900,
+     "drag": 0.45,
      "gravityScale": 1,
      "energy": 2000,
      "tracerEvery": 1
@@ -2724,6 +2738,7 @@
     "family": "lmg",
     "ballistic": {
      "velocity": 760,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1500,
      "tracerEvery": 4
@@ -4361,6 +4376,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
+     "drag": 1,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1
@@ -4676,6 +4692,7 @@
     "family": "battle_rifle",
     "ballistic": {
      "velocity": 880,
+     "drag": 0.5,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 2

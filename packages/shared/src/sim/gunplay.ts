@@ -226,6 +226,54 @@ export function falloffAt(f: FalloffSpec | null, dist: number): number {
   return 1 - (1 - f.min) * k;
 }
 
+// ---------------------------------------------------------------- damage by impact speed (owner, 2026-11-16)
+
+/**
+ * Damage by impact speed (spec §37, "Damage by impact speed"). Under Standard and Advanced ballistics a bullet's
+ * damage (and so its shove) follows its speed when it strikes over its muzzle speed, not the distance it flew. Each
+ * gun's curve comes from its own falloff and drag: the speed ratio its round has at Standard at the falloff's start
+ * is full damage, the ratio at the end is the floor. So at Standard every gun keeps its tuned kill distances exactly,
+ * while Advanced (slower, draggier rounds) loses damage sooner, and a round slowed by anything else on the way
+ * (drag only: penetration and water take their own share already) hits softer. Arcade keeps the distance falloff.
+ *
+ * Speed falls linearly with distance under the sim's drag (semi-implicit Euler, BULLET_SUBSTEPS a tick, the first
+ * NEAR_INSTANT_M metres a ray): at distance x a round has v/v0 = 1 - drag (x - NEAR_INSTANT_M) / (v0 q), q = 1 - drag dt.
+ * `speedDistance` turns a ratio back into the Standard distance it means.
+ */
+export function speedDistance(b: Pick<BallisticSpec, 'velocity' | 'drag'>, ratio: number): number | null {
+  const drag = b.drag ?? 0;
+  if (drag <= 0 || b.velocity <= 0) return null;
+  const q = Math.max(0, 1 - (drag * TICK_DT) / BULLET_SUBSTEPS);
+  return NEAR_INSTANT_M + (b.velocity * q * (1 - Math.min(1, Math.max(0, ratio)))) / drag;
+}
+
+/** The speed ratio (impact / muzzle) a weapon's round has at Standard after `dist` metres (1 without drag). */
+export function speedRatioAt(b: Pick<BallisticSpec, 'velocity' | 'drag'>, dist: number): number {
+  const drag = b.drag ?? 0;
+  if (drag <= 0 || b.velocity <= 0 || dist <= NEAR_INSTANT_M) return 1;
+  const q = Math.max(0, 1 - (drag * TICK_DT) / BULLET_SUBSTEPS);
+  return Math.max(0, 1 - (drag * (dist - NEAR_INSTANT_M)) / (b.velocity * q));
+}
+
+/** A gun's damage-by-speed curve: full damage at or above `full` (impact / muzzle speed), `min` at or below `floor`. Null: no drag or no falloff (distance falloff, or none, stays). */
+export function speedCurve(gp: Pick<Gunplay, 'ballistic' | 'falloff'>): { full: number; floor: number; min: number; curve: FalloffSpec['curve'] } | null {
+  const b = gp.ballistic;
+  const f = gp.falloff;
+  if (!b || !f || !(b.drag && b.drag > 0)) return null;
+  return { full: speedRatioAt(b, f.start), floor: speedRatioAt(b, f.end), min: f.min, curve: f.curve };
+}
+
+/**
+ * Damage multiple of a bullet that strikes after `dist` metres at `ratio` of its muzzle speed (both under the
+ * match's ballistics rule). Arcade, and guns without a speed curve: the distance falloff.
+ */
+export function impactFalloff(gp: Pick<Gunplay, 'ballistic' | 'falloff'>, rules: Pick<MatchRules, 'ballistics'>, dist: number, ratio: number): number {
+  const b = gp.ballistic;
+  if (!b || (rules.ballistics ?? 'standard') === 'arcade') return falloffAt(gp.falloff, dist);
+  const d = speedDistance(b, ratio);
+  return falloffAt(gp.falloff, d ?? dist);
+}
+
 // ---------------------------------------------------------------- recoil & spread state
 
 /**
@@ -570,11 +618,18 @@ export function traceBullet(
   return { end: b.pos, time, hit: false };
 }
 
-/** Flight time (s) and drop (m) of a weapon's bullet to `dist` metres on a flat shot (no drag), under a ballistics rule. */
+/** Flight time (s) and drop (m) of a weapon's bullet to `dist` metres on a flat shot, under a ballistics rule (drag slows it: the time grows, drop with it). */
 export function flightTo(b: BallisticSpec, dist: number, rules: Pick<MatchRules, 'ballistics'> = {}): { time: number; drop: number } {
   const p = bulletPhysics(b, rules);
-  const time = Math.max(0, dist - NEAR_INSTANT_M) / p.speed;
-  return { time, drop: 0.5 * p.gravity * time * time };
+  const x = Math.max(0, dist - NEAR_INSTANT_M);
+  const slow = p.drag > 0 ? (p.drag * x) / p.speed : 0;
+  if (!(p.drag > 0) || slow >= 0.999) {
+    const time = x / p.speed;
+    return { time, drop: 0.5 * p.gravity * time * time };
+  }
+  // Drag slows the fall too: v_y = g (1 - e^(-kt)) / k.
+  const time = -Math.log(1 - slow) / p.drag;
+  return { time, drop: (p.gravity / p.drag) * (time - (1 - Math.exp(-p.drag * time)) / p.drag) };
 }
 
 /** Whether round number `n` (0-based, of the trigger pulls since the weapon was drawn) is drawn as a tracer, with `left` rounds remaining in the magazine after it. */

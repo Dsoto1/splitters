@@ -208,6 +208,8 @@ describe('each gun owns its range (GUNPLAY_AUDIT.md, the tuning of 2026-11-08)',
   const ttk = (id: string, dist: number): number => {
     const def = getWeapon(id);
     const gp = gunplayOf(def);
+    // Past its reach a gun never kills (clearer ranges, 2026-11-16: the close-range guns stop at 60-110 m).
+    if (dist > def.range) return Infinity;
     const per = def.damage * falloffAt(def.falloff ?? gp.falloff, dist);
     const rounds = Math.ceil(PLAYER.maxHealth / per - 1e-9);
     return ((rounds - 1) * def.fireIntervalTicks) / TICK_RATE + (gp.ballistic ? flightTo(gp.ballistic, dist).time : 0);

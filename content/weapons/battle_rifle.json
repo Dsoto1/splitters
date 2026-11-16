@@ -46,6 +46,7 @@
     "sound": "fire.heavy"
   },
   "notes": {
+    "range": "Best within 40 m: full damage, 4 body shots. Down to 75 % (6 shots) by 100 m; reaches 600 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Spec gap G2 (GUNPLAY_SPEC.md §13, \"Battle Rifle\": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Never the quickest body kill of the rifles on paper (Single 0.6 s, Burst 0.55 s, against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.",
     "falloff": "Its own (the family's minimum 0.8 would let five rounds kill at 100 m, quicker than the Precision Rifle's two bolts): five rounds at 50 m, six past 85 m.",
     "model": "The Meshy Community Frontier Rifle (content/guns.json, built since 2026-10-29, unused since the Marksman swap of 2026-11-06): a heavy scoped rifle with a 20-round box. The 3DModelsCC0 pack has no FAL, M14, G3 or SCAR, and the owner's Drive drop of 2026-11-08 holds vehicles only (gunplay pass 2, ARSENAL.md). Held Medium/High copies (2026-11-16): a 60,000-triangle cut of the same download (everyone else's copy keeps 14,000 and its lower level of detail), 2048 px colour, with its own metal and roughness.",
