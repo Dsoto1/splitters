@@ -54,6 +54,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Easy wins
 
+- XS · A · e2e `hostgame`: `window.__cs.spectate is not a function` between sessions (the ended-match stub's `endedReaders` lacks `spectate`), with the friend's spectate check ("spectator false, following -1") and "Host this map … listed" failing first; red on the St. John's step 4 train (run 43882840833, shard 4), not that branch's code.
+
 - XS · A · e2e `vehicles` "a badly damaged buggy catches fire": the buggy burns out in about 200 ticks while the check waits on wall clock for the page to draw it burning (failed once locally under load; HANDOFF "Landed: the e2e `vehicles` flakes").
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
