@@ -1,4 +1,4 @@
-import { PALETTE_CATEGORIES, PANE_CATEGORY } from './paletteCatalog.ts';
+import { PALETTE_CATEGORIES, PANE_CATEGORY, rankedOrder } from './paletteCatalog.ts';
 import { matchScore, searchFields, type SearchFields } from './paletteSearch.ts';
 import type { PaletteAtlas } from './paletteAtlas.ts';
 
@@ -22,6 +22,8 @@ interface Entry extends EntryMeta {
   fields: SearchFields;
   /** Shown under the Style Pack filter. */
   inPack: boolean;
+  /** Its place in the catalogue's order (registration order), so a view that moved it can put it back. */
+  ord: number;
 }
 
 /** Per-viewer conveniences (favourites, recent, view, open groups): browser storage, never required. */
@@ -187,7 +189,7 @@ export class Palette {
     });
     el.append(star);
     el.addEventListener('click', () => this.used(meta.key));
-    const entry: Entry = { ...meta, el, pane, group, fields: searchFields(meta.name, `${meta.tags ?? ''} ${group}`, meta.pack ?? ''), inPack: true };
+    const entry: Entry = { ...meta, el, pane, group, fields: searchFields(meta.name, `${meta.tags ?? ''} ${group}`, meta.pack ?? ''), inPack: true, ord: this.entries.get(meta.key)?.ord ?? this.entries.size };
     this.entries.set(meta.key, entry);
     el.classList.toggle('faved', this.favs.includes(meta.key));
     // The pack may only be known once the atlas manifest is in (props): add it to the search words then.
@@ -235,6 +237,46 @@ export class Palette {
       e.el.hidden = !e.inPack;
     }
     this.refresh();
+  }
+
+  /**
+   * Order the cards within each run of a grid (the cards between two sub-headings) by `rank`, lower first, each rank in
+   * the catalogue's order; null puts the catalogue's order back (painting Phase 3: This map's themes, All). `skip`
+   * cards (Structure and Ground paint: lists of their own) are left where they are.
+   */
+  order(rank: ((key: string) => number) | null, skip: (key: string) => boolean = () => false): void {
+    const grids = new Set<HTMLElement>();
+    for (const e of this.entries.values()) if (e.el.parentElement && !skip(e.key)) grids.add(e.el.parentElement);
+    for (const grid of grids) {
+      const runs: HTMLElement[][] = [[]];
+      for (const c of [...grid.children] as HTMLElement[]) {
+        const key = c.dataset.key;
+        if (key && this.entries.get(key)?.el === c) runs[runs.length - 1]!.push(c);
+        else runs.push([]);
+      }
+      for (const run of runs) {
+        if (run.length < 2) continue;
+        const keyed = run.map((el) => this.entries.get(el.dataset.key!)!).sort((a, b) => a.ord - b.ord);
+        const sorted = (rank ? rankedOrder(keyed, (e) => rank(e.key)) : keyed).map((e) => e.el);
+        if (sorted.every((el, i) => el === run[i])) continue;
+        // Put the run back in its new order where it stood (after the element before it).
+        const before = run[0]!.previousElementSibling;
+        const frag = document.createDocumentFragment();
+        frag.append(...sorted);
+        if (before) before.after(frag);
+        else grid.prepend(frag);
+      }
+    }
+  }
+
+  /** Mark the cards a view puts first (a thin accent: This map's themes); null clears every mark. */
+  mark(first: ((key: string) => boolean) | null): void {
+    for (const e of this.entries.values()) e.el.classList.toggle('theme-first', !!first && first(e.key));
+  }
+
+  /** The keys picked lately, newest first (Structure paint's Recent). */
+  recentKeys(): readonly string[] {
+    return this.recent;
   }
 
   get searching(): boolean {

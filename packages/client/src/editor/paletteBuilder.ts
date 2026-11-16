@@ -24,6 +24,8 @@ import {
   setPieceParts,
   STYLE_PACKS,
   stylePackHas,
+  TERRAIN_MATERIALS,
+  TERRAIN_SURFACES,
   TILE_CATEGORIES,
   TINT_SWATCHES,
   type GlassKind,
@@ -36,6 +38,7 @@ import {
   type SetPieceDefinition,
   type SetPiecePlacement,
   type StylePack,
+  type TerrainMaterial,
   type TileDefinition
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
@@ -53,7 +56,12 @@ import {
   RETIRED_PROPS,
   scenarioGroup,
   setPieceSuitsStylePack,
-  stylePackRoles
+  stylePackRoles,
+  THEMES_VIEW,
+  themePaintList,
+  themeRank,
+  themeGroundOrder,
+  themeStylePacks
 } from './paletteCatalog.ts';
 import { type PathKind } from './pathTool.ts';
 import { isRetiredTile } from './retiredTiles.ts';
@@ -229,6 +237,8 @@ export class PaletteBuilder {
       }
       for (const p of document.querySelectorAll<HTMLElement>('#ed-palette .ed-pane')) p.hidden = p.dataset.pane !== pane;
       $('ed-palette').dataset.cat = btn.dataset.cat ?? '';
+      // Structure paint's This map's themes list shows what was painted lately (built as the tab opens, never under the pointer).
+      if (pane === 'paint') this.renderPaintView();
       // The quick row puts this mode's favourites and recent pieces first (palette.ts quickOrder).
       this.app.palette.setMode(paneMode(pane)?.panes ?? [pane]);
       this.app.topBar.syncWorkspaceTabs();
@@ -258,21 +268,34 @@ export class PaletteBuilder {
 
   // ---------------------------------------------------------------- style packs
 
-  /** The Style Pack the palette is narrowed to (null: every piece). */
+  /** The Style Pack the palette is narrowed to (null: This map's themes or All). */
   stylePack: StylePack | null = null;
+  /** The picker's view: This map's themes (the default: the theme's packs first), All (the catalogue's order) or one pack. */
+  view: string = THEMES_VIEW;
+  /** The theme the palette was last put in order for (it follows a theme change at once: syncTheme). */
+  private viewTheme = '';
+  private viewTerrain: unknown = undefined;
 
-  /** The palette's Style Pack picker: each pack narrows tiles, props, gameplay pieces, vehicles and pickups to its own. */
+  /** The Style Packs that use the map's Structure theme (its own pack first). */
+  themePacks(): StylePack[] {
+    return themeStylePacks(this.app.doc.classicStructure.theme);
+  }
+
+  /**
+   * The palette's Style Pack picker (painting Phase 3: the palette follows the map's themes). Its first choice, This
+   * map's themes, is the default: the pieces of the packs that use the map's Structure theme come first in each group
+   * (marked), the rest after them. All is one click away (the catalogue's order); a pack narrows to its own pieces.
+   */
   buildPackPicker(): void {
     const sel = $<HTMLSelectElement>('ed-pack');
     for (const p of STYLE_PACKS) sel.append(new Option(`${p.number} ${p.displayName} (${p.style})`, p.id));
+    sel.value = this.view;
     const themeBtn = $<HTMLButtonElement>('ed-pack-theme');
     sel.addEventListener('change', () => {
+      this.view = sel.value;
       this.stylePack = getStylePack(sel.value) ?? null;
       themeBtn.hidden = !this.stylePack;
       const pack = this.stylePack;
-      const note = $('ed-pack-note');
-      note.hidden = !pack;
-      note.textContent = pack ? `${pack.style}. ${pack.blurb} Dress rooms with the ${pack.facades.map((f) => FACADE_LABELS[f]).join(' or ')} facade in the tile inspector${pack.demo ? `; demo map: ${pack.demo}` : ''}.` : '';
       themeBtn.textContent = pack ? `Use theme (${coreThemes.get(pack.themes[0]!)?.displayName ?? pack.themes[0]})` : 'Use theme';
       // Gameplay pieces say what they are for in this pack.
       for (const b of document.querySelectorAll<HTMLElement>('#ed-palette .tile-btn[data-tool^="scenario:"]')) {
@@ -280,7 +303,7 @@ export class PaletteBuilder {
         const why = pack?.gameplayNotes?.[b.dataset.tool!.slice('scenario:'.length) as ScenarioPaletteKey];
         this.app.palette.setTip(b, why ?? b.dataset.baseTip);
       }
-      // Set pieces take the pack's look (its role pack), so their ghost re-themes; All pieces: the map theme's.
+      // Set pieces take the pack's look (its role pack), so their ghost re-themes; otherwise the map theme's.
       this.app.pieces.pieceLook = pack ? (stylePackRoles(pack.id, this.app.setPieceLib.packs) ?? '') : '';
       this.app.pieces.renderPieceInfo();
       this.app.hover.updateHover();
@@ -290,23 +313,137 @@ export class PaletteBuilder {
       const theme = this.stylePack?.themes[0];
       if (!theme || theme === this.app.doc.classicStructure.theme) return;
       // Through the same warning as Map settings (painting Phase 2): counts, then Change, Keep current look or Cancel.
-      changeStructureTheme(this.app, theme, () => {
-        const picker = document.getElementById('ed-theme') as HTMLSelectElement | null;
-        if (picker) picker.value = this.app.doc.classicStructure.theme;
-      });
+      changeStructureTheme(this.app, theme);
     });
   }
 
-  /** Narrow the palette to the chosen Style Pack's pieces (search, favourites and recent follow it). */
+  /** The note under the picker: the pack's look, or which packs This map's themes puts first. */
+  private renderPackNote(): void {
+    const note = $('ed-pack-note');
+    const pack = this.stylePack;
+    if (pack) {
+      note.hidden = false;
+      note.textContent = `${pack.style}. ${pack.blurb} Dress rooms with the ${pack.facades.map((f) => FACADE_LABELS[f]).join(' or ')} facade in the tile inspector${pack.demo ? `; demo map: ${pack.demo}` : ''}.`;
+      return;
+    }
+    note.hidden = this.view !== THEMES_VIEW;
+    if (note.hidden) return;
+    const theme = coreThemes.get(this.app.doc.classicStructure.theme)?.displayName ?? this.app.doc.classicStructure.theme;
+    const packs = this.themePacks();
+    note.textContent = packs.length
+      ? `${theme}'s packs first (marked): ${packs.map((p) => `${p.number} ${p.displayName}`).join(', ')}. The rest follow; All is the catalogue's order.`
+      : `No Style Pack uses the ${theme} theme yet: every piece in the catalogue's order.`;
+  }
+
+  /**
+   * Show the palette's view: one pack narrows to its pieces (search, favourites and recent follow it); This map's
+   * themes puts the theme's packs' pieces first in each group and marks them; All is the catalogue's order. Structure
+   * and Ground paint keep lists of their own (renderPaintView, renderGroundOrder).
+   */
   filterPalette(): void {
     const pack = this.stylePack;
-    const suits = (tool: string) => {
+    const pieceSuits = (tool: string, p: StylePack) => {
       // Set pieces go with a pack when one of the looks they suit is the pack's (roles.json); the rest by stylePackHas.
-      if (!tool.startsWith('setpiece:')) return stylePackHas(pack!, tool);
       const def = this.app.pieceDef(tool.slice('setpiece:'.length));
-      return !def || setPieceSuitsStylePack(def, pack!.id, this.app.setPieceLib.packs);
+      return !def || setPieceSuitsStylePack(def, p.id, this.app.setPieceLib.packs);
     };
+    const suits = (tool: string) => (tool.startsWith('setpiece:') ? pieceSuits(tool, pack!) : stylePackHas(pack!, tool));
+    const own = (key: string) => key.startsWith('material:') || key.startsWith('ground:');
+    this.viewTheme = this.app.doc.classicStructure.theme;
+    const packs = !pack && this.view === THEMES_VIEW ? this.themePacks() : [];
+    const rank = (key: string) => themeRank(key, packs, (p) => pieceSuits(key, p));
+    this.app.palette.order(packs.length ? rank : null, own);
+    this.app.palette.mark(packs.length ? (key) => !own(key) && rank(key) === 0 : null);
     this.app.palette.filter(pack ? (b) => !b.dataset.tool || suits(b.dataset.tool) : null);
+    this.renderPackNote();
+    this.renderPaintView();
+    this.renderGroundOrder();
+  }
+
+  /** After an edit (the top bar's refresh): the palette and the paint lists follow a theme change at once, Ground paint the terrain. */
+  syncTheme(): void {
+    if (this.app.doc.classicStructure.theme !== this.viewTheme) this.filterPalette();
+    else if (this.app.doc.terrain !== this.viewTerrain) this.renderGroundOrder();
+  }
+
+  /** Structure paint's list: This map's themes (the theme's slot materials, its packs' materials, Recent) or All. */
+  paintView: 'theme' | 'all' = 'theme';
+  /** #ed-materials as built: the catalogue's order with its category headings (All). */
+  private allMaterials: Element[] = [];
+
+  /**
+   * Structure paint's list (plan, "The palette follows the map's themes"): in This map's themes, the theme's own slot
+   * materials first, then the materials of the packs that use it, then Recent; the rest wait under All, a tab away.
+   * Same buttons either way (one card a material), moved and shown or hidden, so search, favourites and the lit
+   * material are the same in both. Built when the Paint tab opens, the view is switched or the theme changes, never
+   * as a material is clicked (the card stays under the pointer).
+   */
+  renderPaintView(): void {
+    const box = document.getElementById('ed-materials');
+    if (!box || !this.allMaterials.length) return;
+    for (const b of document.querySelectorAll<HTMLElement>('#ed-mat-view [data-mv]')) {
+      const on = b.dataset.mv === this.paintView;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    }
+    box.dataset.view = this.paintView;
+    for (const el of box.querySelectorAll('.mv-head')) el.remove();
+    for (const el of this.allMaterials) el.classList.remove('mv-out');
+    if (this.paintView === 'all') {
+      box.append(...this.allMaterials);
+      return;
+    }
+    const themeId = this.app.doc.classicStructure.theme;
+    const theme = coreThemes.get(themeId);
+    const packs = this.themePacks();
+    const recent = this.app.palette.recentKeys().filter((k) => k.startsWith('material:')).map((k) => k.slice('material:'.length));
+    const list = themePaintList(theme, packs, recent, (id) => !!coreMaterials.get(id));
+    const btn = new Map<string, HTMLElement>();
+    for (const el of this.allMaterials) if ((el as HTMLElement).dataset.material) btn.set((el as HTMLElement).dataset.material!, el as HTMLElement);
+    const head = (text: string, id: string) => {
+      const h = document.createElement('div');
+      h.className = 'mat-cat mv-head';
+      h.dataset.mv = id;
+      h.textContent = text;
+      return h;
+    };
+    const shown: Element[] = [];
+    const section = (text: string, id: string, ids: string[]) => {
+      const cards = ids.map((m) => btn.get(m)).filter((b): b is HTMLElement => !!b);
+      if (cards.length) shown.push(head(text, id), ...cards);
+    };
+    const name = theme?.displayName ?? themeId;
+    section(`Structure theme: ${name}`, 'theme', list.theme);
+    section(packs.length === 1 ? `${packs[0]!.displayName} pack` : `${name}'s packs`, 'packs', list.packs);
+    section('Recent', 'recent', list.recent);
+    const rest = this.allMaterials.filter((el) => !shown.includes(el));
+    for (const el of rest) el.classList.add('mv-out');
+    box.replaceChildren(...shown, ...rest);
+  }
+
+  /**
+   * Ground paint's list in order (plan: the Ground theme's list first; until Phase 4 brings the Ground theme): the
+   * grounds this map's terrain has, its main ground first, then those the Structure theme's packs use, under "This
+   * map's grounds"; then "Other grounds".
+   */
+  renderGroundOrder(): void {
+    const box = document.getElementById('ed-tr-materials');
+    if (!box) return;
+    const terrain = this.app.doc.terrain;
+    this.viewTerrain = terrain;
+    const cards = new Map([...box.querySelectorAll<HTMLElement>('[data-ground]')].map((b) => [b.dataset.ground as TerrainMaterial, b]));
+    const { order, lead } = themeGroundOrder(TERRAIN_MATERIALS, terrain?.materials ?? null, (g) => TERRAIN_SURFACES[g], this.themePacks());
+    const head = (text: string) => {
+      const h = document.createElement('div');
+      h.className = 'mat-cat';
+      h.textContent = text;
+      return h;
+    };
+    const els = order.map((g) => cards.get(g)).filter((b): b is HTMLElement => !!b);
+    const want = lead > 0 && lead < els.length ? [head("This map's grounds"), ...els.slice(0, lead), head('Other grounds'), ...els.slice(lead)] : els;
+    const now = [...box.children];
+    const same = now.length === want.length && want.every((el, i) => (el.classList.contains('mat-cat') ? now[i]!.classList.contains('mat-cat') && now[i]!.textContent === el.textContent : now[i] === el));
+    if (!same) box.replaceChildren(...want);
   }
 
   /**
@@ -522,6 +659,14 @@ export class PaletteBuilder {
       mats.append(b);
       this.app.palette.register(b, { key: `material:${def.id}`, name: def.displayName, tags: `${def.category} material paint surface ${def.id}` });
     }
+    this.allMaterials = [...mats.children];
+    // This map's themes or All (the plan's tab), a click apart.
+    $('ed-mat-view').addEventListener('click', (e) => {
+      const v = (e.target as HTMLElement).closest<HTMLElement>('[data-mv]')?.dataset.mv;
+      if (v !== 'theme' && v !== 'all') return;
+      this.paintView = v;
+      this.renderPaintView();
+    });
     const tints = $('ed-tints');
     const none = document.createElement('button');
     none.className = 'swatch none';

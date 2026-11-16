@@ -188,12 +188,12 @@ dialog { border-top: 3px solid var(--cyan); }
 #ed-plan-bar b { color: var(--cyan); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px; }
 .ed-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 4px 0; }
 .ed-layers label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 12px; }
-#ed-theme { max-width: 140px; }
+#ed-theme-chip-name { display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; color: var(--text); font: 600 12px var(--font-body); text-transform: none; letter-spacing: 0; }
 .ed-pal-tabs .tab { padding: 6px 2px; font-size: 10px; letter-spacing: 0.04em; min-width: 0; }
 @media (max-width: 1500px) {
   #ed-top { gap: 5px; }
   #ed-top button, #ed-top .tab { padding: 5px 7px; font-size: 11px; }
-  #ed-theme { max-width: 118px; }
+  #ed-theme-chip-name { max-width: 118px; }
 }
 
 /* Terrain tab */
@@ -319,6 +319,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 /* Top bar: Grid / Snap / Theme pickers, short labels on narrow screens. */
 .ed-pick { display: flex; align-items: center; gap: 5px; font: 600 11px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); white-space: nowrap; }
 .ed-pick select { padding: 4px 5px; font-size: 12px; }
+.ed-chip { padding: 4px 8px; border-radius: 999px; }
 #ed-top .narrow { display: none; }
 #ed-modes .tab { padding: 6px 10px; }
 
@@ -343,7 +344,7 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   #ed-top .narrow { display: inline; }
   #ed-modes .tab { padding: 5px 7px; }
   #ed-top .ed-file button { padding: 5px 6px; }
-  #ed-theme { max-width: 104px; }
+  #ed-theme-chip-name { max-width: 104px; }
   #ed-bots, #ed-skill { max-width: 76px; }
 }
 @media (max-width: 1100px) {
@@ -443,6 +444,12 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #ed-palette [data-key]:focus-visible { outline: 2px solid var(--cat); outline-offset: 1px; }
 #ed-palette .tile-btn .thumb { position: relative; overflow: hidden; }
 .thumb > .spr { display: block; width: 100%; height: 100%; background-repeat: no-repeat; }
+/* This map's themes (painting Phase 3): the theme's packs' pieces come first, marked with a small dot in the category's colour (steady: nothing blinks). */
+#ed-palette .theme-first::after { content: ''; position: absolute; top: 4px; left: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--cat); opacity: 0.9; pointer-events: none; }
+#ed-palette .ed-quick-row .theme-first::after, #ed-pal-results .theme-first::after { display: none; }
+/* Structure paint's two views: This map's themes (its sections) and All (by kind), one click apart. */
+.ed-mat-view { grid-template-columns: 1fr 1fr; }
+#ed-materials .mv-out { display: none; }
 #ed-palette .fav { position: absolute; top: 1px; right: 3px; font-size: 13px; line-height: 1; color: var(--muted); opacity: 0; cursor: pointer; text-shadow: 0 1px 2px #000; }
 #ed-palette [data-key]:hover .fav, #ed-palette [data-key]:focus-visible .fav { opacity: 0.75; }
 #ed-palette .faved .fav { opacity: 1; color: var(--warning); }
