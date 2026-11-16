@@ -2,7 +2,8 @@ name: Published maps
 
 # Keeps the repository's copy of the maps the owner publishes from MapMaker (the hub's /api/v1/maps,
 # packages/server/src/publish.ts): once a day (and from "Run workflow") it downloads the published
-# versions into maps/ and, when anything changed, pushes a commit to check/published-maps and runs CI
+# versions into maps/ (tools/ci/publishedMaps.mjs: never over a repository map newer than the published copy) and,
+# when anything changed, pushes a commit to check/published-maps and runs CI
 # there. Like any check branch, main is fast-forwarded to it only once it is green (CLAUDE.md). The site
 # doesn't wait for this: it uses the published versions from the hub as soon as they are published.
 on:
@@ -30,22 +31,17 @@ jobs:
         with:
           ref: main
           fetch-depth: 1
+      # The download runs the shared package's own code (map/publishedChoice.ts), so the workspace is installed.
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # A repository map newer than the published copy (changed since the version it records, or the copy is an older
+      # revision) is skipped and the reason logged: the sync never writes an older published copy over it.
       - name: Download the published maps
-        run: |
-          set -euo pipefail
-          curl -fsS --max-time 30 "$HUB/api/v1/maps" -o /tmp/published.json
-          python3 - <<'PY'
-          import json, re, subprocess, os
-          maps = json.load(open('/tmp/published.json'))['maps']
-          for m in maps:
-              mid = m['id']
-              if not re.fullmatch(r'[a-z0-9_]{2,48}', mid):
-                  continue
-              out = f'maps/{mid}.json'
-              subprocess.run(['curl', '-fsS', '--max-time', '60', f"{os.environ['HUB']}/api/v1/maps/{mid}?v={m['at']}", '-o', out], check=True)
-              json.load(open(out))  # it is JSON; the map tests check the rest
-              print(f"{mid}: {m['name']} (published {m['at']})")
-          PY
+        run: node tools/ci/publishedMaps.mjs --hub "$HUB" --maps maps
       - name: Commit to the check branch and run CI there
         env:
           GH_TOKEN: ${{ github.token }}

@@ -19,6 +19,7 @@ import {
   rosterSize,
   SCENARIO_PALETTE,
   TERRAIN_MATERIAL_LABELS,
+  groundLayerAt,
   terrainHeightAt,
   terrainRaycast,
   tileAt,
@@ -39,6 +40,7 @@ import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml } from './editorDom.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 import { pickRadius, type Hit } from './editorParts.ts';
+import { groundWords } from './paintTools.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 
 /** What's under the pointer: the pointer's ray onto the level, the ground and surfaces, picking, the hover card and status line, and the placing ghosts with why one is refused (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -307,9 +309,24 @@ export class Hover {
       const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
       return [`Size: ${span(0)} × ${span(1)} × ${span(2)}`, `Theme: ${themeName}`, `Connectors: ${def.ports.length}`, `Rotation: ${rotation * 90}°`];
     };
+    /** A card of its own (Structure paint's layers): its HTML, in place of the title and lines. */
+    let html: string | null = null;
     if (at && !this.app.input.drag && !this.app.looking) {
       const g = this.app.pieceHover;
-      if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
+      if (this.app.tool.kind === 'paint' && (this.app.hoverFace || this.app.hoverPoint)) {
+        // Structure paint: what is under the cursor, the layers its look comes from (theme → look → your paint), the click.
+        const card = this.app.paint.card();
+        title = card.title;
+        tone = `${card.tone} ed-paint-card`;
+        html = card.html;
+      } else if (this.app.tool.kind === 'terrain' && this.app.terrain.terrainBrush === 'paint' && this.app.terrain.terrainHover && this.app.shownGround) {
+        // Ground paint: the ground layer under it, the map's main ground or painted, and what a click paints.
+        const h = this.app.terrain.terrainHover;
+        const g0 = groundLayerAt(this.app.shownGround, h.x, h.z);
+        title = g0 ? `Ground · ${groundWords(g0)}` : 'Ground';
+        tone = 'pick';
+        lines.push(`Click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} · radius ${this.app.terrain.brushRadius} m`, 'Buildings stay as they are');
+      } else if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
         // The set piece about to be placed: what it is, how it's turned and themed, and whether it fits (and why not).
         title = g.def.displayName;
         tone = g.ok ? 'place' : 'bad';
@@ -378,14 +395,14 @@ export class Hover {
       this.tipShown = null;
       return;
     }
-    const html = `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
+    const tipHtml = html ?? `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
     // The same card at the same spot (an edit under a still pointer, most pointer moves within a cell): left as it is,
     // without laying the page out to measure it (fix 6 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md).
-    const shown = `${tone}|${at.x}|${at.y}|${window.innerWidth}|${window.innerHeight}|${html}`;
+    const shown = `${tone}|${at.x}|${at.y}|${window.innerWidth}|${window.innerHeight}|${tipHtml}`;
     if (perfOn('editlight') && shown === this.tipShown) return;
     this.tipShown = shown;
     tip.className = `tone-${tone}`;
-    tip.innerHTML = html;
+    tip.innerHTML = tipHtml;
     // Beside the pointer, kept inside the window.
     const w = tip.offsetWidth;
     const h = tip.offsetHeight;
@@ -458,7 +475,8 @@ export class Hover {
       const t = this.app.shownGround;
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.app.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.app.terrain.brushRadius, colors[this.app.terrain.terrainBrush]);
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
+      const under = t && h && this.app.terrain.terrainBrush === 'paint' ? groundLayerAt(t, h.x, h.z) : null;
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);

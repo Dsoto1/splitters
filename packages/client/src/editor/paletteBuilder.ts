@@ -22,7 +22,6 @@ import {
   NPC_PALETTE,
   SCENARIO_PALETTE,
   setPieceParts,
-  setThemeCommand,
   STYLE_PACKS,
   stylePackHas,
   TILE_CATEGORIES,
@@ -58,6 +57,7 @@ import {
 } from './paletteCatalog.ts';
 import { type PathKind } from './pathTool.ts';
 import { isRetiredTile } from './retiredTiles.ts';
+import { changeStructureTheme } from './themeChangeDialog.ts';
 import { tileIcon } from './tileIcon.ts';
 
 /** The palette's contents: every tab's cards (tiles, walls, gameplay, pickups, props, vehicles, paint, NPCs, paths, real places), the Style Pack picker and the palette's pictures (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -289,10 +289,11 @@ export class PaletteBuilder {
     themeBtn.addEventListener('click', () => {
       const theme = this.stylePack?.themes[0];
       if (!theme || theme === this.app.doc.classicStructure.theme) return;
-      this.app.run('Set theme', setThemeCommand(this.app.doc, theme));
-      const picker = document.getElementById('ed-theme') as HTMLSelectElement | null;
-      if (picker) picker.value = theme;
-      this.app.toast(`Theme: ${coreThemes.get(theme)?.displayName ?? theme}`);
+      // Through the same warning as Map settings (painting Phase 2): counts, then Change, Keep current look or Cancel.
+      changeStructureTheme(this.app, theme, () => {
+        const picker = document.getElementById('ed-theme') as HTMLSelectElement | null;
+        if (picker) picker.value = this.app.doc.classicStructure.theme;
+      });
     });
   }
 
