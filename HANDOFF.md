@@ -3,6 +3,36 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
+
+The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A only finishes and lands what is in flight: `wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`. Every other open item in QUEUE is now marked B. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
+
+What lane A was holding, for you to pick up:
+1. **Next bugs, in order:**
+   1. Random bots aren't random. `Match.botLook` gives slot n the roster's (n+1)-th look: shuffle per match from the seed.
+   2. The Arid preset and the cut-off Paint list (owner's screenshot).
+   3. The e2e `hostgame` spectate stub.
+2. **The Dropship's new model:** the owner's own Meshy hover carrier, recorded as **Meshy, owned**. File: `/home/user/meshy-drive/owner-2026-11-16-hovercarrier/`, only on lane A's machine. Ask the owner to share it again if your container can't see it. QUEUE Features has the brief.
+3. **The Buggy on Rapier:** the owner answered 1a 2a 3a 4a, **5b straight to default**. Plan and questions: `docs/DRIVING_PHYSICS_PLAN.md` ("After the second drive" / the Rapier plan, from `wip/drive-physics-3b`, landed). The snag log and Rapier evaluation are in that doc.
+4. **Flavius Rule speed and memory** (QUEUE Bugs, the "Memory and frame time" line). The owner's three recordings are read there. The texture climb is the character leak lane A is fixing. Next after it:
+   - animation by distance;
+   - what makes up the 1.9 GB heap;
+   - the garbage churn.
+5. **St. John's step 4b** (QUEUE Maps):
+   - the gateway out with a Cadet Post;
+   - the parking strip and the volleyball court;
+   - the spruces and the limestone wall back once small shadow casters are cheap.
+
+   The step 3 and 4 helpers' Playwright MapMaker drivers are in lane A's scratchpad, so rebuild your own. Their pitfalls are noted under the step 4 claim: `?test=1` repeats IDs, path handle names, and clicks on ribbons.
+6. **The tunnel kit, steps 5-8:** paused on `wip/tunnels-5` (8ef1a373). Step 5 code is built; it needs the coverage map, pictures and checks. Map format v44 is claimed for it (v43 is St. John's step 4, landed). The pause note is under its claim.
+7. **The Roster Board artifact** (https://claude.ai/artifact/Fa3zbiwBH8ZF712pYcjKTu) is the owner's character board, kept in step with main by lane A's lead. Version 11; db synced to main bb22eaf1. The seven characters still needing hand or face work are a QUEUE Features line.
+8. **Waiting on the owner:** QUEUE "Waiting on the owner" and the Maps section's "Owner to decide" lines (Verdant Protocol, The Spillway's gatehouses, Iron Maw, Sunken Kingdom, Dustwater, Mercy Ward, new maps).
+
+Lane A's own rules that worked, worth keeping:
+- Bugs jump the queue.
+- Pictures with every landing the owner can see.
+- Owner questions as short numbered multiple choice with a pick marked. The owner reads on a phone, and long options get cut off.
+
 ## For both lanes: check in parallel, land in trains (owner, 2026-11-16, via lane A's lead)
 
 The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full rules. In short:
