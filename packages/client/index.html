@@ -224,7 +224,7 @@
         <div class="spacer"></div>
         <button id="ed-view-btn" type="button" title="View: grid, full grid, overlaps, the plan view and the map layers (MapMaker only, not saved)"><span>View</span> <span aria-hidden="true">▾</span></button>
         <select id="ed-snap" title="Snap for spawns, items, objects and props (hold Ctrl while placing for none)"><option value="fine">Snap 25 cm</option><option value="normal" selected>Snap 50 cm</option><option value="coarse">Snap 1 m</option><option value="off">Snap off</option></select>
-        <label class="ed-pick" title="Map theme"><span class="wide">Theme</span><select id="ed-theme" title="Map theme"></select></label>
+        <button id="ed-theme-chip" class="ed-pick ed-chip" type="button" aria-controls="ed-map-settings" title="Structure theme: change it in Map settings"><span class="wide">Structure theme</span><b id="ed-theme-chip-name">Prototype</b></button>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-test-here" title="Play from here: a test match with you standing below the camera, facing where it looks (Shift+F5)">▶ <span class="wide">Here</span></button>
@@ -260,7 +260,7 @@
             <button id="ed-pal-view" class="ed-pal-view" type="button" aria-label="Grid or card view"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="g" d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/><path class="c" d="M1 1h14v4H1zM1 6.5h14v4H1zM1 12h14v3H1z"/></svg></button>
           </div>
           <div id="ed-pack-row" class="ed-pack-row">
-            <select id="ed-pack" title="Style Pack: show only one pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="">All pieces</option></select>
+            <select id="ed-pack" title="This map's themes: the packs that use the map's Structure theme first (marked). All: every piece in the catalogue's order. A Style Pack: only that pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="@themes" selected>This map's themes</option><option value="">All pieces</option></select>
             <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
           </div>
         </div>
@@ -376,6 +376,7 @@
           <div id="ed-tints"></div>
           <label class="stack inline-row">Custom tint <input id="ed-tint-custom" type="color" value="#ffffff" /></label>
           <div class="sub-h">Materials</div>
+          <div id="ed-mat-view" class="seg ed-mat-view" role="group" aria-label="Materials shown"><button type="button" data-mv="theme" class="active" aria-pressed="true" title="The Structure theme's own materials, then its packs' materials, then what you painted lately">This map's themes</button><button type="button" data-mv="all" aria-pressed="false" title="Every material, by kind">All</button></div>
           <div id="ed-materials"></div>
         </div>
       </aside>
