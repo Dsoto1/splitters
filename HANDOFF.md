@@ -25,6 +25,8 @@ The owner added: "I did see a set piece for pens/cells (Roman), and when I chang
 
 - **Claimed (a helper of lane A's lead, 2026-11-16): St. John's step 4, entrance and grounds, with the entity budget first** (QUEUE; `docs/map-briefs/st_johns/PLAN_2026-11-12.md` §3.5 step 4 and "4c"), branch `wip/stjohns-4`. **Claimed: map format v43** (path style `brick`; an identity step in `migrate.ts`). Files: `content/setpieces/academy.json` (lighter dorm rooms: paired desks and closet fronts in every dorm piece; `setpiece.entrance_island`), `content/kitprops/*.json` and `tools/content/kit/academy.mjs` plus a new grounds generator (new families: the paired desks, the paired closet fronts, cairn, gate pier with a caged lamp, fieldstone wall, banner lamp post, marker stone), their generated tables, locks and atlases, `map/schema.ts` `PATH_STYLES` and `map/paths.ts` (brick), `maps/st_johns.json` (skybridge out, island, grounds, the north walk rerouted round Scott Johnston / Hazelwood's forward block; through MapMaker) and `maps/test_coverage.json` (the new pieces, through MapMaker), their tests.
 
+- **Claimed (a helper of lane A's lead, 2026-11-16): the e2e `vehicles` flakes** (the arc sentry's wind-up and the buggy's 8 m drop, red on `check/hostflows-fix` and `check/stjohns-3` since the driving physics follow-ups), branch `wip/vehicles-flow`. Files: `e2e/run.mjs` (`vehiclesFlow`'s drop, `arcTurretChecks`) and `packages/shared/test/botsHearVehicles.test.ts` (the out-of-the-buggy check); game code only if the cause is there.
+
 ## Start here (session of 2026-11-07, handed off to the next account)
 
 **Owner rule for the queue (2026-11-08):** new ideas go to the END of the queue. Only bugs or problematic gameplay
