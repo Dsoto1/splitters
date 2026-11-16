@@ -6214,6 +6214,89 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+  await beamMuzzleChecks(browser);
+}
+
+/**
+ * Beams stay on the muzzle (owner, 2026-11-16: the freeze gun's beam "glides around" while you move): frame by frame
+ * on the page's frame clock (60 a game second), strafing left and right, turning and jumping with the trigger held,
+ * how far each drawn beam's start is from the muzzle as drawn that frame. The freeze ray in first person and third
+ * person (Reduce flashing on, as by default: its steady beam), and the laser rifle with Reduce flashing off (a new
+ * beam every other tick). Before the fix they were 20-90 cm off (game/muzzleAnchor.ts).
+ */
+async function beamMuzzleChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(120000) });
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.laser_rifle', 'core.freeze_ray']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // Third person first: your character's gun in its hands loads in real time too.
+  await page.keyboard.press('KeyH');
+  const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
+  await page.evaluate(() => window.__frameClock.freeze());
+  /** `frames` frames of strafing, turning and jumping, firing: the worst and median start-to-muzzle distance (cm). */
+  const run = (o) =>
+    page.evaluate(({ third, frames }) => {
+      const cs = window.__cs;
+      const v = cs.view;
+      const yaw0 = cs.input.yaw;
+      const ds = [];
+      for (let f = 0; f < frames; f++) {
+        window.__autoInput = { right: Math.floor(f / 40) % 2 ? -1 : 1, forward: 0, buttons: 2 | (f % 50 === 5 ? 1 : 0) };
+        cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.6;
+        window.__frameClock.step(1000 / 60);
+        const m = third ? v.muzzleOf(cs.slot) : v.localMuzzle();
+        if (!m || f < 15) continue;
+        const starts = [];
+        for (const key of ['beam:me', `s${cs.slot}`]) {
+          const s = v.steadyArcs.start(key);
+          if (s) starts.push(s);
+        }
+        for (const fx of v.effects) {
+          const mesh = fx.mesh;
+          if (mesh.name !== 'beam' || mesh.isDisposed() || !mesh.isEnabled()) continue;
+          mesh.computeWorldMatrix(true);
+          const e = mesh.getBoundingInfo().boundingBox.extendSize.y;
+          const w = mesh.getWorldMatrix().m;
+          starts.push({ x: -e * w[4] + w[12], y: -e * w[5] + w[13], z: -e * w[6] + w[14] });
+        }
+        if (starts.length) ds.push(Math.max(...starts.map((s) => Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z))));
+      }
+      window.__autoInput = { right: 0, forward: 0, buttons: 0 };
+      for (let f = 0; f < 30; f++) window.__frameClock.step(1000 / 60);
+      ds.sort((a, b) => a - b);
+      return { frames: ds.length, worst: ds.length ? +(ds[ds.length - 1] * 100).toFixed(1) : null, median: ds.length ? +(ds[ds.length >> 1] * 100).toFixed(1) : null };
+    }, o);
+  const stepUntil = (fn, arg) => page.evaluate(([src, arg]) => { const ok = eval(src); for (let i = 0; i < 120 && !ok(arg); i++) window.__frameClock.step(1000 / 60); return ok(arg); }, [fn.toString(), arg]);
+  const ok = (r) => r.frames >= 60 && r.worst !== null && r.worst < 3;
+  const tp = await run({ third: true, frames: 150 });
+  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person while you strafe, turn and jump (${tpOn ? JSON.stringify(tp) : 'no third person'} cm)`);
+  await page.keyboard.press('KeyH');
+  const fpOn = await stepUntil(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+  const fp = await run({ third: false, frames: 150 });
+  check(fpOn && ok(fp), `the freeze ray's beam stays on the muzzle in first person (Reduce flashing on: ${fpOn ? JSON.stringify(fp) : 'no first person'} cm)`);
+  await page.evaluate(() => window.__give('core.laser_rifle'));
+  const laserIn = await stepUntil((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, 'core.laser_rifle');
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  const laser = await run({ third: false, frames: 150 });
+  await setFlashing(true);
+  check(laserIn && ok(laser), `the laser rifle's beams (a new one every other tick, Reduce flashing off) start on the muzzle while you move (${laserIn ? JSON.stringify(laser) : 'no laser'} cm)`);
+  check(errors.length === 0, `no page errors in the beam checks (${errors.join('; ')})`);
+  await ctx.close();
 }
 
 /**
