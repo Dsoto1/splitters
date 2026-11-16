@@ -278,6 +278,12 @@ export interface WeaponPresentation {
    */
   held?: { medium: string; high: string };
   /**
+   * A real optic in the model's scope tube (client game/opticView.ts): aiming down the sights brings the eyepiece to
+   * the eye and the view through it is magnified. Not a `zoomFov` scope: the sim treats it as iron sights (hip fire
+   * keeps its accuracy), the client draws the optic, with the scope's sway and breath.
+   */
+  optic?: OpticSpec;
+  /**
    * The second trigger's shot when it isn't the weapon's own (a melee weapon's barrel): its
    * sound and playback rate, its flash, and how much smoke it leaves (0..1.5, a puff cloud).
    */
@@ -319,6 +325,34 @@ export interface WeaponHold {
  * `burst` a short burst per press.
  */
 export type FireMode = 'auto' | 'semi' | 'burst';
+
+/**
+ * One of a weapon's switchable fire modes (spec §36; `fireModes`): its trigger and what it changes. The first mode
+ * is the weapon's own trigger (its `fireMode`, `fireIntervalTicks`, `burst` and `kick`); a later one overrides them.
+ */
+export interface FireModeSpec {
+  mode: FireMode;
+  /** The HUD's name for it ("Single", "Burst"). */
+  label: string;
+  /** Ticks from one trigger pull to the next (a burst's: from its first round to the next burst's). */
+  fireIntervalTicks?: number;
+  burst?: { count: number; intervalTicks: number };
+  /** Recoil in this mode, over the weapon's own (sim/gunplay.ts KickSpec). */
+  kick?: Partial<KickSpec>;
+}
+
+/**
+ * A real optic (client only): aiming down the sights looks through the model's own scope tube. `eye`: the centre of
+ * the eyepiece's glass on the model (model space, metres); `radius`: the eyepiece's clear radius; `relief`: how far
+ * in front of the eye the eyepiece sits when aimed (metres, default 0.075); `mag`: magnification over the hip view.
+ */
+export interface OpticSpec {
+  mag: number;
+  eye: ModelPoint;
+  radius: number;
+  relief?: number;
+  reticle?: 'duplex' | 'chevron';
+}
 
 /**
  * Legacy spread bloom per shot (the exotic arsenal's, before the gunplay pass); bloom recovers while not firing.
@@ -389,6 +423,8 @@ export interface WeaponDefinition {
   fireMode?: FireMode;
   /** `burst`: shots per press and ticks between them. */
   burst?: { count: number; intervalTicks: number };
+  /** Switchable fire modes (spec §36), switched by a key; absent: the one trigger above (sim/fireModes.ts). */
+  fireModes?: readonly FireModeSpec[];
   /** Hold the trigger this long before it fires (spin-up, charge). `windupResets`: charge again after every shot. */
   windupTicks?: number;
   windupResets?: boolean;

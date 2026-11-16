@@ -148,6 +148,7 @@ export class Hud {
     this.weaponName.textContent = '';
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
+    this.optic.hidden = true;
     this.scoreboard.hidden = true;
     this.scoreboard.parentElement?.classList.remove('sb-up');
     this.board.clear();
@@ -552,6 +553,29 @@ export class Hud {
     this.altEl.textContent = '';
   }
 
+  /** The held weapon's fire mode readout (U switches), or null for a weapon with one mode. */
+  private readonly fireModeEl = $('fire-mode');
+  private lastFireMode = '';
+  setFireMode(f: { label: string; mode: string; burst: { count: number } | null } | null, count = 1): void {
+    const key = f ? `${f.label}|${count}` : '';
+    if (key === this.lastFireMode) return;
+    const switched = !!f && !!this.lastFireMode && this.lastFireMode.split('|')[0] !== f.label;
+    this.lastFireMode = key;
+    if (!f) {
+      this.fireModeEl.innerHTML = '';
+      return;
+    }
+    // Pips: one round for Single, the burst's count, a long bar for Auto; then the mode's name and its key.
+    const pips = f.mode === 'auto' ? '<i class="auto"></i>' : '<i></i>'.repeat(f.burst?.count ?? 1);
+    this.fireModeEl.innerHTML = `<span class="pips">${pips}</span>${escapeHtml(f.label)}<kbd>U</kbd>`;
+    // A short nudge on a switch (a size change only: nothing brightens, Reduce flashing or not).
+    if (switched) {
+      this.fireModeEl.classList.remove('switched');
+      void this.fireModeEl.offsetWidth;
+      this.fireModeEl.classList.add('switched');
+    }
+  }
+
   setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false): void {
     if (driving) {
       this.weaponName.textContent = 'Driving';
@@ -634,6 +658,21 @@ export class Hud {
     this.scope.hidden = !on;
   }
 
+  /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
+  private readonly optic = $('optic');
+  private opticKey = '';
+  setOptic(o: { lens: number; blend: number; reticle: string } | null): void {
+    const key = o ? `${o.lens.toFixed(4)}|${o.blend.toFixed(3)}|${o.reticle}` : '';
+    if (key === this.opticKey) return;
+    this.opticKey = key;
+    this.optic.hidden = !o;
+    if (!o) return;
+    this.optic.style.setProperty('--r', `${(o.lens * 50).toFixed(3)}vh`);
+    // The shade and reticle come in over the second half of the eye's move (a fade, never a flash).
+    this.optic.style.setProperty('--o', Math.max(0, Math.min(1, (o.blend - 0.4) / 0.6)).toFixed(3));
+    this.optic.dataset.reticle = o.reticle;
+  }
+
   /** While out of play: what you're watching ("Watching Ana", "Free camera") and the controls for it (null hides it). */
   setSpectating(title: string | null, hint = ''): void {
     let el = document.getElementById('spectating');
@@ -691,14 +730,17 @@ export class Hud {
     const on = amount > 0.6;
     dot.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
     const cross = document.getElementById('crosshair');
-    if (cross) cross.style.opacity = String(1 - Math.min(1, amount * 1.6));
+    // Through an optic its reticle is the aim (the crosshair would sit on top of it).
+    if (cross) cross.style.opacity = this.optic.hidden ? String(1 - Math.min(1, amount * 1.6)) : '0';
   }
 
   /** Breath meter under the scope (spent: it has to recover before you can hold again). */
   setBreath(breath: number, spent: boolean): void {
-    if (this.scope.hidden) return;
-    this.scope.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
-    this.scope.classList.toggle('spent', spent);
+    for (const el of [this.scope, this.optic]) {
+      if (el.hidden) continue;
+      el.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
+      el.classList.toggle('spent', spent);
+    }
   }
 
   setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {

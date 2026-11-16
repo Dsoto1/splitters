@@ -4546,9 +4546,38 @@
     "kind": "hitscan",
     "slot": 3,
     "family": "battle_rifle",
+    "fireMode": "semi",
     "damage": 25,
     "spread": 0.001,
     "fireIntervalTicks": 12,
+    "fireModes": [
+     {
+      "mode": "semi",
+      "label": "Single"
+     },
+     {
+      "mode": "burst",
+      "label": "Burst",
+      "fireIntervalTicks": 33,
+      "burst": {
+       "count": 3,
+       "intervalTicks": 5
+      },
+      "kick": {
+       "pitch": [
+        0.007,
+        0.006,
+        0.034
+       ],
+       "yaw": [
+        0.015,
+        -0.02,
+        0.002
+       ],
+       "variance": 0.002
+      }
+     }
+    ],
     "range": 600,
     "magazine": 20,
     "reserveMax": 100,
@@ -4596,6 +4625,10 @@
     "view": {
      "model": "guns/frontier_rifle.glb",
      "fallback": "weapons/rifle.glb",
+     "held": {
+      "medium": "guns/frontier_rifle.medium.glb",
+      "high": "guns/frontier_rifle.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.215,
@@ -4625,6 +4658,17 @@
       0.033,
       0.48
      ],
+     "optic": {
+      "mag": 3.5,
+      "eye": [
+       0,
+       0.133,
+       -0.262
+      ],
+      "radius": 0.014,
+      "relief": 0.12,
+      "reticle": "duplex"
+     },
      "sound": "fire.heavy"
     }
    },

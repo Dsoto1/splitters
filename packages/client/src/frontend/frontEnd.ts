@@ -2766,6 +2766,7 @@ export class FrontEnd {
       ['Quick melee (punch; kick on the move or after a punch)', 'Side mouse button · Y'],
       ['Hold breath (scoped)', 'Shift'],
       ['Reload', 'R'],
+      ['Fire mode (Battle Rifle: single or 3-round burst)', 'U'],
       ['Use · get in or out of a vehicle', 'E'],
       ['Third person · in a vehicle: cockpit or chase camera', 'H'],
       ['Weapons (Q tap: your last weapon)', '1–9 · Wheel · Q'],

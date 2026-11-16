@@ -78,7 +78,9 @@ export function schemas(root = ROOT, families = []) {
     model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
+    'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
   });
+  const fireModeSpec = obj({ mode: en(['auto', 'semi', 'burst']), label: str, 'fireIntervalTicks?': int, 'burst?': obj({ count: int, intervalTicks: int }), 'kick?': partial(kick) });
   const alt = obj({
     label: str, ammo: en(['shared', 'own']), cost: int, 'max?': int, 'pickup?': int, fireIntervalTicks: int, kind: en(['hitscan', 'projectile']),
     'damage?': num, 'pellets?': int, 'spread?': num, 'range?': num, 'projectile?': projectile,
@@ -90,7 +92,7 @@ export function schemas(root = ROOT, families = []) {
     damage: num, pellets: int, spread: num, fireIntervalTicks: int, range: num, magazine: int, reserveMax: int, pickupAmmo: int,
     reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num,
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
-    'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
+    'fireModes?': arr(fireModeSpec, 2), 'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,
     'headshot?': num, 'legshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
@@ -246,6 +248,14 @@ export function build(content, root = ROOT) {
     const sound = def.view.sound ?? `fire.${name}`;
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);
+    // Fire modes (spec §36): the first is the weapon's own trigger (its top-level fireMode), so readers that don't know modes see it.
+    if (def.fireModes) {
+      if (def.fireModes[0]?.mode !== (def.fireMode ?? 'auto')) problems.push(`${file}: fireModes[0] is the weapon's own trigger: its mode must be the weapon's fireMode (${def.fireMode ?? 'auto'})`);
+      def.fireModes.forEach((m, i) => {
+        if (m.mode === 'burst' && !(m.burst ?? def.burst)) problems.push(`${file}: fireModes[${i}] is a burst without a burst count`);
+        if (i === 0 && (m.fireIntervalTicks !== undefined || m.burst || m.kick)) problems.push(`${file}: fireModes[0] takes the weapon's own interval, burst and kick (set them on the weapon)`);
+      });
+    }
     if (def.magazine > 0 && def.kind !== 'melee' && !def.ammo && def.reserveMax > 0) problems.push(`${file}: a weapon with a reserve needs an ammo type`);
     if (!p.length) weapons.push({ code: def.code, id: def.id, notes: def.notes, def: strip(def), file });
   }

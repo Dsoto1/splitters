@@ -17,6 +17,11 @@ import {
   counterFrom,
   counterRecoil,
   gunplayOf,
+  clampFireMode,
+  fireModeCount,
+  firingOf,
+  nextFireMode,
+  type Firing,
   isTracer,
   newGunState,
   recoilIdle,
@@ -173,6 +178,27 @@ export class LocalPlayer {
   private windup = 0;
   private burstLeft = 0;
   private burstTimer = 0;
+  private burstEvery = 0;
+  /** The fire mode you want for each weapon you hold (by code; sim/fireModes.ts), sent with every input. */
+  private readonly wantedModes = new Map<number, number>();
+  /** Fire modes as the host applies them (WeaponState.mode): the inputs' values, step for step. */
+  private readonly appliedModes = new Map<number, number>();
+
+  /** Switch the held weapon to its next fire mode; returns the new mode, or null when it has only one. */
+  cycleFireMode(): Firing | null {
+    const def = this.weapon;
+    if (!def || fireModeCount(def) < 2 || this.seatGun) return null;
+    const next = nextFireMode(def, this.wantedModes.get(this.held) ?? 0);
+    this.wantedModes.set(this.held, next);
+    return firingOf(def, next);
+  }
+
+  /** The held weapon's fire mode (as wanted: the host takes it with the next input), or null when it has one. */
+  fireMode(): Firing | null {
+    const def = this.weapon;
+    if (!def || fireModeCount(def) < 2) return null;
+    return firingOf(def, this.wantedModes.get(this.held) ?? 0);
+  }
   /** Carried grenades or mines. */
   throwable: { kind: (typeof THROWABLES)[number]; count: number } | null = null;
   reloadTicks = 0;
@@ -266,6 +292,10 @@ export class LocalPlayer {
     this.lastYaw = yaw;
     this.lastPitch = pitch;
     const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick, ...(absorbed ? { rc: absorbed } : {}) };
+    // The fire mode wanted for the gun that will be in hand (the host sets it after any switch, as here).
+    const modeCode = weapon && this.inventory.has(weapon) ? weapon : this.held;
+    const modeDef = weaponByCode(modeCode);
+    if (modeDef?.fireModes) input.fireMode = clampFireMode(modeDef, this.wantedModes.get(modeCode));
     this.prevPos = { ...this.state.pos };
     let shot: PredictedShot | null = null;
     if (this.alive) {
@@ -383,6 +413,9 @@ export class LocalPlayer {
     if (this.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload();
     if (input.buttons & BUTTON_RELOAD) this.startReload();
     const gp = gunplayOf(def);
+    // As the host: the input's fire mode for the gun in hand (absent: the one it has).
+    if (!this.seatGun && input.fireMode !== undefined && def.fireModes) this.appliedModes.set(this.held, clampFireMode(def, input.fireMode));
+    const firing = firingOf(def, this.seatGun ? 0 : this.appliedModes.get(this.held));
     stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun);
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
     // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
@@ -391,7 +424,7 @@ export class LocalPlayer {
       const shoot = (fireDown && !this.semiLatch && ready(ammo) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && ammo[2] >= def.alt.cost);
       if (swing || shoot) this.cancelReload();
     }
-    const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready);
+    const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready, firing);
     if (!this.seatGun && this.statusSpeed !== 0 && !fired) {
       // As the server: a quick-melee press with a gun in hand breaks a reload (spec §16), struck or not.
       if (pressed & BUTTON_MELEE && !this.mounted && def.kind !== 'melee' && this.reload) this.cancelReload();
@@ -400,12 +433,12 @@ export class LocalPlayer {
       const timers = { reloadTicks: this.reloadTicks, fireCooldown: this.fireCooldown, raiseTicks: this.raiseTicks, burstLeft: this.burstLeft };
       if (armed && input.buttons & BUTTON_AUTO_RELOAD && autoReloadDue(def, this.box(this.held, ammo), timers, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload();
     }
-    if (!fired) recoilIdle(this.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
+    if (!fired) recoilIdle(this.gun, firing.kick, gp.accuracy, firing.interval);
     return shot;
   }
 
   /** The trigger itself. `fired`: a primary round (or swing) went off, as the server counts it. */
-  private trigger(def: WeaponDefinition, ammo: [number, number, number, number], input: PlayerInput, fireDown: boolean, ready: (a: [number, number, number, number]) => number): { shot: PredictedShot | null; fired: boolean } {
+  private trigger(def: WeaponDefinition, ammo: [number, number, number, number], input: PlayerInput, fireDown: boolean, ready: (a: [number, number, number, number]) => number, firing: Firing = firingOf(def)): { shot: PredictedShot | null; fired: boolean } {
     const none = { shot: null, fired: false };
     if (def.windupTicks) {
       const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ready(ammo) > 0);
@@ -421,8 +454,8 @@ export class LocalPlayer {
       }
       ammo[0]--;
       this.burstLeft--;
-      this.burstTimer = def.burst?.intervalTicks ?? 1;
-      return { shot: this.primaryShot(def, input, ammo), fired: true };
+      this.burstTimer = this.burstEvery || (def.burst?.intervalTicks ?? 1);
+      return { shot: this.primaryShot(def, input, ammo, firing), fired: true };
     }
     if (this.fireCooldown > 0 || (this.raiseTicks > 0 && !this.seatGun) || this.reloadTicks > 0 || this.statusSpeed === 0) return none;
     if (fireDown) {
@@ -441,14 +474,14 @@ export class LocalPlayer {
         ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
       }
       if (def.magazine > 0) ammo[0]--;
-      this.fireCooldown = def.fireIntervalTicks;
-      this.semiLatch = (def.fireMode ?? 'auto') !== 'auto';
-      if (def.fireMode === 'burst' && def.burst) {
-        this.burstLeft = def.burst.count - 1;
-        this.burstTimer = def.burst.intervalTicks;
+      this.fireCooldown = firing.interval;
+      this.semiLatch = firing.mode !== 'auto';
+      if (firing.burst) {
+        this.burstLeft = firing.burst.count - 1;
+        this.burstTimer = this.burstEvery = firing.burst.intervalTicks;
       }
       if (def.windupResets) this.windup = 0;
-      return { shot: this.primaryShot(def, input, ammo), fired: true };
+      return { shot: this.primaryShot(def, input, ammo, firing), fired: true };
     }
     if (input.buttons & BUTTON_ALT && def.alt) {
       // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
@@ -470,12 +503,12 @@ export class LocalPlayer {
   }
 
   /** A primary round: spread from the gunplay model, then the recoil kick (as the server does in Match.fire). */
-  private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number]): PredictedShot {
+  private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number], firing?: Firing): PredictedShot {
     const gp = gunplayOf(def);
     const aim = this.shotAim(input);
     const run = this.prevPos ? Math.hypot(this.state.pos.x - this.prevPos.x, this.state.pos.z - this.prevPos.z) / TICK_DT / PLAYER.runSpeed : 0;
     const spread = gp.accuracy ? shotCone(def, gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
-    if (def.kind !== 'melee') recoilShot(this.gun, gp.kick);
+    if (def.kind !== 'melee') recoilShot(this.gun, firing && firing.index > 0 ? firing.kick : gp.kick);
     if (def.kind !== 'hitscan') return { def, ends: [] };
     const shot = this.hitscanShot(def, aim, def.pellets, spread, false);
     if (gp.ballistic) shot.tracer = isTracer(gp.ballistic, this.rounds, ammo[0]);

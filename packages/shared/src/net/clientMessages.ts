@@ -68,6 +68,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
         if (typeof r.viewTick === 'number') input.viewTick = r.viewTick;
         if (typeof r.say === 'number') input.say = r.say;
         if (typeof r.build === 'number') input.build = r.build;
+        if (typeof r.fireMode === 'number') input.fireMode = r.fireMode;
         if (r.sp === 1) input.sp = 1;
         inputs.push(input);
       }

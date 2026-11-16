@@ -9,6 +9,7 @@ import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/item
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { AMMO_BOX_REACH } from '../sim/resupply.ts';
+import { botFireMode } from './fireModePick.ts';
 import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -612,6 +613,8 @@ export class BotBrain {
   private readonly rng: () => number;
   private readonly aim: AimModel;
   private readonly memory = new MapMemory();
+  /** The fire mode chosen for each weapon with modes (by id; bots/fireModePick.ts). */
+  private readonly fireModes = new Map<string, number>();
   /**
    * What it remembers of its enemies (Phase D item 1, memory.ts): where each was seen, where shots came from, noises
    * and teammates' callouts, for its skill's `memorySeconds`. Kept across lives (a player remembers where they died).
@@ -2445,7 +2448,16 @@ export class BotBrain {
       }
     }
     this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount' && !this.link && !me.holding;
-    return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
+    const weapon = this.chooseWeapon(view, target);
+    const input: PlayerInput = { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon };
+    // Switchable fire modes: a burst up close, single shots further out (bots/fireModePick.ts).
+    const modeDef = (weapon ? view.inventory.find((w) => weaponCode(w.def) === weapon)?.def : undefined) ?? this.heldDef(view);
+    if (modeDef?.fireModes) {
+      const mode = botFireMode(modeDef, target ? horizontalDistance(me.pos, target.pos) : null, this.fireModes.get(modeDef.id) ?? 0);
+      this.fireModes.set(modeDef.id, mode);
+      input.fireMode = mode;
+    }
+    return input;
   }
 
   /**

@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/battle-rifle` · bfbb90e4 · 43927763117 (lane A: the Battle Rifle's fire modes, model, optic)
 
 - (none)
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)

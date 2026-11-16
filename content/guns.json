@@ -138,6 +138,10 @@
       "held": {
         "maxTriangles": 20000,
         "maxBytes": 4500000
+      },
+      "heldHero": {
+        "maxTriangles": 80000,
+        "maxBytes": 9000000
       }
     }
   },
@@ -414,7 +418,12 @@
         0.2,
         12
       ],
-      "textureSize": 1024
+      "textureSize": 1024,
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero"
     },
     {
       "out": "guns/ornate_pistol.glb",
