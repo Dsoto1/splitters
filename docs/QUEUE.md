@@ -129,6 +129,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S–M · B · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
 - M · B · Textures for the flat grey sci-fi guns (Flak, Swarm, Laser Rifle; MOBILE_AUDIT proposal 8).
 - M · B · Kit-prop generators, Phase 6 tail: scaffolding and rubble families, measure the share of generated props (PROCEDURAL_ENVIRONMENT §11).
+- XS–S · B · MapMaker: the grid of the level being edited drawn green, the other levels' grids blue (owner, 2026-11-16: "could be nice"), so the working level reads at a glance; keep it calm and readable in both themes, and the level list's highlight in the same green.
 
 ## Waiting on the owner
 - Owner to decide (non-map, found 2026-11-16): MapMaker/match combat rules for creators (headshots, ammo, reload, penetration, damage and health scales; GUNPLAY G5, which knobs); a longer lag-compensation window past ~120 ms ping (GUNPLAY_AUDIT G3); official servers in the game browser (running cost); moderation and rules before launch (OPEN_QUESTIONS); Character Lab, an owner-only rigging tool; Machine Pistol balance.
