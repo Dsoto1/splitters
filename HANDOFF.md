@@ -53,6 +53,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landed in a train** (`check/train-20261116-205423` at e80e056e, run 43954588076, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released): lane B's e2e `hostgame` fix and the Assets panel's Paint list; lane A's random bots and the Dropship's new model. Notes under each claim.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `wip/punchier-hits` · run 43968109808 (`check/punchier-hits` at 2a494bfe; punchier hits, damage by impact speed, clearer ranges; a helper of lane A's lead; full suite: e2e/run.mjs changed)
 
 **Landing now: train** (`wip/mapmaker-bugs-1116`, `wip/mapmaker-ui-3`; lane B's splitters22, 2026-11-16, 21:55 UTC): please hold code pushes to main until this line goes.
 
