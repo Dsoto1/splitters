@@ -28,8 +28,13 @@ assets-src/meshy-community-characters/License.txt now. What is owned:
   Drive; import list batch 1, docs/IMPORT_LIST.md). The owner, 2026-11-06:
   "call him 'Cool Hands Rex', i made him in meshy". Built by
   tools/content/prepare-meshy-characters.mjs.
+- The hover carrier (the Dropship's model, vehicles/hover_carrier.glb, pack
+  meshy-owned-drive-1116 in content/guns.json): the textured GLB download
+  Meshy_AI_hover_carrier_topdown_1116164125_texture.glb from the owner's
+  Drive (2026-11-16). The owner, 2026-11-16: "I made it on Meshy". Built by
+  tools/content/prepare-guns.mjs.
 
-Their download file names are recorded in content/props.lock.json and
-content/meshy.lock.json. The raw downloads are not kept in the repo.
+Their download file names are recorded in content/props.lock.json,
+content/meshy.lock.json and content/guns.lock.json. The raw downloads are not kept in the repo.
 
 Provenance: Meshy, owned.

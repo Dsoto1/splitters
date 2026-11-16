@@ -366,7 +366,7 @@ describe('drop routes in and out of bounds', () => {
   });
 
   it('the dropship is a drop route choice: 12 riders, its own model, the same rules', () => {
-    expect(DROPSHIP_DROP_DEF).toMatchObject({ model: 'vehicles/dropship.glb', airplane: true });
+    expect(DROPSHIP_DROP_DEF).toMatchObject({ model: 'vehicles/hover_carrier.glb', airplane: true });
     expect(DROPSHIP_DROP_DEF.seats).toHaveLength(12);
     const [e] = newScenarioEntities('airplane:dropship', [0, 0, 0], 0);
     expect(e).toMatchObject({ kind: 'airplane', craft: 'dropship', closed: false });
