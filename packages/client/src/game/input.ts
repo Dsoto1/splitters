@@ -44,9 +44,11 @@ export function saveMousePrefs(p: MousePrefs): void {
  */
 const WHEEL_KEY_PREF = 'tiletrigger.wheelKey';
 export const DEFAULT_WHEEL_KEY = 'KeyQ';
+/** Switches the held weapon's fire mode (spec §36). B is taken (quick messages, the order wheel), so U. */
+export const FIRE_MODE_KEY = 'KeyU';
 /** Keys the game already uses for something else (a wheel there would fight them). Q isn't here: a tap keeps its quick switch. */
 export const RESERVED_KEYS: ReadonlySet<string> = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma',
+  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma', 'KeyU',
   'Tab', 'Escape', 'Enter', 'F3', 'F5', 'F11', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'MetaLeft', 'MetaRight',
   ...Array.from({ length: 10 }, (_, i) => `Digit${i}`),
 ]);
@@ -142,6 +144,8 @@ export class InputState {
   private meleeDown = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
+  /** The fire mode key was pressed (sim/fireModes.ts). */
+  private fireModeQueued = false;
   /** Mouse wheel steps since last read (+ = next weapon). */
   private wheelSteps = 0;
   readonly onToggle = new Map<string, () => void>();
@@ -314,6 +318,8 @@ export class InputState {
         this.msgWheeled = false;
       } else this.msgMenu = !this.msgMenu;
     }
+    // U switches the held weapon's fire mode (B, the usual key, is the quick-message and order key here).
+    if (e.code === FIRE_MODE_KEY && !e.repeat) this.fireModeQueued = true;
     if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
     if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
     if ((e.code === 'KeyL' || e.code === 'Comma') && !e.repeat && this.classCount) {
@@ -606,6 +612,13 @@ export class InputState {
     const auto = (window as unknown as { __autoInput?: { up?: number } }).__autoInput;
     if (auto?.up) return auto.up;
     return (this.keys.has('KeyE') || this.pad.fire ? 1 : 0) - (this.keys.has('KeyQ') || this.keys.has('ControlLeft') || this.pad.zoom ? 1 : 0);
+  }
+
+  /** Consume a pending fire mode switch (U). */
+  takeFireModeSwitch(): boolean {
+    const s = this.fireModeQueued;
+    this.fireModeQueued = false;
+    return s;
   }
 
   /** Consume a pending number-key weapon request. */

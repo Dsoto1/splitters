@@ -1414,6 +1414,14 @@ Or:
 > Energy weapon primary = rapid plasma.  
 > Alternate = charged slow projectile.
 
+**Implementation note (2026-11-16): switchable modes.** A weapon lists its modes in `fireModes` (content/weapons; shared
+`sim/fireModes.ts` `firingOf`): the first is the weapon's own trigger, a later one overrides the fire interval, the
+burst (count, ticks between rounds) and the kick. The player switches with a key (U; B is the quick-message key) and
+the mode wanted travels in every input (`PlayerInput.fireMode`), so the host applies it and client prediction replays
+it like the rest of the input; bots choose by range (`bots/fireModePick.ts`). Every trigger reads through the same
+code, so weapons without a list keep theirs exactly. First user: the Battle Rifle's Single and 3-round Burst
+(docs/ARSENAL.md, "The Battle Rifle: fire modes").
+
 ---
 
 # 37. Damage Falloff

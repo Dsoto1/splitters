@@ -135,6 +135,11 @@ export class SessionAudio {
     this.audio.play('fire.knife', { gain: 0.6 });
   }
 
+  /** The selector clicked over to another fire mode: the magazine's metal click, quieter and higher (a small part). */
+  fireModeClick(): void {
+    this.audio.play('reload.start', { gain: 0.45, rate: 1.4 });
+  }
+
   /** The fire button is down with an empty magazine. */
   dryFire(now: number): void {
     if (now - this.dryFireAt < 300) return;

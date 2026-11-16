@@ -33,6 +33,21 @@
       <div id="headshot">HEADSHOT</div>
       <div id="vehicle-hp" hidden><span></span><i><b></b></i></div>
       <div id="vehicle-bars"></div>
+      <div id="optic" hidden>
+        <div class="lens">
+          <svg viewBox="-100 -100 200 200" aria-hidden="true">
+            <g class="duplex" stroke="#05080a" stroke-linecap="butt">
+              <line x1="-100" y1="0" x2="-30" y2="0" stroke-width="4" /><line x1="30" y1="0" x2="100" y2="0" stroke-width="4" />
+              <line x1="0" y1="30" x2="0" y2="100" stroke-width="4" /><line x1="0" y1="-100" x2="0" y2="-30" stroke-width="4" />
+              <line x1="-30" y1="0" x2="30" y2="0" stroke-width="0.6" /><line x1="0" y1="-30" x2="0" y2="30" stroke-width="0.6" />
+              <line x1="-4" y1="10" x2="4" y2="10" stroke-width="0.6" /><line x1="-3" y1="20" x2="3" y2="20" stroke-width="0.6" />
+            </g>
+            <path class="chevron" d="M -6 6 L 0 0 L 6 6" fill="none" stroke="#05080a" stroke-width="1.2" />
+            <circle r="0.9" fill="#c8302a" />
+          </svg>
+        </div>
+        <div id="optic-breath"><span>Shift: hold breath</span><i></i></div>
+      </div>
       <div id="scope" hidden>
         <svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
@@ -69,7 +84,7 @@
           <div class="vit-row st" id="stamina-row"><b id="stance"></b><div class="bar"><i id="stamina-bar"></i></div></div>
         </div>
       </div>
-      <div id="ammo"><span id="weapon-name"></span><div class="ammo-line"><b id="ammo-count"></b><span id="ammo-reserve"></span><span id="throwable"></span></div><small id="ammo-alt"></small></div>
+      <div id="ammo"><span id="weapon-name"></span><small id="fire-mode"></small><div class="ammo-line"><b id="ammo-count"></b><span id="ammo-reserve"></span><span id="throwable"></span></div><small id="ammo-alt"></small></div>
       <div id="target" hidden><span id="target-name"></span><div class="bar"><i id="target-bar"></i></div></div>
       <div id="weapon-bar"></div>
       <div id="powerups"></div>
