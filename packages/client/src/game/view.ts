@@ -594,6 +594,8 @@ export class GameView {
     installFlashHold();
     this.vfx = new GodotVfx(this.scene);
     this.steadyArcs = new SteadyArcs(this.scene);
+    // Effects on a gun's muzzle are placed once every gun is, just before the frame is drawn (followMuzzles).
+    this.scene.onBeforeRenderObservable.add(() => this.followMuzzles(performance.now()));
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
@@ -1232,10 +1234,10 @@ export class GameView {
     return { x: p.x, y: p.y, z: p.z };
   }
 
-  /** World position of a remote player's muzzle, or null when their gun isn't drawn. */
+  /** World position of a remote player's muzzle, or null when their gun isn't drawn (or not yet in their hands). */
   muzzleOf(slot: number): Vec3 | null {
     const m = this.avatars.get(slot)?.muzzle;
-    if (!m || m.node.isDisposed()) return null;
+    if (!m || m.node.isDisposed() || !m.node.isEnabled(false)) return null;
     m.node.computeWorldMatrix(true);
     const p = Vector3.TransformCoordinates(m.local, m.node.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
@@ -4075,12 +4077,15 @@ export class GameView {
     const mesh = createBeam(this.scene, color, width);
     const start = following(from, anchor);
     layBeam(mesh, start(), to);
+    if (anchor) {
+      const lay = () => (mesh.isDisposed() ? this.onMuzzle.delete(lay) : layBeam(mesh, start(), to));
+      this.onMuzzle.add(lay);
+    }
     this.effects.push({
       mesh,
       born: performance.now(),
       ttl: ttlMs,
       update: (f) => {
-        if (anchor) layBeam(mesh, start(), to);
         mesh.scaling.x = mesh.scaling.z = 1 - f * 0.8;
       },
     });
@@ -4116,12 +4121,14 @@ export class GameView {
     const muzzle = from();
     place();
     this.lastRope = { from: { ...last }, muzzle: !!muzzle };
+    // On the muzzle as drawn this frame (followMuzzles).
+    const follow = () => (mesh.isDisposed() ? this.onMuzzle.delete(follow) : place());
+    this.onMuzzle.add(follow);
     this.effects.push({
       mesh,
       born: performance.now(),
       ttl: ttlMs,
       update: (f) => {
-        place();
         mesh.scaling.x = mesh.scaling.z = 1 - f * 0.6;
       },
     });
@@ -4223,13 +4230,18 @@ export class GameView {
     return { draws: counter?.current ?? 0, meshes: this.scene.getActiveMeshes().length, casters: this.atmosphere.casterCount, characters, effects: this.vfx.count + this.effects.length };
   }
 
+  /** Beams laid from a gun's muzzle again each frame (addBeam with an anchor); each goes with its mesh. */
+  private readonly onMuzzle = new Set<() => void>();
+
   /**
-   * Everything drawn on a gun's muzzle, placed where the guns are this frame: the steady beams (Reduce flashing) and
-   * other players' flashes. Run in `render`, after the camera, your first-person gun and the characters (their held
-   * guns) have all been placed (setCamera, updateViewmodel and updateAvatars): run with the effects' physics, in
-   * setCamera, it used the guns of the frame before, and a beam's start lagged a frame behind the muzzle.
+   * Everything drawn on a gun's muzzle, placed where the guns are this frame: beams (addBeam's, and the steady ones
+   * of Reduce flashing) and other players' flashes. Run just before the frame is drawn (the scene's before-render),
+   * once the camera, your first-person gun and the characters' held guns have all been placed: the characters put
+   * the gun in their hands after their animations, inside the scene's render. Run earlier (with the effects'
+   * physics, in setCamera) it used the guns of the frame before, and a beam's start lagged behind the muzzle.
    */
   private followMuzzles(now: number): void {
+    for (const lay of this.onMuzzle) lay();
     this.steadyArcs.update(now);
     for (const a of this.avatars.values()) {
       if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
@@ -4259,7 +4271,6 @@ export class GameView {
       });
       this.indoorFill.update(now);
     }
-    this.followMuzzles(now);
     this.effects = this.effects.filter((fx) => {
       const f = (now - fx.born) / fx.ttl;
       if (f >= 1) {
