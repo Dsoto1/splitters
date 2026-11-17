@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_a7xheex6bvttckhy",
-      "revision": 38,
-      "contentHash": "sha256:73d53b43dfed16e98dcb33183ce709038542ebd75b179eeeb9d2363aa1e1a505",
+      "versionId": "v_keg6cjzo7rr2czch",
+      "revision": 39,
+      "contentHash": "sha256:103d9878b750cfb3a6bcc12cb503d8a077e3fe116449cba5d7099c1ad6121eac",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T06:16:03.884Z"
+      "releasedAt": "2026-11-17T10:15:52.450Z"
     },
     "testOnly": true
   },
@@ -1280,6 +1280,99 @@
         "y": 14,
         "z": -2,
         "rotation": 2
+      },
+      {
+        "id": "tile_qf5nbc0x7t",
+        "tile": "core.tunnel_brick_to_concrete",
+        "x": 14,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_4sn4jrjgs7",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 15,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_npk33wlaes",
+        "tile": "core.tunnel_concrete_t",
+        "x": 16,
+        "y": 17,
+        "z": -1,
+        "rotation": 2,
+        "family": "cave"
+      },
+      {
+        "id": "tile_xluhy2mzhn",
+        "tile": "core.tunnel_cave_collapse",
+        "x": 16,
+        "y": 18,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_36a6pp72yx",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 17,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_mgsox7m7fe",
+        "tile": "core.tunnel_mine_to_brick",
+        "x": 18,
+        "y": 17,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ovjup4q7g9",
+        "tile": "core.tunnel_mine_to_road",
+        "x": 17,
+        "y": 15,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_x5ga364uv9",
+        "tile": "core.tunnel_concrete_end",
+        "x": 13,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_gxvtls3bnr",
+        "tile": "core.tunnel_concrete_end",
+        "x": 19,
+        "y": 17,
+        "z": -1,
+        "rotation": 1,
+        "family": "mine"
+      },
+      {
+        "id": "tile_3kn87861dv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 16,
+        "y": 15,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_r37trmpg0d",
+        "tile": "core.tunnel_concrete_end",
+        "x": 18,
+        "y": 15,
+        "z": -1,
+        "rotation": 1,
+        "family": "mine"
       }
     ]
   },
