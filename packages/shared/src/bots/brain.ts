@@ -642,6 +642,17 @@ export class BotBrain {
   /** Last tick perception ran (a steering tick may have run it before a full think). */
   private lastPerceiveTick = -1;
   private lastKnown: { pos: Vec3; tick: number } | null = null;
+  /** Whose spot `lastKnown` is (-1: nobody known, a squadmate's alert). */
+  private lastKnownSlot = -1;
+  /**
+   * Its target just died (docs/BOTS.md, "After a kill"): the moment it takes that in, a beat of its own (by its skill
+   * tier and its own draw, 0.2-1.2 s), so a crowd that shot one player down doesn't all turn, stop and crouch as one.
+   */
+  private afterKill: { slot: number; pos: Vec3; at: number } | null = null;
+  /** What it does once it has taken a kill in, when not off after another enemy: hold its own sector, or regroup on a teammate. */
+  private fallback: { kind: 'hold' | 'regroup'; until: number; pos: Vec3; yaw: number } | null = null;
+  /** Its own stream for after a kill (the other streams' choices stay as they were by seed). */
+  private readonly lossRng: () => number;
   /** A noise worth checking out. */
   private heard: { pos: Vec3; tick: number } | null = null;
   /** A gun close enough to fetch before going on (set while deciding). */
@@ -838,6 +849,7 @@ export class BotBrain {
     this.rng = createRng(seed * 7919 + slot);
     this.routeRng = createRng((seed * 104729 + slot * 7919 + 17) >>> 0);
     this.skillRng = createRng((seed * 15485863 + slot * 31337 + 101) >>> 0);
+    this.lossRng = createRng((seed * 1299709 + slot * 65537 + 211) >>> 0);
     this.aim = new AimModel(this.rng, difficulty, profile);
     this.clearCheck = () => this.clearShot();
     this.choice = { me: { x: 0, y: 0, z: 0 }, goal: null, profile, hurt: false, lowAmmo: false, cover: false, retreating: false, pickup: -Infinity, post: -Infinity, lost: null, noise: null, posted: false };
@@ -872,6 +884,7 @@ export class BotBrain {
     if (this.targetSlot !== null) return;
     if (this.lastKnown && this.lastKnown.tick >= tick) return;
     this.lastKnown = { pos: { ...pos }, tick };
+    this.lastKnownSlot = -1;
   }
 
   /** Reset per-life memory when the bot respawns. */
@@ -890,6 +903,9 @@ export class BotBrain {
     this.confirmed.clear();
     this.unchecked.clear();
     this.lastKnown = null;
+    this.lastKnownSlot = -1;
+    this.afterKill = null;
+    this.fallback = null;
     this.heard = null;
     this.unreachable = null;
     this.noPath = null;
@@ -1004,6 +1020,12 @@ export class BotBrain {
       this.enemies.note(-1, this.threatFrom, view.tick, 'shot');
     }
 
+    // Its target has just died (the living enemies are all `others` holds): it takes that in after a beat of its own
+    // (After a kill), not on the tick they fell.
+    if (this.targetSlot !== null && !this.afterKill) {
+      const gone = this.targetSlot;
+      if (!view.others.some((o) => o.slot === gone && o.alive)) this.targetDied(view, gone);
+    }
     const interval = this.difficulty.perceptionIntervalTicks;
     if ((view.tick + this.slot) % interval === 0 && this.lastPerceiveTick !== view.tick) this.perceive(view);
 
@@ -1055,12 +1077,113 @@ export class BotBrain {
       this.mountPlan = null;
     }
 
-    if ((view.tick + this.slot) % DECIDE_TICKS === 0) this.decide(view, target);
+    // (Someone else to fight cuts the beat short.)
+    const ak = this.afterKill;
+    if (ak && (target || view.tick >= ak.at)) this.takeKillIn(view, target);
+    if (!this.afterKill && (view.tick + this.slot) % DECIDE_TICKS === 0) this.decide(view, target);
     // Whatever the last decision was, it needs what it was about.
     if ((this.state === 'chase' && !this.lastKnown) || (this.state === 'investigate' && !this.heard) || (this.state === 'hold' && !view.orderGoal) || this.state === 'dead' || this.state === 'mounted') this.state = 'advance';
     if (this.state === 'mount' && !this.mountPlan) this.state = 'advance';
 
     return this.act(view, seq, target, ctx);
+  }
+
+  /** Its target has died: when it will take that in (After a kill). Until then it carries on as it was. */
+  private targetDied(view: BotWorldView, slot: number): void {
+    const lk = this.lastKnown;
+    const pos = lk && this.lastKnownSlot === slot ? lk.pos : view.self.pos;
+    // A beat by its tier's reactions (hard 0.2-0.9 s, normal about 0.3-1.0, easy 0.5-1.2) and its own draw.
+    const base = 0.2 + clamp((this.difficulty.reactionMs - 220) / 430, 0, 1) * 0.3;
+    this.afterKill = { slot, pos: { ...pos }, at: view.tick + Math.round(TICK_RATE * (base + this.lossRng() * 0.7)) };
+  }
+
+  /**
+   * Its target died a beat ago: it lets them go (their spot, the shots they fired: no chasing or holding a dead player's
+   * spot), and, with nobody else in its sights, picks what to do by its personality and its own draw: after another
+   * enemy it knows of (the freshest, its memory and teammates' callouts), else push on with its goal, search on past
+   * where they fell, regroup on a teammate, or hold, watching a sector of its own.
+   */
+  private takeKillIn(view: BotWorldView, target: CombatantView | undefined): void {
+    const ak = this.afterKill!;
+    this.afterKill = null;
+    const me = view.self;
+    const tick = view.tick;
+    this.enemies.forget(ak.slot);
+    this.enemies.forgetNear(ak.pos, 6);
+    if (this.lastKnownSlot === ak.slot) this.lastKnown = null;
+    if (this.threatFrom && horizontalDistance(this.threatFrom, ak.pos) < 6) {
+      this.threatFrom = null;
+      this.underFireTick = -Infinity;
+    }
+    if (target) return;
+    const underFire = tick - this.underFireTick < TICK_RATE * 1.5;
+    if (!underFire) this.cover = null;
+    if (this.state === 'engage' || this.state === 'cover') this.state = 'advance';
+    this.fallback = null;
+    if (underFire || view.orderGoal?.run || this.post) return;
+    // Someone else it knows of: after them.
+    const next = this.enemies.best(me.pos, tick, this.memoryTicks, 80);
+    if (next) {
+      this.heard = { pos: { ...next.pos }, tick };
+      this.state = 'investigate';
+      return;
+    }
+    const p = this.profile;
+    const ally = this.regroupAlly(view);
+    const w0 = 0.25 + p.aggression / 100;
+    const w1 = 0.15 + (p.pursuitPersistence / 100) * 0.8;
+    const w2 = ally ? 0.1 + (p.teamLoyalty / 100) * 0.8 : 0;
+    const w3 = 0.15 + this.tactical;
+    let r = this.lossRng() * (w0 + w1 + w2 + w3);
+    if ((r -= w0) < 0) return; // Push on: its goal (the scored choices) at the next decision.
+    if ((r -= w1) < 0) {
+      // Search on, past where they fell (their side may be there).
+      const dx = ak.pos.x - me.pos.x;
+      const dz = ak.pos.z - me.pos.z;
+      const d = Math.hypot(dx, dz) || 1;
+      const on = 6 + this.lossRng() * 10;
+      const a = (this.lossRng() - 0.5) * 1.2;
+      const ux = dx / d;
+      const uz = dz / d;
+      const sx = ux * Math.cos(a) + uz * Math.sin(a);
+      const sz = uz * Math.cos(a) - ux * Math.sin(a);
+      const p2 = view.nav.closestPoint({ x: ak.pos.x + sx * on, y: ak.pos.y + 0.5, z: ak.pos.z + sz * on }, { x: 3, y: 3, z: 3 });
+      this.heard = { pos: p2 ? { ...p2 } : { ...ak.pos }, tick };
+      this.state = 'investigate';
+      return;
+    }
+    if ((r -= w2) < 0 && ally) {
+      this.fallback = { kind: 'regroup', until: tick + Math.round(TICK_RATE * (4 + this.lossRng() * 4)), pos: { ...ally.pos }, yaw: 0 };
+      return;
+    }
+    // Hold: a sector of its own, out from its teammates near by (else its own way, turned a little).
+    let cx = 0;
+    let cz = 0;
+    let n = 0;
+    for (const a of view.allies ?? []) {
+      if (a.slot === me.slot || !a.alive || horizontalDistance(a.pos, me.pos) > 20) continue;
+      cx += a.pos.x;
+      cz += a.pos.z;
+      n++;
+    }
+    const out = n > 0 && Math.hypot(me.pos.x - cx / n, me.pos.z - cz / n) > 1 ? Math.atan2(me.pos.x - cx / n, me.pos.z - cz / n) : this.yaw + (this.lossRng() - 0.5) * Math.PI;
+    const yaw = out + (this.lossRng() - 0.5) * 1.2;
+    this.fallback = { kind: 'hold', until: tick + Math.round(TICK_RATE * (1.5 + this.lossRng() * 2.5)), pos: { ...me.pos }, yaw };
+  }
+
+  /** The nearest teammate a little way off (8-45 m) to regroup on after a kill, if any. */
+  private regroupAlly(view: BotWorldView): CombatantView | null {
+    let best: CombatantView | null = null;
+    let bd = Infinity;
+    for (const a of view.allies ?? []) {
+      if (a.slot === view.self.slot || !a.alive) continue;
+      const d = horizontalDistance(a.pos, view.self.pos);
+      if (d >= 8 && d <= 45 && d < bd) {
+        bd = d;
+        best = a;
+      }
+    }
+    return best;
   }
 
   private aimContext(view: SteerView): AimContext {
@@ -1472,7 +1595,14 @@ export class BotBrain {
     } else if (target) {
       this.state = this.cover ? 'cover' : 'engage';
       this.option = OPT_FIGHT;
-    } else this.choose(view, hurt, underFire);
+      this.fallback = null;
+    } else if (this.fallback && tick < this.fallback.until && !underFire) {
+      // After a kill: holding its own sector, or regrouping on a teammate, for a while (act).
+      this.state = 'advance';
+    } else {
+      this.fallback = null;
+      this.choose(view, hurt, underFire);
+    }
 
     // Cover-to-cover advance (Phase B item 6): on the way to an objective, in a fight at range, by style.
     this.bound = this.boundPhase(view, target, goal);
@@ -1758,8 +1888,9 @@ export class BotBrain {
               lookDone = true;
               break;
             }
-          } else if (!this.cover && this.strafing && tick - this.lastTargetTick < TICK_RATE * 0.6) {
-            // Out of sight for a moment mid-fight: carry on with the strafe rather than freezing.
+          } else if (!this.cover && this.strafing && (tick - this.lastTargetTick < TICK_RATE * 0.6 || this.afterKill)) {
+            // Out of sight for a moment mid-fight (or its target just fell, and it hasn't taken that in yet): carry on
+            // with the strafe rather than freezing.
             strafe = true;
           }
           if (this.cover && threat) {
@@ -2042,6 +2173,25 @@ export class BotBrain {
       case 'advance':
       case 'roam':
       default: {
+        // After a kill (takeKillIn): hold its own sector a while, or regroup on a teammate.
+        const fb = this.fallback;
+        if (fb && tick >= fb.until) this.fallback = null;
+        else if (fb?.kind === 'hold') {
+          const r = this.keepWatch(view, { pos: fb.pos, radius: 2.5, watch: { x: fb.pos.x + Math.sin(fb.yaw) * 20, y: fb.pos.y, z: fb.pos.z + Math.cos(fb.yaw) * 20 } });
+          moveYaw = r.moveYaw;
+          moveScale = r.moveScale;
+          stance = r.stance;
+          lookDone = true;
+          doing = 'station';
+          break;
+        } else if (fb?.kind === 'regroup') {
+          moveYaw = horizontalDistance(me.pos, fb.pos) > 5 ? this.followPathTo(view, fb.pos, false) : null;
+          if (moveYaw !== null) {
+            doing = 'regroup';
+            break;
+          }
+          this.fallback = null;
+        }
         // Camper and sniper roles: a vantage spot to hold.
         if (this.post) {
           const r = this.actPost(view);
@@ -2886,6 +3036,9 @@ export class BotBrain {
         }
         if (!alive) mem.forget(e.slot);
       }
+      // Lost sight of someone who has died since (someone else's kill): nothing there to go after.
+      const lk = this.lastKnownSlot;
+      if (this.lastKnown && lk >= 0 && !this.afterKill && !view.others.some((o) => o.slot === lk && o.alive)) this.lastKnown = null;
     }
     const board = view.plan?.callouts;
     if (board) {
@@ -3968,6 +4121,7 @@ export class BotBrain {
       this.targetSlot = best.o.slot;
       const t = best.o;
       this.lastKnown = { pos: { ...t.pos }, tick };
+      this.lastKnownSlot = t.slot;
       // A callout: teammates hear where it is (memory.ts CalloutBoard; once every 2 s per enemy at most).
       view.plan?.callouts?.post(this.slot, t.slot, t.pos, tick);
     } else {
