@@ -229,7 +229,7 @@ function nearestOnTriangle(p, a, b, c) {
   return add(a, add(scale(ab, vb * den), scale(ac, vc * den)));
 }
 /** How far past a triangle's edges a projected corner may read the map (barycentric): a little, never into the next chart. */
-const UV_REACH = 0.15;
+const UV_REACH = 0;
 /** A point's texture coordinate on an old triangle: projected onto its plane, barycentric, held within UV_REACH of it. */
 function uvOnTriangle(p, o) {
   const e1 = sub(o.b, o.a), e2 = sub(o.c, o.a), r = sub(p, o.a);
