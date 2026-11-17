@@ -5433,6 +5433,9 @@ async function mobileFlow(browser) {
   check(display.includes('low') && display.includes('performance'), `a phone starts on Low graphics and the Performance render scale (${display.join(', ')})`);
   await page.tap('.opt-nav button[data-tab="controls"]');
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
+  // The touch layout (docs/MOBILE_AUDIT.md, proposal 3): size, opacity, left-handed and Aim, which a phone toggles by default.
+  const touchOpts = await page.evaluate(() => ({ size: document.getElementById('opt-touch-size')?.value, opacity: document.getElementById('opt-touch-opacity')?.value, left: document.getElementById('opt-touch-left')?.checked, aim: document.getElementById('opt-touch-aim')?.value }));
+  check(touchOpts.size === 'medium' && touchOpts.opacity === '1' && touchOpts.left === false && touchOpts.aim === 'toggle', `Options → Controls → Touch: button size, opacity, left-handed and Aim (Toggle on a phone) (${JSON.stringify(touchOpts)})`);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
   await mobileCharacterSelect(page);
 
@@ -5473,6 +5476,17 @@ async function mobileFlow(browser) {
   const fire = await centre('#touch-ui .tc-fire');
   before = await state();
   check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
+  // Aim (Toggle, a phone's default): a tap aims and the next tap stops; the button lights while aiming.
+  const aim = await centre('#touch-ui .tc-aim');
+  const tapAt = async (p, id) => {
+    await touch('touchStart', [{ x: p.x, y: p.y, id }]);
+    await touch('touchEnd', []);
+  };
+  await tapAt(aim, 30);
+  const aimOn = await page.waitForFunction(() => window.__cs.input.zooming && document.querySelector('#touch-ui .tc-aim').classList.contains('on'), null, { timeout: T(5000) }).then(() => true, () => false);
+  await tapAt(aim, 31);
+  const aimOff = await page.waitForFunction(() => !window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(aimOn && aimOff, `Aim (Toggle): a tap aims (lit), another stops (on ${aimOn}, off ${aimOff})`);
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
   // page handles the lift late), so the tap says when it happened: 80 ms apart. A jump is taken only on the ground:
   // tap once you stand on it (the walk above can still be carrying you).
@@ -5553,7 +5567,170 @@ async function mobileFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await ctx.close();
+  await mobileTouchLayout(browser);
+  await mobileMenus(browser);
   await mobileLamps(browser);
+}
+
+/** The phone sizes the menus are checked at (docs/MOBILE_AUDIT.md, proposals 2 and 4): upright and sideways. */
+const PHONE_SIZES = [[360, 780, 'small phone'], [412, 915, 'Pixel-like'], [384, 832, 'S25+-like']];
+
+/**
+ * The touch layout in a match (docs/MOBILE_AUDIT.md, proposal 3; game/touchLayout.ts): Large, half opacity,
+ * left-handed: the pad on the right, the buttons on the left and bigger, drawn at half strength; the ammo panel
+ * clear of every button; Aim set to Hold aims only while the finger is down.
+ */
+async function mobileTouchLayout(browser) {
+  const phone = devices['Pixel 7'];
+  const ctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
+  await ctx.addInitScript(() => {
+    localStorage.setItem('tiletrigger.touchLayout', JSON.stringify({ size: 'large', opacity: 0.5, leftHanded: true }));
+    localStorage.setItem('tiletrigger.combat', JSON.stringify({ aim: 'hold' }));
+  });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const cdp = await ctx.newCDPSession(page);
+  const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  await page.tap('#resume');
+  await page.waitForFunction(() => !document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).catch(() => {});
+  const lay = await page.evaluate(() => {
+    const r = (sel) => document.querySelector(sel).getBoundingClientRect();
+    const pad = r('#touch-ui .tc-pad');
+    const fire = r('#touch-ui .tc-fire');
+    const look = r('#touch-ui .tc-look');
+    return { w: innerWidth, padL: pad.left, padW: pad.width, fireR: fire.right, fireW: fire.width, lookR: look.right, opacity: getComputedStyle(document.querySelector('#touch-ui .tc-fire')).opacity, left: document.documentElement.classList.contains('tc-left') };
+  });
+  check(lay.left && lay.padL > lay.w / 2 && lay.fireR < lay.w / 2 && lay.lookR <= lay.w / 2 + 1 && lay.fireW > 92 * 1.15 && Number(lay.opacity) === 0.5, `left-handed, Large, 50 %: the pad on the right, Fire on the left and bigger, look on the left half, drawn at half strength (${JSON.stringify(lay)})`);
+  for (const [w, h, label] of [[915, 412, 'Pixel 7'], [832, 384, 'S25+ 832x384'], [658, 320, 'S9+ 658x320']]) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.waitForFunction(([w, h]) => innerWidth === w && innerHeight === h, [w, h], { timeout: T(5000) }).catch(() => {});
+    // (The layout follows the window on its resize event: two frames on.)
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const box = await touchHudBoxes(page);
+    const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
+    // The round buttons as circles (their boxes' corners may cross).
+    const round = (b) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2, r: (b.r - b.l) / 2 });
+    const touching = (a, b) => Math.hypot(round(a).x - round(b).x, round(a).y - round(b).y) < round(a).r + round(b).r - 2;
+    const clash = box.buttons.filter((a, i) => box.buttons.some((b, j) => j > i && touching(a, b))).map((b) => b.name);
+    const top = Math.min(...box.buttons.filter((b) => b.name !== 'II').map((b) => b.t));
+    check(!!box.ammo && hit.length === 0 && clash.length === 0 && top >= 60, `${label} left-handed Large: the ammo panel over no button, no two buttons overlap, the cluster below the top bar (ammo hit ${hit.join(', ') || 'none'}, overlaps ${clash.join(', ') || 'none'}, cluster top ${Math.round(top)})`);
+    await page.screenshot({ path: `${ARTIFACTS}/mobile-left-large-${w}x${h}.png` });
+  }
+  // Aim set to Hold: aiming while the finger is down, not after.
+  const a = await page.locator('#touch-ui .tc-aim').boundingBox();
+  await touch('touchStart', [{ x: a.x + a.width / 2, y: a.y + a.height / 2, id: 50 }]);
+  const held = await page.waitForFunction(() => window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  await touch('touchEnd', []);
+  const released = await page.waitForFunction(() => !window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(held && released, `Aim set to Hold: the Aim button aims while held and stops on release (held ${held}, released ${released})`);
+  check(errors.length === 0, `touch layout: no page errors (${errors.join('; ')})`);
+  await ctx.close();
+}
+
+/**
+ * The menus on phones upright and sideways (docs/MOBILE_AUDIT.md, proposals 2 and 4): Quick Play's Pick a map opens
+ * Match Setup's full-screen map picker (on a narrow screen), a card picks the map and closes it; Character Select keeps
+ * the grid tall with the details as a sheet a tap pulls up, a search and Favourites only; nothing spills sideways.
+ */
+async function mobileMenus(browser) {
+  const phone = devices['Pixel 7'];
+  for (const [pw, ph, name] of PHONE_SIZES) {
+    for (const [w, h] of [[pw, ph], [ph, pw]]) {
+      const label = `${name} ${w}x${h}`;
+      const ctx = await browser.newContext({ ...phone, viewport: { width: w, height: h }, screen: { width: w, height: h } });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('pageerror', (e) => errors.push(e.message));
+      await page.goto(`${CLIENT}/?test=1`);
+      await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+      const wide = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+      // Every main menu button can be tapped (none under the news bar or the featured map).
+      const covered = await page.evaluate(() => [...document.querySelectorAll('.nav button')].filter((b) => {
+        const r = b.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !top || !b.contains(top);
+      }).map((b) => b.textContent));
+      check(covered.length === 0, `${label}: every main menu button is clear to tap (${covered.join(', ') || 'all clear'})`);
+      // Quick Play → Pick a map.
+      await page.tap('#nav-quick');
+      await page.waitForSelector('#qp-pick', { timeout: T(5000) });
+      const qp = await page.evaluate(() => {
+        const p = document.getElementById('quick-play').getBoundingClientRect();
+        return { inside: p.left >= 0 && p.right <= innerWidth + 1 && p.top >= 0 && p.bottom <= innerHeight + 1, cards: document.querySelectorAll('#quick-play .qp-mode').length };
+      });
+      check(qp.inside && qp.cards === 3, `${label}: Quick Play shows TDM, DM and Pick a map, inside the screen (${JSON.stringify(qp)})`);
+      await page.tap('#qp-pick');
+      await page.waitForSelector('#match-setup', { timeout: T(10000) });
+      const narrow = w <= 900;
+      if (narrow) {
+        await page.waitForFunction(() => document.querySelector('.screen.play.picking') && document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
+        const pick = await page.evaluate(() => {
+          const b = document.getElementById('map-browse').getBoundingClientRect();
+          const cards = [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.getBoundingClientRect());
+          const cols = cards.filter((r) => Math.abs(r.top - cards[0].top) < 2).length;
+          return { full: b.left <= 1 && b.top <= 1 && b.right >= innerWidth - 1 && b.bottom >= innerHeight - 1, cols, cardW: Math.round(cards[0]?.width ?? 0), spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, rowsSeen: cards.filter((r) => r.top < innerHeight).length };
+        });
+        check(pick.full && pick.cols >= 2 && !pick.spill && pick.rowsSeen > pick.cols, `${label}: Pick a map opens the map picker full screen, two or more cards a row, more than a row in view, nothing spilling (${JSON.stringify(pick)})`);
+        const other = await page.$$eval('#map-cards .map-card:not(.on)', (cs) => cs[0]?.dataset.map);
+        await page.tap(`#map-cards .map-card[data-map="${other}"]`);
+        const picked = await page.waitForFunction((k) => !document.querySelector('.screen.play.picking') && document.getElementById('arcade-map')?.value === k, other, { timeout: T(10000) }).then(() => true, () => false);
+        const button = await page.evaluate(() => ({ shown: !!document.getElementById('arcade-map-pick')?.offsetParent, text: document.querySelector('#arcade-map-pick b')?.textContent }));
+        check(picked && button.shown && !!button.text, `${label}: a card picks the map and closes the picker; the setup's map button names it (${other}, ${JSON.stringify(button)})`);
+        await page.tap('#arcade-map-pick');
+        const reopened = await page.waitForFunction(() => !!document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
+        await page.tap('#map-pick-close');
+        const closed = await page.waitForFunction(() => !document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
+        check(reopened && closed, `${label}: the map button opens the picker again and Close shuts it (${reopened}, ${closed})`);
+      } else {
+        check(await page.isVisible('#map-cards .map-card'), `${label}: Pick a map opens Match Setup with the map cards beside it`);
+      }
+      check(await wide(), `${label}: Match Setup doesn't spill sideways`);
+      // Character Select.
+      await page.goto(`${CLIENT}/?test=1`);
+      await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+      await page.tap('#nav-characters');
+      await page.waitForFunction(() => document.querySelectorAll('.char-grid .char-tile[data-look]').length > 6, null, { timeout: T(15000) }).catch(() => {});
+      const down = await page.evaluate(() => {
+        const g = document.querySelector('.char-grid').getBoundingClientRect();
+        const i = document.querySelector('.char-info').getBoundingClientRect();
+        const t = document.querySelector('.char-grid .char-tile').getBoundingClientRect();
+        const arrow = document.querySelector('.bumper-btn .bumper-arrow');
+        const kbd = document.querySelector('.bumper-btn kbd');
+        return { grid: Math.round(g.height), tile: Math.round(t.height), info: Math.round(i.height), infoBottom: Math.round(i.bottom), gridBottom: Math.round(g.bottom), infoTop: Math.round(i.top), arrows: !!arrow?.offsetParent && (!kbd || !kbd.offsetParent), choose: !!document.getElementById('char-choose')?.offsetParent };
+      });
+      check(down.info <= 66 && down.infoBottom <= h && down.gridBottom <= down.infoTop + 1 && down.grid >= down.tile * 1.6 && down.arrows && down.choose, `${label}: Character Select's grid takes the height over a short strip (name, Choose), arrows instead of key caps (${JSON.stringify(down)})`);
+      const tiles = await page.$$eval('.char-grid .char-tile[data-look]', (ts) => ts.map((t) => t.dataset.look));
+      await page.tap(`.char-tile[data-look="${tiles[2]}"]`);
+      const up = await page.waitForFunction(() => document.querySelector('.char-info.sheet-open')?.getBoundingClientRect().height > 100, null, { timeout: T(5000) }).then(() => page.evaluate(() => {
+        const i = document.querySelector('.char-info').getBoundingClientRect();
+        const c = document.getElementById('char-choose').getBoundingClientRect();
+        return { top: Math.round(i.top), bottom: Math.round(i.bottom), stats: !!document.querySelector('.char-info .char-stats')?.offsetParent, choose: c.bottom <= innerHeight && c.top >= 0 || document.querySelector('.char-info').scrollHeight > document.querySelector('.char-info').clientHeight, shown: window.__front.scene.look };
+      }), () => null);
+      check(!!up && up.top >= 0 && up.bottom <= h && up.stats && up.choose && up.shown === tiles[2], `${label}: a tap on a portrait shows them and pulls the details sheet up (stats, Choose) inside the screen (${JSON.stringify(up)})`);
+      await page.tap('#char-sheet-toggle');
+      const lowered = await page.waitForFunction(() => !document.querySelector(".char-info.sheet-open"), null, { timeout: T(5000) }).then(() => true, () => false);
+      check(lowered, `${label}: the handle lets the sheet down`);
+      // Favourites: the star keeps one; Favourites only shows just it. Search: no match says so.
+      // (A click on the star itself: tapping scrolls it under the section's sticky header.)
+      await page.locator(`.char-tile[data-look="${tiles[4]}"] .char-fav`).dispatchEvent('click');
+      await page.tap('#char-favs-only');
+      const favs = await page.evaluate(() => [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => t.offsetParent).map((t) => t.dataset.look));
+      check(favs.length === 1 && favs[0] === tiles[4], `${label}: a portrait's star keeps a favourite, and Favourites only lists just it (${favs.join(', ')})`);
+      await page.tap('#char-favs-only');
+      await page.fill('#char-search', 'zzzz');
+      const none = await page.evaluate(() => ({ shown: [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => t.offsetParent).length, empty: document.querySelector('.char-empty')?.offsetParent ? document.querySelector('.char-empty').textContent : '' }));
+      await page.fill('#char-search', '');
+      const all = await page.evaluate(() => [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => !t.hidden).length);
+      check(none.shown === 0 && /No characters match/.test(none.empty) && all === tiles.length, `${label}: the search hides who doesn't match and says so, and clearing it brings everyone back (${JSON.stringify(none)}, ${all} of ${tiles.length})`);
+      check(await wide(), `${label}: Character Select doesn't spill sideways`);
+      await page.screenshot({ path: `${ARTIFACTS}/mobile-chars-${w}x${h}.png` });
+      check(errors.length === 0, `${label}: menus without page errors (${errors.join('; ')})`);
+      await ctx.close();
+    }
+  }
 }
 
 /** Boxes of the touch HUD's parts on the page (null: not shown). */
@@ -10750,14 +10927,15 @@ async function newplayerFlow(browser) {
   // Quick Play: two clicks into a Deathmatch against bots, on a map of its list, the map's recommended players.
   await page.click('#nav-quick');
   await page.waitForSelector('#quick-play');
-  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode));
+  // (The modes' cards, then Pick a map: docs/MOBILE_AUDIT.md, proposal 2.)
+  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode ?? b.id));
   await page.click('#qp-dm');
   const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
   const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
   const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
   const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
   check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
-  check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
+  check(choice.join() === 'core.tdm,core.deathmatch,qp-pick' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
   await page.click('#nav-quick');

@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -195,6 +195,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(typeof f?.share === 'number' && f.share > 0 && f.share <= 0.2, 'fixes.face.share: 0–0.2 (the share of the triangle budget the face keeps, out of the head\'s)');
     need(x.surface === 'rebake', "fixes.face: with surface 'rebake' only");
   }
+  // Closed shapes inside an unrigged download where its surface is open (plugs.mjs).
+  if (x.plugs !== undefined) {
+    const p = x.plugs;
+    need(p && typeof p === 'object' && Array.isArray(p.at) && p.at.length > 0 && p.at.length <= 8 && p.at.every((q) => Array.isArray(q) && q.length === 4 && q.every((v) => typeof v === 'number' && Math.abs(v) <= 1.2) && q[3] > 0 && q[3] <= 0.2), 'fixes.plugs.at: [[x, y, z, reach], …] (1–8; shares of the download\'s height in its own pose, the landmarks frame; reach 0–0.2)');
+    need(p?.shrink === undefined || (typeof p.shrink === 'number' && p.shrink > 0.3 && p.shrink <= 1), 'fixes.plugs.shrink: 0.3–1 (each radius against the points\' spread; 0.85 unless set)');
+  }
   need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
@@ -213,7 +219,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // This look's own hands and arms on a gun (GripTune in packages/shared/src/content/looks.ts).
     const g = x.grip;
     const NUM = { elbowOut: 0.4, elbowDown: 0.4, curlR: 1.6, curlL: 1.6, rollR: 1.6, rollL: 1.6 };
-    const PTS = ['supportPistol', 'supportLong', 'gripLong'];
+    const PTS = ['supportPistol', 'supportLong', 'gripLong', 'gripPistol'];
     need(g && typeof g === 'object' && Object.keys(g).every((k) => k in NUM || PTS.includes(k)), `fixes.grip: { ${[...Object.keys(NUM), ...PTS].join(', ')} }`);
     for (const k of ['elbowOut', 'elbowDown']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: metres (−${NUM[k]}–${NUM[k]})`);
     for (const k of ['rollR', 'rollL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: radians (−${NUM[k]}–${NUM[k]})`);
@@ -224,7 +230,9 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'graft', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together, graft; or l / r for one side)`);
+    // New hand geometry (handgraft.mjs): both hands, or one.
+    need(h?.graft === undefined || h.graft === true || h.graft === 'l' || h.graft === 'r', "fixes.hands.graft: true (both hands get new geometry: the rig's own hand, fitted) or 'l' / 'r'");
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');
@@ -415,6 +423,7 @@ export function buildSpec(m) {
     skin: x.skin,
     handsShare: x.handsShare,
     headShare: x.headShare,
+    plugs: x.plugs,
     face: x.face,
     lod: x.lod,
     normalSize: x.normalSize,

@@ -518,19 +518,22 @@ function mesh(lo, n, s, list, colours, assign) {
  * `box`: every cell solid (a picture box: the bounds, their faces in the model's colours). Returns the Mesh, with
  * `bake` = { cells, colours, box? }.
  */
-export function bakeFarLook(m, { cells = 8, maxTriangles = 120, cover = 0.3, minCells = 3, colours = 10, box = false, tall = 1 } = {}) {
+export function bakeFarLook(m, { cells = 8, maxTriangles = 120, cover = 0.3, minCells = 3, colours = 10, box = false, tall = 1, k: only = 0 } = {}) {
   const [lo, hi] = meshBounds(m);
   const tg = rayTarget(m);
   let last = null;
   for (let c = cells; c >= minCells; c--) {
     const { n, s } = grid(lo, hi, c, tall);
     const list = faces(m, tg, lo, hi, n, s, cover, box);
+    // Nothing solid at this grid (a court's lines, a thin panel under the cover): no bake here.
+    if (!list.length) continue;
     const ws = list.map(() => 1);
     // At least four colours (fewer washed a shop shelf's goods out to its frame's grey): over the cap, fewer cells.
-    for (let k = colours; k >= 4; k = k > 6 ? k - 2 : k - 1) {
+    // `only`: the palette size a kept plan found (no search).
+    for (let k = only || colours; k >= 4; k = only ? 0 : k > 6 ? k - 2 : k - 1) {
       const { colours: pal, assign } = palette(list.map((f) => f.colour), ws, Math.min(k, list.length));
       const out = mesh(lo, n, s, list, pal, assign);
-      out.bake = { cells: c, colours: pal.length, ...(box ? { box: true } : {}), ...(tall > 1 ? { tall } : {}) };
+      out.bake = { cells: c, colours: pal.length, k, ...(box ? { box: true } : {}), ...(tall > 1 ? { tall } : {}) };
       out.parts = list.parts;
       last = out;
       if (out.triangles <= maxTriangles) return out;
@@ -548,7 +551,7 @@ export function bakeFarLook(m, { cells = 8, maxTriangles = 120, cover = 0.3, min
  * `reach` m in front of it. Corners where level 0 shows nothing keep their own colour. Kept within `maxTriangles` by a
  * coarser grid. Returns a new Mesh (with `bake` = { cell }).
  */
-export function recolourLevel(level, m, { cell = 0.12, maxTriangles = 400, reach = 0.3, tolerance = 0.1 } = {}) {
+export function recolourLevel(level, m, { cell = 0.12, maxTriangles = 400, reach = 0.3, tolerance = 0.1, tries: fixed = null } = {}) {
   const tg = rayTarget(m);
   const P = level.P;
   const at = (i) => [P[i * 3], P[i * 3 + 1], P[i * 3 + 2]];
@@ -671,15 +674,26 @@ export function recolourLevel(level, m, { cell = 0.12, maxTriangles = 400, reach
     }
     return out;
   };
+  // `fixed`: the steps a kept plan found (-1: corners only), made once.
+  if (fixed !== null) {
+    const size = fixed < 0 ? Infinity : cell * 1.35 ** fixed;
+    const out = emit(size);
+    out.bake = { cell: Math.round(size * 1000) / 1000, tries: fixed };
+    return out;
+  }
   let size = cell;
+  let tries = 0;
   let out = emit(size);
-  for (let tries = 0; out.triangles > maxTriangles && tries < 12; tries++) {
+  for (; out.triangles > maxTriangles && tries < 12; tries++) {
     size *= 1.35;
     out = emit(size);
   }
   // Still over (more quads than the budget allows divided at all): the level with its corners recoloured only.
-  if (out.triangles > maxTriangles) out = emit(Infinity);
-  out.bake = { cell: Math.round(size * 1000) / 1000 };
+  if (out.triangles > maxTriangles) {
+    out = emit(Infinity);
+    tries = -1;
+  }
+  out.bake = { cell: Math.round(size * 1000) / 1000, tries };
   return out;
 }
 
@@ -764,7 +778,7 @@ export function bakeLevel(m, own, { maxTriangles, px = 40, cells = [10, 8, 6, 4]
   const re = recolourLevel(own, m, { maxTriangles });
   if (re.triangles <= maxTriangles) candidates.push({ mesh: re, how: 'recoloured' });
   // A coarse bake must not break the model into more pieces than it has (a round table's stem lost, its top afloat).
-  const pieces = cells.length ? bakeFarLook(m, { cells: 16, minCells: 16, maxTriangles: Infinity }).parts : 0;
+  const pieces = cells.length ? (bakeFarLook(m, { cells: 16, minCells: 16, maxTriangles: Infinity })?.parts ?? 0) : 0;
   for (const c of cells)
     for (const tall of talls)
       for (const box of [false, true]) {
@@ -806,9 +820,12 @@ export function farKey(full, own, cap) {
 
 function make(full, own, cap, plan) {
   if (plan.how === 'own') return own;
-  if (plan.how === 'recoloured') return recolourLevel(own, full, { maxTriangles: cap });
-  return bakeFarLook(full, { cells: plan.cells, minCells: plan.cells, tall: plan.tall ?? 1, box: plan.how === 'picture box', maxTriangles: cap });
+  if (plan.how === 'recoloured') return recolourLevel(own, full, { maxTriangles: cap, ...(plan.tries !== undefined ? { tries: plan.tries } : {}) });
+  return bakeFarLook(full, { cells: plan.cells, minCells: plan.cells, tall: plan.tall ?? 1, box: plan.how === 'picture box', maxTriangles: cap, ...(plan.k ? { k: plan.k } : {}) });
 }
+
+/** What a made level needs to be made again without searching: the recolouring's steps, the palette's size. */
+const exact = (mesh, how) => (how === 'recoloured' ? { tries: mesh.bake.tries } : how === 'own' ? {} : { k: mesh.bake.k });
 
 /**
  * Level `level` of a kit prop, baked from level 0 (`full`) where that looks more like it than the generator's own
@@ -821,10 +838,11 @@ export function farLevel(full, own, level, kept = null, before = full.triangles)
   const key = farKey(full, own, cap);
   if (kept?.key === key) {
     const mesh = make(full, own, cap, kept);
-    if (mesh.triangles <= cap) return { mesh, plan: kept };
+    if (mesh.triangles <= cap) return { mesh, plan: { ...kept, ...exact(mesh, kept.how) } };
   }
   // Level 1 (from 20 m) keeps the generator's outline, recoloured or not: a cell bake is too coarse that near.
   const r = bakeLevel(full, own, { maxTriangles: cap, px: farPx(level), ...(level <= 1 ? { cells: [] } : {}) });
   const plan = { key, how: r.how, ...(r.mesh.bake?.cells ? { cells: r.mesh.bake.cells } : {}), ...(r.mesh.bake?.tall ? { tall: r.mesh.bake.tall } : {}), error: Math.round(r.error * 1000) / 1000, ownError: Math.round(r.ownError * 1000) / 1000 };
-  return { mesh: make(full, own, cap, plan), plan };
+  const mesh = make(full, own, cap, plan);
+  return { mesh, plan: { ...plan, ...exact(mesh, plan.how) } };
 }
