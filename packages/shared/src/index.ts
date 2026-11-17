@@ -117,6 +117,7 @@ export * from './editor/paintTargets.ts';
 export * from './editor/paintLayers.ts';
 export * from './editor/replaceMounts.ts';
 export * from './editor/setPieceEdit.ts';
+export * from './editor/myLooks.ts';
 export * from './editor/buildArea.ts';
 export * from './editor/ghostWhy.ts';
 export * from './editor/budgetCounters.ts';

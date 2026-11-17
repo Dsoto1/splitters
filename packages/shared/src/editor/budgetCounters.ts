@@ -297,6 +297,7 @@ export class BudgetTracker {
         return;
       case 'setTheme':
       case 'setSetPieceDefs':
+      case 'setLookDefs':
         touched.pieces = true;
         touched.settings = true;
         return;

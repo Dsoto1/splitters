@@ -128,6 +128,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v44 -> v45: the ground's base layer (docs/MAPMAKER_PAINTING_PLAN.md, "Format change A"; painting Phase 4):
   // groundLayersV45.
   [44, groundLayersV45],
+  // v45 -> v46: the map's own looks, `lookDefs` (docs/MAPMAKER_PAINTING_PLAN.md, "Format change B"; painting Phase 5:
+  // looks saved in MapMaker that its set pieces name in `pack`). Absent = none: v45 data is valid as is. The bump is
+  // for the other direction: an older build would draw a placement in an unknown look as the theme's.
+  [45, (doc) => ({ ...doc })],
 ]);
 
 /**
