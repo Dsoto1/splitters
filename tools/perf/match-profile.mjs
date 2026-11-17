@@ -11,6 +11,8 @@
 //   (census) the distances of the characters in view, four times a second for PROF_SECONDS, and from them the character
 //      evaluations a second the animation LOD makes at 39 and 60 fps with and without the crowd rule
 //      (tools/perf/anim-census.mjs: counted, not timed, so SwiftShader's frame rate doesn't matter),
+//   (bodies) the body pool over the measured steps (game/bodyPool.ts): avatars' bodies built and taken from the pool,
+//      bodies put in it, let go when it was full, and its size (PROF_POOL=<n> sets the size, for comparing sizes),
 //   4. the heap: before and after a full collection, and the engine's counts (window.__memory, and the CPU-side copies
 //      of geometry and textures it keeps).
 //
@@ -19,6 +21,7 @@
 //   PROF_SIZE=480x270 (the viewport: SwiftShader draws every pixel on the CPU)   PROF_WARM=25 (seconds before measuring)   PROF_SECONDS=15   PROF_QUERY=perfoff=animcrowd (more URL parameters)
 //   PROF_STEPS=live,census,split,cpu,alloc,heap (which steps)   PROF_JSON=<file> (results)
 //   PROF_RAW=<prefix>  also the raw profiles (<prefix>.cpuprofile, -alloc/-live.heapprofile, for DevTools)
+//   PROF_POOL=24  the body pool's size in all (game/bodyPool.ts; PROF_QUERY=perfoff=bodypool for the old 16)
 //   PROF_DIST=dist-prof   the build to serve (names read better from `vite build --minify false --outDir dist-prof`)
 //   PROF_URL=<url> a client already being served;   CHROMIUM=<path> another Chromium
 //
@@ -40,6 +43,7 @@ const SECONDS = Number(process.env.PROF_SECONDS ?? 15);
 const QUERY = process.env.PROF_QUERY ? `&${process.env.PROF_QUERY}` : '';
 const STEPS = new Set((process.env.PROF_STEPS ?? 'live,census,split,cpu,alloc,heap').split(','));
 const DIST = process.env.PROF_DIST ?? 'dist';
+const POOL = Number(process.env.PROF_POOL ?? 0);
 /** PROF_RAW=<file prefix>: the raw profiles too (open a .heapprofile or .cpuprofile in DevTools). */
 const RAW = process.env.PROF_RAW;
 const out = { map: MAP, bots: BOTS, graphics: GRAPHICS, query: QUERY };
@@ -231,6 +235,7 @@ async function main() {
       localStorage.setItem('tiletrigger.frameCap', '0');
     } catch {}
   }, GRAPHICS);
+  if (POOL > 0) await ctx.addInitScript((n) => (globalThis.__bodyPoolTotal = n), POOL);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.log(`  page error: ${e.message}`));
   page.on('crash', () => {
@@ -266,6 +271,8 @@ async function main() {
   out.players = await page.evaluate(() => window.__match?.combatants().length ?? 0);
   const m0 = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
   const t0 = Date.now();
+  const pool = () => page.evaluate(() => ({ ...(window.__bodyPool ?? {}), corpses: window.__cs?.view?.corpses?.length ?? -1, pooled: window.__cs?.view?.pooled?.size ?? -1 }));
+  const b0 = await pool();
   if (STEPS.has('census')) {
     const samples = [];
     const end = Date.now() + SECONDS * 1000;
@@ -291,6 +298,10 @@ async function main() {
   if (STEPS.has('alloc')) out.alloc = await alloc(cdp, SECONDS);
   const m1 = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
   const wall = (Date.now() - t0) / 1000;
+  const b1 = await pool();
+  const d = (k) => (b1[k] ?? 0) - (b0[k] ?? 0);
+  const respawns = d('built') + d('reused');
+  out.bodies = { seconds: Math.round(wall), built: d('built'), reused: d('reused'), kept: d('kept'), evicted: d('evicted'), refused: d('refused'), reuseShare: respawns ? Math.round((d('reused') / respawns) * 100) / 100 : null, size: b1.size, pooledAtEnd: b1.pooled, corpsesAtEnd: b1.corpses };
   out.metrics = { scriptMsPerS: ((m1.ScriptDuration - m0.ScriptDuration) * 1000) / wall, taskMsPerS: ((m1.TaskDuration - m0.TaskDuration) * 1000) / wall, heapUsedMB: mb(m1.JSHeapUsedSize), heapTotalMB: mb(m1.JSHeapTotalSize) };
   if (STEPS.has('heap')) out.heap = await heap(page, cdp);
   await browser.close();

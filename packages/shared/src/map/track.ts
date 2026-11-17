@@ -1,6 +1,7 @@
 import type { ValidationIssue } from './validate.ts';
 import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+import { groundCutAt, terrainCuts } from './terrainCuts.ts';
 import { hypot } from '../math.ts';
 import { liveMount } from '../sim/mounts.ts';
 
@@ -439,10 +440,15 @@ export function roadStrip(map: MapDocument, from: number, to: number, cols: numb
   return { rows, s };
 }
 
-/** Ease a new control point's height onto the ground under it (MapMaker places points where you click). */
+/**
+ * Ease a new control point's height onto the ground under it (MapMaker places points where you click). `terrain` is the
+ * ground as shown (as played: a tunnel mouth's cutting dug, its cuts remembered). A point picked on a buried tunnel's
+ * floor, the ground well over it, stays on that floor (Tileset 04 step 6: a road laid through a road tunnel).
+ */
 export function trackPointAt(terrain: TerrainData | null, x: number, y: number, z: number): [number, number, number] {
   const r = (v: number) => Math.round(v * 100) / 100;
   const h = terrain ? terrainHeightAt(terrain, x, z) : null;
+  if (terrain && h !== null && h - y > 2 && groundCutAt(terrainCuts(terrain), x, y + 0.5, z)) return [r(x), r(y), r(z)];
   return [r(x), r(h ?? y), r(z)];
 }
 

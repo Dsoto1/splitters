@@ -19,10 +19,13 @@
  * `animcrowd`, all but the nearest characters of a crowd in view animated a rung or two slower, animLod.ts crowdStep,
  * `leveldata`, the merged level's vertex data kept as 32-bit floats, levelMerge.ts, `netgarbage`, snapshots filed
  * without a pair array per player, interpolation.ts, and `aurashare`, the status aura's shapes made once a scene,
- * arsenalVisuals.ts createAura).
+ * arsenalVisuals.ts createAura); cheaper small shadow casters, docs/PERF_SHADOW_CASTERS_2026-11-17.md, adds
+ * `smallcasters`: trees and rocks cast through static shadow-only batches by cascade, props with levels of detail through
+ * the shadow proxies at full detail, small clutter's near shadows with a band (game/shadowCasters.ts); the body pool to
+ * about 32 adds `bodypool`, a big match keeping up to 32 spare character bodies instead of 16, bodyPool.ts.
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool';
 
 let off: Set<string> | null = null;
 

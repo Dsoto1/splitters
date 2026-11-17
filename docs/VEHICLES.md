@@ -308,7 +308,11 @@ Urban grey or Team colour. Automatic paints a team-owned vehicle (one given a
 team in the inspector) in its team's colour and leaves the rest in factory
 paint, so the team bases on Coldwater Gulch and Frost Basin read at a glance.
 Skins are a tint over the model's own colours (the model gets its own copy of
-its materials); pale skins glow a touch so snow paint reads white. Paid
+its materials); pale skins glow a touch so snow paint reads white. A model
+with a dark colour scheme of its own takes the paint at less than full
+strength (`paint` in its `content/vehicles/<id>.json`, 0 to 1, default 1: the
+tint mixed that far from white): the Dropship's is 0.5, since the full team
+colour over its olive and white drew it as a near-black and blue box. Paid
 upgrades are not planned.
 
 ## Parachutes and gliders

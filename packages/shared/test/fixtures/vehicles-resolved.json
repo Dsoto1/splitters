@@ -665,6 +665,7 @@
     "kind": "vehicle",
     "model": "vehicles/hover_carrier.glb",
     "fallback": "vehicles/dropship.glb",
+    "paint": 0.5,
     "health": 750,
     "half": [
      2.35,
@@ -2236,6 +2237,7 @@
    "kind": "vehicle",
    "model": "vehicles/hover_carrier.glb",
    "fallback": "vehicles/dropship.glb",
+   "paint": 0.5,
    "health": 1000000,
    "half": [
     2.35,

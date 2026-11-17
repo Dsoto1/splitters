@@ -3,6 +3,10 @@ import { rotateSide, rotateXZ } from './geometry.ts';
 import { SIDE_DIRS } from './tileOptions.ts';
 import type { MapDocument } from './schema.ts';
 import { terrainHeightAt, terrainTriangles, vertexY, type TerrainData } from './terrain.ts';
+import { groundCutAt, type GroundCut } from './terrainCuts.ts';
+
+// (The cuts' own small helpers live in terrainCuts.ts, which roads and paths import without the tile catalogue.)
+export { groundCutAt, rememberTerrainCuts, terrainCuts, type GroundCut } from './terrainCuts.ts';
 
 /**
  * Ground over a tunnel (Tileset 04 step 1; docs/map-briefs/tunnels/PLAN_2026-11-13.md).
@@ -28,10 +32,6 @@ import { terrainHeightAt, terrainTriangles, vertexY, type TerrainData } from './
  * map's tiles and its ground as made every time the map is loaded or shown, so a tunnel that moves takes its mouth
  * with it and the hill comes back. A map's file keeps the hill as the map maker made it.
  */
-export interface GroundCut {
-  min: [number, number, number];
-  max: [number, number, number];
-}
 
 /** A mouth: the rectangle (world X/Z) open to the sky, and the floor the ground comes down to. */
 export interface GroundOpening {
@@ -57,15 +57,21 @@ export interface GroundRim {
   z1: number;
   y1: number;
   mode: 'both' | 'raise' | 'lower';
+  /** The piece's floor: ground further out than the line's own squares and lower than it (by COVER_SPILL) is not banked up. */
+  floor?: number;
 }
 
-/** Cover: over the rectangle the ground is at least `y` high (earth over a buried piece), falling away outside at COVER_BANK. */
+/**
+ * Cover: over the rectangle the ground is at least `y` high (earth over a buried piece), falling away outside at
+ * COVER_BANK, but never brought up out of ground lower than the piece's `floor` (a terrace below: COVER_SPILL).
+ */
 export interface GroundCover {
   x0: number;
   z0: number;
   x1: number;
   z1: number;
   y: number;
+  floor: number;
 }
 
 export interface GroundBores {
@@ -79,6 +85,13 @@ export interface GroundBores {
 
 /** The steepest the banks of a mouth's cutting rise (rise over run): 56°, too steep to walk, so a mouth is entered by its floor. */
 export const MOUTH_BANK = 1.5;
+/**
+ * How far under a buried piece's floor ground outside its cover may lie and still be banked up to it (Tileset 04 step
+ * 8): a cover's bank stops at a terrace edge. A piece on a bench of a quarry or a terraced hill gets its earth on the
+ * bench, not a ramp of earth down to the next bench (a new way up between them); over the piece itself the ground is
+ * still raised to the cover.
+ */
+export const COVER_SPILL = 0.5;
 /** How steeply earth brought up to a buried piece falls away (a cover's mound, the berm at a rim): 35°, a slope players and bots walk, so a buried tunnel can be crossed over its top. */
 export const COVER_BANK = 0.7;
 /** How far under an opening's floor its ground lies (as open ground meets any floor's edge: settle.ts). */
@@ -164,12 +177,12 @@ export function mapGroundBores(map: Pick<MapDocument, 'classicStructure'>, catal
     for (const r of bore.rim ?? []) {
       const [ax, az] = rotateXZ(r.line[0]!, r.line[1]!, p.rotation);
       const [bx, bz] = rotateXZ(r.line[2]!, r.line[3]!, p.rotation);
-      bores.rims.push({ x0: cx + ax, z0: cz + az, y0: baseY + r.y[0]!, x1: cx + bx, z1: cz + bz, y1: baseY + r.y[1]!, mode: r.mode });
+      bores.rims.push({ x0: cx + ax, z0: cz + az, y0: baseY + r.y[0]!, x1: cx + bx, z1: cz + bz, y1: baseY + r.y[1]!, mode: r.mode, floor: baseY });
     }
     for (const c of bore.cover ?? []) {
       const [ax, az] = rotateXZ(c[0]!, c[1]!, p.rotation);
       const [bx, bz] = rotateXZ(c[2]!, c[3]!, p.rotation);
-      bores.covers.push({ x0: cx + Math.min(ax, bx), z0: cz + Math.min(az, bz), x1: cx + Math.max(ax, bx), z1: cz + Math.max(az, bz), y: baseY + c[4]! });
+      bores.covers.push({ x0: cx + Math.min(ax, bx), z0: cz + Math.min(az, bz), x1: cx + Math.max(ax, bx), z1: cz + Math.max(az, bz), y: baseY + c[4]!, floor: baseY });
     }
   }
   cache.set(tiles, { catalog, cellSize, levelHeight, bores });
@@ -315,27 +328,6 @@ export function cutCellPieces(t: TerrainData, c: number, r: number, cuts: readon
   return [...pa, ...pb];
 }
 
-/** Whether the ground's surface at (x, z), `y` high, has been cut away there (or within `margin` of where it has). */
-export function groundCutAt(cuts: readonly GroundCut[], x: number, y: number, z: number, margin = 0): boolean {
-  for (const c of cuts) if (x > c.min[0] - margin && x < c.max[0] + margin && z > c.min[2] - margin && z < c.max[2] + margin && y > c.min[1] && y < c.max[1]) return true;
-  return false;
-}
-
-const cutsOf = new WeakMap<object, readonly GroundCut[]>();
-const NO_CUTS: readonly GroundCut[] = [];
-
-/** Remember the cuts a ground as played was worked out with (settle.ts terrainUnderFloors). */
-export function rememberTerrainCuts(t: TerrainData, cuts: readonly GroundCut[]): void {
-  if (cuts.length) cutsOf.set(t, cuts);
-}
-
-/**
- * The cuts of a ground as played (the terrain loadMap plays and MapMaker shows), for what is placed on the ground by
- * its height alone: plants must not grow where the ground has been cut away (client foliage.ts).
- */
-export function terrainCuts(t: TerrainData): readonly GroundCut[] {
-  return cutsOf.get(t) ?? NO_CUTS;
-}
 
 /** Whether (x, z) is over a cut's footprint or within `margin` of one (bots there make the exact move: Match.relaxedMove). */
 export function nearGroundCut(cuts: readonly GroundCut[], x: number, z: number, margin = 0): boolean {
@@ -436,7 +428,15 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
     const reach = Math.max(0, cover.y - low) / COVER_BANK + s;
     const [c0, c1] = cols(cover.x0 - reach, cover.x1 + reach);
     const [r0, r1] = rows(cover.z0 - reach, cover.z1 + reach);
-    for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) atLeast(lo, r * t.cols + c, cmUp(cover.y - COVER_BANK * away(q, c, r)));
+    const below = cmDown(cover.floor - COVER_SPILL);
+    for (let r = r0; r <= r1; r++) {
+      for (let c = c0; c <= c1; c++) {
+        const i = r * t.cols + c;
+        const d = away(q, c, r);
+        if (d > 0 && t.heights[i]! < below) continue;
+        atLeast(lo, i, cmUp(cover.y - COVER_BANK * d));
+      }
+    }
   }
 
   for (const rim of bores.rims) {
@@ -462,7 +462,8 @@ export function shapeGroundAtBores(t: TerrainData, bores: Pick<GroundBores, 'ope
         const e = Math.max(0, d - s);
         // Held at the rim: the vertices on the line, or the nearest either side of it (strictly within a square).
         if (rim.mode === 'both' && d < s - 1e-9) atMost(pin, i, Math.round((y - t.baseY) * 100));
-        if (rim.mode !== 'lower') atLeast(lo, i, cmUp(y - COVER_BANK * e));
+        // (Not out of a terrace below the piece: its earth stays on the piece's own level, as a cover's does.)
+        if (rim.mode !== 'lower' && !(e > 0 && rim.floor !== undefined && t.heights[i]! < cmDown(rim.floor - COVER_SPILL))) atLeast(lo, i, cmUp(y - COVER_BANK * e));
         if (rim.mode !== 'raise') atMost(hi, i, cmDown(y + MOUTH_BANK * e));
       }
     }

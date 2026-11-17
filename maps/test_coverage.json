@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_kycpjb4ximwelqgf",
-      "revision": 37,
-      "contentHash": "sha256:8349461384bea932dac9ff46ee2cbc1719f8ef72c6219503ff5568fd4378393e",
+      "versionId": "v_keg6cjzo7rr2czch",
+      "revision": 39,
+      "contentHash": "sha256:103d9878b750cfb3a6bcc12cb503d8a077e3fe116449cba5d7099c1ad6121eac",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T02:43:19.002Z"
+      "releasedAt": "2026-11-17T10:15:52.450Z"
     },
     "testOnly": true
   },
@@ -1182,6 +1182,196 @@
         "y": 18,
         "z": -1,
         "rotation": 0,
+        "family": "mine"
+      },
+      {
+        "id": "tile_96wgevk551",
+        "tile": "core.tunnel_road_wide_cross",
+        "x": 8,
+        "y": 17,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jhtnswnmoo",
+        "tile": "core.tunnel_road_wide_straight",
+        "x": 9,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_xk8dqjnl2g",
+        "tile": "core.tunnel_road_wide_t",
+        "x": 10,
+        "y": 17,
+        "z": -1,
+        "rotation": 0,
+        "family": "brick"
+      },
+      {
+        "id": "tile_fzvozx34q6",
+        "tile": "core.tunnel_road_wide_straight",
+        "x": 11,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_438pxhef3v",
+        "tile": "core.tunnel_road_wide_curve",
+        "x": 12,
+        "y": 17,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_usoqxx5u6j",
+        "tile": "core.tunnel_road_wide_portal",
+        "x": 8,
+        "y": 18,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_yi6brh2cmd",
+        "tile": "core.tunnel_road_reducer",
+        "x": 8,
+        "y": 16,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qed1hjeofv",
+        "tile": "core.tunnel_road_wide_ramp",
+        "x": 10,
+        "y": 15,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pikmwzwvu8",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 7,
+        "y": 17,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_cuy0f6j7pj",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 12,
+        "y": 18,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_apyfagqlqo",
+        "tile": "core.tunnel_concrete_end",
+        "x": 8,
+        "y": 15,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vtd8qqdwpl",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 10,
+        "y": 14,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qf5nbc0x7t",
+        "tile": "core.tunnel_brick_to_concrete",
+        "x": 14,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_4sn4jrjgs7",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 15,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_npk33wlaes",
+        "tile": "core.tunnel_concrete_t",
+        "x": 16,
+        "y": 17,
+        "z": -1,
+        "rotation": 2,
+        "family": "cave"
+      },
+      {
+        "id": "tile_xluhy2mzhn",
+        "tile": "core.tunnel_cave_collapse",
+        "x": 16,
+        "y": 18,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_36a6pp72yx",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 17,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_mgsox7m7fe",
+        "tile": "core.tunnel_mine_to_brick",
+        "x": 18,
+        "y": 17,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ovjup4q7g9",
+        "tile": "core.tunnel_mine_to_road",
+        "x": 17,
+        "y": 15,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_x5ga364uv9",
+        "tile": "core.tunnel_concrete_end",
+        "x": 13,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_gxvtls3bnr",
+        "tile": "core.tunnel_concrete_end",
+        "x": 19,
+        "y": 17,
+        "z": -1,
+        "rotation": 1,
+        "family": "mine"
+      },
+      {
+        "id": "tile_3kn87861dv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 16,
+        "y": 15,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_r37trmpg0d",
+        "tile": "core.tunnel_concrete_end",
+        "x": 18,
+        "y": 15,
+        "z": -1,
+        "rotation": 1,
         "family": "mine"
       }
     ]

@@ -24,6 +24,7 @@ import { formatLock, readLock } from './lockfile.mjs';
 import { surfaceTypeIds } from './surface-types.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { writeKitModel } from './kit/glb.mjs';
+import { farLevel } from './kit/farLook.mjs';
 import { binMesh, crateMesh, framedCrateMesh } from './kit/crate.mjs';
 import { drumMesh } from './kit/drum.mjs';
 import { cartonMesh } from './kit/carton.mjs';
@@ -74,7 +75,7 @@ export function validate(content, root = ROOT) {
   const catalogue = loadPropManifest();
   const categories = new Set(catalogue.props.map((p) => p.category));
   const m = content.manifest;
-  problems.push(...check(m, obj({ $comment: str, generatorVersion: int, pack: obj({ id: str, title: str, creator: str, url: str, license: str, licenseFile: str }), budgets: obj({ maxBytes: int, triangles: map(arr(int, 1)) }), aliases: map(obj({ model: str, variant: int, scale: num, 'ownSize?': en([true]) })) }), MANIFEST));
+  problems.push(...check(m, obj({ $comment: str, generatorVersion: int, pack: obj({ id: str, title: str, creator: str, url: str, license: str, licenseFile: str }), budgets: obj({ maxBytes: int, triangles: map(arr(int, 1)) }), 'farLooks?': arr(str, 1), aliases: map(obj({ model: str, variant: int, scale: num, 'ownSize?': en([true]) })) }), MANIFEST));
   for (const k of Object.keys(m.budgets?.triangles ?? {})) if (!KINDS[k]) problems.push(`${MANIFEST}: budgets.triangles.${k}: not a generator kind (${Object.keys(KINDS).join(', ')})`);
   const families = [];
   const ids = new Set();
@@ -137,6 +138,18 @@ export async function build(content, families) {
   const report = [];
   const props = [];
   const render = [];
+  // Far looks (tools/content/kit/farLook.mjs): the families of these types have their lighter levels baked from their
+  // own level 0; the choice each made is kept in the lock and reused while its model is unchanged.
+  const farTypes = new Set(m.farLooks ?? []);
+  // A variant that plays a retired catalogue prop (an alias) keeps its level 1 within that prop's triangles.
+  const oldTris = new Map(readLock(join(ROOT, 'content/props.lock.json')).files.map((x) => [x.file, x.triangles]));
+  const aliasCap = new Map();
+  for (const [from, a] of Object.entries(m.aliases ?? {})) {
+    const was = oldTris.get(`props/${from.slice(5)}.glb`);
+    const k = `${a.model}#${a.variant}`;
+    if (was !== undefined) aliasCap.set(k, Math.min(aliasCap.get(k) ?? Infinity, was));
+  }
+  const kept = new Map(existsSync(join(ROOT, LOCK)) ? readLock(join(ROOT, LOCK)).files.filter((x) => x.far).map((x) => [x.src, x.far]) : []);
   for (const f of families) {
     const make = KINDS[f.generator.kind];
     const [, type, name] = f.id.split('.');
@@ -148,6 +161,33 @@ export async function build(content, families) {
     for (const v of f.variants) {
       const g = { ...f.generator, ...(v.set ?? {}) };
       const levels = f.lods.map((l, i) => ({ distance: l.distance, mesh: make(v.seed, f.size, g, v.look, i) }));
+      let far;
+      const made = levels.map((l) => l.mesh);
+      // `tight`: a variant whose file came out over the byte budget keeps every lighter level within the generator's own
+      // triangles (recoloured at most: a whole dome's level 1 grew to 900 triangles); remembered in the lock.
+      const bake = (was, tight) => {
+        const plans = [];
+        for (let i = 1; i < levels.length; i++) {
+          const prev = i === 1 ? Math.min(made[0].triangles, (aliasCap.get(`${f.id}#${v.index}`) ?? Infinity) + 1) : levels[i - 1].mesh.triangles;
+          const before = tight ? Math.min(prev, made[i].triangles + 1) : prev;
+          const r = farLevel(made[0], made[i], i, was[i - 1], before);
+          levels[i].mesh = r.mesh;
+          plans.push(tight ? { ...r.plan, tight: true } : r.plan);
+        }
+        return plans;
+      };
+      if (farTypes.has(type)) {
+        const was = kept.get(`${f.id}#${v.name}`) ?? [];
+        // A variant kept at its own levels for its bytes (below) stays so without searching again.
+        far = was[0]?.key === 'own' ? was.map((p) => ({ ...p })) : bake(was, !!was[0]?.tight);
+        const over = async () => (await writeKitModel(`${type}_${name}_${v.name}`, levels, f.detailSpec)).length > m.budgets.maxBytes;
+        if (!was[0]?.tight && was[0]?.key !== 'own' && (await over())) far = bake([], true);
+        // Still over: the generator's own levels as they were.
+        if (far.some((p) => p.how !== 'own') && (await over())) {
+          for (let i = 1; i < levels.length; i++) levels[i].mesh = made[i];
+          far = far.map(() => ({ key: 'own', how: 'own', tight: true }));
+        }
+      }
       const t = levels.map((l) => l.mesh.triangles);
       const own = levels[0].mesh.boxes?.length ? levels[0].mesh.boxes.map((b) => b.map(mm)) : null;
       if (own && f.collide === 'none') throw new Error(`${f.id}#${v.name}: gives collision boxes, but its family has no collision (collide: "none")`);
@@ -160,7 +200,7 @@ export async function build(content, families) {
       const file = `kit/${type}.${name}.${v.name}.glb`;
       const glb = await writeKitModel(`${type}_${name}_${v.name}`, levels, f.detailSpec);
       files.set(file, glb);
-      lockFiles.push({ file, sha256: sha(glb), bytes: glb.length, triangles: t[0], lodTriangles: t, source: m.pack.id, src: `${f.id}#${v.name}`, generatorVersion: m.generatorVersion, assetVersion: f.assetVersion, bounds: boundsOf(levels[0].mesh) });
+      lockFiles.push({ file, sha256: sha(glb), bytes: glb.length, triangles: t[0], lodTriangles: t, source: m.pack.id, src: `${f.id}#${v.name}`, generatorVersion: m.generatorVersion, assetVersion: f.assetVersion, bounds: boundsOf(levels[0].mesh), ...(far ? { far } : {}) });
       variants.push({ index: v.index, name: v.name, file });
       report.push(`${f.id}#${v.name}: ${t.join(' / ')} triangles, ${glb.length} B`);
     }

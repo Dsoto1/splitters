@@ -4,6 +4,7 @@
   "kind": "vehicle",
   "model": "vehicles/hover_carrier.glb",
   "fallback": "vehicles/dropship.glb",
+  "paint": 0.5,
   "health": 1000000,
   "half": [2.35, 0.85, 4.8],
   "seats": [
@@ -26,6 +27,7 @@
   "airplane": true,
   "blurb": "Flies a fixed route; jump out with E or jump and parachute down",
   "notes": {
-    "design": "The dropship on a drop route (an `airplane` entity with craft `dropship`), not the placeable Dropship: its model (the hover carrier, 2026-11-16), 12 riders seated six a side on the deck's two benches (z -0.5 to -3.75, 0.65 m apart, facing in; measured on the model, dropship.json notes); it cannot be hurt and nobody flies it."
+    "design": "The dropship on a drop route (an `airplane` entity with craft `dropship`), not the placeable Dropship: its model (the hover carrier, 2026-11-16), 12 riders seated six a side on the deck's two benches (z -0.5 to -3.75, 0.65 m apart, facing in; measured on the model, dropship.json notes); it cannot be hurt and nobody flies it.",
+    "paint": "Half strength (2026-11-17; owner's screenshot of a team-owned Dropship, \"looks broken\"): the full team colour multiplied over the model's olive and white turned the olive near black and the white into flat team colour (Shingle Point's blue: a dark, black and blue box from above). At 0.5 the olive and white stay and the team colour reads as a cast over them; the open deck and benches seen from above are the model's own (an open carrier, no roof)."
   }
 }
