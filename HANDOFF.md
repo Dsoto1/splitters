@@ -139,7 +139,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Claims (lane B's splitters22), 2026-11-17 19:20:** `wip/characters-1117` (the owner's character pass, QUEUE Bugs) and `wip/landing-lock` (the landing lock as a branch run by train.mjs; touches `tools/ci/train.mjs`, CLAUDE.md's landing lines, HANDOFF's How-to).
   - **The landing lock as a branch, status 2026-11-17: green on `check/landing-lock` at 9e2ddefd (run 44151224415, attempt 1, no flaky flows); reported to lane B's lead** (a helper of lane B's splitters22). `tools/ci/landingLock.mjs` (the branch `landing-lock`: held/free child commits, never forced or deleted) and `tools/ci/train.mjs` (takes it per train with `--holder`, frees it after `--land` or when a train stops before pushing; `--lock-status`, `--lock`, `--unlock`, `--force-unlock` after 3 h). Tests: `tools/ci/test/landingLock.test.mjs` (scratch bare repo, two sessions, a race) and the train's own. Docs: CLAUDE.md Landing item 3, HANDOFF how-to and a note to lane A at the top, QUEUE how-to. Once it lands, the first train creates `landing-lock`.
 
-**Next in line (lane B's splitters22, 2026-11-17 20:00):** a train of `wip/st-johns-spruces` and `wip/landing-lock` after lane A's train above lands. (My 19:55 lock line went up by mistake while lane A held the lock; nothing was pushed under it, removed.)
+**Landing now: train** (`wip/st-johns-spruces`, `wip/landing-lock`; lane B's splitters22, 2026-11-17 20:40 UTC; the last train under the old lock line): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
