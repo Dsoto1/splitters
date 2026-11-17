@@ -131,7 +131,7 @@ export class EditorView {
   /** The cuts the drawn ground was built with (groundCutsKey). */
   private drawnCuts = '';
   /** The document's ground with its paths laid in (paths.ts), worked out again only when the ground or the paths change. */
-  private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; terrain: MapDocument['terrain'] } | null = null;
+  private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; tiles: MapDocument['classicStructure']['tiles']; terrain: MapDocument['terrain'] } | null = null;
   /** The ground as played (paths laid in, kept under every floor): what the terrain, plants and roads are drawn on. */
   private shownTerrain: MapDocument['terrain'] = null;
   /** The laid ground `shownTerrain` was kept under the floors from. */
@@ -380,7 +380,8 @@ export class EditorView {
     // The ground as played (what loadMap plays, settle.ts withGroundAsPlayed): the paths laid in (paths.ts) and the
     // terrain kept under every floor (terrainUnderFloors), worked out after every edit from the document's own ground,
     // which only sculpting changes: a path or a floor that moves takes its dip with it, and the ground comes back.
-    if (doc.terrain !== this.laid?.from || doc.paths !== this.laid.paths) this.laid = { from: doc.terrain, paths: doc.paths, terrain: withPathsLaid(doc).terrain };
+    // (A road through a buried tunnel leaves the hill over it alone: the tunnels' cuts, so the tiles count too.)
+    if (doc.terrain !== this.laid?.from || doc.paths !== this.laid.paths || doc.classicStructure.tiles !== this.laid.tiles) this.laid = { from: doc.terrain, paths: doc.paths, tiles: doc.classicStructure.tiles, terrain: withPathsLaid(doc, mapGroundBores(doc).cuts).terrain };
     const laid = this.laid.terrain;
     const ground = laid ? terrainUnderFloors({ ...doc, terrain: laid }, all) : null;
     // The floors moved but the ground came out the same: it stays the same terrain (nothing to rebuild).

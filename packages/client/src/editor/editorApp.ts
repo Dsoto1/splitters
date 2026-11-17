@@ -45,6 +45,7 @@ import {
   type Transform,
   withGroupsTidied,
   withPathsLaid,
+  mapGroundBores,
   type BotHintKind,
   type EdgeStyle,
   type EdgeTarget,
@@ -538,7 +539,7 @@ export class EditorApp {
   /** `terrain` as it would be shown: kept under the map's floors, with the paths laid in first unless `laid` is false (a brush's live preview). */
   groundShownFor(terrain: TerrainData, laid = true): TerrainData {
     const doc = { ...this.viewDoc, terrain };
-    return terrainUnderFloors(laid ? withPathsLaid(doc) : doc, this.mapBoxes())!;
+    return terrainUnderFloors(laid ? withPathsLaid(doc, mapGroundBores(doc).cuts) : doc, this.mapBoxes())!;
   }
 
   get placeLib(): SetPieceLibrary {
