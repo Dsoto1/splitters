@@ -64,7 +64,7 @@ function mapNormal(n, fd, ft) {
  * Returns { moved: Map<joint, world position>, sides } and edits the target meshes' arrays: each mesh gets `added`
  * (the new vertices: pos, J, W, uv, nrm) and `drop` (triangle starts to remove); the caller writes them.
  */
-export function graftHands({ target, donor, sides, measure, colourAt = null, normalAt = null, log = () => {} }) {
+export function graftHands({ target, donor, sides, measure, smooth = 1, log = () => {} }) {
   const moved = new Map();
   const done = [];
   const mt = measure(target, sides);
@@ -104,6 +104,7 @@ export function graftHands({ target, donor, sides, measure, colourAt = null, nor
     let dropped = 0;
     target.meshes.forEach((m) => {
       const dm = donor.meshes.find((x) => x.lod === m.lod) ?? donor.meshes[0];
+      const uvOf = (v) => (m.uv ? [m.uv[v * 2], m.uv[v * 2 + 1]] : [0, 0]);
       const n = m.pos.length / 3;
       // The old hand: its vertices (their texture coordinates, for the new surface) and its triangles (to go).
       const old = [];
@@ -111,58 +112,84 @@ export function graftHands({ target, donor, sides, measure, colourAt = null, nor
       const isOld = new Uint8Array(n);
       for (const v of old) isOld[v] = 1;
       if (!old.length) return;
-      // The new hand's one colour: the old hand vertex whose colour is nearest the old hand's median (a glove's
-      // white, a skin's tone), not a seam's or a nail's.
-      const uvOf = (v) => (m.uv ? [m.uv[v * 2], m.uv[v * 2 + 1]] : [0, 0]);
-      let handUV = uvOf(old[0]);
-      if (colourAt && m.uv) {
-        const cols = old.map((v) => colourAt(...uvOf(v)));
-        const med = [0, 1, 2].map((k) => cols.map((c) => c[k]).sort((a, b) => a - b)[cols.length >> 1]);
-        // ...where the normal map is flat too (one texel's tilt on every new vertex shaded the hand in blotches).
-        const tilt = (v) => {
-          const n = normalAt?.(...uvOf(v));
-          return n ? (n[0] - 128) ** 2 + (n[1] - 128) ** 2 : 0;
-        };
-        let bd = Infinity;
-        old.forEach((v, i) => {
-          const d = (cols[i][0] - med[0]) ** 2 + (cols[i][1] - med[1]) ** 2 + (cols[i][2] - med[2]) ** 2 + tilt(v);
-          if (d < bd) [bd, handUV] = [d, uvOf(v)];
-        });
-      }
       m.drop ??= new Set();
+      // The old hand's triangles: they go, and the new hand takes its surface from them (below).
+      const oldTris = [];
       for (let i = 0; i < m.idx.length; i += 3) {
-        if (!isOld[m.idx[i]] || !isOld[m.idx[i + 1]] || !isOld[m.idx[i + 2]] || m.drop.has(i)) continue;
+        if (!isOld[m.idx[i]] || !isOld[m.idx[i + 1]] || !isOld[m.idx[i + 2]]) continue;
+        oldTris.push(i);
+        if (m.drop.has(i)) continue;
         m.drop.add(i);
         dropped++;
       }
-      // The donor's hand, mapped.
+      // The donor's hand (its vertices the hand chain holds), mapped, then (`smooth`) subdivided: the donor's own
+      // fingers are a few segments round, and closed they read as blocks.
       const dn = dm.pos.length / 3;
       const keep = new Int32Array(dn).fill(-1);
-      const fresh = { pos: [], J: [], W: [], uv: [], nrm: [], idx: [] };
+      const hand = { pos: [], nrm: [], jw: [], idx: [] };
+      // (Welded by position: copies of a vertex either side of the donor's own texture seams are one, so the hand
+      // subdivides as one surface.)
+      const at = new Map();
       for (let v = 0; v < dn; v++) {
         if (heldBy(dm.J, dm.W, v, chainD) < DONOR_HELD) continue;
-        keep[v] = fresh.pos.length;
-        const p = toTarget([dm.pos[v * 3], dm.pos[v * 3 + 1], dm.pos[v * 3 + 2]]);
-        fresh.pos.push(p);
+        const kp = `${dm.pos[v * 3].toFixed(5)},${dm.pos[v * 3 + 1].toFixed(5)},${dm.pos[v * 3 + 2].toFixed(5)}`;
+        if (at.has(kp)) {
+          keep[v] = at.get(kp);
+          continue;
+        }
+        keep[v] = hand.pos.length;
+        at.set(kp, keep[v]);
+        hand.pos.push(toTarget([dm.pos[v * 3], dm.pos[v * 3 + 1], dm.pos[v * 3 + 2]]));
         const nd = dm.nrm ? qrot(qinv(Hd.q), [dm.nrm[v * 3], dm.nrm[v * 3 + 1], dm.nrm[v * 3 + 2]]) : [0, 0, 1];
-        fresh.nrm.push(qrot(Ht.q, mapNormal(nd, fd, ft)));
-        const js = [];
+        hand.nrm.push(qrot(Ht.q, mapNormal(nd, fd, ft)));
+        const jw = new Map();
         for (let k = 0; k < 4; k++) {
           const w = dm.W[v * 4 + k];
-          if (!w) continue;
-          const t = targetIndex.get(donor.jointNames[dm.J[v * 4 + k]]);
-          if (t !== undefined) js.push([t, w]);
+          const t = w ? targetIndex.get(donor.jointNames[dm.J[v * 4 + k]]) : undefined;
+          if (t !== undefined) jw.set(t, (jw.get(t) ?? 0) + w);
         }
-        const sum = js.reduce((a, [, w]) => a + w, 0) || 1;
-        fresh.J.push([0, 1, 2, 3].map((k) => js[k]?.[0] ?? 0));
-        fresh.W.push([0, 1, 2, 3].map((k) => (js[k] ? js[k][1] / sum : 0)));
-        fresh.uv.push(handUV);
+        hand.jw.push(jw);
       }
-      // Donor triangles wholly kept.
       for (let i = 0; i < dm.idx.length; i += 3) {
         const [a, b, c] = [keep[dm.idx[i]], keep[dm.idx[i + 1]], keep[dm.idx[i + 2]]];
-        if (a < 0 || b < 0 || c < 0) continue;
-        fresh.idx.push(a, b, c);
+        if (a >= 0 && b >= 0 && c >= 0 && a !== b && b !== c && a !== c) hand.idx.push(a, b, c);
+      }
+      for (let level = 0; level < (m.lod ? 0 : smooth); level++) subdivide(hand);
+      // Its surface from the old hand's: each new triangle takes its texture coordinates from the old triangle nearest
+      // it (its corners projected onto that triangle's plane, kept within a little of it), so the skin's tone, a
+      // glove's seams and a nail's colour carry over; its corners are its own (no texture coordinate is shared
+      // across two old triangles' charts).
+      const P = (v) => [m.pos[v * 3], m.pos[v * 3 + 1], m.pos[v * 3 + 2]];
+      const olds = oldTris.map((i) => ({ a: P(m.idx[i]), b: P(m.idx[i + 1]), c: P(m.idx[i + 2]), ua: uvOf(m.idx[i]), ub: uvOf(m.idx[i + 1]), uc: uvOf(m.idx[i + 2]) }));
+      const fresh = { pos: [], J: [], W: [], uv: [], nrm: [], idx: [] };
+      // (A corner is shared by the triangles that read the same old triangle.)
+      const corner = new Map();
+      for (let i = 0; i < hand.idx.length; i += 3) {
+        const corners = [hand.idx[i], hand.idx[i + 1], hand.idx[i + 2]];
+        const centre = scale(add(add(hand.pos[corners[0]], hand.pos[corners[1]]), hand.pos[corners[2]]), 1 / 3);
+        let best = null;
+        let bd = Infinity;
+        for (const o of olds) {
+          const d = distToTriangle(centre, o.a, o.b, o.c);
+          if (d < bd) [bd, best] = [d, o];
+        }
+        for (const v of corners) {
+          const ck = `${v}_${best ? olds.indexOf(best) : -1}`;
+          if (corner.has(ck)) {
+            fresh.idx.push(corner.get(ck));
+            continue;
+          }
+          corner.set(ck, fresh.pos.length);
+          const uv = best ? uvOnTriangle(hand.pos[v], best) : [0, 0];
+          fresh.pos.push(hand.pos[v]);
+          fresh.nrm.push(hand.nrm[v]);
+          const top = [...hand.jw[v]].sort((x, y) => y[1] - x[1]).slice(0, 4);
+          const sum = top.reduce((a2, [, w]) => a2 + w, 0) || 1;
+          fresh.J.push([0, 1, 2, 3].map((k2) => top[k2]?.[0] ?? 0));
+          fresh.W.push([0, 1, 2, 3].map((k2) => (top[k2] ? top[k2][1] / sum : 0)));
+          fresh.uv.push(uv);
+          fresh.idx.push(fresh.pos.length - 1);
+        }
       }
       added += fresh.pos.length;
       (m.added ??= []).push(fresh);
@@ -176,4 +203,108 @@ export function graftHands({ target, donor, sides, measure, colourAt = null, nor
     log(`hand_${s}: new hand geometry (the rig's own hand fitted: ${(ht.length * 100).toFixed(1)} cm long, ${(ht.width * 100).toFixed(1)} wide): ${added} vertices for ${dropped} old triangles`);
   }
   return { moved, sides: done };
+}
+
+/** Distance from a point to a triangle (the nearest point on it). */
+function distToTriangle(p, a, b, c) {
+  const q = nearestOnTriangle(p, a, b, c);
+  return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+}
+function nearestOnTriangle(p, a, b, c) {
+  // (Ericson, Real-Time Collision Detection, 5.1.5.)
+  const ab = sub(b, a), ac = sub(c, a), ap = sub(p, a);
+  const d1 = dot(ab, ap), d2 = dot(ac, ap);
+  if (d1 <= 0 && d2 <= 0) return a;
+  const bp = sub(p, b), d3 = dot(ab, bp), d4 = dot(ac, bp);
+  if (d3 >= 0 && d4 <= d3) return b;
+  const vc = d1 * d4 - d3 * d2;
+  if (vc <= 0 && d1 >= 0 && d3 <= 0) return add(a, scale(ab, d1 / (d1 - d3)));
+  const cp = sub(p, c), d5 = dot(ab, cp), d6 = dot(ac, cp);
+  if (d6 >= 0 && d5 <= d6) return c;
+  const vb = d5 * d2 - d1 * d6;
+  if (vb <= 0 && d2 >= 0 && d6 <= 0) return add(a, scale(ac, d2 / (d2 - d6)));
+  const va = d3 * d6 - d5 * d4;
+  if (va <= 0 && d4 - d3 >= 0 && d5 - d6 >= 0) return add(b, scale(sub(c, b), (d4 - d3) / (d4 - d3 + (d5 - d6))));
+  const den = 1 / (va + vb + vc);
+  return add(a, add(scale(ab, vb * den), scale(ac, vc * den)));
+}
+/** How far past a triangle's edges a projected corner may read the map (barycentric): a little, never into the next chart. */
+const UV_REACH = 0.15;
+/** A point's texture coordinate on an old triangle: projected onto its plane, barycentric, held within UV_REACH of it. */
+function uvOnTriangle(p, o) {
+  const e1 = sub(o.b, o.a), e2 = sub(o.c, o.a), r = sub(p, o.a);
+  const d11 = dot(e1, e1), d12 = dot(e1, e2), d22 = dot(e2, e2), dr1 = dot(r, e1), dr2 = dot(r, e2);
+  const den = d11 * d22 - d12 * d12 || 1e-12;
+  let v = (d22 * dr1 - d12 * dr2) / den;
+  let w = (d11 * dr2 - d12 * dr1) / den;
+  let u = 1 - v - w;
+  [u, v, w] = [u, v, w].map((x) => Math.max(-UV_REACH, x));
+  const t = u + v + w;
+  [u, v, w] = [u / t, v / t, w / t];
+  return [0, 1].map((k) => u * o.ua[k] + v * o.ub[k] + w * o.uc[k]);
+}
+
+/**
+ * One level of subdivision of the donor hand, in place (Loop's rules on a closed patch, its open border kept as a
+ * curve): each triangle into four, the old vertices eased toward their neighbours and the new ones at the weighted
+ * middle of their edge; normals and skin weights blended the same way, so the fingers round off instead of standing
+ * as six-sided blocks.
+ */
+function subdivide(h) {
+  const n = h.pos.length;
+  const edges = new Map();
+  const key = (a, b) => (a < b ? `${a}_${b}` : `${b}_${a}`);
+  const opp = new Map();
+  for (let i = 0; i < h.idx.length; i += 3) {
+    const t = [h.idx[i], h.idx[i + 1], h.idx[i + 2]];
+    for (let k = 0; k < 3; k++) {
+      const kk = key(t[k], t[(k + 1) % 3]);
+      (opp.get(kk) ?? opp.set(kk, []).get(kk)).push(t[(k + 2) % 3]);
+    }
+  }
+  const nbr = Array.from({ length: n }, () => new Set());
+  const border = new Uint8Array(n);
+  for (const [kk, os] of opp) {
+    const [a, b] = kk.split('_').map(Number);
+    nbr[a].add(b);
+    nbr[b].add(a);
+    if (os.length === 1) border[a] = border[b] = 1;
+  }
+  const mix = (parts) => {
+    const pos = [0, 0, 0], nrm = [0, 0, 0], jw = new Map();
+    for (const [v, w] of parts) {
+      for (let k = 0; k < 3; k++) [pos[k], nrm[k]] = [pos[k] + h.pos[v][k] * w, nrm[k] + h.nrm[v][k] * w];
+      for (const [j, x] of h.jw[v]) jw.set(j, (jw.get(j) ?? 0) + x * w);
+    }
+    return { pos, nrm: norm(nrm), jw };
+  };
+  const out = { pos: [], nrm: [], jw: [] };
+  // Old vertices, eased (border ones kept: the wrist's edge meets the sleeve where it was).
+  for (let v = 0; v < n; v++) {
+    const ns = [...nbr[v]];
+    if (border[v] || ns.length < 3) {
+      out.pos.push(h.pos[v]); out.nrm.push(h.nrm[v]); out.jw.push(h.jw[v]);
+      continue;
+    }
+    const beta = ns.length === 3 ? 3 / 16 : 3 / (8 * ns.length);
+    const r = mix([[v, 1 - ns.length * beta], ...ns.map((x) => [x, beta])]);
+    out.pos.push(r.pos); out.nrm.push(r.nrm); out.jw.push(r.jw);
+  }
+  const mid = new Map();
+  const midOf = (a, b) => {
+    const kk = key(a, b);
+    if (mid.has(kk)) return mid.get(kk);
+    const os = opp.get(kk) ?? [];
+    const r = os.length === 2 ? mix([[a, 3 / 8], [b, 3 / 8], [os[0], 1 / 8], [os[1], 1 / 8]]) : mix([[a, 1 / 2], [b, 1 / 2]]);
+    out.pos.push(r.pos); out.nrm.push(r.nrm); out.jw.push(r.jw);
+    mid.set(kk, out.pos.length - 1);
+    return out.pos.length - 1;
+  };
+  const idx = [];
+  for (let i = 0; i < h.idx.length; i += 3) {
+    const [a, b, c] = [h.idx[i], h.idx[i + 1], h.idx[i + 2]];
+    const [ab, bc, ca] = [midOf(a, b), midOf(b, c), midOf(c, a)];
+    idx.push(a, ab, ca, ab, b, bc, ca, bc, c, ab, bc, ca);
+  }
+  Object.assign(h, out, { idx });
 }

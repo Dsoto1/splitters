@@ -224,7 +224,10 @@ async function cutArms(doc) {
 
 /** The donor of new hand geometry (`fixes.hands.graft`, handgraft.mjs): the athlete body part, as shipped. */
 let donorDoc = null;
-const donor = async () => (donorDoc ??= await io.read(join(OUT, 'athlete_torso_m.glb')));
+const DONOR = process.env.GRAFT_DONOR ?? 'athlete_torso_m';
+/** Levels of subdivision of the donor's hand (handgraft.mjs `subdivide`; GRAFT_SMOOTH for a trial). */
+const GRAFT_SMOOTH = Number(process.env.GRAFT_SMOOTH ?? 1);
+const donor = async () => (donorDoc ??= await io.read(join(OUT, `${DONOR}.glb`)));
 
 /** Per-vertex tangents from positions, normals and texture coordinates (the normal map's frame on new vertices). */
 function tangents(pos, nrm, uv, idx) {
@@ -274,23 +277,19 @@ async function graft(doc, which, label) {
   if (!sides.length) return;
   const c = open(doc);
   const d = open(await donor());
-  const measure = (x, ss) => fitHands({ meshes: x.meshes, jointNames: x.jointNames, world: x.world, rig, sides: ss, keep: ss }).data;
-  // The body's colour map, to pick the new hands' colour from the old hands'.
-  // (and its normal map, so they sit where it is flat).
-  const sampler = async (image) => {
-    if (!image) return null;
-    const { data, info } = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
-    return (u, v) => {
-      const x = Math.min(info.width - 1, Math.max(0, Math.round(u * (info.width - 1))));
-      const y = Math.min(info.height - 1, Math.max(0, Math.round(v * (info.height - 1))));
-      const o = (y * info.width + x) * 3;
-      return [data[o], data[o + 1], data[o + 2]];
-    };
+  // The donor's skin: of its primitives (a part's sleeve and skin are two), the one its hands are on, each detail.
+  const handVerts = (m2) => {
+    let k = 0;
+    for (let v = 0; v < m2.pos.length / 3; v++) {
+      let w = 0;
+      for (let q = 0; q < 4; q++) if (/^(hand|index|middle|ring|pinky|thumb)_/.test(d.jointNames[m2.J[v * 4 + q]])) w += m2.W[v * 4 + q];
+      if (w >= 0.5) k++;
+    }
+    return k;
   };
-  const material = c.meshes[0].prim.getMaterial();
-  const colourAt = await sampler(material?.getBaseColorTexture()?.getImage());
-  const normalAt = await sampler(material?.getNormalTexture()?.getImage());
-  const { moved, sides: done } = graftHands({ target: c, donor: d, sides, measure, colourAt, normalAt, log: (l) => console.log(`  ${label} ${l}`) });
+  d.meshes = [false, true].map((lod) => d.meshes.filter((m2) => m2.lod === lod).sort((a, b) => handVerts(b) - handVerts(a))[0]).filter(Boolean);
+  const measure = (x, ss) => fitHands({ meshes: x.meshes, jointNames: x.jointNames, world: x.world, rig, sides: ss, keep: ss }).data;
+  const { moved, sides: done } = graftHands({ target: c, donor: d, sides, measure, smooth: GRAFT_SMOOTH, log: (l) => console.log(`  ${label} ${l}`) });
   const Qinv = affineInverse(c.Q);
   for (const m of c.meshes) {
     if (!m.added?.length) continue;
