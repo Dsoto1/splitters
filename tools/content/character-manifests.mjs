@@ -36,7 +36,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -186,6 +186,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     need(typeof f === 'object' && f !== null && Array.isArray(f.box) && f.box.length === 6 && f.box.every((v) => typeof v === 'number' && Math.abs(v) <= 1.2) && f.box[0] < f.box[3] && f.box[1] < f.box[4] && f.box[2] < f.box[5], 'fixes.face.box: [x0, y0, z0, x1, y1, z1] in shares of the download\'s height (feet at 0, +z its front)');
     need(typeof f?.share === 'number' && f.share > 0 && f.share <= 0.2, 'fixes.face.share: 0–0.2 (the share of the triangle budget the face keeps, out of the head\'s)');
     need(x.surface === 'rebake', "fixes.face: with surface 'rebake' only");
+  }
+  // Closed shapes inside an unrigged download where its surface is open (plugs.mjs).
+  if (x.plugs !== undefined) {
+    const p = x.plugs;
+    need(p && typeof p === 'object' && Array.isArray(p.at) && p.at.length > 0 && p.at.length <= 8 && p.at.every((q) => Array.isArray(q) && q.length === 4 && q.every((v) => typeof v === 'number' && Math.abs(v) <= 1.2) && q[3] > 0 && q[3] <= 0.2), 'fixes.plugs.at: [[x, y, z, reach], …] (1–8; shares of the download\'s height in its own pose, the landmarks frame; reach 0–0.2)');
+    need(p?.shrink === undefined || (typeof p.shrink === 'number' && p.shrink > 0.3 && p.shrink <= 1), 'fixes.plugs.shrink: 0.3–1 (each radius against the points\' spread; 0.85 unless set)');
   }
   need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
@@ -407,6 +413,7 @@ export function buildSpec(m) {
     skin: x.skin,
     handsShare: x.handsShare,
     headShare: x.headShare,
+    plugs: x.plugs,
     face: x.face,
     lod: x.lod,
     normalSize: x.normalSize,
