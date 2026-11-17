@@ -203,6 +203,12 @@ describe('props with levels of detail cast at full detail through the shadow pro
     plant.computeWorldMatrix(true);
     plant.freezeWorldMatrix();
     expect(proxyable(plant, true)).toBe(false);
+    // A prop that can break keeps casting on its own (a proxy would keep its shadow once it is broken).
+    const crate = src!.createInstance('crate_1');
+    crate.metadata = { breakable: true };
+    crate.computeWorldMatrix(true);
+    crate.freezeWorldMatrix();
+    expect(proxyable(crate, true)).toBe(false);
   });
 
   it('batched copies with levels cast through static full-detail batches per square; their drawn batches cast nothing', async () => {
