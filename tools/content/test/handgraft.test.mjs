@@ -45,14 +45,13 @@ describe('new hand geometry (fixes.hands.graft, handgraft.mjs)', () => {
   // The old hand: a slab on the hand joint alone (a hand whose fingers can't curl), larger than the donor's.
   const target = hand({ at: [-0.6, 1.3, 0.05], len: 0.24, width: 0.14, holder: () => 'hand_r' });
   const sizes = new Map([[donor, [0.18, 0.09]], [target, [0.24, 0.14]]]);
-  const out = graftHands({ target, donor, sides: ['r'], measure: (x) => measured(...sizes.get(x)), colourAt: () => [200, 200, 200] });
+  const out = graftHands({ target, donor, sides: ['r'], measure: (x) => measured(...sizes.get(x)), smooth: 0 });
   const m = target.meshes[0];
 
   it("drops the old hand and adds the donor's, sized to the old one", () => {
     expect(out.sides).toEqual(['r']);
     expect(m.drop.size).toBe(m.idx.length / 3);
     const added = m.added[0];
-    expect(added.pos.length).toBe(donor.meshes[0].pos.length / 3);
     expect(added.idx.length).toBe(donor.meshes[0].idx.length);
     const ys = added.pos.map((p) => p[1] - 1.3);
     const xs = added.pos.map((p) => p[0] + 0.6);
@@ -62,9 +61,9 @@ describe('new hand geometry (fixes.hands.graft, handgraft.mjs)', () => {
 
   it("keeps the donor's finger weights, by joint name", () => {
     const added = m.added[0];
-    const onFingers = added.J.filter((js, i) => /^(index|middle|ring|pinky)_/.test(NAMES[js[0]]) && added.W[i][0] > 0.99).length;
-    const donorOn = Array.from(donor.meshes[0].J).filter((j, i) => i % 4 === 0 && /^(index|middle|ring|pinky)_/.test(NAMES[j])).length;
-    expect(onFingers).toBe(donorOn);
+    // Every new corner is held by the joint that held its donor vertex (here one joint each).
+    const holder = (p) => fingerOf(Math.round(((p[1] - 1.3) / 0.24) * 1e6) / 1e6, Math.min(0.5, Math.max(-0.5, Math.round(((p[0] + 0.6) / 0.14) * 1e6) / 1e6)));
+    for (let i = 0; i < added.pos.length; i++) expect(NAMES[added.J[i][0]]).toBe(holder(added.pos[i]));
   });
 
   it('moves the finger joints onto the new hand', () => {
@@ -76,9 +75,23 @@ describe('new hand geometry (fixes.hands.graft, handgraft.mjs)', () => {
     expect(t[0] + 0.6).toBeCloseTo(((d[0] - 0.5) / 0.09) * 0.14, 5);
   });
 
-  it("colours the new hand from the old hand's own colour", () => {
+  it("reads its surface from the old hand's own texture, inside the old triangles", () => {
     const added = m.added[0];
-    expect(new Set(added.uv.map((x) => x.join())).size).toBe(1);
+    // The old hand's map runs u 0.25-0.30, v 0.50-0.58: every new corner reads within it.
+    for (const [u, v] of added.uv) {
+      expect(u).toBeGreaterThanOrEqual(0.25 - 1e-6);
+      expect(u).toBeLessThanOrEqual(0.3 + 1e-6);
+      expect(v).toBeGreaterThanOrEqual(0.5 - 1e-6);
+      expect(v).toBeLessThanOrEqual(0.58 + 1e-6);
+    }
+    expect(new Set(added.uv.map((x) => x.map((k) => k.toFixed(3)).join())).size).toBeGreaterThan(10);
+  });
+
+  it('subdivides the donor hand once for smoother fingers', () => {
+    const t2 = hand({ at: [-0.6, 1.3, 0.05], len: 0.24, width: 0.14, holder: () => 'hand_r' });
+    sizes.set(t2, [0.24, 0.14]);
+    graftHands({ target: t2, donor, sides: ['r'], measure: (x) => measured(...sizes.get(x)), smooth: 1 });
+    expect(t2.meshes[0].added[0].idx.length).toBe(4 * donor.meshes[0].idx.length);
   });
 });
 

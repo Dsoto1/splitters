@@ -978,14 +978,19 @@ low-poly Meshy hand (a few long slivers per finger, cut that way from the downlo
 whatever its weights: blends, lanes and curls only softened it (HANDOFF.md, "Hands round 5"). The donor hand is laid
 in the old hand's joint frame as it sits in its own (so the clips' finger poses and the game's curl bend it as the
 rig's), sized to the old hand's measured length and width (its thickness in proportion: a measured thickness counts
-relaxed, half-closed fingers), skinned with the donor's finger weights and the rig's finger and thumb joints moved
-onto it; the old hand's triangles go (those the hand chain holds at least half). It takes one colour from the old
-hand: the texel nearest the old hand's median colour where the normal map is flat (a glove stays a glove). From then
-on the hand is measured only (`fingers: 'own'`). `rehand-built.mjs` applies it to a built file, the body and the
-first-person arms, once (`extras.graft` on the skin; the lock's `graft`; provenance names the hands' source); a
-rebuild from the download brings the download's hands back, and `prepare-meshy-characters.mjs` says to run
-`rehand-built.mjs` for it. On Alien Biker, Beanie Alien, Luther Vanguard, Agent Zhao and Anoobys (whose mitten paddle
-also curled away from a rifle's handguard), all with `curl: 0.7`. A rigid
+relaxed, half-closed fingers), subdivided once (Loop's rules, weights and normals blended: the donor's own fingers are
+six-sided and closed they read as blocks; `GRAFT_SMOOTH`), skinned with the donor's finger weights and the rig's
+finger and thumb joints moved onto it; the old hand's triangles go (those the hand chain holds at least half). Its
+surface is the old hand's own: each new triangle reads the character's map through the old hand triangle nearest it
+(its corners projected onto that triangle and kept inside it), so a glove keeps its weave and a skin its tone and
+mottling (an early version took one flat colour: owner, 2026-11-17, "plain grey"). About 1,500 triangles a hand
+(the far copy keeps the donor's own, not subdivided). From then on the hand is measured only (`fingers: 'own'`).
+`rehand-built.mjs` applies it to a built file, the body and the first-person arms, once (`extras.graft` on the skin;
+the lock's `graft`; provenance names the hands' source); a rebuild from the download brings the download's hands
+back, and `prepare-meshy-characters.mjs` says to run `rehand-built.mjs` for it. On Alien Biker, Beanie Alien, Luther
+Vanguard, Agent Zhao and Anoobys (whose mitten paddle also curled away from a rifle's handguard), all with
+`curl: 0.7`. In full-body first person a closed grafted hand reads lower on the audit's pistol palm (`sideR`, from the
+hand's thinnest way: a fist has none): 0.5-0.7 closed against 0.8 open; Vanguard's 0.13 (its narrow hand). A rigid
 gauntlet (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip. The Iron Knight's
 gauntlets (own fingers since its Iron Warden model) measure thick for their length, which caps the curl at 0.5; it has
 `fixes.hands.curl: 1` (2026-11-06: they close round the grip in both views).
