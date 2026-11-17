@@ -3000,7 +3000,7 @@ async function editorBuriedPickChecks(browser) {
   await page.mouse.click(q.x, q.y);
   await frames(page, 2);
   const piece = await page.evaluate(() => ({ pieces: [...(window.__editor.selection.setPieces ?? [])], portal: document.getElementById('ed-tunnel-portal')?.textContent ?? null, family: !!document.getElementById('ed-tunnel-family') }));
-  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && !piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers portals on its open ends (${JSON.stringify(piece)})`);
+  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers its Family (map format v44) and portals on its open ends (${JSON.stringify(piece)})`);
   if (piece.portal) await page.click('#ed-tunnel-portal');
   await frames(page, 2);
   const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
