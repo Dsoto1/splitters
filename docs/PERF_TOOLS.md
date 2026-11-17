@@ -98,6 +98,19 @@ memory     script 642 MB · 3,730 meshes, 891 materials, 2,835 geometries, 433 t
   runs rounds of a small edit, a Test with bots and Back to MapMaker, then plain matches from the menu, and
   after each collects garbage and prints what the page holds, including objects still in the heap that were
   disposed (a disposed scene there is a leak). Its options are at the top of the file.
+- **A match's heap and garbage**: `node tools/perf/match-profile.mjs` (after `pnpm build`) plays an offline bot match
+  (default Flavius Rule, 64 bots, Medium) and reports, in one page:
+  - what the live heap holds by the code that allocated it;
+  - an animation census: character evaluations a second at 39 and 60 fps, with and without the crowd rule
+    (`tools/perf/anim-census.mjs`);
+  - the frame split;
+  - a CPU profile with the garbage collector's share;
+  - an allocation profile: MB a second and the top allocators;
+  - the heap after a full collection, with the CPU-side geometry the engine keeps.
+
+  `PROF_QUERY=perfoff=…` measures against old code. `PROF_DIST=dist-prof` serves an unminified build
+  (`vite build --minify false --outDir dist-prof`), so its profiles name functions. Its first use, and its options:
+  `docs/PERF_FLAVIUS_MEMORY_2026-11-16.md`.
 
 ## The recording file
 
