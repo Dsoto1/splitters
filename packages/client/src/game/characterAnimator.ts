@@ -84,7 +84,7 @@ const RATIO_EPSILON = 0.004;
  * spine turns back by the same. Without strafe clips, legs running straight ahead while the body
  * goes sideways slid the planted foot at the full ground speed.
  */
-const HIP_TURN_MAX = 1.35;
+export const HIP_TURN_MAX = 1.35;
 /** Moving more than this share of a half turn away from facing plays the gait backwards (and stops below the second). */
 const BACK_START = 0.6;
 const BACK_STAY = 0.52;

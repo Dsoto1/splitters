@@ -148,7 +148,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
-import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { CharacterAnimator, HIP_TURN_MAX, type OneShot } from './characterAnimator.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { sliced } from './sliced.ts';
@@ -422,6 +422,15 @@ interface PickupVisual {
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
+/**
+ * The way a seated rider is drawn facing (its root's yaw): its aim, turned back toward the seat's way to within how far
+ * the waist turns (CharacterAnimator's HIP_TURN_MAX), so the hips always face the seat and the legs stay on it.
+ */
+export function seatDrawnYaw(aimYaw: number, seatYaw: number): number {
+  const d = angleDelta(seatYaw, aimYaw);
+  return seatYaw + Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, d));
+}
+
 export class GameView {
   readonly scene: Scene;
   /** Draw every body's hit shapes over it (Options → Display → Show hitboxes, a dev and test setting). */
@@ -2297,7 +2306,11 @@ export class GameView {
           if (t >= 1) a.emergeAt = undefined;
           else a.root.position.y -= EMERGE_DEPTH * (1 - t) * (1 - t);
         }
-        a.root.rotation.y = p.yaw;
+        // A rider in a real seat is drawn turned no further from the seat's way than the waist turns, so the hips and
+        // legs stay on the seat: one looking over its shoulder (a bench rider aiming out over the side, a pilot looking
+        // back) had its legs swung off the cushion, back into the backrest, and read as standing (seatDrawnYaw).
+        const sitAt = sitting.get(p.slot);
+        a.root.rotation.y = sitAt ? seatDrawnYaw(p.yaw, sitAt.yaw) : p.yaw;
       }
       // Show hitboxes (dev and test setting): the shapes the host tests shots against, over the body.
       if (this.showHitboxes && p.alive && !a.ragdoll) {
@@ -2395,7 +2408,7 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
-          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
+          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
