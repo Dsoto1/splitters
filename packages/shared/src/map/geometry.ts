@@ -435,11 +435,11 @@ export function envHalfSize(e: Extract<MapEntity, { kind: 'prop' }>): [number, n
 }
 
 /**
- * Kit prop generators whose pieces are bars or mesh with gaps (tools/content/kitprops.mjs KINDS): the Iron Fence and
- * the chain-link fences. Their collision box is a lattice to sight (WorldBox.lattice): bots see you through them, as
+ * Kit prop generators whose pieces are bars or mesh with gaps (tools/content/kitprops.mjs KINDS): the Iron Fence,
+ * the chain-link fences and the Volleyball Net. Their collision box is a lattice to sight (WorldBox.lattice): bots see you through them, as
  * you see them; the box still stops bodies, and rounds as the surface does (sheet metal: rifles go through).
  */
-const LATTICE_KIT_KINDS: ReadonlySet<string> = new Set(['railing', 'chainlink']);
+const LATTICE_KIT_KINDS: ReadonlySet<string> = new Set(['railing', 'chainlink', 'volleynet']);
 
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];

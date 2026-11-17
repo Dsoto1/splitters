@@ -12,10 +12,11 @@
 // part only). Nothing glows or blinks: the globe and the lantern are paint (a light entity beside them lights them).
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, bar, box, cyl, hex, lathe, mix3, ovalDisc, ovalShell, quadN, scale3, standIn, triN } from './geom.mjs';
+import { Mesh, bar, box, cyl, groundShade, hex, lathe, mix3, ovalDisc, ovalShell, quadN, scale3, standIn, triN, wirePanel } from './geom.mjs';
 
 const add3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 const mul3 = (a, k) => [a[0] * k, a[1] * k, a[2] * k];
+const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const lerp = (p, q, t) => p + (q - p) * t;
 
 /** A stone colour from the look's palette, jittered. */
@@ -526,5 +527,231 @@ export function islandBedMesh(seed, size, g, look, level) {
       box(m, [cx - cw * 0.7, y0 + ch * 0.7, cz - cw * 0.7], [cx + cw * 0.7, y0 + ch, cz + cw * 0.7], fc, ['ny']);
     }
   }
+  return m;
+}
+
+// ---------------------------------------------------------------- the guard post (St. John's step 4b: the Cadet Post)
+
+/**
+ * A small stone guard post by a gate: a dressed base course, walls of thin layered stone (lannonstone) with a wide
+ * window to the front (+z), a window on the −x side and a door on the +x side, a dressed lintel band round the top, a
+ * white fascia under a low hipped slate roof that overhangs the walls on every side. The windows are dark glass in
+ * white frames (paint: nothing glows). Settings `g`: `walls` ([half width, half depth] of the walls), `base` (the
+ * base course's height), `sill` (the windows' sill), `head` (their head and the door's), `band` (the lintel band's
+ * top), `eave` (the fascia's top), `door` ([z0, z1] on the +x face), `side` ([z0, z1]: the −x window). `look`:
+ * `stones` (hex list), `mortar`, `dressed`, `fascia`, `roof`, `glass`, `frame`, `door`, `jitter`. Collides as its box.
+ */
+export function guardPostMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const r = rng(seed);
+  const m = new Mesh();
+  const X = w / 2;
+  const Z = d / 2;
+  const [wx, wz] = g.walls;
+  const dressed = hex(look.dressed ?? '#c9c0ad');
+  const fascia = hex(look.fascia ?? '#e9e6dd');
+  const roof = hex(look.roof ?? '#3d4248');
+  const glass = hex(look.glass ?? '#2f3d47');
+  const frame = hex(look.frame ?? '#ece9e1');
+  const doorC = hex(look.door ?? '#2d4a3a');
+  const { base, sill, head, band, eave } = g;
+  const [dz0, dz1] = g.door;
+  const [sz0, sz1] = g.side;
+  const fx = wx - 0.35; // the front window's half width
+  // The openings on each face, in the face's own (s across, y up) terms; s runs along the face's `along` axis.
+  const faces = [
+    { n: [0, 0, 1], at: (s, y) => [s, y, wz], half: wx, holes: [[-fx, fx, sill, head]] },
+    { n: [0, 0, -1], at: (s, y) => [-s, y, -wz], half: wx, holes: [] },
+    { n: [1, 0, 0], at: (s, y) => [wx, y, -s], half: wz, holes: [[-dz1, -dz0, base, head]] },
+    { n: [-1, 0, 0], at: (s, y) => [-wx, y, s], half: wz, holes: [[sz0, sz1, sill, head]] },
+  ];
+  // The base course: a dressed plinth a little proud of the walls.
+  const bp = 0.05;
+  box(m, [-wx - bp, 0, -wz - bp], [wx + bp, base, wz + bp], (p, n) => scale3(dressed, n[1] > 0.5 ? 1.04 : 0.9 * groundShade(p[1], 0.3, 0.8)), ['ny']);
+  // The walls between base and band: laid stone, the openings left out.
+  const H = band - base;
+  for (const f of faces) {
+    const inHole = (s, y) => f.holes.some(([a, b, y0, y1]) => s > a - 0.02 && s < b + 0.02 && y > y0 - 0.02 && y < y1 + 0.02);
+    const at = (s, t) => f.at(s * f.half, base + t * H);
+    if (level >= 2) {
+      // Far: the face's ground, the openings as dark panels on it.
+      quadN(m, at(-1, 0), at(1, 0), at(1, 1), at(-1, 1), f.n, mix3(stoneTone(r, look), hex(look.mortar ?? '#4a4640'), 0.2));
+      for (const [a, b, y0, y1] of f.holes) {
+        const o = f.n.map((v) => v * 0.01);
+        const P = (s, y) => add3(f.at(s, y), o);
+        quadN(m, P(a, y0), P(b, y0), P(b, y1), P(a, y1), f.n, f === faces[2] ? doorC : glass);
+      }
+      continue;
+    }
+    fieldFace(m, r, look, { at, n: f.n, H, W: () => 2 * f.half, row: [0.12, 0.22], wide: [0.35, 0.8], proud: 0.025, level, skip: (s, t) => inHole(s * f.half, base + t * H) });
+    // Each opening: a recessed panel (glass or the door), a dressed surround standing a little proud, glazing bars.
+    for (const [a, b, y0, y1] of f.holes) {
+      const isDoor = f === faces[2];
+      const back = f.n.map((v) => v * -0.06);
+      const P = (s, y, o = back) => add3(f.at(s, y), o);
+      quadN(m, P(a, y0), P(b, y0), P(b, y1), P(a, y1), f.n, isDoor ? doorC : glass);
+      // The reveal: the opening's sides, head and sill, back to the panel.
+      const out = f.n.map((v) => v * 0.03);
+      const along = sub3(f.at(1, 0), f.at(0, 0));
+      quadN(m, P(a, y0, out), P(a, y1, out), P(a, y1), P(a, y0), along, scale3(dressed, 0.8));
+      quadN(m, P(b, y0, out), P(b, y1, out), P(b, y1), P(b, y0), mul3(along, -1), scale3(dressed, 0.8));
+      quadN(m, P(a, y1, out), P(b, y1, out), P(b, y1), P(a, y1), [0, -1, 0], scale3(dressed, 0.7));
+      if (!isDoor) quadN(m, P(a, y0, out), P(b, y0, out), P(b, y0), P(a, y0), [0, 1, 0], scale3(dressed, 1.05));
+      // The surround: a dressed frame 0.1 m wide on the face, round the opening.
+      const t = 0.1;
+      const strips = isDoor ? [[a - t, a, y0, y1 + t], [b, b + t, y0, y1 + t], [a, b, y1, y1 + t]] : [[a - t, a, y0 - t, y1 + t], [b, b + t, y0 - t, y1 + t], [a, b, y1, y1 + t], [a, b, y0 - t, y0]];
+      for (const [s0, s1, v0, v1] of strips) quadN(m, P(s0, v0, out), P(s1, v0, out), P(s1, v1, out), P(s0, v1, out), f.n, dressed);
+      if (level > 0) continue;
+      // Glazing bars on the windows (painted frames, a hair in front of the glass); the door a glazed top panel.
+      const bars = isDoor ? [] : Array.from({ length: Math.max(1, Math.round((b - a) / 0.6)) - 1 }, (_, k) => a + ((k + 1) * (b - a)) / Math.max(1, Math.round((b - a) / 0.6)));
+      const front = f.n.map((v) => v * -0.055);
+      for (const s of bars) quadN(m, P(s - 0.025, y0, front), P(s + 0.025, y0, front), P(s + 0.025, y1, front), P(s - 0.025, y1, front), f.n, frame);
+      if (!isDoor) {
+        const ym = y0 + (y1 - y0) * 0.62;
+        quadN(m, P(a, ym - 0.025, front), P(b, ym - 0.025, front), P(b, ym + 0.025, front), P(a, ym + 0.025, front), f.n, frame);
+      } else {
+        const m0 = a + 0.12;
+        const m1 = b - 0.12;
+        quadN(m, P(m0, y1 - 0.75, front), P(m1, y1 - 0.75, front), P(m1, y1 - 0.15, front), P(m0, y1 - 0.15, front), f.n, glass);
+        quadN(m, P(m1 - 0.12, base + 0.95, front), P(m1 - 0.04, base + 0.95, front), P(m1 - 0.04, base + 1.0, front), P(m1 - 0.12, base + 1.0, front), f.n, hex('#b59a52'));
+      }
+    }
+  }
+  // The lintel band: dressed stone all round, flush with the base course.
+  box(m, [-wx - bp * 0.6, band - 0.0001, -wz - bp * 0.6], [wx + bp * 0.6, band + 0.25, wz + bp * 0.6], (p, n) => scale3(dressed, n[1] < -0.5 ? 0.7 : 1), ['py']);
+  // The fascia (white) under the eaves, and its soffit.
+  const y0 = band + 0.25;
+  box(m, [-X, y0, -Z], [X, eave, Z], (p, n) => (n[1] < -0.5 ? scale3(fascia, 0.75) : fascia));
+  // The roof: a low hip from the eaves to a ridge along x.
+  const ridge = Math.max(0.05, X - Z);
+  const A = [[-X, eave, -Z], [X, eave, -Z], [X, eave, Z], [-X, eave, Z]];
+  const hr = level === 0 ? h - 0.035 : h; // the ridge cap's top is the size's
+  const R0 = [-ridge, hr, 0];
+  const R1 = [ridge, hr, 0];
+  const slate = (p, n) => scale3(roof, 0.9 + 0.12 * n[1] + (level === 0 ? 0.04 * Math.sin(p[1] * 40) : 0));
+  quadN(m, A[2], A[3], R0, R1, [0, 1, 1], slate);
+  quadN(m, A[0], A[1], R1, R0, [0, 1, -1], slate);
+  triN(m, A[1], A[2], R1, [1, 1, 0], slate);
+  triN(m, A[3], A[0], R0, [-1, 1, 0], slate);
+  if (level === 0) {
+    // A ridge cap and hip rolls (a shade darker).
+    const cap = scale3(roof, 0.7);
+    bar(m, R0, R1, 0.07, cap, { ends: true });
+    for (const [p, q] of [[A[0], R0], [A[3], R0], [A[1], R1], [A[2], R1]]) bar(m, add3(p, [-Math.sign(p[0]) * 0.06, 0.03, -Math.sign(p[2]) * 0.06]), q, 0.05, cap);
+  }
+  void d;
+  return m;
+}
+
+// ---------------------------------------------------------------- the volleyball net and court
+
+/**
+ * A volleyball net between two steel posts: the posts on small foot plates at ±(w/2 − plate/2), the net a band `net`
+ * m deep hung with its top at `top` m, a white tape along its top and foot and down its sides, a cord grid between
+ * (dark), guy cords from the tape's ends to the posts. Settings `g`: `top`, `net` (its depth), `span` (the net's
+ * width), `post` (a post's width), `plate`, `cell` (the grid's mesh, m). `look`: `post`, `tape`, `cord`, `plate`.
+ * Collides as its posts and the net's band (boxes: a lattice to sight, as the chain-link fence is).
+ */
+export function volleyNetMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const m = new Mesh();
+  const postC = hex(look.post ?? '#3c5e7c');
+  const tape = hex(look.tape ?? '#f1efe8');
+  const cord = hex(look.cord ?? '#1f2124');
+  const plateC = hex(look.plate ?? '#5b5d60');
+  const px = w / 2 - g.plate / 2;
+  const hp = g.post / 2;
+  const nx = g.span / 2;
+  const y1 = g.top;
+  const y0 = g.top - g.net;
+  if (level === 0) m.boxes = [[-px - g.plate / 2, 0, -d / 2, -px + g.plate / 2, h, d / 2], [px - g.plate / 2, 0, -d / 2, px + g.plate / 2, h, d / 2], [-nx, y0, -0.03, nx, y1, 0.03]];
+  for (const s of [-1, 1]) {
+    const x = s * px;
+    box(m, [x - g.plate / 2, 0, -d / 2], [x + g.plate / 2, 0.02, d / 2], plateC, ['ny']);
+    if (level >= 2) box(m, [x - hp, 0.02, -hp], [x + hp, h, hp], postC, ['ny']);
+    else cyl(m, 1, 0, x, 0.02, h - 0.03, hp, level === 0 ? 8 : 4, postC, { caps: '1' });
+    // A cap on the post's top (fills the height).
+    box(m, [x - hp * 1.15, h - 0.03, -hp * 1.15], [x + hp * 1.15, h, hp * 1.15], scale3(postC, 0.8));
+  }
+  // Fill the size's depth exactly: the foot plates are `d` deep (above). The net: tapes, then the cord grid.
+  const tw = 0.07;
+  const zf = 0.004;
+  for (const side of [1, -1]) {
+    const z = side * zf;
+    quadN(m, [-nx, y1 - tw, z], [nx, y1 - tw, z], [nx, y1, z], [-nx, y1, z], [0, 0, side], tape);
+    quadN(m, [-nx, y0, z], [nx, y0, z], [nx, y0 + 0.05, z], [-nx, y0 + 0.05, z], [0, 0, side], tape);
+    for (const sx of [-1, 1]) quadN(m, [sx * nx - (sx > 0 ? 0.05 : 0), y0, z], [sx * nx + (sx < 0 ? 0.05 : 0), y0, z], [sx * nx + (sx < 0 ? 0.05 : 0), y1, z], [sx * nx - (sx > 0 ? 0.05 : 0), y1, z], [0, 0, side], tape);
+  }
+  if (level >= 2) {
+    // Far: the net as one dark see-through-looking band (both faces).
+    for (const side of [1, -1]) quadN(m, [-nx, y0 + 0.05, side * 0.002], [nx, y0 + 0.05, side * 0.002], [nx, y1 - tw, side * 0.002], [-nx, y1 - tw, side * 0.002], [0, 0, side], scale3(cord, 1.4));
+  } else {
+    const cell = level === 0 ? g.cell : g.cell * 2.5;
+    const nu = Math.max(1, Math.round((2 * nx) / cell) - 1);
+    const nv = Math.max(1, Math.round((y1 - tw - (y0 + 0.05)) / cell) - 1);
+    wirePanel(m, [-nx, y0 + 0.05, 0], [nx, y0 + 0.05, 0], [-nx, y1 - tw, 0], [nx, y1 - tw, 0], nu, nv, level === 0 ? 0.012 : 0.03, cord);
+    // Guy cords from the tape's ends to the posts, top and foot.
+    for (const sx of [-1, 1]) for (const y of [y1 - 0.03, y0 + 0.02]) bar(m, [sx * nx, y, 0], [sx * (px - hp), y, 0], 0.012, cord);
+  }
+  return m;
+}
+
+/**
+ * A sand court laid on the ground: a shallow sand bed `size` (its width, thickness and length) with a bevelled edge,
+ * in patches of slightly different tone, and painted boundary lines round the court `court` ([width, length], m)
+ * centred on it, with a centre line across (under the net). Settings `g`: `court`, `line` (the lines' width),
+ * `patch` (the tone patches' size). `look`: `sand`, `line`, `jitter`. No collision: it is walked on as the ground.
+ */
+export function courtMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const r = rng(seed);
+  const m = new Mesh();
+  const sand = hex(look.sand ?? '#cdb78f');
+  const lineC = hex(look.line ?? '#f2f1ec');
+  const X = w / 2;
+  const Z = d / 2;
+  const b = Math.min(0.12, X / 4); // the bevel's width
+  if (level >= 2) {
+    // Far: the bed's top alone.
+    quadN(m, [-X, h, -Z], [X, h, -Z], [X, h, Z], [-X, h, Z], [0, 1, 0], sand);
+    return m;
+  }
+  // The bevel round the bed, from the ground up to the top.
+  const lo = [[-X, 0, -Z], [X, 0, -Z], [X, 0, Z], [-X, 0, Z]];
+  const hi = [[-X + b, h - 0.004, -Z + b], [X - b, h - 0.004, -Z + b], [X - b, h - 0.004, Z - b], [-X + b, h - 0.004, Z - b]];
+  for (let k = 0; k < 4; k++) {
+    const k2 = (k + 1) % 4;
+    const out = [lo[k][0] + lo[k2][0], 0.5, lo[k][2] + lo[k2][2]];
+    quadN(m, lo[k], lo[k2], hi[k2], hi[k], out, scale3(sand, 0.82));
+  }
+  // The top: tone patches at the nearest level, one face farther off (the lines a hair over it reach the size's top).
+  const top = h - 0.004;
+  if (level === 0) {
+    const nxp = Math.max(1, Math.round((2 * (X - b)) / g.patch));
+    const nzp = Math.max(1, Math.round((2 * (Z - b)) / g.patch));
+    for (let i = 0; i < nxp; i++) {
+      for (let j = 0; j < nzp; j++) {
+        const x0 = -X + b + ((2 * (X - b)) * i) / nxp;
+        const x1 = -X + b + ((2 * (X - b)) * (i + 1)) / nxp;
+        const z0 = -Z + b + ((2 * (Z - b)) * j) / nzp;
+        const z1 = -Z + b + ((2 * (Z - b)) * (j + 1)) / nzp;
+        quadN(m, [x0, top, z0], [x1, top, z0], [x1, top, z1], [x0, top, z1], [0, 1, 0], scale3(sand, 1 + r.range(-1, 1) * (look.jitter ?? 0.05)));
+      }
+    }
+  } else {
+    quadN(m, hi[0], hi[1], hi[2], hi[3], [0, 1, 0], sand);
+  }
+  // The lines: a hair over the sand, the court's outline and its centre line (across, at z = 0).
+  const [cw, cl] = g.court;
+  const lw = g.line;
+  const y = top + 0.004;
+  const cx = cw / 2;
+  const cz = cl / 2;
+  const strip = (x0, z0, x1, z1) => quadN(m, [x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1], [0, 1, 0], lineC);
+  strip(-cx, -cz, cx, -cz + lw);
+  strip(-cx, cz - lw, cx, cz);
+  strip(-cx, -cz + lw, -cx + lw, cz - lw);
+  strip(cx - lw, -cz + lw, cx, cz - lw);
+  strip(-cx + lw, -lw / 2, cx - lw, lw / 2);
   return m;
 }
