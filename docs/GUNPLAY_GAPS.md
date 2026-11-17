@@ -95,7 +95,7 @@ one marker (red for heads) and one kill sound. Bots led only projectiles.
 | Item | Before | Now |
 |---|---|---|
 | Head / torso / legs zones | ✅ (head ×2, legs ×0.75 for all) | ✅ per family: head 1.5–2 (precision 3), legs 0.8–0.9 |
-| Arms zone | ❌ | ❌ (arms count as torso) |
+| Arms zone | ❌ | ✅ own zone, 0.9× for every family (`arms`, `armshot`) |
 | Shotgun reduced head multiplier | ❌ | ✅ ×1.25 |
 | Explosives without headshots | ✅ | ✅ |
 
@@ -158,7 +158,7 @@ one marker (red for heads) and one kill sound. Bots led only projectiles.
 |---|---|---|
 | Hitmarker, impact sound, target reaction, material effect | ✅ | ✅ |
 | Distinct normal / head / armor / kill by shape and sound | 🟡 head colour only | ✅ diamond / bigger red diamond + ding / blue square + clank / sharp X + crunch |
-| Shield, critical weak point | ❌ | ❌ (no shields yet) |
+| Shield, critical weak point | ❌ | ✅ shield (spawn protection): gold ring + ping; weak points: none in the game yet |
 | Crunchy kill sound, multi-kill rhythm | 🟡 one pluck + announcer | ✅ synthesised crunch that climbs a step per kill in a row; marker grows and glows |
 | Damage numbers (optional) | ❌ | ❌ |
 
@@ -270,7 +270,8 @@ no latency and fly against the live world from the start.
 
 ### §42 Accessibility
 Crosshair and hitmarker styles, sensitivity, invert, aim assist toggle ✅;
-camera-shake / flash reduction, toggle ADS, vibration ❌ (G5).
+flash reduction (Reduce flashing), camera shake Off / Reduced / Full, toggle ADS, controller vibration on/off and
+strength ✅ (2026-11-17: Options → Accessibility and the pause menu).
 
 ### §43 MapMaker combat settings
 | Item | Before | Now |

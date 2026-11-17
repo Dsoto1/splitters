@@ -7,6 +7,8 @@
  * third of a second. Rounds landing close together add up to a cap, so sustained fire never shakes the view off a
  * target (docs/GUNPLAY_DIRECTION.md: no excessive flinch).
  *
+ * Camera shake (Options → Accessibility, combatPrefs.ts): Reduced keeps about a third of it, Off none.
+ *
  * Reduce flashing (docs/LOOK.md): no snap. The kick is a little over half the size and eases in over 90 ms instead
  * of 35 ms, and settles more slowly: a steady nudge, never a rapid jolt.
  */
@@ -61,11 +63,12 @@ export function kickAt(k: HitKick | null, now: number): { pitch: number; yaw: nu
 /**
  * A hit lands: `power` is its weapon's stopping power times the share of a full shot it carried (a shotgun pellet
  * 1/pellets), `side` where the round came from (-1 left of the view .. 1 right). Returns the new kick, starting now
- * from what is left of the last one plus this hit, within the cap.
+ * from what is left of the last one plus this hit, within the cap. `amount` scales the kick and its cap (Camera shake).
  */
-export function addKick(prev: HitKick | null, now: number, power: number, side: number, calm: boolean): HitKick {
+export function addKick(prev: HitKick | null, now: number, power: number, side: number, calm: boolean, amount = 1): HitKick {
   const left = kickAt(prev, now);
-  const scale = calm ? HIT_KICK.calmScale : 1;
+  // `amount`: the Camera shake setting's share (combatPrefs.ts), on top of Reduce flashing's calmer shape.
+  const scale = (calm ? HIT_KICK.calmScale : 1) * Math.max(0, amount);
   const max = HIT_KICK.max * scale;
   const up = (HIT_KICK.base + HIT_KICK.perPower * Math.max(0, power)) * scale;
   const pitch = Math.min(max, left.pitch + up);

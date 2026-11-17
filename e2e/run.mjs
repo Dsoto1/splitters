@@ -3000,7 +3000,7 @@ async function editorBuriedPickChecks(browser) {
   await page.mouse.click(q.x, q.y);
   await frames(page, 2);
   const piece = await page.evaluate(() => ({ pieces: [...(window.__editor.selection.setPieces ?? [])], portal: document.getElementById('ed-tunnel-portal')?.textContent ?? null, family: !!document.getElementById('ed-tunnel-family') }));
-  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && !piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers portals on its open ends (${JSON.stringify(piece)})`);
+  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers its Family (map format v44) and portals on its open ends (${JSON.stringify(piece)})`);
   if (piece.portal) await page.click('#ed-tunnel-portal');
   await frames(page, 2);
   const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
@@ -5000,6 +5000,15 @@ async function offlineFlow(browser) {
   await page.click('.opt-row:has-text("Reduce flashing") .switch');
   const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
   check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
+  // Combat accessibility (game/combatPrefs.ts): Aim hold/toggle and Camera shake, saved; vibration only where the browser can rumble a controller.
+  const combatDefault = await page.evaluate(() => ({ aim: document.getElementById('opt-aim-mode')?.value, shake: document.getElementById('opt-camera-shake')?.value }));
+  await page.selectOption('#opt-aim-mode', 'toggle');
+  await page.selectOption('#opt-camera-shake', 'reduced');
+  const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  await page.selectOption('#opt-aim-mode', 'hold');
+  await page.selectOption('#opt-camera-shake', 'full');
+  check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
@@ -10973,20 +10982,23 @@ async function flashingFlow(browser) {
 }
 
 /**
- * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit concrete tunnel (a portal, three modules with a
- * light under each strip fixture, a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
+ * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit tunnel (a portal, three modules with a light
+ * under each fixture, one in each family: concrete, brick sewer, mine; a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
  * headwall you sprint out to 5 m beyond it looking out (the dim bore opening onto daylight: a brightness step over
  * much of the picture), turn round in one frame and sprint back in looking into the tunnel.
  */
 const FLASHING_DAY = {
   name: 'day',
-  what: "the check's day scene: a lit concrete tunnel 40 m long (two portals, three modules, three lights)",
+  what: "the check's day scene: a lit tunnel 40 m long (two concrete portals; a concrete, a brick sewer and a mine module; three lights)",
   make: (page) =>
     page.evaluate(() => {
       const ed = window.__editor;
       // (Three cells east of the new map's own starting room.)
       const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
-      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
+      // (The run's three modules one in each family, concrete by the south portal, then brick sewer and mine: their
+      // lanterns and strip lights are steady glowing fixtures, seen when you turn back into the tunnel.)
+      const families = [undefined, 'brick', 'mine'];
+      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => ({ ...tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0), ...(families[y + 1] ? { family: families[y + 1] } : {}) })), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
       const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
       // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
       // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).

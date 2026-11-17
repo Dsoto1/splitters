@@ -38,7 +38,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/tunnels-5` · 7fd6fe28 · 44023522693 (lane B: tunnel kit step 5, brick sewer and mine families, the Outfall, Lit Tunnel Chamber, Family on set pieces and Close open ends; map format v44)
+- `wip/dropship-seats` · b6f72f77 · 44034422634 (lane A: the Dropship's riders stay on their seats: a seated rider is drawn turned no further from its seat than the waist turns; the drop route's twelve spread along the benches)
+- `wip/tunnels-6` · ba7b438c · 44044279105 (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
@@ -105,7 +106,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · **Procedural environment Phase 5: polish (owner, 2026-11-16: "yes")** (§11): ground-material transitions, seasonal and biome looks (autumn, snow-dusted, dry) across a whole map in one setting, LOD and shadow tuning for distant plants, a consistency pass.
 - M · B · MapMaker UI spec Phase 3: live minimap. **Built 2026-11-16 on `wip/mapmaker-ui-3`** (a helper of lane B's splitters22): Minimap | Outliner tabs, the compact card, click to select or go there, the selection and camera on it, redrawn after edits pause; `docs/MAPMAKER_UI_SPEC.md`, "Phase 3: as built". (Phase 2, synced selection and numeric transforms, landed 2026-11-16.)
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
-- L · B · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
+- L · B · Tunnel kit steps 5–8: step 5 built (brick sewer and mine families, the outfall, lit chamber, "Close open ends", `family` on set pieces at map format v44), checking on `check/tunnels-5`; then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
 - M · A · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).

@@ -345,6 +345,13 @@ export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, the
     // Through the map schema: each part as a map file would hold it (its fields in the schema's order).
     if (part.kind === 'tile') {
       const t = placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog);
+      // The placement's material family (format v44): a tunnel part that comes in it is drawn in it (as a placed tile's
+      // `family`); a part already in it, or one that doesn't come in it, is left as it is.
+      if (p.family) {
+        const own = catalog.get(t.tile)?.familyOf;
+        if (own && own.family !== p.family && catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === p.family)) t.family = p.family;
+        else if (own && own.family === p.family) delete t.family;
+      }
       if (paint && !('material' in paint)) {
         const s = { ...t.surfaces };
         for (const [slot, v] of Object.entries(paint) as [keyof typeof s, SurfaceStyle | undefined][]) if (v) s[slot] = { material: v.material, tint: v.tint ?? null };
