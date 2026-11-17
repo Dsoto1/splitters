@@ -107,6 +107,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/farlooks-kit2`, `wip/tunnels-8-ironmaw`; lane B's splitters22, 2026-11-17 19:00 UTC): please hold code pushes to main until this line goes.
 
+**Claimed (a helper of lane B's splitters22, 2026-11-17): the Dropship's deck holes and half-strength team paint** (`wip/dropship-deck`; QUEUE Bugs, first in line). Cause found: the cut model's deck floor has real holes (open edges at the floor's height, 0.2 m deep to the hull's bottom, whose faces point down, so the ground shows through them from above), in both levels of detail. Files: new `tools/content/deck-plate.mjs` (a flat plate under the floor's holes, coloured like the floor, every level of detail; also adds it to the built file without the download), `prepare-guns.mjs` (`plate` on an entry), `content/guns.json` / `guns.lock.json` / provenance / the vehicles palette atlas, `vehicles/hover_carrier.glb` (rebuilt from the built file; the source stays on the owner's Drive), `tools/content/test/deckPlate.test.mjs`; then `paint: 0.5` in every textured `content/vehicles/*.json`, the generated tables and fixture, `mountPaint.test.ts`, docs/VEHICLES.md, CHANGELOG. No map format change.
+
 **Claims (lane B's splitters22), 2026-11-17 19:20:** `wip/characters-1117` (the owner's character pass, QUEUE Bugs) and `wip/landing-lock` (the landing lock as a branch run by train.mjs; touches `tools/ci/train.mjs`, CLAUDE.md's landing lines, HANDOFF's How-to).
 
 **Checking** (branch · run; remove the line when it turns green or red):
