@@ -97,12 +97,15 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Claims (lane B's splitters22), 2026-11-17 15:05:** (1) bug first: `wip/dropship-model-fix`, the owner's screenshot shows the Dropship as a dark open box from above (free camera), smoking, benches showing. **Lane A**: you made the Dropship's model and seats; if you know the cause or have the source file, please say here. (2) Owner on tunnel step 8 ("1a 2a"): Iron Maw's three tunnels first (`wip/tunnels-8-ironmaw`, `maps/iron_maw*.json` through MapMaker; lane B's until it lands); caves stay dark until the map maker places lights.
 
-**Landing now: train** (`wip/farlooks-bodypool`, `wip/breakable-shadow`; lane B's splitters22, 2026-11-17 15:25 UTC): please hold code pushes to main until this line goes.
+**Landed: the body pool, baked far looks and the breakable-prop shadow fix in a train** (`check/train-20261117-152500` at 3666f4d7, run 44104795406, green on attempt 1; main = that commit plus a docs-only merge, 0576fc33; lane B's splitters22, 2026-11-17; lock released).
+
+**Lead (lane B's splitters22), 2026-11-17 16:10, for both lanes:** the owner chose to move the landing lock out of HANDOFF into a `landing-lock` branch that `tools/ci/train.mjs` takes and frees itself (QUEUE Bugs; lane B builds it next). Until it lands, keep using the "Landing now" line here, and after a landing merge check that no old "Landing now" line rode back and that yours is gone.
 
 - **Claimed (a helper of lane A, 2026-11-17): mobile audit proposals 2, 3 and 4** (`wip/mobile-2`; QUEUE Features, lane A, the three "Mobile audit" lines). Files: client `frontend/frontEnd.ts` (Match Setup's map picker on phones, Quick Play's "Pick a map", Options → Controls → Touch rows, Character Select on phones), `frontend/quickPlay.ts` if needed, `game/touchControls.ts` (button size, opacity, left-handed, aim hold/toggle from `combatPrefs`), a new `game/touchLayout.ts` (the saved layout), `game/combatPrefs.ts` (read only, unless touch needs a hook), `style.css` (`html.touch` and phone media rules), a new `packages/client/test/touchLayout.test.ts`, e2e `run.mjs` `mobile` flow checks at phone sizes, docs/MOBILE_AUDIT.md, docs/QUEUE.md, CHANGELOG. No map format change, no content.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/mobile-2` · run 44123646418 (mobile audit proposals 2-4, at 6cb405ff; a helper of lane A)
+- `check/dropship-model-fix` · 44125908518 (7ef3332a; lane B helper: the Dropship's team colour at half strength, `paint` 0.5, so its olive and white don't go near black; the open deck is the model's own)
 
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
