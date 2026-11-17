@@ -38,6 +38,17 @@ describe('the Dropship, the hover carrier', () => {
     for (const s of riders) expect(s.seated && Math.sign(s.facing!) === -Math.sign(s.offset[0])).toBe(true);
     expect(DROPSHIP_DROP_DEF.model).toBe(ship.model);
     expect(DROPSHIP_DROP_DEF.seats).toHaveLength(12);
+    // Every bench place on a cushion (measured on the drawn model, 2026-11-17: tops 1.24-1.26 m up, the floor 0.74 m,
+    // the three cushions a side from z -0.25 to -3.75 at x 1.0-1.6; a seated rider's hip joint rides 0.07-0.17 m over a
+    // place at 1.2), a rider's width (0.25 m) clear of the bench's ends.
+    for (const def of [ship, DROPSHIP_DROP_DEF]) {
+      for (const s of def.seats.filter((x) => x.role === 'passenger')) {
+        expect(Math.abs(s.offset[0]), s.label).toBeCloseTo(1.3);
+        expect(s.offset[1], s.label).toBeCloseTo(1.2);
+        expect(s.offset[2], s.label).toBeLessThanOrEqual(-0.25 - 0.25);
+        expect(s.offset[2], s.label).toBeGreaterThanOrEqual(-3.75 + 0.25);
+      }
+    }
   });
 
   it('on Shingle Point: a pilot and five bots aboard, it climbs, flies, lands and lets them all out on the ground', () => {
