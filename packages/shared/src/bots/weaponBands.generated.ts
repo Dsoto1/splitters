@@ -38,7 +38,7 @@ export const BOT_TTK: Readonly<Record<string, readonly (number | null)[]>> = {
   'core.flamethrower': [900, null, null, null, null, null, null, null, null, null, null, null, null, null],
   'core.freeze_ray': [1650, 1650, 1650, 1650, 1650, 1650, 1650, 1650, null, null, null, null, null, null],
   'core.blast_rockets': [983, 1133, 1317, 1517, 1700, 1900, 2083, 2283, 2667, 3050, 3633, 4583, null, null],
-  'core.revolver': [667, 667, 683, 700, 1050, 1400, 1417, 3375, 6600, 7900, 7967, null, null, null],
+  'core.revolver': [667, 667, 683, 700, 1050, 1400, 1417, 4642, 7867, null, null, null, null, null],
   'core.battle_rifle': [600, 600, 600, 600, 617, 617, 617, 633, 1033, 1750, 1467, 7300, null, null],
 };
 
