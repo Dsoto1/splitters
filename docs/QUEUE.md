@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
+- `wip/characters-1117` · 8cc22b4f · 44187594735 (lane B: the owner's character pass: Warrior Sentinel's shoulder (rejoint), Rattles stands straighter (lean), Horrors & Creatures, Soldiers & Spies with Army/Agency, the moves, astronauts together)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
@@ -172,6 +173,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
 
 ## Parked
+- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive `sounds/sonniss/<year>/` (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
 - L · B · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · B · Sound pass 2 (paused by the owner).
 - ? · B · Packed inputs to cut upload bandwidth.
