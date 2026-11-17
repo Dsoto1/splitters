@@ -155,6 +155,7 @@ import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type Chara
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, CROWD_KEEP, SHOT_OVERLAY_REACH, animStep, animStepByShare, byNumber, crowdStep, rankIn } from './animLod.ts';
+import { BODY_POOL_PER_LOOK, bodyPoolStats, bodyPoolTotal } from './bodyPool.ts';
 import { perfOn } from './perfSwitches.ts';
 import { sliced } from './sliced.ts';
 import { FrameSpread } from './frameSpread.ts';
@@ -347,15 +348,12 @@ const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z
 /**
  * Characters kept for reuse per look (spec) when their avatar goes (a body that sank away, one past MAX_CORPSES, a player
  * who left): the next avatar of that look (a respawn) takes one at once instead of building a new one (10-25 ms each,
- * just after a frame: a busy match's respawns were most of its hitches' unexplained time).
- */
-const BODY_POOL_PER_LOOK = 2;
-/**
- * And in all: past this the longest-kept body goes. Roulette deals every life another look, so two a look came to
+ * just after a frame: a busy match's respawns were most of its hitches' unexplained time). Two a look
+ * (BODY_POOL_PER_LOOK) and, in all, bodyPoolTotal (bodyPool.ts): 16, or one for every two players up to 32 in a big
+ * match. Past the total the longest-kept body goes: Roulette deals every life another look, so two a look came to
  * some 160 hidden bodies by mid-match, each with its paused clips still on the scene's list of running animations
  * (about 30,000 entries, which every clip start and stop searches: St. John's, 2026-11-10).
  */
-const BODY_POOL_TOTAL = 16;
 /**
  * Time (ms) a frame may spend putting away going characters (View.retireAvatar: back to the body pool, or disposed),
  * after the first step: a crowded match past MAX_CORPSES lost a body with every death, a new round all of them at once.
@@ -447,6 +445,8 @@ export class GameView {
   private readonly avatars = new Map<number, Avatar>();
   /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
   private crowd = false;
+  /** The most remote players and NPCs seen at once this match (the body pool's size: bodyPool.ts). */
+  private mostPoses = 0;
   /** updateAvatars calls so far: the animation LOD's frame count (animLod.ts). */
   private avatarFrame = 0;
   /** The living characters in view this frame, as squared distances, nearest first (updateAvatars). */
@@ -2157,6 +2157,7 @@ export class GameView {
     this.avatarFrame++;
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
+    if (poses.length > this.mostPoses) this.mostPoses = poses.length;
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
@@ -2784,6 +2785,7 @@ export class GameView {
     }
     const kept = this.bodyPool.get(specKey)?.pop();
     if (kept) {
+      bodyPoolStats.reused++;
       this.pooled.delete(kept);
       // A body of this look kept from an avatar that went: back in play at once (it was fitted and sized for this spec).
       kept.ch.root.parent = root;
@@ -2793,6 +2795,7 @@ export class GameView {
       placeholder.setEnabled(false);
       return a;
     }
+    bodyPoolStats.built++;
     void this.characters.create(spec, `char_${slot}`).then((ch) => {
       if (root.isDisposed()) return ch.dispose();
       ch.root.parent = root;
@@ -2984,7 +2987,7 @@ export class GameView {
 
   /** Characters kept for the next avatar of their look (BODY_POOL_PER_LOOK), by spec key. */
   private readonly bodyPool = new Map<string, CharacterAnimator[]>();
-  /** Every kept body with its spec key, longest-kept first (BODY_POOL_TOTAL). */
+  /** Every kept body with its spec key, longest-kept first (bodyPoolTotal). */
   private readonly pooled = new Map<CharacterAnimator, string>();
 
   /** Keep a going avatar's character for reuse (taken off the avatar, hidden, its clips paused); false: pool full. */
@@ -2992,14 +2995,20 @@ export class GameView {
     if (this.scene.isDisposed || anim.firstPerson || anim.ch.root.isDisposed()) return false;
     let list = this.bodyPool.get(key);
     if (!list) this.bodyPool.set(key, (list = []));
-    if (list.length >= BODY_POOL_PER_LOOK) return false;
+    if (list.length >= BODY_POOL_PER_LOOK) {
+      bodyPoolStats.refused++;
+      return false;
+    }
     anim.standBy();
     anim.ch.root.parent = null;
     anim.ch.root.setEnabled(false);
     list.push(anim);
     this.pooled.set(anim, key);
+    bodyPoolStats.kept++;
+    const total = (bodyPoolStats.size = bodyPoolTotal(this.mostPoses));
     // Over the total: the longest-kept body goes (a Map keeps the order they were put in).
-    if (this.pooled.size > BODY_POOL_TOTAL) {
+    while (this.pooled.size > total) {
+      bodyPoolStats.evicted++;
       const [oldest, itsKey] = this.pooled.entries().next().value!;
       this.pooled.delete(oldest);
       const its = this.bodyPool.get(itsKey);

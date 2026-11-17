@@ -231,6 +231,13 @@ export interface MountDef {
    * while it winds up (MOUNT_FLAG_CHARGING) and while its arc is locked on (MOUNT_FLAG_ARC); its arcs are this colour.
    */
   glow?: string;
+  /**
+   * Drawing: how strongly a paint skin or team colour (mountTint) paints the model, 0 to 1 (default 1, the full
+   * colour). The tint is mixed this far from white before it multiplies the model's own colours, so a model with a
+   * dark scheme of its own (the Dropship's olive and white) keeps it and takes the colour as a cast, where the full
+   * colour would turn it near black.
+   */
+  paint?: number;
   /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
   airplane?: boolean;
   /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
