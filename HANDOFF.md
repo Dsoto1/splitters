@@ -111,6 +111,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+- `check/landing-lock` · 44151224415 (the landing lock as a branch, run by train.mjs; a helper of lane B's splitters22)
+
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
 
