@@ -164,6 +164,7 @@ export class Inspector {
     } else {
       el.append(h2(`${this.app.selCount()} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
+      if (pieces.length > 1) el.append(this.app.pieces.multiLookRow(pieces));
       const tileOpts = tiles.length ? tileOptionPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
       if (tileOpts) el.append(tileOpts);
       const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc) : null;
