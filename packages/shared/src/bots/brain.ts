@@ -134,6 +134,11 @@ export interface BotWorldView {
   tick: number;
   self: CombatantView;
   others: readonly CombatantView[];
+  /**
+   * Has this player died (or left)? `others` holds only the living a bot may notice, so someone missing from it may be
+   * alive and out of its reckoning (in the drop plane, past a mode's awareness). Unset: missing counts as dead.
+   */
+  fallen?: (slot: number) => boolean;
   physics: PhysicsWorld;
   nav: NavWorld;
   spawnPoints: readonly Vec3[];
@@ -1020,11 +1025,13 @@ export class BotBrain {
       this.enemies.note(-1, this.threatFrom, view.tick, 'shot');
     }
 
-    // Its target has just died (the living enemies are all `others` holds): it takes that in after a beat of its own
-    // (After a kill), not on the tick they fell.
-    if (this.targetSlot !== null && !this.afterKill) {
+    // Its target has just died: it takes that in after a beat of its own (After a kill), not on the tick they fell.
+    // Not with an objective or an order to keep to: each of those has its own way to go already, and going on to where
+    // the fallen enemy was carries attackers forward (a beat and the fallbacks there left Fort Wars' attack short of
+    // the flag on 5 of 8 seeds, against 1 before).
+    if (this.targetSlot !== null && !this.afterKill && !view.orderGoal) {
       const gone = this.targetSlot;
-      if (!view.others.some((o) => o.slot === gone && o.alive)) this.targetDied(view, gone);
+      if (view.fallen ? view.fallen(gone) : !view.others.some((o) => o.slot === gone && o.alive)) this.targetDied(view, gone);
     }
     const interval = this.difficulty.perceptionIntervalTicks;
     if ((view.tick + this.slot) % interval === 0 && this.lastPerceiveTick !== view.tick) this.perceive(view);
@@ -1120,7 +1127,8 @@ export class BotBrain {
     if (!underFire) this.cover = null;
     if (this.state === 'engage' || this.state === 'cover') this.state = 'advance';
     this.fallback = null;
-    if (underFire || view.orderGoal?.run || this.post) return;
+    // Under fire, with an objective or an order now, on a vantage spot or still coming down: on as it was.
+    if (underFire || view.orderGoal || this.post || me.chute || me.grounded === false) return;
     // Someone else it knows of: after them.
     const next = this.enemies.best(me.pos, tick, this.memoryTicks, 80);
     if (next) {
@@ -3036,9 +3044,10 @@ export class BotBrain {
         }
         if (!alive) mem.forget(e.slot);
       }
-      // Lost sight of someone who has died since (someone else's kill): nothing there to go after.
+      // Lost sight of someone who has died since (someone else's kill): nothing there to go after (as for its own
+      // kills, not with an objective to keep to).
       const lk = this.lastKnownSlot;
-      if (this.lastKnown && lk >= 0 && !this.afterKill && !view.others.some((o) => o.slot === lk && o.alive)) this.lastKnown = null;
+      if (this.lastKnown && lk >= 0 && !this.afterKill && !view.orderGoal && (view.fallen ? view.fallen(lk) : !view.others.some((o) => o.slot === lk && o.alive))) this.lastKnown = null;
     }
     const board = view.plan?.callouts;
     if (board) {

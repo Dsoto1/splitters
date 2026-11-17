@@ -902,6 +902,10 @@ the living `others`) and kept its `lastKnown` spot, so every bot that had been s
 window, to hold the angle on that spot (engage or cover with no target), to chase it, or (tactical styles) to crouch
 and aim at it for a second first (`chase`'s "hold the angle"); their shots' spots in memory and `threatFrom` kept the
 holders facing it after. Now (`BotBrain.targetDied`, `takeKillIn`):
+- **Only for bots with nothing to keep to** (no objective or order: Team Deathmatch, free-for-all, roaming): a bot
+  with an objective goes on as before. Its goal already gives each its own way to go, and going on to where the fallen
+  enemy was carries attackers forward: a beat and the fallbacks there left Fort Wars' attack short of the flag on 5 of
+  8 seeds, against 1 before; without them there, the same as before.
 - **A beat of its own:** it takes the death in after 0.2-0.9 s (hard), about 0.3-1.0 s (normal) or 0.5-1.2 s (easy), by
   its tier's reaction time and its own seeded draw (`lossRng`, a stream of its own, so other choices stay as they were by
   seed). Until then it carries on as it was (no re-plan; a strafe goes on). Someone else in its sights ends the beat.
@@ -911,10 +915,15 @@ holders facing it after. Now (`BotBrain.targetDied`, `takeKillIn`):
   investigate) first; else push on (its goal, at the next decision; weight 0.25 + aggression), search on 6-16 m past
   where they fell (0.15 + pursuit persistence), regroup on the nearest teammate 8-45 m off for 4-8 s (0.1 + team
   loyalty), or hold for 1.5-4 s, keeping watch on a sector of its own (out from its teammates within 20 m, ±35°;
-  0.15 + tactics). Under fire, running an objective or on a vantage spot it does what those say.
+  0.15 + tactics). Under fire, on a vantage spot or still coming down under a canopy it does what those say.
+- `fallen` (BotWorldView, from the match): whether a player has died. Its `others` hold only the living it may notice,
+  so someone missing from them may be alive (in the drop plane, past a mode's awareness).
 - Test `botReact.test.ts`: on Shingle Point with 47 bots, when the player 6-12 bots are shooting falls, at most 3 of
   them change state or stance on any tick (before: 4-7), at most half face where they fell 1.5 s on (before: 9-10 of 12;
-  after: 0-4), and none chases or holds that spot after the beats.
+  after: 0-4), and none chases or holds that spot after the beats. Seed-sensitive tests moved: the arena hunt (match.test)
+  now counts kills over seeds 7, 8 and 12 (seeds 1-12 × 3 profiles: 80 kills before, 79 after; seed 7 alone 4 → 1),
+  the air drop (airplane.test) seed 2 (seed 1's third bot steered onto the yard's wall top after the others' knife
+  fight; 2-8 land on the floor before and after).
 
 ## Holding a spot: the scan (Bot AI Phase D item 2)
 On top of "Standing still"'s keeping watch (shifting between places round the spot, crouching, the glance over the

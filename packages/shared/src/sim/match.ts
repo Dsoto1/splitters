@@ -2236,6 +2236,8 @@ export class Match {
       return list;
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
+    // Who has died (or gone): a bot's target missing from its `others` may only be out of its reckoning.
+    const fallen = (slot: number): boolean => (slot >= SENTRY_VIEW_BASE ? !this.mounts[slot - SENTRY_VIEW_BASE]?.alive : !this.actor(slot)?.alive);
     this.directBots(actors);
     const director = this.director;
     const every = this.botBudget(actors);
@@ -2286,6 +2288,7 @@ export class Match {
         tick: this.tick,
         self: views.get(c.slot)!,
         others,
+        fallen,
         physics: this.physics,
         // Shared sight lines and bounded perception only in big matches: smaller ones see exactly as before.
         sight: every > 1 ? this.sight : undefined,
