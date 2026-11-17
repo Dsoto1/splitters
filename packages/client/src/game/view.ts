@@ -31,6 +31,8 @@ import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
 import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
+import { streamPoint, streamStart, type StreamStart } from './streamBlend.ts';
+import type { ProjectileSample } from './interpolation.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
@@ -67,6 +69,7 @@ import {
   type WeaponHold,
   type WorldBox,
   PROJECTILE_VISUALS,
+  STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
   FX_PROTECTED,
@@ -150,7 +153,7 @@ import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
-import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, CROWD_KEEP, SHOT_OVERLAY_REACH, animStep, animStepByShare, byNumber, crowdStep, rankIn } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { sliced } from './sliced.ts';
 import { FrameSpread } from './frameSpread.ts';
@@ -445,12 +448,15 @@ export class GameView {
   private crowd = false;
   /** updateAvatars calls so far: the animation LOD's frame count (animLod.ts). */
   private avatarFrame = 0;
+  /** The living characters in view this frame, as squared distances, nearest first (updateAvatars). */
+  private readonly nearInView: number[] = [];
   private readonly pickups = new Map<string, PickupVisual>();
   /** When pickups were last updated (ms; their glows ease by the time since). */
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
-  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
+  /** `at`: where the host has it (sampled); `stream`: a stream's piece, drawn from its shooter's muzzle (streamBlend.ts). */
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
@@ -2155,15 +2161,20 @@ export class GameView {
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
     let shadowCut = Infinity;
+    // The living characters in view, nearest first (squared distances): the shadow cut and the animation crowd rule's
+    // ranks (animLod.ts crowdStep). One array kept from frame to frame.
+    const near = this.nearInView;
+    near.length = 0;
     if (eye) {
-      const near: number[] = [];
       for (const p of poses) {
         if (p.slot === localSlot || !p.alive) continue;
         if (planes && !inView(planes, p.x, p.y + 0.9, p.z, CULL_RADIUS)) continue;
         near.push((p.x - eye.x) ** 2 + (p.z - eye.z) ** 2);
       }
-      if (near.length > SHADOW_CHARACTERS) shadowCut = near.sort((x, y) => x - y)[SHADOW_CHARACTERS - 1]!;
+      near.sort(byNumber);
+      if (near.length > SHADOW_CHARACTERS) shadowCut = near[SHADOW_CHARACTERS - 1]!;
     }
+    const crowdRule = crowd && near.length > CROWD_KEEP && perfOn('animcrowd') && perfOn('animlod4');
     const seen = new Set<number>();
     let deathMs = 0;
     let deathsStarted = 0;
@@ -2358,7 +2369,10 @@ export class GameView {
           // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 20, 15, 10 and
           // 5 Hz (and at most every 2nd, 3rd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's
           // own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
+          const share = screenShare(far, fov);
+          const banded = perfOn('animlod4') ? animStepByShare(share) : animStep(far, perfOn('animlod2'));
+          // In a crowd, all but the nearest few a rung or two slower (crowdStep).
+          const step = crowdRule ? crowdStep(banded, rankIn(near, d2), share, near.length) : banded;
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
@@ -3140,16 +3154,23 @@ export class GameView {
     if (node) this.setPropShown(node, false);
   }
 
-  updateProjectiles(positions: ReadonlyMap<number, [number, number, number, number]>): void {
+  /** `localSlot`: yours, so a stream you fire leaves your first-person gun (streamBlend.ts). */
+  updateProjectiles(positions: ReadonlyMap<number, ProjectileSample>, localSlot = -1): void {
     const now = performance.now();
     for (const [id, pos] of positions) {
       let p = this.projectiles.get(id);
       if (!p) {
-        p = { node: this.createProjectile(id, PROJECTILE_VISUALS[pos[3]] ?? 'grenade'), look: pos[3], born: now };
+        const visual = PROJECTILE_VISUALS[pos[3]] ?? 'grenade';
+        p = { node: this.createProjectile(id, visual), look: pos[3], born: now, at: new Vector3(pos[0], pos[1], pos[2]) };
+        // A stream's own shot (the snapshot names its shooter) leaves the shooter's muzzle as drawn this frame.
+        const shooter = pos[4];
+        if (shooter >= 0 && STREAM_VISUALS.has(visual)) p.stream = streamStart({ x: pos[0], y: pos[1], z: pos[2] }, this.muzzleAnchor({ local: shooter === localSlot, slot: shooter }), now);
         this.projectiles.set(id, p);
       }
-      const prev = p.node.position.clone();
-      p.node.position.set(pos[0], pos[1], pos[2]);
+      // Its heading from where the host had it (a stream piece is drawn off that path for its first moments).
+      const prev = p.at.clone();
+      p.at.set(pos[0], pos[1], pos[2]);
+      p.node.position.copyFrom(p.at);
       const look = PROJECTILE_VISUALS[p.look];
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
@@ -4310,6 +4331,8 @@ export class GameView {
 
   /** Beams laid from a gun's muzzle again each frame (addBeam with an anchor); each goes with its mesh. */
   private readonly onMuzzle = new Set<() => void>();
+  /** Scratch point for stream pieces (followMuzzles). */
+  private readonly streamAt: Vec3 = { x: 0, y: 0, z: 0 };
 
   /**
    * Everything drawn on a gun's muzzle, placed where the guns are this frame: beams (addBeam's, and the steady ones
@@ -4320,6 +4343,13 @@ export class GameView {
    */
   private followMuzzles(now: number): void {
     for (const lay of this.onMuzzle) lay();
+    // Stream pieces in their first moments: off the muzzle, blending into the host's path.
+    for (const p of this.projectiles.values()) {
+      if (!p.stream) continue;
+      const at = streamPoint(p.stream, p.at, now, this.streamAt);
+      p.node.position.set(at.x, at.y, at.z);
+      if (now - p.stream.born > 1000) p.stream = undefined;
+    }
     this.steadyArcs.update(now);
     for (const a of this.avatars.values()) {
       if (a.flashRig?.update(now)) this.placeRemoteFlash(a);

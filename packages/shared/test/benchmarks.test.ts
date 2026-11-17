@@ -90,11 +90,15 @@ function setup(weapon: string, targets: [number, number, number][], extra: MapEn
 }
 
 describe('benchmark personalities', () => {
-  it('the heavy revolver is absurdly powerful: a head shot kills at any range, a body shot takes most of a life', () => {
+  it('the heavy revolver is absurdly powerful: a head shot kills within its range, a body shot takes most of a life', () => {
     const def = getWeapon(BENCH.revolver);
     const gp = gunplayOf(def);
     expect(def.damage).toBeGreaterThanOrEqual(85);
-    expect(def.damage * gp.head * falloffAt(gp.falloff, 1000)).toBeGreaterThanOrEqual(PLAYER.maxHealth);
+    // Short range (owner, 2026-11-16: "short range yes", like the Hand Cannon): one head shot kills to 45 m, not
+    // far beyond; it reaches 110 m.
+    expect(def.damage * gp.head * falloffAt(gp.falloff, 45)).toBeGreaterThanOrEqual(PLAYER.maxHealth);
+    expect(def.damage * gp.head * falloffAt(gp.falloff, 60)).toBeLessThan(PLAYER.maxHealth);
+    expect(def.range).toBeLessThanOrEqual(120);
     expect(def.damage).toBeGreaterThan(getWeapon(BENCH.pistol).damage * 3);
     // In a match: one round to the head at 40 m drops a player.
     const { a, others, step } = setup(BENCH.revolver, [[40, 0, 0]]);
