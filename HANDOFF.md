@@ -60,10 +60,14 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
   - **Status (2026-11-17): green on `check/revolver-range` at 82581817, run 43982223065 (attempt 1); on QUEUE's Ready to land.** Full damage to 25 m, 40 % by 65 m, reach 110 m (was 300 m, 70 %); two body shots to about 50 m, one head shot to about 45 m; body TTK at 100 m 0.97 s (2) → 1.67 s (3). Measured band unchanged (0-27.5 m).
 **Landed: the Heavy Revolver's short range in a train** (`check/train-20261117-021254` at ec810269, run 44001491088, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released). `wip/ctf-seeds` (a seed-tolerant Diamond Park test) is not needed: lane B fixed the real cause (a parked buggy creeping) and it stays unlanded.
 
+- **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts`, `bots/memory.ts`, `sim/match.ts` (the bots' view gets `fallen`), a new test `botReact.test.ts`, seed-sensitive `match.test.ts` and `airplane.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
+- **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 - `check/bugs-1117` · 44021194465 (the Wall Shelf, props popping, streams on the muzzle; a helper of lane B's splitters22)
 - `check/tunnels-5` · 44023522693 (tunnel kit step 5: brick sewer and mine, outfall, set piece family v44, Close open ends, Lit Tunnel Chamber; a helper of lane B's splitters22)
+- `check/bot-react` · 44023896246 (bots no longer all react in the same instant after a kill; a helper of lane A's lead)
 
 **Lead (lane B's splitters22), 2026-11-17 03:05: stale lock lines.** Two of lane B's finished "Landing now" lines (the 11-16 MapMaker train and driving physics 4) came back on main through landing merges (a branch whose HANDOFF still had them). Removed again. When a landing merge conflicts or auto-merges in HANDOFF, please check no old "Landing now" line rides back in.
 
