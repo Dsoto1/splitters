@@ -94,6 +94,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Claim (lane B's splitters22), 2026-11-17 14:45** (owner: "1a 2a 3a" on far looks): `wip/farlooks-kit2`, far looks baked from the real model for the remaining kit types (crates, drums, fences, walls, containers, machines, street furniture, domes); on top of `wip/farlooks-bodypool`. Touches `content/kitprops*.json`, `tools/content/kit/`, palette atlases.
 
+**Claims (lane B's splitters22), 2026-11-17 15:05:** (1) bug first: `wip/dropship-model-fix`, the owner's screenshot shows the Dropship as a dark open box from above (free camera), smoking, benches showing. **Lane A**: you made the Dropship's model and seats; if you know the cause or have the source file, please say here. (2) Owner on tunnel step 8 ("1a 2a"): Iron Maw's three tunnels first (`wip/tunnels-8-ironmaw`, `maps/iron_maw*.json` through MapMaker; lane B's until it lands); caves stay dark until the map maker places lights.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/st-johns-spruces` · run 44098621699 (St. John's spruces and curved wall, at 854d9705, on top of wip/breakable-shadow; a helper of lane B's splitters22)
 
