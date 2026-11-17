@@ -93,7 +93,6 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/characters-1117` · 44187594735 (8cc22b4f; run 44178429892 red only on e2e `teams`' soldiers-only match, now Army-only; lane B helper: Horrors & Creatures, Soldiers & Spies with Army / Agency, the owner's moves and astronaut order; Warrior Sentinel's shoulders rejointed; Rattles leaned upright)
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts`, `bots/memory.ts`, `sim/match.ts` (the bots' view gets `fallen`), a new test `botReact.test.ts`, seed-sensitive `match.test.ts` and `airplane.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
 
