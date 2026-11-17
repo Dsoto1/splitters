@@ -3,7 +3,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { LastingFx } from './lastingFx.ts';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh as MeshClass, type Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
@@ -16,6 +16,7 @@ import { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 import { indicator, reduceFlashing } from './reduceFlashing.ts';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing
@@ -615,11 +616,15 @@ export function statusColor(bits: number): string | null {
  * It holds still on every setting: a steady glow (docs/LOOK.md, "Reduce flashing").
  */
 export function createAura(scene: Scene, parent: TransformNode): Mesh {
-  const shell = CreateCylinder('aura', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene);
+  // Every character gets one (spawn protection is a status), so a busy match built two fresh shapes with every respawn
+  // (Flavius Rule's allocation profile, docs/PERF_FLAVIUS_MEMORY_2026-11-16.md): their geometry is now made once a
+  // scene and shared (`?perfoff=aurashare` builds them afresh).
+  const shapes = perfOn('aurashare') ? auraShapes(scene) : null;
+  const shell = shapes ? shapeCopy('aura', shapes.shell, scene) : CreateCylinder('aura', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene);
   shell.position.y = 0.95;
   shell.parent = parent;
   shell.isPickable = false;
-  const rim = CreateSphere('aura_rim', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene);
+  const rim = shapes ? shapeCopy('aura_rim', shapes.rim, scene) : CreateSphere('aura_rim', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene);
   rim.parent = shell;
   rim.isPickable = false;
   auraRims.set(shell, rim);
@@ -628,6 +633,28 @@ export function createAura(scene: Scene, parent: TransformNode): Mesh {
 }
 
 const auraRims = new WeakMap<Mesh, Mesh>();
+
+/** The aura's two shapes, made once a scene and kept hidden: every aura draws with their geometry. */
+const shapesByScene = new WeakMap<Scene, { shell: Mesh; rim: Mesh }>();
+function auraShapes(scene: Scene): { shell: Mesh; rim: Mesh } {
+  let s = shapesByScene.get(scene);
+  if (!s || s.shell.isDisposed() || s.rim.isDisposed()) {
+    s = { shell: CreateCylinder('aura_shape', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene), rim: CreateSphere('aura_rim_shape', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene) };
+    for (const m of [s.shell, s.rim]) {
+      m.setEnabled(false);
+      m.isPickable = false;
+    }
+    shapesByScene.set(scene, s);
+  }
+  return s;
+}
+
+/** A mesh drawing with `shape`'s geometry (shared, not copied: the shape keeps it when every copy has gone). */
+function shapeCopy(name: string, shape: Mesh, scene: Scene): Mesh {
+  const m = new MeshClass(name, scene);
+  shape.geometry!.applyToMesh(m);
+  return m;
+}
 
 /** How opaque the outline's rim (seen edge-on) and its middle (seen face-on) are. */
 export const AURA_RIM = { edge: 0.9, middle: 0.05, power: 0.6 } as const;
