@@ -108,6 +108,8 @@ export interface GripTune {
   rollL?: number;
   /** The shooting palm's point on a long gun's grip, moved by this much. */
   gripLong?: [number, number, number];
+  /** The shooting palm's point on a pistol's grip, moved by this much (third person: a hand whose palm sat inside the grip). */
+  gripPistol?: [number, number, number];
 }
 
 /**
