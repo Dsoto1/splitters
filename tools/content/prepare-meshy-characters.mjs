@@ -53,6 +53,7 @@ import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
 import { buildSpec, jointsFromLandmarks, readManifests } from './character-manifests.mjs';
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
+import { addPlugs } from './plugs.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { bindRigid, bodySkin, fingerSkin, fixBodySkin, moveJoints } from './skinfix.mjs';
@@ -635,6 +636,12 @@ async function readUnrigged(file, c, ual) {
     if (!p.getIndices()) p.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from({ length: p.getAttribute('POSITION').getCount() }, (_, i) => i)));
   }
   await doc.transform(weld());
+  // `fixes.plugs` (plugs.mjs): closed shapes inside the body where the download's own surface is open, added before it
+  // is rigged (bone heat rigs them with the rest).
+  if (c.plugs) {
+    const added = addPlugs(mesh.listPrimitives()[0], c.plugs.at, c.plugs.shrink, (l) => console.log(`  ${c.id} ${l}`));
+    console.log(`  ${c.id} plugs: ${added} triangles`);
+  }
   let rebaked = null;
   {
     // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
