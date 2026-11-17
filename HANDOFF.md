@@ -83,6 +83,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (`wip/chars-faces`, green 2c3f6449 run 44060937176: Sgt. Mackie's and Kenji's faces, owner OK; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/breakable-shadow` · run 44086669127 (a broken prop takes its shadow with it, at b27c9e0f, on top of wip/shadow-casters; a helper of lane B's splitters22)
 
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
