@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_jo5ka532hlh4dv42",
-      "revision": 14,
-      "contentHash": "sha256:3619e43d0d86ae7e7f8510291c8495128e2a92aa980f219750f309d6970ce1d0",
+      "versionId": "v_3dwap4f3ecnuav7b",
+      "revision": 15,
+      "contentHash": "sha256:67dc8cf3c5d030d4188fb5593717874d8261116657e457fbcbfade11f7822cca",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T16:09:42.885Z"
+      "releasedAt": "2026-11-17T17:08:25.786Z"
     },
     "tier": "experimental"
   },
@@ -248,7 +248,7 @@
         "id": "t2_portal_n",
         "tile": "core.tunnel_road_wide_portal",
         "x": -12,
-        "y": -7,
+        "y": -6,
         "z": -6,
         "rotation": 2,
         "family": "concrete"
@@ -359,6 +359,15 @@
         "y": -7,
         "z": -10,
         "rotation": 2,
+        "family": "concrete"
+      },
+      {
+        "id": "t2_run_0",
+        "tile": "core.tunnel_road_wide_straight",
+        "x": -12,
+        "y": -7,
+        "z": -6,
+        "rotation": 0,
         "family": "concrete"
       }
     ]
