@@ -89,6 +89,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: Sgt. Mackie's and Kenji's faces** (`check/train-20261117-125014` at d1e766c6, run 44086887358, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released). The grafted hands continue on `wip/chars-hands-faces` (owner: palms show the pistol grip through them).
 
+**Landing now: train** (`wip/tunnels-6`, `wip/shadow-casters`, `wip/tunnels-7`; lane B's splitters22, 2026-11-17 13:55 UTC): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/farlooks-bodypool` · 44090541768 (da6de9e6: far looks baked from the real model, on top of the body pool)
 - `check/breakable-shadow` · run 44086669127 (a broken prop takes its shadow with it, at b27c9e0f, on top of wip/shadow-casters; a helper of lane B's splitters22)
