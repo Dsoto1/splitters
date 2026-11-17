@@ -1676,7 +1676,10 @@ export class CharacterAnimator {
     let support = grip.support;
     if (grip.style === 'pistol') {
       // The grip point goes to the middle of the hand's width, as in first person (gripPlaced).
-      gripped = { rot: aim, pos: palmWorld(arms.r).add(knuckleLine(arms.r)).subtract(new Vector3(...grip.grip).scale(scale).applyRotationQuaternion(aim)) };
+      // (This look's own `gripPistol`, GripTune: the gun moved in the shooting hand by this much, third person only.)
+      const by = this.ch.grip?.gripPistol;
+      const at = by ? [grip.grip[0] + by[0], grip.grip[1] + by[1], grip.grip[2] + by[2]] : grip.grip;
+      gripped = { rot: aim, pos: palmWorld(arms.r).add(knuckleLine(arms.r)).subtract(new Vector3(at[0]!, at[1]!, at[2]!).scale(scale).applyRotationQuaternion(aim)) };
     } else if (grip.style === 'long' && grip.shoulder) {
       const shoulder = pos(arms.r.upper);
       const inward = pos(this.spine[this.spine.length - 1]!).subtract(shoulder);

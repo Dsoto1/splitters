@@ -205,7 +205,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // This look's own hands and arms on a gun (GripTune in packages/shared/src/content/looks.ts).
     const g = x.grip;
     const NUM = { elbowOut: 0.4, elbowDown: 0.4, curlR: 1.6, curlL: 1.6, rollR: 1.6, rollL: 1.6 };
-    const PTS = ['supportPistol', 'supportLong', 'gripLong'];
+    const PTS = ['supportPistol', 'supportLong', 'gripLong', 'gripPistol'];
     need(g && typeof g === 'object' && Object.keys(g).every((k) => k in NUM || PTS.includes(k)), `fixes.grip: { ${[...Object.keys(NUM), ...PTS].join(', ')} }`);
     for (const k of ['elbowOut', 'elbowDown']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: metres (−${NUM[k]}–${NUM[k]})`);
     for (const k of ['rollR', 'rollL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: radians (−${NUM[k]}–${NUM[k]})`);
