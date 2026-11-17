@@ -162,14 +162,30 @@ export async function build(content, families) {
       const g = { ...f.generator, ...(v.set ?? {}) };
       const levels = f.lods.map((l, i) => ({ distance: l.distance, mesh: make(v.seed, f.size, g, v.look, i) }));
       let far;
+      const made = levels.map((l) => l.mesh);
+      // `tight`: a variant whose file came out over the byte budget keeps every lighter level within the generator's own
+      // triangles (recoloured at most: a whole dome's level 1 grew to 900 triangles); remembered in the lock.
+      const bake = (was, tight) => {
+        const plans = [];
+        for (let i = 1; i < levels.length; i++) {
+          const prev = i === 1 ? Math.min(made[0].triangles, (aliasCap.get(`${f.id}#${v.index}`) ?? Infinity) + 1) : levels[i - 1].mesh.triangles;
+          const before = tight ? Math.min(prev, made[i].triangles + 1) : prev;
+          const r = farLevel(made[0], made[i], i, was[i - 1], before);
+          levels[i].mesh = r.mesh;
+          plans.push(tight ? { ...r.plan, tight: true } : r.plan);
+        }
+        return plans;
+      };
       if (farTypes.has(type)) {
         const was = kept.get(`${f.id}#${v.name}`) ?? [];
-        far = [];
-        for (let i = 1; i < levels.length; i++) {
-          const before = i === 1 ? Math.min(levels[0].mesh.triangles, (aliasCap.get(`${f.id}#${v.index}`) ?? Infinity) + 1) : levels[i - 1].mesh.triangles;
-          const r = farLevel(levels[0].mesh, levels[i].mesh, i, was[i - 1], before);
-          levels[i].mesh = r.mesh;
-          far.push(r.plan);
+        // A variant kept at its own levels for its bytes (below) stays so without searching again.
+        far = was[0]?.key === 'own' ? was.map((p) => ({ ...p })) : bake(was, !!was[0]?.tight);
+        const over = async () => (await writeKitModel(`${type}_${name}_${v.name}`, levels, f.detailSpec)).length > m.budgets.maxBytes;
+        if (!was[0]?.tight && was[0]?.key !== 'own' && (await over())) far = bake([], true);
+        // Still over: the generator's own levels as they were.
+        if (far.some((p) => p.how !== 'own') && (await over())) {
+          for (let i = 1; i < levels.length; i++) levels[i].mesh = made[i];
+          far = far.map(() => ({ key: 'own', how: 'own', tight: true }));
         }
       }
       const t = levels.map((l) => l.mesh.triangles);
