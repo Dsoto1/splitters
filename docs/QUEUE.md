@@ -38,8 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/bot-react` · a74bada7 · 44023896246 (lane A: bots no longer all react in the same instant after a kill; green on attempt 2: attempt 1's e2e shard 1 ran out of time on `characters3`, 14 min for one check against its usual 4)
-- `wip/gunplay-polish` · 92889755 · 44027999271 (lane A: combat accessibility (toggle aim, camera shake, controller vibration), arms as their own hit zone at 0.9×, a shield hit marker; green on attempt 1)
+- (none)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
