@@ -23,7 +23,7 @@ import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
-import { dropPointCaches } from './pointCache.ts';
+import { dropPointCaches, withoutPointCaches } from './pointCache.ts';
 import { OwnedAssets } from './ownedAssets.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 import type { ClipLoop } from '../game/gait.ts';
@@ -184,6 +184,9 @@ export interface CharacterSpec {
  */
 export const gone = <T>(): Promise<T> => new Promise<T>(() => {});
 
+/** A file's meshes cloned for a body: without Babylon's per-vertex picking points (pointCache.ts; `?perfoff=bodypoints` makes them). */
+const instance = <T>(fn: () => T): T => (perfOn('bodypoints') ? withoutPointCaches(fn) : fn());
+
 export class CharacterLibrary {
   private readonly files = new Map<string, Promise<AssetContainer>>();
   private readonly textures = new Map<string, Texture>();
@@ -275,7 +278,7 @@ export class CharacterLibrary {
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
-      const inst = own.track(() => rig.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true }));
+      const inst = own.track(() => instance(() => rig.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
       for (const n of inst.rootNodes) n.parent = holder;
       joints = jointMap(inst.rootNodes);
       clips = new Map(inst.animationGroups.map((g) => [g.name as Clip, g]));
@@ -333,7 +336,7 @@ export class CharacterLibrary {
         return gone();
       }
       // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
-      const carrier = own.track(() => carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true }));
+      const carrier = own.track(() => instance(() => carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
       hands = handsOf(carrierC!);
       for (const n of carrier.rootNodes) n.parent = holder;
       const skeleton = carrier.skeletons[0]!;
@@ -459,7 +462,7 @@ export class CharacterLibrary {
 
   /** Instance a part's meshes onto an existing skeleton and return them. */
   private attach(part: AssetContainer, skeleton: Skeleton, anchor: Node, own: OwnedAssets): AbstractMesh[] {
-    const inst = own.track(() => part.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true }));
+    const inst = own.track(() => instance(() => part.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
     const out: AbstractMesh[] = [];
     for (const root of inst.rootNodes) {
       for (const m of root.getChildMeshes()) {

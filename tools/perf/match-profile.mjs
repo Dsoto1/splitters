@@ -15,6 +15,7 @@
 //   PROF_MAP=sandfall_colosseum   PROF_BOTS=64   PROF_MODE=core.tdm   PROF_GRAPHICS=medium
 //   PROF_SIZE=480x270 (the viewport: SwiftShader draws every pixel on the CPU)   PROF_WARM=25 (seconds before measuring)   PROF_SECONDS=15   PROF_QUERY=perfoff=animcrowd (more URL parameters)
 //   PROF_STEPS=live,split,cpu,alloc,heap (which steps)   PROF_JSON=<file> (results)
+//   PROF_RAW=<prefix>  also the raw profiles (<prefix>.cpuprofile, -alloc/-live.heapprofile, for DevTools)
 //   PROF_DIST=dist-prof   the build to serve (names read better from `vite build --minify false --outDir dist-prof`)
 //   PROF_URL=<url> a client already being served;   CHROMIUM=<path> another Chromium
 //
@@ -36,6 +37,8 @@ const SECONDS = Number(process.env.PROF_SECONDS ?? 15);
 const QUERY = process.env.PROF_QUERY ? `&${process.env.PROF_QUERY}` : '';
 const STEPS = new Set((process.env.PROF_STEPS ?? 'live,split,cpu,alloc,heap').split(','));
 const DIST = process.env.PROF_DIST ?? 'dist';
+/** PROF_RAW=<file prefix>: the raw profiles too (open a .heapprofile or .cpuprofile in DevTools). */
+const RAW = process.env.PROF_RAW;
 const out = { map: MAP, bots: BOTS, graphics: GRAPHICS, query: QUERY };
 
 const server = process.env.PROF_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--outDir', DIST, '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
@@ -94,6 +97,7 @@ async function cpu(cdp, seconds) {
   await cdp.send('Profiler.start');
   await sleep(seconds * 1000);
   const { profile } = await cdp.send('Profiler.stop');
+  if (RAW) writeFileSync(`${RAW}.cpuprofile`, JSON.stringify(profile));
   const dt = new Map();
   for (let i = 0; i < profile.samples.length; i++) dt.set(profile.samples[i], (dt.get(profile.samples[i]) ?? 0) + (profile.timeDeltas[i] ?? 0));
   const self = new Map();
@@ -124,6 +128,8 @@ function sumSampling(profile, seconds) {
   const byOurs = new Map();
   /** Self function → (first of our functions → bytes), to tell which of ours a Babylon allocation serves. */
   const pairs = new Map();
+  /** And the other way: first of our functions → (allocating function → bytes). */
+  const reverse = new Map();
   let total = 0;
   const add = (m, k, b) => m.set(k, (m.get(k) ?? 0) + b);
   const walk = (n, stack) => {
@@ -139,6 +145,9 @@ function sumSampling(profile, seconds) {
       let pm = pairs.get(k);
       if (!pm) pairs.set(k, (pm = new Map()));
       add(pm, ok, n.selfSize);
+      let rm = reverse.get(ok);
+      if (!rm) reverse.set(ok, (rm = new Map()));
+      add(rm, k, n.selfSize);
     }
     stack.push(n);
     for (const c of n.children) walk(c, stack);
@@ -148,7 +157,8 @@ function sumSampling(profile, seconds) {
   const scale = (b) => (seconds ? mb(b / seconds) : mb(b));
   const top = (m, k) => [...m].sort((a, b) => b[1] - a[1]).slice(0, k).map(([name, b]) => [name, scale(b)]);
   const split = top(self, 12).map(([k]) => [k, top(pairs.get(k), 5)]);
-  return { totalMB: mb(total), ...(seconds ? { mbPerS: scale(total) } : {}), top: top(self, 40), topWithCaller: top(withCaller, 30), byOurFunction: top(byOurs, 40), topByOurs: split };
+  const ourSplit = top(byOurs, 12).map(([k]) => [k, top(reverse.get(k), 8)]);
+  return { totalMB: mb(total), ...(seconds ? { mbPerS: scale(total) } : {}), top: top(self, 40), topWithCaller: top(withCaller, 30), byOurFunction: top(byOurs, 40), topByOurs: split, oursBySelf: ourSplit };
 }
 
 /** An allocation profile (garbage included): MB a second and the top allocating functions. */
@@ -157,6 +167,7 @@ async function alloc(cdp, seconds) {
   await cdp.send('HeapProfiler.startSampling', { samplingInterval: 8192, includeObjectsCollectedByMajorGC: true, includeObjectsCollectedByMinorGC: true });
   await sleep(seconds * 1000);
   const { profile } = await cdp.send('HeapProfiler.stopSampling');
+  if (RAW) writeFileSync(`${RAW}-alloc.heapprofile`, JSON.stringify(profile));
   return sumSampling(profile, seconds);
 }
 
@@ -236,6 +247,7 @@ async function main() {
   if (STEPS.has('live')) {
     await cdp.send('HeapProfiler.collectGarbage');
     const { profile } = await cdp.send('HeapProfiler.stopSampling');
+    if (RAW) writeFileSync(`${RAW}-live.heapprofile`, JSON.stringify(profile));
     out.live = sumSampling(profile, 0);
   }
   out.players = await page.evaluate(() => window.__match?.combatants().length ?? 0);

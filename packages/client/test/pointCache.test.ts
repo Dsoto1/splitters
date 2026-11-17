@@ -33,3 +33,23 @@ describe('the bodies’ picking points (Flavius Rule memory, 2026-11-16)', () =>
     expect(hit?.distance).toBeCloseTo(pre!.distance, 5);
   });
 });
+
+describe('bodies cloned without picking points', () => {
+  it('clones a mesh with the same bounds and no point cache inside withoutPointCaches, and as before outside it', async () => {
+    const { withoutPointCaches } = await import('../src/content/pointCache.ts');
+    const engine = new NullEngine();
+    engines.push(engine);
+    const scene = new Scene(engine);
+    const box = CreateBox('src', { width: 1, height: 3, depth: 2 }, scene);
+    const plain = box.clone('plain');
+    const quiet = withoutPointCaches(() => box.clone('quiet'));
+    expect(points(plain)?.length).toBe(24);
+    expect(points(quiet)).toBeNull();
+    expect(quiet.getBoundingInfo().boundingBox.extendSize.equals(plain.getBoundingInfo().boundingBox.extendSize)).toBe(true);
+    // Outside it, and for a call with options, the original behaviour.
+    const after = box.clone('after');
+    expect(points(after)?.length).toBe(24);
+    withoutPointCaches(() => after.refreshBoundingInfo({ applySkeleton: false }));
+    expect(points(after)?.length).toBe(24);
+  });
+});
