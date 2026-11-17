@@ -102,6 +102,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane A, 2026-11-17): mobile audit proposals 2, 3 and 4** (`wip/mobile-2`; QUEUE Features, lane A, the three "Mobile audit" lines). Files: client `frontend/frontEnd.ts` (Match Setup's map picker on phones, Quick Play's "Pick a map", Options → Controls → Touch rows, Character Select on phones), `frontend/quickPlay.ts` if needed, `game/touchControls.ts` (button size, opacity, left-handed, aim hold/toggle from `combatPrefs`), a new `game/touchLayout.ts` (the saved layout), `game/combatPrefs.ts` (read only, unless touch needs a hook), `style.css` (`html.touch` and phone media rules), a new `packages/client/test/touchLayout.test.ts`, e2e `run.mjs` `mobile` flow checks at phone sizes, docs/MOBILE_AUDIT.md, docs/QUEUE.md, CHANGELOG. No map format change, no content.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/mobile-2` · run 44123646418 (mobile audit proposals 2-4, at 6cb405ff; a helper of lane A)
 
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
