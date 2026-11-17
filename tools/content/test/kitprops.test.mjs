@@ -214,6 +214,21 @@ describe('kit-prop generator', () => {
     }
   });
 
+  it('the banner lamp post\'s trim is drawn only for a variant that has one (St. John\'s royal purple); the others are unchanged', () => {
+    const fam = families.find((f) => f.id === 'kit.lamp.post_banner');
+    expect(fam.variants.map((v) => v.name)).toEqual(['crimson', 'navy', 'slate', 'royal_purple']);
+    const purple = fam.variants[3].look;
+    expect(purple).toMatchObject({ banner: '#4b2a84', band: '#f2f0ea', trim: '#b3202a' });
+    const { trim, ...plain } = purple;
+    const tris = (look, level) => KINDS.bannerpost(1, fam.size, fam.generator, look, level).I.length / 3;
+    // Three thin strips (both sides and the foot) on each face of the cloth: 12 triangles at the near levels, none far.
+    for (const level of [0, 1]) expect(tris(purple, level) - tris(plain, level)).toBe(12);
+    expect(tris(purple, 2)).toBe(tris(plain, 2));
+    // Crimson has no trim: the same triangles as before the trim slot existed (the shipped files did not change).
+    expect(tris(fam.variants[0].look, 0)).toBe(tris(plain, 0));
+    void trim;
+  });
+
   it('never uses Math.random (seeded streams only)', () => {
     const dir = join(ROOT, 'tools/content/kit');
     for (const f of [...readdirSync(dir).map((x) => join(dir, x)), join(ROOT, 'tools/content/kitprops.mjs')]) expect(readFileSync(f, 'utf8'), f).not.toMatch(/Math\.random/);

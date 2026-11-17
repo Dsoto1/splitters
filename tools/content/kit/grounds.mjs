@@ -321,7 +321,8 @@ export function fieldWallMesh(seed, size, g, look, level) {
  * under a cap and finial at the top; an arm at `arm` m reaching +x carries a banner of two colours with a chevron
  * (plain colours of the map's own, no mark). Settings `g`: `base` (its height), `shaft` (the lantern's foot),
  * `arm` (the arm's height), `banner` ([x0, x1, y0]: its sides and foot). `look`: `iron`, `glass` (the lantern's
- * panes), `banner` (hex), `band` (hex: the chevron and border). Collides as the post (its base's box to the top).
+ * panes), `banner` (hex), `band` (hex: the chevron and border), `trim` (hex, optional: a thin edge round the sides and
+ * foot; none when unset). Collides as the post (its base's box to the top).
  */
 export function bannerPostMesh(seed, size, g, look, level) {
   const [w, h] = size;
@@ -384,6 +385,15 @@ export function bannerPostMesh(seed, size, g, look, level) {
       const t = 0.07;
       quadN(m, [mx - ww, cy, zz], [mx, cy + 0.32, zz], [mx, cy + 0.32 + t, zz], [mx - ww, cy + t, zz], [0, 0, side], band);
       quadN(m, [mx, cy + 0.32, zz], [mx + ww, cy, zz], [mx + ww, cy + t, zz], [mx, cy + 0.32 + t, zz], [0, 0, side], band);
+      // `trim`: a thin edge down both sides and along the foot (a variant without one has none: its look unchanged).
+      if (look.trim) {
+        const trim = hex(look.trim);
+        const e = 0.03;
+        const z3 = side * 0.011;
+        quadN(m, [bx0, yFoot, z3], [bx0 + e, yFoot, z3], [bx0 + e, yTop, z3], [bx0, yTop, z3], [0, 0, side], trim);
+        quadN(m, [bx1 - e, yFoot, z3], [bx1, yFoot, z3], [bx1, yTop, z3], [bx1 - e, yTop, z3], [0, 0, side], trim);
+        quadN(m, [bx0, yFoot, z3], [bx1, yFoot, z3], [bx1, yFoot + e, z3], [bx0, yFoot + e, z3], [0, 0, side], trim);
+      }
     }
   }
   void w;
