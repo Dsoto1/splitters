@@ -92,6 +92,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/tunnels-6`, `wip/shadow-casters`, `wip/tunnels-7`; lane B's splitters22, 2026-11-17 13:55 UTC): please hold code pushes to main until this line goes.
 
+- **Claimed (a helper of lane A, 2026-11-17): mobile audit proposals 2, 3 and 4** (`wip/mobile-2`; QUEUE Features, lane A, the three "Mobile audit" lines). Files: client `frontend/frontEnd.ts` (Match Setup's map picker on phones, Quick Play's "Pick a map", Options → Controls → Touch rows, Character Select on phones), `frontend/quickPlay.ts` if needed, `game/touchControls.ts` (button size, opacity, left-handed, aim hold/toggle from `combatPrefs`), a new `game/touchLayout.ts` (the saved layout), `game/combatPrefs.ts` (read only, unless touch needs a hook), `style.css` (`html.touch` and phone media rules), a new `packages/client/test/touchLayout.test.ts`, e2e `run.mjs` `mobile` flow checks at phone sizes, docs/MOBILE_AUDIT.md, docs/QUEUE.md, CHANGELOG. No map format change, no content.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/st-johns-spruces` · run 44098621699 (St. John's spruces and curved wall, at 854d9705, on top of wip/breakable-shadow; a helper of lane B's splitters22)
 
