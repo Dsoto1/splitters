@@ -6,8 +6,9 @@
 //
 // The Dropship (vehicles/hover_carrier.glb, 2026-11-17): its cut deck has long triangular holes between the aisle and
 // the benches, 0.2 m deep to the hull's bottom, whose faces point down and out; seen from above, the ground showed
-// through them (owner's screenshot). `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }`, in the built model's
-// frame (metres, glTF axes: +y up), inside the hull's walls.
+// through them (owner's screenshot). `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }`, or a list of them
+// (the Dropship's: the deck, and a sliver at each bench's front corner by the hull), in the built model's frame
+// (metres, glTF axes: +y up), inside the hull's walls.
 //
 // prepare-guns.mjs adds it when it builds the entry from the download. Without the download (it is on the owner's
 // Drive, not here), this adds it to the built file and updates content/guns.lock.json:
@@ -86,15 +87,15 @@ function extend(doc, prim, sem, extra) {
  * already carrying one (mesh extras `deckPlate`) are left alone. Returns how many meshes got it.
  */
 export function addDeckPlate(doc, plate) {
-  const { y, x: [x0, x1], z: [z0, z1], uvAt } = plate;
-  if (!(x1 > x0 && z1 > z0)) throw new Error('plate: x and z are [min, max]');
+  const plates = Array.isArray(plate) ? plate : [plate];
+  for (const { x: [x0, x1], z: [z0, z1] } of plates) if (!(x1 > x0 && z1 > z0)) throw new Error('plate: x and z are [min, max]');
   let n = 0;
   for (const node of doc.getRoot().listNodes()) {
     const mesh = node.getMesh();
     if (!mesh || mesh.getExtras()?.deckPlate) continue;
     const world = node.getWorldMatrix();
     const local = invert(world);
-    for (const prim of mesh.listPrimitives()) {
+    for (const prim of mesh.listPrimitives()) for (const { y, x: [x0, x1], z: [z0, z1], uvAt } of plates) {
       const pos = prim.getAttribute('POSITION');
       if (pos.getNormalized() || pos.getComponentType() !== 5126) throw new Error('plate: dequantize the document first');
       const uv = floorUv(prim, world, uvAt);

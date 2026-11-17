@@ -31,7 +31,7 @@
 // gets a normal map baked from the full download (`normalSize`, default 512 px; meshy-mesh.mjs bakeNormals).
 // `budget: "hero"` holds an entry to `budgets.tiers.hero` instead of the default caps (content:check), and
 // `lod: [share, metres]` adds a lower level of detail that instanced copies (a crowd's guns) draw from that far.
-// `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }` adds a flat deck plate, facing up, under a floor the cut
+// `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }` (or a list of them) adds a flat deck plate, facing up, under a floor the cut
 // left holes in (the Dropship's deck), to every level of detail, coloured like the floor under `uvAt`
 // (tools/content/deck-plate.mjs, which also adds it to a built file without the download).
 //
