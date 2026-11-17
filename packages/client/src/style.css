@@ -1973,3 +1973,80 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
   .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; width: min(340px, 46vw); }
   .nav button { font-size: 13px; padding: 4px 10px; gap: 8px; min-height: 34px; letter-spacing: 0.04em; }
 }
+
+/* Character Select: search, Favourites only and a favourite's star (every screen; docs/MOBILE_AUDIT.md, proposal 4). */
+.char-find { flex: none; display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+.char-search { width: 130px; min-width: 0; padding: 4px 8px; font-size: 13px; }
+.char-favs-only { min-width: 32px; padding: 2px 8px; color: var(--muted); font-size: 15px; line-height: 1; }
+.char-favs-only.on { color: var(--orange); border-color: var(--orange); background: rgba(255, 179, 71, 0.14); }
+.char-chip[hidden], .char-sec[hidden], .char-grid .char-tile[hidden] { display: none; }
+.char-empty { margin: 16px 4px; color: var(--muted); font-size: 14px; }
+.char-fav { position: absolute; top: 4px; left: 4px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(8, 11, 19, 0.65); color: var(--muted); font-size: 14px; line-height: 1; opacity: 0; transition: opacity 0.15s; cursor: pointer; }
+.char-tile:hover .char-fav, .char-tile:focus-visible .char-fav, .char-fav.on, html.touch .char-fav { opacity: 1; }
+.char-fav.on { color: var(--orange); }
+html.touch .char-fav { width: 30px; height: 30px; font-size: 16px; }
+/* Arrows, not Q / E key caps, at the ends of the strip on a touch screen. */
+.bumper-arrow { display: none; }
+html.touch .bumper-btn kbd { display: none; }
+html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 4px; color: var(--text); font-size: 13px; }
+.char-sheet-toggle { display: none; }
+
+/* Character Select on a phone (html.touch, sideways or upright; docs/MOBILE_AUDIT.md, proposal 4): the grid takes the
+   height; the details are a sheet along the bottom: down, a strip with the name and Choose; up (a tap on a portrait or
+   the handle), everything over the grid's lower part. */
+@media (max-height: 600px), (max-width: 760px) {
+  html.touch #menu .screen.characters { padding-bottom: 72px; }
+  html.touch .char-grid { flex: 1 1 auto; }
+  html.touch .char-info { position: fixed; z-index: 6; left: max(20px, env(safe-area-inset-left)); bottom: 8px; margin: 0; max-height: 58px; background: rgb(14, 20, 33); display: flex; align-items: center; gap: 10px; padding: 6px 10px; overflow: hidden; transition: max-height 0.2s ease; }
+  html.touch .char-info .char-sheet-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 44px; padding: 0 8px; font-size: 16px; }
+  html.touch .char-info > img, html.touch .char-info .char-stats, html.touch .char-info .loadout, html.touch .char-info .who p, html.touch .char-info .tags { display: none; }
+  html.touch .char-info .who { flex: 1; min-width: 0; overflow: hidden; }
+  html.touch .char-info h3 { margin: 0; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.touch .char-info .char-actions { flex: none; flex-direction: row; gap: 6px; }
+  html.touch .char-info .char-actions button { padding: 6px 12px; font-size: 13px; }
+  html.touch .char-info:not(.sheet-open) .char-actions button:not(#char-choose) { display: none; }
+  /* Up: the whole panel, scrolling inside itself. */
+  html.touch .char-info.sheet-open { max-height: min(78vh, calc(100vh - 64px)); display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'who toggle' 'stats stats' 'loadout loadout' 'acts acts'; align-items: start; gap: 8px 12px; padding: 8px 12px 12px; overflow-y: auto; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5); }
+  html.touch .char-info.sheet-open .char-sheet-toggle { grid-area: toggle; }
+  html.touch .char-info.sheet-open .who { grid-area: who; }
+  html.touch .char-info.sheet-open .who p { display: block; margin: 4px 0 0; font-size: 13px; max-width: none; }
+  html.touch .char-info.sheet-open .tags { display: flex; flex-wrap: wrap; margin-top: 6px; }
+  html.touch .char-info.sheet-open .char-stats { display: grid; grid-area: stats; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  html.touch .char-info.sheet-open .char-stats .stat-bar, html.touch .char-info.sheet-open .char-stats h4 { display: revert; }
+  html.touch .char-info.sheet-open .char-stats h4 { grid-column: 1 / -1; }
+  html.touch .char-info.sheet-open .stat-row { grid-template-columns: 56px minmax(40px, 1fr) 40px; }
+  html.touch .char-info.sheet-open .loadout { display: flex; flex-wrap: wrap; gap: 4px 10px; grid-area: loadout; font-size: 13px; }
+  html.touch .char-info.sheet-open .loadout h4 { flex-basis: 100%; margin: 0; }
+  html.touch .char-info.sheet-open .char-actions { grid-area: acts; }
+  html.touch .char-info.sheet-open .char-actions button { flex: 1; padding: 8px 12px; font-size: 14px; }
+  html.touch .char-find .char-search { width: 96px; }
+  html.touch .char-fav:not(.on) { opacity: 0.7; }
+}
+/* Sideways: smaller portraits (two rows and more show), a smaller head, and the sheet up leaves the strip in view. */
+@media (max-height: 600px) and (orientation: landscape) {
+  html.touch #menu .screen.characters { padding-top: 8px; padding-bottom: 66px; }
+  html.touch .screen.characters .screen-head h2 { font-size: 20px; }
+  html.touch .screen.characters .screen-head .back-btn { min-height: 36px; padding: 4px 12px; }
+  html.touch .char-jump { margin-top: 6px; padding: 3px 6px; }
+  html.touch .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 5px; }
+  html.touch .char-sec-head { padding: 6px 10px 5px; }
+  html.touch .char-info { bottom: 6px; max-height: 52px; padding: 4px 10px; }
+  html.touch .char-info.sheet-open { max-height: calc(100vh - 104px); }
+}
+/* Upright: the grid and sheet take the width (no room for the turning model beside them, so the sheet shows the portrait). */
+@media (max-width: 760px) and (orientation: portrait) {
+  html.touch #menu .screen.characters { padding: 10px 12px 72px; }
+  html.touch .screen.characters .screen-head h2 { font-size: 22px; }
+  html.touch .screen.characters .screen-head h2 br { display: none; }
+  html.touch .char-grid, html.touch .char-jump { width: 100%; }
+  html.touch .char-jump { margin-top: 8px; padding: 4px 6px; flex-wrap: wrap; row-gap: 6px; }
+  html.touch .char-jump-chips { order: 1; flex-basis: calc(100% - 90px); }
+  html.touch .char-find { order: 3; flex: 1 1 100%; margin: 0; }
+  html.touch .char-find .char-search { flex: 1; width: auto; }
+  html.touch .char-jump .bumper-btn:last-of-type { order: 2; }
+  html.touch .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  html.touch .char-info { left: 12px; right: 12px; width: auto; }
+  html.touch .char-info.sheet-open { grid-template-columns: 84px minmax(0, 1fr) auto; grid-template-areas: 'pic who toggle' 'stats stats stats' 'loadout loadout loadout' 'acts acts acts'; }
+  html.touch .char-info.sheet-open > img { display: block; grid-area: pic; width: 84px; height: 84px; }
+  html.touch .char-spin { display: none; }
+}
