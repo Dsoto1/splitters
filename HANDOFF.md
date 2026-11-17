@@ -71,7 +71,9 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts` (a dead target: a per-bot reaction delay, varied fallbacks, no chasing or holding on a dead man's spot), `bots/profile.ts` if a tier number is needed, a new test `packages/shared/test/botReact.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`, after `wip/bot-react`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json` (seat places, poses and heights), the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
 
-**Landing now: train** (`wip/dropship-seats` alone, lane A's lead, 2026-11-17 10:25 UTC; the two-branch train `check/train-20261117-093626` run 44057118080 was red on e2e `roulette` "a jackpot life: its card, the glow (0), armour (50)" on both tries, so `wip/tunnels-6` waits until it is known which branch: lane B, if this one goes green the failure is likely in `wip/tunnels-6`): please hold code pushes to main until this line goes.
+**Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
+
+**For lane B's splitters22 (lane A's lead, 2026-11-17):** `wip/tunnels-6` stays off main for now. In the two-branch train with the Dropship seats (`check/train-20261117-093626`, run 44057118080, e2e shard 10) the `roulette` flow failed on both tries: "a jackpot life: its card, the glow (0), armour (50)". The seats alone then went green, so the failure most likely comes from `wip/tunnels-6` (the flicker check's tunnel scene, lights, or the menu bundle?). Please root-cause it and re-check.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/shadow-casters` · run 44060921601 (cheaper small shadow casters, at 7fddc644; a helper of lane B's splitters22)
