@@ -82,6 +82,13 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/chars-faces`, green 2c3f6449 run 44060937176: Sgt. Mackie's and Kenji's faces, owner OK; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
 
+- **Claimed (a helper of lane A's lead, 2026-11-17): two Roster Board faces, split from `wip/chars-hands-faces`** (`wip/chars-faces`; QUEUE Features, lane A; the owner agreed to land these first). Files: `content/characters/meshy_pruitt.json`, `meshy_resolvesoldier.json`, their built files and lock lines, `tools/content/prepare-meshy-characters.mjs` and `character-manifests.mjs` (`fixes.face`), the generated hit shapes and provenance, docs/CHARACTERS.md. No map format change.
+  - **Sgt. Mackie, the eye wedge. Cause: the rebaked cut.** The head's share counted the cap and brim; cut by error the eye sockets went and a wedge of cheek ran up over each eye (354 triangles in the face). Fix: new `fixes.face` (the face its own part of a rebaked cut, a box in the download's frame, charts as fine as the head's): `box [-0.05, 0.855, 0, 0.05, 0.921, 0.12]`, `share 0.1`, `headShare 0.26`: 1310 triangles in the face, both eyes whole. Grip audit 3 → 0 (rebuilt from its download).
+  - **Kenji, the pale fringe patch. Cause: the texture copy.** The download's 2048 px map is one island per triangle; the shared 1024 px copy washed the dark fringe strands painted over his forehead into a pale patch. Fix: `surface: rebake` (no cut; the head's charts 2.5x the texels): strands, brows and eyes sharp; 778 → 715 KB. Grip audit 0 → 0.
+  - Other looks unchanged (opt-in per manifest; hit shapes: these two rows). Pictures: the helper's scratchpad `chars7/compare-pruitt-face.png`, `compare-resolvesoldier-face.png`.
+  - **Green on `check/chars-faces` at 2c3f6449, run 44060937176; on QUEUE's Ready to land.**
+  - The grafted hands stay on `wip/chars-hands-faces` for rework (owner: not ready; colour, smoother fingers, first-person pistol palm).
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/breakable-shadow` · run 44086669127 (a broken prop takes its shadow with it, at b27c9e0f, on top of wip/shadow-casters; a helper of lane B's splitters22)
 

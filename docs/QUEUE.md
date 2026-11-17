@@ -37,6 +37,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-faces` · 2c3f6449 · 44060937176 (lane A: Sgt. Mackie's and Kenji's faces)
 
 - `wip/tunnels-6` · eba67329 · 44077679537 (main merged in; code equals green ba7b438c. The `roulette` jackpot-glow failure is not this branch: it also hit `wip/dropship-seats` alone, see HANDOFF) (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
 - `wip/shadow-casters` · 7fddc644 · 44060921601 (lane B: cheaper small shadow casters: trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps; clutter casts to 20 m with a 24 m band; `?perfoff=smallcasters`)
