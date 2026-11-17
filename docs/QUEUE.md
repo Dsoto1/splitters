@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/dropship-seats` · b6f72f77 · 44034422634 (lane A: the Dropship's riders stay on their seats: a seated rider is drawn turned no further from its seat than the waist turns; the drop route's twelve spread along the benches)
+- `wip/tunnels-6` · ba7b438c · 44044279105 (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
