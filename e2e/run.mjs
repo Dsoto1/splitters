@@ -3000,7 +3000,7 @@ async function editorBuriedPickChecks(browser) {
   await page.mouse.click(q.x, q.y);
   await frames(page, 2);
   const piece = await page.evaluate(() => ({ pieces: [...(window.__editor.selection.setPieces ?? [])], portal: document.getElementById('ed-tunnel-portal')?.textContent ?? null, family: !!document.getElementById('ed-tunnel-family') }));
-  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && !piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers portals on its open ends (${JSON.stringify(piece)})`);
+  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers its Family (map format v44) and portals on its open ends (${JSON.stringify(piece)})`);
   if (piece.portal) await page.click('#ed-tunnel-portal');
   await frames(page, 2);
   const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
@@ -5000,6 +5000,15 @@ async function offlineFlow(browser) {
   await page.click('.opt-row:has-text("Reduce flashing") .switch');
   const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
   check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
+  // Combat accessibility (game/combatPrefs.ts): Aim hold/toggle and Camera shake, saved; vibration only where the browser can rumble a controller.
+  const combatDefault = await page.evaluate(() => ({ aim: document.getElementById('opt-aim-mode')?.value, shake: document.getElementById('opt-camera-shake')?.value }));
+  await page.selectOption('#opt-aim-mode', 'toggle');
+  await page.selectOption('#opt-camera-shake', 'reduced');
+  const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  await page.selectOption('#opt-aim-mode', 'hold');
+  await page.selectOption('#opt-camera-shake', 'full');
+  check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
@@ -10973,29 +10982,34 @@ async function flashingFlow(browser) {
 }
 
 /**
- * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit concrete tunnel (a portal, three modules with a
- * light under each strip fixture, a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
+ * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit tunnel (a portal, three modules with a light
+ * under each fixture, one in each family: concrete, brick sewer, mine; a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
  * headwall you sprint out to 5 m beyond it looking out (the dim bore opening onto daylight: a brightness step over
  * much of the picture), turn round in one frame and sprint back in looking into the tunnel.
  */
 const FLASHING_DAY = {
   name: 'day',
-  what: "the check's day scene: a lit concrete tunnel 40 m long (two portals, three modules, three lights)",
+  what: "the check's day scene: a lit tunnel 40 m long (two concrete portals; a concrete, a brick sewer and a mine module; three lights)",
   make: (page) =>
     page.evaluate(() => {
       const ed = window.__editor;
       // (Three cells east of the new map's own starting room.)
       const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
-      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
+      // (The run's three modules one in each family, concrete by the south portal, then brick sewer and mine: their
+      // lanterns and strip lights are steady glowing fixtures, seen when you turn back into the tunnel.)
+      const families = [undefined, 'brick', 'mine'];
+      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => ({ ...tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0), ...(families[y + 1] ? { family: families[y + 1] } : {}) })), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
       const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
       // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
       // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
       entities.push({ id: 'day_tiles', kind: 'block', position: [-24.4, 0, -25], size: [6, 0.1, 6], yaw: 0, material: 'core.white_tiles', tint: '#ffffff', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
       for (const [i, [item, x, z]] of [['ammo_light', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
+      // A row of ten stocked shop shelves (the `shelves` moment: no pop between their near and far looks as you walk up).
+      for (let i = 0; i < 10; i++) entities.push({ id: `day_shelf_${i}`, kind: 'prop', model: 'kit.shelf.gondola', position: [-34 + 2 * i, 0, 38], yaw: 0, scale: 1, solid: true, tint: null });
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
-      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
-  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.sky !== 'night',
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
   moments: ({ page, stage, step }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
@@ -11006,7 +11020,49 @@ const FLASHING_DAY = {
         await stage({ me: [24, 0, zAt(f)], bots: [] });
       };
     }
+    // Walking up to the shelves (owner, 2026-11-16: a shop shelf's goods popped between flat blocks and the real items a
+    // few metres away, flickering at the line; game/propLod.ts): from 26 m to 4 m of the row, at 11 m/s. Every frame,
+    // each shelf's level of detail (its prop batch's meshes) is read: none within 20 m may be on a lighter level, and
+    // none may change level during the walk.
+    const shelfAt = (f) => 12 + (22 * f) / 59;
+    const shelfLevels = () =>
+      page.evaluate(() => {
+        const v = window.__cs.view;
+        const eye = v.cameraPosition();
+        const log = (window.__shelfLog ??= { seen: 0, near: 0, changes: 0, last: {}, far: 0 });
+        for (const [i, n] of v.props) {
+          if (!n.name.startsWith('prop_day_shelf_')) continue;
+          const st = v.propBatches?.copyState(n);
+          if (!st?.meshes.length) continue;
+          const level = Number(/_l(\d+)_/.exec(st.meshes[0])?.[1] ?? 0);
+          log.seen++;
+          const d = Math.hypot(n.position.x - eye.x, n.position.y + 1 - eye.y, n.position.z - eye.z);
+          if (d < 20 && level > 0) log.near++;
+          log.far = Math.max(log.far, d);
+          if (log.last[i] !== undefined && log.last[i] !== level) log.changes++;
+          log.last[i] = level;
+        }
+      });
+    const shelfWalk = {};
+    for (let f = 0; f < 60; f++) {
+      shelfWalk[f] = async () => {
+        await shelfLevels();
+        await stage({ me: [-25, 0, shelfAt(f)], bots: [] });
+      };
+    }
     return [
+      {
+        name: 'shelves',
+        label: 'walking up to a row of stocked shop shelves, from 26 m to 4 m',
+        weapon: 'core.arc_caster',
+        me: [-25, 0, 12],
+        look: { yaw: 0, pitch: -0.05 },
+        bots: [],
+        before: () => page.evaluate(() => (window.__shelfLog = undefined)),
+        at: shelfWalk,
+        seen: () => shelfLevels().then(() => page.evaluate(() => ({ seen: window.__shelfLog.seen, near: window.__shelfLog.near, changes: window.__shelfLog.changes, far: +window.__shelfLog.far.toFixed(1) }))),
+        sees: (_on, s) => s.seen >= 300 && s.near === 0 && s.changes === 0,
+      },
       {
         name: 'tunnel',
         label: 'sprinting out of a lit tunnel into daylight, turning round and sprinting back in',

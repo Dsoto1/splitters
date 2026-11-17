@@ -35,6 +35,14 @@ export const PROJECTILE_VISUALS = [
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
 /**
+ * Projectile looks fired as a stream (the flamethrower's flame, goo, bubbles, plasma, oil): the snapshot names a
+ * stream projectile's shooter, so clients draw it leaving the shooter's muzzle as drawn now and blend it into where
+ * the host has it (client game/streamBlend.ts). Drawn from the snapshot alone it left the eye about 100 ms in the
+ * past and trailed behind you while you moved.
+ */
+export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil']);
+
+/**
  * Lingering effects a hit leaves on a player: `burn` and `poison` hurt over
  * time, `slow` cuts speed, `chill` builds up (freeze ray) until the target
  * freezes solid for a moment.
@@ -454,6 +462,8 @@ export interface WeaponDefinition {
   headshot?: number;
   /** Damage multiplier for a leg hit (default: the family's, else LEG_MULTIPLIER). */
   legshot?: number;
+  /** Damage multiplier for an arm hit (default: the family's, else ARM_MULTIPLIER). */
+  armshot?: number;
   /**
    * Legacy spread bloom, for weapons without a gunplay family (the exotic arsenal: their spread can't be moved to
    * `accuracy` without changing it). Family weapons use `accuracy`; their `maxBloom` only sets bots' burst length.
@@ -635,8 +645,8 @@ const scratchBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, sc
  * Resolve a hitscan shot: the nearest of the first static surface and any
  * target capsule wins. `worldDistance` is the result of a static raycast (null = nothing within range).
  */
-/** Where a shot landed on a body: 0 torso and arms, 1 head, 2 legs. */
-export type HitZone = 0 | 1 | 2;
+/** Where a shot landed on a body: 0 torso, 1 head, 2 legs, 3 arms (GUNPLAY_SPEC §11). */
+export type HitZone = 0 | 1 | 2 | 3;
 /** Head hits hurt double (sniper rifles more); leg hits a bit less. */
 export const HEAD_MULTIPLIER = 2;
 
@@ -660,6 +670,8 @@ export function unarmedStrike(forward: number, ticksSincePunch: number): Unarmed
   return forward >= UNARMED.kickForward || ticksSincePunch <= UNARMED.comboTicks ? 'kick' : 'punch';
 }
 export const LEG_MULTIPLIER = 0.75;
+/** Arm hits (GUNPLAY_SPEC §11: 0.8-1.0): a little under the body, above the legs. Families set their own (`arms`). */
+export const ARM_MULTIPLIER = 0.9;
 
 /** The body zone at height `y` on a player standing at `feet` (`height` tall): the old height bands, for targets without measured shapes. */
 export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): HitZone {
@@ -670,7 +682,7 @@ export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): 
 }
 
 export function zoneMultiplier(zone: HitZone, headshot: number = HEAD_MULTIPLIER): number {
-  return zone === 1 ? headshot : zone === 2 ? LEG_MULTIPLIER : 1;
+  return zone === 1 ? headshot : zone === 2 ? LEG_MULTIPLIER : zone === 3 ? ARM_MULTIPLIER : 1;
 }
 
 export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDistance: number | null, targets: readonly ShotTarget[]): ShotResult {

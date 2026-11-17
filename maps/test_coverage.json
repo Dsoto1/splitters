@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 42,
+  "formatVersion": 45,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_jmudmoagdpwato62",
-      "revision": 36,
-      "contentHash": "sha256:735f2a8f85ba3a5e9df99f551eb884089087910f84e88f64aac6e5cabb89c4f6",
-      "schemaVersion": 42,
-      "releasedAt": "2026-11-16T01:35:02.863Z"
+      "versionId": "v_kycpjb4ximwelqgf",
+      "revision": 37,
+      "contentHash": "sha256:8349461384bea932dac9ff46ee2cbc1719f8ef72c6219503ff5568fd4378393e",
+      "schemaVersion": 45,
+      "releasedAt": "2026-11-17T02:43:19.002Z"
     },
     "testOnly": true
   },
@@ -1138,6 +1138,51 @@
         "y": -51,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_fj9r08y3j4",
+        "tile": "core.tunnel_concrete_straight",
+        "x": 2,
+        "y": 16,
+        "z": -1,
+        "rotation": 1,
+        "family": "brick"
+      },
+      {
+        "id": "tile_ze3o4szbas",
+        "tile": "core.tunnel_concrete_outfall",
+        "x": 3,
+        "y": 16,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_qvil8zbeg7",
+        "tile": "core.tunnel_concrete_end",
+        "x": 0,
+        "y": 15,
+        "z": -1,
+        "rotation": 2,
+        "family": "mine"
+      },
+      {
+        "id": "tile_ifsyxd9ujb",
+        "tile": "core.tunnel_concrete_end",
+        "x": -1,
+        "y": 16,
+        "z": -1,
+        "rotation": 3,
+        "family": "mine"
+      },
+      {
+        "id": "tile_45b450pn0n",
+        "tile": "core.tunnel_concrete_end",
+        "x": 0,
+        "y": 18,
+        "z": -1,
+        "rotation": 0,
+        "family": "mine"
       }
     ]
   },
@@ -5727,6 +5772,17 @@
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ],
+    "groundTheme": "ground.meadow",
+    "grounds": [
+      "core.pbr_grass",
+      "core.pbr_forest",
+      "core.pbr_rock",
+      "core.pbr_sand",
+      "core.pbr_gravel",
+      "core.pbr_snow",
+      "core.pbr_moss",
+      "core.pbr_hex_paving"
+    ],
     "boundary": true,
     "foliage": []
   },
@@ -6678,6 +6734,16 @@
           "top": "red"
         }
       }
+    },
+    {
+      "id": "setpiece_4zzx1qxc84",
+      "piece": "setpiece.tunnel_lit_chamber",
+      "x": 0,
+      "y": 16,
+      "z": -1,
+      "rotation": 0,
+      "mirror": false,
+      "family": "mine"
     }
   ]
 }

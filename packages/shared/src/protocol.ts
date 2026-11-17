@@ -298,7 +298,7 @@ export const POWERUP_DAMAGE_BIT = 2;
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
   | {
-      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1;
+      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs, 3 arms), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1;
       /** Ballistic bullets: muzzle speed (m/s) and gravity (m/s²) they fly with, for client tracers. */ v?: number; g?: number;
       /** Pellet indices still in flight (their `to` is where they were when this was sent; an `impact` event follows). */ fl?: number[];
       /** A hit landed on armor. */ ar?: 1;
@@ -614,8 +614,11 @@ export type ServerMessage =
       players: PlayerSnapshot[];
       score: ScoreEntry[];
       ev: GameEvent[];
-      /** Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)]. */
-      pr: [number, number, number, number, number][];
+      /**
+       * Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)], and for a stream's own shots
+       * (STREAM_VISUALS, not the pieces a projectile splits into) the shooter's slot after them.
+       */
+      pr: ([number, number, number, number, number] | [number, number, number, number, number, number])[];
       /** IDs of pickups currently taken (waiting to respawn). */
       pk: string[];
       /** Random weapon pickups holding something other than what was placed: [pickup ID, item ID] (absent: none). */

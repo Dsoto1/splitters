@@ -136,6 +136,7 @@ export interface FamilyDefaults {
   falloff: FalloffSpec;
   head: number;
   legs: number;
+  arms: number;
 }
 
 const acc = (base: number, move: number, air: number, perShot: number, tight: number, max: number, recovery: number, ads: number, adsTicks = 12): AccuracySpec => ({ base, move, air, perShot, tight, max, recovery, ads, adsTicks });
@@ -154,11 +155,14 @@ export interface Gunplay {
   falloff: FalloffSpec | null;
   head: number;
   legs: number;
+  arms: number;
 }
 
 /** Head / leg multipliers for weapons without a family (unchanged from before the gunplay pass; weapons.ts exports them). */
 const DEFAULT_HEAD = 2;
 const DEFAULT_LEGS = 0.75;
+/** Arms (GUNPLAY_SPEC §11, 0.8-1.0): weapons.ts ARM_MULTIPLIER. */
+const DEFAULT_ARMS = 0.9;
 
 const cache = new WeakMap<WeaponDefinition, Gunplay>();
 
@@ -180,6 +184,7 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     falloff: def.falloff ?? fam?.falloff ?? null,
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,
     legs: def.legshot ?? fam?.legs ?? DEFAULT_LEGS,
+    arms: def.armshot ?? fam?.arms ?? DEFAULT_ARMS,
   };
   cache.set(def, g);
   return g;

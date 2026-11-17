@@ -24,6 +24,35 @@ function turnBox(b, turns) {
 }
 
 /**
+ * A segmental arch spanning a passage `w` either side of its line, springing at `spring` and rising to the crown at
+ * `crown`: the slabs that line it (`segs` voussoir slabs `t` thick, each a box centred `x`, `y` across the passage and
+ * rolled to lie along the curve) and the stepped boxes that fill the corners over it to the shell (`spandrels`, from
+ * x out to the wall), for a face where the arch ends.
+ */
+function archOf(w, { spring, t = 0.25, segs = 9, steps = 6 }, crown) {
+  const rise = crown - spring;
+  const R = (w * w + rise * rise) / (2 * rise);
+  const yc = crown - R;
+  const a0 = Math.acos(w / R);
+  const span = Math.PI - 2 * a0;
+  const slabs = [];
+  for (let i = 0; i < segs; i++) {
+    const am = a0 + ((i + 0.5) * span) / segs;
+    const half = R * Math.sin(span / segs / 2) + 0.03;
+    const rc = R * Math.cos(span / segs / 2) + t / 2;
+    slabs.push({ x: rc * Math.cos(am), y: yc + rc * Math.sin(am), half, roll: am - Math.PI / 2 });
+  }
+  const spandrels = [];
+  for (let j = 0; j < steps; j++) {
+    const y0 = spring + (j * rise) / steps;
+    const y1 = spring + ((j + 1) * rise) / steps;
+    const ym = (y0 + y1) / 2;
+    spandrels.push({ x: Math.sqrt(Math.max(0, R * R - (ym - yc) ** 2)), y0, y1 });
+  }
+  return { t, slabs, spandrels };
+}
+
+/**
  * The parts of one module. `arms`: the sides its passage runs to. `mouth`: the side a portal opens to the sky.
  * Everything is written for the north arm (z from the passage's half-width to the cell's edge) and turned to the
  * others, so every shape is the same cross-section.
@@ -41,6 +70,19 @@ function moduleParts(profile, family, shape) {
   const arms = new Set(shape.arms);
   const mouth = shape.mouth ?? null;
   const E = 4;
+  // A box written in the north arm's frame and rolled about the passage's line (its +X side lifted by `roll`), turned
+  // k quarter turns: its centre turns and a yaw carries the turn, as a turned tile's tilted boxes do (geometry.ts).
+  const drawRolled = (k, [x0, y0, z0, x1, y1, z1], roll, material, tint) => {
+    if (!k) return trims.push({ box: [x0, y0, z0, x1, y1, z1].map(r3), kind: 'trim', ...(roll ? { roll: r3(roll) } : {}), ...surf(material, tint) });
+    const [tx, , tz] = turnBox([(x0 + x1) / 2, 0, (z0 + z1) / 2, (x0 + x1) / 2, 0, (z0 + z1) / 2], k);
+    const hx = (x1 - x0) / 2;
+    const hz = (z1 - z0) / 2;
+    trims.push({ box: [tx - hx, y0, tz - hz, tx + hx, y1, tz + hz].map(r3), kind: 'trim', yaw: r3((k * Math.PI) / 2), ...(roll ? { roll: r3(roll) } : {}), ...surf(material, tint) });
+  };
+  // The passage runs on one line, north–south (a straight, a dead end, a portal, a shaft): its lining runs through
+  // the middle square too. At a junction or a curve each arm is lined from the middle square out.
+  const line = !arms.has('E') && !arms.has('W');
+  const arch = lining.arch ? archOf(w, lining.arch, clear) : null;
 
   // --- the shell: the four corner masses, a mass in each closed arm, the cap. The same for every family.
   for (let k = 0; k < 4; k++) solid(turnBox([w, 0, w, E, clear, E], k), m.wall);
@@ -51,30 +93,92 @@ function moduleParts(profile, family, shape) {
 
   // --- the lining and trim of a wall: the stretch of the wall at x = sx × half the width, from z = `from` to `to`,
   // in the north arm's frame turned k quarter turns.
-  const wallTrim = (k, sx, from, to) => {
+  const wallTrim = (k, sx, from, to, arched = false) => {
     const put = (b, material, tint) => draw(turnBox(b, k), material, tint);
     const face = (d) => [Math.min(sx * w, sx * (w - d)), Math.max(sx * w, sx * (w - d))];
     // A plinth along the wall.
     if (trim.plinth) put([face(0.04)[0], 0, from, face(0.04)[1], trim.plinth, to], m.trim);
-    // The cast downstand where wall meets soffit (a flat-soffit lining's haunch).
-    if (lining.haunch) put([face(lining.haunch)[0], clear - lining.haunch, from, face(lining.haunch)[1], clear, to], m.soffit);
+    // The cast downstand where wall meets soffit (a flat-soffit lining's haunch; an arched stretch has its arch).
+    if (lining.haunch && !arched) put([face(lining.haunch)[0], clear - lining.haunch, from, face(lining.haunch)[1], clear, to], m.soffit);
     // Panel joints: a thin rib up the wall every `joints` metres.
     if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) put([face(0.015)[0], trim.plinth ?? 0, z - 0.02, face(0.015)[1], clear - (lining.haunch ?? 0), z + 0.02], m.trim);
   };
+  // --- a round arch along the passage from z = `from` to `to` (north frame turned k): voussoir slabs on a segmental
+  // arch from the springing on each wall to the crown, drawn inside the clear box (the collision is the shell's).
+  // `rings`: the ends where the arch shows its face (a ring of the trim stone, the corners over it filled).
+  const archRun = (k, from, to, rings = [from, to]) => {
+    if (!arch || to - from < 0.05) return;
+    for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2, from, s.x + s.half, s.y + arch.t / 2, to], s.roll, m.soffit);
+    for (const z of rings) {
+      const [z0, z1] = z <= from + 1e-6 ? [from, Math.min(to, from + 0.3)] : [Math.max(from, to - 0.3), to];
+      // The ring: the same slabs a little deeper, in the trim stone.
+      for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2 - 0.06, z0, s.x + s.half, s.y + arch.t / 2, z1], s.roll, m.trim);
+      // The corners over the arch filled to the shell, stepped (seen from a junction or the next family's piece).
+      for (const b of arch.spandrels) for (const sx of [-1, 1]) draw(turnBox([Math.min(sx * b.x, sx * w), b.y0, z0, Math.max(sx * b.x, sx * w), b.y1, z1], k), m.wall);
+    }
+  };
+  // --- timber sets (a mine): a post on each wall and a cap beam every `every` metres, lagging boards over the
+  // soffit between them. Posts stand 0.12 m proud of the rock (closer than a player's body ever comes).
+  const setsRun = (k, from, to) => {
+    const st = lining.sets;
+    if (!st) return;
+    const put = (b, material, tint) => draw(turnBox(b, k), material, tint);
+    for (let z = Math.ceil((from - st.every / 2) / st.every) * st.every + st.every / 2; z < to - 0.1; z += st.every) {
+      if (z - st.post / 2 < from - 1e-6) continue;
+      for (const sx of [-1, 1]) put([Math.min(sx * (w - 0.12), sx * (w + 0.1)), 0, z - st.post / 2, Math.max(sx * (w - 0.12), sx * (w + 0.1)), clear, z + st.post / 2], st.material);
+      put([-w, clear - st.beam, z - st.post / 2 - 0.02, w, clear + 0.05, z + st.post / 2 + 0.02], st.material);
+    }
+    if (st.lagging) for (const x of [-1.4, -0.7, 0, 0.7, 1.4]) put([x - 0.17, clear - 0.04, from, x + 0.17, clear, to], st.lagging);
+  };
+  // --- the floor's line down an arm from the middle (z = 0) out to `to`: a drain, a water channel between kerbs with a
+  // grate, or a narrow-gauge track. `kerbFrom`: where the kerbs start (clear of a crossing arm's channel).
+  const floorRun = (k, to, kerbFrom = 0, drain = true) => {
+    const put = (b, material, tint) => draw(turnBox(b, k), material, tint);
+    if (trim.drain && drain) put([-trim.drain.width / 2, 0, 0, trim.drain.width / 2, 0.02, to], trim.drain.material);
+    if (trim.channel) {
+      const c = trim.channel;
+      const h = c.width / 2;
+      // Drawn only: the walkways either side are the floor, and the water is a surface a hand over it (no liquid, so
+      // nothing to wade in and no `tunnel.flooded`).
+      put([-h, 0, 0, h, 0.025, to], c.water.material, c.water.tint);
+      if (c.kerb) for (const sx of [-1, 1]) put([Math.min(sx * h, sx * (h + c.kerb.width)), 0, kerbFrom, Math.max(sx * h, sx * (h + c.kerb.width)), c.kerb.height, to], c.kerb.material);
+      if (c.grate && to - 2 > 0.4) put([-h - 0.04, 0.025, 2 - 0.35, h + 0.04, 0.045, 2 + 0.35], c.grate.material, c.grate.tint);
+    }
+    if (trim.rails) {
+      const r = trim.rails;
+      for (let z = 0.35; z < to - 0.1; z += r.sleeperEvery) put([-r.gauge / 2 - 0.25, 0, z - 0.08, r.gauge / 2 + 0.25, 0.03, z + 0.08], r.sleeper);
+      for (const sx of [-1, 1]) put([sx * r.gauge / 2 - 0.03, 0, 0, sx * r.gauge / 2 + 0.03, 0.06, to], r.material, r.tint);
+    }
+  };
   // An open arm: both its walls from the middle square out to the cell's edge, the joints carried across the soffit,
   // and the drain down the middle of the floor from the cell's centre.
-  const armTrim = (k, from, to) => {
-    for (const sx of [-1, 1]) wallTrim(k, sx, from, to);
+  // (`kerbFrom`: on a line the kerbs run on through the middle; elsewhere they stop clear of the other arms' water.)
+  const kerbFrom = line ? 0 : trim.channel ? r3(trim.channel.width / 2 + (trim.channel.kerb?.width ?? 0)) : 0;
+  const armTrim = (k, from, to, archFrom = from, rings = [archFrom, to]) => {
+    for (const sx of [-1, 1]) wallTrim(k, sx, from, to, !!arch);
     if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
-    if (trim.drain) draw(turnBox([-trim.drain.width / 2, 0, 0, trim.drain.width / 2, 0.02, to], k), trim.drain.material);
+    floorRun(k, to, kerbFrom);
+    archRun(k, archFrom, to, rings);
+    setsRun(k, from, to);
   };
-  for (const [k, side] of SIDES.entries()) if (arms.has(side)) armTrim(k, w, E);
+  // On a line the arch and the sets run on through the middle square (the shaft's hatch leaves a gap in the arch).
+  const lineArch = line && !mouth && arch;
+  for (const [k, side] of SIDES.entries()) {
+    if (!arms.has(side)) continue;
+    if (lineArch && shape.hatch) armTrim(k, w, E, k === 0 ? shape.hatch[3] : -shape.hatch[1]);
+    else if (lineArch) armTrim(k, w, E, 0, [E]);
+    else armTrim(k, w, E);
+  }
   // The middle square: a wall only on a closed side (the east side's wall is the north frame's east wall, and so on).
   if (!mouth) {
-    if (!arms.has('E')) wallTrim(0, 1, -w, w);
-    if (!arms.has('W')) wallTrim(0, -1, -w, w);
+    const archedMiddle = !!lineArch && !shape.hatch;
+    if (!arms.has('E')) wallTrim(0, 1, -w, w, line && archedMiddle);
+    if (!arms.has('W')) wallTrim(0, -1, -w, w, line && archedMiddle);
     if (!arms.has('N')) wallTrim(1, -1, -w, w);
     if (!arms.has('S')) wallTrim(1, 1, -w, w);
+    // A dead end's arch runs on to its end wall; a straight's two arms' arches meet at the middle (no ring there).
+    if (lineArch && !arms.has('N')) archRun(2, -w, 0, []);
+    if (line) setsRun(0, -w, w);
   }
 
   // An eight-sided pipe from z = `from` to the cell's north edge: four slats, each as wide as the pipe and as thick as
@@ -96,7 +200,18 @@ function moduleParts(profile, family, shape) {
   }
 
   // --- the strip light at the crown, one a module: a housing and a glowing tube (a glowing material, not a light entity).
-  if (trim.light) {
+  // (A lantern instead: a lamp hung from the crown on a rod, the glass glowing.)
+  const lantern = (x, z) => {
+    const l = trim.light;
+    const f = l.frame ?? m.trim;
+    draw([x - 0.015, clear - 0.45, z - 0.015, x + 0.015, clear, z + 0.015], f);
+    draw([x - 0.13, clear - 0.5, z - 0.13, x + 0.13, clear - 0.44, z + 0.13], f);
+    draw([x - 0.09, clear - 0.76, z - 0.09, x + 0.09, clear - 0.5, z + 0.09], l.material, l.tint);
+    draw([x - 0.11, clear - 0.8, z - 0.11, x + 0.11, clear - 0.76, z + 0.11], f);
+  };
+  if (trim.light?.style === 'lantern') {
+    if (!mouth) lantern(0, 0);
+  } else if (trim.light) {
     const l = trim.light;
     const along = through || !arms.has('N') ? 0 : 1;
     const at = mouth === 'S' ? 2.2 : 0;
@@ -138,8 +253,25 @@ function moduleParts(profile, family, shape) {
     // A lintel band, and the hazard band on each jamb, on the headwall's face.
     draw([-w - 0.3, clear, front - 0.04, w + 0.3, clear + 0.4, front], m.trim);
     if (trim.hazard) for (const sx of [-1, 1]) draw([Math.min(sx * w, sx * (w + 0.9)), 0, front - 0.03, Math.max(sx * w, sx * (w + 0.9)), 1.0, front], trim.hazard);
-    // The apron's drain runs out to the edge.
+    // The apron's drain runs out to the edge (a channel or a track too).
     if (trim.drain) draw([-trim.drain.width / 2, 0, -E, trim.drain.width / 2, 0.02, back], trim.drain.material);
+    floorRun(2, E, 0, false);
+    // A mine's mouth: a heavy timber frame on the headwall's face (posts either side of the opening and a lintel).
+    if (trim.frame) {
+      for (const sx of [-1, 1]) draw([Math.min(sx * (w - 0.1), sx * (w + 0.3)), 0, front - 0.25, Math.max(sx * (w - 0.1), sx * (w + 0.3)), clear, front + 0.05], trim.frame);
+      draw([-w - 0.45, clear - 0.3, front - 0.3, w + 0.45, clear + 0.15, front + 0.05], trim.frame);
+    }
+    // Bars across the mouth (an outfall): iron that stops players and bots; shots pass between the bars.
+    if (shape.bars) {
+      const b = shape.bars;
+      const bm = trim.bars ?? 'core.rusty_metal';
+      const n = Math.floor((2 * w) / b.every);
+      for (let i = 1; i < n; i++) {
+        const x = -w + (i * 2 * w) / n;
+        solid([x - b.r, 0, h.at - b.r, x + b.r, clear, h.at + b.r], bm);
+      }
+      for (const y of b.rails) solid([-w, y - 0.04, h.at - b.r - 0.02, w, y + 0.04, h.at + b.r + 0.02], bm);
+    }
     // The wing walls: a low wall and an end pier, stepped masonry hidden under a coping slab that slopes from the
     // headwall down to the pier (one tilted box: pitch lifts its +z end).
     const run = front - g.foot;
@@ -181,12 +313,14 @@ function moduleParts(profile, family, shape) {
     ];
   }
   function armTrimFrom(from) {
-    armTrim(0, from, E);
+    // (An arch runs on through the headwall's opening, its ring on the headwall's face.)
+    armTrim(0, from, E, arch ? shape.headwall.at - shape.headwall.t / 2 : from, arch ? [shape.headwall.at - shape.headwall.t / 2, E] : undefined);
     if (trim.pipe) {
       const p = trim.pipe;
       pipeRun(from);
     }
-    if (trim.light) {
+    if (trim.light?.style === 'lantern') lantern(0, 2.2);
+    else if (trim.light) {
       const l = trim.light;
       draw([-0.14, clear - 0.05, 2.2 - l.length / 2 - 0.08, 0.14, clear, 2.2 + l.length / 2 + 0.08], m.trim);
       draw([-0.06, clear - 0.1, 2.2 - l.length / 2, 0.06, clear - 0.05, 2.2 + l.length / 2], l.material, l.tint);
@@ -206,7 +340,13 @@ function moduleParts(profile, family, shape) {
     solid([hx0, cap, hz0 - k, hx1 + k, top + 0.2, hz0], m.trim);
     solid([hx0, cap, hz1, hx1 + k, top + 0.2, hz1 + k], m.trim);
     solid([hx1, cap, hz0, hx1 + k, top + 0.2, hz1], m.trim);
-    solids.push({ box: [hx1 + k, top, hz0, hx1 + k + 0.06, top + (hx1 - hx0) * 0.9, hz1].map(r3), kind: 'wall', ...surf((trim.door ?? {}).material ?? m.trim) });
+    const lidH = (hx1 - hx0) * 0.9;
+    solids.push({ box: [hx1 + k, top, hz0, hx1 + k + 0.06, top + lidH, hz1].map(r3), kind: 'wall', ...surf((trim.door ?? {}).material ?? m.trim) });
+    // The lid reads as a lid: a hazard band along its free edge, a grab handle on its inside face, two hinge knuckles
+    // at its foot on the kerb.
+    draw([hx1 + k - 0.005, top + lidH - 0.1, hz0, hx1 + k + 0.065, top + lidH, hz1], trim.hazard ?? m.trim);
+    draw([hx1 + k - 0.05, top + lidH - 0.32, -0.22, hx1 + k, top + lidH - 0.27, 0.22], m.trim);
+    for (const z of [hz0 + 0.25, hz1 - 0.25]) draw([hx1 + k - 0.03, top - 0.02, z - 0.1, hx1 + k + 0.09, top + 0.09, z + 0.1], m.trim);
     // Rungs' backing down the west wall, so the ladder reads as fixed to something.
     draw([hx0, 0, hz0 + 0.2, hx0 + 0.03, cap, hz1 - 0.2], m.trim);
     bore.cut.push([hx0, cap, hz0, hx1, 1000, hz1]);

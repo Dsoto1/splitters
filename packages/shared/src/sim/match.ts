@@ -113,7 +113,7 @@ import {
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -2236,6 +2236,8 @@ export class Match {
       return list;
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
+    // Who has died (or gone): a bot's target missing from its `others` may only be out of its reckoning.
+    const fallen = (slot: number): boolean => (slot >= SENTRY_VIEW_BASE ? !this.mounts[slot - SENTRY_VIEW_BASE]?.alive : !this.actor(slot)?.alive);
     this.directBots(actors);
     const director = this.director;
     const every = this.botBudget(actors);
@@ -2286,6 +2288,7 @@ export class Match {
         tick: this.tick,
         self: views.get(c.slot)!,
         others,
+        fallen,
         physics: this.physics,
         // Shared sight lines and bounded perception only in big matches: smaller ones see exactly as before.
         sight: every > 1 ? this.sight : undefined,
@@ -7411,7 +7414,7 @@ export class Match {
       players: this.playerSnapshots(),
       score: this.scores(),
       ev: events,
-      pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
+      pr: this.projectiles.map((p) => (STREAM_VISUALS.has(p.spec.visual) && !p.extra ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
@@ -8103,9 +8106,9 @@ function isMeleeWeapon(weapon: string): boolean {
   return CORE_WEAPONS[weapon]?.kind === 'melee';
 }
 
-/** Body-zone damage multiple for a weapon: head, torso or legs (spec §11). */
+/** Body-zone damage multiple for a weapon: head, torso, legs or arms (spec §11). */
 function zoneScale(gp: Gunplay, zone: HitZone): number {
-  return zone === 1 ? gp.head : zone === 2 ? gp.legs : 1;
+  return zone === 1 ? gp.head : zone === 2 ? gp.legs : zone === 3 ? gp.arms : 1;
 }
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {

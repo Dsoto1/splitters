@@ -105,6 +105,8 @@ const OPEN_SIDED = [
   'setpiece.tunnel_cross',
   'setpiece.tunnel_hatch',
   'setpiece.tunnel_junction',
+  // (The chamber's openings, closed or joined: tunnelFamilies5.test.ts.)
+  'setpiece.tunnel_lit_chamber',
   'setpiece.tunnel_lit_run',
   // (A ladder between a tunnel and the field, or between two levels: tunnelElevation.test.ts, tunnelLadderBots.test.ts.)
   'setpiece.tunnel_riser',

@@ -1088,8 +1088,10 @@ hitboxes, no evening-out within a size class; small or thin looks are harder to 
   weapons, ballistics and bot-aim tests, which pass with main's thresholds). Each look keeps its own proportions: a
   standard chest is 0.68 × 0.62 m with the margin (0.32 × 0.26 measured), its head 0.50 m across (0.26).
 - **Zones:** a round strikes the nearest padded surface; its zone is the shape whose own (unpadded) core the line
-  passes deepest into or nearest to: head sphere = head (×`head`), thighs and shins = legs (×`legs`), torso and arms =
-  body (1.0×). A shot at the face over a padded forearm is a head shot, one at the belt a body shot. No height bands
+  passes deepest into or nearest to: head sphere = head (×`head`), thighs and shins = legs (×`legs`), torso = body (1.0×),
+  arms = arms (×`arms`, 0.9 for every bullet family; 2026-11-17, GUNPLAY_SPEC §11). A shot at the face over a padded
+  forearm is a head shot, one at the belt a body shot, one through a forearm into the chest a body shot, one that
+  clips a forearm held out and misses the chest an arm shot. No height bands
   (the old fixed 0.32 m head band was a third of a small look's height).
 - **Stance and size:** standing, crouching and prone each have their own shapes, measured in the pose the game draws
   (below). They turn with the body's yaw and scale with its size (the size class, or a `size` stat). The game has

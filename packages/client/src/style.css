@@ -943,6 +943,9 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #hitmarker.armor { transform: none; border-color: #6fc8ff; border-style: dashed; }
 #hitmarker[data-style='ticks'].armor { transform: rotate(45deg); }
 #hitmarker[data-style='ticks'].armor::before, #hitmarker[data-style='ticks'].armor::after { background: linear-gradient(#6fc8ff 0 9px, transparent 9px 21px, #6fc8ff 21px); }
+/* A spawn-protected target's shield took it (no damage): a pale gold ring, round where every other marker is angular. */
+#hitmarker.shield, #hitmarker[data-style='ticks'].shield { transform: none; border: 2px solid #ffe08a; border-radius: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6); }
+#hitmarker[data-style='ticks'].shield::before, #hitmarker[data-style='ticks'].shield::after { display: none; }
 /* Kill confirmation: a sharp, bigger X that punches in; kills in a row make it bigger and hotter. */
 #hitmarker.kill, #hitmarker[data-style='ticks'].kill { border: none; transform: none; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation: kill-punch 0.3s ease-out; }
 #hitmarker.kill::before, #hitmarker.kill::after, #hitmarker[data-style='ticks'].kill::before, #hitmarker[data-style='ticks'].kill::after { content: ''; position: absolute; left: 20px; top: 0; width: 4px; height: 44px; background: linear-gradient(#ff2a2a 0 15px, transparent 15px 29px, #ff2a2a 29px); filter: drop-shadow(0 0 2px #000); transform: rotate(45deg); }

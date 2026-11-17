@@ -106,6 +106,8 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
+import { vibrationSupported } from '../game/rumble.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import { communityMapRow, communityPanel, reportButton } from './communityUi.ts';
@@ -2701,6 +2703,25 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
+    // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
+    const combat = combatPrefs();
+    const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
+    aimMode.id = 'opt-aim-mode';
+    aimMode.addEventListener('change', () => saveCombatPrefs({ aim: aimMode.value as AimMode }));
+    const shake = el('select', {}, ...SHAKE_LEVELS.map((l) => el('option', { value: l, textContent: SHAKE_LABELS[l], selected: l === combat.shake })));
+    shake.id = 'opt-camera-shake';
+    shake.addEventListener('change', () => saveCombatPrefs({ shake: shake.value as ShakeLevel }));
+    const vibration = el('input', { type: 'checkbox', checked: combat.vibration });
+    vibration.id = 'opt-vibration';
+    const vibStrength = el('input', { type: 'range', min: '0.1', max: '1', step: '0.1', value: String(combat.vibrationStrength), disabled: !combat.vibration });
+    vibStrength.id = 'opt-vibration-strength';
+    const vibVal = el('output', { textContent: `${Math.round(combat.vibrationStrength * 100)}%` });
+    vibration.addEventListener('change', () => {
+      saveCombatPrefs({ vibration: vibration.checked });
+      vibStrength.disabled = !vibration.checked;
+    });
+    vibStrength.addEventListener('input', () => (vibVal.textContent = `${Math.round(Number(vibStrength.value) * 100)}%`));
+    vibStrength.addEventListener('change', () => saveCombatPrefs({ vibrationStrength: Number(vibStrength.value) }));
     // Room lights (game/roomLights.ts): on by default; the pause menu has it too.
     const roomLights = el('input', { type: 'checkbox', checked: roomLightsOn() });
     roomLights.id = 'opt-room-lights';
@@ -2909,6 +2930,14 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone the Aim button always toggles. Also in the pause menu.'),
+        row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
+        ...(vibrationSupported()
+          ? [
+              row('Controller vibration', toggle(vibration), 'A controller rumbles when you fire, take a hit or a blast goes off near you. Also in the pause menu.'),
+              row('Vibration strength', el('span', { class: 'opt-range' }, vibStrength, vibVal)),
+            ]
+          : []),
       ]],
       ['online', 'Online', [
         el('p', { class: 'opt-note', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again. The invite link carries these settings." }),

@@ -31,6 +31,8 @@ import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
 import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
+import { streamPoint, streamStart, type StreamStart } from './streamBlend.ts';
+import type { ProjectileSample } from './interpolation.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
@@ -67,6 +69,7 @@ import {
   type WeaponHold,
   type WorldBox,
   PROJECTILE_VISUALS,
+  STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
   FX_PROTECTED,
@@ -123,6 +126,7 @@ import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
+import { shakeScale } from './combatPrefs.ts';
 import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
@@ -451,7 +455,8 @@ export class GameView {
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
-  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
+  /** `at`: where the host has it (sampled); `stream`: a stream's piece, drawn from its shooter's muzzle (streamBlend.ts). */
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
@@ -3145,16 +3150,23 @@ export class GameView {
     if (node) this.setPropShown(node, false);
   }
 
-  updateProjectiles(positions: ReadonlyMap<number, [number, number, number, number]>): void {
+  /** `localSlot`: yours, so a stream you fire leaves your first-person gun (streamBlend.ts). */
+  updateProjectiles(positions: ReadonlyMap<number, ProjectileSample>, localSlot = -1): void {
     const now = performance.now();
     for (const [id, pos] of positions) {
       let p = this.projectiles.get(id);
       if (!p) {
-        p = { node: this.createProjectile(id, PROJECTILE_VISUALS[pos[3]] ?? 'grenade'), look: pos[3], born: now };
+        const visual = PROJECTILE_VISUALS[pos[3]] ?? 'grenade';
+        p = { node: this.createProjectile(id, visual), look: pos[3], born: now, at: new Vector3(pos[0], pos[1], pos[2]) };
+        // A stream's own shot (the snapshot names its shooter) leaves the shooter's muzzle as drawn this frame.
+        const shooter = pos[4];
+        if (shooter >= 0 && STREAM_VISUALS.has(visual)) p.stream = streamStart({ x: pos[0], y: pos[1], z: pos[2] }, this.muzzleAnchor({ local: shooter === localSlot, slot: shooter }), now);
         this.projectiles.set(id, p);
       }
-      const prev = p.node.position.clone();
-      p.node.position.set(pos[0], pos[1], pos[2]);
+      // Its heading from where the host had it (a stream piece is drawn off that path for its first moments).
+      const prev = p.at.clone();
+      p.at.set(pos[0], pos[1], pos[2]);
+      p.node.position.copyFrom(p.at);
       const look = PROJECTILE_VISUALS[p.look];
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
@@ -3449,16 +3461,20 @@ export class GameView {
    * the left .. 1 the right), by `power` (stopping power times the hit's share). Calmer with Reduce flashing on.
    */
   hitKick(power: number, side: number): void {
-    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing());
+    const amount = shakeScale();
+    if (amount <= 0) return;
+    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing(), amount);
   }
 
   // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
   private shakeAmount = 0;
   private shakeAt = 0;
 
-  /** Shake the camera (0..1; explosions and crashes near you). */
+  /** Shake the camera (0..1; explosions and crashes near you, a heavy round leaving the barrel), by the Camera shake setting. */
   shake(amount: number): void {
-    this.shakeAmount = Math.min(1, this.currentShake() + amount);
+    const k = shakeScale();
+    if (k <= 0) return;
+    this.shakeAmount = Math.min(k, this.currentShake() + amount * k);
     this.shakeAt = performance.now();
   }
 
@@ -4315,6 +4331,8 @@ export class GameView {
 
   /** Beams laid from a gun's muzzle again each frame (addBeam with an anchor); each goes with its mesh. */
   private readonly onMuzzle = new Set<() => void>();
+  /** Scratch point for stream pieces (followMuzzles). */
+  private readonly streamAt: Vec3 = { x: 0, y: 0, z: 0 };
 
   /**
    * Everything drawn on a gun's muzzle, placed where the guns are this frame: beams (addBeam's, and the steady ones
@@ -4325,6 +4343,13 @@ export class GameView {
    */
   private followMuzzles(now: number): void {
     for (const lay of this.onMuzzle) lay();
+    // Stream pieces in their first moments: off the muzzle, blending into the host's path.
+    for (const p of this.projectiles.values()) {
+      if (!p.stream) continue;
+      const at = streamPoint(p.stream, p.at, now, this.streamAt);
+      p.node.position.set(at.x, at.y, at.z);
+      if (now - p.stream.born > 1000) p.stream = undefined;
+    }
     this.steadyArcs.update(now);
     for (const a of this.avatars.values()) {
       if (a.flashRig?.update(now)) this.placeRemoteFlash(a);

@@ -120,7 +120,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // option (`overrides.options.furniture`; absent = paired). v42 data is valid as is. The bump is for the other
   // direction: an older build refuses a v43 map outright instead of failing on a style it has never heard of.
   [42, (doc) => ({ ...doc })],
-  // v43 -> v44: kept for the tunnel kit's set piece `family` (HANDOFF; its own step lands with it); nothing changes.
+  // v43 -> v44: a placed set piece's optional `family` (the tunnel kit, Tileset 04 step 5): its tunnel parts drawn in
+  // that material family (a Lit Tunnel Run in brick). Absent = each part's own: v43 data is valid as is. The bump is
+  // for the other direction: an older build would drop the family without a word. (v44 -> v45 touches only the
+  // terrain, so a set piece's family passes through it.)
   [43, (doc) => ({ ...doc })],
   // v44 -> v45: the ground's base layer (docs/MAPMAKER_PAINTING_PLAN.md, "Format change A"; painting Phase 4):
   // groundLayersV45.

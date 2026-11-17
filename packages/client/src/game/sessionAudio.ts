@@ -292,9 +292,17 @@ export class SessionAudio {
   }
 
   /** Server events. `poses` gives remote positions for events that carry none. */
-  /** Your hit, by sound (GUNPLAY_SPEC §21): a bright ding for the head, a dull clank for armor, the tick for flesh. */
+  /** Whether a player is under spawn protection now (set by the session): your hits on them ping off the shield. */
+  shielded?: (slot: number) => boolean;
+
+  /** Your hit, by sound (GUNPLAY_SPEC §21): a bright ding for the head, a dull clank for armor, a ping off a shield, the tick for flesh. */
   private hitSound(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     if (!hits.some((h) => h !== null && h !== undefined)) return;
+    // A spawn-protected target's shield took it: a high, thin ping (the armour clank pitched up and softer).
+    if (this.shielded && hits.every((h) => h === null || h === undefined || this.shielded!(h))) {
+      this.audio.play('ui.hit.armor', { rate: 1.7, gain: 0.7 });
+      return;
+    }
     const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
     this.audio.play(head ? 'ui.hit.head' : armor ? 'ui.hit.armor' : 'ui.hit');
   }

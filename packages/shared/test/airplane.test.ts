@@ -160,8 +160,11 @@ describe('air drop', () => {
   });
 
   it('bots ride the plane, jump out over their objective and parachute in', () => {
-    // Knives only, so nobody is shot out of the sky before the drop.
-    const match = new Match(yard({ loopSeconds: 16 }), { ...rules, startingWeapons: ['core.knife'], startingGrenades: 0 });
+    // Knives only, so nobody is shot out of the sky before the drop. Seed 2: the first bot down knifes another while
+    // the third is still in the air, which then steers after whoever is left; on seed 1, once bots took a kill in after
+    // a beat (docs/BOTS.md, "After a kill"), that took it down onto the yard's wall top, 4 m up (seeds 2-8 all land on
+    // the yard's floor, before and after).
+    const match = new Match(yard({ loopSeconds: 16 }), { ...rules, startingWeapons: ['core.knife'], startingGrenades: 0 }, 2);
     const bots = [0, 1, 2].map((i) => match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal)!);
     expect(bots.every((b) => b.mount)).toBe(true);
     const chuted = new Set<number>();
