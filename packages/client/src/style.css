@@ -1997,7 +1997,7 @@ html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center
 @media (max-height: 600px), (max-width: 760px) {
   html.touch #menu .screen.characters { padding-bottom: 72px; }
   html.touch .char-grid { flex: 1 1 auto; }
-  html.touch .char-info { position: fixed; z-index: 6; left: max(20px, env(safe-area-inset-left)); bottom: 8px; margin: 0; max-height: 58px; background: rgb(14, 20, 33); display: flex; align-items: center; gap: 10px; padding: 6px 10px; overflow: hidden; transition: max-height 0.2s ease; }
+  html.touch .char-info { position: fixed; z-index: 6; left: max(20px, env(safe-area-inset-left)); bottom: 8px; margin: 0; max-height: 58px; background: rgb(14, 20, 33); display: flex; align-items: center; gap: 10px; padding: 6px 10px; overflow: hidden; }
   html.touch .char-info .char-sheet-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 44px; padding: 0 8px; font-size: 16px; }
   html.touch .char-info > img, html.touch .char-info .char-stats, html.touch .char-info .loadout, html.touch .char-info .who p, html.touch .char-info .tags { display: none; }
   html.touch .char-info .who { flex: 1; min-width: 0; overflow: hidden; }
@@ -2032,6 +2032,11 @@ html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center
   html.touch .char-sec-head { padding: 6px 10px 5px; }
   html.touch .char-info { bottom: 6px; max-height: 52px; padding: 4px 10px; }
   html.touch .char-info.sheet-open { max-height: calc(100vh - 104px); }
+  /* The turning model's drag area starts right of the strip and grid (it covered their right edge, and Favourites only). */
+  html.touch .char-spin { left: calc(min(900px, 70vw) + 36px); }
+}
+@media (max-height: 360px) and (orientation: landscape) {
+  html.touch .char-spin { left: calc(min(900px, 74vw) + 36px); }
 }
 /* Upright: the grid and sheet take the width (no room for the turning model beside them, so the sheet shows the portrait). */
 @media (max-width: 760px) and (orientation: portrait) {
