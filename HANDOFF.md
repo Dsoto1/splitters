@@ -97,7 +97,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Claims (lane B's splitters22), 2026-11-17 15:05:** (1) bug first: `wip/dropship-model-fix`, the owner's screenshot shows the Dropship as a dark open box from above (free camera), smoking, benches showing. **Lane A**: you made the Dropship's model and seats; if you know the cause or have the source file, please say here. (2) Owner on tunnel step 8 ("1a 2a"): Iron Maw's three tunnels first (`wip/tunnels-8-ironmaw`, `maps/iron_maw*.json` through MapMaker; lane B's until it lands); caves stay dark until the map maker places lights.
 
-**Landing now: train** (`wip/farlooks-bodypool`, `wip/breakable-shadow`; lane B's splitters22, 2026-11-17 15:25 UTC): please hold code pushes to main until this line goes.
+**Landed: the body pool, baked far looks and the breakable-prop shadow fix in a train** (`check/train-20261117-152500` at 3666f4d7, run 44104795406, green on attempt 1; main = that commit plus a docs-only merge, 0576fc33; lane B's splitters22, 2026-11-17; lock released).
 
 **Checking** (branch · run; remove the line when it turns green or red):
 

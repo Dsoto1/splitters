@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/farlooks-bodypool` · da6de9e6 · 44090541768 (lane B: body pool to about 32 (`?perfoff=bodypool`); far looks of shelves, tables, seats and other furniture baked from the real model, kept in the kit-props lock)
-- `wip/breakable-shadow` · b27c9e0f · 44086669127 (lane B: a broken breakable prop takes its shadow with it)
 - `wip/st-johns-spruces` · 6c0106d8 · 44104725476 (**held**: owner, 2026-11-17, the two new banner lamps royal purple instead of crimson; St. John's colours are royal purple, white and red (owner): add a `royal purple` variant of `kit.lamp.post_banner` (only crimson, navy, slate today) with a royal purple banner, a white band and red trim (owner: "red trim yes"; a thin red edge on the banner, a `trim` colour in the lamp generator's look if it has none), then set the two lamps to it in MapMaker; lane B, next free helper) (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts, placed in MapMaker; contains the landed `wip/breakable-shadow`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
@@ -167,6 +165,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-17 · B · Body pool to about 32, far looks of 186 furniture variants baked from the real model, and a broken breakable prop takes its shadow with it (train `check/train-20261117-152500` at 3666f4d7, run 44104795406).
 - 2026-11-17 · B · Tunnel kit steps 6 and 7 and cheaper small shadow casters (train `check/train-20261117-133853` at 95d3fb91, run 44094842566): the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning, curved mine track, chamber lanterns; the cave family, cave Mouth, joints between families, Bay to Road; trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps (Spillway High shadow draws 372 → 29), clutter to 20 m (`?perfoff=smallcasters`).
 - 2026-11-17 · B · Tunnel kit step 5 (train `check/train-20261117-054853`): brick and mine families, Outfall, Lit Tunnel Chamber, Close open ends.
 - 2026-11-17 · B · Bugs 1117 (`wip/bugs-1117`, 464c35f7): the Wall Shelf with books, props' far looks wait with hysteresis (20/45 m minimums), stream weapons drawn from the muzzle.
