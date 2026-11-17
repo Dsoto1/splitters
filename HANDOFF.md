@@ -92,6 +92,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/tunnels-6`, `wip/shadow-casters`, `wip/tunnels-7`; lane B's splitters22, 2026-11-17 13:55 UTC): please hold code pushes to main until this line goes.
 
+**Claim (lane B's splitters22), 2026-11-17 14:45** (owner: "1a 2a 3a" on far looks): `wip/farlooks-kit2`, far looks baked from the real model for the remaining kit types (crates, drums, fences, walls, containers, machines, street furniture, domes); on top of `wip/farlooks-bodypool`. Touches `content/kitprops*.json`, `tools/content/kit/`, palette atlases.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/st-johns-spruces` · run 44098621699 (St. John's spruces and curved wall, at 854d9705, on top of wip/breakable-shadow; a helper of lane B's splitters22)
 
