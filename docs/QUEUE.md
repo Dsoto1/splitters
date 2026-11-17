@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/farlooks-bodypool` · da6de9e6 · 44090541768 (lane B: body pool to about 32 (`?perfoff=bodypool`); far looks of shelves, tables, seats and other furniture baked from the real model, kept in the kit-props lock)
 - `wip/breakable-shadow` · b27c9e0f · 44086669127 (lane B: a broken breakable prop takes its shadow with it)
+- `wip/st-johns-spruces` · 6c0106d8 · 44104725476 (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts, placed in MapMaker; contains `wip/breakable-shadow`; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
@@ -55,13 +56,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · ? · Sandsweep plays weak as a battle map.
 - S · B · **Island plan, planning only, back of the queue** (owner, 2026-11-15): written, `docs/ISLAND_PLAN.md` for one large open map with every feature, tile set and theme ("like a Far Cry island"), to keep with the scaling study. Lead's recommended target about 1 km × 1 km, 32-64 players; sizes, budgets (entities, memory, bandwidth, host CPU), what each needs (tiled navmesh, far stand-ins, interest management, spawn-first build, region editing in MapMaker; real streaming only past that), steps. A plan only: no work starts from it without the owner.
 - S · B · Iron Coast: place the Sea Wall and its breach (the set piece is on main, not on `maps/iron_coast.json`; SET_PIECES_PLAN "Left for later").
-- S · ? · **Owner to decide:** Verdant Protocol (MAP 04): built and green on `check/mapmaker-verdant`, never landed; balance favours Tide. Land it, rebalance first, or drop?
-- S · ? · **Owner to decide:** The Spillway's gatehouses: none, one or two.
-- S · ? · **Owner to decide:** Iron Maw: raise the recommended player cap (32) to 64-96 (a format change); give the excavator a walkable deck.
-- S–M · ? · **Owner to decide:** Sunken Kingdom: a real dome (the Desert City dome kit exists), two-level tiers, CTF flags bots never take (`map-briefs/sunken_kingdom/DECISIONS_AND_DEVIATIONS.md`).
-- L · ? · **Owner to decide:** Dustwater expansion: a bigger town, mines, two through-trains tunnel to tunnel (STAGED_IDEAS §1, four open questions).
-- S · ? · **Owner to decide:** Mercy Ward rooftop zombies (STAGED_IDEAS §2; the rest of that batch is done or moot).
-- L · ? · **Owner to decide:** new maps from MAP_IDEAS' top list: Low Bridge, Wheel of Peril, Meltdown Protocol, Matchstick Hotel, Floodgate; and its kit gaps (turning movers, random pick in logic, liquids as logic targets, slippery ground, bulletproof glass, a hurt-zone action).
+- M · B · **Verdant Protocol (MAP 04): rebuild, then rebalance** (owner, 2026-11-17, "a"): rebuild `maps/verdant_protocol.json` in MapMaker with today's tools (Ground theme painting with blended paths instead of the chunky squares, generated jungle plants and rocks, the cave and tunnel kit for the quarantine bunker's connector, set pieces), starting from the built version on `check/mapmaker-verdant` (241e5cf8); then even out the Tide-favoured balance with bot reports (TDM, CTF, KotH). It lands as experimental; official only after the owner vets it. After Iron Maw's tunnels (lane B).
+- S · B · **The Spillway: two gatehouses** (owner, 2026-11-17, "2 gatehouses?", leaning two): one each side, in MapMaker, with the map's refresh.
+- M · B · **Iron Maw's excavator remade** (owner, 2026-11-17): a rebuild or a new Meshy model, fewer triangles and shaped for what the map needs (a walkable deck), clean and good-looking for what it is, never lumpy or distorted from the import; not super high detail. Owner, 2026-11-17 ("1a 2a"): generate a new, lower-detail model through the Meshy API on the owner's subscription (record as Meshy, owned); keep the recommended cap at 32 for now.
+- M · B · **Sunken Kingdom: a real dome** (owner, 2026-11-17: "we should have dome kits"): build it from the dome pieces we have (the Desert City pack's domes, the kit domes), two-level tiers, and CTF flags bots actually take (`map-briefs/sunken_kingdom/DECISIONS_AND_DEVIATIONS.md`); in MapMaker.
+- L · B · **Dustwater: a refresh first** (owner, 2026-11-17): more visual appeal and a natural look (Ground theme painting, generated plants and rocks, set pieces); the expansion (bigger town, mines, two through-trains tunnel to tunnel; STAGED_IDEAS §1) with or after it.
+- M · B · **Mercy Ward: a refresh with more to it** (owner, 2026-11-17: "relatively bland"): more to see and do, the rooftop zombies (STAGED_IDEAS §2) as part of it.
+- L · ? · New maps from MAP_IDEAS (top list: Low Bridge, Wheel of Peril, Meltdown Protocol, Matchstick Hotel, Floodgate): **not yet** (owner, 2026-11-17, "3d": finish the refreshes first).
 
 ## Bugs
 - **B · Bug (owner, 2026-11-17, screenshot): the Dropship's model looks broken**: seen from above in free camera, a dark open box (no roof or hull top, black panels), smoking, the benches showing. Lane B's splitters22 investigating (`wip/dropship-model-fix`); lane A made the model, see HANDOFF.
@@ -166,6 +167,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-17 · B · Tunnel kit steps 6 and 7 and cheaper small shadow casters (train `check/train-20261117-133853` at 95d3fb91, run 44094842566): the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning, curved mine track, chamber lanterns; the cave family, cave Mouth, joints between families, Bay to Road; trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps (Spillway High shadow draws 372 → 29), clutter to 20 m (`?perfoff=smallcasters`).
+- 2026-11-17 · B · Tunnel kit step 5 (train `check/train-20261117-054853`): brick and mine families, Outfall, Lit Tunnel Chamber, Close open ends.
+- 2026-11-17 · B · Bugs 1117 (`wip/bugs-1117`, 464c35f7): the Wall Shelf with books, props' far looks wait with hysteresis (20/45 m minimums), stream weapons drawn from the muzzle.
+- 2026-11-17 · B · St. John's step 4b and driving physics 4 (the Troop Buggy a Rapier rigid body; `?drive=own` the old drive); Flavius Rule memory (heap about 1.06 GB → 650 MB).
 - 2026-11-17 · A · Sgt. Mackie's face (the eye wedge gone: the face its own share of the cut, 354 → 1,310 triangles) and Kenji's fringe (rebaked charts, dark strands back) (`wip/chars-faces`, train `check/train-20261117-125014` at d1e766c6).
 - 2026-11-17 · A · The Dropship's riders sit on their seats (`wip/dropship-seats`, train `check/train-20261117-102339` at b151c383): a seated rider is drawn turned no further from its seat's way than its waist turns, so its legs stay on the bench.
 - 2026-11-17 · A · The Heavy Revolver's short range (`wip/revolver-range`, train `check/train-20261117-021254` at ec810269; owner "short range yes"): full damage to 25 m, a 40 % floor by 65 m, reach 110 m (was 300 m at 70 %); a head shot kills to about 45 m.
