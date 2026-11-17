@@ -80,14 +80,14 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Claims (lane B's splitters22), 2026-11-17 11:55** (owner: "1a 2a 3a" on the shadow casters' questions): `wip/breakable-shadow` (a broken breakable prop's shadow goes with it, also for props without near/far looks placed fewer than 8 times) and `wip/st-johns-spruces` (2 spruces by the arch and the curved sandstone Low Stone Wall, a pier and 2 banner lamp posts at St. John's, through MapMaker; built on `wip/shadow-casters`). `maps/st_johns.json` is lane B's until it lands.
 
-**Landing now: train** (`wip/chars-faces`, green 2c3f6449 run 44060937176: Sgt. Mackie's and Kenji's faces, owner OK; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
-
 - **Claimed (a helper of lane A's lead, 2026-11-17): two Roster Board faces, split from `wip/chars-hands-faces`** (`wip/chars-faces`; QUEUE Features, lane A; the owner agreed to land these first). Files: `content/characters/meshy_pruitt.json`, `meshy_resolvesoldier.json`, their built files and lock lines, `tools/content/prepare-meshy-characters.mjs` and `character-manifests.mjs` (`fixes.face`), the generated hit shapes and provenance, docs/CHARACTERS.md. No map format change.
   - **Sgt. Mackie, the eye wedge. Cause: the rebaked cut.** The head's share counted the cap and brim; cut by error the eye sockets went and a wedge of cheek ran up over each eye (354 triangles in the face). Fix: new `fixes.face` (the face its own part of a rebaked cut, a box in the download's frame, charts as fine as the head's): `box [-0.05, 0.855, 0, 0.05, 0.921, 0.12]`, `share 0.1`, `headShare 0.26`: 1310 triangles in the face, both eyes whole. Grip audit 3 → 0 (rebuilt from its download).
   - **Kenji, the pale fringe patch. Cause: the texture copy.** The download's 2048 px map is one island per triangle; the shared 1024 px copy washed the dark fringe strands painted over his forehead into a pale patch. Fix: `surface: rebake` (no cut; the head's charts 2.5x the texels): strands, brows and eyes sharp; 778 → 715 KB. Grip audit 0 → 0.
   - Other looks unchanged (opt-in per manifest; hit shapes: these two rows). Pictures: the helper's scratchpad `chars7/compare-pruitt-face.png`, `compare-resolvesoldier-face.png`.
   - **Green on `check/chars-faces` at 2c3f6449, run 44060937176; on QUEUE's Ready to land.**
   - The grafted hands stay on `wip/chars-hands-faces` for rework (owner: not ready; colour, smoother fingers, first-person pistol palm).
+
+**Landed: Sgt. Mackie's and Kenji's faces** (`check/train-20261117-125014` at d1e766c6, run 44086887358, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released). The grafted hands continue on `wip/chars-hands-faces` (owner: palms show the pistol grip through them).
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/farlooks-bodypool` · 44090541768 (da6de9e6: far looks baked from the real model, on top of the body pool)

@@ -37,7 +37,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chars-faces` · 2c3f6449 · 44060937176 (lane A: Sgt. Mackie's and Kenji's faces)
 
 - `wip/tunnels-6` · eba67329 · 44077679537 (main merged in; code equals green ba7b438c. The `roulette` jackpot-glow failure is not this branch: it also hit `wip/dropship-seats` alone, see HANDOFF) (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
 - `wip/shadow-casters` · 7fddc644 · 44060921601 (lane B: cheaper small shadow casters: trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps; clutter casts to 20 m with a 24 m band; `?perfoff=smallcasters`)
@@ -166,6 +165,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-17 · A · Sgt. Mackie's face (the eye wedge gone: the face its own share of the cut, 354 → 1,310 triangles) and Kenji's fringe (rebaked charts, dark strands back) (`wip/chars-faces`, train `check/train-20261117-125014` at d1e766c6).
 - 2026-11-17 · A · The Dropship's riders sit on their seats (`wip/dropship-seats`, train `check/train-20261117-102339` at b151c383): a seated rider is drawn turned no further from its seat's way than its waist turns, so its legs stay on the bench.
 - 2026-11-17 · A · The Heavy Revolver's short range (`wip/revolver-range`, train `check/train-20261117-021254` at ec810269; owner "short range yes"): full damage to 25 m, a 40 % floor by 65 m, reach 110 m (was 300 m at 70 %); a head shot kills to about 45 m.
 - 2026-11-16 · A · Punchier hits, damage by impact speed, clearer ranges (`wip/punchier-hits`, train `check/train-20261116-224557` at e41aa635): shoves up (Battle Rifle 12 → 31 cm, shotguns and snipers 33-38 → 52, Heavy Revolver 90 → 131), 1.5× on someone in the air, harder flinch and stagger, a small camera kick when hit (calmer with Reduce flashing); rounds slow in flight and hit by impact speed under Standard and Advanced (Standard keeps every kill distance); pistols and SMGs reach 100-110 m with 35-40 % floors (were 200-250 m at 55-65 %). Heavy Revolver's short range follows on `wip/revolver-range`.
