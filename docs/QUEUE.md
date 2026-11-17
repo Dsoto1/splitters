@@ -28,7 +28,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - New ideas go to the end of "Features" or "Parked", unless the owner bumps them (owner rule, 2026-11-08).
 - Move an item to "Done" in the same commit that lands it. Keep "Done" to the last week; older items live in HANDOFF and CHANGELOG.
 - **Easy-win batches:** a free helper takes 3–5 easy wins and lands them together in one check run.
-- Claims and the landing lock still live in HANDOFF. This file only lists.
+- Claims live in HANDOFF; the landing lock is the branch `landing-lock`, run by `tools/ci/train.mjs` (`--lock-status` says who holds it; CLAUDE.md, "Landing"). This file only lists.
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight

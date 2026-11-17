@@ -3,6 +3,8 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+**For lane A's splitters22 (from lane B's, 2026-11-17): the landing lock is a branch now** (once `wip/landing-lock` lands; until then the "Landing now" line still holds). No more "Landing now" lines in HANDOFF; it keeps only the "Landed" history. Every train: `node tools/ci/train.mjs --holder "lane A splitters22" wip/a wip/b …` (it takes the branch `landing-lock`, or refuses and names who holds it and since when); when green, `node tools/ci/train.mjs --land <sha> --branch check/train-… --holder "lane A splitters22"` (it frees the lock after the fast-forward). Landing by hand: `--lock --holder X` before, `--unlock --holder X` after. `--lock-status` any time; `--force-unlock --holder X` only for a lock held 3 h or more. CLAUDE.md, "Landing", item 3.
+
 ## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
 
 The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A keeps working, second (owner: "we can still work here but it will be secondary"): it finishes what is in flight (`wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`) and keeps two items, the random bots fix and the Dropship's new model (its file is on lane A's machine); everything else is marked B. Lane A claims in HANDOFF before taking anything more. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
@@ -37,7 +39,7 @@ Lane A's own rules that worked, worth keeping:
 The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full rules. In short:
 - A finished branch merges origin/main once, runs `pnpm prepush`, and pushes its own `check/<name>` right away. No turn and no lock, at most 4 runs in flight. List it under "Checking" below while it runs.
 - Green branches go on QUEUE's "Ready to land" (`branch · green sha · run`).
-- One "Landing now: train" at a time runs `tools/ci/train.mjs` over the whole list: one combined run, then `--land`. Run a train at 2 or more ready branches, or after a 2-hour wait.
+- One train at a time: `tools/ci/train.mjs --holder "<session>"` over the whole list takes the landing lock (the branch `landing-lock`, since 2026-11-17; no more "Landing now" lines here), one combined run, then `--land … --holder` frees it. By hand: `--lock`/`--unlock --holder`. `--lock-status` says who holds it. Run a train at 2 or more ready branches, or after a 2-hour wait.
 - A lone ready branch that is still current with main (docs only added since its green commit) may land alone, and so may a bug fix for a broken main.
 - A red train: re-run a known flake once, drop a failing branch and go again, a conflict goes back to the branch's owner.
 - "Next in line" notes are no longer needed. Branches already waiting (St. John's step 4, painting Phase 3) simply push their check runs now, if they haven't, and go on "Ready to land".
@@ -101,7 +103,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the body pool, baked far looks and the breakable-prop shadow fix in a train** (`check/train-20261117-152500` at 3666f4d7, run 44104795406, green on attempt 1; main = that commit plus a docs-only merge, 0576fc33; lane B's splitters22, 2026-11-17; lock released).
 
-**Lead (lane B's splitters22), 2026-11-17 16:10, for both lanes:** the owner chose to move the landing lock out of HANDOFF into a `landing-lock` branch that `tools/ci/train.mjs` takes and frees itself (QUEUE Bugs; lane B builds it next). Until it lands, keep using the "Landing now" line here, and after a landing merge check that no old "Landing now" line rode back and that yours is gone.
+**Lead (lane B's splitters22), 2026-11-17 16:10, for both lanes:** the owner chose to move the landing lock out of HANDOFF into a `landing-lock` branch that `tools/ci/train.mjs` takes and frees itself (QUEUE Bugs). Built on `wip/landing-lock` (see the note at the top); until it lands, keep using the "Landing now" line here.
 
 **Green: the Dropship's model bug** (`wip/dropship-model-fix` at 7ef3332a, green on `check/dropship-model-fix`, run 44125908518; a helper of lane B's splitters22, 2026-11-17; ready to land). Not a broken model and not a regression (the model file is unchanged since it landed on 2026-11-16; all its meshes, both detail levels and its texture load and draw). Cause: team paint multiplies the whole model by the team colour; the owner's olive-and-white carrier under Shingle Point's blue (#3f7fd8) turns its olive near black and its white flat blue, so a team-owned Dropship read as a black and blue box. The open deck, benches and floor seen from above are the model's design (an open carrier, no roof); the smoke was its damage state. Fix: `MountDef.paint` (0 to 1, default 1: the tint mixed that far from white before it multiplies), 0.5 on `dropship` and `dropship_drop`; every other vehicle unchanged. Test `client/test/mountPaint.test.ts`. Owner question pending in the lead's report: the other textured vehicles darken the same way under team paint (about 4 times darker).
 

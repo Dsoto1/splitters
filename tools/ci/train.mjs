@@ -10,13 +10,23 @@
 //                                                  check/train-* branch is for <sha>, completed and successful,
 //                                                  and origin/main is an ancestor of <sha>
 //
+// The landing lock (tools/ci/landingLock.mjs: the branch `landing-lock`): a train takes it as it starts and keeps it
+// while its check runs; --land frees it once main is fast-forwarded; a train that stops before pushing (a conflict, a
+// refusal) frees it. Every train and landing names its holder: --holder "<session>" or LANDING_LOCK_HOLDER.
+//   node tools/ci/train.mjs --lock-status          who holds it, which train, for how long
+//   node tools/ci/train.mjs --lock --holder X      take it for a landing by hand (merge, check, push main yourself)
+//   node tools/ci/train.mjs --unlock --holder X    free it (only X's own)
+//   node tools/ci/train.mjs --force-unlock --holder X   free anyone's lock held for 3 h or more (a warning is printed)
+//
 // It never force-pushes, never changes your checkout (the merges happen in a temporary worktree) and pushes
-// only to check/train-* (new branches) and main (a fast-forward). Tested in tools/ci/test/train.test.mjs.
+// only to check/train-* (new branches), main (a fast-forward) and landing-lock (a child commit). Tested in
+// tools/ci/test/train.test.mjs and tools/ci/test/landingLock.test.mjs.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { LockError, describeLock, freeLock, readLock, takeLock } from './landingLock.mjs';
 
 // TRAIN_ROOT: another clone (the tests' scratch repositories).
 const ROOT = process.env.TRAIN_ROOT || fileURLToPath(new URL('../../', import.meta.url));
@@ -61,9 +71,36 @@ const die = (msg) => {
   throw new TrainError(msg);
 };
 
-function train(branches, { push }) {
+/** The time the lock sees (LANDING_LOCK_NOW: the tests' clock). */
+const now = () => (process.env.LANDING_LOCK_NOW ? new Date(process.env.LANDING_LOCK_NOW) : new Date());
+const lockCall = (fn) => {
+  try {
+    return fn();
+  } catch (e) {
+    if (e instanceof LockError) die(e.message);
+    throw e;
+  }
+};
+
+function train(branches, { push, holder }) {
   const names = branches.map((b) => trainBranch(b) ?? die(`${b}: not a wip/ or check/ branch`));
   if (!names.length) die('name the branches to merge (wip/… or check/…)');
+  if (!push) return candidate(names, { push });
+  if (!holder) die('a train takes the landing lock: name yourself with --holder "<session>" (or LANDING_LOCK_HOLDER)');
+  const branch = trainBranchName(now());
+  const took = lockCall(() => takeLock(ROOT, { holder, train: branch, now: now() }));
+  console.log(took.taken ? `Took the landing lock for ${branch}.` : `You hold the landing lock already (${branch}).`);
+  try {
+    candidate(names, { push, branch });
+  } catch (e) {
+    // Stopped before pushing: the lock goes back.
+    lockCall(() => freeLock(ROOT, { holder, now: now() }));
+    console.error('Freed the landing lock (the train stopped before pushing).');
+    throw e;
+  }
+}
+
+function candidate(names, { push, branch }) {
   git(['fetch', '--quiet', '--no-tags', 'origin', '+refs/heads/main:refs/remotes/origin/main', ...names.map((b) => `+refs/heads/${b}:refs/remotes/origin/${b}`)]);
   const dir = mkdtempSync(join(tmpdir(), 'train-'));
   try {
@@ -85,10 +122,9 @@ function train(branches, { push }) {
       console.log(`Candidate ${sha} (not pushed: --no-push)`);
       return;
     }
-    const branch = trainBranchName();
     // A new branch: a plain push (no force) fails rather than replace anything already there.
     git(['push', '--quiet', 'origin', `${sha}:refs/heads/${branch}`]);
-    console.log(`Pushed ${sha.slice(0, 7)} to ${branch}: CI runs there.\nWhen it's green: node tools/ci/train.mjs --land ${sha} --branch ${branch}`);
+    console.log(`Pushed ${sha.slice(0, 7)} to ${branch}: CI runs there. You hold the landing lock until it lands.\nWhen it's green: node tools/ci/train.mjs --land ${sha} --branch ${branch} --holder "<you>"\nIf it goes red: fix or drop a branch and run the train again (the lock stays yours), or --unlock.`);
   } finally {
     gitOk(['worktree', 'remove', '--force', dir]);
     rmSync(dir, { recursive: true, force: true });
@@ -100,7 +136,10 @@ function latestRun(slug, branch) {
   return JSON.parse(out).workflow_runs?.[0] ?? null;
 }
 
-function land(shaArg, branchArg) {
+function land(shaArg, branchArg, holder) {
+  if (!holder) die('landing frees the landing lock: name yourself with --holder "<session>" (or LANDING_LOCK_HOLDER)');
+  const lock = lockCall(() => readLock(ROOT)).state;
+  if (lock.held && lock.holder !== holder) die(`not landing: ${describeLock(lock, now())}`);
   git(['fetch', '--quiet', '--no-tags', 'origin', '+refs/heads/main:refs/remotes/origin/main', '+refs/heads/check/train-*:refs/remotes/origin/check/train-*']);
   const sha = gitOk(['cat-file', '-e', `${shaArg}^{commit}`]) ? git(['rev-parse', `${shaArg}^{commit}`]) : die(`${shaArg}: no such commit (fetched origin)`);
   let branch = branchArg && trainBranch(branchArg);
@@ -117,6 +156,8 @@ function land(shaArg, branchArg) {
   // A fast-forward: without force, the push itself refuses anything else.
   git(['push', '--quiet', 'origin', `${sha}:refs/heads/main`]);
   console.log(`main fast-forwarded to ${sha.slice(0, 7)} (green on ${branch}); its CI run skips as already green.`);
+  const freed = lockCall(() => freeLock(ROOT, { holder, now: now() }));
+  console.log(freed.freed ? 'Freed the landing lock.' : 'The landing lock was free.');
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
@@ -139,12 +180,30 @@ function main(argv) {
   };
   const landSha = opt('--land');
   const branch = opt('--branch');
-  const noPush = argv.includes('--no-push');
-  const rest = argv.filter((a) => a !== '--no-push');
+  const holder = opt('--holder') ?? process.env.LANDING_LOCK_HOLDER ?? null;
+  const flags = ['--no-push', '--lock', '--unlock', '--force-unlock', '--lock-status'];
+  const on = (f) => argv.includes(f);
+  const rest = argv.filter((a) => !flags.includes(a));
   const unknown = rest.find((a) => a.startsWith('--'));
   if (unknown) die(`unknown option ${unknown}`);
+  const lockOps = ['--lock', '--unlock', '--force-unlock', '--lock-status'].filter(on);
+  if (lockOps.length > 1) die(`one of ${lockOps.join(', ')} at a time`);
+  if (lockOps.length) {
+    if (rest.length || landSha) die(`${lockOps[0]} takes no branches and no --land`);
+    if (on('--lock-status')) return console.log(describeLock(lockCall(() => readLock(ROOT)).state, now()));
+    if (on('--lock')) {
+      const r = lockCall(() => takeLock(ROOT, { holder, train: branch ?? 'by hand', now: now() }));
+      return console.log(r.taken ? `Took the landing lock (${holder}, ${branch ?? 'by hand'}). Free it when main is pushed: --unlock --holder "${holder}"` : 'You hold the landing lock already.');
+    }
+    if (on('--force-unlock')) {
+      const was = lockCall(() => readLock(ROOT)).state;
+      if (was.held) console.warn(`WARNING: forcing the landing lock free: ${describeLock(was, now())}. Make sure that train isn't still landing.`);
+    }
+    const r = lockCall(() => freeLock(ROOT, { holder, force: on('--force-unlock'), now: now() }));
+    return console.log(r.freed ? 'Freed the landing lock.' : 'The landing lock was free.');
+  }
   if (landSha) {
     if (rest.length) die('--land takes a sha (and --branch), not branches to merge');
-    land(landSha, branch);
-  } else train(rest, { push: !noPush });
+    land(landSha, branch, holder);
+  } else train(rest, { push: !on('--no-push'), holder });
 }
