@@ -39,7 +39,7 @@ const WEAPONS_DIR = join(dirname(fileURLToPath(import.meta.url)), '../../../cont
 /** Every bullet-firing gun with a falloff (the families with drag). */
 const BULLET_GUNS = ['core.pistol', 'core.smg', 'core.machine_pistol', 'core.hand_cannon', 'core.revolver', 'core.rifle', 'core.burst_rifle', 'core.battle_rifle', 'core.lmg', 'core.marksman', 'core.sniper'];
 /** The close-range guns the owner asked to reach less far, and the long guns that stay long. */
-const CLOSE = ['core.pistol', 'core.smg', 'core.machine_pistol', 'core.pulse_pistol', 'core.hand_cannon'];
+const CLOSE = ['core.pistol', 'core.smg', 'core.machine_pistol', 'core.pulse_pistol', 'core.hand_cannon', 'core.revolver'];
 const LONG = ['core.rifle', 'core.lmg', 'core.battle_rifle', 'core.marksman', 'core.sniper'];
 
 const rules: MatchRules = { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 };
