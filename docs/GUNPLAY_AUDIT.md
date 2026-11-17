@@ -429,7 +429,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G0 leading | ✅ | `ballistics.test.ts:172` (runner hit only with travel-time lead) |
 | G0 recoil and recovery | ✅ | `gunplay.ts:268` `recoilShot`, `:284` counter, `:309` `recoilIdle`; `shared/test/recoil.test.ts:87,110,141` |
 | G0 reload interruption | ✅ | fire `match.ts:2905-2910`, sprint/use `:2900`, swap `:3003`; stages `gunplay.ts:444`; `shared/test/reload.test.ts:127,142,170,215` |
-| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; damage numbers as an option (pass 2: `client/src/game/combatReadouts.ts`, privateState `dd`); no shield or weak-point marker |
+| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; damage numbers as an option (pass 2: `client/src/game/combatReadouts.ts`, privateState `dd`); a shield marker for spawn protection (2026-11-17); no weak points in the game yet |
 | G0 kill confirmation | ✅ | X marker growing per kill in a row `hud.ts:819`; climbing crunch `client/src/game/sessionAudio.ts:357` |
 | **G1** glass | ✅ | breakable panes `shared/src/sim/scenario.ts:497` `shootGlass`; `shared/test/glass.test.ts` |
 | G1 wood, concrete, metal (+ 13 classes) | ✅ | `gunplay.ts:584` `MATERIAL_BALLISTICS`; surface types `content/surface-types.json` |
@@ -462,6 +462,9 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 Body STK and ideal body TTK at 10 / 25 / 50 / 100 m (unarmoured), head and armoured body ideal TTK, hip and ADS body
 TTK, first shot, draw, reload (tactical / empty, or heat cool-down), one round's settle time, cone hip / ADS / running
 (mrad). Full data, including every armoured and head cell: [gunplay-audit.json](gunplay-audit.json).
+The JSON was re-run on 2026-11-17 with arms as their own zone (0.9×): of the ideal cells only the SMG at 100 m
+(20 → 22) and the Auto Shotgun's armoured head at 10 m moved; the table below predates the clearer ranges of 2026-11-16
+(GUNPLAY_SPEC §10 has the current body TTK).
 
 | Gun | Class | Trigger · mag | Body STK | Body TTK | Head TTK | Armoured body | Hip body | ADS body | 1st shot ms | Draw ms | Reload ms | Settle ms | Cone |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|

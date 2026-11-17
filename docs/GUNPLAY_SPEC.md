@@ -556,7 +556,7 @@ Tactical by about 0.72.
 | Hand Cannon | .50 (2) | .55 (2) | 1.13 (3) → **1.63 (4)** | 1.30 (3) → **2.33 (5)** |
 | Machine Pistol | .75 (16) | 2.43 (29) → **3.03 (41)** | 2.50 (29) → **3.12 (41)** | – (reach 60 m) |
 | Pulse Pistol | .60 (5) | .75 (6) | 1.35 (10) → **1.95 (14)** | 1.35 (10) → **– (reach 90 m)** |
-| SMG | .40 (7) | .63 (10) → **.83 (13)** | .90 (13) → **1.37 (20)** | 1.02 (13) → **1.53 (20)** |
+| SMG | .40 (7) | .63 (10) → **.83 (13)** | .90 (13) → **1.37 (20)** | 1.02 (13) → **1.53 (20)** → **1.67 (22)** |
 | Assault Rifle | .50 (6) | .52 (6) | .75 (8) | 1.00 (10) |
 | Burst Rifle | .53 (6) | .55 (6) | .92 (8) | 1.30 (11) |
 | Battle Rifle | .60 (4) | .62 (4) | .83 (5) | 1.10 (6) |
@@ -566,6 +566,17 @@ Tactical by about 0.72.
 | Shotgun | .75 (2) | – | – | – |
 
 The long guns did not move: at Standard damage by impact speed gives exactly the old distances (§37).
+
+Arms as their own zone (2026-11-17, §11) moved one cell: the SMG at 100 m, 20 → 22 rounds (1.53 → 1.67 s), its spread
+there putting some rounds on an arm. Every other ideal body cell is unchanged (the report aims at the chest's middle);
+hip-fire, ADS and tracking cells, which spray, take about one round more in places. Arcade and Tactical scale as before.
+
+**Arm shots to kill at Standard, 10 m** (unarmoured, every round on an arm; body in brackets): Pistol 5 (5), Heavy
+Revolver 2 (2), Hand Cannon 2 (2), Pulse Pistol 5 (5), Machine Pistol 18 (16), SMG 8 (7), Assault Rifle 7 (6), Burst Rifle 7 (6),
+Battle Rifle 5 (4), Spin Gun 13 (12), Marksman Rifle 4 (3), Precision Rifle 2 (2). The one-shot and two-shot guns keep
+their counts on an arm, as do the Pistol and Pulse Pistol (24 a round: 21.6 still kills in five); the rest take one
+round more, the Machine Pistol two. From the report's first-hit damage (docs/gunplay-audit.json `firstHit`). Ranges
+(falloff) are unchanged.
 
 Important:
 
@@ -594,7 +605,15 @@ Explosives should not use conventional headshot logic.
 Every look has its own head sphere, torso, thigh, shin and (where they stick out) arm shapes measured from its model
 standing, crouching and prone; the zone is the shape a round meets (head sphere: head, legs: legs, torso and arms:
 upper body at 1.0×; the zone is the shape whose own core the round passes nearest). Lag compensation rewinds the
-same shapes. Every shape carries a margin (`HITBOX_MARGIN`: 0.18 m body, 0.12 m head at a 1.8 m body) so hit rates
+same shapes.
+
+**Arms (2026-11-17):** the arm shapes are their own zone now, at **0.9×** for every bullet family (`arms` in
+content/weapons/families.json; a weapon may set `armshot`; weapons without a family 0.9): between the body and the
+legs (0.8-0.9), inside the spec's 0.8-1.0. Server-authoritative (sim/hitbox.ts, sim/match.ts `zoneScale`), from the
+same measured rows. The rule is unchanged: the shape whose core the round passes deepest into wins, so a round through
+a forearm into the chest is a body shot, and one that clips a forearm held out and misses the chest is an arm shot
+(about 2 % of rounds aimed at the chest's middle from any side, about a third of upper-body hits sprayed near a body).
+Arm hits show the body marker; the target flinches as for a body hit. Every shape carries a margin (`HITBOX_MARGIN`: 0.18 m body, 0.12 m head at a 1.8 m body) so hit rates
 and TTK stay where the 0.8 m capsule had them: a standard chest is 0.68 × 0.62 m with it, the head 0.50 m across.
 Melee keeps its forgiving reach and thrown projectiles are 0.12 m thick. docs/CHARACTERS.md, "Hitboxes".
 
@@ -995,6 +1014,11 @@ Kill
 ```
 
 Players should recognize these largely by **sound and shape**, not by reading text.
+
+As built (2026-11-17): **shield hit** is a hit on a player under spawn protection (its shield takes the round, no
+damage): a pale gold ring, round where every other marker is angular, and a high thin ping (the armour clank pitched
+up and softer). The client knows from the snapshot's `FX_PROTECTED` bit; no new event. **Critical / weak point**: the
+game has no weak points yet (no shielded enemies or vehicles with a weak spot), so there is no marker for it.
 
 ---
 
@@ -1646,6 +1670,15 @@ Support:
 - Screen-flash reduction.
 - Controller vibration strength.
 - Color-independent armor/shield indicators.
+
+As built (2026-11-17, Options → Accessibility and the pause menu; client `game/combatPrefs.ts`, `game/rumble.ts`):
+**Aim** Hold / Toggle (a toggled aim lets go on a weapon change, death, a vehicle or leaving play; works with every
+scope and the Battle Rifle's optic; touch's Aim button always toggles); **Camera shake** Off / Reduced (0.35) / Full
+for the view's own movement: heavy-shot shake, the hit kick (§23), blasts and crashes (mechanical recoil stays: it is
+where the rounds go, §29; Reduce flashing keeps its calmer kick on top); **Controller vibration** on/off and strength
+(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` for firing (a buzz a round for automatics, a
+thump for heavy shots), hits taken and blasts and crashes near you; hidden where the browser can't rumble a
+controller. Saved in this browser (`tiletrigger.combat`).
 
 Competitive playlists may standardize mechanics while preserving presentation/accessibility settings.
 
