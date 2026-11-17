@@ -223,6 +223,17 @@ Two options for finding where a view's draws come from:
 - `PERF_STILL_EXTRA` adds views of your own for one map (JSON): `[{"name": "eye, sun", "spawn": 2645, "look": [58, 40, -44]}]`
   stands at entity 2645 (a spawn) at eye height and looks along `look`; `"eye": [x, y, z]` and `"target": [x, y, z]`
   (or `"toSpawn"`) work too. Their rows count in the map's mean.
+- With `PERF_BREAKDOWN=1` a `casters:` line also lists what the Shadow casters column counted, by mesh name. That column
+  is the length of the shadow map's list of casters this frame, not the shadow pass's draws: it counts each GPU instance
+  of a prop on its own (one draw for all of them), leaves out static casters the static shadow cache holds, and
+  includes disabled templates near the camera (the environment's `env_tpl_*` and the effects' `gvBase_*`, never drawn:
+  the ~400-caster readings of views near a map's middle). For the shadow pass's real cost, see the next item.
+- `PERF_SPLIT=1` prints under each row the page's own time a frame at the view (render, and in it the shadow pass,
+  the mesh evaluation and post-processing; the game frame's JS), the shadow pass's draws a frame (all cascades: the
+  real count; the most in one frame, a static-cache redraw, in brackets) and the casters column, over 40 frames.
+  `PERF_WALK=<metres>` then walks the camera that far ahead at 0.1 m a frame and prints the same over the walk: a
+  still view never moves a cascade, so it hides the static shadow cache's redraws (docs/PERF_SHADOW_CASTERS_2026-11-17.md).
+  On SwiftShader the milliseconds are for comparing two runs on the same machine, not real hardware.
 
 ```
 PERF_STILL=1 PERF_GRAPHICS=high PERF_BREAKDOWN=1 node tools/perf/client-perf.mjs st_johns

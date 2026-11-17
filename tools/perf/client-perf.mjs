@@ -26,7 +26,9 @@
 // device scale factor and PERF_SIZE=1280x720 sets the viewport (pictures for the owner); PERF_NOGUN=1 hides the
 // first-person weapon and arms (their draws then leave the counts too). PERF_BREAKDOWN=1 also prints each view's draws by pass (main view,
 // shadow map, sun shafts, reflections) and by the mesh drawing them (names, digits stripped; PERF_BREAKDOWN_TOP=40), and the
-// shadow casters the column counts, by name.
+// shadow casters the column counts, by name. PERF_SPLIT=1 prints each view's frame split (render, shadow pass, mesh
+// evaluation, game JS; ms on this machine) and the shadow pass's own draws over 40 frames; PERF_WALK=<m> then walks the
+// camera that far ahead and prints the same over the walk (static shadow cache redraws, levels of detail changing).
 //
 // SwiftShader renders on the CPU, so its frame rate is far below a real GPU's;
 // compare runs on the same machine, and lean on draw calls, meshes and triangles.
