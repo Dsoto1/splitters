@@ -222,6 +222,8 @@ if (rescore) {
         if (shots && views.some(([vw, v]) => vw === w && v === 'hands')) tiles[`${w}-hands`] = await page.screenshot({ type: 'png' });
         m.audit = await page.evaluate(() => window.__grips.audit());
         m.drawn = await page.evaluate(() => window.__grips.drawn());
+        // The gun inside each hand as drawn (tools/gripInside.ts: vertices behind the gun's surface, the deepest; measured, not flagged).
+        m.inside = await page.evaluate(() => window.__grips.inside());
         if (w === 'rifle') {
           // Curl test: the fingertips with the hands open, against closed as the game closes them.
           await page.evaluate(() => window.__grips.curl(0));
@@ -241,6 +243,7 @@ if (rescore) {
         if (firstPerson && w !== 'spin') {
           await page.evaluate(([l, wp]) => window.__grips.pose(l, wp, 'body'), [c.look, weapon]);
           m.fp = await page.evaluate(() => window.__grips.drawn());
+          m.fpInside = await page.evaluate(() => window.__grips.inside());
         }
       } catch (e) {
         m.error = e.message.split('\n')[0];
@@ -262,7 +265,7 @@ if (rescore) {
       resized.push({ input: text(title, views.length * TILE, HEAD, 16, 700, r.score ? '#ffcf6a' : '#9be39b'), left: 0, top: 0 });
       await sharp({ create: { width: views.length * TILE, height: HEAD + LABEL + TILE, channels: 3, background: '#15181d' } }).composite(resized).png().toFile(join(out, `${c.id}.png`));
     }
-    console.log(`${c.id}: ${r.score} ${r.flags.join(',')} tear ${tearOf(r)} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
+    console.log(`${c.id}: ${r.score} ${r.flags.join(',')} tear ${tearOf(r)} pistol inside ${insideOf(r)} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
   }
   await browser.close();
 
@@ -275,6 +278,12 @@ if (!rescore) {
 }
 results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results }, null, 1));
+/** The pistol inside the hands (tools/gripInside.ts), third person then full-body first person: deepest cm and vertices, R / L. */
+function insideOf(r) {
+  const m = r.weapons.pistol;
+  const f = (x) => (x ? ['r', 'l'].map((s) => `${(x[s].depth * 100).toFixed(1)} (${x[s].verts})`).join(' / ') : '-');
+  return m ? `${f(m.inside)}; ${f(m.fpInside)}` : '-';
+}
 /** The hands' tear (tools/gripAudit.ts `tear`), worst over the weapons: longest edge stretch, then triangles turned over. */
 function tearOf(r) {
   const t = { r: null, l: null };
@@ -288,13 +297,13 @@ const n = (x, d = 2) => (x === null || x === undefined ? '-' : Number(x).toFixed
 const rows = results.map((r) => {
   const a = r.weapons.rifle?.audit;
   const d = r.weapons.rifle?.drawn;
-  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${n(d?.sideR)}/${n(d?.palmL)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) | ${tearOf(r)} |`;
+  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${n(d?.sideR)}/${n(d?.palmL)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) | ${tearOf(r)} | ${insideOf(r)} |`;
 });
 writeFileSync(
   join(out, 'summary.md'),
   [
-    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) | hand tear R/L |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) | hand tear R/L | pistol in hand R/L (cm, verts; third / first) |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
     `Flags per weapon (${weapons.map(([w]) => w).join(', ')}):`,
