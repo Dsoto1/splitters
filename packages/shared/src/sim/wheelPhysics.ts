@@ -415,6 +415,23 @@ interface HullHit {
   roll: boolean;
 }
 
+/** Asleep, a look: every wheel still on the ground within 5 mm of where it settled (its hub's ray, as the step casts it). */
+function groundHolds(s: RigidState, t: RigidSetup, world: ChassisWorld): boolean {
+  const up = rotate(s.q, v3(0, 1, 0));
+  const down = scale(up, -1);
+  const start = t.bump + 0.15;
+  for (let i = 0; i < t.points.length; i++) {
+    const [x, z] = t.points[i]!;
+    const a = add(s.pos, rotate(s.q, v3(x, t.hubY + start, z)));
+    const h = world.ray(a, down, start + t.radius + t.travel + 0.05);
+    if (!h || h.dist <= 1e-3 || dot(h.normal, up) <= WHEEL_FACING) return false;
+    // The hub's distance to the ground along the chassis' down, against the tyre's radius: its compression.
+    const comp = t.radius - (h.dist - start);
+    if (Math.abs(comp - (s.comp[i] ?? 0)) > 0.005) return false;
+  }
+  return true;
+}
+
 /** The body's inverse inertia applied to a world vector. */
 function invInertia(s: RigidState, t: RigidSetup, v: Vec3): Vec3 {
   const b = unrotate(s.q, v);
@@ -511,8 +528,11 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   const gripMul = input.grip ?? 1;
   const speedMul = input.speed ?? 1;
   const out: RigidStepResult = { landing: 0, blocked: 0, impact: 0 };
-  // Asleep: parked, settled, nobody aboard; a look every REST_TICKS in case the ground went.
-  if (!input.piloted && s.rest > REST_TICKS && s.rest % REST_TICKS !== 0) {
+  // Asleep: parked, settled, nobody aboard; a look every REST_TICKS in case the ground went. It stays exactly where it
+  // settled while the ground under its wheels holds and nothing set it moving (a push, a speed from outside): before,
+  // each look stepped it, and a parked buggy crept a millimetre or so a minute, moving its box under everyone's
+  // sight lines and shots.
+  if (!input.piloted && s.rest > REST_TICKS && len(s.vel) < 1e-6 && len(s.spin) < 1e-6 && (s.rest % REST_TICKS !== 0 || groundHolds(s, t, world))) {
     s.rest++;
     return out;
   }
@@ -890,8 +910,14 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     }
   } else s.tipped = 0;
   // Resting: nobody aboard, on its wheels and still.
-  if (!input.piloted && contact === n && len(s.vel) < 0.08 && len(s.spin) < 0.08 && input.forward === 0 && s.righting === 0) s.rest++;
-  else s.rest = 0;
+  if (!input.piloted && contact === n && len(s.vel) < 0.08 && len(s.spin) < 0.08 && input.forward === 0 && s.righting === 0) {
+    s.rest++;
+    // Falling asleep: it stops where it is.
+    if (s.rest === REST_TICKS + 1) {
+      s.vel = v3(0, 0, 0);
+      s.spin = v3(0, 0, 0);
+    }
+  } else s.rest = 0;
   if (tr) {
     tr.vel1 = { ...s.vel };
     tr.spin1 = { ...s.spin };

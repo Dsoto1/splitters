@@ -330,6 +330,12 @@ wheeled vehicles stay classic until step 2 of "Later steps".
 - **Cost:** a hull step is about 0.1 ms on a big map (most of it Rapier's narrow phase against the terrain's mesh);
   with Rapier on one substep of two, about 0.15-0.2 ms a buggy a tick. The driver's client pays the same per predicted
   tick plus its replays. A per-vehicle small world (the plan's first idea) wouldn't help the terrain's share.
+- **Parked buggies stay put** (found through a train, 2026-11-17: `botCtf.test.ts`'s Diamond Park seed went without a
+  capture). A parked, empty buggy was stepped at each of its sleep's looks (every half second) and crept about a
+  millimetre a minute, under both solvers; its box moving moved every bot's sight line and shot past it, so any change
+  to how it settles sent a whole match another way (no bot ever boarded Diamond Park's buggies). Asleep, it now stays
+  exactly where it settled while the ground under its wheels holds (four hub rays at each look) and nothing set it
+  moving; falling asleep stops it. Diamond Park CTF seeds 1-6, captures in 5 minutes: 1 1 1 4 0 1 (main: 0 2 1 2 1 1).
 - **Pictures** (DSF 2, chase camera, time frozen, `?sim=main&vehiclepredict=0`): a jump and its landing and a hit on a
   rock at 15 m/s on Rockfall Canyon (the helper's scratchpad `shots-drive4/`: `jump-00..15.png`, `wall-00..11.png`).
 

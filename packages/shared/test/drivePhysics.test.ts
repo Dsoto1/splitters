@@ -399,6 +399,19 @@ describe('driving physics 4: the snags (the hull a Rapier body)', () => {
     return { sharp, slowest, worstPitch, x: d.m.pos.x, up: uprightness(d.m.rigid!) };
   };
 
+  it('parked and empty it settles and then stays exactly where it is (it used to creep: a box moving under sight lines)', () => {
+    const match = new Match(strip(), rules, 1);
+    const m = mountOf(match);
+    for (let k = 0; k < 120; k++) match.step();
+    const at = { ...m.pos };
+    for (let k = 0; k < 1800; k++) match.step();
+    expect(m.pos).toEqual(at);
+    // A push wakes it.
+    (m as unknown as { push: { x: number; z: number } }).push = { x: 3, z: 0 };
+    for (let k = 0; k < 30; k++) match.step();
+    expect(m.pos.x - at.x).toBeGreaterThan(0.2);
+  });
+
   it('a seam between two floor slabs (1 cm apart in height) at 8 m/s: nothing (it froze there on the coverage map once)', () => {
     const r = across([block('slabA', 40, 16, [8, 0.2, 20], 0, 0), block('slabB', 60, 16, [8, 0.21, 20], 0, 0)], 8, 45, 58);
     expect(r.sharp).toBe(0);
