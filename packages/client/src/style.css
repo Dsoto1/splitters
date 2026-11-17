@@ -1684,6 +1684,13 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
   html.touch #ammo-count { font-size: 22px; }
 }
 
+/* Left-handed (Options → Controls → Touch; html.tc-left): the HUD mirrors with the controls. The minimap and vitals go
+   top right above the pad, the kill feed top left beside the pause button, and the ammo panel left above the buttons. */
+html.touch.tc-left #minimap { left: auto; right: calc(8px + env(safe-area-inset-right)); }
+html.touch.tc-left #vitals { left: auto; right: calc(8px + env(safe-area-inset-right)); transform-origin: top right; }
+html.touch.tc-left #feed { right: auto; left: calc(60px + env(safe-area-inset-left)); align-items: flex-start; }
+html.touch.tc-left #ammo { right: auto; left: calc(14px + env(safe-area-inset-left)); align-items: flex-start; }
+
 /* The on-screen controls (game/touchControls.ts). */
 #touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
 #touch-ui[hidden] { display: none; }
