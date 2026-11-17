@@ -123,6 +123,7 @@ import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
+import { shakeScale } from './combatPrefs.ts';
 import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
@@ -3439,16 +3440,20 @@ export class GameView {
    * the left .. 1 the right), by `power` (stopping power times the hit's share). Calmer with Reduce flashing on.
    */
   hitKick(power: number, side: number): void {
-    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing());
+    const amount = shakeScale();
+    if (amount <= 0) return;
+    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing(), amount);
   }
 
   // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
   private shakeAmount = 0;
   private shakeAt = 0;
 
-  /** Shake the camera (0..1; explosions and crashes near you). */
+  /** Shake the camera (0..1; explosions and crashes near you, a heavy round leaving the barrel), by the Camera shake setting. */
   shake(amount: number): void {
-    this.shakeAmount = Math.min(1, this.currentShake() + amount);
+    const k = shakeScale();
+    if (k <= 0) return;
+    this.shakeAmount = Math.min(k, this.currentShake() + amount * k);
     this.shakeAt = performance.now();
   }
 

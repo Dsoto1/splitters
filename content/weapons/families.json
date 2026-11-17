@@ -1,5 +1,5 @@
 {
-  "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` override them. Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
+  "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` / `armshot` override them. Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
   "notes": {
     "codes": "Each weapon file carries its network `code`: never change one, never reuse one (content/codes.lock.json remembers every code ever given).",
     "slots": "Slots: 1 melee and tools, sidearms in 2, rifles in 3, shotguns in 4, precision in 5, lobbers in 6, automatics in 7, heavy weapons in 8 and energy and chemical weapons in 9; pressing a number again cycles through what you carry in that slot. 0: mounted guns (never carried or picked up)."
@@ -43,7 +43,8 @@
       },
       "falloff": { "start": 18, "end": 45, "min": 0.4, "curve": "linear" },
       "head": 2,
-      "legs": 0.8
+      "legs": 0.8,
+      "arms": 0.9
     },
     "revolver": {
       "ballistic": { "velocity": 300, "drag": 0.6, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
@@ -70,6 +71,7 @@
       "falloff": { "start": 25, "end": 60, "min": 0.7, "curve": "smooth" },
       "head": 1.75,
       "legs": 0.85,
+      "arms": 0.9,
       "notes": {
         "accuracy": "A true first shot, but a round fired before the last one's spray has settled (about half a second) is a guess."
       }
@@ -98,7 +100,8 @@
       },
       "falloff": { "start": 8, "end": 25, "min": 0.35, "curve": "steep" },
       "head": 1.5,
-      "legs": 0.85
+      "legs": 0.85,
+      "arms": 0.9
     },
     "smg": {
       "ballistic": { "velocity": 400, "drag": 1.5, "gravityScale": 1, "energy": 400, "tracerEvery": 3, "tracerFinal": 5 },
@@ -125,6 +128,7 @@
       "falloff": { "start": 15, "end": 35, "min": 0.35, "curve": "steep" },
       "head": 1.5,
       "legs": 0.85,
+      "arms": 0.9,
       "notes": {
         "accuracy": "Dead steady for five rounds, then it climbs and blooms hard; let go and it is steady again almost at once."
       }
@@ -153,7 +157,8 @@
       },
       "falloff": { "start": 25, "end": 70, "min": 0.6, "curve": "smooth" },
       "head": 2,
-      "legs": 0.8
+      "legs": 0.8,
+      "arms": 0.9
     },
     "battle_rifle": {
       "ballistic": { "velocity": 880, "drag": 0.5, "gravityScale": 1, "energy": 1800, "tracerEvery": 2 },
@@ -179,7 +184,8 @@
       },
       "falloff": { "start": 40, "end": 100, "min": 0.8, "curve": "smooth" },
       "head": 2,
-      "legs": 0.85
+      "legs": 0.85,
+      "arms": 0.9
     },
     "marksman": {
       "ballistic": { "velocity": 900, "drag": 0.45, "gravityScale": 1, "energy": 2000, "tracerEvery": 1 },
@@ -205,7 +211,8 @@
       },
       "falloff": { "start": 60, "end": 150, "min": 0.85, "curve": "smooth" },
       "head": 2,
-      "legs": 0.85
+      "legs": 0.85,
+      "arms": 0.9
     },
     "precision": {
       "ballistic": { "velocity": 950, "drag": 0.3, "gravityScale": 2.5, "energy": 3000, "tracerEvery": 1 },
@@ -232,6 +239,7 @@
       "falloff": { "start": 150, "end": 300, "min": 0.9, "curve": "linear" },
       "head": 3,
       "legs": 0.9,
+      "arms": 0.9,
       "notes": {
         "ballistic": "Fast (least lead of all) but heavy: 12 cm of drop at 100 m, half a metre at 200 m.",
         "accuracy": "A shot taken the moment the bolt closes is a little off; wait a beat and it is dead on (patience)."
@@ -261,7 +269,8 @@
       },
       "falloff": { "start": 30, "end": 80, "min": 0.7, "curve": "smooth" },
       "head": 1.5,
-      "legs": 0.85
+      "legs": 0.85,
+      "arms": 0.9
     },
     "shotgun": {
       "ballistic": null,
@@ -288,6 +297,7 @@
       "falloff": { "start": 8, "end": 28, "min": 0.25, "curve": "steep" },
       "head": 1.25,
       "legs": 0.85,
+      "arms": 0.9,
       "notes": {
         "ballistic": "Pellets stay hitscan (spec §3.1 allows it for performance): damage loss comes from spread and per-pellet falloff.",
         "accuracy": "The pellet pattern is the weapon's own `spread` (pelletCone); this is aim error on top of it."

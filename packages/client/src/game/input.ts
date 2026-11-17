@@ -1,4 +1,5 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
+import { AimLatch, combatPrefs } from './combatPrefs.ts';
 import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
@@ -101,6 +102,8 @@ export class InputState {
   /** The player's own look settings (Options / pause menu). */
   mouse: MousePrefs = loadMousePrefs();
   private keys = new Set<string>();
+  /** Aim down the sights: held or toggled (Options → Accessibility, combatPrefs.ts). */
+  private readonly aimLatch = new AimLatch();
   private fireDown = false;
   private keyFire = false;
   private zoomDown = false;
@@ -206,6 +209,7 @@ export class InputState {
       () => {
         this.keys.clear();
         this.fireDown = this.zoomDown = this.altDown = this.meleeDown = this.throwAiming = this.keyFire = false;
+        this.aimLatch.cancel();
         this.wheelKeyAt = this.padWheelAt = 0;
         this.closeWheel(false);
       },
@@ -472,7 +476,23 @@ export class InputState {
 
   get zooming(): boolean {
     // Tests can hold the aim with window.__autoInput = { zoom: true }.
-    return (this.locked && !this.wheelOpen && (this.zoomDown || this.keys.has('KeyX') || this.pad.zoom)) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
+    return (this.locked && !this.wheelOpen && this.aiming()) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
+  }
+
+  /**
+   * Whether you aim down the sights now: the aim button (right mouse, X, a controller's LT) held, or with Aim set to
+   * Toggle, pressed once to aim and again to stop. Touch's Aim button latches by itself, and a melee weapon's heavy
+   * swing (`altTrigger`) is always held.
+   */
+  private aiming(): boolean {
+    const down = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    const mode = this.touchEngaged || this.altTrigger ? 'hold' : combatPrefs().aim;
+    return this.aimLatch.update(down, mode);
+  }
+
+  /** Let a toggled aim go: a weapon change, death, a vehicle (the session calls it). */
+  cancelAim(): void {
+    this.aimLatch.cancel();
   }
 
   held(code: string): boolean {
@@ -489,6 +509,7 @@ export class InputState {
     this.touchLook.dx = this.touchLook.dy = 0;
     if (!this.locked) {
       this.closeWheel(false);
+      this.aimLatch.cancel();
       return;
     }
     // The wheel key held past a tap opens the wheel; so does B (Fireteams), the order wheel.
@@ -697,7 +718,7 @@ export class InputState {
     if (this.fireDown || this.keyFire || this.pad.fire) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
     // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
-    const aim = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    const aim = this.aiming();
     if (aim) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
     // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
     if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;

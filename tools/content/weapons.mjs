@@ -94,11 +94,11 @@ export function schemas(root = ROOT, families = []) {
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
     'fireModes?': arr(fireModeSpec, 2), 'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,
-    'headshot?': num, 'legshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
+    'headshot?': num, 'legshot?': num, 'armshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
     'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });
-  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, 'notes?': notes });
+  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, arms: num, 'notes?': notes });
   const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'handOnly?': bool, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
   const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
   return { weapon, family, throwable, projectile };

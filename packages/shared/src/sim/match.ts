@@ -8103,9 +8103,9 @@ function isMeleeWeapon(weapon: string): boolean {
   return CORE_WEAPONS[weapon]?.kind === 'melee';
 }
 
-/** Body-zone damage multiple for a weapon: head, torso or legs (spec §11). */
+/** Body-zone damage multiple for a weapon: head, torso, legs or arms (spec §11). */
 function zoneScale(gp: Gunplay, zone: HitZone): number {
-  return zone === 1 ? gp.head : zone === 2 ? gp.legs : 1;
+  return zone === 1 ? gp.head : zone === 2 ? gp.legs : zone === 3 ? gp.arms : 1;
 }
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {
