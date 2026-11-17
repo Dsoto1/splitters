@@ -98,28 +98,34 @@ export function shakeScale(): number {
 }
 
 /**
- * Aim down the sights, held or toggled. `update` takes whether an aim button is down now (any of them) and gives
- * whether you aim: held, while it is down; toggled, each press flips it. `cancel` lets a toggled aim go (a weapon
- * change, death, a vehicle, leaving play); the button must come up and go down again to aim once more.
+ * Aim down the sights, held or toggled. `press` is called as an aim button goes down (the event itself, so a click
+ * quicker than a frame still counts); `update` takes whether one is down now and gives whether you aim: held, while
+ * it is down; toggled, each press flips it. `cancel` lets a toggled aim go (a weapon change, death, a vehicle,
+ * leaving play).
  */
 export class AimLatch {
   private latched = false;
-  private wasDown = false;
+  private presses = 0;
+
+  press(): void {
+    this.presses++;
+  }
 
   update(down: boolean, mode: AimMode): boolean {
-    const pressed = down && !this.wasDown;
-    this.wasDown = down;
+    const presses = this.presses;
+    this.presses = 0;
     if (mode === 'hold') {
       this.latched = false;
       return down;
     }
-    if (pressed) this.latched = !this.latched;
+    if (presses % 2) this.latched = !this.latched;
     return this.latched;
   }
 
-  /** Let a toggled aim go. A button still held stays "already down", so it doesn't aim again until pressed anew. */
+  /** Let a toggled aim go (and forget presses not yet seen). */
   cancel(): void {
     this.latched = false;
+    this.presses = 0;
   }
 
   get on(): boolean {

@@ -227,10 +227,12 @@ export class InputState {
         this.specUsed = true;
       }
       const wasFire = this.fireDown;
+      const wasZoom = this.zoomDown;
       this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
       this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
       this.meleeDown = (e.buttons & 24) !== 0 && (press || this.meleeDown);
+      if (this.zoomDown && !wasZoom) this.aimLatch.press();
       // A click with the wheel open picks the weapon it points at (and doesn't fire).
       if (this.wheelOpen && this.fireDown && !wasFire) {
         this.closeWheel(true);
@@ -300,6 +302,7 @@ export class InputState {
     if (e.code === 'KeyR') this.reloadQueued = true;
     // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
     if (e.code === 'KeyF') this.keyFire = true;
+    if (e.code === 'KeyX' && !e.repeat) this.aimLatch.press();
     if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
     if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
     // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
@@ -557,6 +560,7 @@ export class InputState {
     }
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
+    if (pressed(PAD.lt) && !this.spectating) this.aimLatch.press();
     p.jump = !!down[PAD.a];
     p.use = !!down[PAD.rb];
     if (this.spectating) {
