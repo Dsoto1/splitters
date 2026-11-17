@@ -1380,3 +1380,7 @@ for (const c of SPECS) {
 }
 writeLock(LOCK, lock);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);
+// New hand geometry (`fixes.hands.graft`, handgraft.mjs) goes on a built file: a character rebuilt here has its download's
+// hands again until rehand-built.mjs grafts them.
+const grafted = SPECS.filter((c) => c.hands?.graft && (!only || only.includes(c.id)) && findDownload(c));
+if (grafted.length) console.log(`new hand geometry (fixes.hands.graft) not on these yet: ONLY=${grafted.map((c) => c.id).join(',')} node tools/content/rehand-built.mjs`);
