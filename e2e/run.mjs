@@ -10927,14 +10927,15 @@ async function newplayerFlow(browser) {
   // Quick Play: two clicks into a Deathmatch against bots, on a map of its list, the map's recommended players.
   await page.click('#nav-quick');
   await page.waitForSelector('#quick-play');
-  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode));
+  // (The modes' cards, then Pick a map: docs/MOBILE_AUDIT.md, proposal 2.)
+  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode ?? b.id));
   await page.click('#qp-dm');
   const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
   const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
   const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
   const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
   check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
-  check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
+  check(choice.join() === 'core.tdm,core.deathmatch,qp-pick' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
   await page.click('#nav-quick');
