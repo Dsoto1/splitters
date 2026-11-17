@@ -6,6 +6,12 @@ import { PLAYER } from './constants.ts';
  * Rigid vehicles (docs/DRIVING_PHYSICS_PLAN.md, step 1): a chassis that is a real body (position, velocity,
  * orientation, spin) on sprung raycast wheels, with tyres whose grip can fail.
  *
+ * Driving physics 4 (the default; owner's answers 1a 2a 3a 4a 5b): the body is a Rapier dynamic body
+ * (ChassisWorld.solve: PhysicsWorld.solveChassis, a rounded convex hull of the real body) that our springs and tyres
+ * push as forces, Rapier resolving every contact the hull makes; no bump stop (a progressive bump rubber), hull
+ * corners, sweep, speed keep or air levelling. Without `solve` (`?drive=own`) the step's own hull contacts and capsule
+ * sweep below do it, as driving physics 3 did.
+ *
  * - **Wheels.** One ray per wheel along the chassis' own down finds the ground and its slope. A preloaded spring and
  *   a damper per wheel push along the chassis' up at the hub: the body bounces, squats, dives, leans and lands on
  *   its springs, and the push is off the centre of mass, so it pitches and rolls for real (and can roll over).
@@ -103,6 +109,13 @@ export interface RigidSetup extends RigidTuning {
   /** The capsule's middle over the feet, and the hull's underside (its bottom corners: the model's ride height). */
   probeY: number;
   belly: number;
+  /**
+   * The hull as a Rapier body (driving physics 4): a rounded convex hull's points (x y z in the body's frame, flat),
+   * its rounding and its friction against what it meets.
+   */
+  hullPoints: number[];
+  hullBorder: number;
+  hullFriction: number;
 }
 
 /** What the chassis asks of the world (PhysicsWorld.chassisWorld on the host, the same over the prediction physics). */
@@ -111,6 +124,13 @@ export interface ChassisWorld {
   ray(origin: Vec3, dir: Vec3, len: number): { dist: number; normal: Vec3; terrain?: boolean } | null;
   /** Move the hull's capsule (its middle at `centre`, turned by `q`) by `delta`: what it got and the normals it met. */
   sweep(centre: Vec3, q: RigidState['q'], delta: Vec3): { moved: Vec3; normals: Vec3[] };
+  /**
+   * Driving physics 4: the hull is a Rapier rigid body (PhysicsWorld.solveChassis). Steps the body by `dt` from the
+   * pose (position, orientation, velocity, spin; written back), Rapier resolving its contacts with the world: whether
+   * it touched and the normals it met. Absent: the step's own hull contacts and the capsule sweep (driving physics 3,
+   * `?drive=own`).
+   */
+  solve?(pose: { pos: Vec3; q: RigidState['q']; vel: Vec3; spin: Vec3 }, dt: number): { touching: boolean; normals: Vec3[] };
 }
 
 /** The driver's controls for one tick. */
@@ -154,6 +174,19 @@ const KNOCK_KEEP = 0.92;
 const HULL_FRICTION = 0.55;
 /** How much of the speed into a wall or floor the hull sweep gives back. */
 const HULL_BOUNCE = 0.15;
+/**
+ * The bump rubber past the bump stop (driving physics 4, in place of the hard stop): its stiffness as a multiple of the
+ * spring's, growing by its depth over RUBBER_SCALE (progressive), and its damping (on compression) as a multiple of the
+ * damper's.
+ */
+const RUBBER = 8;
+const RUBBER_SCALE = 0.04;
+const RUBBER_DAMP = 3;
+/** Share of the rubber's push it gives back as it extends again: it soaks up a landing instead of throwing it back up. */
+const RUBBER_RETURN = 0.2;
+/** The most a wheel pushes, as a multiple of its share of the vehicle's weight. */
+const WHEEL_MOST = 8;
+const EDGE_MOST = 6;
 /** Wheels count only on ground facing at least this much along the chassis' up (else the hull's corners do). */
 const WHEEL_FACING = 0.35;
 
@@ -193,6 +226,10 @@ export interface RigidTraceTick {
   sweepNormals: Vec3[];
   /** The sweep was 'stuck' (ignored). */
   sweepStuck: boolean;
+  /** Driving physics 4: the hull's Rapier contacts (summed over substeps), the normals met, and the bump rubber's use. */
+  hullContacts: number;
+  hullNormals: Vec3[];
+  rubber: number;
 }
 export const rigidTrace: { sink: ((t: RigidTraceTick) => void) | null } = { sink: null };
 
@@ -244,11 +281,44 @@ export function rigidOf(def: MountDef): RigidSetup | null {
             probeHalf: Math.max(0.05, Math.min(hz - probeR - 0.1, Math.min(...points.map((p) => Math.abs(p[1]))) * 0.8 - probeR)),
             probeY: hy + 0.15,
             belly: Math.max(0.05, def.rideHeight ?? 0.05),
+            ...hullOf(points, hubY, def.wheels?.radius ?? hubY, def.half, Math.max(0.05, def.rideHeight ?? 0.05)),
           }
         : null;
   }
   setups.set(def, s);
   return s;
+}
+
+/** Rounding of the hull's edges (m): it slides off seams and edges instead of catching on them. */
+const HULL_BORDER = 0.08;
+
+/**
+ * The hull Rapier solves (driving physics 4): the real body, not the 1.6 m box. A convex hull through three rings: the
+ * belly at ride height between the axles; at about the tyres' middle height out to the tyres' fronts and backs (so a
+ * nose into a wall is the body, and the wheels' round fronts still meet a slope's foot first: the nose rises at about
+ * 47° from the axles); and the roll cage's top, so a roll lands on it. Rounded by HULL_BORDER (the points are inset by
+ * it).
+ */
+function hullOf(points: [number, number][], hubY: number, radius: number, half: [number, number, number], belly: number): { hullPoints: number[]; hullBorder: number; hullFriction: number } {
+  const [hx, hy, hz] = half;
+  const b = HULL_BORDER;
+  const front = Math.max(...points.map((p) => p[1]));
+  const rear = Math.min(...points.map((p) => p[1]));
+  const wide = Math.max(...points.map((p) => Math.abs(p[0])));
+  const midY = hubY + radius * 0.5;
+  const reach = Math.sqrt(Math.max(0, radius * radius - (midY - hubY) ** 2));
+  const out: number[] = [];
+  const ring = (x: number, y: number, z0: number, z1: number) => {
+    for (const sx of [-1, 1]) for (const z of [z0, z1]) out.push(sx * (x - b), y, z);
+  };
+  // Belly: the frame between the axles, inside the wheels, at hub height (a tube frame's bottom rails: the model's ride
+  // height is its lowest tube, and a flat plate that low hung it up on every stair's top and crest).
+  ring(Math.min(wide * 0.85, hx - b), Math.max(belly, hubY) + b, rear + b, front - b);
+  // At the tyres' middle height, out to their fronts and backs and across the wheels' centres.
+  ring(Math.min(wide, hx - b), midY, Math.max(-hz + b, rear - reach + b), Math.min(hz - b, front + reach - b));
+  // The roll cage's top.
+  ring(Math.min(wide * 0.85, hx - b), Math.max(midY + 0.2, 2 * hy * 0.95 - b), -hz * 0.6, hz * 0.5);
+  return { hullPoints: out, hullBorder: b, hullFriction: 0.2 };
 }
 
 // ---------------------------------------------------------------- small vector and quaternion maths
@@ -343,6 +413,23 @@ interface HullHit {
   at: Vec3;
   /** An underside corner on something low enough for its tyre to roll up. */
   roll: boolean;
+}
+
+/** Asleep, a look: every wheel still on the ground within 5 mm of where it settled (its hub's ray, as the step casts it). */
+function groundHolds(s: RigidState, t: RigidSetup, world: ChassisWorld): boolean {
+  const up = rotate(s.q, v3(0, 1, 0));
+  const down = scale(up, -1);
+  const start = t.bump + 0.15;
+  for (let i = 0; i < t.points.length; i++) {
+    const [x, z] = t.points[i]!;
+    const a = add(s.pos, rotate(s.q, v3(x, t.hubY + start, z)));
+    const h = world.ray(a, down, start + t.radius + t.travel + 0.05);
+    if (!h || h.dist <= 1e-3 || dot(h.normal, up) <= WHEEL_FACING) return false;
+    // The hub's distance to the ground along the chassis' down, against the tyre's radius: its compression.
+    const comp = t.radius - (h.dist - start);
+    if (Math.abs(comp - (s.comp[i] ?? 0)) > 0.005) return false;
+  }
+  return true;
 }
 
 /** The body's inverse inertia applied to a world vector. */
@@ -441,13 +528,18 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
   const gripMul = input.grip ?? 1;
   const speedMul = input.speed ?? 1;
   const out: RigidStepResult = { landing: 0, blocked: 0, impact: 0 };
-  // Asleep: parked, settled, nobody aboard; a look every REST_TICKS in case the ground went.
-  if (!input.piloted && s.rest > REST_TICKS && s.rest % REST_TICKS !== 0) {
+  // Asleep: parked, settled, nobody aboard; a look every REST_TICKS in case the ground went. It stays exactly where it
+  // settled while the ground under its wheels holds and nothing set it moving (a push, a speed from outside): before,
+  // each look stepped it, and a parked buggy crept a millimetre or so a minute, moving its box under everyone's
+  // sight lines and shots.
+  if (!input.piloted && s.rest > REST_TICKS && len(s.vel) < 1e-6 && len(s.spin) < 1e-6 && (s.rest % REST_TICKS !== 0 || groundHolds(s, t, world))) {
     s.rest++;
     return out;
   }
   const fallSpeed = -s.vel.y;
-  const tr: RigidTraceTick | null = rigidTrace.sink ? { vel0: { ...s.vel }, spin0: { ...s.spin }, vel1: s.vel, spin1: s.spin, pos: s.pos, contact: 0, bump: 0, bumpDepth: 0, rollCorners: 0, hardCorners: 0, cornerDepth: 0, corners: [], stepUps: 0, stepSnaps: 0, keep: 0, sliding: 0, airLevel: 0, sweepBlocked: 0, sweepImpact: 0, sweepNormals: [], sweepStuck: false } : null;
+  const tr: RigidTraceTick | null = rigidTrace.sink ? { vel0: { ...s.vel }, spin0: { ...s.spin }, vel1: s.vel, spin1: s.spin, pos: s.pos, contact: 0, bump: 0, bumpDepth: 0, rollCorners: 0, hardCorners: 0, cornerDepth: 0, corners: [], stepUps: 0, stepSnaps: 0, keep: 0, sliding: 0, airLevel: 0, sweepBlocked: 0, sweepImpact: 0, sweepNormals: [], sweepStuck: false, hullContacts: 0, hullNormals: [], rubber: 0 } : null;
+  // Driving physics 4: Rapier solves the hull (a real body: its contacts, no corners, sweep, speed keep or levelling).
+  const solve = world.solve;
   const stepped = tr ? new Set<number>() : null;
   const snapped = tr ? new Set<number>() : null;
   // ---- rays, once a tick
@@ -474,7 +566,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     fronts.push(Math.abs(rolling) > 0.5 ? cast(x, z + ahead) : null);
   }
   const hullHits: HullHit[] = [];
-  const looks = up0.y < 0.9 || s.contact < n || s.hull || s.comp.some((c) => c > t.bump * 0.8);
+  const looks = !solve && (up0.y < 0.9 || s.contact < n || s.hull || s.comp.some((c) => c > t.bump * 0.8));
   if (looks) {
     let corners = cornerCache.get(t);
     if (!corners) cornerCache.set(t, (corners = hullCorners(t)));
@@ -499,7 +591,9 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       if (tr) tr.corners.push({ at: add(o, scale(d, h.dist / l)), n: h.normal, roll });
     }
   }
-  s.hull = hullHits.length > 0;
+  // (Rapier's contacts: whether the hull touched last tick, until this one's say.)
+  if (!solve) s.hull = hullHits.length > 0;
+  let hullTouched = false;
 
   const h = dt / SUBSTEPS;
   const g = GRAVITY * (t.gravity ?? 1);
@@ -552,6 +646,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       let d = hit && un > WHEEL_FACING ? dot(sub(a, hit.p), hit.n) / un : Infinity;
       let x_ = t.radius - d;
       let edge = false;
+      let snap = false;
       const fh = fronts[i];
       if (fh) {
         const fa = add(a, scale(fwd, ahead));
@@ -568,6 +663,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
         const fx = step ? t.radius - fd : Math.sqrt(t.radius * t.radius - ahead * ahead) - fd;
         if (fx > x_ + 0.01) {
           if (tr && step) snapped!.add(i);
+          snap = step;
           hit = fh;
           un = fu;
           d = t.radius - fx;
@@ -587,11 +683,23 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
       const arm = sub(cp, com);
       const va = add(s.vel, cross(s.spin, sub(a, com)));
       const xdot = -dot(va, hit.n) / un;
-      // Past the bump stop the spring stays at its stop's force; the stop itself is a hard contact (below).
-      let fs = g / n + t.k * Math.min(x_, t.bump) + t.c * xdot;
-      if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0, wheel: true });
+      let fs: number;
+      if (solve) {
+        // Past the bump stop a progressive bump rubber (stiffening with the square of how far in, damped, and giving
+        // back little as it extends), never a hard stop: what it can't take the hull's own contact with the ground does
+        // (Rapier).
+        // (Capped: a wheel can't throw the body, as when it is rolled onto them from its side.)
+        const u = clamp(x_ - t.bump, 0, RUBBER_SCALE * 2);
+        // (A tyre lifting onto a step, its front ray's, pushes at most EDGE_MOST: a stair doesn't kick the body.)
+        fs = Math.min((snap ? EDGE_MOST : WHEEL_MOST) * (g / n), g / n + t.k * x_ + t.c * xdot + (u > 0 ? t.k * RUBBER * u * (1 + u / RUBBER_SCALE) * (xdot >= 0 ? 1 : RUBBER_RETURN) + t.c * RUBBER_DAMP * Math.max(0, xdot) : 0));
+        if (tr && u > 0) tr.rubber++;
+      } else {
+        // Past the bump stop the spring stays at its stop's force; the stop itself is a hard contact (below).
+        fs = g / n + t.k * Math.min(x_, t.bump) + t.c * xdot;
+        if (x_ > t.bump) stops.push({ at: cp, n: nrm, depth: (x_ - t.bump) * un, friction: 0, wheel: true });
+      }
       if (tr) {
-        if (x_ > t.bump) {
+        if (x_ > t.bump && !solve) {
           tr.bump++;
           tr.bumpDepth = Math.max(tr.bumpDepth, x_ - t.bump);
         }
@@ -663,8 +771,8 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     // Angular acceleration: the torque in the body's frame over its inertia, back to the world.
     const tb = unrotate(s.q, torque);
     let alpha = rotate(s.q, v3(tb.x * t.invI[0], tb.y * t.invI[1], tb.z * t.invI[2]));
-    const flying = contact === 0 && hullHits.length === 0;
-    if (flying) {
+    const flying = contact === 0 && (solve ? !s.hull : hullHits.length === 0);
+    if (flying && !solve) {
       // An arcade flight: the spin it left the lip with dies away and the nose follows its arc (`airLevel`), rolls ease
       // back level, so a jump taken straight lands on its wheels; the driver's air control works on top.
       const pitchNow = Math.asin(clamp(fwd.y, -1, 1));
@@ -703,6 +811,25 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     if (spin > MAX_SPIN) s.spin = scale(s.spin, MAX_SPIN / spin);
     const sp = len(s.vel);
     if (sp > MAX_SPEED) s.vel = scale(s.vel, MAX_SPEED / sp);
+    // Rapier moves the body by its velocity and resolves the hull's contacts (driving physics 4): on the tick's last
+    // substep, and on each while the hull touches something; the others move it here (half the cost: a hull step is
+    // most of a rigid vehicle's).
+    if (solve && (sub_ === SUBSTEPS - 1 || s.hull)) {
+      const velIn = s.vel;
+      const hit = solve(s, h);
+      com = add(s.pos, rotate(s.q, comAt));
+      if (hit.touching) {
+        hullTouched = true;
+        s.hull = true;
+        for (const nn of hit.normals) out.impact = Math.max(out.impact, -dot(velIn, nn));
+        if (tr) {
+          tr.hullContacts++;
+          tr.hullNormals.push(...hit.normals);
+        }
+      } else s.hull = false;
+      if (tr) tr.sliding += sliding;
+      continue;
+    }
     keptLast = 0;
     if (stops.length) solveContacts(s, t, com, stops, speed0);
     if (tr) {
@@ -724,11 +851,14 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     s.pos = sub(com, rotate(s.q, comAt));
   }
 
+  if (solve) {
+    s.hull = hullTouched;
+  }
   // ---- the hull sweep: from where the hull was by what the tick asked (its turn already applied).
   const mid = v3(0, t.probeY, 0);
   const midBefore = add(startPos, rotate(s.q, mid));
   const wanted = sub(s.pos, startPos);
-  const swept = world.sweep(midBefore, s.q, wanted);
+  const swept = solve ? { moved: wanted, normals: [] } : world.sweep(midBefore, s.q, wanted);
   const got = swept.moved;
   const wl = len(wanted);
   // Held fast with nothing in the way: the capsule started inside something (put there, or squeezed in). The sweep
@@ -749,7 +879,7 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     }
   }
 
-  if (tr) {
+  if (tr && !solve) {
     tr.sweepNormals = swept.normals;
     tr.sweepStuck = wl > 1e-6 && stuck;
     tr.sweepBlocked = out.blocked;
@@ -780,8 +910,14 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
     }
   } else s.tipped = 0;
   // Resting: nobody aboard, on its wheels and still.
-  if (!input.piloted && contact === n && len(s.vel) < 0.08 && len(s.spin) < 0.08 && input.forward === 0 && s.righting === 0) s.rest++;
-  else s.rest = 0;
+  if (!input.piloted && contact === n && len(s.vel) < 0.08 && len(s.spin) < 0.08 && input.forward === 0 && s.righting === 0) {
+    s.rest++;
+    // Falling asleep: it stops where it is.
+    if (s.rest === REST_TICKS + 1) {
+      s.vel = v3(0, 0, 0);
+      s.spin = v3(0, 0, 0);
+    }
+  } else s.rest = 0;
   if (tr) {
     tr.vel1 = { ...s.vel };
     tr.spin1 = { ...s.spin };
@@ -796,12 +932,17 @@ export function stepRigid(s: RigidState, t: RigidSetup, world: ChassisWorld, inp
 
 /**
  * The driver's prediction state on the wire (PrivateState.vp): [mount index, x, y, z, qx, qy, qz, qw, vx, vy, vz,
- * spin x, y, z, steer, tipped, righting, air, flags (hull 1, + resting ticks × 2), take-off throttle, take-off steering],
- * rounded.
+ * spin x, y, z, steer, tipped, righting, air, flags (hull 1, + resting ticks × 2), take-off throttle, take-off steering,
+ * the hull solver (1: a Rapier body, driving physics 4; 0: the step's own, `?drive=own`)], rounded.
  */
-export function rigidWire(index: number, s: RigidState): number[] {
+export function rigidWire(index: number, s: RigidState, rapier = true): number[] {
   const r = (v: number, k: number) => Math.round(v * k) / k;
-  return [index, r(s.pos.x, 1e4), r(s.pos.y, 1e4), r(s.pos.z, 1e4), r(s.q.x, 1e6), r(s.q.y, 1e6), r(s.q.z, 1e6), r(s.q.w, 1e6), r(s.vel.x, 1e4), r(s.vel.y, 1e4), r(s.vel.z, 1e4), r(s.spin.x, 1e4), r(s.spin.y, 1e4), r(s.spin.z, 1e4), r(s.steer, 1e4), s.tipped, s.righting, s.air, (s.hull ? 1 : 0) + Math.min(1000, s.rest) * 2, r(s.airIn[0], 1e4), r(s.airIn[1], 1e4)];
+  return [index, r(s.pos.x, 1e4), r(s.pos.y, 1e4), r(s.pos.z, 1e4), r(s.q.x, 1e6), r(s.q.y, 1e6), r(s.q.z, 1e6), r(s.q.w, 1e6), r(s.vel.x, 1e4), r(s.vel.y, 1e4), r(s.vel.z, 1e4), r(s.spin.x, 1e4), r(s.spin.y, 1e4), r(s.spin.z, 1e4), r(s.steer, 1e4), s.tipped, s.righting, s.air, (s.hull ? 1 : 0) + Math.min(1000, s.rest) * 2, r(s.airIn[0], 1e4), r(s.airIn[1], 1e4), rapier ? 1 : 0];
+}
+
+/** Whether the host solves this vehicle's hull with a Rapier body (rigidWire's last number; older hosts: no). */
+export function rigidWireRapier(w: readonly number[]): boolean {
+  return w[21] === 1;
 }
 
 /** A RigidState from rigidWire's numbers (null: not one). */
