@@ -111,10 +111,10 @@ const LINEUP4: [string, number, number, number, number][] = [
   ...(
     [['env.broadleaf.birch', 0], ['env.broadleaf.olive', 0], ['env.conifer.mountain_pine', 0], ['env.conifer.larch', 0], ['env.conifer.cypress', 0], ['env.broadleaf.birch', 1], ['env.broadleaf.olive', 1], ['env.conifer.mountain_pine', 1], ['env.conifer.larch', 1], ['env.conifer.cypress', 1]] as const
   ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + (i % 5) * 6 + (i >= 5 ? 3 : 0), i < 5 ? -77 : -69, i * 1.1]),
-  ['env.cliff.sandstone', 0, 39, -58, 0],
-  ['env.cliff.sandstone', 1, 47, -58, 0],
-  ['env.cliff.crag', 0, 55, -58, 0],
-  ['env.cliff.crag', 1, 63, -58, 0],
+  ['env.cliff.sandstone', 0, 39, -48, 0],
+  ['env.cliff.sandstone', 1, 47, -48, 0],
+  ['env.cliff.crag', 0, 55, -48, 0],
+  ['env.cliff.crag', 1, 63, -48, 0],
 ];
 
 const EYE = 1.7;
@@ -284,7 +284,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   // Environment Phase 4's lineup (no "before" set: these are new species).
   VIEWS.variety = [new Vector3(51, EYE, -100), new Vector3(51, 3.2, -72)];
   VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
-  VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -76), new Vector3(51, 4.5, -58)];
+  VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 
