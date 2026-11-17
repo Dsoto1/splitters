@@ -432,7 +432,9 @@ for (const m of readManifests({ ready: true })) {
     doc.getRoot().getAsset().generator = 'tiletrigger prepare-meshy-characters';
     const glb = await io.writeBinary(doc);
     writeFileSync(join(TRIAL ?? OUT, `${id}.glb`), glb);
-    Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: triangles(doc), ...(entry.lodTriangles !== undefined ? { lodTriangles: lodTriangles(doc) } : {}), bytes: glb.byteLength, hands: true });
+    // (`graft`: the sides with new hand geometry, handgraft.mjs; provenance names the hands' source.)
+    const grafted = doc.getRoot().listSkins()[0]?.getExtras()?.graft;
+    Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: triangles(doc), ...(entry.lodTriangles !== undefined ? { lodTriangles: lodTriangles(doc) } : {}), bytes: glb.byteLength, hands: true, ...(grafted?.length ? { graft: grafted.join(' ') } : {}) });
     console.log(`  ${`${id}.glb`.padEnd(26)} ${String(entry.triangles).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
   };
   const doc = await io.read(join(OUT, `${m.id}.glb`));
