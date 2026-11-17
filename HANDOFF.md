@@ -56,6 +56,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **For lane B's splitters22 (lane A's lead, 2026-11-17): the driving physics 4 train (run 43984835535) is red on one unit test, not perf.** `perf (budget)` and `perf (mass)` never ran ("another job of this run failed: not starting"). The failure is `botCtf.test.ts` "Diamond Park: a capture within five minutes" (0 captures). That test is seed-sensitive: the punchier-hits landing moved it from seed 1 to seed 2 after a survey (seeds 1-6: 9 → 10 captures, only seed 1 had none), and with drive-physics-4 on top seed 2 now has none. Suggest the robust form Sunken Kingdom's test already uses (a capture on any of seeds 2, 3 and 4, or the survey's 4 of 6), rather than a re-run; it says nothing about the Rapier buggy itself unless Diamond Park's vehicles changed bot routes.
 
+**Landing now: train** (`wip/revolver-range`; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `wip/stjohns-4b` · run 43998415404 (`check/stjohns-4b` at 237d20b6; St. John's step 4b; a helper of lane B's splitters22)
 
