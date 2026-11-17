@@ -484,14 +484,17 @@ export class InputState {
 
   /**
    * Whether you aim down the sights now: the aim button (right mouse, X, a controller's LT) held, or with Aim set to
-   * Toggle, pressed once to aim and again to stop. Touch's Aim button latches by itself, and a melee weapon's heavy
-   * swing (`altTrigger`) is always held.
+   * Toggle, pressed once to aim and again to stop (touch's Aim button too: it holds X while pressed). A melee
+   * weapon's heavy swing (`altTrigger`) is always held.
    */
   private aiming(): boolean {
     const down = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
-    const mode = this.touchEngaged || this.altTrigger ? 'hold' : combatPrefs().aim;
-    return this.aimLatch.update(down, mode);
+    const mode = this.altTrigger ? 'hold' : combatPrefs().aim;
+    return (this.aimShown = this.aimLatch.update(down, mode));
   }
+
+  /** Whether you aimed at the last read (touch's Aim button lights with it). */
+  aimShown = false;
 
   /** Let a toggled aim go: a weapon change, death, a vehicle (the session calls it). */
   cancelAim(): void {

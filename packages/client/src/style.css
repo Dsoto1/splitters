@@ -1653,7 +1653,7 @@ html.touch #weapon-bar { display: none; }
 html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 104px; height: 104px; }
 html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
 /* The ammo panel sits by the fire buttons, above Reload and Throw, clearing the lower centre (where targets' feet are). */
-html.touch #ammo { right: calc(14px + env(safe-area-inset-right)); bottom: 212px; padding: 3px 10px 3px 14px; }
+html.touch #ammo { right: calc(14px + env(safe-area-inset-right)); bottom: calc(212px * var(--tc-scale, 1)); padding: 3px 10px 3px 14px; }
 html.touch #ammo-count { font-size: 26px; }
 html.touch #ammo-count.reloading { font-size: 15px; }
 html.touch #ammo-reserve, html.touch #throwable { font-size: 14px; }
@@ -1679,7 +1679,7 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
   /* The ammo panel just above Reload, without the weapon's name (the feed keeps 3 lines above it: feedLimit.ts). */
   html.touch #feed { gap: 2px; }
   html.touch #feed div { padding: 1px 10px; }
-  html.touch #ammo { bottom: 206px; padding: 1px 10px 1px 12px; }
+  html.touch #ammo { bottom: calc(206px * var(--tc-scale, 1)); padding: 1px 10px 1px 12px; }
   html.touch #weapon-name { display: none; }
   html.touch #ammo-count { font-size: 22px; }
 }
@@ -1689,7 +1689,17 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
 #touch-ui[hidden] { display: none; }
 #touch-ui > * { pointer-events: auto; touch-action: none; }
 #touch-ui .tc-look { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; }
-#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: var(--pad); height: var(--pad); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
+/* The layout (Options → Controls → Touch; game/touchLayout.ts): --tc-scale sizes the pad and the button cluster, --tc-opacity
+   draws them lighter (a pressed one at full strength), html.tc-left swaps sides for left-handed play. */
+#touch-ui .tc-cluster { position: absolute; right: 0; bottom: 0; width: 310px; height: 240px; pointer-events: none; transform: scale(var(--tc-scale, 1)); transform-origin: bottom right; }
+#touch-ui .tc-cluster > .tc-btn { pointer-events: auto; right: calc(var(--x) + env(safe-area-inset-right)); }
+#touch-ui .tc-cluster > .tc-btn, #touch-ui .tc-pad { opacity: var(--tc-opacity, 1); }
+#touch-ui .tc-cluster > .tc-btn.on, #touch-ui .tc-pad:active { opacity: 1; }
+html.tc-left #touch-ui .tc-look { right: auto; left: 0; }
+html.tc-left #touch-ui .tc-cluster { right: auto; left: 0; transform-origin: bottom left; }
+html.tc-left #touch-ui .tc-cluster > .tc-btn { right: auto; left: calc(var(--x) + env(safe-area-inset-left)); }
+html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-inset-right)); }
+#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: calc(var(--pad) * var(--tc-scale, 1)); height: calc(var(--pad) * var(--tc-scale, 1)); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
 #touch-ui .tc-pad.sprint { box-shadow: 0 0 0 2px var(--orange); }
 #touch-ui .tc-arm { position: absolute; width: 0; height: 0; border: 11px solid transparent; opacity: 0.55; }
 #touch-ui .tc-arm.up { left: 50%; top: 7%; margin-left: -11px; border-bottom-color: var(--text); border-top-width: 0; }
@@ -1704,20 +1714,20 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
 #touch-ui .tc-jump.on { background: rgba(0, 209, 255, 0.4); }
 #touch-ui .tc-btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid rgba(230, 240, 255, 0.45); background: rgba(18, 24, 39, 0.5); color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; -webkit-user-select: none; user-select: none; }
 #touch-ui .tc-btn.on { background: rgba(0, 209, 255, 0.4); border-color: var(--cyan); }
-#touch-ui .tc-fire { right: calc(26px + env(safe-area-inset-right)); bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
+#touch-ui .tc-fire { --x: 26px; bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
 #touch-ui .tc-fire.on { background: rgba(255, 70, 70, 0.5); border-color: #ff6b6b; }
-#touch-ui .tc-aim { right: calc(132px + env(safe-area-inset-right)); bottom: 22px; }
-#touch-ui .tc-melee { right: calc(136px + env(safe-area-inset-right)); bottom: 92px; }
-#touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
-#touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
-#touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
-#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
+#touch-ui .tc-aim { --x: 132px; bottom: 22px; }
+#touch-ui .tc-melee { --x: 136px; bottom: 92px; }
+#touch-ui .tc-reload { --x: 84px; bottom: 148px; }
+#touch-ui .tc-throw { --x: 14px; bottom: 146px; width: 50px; height: 50px; }
+#touch-ui .tc-use { --x: 204px; bottom: 50px; }
+#touch-ui .tc-wheel { --x: 158px; bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
 /* ("Weapons" ran past the 64 px ring at 11 px; 12 px fits the 68 px one without letter spacing.) */
 /* The scorebar's tap target: invisible, over the scorebar; a tap shows the scoreboard, another hides it. */
 #touch-ui .tc-scores { left: 50%; top: 0; width: min(300px, 40vw); height: 66px; transform: translateX(-50%); border: 0; border-radius: 0; background: transparent; }
 #touch-ui .tc-scores.on { background: transparent; }
 /* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
-#touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
+#touch-ui .tc-orders { --x: 230px; bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
 #touch-ui .tc-orders[hidden] { display: none; }
 #touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }

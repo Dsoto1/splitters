@@ -106,6 +106,7 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
 import { vibrationSupported } from '../game/rumble.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
@@ -2707,7 +2708,26 @@ export class FrontEnd {
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
     aimMode.id = 'opt-aim-mode';
-    aimMode.addEventListener('change', () => saveCombatPrefs({ aim: aimMode.value as AimMode }));
+    // The same setting in Controls → Touch (a phone or tablet): the two stay in step.
+    const touchAim = el('select', { id: 'opt-touch-aim' }, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
+    aimMode.addEventListener('change', () => {
+      saveCombatPrefs({ aim: aimMode.value as AimMode });
+      touchAim.value = aimMode.value;
+    });
+    touchAim.addEventListener('change', () => {
+      saveCombatPrefs({ aim: touchAim.value as AimMode });
+      aimMode.value = touchAim.value;
+    });
+    // The touch controls' layout (game/touchLayout.ts; docs/MOBILE_AUDIT.md, proposal 3).
+    const tl = touchLayout();
+    const touchSize = el('select', { id: 'opt-touch-size' }, ...TOUCH_SIZES.map((z) => el('option', { value: z, textContent: TOUCH_SIZE_LABELS[z], selected: z === tl.size })));
+    touchSize.addEventListener('change', () => saveTouchLayout({ size: touchSize.value as TouchSize }));
+    const touchOpacity = el('input', { id: 'opt-touch-opacity', type: 'range', min: String(MIN_TOUCH_OPACITY), max: '1', step: '0.05', value: String(tl.opacity) });
+    const touchOpacityVal = el('output', { textContent: `${Math.round(tl.opacity * 100)}%` });
+    touchOpacity.addEventListener('input', () => (touchOpacityVal.textContent = `${Math.round(Number(touchOpacity.value) * 100)}%`));
+    touchOpacity.addEventListener('change', () => saveTouchLayout({ opacity: Number(touchOpacity.value) }));
+    const leftHanded = el('input', { id: 'opt-touch-left', type: 'checkbox', checked: tl.leftHanded });
+    leftHanded.addEventListener('change', () => saveTouchLayout({ leftHanded: leftHanded.checked }));
     const shake = el('select', {}, ...SHAKE_LEVELS.map((l) => el('option', { value: l, textContent: SHAKE_LABELS[l], selected: l === combat.shake })));
     shake.id = 'opt-camera-shake';
     shake.addEventListener('change', () => saveCombatPrefs({ shake: shake.value as ShakeLevel }));
@@ -2806,11 +2826,11 @@ export class FrontEnd {
     const pad = 'Controller: ';
     // Phones and tablets (game/touchControls.ts).
     const touchList = bindingList([
-      ['Move (push past the rim to sprint)', 'Left pad'],
+      ['Move (push past the rim to sprint)', touchLayout().leftHanded ? 'Right pad' : 'Left pad'],
       ['Jump · crouch', "Tap · hold the pad's middle"],
-      ['Look', 'Drag on the right half'],
+      ['Look', touchLayout().leftHanded ? 'Drag on the left half' : 'Drag on the right half'],
       ['Fire (drag it to aim while firing)', 'Fire'],
-      ['Aim down sights (toggle)', 'Aim'],
+      ['Aim down sights (hold or toggle: Aim above)', 'Aim'],
       ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
@@ -2912,7 +2932,16 @@ export class FrontEnd {
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
-        ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),
+        ...(isTouchDevice()
+          ? [
+              el('h3', { class: 'opt-sub', textContent: 'Touch' }),
+              row('Button size', touchSize, 'The movement pad and the buttons. Large is kept a little smaller on short screens, so the buttons stay clear of the kill feed.'),
+              row('Button opacity', el('span', { class: 'opt-range' }, touchOpacity, touchOpacityVal), 'How solid the pad and buttons are drawn: lower to see more of the game behind them. A pressed button always shows in full.'),
+              row('Left-handed', toggle(leftHanded), 'The pad on the right and the buttons on the left; drag on the left half to look.'),
+              row('Aim', touchAim, 'Hold: aim while the Aim button is held. Toggle (the default on a phone): tap to aim, tap again to stop; changing weapons, getting in a vehicle or dying lets go. The same setting as Accessibility → Aim.'),
+              touchList,
+            ]
+          : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
         keyboard,
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
@@ -2930,7 +2959,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
-        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone the Aim button always toggles. Also in the pause menu.'),
+        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
           ? [
