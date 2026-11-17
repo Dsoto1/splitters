@@ -101,6 +101,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Landing now: train** (`wip/farlooks-bodypool`, `wip/breakable-shadow`; lane B's splitters22, 2026-11-17 15:25 UTC): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/frida-shoulders` · run 44123007482 (Freaky Frida's shoulder plugs, at 5e5a6c12; a helper of lane A's lead)
 
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
