@@ -6,6 +6,7 @@
   "name": "Briggs",
   "look": "core.tposesoldier2",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Has shouted himself hoarse at every drill since basic. His whisper still rattles windows.",
   "body": "male",

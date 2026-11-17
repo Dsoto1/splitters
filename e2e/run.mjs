@@ -505,9 +505,9 @@ async function editorFlow(browser) {
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   await page.evaluate(() => (document.getElementById('ed-cast').open = true));
   await page.click('#ed-cast input[data-cast="soldiers"]');
-  await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers & Spies', null, { timeout: T(5000) }).catch(() => {});
   const cast = { doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => document.querySelector('#ed-cast input[data-cast="soldiers"]')?.checked) };
-  check(JSON.stringify(cast.doc) === '["soldiers"]' && cast.sum === 'Soldiers' && cast.ticked, `map properties set the bot characters (${JSON.stringify(cast)})`);
+  check(JSON.stringify(cast.doc) === '["soldiers"]' && cast.sum === 'Soldiers & Spies' && cast.ticked, `map properties set the bot characters (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -5066,7 +5066,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,agents,legends,creatures,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -5085,9 +5085,9 @@ async function offlineFlow(browser) {
   await page.keyboard.press('q');
   const back1 = await settled('folk');
   check(back1.on === 'folk', `Q scrolls back a section (${JSON.stringify(back1)})`);
-  await page.click('.char-chip[data-section="creatures"]');
-  const chipJump = await settled('creatures');
-  check(chipJump.on === 'creatures', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
+  await page.click('.char-chip[data-section="machines"]');
+  const chipJump = await settled('machines');
+  check(chipJump.on === 'machines', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
   const g = await page.locator('.char-grid').boundingBox();
   await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
   await page.mouse.wheel(0, -100000);

@@ -13,7 +13,7 @@ import { ROULETTE_DATA } from '../content/roulette.generated.ts';
 import { getLook } from '../content/looks.ts';
 import type { GameEvent } from '../protocol.ts';
 import { TICK_RATE } from './constants.ts';
-import { lookGroup } from './npc.ts';
+import { lookBranch, lookGroup } from './npc.ts';
 import { RANDOM_LOOK_POOL, lookMix } from './randomLooks.ts';
 import type { MatchRules } from './rules.ts';
 import { matchStats } from './characterStats.ts';
@@ -62,9 +62,9 @@ export const isRouletteSay = (say: number | undefined): boolean => say !== undef
 /** A life's roll: a jackpot (the glow, an announcer line, a better signature and armour), tiny (a smaller, quicker body), or plain. */
 export type RouletteRoll = 'jackpot' | 'tiny' | null;
 
-/** A look's signature weapon (its own, else its group's, else the rifle), before the weapon set has its say. */
+/** A look's signature weapon (its own, else its branch's (Agency), else its group's, else the rifle), before the weapon set has its say. */
 export function signatureOf(look: string): string {
-  return SIGNATURES[look] ?? GROUP_SIGNATURES[lookGroup(look) ?? ''] ?? 'core.rifle';
+  return SIGNATURES[look] ?? GROUP_SIGNATURES[lookBranch(look) ?? ''] ?? GROUP_SIGNATURES[lookGroup(look) ?? ''] ?? 'core.rifle';
 }
 
 /** The weapon a life spawns holding: the signature (a jackpot's better one), as the weapon set allows (else its main gun); null where weapons are fixed. */

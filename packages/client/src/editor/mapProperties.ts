@@ -17,7 +17,6 @@ import {
   botCastLabel,
   botSetLabel,
   castLooks,
-  CHARACTER_GROUPS,
   coreThemes,
   coreMaterials,
   groundThemes,
@@ -48,6 +47,7 @@ import {
   teamLayoutLabel,
   TERRAIN_MATERIAL_LABELS,
   validBotCast,
+  isCharacterCastId,
   weaponSetList,
   withMainMode,
   type Backdrop,
@@ -213,8 +213,8 @@ export class MapProperties {
         box.append(lab);
       }
     };
-    group('Characters', BOT_CAST_CHOICES.filter((c) => CHARACTER_GROUPS.some((g) => g.id === c.id)));
-    group('Named as', BOT_CAST_CHOICES.filter((c) => !CHARACTER_GROUPS.some((g) => g.id === c.id)));
+    group('Characters', BOT_CAST_CHOICES.filter((c) => isCharacterCastId(c.id)));
+    group('Named as', BOT_CAST_CHOICES.filter((c) => !isCharacterCastId(c.id)));
     const all = button('All characters', () => set([]));
     all.id = 'ed-cast-all';
     all.disabled = !cast.length;

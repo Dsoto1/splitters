@@ -6,6 +6,7 @@
   "name": "Warrior Sentinel",
   "look": "core.warriorsentinel",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Shaved head, short temper, and arms that do most of the talking.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Grunt '68",
   "look": "core.grunt68",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Has been in the field so long the field started calling him sir.",
   "body": "male",

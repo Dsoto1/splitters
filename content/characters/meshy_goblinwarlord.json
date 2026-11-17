@@ -5,7 +5,7 @@
   "order": 111,
   "name": "Goblin Warlord",
   "look": "core.goblinwarlord",
-  "group": "creatures",
+  "group": "horror",
   "nameTheme": "goblin",
   "bio": "Rules the warren by fear, spite and a very large knife.",
   "body": "male",
