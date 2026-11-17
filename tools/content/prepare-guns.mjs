@@ -31,6 +31,9 @@
 // gets a normal map baked from the full download (`normalSize`, default 512 px; meshy-mesh.mjs bakeNormals).
 // `budget: "hero"` holds an entry to `budgets.tiers.hero` instead of the default caps (content:check), and
 // `lod: [share, metres]` adds a lower level of detail that instanced copies (a crowd's guns) draw from that far.
+// `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }` adds a flat deck plate, facing up, under a floor the cut
+// left holes in (the Dropship's deck), to every level of detail, coloured like the floor under `uvAt`
+// (tools/content/deck-plate.mjs, which also adds it to a built file without the download).
 //
 // `glow: { color, warm: [r, r-b, r-g], strength }` (Meshy entries): the download's own glowing parts (lit panels,
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
@@ -80,6 +83,7 @@ import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { MESHY_QUANTIZE, addLod, markings, meshyDocument, normalJpeg, paintOut, splitParts } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
+import { addDeckPlate } from './deck-plate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
@@ -421,6 +425,8 @@ async function buildAnimated(src, entry) {
   await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: Math.min(1, (entry.triangles ?? before) / before), error: entry.maxError ?? 0.02 }), dedup(), prune());
   for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) compactPrimitive(prim);
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
+  // `plate`: a deck plate under a floor the cut left holes in, on every level of detail (deck-plate.mjs).
+  if (entry.plate) addDeckPlate(doc, entry.plate);
   return { glb: Buffer.from(await io.writeBinary(doc)), ...countTriangles(doc), normalMap: false, place: {} };
 }
 
