@@ -29,6 +29,7 @@
     "sound": "fire.sniper"
   },
   "notes": {
+    "range": "Best within 60 m: full damage, 3 body shots. Down to 85 % (4 shots) by 150 m; reaches 220 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
     "model": "The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle (still built): a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set. The kit rifle is the fallback."

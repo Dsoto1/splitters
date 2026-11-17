@@ -5,9 +5,9 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). **Phase 4 built** ("Phase 4: as built"; map format v45). |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
-| Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) takes the next free number when it lands. |
+| Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) is **v45** (v44 kept for the tunnel kit's set piece `family`). |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
 
 ## The owner's direction, in short
@@ -367,6 +367,39 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
 - Unit test: `palette.test.ts` (client) gains the ordering.
 - E2E (`editorux`): the default shows the theme's packs first, and All shows everything. The `mapmaker.png` baseline is regenerated (`pnpm e2e:baselines`).
 
+**Phase 3: as built (2026-11-16, a helper of lane B's splitters22, `wip/painting-3`).** No map format change.
+- **The palette** (`paletteBuilder.ts` `filterPalette`, `palette.ts` `order`/`mark`, pure rules in `paletteCatalog.ts`):
+  the Style Pack picker's first choice is **This map's themes**, the default (not remembered between sessions). The
+  packs that use the map's Structure theme (`themeStylePacks`: the pack whose own theme it is first, then those that
+  list it) have their tiles, props, set pieces (by the looks they suit) and gameplay pieces put first in each group,
+  and in a prop group within each category, each part in the catalogue's order (`themeRank`, `rankedOrder`); they
+  carry a small steady dot in the tab's colour. **Nothing is hidden**: everything else follows, so search, the
+  Set pieces tab's full list and every tool still reach every piece. A note under the picker names the packs; a theme
+  no pack uses (Prototype, the new map's, and Lab, Station, Neon, Volcano) says so and keeps the catalogue's order.
+  **All pieces** (the second choice, value `''` as before) is the catalogue's order, unmarked; a pack still narrows to
+  its own pieces and offers "Use theme" through the warning. It follows a theme change at once (`syncTheme`, from the
+  top bar's refresh), undo included.
+- **Structure paint's list**: a **This map's themes | All** switch over Materials. This map's themes lists the
+  Structure theme's own slot materials (floor, walls, solids, underside, trim, then its metal or `DEFAULT_METAL`),
+  then the materials of its packs, then Recent (materials picked lately, at most 8), none twice
+  (`themePaintList`); All is every material by kind, as before. Same buttons in both (moved, the rest hidden), so the
+  lit material, search and favourites are the same. Recent is rebuilt as the tab opens or the view changes, never
+  under the pointer.
+- **Ground paint's list**: until the Ground theme (Phase 4), "This map's grounds" are the ground layers the terrain
+  has, most cells first (the main ground leads), then any whose surface the theme's packs list; then "Other grounds"
+  (`themeGroundOrder`). Phase 4 replaces the lead with the Ground theme's list.
+- **The top bar**: the `ed-theme` select is gone; a **Structure theme** chip names the theme and opens Map settings at
+  its Structure theme select (focused), so every change goes through Phase 2's warning (`changeStructureTheme`). The
+  Ground theme chip comes with the Ground theme (Phase 4). Under 1400 px the chip shows the name only; it goes at
+  `fit-6` as the select did.
+- Tests: `palette.test.ts` (the packs for a theme, own first; theme-first order stable within each part, All the
+  catalogue's; Structure paint's three sections; Ground paint's order). E2E `editorux` `editorThemeViewChecks`
+  (Prototype keeps the catalogue's order; Military's pieces first and marked, nothing hidden; All unmarked in order;
+  Structure paint's sections, All, Recent; Ground paint's headings) with screenshots `editorux-themes-*.png`;
+  `editorLayoutChecks` and `editortools`' theme warning use the chip; `editor` picks its materials under All.
+  Baseline regenerated: `mapmaker.png` (the chip in place of the select) only.
+- Nothing flashes: a steady dot and reordered cards.
+
 **Phase 4: the Ground theme (format change A).**
 - What it does:
   - `groundThemes` content;
@@ -383,6 +416,61 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   - `editorenv` e2e: Ground theme change with counts, painted cells stay, Packed Snow paints as Packed Snow;
   - `visual` baselines unchanged.
 - Pictures of the ten Ground themes go to the owner before this phase lands.
+
+**Phase 4: as built (2026-11-16, a helper of lane B's splitters22, `wip/painting-4`).** Map format **v45**.
+- **Content.** `groundThemes` in `content/materials.json` (checked and generated by `tools/content/materials.mjs` into
+  `GROUND_THEMES`, shared `groundThemes`): ten, each a base, the grounds offered first (base first) and the Structure
+  themes it suits. Meadow (Grass), Woodland (Forest Floor), Rocky (Mossy Rock), Desert (Desert Sand), Quarry (Gravel),
+  Snowfield (Snowy Ground), Moorland (Moss), Urban (Asphalt), Volcanic (Wet Asphalt, with Lava listed) and Coastal
+  (Shingle). Every Structure theme names its match (`ground`, checked to be listed in that Ground theme's `suits`).
+  **Ground materials** are the 19 of the Ground category plus the two old layers that are not in it, Mossy Rock (the old
+  "Stone") and Hex Paving (the old "Dark earth"), which shipped maps use: 21 in all (`GROUND_MATERIALS`). Nothing else
+  can be ground (the generator, `isGroundMaterial`, the validator).
+- **Format** (shared `map/terrain.ts`, `map/schema.ts`): `terrain.groundTheme` (absent: Meadow) and `terrain.grounds`
+  (at most 16); a cell is 0 (the base) or k (`grounds[k − 1]`). `cellGround`, `cellPainted`, `groundStyle` (the material
+  and its ground tint: Gravel's `#8f877b` moved here from `mapMeshes.ts`), `groundKind` / `cellKind` (what a ground
+  behaves as: `terrainMaterialFor`, moved into terrain.ts, now only for plants, the Environment brush's filters, the
+  border's ground kind and a height-grid import's plants), `groundIndex` (adds a ground to the list; a full list first
+  drops grounds no cell uses; null when 16 are in use: Ground paint says so and never substitutes), `newTerrain(…,
+  groundTheme)` (all base), `applyBrush`'s `ground` (null: back to the base), `paintSlopes` (Mossy Rock, painted).
+- **Migration** `groundLayersV45` (`migrate.ts`; v43 -> v44 an identity step kept for the tunnel kit): `grounds` = the
+  eight old layers in order (old j is k = j + 1); the base is the most common layer **that is some Ground theme's base**
+  (the first such theme; ties to the earlier layer), its cells 0; every other cell painted. Hex Paving is no theme's
+  base, so a map mostly Hex Paving takes the next layer as its base (all Hex Paving: Meadow, every cell painted); no
+  shipped map is. Shipped maps' bases (52 with terrain): Meadow 29, Desert 10, Rocky 6, Snowfield 3, Moorland 2, Quarry
+  1, Woodland 1.
+- **The proof.** `tools/maps/paint-looks.ts` wrote `packages/shared/test/fixtures/paintLooks.json` on origin/main
+  first (its own commit): per map in `maps/` and `maps/templates/`, loaded as played, a hash of every box's resolved
+  style on its top and sides, and one of every terrain cell's drawn material and tint, plant cover and ground kind plus
+  the ground past the border. `paintLooks.test.ts` checks all 94 against it with the new code: **all the same**.
+  `groundLayersV45.test.ts`: Backwoods (v36, six layers) cell by cell (base cells, painted cells, Gravel's tint, plants),
+  the tie and Hex Paving rules, a Ground theme change, Keep, Packed Snow as itself, the full list.
+- **Readers.** `mapMeshes.ts` sorts cells by ground (the old layers keep their mesh names, `…_terrain_grass`, and the
+  soft borders' order; any other ground's mesh is named by its material, `…_terrain_core.packed_snow`); `foliage.ts`
+  and `envBrush.ts` read `cellKind`; `backdrop.ts` (shared `backdropGroundSurface`: the commonest edge ground itself
+  past the border, Packed Snow as Packed Snow; `resolveBackdrop`'s `ground` its kind); `paths.ts` lays a path's ground
+  as a painted ground; `changeGrid.ts` resamples up to 17 values; `mirror.ts` copies cell values (the same list);
+  `heightGrid.ts` (unreached cells the base, the current terrain's theme and list kept); `frontend/mapPlan.ts` (the old
+  layers' plan colours, any other ground its material's colour).
+- **MapMaker.** Map settings' General: **Ground theme** under Structure theme (grouped "Suits <theme>" / "Other",
+  "base Gravel · 7 grounds" under it), through its own warning (`themeChangeDialog.ts` `changeGroundTheme`: m² that
+  follow and will change from one base to the other, m² painted that stay, the border line; Change, Keep current look,
+  Cancel; one undo step each; a change that looks no different skips it). The Structure theme warning gets Phase 2's
+  left-out tick box, off: "Also change the Ground theme to Desert (Desert City's match): N m² of ground follows it"
+  (with Keep, the ground keeps its look too). A **Ground theme chip** beside the Structure one (`ed-ground-chip`, opens
+  Map settings at the row; "No terrain" without one). The Terrain tab's "Main ground" swap went: it shows the Ground
+  theme with a Change… button to the same place. **Ground paint** offers the Base chip (back to following the theme;
+  Shift+drag does the same with any ground) and all 21 grounds, each drawn as itself, under "Ground theme: <name>" (its
+  list, then grounds the map painted) and "Other grounds" (`paletteCatalog.ts` `themeGroundOrder`). The card and status
+  line say "Gravel (Ground theme: Quarry)" or "Sand (painted; Ground theme Quarry: Gravel)". A new terrain (Terrain
+  tab, New map) picks a Ground theme (default: the Structure theme's match; New map: Meadow) and starts all base.
+- Tests: the two above, `terrain.test.ts`, `paintLayers.test.ts` (the ground under the cursor), `palette.test.ts`
+  (Ground paint's order), `backdrop.test.ts`, `terrainGrid.test.ts`, `materialsData.test.ts` (the fixture minus the new
+  `ground` field). E2E `editorenv` `editorGroundThemeChecks` (a new terrain all Meadow, the chip; Packed Snow paints as
+  itself, its own mesh; the warning's m² match; Cancel; Change moves only base cells, Packed Snow stays, one undo;
+  Keep keeps every cell; the Structure warning's tick box changes both in one step), screenshots `editorux-ground-*.png`
+  with `E2E_SHOTS`; `editortools` and `editorux` ground lists and labels updated. Baselines: only `mapmaker.png` (the
+  chip). Nothing flashes: a dialog and a chip.
 
 **Phase 5: set pieces with Structure paint, and saved looks (format change B).**
 - What it does:

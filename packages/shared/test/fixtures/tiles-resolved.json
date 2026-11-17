@@ -77191,15 +77191,15 @@
   },
   {
    "id": "core.arena_corner_ground",
-   "hash": "a269108c883d029950bd79f6"
+   "hash": "eeef690b6dc429c92583811e"
   },
   {
    "id": "core.arena_corner_mid",
-   "hash": "c65509a664d210c204b5be57"
+   "hash": "cce2a24052fd40a4dbcb48e8"
   },
   {
    "id": "core.arena_corner_upper",
-   "hash": "25f2c9934a96bc568ccada9a"
+   "hash": "8cebaf34bf3dc007f657990c"
   },
   {
    "id": "core.arena_corner_attic",
@@ -77207,7 +77207,7 @@
   },
   {
    "id": "core.arena_corner_ground_gate",
-   "hash": "c4acd81856136c1a426bf4ce"
+   "hash": "44ffe1d9cae5dc909a0be5f1"
   },
   {
    "id": "core.arena_corner_attic_gate",
@@ -96338,7 +96338,7 @@
  },
  "styleMap": {
   "geometry": "bbd6e4417ac1feb0e6928dcb",
-  "decor": "8301f38b23cb00e426ec0cd3",
+  "decor": "70cfa5e6c995cfa9e5217aa3",
   "facades": "da8ce5247c5633d473086b6b",
   "panes": "120463c4afb5feda14fac1d5",
   "issues": "b2df3f7fbb8b7eb9c544189d",

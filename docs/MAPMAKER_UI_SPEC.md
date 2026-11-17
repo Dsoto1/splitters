@@ -199,8 +199,89 @@ layout". Files are under `packages/client/src/editor/`.
 ### Phase 2 — Unified selection + Outliner/Inspector
 Implement selection controller and synchronized highlight across 3D viewport, outliner, and inspector. Add reliable object-focused properties and transform commands.
 
+**Phase 2: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-2`, 2026-11-16; no map format change).** The audit's
+§4–5 plan, kept to its scope. Files under `packages/client/src/editor/` unless shared.
+
+- **One selection** (shared `editor/selectionState.ts`): `EditorApp.selection` is read-only now; every write goes through
+  `setSelection` (or `adoptSelection` where the panels are redrawn straight after: an edit's prune in `refresh`, opening a
+  map in `mapSaving.ts`). `selectionRev` counts changes; the plan view redraws on it instead of joining every id each
+  frame. Rules, pure and tested: `wholeSelection` (groups **and moving builds** whole wherever the pick came from: the
+  view, the outliner, a problem's select, the budget pill; Alt keeps one; locks left out), `pruneSelection` (ids an edit
+  removed dropped, the same object when none went; a stale pick selects only what is there), `sameSelection`.
+- **Views in step**: a pick in the outliner selects in the view and the inspector (as before), the outliner passes Alt
+  through, and a pick anywhere else scrolls the outliner to the row (`OutlinerPanel.reveal`, also when its search is
+  cleared). It reads nothing from the page on the selection path: the row's place comes from the rows and the scroll and
+  height last seen (scroll events, the size watcher), and only an out-of-view row scrolls, at the next frame. A level
+  change keeps the selection (status bar, Phase 1). The bot-hint pin, path point and route point are left as they are;
+  `setSelection` still lets the pin go.
+- **The shared transform command** (shared `editor/transform.ts`, `transformCommand(doc, sel, t)`; `EditorApp.transform`):
+  `{ by: { cells } | { metres } }`, `{ set: { id, axis, value } }`, `{ turn }`, `{ face: { id, deg } }`. Tiles and set
+  pieces by whole cells through the layout check (`moveCommand`), things through `moveEntitiesCommand` (millimetres,
+  re-bedding on the terrain), turns through `turnByCommand`; one command, one undo step. Callers: the drag's release (and
+  its red preview, now with the same set-piece library), the arrow-key nudges, the rotate ring, the quick facings, and
+  the inspector's X / Height / Z, Facing (things) and X / Y / Level (tiles, set pieces), ids `ed-insp-x|y|z|facing`.
+  Behaviour change: things carried by a tile drag are re-bedded on the terrain like a drag of things alone.
+- **The QUEUE bug, confirmed then fixed**: on the base build the e2e check typed X = 10.123456 and kept it unrounded, left
+  a crate on a 1-in-10 slope 1 m into the ground (5.82 where a nudge gives 6.82), and moved a mover without its lift and
+  barrel. All three now behave like the nudge.
+- **Number fields** (`editorDom.numberInput`): Enter/Tab/blur commit, Esc puts the value back without an edit, an
+  empty or unreadable value is put back, an unchanged value commits nothing.
+- **Not done (later phases):** breadcrumbs, `focus`/`child` selection (Tile View, Phase 4), the minimap (Phase 3).
+- **Tests:** shared `test/transform.test.ts` (rounding, re-bedding, a mover with its parts, Facing on a build, cells and
+  the layout check, undo as one step each, the selection rules); e2e `editorTransformChecks` (`editortools`) and
+  `editorSelectionSyncChecks` (`editorux`). No baseline moved.
+
 ### Phase 3 — Live minimap
 Implement level-aware overhead projection, camera marker, selection highlighting, navigation, fit/zoom/pan, and layer toggles. Keep the minimap independently usable in compact mode.
+
+**Phase 3: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-3`, 2026-11-16; no map format change).** The
+audit's §7 plan. Files under `packages/client/src/editor/`: `minimapModel.ts` (the maths, pure), `minimapPanel.ts` (the
+drawing and the pointer), `minimap.css`, and the dock (`rightDock.ts`, `dockPrefs.ts`, the page's dock in `index.html`).
+
+- **Where it shows:** the expanded dock's top panel is now **Minimap | Outliner** (WAI-ARIA tabs: a click, or the arrow
+  keys, Home and End), Properties below as before; the compact card is the minimap (the Phase 1 placeholder is gone).
+  The panel's fold (▾) folds both. The expanded dock opens on the **Outliner** until you pick the Minimap (owner
+  question 1); the choice and the minimap's zoom are kept in `tiletrigger.editor.dock` (`tab`, `minimapZoom`), never
+  in the map. A hidden dock, a folded panel, Map settings or the Outliner tab: none of the minimap runs.
+- **What it shows**, north up, over the level being edited (the level strip's level; its name in a chip):
+  - the ground (its paint colours, lighter on high ground; fainter off the ground level), then that level's floors,
+    water, blocks and props (breakable props and moving or hidden blocks included), walls, the tile outlines (the
+    level below faint), buried tunnels dashed on the ground level;
+  - spawns by team, flags, hills, objectives and pickups (the plan view's icons, `planMarkers`);
+  - the camera: a dot, a short arrow and the wedge it sees (the view's field of view and shape);
+  - the selection, from the shared state (`EditorApp.selection`, redrawn on `selectionRev`): cyan outlines round
+    tiles and set pieces, a ring round a thing; dashed where it is only on another level (things on the open ground
+    count on every level);
+  - a scale bar and N. The View menu's Map layers and the outliner's hide apply to it as to the view.
+- **Framing:** the playable boundary, else everything built and placed (props too), with room round it for a dock of
+  another shape. The wheel and + / − zoom (up to 16×) about the pointer; zoomed in, it follows the camera, a drag pans
+  it, ⌂ fits the level again.
+- **Clicks** (the spec's "click to navigate", and a selection source as §5 asks): a click on a thing selects it through
+  `setSelection` and frames it, exactly as a click on its outliner row (Shift adds, Alt one part of a group or moving
+  build; locked and hidden things can't be picked; the nearest thing within 8 px, else the set piece, else the tile
+  with a cell there on that level). A click on open ground moves the camera there, keeping the selection. Double-click
+  is kept for Tile View (Phase 4a); the minimap has no key (owner answer 1).
+- **Cost** (`docs/PERF_MAPMAKER_TRACE_2026-11-15.md`, fix 6: nothing on the edit's path). The minimap is not called from
+  `refresh`. Each frame it compares a few numbers. Its picture of the level is made again only when the document,
+  level or layers changed: a new level or map at once, an edit once the edits pause (350 ms, at most 1.5 s into a run
+  of edits, never during a drag; `bakeDelay`), and only while it can be seen. It is drawn from the boxes MapMaker
+  already holds (`EditorApp.mapBoxes`), at about 3 px a metre (at most 1,600 px), with the ground drawn once per ground.
+  The canvas is a copy of that picture plus the icons, the selection and the camera, drawn when the selection, the
+  picture or the frame change, and at most 20 times a second while only the camera moves. Its size comes from a size
+  watcher: it reads nothing from the page while drawing.
+- **Measured** (`tools/perf/editor-edit.mjs "St. John's"`, software rendering on a loaded 4-core box, so the totals
+  swing ±30 % run to run; `EDIT_DOCK=minimap` shows the Minimap tab): an edit's own `refresh` is unchanged (move a
+  block 1 m: 426 ms on main, 397 ms here with the Outliner tab, 327 ms with the Minimap tab; undo 261 / 267 / 295 ms;
+  the minimap is not in it). The minimap's picture, once per edit after the pause: 18-29 ms on St. John's (2,670
+  things, 19,481 ground points); its per-frame check: about 0.2 ms. Opening Flavius Rule: 36 ms, its level 1: 10 ms.
+- **Not done:** Tile View (Phase 4a, double-click); layer toggles of its own (it follows View → Map layers); doors and
+  windows as edge marks; the plan view's frame drawn on it.
+- **Tests:** unit `client/test/minimap.test.ts` (frame and zoom, the camera's marker, the selection's marks, picks,
+  levels, when the picture is made again, the kept tab and zoom); e2e `editorMinimapChecks` in `editorux` (the tabs,
+  a click selects and syncs the view, inspector and outliner, a selection made elsewhere shows without a new picture,
+  open ground moves the camera, levels, an edit makes no picture on its own path, the zoom stays out of the map, the
+  compact card, a hidden dock runs nothing). The `mapmaker.png` baseline still passes (1.3 % of pixels, the tab
+  heading); not regenerated.
 
 ### Phase 4 — Tile Detail precision editor
 Implement tile focus, child picking, move/rotate/snap, numeric transforms, local/world coordinates, history integration, and immediate 3D updates. Gate generated-child overrides behind verified generator support.
@@ -307,3 +388,5 @@ These are the recommended options from `docs/MAPMAKER_UI_AUDIT.md` §10. They ar
 
 ## Owner's answers on Phase 1 as built (2026-11-14: "Recs")
 1a: between 900 and 1,100 px the right dock starts expanded. 2a: the left rail's 44 px comes from the palette. 3a: the map is renamed in Map settings (the title opens them); no inline rename. 4a: Dress all and Settle all stay in the ⋯ menu only.
+
+**The owner's answers on Phase 3 (2026-11-16, "1a 2a 3a"):** the dock opens on the Outliner tab; a click on a thing in the minimap selects and frames it, like the Outliner; the minimap follows View → Map layers (no toggles of its own). All as built.

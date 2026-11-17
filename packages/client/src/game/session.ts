@@ -27,6 +27,7 @@ import {
   matchStats,
   CORE_WEAPONS,
   gunplayOf,
+  bulletPhysics,
   traceBullet,
   THROWABLE_DEFS,
   predictThrow,
@@ -73,6 +74,7 @@ import {
   type HoldKind,
   type CarryOver,
   weaponByCode,
+  fireModeCount,
   DESTRUCTIBLE_SPECS,
   glassAt,
   NPC_ROLES,
@@ -201,6 +203,7 @@ import { CoachHud } from './coachHud.ts';
 import { TipBook, type TipId } from './tips.ts';
 import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
+import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
@@ -382,6 +385,24 @@ export class GameSession {
   }
 
   /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
+  /** The drag a weapon's rounds fly with under this match's ballistics, so drawn rounds slow as the host's do. */
+  private dragOf(def: WeaponDefinition | undefined): number {
+    const b = def ? gunplayOf(def).ballistic : null;
+    return b ? bulletPhysics(b, this.rules ?? {}).drag : 0;
+  }
+
+  /** A round of `def` fired from `from` hit you: the view's hit kick (view.hitKick), a pellet its share of the blast. */
+  private kickMe(def: WeaponDefinition | undefined, from: { x: number; z: number }): void {
+    if (!def) return;
+    const me = this.view.cameraPosition();
+    const dx = from.x - me.x;
+    const dz = from.z - me.z;
+    const len = Math.hypot(dx, dz) || 1;
+    // Right of the view is (cos yaw, -sin yaw): + when the round came from the right.
+    const side = ((dx * Math.cos(this.input.yaw) - dz * Math.sin(this.input.yaw)) / len);
+    this.view.hitKick(stoppingPower(def) / Math.max(1, def.pellets), side);
+  }
+
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     const target = hits.find((h): h is number => h !== null && h !== undefined);
     if (target === undefined) return;
@@ -672,6 +693,9 @@ export class GameSession {
   private fov = DEFAULT_FOV;
   private zoomLevel = 0;
   private scopedNow = false;
+  /** How far the eye is onto a real optic (0..1, opticView.ts), and the gun it belongs to. */
+  private opticBlend = 0;
+  private opticWeapon: WeaponDefinition | undefined;
   private adsAmount = 0;
   private readonly markers = markerSetting();
   /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
@@ -2151,7 +2175,7 @@ export class GameSession {
                   const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
-                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: this.dragOf(def) }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
                   this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
                 }
                 return;
@@ -2165,6 +2189,7 @@ export class GameSession {
               if (victim === this.slot) {
                 this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
                 this.lastHitBy = { slot: ev.s, from: eye, at: performance.now() };
+                this.kickMe(def, eye);
               }
               if (victim !== null) {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
@@ -2197,7 +2222,10 @@ export class GameSession {
             const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
             const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
             const zone = ev.z ?? 0;
-            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            if (ev.hit === this.slot) {
+              this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+              this.kickMe(def, from);
+            }
             if (ev.hit !== null) {
               const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
               const len = Math.hypot(d.x, d.y, d.z) || 1;
@@ -2232,7 +2260,9 @@ export class GameSession {
             // Lightning by its source (content/vfx.json map.arcs): an arc sentry, an electric fence (no shooter) or a gun.
             // With flashing reduced, each source holds one steady beam (keyed by it; a fence's by where it struck).
             const source = ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default';
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined);
+            // A gun's lightning leaves the shooter's muzzle and stays on it (yours: the gun in your hands).
+            const anchor = ev.m === undefined && ev.s >= 0 ? this.view.muzzleAnchor({ local: ev.s === this.slot, slot: ev.s }) : null;
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined, anchor);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -3148,6 +3178,11 @@ export class GameSession {
         const next = inSlot[(i + 1) % inSlot.length];
         if (next) this.requestWeapon(next);
       }
+      // U: the held weapon's next fire mode (spec §36), with the selector's click; the mode rides in the next input.
+      if (this.input.takeFireModeSwitch() && local.alive && !this.seat) {
+        const mode = local.cycleFireMode();
+        if (mode) this.sfx.fireModeClick();
+      }
       this.updateWheel(local, building);
       this.updateOrderWheel(local);
       this.touch?.update();
@@ -3255,7 +3290,7 @@ export class GameSession {
           const muzzle = this.view.localMuzzle();
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
-          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
@@ -3288,11 +3323,22 @@ export class GameSession {
       // Aiming down the sights of any other gun: a slight zoom and the gun brought up to the eye.
       const ads = !!weapon && !weapon.view.zoomFov && weapon.kind !== 'melee' && this.input.zooming && ready;
       if (!zoomed) this.zoomLevel = 0;
-      this.scopedNow = zoomed;
       const wantFov = zoomed ? weapon!.view.zoomFov! * (this.zoomLevel ? 0.45 : 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
       // Scopes snap; sights ease in and out.
       this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
       this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
+      // A real optic (opticView.ts): once the sights are up, the eye comes onto the model's own scope.
+      const optic = ads && !this.thirdPerson ? weapon!.view.optic : undefined;
+      this.opticBlend = optic && this.adsAmount > 0.9 ? Math.min(1, this.opticBlend + dt / OPTIC_IN) : Math.max(0, this.opticBlend - dt / OPTIC_OUT);
+      if (!optic && this.opticBlend > 0 && weapon !== this.opticWeapon) this.opticBlend = 0;
+      if (optic) this.opticWeapon = weapon;
+      const opticSpec = this.opticWeapon?.view.optic;
+      const frame = opticSpec && this.opticBlend > 0 ? opticFrame(opticSpec, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, this.opticBlend) : null;
+      if (frame) this.fov = frame.worldFov;
+      this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex' } : null);
+      // The optic sways and steadies like a scope once the eye is on it.
+      this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
@@ -3390,8 +3436,8 @@ export class GameSession {
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
-      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
-      this.updateScopeSway(dt, zoomed);
+      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend));
+      this.updateScopeSway(dt, this.scopedNow);
       this.hud.setHealth(local.health, local.armor, local.alive);
       this.updateHoldAndWarning(local);
       // Took damage since last frame: flash, pointing at the latest shot or blast near you.
@@ -3409,6 +3455,7 @@ export class GameSession {
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
       else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
+      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? local.fireMode() : null, local.weapon ? fireModeCount(local.weapon) : 1);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
       const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;

@@ -26,6 +26,7 @@
 import { rng } from '../env/rng.mjs';
 import { Mesh, bar, box, disc, hex, lathe, quad, quadN, scale3, standIn, triN } from './geom.mjs';
 import { woodTone } from './crate.mjs';
+import { seatMesh } from './furniture.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
 
@@ -471,5 +472,71 @@ export function spireMesh(seed, size, g, look, level) {
     const s2 = Math.max(6, seg / 2);
     lathe(m, [[0.05, top - 0.05], [0.05, top + fin * 0.45], [0.11, top + fin * 0.5], [0.12, top + fin * 0.58], [0.11, top + fin * 0.66], [0.035, top + fin * 0.7], [0.01, h]], s2, () => trim);
   } else lathe(m, [[0.06, top], [0.01, h]], 4, () => trim);
+  return m;
+}
+
+// ---------------------------------------------------------------- the paired dorm furniture
+
+/** `sub` appended to `m` turned `turn` quarter turns about +Y (local +x to −z, as a prop's yaw) and moved by `at`. */
+function placeMesh(m, sub, turn, at) {
+  const c = [1, 0, -1, 0][turn & 3];
+  const s = [0, 1, 0, -1][turn & 3];
+  const o = m.vertexCount;
+  for (let i = 0; i < sub.P.length; i += 3) {
+    const [x, y, z] = [sub.P[i], sub.P[i + 1], sub.P[i + 2]];
+    const [nx, ny, nz] = [sub.N[i], sub.N[i + 1], sub.N[i + 2]];
+    m.P.push(at[0] + x * c + z * s, at[1] + y, at[2] - x * s + z * c);
+    m.N.push(nx * c + nz * s, ny, -nx * s + nz * c);
+  }
+  m.UV.push(...sub.UV);
+  m.C.push(...sub.C);
+  m.W.push(...sub.W);
+  for (const i of sub.I) m.I.push(i + o);
+}
+
+/**
+ * A dorm room's two desks with hutches side by side along a wall, a chair pushed in at each (St. John's step 4: one
+ * prop where there were four, so a room costs fewer of the map's 4,096 entities). Its front is +z; the desks are
+ * `desk` (the Desk with Hutch's size) at x = ±(w − desk w) / 2 against −z, the chairs `chair` (the Chair's size) in
+ * front of them, turned to face the desks, `tuck` m from a desk's middle to its chair's. Settings `g`: the desk's and
+ * the chair's generator settings (`deskG`, `chairG`; `leftG` and `rightG` over `deskG` for one desk), `desk`, `chair`,
+ * `tuck`, `chairs` (false: no chairs: a shut room's desks), `seeds` (optional [left desk, right desk, chairs]: the
+ * separate pieces' own seeds, so the pair looks as they did). `look`: `left` and `right` (the desks' looks: −x and +x), `chair` (the chairs'). Collides as the two
+ * desks' boxes (desk and hutch each); the chairs, pushed in, do not (as the separate chairs did not: `solid: false`).
+ */
+export function deskPairMesh(seed, size, g, look, level) {
+  const [w, , d] = size;
+  const [dw, , dd] = g.desk;
+  const dx = (w - dw) / 2;
+  const dz = -d / 2 + dd / 2;
+  const m = new Mesh();
+  const boxes = [];
+  for (const [k, sx] of [[0, -1], [1, 1]]) {
+    const desk = deskHutchMesh(g.seeds?.[k] ?? seed + k * 7, g.desk, { ...g.deskG, ...(sx < 0 ? g.leftG : g.rightG) }, sx < 0 ? look.left : look.right, level);
+    placeMesh(m, desk, 0, [sx * dx, 0, dz]);
+    for (const b of desk.boxes ?? []) boxes.push([b[0] + sx * dx, b[1], b[2] + dz, b[3] + sx * dx, b[4], b[5] + dz]);
+    if (g.chairs !== false) {
+      const chair = seatMesh(g.seeds?.[2] ?? seed + 20 + k, g.chair, g.chairG, look.chair, level);
+      placeMesh(m, chair, 2, [sx * dx, 0, dz + g.tuck]);
+    }
+  }
+  if (level === 0) m.boxes = boxes;
+  return m;
+}
+
+/**
+ * The two built-in closet fronts either side of a dorm room's doorway (St. John's step 4: one prop where there were
+ * two): each the Built-in Closet Front (`front`, its size) at x = ±(w − front w) / 2, facing +z, nothing between
+ * them. No collision (the wall behind is the closets). Settings `g`: `front`, `frontG` (the front's generator
+ * settings), `pulls` ('out': each pull on the side away from the doorway; else both as `frontG.pull`). `look`: the fronts' look.
+ */
+export function closetPairMesh(seed, size, g, look, level) {
+  const [w] = size;
+  const fx = (w - g.front[0]) / 2;
+  const m = new Mesh();
+  for (const [k, sx] of [[0, -1], [1, 1]]) {
+    const pull = g.pulls === 'out' ? (sx < 0 ? 'left' : 'right') : g.frontG?.pull ?? 'right';
+    placeMesh(m, closetFrontMesh(seed + k * 5, g.front, { ...g.frontG, pull }, look, level), 0, [sx * fx, 0, 0]);
+  }
   return m;
 }

@@ -96,6 +96,7 @@ folder can sit directly in it or one level down), and run:
 | The owner's Meshy landmark uploads of 2026-10-31 (Meshy Community CC0 per the owner's rule of 2026-11-06; textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-community-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | The Meshy airliner of 2026-11-04 (Meshy Community CC0 per the owner, 2026-11-06; the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-community-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
+| The owner's own Meshy hover carrier of 2026-11-16 (Meshy, owned: "I made it on Meshy"; the textured GLB `Meshy_AI_hover_carrier_topdown_1116164125_texture.glb`, in any folder) | `ONLY=vehicles/hover_carrier.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/hover_carrier.glb` (pack `meshy-owned-drive-1116`, vehicle tier: 10k triangles plus a 2.5k one from 40 m, 1024 px colour map, 0.83 MB, 9.6 m long), the Dropship's model and the drop route's dropship |
 | The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder; unpack it with `unar`: three of its files don't unpack, none used) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 | The weapons and grenades of 2026-11-06 (Meshy Community CC0: the 11 `Meshy_AI_<name>_1106…_texture.glb` in a folder `intake-2026-11-06c`) and the Guns & Explosives pack's guns and grenades, side by side in one downloads dir | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` (a `held` gun writes three files: everyone's, `.medium.glb` and `.high.glb`) | pack `meshy-community-drive-1106c` and `3dmodelscc0-guns-explosives` entries in `content/guns.json`; ARSENAL.md, "Weapons intake of 2026-11-06" |
@@ -839,6 +840,29 @@ can say `passage` for a doorway of its own narrower than the navmesh.
 a shingled cone 3.4 m across and 4.6 m to its finial's tip over a short eaves skirt, nine courses; variants `slate`
 and `red`; collides as three stacked boxes. It caps the Round Corner Turret (`setpiece.corner_turret_round`) or any
 round tower.
+
+**Paired dorm furniture** (St. John's step 4: a map as played holds at most 4,096 entities, and a dorm room was 9
+props): `kit.table.desk_hutch_pair` (generator kind `deskpair`: two Desks with Hutches side by side 0.15 m apart, a
+Chair pushed in at each, built from the desk's and the chair's own generators and seeds so it looks as the separate
+pieces did; it collides as the two desks' four boxes, `bounds: "within"`, the chairs not at all, as the separate
+chairs placed not solid; variant `empty` has no chairs) and `kit.cabinet.closet_front_pair` (`closetpair`: the two
+Built-in Closet Fronts either side of a doorway, centres 2.94 m apart, no collision). Every dorm piece and the Hall
+Centre has a set piece option **Room furniture**: Paired (the default) or Separate pieces (the old parts, kept at their
+part indices, so `overrides.hide` on them still works with Separate). A room is then 5 props: door, desk pair, closet
+pair, sink, bunk. `setPiecesAcademy.test.ts` checks that Paired collides exactly as Separate in every piece and turn.
+
+**The grounds** (`tools/content/kit/grounds.mjs`; St. John's step 4). Fieldstone is laid by `fieldFace`: rows of
+rounded stones of mixed colour, each a pillow (its foot on a dark mortar ground, its face smaller and a few centimetres
+proud, the sides sloping between on shared corners so it shades round); lighter levels lay the stones flat, the
+farthest only the ground. Flat-shaded triangles cost about 90 bytes each in a GLB, so the 140 kB a file allows is about
+1,500 triangles: the stones are kept large. Families: `kit.monument.cairn` (a 5.5 m cairn on a dressed plinth with a
+pointed-arched niche on its +z face; collides as the plinth and three steps), `kit.monument.island_bed` (an oval kerbed
+bed 6 × 9 m with a fieldstone wall 0.4 m high, mulch and flower clumps; three stepped boxes, a step up),
+`kit.monument.marker` (a dark marker stone, a border and a plain star cut in it), `kit.wall.fieldstone` (4 m) and
+`kit.wall.fieldstone_short` (2 m; variants fieldstone and limestone), `kit.wall.pier` and `kit.wall.pier_lamp` (a
+gate pier with a blank bronze plaque; the lamp's globe in an iron cage is paint: stand a light by it),
+`kit.lamp.post_banner` (a black lamp post with a lantern and a banner of plain colours and a chevron on an arm reaching
++x; collides as the post), `kit.seat.bench_stone`. Nothing in them glows or blinks.
 
 #### The dome kit
 

@@ -610,6 +610,125 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.table.desk_hutch_pair",
+      "displayName": "Desks with Hutches (pair)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a dorm room's two Desks with Hutches side by side, 0.15 m apart, a Chair pushed in at each, as one prop: what were four props a room is one (a map as played holds at most 4,096 entities). Collides as the two desks' boxes (desk and hutch each, as a Desk with Hutch does); the chairs, pushed in, do not (as the separate ones, placed not solid, did not). Variant 'empty': the same desks without chairs (a shut room)."
+      },
+      "size": [
+        2.95,
+        1.7,
+        0.8
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "deskpair",
+        "desk": [
+          1.4,
+          1.7,
+          0.65
+        ],
+        "chair": [
+          0.404,
+          0.95,
+          0.404
+        ],
+        "tuck": 0.273,
+        "deskG": {
+          "desk": 0.76,
+          "hutch": 0.3,
+          "drawers": 3,
+          "shelves": 2,
+          "books": 0.7
+        },
+        "leftG": {
+          "books": 0.12
+        },
+        "chairG": {
+          "seat": 0.485,
+          "seatT": 0.035,
+          "leg": 0.04,
+          "back": 0.15,
+          "slats": 3
+        },
+        "seeds": [
+          9994,
+          9991,
+          8201
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 10101,
+          "look": {
+            "left": {
+              "wood": "#9a744a",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.3
+            },
+            "right": {
+              "wood": "#a67c4e",
+              "back": "#8a6540",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.25
+            },
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            }
+          }
+        },
+        {
+          "index": 1,
+          "name": "empty",
+          "seed": 10102,
+          "set": {
+            "chairs": false
+          },
+          "look": {
+            "left": {
+              "wood": "#9a744a",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.3
+            },
+            "right": {
+              "wood": "#a67c4e",
+              "back": "#8a6540",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.25
+            },
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            }
+          }
+        }
+      ]
     }
   ]
 }

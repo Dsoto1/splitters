@@ -1,27 +1,27 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { isCastId } from '../content/botThemes.ts';
-import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
+import { SURFACE_SLOTS, coreMaterials, coreThemes, groundThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
-import { SIDE_DIRS } from './tileOptions.ts';
+import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
 import { PLAYER } from '../sim/constants.ts';
-import { terrainHeightAt } from './terrain.ts';
+import { DEFAULT_GROUND_THEME, isGroundMaterial, terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
 import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
-import { migrateMapDocument, MapMigrationError } from './migrate.ts';
+import { carryReleaseOverGroundLayers, migrateMapDocument, MapMigrationError, withOldGroundEncoding } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
-import { carryReleaseOverRaceDrop, releaseCurrent } from './identity.ts';
+import { carryReleaseOverRaceDrop, mapContentHash, releaseCurrent } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
@@ -91,7 +91,15 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     };
   }
   // A release stamp from before v39 whose map changed only by losing race mode's dead track settings keeps its version.
-  if (migrated.fromVersion < 39) parsed.data = carryReleaseOverRaceDrop(raw, parsed.data);
+  // One from before v45 whose map changed only by v45's ground encoding (groundLayersV45) keeps its version too, and
+  // one from before v39 checks its race settings with the ground put back as it was then.
+  if (migrated.fromVersion < 45) parsed.data = carryReleaseOverGroundLayers(parsed.data);
+  if (migrated.fromVersion < 39 && !releaseCurrent(parsed.data)) {
+    const asOld = withOldGroundEncoding(parsed.data) ?? parsed.data;
+    const carried = carryReleaseOverRaceDrop(raw, asOld);
+    const r = carried.metadata.release;
+    if (carried !== asOld && r) parsed.data = { ...parsed.data, metadata: { ...parsed.data.metadata, release: { ...r, contentHash: mapContentHash(parsed.data) } } };
+  }
   const library = opts.library ?? builtInSetPieces();
   // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
@@ -309,6 +317,11 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
       }
     }
   }
+  // The ground (map format v45): a Ground theme that exists, and grounds that are ground materials (nothing else draws as ground).
+  if (map.terrain) {
+    if (map.terrain.groundTheme && !groundThemes.get(map.terrain.groundTheme)) issues.push({ severity: 'warning', code: 'ground.theme_unknown', message: `unknown Ground theme "${map.terrain.groundTheme}": the ground shows ${DEFAULT_GROUND_THEME}'s base` });
+    for (const g of map.terrain.grounds ?? []) if (!isGroundMaterial(g)) issues.push({ severity: 'error', code: 'material.unknown', message: `the terrain's grounds name "${g}", which is not a ground material` });
+  }
   const blocks = map.entities.filter((e) => e.kind === 'block');
   for (const b of blocks) {
     if (b.kind === 'block' && b.material && !coreMaterials.get(b.material)) issues.push({ severity: 'error', code: 'material.unknown', message: `block ${b.id} uses unknown material "${b.material}"`, targetId: b.id });
@@ -402,6 +415,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...glassIssues(map, catalog));
+  issues.push(...tallEdgeIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
   if (stored.metadata.release && !releaseCurrent(stored)) {
@@ -417,6 +431,40 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });
 
   return issues;
+}
+
+/** Level names as MapMaker shows them (editor/operations.ts levelName). */
+const levelWord = (z: number) => (z === 0 ? 'Ground' : z > 0 ? `Level ${z}` : z === -1 ? 'Basement' : `Basement ${-z}`);
+
+/**
+ * Tall wall styles (two storeys and more: Grand arch, Gate arch, High wall, Towering wall) that rise through a floor or
+ * a roof over their side (geometry.ts tallEdgeBlock): a warning each (MapMaker refuses new ones; owner, 2026-11-16).
+ */
+export function tallEdgeIssues(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+  const tiles = map.classicStructure.tiles;
+  if (!tiles.some((t) => t.edges && Object.values(t.edges).some((s) => s !== 'auto' && s !== 'open'))) return [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const { cells } = buildOccupancy(map, catalog);
+  const out: ValidationIssue[] = [];
+  const seen = new Set<string>();
+  for (const [key, occ] of cells) {
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const [, side] of cellSides(occ)) {
+      const style = resolveEdge(cells, x, y, z, side);
+      if (style === 'none' || edgeStoreys(style, half, levelHeight) <= 1) continue;
+      // One wall, two cells: count it once.
+      const [dx, dy] = SIDE_DIRS[side];
+      const wall = `${[`${x},${y}`, `${x + dx},${y + dy}`].sort().join('|')}|${z}`;
+      if (seen.has(wall)) continue;
+      seen.add(wall);
+      const block = tallEdgeBlock(cells, x, y, z, side, style, cellSize, levelHeight);
+      if (!block) continue;
+      const through = block.what === 'roof' ? `the roof over ${levelWord(block.level - 1)}` : `${levelWord(block.level)}'s floor`;
+      out.push({ severity: 'warning', code: 'edge.tall', message: `tile ${occ.placement.id}: ${EDGE_STYLE_LABELS[style]} on its ${side} side (${levelWord(z)}) rises through ${through}; use a one-storey style there, or open the storey above`, targetId: occ.placement.id });
+    }
+  }
+  return out;
 }
 
 /** Glass options that do nothing: glass on a side with no window, glass on a block that isn't plain solid. */

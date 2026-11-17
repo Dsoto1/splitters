@@ -5,6 +5,7 @@ import {
   EDGE_STYLE_LABELS,
   edgeChoiceAt,
   edgeTargetAt,
+  tallEdgeRefusal,
   entityGhostNote,
   entityLabel,
   FOLIAGE_LEVELS,
@@ -18,7 +19,6 @@ import {
   placementCells,
   rosterSize,
   SCENARIO_PALETTE,
-  TERRAIN_MATERIAL_LABELS,
   groundLayerAt,
   terrainHeightAt,
   terrainRaycast,
@@ -320,12 +320,12 @@ export class Hover {
         tone = `${card.tone} ed-paint-card`;
         html = card.html;
       } else if (this.app.tool.kind === 'terrain' && this.app.terrain.terrainBrush === 'paint' && this.app.terrain.terrainHover && this.app.shownGround) {
-        // Ground paint: the ground layer under it, the map's main ground or painted, and what a click paints.
+        // Ground paint: the ground under it, the Ground theme's base or painted, and what a click paints.
         const h = this.app.terrain.terrainHover;
         const g0 = groundLayerAt(this.app.shownGround, h.x, h.z);
         title = g0 ? `Ground · ${groundWords(g0)}` : 'Ground';
         tone = 'pick';
-        lines.push(`Click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} · radius ${this.app.terrain.brushRadius} m`, 'Buildings stay as they are');
+        lines.push(`Click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} · radius ${this.app.terrain.brushRadius} m`, 'Shift+drag: back to the base · Buildings stay as they are');
       } else if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
         // The set piece about to be placed: what it is, how it's turned and themed, and whether it fits (and why not).
         title = g.def.displayName;
@@ -349,6 +349,16 @@ export class Hover {
           if (why) marks.set(lines.push(`${why.tone === 'bad' ? '✗' : 'ℹ'} ${why.text}`) - 1, why.tone === 'bad' ? 'bad' : 'note');
           tone = check.ok ? 'place' : 'bad';
         }
+      } else if (this.app.tool.kind === 'edge' && this.app.paint.hoverEdge) {
+        // Walls & openings: the side about to be built, and (a tall style) why it can't go there, before the click.
+        const e = this.app.paint.hoverEdge;
+        const style = this.app.tool.style;
+        title = EDGE_STYLE_LABELS[style];
+        lines.push(`${{ N: 'North', E: 'East', S: 'South', W: 'West' }[e.side]} side · ${levelName(e.cell[2])} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]}`);
+        const refusal = tallEdgeRefusal(this.app.doc, e, style);
+        if (refusal) marks.set(lines.push(`✗ ${refusal}`) - 1, 'bad');
+        else lines.push('Click to build');
+        tone = refusal ? 'bad' : 'place';
       } else if (this.entityGhost()) {
         // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
         const g = this.entityGhost()!;
@@ -464,7 +474,7 @@ export class Hover {
       const p = this.app.hoverPoint;
       const env = this.app.tool.kind === 'envbrush';
       this.app.view.setBrushRing(p ? this.app.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.app.terrain.brushRadius, env && this.app.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
-      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel();
+      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel(p);
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -476,7 +486,7 @@ export class Hover {
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.app.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.app.terrain.brushRadius, colors[this.app.terrain.terrainBrush]);
       const under = t && h && this.app.terrain.terrainBrush === 'paint' ? groundLayerAt(t, h.x, h.z) : null;
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -495,7 +505,8 @@ export class Hover {
         this.app.view.setFaceHighlight(box, [-dx, 0, -dz]);
         const tileName = coreCatalog.get(tileAt(this.app.doc, gx, gy, gz)?.tile ?? '')?.displayName ?? '';
         const sideName = { N: 'North', E: 'East', S: 'South', W: 'West' }[e.side];
-        $('ed-target').textContent = `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
+        const refusal = tallEdgeRefusal(this.app.doc, e, this.app.tool.style);
+        $('ed-target').textContent = refusal ? `${sideName} side · can't build: ${refusal}` : `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
       } else {
         this.app.view.setFaceHighlight(null, null);
         $('ed-target').textContent = '';

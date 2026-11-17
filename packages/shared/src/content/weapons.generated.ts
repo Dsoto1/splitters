@@ -33,6 +33,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.1] },
     },
   },
+  // range: Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.
   // design: Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
   // fireMode: One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one).
@@ -46,7 +47,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     fireMode: 'semi',
     damage: 24,
     spread: 0.002,
-    range: 250,
+    range: 110,
     magazine: 12,
     reserveMax: 96,
     pickupAmmo: 24,
@@ -68,6 +69,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.055, 0.1],
     },
   },
+  // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 500 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.
   // design: Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
   'core.rifle': {
@@ -120,6 +122,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.068, 0.44],
     },
   },
+  // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (4 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's (still built), the kit shotgun as the fallback.
   // design: Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
   // reload: Shell by shell: each one loaded can be fired straight away.
@@ -164,6 +167,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.083, 0.52],
     },
   },
+  // range: Best within 150 m: full damage, 2 body shots. Down to 90 % (2 shots) by 300 m; reaches 1000 m. Standard ballistics: by impact speed, the same distances.
   // design: Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.
   // model: The owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback.
   'core.sniper': {
@@ -233,6 +237,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.1, 0.02], support: [0, 0.029, 0.187], shoulder: [0, 0.023, -0.43] },
     },
   },
+  // range: Best within 15 m: full damage, 7 body shots. Down to 35 % (20 shots) by 35 m; reaches 100 m. Standard ballistics: by impact speed, the same distances.
   // design: Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
   // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback.
   'core.smg': {
@@ -245,7 +250,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     damage: 15,
     spread: 0.006,
     fireIntervalTicks: 4,
-    range: 200,
+    range: 100,
     magazine: 32,
     reserveMax: 192,
     pickupAmmo: 64,
@@ -364,6 +369,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.08, -0.08], support: [0, -0.05, 0.28], shoulder: [0, 0.02, -0.41] },
     },
   },
+  // range: Best within 15 m: full damage, 5 body shots. Down to 30 % (14 shots) by 45 m; reaches 90 m. Hitscan: by distance.
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // model: The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun (still built), the kit sci-fi pistol as the fallback.
@@ -377,8 +383,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     damage: 24,
     spread: 0.004,
     fireIntervalTicks: 9,
-    range: 110,
-    falloff: { start: 15, end: 45, min: 0.45, curve: 'linear' },
+    range: 90,
+    falloff: { start: 15, end: 45, min: 0.3, curve: 'linear' },
     magazine: 15,
     reserveMax: 90,
     pickupAmmo: 30,
@@ -410,6 +416,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // range: Best within 20 m: full damage, 2 body shots. Down to 40 % (5 shots) by 55 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.
   // model: The Meshy community BK 220 (CC0 per the owner; content/guns.json): a heavy semi-automatic pistol (the Heavy Revolver is the revolver), replacing the flat-colour kit revolver, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   'core.hand_cannon': {
@@ -423,14 +430,15 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     damage: 58,
     spread: 0.002,
     fireIntervalTicks: 30,
-    range: 140,
+    range: 110,
+    falloff: { start: 20, end: 55, min: 0.4, curve: 'smooth' },
     magazine: 6,
     reserveMax: 36,
     pickupAmmo: 12,
     reloadTicks: 100,
     raiseTicks: 22,
     botDesirability: 0.55,
-    botRange: [3, 35],
+    botRange: [3, 30],
     ammo: 'light',
     knockback: 3,
     recoil: { bloom: 0.03, maxBloom: 0.05, recover: 0.0012 },
@@ -537,6 +545,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flare',
     },
   },
+  // range: Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // hold: Both hands on its pistol grip (the hold's points sat at the end of the wire stock, 11 cm behind the grip; a support hand on the foregrip, 15 cm further ahead, is out of reach in third person); 4 cm nearer the eye than the pistols, so the hands sit where theirs do.
@@ -572,6 +581,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
+  // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
   // model: The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux (still built): a realistic rifle for the Military set. The kit burst rifle is the fallback.
@@ -638,6 +648,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // range: Best within 60 m: full damage, 3 body shots. Down to 85 % (4 shots) by 150 m; reaches 220 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
   // model: The 3DModelsCC0 scoped bolt-action rifle (the pack's Sniper, CC0; content/guns.json, levelled), replacing the Meshy community Frontier Rifle (still built): a hunting rifle with a scope, apart from the Sniper Rifle's tactical one, for the Military set. The kit rifle is the fallback.
@@ -675,6 +686,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.sniper',
     },
   },
+  // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.sawed_off': {
     id: 'core.sawed_off',
@@ -707,6 +719,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.shotgun',
     },
   },
+  // range: Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.auto_shotgun': {
     id: 'core.auto_shotgun',
@@ -1004,6 +1017,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.goo',
     },
   },
+  // range: Best within 30 m: full damage, 12 body shots. Down to 70 % (16 shots) by 80 m; reaches 300 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 7: automatics.
   // design: Huge belt, poor handling: slow to draw and a long, dangerous reload.
@@ -1757,6 +1771,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, 0.1, 0] },
     },
   },
+  // range: Best within 25 m: full damage, 2 body shots. Down to 70 % (2 shots) by 60 m; reaches 300 m. Standard ballistics: by impact speed, the same distances.
   // design: Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).
   // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback.
   'core.revolver': {
@@ -1846,10 +1861,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       altShot: { sound: 'fire.shotgun', rate: 0.78, flash: { effect: 'wide_flash_02', scale: 0.32 }, smoke: 1.2 },
     },
   },
-  // design: Spec gap G2 (GUNPLAY_SPEC.md §13, "Battle Rifle": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Paced, every round lands where the dot is; held down, it climbs a hand's width a round. Never the quickest body kill of the rifles on paper (0.6 s against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.
+  // range: Best within 40 m: full damage, 4 body shots. Down to 75 % (6 shots) by 100 m; reaches 600 m. Standard ballistics: by impact speed, the same distances.
+  // design: Spec gap G2 (GUNPLAY_SPEC.md §13, "Battle Rifle": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Never the quickest body kill of the rifles on paper (Single 0.6 s, Burst 0.55 s, against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.
   // falloff: Its own (the family's minimum 0.8 would let five rounds kill at 100 m, quicker than the Precision Rifle's two bolts): five rounds at 50 m, six past 85 m.
-  // model: The Meshy Community Frontier Rifle (content/guns.json, built since 2026-10-29, unused since the Marksman swap of 2026-11-06): a heavy scoped rifle with a 20-round box. The 3DModelsCC0 pack has no FAL, M14, G3 or SCAR, and the owner's Drive drop of 2026-11-08 holds vehicles only (gunplay pass 2, ARSENAL.md).
+  // model: The Meshy Community Frontier Rifle (content/guns.json, built since 2026-10-29, unused since the Marksman swap of 2026-11-06): a heavy scoped rifle with a 20-round box. The 3DModelsCC0 pack has no FAL, M14, G3 or SCAR, and the owner's Drive drop of 2026-11-08 holds vehicles only (gunplay pass 2, ARSENAL.md). Held Medium/High copies (2026-11-16): a 60,000-triangle cut of the same download (everyone else's copy keeps 14,000 and its lower level of detail), 2048 px colour, with its own metal and roughness.
   // hold: Read off a side view on a 5 cm grid: grip in the raked pistol grip's middle under the trigger guard, support on the vertical foregrip, the butt plate in the shoulder.
+  // fireModes: Spec §36, owner 2026-11-16 (U switches). Single: one round a press, at most every 12 ticks (300 rpm); paced, every round lands where the dot is. Burst: three rounds 5 ticks apart (720 rpm inside the burst), the next burst 33 ticks after the first round (a 0.55 s body kill against Single's 0.6). Its own kick: little climb (7 and 6 mrad) but a hard sideways jump on the second round (15 mrad right, then 20 back left), too quick to pull against: two heads in one burst (83 ms) only inside about 12 m, chest bursts all land to about 20 m, and past 35 m a burst mostly misses where Single still kills. Bots burst inside 22 m and go single past it (bots/fireModePick.ts). Measured in packages/shared/test/fireModes.test.ts.
+  // optic: A real 3.5x optic in the model's own scope tube (client game/opticView.ts): the eyepiece's glass is at [0, 0.133, -0.262] with a 14 mm clear radius (read off rear and side views of the built model on a 1 cm grid; the tube is straight and level, on the bore's line), brought to 12 cm in front of the eye.
   'core.battle_rifle': {
     id: 'core.battle_rifle',
     displayName: 'Battle Rifle',
@@ -1857,9 +1875,11 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     kind: 'hitscan',
     slot: 3,
     family: 'battle_rifle',
+    fireMode: 'semi',
     damage: 25,
     spread: 0.001,
     fireIntervalTicks: 12,
+    fireModes: [{ mode: 'semi', label: 'Single' }, { mode: 'burst', label: 'Burst', fireIntervalTicks: 33, burst: { count: 3, intervalTicks: 5 }, kick: { pitch: [0.007, 0.006, 0.034], yaw: [0.015, -0.02, 0.002], variance: 0.002 } }],
     range: 600,
     magazine: 20,
     reserveMax: 100,
@@ -1884,10 +1904,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     view: {
       model: 'guns/frontier_rifle.glb',
       fallback: 'weapons/rifle.glb',
+      held: { medium: 'guns/frontier_rifle.medium.glb', high: 'guns/frontier_rifle.high.glb' },
       viewOffset: [0.21, -0.215, 0.64],
       tracer: '#ffe2a0',
       hold: { style: 'long', grip: [0, -0.075, -0.225], support: [0, -0.07, 0.105], shoulder: [0, 0.01, -0.47] },
       muzzleAt: [0, 0.033, 0.48],
+      optic: { mag: 3.5, eye: [0, 0.133, -0.262], radius: 0.014, relief: 0.12, reticle: 'duplex' },
       sound: 'fire.heavy',
     },
   },

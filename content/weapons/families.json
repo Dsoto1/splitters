@@ -20,7 +20,7 @@
   },
   "families": {
     "pistol": {
-      "ballistic": { "velocity": 375, "gravityScale": 1, "energy": 450, "tracerEvery": 0, "tracerFinal": 0 },
+      "ballistic": { "velocity": 375, "drag": 1.5, "gravityScale": 1, "energy": 450, "tracerEvery": 0, "tracerFinal": 0 },
       "accuracy": {
         "base": 0.002,
         "move": 0.006,
@@ -41,12 +41,12 @@
         "rate": 0.35,
         "visual": 0.5
       },
-      "falloff": { "start": 18, "end": 45, "min": 0.65, "curve": "linear" },
+      "falloff": { "start": 18, "end": 45, "min": 0.4, "curve": "linear" },
       "head": 2,
       "legs": 0.8
     },
     "revolver": {
-      "ballistic": { "velocity": 300, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
+      "ballistic": { "velocity": 300, "drag": 0.6, "gravityScale": 1, "energy": 1800, "tracerEvery": 1 },
       "accuracy": {
         "base": 0.0005,
         "move": 0.012,
@@ -75,7 +75,7 @@
       }
     },
     "machine_pistol": {
-      "ballistic": { "velocity": 360, "gravityScale": 1, "energy": 350, "tracerEvery": 4 },
+      "ballistic": { "velocity": 360, "drag": 1.8, "gravityScale": 1, "energy": 350, "tracerEvery": 4 },
       "accuracy": {
         "base": 0.012,
         "move": 0.006,
@@ -96,12 +96,12 @@
         "rate": 0.3,
         "visual": 0.4
       },
-      "falloff": { "start": 8, "end": 25, "min": 0.5, "curve": "steep" },
+      "falloff": { "start": 8, "end": 25, "min": 0.35, "curve": "steep" },
       "head": 1.5,
       "legs": 0.85
     },
     "smg": {
-      "ballistic": { "velocity": 400, "gravityScale": 1, "energy": 400, "tracerEvery": 3, "tracerFinal": 5 },
+      "ballistic": { "velocity": 400, "drag": 1.5, "gravityScale": 1, "energy": 400, "tracerEvery": 3, "tracerFinal": 5 },
       "accuracy": {
         "base": 0.006,
         "move": 0.004,
@@ -122,7 +122,7 @@
         "rate": 0.3,
         "visual": 0.45
       },
-      "falloff": { "start": 15, "end": 35, "min": 0.55, "curve": "steep" },
+      "falloff": { "start": 15, "end": 35, "min": 0.35, "curve": "steep" },
       "head": 1.5,
       "legs": 0.85,
       "notes": {
@@ -130,7 +130,7 @@
       }
     },
     "rifle": {
-      "ballistic": { "velocity": 820, "gravityScale": 1, "energy": 1200, "tracerEvery": 3, "tracerFinal": 3 },
+      "ballistic": { "velocity": 820, "drag": 0.6, "gravityScale": 1, "energy": 1200, "tracerEvery": 3, "tracerFinal": 3 },
       "accuracy": {
         "base": 0.0015,
         "move": 0.008,
@@ -156,7 +156,7 @@
       "legs": 0.8
     },
     "battle_rifle": {
-      "ballistic": { "velocity": 880, "gravityScale": 1, "energy": 1800, "tracerEvery": 2 },
+      "ballistic": { "velocity": 880, "drag": 0.5, "gravityScale": 1, "energy": 1800, "tracerEvery": 2 },
       "accuracy": {
         "base": 0.001,
         "move": 0.02,
@@ -182,7 +182,7 @@
       "legs": 0.85
     },
     "marksman": {
-      "ballistic": { "velocity": 900, "gravityScale": 1, "energy": 2000, "tracerEvery": 1 },
+      "ballistic": { "velocity": 900, "drag": 0.45, "gravityScale": 1, "energy": 2000, "tracerEvery": 1 },
       "accuracy": {
         "base": 0.001,
         "move": 0.025,
@@ -208,7 +208,7 @@
       "legs": 0.85
     },
     "precision": {
-      "ballistic": { "velocity": 950, "gravityScale": 2.5, "energy": 3000, "tracerEvery": 1 },
+      "ballistic": { "velocity": 950, "drag": 0.3, "gravityScale": 2.5, "energy": 3000, "tracerEvery": 1 },
       "accuracy": {
         "base": 0,
         "move": 0.03,
@@ -238,7 +238,7 @@
       }
     },
     "lmg": {
-      "ballistic": { "velocity": 760, "gravityScale": 1, "energy": 1500, "tracerEvery": 4 },
+      "ballistic": { "velocity": 760, "drag": 0.6, "gravityScale": 1, "energy": 1500, "tracerEvery": 4 },
       "accuracy": {
         "base": 0.012,
         "move": 0.03,

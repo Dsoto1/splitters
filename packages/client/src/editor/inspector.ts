@@ -38,7 +38,6 @@ import {
   ROOM_TYPES,
   roomCells,
   seededRandom,
-  setFacingCommand,
   setPieceMirrorRefusal,
   setUpperFloorsCommand,
   SIDES,
@@ -58,7 +57,6 @@ import {
   type ReplaceSize,
   type RoomOptions,
   type RoomType,
-  type Selection,
   type SurfaceSlot,
   type SurfaceStyle,
   type TilePlacement,
@@ -213,15 +211,7 @@ export class Inspector {
     const type = document.createElement('select');
     for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
     type.addEventListener('change', () => this.app.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
-    const set = (patch: Partial<typeof t>) => this.app.run('Edit tile', updateTileCommand(doc, t, { ...t, ...patch }));
-    el.append(
-      row('Type', type),
-      row('X', numberInput(t.x, 1, (v) => set({ x: v }))),
-      row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
-      row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
-      row('Rotation', text(`${t.rotation * 90}°`)),
-      this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
-    );
+    el.append(row('Type', type), ...this.cellFields(t.id, [t.x, t.y, t.z], 'Move tile'), row('Rotation', text(`${t.rotation * 90}°`)), this.quickFacings(t.id, (t.rotation * Math.PI) / 2));
     const def = coreCatalog.get(t.tile);
     const wallsHead = document.createElement('h3');
     wallsHead.textContent = 'Walls';
@@ -354,10 +344,23 @@ export class Inspector {
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
-  /** The inspector's quick facings for one thing: 0°, 90°, 180°, 270° in one click (one undo step each). */
-  quickFacings(sel: Selection, facing: number): HTMLElement {
+  /**
+   * A tile's or set piece's X, Y and Level (whole cells), through the shared transform command (MapMaker UI spec Phase
+   * 2): the layout check and what is selected with it carried along, as a drag or the arrow keys.
+   */
+  cellFields(id: string, at: readonly [number, number, number], label: string): HTMLElement[] {
+    return (['X', 'Y', 'Level'] as const).map((name, i) => {
+      const f = numberInput(at[i]!, 1, (value) => this.app.transform(label, { set: { id, axis: i as 0 | 1 | 2, value } }));
+      f.id = `ed-insp-${'xyz'[i]}`;
+      f.title = `${name === 'Level' ? 'Level' : `${name} in cells`} (Enter: move · Esc: put back)`;
+      return row(name, f);
+    });
+  }
+
+  /** The inspector's quick facings for the thing `id` (the rest of the selection turns with it): 0°, 90°, 180°, 270° in one click (one undo step each). */
+  quickFacings(id: string, facing: number): HTMLElement {
     return quickFacings(facing, (deg) => {
-      this.app.run(`Face ${deg}°`, setFacingCommand(this.app.doc, sel, deg, coreCatalog, this.app.placeLib));
+      this.app.transform(`Face ${deg}°`, { face: { id, deg } });
     });
   }
 

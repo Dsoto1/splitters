@@ -9,6 +9,7 @@ import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/item
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { AMMO_BOX_REACH } from '../sim/resupply.ts';
+import { botFireMode } from './fireModePick.ts';
 import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
@@ -612,6 +613,8 @@ export class BotBrain {
   private readonly rng: () => number;
   private readonly aim: AimModel;
   private readonly memory = new MapMemory();
+  /** The fire mode chosen for each weapon with modes (by id; bots/fireModePick.ts). */
+  private readonly fireModes = new Map<string, number>();
   /**
    * What it remembers of its enemies (Phase D item 1, memory.ts): where each was seen, where shots came from, noises
    * and teammates' callouts, for its skill's `memorySeconds`. Kept across lives (a player remembers where they died).
@@ -1478,8 +1481,9 @@ export class BotBrain {
     // Cover: under fire, fighting at range, reloading or hurt, for bots that play tactically.
     const threat = target?.pos ?? (underFire ? this.threatFrom : null);
     // Better bots take cover far more often; arena bots mostly keep moving instead.
-    // An enemy vehicle it has nothing to hurt with: cover (any bot that thinks at all).
-    const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !armedForVehicles;
+    // An enemy shut in a vehicle (sealed: the Tank) it has nothing to hurt with: cover (any bot that thinks at all). An
+    // open vehicle's riders are exposed (Match.openHull): bullets reach them, so it fights them as anyone else.
+    const outgunned = !!target && this.targetMount?.kind === 'vehicle' && !!target.sheltered && !armedForVehicles;
     const coverChance = Math.max(this.arena ? this.tactical * 0.4 : 0.15 + this.tactical * 1.7 + (this.methodical ? 0.3 : 0), outgunned ? 0.4 + this.tactical * 0.6 : 0);
     if (threat && !this.berserker && !holding && !goal?.run && (this.bound !== null || this.rng() < coverChance)) {
       const dist = horizontalDistance(me.pos, threat);
@@ -2444,7 +2448,16 @@ export class BotBrain {
       }
     }
     this.steerable = aimedTarget && wantFire && !sprint && !dodge && !throwNow && !pressNow && !this.throwPlan && !this.pressPlan && !this.holdStill && this.state !== 'mount' && !this.link && !me.holding;
-    return { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon: this.chooseWeapon(view, target) };
+    const weapon = this.chooseWeapon(view, target);
+    const input: PlayerInput = { seq, forward, right, yaw: this.yaw, pitch: this.pitch, buttons, weapon };
+    // Switchable fire modes: a burst up close, single shots further out (bots/fireModePick.ts).
+    const modeDef = (weapon ? view.inventory.find((w) => weaponCode(w.def) === weapon)?.def : undefined) ?? this.heldDef(view);
+    if (modeDef?.fireModes) {
+      const mode = botFireMode(modeDef, target ? horizontalDistance(me.pos, target.pos) : null, this.fireModes.get(modeDef.id) ?? 0);
+      this.fireModes.set(modeDef.id, mode);
+      input.fireMode = mode;
+    }
+    return input;
   }
 
   /**
@@ -2571,7 +2584,7 @@ export class BotBrain {
     dir.y = Math.sin(pitch);
     dir.z = Math.cos(this.yaw) * cp;
     if (simProfile.on) simProfile.count('botClearShot');
-    if (view.physics.raycastHit(eye, dir, reach) === null) {
+    if (view.physics.botShotHit(eye, dir, reach) === null) {
       c.tick = tick;
       c.yaw = this.yaw;
       c.pitch = this.pitch;
@@ -2593,12 +2606,12 @@ export class BotBrain {
     p.x = target.pos.x;
     p.z = target.pos.z;
     p.y = target.pos.y + height * 0.6;
-    if (view.physics.shotLine(eye, p)) {
+    if (view.physics.botShotLine(eye, p)) {
       this.aim.correct();
       return false;
     }
     p.y = target.pos.y + height - 0.3 * size;
-    if (view.physics.shotLine(eye, p)) {
+    if (view.physics.botShotLine(eye, p)) {
       // Only head and shoulders over the cover: aim there for a while (and, crouched or prone, stand up
       // for a clearer line over it).
       this.aim.raise(tick + TICK_RATE * 1.5);
@@ -3252,7 +3265,8 @@ export class BotBrain {
     const tick = view.tick;
     if (tick - this.vehicleSeenTick > TICK_RATE * VEHICLE_MEMORY || view.orderGoal) return false;
     // Fighting someone on foot, or a vehicle right on top of us: fight (or dodge) first.
-    if (target && (this.targetMount?.kind !== 'vehicle' || horizontalDistance(view.self.pos, target.pos) < 15)) return false;
+    // (An open vehicle's driver and riders are exposed (Match.openHull): fight them with what it has.)
+    if (target && (this.targetMount?.kind !== 'vehicle' || !target.sheltered || horizontalDistance(view.self.pos, target.pos) < 15)) return false;
     const p = this.pickupGoal(view, 'weapon', this.armourAbout(tick) ? ARMOUR_LAUNCHER_DETOUR : LAUNCHER_DETOUR, antiVehicle);
     if (!p) return false;
     this.roamGoal = p;
@@ -3930,7 +3944,7 @@ export class BotBrain {
       if (clear && view.smoke && smokeBlocks(myEye, theirEye, view.smoke)) clear = false;
       if (!clear) continue;
       // Behind bulletproof glass: seen, but not worth a bullet.
-      if (view.physics.armorGlass && !view.physics.shotLine(myEye, theirEye)) continue;
+      if (view.physics.armorGlass && !view.physics.botShotLine(myEye, theirEye)) continue;
       if (!this.visibleSince.has(o.slot)) {
         this.visibleSince.set(o.slot, tick);
         this.reactAt.set(o.slot, tick + this.reactAfter(o, c.dx * fx + c.dz * fz < FOV_COS, tick));

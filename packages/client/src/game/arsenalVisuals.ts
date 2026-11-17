@@ -2,7 +2,7 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { Scene } from '@babylonjs/core/scene';
 import type { LastingFx } from './lastingFx.ts';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -551,17 +551,13 @@ export class ZoneVisuals {
 }
 
 /** A solid glowing beam (lasers, rails, freeze rays) that thins out over its short life. */
-export function createBeam(scene: Scene, from: Vec3, to: Vec3, color: string, width: number): Mesh {
-  const a = new Vector3(from.x, from.y - 0.08, from.z);
-  const b = new Vector3(to.x, to.y, to.z);
-  const len = Vector3.Distance(a, b);
-  const beam = CreateCylinder('beam', { diameter: width, height: Math.max(0.01, len), tessellation: 6 }, scene);
-  beam.position = a.add(b).scale(0.5);
-  // Cylinders run along Y: tip the beam onto the line from a to b.
-  const dir = b.subtract(a).normalize();
-  const axis = Vector3.Cross(Vector3.Up(), dir);
-  const angle = Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(Vector3.Up(), dir))));
-  if (axis.lengthSquared() > 1e-9) beam.rotate(axis.normalize(), angle);
+/**
+ * A solid beam: a unit cylinder along Y in `color`, `width` across, laid from one point to another by `layBeam` (each
+ * frame, for a beam that leaves a gun's muzzle: muzzleAnchor.ts).
+ */
+export function createBeam(scene: Scene, color: string, width: number): Mesh {
+  const beam = CreateCylinder('beam', { diameter: width, height: 1, tessellation: 6 }, scene);
+  beam.rotationQuaternion = Quaternion.Identity();
   const m = new StandardMaterial('beamMat', scene);
   m.emissiveColor = Color3.FromHexString(color);
   m.diffuseColor = Color3.Black();
@@ -570,6 +566,15 @@ export function createBeam(scene: Scene, from: Vec3, to: Vec3, color: string, wi
   beam.material = m;
   beam.isPickable = false;
   return beam;
+}
+
+/** Lay a `createBeam` beam from `a` to `b` (its +Y end at `b`). Keeps its width (x, z scaling) as it is. */
+export function layBeam(beam: Mesh, a: Vec3, b: Vec3): void {
+  const d = new Vector3(b.x - a.x, b.y - a.y, b.z - a.z);
+  const len = Math.max(0.01, d.length());
+  beam.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+  beam.scaling.y = len;
+  Quaternion.FromUnitVectorsToRef(Vector3.Up(), d.scaleInPlace(1 / len), beam.rotationQuaternion ?? (beam.rotationQuaternion = Quaternion.Identity()));
 }
 
 /** Jagged lightning through a list of points. */

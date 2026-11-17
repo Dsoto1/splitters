@@ -298,6 +298,8 @@ async function editorFlow(browser) {
   // tab's tool bar, UI Phase 1.)
   await page.click('#ed-modes [data-ws="environment"]');
   await page.click('#ed-tb-paint');
+  // Structure paint's list opens on This map's themes (painting Phase 3); every material is under All, a click away.
+  await page.click('#ed-mat-view [data-mv="all"]');
   await page.click('[data-material="core.red_brick"]');
   const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
   await page.mouse.move(wall.x, wall.y);
@@ -1376,6 +1378,11 @@ async function editoruxFlow(browser) {
   await page.context().close();
   await editorInterfaceChecks(browser);
   await editorLayoutChecks(browser);
+  await editorSelectionSyncChecks(browser);
+  await editorMinimapChecks(browser);
+  await editorThemeViewChecks(browser);
+  await editorAssetsFitChecks(browser);
+  await editorTallWallChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1384,6 +1391,285 @@ async function editoruxFlow(browser) {
  * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
+/**
+ * MapMaker UI spec Phase 3, the live minimap (editor/minimapPanel.ts): the expanded dock's Minimap | Outliner tabs
+ * (kept in this browser, never in the map); a click on a thing in the minimap selects it in the view, the inspector and
+ * the outliner, and a selection made elsewhere shows on it without a new picture; open ground moves the camera; a
+ * level change shows that level (the selection dashed); an edit makes the picture again only after a pause; the
+ * compact card is the minimap too, and a hidden dock runs none of it. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorMinimapChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-minimap-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const lh = await page.evaluate(() => window.__editor.doc.classicStructure.levelHeight);
+  await page.evaluate((lh) => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14]), prop('mm_far', 'core.crate', [40, 0, -40])] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  }, lh);
+  const mm = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.minimap.state();
+    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas')?.offsetParent, slot: document.getElementById('ed-minimap')?.parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
+  });
+  const clickAt = async (x, z, mods = {}) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.minimap.clientPoint(x, z), [x, z]);
+    if (!p) return false;
+    if (mods.shift) await page.keyboard.down('Shift');
+    await page.mouse.click(p.x, p.y);
+    if (mods.shift) await page.keyboard.up('Shift');
+    await frames(page, 3);
+    return true;
+  };
+
+  // The expanded dock opens on the Outliner, as before; the Minimap tab shows the minimap in its place and is kept.
+  let s = await mm();
+  check(s.tab === 'outliner' && s.outliner && !s.canvas && !s.visible && s.bakes === 0, `the expanded dock opens on the Outliner and the minimap does nothing while unseen (${JSON.stringify(s)})`);
+  await page.click('#ed-tab-minimap');
+  await page.waitForFunction(() => window.__editor.minimap.state().bakes > 0, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.tab === 'minimap' && !s.outliner && s.canvas && s.visible && s.slot === 'ed-minimap-host' && s.level === 0 && JSON.parse(s.stored).tab === 'minimap' && (await page.getAttribute('#ed-tab-minimap', 'aria-selected')) === 'true', `the Minimap tab shows the live minimap above Properties, and is kept in this browser (${JSON.stringify(s)})`);
+  check(s.w > 150 && s.h > 150, `the minimap has room in the expanded dock (${s.w}×${s.h})`);
+  await shot('expanded');
+
+  // A click on a thing selects it everywhere: the view's gizmo, the inspector, the outliner's row; and frames it.
+  const cam0 = await page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  check(await clickAt(14, 10), 'the barrel has a place on the minimap');
+  s = await mm();
+  const insp = await page.evaluate(() => ({ x: document.getElementById('ed-insp-x')?.value ?? null, gizmo: !!window.__editor.view.gizmo?.isEnabled(), cam: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z } }));
+  check(s.sel.join() === 'mm_barrel' && insp.x === '14' && s.marks.some((m) => m.id === 'mm_barrel' && m.current), `a click on the barrel in the minimap selects it (view, inspector X ${insp.x}) and marks it (${JSON.stringify({ sel: s.sel, marks: s.marks })})`);
+  check(Math.hypot(insp.cam.x - 14, insp.cam.z - 10) < Math.hypot(cam0.x - 14, cam0.z - 10), `and frames it, as a click in the outliner does (${JSON.stringify([cam0, insp.cam])})`);
+  await shot('selected');
+  // Shift adds, as in the outliner.
+  await clickAt(-14, -10, { shift: true });
+  s = await mm();
+  check(s.sel.length === 2 && s.sel.includes('mm_crate') && s.marks.length === 2, `Shift-click in the minimap adds to the selection (${JSON.stringify(s.sel)})`);
+  // The outliner lights the same rows.
+  await page.click('#ed-tab-outliner');
+  await frames(page, 3);
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => el.dataset.id).sort());
+  check(rows.join() === 'mm_barrel,mm_crate', `the outliner shows the minimap's selection (${rows.join()})`);
+  await page.click('#ed-tab-minimap');
+  await frames(page, 3);
+
+  // A selection made elsewhere shows on the minimap without making its picture again.
+  const bakes0 = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_crate'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].id === 'mm_crate' && s.bakes === bakes0, `a selection made in the view shows on the minimap at once, with no new picture (${JSON.stringify({ marks: s.marks, bakes: [bakes0, s.bakes] })})`);
+
+  // Open ground: the camera goes there and the selection stays.
+  await clickAt(30, -30);
+  const cam1 = await page.evaluate(() => {
+    const v = window.__editor.view;
+    const d = { x: Math.sin(v.yaw), z: Math.cos(v.yaw) };
+    // Where the camera looks at the ground (focus stands it 22 m back along the view).
+    return { x: v.camera.position.x + d.x * 22 * Math.cos(0.85), z: v.camera.position.z + d.z * 22 * Math.cos(0.85) };
+  });
+  s = await mm();
+  check(Math.hypot(cam1.x - 30, cam1.z + 30) < 3 && s.sel.join() === 'mm_crate', `a click on open ground moves the camera there and keeps the selection (${JSON.stringify(cam1)})`);
+
+  // An edit: the picture is made again only after the edits pause, not on the edit's own path.
+  const before = (await mm()).bakes;
+  const fresh = await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.transform('Move', { by: { metres: [2, 0, 0] } });
+    ed.frame(0.016);
+    return ed.minimap.state().bakes;
+  });
+  await page.waitForFunction((b) => window.__editor.minimap.state().bakes > b, before, { timeout: T(5000) });
+  check(fresh === before, `an edit doesn't make the minimap's picture on its own path (bakes ${before} → ${fresh} right after it)`);
+
+  // A level change: that level's picture at once. A thing selected up there is dashed on the ground level's minimap
+  // (things on the open ground count on every level), solid on its own, and a click there picks it.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_up'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === false, `a thing selected on another level is marked dashed (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await page.waitForFunction(() => window.__editor.minimap.state().level === 1, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === true && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on its own level the minimap shows that level and the selection solid (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await clickAt(-14, 14);
+  s = await mm();
+  check(s.sel.join() === 'mm_up' && s.marks[0]?.current, `a click on the minimap picks a thing on the level shown (${JSON.stringify(s.sel)})`);
+  await shot('level1');
+  await page.evaluate(() => window.__editor.setLevel(0));
+
+  // Zoom: kept in this browser, never in the map.
+  await page.click('#ed-minimap-in');
+  await page.waitForFunction(() => (JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').minimapZoom ?? 1) > 1, null, { timeout: T(3000) });
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  check(!/minimap/i.test(json), "the minimap's zoom and tab stay out of the map");
+  await page.click('#ed-minimap-fit');
+
+  // Compact: the card is the minimap; a click there selects too. Hidden: none of it runs.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.click('#ed-dock-compact');
+  await frames(page, 4);
+  s = await mm();
+  check(s.visible && s.slot === 'ed-minimap-mini' && s.canvas && s.w > 120, `the compact card shows the minimap (${JSON.stringify({ slot: s.slot, w: s.w, h: s.h })})`);
+  await frames(page, 4);
+  await clickAt(14, 10);
+  s = await mm();
+  check(s.sel.join() === 'mm_barrel', `a click in the compact card's minimap selects (${JSON.stringify(s.sel)})`);
+  await shot('compact');
+  await page.click('#ed-dock-hide');
+  await frames(page, 3);
+  const hiddenBakes = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.transform('Move', { by: { metres: [1, 0, 0] } }));
+  await sleep(1200);
+  s = await mm();
+  check(!s.visible && !s.canvas && s.bakes === hiddenBakes, `a hidden dock runs no minimap (${JSON.stringify({ visible: s.visible, bakes: [hiddenBakes, s.bakes] })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 2, the one selection (shared editor/selectionState.ts): a pick in the outliner selects in the
+ * view (outline and gizmo) and the inspector, and a pick in the view lights the outliner's row and scrolls it into view;
+ * a moving build is picked whole from the outliner as from the view (Alt: one part); a level change keeps the selection.
+ * Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSelectionSyncChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  // 300 crates in rows to the north (a long outliner list), one barrel by the camera, and a moving build.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    const crates = Array.from({ length: 300 }, (_, i) => prop(`e2e_c${String(i).padStart(3, '0')}`, 'core.crate', [-30 + (i % 30) * 2, 0, 20 + Math.floor(i / 30) * 2]));
+    ed.run('Setup', { kind: 'addEntities', entities: [
+      ...crates,
+      prop('e2e_barrel', 'kit.drum.steel', [4, 0, 2]),
+      { id: 'e2e_lift', kind: 'block', position: [-6, 0, 4], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+      { id: 'e2e_mover', kind: 'mover', position: [-6, 0, 4], yaw: 0, blocks: ['e2e_lift'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+    ] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 2 });
+  });
+  await frames(page, 5);
+  const state = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const g = ed.view.gizmo?.getBoundingInfo().boundingBox.minimumWorld;
+    const list = document.getElementById('ed-ol-list');
+    const on = [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => ({ id: el.dataset.id, top: el.offsetTop }));
+    return {
+      sel: [...ed.selection.entities],
+      gizmo: g ? [Math.round(g.x * 10) / 10, Math.round(g.z * 10) / 10] : null,
+      head: document.querySelector('#ed-inspector h2')?.textContent ?? '',
+      x: document.getElementById('ed-insp-x')?.value ?? null,
+      on,
+      view: list ? [list.scrollTop, list.scrollTop + list.clientHeight] : null,
+      status: document.getElementById('ed-sel')?.textContent ?? '',
+    };
+  });
+  const shown = (s, id) => s.on.some((r) => r.id === id && r.top >= s.view[0] - 1 && r.top + 22 <= s.view[1] + 1);
+
+  // Outliner → view and inspector: a row clicked selects the thing, its gizmo stands on it, the inspector shows it.
+  const row = '#ed-ol-list .ed-ol-item[data-id="e2e_barrel"]';
+  await page.fill('#ed-ol-search', 'drum');
+  await page.waitForSelector(row, { timeout: T(5000) });
+  await page.click(`${row} .nm`);
+  await frames(page, 3);
+  let s = await state();
+  check(s.sel.join() === 'e2e_barrel' && s.gizmo && Math.abs(s.gizmo[0] - 4) < 0.5 && Math.abs(s.gizmo[1] - 2) < 0.5 && s.x === '4' && s.on.some((r) => r.id === 'e2e_barrel'), `a row clicked in the outliner selects in the view (gizmo) and the inspector, and stays lit (${JSON.stringify(s)})`);
+  await page.fill('#ed-ol-search', '');
+  await frames(page, 5);
+  s = await state();
+  check(shown(s, 'e2e_barrel'), `the search cleared, the list comes back to the selected row (${JSON.stringify({ on: s.on, view: s.view })})`);
+  await shot('selection-synced');
+
+  // View → outliner: a click on a crate far down the list lights its row and scrolls it into view.
+  const far = 'e2e_c287';
+  await page.evaluate((id) => window.__editor.view.focus({ x: [...window.__editor.doc.entities].find((e) => e.id === id).position[0], y: 0, z: 40 }), far);
+  await frames(page, 5);
+  const p = await page.evaluate((id) => {
+    const e = window.__editor.doc.entities.find((x) => x.id === id);
+    return window.__editor.view.project({ x: e.position[0], y: 0.4, z: e.position[2] });
+  }, far);
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === far && shown(s, far), `a thing clicked in the view lights its outliner row and scrolls it into view (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  // The same from a programmatic pick (a problem's "select", the budget pill): through the one setter.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === 'e2e_c003' && shown(s, 'e2e_c003') && s.head.length > 0, `any pick lights and shows its row (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  const rev0 = await page.evaluate(() => window.__editor.selectionRev);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  check((await page.evaluate(() => window.__editor.selectionRev)) === rev0, 'the same selection again is no change (its revision stands)');
+
+  // A moving build from the outliner: whole, as a click in the view picks it; Alt-click: the part alone.
+  await page.fill('#ed-ol-search', 'block');
+  const lift = '#ed-ol-list .ed-ol-item[data-id="e2e_lift"] .nm';
+  await page.waitForSelector(lift, { timeout: T(5000) });
+  await page.click(lift);
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 2 && s.sel.includes('e2e_mover') && /moving build/i.test(await page.textContent('#ed-inspector')), `a moving build's part clicked in the outliner selects the whole build (${JSON.stringify(s.sel)})`);
+  await page.click(lift, { modifiers: ['Alt'] });
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_lift', `Alt-click in the outliner picks the part alone (${JSON.stringify(s.sel)})`);
+  await page.fill('#ed-ol-search', '');
+
+  // A level change keeps the selection and says where it is; deleting it clears it everywhere.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_barrel' && /another level/.test(s.status), `a level change keeps the selection and the status bar says so (${s.status})`);
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await page.evaluate(() => window.__editor.edits.deleteSelection());
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 0 && !s.gizmo && s.on.length === 0 && !!(await page.$('#ed-insp-empty')), `deleting the selection clears it in the view, the outliner and the inspector (${JSON.stringify(s)})`);
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  check((await state()).sel.length === 0 && (await doc()).entities.some((e) => e.id === 'e2e_barrel'), 'undoing the delete brings the barrel back, unselected (the selection is not part of undo)');
+  // A stale pick (an id the map no longer has) selects only what is there.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel', 'e2e_gone'] }));
+  check((await state()).sel.join() === 'e2e_barrel', 'a pick naming something the map no longer has selects only what is there');
+
+  // The numeric fields, for the record: a thing's X / Height / Z and Facing.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await frames(page, 3);
+  const fields = await page.evaluate(() => ['ed-insp-x', 'ed-insp-y', 'ed-insp-z', 'ed-insp-facing'].map((id) => document.getElementById(id)?.value ?? null));
+  check(fields.every((v) => v !== null), `a thing's inspector has X, Height, Z and Facing fields (${fields.join(', ')})`);
+  await page.evaluate(() => document.getElementById('ed-insp-x')?.scrollIntoView({ block: 'center' }));
+  await shot('numeric-fields');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTourChecks(browser) {
   const shots = process.env.E2E_SHOTS;
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
@@ -1679,7 +1965,11 @@ async function editorLayoutChecks(browser) {
       probe.textContent = el.selectedOptions[0]?.textContent ?? '';
       return getComputedStyle(el).display !== 'none' && probe.getBoundingClientRect().width + 18 <= el.clientWidth;
     };
-    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: whole('ed-theme'), skill: whole('ed-skill'), bots: whole('ed-bots') };
+    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: (() => {
+        // The Structure theme's chip (painting Phase 3) shows the theme's name whole.
+        const chip = document.getElementById('ed-theme-chip-name');
+        return getComputedStyle(document.getElementById('ed-theme-chip')).display !== 'none' && chip.scrollWidth <= chip.clientWidth + 1 && chip.textContent.length > 0;
+      })(), skill: whole('ed-skill'), bots: whole('ed-bots') };
     probe.remove();
     return r;
   });
@@ -1900,10 +2190,16 @@ async function editorLayoutChecks(browser) {
   await page.click('#ed-tb-more');
   check(delOff, 'Delete waits for a selection, on the bar and in the menu');
 
-  // ---- The old controls from their places: the top bar's theme and Snap, the rail's collapse, the problems pill.
-  await page.selectOption('#ed-theme', otherTheme);
+  // ---- The old controls from their places: the top bar's Structure theme chip (it opens Map settings at the theme:
+  // painting Phase 3) and Snap, the rail's collapse, the problems pill.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chipOpens = await page.evaluate(() => document.activeElement?.id === 'ed-prop-theme' && document.getElementById('ed-title').getAttribute('aria-expanded') === 'true');
+  await page.selectOption('#ed-prop-theme', otherTheme);
   if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
-  const themeTop = (await doc()).classicStructure.theme === otherTheme && (await undoLabel()) === 'Change theme';
+  await frames(page, 3);
+  const chipTheme = { opens: chipOpens, theme: (await doc()).classicStructure.theme === otherTheme, undo: await undoLabel(), name: await page.textContent('#ed-theme-chip-name'), want: await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].find((o) => o.value === t)?.textContent, otherTheme) };
+  const themeTop = chipTheme.opens && chipTheme.theme && chipTheme.undo === 'Change theme' && chipTheme.name === chipTheme.want;
   await page.click('#ed-undo');
   await page.selectOption('#ed-snap', 'coarse');
   const snap = await page.evaluate(() => window.__editor.snapMode);
@@ -1915,7 +2211,7 @@ async function editorLayoutChecks(browser) {
   await page.keyboard.press('Backslash');
   const byKey = await page.evaluate(() => !document.getElementById('ed-palette').offsetParent);
   await page.keyboard.press('Backslash');
-  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ themeTop, snap, folded, reopened, byKey })})`);
+  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme chip (it opens Map settings at the Structure theme, and names the theme) and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ chipTheme, snap, folded, reopened, byKey })})`);
   await page.keyboard.press('Shift+Backslash');
   await page.keyboard.press('Shift+Backslash');
   await page.click('#ed-status');
@@ -1935,6 +2231,121 @@ async function editorLayoutChecks(browser) {
   const nOpen = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, settings: !!document.getElementById('ed-prop-name')?.offsetParent }));
   check(n.state === 'compact' && n.card && n.fits && nOpen.state === 'expanded' && nOpen.settings, `at 860 px the dock starts compact and the top bar fits; the title still opens Map settings, expanding it (${JSON.stringify({ n, nOpen })})`);
   await narrow.close();
+}
+
+/**
+ * The palette follows the map's themes (docs/MAPMAKER_PAINTING_PLAN.md, Phase 3): the Style Pack picker opens on This
+ * map's themes, which puts the pieces of the packs that use the map's Structure theme first in each group (marked) and
+ * hides nothing; All, one click away, is the catalogue's order; it follows a theme change at once. Structure paint lists
+ * the theme's slot materials, its packs' materials and Recent, with All a tab away; Ground paint the map's grounds first.
+ */
+async function editorThemeViewChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-themes-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  // Each tile and prop grid's cards in order, which are marked, and how many cards show in the panes.
+  const palette = () =>
+    page.evaluate(() => {
+      const order = window.__editor.palette.keys();
+      const grids = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles, #ed-setpieces .ed-group .tiles')].map((g) => [...g.querySelectorAll(':scope > [data-key]')].map((c) => ({ key: c.dataset.key, first: c.classList.contains('theme-first') })));
+      const inOrder = grids.every((g) => g.every((c, i) => i === 0 || order.indexOf(g[i - 1].key) < order.indexOf(c.key)));
+      // Marked cards lead each run of a grid (a prop group's runs are its categories).
+      const runsLead = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles')].every((g) => {
+        let seenPlain = false;
+        for (const c of g.children) {
+          if (!c.dataset.key) seenPlain = false;
+          else if (!c.classList.contains('theme-first')) seenPlain = true;
+          else if (seenPlain) return false;
+        }
+        return true;
+      });
+      const shown = [...document.querySelectorAll('#ed-palette .ed-pane [data-key]')].filter((c) => !c.hidden).length;
+      const marked = grids.flat().filter((c) => c.first).map((c) => c.key);
+      return { view: document.getElementById('ed-pack').value, note: document.getElementById('ed-pack-note').hidden ? '' : document.getElementById('ed-pack-note').textContent, inOrder, runsLead, shown, marked, mixed: grids.some((g) => g.some((c) => c.first) && g.some((c) => !c.first)) };
+    });
+
+  // A new map's Prototype theme: no pack uses it, so This map's themes (the default) is the catalogue's order.
+  const proto = await palette();
+  check(proto.view === '@themes' && /No Style Pack uses the Prototype theme/.test(proto.note) && proto.inOrder && proto.marked.length === 0, `the palette opens on This map's themes; with no pack for the theme, every piece in the catalogue's order (${JSON.stringify({ ...proto, marked: proto.marked.length })})`);
+
+  // Military: its pack's pieces first in each group, marked; nothing hidden.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.military' });
+  });
+  await settle();
+  const mil = await palette();
+  const order = await page.evaluate(() => {
+    const idx = (k) => [...document.querySelectorAll('#ed-tiles [data-key]')].findIndex((c) => c.dataset.key === k);
+    const sandbag = document.querySelector('[data-key="prop:prop.sandbag_wall"]');
+    return { barracks: idx('tile:military.barracks'), corridor: idx('tile:core.corridor'), sandbagFirst: !!sandbag?.classList.contains('theme-first') };
+  });
+  check(mil.view === '@themes' && /Military Compound/.test(mil.note) && mil.runsLead && mil.mixed && mil.marked.includes('tile:military.barracks') && !mil.marked.includes('tile:core.corridor') && order.sandbagFirst && order.barracks >= 0 && order.barracks < order.corridor && mil.shown === proto.shown, `This map's themes follows a theme change at once: Military Compound's pieces first in each group, marked, nothing hidden (${JSON.stringify({ ...mil, marked: mil.marked.length, order })})`);
+  await page.click('#ed-pal-tabs [data-pane="tiles"]');
+  await page.evaluate(() => (document.getElementById('ed-palette').scrollTop = 0));
+  await shot('default');
+
+  // All, one click away: the catalogue's order, nothing marked, the same pieces.
+  await page.selectOption('#ed-pack', '');
+  await settle();
+  const all = await palette();
+  check(all.view === '' && all.inOrder && all.marked.length === 0 && all.shown === mil.shown && all.note === '', `All shows everything in the catalogue's order, unmarked (${JSON.stringify({ ...all, marked: all.marked.length })})`);
+  await shot('all');
+  await page.selectOption('#ed-pack', '@themes');
+  await settle();
+  const back = await palette();
+  check(back.runsLead && back.marked.length === mil.marked.length, `back to This map's themes: the theme's pieces lead again (${back.marked.length} marked)`);
+  // The top bar's Structure theme chip names the theme.
+  await shot('chip');
+
+  // Structure paint: This map's themes (the theme's slot materials, its packs', Recent), All a tab away.
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-pal-tabs [data-pane="paint"]');
+  await settle();
+  const paint = () =>
+    page.evaluate(() => {
+      const box = document.getElementById('ed-materials');
+      const visible = [...box.children].filter((c) => getComputedStyle(c).display !== 'none');
+      return {
+        view: box.dataset.view,
+        heads: visible.filter((c) => c.classList.contains('mv-head')).map((c) => c.dataset.mv),
+        title: box.querySelector('.mv-head')?.textContent ?? '',
+        mats: visible.filter((c) => c.dataset.material).map((c) => c.dataset.material),
+        total: box.querySelectorAll('[data-material]').length,
+        tab: document.querySelector('#ed-mat-view [aria-pressed="true"]')?.dataset.mv,
+      };
+    });
+  const themed = await paint();
+  check(themed.view === 'theme' && themed.tab === 'theme' && themed.heads.join() === 'theme,packs' && /^Structure theme: /.test(themed.title) && themed.mats.includes('core.pbr_bunker_panels') && themed.mats.length < themed.total / 3 && new Set(themed.mats).size === themed.mats.length, `Structure paint opens on This map's themes: the theme's materials, then its pack's (${JSON.stringify({ ...themed, mats: themed.mats.length })})`);
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint');
+  await page.click('#ed-mat-view [data-mv="all"]');
+  const allMats = await paint();
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint-all');
+  await page.click('[data-material="core.checker"]');
+  await page.click('#ed-mat-view [data-mv="theme"]');
+  const recent = await paint();
+  check(allMats.view === 'all' && allMats.heads.length === 0 && allMats.mats.length === allMats.total && recent.heads.join() === 'theme,packs,recent' && recent.mats.at(-1) === 'core.checker' && (await page.evaluate(() => window.__editor.paint.paintStyle.material)) === 'core.checker', `All lists every material; one picked there shows under Recent in This map's themes (${JSON.stringify({ all: allMats.mats.length, total: allMats.total, recent: recent.heads })})`);
+
+  // Ground paint: the Base chip, then the Ground theme's grounds (a new terrain is Meadow: Grass first), then the others.
+  await page.click('#ed-pal-tabs [data-pane="terrain"]');
+  await settle();
+  const ground = await page.evaluate(() => [...document.getElementById('ed-tr-materials').children].map((c) => c.dataset.ground ?? `# ${c.textContent}`));
+  check(ground[0] === 'base' && ground[1] === '# Ground theme: Meadow' && ground[2] === 'core.pbr_grass' && ground.includes('# Other grounds') && ground.filter((g) => !g.startsWith('#')).length === 22, `Ground paint lists the base, then the Ground theme's grounds first, then every other ground (${ground.join(', ')})`);
+  await page.evaluate(() => document.querySelector('#ed-tr-materials')?.scrollIntoView({ block: 'center' }));
+  await shot('ground');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
 }
 
 /**
@@ -2000,6 +2411,125 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
   const undone = (await doc()).entities.find((e) => e.id === 'gate_keep_a');
   check(JSON.stringify(shown) === JSON.stringify(['pack', ['Pack effect', 'Painted']]) && painted === 'painted' && undone && !('swirl' in undone), `a portal's inspector picks its swirl (pack effect or painted), one undo step (${JSON.stringify({ shown, painted, undone: undone?.swirl ?? null })})`);
   await page.keyboard.press('Escape');
+}
+
+/**
+ * The Assets panel fits its window (owner, 2026-11-16: Structure paint's third column was cut off at 1440-2000 px with
+ * no scrollbar): at a few window widths (the panel is 175-275 px inside), every piece, material, ground and swatch on
+ * every tab (Structure paint in both its views) lies wholly inside the panel's width.
+ */
+async function editorAssetsFitChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  for (const width of [1100, 1440, 2000]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?mode=editor&test=1`);
+    await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+    page.once('dialog', (d) => d.accept());
+    await newMap(page, 96);
+    const outside = () =>
+      page.evaluate(() => {
+        const pal = document.getElementById('ed-palette');
+        const box = pal.getBoundingClientRect();
+        const right = box.left + pal.clientLeft + pal.clientWidth;
+        const out = [];
+        let n = 0;
+        for (const el of pal.querySelectorAll('.ed-pane:not([hidden]) :is(.mat-btn, .tile-btn, .swatch, [data-material], [data-ground])')) {
+          const b = el.getBoundingClientRect();
+          if (!b.width || !el.offsetParent) continue;
+          n++;
+          if (b.left < box.left - 0.5 || b.right > right + 0.5) out.push(`${el.dataset.material ?? el.dataset.ground ?? el.textContent.trim().slice(0, 24)} (${Math.round(b.left)}-${Math.round(b.right)} of ${Math.round(box.left)}-${Math.round(right)})`);
+        }
+        return { n, out };
+      });
+    const seen = [];
+    const bad = [];
+    for (const [ws, pane] of [['build', 'tiles'], ['build', 'setpieces'], ['build', 'advanced'], ['props', 'props'], ['props', 'lights'], ['entities', 'entities'], ['entities', 'npcs'], ['entities', 'vehicles'], ['entities', 'scenario'], ['environment', 'paint'], ['environment', 'paint:all'], ['environment', 'plants'], ['environment', 'terrain'], ['environment', 'sky']]) {
+      await page.click(`#ed-modes [data-ws="${ws}"]`);
+      if (pane === 'paint:all') await page.click('#ed-mat-view [data-mv="all"]');
+      else await page.click(`#ed-pal-tabs [data-pane="${pane}"]`);
+      await frames(page, 3);
+      const r = await outside();
+      seen.push(`${pane} ${r.n}`);
+      if (r.out.length) bad.push(`${pane}: ${r.out.slice(0, 4).join(', ')}${r.out.length > 4 ? ` +${r.out.length - 4}` : ''}`);
+      if (shots && pane === 'paint') await page.screenshot({ path: `${shots}/editorux-assets-fit-${width}.png` }).catch(() => {});
+    }
+    check(bad.length === 0, `at ${width} px every item in the Assets panel lies inside it (${bad.join('; ') || seen.join(', ')})`);
+    check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+    livePages.delete(page);
+    await context.close();
+  }
+}
+
+/**
+ * Tall wall styles (owner, 2026-11-16: a Grand arch on an inside edge on Level 2 rose through Level 3's floor and the
+ * roof): on an inside wall with rooms over both sides, the Walls tool's hover card says it can't go there before the
+ * click, a click is refused with the same words and changes nothing, and a one-storey arch goes in; validation warns
+ * on one already in a map.
+ */
+async function editorTallWallChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // Two rooms side by side on Level 1 (x 16 and 24 m), rooms over both on Level 2; the Walls tool with the Grand arch,
+  // looking from inside the west room at the wall between them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const tiles = [];
+    for (const z of [1, 2]) for (const x of [2, 3]) tiles.push({ id: `tw${x}_${z}`, tile: 'core.room', x, y: 0, z, rotation: 0 });
+    ed.history.execute('Place', { kind: 'addTiles', tiles });
+    ed.setLevel(1, true);
+    ed.setTool({ kind: 'edge', style: 'arch_grand' });
+    const v = ed.view;
+    // (Off the middle: an Auto side between two rooms is a doorway there.)
+    v.camera.position.set(13, 6, 1);
+    v.yaw = Math.atan2(19.4 - 13, -3 - 1);
+    v.pitch = Math.atan2(6.5 - 6, Math.hypot(19.4 - 13, 4));
+    v.applyCamera();
+  });
+  await frames(page, 4);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 19.4, y: 6.5, z: -3 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  const card = await page.evaluate(() => ({ tip: document.getElementById('ed-tip')?.hidden ? '' : document.getElementById('ed-tip')?.textContent ?? '', status: document.getElementById('ed-target').textContent, edge: window.__editor.paint.hoverEdge }));
+  if (shots) await page.screenshot({ path: `${shots}/editorux-tall-wall-card.png` }).catch(() => {});
+  const before = await page.evaluate(() => JSON.stringify(window.__editor.doc.classicStructure.tiles));
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ tiles: JSON.stringify(window.__editor.doc.classicStructure.tiles), toast: document.getElementById('ed-toast')?.textContent ?? '' }));
+  check(card.edge?.cell?.join() === '2,0,1' && card.edge.side === 'E' && /Grand arch/.test(card.tip) && /would rise through Level 2's floor/.test(card.tip) && /can't build/.test(card.status), `the Walls tool's card says a Grand arch can't go under Level 2's rooms before the click (${JSON.stringify(card)})`);
+  check(after.tiles === before && /would rise through Level 2's floor/.test(after.toast), `a click there is refused with the same words and changes nothing (${after.toast})`);
+  // A one-storey arch goes in on the same side.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'edge', style: 'arch_round' }));
+  await page.mouse.move(p.x + 1, p.y);
+  await frames(page, 3);
+  const roundTip = await page.evaluate(() => document.getElementById('ed-tip')?.textContent ?? '');
+  await page.mouse.click(p.x + 1, p.y);
+  await frames(page, 2);
+  const round = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.flatMap((t) => Object.values(t.edges ?? {})));
+  check(/Click to build/.test(roundTip) && round.join() === 'arch_round', `a Round arch builds on that side (${roundTip}; ${round.join(', ')})`);
+  // One forced into the map: the validation list warns about it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.classicStructure.tiles.find((x) => x.id === 'tw2_1');
+    ed.history.execute('Force', { kind: 'updateTiles', before: [t], after: [{ ...t, edges: { '0,0,0:E': 'arch_grand' } }] });
+  });
+  await page.waitForFunction(() => window.__editor.checks.allIssues().some((i) => i.code === 'edge.tall'), null, { timeout: T(10000) }).catch(() => {});
+  const warned = await page.evaluate(() => window.__editor.checks.allIssues().filter((i) => i.code === 'edge.tall').map((i) => `${i.severity}: ${i.message}`));
+  check(warned.length === 1 && /^warning: .*Grand arch.*rises through Level 2's floor/.test(warned[0]), `validation warns on a Grand arch already under Level 2's rooms (${warned.join('; ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await context.close();
 }
 
 /**
@@ -2096,6 +2626,7 @@ async function editortoolsFlow(browser) {
   await editorPaintChecks(browser);
   await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
+  await editorTransformChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
@@ -2202,7 +2733,7 @@ async function editorPaintChecks(browser) {
   const undone = await doc();
   check(!undone.classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces && undone.entities.find((e) => e.id === 'paint_blk').material === null, 'undo takes every paint back');
 
-  // Ground paint (Shift+B): the Terrain tool's Paint brush, the ground layers only (no Marble Checker), and it passes
+  // Ground paint (Shift+B): the Terrain tool's Paint brush, the 21 grounds and the base only (no Marble Checker), and it passes
   // under a building.
   await page.keyboard.press('Shift+KeyB');
   await settle();
@@ -2214,9 +2745,9 @@ async function editorPaintChecks(browser) {
     lit: document.getElementById('ed-tb-groundpaint')?.classList.contains('active') ?? false,
     hint: document.getElementById('ed-toolhint').textContent,
   }));
-  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 8 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the ground layers only, no Marble Checker (${JSON.stringify(gp)})`);
+  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 22 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the grounds only, no Marble Checker (${JSON.stringify(gp)})`);
   await shot('ground-paint');
-  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'stone'));
+  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'core.pbr_rock'));
   const roomBefore = JSON.stringify((await doc()).classicStructure.tiles);
   const cells0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
   p = await hover(0, 0, 0);
@@ -2336,13 +2867,17 @@ async function editorThemeWarningChecks(browser) {
   await settle();
   check(kept.theme === 'core.industrial' && kept.undo === 'Change theme, keep the look' && kept.plain && kept.block && kept.cage && kept.back === 0 && (await json()) === before, `Keep current look changes the theme and pins today's look as paint (nothing would change going back), one undo step (${JSON.stringify(kept)})`);
 
-  // ---- The top bar's theme: the same dialog; Esc is Cancel.
-  await page.selectOption('#ed-theme', 'core.industrial');
+  // ---- The top bar's Structure theme chip (painting Phase 3: the select went) opens Map settings at the theme, so the
+  // same dialog; Esc is Cancel.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chip = await page.evaluate(() => ({ focus: document.activeElement?.id, name: document.getElementById('ed-theme-chip-name').textContent }));
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
   const top = { opened: await waitDialog(), counts: await dialogCounts() };
   await page.keyboard.press('Escape');
   await settle();
-  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')) };
-  check(top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open, `the top bar's theme opens the same warning; Esc cancels (${JSON.stringify({ top, topAfter })})`);
+  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')), noSelect: await page.evaluate(() => !document.getElementById('ed-theme')) };
+  check(chip.focus === 'ed-prop-theme' && chip.name === 'Imperial Arena' && top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open && topAfter.noSelect, `the top bar's theme chip opens Map settings at the Structure theme, which asks first; Esc cancels (${JSON.stringify({ chip, top, topAfter })})`);
 
   // ---- The palette's "Use theme": the same dialog, then Change.
   await page.selectOption('#ed-pack', 'military');
@@ -2399,14 +2934,14 @@ async function editorThemeWarningChecks(browser) {
   await settle();
   await hover(-30, 0, -20);
   const groundCard = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, text: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }));
-  check(/^Ground · .*main ground/.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
+  check(/^Ground · .*\(Ground theme: /.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
   await shot('cursor-ground');
-  // Ground paint names the ground layer: the main ground, or painted.
+  // Ground paint names the ground: the Ground theme's base, or painted.
   await page.keyboard.press('Shift+KeyB');
   await settle();
   await hover(-30, 0, -20);
   const gp = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, status: document.getElementById('ed-target').textContent }));
-  check(/^Ground · .*\(the map's main ground\)/.test(gp.head) && /Ground paint · Ground · .*main ground.* · click paints/.test(gp.status), `Ground paint names the ground layer and that it is the main ground (${JSON.stringify(gp)})`);
+  check(/^Ground · .*\(Ground theme: [A-Z]\w+\)/.test(gp.head) && /Ground paint · Ground · .*Ground theme: [A-Z].* · click paints/.test(gp.status), `Ground paint names the ground and that it is the Ground theme's base (${JSON.stringify(gp)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await context.close();
 }
@@ -2526,7 +3061,107 @@ async function editorTileOptionChecks(browser) {
 async function editorenvFlow(browser) {
   await editorMapTestChecks(browser);
   await editorEnvironmentChecks(browser);
+  await editorGroundThemeChecks(browser);
   await editorSkyWeatherChecks(browser);
+}
+
+/**
+ * The Ground theme (painting Phase 4, map format v45): a new terrain is all base (Meadow, its chip in the top bar);
+ * Packed Snow paints as Packed Snow (its own mesh, no stand-in); Map settings' Ground theme asks first with the
+ * counts (m² that follow, m² painted), Cancel changes nothing, Change moves only the base cells (painted ones stay)
+ * in one undo step, Keep current look keeps every cell; a Structure theme change offers its match as a tick box.
+ */
+async function editorGroundThemeChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-ground-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.on('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const state = () =>
+    page.evaluate(() => {
+      const t = window.__editor.doc.terrain;
+      const meshes = window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_terrain_') && !m.isDisposed()).map((m) => m.name.slice('edmap_terrain_'.length));
+      return { theme: t.groundTheme, grounds: t.grounds ?? [], base: t.materials.filter((m) => m === 0).length, cells: t.materials.length, painted: t.materials.filter((m) => m > 0).length, snow: t.materials.filter((m) => m > 0 && t.grounds[m - 1] === 'core.packed_snow').length, spacing: t.spacing, meshes, chip: document.getElementById('ed-ground-chip-name').textContent, undo: window.__editor.history.undoLabel };
+    });
+  const s0 = await state();
+  check(s0.theme === 'ground.meadow' && s0.base === s0.cells && s0.chip === 'Meadow' && s0.meshes.includes('grass'), `a new terrain is all the base of its Ground theme, Meadow, shown on the top bar's chip (${JSON.stringify({ ...s0, meshes: s0.meshes.join() })})`);
+  // Packed Snow with Ground paint: added to the map's grounds and drawn as itself.
+  await page.keyboard.press('Shift+KeyB');
+  await page.click('#ed-tr-materials [data-ground="core.packed_snow"]');
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.yaw = 0;
+    v.focus({ x: 10, y: 0, z: 10 });
+    v.dolly(-20);
+    window.__editor.setBrushRadius(6);
+  });
+  await frames(page, 3);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 10, y: 0, z: 10 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 2);
+  await page.mouse.down();
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 3);
+  const s1 = await state();
+  check(s1.grounds.includes('core.packed_snow') && s1.snow > 0 && s1.meshes.includes('core.packed_snow') && /Packed Snow/.test(s1.undo ?? ''), `Packed Snow paints as Packed Snow: in the map's grounds, its own terrain mesh, one undo step (${JSON.stringify({ ...s1, meshes: s1.meshes.join() })})`);
+  await shot('packed-snow');
+  // Map settings' Ground theme: the warning, with the counts.
+  await openMapSettings(page);
+  const note = await page.evaluate(() => document.getElementById('ed-prop-ground-note')?.textContent ?? '');
+  check(/^base Grass · 2 grounds$/.test(note), `Map settings names the base and how many grounds the map uses (${note})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  const dlg = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#ed-ground-dialog [data-count]')].map((l) => [l.dataset.count, l.textContent])));
+  const m2 = (n) => Math.round(n).toLocaleString('en-GB');
+  const want = { follows: m2(s1.base * s1.spacing * s1.spacing), painted: m2(s1.painted * s1.spacing * s1.spacing) };
+  check(dlg.follows?.includes(`${want.follows} m² of ground`) && /from Grass to Desert Sand/.test(dlg.follows) && dlg.painted?.includes(`${want.painted} m² you painted`) && /border/.test(dlg.border ?? ''), `the Ground theme warning counts the ground that follows and the ground painted (${JSON.stringify({ dlg, want })})`);
+  await shot('warning');
+  await page.click('#ed-ground-cancel');
+  const s2 = await state();
+  check(s2.theme === 'ground.meadow' && s2.undo === s1.undo && (await page.inputValue('#ed-prop-ground-theme')) === 'ground.meadow', `Cancel changes nothing and puts the select back (${JSON.stringify({ theme: s2.theme, undo: s2.undo })})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-change');
+  await frames(page, 3);
+  const s3 = await state();
+  check(s3.theme === 'ground.desert' && s3.snow === s1.snow && s3.base === s1.base && s3.meshes.includes('sand') && !s3.meshes.includes('grass') && s3.meshes.includes('core.packed_snow') && s3.chip === 'Desert' && s3.undo === 'Change Ground theme', `Change moves the base cells to Desert Sand and the painted Packed Snow stays (${JSON.stringify({ ...s3, meshes: s3.meshes.join() })})`);
+  await shot('changed');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  const s4 = await state();
+  check(s4.theme === 'ground.meadow' && s4.meshes.includes('grass') && s4.snow === s1.snow, `one undo puts the Ground theme back (${JSON.stringify({ theme: s4.theme, meshes: s4.meshes.join() })})`);
+  // Keep current look: the theme changes, every cell keeps its ground (the base cells become painted Grass).
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.snowfield');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-keep');
+  await frames(page, 3);
+  const s5 = await state();
+  check(s5.theme === 'ground.snowfield' && s5.base === 0 && s5.grounds.includes('core.pbr_grass') && s5.meshes.includes('grass') && !s5.meshes.includes('snow') && s5.snow === s1.snow, `Keep current look changes the theme and keeps every cell's ground (${JSON.stringify({ ...s5, meshes: s5.meshes.join() })})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  // A Structure theme change offers its matching Ground theme as a tick box (off); ticked, both change in one step.
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-theme', 'core.desert_city');
+  await page.waitForSelector('#ed-theme-dialog', { timeout: T(5000) });
+  const tick = await page.evaluate(() => ({ text: document.getElementById('ed-theme-ground-row')?.textContent ?? '', on: document.getElementById('ed-theme-ground')?.checked }));
+  check(/Also change the Ground theme to Desert \(Desert City's match\): [\d,]+ m² of ground follows it/.test(tick.text) && tick.on === false, `the Structure theme warning offers the matching Ground theme, unticked (${JSON.stringify(tick)})`);
+  await shot('structure-tick');
+  await page.check('#ed-theme-ground');
+  await page.click('#ed-theme-change');
+  await frames(page, 3);
+  const both = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme, undo: window.__editor.history.undoLabel }));
+  await page.keyboard.press('Control+KeyZ');
+  const back = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme }));
+  check(both.theme === 'core.desert_city' && both.ground === 'ground.desert' && back.theme !== 'core.desert_city' && back.ground === 'ground.meadow', `ticked, the Structure and Ground themes change in one undo step (${JSON.stringify({ both, back })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -2885,8 +3520,9 @@ async function editorEnvironmentChecks(browser) {
     const t = ed.doc.terrain;
     const xOf = (i) => t.origin[0] + (i % t.cols) * t.spacing;
     const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
-    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
-    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
+    // Painted Mossy Rock (the stone kind) on the slope: the terrain's own ground 1.
+    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 1 : m));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials, grounds: ['core.pbr_rock'] } });
     ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, faction: null }] });
     ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
   });
@@ -2990,6 +3626,27 @@ async function editorEnvironmentChecks(browser) {
   await stroke([12, -6], [28, 6]);
   const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
   check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  // Arid on grass (owner, 2026-11-16: "didn't seem to work"): its ground (sand, dirt, gravel, stone) is said on the
+  // brush card and under the pointer before the click, a stroke on grass says why it painted nothing, and "Paint on
+  // any ground" paints its dry acacias, laurels and grass there.
+  await page.selectOption('#ed-env-preset', 'arid');
+  await look(-25, -25);
+  const card = await page.evaluate(() => document.getElementById('ed-env-ground')?.textContent ?? '');
+  const onGrass = await at(-25, 0, -25);
+  await page.mouse.move(onGrass.x, onGrass.y);
+  await frames(page, 3);
+  const aridHover = await page.textContent('#ed-target');
+  const beforeArid = await envCount();
+  await stroke([-35, -28], [-15, -22]);
+  const sArid = await page.evaluate(() => window.__envStroke);
+  const aridToast = await page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  check(/sand, dirt, gravel or stone/.test(card) && /paints only on .*not on grass here/.test(aridHover) && (await envCount()) === beforeArid && sArid?.wrongGround > 0 && /Paint on any ground/.test(aridToast), `Arid on grass: the card and the pointer say its ground first, a stroke paints nothing and says why (${JSON.stringify({ card, aridHover, aridToast, wrongGround: sArid?.wrongGround })})`);
+  await page.click('#ed-env-any-ground');
+  await stroke([-35, -28], [-15, -22]);
+  const arid = await page.evaluate((n) => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).slice(n).map((e) => `${e.model}#${e.variant ?? 0}`), beforeArid);
+  const dry = arid.filter((m) => /env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#1$/.test(m));
+  check(arid.length > 5 && !(await page.isVisible('#ed-env-ground')) && dry.length > 0 && arid.every((m) => !/env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#0$/.test(m)), `"Paint on any ground" paints Arid on grass, its acacias, laurels and grass dry (${arid.length} painted, ${dry.length} dry: ${[...new Set(arid)].join(', ')})`);
+  await shot('arid-grass');
   await page.selectOption('#ed-env-preset', 'alpine');
   await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
   await look(52, 0, 24);
@@ -3378,6 +4035,114 @@ async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
  * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
  * E2E_SHOTS when set.
  */
+/**
+ * MapMaker UI spec Phase 2, the shared transform command (shared editor/transform.ts): typing X, Height or Z in the
+ * inspector moves a thing exactly as a drag or a nudge does (rounded to the millimetre, a prop on the terrain bedded
+ * where it lands), a moving build selected whole moves with its blocks and props, and each typed value is one undo
+ * step; Esc in a field puts the value back without an edit.
+ */
+async function editorTransformChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const pos = async (id) => (await doc()).entities.find((e) => e.id === id)?.position;
+  const rev = () => page.evaluate(() => window.__editor.history.revision);
+  // Ground rising 1 m in 10 to the east, a crate on it, and a moving build (a lift block and a barrel on a mover).
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const after = { ...t, heights: t.heights.map((_, i) => Math.round(((i % t.cols) * t.spacing + t.origin[0] + 60) * 10)) };
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'setTerrain', before: t, after },
+        { kind: 'addEntities', entities: [
+          prop('e2e_crate', 'core.crate', [0, t.baseY + 6, 20]),
+          { id: 'e2e_lift', kind: 'block', position: [6, 8, 30], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+          prop('e2e_barrel', 'kit.drum.steel', [6, 8.15, 30]),
+          { id: 'e2e_mover', kind: 'mover', position: [6, 8, 30], yaw: 0, blocks: ['e2e_lift'], props: ['e2e_barrel'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+        ] },
+      ],
+    });
+    // Bedded on the slope, as Settle on ground does.
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['e2e_crate'] });
+    ed.edits.settleProps(['e2e_crate']);
+  });
+  await frames(page, 3);
+  /** The inspector's number field in the row labelled `label`, filled with `value` and committed with Enter (or cancelled with Esc). */
+  const typeField = async (label, value, key = 'Enter') => {
+    const ok = await page.evaluate((label) => {
+      for (const r of document.querySelectorAll('#ed-inspector .row')) {
+        if (r.firstElementChild?.textContent?.trim() !== label) continue;
+        const input = r.querySelector('input[type=number]');
+        if (!input) continue;
+        document.querySelectorAll('[data-e2e-field]').forEach((x) => x.removeAttribute('data-e2e-field'));
+        input.setAttribute('data-e2e-field', '1');
+        return true;
+      }
+      return false;
+    }, label);
+    if (!ok) return false;
+    await page.fill('[data-e2e-field]', String(value));
+    await page.press('[data-e2e-field]', key);
+    await frames(page, 3);
+    await page.evaluate(() => document.activeElement?.blur?.());
+    return true;
+  };
+  const select = async (ids) => {
+    await page.evaluate((ids) => window.__editor.setSelection({ tiles: [], entities: ids }), ids);
+    await frames(page, 2);
+  };
+
+  // The crate on the slope: X typed 10 m east is rounded to the millimetre and bedded on the ground there.
+  const crate0 = await pos('e2e_crate');
+  await select(['e2e_crate']);
+  const r0 = await rev();
+  check(await typeField('X', 10.123456), 'the prop inspector has an X field');
+  const typed = await pos('e2e_crate');
+  check(typed?.[0] === 10.123 && (await rev()) === r0 + 1, `typing X rounds to the millimetre, as a drag does, in one undo step (${JSON.stringify(typed)}, ${(await rev()) - r0} steps)`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(JSON.stringify(await pos('e2e_crate')) === JSON.stringify(crate0), 'one undo puts it back');
+  // The same 10 m by the arrow keys (a nudge is half a metre): where it lands, the typed X gives the same height.
+  await select(['e2e_crate']);
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight');
+  await frames(page, 2);
+  const nudged = await pos('e2e_crate');
+  for (let i = 0; i < 20; i++) await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await select(['e2e_crate']);
+  await typeField('X', crate0[0] + 10);
+  const typed10 = await pos('e2e_crate');
+  check(nudged && typed10 && nudged[0] === typed10[0] && Math.abs(nudged[1] - typed10[1]) < 1e-6 && typed10[1] > crate0[1] + 0.9, `typing X beds a prop on the terrain where it lands, as a nudge does (nudged ${JSON.stringify(nudged)}, typed ${JSON.stringify(typed10)}, from ${JSON.stringify(crate0)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Z too; and Esc in the field puts the value back with no edit.
+  await select(['e2e_crate']);
+  const r1 = await rev();
+  await typeField('Z', 25, 'Escape');
+  check((await rev()) === r1 && (await pos('e2e_crate'))?.[2] === crate0[2], `Esc in a field cancels: no edit (${(await rev()) - r1} steps)`);
+
+  // The moving build selected whole (as a click on any part selects it): X moves the mover, its block and its barrel.
+  await select(['e2e_mover', 'e2e_lift', 'e2e_barrel']);
+  const r2 = await rev();
+  await typeField('X', 2);
+  const build = await Promise.all(['e2e_mover', 'e2e_lift', 'e2e_barrel'].map(pos));
+  check(build.every((p) => p?.[0] === 2) && (await rev()) === r2 + 1, `typing X on a moving build moves the mover with its parts, one step (${JSON.stringify(build)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await pos('e2e_lift'))?.[0] === 6 && (await pos('e2e_mover'))?.[0] === 6, 'one undo puts the whole build back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTurnChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
@@ -5841,6 +6606,89 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+  await beamMuzzleChecks(browser);
+}
+
+/**
+ * Beams stay on the muzzle (owner, 2026-11-16: the freeze gun's beam "glides around" while you move): frame by frame
+ * on the page's frame clock (60 a game second), strafing left and right, turning and jumping with the trigger held,
+ * how far each drawn beam's start is from the muzzle as drawn that frame. The freeze ray in first person and third
+ * person (Reduce flashing on, as by default: its steady beam), and the laser rifle with Reduce flashing off (a new
+ * beam every other tick). Before the fix they were 20-90 cm off (game/muzzleAnchor.ts).
+ */
+async function beamMuzzleChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(120000) });
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.laser_rifle', 'core.freeze_ray']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // Third person first: your character's gun in its hands loads in real time too.
+  await page.keyboard.press('KeyH');
+  const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
+  await page.evaluate(() => window.__frameClock.freeze());
+  /** `frames` frames of strafing, turning and jumping, firing: the worst and median start-to-muzzle distance (cm). */
+  const run = (o) =>
+    page.evaluate(({ third, frames }) => {
+      const cs = window.__cs;
+      const v = cs.view;
+      const yaw0 = cs.input.yaw;
+      const ds = [];
+      for (let f = 0; f < frames; f++) {
+        window.__autoInput = { right: Math.floor(f / 40) % 2 ? -1 : 1, forward: 0, buttons: 2 | (f % 50 === 5 ? 1 : 0) };
+        cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.6;
+        window.__frameClock.step(1000 / 60);
+        const m = third ? v.muzzleOf(cs.slot) : v.localMuzzle();
+        if (!m || f < 15) continue;
+        const starts = [];
+        for (const key of ['beam:me', `s${cs.slot}`]) {
+          const s = v.steadyArcs.start(key);
+          if (s) starts.push(s);
+        }
+        for (const fx of v.effects) {
+          const mesh = fx.mesh;
+          if (mesh.name !== 'beam' || mesh.isDisposed() || !mesh.isEnabled()) continue;
+          mesh.computeWorldMatrix(true);
+          const e = mesh.getBoundingInfo().boundingBox.extendSize.y;
+          const w = mesh.getWorldMatrix().m;
+          starts.push({ x: -e * w[4] + w[12], y: -e * w[5] + w[13], z: -e * w[6] + w[14] });
+        }
+        if (starts.length) ds.push(Math.max(...starts.map((s) => Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z))));
+      }
+      window.__autoInput = { right: 0, forward: 0, buttons: 0 };
+      for (let f = 0; f < 30; f++) window.__frameClock.step(1000 / 60);
+      ds.sort((a, b) => a - b);
+      return { frames: ds.length, worst: ds.length ? +(ds[ds.length - 1] * 100).toFixed(1) : null, median: ds.length ? +(ds[ds.length >> 1] * 100).toFixed(1) : null };
+    }, o);
+  const stepUntil = (fn, arg) => page.evaluate(([src, arg]) => { const ok = eval(src); for (let i = 0; i < 120 && !ok(arg); i++) window.__frameClock.step(1000 / 60); return ok(arg); }, [fn.toString(), arg]);
+  const ok = (r) => r.frames >= 60 && r.worst !== null && r.worst < 3;
+  const tp = await run({ third: true, frames: 150 });
+  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person while you strafe, turn and jump (${tpOn ? JSON.stringify(tp) : 'no third person'} cm)`);
+  await page.keyboard.press('KeyH');
+  const fpOn = await stepUntil(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+  const fp = await run({ third: false, frames: 150 });
+  check(fpOn && ok(fp), `the freeze ray's beam stays on the muzzle in first person (Reduce flashing on: ${fpOn ? JSON.stringify(fp) : 'no first person'} cm)`);
+  await page.evaluate(() => window.__give('core.laser_rifle'));
+  const laserIn = await stepUntil((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, 'core.laser_rifle');
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  const laser = await run({ third: false, frames: 150 });
+  await setFlashing(true);
+  check(laserIn && ok(laser), `the laser rifle's beams (a new one every other tick, Reduce flashing off) start on the muzzle while you move (${laserIn ? JSON.stringify(laser) : 'no laser'} cm)`);
+  check(errors.length === 0, `no page errors in the beam checks (${errors.join('; ')})`);
+  await ctx.close();
 }
 
 /**
@@ -10117,7 +10965,7 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
  *
  * Then a second scene by day (FLASHING_DAY: flashing-day.json), for the bright moments daylight makes: sprinting out
- * of a lit tunnel into the day, turning round and sprinting back in.
+ * of a lit tunnel into the day, turning round and sprinting back in; the hit camera kick on the tunnel's daylight edge.
  */
 async function flashingFlow(browser) {
   await flashingScene(browser);
@@ -10204,6 +11052,21 @@ const FLASHING_DAY = {
         seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
+      // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
+      // where a jolt of the view swings most pixels across it), kicked as by a full-power hit (a shotgun blast or a
+      // sniper round) five times a second for the whole recording, from either side in turn: sustained heavy fire.
+      {
+        name: 'hitkick',
+        label: 'the hit camera kick: full-power hits five times a second, by day, looking into the dark tunnel mouth',
+        weapon: 'core.arc_caster',
+        me: [24, 0, -24],
+        look: { yaw: 0, pitch: 0 },
+        bots: [],
+        at: Object.fromEntries(Array.from({ length: 10 }, (_, k) => [2 + k * 6, () => page.evaluate((side) => window.__cs.view.hitKick(1, side), k % 2 ? 1 : -1)])),
+        seen: () => page.evaluate(() => ({ kick: !!window.__cs.view.hitKickState })),
+        sees: (_on, s) => s.kick,
       },
     ];
   },
@@ -12034,6 +12897,14 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the round: its bots reach Deathmatch's score limit (15) in a few minutes, and a slow run gets there
+  // mid-flow; the host then travels to the next map, the friend follows it, and between the two sessions the
+  // friend's `__cs` is the ended-match stub (no `spectate`, "spectator false, following -1"), then another map
+  // (not `phase0_arena` for Host this map). On CI the flow takes up to 9 minutes: no time limit either.
+  await sim(host, (m) => {
+    m.rules.scoreLimit = 0;
+    m.phaseEndTick = Infinity;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');

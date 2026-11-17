@@ -34,6 +34,7 @@
     "sound": "fire.smg"
   },
   "notes": {
+    "range": "Best within 30 m: full damage, 12 body shots. Down to 70 % (16 shots) by 80 m; reaches 300 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 7: automatics.",
     "design": "Huge belt, poor handling: slow to draw and a long, dangerous reload.",

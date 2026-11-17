@@ -33,6 +33,21 @@
       <div id="headshot">HEADSHOT</div>
       <div id="vehicle-hp" hidden><span></span><i><b></b></i></div>
       <div id="vehicle-bars"></div>
+      <div id="optic" hidden>
+        <div class="lens">
+          <svg viewBox="-100 -100 200 200" aria-hidden="true">
+            <g class="duplex" stroke="#05080a" stroke-linecap="butt">
+              <line x1="-100" y1="0" x2="-30" y2="0" stroke-width="4" /><line x1="30" y1="0" x2="100" y2="0" stroke-width="4" />
+              <line x1="0" y1="30" x2="0" y2="100" stroke-width="4" /><line x1="0" y1="-100" x2="0" y2="-30" stroke-width="4" />
+              <line x1="-30" y1="0" x2="30" y2="0" stroke-width="0.6" /><line x1="0" y1="-30" x2="0" y2="30" stroke-width="0.6" />
+              <line x1="-4" y1="10" x2="4" y2="10" stroke-width="0.6" /><line x1="-3" y1="20" x2="3" y2="20" stroke-width="0.6" />
+            </g>
+            <path class="chevron" d="M -6 6 L 0 0 L 6 6" fill="none" stroke="#05080a" stroke-width="1.2" />
+            <circle r="0.9" fill="#c8302a" />
+          </svg>
+        </div>
+        <div id="optic-breath"><span>Shift: hold breath</span><i></i></div>
+      </div>
       <div id="scope" hidden>
         <svg viewBox="-100 -100 200 200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           <defs>
@@ -69,7 +84,7 @@
           <div class="vit-row st" id="stamina-row"><b id="stance"></b><div class="bar"><i id="stamina-bar"></i></div></div>
         </div>
       </div>
-      <div id="ammo"><span id="weapon-name"></span><div class="ammo-line"><b id="ammo-count"></b><span id="ammo-reserve"></span><span id="throwable"></span></div><small id="ammo-alt"></small></div>
+      <div id="ammo"><span id="weapon-name"></span><small id="fire-mode"></small><div class="ammo-line"><b id="ammo-count"></b><span id="ammo-reserve"></span><span id="throwable"></span></div><small id="ammo-alt"></small></div>
       <div id="target" hidden><span id="target-name"></span><div class="bar"><i id="target-bar"></i></div></div>
       <div id="weapon-bar"></div>
       <div id="powerups"></div>
@@ -209,7 +224,8 @@
         <div class="spacer"></div>
         <button id="ed-view-btn" type="button" title="View: grid, full grid, overlaps, the plan view and the map layers (MapMaker only, not saved)"><span>View</span> <span aria-hidden="true">▾</span></button>
         <select id="ed-snap" title="Snap for spawns, items, objects and props (hold Ctrl while placing for none)"><option value="fine">Snap 25 cm</option><option value="normal" selected>Snap 50 cm</option><option value="coarse">Snap 1 m</option><option value="off">Snap off</option></select>
-        <label class="ed-pick" title="Map theme"><span class="wide">Theme</span><select id="ed-theme" title="Map theme"></select></label>
+        <button id="ed-theme-chip" class="ed-pick ed-chip" type="button" aria-controls="ed-map-settings" title="Structure theme: change it in Map settings"><span class="wide">Structure theme</span><b id="ed-theme-chip-name">Prototype</b></button>
+        <button id="ed-ground-chip" class="ed-pick ed-chip" type="button" aria-controls="ed-map-settings" title="Ground theme: change it in Map settings"><span class="wide">Ground theme</span><b id="ed-ground-chip-name">Meadow</b></button>
         <select id="ed-bots" title="Bots in TEST"></select>
         <select id="ed-skill" title="Bot skill in TEST"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select>
         <button id="ed-test-here" title="Play from here: a test match with you standing below the camera, facing where it looks (Shift+F5)">▶ <span class="wide">Here</span></button>
@@ -245,7 +261,7 @@
             <button id="ed-pal-view" class="ed-pal-view" type="button" aria-label="Grid or card view"><svg viewBox="0 0 16 16" aria-hidden="true"><path class="g" d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z"/><path class="c" d="M1 1h14v4H1zM1 6.5h14v4H1zM1 12h14v3H1z"/></svg></button>
           </div>
           <div id="ed-pack-row" class="ed-pack-row">
-            <select id="ed-pack" title="Style Pack: show only one pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="">All pieces</option></select>
+            <select id="ed-pack" title="This map's themes: the packs that use the map's Structure theme first (marked). All: every piece in the catalogue's order. A Style Pack: only that pack's tiles, props, gameplay pieces, vehicles and pickups; mix packs freely"><option value="@themes" selected>This map's themes</option><option value="">All pieces</option></select>
             <button id="ed-pack-theme" title="Use the pack's theme for this map" hidden>Use theme</button>
           </div>
         </div>
@@ -307,7 +323,7 @@
               <label class="stack">Width (m)<input id="ed-tr-new-w" type="number" min="32" max="400" step="4" placeholder="size" /></label>
               <label class="stack">Depth (m)<input id="ed-tr-new-d" type="number" min="32" max="400" step="4" placeholder="size" /></label>
             </div>
-            <label class="stack">Ground<select id="ed-tr-new-ground"></select></label>
+            <label class="stack" title="The base ground every cell starts as (and follows until you paint it)">Ground theme<select id="ed-tr-new-ground"></select></label>
             <button id="ed-tr-new" class="primary">Create terrain</button>
           </div>
           <div id="ed-tr-edit" hidden>
@@ -324,10 +340,10 @@
             <label class="check" title="Ground under blocks standing on it (and 1.5 m round them) stays as it is, so buildings, walls and pads don't float or sink"><input id="ed-tr-smooth-hold" type="checkbox" checked /> Keep the ground under blocks</label>
             <div class="sub-h">Ground paint</div>
             <div id="ed-tr-materials" class="mats"></div>
-            <button id="ed-tr-cliffs">Paint steep slopes as stone</button>
-            <div class="ed-tr-swap" title="Swap the ground the terrain is mostly made of for another material; what you painted by hand stays">
-              <label class="stack">Main ground<select id="ed-tr-base"></select></label>
-              <button id="ed-tr-base-set">Change</button>
+            <button id="ed-tr-cliffs">Paint steep slopes as rock</button>
+            <div class="ed-tr-swap" title="The Ground theme: the base ground every cell you haven't painted shows. It is changed in Map settings, which says first what would change; what you painted stays">
+              <div class="ed-note" id="ed-tr-theme"></div>
+              <button id="ed-tr-theme-set">Change…</button>
             </div>
             <div class="sub-h">Plants</div>
             <div id="ed-tr-foliage" class="seg"></div>
@@ -361,6 +377,7 @@
           <div id="ed-tints"></div>
           <label class="stack inline-row">Custom tint <input id="ed-tint-custom" type="color" value="#ffffff" /></label>
           <div class="sub-h">Materials</div>
+          <div id="ed-mat-view" class="seg ed-mat-view" role="group" aria-label="Materials shown"><button type="button" data-mv="theme" class="active" aria-pressed="true" title="The Structure theme's own materials, then its packs' materials, then what you painted lately">This map's themes</button><button type="button" data-mv="all" aria-pressed="false" title="Every material, by kind">All</button></div>
           <div id="ed-materials"></div>
         </div>
       </aside>
@@ -371,7 +388,7 @@
           <button id="ed-dock-hide" type="button" aria-keyshortcuts="Shift+Backslash" title="Hide the right dock (Shift+\)" aria-label="Hide the right dock">›</button>
         </div>
         <div id="ed-dock-mini" class="ed-dock-mini" hidden>
-          <div class="ed-dock-mini-map" role="img" aria-label="Minimap (coming in a later update)"><span>Minimap</span><small>Coming in a later update</small></div>
+          <div id="ed-minimap-mini" class="ed-minimap-slot"></div>
           <button id="ed-dock-expand" type="button" title="The Outliner and Properties (Shift+\)">Expand</button>
         </div>
         <section id="ed-map-settings" aria-labelledby="ed-ms-title" hidden>
@@ -379,9 +396,9 @@
           <div id="ed-ms-body"></div>
         </section>
         <div id="ed-dock-panels">
-        <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel">
-          <h3 class="ed-panel-head"><button type="button" aria-expanded="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button><span id="ed-ol-count"></span></h3>
-          <div class="ed-panel-body" id="ed-outliner"></div>
+        <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel" data-tab="outliner">
+          <h3 class="ed-panel-head ed-nav-head"><button type="button" class="ed-nav-fold" aria-expanded="true" aria-label="Fold the Minimap and Outliner" title="Fold the Minimap and Outliner"></button><span class="ed-nav-tabs" role="tablist" aria-label="Map navigation"><button type="button" role="tab" id="ed-tab-minimap" data-tab="minimap" aria-controls="ed-minimap-host" aria-selected="false" tabindex="-1" title="The level from above: the camera, the selection; click to select or go there">Minimap</button><button type="button" role="tab" id="ed-tab-outliner" data-tab="outliner" aria-controls="ed-outliner" aria-selected="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button></span><span id="ed-ol-count"></span></h3>
+          <div class="ed-panel-body ed-nav-body"><div id="ed-minimap-host" class="ed-minimap-slot" role="tabpanel" aria-labelledby="ed-tab-minimap" hidden></div><div id="ed-outliner" role="tabpanel" aria-labelledby="ed-tab-outliner"></div></div>
         </section>
         <section class="ed-panel" data-panel="inspector">
           <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Properties</button></h3>
@@ -427,7 +444,7 @@
         <h2>New map</h2>
         <p class="ed-note">Start on open ground in the size you want, or in the sky (no terrain: build floating platforms). Terrain can be added or removed later in Environment → Terrain.</p>
         <div id="ed-new-sizes" class="ed-new-sizes" role="radiogroup" aria-label="Map size"></div>
-        <label class="ed-dialog-field"><span>Ground</span><select id="ed-new-ground"></select></label>
+        <label class="ed-dialog-field"><span>Ground theme</span><select id="ed-new-ground"></select></label>
         <div class="ed-dialog-actions">
           <button id="ed-new-create" class="primary">Create</button>
           <button id="ed-new-cancel">Cancel</button>

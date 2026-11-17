@@ -73,7 +73,7 @@ import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
 import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
-import { PhysicsWorld, type GroundHeight } from './physics.ts';
+import { PhysicsWorld, type ChassisBody, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
 import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid, yawPitchRoll, type RigidSetup, type RigidState } from './wheelPhysics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
@@ -102,18 +102,19 @@ import { TrackDriver, type DrivenVehicle } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
+import { DEFAULT_LOOK, botLookOrder, getLook } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
 import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, impactFalloff, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
+import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
-import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
+import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -184,6 +185,8 @@ export interface WeaponState {
   overheated?: boolean;
   /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
   firedTick?: number;
+  /** The fire mode it is set to (index into its `fireModes`, sim/fireModes.ts; absent: its first). */
+  mode?: number;
   /** A magazine is in but no round is chambered (an empty reload stopped before the bolt). */
   unchambered?: boolean;
   /** Mounted guns with limited ammunition (SeatDef.ammo): rounds aboard, and ticks toward the next one back. */
@@ -263,6 +266,8 @@ interface MountRt {
   rigidSetup?: RigidSetup;
   rigid?: RigidState;
   chassisProbe?: RAPIER.Collider;
+  /** Driving physics 4: the hull as a Rapier body (PhysicsWorld.createChassisBody); absent with `?drive=own` (the probe's sweep). */
+  chassisBody?: ChassisBody;
   /**
    * The driver's inputs applied this tick: a driven rigid vehicle steps once for each, as the driver's own prediction
    * steps once per input (Match.driveRigid).
@@ -452,6 +457,8 @@ export interface Combatant {
   semiLatch: boolean;
   burstLeft: number;
   burstTimer: number;
+  /** Ticks between a burst's rounds (the mode it was fired in: a mode switch mid-burst doesn't change it). */
+  burstEvery?: number;
   bloom: number;
   /** Mechanical recoil offset, spray and sights (gunplay.ts), counted in applied inputs like the timers. */
   gun: GunState;
@@ -548,6 +555,13 @@ interface Bullet {
   energy: number;
   /** Damage left after penetrations and ricochets (1 = full). */
   scale: number;
+  /**
+   * Damage by impact speed (gunplay.ts impactFalloff): the speed its muzzle speed has become through what it passed
+   * (penetration, water, a ricochet: their damage is in `scale`), so speed / ref is what drag alone left; and its
+   * speed at the start of the segment being flown (the strike's speed is read along it).
+   */
+  ref: number;
+  seg: number;
   pens: number;
   rics: number;
   /** Surfaces it passed through or glanced off (drawn as impacts). */
@@ -834,7 +848,7 @@ export class Match {
      * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
      * `navReused`), as the process's navCache is.
      */
-    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' } = {},
+    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own' } = {},
   ) {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
@@ -1520,12 +1534,27 @@ export class Match {
     return this.rules.botCast ?? validBotCast(this.map.botCast);
   }
 
-  /** A random bot's look for its slot: spread across the looks the bot-characters setting allows (all: the whole roster, as ever). */
+  /** Each cast's deal (botLookOrder over castLooks), by cast key. */
+  private botDeals = new Map<string, string[]>();
+
+  /**
+   * A random bot's look for its slot: the match's own shuffle of the looks the bot-characters setting allows (all:
+   * the whole core roster), each bot a different look until the pool runs out. The deal starts at the slot's place
+   * and steps past looks other random bots already wear (a set's hand picks and away players' bodies count too).
+   */
   botLook(slot: number): string {
     const cast = this.botCast;
-    if (!cast.length) return lookForBot(slot);
-    const pool = castLooks(cast);
-    return pool[(slot + 1) % pool.length]!.id;
+    const key = cast.join(',');
+    let order = this.botDeals.get(key);
+    if (!order) this.botDeals.set(key, (order = botLookOrder(castLooks(cast), this.seed)));
+    const worn = new Set<string>();
+    for (const c of this.combatants()) if (c.kind === 'bot' && c.slot !== slot) worn.add(c.ownLook ?? c.look);
+    const start = slot % order.length;
+    for (let k = 0; k < order.length; k++) {
+      const id = order[(start + k) % order.length]!;
+      if (!worn.has(id)) return id;
+    }
+    return order[start]!;
   }
 
   /**
@@ -3268,6 +3297,9 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      // The fire mode the player wants for the gun in hand (spec §36): part of the input, so prediction replays it.
+      if (!gun && input.fireMode !== undefined && def.fireModes) held.mode = clampFireMode(def, input.fireMode);
+      const firing = firingOf(def, gun ? 0 : held.mode);
       c.thirdPerson = c.kind === 'human' && !c.mount && (input.buttons & BUTTON_THIRD_PERSON) !== 0;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
@@ -3297,23 +3329,22 @@ export class Match {
         // The rest of a burst follows on its own timer.
         if (--c.burstTimer <= 0) {
           if (!frozen && c.reloadTicks === 0 && spendRound(held)) {
-            this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+            this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
             fired = true;
             c.burstLeft--;
-            c.burstTimer = def.burst?.intervalTicks ?? 1;
+            c.burstTimer = c.burstEvery ?? def.burst?.intervalTicks ?? 1;
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
         if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
         else if (spendRound(held)) {
-          const mode = def.fireMode ?? 'auto';
-          c.fireCooldown = def.fireIntervalTicks;
-          c.semiLatch = mode !== 'auto';
-          this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+          c.fireCooldown = firing.interval;
+          c.semiLatch = firing.mode !== 'auto';
+          this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
           fired = true;
-          if (mode === 'burst' && def.burst) {
-            c.burstLeft = def.burst.count - 1;
-            c.burstTimer = def.burst.intervalTicks;
+          if (firing.burst) {
+            c.burstLeft = firing.burst.count - 1;
+            c.burstTimer = c.burstEvery = firing.burst.intervalTicks;
           }
           if (def.windupResets) c.windup = 0;
         }
@@ -3353,7 +3384,7 @@ export class Match {
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
       // Aim settles back after the recoil along the weapon's curve; the spray recovers.
-      if (!fired) recoilIdle(c.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
+      if (!fired) recoilIdle(c.gun, firing.kick, gp.accuracy, firing.interval);
       // Classes: G is the class's ability (sentry, overcharge, cloak) when it has one.
       if (input.buttons & BUTTON_THROW && !frozen && !gun && c.cls && this.classes?.useAbility(c)) {
         // Used.
@@ -3508,7 +3539,7 @@ export class Match {
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
     // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
-    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, gp.kick);
+    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
     else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
@@ -3587,7 +3618,15 @@ export class Match {
         if (world) bodies.push({ handle: world.handle, dist: wallAt, at: add(eye, scale(dir, wallAt)) });
         continue;
       }
-      const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      let shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      if (shot.hitSlot === null && world) {
+        // Into an open vehicle's hull: its riders are exposed (openHull).
+        const open = this.openHull(world.handle, eye, dir, def.range);
+        if (open) {
+          const inside = resolveHitscan(eye, dir, def.range, open.beyond, targets.filter((t) => open.riders.includes(t.slot)));
+          if (inside.hitSlot !== null) shot = inside;
+        }
+      }
       // Shots go through breakable glass, shattering it on the way (sim/glass.ts), and lose a little for each pane.
       const broke = this.scenario.shootGlass(eye, dir, hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
@@ -3699,11 +3738,12 @@ export class Match {
   /**
    * Stopping power (sim/impact.ts): a hit by `weapon` with `share` of a full shot's damage shoves a
    * living body a little along `dir` and slows it briefly, within the stagger caps and immunity.
-   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly.
+   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly; someone in the air takes
+   * IMPACT.airShove times as much, and keeps it until they land.
    */
   private stagger(victim: Combatant, power: number, dir: Vec3, share: number): void {
     if (!victim.alive || victim.mount || victim.invulnerable) return;
-    const shove = hitImpact(victim.impact, power, share);
+    const shove = hitImpact(victim.impact, power, share) * (victim.move.grounded ? 1 : IMPACT.airShove);
     if (shove <= 0) return;
     const h = hypot(dir.x, dir.z);
     if (h < 0.05) return;
@@ -4060,7 +4100,7 @@ export class Match {
     let armored = false;
     for (let p = 0; p < Math.max(1, def.pellets); p++) {
       const dir = this.spreadDir(aim, spread);
-      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, pens: 0, rics: 0, marks: [], born: this.tick };
+      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, ref: phys.speed, seg: phys.speed, pens: 0, rics: 0, marks: [], born: this.tick };
       // Near range: one straight ray, no time taken.
       const near = add(eye, scale(dir, Math.min(NEAR_INSTANT_M, def.range)));
       b.pos = near;
@@ -4143,6 +4183,7 @@ export class Match {
   private flyTick(b: Bullet, targets: ShotTargets): BulletEnd | null {
     const dt = TICK_DT / BULLET_SUBSTEPS;
     for (let i = 0; i < BULLET_SUBSTEPS; i++) {
+      b.seg = hypot(b.vel.x, b.vel.y, b.vel.z);
       const seg = flyBullet(b, b.gravity, b.drag, dt);
       b.age += dt;
       const end = this.bulletSegment(b, seg.from, seg.to, targets);
@@ -4183,6 +4224,22 @@ export class Match {
         zone = lastHit.zone;
       }
     }
+    if (!victim && wall && wall.dist < len) {
+      // Into an open vehicle's hull: its riders are exposed (openHull); the round goes on to one inside it.
+      const open = this.openHull(wall.handle, a, u, len);
+      if (open) {
+        let inBest = Math.min(len, open.beyond);
+        for (const t of targets) {
+          if (!open.riders.includes(t.slot) || (t.who && !t.who.alive)) continue;
+          const d = rayTarget(a, u, t, inBest);
+          if (d !== null && d < inBest) {
+            inBest = best = d;
+            victim = t;
+            zone = lastHit.zone;
+          }
+        }
+      }
+    }
     // Water soaks up energy on the way to whatever is hit (spec §8): a pistol round dies in a metre of it,
     // a rifle round comes out the far side slower and weaker.
     const wet = this.liquids.length ? waterSpan(this.liquids, a, u, Math.min(len, best)) : null;
@@ -4194,7 +4251,7 @@ export class Match {
       }
       const kept = left / b.energy;
       b.energy = left;
-      b.vel = scale(b.vel, Math.sqrt(kept));
+      this.slowBullet(b, Math.sqrt(kept));
       b.scale *= kept;
     }
     // Breakable glass before whatever stops it shatters, and the round goes on a little weaker (GLASS.passDamage).
@@ -4206,7 +4263,7 @@ export class Match {
     if (victim) {
       const at = add(a, scale(u, best));
       const gp = gunplayOf(getWeapon(b.trig.id));
-      const damage = b.trig.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, b.travelled + best) * b.scale;
+      const damage = b.trig.damage * zoneScale(gp, zone) * this.bulletFalloff(b, gp, best, len) * b.scale;
       return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
     }
     if (wall) {
@@ -4217,14 +4274,15 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
-      this.noteTargetHit(owner, wall.handle, raw * falloffAt(gunplayOf(getWeapon(b.trig.id)).falloff, b.travelled + wall.dist), at);
+      this.noteTargetHit(owner, wall.handle, raw * this.bulletFalloff(b, gunplayOf(getWeapon(b.trig.id)), wall.dist, len), at);
       if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
       const grazing = Math.asin(Math.min(1, Math.abs(u.x * n.x + u.y * n.y + u.z * n.z)));
       if (b.rics < MAX_RICOCHETS && spec.ricochet > 0 && grazing < RICOCHET_MAX_ANGLE && ricochets(mat, grazing, this.rng())) {
         const vn = b.vel.x * n.x + b.vel.y * n.y + b.vel.z * n.z;
-        b.vel = scale({ x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z }, 0.6);
+        b.vel = { x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z };
+        this.slowBullet(b, 0.6);
         b.pos = add(at, scale(n, 0.02));
         b.scale *= 0.5;
         b.energy *= 0.4;
@@ -4242,7 +4300,7 @@ export class Match {
           if (left !== null) {
             const kept = left / b.energy;
             b.energy = left;
-            b.vel = scale(b.vel, Math.sqrt(kept));
+            this.slowBullet(b, Math.sqrt(kept));
             b.scale *= kept;
             b.pens++;
             b.travelled += wall.dist + thick;
@@ -4256,6 +4314,23 @@ export class Match {
     }
     b.travelled += len;
     return null;
+  }
+
+  /** A bullet slowed by what it passed (penetration, water, a ricochet): its damage takes that share through `scale`, so the speed reference goes down with it. */
+  private slowBullet(b: Bullet, k: number): void {
+    b.vel = scale(b.vel, k);
+    b.ref *= k;
+    b.seg *= k;
+  }
+
+  /**
+   * Damage multiple of a bullet striking `at` metres along the segment it is flying (`len` long): by its speed at the
+   * strike over its muzzle speed under Standard and Advanced ballistics, by distance flown under Arcade (impactFalloff).
+   */
+  private bulletFalloff(b: Bullet, gp: Gunplay, at: number, len: number): number {
+    const end = hypot(b.vel.x, b.vel.y, b.vel.z);
+    const speed = b.seg + (end - b.seg) * Math.min(1, Math.max(0, at / Math.max(len, 1e-6)));
+    return impactFalloff(gp, this.rules, b.travelled + at, b.ref > 0 ? speed / b.ref : 1);
   }
 
   /** Where a ray entering a surface at `at` comes out (null: thicker than a metre or so, or solid all the way). */
@@ -4667,11 +4742,14 @@ export class Match {
     // Rigid driving where the vehicle has it on (or the match asks for it: MatchOptions.drive); not afloat.
     const rigid = rigidOf(def);
     const drive = this.opts.drive;
-    if (rigid && !floats && (drive === 'rigid' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
+    if (rigid && !floats && (drive === 'rigid' || drive === 'own' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
       m.rigidSetup = rigid;
       m.rigid = newRigid(rigid, pos, yaw);
       m.rigidSeen = { pos: m.pos, yaw, speed: 0 };
-      m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+      // Driving physics 4: the hull a Rapier body (owner, 2026-11-16: 1a, straight to the default); `?drive=own` keeps
+      // driving physics 3's own hull contacts and sweep, to compare.
+      if (drive === 'own') m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+      else m.chassisBody = this.physics.createChassisBody(rigid.hullPoints, rigid.hullBorder, rigid.com, [1 / rigid.invI[0], 1 / rigid.invI[1], 1 / rigid.invI[2]], rigid.hullFriction);
     }
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
@@ -4680,6 +4758,20 @@ export class Match {
   private seatOf(c: Combatant): SeatDef | null {
     if (!c.mount) return null;
     return this.mounts[c.mount.index]?.def.seats[c.mount.seat] ?? null;
+  }
+
+  /**
+   * A shot that struck `handle`: when it is an open vehicle's hull (not sealed: MountArmour) with riders, how far the
+   * shot could go on through it, and who rides in it. Riders of an open vehicle are exposed: its collision box (the
+   * Troop Buggy's is 1.6 m tall over an open tube frame) stands in for the whole body, and a seated rider's chest is
+   * inside it, so without this every round aimed at a driver's middle stopped in the box (owner, 2026-11-16: "bots not
+   * being able to shoot me ... only me, the driver"). The vehicle is not hurt by a round that hits a rider.
+   */
+  private openHull(handle: number, from: Vec3, dir: Vec3, maxDist: number): { beyond: number; riders: (number | null)[] } | null {
+    const m = this.mountBodies.get(handle);
+    if (!m || !m.alive || m.def.kind !== 'vehicle' || sealedMount(m.def) || !m.seats.some((s) => s !== null)) return null;
+    const next = this.physics.raycastHitPast(from, dir, maxDist, m.body);
+    return { beyond: next?.dist ?? maxDist, riders: m.seats };
   }
 
   /** Aboard a sealed vehicle that still stands (MountArmour.sealed, the Tank): out of reach of everything outside. */
@@ -5692,7 +5784,7 @@ export class Match {
     }
     const piloted = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null) || !!m.ambient;
     const road = roadHandling(this.road, m.pos, false);
-    const world = this.physics.chassisWorld(m.chassisProbe!, m.body);
+    const world = this.physics.chassisWorld(m.chassisProbe ?? null, m.body, m.chassisBody);
     const before = { ...m.pos };
     let landing = 0;
     let blocked = 0;
@@ -7245,7 +7337,7 @@ export class Match {
   private rigidPrivate(c: Combatant): { vp?: number[] } {
     const m = this.mounts[c.mount!.index];
     if (!m?.rigid || !m.alive || m.def.seats[c.mount!.seat]?.role !== 'driver') return {};
-    return { vp: rigidWire(m.index, m.rigid) };
+    return { vp: rigidWire(m.index, m.rigid, !!m.chassisBody) };
   }
 
   /** The owning player's inventory and timers. */
@@ -7906,6 +7998,8 @@ interface Trigger {
   headshot?: number;
   /** Second triggers: their own kick and falloff (AltFire). */
   kick?: KickSpec;
+  /** The primary trigger's recoil in the fire mode it was pulled in (sim/fireModes.ts). */
+  modeKick?: KickSpec | null;
   falloff?: FalloffSpec;
 }
 
@@ -7960,8 +8054,9 @@ function aimSpread(c: Combatant, def: Trigger, spread: number): number {
   return spread + (w.view.zoomFov < 0.5 ? 0.05 : 0.012);
 }
 
-function primaryTrigger(def: WeaponDefinition): Trigger {
+function primaryTrigger(def: WeaponDefinition, firing?: Firing): Trigger {
   return {
+    ...(firing && firing.index > 0 ? { modeKick: firing.kick } : {}),
     id: def.id,
     kind: def.kind,
     damage: def.damage,

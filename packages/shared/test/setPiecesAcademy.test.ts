@@ -343,9 +343,12 @@ describe('what the bays are made of, and what they cost', () => {
     return { tiles: tiles.length, blocks: n('block'), props: n('prop'), doors: n('door'), lights: n('light'), tileIds: [...new Set(tiles.map((t) => t.tile))].sort(), models };
   };
   it('each is made of the kit tiles, blocks, props and lights it says', () => {
-    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 36, doors: 0, lights: 1, tileIds: ['core.room'] });
-    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front', 'kit.door.oak_open', 'kit.seat.chair', 'kit.table.desk_hutch', 'prop.hh_cupboard_sink']);
-    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 30, doors: 0, lights: 1 });
+    // Room furniture paired (the default since St. John's step 4): a room's desks and chairs one prop, its closet
+    // fronts another, so a room is 5 props, not 9.
+    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 20, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front_pair', 'kit.door.oak_open', 'kit.table.desk_hutch_pair', 'prop.hh_cupboard_sink']);
+    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 18, doors: 0, lights: 1 });
+    expect(made('setpiece.hall_centre')).toMatchObject({ props: 65 });
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
@@ -374,13 +377,48 @@ describe('what the bays are made of, and what they cost', () => {
     expect(one.collision).toBeLessThanOrEqual(104);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
-    expect(one.props).toBe(36);
+    expect(one.props).toBe(20);
+  });
+
+  it('paired furniture collides exactly as the separate pieces did, in every dorm piece and turn', () => {
+    const rotateYaw = (x: number, z: number, yaw: number): [number, number] => [x * Math.cos(yaw) + z * Math.sin(yaw), -x * Math.sin(yaw) + z * Math.cos(yaw)];
+    const furniture = /^kit\.(table\.desk_hutch|seat\.chair|cabinet\.closet_front)/;
+    const boxes = (piece: string, rotation: Rotation, furnitureChoice: string) => {
+      const map = withPiece(piece, rotation, false, { furniture: furnitureChoice });
+      const ids = new Set(map.entities.filter((e) => e.kind === 'prop' && furniture.test(e.model)).map((e) => e.id));
+      const r = (v: number) => Math.round(v * 100) / 100;
+      return buildMapGeometry(map)
+        .filter((b) => ids.has(b.sourceId))
+        .map((b) => {
+          // The box in the world: its corners in plan, turned about its middle, and its height.
+          const cx = (b.min[0] + b.max[0]) / 2;
+          const cz = (b.min[2] + b.max[2]) / 2;
+          const corners = [[b.min[0], b.min[2]], [b.max[0], b.min[2]], [b.max[0], b.max[2]], [b.min[0], b.max[2]]].map(([x, z]) => {
+            const [dx, dz] = rotateYaw(x! - cx, z! - cz, b.yaw ?? 0);
+            return `${r(cx + dx)}/${r(cz + dz)}`;
+          });
+          return [...corners.sort(), r(b.min[1]), r(b.max[1])].join(',');
+        })
+        .sort();
+    };
+    for (const piece of ['setpiece.dorm_bay', 'setpiece.dorm_bay_closed', 'setpiece.dorm_corner_bay', 'setpiece.dorm_entry_bay', 'setpiece.hall_centre'])
+      for (const rotation of [0, 1, 2, 3] as Rotation[]) {
+        const paired = boxes(piece, rotation, 'paired');
+        expect(paired.length, `${piece} turned ${rotation}`).toBeGreaterThan(0);
+        expect(paired, `${piece} turned ${rotation}`).toEqual(boxes(piece, rotation, 'separate'));
+      }
   });
 
   it('the closets are in the entry wall: its face and the closet fronts line up, nothing behind, beside or over them is open', () => {
-    const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    // The separate fronts (Room furniture: Separate pieces), and the paired fronts' two halves where they stand.
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { furniture: 'separate' } } }]);
     const fronts = map.entities.filter((e) => e.kind === 'prop' && e.model === 'kit.cabinet.closet_front');
     expect(fronts).toHaveLength(8);
+    const paired = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]).entities.filter((e) => e.kind === 'prop' && e.model === 'kit.cabinet.closet_front_pair');
+    expect(paired).toHaveLength(4);
+    expect(getProp('kit.cabinet.closet_front_pair')!.collision).toBeNull();
+    const halves = paired.flatMap((e) => [-1.47, 1.47].map((d) => `${(e.position[0] + d).toFixed(2)},${e.position[2].toFixed(3)}`)).sort();
+    expect(halves).toEqual(fronts.map((e) => `${e.position[0].toFixed(2)},${e.position[2].toFixed(3)}`).sort());
     expect(getProp('kit.cabinet.closet_front')!.collision).toBeNull();
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
     for (const f of fronts) {

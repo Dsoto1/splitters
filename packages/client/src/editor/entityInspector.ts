@@ -50,7 +50,6 @@ import {
   MOUNT_SKIN_LABELS,
   MOUNT_SKINS,
   MOVER_MODES,
-  normalizeYaw,
   NPC_ROLE_SPECS,
   NPC_ROLES,
   PLAYER,
@@ -100,17 +99,20 @@ export class EntityInspector {
       name.addEventListener('change', () => update('Rename', { name: name.value.trim() || undefined }));
       el.append(row('Name', name));
     }
-    const setPos = (i: number, v: number) => {
-      const position = [...e.position] as [number, number, number];
-      position[i] = v;
-      update(`Move ${e.kind}`, { position });
+    // Position and facing go through the shared transform command (MapMaker UI spec Phase 2): the same rounding and
+    // bedding on the terrain as a drag, and a moving build selected whole moves and turns with its parts.
+    const axis = (i: 0 | 1 | 2, label: string, step: number) => {
+      const f = numberInput(e.position[i], step, (value) => this.app.transform(`Move ${e.kind}`, { set: { id: e.id, axis: i, value } }));
+      f.id = `ed-insp-${'xyz'[i]}`;
+      f.title = `${label} in metres (Enter: move · Esc: put back)`;
+      return row(label, f);
     };
-    el.append(
-      row('X', numberInput(e.position[0], 0.5, (v) => setPos(0, v))),
-      row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
-      row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
-    );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))), this.app.inspector.quickFacings({ tiles: [], entities: [e.id] }, e.yaw));
+    el.append(axis(0, 'X', 0.5), axis(1, 'Height', 0.25), axis(2, 'Z', 0.5));
+    if ('yaw' in e) {
+      const facing = numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => this.app.transform('Turn', { face: { id: e.id, deg } }));
+      facing.id = 'ed-insp-facing';
+      el.append(row('Facing °', facing), this.app.inspector.quickFacings(e.id, e.yaw));
+    }
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');

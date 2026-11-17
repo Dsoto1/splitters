@@ -453,6 +453,57 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.seat.bench_stone",
+      "displayName": "Stone Bench",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a dressed limestone slab 1.8 m long on two plinths, seat 0.48 m high. Collides as its box."
+      },
+      "size": [
+        1.8,
+        0.48,
+        0.5
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "stonebench",
+        "slab": 0.11,
+        "leg": 0.28,
+        "inset": 0.15
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "limestone",
+          "seed": 11601,
+          "look": {
+            "stone": "#b3ac9d"
+          }
+        },
+        {
+          "index": 1,
+          "name": "granite",
+          "seed": 11602,
+          "look": {
+            "stone": "#8e8c88"
+          }
+        }
+      ]
     }
   ]
 }

@@ -15,6 +15,7 @@ import {
   lookAngles,
   newImpact,
   stepImpact,
+  staggerOf,
   stoppingPower,
   weaponCode,
   type MapDocument,
@@ -50,6 +51,43 @@ describe('stopping power', () => {
     expect(hitImpact(a, pistol)).toBeLessThan(hitImpact(b, shotgun) / 3);
     expect(impactSpeed(a)).toBeGreaterThan(0.9);
     expect(impactSpeed(b)).toBeLessThan(0.75);
+  });
+
+  it('punchier (owner, 2026-11-16): shotguns, snipers, revolvers and the Battle Rifle most; rifles a little more; SMGs light', () => {
+    const shove = (id: string) => staggerOf(stoppingPower(getWeapon(id))).shove;
+    // Before: shove 3.6 m/s at power 1 (shotgun 0.8, sniper 0.9, revolver 0.45, rifle and Battle Rifle 0.3, SMG 0.12, pistol 0.15).
+    const before = { shotgun: 2.88, sniper: 3.24, revolver: 1.62, battle: 1.08, rifle: 1.08, smg: 0.432, pistol: 0.54 };
+    const now = {
+      shotgun: shove('core.shotgun'),
+      sniper: shove('core.sniper'),
+      revolver: shove('core.revolver'),
+      cannon: shove('core.hand_cannon'),
+      battle: shove('core.battle_rifle'),
+      rifle: shove('core.rifle'),
+      smg: shove('core.smg'),
+      pistol: shove('core.pistol'),
+    };
+    for (const k of ['shotgun', 'sniper', 'revolver', 'battle'] as const) expect(now[k] / before[k], k).toBeGreaterThan(1.3);
+    expect(now.cannon).toBe(now.revolver);
+    expect(now.rifle / before.rifle).toBeGreaterThan(1.05);
+    expect(now.rifle / before.rifle).toBeLessThan(1.3);
+    expect(now.smg / before.smg).toBeLessThan(1.05);
+    expect(now.pistol / before.pistol).toBeLessThan(1.05);
+    // The order: the heavy hitters, then the Battle Rifle, rifles, and the light guns.
+    expect(Math.min(now.shotgun, now.sniper, now.revolver)).toBeGreaterThan(now.battle);
+    expect(now.battle).toBeGreaterThan(now.rifle * 1.5);
+    expect(now.rifle).toBeGreaterThan(now.smg * 2);
+    // One full blast is never cut by the window's shove cap.
+    expect(IMPACT.maxShove).toBeGreaterThanOrEqual(now.shotgun);
+  });
+
+  it('keeps the no-stun-lock caps as they were: slow 50 %, a 0.6 s window, 0.5 s immune', () => {
+    expect(IMPACT.maxSlow).toBe(0.5);
+    expect(IMPACT.maxStaggerSeconds).toBe(0.6);
+    expect(IMPACT.immunitySeconds).toBe(0.5);
+    // The deepest single slow fits under the cap; the stagger is longer, but no longer than the window.
+    expect(IMPACT.slow).toBeLessThanOrEqual(IMPACT.maxSlow);
+    expect(IMPACT.maxSeconds).toBeLessThanOrEqual(IMPACT.maxStaggerSeconds);
   });
 
   it('adds pellets up to the weapon, caps the stack, and never stun-locks', () => {
@@ -120,6 +158,42 @@ describe('stopping power', () => {
     expect(pistol.push).toBeGreaterThan(0);
     expect(pistol.push).toBeLessThan(shotgun.push / 3);
     expect(pistol.slow).toBeGreaterThan(0.9);
+  });
+});
+
+describe('a shove in the air (owner, 2026-11-16)', () => {
+  it('someone in the air takes 1.5x the shove and carries it until they land', () => {
+    const hit = (air: boolean) => {
+      const match = new Match(room([[0, 0, 0], [5, 0, 0]]), rules);
+      const a = match.addHuman('a')!;
+      const b = match.addHuman('b')!;
+      a.move.pos = { x: 0, y: 0, z: 0 };
+      b.move.pos = { x: 5, y: 0, z: 0 };
+      b.health = 1000;
+      let seq = 0;
+      const idle = (): PlayerInput => ({ seq: ++seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 });
+      for (let i = 0; i < 5; i++) {
+        match.queueInputs(b.slot, [idle()]);
+        match.step();
+      }
+      give(a, 'core.shotgun');
+      if (air) b.move = { ...b.move, pos: { x: 5, y: 1.2, z: 0 }, velY: 3, grounded: false };
+      const look = lookAngles({ x: 0, y: PLAYER.eyeHeight, z: 0 }, { x: 5, y: (air ? 1.2 : 0) + 1.1, z: 0 });
+      const x0 = b.move.pos.x;
+      let first = 0;
+      for (let i = 0; i < 60; i++) {
+        match.queueInputs(a.slot, [{ seq: ++seq, forward: 0, right: 0, ...look, buttons: i === 0 ? BUTTON_FIRE : 0 }]);
+        match.queueInputs(b.slot, [idle()]);
+        match.step();
+        if (i === 0) first = b.move.vx ?? 0;
+      }
+      return { first, moved: b.move.pos.x - x0 };
+    };
+    const ground = hit(false);
+    const air = hit(true);
+    // The tick's own decay differs (ground grip 0.86, air 0.99): undo it to compare the shoves given.
+    expect(air.first / 0.99 / (ground.first / 0.86)).toBeCloseTo(IMPACT.airShove, 1);
+    expect(air.moved).toBeGreaterThan(ground.moved * 3);
   });
 });
 

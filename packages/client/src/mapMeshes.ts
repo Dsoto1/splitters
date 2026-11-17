@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cutGroundPolygon, mapGroundBores, type GroundCut, type P3, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cellGround, groundStyle, cutGroundPolygon, mapGroundBores, type GroundCut, type P3, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 import { jpegPixels, mergeLevel, type MergeSource } from './levelMerge.ts';
@@ -97,10 +97,42 @@ export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
  * mesh, so draw calls scale with the number of distinct looks, not tiles.
  * Textures and materials are cached per scene.
  */
-function terrainStyle(material: TerrainMaterial): ResolvedStyle {
-  const def = coreMaterials.get(TERRAIN_SURFACES[material]) ?? coreMaterials.get('core.proto_floor')!;
-  // Gravel's photo texture is near white in daylight; darken it so it reads as ground, not snow.
-  return { material: def, tint: material === 'gravel' ? '#8f877b' : null };
+/**
+ * How the terrain sorts its grounds (map format v45: a cell is the base or a painted ground, terrain.ts cellGround):
+ * one number a drawn material, the old layer's index for the eight grounds the terrain had before v45 (so their meshes,
+ * names and the soft borders' order are as they were), past them the material's palette index. With its mesh name.
+ */
+const OLD_LAYER_SURFACES: readonly string[] = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+const groundKeys = new Map<string, { key: number; name: string; style: ResolvedStyle }>();
+function groundDraw(id: string): { key: number; name: string; style: ResolvedStyle } {
+  let g = groundKeys.get(id);
+  if (!g) {
+    // groundStyle: the material and its ground tint (Gravel's photo is near white in daylight, so it is darkened).
+    const style = groundStyle(id);
+    const old = OLD_LAYER_SURFACES.indexOf(style.material.id);
+    g = old >= 0 ? { key: old, name: TERRAIN_MATERIALS[old]!, style } : { key: TERRAIN_MATERIALS.length + coreMaterials.all().findIndex((m) => m.id === style.material.id), name: style.material.id, style };
+    groundKeys.set(id, g);
+  }
+  return g;
+}
+
+/** Each cell's draw key (groundDraw), worked out once per ground index. */
+function cellDrawKeys(t: NonNullable<MapDocument['terrain']>): Int32Array {
+  const byIndex = new Map<number, number>();
+  const out = new Int32Array(t.materials.length);
+  for (let i = 0; i < out.length; i++) {
+    const m = t.materials[i]!;
+    let k = byIndex.get(m);
+    if (k === undefined) byIndex.set(m, (k = groundDraw(cellGround(t, i)).key));
+    out[i] = k;
+  }
+  return out;
+}
+
+/** The ground drawn for a draw key. */
+function keyGround(t: NonNullable<MapDocument['terrain']>, keys: Int32Array, key: number): { name: string; style: ResolvedStyle } {
+  const i = keys.indexOf(key);
+  return groundDraw(cellGround(t, Math.max(0, i)));
 }
 
 /**
@@ -272,8 +304,9 @@ export class MapStyler {
         nrm[i + 2] = nz / l;
       }
     }
-    // Drawn cells (k = row of drawn cells × drawn columns + column), each the material of its first fine cell.
+    // Drawn cells (k = row of drawn cells × drawn columns + column), each the ground of its first fine cell.
     const byMaterial = new Map<number, number[]>();
+    const keys = cellDrawKeys(t);
     const dc = ci.length - 1;
     // Buried tunnels cut their bores out of the ground (shared groundBore.ts): the drawn cells a cut's footprint
     // touches, each with its cuts; what is left of such a cell is drawn in pieces (below).
@@ -302,15 +335,14 @@ export class MapStyler {
     this.cutCells.clear();
     for (let r = 0; r < ri.length - 1; r++) {
       for (let c = 0; c < dc; c++) {
-        const m = t.materials[ri[r]! * (cols - 1) + ci[c]!]!;
+        const m = keys[ri[r]! * (cols - 1) + ci[c]!]!;
         let list = byMaterial.get(m);
         if (!list) byMaterial.set(m, (list = []));
         list.push(r * dc + c);
       }
     }
     for (const [m, cells] of byMaterial) {
-      const material = TERRAIN_MATERIALS[m] ?? 'grass';
-      const style = terrainStyle(material);
+      const { name: material, style } = keyGround(t, keys, m);
       const def = style.material;
       const n = cells.length;
       const positions = new Float32Array(n * 12);
@@ -422,7 +454,7 @@ export class MapStyler {
       this.styleOf.set(mesh, style);
       this.terrainMeshes.push(mesh);
     }
-    if (this.terrainBlend && byMaterial.size > 1) this.buildTerrainBlend(t, name, ci, ri, hy, nrm);
+    if (this.terrainBlend && byMaterial.size > 1) this.buildTerrainBlend(t, keys, name, ci, ri, hy, nrm);
   }
 
   /**
@@ -438,11 +470,11 @@ export class MapStyler {
    * the same on either side of the cell edge: a path is a band that fades over a cell each way, not a row of squares.
    * One see-through mesh a material, on the very triangles of the ground under it (the same vertices and diagonal).
    */
-  private buildTerrainBlend(t: NonNullable<MapDocument['terrain']>, name: string, ci: number[], ri: number[], hy: Float32Array, nrm: Float32Array): void {
+  private buildTerrainBlend(t: NonNullable<MapDocument['terrain']>, keys: Int32Array, name: string, ci: number[], ri: number[], hy: Float32Array, nrm: Float32Array): void {
     const cols = t.cols;
     const dc = ci.length - 1;
     const dr = ri.length - 1;
-    const cell = (c: number, r: number): number => (c < 0 || r < 0 || c >= dc || r >= dr ? -1 : t.materials[ri[r]! * (cols - 1) + ci[c]!]!);
+    const cell = (c: number, r: number): number => (c < 0 || r < 0 || c >= dc || r >= dr ? -1 : keys[ri[r]! * (cols - 1) + ci[c]!]!);
     // A material's share of the (up to four) cells round a drawn vertex.
     const share = (m: number, vc: number, vr: number): number => {
       let has = 0;
@@ -480,8 +512,7 @@ export class MapStyler {
     const side = N + 1;
     const perCell = side * side;
     for (const [m, list] of quads) {
-      const material = TERRAIN_MATERIALS[m] ?? 'grass';
-      const style = terrainStyle(material);
+      const { name: material, style } = keyGround(t, keys, m);
       const inv = 1 / style.material.scale;
       const n = list.length / 2;
       const positions = new Float32Array(n * perCell * 3);
@@ -651,14 +682,14 @@ export class MapStyler {
     return this.material(def ? { material: def, tint } : resolveSurface(doc, undefined, 'solids'));
   }
 
-  /** The material terrain of this kind is drawn in (the backdrop's ground uses it too). */
-  groundMaterial(material: TerrainMaterial): StandardMaterial {
-    return this.material(terrainStyle(material));
+  /** The material a ground (a material id) is drawn in on the terrain (the backdrop's ground past the border uses it too). */
+  groundMaterial(ground: string): StandardMaterial {
+    return this.material(groundStyle(ground));
   }
 
   /** Metres per repeat of that ground's texture. */
-  groundScale(material: TerrainMaterial): number {
-    return terrainStyle(material).material.scale;
+  groundScale(ground: string): number {
+    return groundStyle(ground).material.scale;
   }
 
   /** Sky colour of the map's theme. */

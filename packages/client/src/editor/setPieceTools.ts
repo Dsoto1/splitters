@@ -544,11 +544,9 @@ export class SetPieceTools {
     el.append(row('Mirror', mirror));
     if (why) el.append(small(why));
     el.append(
-      row('X', numberInput(p.x, 1, (v) => update('Move set piece', { ...p, x: v }))),
-      row('Y', numberInput(p.y, 1, (v) => update('Move set piece', { ...p, y: v }))),
-      row('Level', numberInput(p.z, 1, (v) => update('Move set piece', { ...p, z: v }))),
+      ...this.app.inspector.cellFields(p.id, [p.x, p.y, p.z], 'Move set piece'),
       row('Rotation', text(`${p.rotation * 90}° (R turns it)`)),
-      this.app.inspector.quickFacings({ tiles: [], entities: [], setPieces: [p.id] }, (p.rotation * Math.PI) / 2),
+      this.app.inspector.quickFacings(p.id, (p.rotation * Math.PI) / 2),
     );
     // Ports: where it meets what's round it; one a wall stands in is a warning (and red on its outline).
     const states = setPiecePortStates(p, def, this.app.mapBoxes());

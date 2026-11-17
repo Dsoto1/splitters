@@ -12,10 +12,11 @@
  * kept between matches in its storage, game/navCache.ts; MapMaker's navigation check adds `padnav`, the jump pads flown
  * on the check's own navmesh instead of building another, editor/mapTestWorkerCore.ts, `navstop`, the check stopped
  * when Test starts, editor/mapChecks.ts `pause`, and `editlight`, an edit's outliner rows, level picker and hover card
- * rebuilt only when what they show changed, editor/editorApp.ts `refresh`).
+ * rebuilt only when what they show changed, editor/editorApp.ts `refresh`; the character leak fix adds `bodyclones`, a
+ * body's cloned materials and texture copies freed with it, content/ownedAssets.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones';
 
 let off: Set<string> | null = null;
 

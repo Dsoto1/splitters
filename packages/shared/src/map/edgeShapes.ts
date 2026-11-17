@@ -23,6 +23,22 @@ export const shapeOf = (style: ResolvedEdge): EdgeShape | undefined => (style ==
 /** The surface a style's segments and trim are drawn in instead of the walls' and trim's: `metal` (bars, gates, railings). */
 export const edgePaint = (style: ResolvedEdge): 'metal' | undefined => shapeOf(style)?.paint;
 
+/** Thinner than this (m) across its face or in height, a see-through style's piece is a bar, a post or a rail. */
+const LATTICE_PIECE = 0.25;
+
+/**
+ * Whether a collision segment of `style` is part of a lattice you see and shoot between: a bar, post or rail of a
+ * see-through style (bars, the tall fence: `dressing` see-through) or a barred one (`paint` metal: bars, barred gates).
+ * Such a piece still stops bodies and the rounds that strike it, but not sight lines (PhysicsWorld: GROUP_LATTICE), so
+ * bots see, and fire at, someone through the gaps as a player does (owner, 2026-11-16: "bots wont target me or others
+ * when on other side of a fence or bars/door with bars"). A railing's solid 1 m panel is not a lattice.
+ */
+export function edgeLattice(style: ResolvedEdge, seg: readonly [number, number, number, number, number]): boolean {
+  const shape = shapeOf(style);
+  if (!shape || !(shape.paint === 'metal' || shape.dressing?.kind === 'see-through')) return false;
+  return seg[1] - seg[0] <= LATTICE_PIECE || seg[3] - seg[2] <= LATTICE_PIECE;
+}
+
 /** An edge value along a side `half` long each way from its middle, on a level `height` high. */
 function edgeValue(v: EdgeValue, half: number, height: number): number {
   if (typeof v === 'number') return v;
@@ -116,13 +132,17 @@ function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number, sur
 
 /**
  * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
- * wall's inner face, standing off it from `from` (the style's trimFrom, else the wall thickness); an arch's soffit
+ * wall's inner face, standing off it from `from` (the style's trimFrom, else its thickest piece's thickness); an arch's soffit
  * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
  * boundary), for a side nothing is built beyond.
  */
 export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
   const shape = shapeOf(style);
-  const from = shape?.trimFrom ?? WALL_THICKNESS;
+  // The wall's own face: a style with thicker piers (the Grand arch's 0.8 m, the Gate arch's 1.2 m) dresses that face,
+  // not one buried inside it, and its arch's soffit runs through the whole thickness (owner, 2026-11-16: the Grand
+  // arch's curve showed as a coarse staircase of its collision steps).
+  const thickest = Math.max(WALL_THICKNESS, ...(shape?.segments ?? []).map((g) => g.t ?? WALL_THICKNESS));
+  const from = shape?.trimFrom ?? thickest;
   const out: SideTrim[] = [];
   const own = (p: { surface?: { material: string; tint?: string } }) => (p.surface ? { surface: { material: p.surface.material, tint: p.surface.tint ?? null } } : {});
   const at = (u0: number, u1: number, y0: number, y1: number, depth: number, surface: Pick<SideTrim, 'surface'> = {}) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth, ...surface });
@@ -146,7 +166,7 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
       at(u0 - 0.1, u0, y0, y1, 0.05);
       at(u1, u1 + 0.1, y0, y1, 0.05);
     } else if ('arch' in p) {
-      out.push(...archTrim(p.arch, from, false, Math.min(from, WALL_THICKNESS), own(p)));
+      out.push(...archTrim(p.arch, from, false, Math.min(from, thickest), own(p)));
       if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0, own(p)));
     } else if ('v' in p) {
       // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.

@@ -56,15 +56,17 @@ describe('terrainFromHeightGrid', () => {
     const n = 401;
     const rows = Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => (r + c) / 10));
     const g = parseAsciiGrid(asc(rows, 'xllcenter -200\nyllcenter -200\ncellsize 1')) as HeightGrid;
-    const old = newTerrain(40, 2, [0, 0], 'sand');
+    const old = { ...newTerrain(40, 2, [0, 0], 'ground.meadow'), grounds: ['core.pbr_sand'] };
+    old.materials.fill(1);
     const { terrain, resampled } = terrainFromHeightGrid(g, { current: old });
     expect(resampled).toBe(true);
     expect(terrain.cols).toBeLessThanOrEqual(MAX_TERRAIN_VERTS);
     expect(terrain.spacing).toBe(2.5);
     expect(terrain.cols).toBe(161);
     const cell = (x: number, z: number) => terrain.materials[Math.floor((z - terrain.origin[1]) / terrain.spacing) * (terrain.cols - 1) + Math.floor((x - terrain.origin[0]) / terrain.spacing)];
-    expect(cell(1, 1)).toBe(3); // sand, from the old terrain
-    expect(cell(150, 150)).toBe(0); // grass, past it
+    expect(cell(1, 1)).toBe(1); // painted sand, from the old terrain
+    expect(cell(150, 150)).toBe(0); // the base, past it
+    expect([terrain.groundTheme, terrain.grounds]).toEqual(['ground.meadow', ['core.pbr_sand']]);
     expect(TerrainSchemaCheck(terrain)).toBe(true);
   });
 

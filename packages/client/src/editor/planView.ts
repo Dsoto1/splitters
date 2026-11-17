@@ -20,6 +20,8 @@ export interface PlanHost {
   level(): number;
   ground(): TerrainData | null;
   selected(): ReadonlySet<string>;
+  /** Bumped whenever the selection changes (EditorApp.selectionRev): the overlay redraws on a new number. */
+  selectionRev(): number;
   showAll(): boolean;
   setShowAll(on: boolean): void;
   toast(message: string, error?: boolean): void;
@@ -123,8 +125,7 @@ export class PlanView {
     if (view.scene.clipPlane?.d !== -cut) view.scene.clipPlane = new Plane(0, 1, 0, -cut);
     const doc = this.host.doc();
     if (this.clippedFor !== doc) this.keepTerrainWhole(doc);
-    const sel = [...this.host.selected()].join(',');
-    const key = `${f.cx},${f.cz},${f.halfH},${w},${h},${this.host.level()},${sel}`;
+    const key = `${f.cx},${f.cz},${f.halfH},${w},${h},${this.host.level()},${this.host.selectionRev()}`;
     if (key === this.drawnKey && this.drawnDoc === doc) return;
     this.drawnKey = key;
     this.drawnDoc = doc;
@@ -370,8 +371,8 @@ export class PlanView {
   }
 }
 
-/** One plan icon at (x, y), `r` across its middle. */
-function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
+/** One plan icon at (x, y), `r` across its middle (the plan view's and the minimap's). */
+export function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
   g.save();
   g.translate(x, y);
   g.lineWidth = 1.5 * u;

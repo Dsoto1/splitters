@@ -145,8 +145,8 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   (`characterSections`). A person can still choose one, for themselves or for a bot in the bot manager (`BOT_LOOKS`),
   and a saved choice keeps working (`getLook` resolves any roster look by id).
 - **Left out of automatic picks.** `PICKABLE_LOOKS` (the core tier of `CORE_LOOKS`; "core" in `CORE_LOOKS` is the id
-  prefix, not the tier) is what the default look, random bots (`lookForBot`, `castLooks` under a bot-characters
-  setting), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
+  prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
+  `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
   `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
 - **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
   `pnpm quality-gates` prints the characters after the maps and exits 1 on a failing core character
