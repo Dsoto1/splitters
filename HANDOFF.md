@@ -87,6 +87,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
     - Pictures (DSF 2): the helper's scratchpad `chars7/`: `compare-<id>-hands.png` (before rows over after rows: rifle and pistol, side, shooting hand twice, support hand twice), `compare-pruitt-face.png`, `compare-resolvesoldier-face.png`; singles in `before/` and `after/`; audits in `audit-before/`, `audit-after/`.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/dropship-deck` · 44177158513 (5fd62a08; lane B helper: the Dropship's deck holes covered by deck plates in our processing, every level of detail; every vehicle's team colour at half strength)
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts`, `bots/memory.ts`, `sim/match.ts` (the bots' view gets `fallen`), a new test `botReact.test.ts`, seed-sensitive `match.test.ts` and `airplane.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
 
