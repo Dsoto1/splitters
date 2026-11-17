@@ -40,7 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/farlooks-kit2` · 38d6e134 · 44137803438 (lane B: far looks baked for all 34 kit types (612 variants): crates, drums, fences, walls, containers, machines, street furniture, domes; green on attempt 2, attempt 1 red only on e2e `editor` "TEST starts within 3 s" under runner load)
 - `wip/tunnels-8-ironmaw` · 773dbf52 · 44142540661 (lane B: tunnel step 8, Iron Maw's three tunnels as real 7 m bores through the rock; kit: a piece's earth isn't banked onto ground far below its floor)
-- `wip/st-johns-spruces` · 6c0106d8 · 44104725476 (**held**: owner, 2026-11-17, the two new banner lamps royal purple instead of crimson; St. John's colours are royal purple, white and red (owner): add a `royal purple` variant of `kit.lamp.post_banner` (only crimson, navy, slate today) with a royal purple banner, a white band and red trim (owner: "red trim yes"; a thin red edge on the banner, a `trim` colour in the lamp generator's look if it has none), then set the two lamps to it in MapMaker; lane B, next free helper) (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts, placed in MapMaker; contains the landed `wip/breakable-shadow`)
+- `wip/st-johns-spruces` · 575b964c · 44143716184 (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts in the school colours: a new Royal purple variant of the banner lamp, white band, red trim; placed in MapMaker; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)

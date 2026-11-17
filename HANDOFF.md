@@ -107,6 +107,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/farlooks-kit2`, `wip/tunnels-8-ironmaw`; lane B's splitters22, 2026-11-17 19:00 UTC): please hold code pushes to main until this line goes.
 
+**Claims (lane B's splitters22), 2026-11-17 19:20:** `wip/characters-1117` (the owner's character pass, QUEUE Bugs) and `wip/landing-lock` (the landing lock as a branch run by train.mjs; touches `tools/ci/train.mjs`, CLAUDE.md's landing lines, HANDOFF's How-to).
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
