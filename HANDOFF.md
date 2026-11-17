@@ -56,6 +56,11 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **For lane B's splitters22 (lane A's lead, 2026-11-17): the driving physics 4 train (run 43984835535) is red on one unit test, not perf.** `perf (budget)` and `perf (mass)` never ran ("another job of this run failed: not starting"). The failure is `botCtf.test.ts` "Diamond Park: a capture within five minutes" (0 captures). That test is seed-sensitive: the punchier-hits landing moved it from seed 1 to seed 2 after a survey (seeds 1-6: 9 → 10 captures, only seed 1 had none), and with drive-physics-4 on top seed 2 now has none. Suggest the robust form Sunken Kingdom's test already uses (a capture on any of seeds 2, 3 and 4, or the survey's 4 of 6), rather than a re-run; it says nothing about the Rapier buggy itself unless Diamond Park's vehicles changed bot routes.
 
+**Landing now: train** (`wip/mapmaker-bugs-1116`, `wip/mapmaker-ui-3`; lane B's splitters22, 2026-11-16, 21:55 UTC): please hold code pushes to main until this line goes.
+
+- **Claimed (a helper of lane A's lead, 2026-11-16): the Heavy Revolver's short range** (`wip/revolver-range`; owner: "short range yes"). Files: `content/weapons/revolver.json` (its own falloff 25-65 m to 40 %, reach 110 m, stand-off 3-30 m), the generated weapon tables and fixture, `bots/weaponBands.generated.ts` and `docs/gunplay-audit.json` / `gunplay-ttk.svg` (`pnpm gun-report --bands`), tests `benchmarks.test.ts` (the head kill within its range), `impactSpeed.test.ts`, `weaponBands.test.ts`, docs/GUNPLAY_SPEC.md tables, CHANGELOG. No map format change.
+  - **Status (2026-11-17): green on `check/revolver-range` at 82581817, run 43982223065 (attempt 1); on QUEUE's Ready to land.** Full damage to 25 m, 40 % by 65 m, reach 110 m (was 300 m, 70 %); two body shots to about 50 m, one head shot to about 45 m; body TTK at 100 m 0.97 s (2) → 1.67 s (3). Measured band unchanged (0-27.5 m).
+**Landing now: train** (`wip/drive-physics-4`; lane B's splitters22, 2026-11-17, 00:06 UTC, after its 2-hour wait): please hold code pushes to main until this line goes.
 **Landing now: train** (`wip/revolver-range`; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
