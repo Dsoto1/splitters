@@ -166,6 +166,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-17 · B · Tunnel kit steps 6 and 7 and cheaper small shadow casters (train `check/train-20261117-133853` at 95d3fb91, run 44094842566): the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning, curved mine track, chamber lanterns; the cave family, cave Mouth, joints between families, Bay to Road; trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps (Spillway High shadow draws 372 → 29), clutter to 20 m (`?perfoff=smallcasters`).
+- 2026-11-17 · B · Tunnel kit step 5 (train `check/train-20261117-054853`): brick and mine families, Outfall, Lit Tunnel Chamber, Close open ends.
+- 2026-11-17 · B · Bugs 1117 (`wip/bugs-1117`, 464c35f7): the Wall Shelf with books, props' far looks wait with hysteresis (20/45 m minimums), stream weapons drawn from the muzzle.
+- 2026-11-17 · B · St. John's step 4b and driving physics 4 (the Troop Buggy a Rapier rigid body; `?drive=own` the old drive); Flavius Rule memory (heap about 1.06 GB → 650 MB).
 - 2026-11-17 · A · Sgt. Mackie's face (the eye wedge gone: the face its own share of the cut, 354 → 1,310 triangles) and Kenji's fringe (rebaked charts, dark strands back) (`wip/chars-faces`, train `check/train-20261117-125014` at d1e766c6).
 - 2026-11-17 · A · The Dropship's riders sit on their seats (`wip/dropship-seats`, train `check/train-20261117-102339` at b151c383): a seated rider is drawn turned no further from its seat's way than its waist turns, so its legs stay on the bench.
 - 2026-11-17 · A · The Heavy Revolver's short range (`wip/revolver-range`, train `check/train-20261117-021254` at ec810269; owner "short range yes"): full damage to 25 m, a 40 % floor by 65 m, reach 110 m (was 300 m at 70 %); a head shot kills to about 45 m.
