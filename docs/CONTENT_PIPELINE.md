@@ -872,6 +872,40 @@ with its top at 2.43 m; collides as its posts and the net's band, a lattice to s
 bed 15 × 24 m and 4 cm deep with the lines of a 9 × 18 m court and a centre line across; no collision, so lay it on
 ground made flat with the Terrain tab's Flatten and stand the net across its middle, turned as the court is).
 
+#### Far looks baked from the real model
+
+(Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
+was usually a flat block of two colours (`geom.mjs` `standIn`): a shop shelf of goods turned into a grey box, a chair
+into a cube. For the families of the types `content/kitprops.json` lists in `farLooks` (shop shelves and shop stands,
+bookcases, tables, seats, sofas, cabinets, beds, appliances, stalls), every lighter level is now chosen from candidates
+made from that variant's own level 0 (`tools/content/kit/farLook.mjs`):
+
+- **Recoloured**: the generator's own level (its outline), its faces divided where level 0's picture varies across
+  them, each part taking the colour level 0 shows there (rays from just in front of the face onto level 0): a tier of
+  goods as one block keeps its goods' colours.
+- **Cells**: level 0 sampled into a coarse grid (4-10 cells along its longest side, once or twice as many rows), solid
+  where its surface covers a cell or closes it in, the outward faces coloured by rays from outside onto level 0,
+  reduced to a palette of 4-10 colours and merged into rectangles. Gaps of a cell or more (under a table, between a
+  chair's legs) stay open. A bake that breaks the model into more pieces than it has is not used.
+- **Picture box**: the same with every cell solid: the bounds, each face a grid of the model's colours.
+- **Own**: the generator's level as it was.
+
+Each candidate is drawn in five views (four sides and one from above, software rasterised, `raster.mjs`) at about its
+size on screen where it starts (64 px across for level 1, from 20 m; 32 px for level 2, from 45 m) and compared with
+level 0 drawn the same way; the closest within the level's cap wins (`farCap`: level 1 up to 60 % of level 0's
+triangles, later levels a quarter of it, 48-120, always fewer than the level before and never under the generator's
+own; an alias's level 1 stays within the retired prop's triangles). The choice is kept in `content/kitprops.lock.json`
+(`far`, with a key of the inputs), so a build only makes the chosen one again; a change to a model, a generator or the
+bake (`FAR_VERSION`) searches again (about 3 minutes for the 186 variants). The kind budgets
+(`budgets.triangles`) were raised to the baked levels. Tested in `tools/content/test/farLook.test.mjs`.
+
+As built (2026-11-17): level 1 recoloured in 84 of 186 variants (the generator's own outline kept, unchanged, in 102);
+level 2 baked as cells in 67, a picture box in 14, the generator's level recoloured in 83, unchanged in 22. Not yet
+baked: the other kit types (crates, drums, fences, walls, containers, machines, street furniture, domes). The
+catalogue packs have no flat blocks: 35 of 1,378 props (hero pieces) have a lighter level, and it is their own model
+simplified (`prepare-props.mjs` `HERO_LOD`); the rest are drawn whole. The environment's trees end on a picture card
+already rendered from the tree.
+
 #### The dome kit
 
 Desert City domes built from parts, from the owner's reference sheet (2026-11-12): `tools/content/kit/dome.mjs`,

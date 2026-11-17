@@ -835,7 +835,8 @@ export class TileCatalog {
       for (const d of this.byId.values()) {
         if (!d.familyOf) continue;
         const list = this.families.get(d.familyOf.base);
-        if (list) list.push(d);
+        // (The shape's own first family first, whatever order the kit lists its tiles in.)
+        if (list) d.id === d.familyOf.base ? list.unshift(d) : list.push(d);
         else this.families.set(d.familyOf.base, [d]);
       }
     }
