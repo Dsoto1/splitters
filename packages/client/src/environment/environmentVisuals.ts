@@ -5,6 +5,7 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { envModelFile, envTilts, getEnvSpecies, groundNormal, terrainHeightAt, type EnvSpeciesData, type PropEntity, type TerrainData } from '@tiletrigger/shared';
 import { EnvMaterials, ENV_TIERS, type EnvTier } from './envMaterials.ts';
 import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
+import { bySquare, envShadowSector, envShadowSets } from '../game/shadowCasters.ts';
 
 /**
  * The environment renderer (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §9.3), behind `?env=1` until Phase 4: every placed
@@ -14,6 +15,11 @@ import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
  * made a draw (and a shadow and light-shaft draw) for every one or two of them (St. John's 139 trees were 133 batches). Each copy picks its level of detail from its
  * distance to the camera (hysteresis ±10 %) whenever the camera has moved a metre; a batch's buffer is rebuilt only
  * when a copy joins or leaves it. Babylon's mesh LOD is not used (it doesn't see thin instances).
+ *
+ * Shadows (`shadowSets`, the game's view with `?perfoff=smallcasters` not set: game/shadowCasters.ts): the drawn batches
+ * cast nothing; each species variant casts through static shadow-only batches made once per square (its full detail for
+ * the near cascades, its lightest casting level for the far one), which never change as the camera walks, so the static
+ * shadow cache keeps them. Without it the drawn batches cast as they draw.
  *
  * Gameplay rule: no graphics tier removes a `cover` or `blocking` species. They are never culled by distance (the
  * farthest level is a two-card stand-in, then fog); tiers only move where levels change. Ground cover (grass) is
@@ -66,6 +72,8 @@ export interface EnvStats {
   /** Copies by their species' lightest level (a forced level stops there: grass has one level, shrubs three). */
   lastLevel: number[];
   triangles: number;
+  /** Static shadow-only batch meshes (`shadowSets`). */
+  shadowBatches: number;
 }
 
 export class EnvironmentVisuals {
@@ -84,21 +92,26 @@ export class EnvironmentVisuals {
   private tier: EnvTier;
   private visible = true;
   private readonly sector: number;
+  private readonly shadowSets: boolean;
+  /** The static shadow-only batches (with `shadowSets`): made once the placements' models are in. */
+  private shadowMeshes: Mesh[] = [];
 
   constructor(
     private readonly scene: Scene,
     quality: string,
-    options: { sector?: number } = {},
+    options: { sector?: number; shadowSets?: boolean } = {},
   ) {
     this.tier = ENV_TIERS[quality] ?? ENV_TIERS.medium!;
     this.materials = new EnvMaterials(scene, this.tier);
     this.sector = options.sector ?? SECTOR;
+    this.shadowSets = options.shadowSets ?? false;
   }
 
   /** Show or hide every copy (the bench's border-off comparison). */
   setVisible(on: boolean): void {
     this.visible = on;
     for (const b of this.batches.values()) for (const m of b.meshes) m.isVisible = on;
+    for (const m of this.shadowMeshes) m.isVisible = on;
   }
 
   /** Whether a placement is drawn here (an env species), not as a prop node. */
@@ -124,6 +137,40 @@ export class EnvironmentVisuals {
     if (build !== this.build) return;
     this.groups = [...byFile.values()].filter((g) => this.loaded.has(g.file));
     this.lastX = this.lastY = this.lastZ = Infinity;
+    if (this.shadowSets) this.buildShadowSets();
+  }
+
+  /**
+   * The static shadow-only batches (game/shadowCasters.ts): per species variant, shadow set (level and cascades) and
+   * square, one mesh per part holding every copy in the square. Drawn by no camera (layer mask 0); they never change, so
+   * the static shadow cache keeps them from the start (`staticCaster`).
+   */
+  private buildShadowSets(): void {
+    for (const g of this.groups) {
+      const m = this.loaded.get(g.file)!;
+      const species = g.file.slice(4, -4);
+      for (const set of envShadowSets(m.levels)) {
+        const size = envShadowSector(set.mask);
+        for (const [sq, copies] of bySquare(g.copies, size)) {
+          const buffer = new Float32Array(copies.length * 16);
+          copies.forEach((c, i) => buffer.set(c.matrix, 16 * i));
+          (this.templates.get(g.file)?.[set.level] ?? []).forEach((tpl, pi) => {
+            const mesh = tpl.clone(`envshadow_${species}_l${set.level}_p${pi}_${sq}`, null, true)!;
+            mesh.makeGeometryUnique();
+            mesh.thinInstanceSetBuffer('matrix', buffer, 16, true);
+            mesh.freezeWorldMatrix();
+            mesh.doNotSyncBoundingInfo = true;
+            mesh.thinInstanceRefreshBoundingInfo(false);
+            mesh.isPickable = false;
+            mesh.layerMask = 0;
+            mesh.isVisible = this.visible;
+            mesh.setEnabled(true);
+            mesh.metadata = { envShadow: true, shadowLayers: set.mask, staticCaster: true };
+            this.shadowMeshes.push(mesh);
+          });
+        }
+      }
+    }
   }
 
   private model(file: string): Promise<EnvModel | null> {
@@ -240,8 +287,9 @@ export class EnvironmentVisuals {
       mesh.doNotSyncBoundingInfo = true;
       mesh.isPickable = false;
       mesh.isVisible = this.visible;
-      // Light levels and the stand-in cast no shadow (a far shadow is a smudge; near levels cast).
-      if (far) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
+      // Light levels and the stand-in cast no shadow (a far shadow is a smudge; near levels cast). With the static
+      // shadow sets none of the drawn batches casts: the sets do.
+      if (far || this.shadowSets) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
       return mesh;
     });
     b = { level, copies, meshes, buffer, dirty: false };
@@ -272,12 +320,14 @@ export class EnvironmentVisuals {
       batches += b.meshes.length;
       drawn += b.meshes.filter((x) => x.isEnabled() && x.isVisible).length;
     }
-    return { batches, drawnBatches: drawn, copies, perLevel: [...perLevel].map((v) => v ?? 0), lastLevel: [...lastLevel].map((v) => v ?? 0), triangles };
+    return { batches, drawnBatches: drawn, copies, perLevel: [...perLevel].map((v) => v ?? 0), lastLevel: [...lastLevel].map((v) => v ?? 0), triangles, shadowBatches: this.shadowMeshes.length };
   }
 
   private clearBatches(): void {
     for (const b of this.batches.values()) for (const m of b.meshes) m.dispose();
     this.batches.clear();
+    for (const m of this.shadowMeshes) m.dispose();
+    this.shadowMeshes = [];
     this.changed.length = 0;
     this.groups = [];
   }
