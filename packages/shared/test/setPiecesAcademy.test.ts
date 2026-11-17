@@ -280,6 +280,41 @@ describe("a two-floor L (Smythe Hall's shape)", () => {
   });
 });
 
+/**
+ * Stangeland / Cord's shape (St. John's step 5): a three-floor school hall along z = 4 (cells y 0, 1). The 3-floor Stair
+ * End Bay at x 0, four Classroom Bays a floor at x 1-4, the Stair End Bay (upper door) at the east end (x 5, turned
+ * half round, anchored a cell north) with a Carriageway beside it (x 6, y 0) whose door on each floor meets the end
+ * bay's lobby and the lobby's upper door; the top floor runs one bay further, closed at its east end, over the lower end bay.
+ */
+function stangeland(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, overrides?: SetPiecePlacement['overrides']): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(overrides ? { overrides } : {}) });
+  const out = [at('end_w', 'setpiece.stair_end_bay_3', 0, 0, 0), at('end_e', 'setpiece.stair_end_bay_bridge', 5, 1, 0, 2, { hide: [11] }), at('bridge', 'setpiece.carriageway_1', 6, 0, 0), at('top_e', 'setpiece.classroom_bay', 5, 0, 2, 0, { options: { end: 'east' } })];
+  for (let z = 0; z < 3; z++) for (const x of [1, 2, 3, 4]) out.push(at(`bay_${x}_${z}`, 'setpiece.classroom_bay', x, 0, z));
+  return out;
+}
+
+describe("a three-floor school hall joined to a bridge (Stangeland / Cord's shape)", () => {
+  it('every floor end to end, every classroom, both stairs, the bridge on the ground and the first floor', { timeout: 240_000 }, () => {
+    const map = mapOf(stangeland());
+    const nav = navOf(map);
+    for (const y of [0, 4, 8]) {
+      expect(miss(nav, v([4, y, 4]), v([36, y, 4])), `the hall at ${y} m, end to end`).toBeLessThan(1.2);
+      for (const x of [1, 4]) for (const north of [true, false]) expect(miss(nav, v([x * 8, y, 4]), v([x * 8 + 2.4, y, north ? 10.6 : -2.6])), `the classroom at x ${x}, ${north ? 'north' : 'south'}, ${y} m`).toBeLessThan(1.2);
+      // From the west lobby to every floor.
+      expect(miss(nav, v([0, 0, 7]), v([12, y, 4])), `west stair to ${y} m`).toBeLessThan(1.2);
+    }
+    // The top floor's last bay, over the east end bay, closed at its end.
+    expect(miss(nav, v([36, 8, 4]), v([42, 8, 4]))).toBeLessThan(1.2);
+    expect(miss(nav, v([36, 8, 4]), v([44.5, 8, 4]))).toBeGreaterThan(0.6);
+    // The bridge: in from its passage at the side door to the east lobby; its room over the arch to the first floor's hall.
+    expect(miss(nav, v([48, 0, 0]), v([40, 0, 0.5]))).toBeLessThan(1.2);
+    expect(miss(nav, v([48, 4, 0]), v([30, 4, 4]))).toBeLessThan(1.2);
+    // The east stair from the ground to the first floor.
+    expect(miss(nav, v([40, 0, 1]), v([36, 4, 4]))).toBeLessThan(1.2);
+    nav.destroy();
+  });
+});
+
 describe('the wall styles the bays are built with', () => {
   it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
     expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);

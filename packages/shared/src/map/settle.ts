@@ -131,6 +131,8 @@ export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = sup
   const out: { id: string; gap: number }[] = [];
   for (const e of map.entities) {
     if (e.kind !== 'prop') continue;
+    // A set piece's parts stand where the piece puts them (a board hung on a classroom's wall); MapMaker can't settle them.
+    if (e.id.startsWith('sp_')) continue;
     const ground = settledPropY(t, e);
     if (ground === null) continue;
     const gap = e.position[1] - (ground + 0.03);
