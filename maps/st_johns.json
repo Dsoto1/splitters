@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_h3r6mvaouqncf6vl",
-      "revision": 17,
-      "contentHash": "sha256:8d5c259a1c908cab62588e1d621c7e9a8f37f49cddf828d7a5d47b745538908d",
+      "versionId": "v_eulxjzhgxys47wk3",
+      "revision": 19,
+      "contentHash": "sha256:39140256088ae87989c8d9c0e2b374e76a2e288b2387256ad761f082347253e4",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T00:41:49.094Z"
+      "releasedAt": "2026-11-17T17:19:58.476Z"
     }
   },
   "classicStructure": {
@@ -52142,6 +52142,168 @@
       "scale": 1,
       "solid": true,
       "tint": null
+    },
+    {
+      "id": "prop_qts0c1br1c",
+      "position": [
+        -116,
+        -0.09,
+        -57
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 0.401,
+      "scale": 0.75,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_znk7r12n0o",
+      "position": [
+        -108,
+        -0.08,
+        -57
+      ],
+      "kind": "prop",
+      "model": "env.conifer.spruce",
+      "yaw": 2.094,
+      "scale": 0.75,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0sag0luw3t",
+      "position": [
+        -128.5,
+        -0.84,
+        -55.5
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": 0.698,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_4tw978dgz3",
+      "position": [
+        -127,
+        -0.75,
+        -56.5
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": 0.419,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_58q7mf5eb8",
+      "position": [
+        -125,
+        -0.64,
+        -57
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": 0.14,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_3459ewaolt",
+      "position": [
+        -123,
+        -0.46,
+        -57
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": -0.14,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_zzt4gpx8uz",
+      "position": [
+        -121,
+        -0.3,
+        -56.5
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": -0.419,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_7mfvzrvurk",
+      "position": [
+        -119.5,
+        -0.3,
+        -55.5
+      ],
+      "kind": "prop",
+      "model": "kit.wall.stone",
+      "yaw": -0.698,
+      "scale": 1,
+      "solid": true,
+      "variant": 2,
+      "tint": null
+    },
+    {
+      "id": "prop_qafubgr7py",
+      "position": [
+        -118,
+        -0.21,
+        -56
+      ],
+      "kind": "prop",
+      "model": "kit.wall.pier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_cr7rogzi50",
+      "position": [
+        -114.5,
+        -0.32,
+        -54.5
+      ],
+      "kind": "prop",
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 3
+    },
+    {
+      "id": "prop_u2ewet59uc",
+      "position": [
+        -109.5,
+        -0.31,
+        -54.5
+      ],
+      "kind": "prop",
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 3
     }
   ],
   "factions": [],
