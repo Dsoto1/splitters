@@ -10,6 +10,7 @@ The owner (to lane B's splitters22): **lane A takes St. John's and the fixes; la
 - **Lane B (lead):** major features: MapMaker painting Phase 5, MapMaker UI Phases 4-5, procedural environment Phases 4-5 and saved mixes; then gun handling extras and the weapon tuning screen, player profiles; also music and announcer, blood by character, jump pad effects, team switch, the grips rework (owner deciding), Meshy model processing. Lane B still runs the trains and keeps QUEUE and HANDOFF.
 - **Already running in lane B and finishing there:** the Dropship deck fix (with half-strength team colour on all textured vehicles) and the owner's character pass (`wip/characters-1117`).
 - If lane A runs short of its limit, say so here; lane B picks up from your notes.
+- **Fixes land as a daily batch** (owner, 2026-11-17; CLAUDE.md "Fix batches"): `wip/fixes-<YYYYMMDD>`, one commit per fix, one check, one landing; urgent fixes alone. **Versions weekly**, cut by lane B's lead.
 
 ## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
 
