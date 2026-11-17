@@ -387,6 +387,7 @@
     {"file":"props/hm_kitchen_counter_long.glb","source":"quaternius-house-interior","src":"Kitchen_3Drawers.glb","triangles":212,"bytes":11364,"sha256":"bba02ef9e2096266"},
     {"file":"props/hm_kitchen_sink.glb","source":"quaternius-house-interior","src":"Kitchen_Sink.glb","triangles":444,"bytes":23892,"sha256":"6353c1776e17d5d3"},
     {"file":"props/hm_nightstand.glb","source":"quaternius-house-interior","src":"NightStand_1.glb","triangles":172,"bytes":9572,"sha256":"0018e192655ea5a6"},
+    {"file":"props/hm_open_shelf.glb","source":"quaternius-house-interior","src":"Shelf_1.glb","triangles":96,"bytes":6268,"sha256":"66ddf57a5a199a0f"},
     {"file":"props/hm_oven.glb","source":"quaternius-house-interior","src":"Kitchen_Oven.glb","triangles":524,"bytes":27520,"sha256":"351b3e8c03806cd5"},
     {"file":"props/hm_potted_palm.glb","source":"quaternius-house-interior","src":"Houseplant_5.glb","triangles":492,"bytes":19536,"sha256":"e8130e6e80ae9279"},
     {"file":"props/hm_rug.glb","source":"quaternius-house-interior","src":"Carpet_1.glb","triangles":108,"bytes":5144,"sha256":"321ff817a8a6a715"},

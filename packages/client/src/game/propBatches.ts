@@ -6,6 +6,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
+import { pickPropLevel, propLodEdges } from './propLod.ts';
 
 /**
  * Static props drawn in batches (docs/PERF_96.md, "Performance round 3"). Every placed prop used to be a node of
@@ -16,8 +17,9 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
  * that only change when a copy changes its level of detail.
  *
  * - **Tints** ride in the instance colour (the same albedo × tint product a tinted copy's own material made).
- * - **Levels of detail**: each copy picks its level by its distance to the camera (with hysteresis) whenever the camera
- *   has moved a metre, as the environment renderer does; a batch's buffer is rebuilt only when a copy joins or leaves.
+ * - **Levels of detail**: each copy picks its level by its distance to the camera whenever the camera has moved a
+ *   metre, as the environment renderer does, at distances set by its size on screen with hysteresis (propLod.ts: no
+ *   pop a few metres away, no flicker at the line); a batch's buffer is rebuilt only when a copy joins or leaves.
  * - **Shadows**: batches that never change (no levels of detail) are static thin instances, merged into the shadow
  *   proxies like the instances were. Batches with levels of detail cast as they draw (as instances did). Small clutter
  *   casts only within `smallReach` of the camera: one shadow-only batch per model holds the copies that near.
@@ -57,11 +59,8 @@ export function joinsPropBatch(copies: number, breakable: boolean, catalogueBrea
   return copies >= PROP_BATCH_MIN && (breakBatched || (!breakable && !catalogueBreakable));
 }
 
-/** A copy changes level only once it is this share past the boundary (no flicker at the edge). */
-const HYSTERESIS = 0.1;
-
 interface Level {
-  /** Camera distance (m) from which this level draws. */
+  /** Camera distance (m) from which this level draws, as the model was written (each copy's own: Copy.edges). */
   distance: number;
   /** The level's meshes (one per material), as geometry and material; empty: nothing drawn (culled at range). */
   parts: { data: VertexData; material: Material | null; sideOrientation: number; hasVertexAlpha: boolean }[];
@@ -85,6 +84,8 @@ interface Copy {
   z: number;
   r: number;
   level: number;
+  /** Where each level starts for this copy (propLod.ts propLodEdges: by its size on screen). */
+  edges: number[];
   small: boolean;
   /** Under a roof or the floor above (shared `indoorProps`): out of the sun's shadow pass. */
   indoor: boolean;
@@ -199,7 +200,9 @@ export class PropBatches {
     const color: [number, number, number, number] = tint ? [...Color3.FromHexString(tint).asArray(), 1] as [number, number, number, number] : [1, 1, 1, 1];
     let g = this.groups.get(path);
     if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map() }));
-    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r: model.radius * s, level: -1, small, indoor, quiet: small || indoor, breakable };
+    const r = model.radius * s;
+    const edges = propLodEdges(model.levels.map((l) => l.distance), r);
+    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r, level: -1, edges, small, indoor, quiet: small || indoor, breakable };
     g.copies.push(copy);
     this.byRoot.set(root, { g, copy });
     if (tint) g.tinted = true;
@@ -250,15 +253,9 @@ export class PropBatches {
         // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.
         for (let l = 0; l < g.model.levels.length; l++) for (const k of g.copies) this.batch(g, l, k);
       }
-      const levels = g.model.levels;
       for (const c of g.copies) {
         const d = Math.hypot(c.x - camera.x, c.y - camera.y, c.z - camera.z);
-        let level = 0;
-        for (let i = 1; i < levels.length; i++) if (d >= levels[i]!.distance) level = i;
-        if (c.level >= 0 && level !== c.level) {
-          const edge = levels[Math.max(level, c.level)]!.distance;
-          if (Math.abs(d - edge) < edge * HYSTERESIS) level = c.level;
-        }
+        const level = pickPropLevel(d, c.edges, c.level);
         if (level === c.level) continue;
         if (c.level >= 0) this.batch(g, c.level, c).dirty = true;
         this.batch(g, level, c).dirty = true;
@@ -455,7 +452,9 @@ function toModel(path: string, sources: readonly Mesh[]): Model | null {
   for (const l of sources[0]!.getLODLevels()) {
     // A billboard turns per copy, which thin instances can't: such models keep their instances.
     if (l.mesh && l.mesh.billboardMode !== Mesh.BILLBOARDMODE_NONE) return null;
-    levels.push({ distance: l.distanceOrScreenCoverage, parts: l.mesh ? [part(l.mesh)] : [] });
+    // The distance the model was written with (ModelLibrary.mergeModel keeps it beside the one it gives instances).
+    const authored = (l.mesh?.metadata as { lodAuthored?: number } | null | undefined)?.lodAuthored;
+    levels.push({ distance: authored ?? l.distanceOrScreenCoverage, parts: l.mesh ? [part(l.mesh)] : [] });
   }
   levels.sort((a, b) => a.distance - b.distance);
   // Bounds in the model's space (the sources are parked away from it: their own geometry is in the model's space).

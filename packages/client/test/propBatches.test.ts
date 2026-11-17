@@ -92,8 +92,10 @@ describe('static prop batches', () => {
       [0, 1],
       [1, 1],
     ]);
-    // Walk up to the far one: both at full detail.
+    // Walk up to the far one: both at full detail (inside the hysteresis band, 30 m × 0.85, from the far one).
     batches.update(new Vector3(33, 0, 0));
+    expect(batchMeshes(s).filter((m) => m.isEnabled()).length).toBe(2);
+    batches.update(new Vector3(36, 0, 0));
     const full = batchMeshes(s).filter((m) => m.isEnabled());
     expect(full.length).toBe(1);
     expect(full[0]!.thinInstanceCount).toBe(2);

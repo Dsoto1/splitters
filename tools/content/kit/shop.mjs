@@ -9,7 +9,7 @@
 // Level 1 keeps the outline (goods as one block a shelf); level 2 is the bounds, or the stall's table and canopy.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, box, groundShade, hex, quadN, scale3, standIn, triN } from './geom.mjs';
+import { Mesh, board, box, groundShade, hex, quadN, scale3, standIn, triN } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
@@ -284,5 +284,109 @@ export function wasteBinMesh(seed, size, g, look, level) {
   } else quadN(m, o1[0], o1[1], o1[2], o1[3], [0, 1, 0], scale3(paint, 0.35));
   // (The foot's four corners touch the ground inside the footprint; the rim is the bounds.)
   quadN(m, ...ring(0, k), [0, -1, 0], scale3(paint, 0.3));
+  return m;
+}
+
+/**
+ * A wall shelf: one plank on two brackets screwed to the wall, a few things standing on it (books, jars and tins, or
+ * a potted plant beside a few books). Settings `g`: `back` (z of the wall it hangs on, m: the shelf reaches towards
+ * +z from it), `depth` (the plank's depth), `plank` [top height, thickness], `stock` ('books', 'jars' or 'decor'),
+ * `fill` (0–1). Its bounds are its family's size, centred, so it stays inside them (`bounds: "within"`); it collides as
+ * nothing. `look`: `wood` (hex: the plank), `bracket` (hex), `grime`.
+ *
+ * Why (owner, 2026-11-16, Flatpack Depot): the Quaternius "Wall Shelf" was the pack's narrow standing shelf unit
+ * shrunk to 40 cm, a tiny bookcase stuck on the wall; this takes its place on the maps (content alias) at the same
+ * height, its back on the same plane.
+ * Level 1: the plank, the brackets as blocks and the goods as one block; level 2: the plank and one block.
+ */
+export function wallShelfMesh(seed, size, g, look, level) {
+  const [w, h] = size;
+  const r = rng(seed);
+  const m = new Mesh();
+  const z0 = g.back ?? 0;
+  const z1 = z0 + (g.depth ?? 0.22);
+  const [top, thick] = g.plank ?? [0.1, 0.025];
+  const wood = hex(look.wood ?? '#9a6b3f');
+  const iron = hex(look.bracket ?? '#3a3a3c');
+  const grime = look.grime ?? 0.15;
+  const plankC = (p, n) => scale3(wood, n[1] > 0.5 ? 1.05 - grime * 0.3 : n[1] < -0.5 ? 0.6 : 0.82);
+  // The plank, its back against the wall (no back face: nobody sees it).
+  box(m, [-w / 2, top - thick, z0], [w / 2, top, z1], plankC, ['nz']);
+  const room = h - top;
+  if (level >= 2) {
+    box(m, [-w / 2 + 0.06, top, z0 + 0.03], [w / 2 - 0.06, top + room * 0.6, z1 - 0.04], scale3(hex('#8a6a4a'), 0.8), ['ny', 'nz']);
+    return m;
+  }
+  // Two brackets: a strap on the wall and an arm under the plank, braced.
+  const bx = w / 2 - Math.min(0.12, w * 0.15);
+  for (const sx of [-1, 1]) {
+    const x = sx * bx;
+    const t = 0.012;
+    box(m, [x - 0.015, 0, z0], [x + 0.015, top - thick, z0 + t], iron, ['nz', 'py']);
+    if (level === 0) {
+      box(m, [x - 0.015, top - thick - t, z0 + t], [x + 0.015, top - thick, z1 - 0.03], iron, ['py', 'nz']);
+      // The brace: a flat bar from low on the strap to the arm's far end.
+      board(m, [x, 0.012, z0 + t], [x, top - thick - t, z1 - 0.05], [1, 0, 0], [0, -1, 0], 0.024, 0.006, scale3(iron, 0.9), { ends: false });
+    } else box(m, [x - 0.015, top - thick - 0.04, z0 + t], [x + 0.015, top - thick, z0 + (z1 - z0) * 0.6], iron, ['py', 'nz']);
+  }
+  const stock = g.stock ?? 'books';
+  if (level >= 1) {
+    const col = stock === 'jars' ? '#a8b0a8' : stock === 'decor' ? '#6a8a4a' : '#7a3a2f';
+    box(m, [-w / 2 + 0.05, top, z0 + 0.02], [w / 2 - 0.05, top + room * 0.7, z1 - 0.03], scale3(hex(col), 0.85), ['ny', 'nz']);
+    return m;
+  }
+  const BOOKS = ['#7a2f2a', '#2f4f6f', '#3f6a3a', '#c9a23a', '#5a3a6a', '#d8d0bc', '#8a5a2a'];
+  const JARS = ['#c9c2b0', '#a8adb0', '#b23a2f', '#d8c23a', '#3f7a4a', '#e3dccb'];
+  const fill = g.fill ?? 0.8;
+  const zb = z0 + 0.015;
+  const zf = z1 - 0.025;
+  const shade = (c) => (p, n) => scale3(c, n[1] > 0.5 ? 1.1 : Math.abs(n[0]) > 0.5 ? 0.75 : 1);
+  let x = -w / 2 + 0.04;
+  const end = w / 2 - 0.04;
+  // Decor: a potted plant at one end first.
+  if (stock === 'decor') {
+    const pw = Math.min(0.12, zf - zb);
+    const px = r.next() < 0.5 ? x : end - pw;
+    const pot = hex('#b8673f');
+    box(m, [px, top, zb], [px + pw, top + 0.11, zb + pw], shade(pot), ['ny']);
+    const leaf = hex('#4f7a3a');
+    for (let k = 0; k < 3; k++) {
+      const lx = px + pw / 2 + r.range(-0.03, 0.03);
+      const lz = zb + pw / 2 + r.range(-0.01, 0.01);
+      const lh = room * r.range(0.55, 0.8);
+      triN(m, [lx - 0.06, top + 0.1, lz], [lx + 0.06, top + 0.1, lz], [lx + r.range(-0.03, 0.03), top + lh, lz], [0, 0, 1], scale3(leaf, r.range(0.85, 1.1)));
+      triN(m, [lx, top + 0.1, lz - 0.045], [lx, top + 0.1, lz + 0.045], [lx, top + lh * 0.9, lz + r.range(-0.02, 0.02)], [1, 0, 0], scale3(leaf, r.range(0.75, 1)));
+    }
+    if (px === x) x += pw + 0.03;
+  }
+  const stop = stock === 'decor' && x === -w / 2 + 0.04 ? end - 0.16 : end;
+  while (x < stop) {
+    if (stock === 'jars') {
+      const jw = r.range(0.07, 0.1);
+      if (x + jw > stop) break;
+      if (r.next() < fill) {
+        const jh = room * r.range(0.35, 0.6);
+        const zc = r.range(zb, zf - jw);
+        const c = hex(JARS[r.int(0, JARS.length - 1)]);
+        box(m, [x, top, zc], [x + jw, top + jh, zc + jw], shade(c), ['ny']);
+        // A lid.
+        box(m, [x + 0.005, top + jh, zc + 0.005], [x + jw - 0.005, top + jh + 0.015, zc + jw - 0.005], scale3(hex('#5a5a5a'), 1), ['ny']);
+      }
+      x += jw + 0.02;
+    } else {
+      // A run of books upright, sometimes a gap or a book lying flat.
+      const bw = r.range(0.025, 0.045);
+      if (x + bw > stop) break;
+      if (r.next() > fill) {
+        x += r.range(0.03, 0.08);
+        continue;
+      }
+      const bh = room * r.range(0.6, 0.85);
+      const bd = Math.min(zf - zb, r.range(0.09, 0.19));
+      const c = hex(BOOKS[r.int(0, BOOKS.length - 1)]);
+      box(m, [x, top, zb], [x + bw, top + bh, zb + bd], shade(scale3(c, r.range(0.85, 1.05))), ['ny', 'nz']);
+      x += bw + 0.002;
+    }
+  }
   return m;
 }

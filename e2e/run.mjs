@@ -10995,10 +10995,12 @@ const FLASHING_DAY = {
       // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
       entities.push({ id: 'day_tiles', kind: 'block', position: [-24.4, 0, -25], size: [6, 0.1, 6], yaw: 0, material: 'core.white_tiles', tint: '#ffffff', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
       for (const [i, [item, x, z]] of [['ammo_light', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
+      // A row of ten stocked shop shelves (the `shelves` moment: no pop between their near and far looks as you walk up).
+      for (let i = 0; i < 10; i++) entities.push({ id: `day_shelf_${i}`, kind: 'prop', model: 'kit.shelf.gondola', position: [-34 + 2 * i, 0, 38], yaw: 0, scale: 1, solid: true, tint: null });
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
-      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
-  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.sky !== 'night',
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
   moments: ({ page, stage, step }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
@@ -11009,7 +11011,49 @@ const FLASHING_DAY = {
         await stage({ me: [24, 0, zAt(f)], bots: [] });
       };
     }
+    // Walking up to the shelves (owner, 2026-11-16: a shop shelf's goods popped between flat blocks and the real items a
+    // few metres away, flickering at the line; game/propLod.ts): from 26 m to 4 m of the row, at 11 m/s. Every frame,
+    // each shelf's level of detail (its prop batch's meshes) is read: none within 20 m may be on a lighter level, and
+    // none may change level during the walk.
+    const shelfAt = (f) => 12 + (22 * f) / 59;
+    const shelfLevels = () =>
+      page.evaluate(() => {
+        const v = window.__cs.view;
+        const eye = v.cameraPosition();
+        const log = (window.__shelfLog ??= { seen: 0, near: 0, changes: 0, last: {}, far: 0 });
+        for (const [i, n] of v.props) {
+          if (!n.name.startsWith('prop_day_shelf_')) continue;
+          const st = v.propBatches?.copyState(n);
+          if (!st?.meshes.length) continue;
+          const level = Number(/_l(\d+)_/.exec(st.meshes[0])?.[1] ?? 0);
+          log.seen++;
+          const d = Math.hypot(n.position.x - eye.x, n.position.y + 1 - eye.y, n.position.z - eye.z);
+          if (d < 20 && level > 0) log.near++;
+          log.far = Math.max(log.far, d);
+          if (log.last[i] !== undefined && log.last[i] !== level) log.changes++;
+          log.last[i] = level;
+        }
+      });
+    const shelfWalk = {};
+    for (let f = 0; f < 60; f++) {
+      shelfWalk[f] = async () => {
+        await shelfLevels();
+        await stage({ me: [-25, 0, shelfAt(f)], bots: [] });
+      };
+    }
     return [
+      {
+        name: 'shelves',
+        label: 'walking up to a row of stocked shop shelves, from 26 m to 4 m',
+        weapon: 'core.arc_caster',
+        me: [-25, 0, 12],
+        look: { yaw: 0, pitch: -0.05 },
+        bots: [],
+        before: () => page.evaluate(() => (window.__shelfLog = undefined)),
+        at: shelfWalk,
+        seen: () => shelfLevels().then(() => page.evaluate(() => ({ seen: window.__shelfLog.seen, near: window.__shelfLog.near, changes: window.__shelfLog.changes, far: +window.__shelfLog.far.toFixed(1) }))),
+        sees: (_on, s) => s.seen >= 300 && s.near === 0 && s.changes === 0,
+      },
       {
         name: 'tunnel',
         label: 'sprinting out of a lit tunnel into daylight, turning round and sprinting back in',
