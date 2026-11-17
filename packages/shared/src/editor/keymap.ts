@@ -144,7 +144,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'planView', group: 'View and camera', keys: 'K', what: 'Plan view: the level from straight above, with spawns, objectives and pickups (again: back)', codes: ['KeyK'] },
   { action: 'showAll', group: 'Levels', keys: 'H', what: 'Show the levels above too', codes: ['KeyH'] },
   { action: 'focus', group: 'View and camera', keys: 'F', what: 'Frame the selection', codes: ['KeyF'] },
-  { action: 'tileView', group: 'View and camera', keys: 'Enter', what: 'Tile View: the selected tile, set piece or group from above, in the dock (or double-click it; Esc: back to the map)', codes: ['Enter', 'NumpadEnter'] },
+  { action: 'tileView', group: 'View and camera', keys: 'Enter', what: 'Tile View: the selected tile, set piece or group from above, in the dock (or double-click it; Esc: back to the map)', codes: ['Enter', 'NumpadEnter'], shift: false },
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
   { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Environment brush)', codes: ['BracketRight'] },
   { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Environment brush)', codes: ['BracketLeft'] },
