@@ -39,7 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/dropship-seats` · b6f72f77 · 44034422634 (lane A: the Dropship's riders stay on their seats: a seated rider is drawn turned no further from its seat than the waist turns; the drop route's twelve spread along the benches)
-- `wip/tunnels-6` · ba7b438c · 44044279105 (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
+- `wip/tunnels-6` · ba7b438c · 44044279105 (**held, lane B fixing**: with today's main it fails e2e `roulette` jackpot glow; trains skip it until a new green sha is here) (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
 - `wip/shadow-casters` · 7fddc644 · 44060921601 (lane B: cheaper small shadow casters: trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps; clutter casts to 20 m with a 24 m band; `?perfoff=smallcasters`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
