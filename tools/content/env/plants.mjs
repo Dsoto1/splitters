@@ -71,7 +71,8 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
   pts.sort((a, b) => len(sub(b, [0, cy, 0])) - len(sub(a, [0, cy, 0])));
   const chosen = spread(pts.slice(0, Math.max(lod.cards, Math.round(pts.length * 0.6))), lod.cards);
   const leaves = look.leaves.map(toLinear);
-  const keys = ['shrub.0', 'shrub.1', 'shrub.2', 'shrub.3'];
+  // The card pictures (g.cards: atlas keys, e.g. a juniper's needle sprays; the broadleaf shrub cards by default).
+  const keys = g.cards ?? ['shrub.0', 'shrub.1', 'shrub.2', 'shrub.3'];
   for (const q of chosen) {
     const out = norm(sub(q, [0, cy * 0.6, 0]));
     const face = norm(add(mul(out, 0.7), r.unit()));
@@ -81,7 +82,7 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
     const v = (0.5 + 0.5 * depth) * (1 + r.jitter(look.jitter)) * (0.75 + 0.25 * Math.min(1, q[1] / g.height));
     const size = g.cardSize * lod.cardScale * r.range(0.85, 1.15);
     const c = add(mul(q, 1 - 0.12 * (lod.cardScale - 1)), [0, 0, 0]);
-    card(leaf, { c, up, face, size, card: atlas.cards[keys[r.int(0, 3)]], colour: base.map((x) => x * v), lit: norm(add(mul(out, 0.8), [0, 0.3, 0])), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 1] });
+    card(leaf, { c, up, face, size, card: atlas.cards[keys[r.int(0, keys.length - 1)]], colour: base.map((x) => x * v), lit: norm(add(mul(out, 0.8), [0, 0.3, 0])), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 1] });
   }
   return { bark, leaf };
 }
@@ -283,4 +284,37 @@ export function eelgrassMesh(seed, g, look) {
     m.tri(ids[segs - 1][0], ids[segs - 1][1], tipId);
   }
   return { grass: m };
+}
+
+/**
+ * A rosette succulent (env.succulent.*, an agave): 10–14 stiff, thick sword leaves from one crown, in two or three
+ * rings, the inner ones steeper, each a strip of two segments to a sharp point, curving out a little toward the tip,
+ * a slight fold along its midrib in the shading. Vertex colour only (env.grass: root, tip and an edge tint), almost no
+ * sway. Decoration only (no collision, no concealment). { leaves: Mesh }.
+ */
+export function rosetteMesh(seed, g, look) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const [root, tip] = [toLinear(look.root), toLinear(look.tip)];
+  const alt = look.alt ? toLinear(look.alt) : tip;
+  const n = r.int(g.leaves[0], g.leaves[1]);
+  let az = r.next() * Math.PI * 2;
+  for (let b = 0; b < n; b++) {
+    az += ((137.5 + r.jitter(12)) * Math.PI) / 180;
+    // Inner leaves (later ones) stand steeper and shorter.
+    const inner = b / Math.max(1, n - 1);
+    const out = [Math.cos(az), 0, Math.sin(az)];
+    const rise = ((g.elevation[0] + (g.elevation[1] - g.elevation[0]) * inner + r.jitter(6)) * Math.PI) / 180;
+    const L = g.length * (1 - 0.35 * inner) * r.range(0.85, 1.1);
+    const w = g.width * r.range(0.85, 1.15);
+    const curl = r.range(0.04, 0.16);
+    const dir = norm(add(mul(out, Math.cos(rise)), [0, Math.sin(rise), 0]));
+    const pts = [0, 0.35, 0.7, 1].map((t) => add(add(mul(out, 0.03), mul(dir, L * t)), [0, -curl * L * t * t, 0]));
+    const side = norm(cross([0, 1, 0], out));
+    const up = norm(cross(dir, side));
+    const tint = r.chance(0.3) ? alt : tip;
+    const shade = 0.85 + 0.25 * r.next();
+    strip(m, pts, side, w, w * 0.55, norm(add(mul(up, -1), [0, 0.6, 0])), (t) => root.map((v, i) => (v + (tint[i] - v) * Math.min(1, t * 1.4)) * shade), (t) => [t * t * 0.15, 0], true);
+  }
+  return { leaves: m };
 }

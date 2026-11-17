@@ -20,6 +20,45 @@
         { "index": 2, "name": "purple", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#9a5cc0", "card": 2 } },
         { "index": 3, "name": "red", "look": { "stem": "#4a6a2a", "leaf": "#3f5f26", "petal": "#d0261c", "card": 1 } }
       ]
+    },
+    {
+      "id": "env.flower.alpine",
+      "displayName": "Alpine Flowers",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a low cushion of many short stems with small heads (0.18 m), the gentian, saxifrage and moss campion of high meadows: blue, pink, white. Decoration only."},
+      "nominalHeight": 0.18,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 45, "minSpacing": 0.25, "scale": [0.7, 1.3]},
+      "generator": {"kind": "flower", "seed": 70, "height": 0.18, "stems": [7, 8], "stemWidth": 0.006, "leaves": 3, "leafLength": 0.09, "leafWidth": 0.024, "headSize": 0.042},
+      "lods": [
+        {"distance": 0}
+      ],
+      "variants": [
+        {"index": 0, "name": "blue", "look": {"stem": "#3e5a28", "leaf": "#36522a", "petal": "#3a5cd0", "card": 1}},
+        {"index": 1, "name": "pink", "look": {"stem": "#3e5a28", "leaf": "#36522a", "petal": "#e07aa8", "card": 0}},
+        {"index": 2, "name": "white", "look": {"stem": "#3e5a28", "leaf": "#36522a", "petal": "#f4f2ea", "card": 2}}
+      ]
+    },
+    {
+      "id": "env.flower.desert",
+      "displayName": "Desert Marigold",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): tall wiry grey-green stems (0.5 m) leaning out from a woolly base, a daisy head on each: yellow or orange; arid ground. Decoration only."},
+      "nominalHeight": 0.5,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 40, "minSpacing": 0.35, "scale": [0.7, 1.3]},
+      "generator": {"kind": "flower", "seed": 71, "height": 0.5, "stems": [5, 6], "stemWidth": 0.007, "leaves": 4, "leafLength": 0.12, "leafWidth": 0.035, "headSize": 0.085},
+      "lods": [
+        {"distance": 0}
+      ],
+      "variants": [
+        {"index": 0, "name": "yellow", "look": {"stem": "#7c8a6a", "leaf": "#8e9a7e", "petal": "#f0c41c", "card": 0}},
+        {"index": 1, "name": "orange", "look": {"stem": "#7c8a6a", "leaf": "#8e9a7e", "petal": "#e8781e", "card": 0}}
+      ]
     }
   ]
 }

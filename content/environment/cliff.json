@@ -22,6 +22,48 @@
         { "index": 0, "name": "bare", "look": { "rock": "#77726a", "band": "#958d80", "strataFreq": 2.2 } },
         { "index": 1, "name": "snow", "look": { "rock": "#7a756c", "band": "#8f877c", "strataFreq": 3, "cover": "#e6eaf0", "coverFrom": 0.85 } }
       ]
+    },
+    {
+      "id": "env.cliff.sandstone",
+      "displayName": "Sandstone Cliff",
+      "category": "cliff",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a layered desert cliff panel (8 m wide, 7 m high): thin, regular beds with deep ledges and long, low joint blocks; its own family (panels of it butt seamlessly). Collision: the lightest level as a mesh."},
+      "nominalHeight": 7,
+      "nav": "boundary",
+      "role": "blocking",
+      "placement": {"maxSlopeDegrees": 60, "minSpacing": 8, "scale": [1, 1.5]},
+      "generator": {"kind": "cliff", "familySeed": 110, "seed": 111, "width": 8, "height": 7, "depth": 3, "skirt": 1, "relief": 0.8, "topRelief": 0.9, "strata": 0.85, "ledgeDepth": 0.7, "joints": {"size": [2.6, 0.7], "depth": 0.2, "groove": 0.08}, "uvRepeat": 2},
+      "lods": [
+        {"distance": 0, "nx": 30, "ny": 32, "detail": 1},
+        {"distance": 40, "nx": 16, "ny": 18, "detail": 0.6},
+        {"distance": 100, "nx": 8, "ny": 8}
+      ],
+      "variants": [
+        {"index": 0, "name": "tan", "look": {"rock": "#a88866", "band": "#c6a880", "strataFreq": 5}},
+        {"index": 1, "name": "red", "look": {"rock": "#9e6446", "band": "#c08260", "strataFreq": 5}}
+      ]
+    },
+    {
+      "id": "env.cliff.crag",
+      "displayName": "Mountain Crag",
+      "category": "cliff",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a tall, broken granite face (8 m wide, 10 m high): deep vertical ribs, tall blocky joints, few ledges, a ragged top; its own family (panels of it butt seamlessly); alpine maps. Collision: the lightest level as a mesh."},
+      "nominalHeight": 10,
+      "nav": "boundary",
+      "role": "blocking",
+      "placement": {"maxSlopeDegrees": 60, "minSpacing": 8, "scale": [1, 1.5]},
+      "generator": {"kind": "cliff", "familySeed": 120, "seed": 121, "width": 8, "height": 10, "depth": 3, "skirt": 1, "relief": 1.8, "topRelief": 2.4, "strata": 2.6, "ledgeDepth": 0.3, "joints": {"size": [1.1, 1.6], "depth": 0.3, "groove": 0.07}, "uvRepeat": 2},
+      "lods": [
+        {"distance": 0, "nx": 30, "ny": 32, "detail": 1},
+        {"distance": 40, "nx": 16, "ny": 18, "detail": 0.6},
+        {"distance": 100, "nx": 8, "ny": 8}
+      ],
+      "variants": [
+        {"index": 0, "name": "bare", "look": {"rock": "#6f6e6c", "band": "#87858a", "strataFreq": 1.6}},
+        {"index": 1, "name": "snow", "look": {"rock": "#6c6b6a", "band": "#838186", "strataFreq": 1.6, "cover": "#e6eaf0", "coverFrom": 0.7}}
+      ]
     }
   ]
 }
