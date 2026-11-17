@@ -73,6 +73,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 - `check/bugs-1117` · 44021194465 (the Wall Shelf, props popping, streams on the muzzle; a helper of lane B's splitters22)
 - `check/tunnels-5` · 44023522693 (tunnel kit step 5: brick sewer and mine, outfall, set piece family v44, Close open ends, Lit Tunnel Chamber; a helper of lane B's splitters22)
+- `check/chars-hands-faces` · 44027505383 (the seven Roster Board characters' hands and faces: new hand geometry for five, Sgt. Mackie's face, Kenji's fringe; a helper of lane A's lead)
 
 **Lead (lane B's splitters22), 2026-11-17 03:05: stale lock lines.** Two of lane B's finished "Landing now" lines (the 11-16 MapMaker train and driving physics 4) came back on main through landing merges (a branch whose HANDOFF still had them). Removed again. When a landing merge conflicts or auto-merges in HANDOFF, please check no old "Landing now" line rides back in.
 
