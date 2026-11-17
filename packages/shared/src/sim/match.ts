@@ -113,7 +113,7 @@ import {
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -7411,7 +7411,7 @@ export class Match {
       players: this.playerSnapshots(),
       score: this.scores(),
       ev: events,
-      pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
+      pr: this.projectiles.map((p) => (STREAM_VISUALS.has(p.spec.visual) && !p.extra ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),

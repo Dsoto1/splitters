@@ -24,11 +24,14 @@ const EXTRAPOLATE_TICKS = 5;
 /** This many snapshots in a row far later than expected (about 0.4 s) and the clock estimate moves to them. */
 const LATE_RUN_RESYNC = 12;
 
+/** A projectile as drawn: [x, y, z, look (PROJECTILE_VISUALS index), shooter's slot (a stream's own shots) or -1]. */
+export type ProjectileSample = [number, number, number, number, number];
+
 interface Frame {
   tick: number;
   players: Map<number, PlayerSnapshot>;
-  /** Projectile id -> [x, y, z, look]. */
-  projectiles: Map<number, [number, number, number, number]>;
+  /** Projectile id -> [x, y, z, look, shooter (a stream's own shots: STREAM_VISUALS) or -1]. */
+  projectiles: Map<number, ProjectileSample>;
   /** Players still in the match but left out of this snapshot (far away, big matches). */
   hold?: Set<number>;
 }
@@ -75,9 +78,9 @@ export class Interpolator {
   private lateRun = 0;
 
   /** `hold`: slots left out of this snapshot to save bandwidth; they are drawn from the frames that had them. */
-  push(tick: number, players: PlayerSnapshot[], projectiles: [number, number, number, number, number][] = [], hold?: readonly number[], now: number = performance.now()): void {
+  push(tick: number, players: PlayerSnapshot[], projectiles: readonly (readonly number[])[] = [], hold?: readonly number[], now: number = performance.now()): void {
     if (tick <= this.latestTick && this.frames.length) return;
-    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v]) => [id, [x, y, z, v ?? 0]])), ...(hold?.length ? { hold: new Set(hold) } : {}) });
+    this.frames.push({ tick, players: new Map(players.map((p) => [p.s, p])), projectiles: new Map(projectiles.map(([id, x, y, z, v, owner]) => [id!, [x!, y!, z!, v ?? 0, owner ?? -1]])), ...(hold?.length ? { hold: new Set(hold) } : {}) });
     this.latestTick = tick;
     const offset = tick - (now / 1000) * TICK_RATE;
     // Far ahead of the estimate: we fell behind (a stall here), catch up at once. Far behind it: one
@@ -127,13 +130,13 @@ export class Interpolator {
   }
 
   /** Interpolated projectile positions by ID. */
-  sampleProjectiles(now: number = performance.now()): Map<number, [number, number, number, number]> {
-    const out = new Map<number, [number, number, number, number]>();
+  sampleProjectiles(now: number = performance.now()): Map<number, ProjectileSample> {
+    const out = new Map<number, ProjectileSample>();
     if (!this.frames.length) return out;
     const { a, b, t } = this.bracket(this.renderTick(now));
     for (const [id, pb] of b.projectiles) {
       const pa = a.projectiles.get(id) ?? pb;
-      out.set(id, [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t, pa[2] + (pb[2] - pa[2]) * t, pb[3]]);
+      out.set(id, [pa[0] + (pb[0] - pa[0]) * t, pa[1] + (pb[1] - pa[1]) * t, pa[2] + (pb[2] - pa[2]) * t, pb[3], pb[4]]);
     }
     return out;
   }
