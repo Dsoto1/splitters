@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_h3r6mvaouqncf6vl",
-      "revision": 17,
-      "contentHash": "sha256:8d5c259a1c908cab62588e1d621c7e9a8f37f49cddf828d7a5d47b745538908d",
+      "versionId": "v_is7hex4sibe4frjv",
+      "revision": 18,
+      "contentHash": "sha256:1775f2e477d12ff62d22de1b503a02963a180fa4f5dcba5beb45a0217163c663",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T00:41:49.094Z"
+      "releasedAt": "2026-11-17T13:27:20.078Z"
     }
   },
   "classicStructure": {
@@ -52139,6 +52139,166 @@
       "kind": "prop",
       "model": "kit.sport.volleyball_net",
       "yaw": 1.571,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_qts0c1br1c",
+      "kind": "prop",
+      "position": [
+        -116,
+        -0.09,
+        -57
+      ],
+      "model": "env.conifer.spruce",
+      "yaw": 0.401,
+      "scale": 0.75,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_znk7r12n0o",
+      "kind": "prop",
+      "position": [
+        -108,
+        -0.08,
+        -57
+      ],
+      "model": "env.conifer.spruce",
+      "yaw": 2.094,
+      "scale": 0.75,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0sag0luw3t",
+      "kind": "prop",
+      "position": [
+        -128.5,
+        -0.84,
+        -55.5
+      ],
+      "model": "kit.wall.stone",
+      "yaw": 0.698,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_4tw978dgz3",
+      "kind": "prop",
+      "position": [
+        -127,
+        -0.75,
+        -56.5
+      ],
+      "model": "kit.wall.stone",
+      "yaw": 0.419,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_58q7mf5eb8",
+      "kind": "prop",
+      "position": [
+        -125,
+        -0.64,
+        -57
+      ],
+      "model": "kit.wall.stone",
+      "yaw": 0.14,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_3459ewaolt",
+      "kind": "prop",
+      "position": [
+        -123,
+        -0.46,
+        -57
+      ],
+      "model": "kit.wall.stone",
+      "yaw": -0.14,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_zzt4gpx8uz",
+      "kind": "prop",
+      "position": [
+        -121,
+        -0.3,
+        -56.5
+      ],
+      "model": "kit.wall.stone",
+      "yaw": -0.419,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_7mfvzrvurk",
+      "kind": "prop",
+      "position": [
+        -119.5,
+        -0.3,
+        -55.5
+      ],
+      "model": "kit.wall.stone",
+      "yaw": -0.698,
+      "scale": 1,
+      "solid": true,
+      "tint": null,
+      "variant": 2
+    },
+    {
+      "id": "prop_qafubgr7py",
+      "kind": "prop",
+      "position": [
+        -118,
+        -0.21,
+        -56
+      ],
+      "model": "kit.wall.pier",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_cr7rogzi50",
+      "kind": "prop",
+      "position": [
+        -114.5,
+        -0.32,
+        -54.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_u2ewet59uc",
+      "kind": "prop",
+      "position": [
+        -109.5,
+        -0.31,
+        -54.5
+      ],
+      "model": "kit.lamp.post_banner",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
