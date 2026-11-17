@@ -4,6 +4,7 @@
   "displayName": "Speeder",
   "kind": "vehicle",
   "model": "vehicles/cyber_fang.glb",
+  "paint": 0.5,
   "fallback": "vehicles/speeder.glb",
   "health": 300,
   "half": [1.2, 0.65, 2.1],
@@ -45,6 +46,7 @@
   "notes": {
     "model": "Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).",
     "seats": "Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged. Both sit astride (2026-11-11: they stood knee-deep in the saddle): the pilot on the saddle 1.65 m up, the passenger on the tail hump 1.9 m up.",
-    "cockpitEye": "Over the fairing, so the pilot sees the way ahead."
+    "cockpitEye": "Over the fairing, so the pilot sees the way ahead.",
+    "paint": "Half strength (owner, 2026-11-17, \"1a 2a\"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange)."
   }
 }
