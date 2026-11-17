@@ -8,20 +8,23 @@
 //   0. (before them) what the heap holds by where it was allocated: V8's sampling heap profiler from the page's load to
 //      the end of the warm-up, live objects only, summed by the allocating function and by the first of our own
 //      functions on its stack (a full heap snapshot of a 1 GB heap crashed the renderer here),
+//   (census) the distances of the characters in view, four times a second for PROF_SECONDS, and from them the character
+//      evaluations a second the animation LOD makes at 39 and 60 fps with and without the crowd rule
+//      (tools/perf/anim-census.mjs: counted, not timed, so SwiftShader's frame rate doesn't matter),
 //   4. the heap: before and after a full collection, and the engine's counts (window.__memory, and the CPU-side copies
 //      of geometry and textures it keeps).
 //
 //   node tools/perf/match-profile.mjs                (after `pnpm build`; serves the build on PROF_PORT, default 4881)
 //   PROF_MAP=sandfall_colosseum   PROF_BOTS=64   PROF_MODE=core.tdm   PROF_GRAPHICS=medium
 //   PROF_SIZE=480x270 (the viewport: SwiftShader draws every pixel on the CPU)   PROF_WARM=25 (seconds before measuring)   PROF_SECONDS=15   PROF_QUERY=perfoff=animcrowd (more URL parameters)
-//   PROF_STEPS=live,split,cpu,alloc,heap (which steps)   PROF_JSON=<file> (results)
+//   PROF_STEPS=live,census,split,cpu,alloc,heap (which steps)   PROF_JSON=<file> (results)
 //   PROF_RAW=<prefix>  also the raw profiles (<prefix>.cpuprofile, -alloc/-live.heapprofile, for DevTools)
 //   PROF_DIST=dist-prof   the build to serve (names read better from `vite build --minify false --outDir dist-prof`)
 //   PROF_URL=<url> a client already being served;   CHROMIUM=<path> another Chromium
 //
 // Software rendering (SwiftShader) here: render times are the CPU drawing pixels, so lean on the script's own parts,
 // allocation, heap and GC time.
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium } from 'playwright';
@@ -35,7 +38,7 @@ const GRAPHICS = process.env.PROF_GRAPHICS ?? 'medium';
 const WARM = Number(process.env.PROF_WARM ?? 25);
 const SECONDS = Number(process.env.PROF_SECONDS ?? 15);
 const QUERY = process.env.PROF_QUERY ? `&${process.env.PROF_QUERY}` : '';
-const STEPS = new Set((process.env.PROF_STEPS ?? 'live,split,cpu,alloc,heap').split(','));
+const STEPS = new Set((process.env.PROF_STEPS ?? 'live,census,split,cpu,alloc,heap').split(','));
 const DIST = process.env.PROF_DIST ?? 'dist';
 /** PROF_RAW=<file prefix>: the raw profiles too (open a .heapprofile or .cpuprofile in DevTools). */
 const RAW = process.env.PROF_RAW;
@@ -183,12 +186,18 @@ async function heap(page, cdp) {
     let indexBytes = 0;
     let numberArrays = 0;
     const seen = new Set();
+    /** Number-array vertex data by the name of the first mesh using it (digits as #). */
+    const byOwner = new Map();
     for (const g of scene.geometries) {
       for (const vb of Object.values(g._vertexBuffers ?? {})) {
         const d = vb?._buffer?._data ?? vb?.getData?.();
         if (!d || seen.has(d)) continue;
         seen.add(d);
-        if (Array.isArray(d)) numberArrays += d.length * 8;
+        if (Array.isArray(d)) {
+          numberArrays += d.length * 8;
+          const owner = (g.meshes?.[0]?.name ?? '(no mesh)').replace(/[0-9]+/g, '#').slice(0, 40);
+          byOwner.set(owner, (byOwner.get(owner) ?? 0) + d.length * 8);
+        }
         else vertexBytes += d.byteLength ?? 0;
       }
       const ix = g._indices;
@@ -203,7 +212,7 @@ async function heap(page, cdp) {
       const b = t._buffer;
       if (b) texBuffers += b.byteLength ?? b.length ?? 0;
     }
-    return { ...m, geometryVertexMB: vertexBytes / 1048576, geometryIndexMB: indexBytes / 1048576, geometryNumberArrayMB: numberArrays / 1048576, textureBufferMB: texBuffers / 1048576 };
+    return { ...m, geometryVertexMB: vertexBytes / 1048576, geometryIndexMB: indexBytes / 1048576, geometryNumberArrayMB: numberArrays / 1048576, numberArraysByMesh: [...byOwner].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, b]) => [k, Math.round(b / 104857.6) / 10]), textureBufferMB: texBuffers / 1048576 };
   });
   const r = { usedBeforeGcMB: mb(before.used), usedAfterGcMB: mb(after.used), totalMB: mb(after.total), engine };
   return r;
@@ -224,7 +233,11 @@ async function main() {
   }, GRAPHICS);
   const page = await ctx.newPage();
   page.on('pageerror', (e) => console.log(`  page error: ${e.message}`));
-  page.on('crash', () => console.log('  PAGE CRASHED'));
+  page.on('crash', () => {
+    console.log('  PAGE CRASHED');
+    stop();
+    process.exit(3);
+  });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Performance.enable');
   await page.goto(`${CLIENT}/?offline=${MAP}&gamemode=${MODE}&bots=${BOTS}${QUERY}`);
@@ -253,6 +266,26 @@ async function main() {
   out.players = await page.evaluate(() => window.__match?.combatants().length ?? 0);
   const m0 = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
   const t0 = Date.now();
+  if (STEPS.has('census')) {
+    const samples = [];
+    const end = Date.now() + SECONDS * 1000;
+    while (Date.now() < end) {
+      samples.push(
+        await page.evaluate(() => {
+          const v = window.__cs.view;
+          const eye = v.scene.activeCamera?.globalPosition;
+          const d = [];
+          if (eye) for (const [slot, a] of v.avatars) if (a.anim && !a.culled && !a.hiddenSelf && a.wasAlive) d.push({ slot, dist: Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) });
+          return { dt: 250, fov: v.scene.activeCamera?.fov ?? 1.35, d };
+        }),
+      );
+      await sleep(250);
+    }
+    const file = `${process.env.TMPDIR ?? '/tmp'}/anim-census-${process.pid}.json`;
+    writeFileSync(file, JSON.stringify({ samples }));
+    const script = new URL('./anim-census.mjs', import.meta.url).pathname;
+    out.census = JSON.parse(execFileSync(process.execPath, ['--experimental-transform-types', '--no-warnings', script, file], { encoding: 'utf8' }));
+  }
   if (STEPS.has('split')) out.split = await split(page, SECONDS);
   if (STEPS.has('cpu')) out.cpu = await cpu(cdp, SECONDS);
   if (STEPS.has('alloc')) out.alloc = await alloc(cdp, SECONDS);

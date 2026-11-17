@@ -16,10 +16,12 @@
  * body's cloned materials and texture copies freed with it, content/ownedAssets.ts; Flavius Rule's memory round,
  * docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, adds `proxydata`, the shadow proxies' triangles not kept in the page,
  * game/shadowProxy.ts, `bodypoints`, the bodies' per-vertex picking points dropped, content/pointCache.ts, and
- * `animcrowd`, all but the nearest characters of a crowd in view animated a rung or two slower, animLod.ts crowdStep).
+ * `animcrowd`, all but the nearest characters of a crowd in view animated a rung or two slower, animLod.ts crowdStep,
+ * `leveldata`, the merged level's vertex data kept as 32-bit floats, levelMerge.ts, and `netgarbage`, snapshots filed
+ * without a pair array per player, interpolation.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage';
 
 let off: Set<string> | null = null;
 
@@ -28,7 +30,9 @@ export function perfOn(name: PerfSwitch): boolean {
   if (!off) {
     off = new Set();
     try {
-      const v = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('perfoff');
+      // (Through globalThis: the server's build, which shares some of the game's modules, has no DOM types.)
+      const where = (globalThis as { location?: { search: string } }).location;
+      const v = where ? new URLSearchParams(where.search).get('perfoff') : null;
       for (const s of (v ?? '').split(',')) if (s) off.add(s.trim());
     } catch {
       // No page (tests): everything on.
