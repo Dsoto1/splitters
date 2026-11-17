@@ -10973,20 +10973,23 @@ async function flashingFlow(browser) {
 }
 
 /**
- * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit concrete tunnel (a portal, three modules with a
- * light under each strip fixture, a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
+ * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit tunnel (a portal, three modules with a light
+ * under each fixture, one in each family: concrete, brick sewer, mine; a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
  * headwall you sprint out to 5 m beyond it looking out (the dim bore opening onto daylight: a brightness step over
  * much of the picture), turn round in one frame and sprint back in looking into the tunnel.
  */
 const FLASHING_DAY = {
   name: 'day',
-  what: "the check's day scene: a lit concrete tunnel 40 m long (two portals, three modules, three lights)",
+  what: "the check's day scene: a lit tunnel 40 m long (two concrete portals; a concrete, a brick sewer and a mine module; three lights)",
   make: (page) =>
     page.evaluate(() => {
       const ed = window.__editor;
       // (Three cells east of the new map's own starting room.)
       const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
-      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
+      // (The run's three modules one in each family, concrete by the south portal, then brick sewer and mine: their
+      // lanterns and strip lights are steady glowing fixtures, seen when you turn back into the tunnel.)
+      const families = [undefined, 'brick', 'mine'];
+      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => ({ ...tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0), ...(families[y + 1] ? { family: families[y + 1] } : {}) })), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
       const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
       // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
       // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
