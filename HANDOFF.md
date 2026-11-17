@@ -70,6 +70,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+- `check/dropship-seats` · 44034422634 (the Dropship's riders kept on their seats; a helper of lane A's lead)
 **Landing now: train** (`wip/bot-react`, `wip/gunplay-polish`, both lane A's; run by lane B's splitters22, the lead, 2026-11-17 06:53 UTC): please hold code pushes to main until this line goes.
 
 
