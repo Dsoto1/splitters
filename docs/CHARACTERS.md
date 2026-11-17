@@ -599,7 +599,12 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   stays rigid when the arms move; a head hung low over the chest keeps off it.
 - **Stance:** hunched bodies (goblin, boglurker) lean back per spine joint when
   re-posed (`lean`), the head keeping the way it faced, so the shared clips
-  stand them up. The hyena's digitigrade legs have their joints on the leg's
+  stand them up. A character whose rigged download can't be fetched (its Meshy
+  rig task 404s on this key) is leaned in its shipped file instead:
+  `ONLY=<id> node tools/content/relean-built.mjs` turns the built chain back the
+  same way (the collarbones and arms ride the chest without turning), moves the
+  joints and bind matrices with it and records the lean in the file, so a
+  second run does nothing (Rattles, 2026-11-17). The hyena's digitigrade legs have their joints on the leg's
   centre line (hock as the ankle, paw as the foot), so straightening them
   turns the thigh and shin only a little. The goblin's rags are hundreds of
   small texture islands: its simplification collapses across seams only where
