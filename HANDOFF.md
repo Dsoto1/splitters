@@ -99,6 +99,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the body pool, baked far looks and the breakable-prop shadow fix in a train** (`check/train-20261117-152500` at 3666f4d7, run 44104795406, green on attempt 1; main = that commit plus a docs-only merge, 0576fc33; lane B's splitters22, 2026-11-17; lock released).
 
+**Lead (lane B's splitters22), 2026-11-17 16:10, for both lanes:** the owner chose to move the landing lock out of HANDOFF into a `landing-lock` branch that `tools/ci/train.mjs` takes and frees itself (QUEUE Bugs; lane B builds it next). Until it lands, keep using the "Landing now" line here, and after a landing merge check that no old "Landing now" line rode back and that yours is gone.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
