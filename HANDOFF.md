@@ -104,7 +104,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane A, 2026-11-17): mobile audit proposals 2, 3 and 4** (`wip/mobile-2`; QUEUE Features, lane A, the three "Mobile audit" lines). Files: client `frontend/frontEnd.ts` (Match Setup's map picker on phones, Quick Play's "Pick a map", Options → Controls → Touch rows, Character Select on phones), `frontend/quickPlay.ts` if needed, `game/touchControls.ts` (button size, opacity, left-handed, aim hold/toggle from `combatPrefs`), a new `game/touchLayout.ts` (the saved layout), `game/combatPrefs.ts` (read only, unless touch needs a hook), `style.css` (`html.touch` and phone media rules), a new `packages/client/test/touchLayout.test.ts`, e2e `run.mjs` `mobile` flow checks at phone sizes, docs/MOBILE_AUDIT.md, docs/QUEUE.md, CHANGELOG. No map format change, no content.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/mobile-2` · run 44123646418 (mobile audit proposals 2-4, at 6cb405ff; a helper of lane A)
+- `check/mobile-2` · run 44131574346 (mobile audit proposals 2-4, at 09159d51; a helper of lane A; run 44123646418 was red on e2e newplayer (fixed: it counted Quick Play's cards) and editor's 3 s TEST budget (3.3 s, timing))
 - `check/dropship-model-fix` · 44125908518 (7ef3332a; lane B helper: the Dropship's team colour at half strength, `paint` 0.5, so its olive and white don't go near black; the open deck is the model's own)
 
 
