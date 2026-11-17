@@ -36,7 +36,8 @@
     "feet": true,
     "hands": {
       "scale": 0.85,
-      "curl": 1
+      "curl": 0.7,
+      "graft": true
     },
     "grip": {
       "gripLong": [-0.015, 0, 0],

@@ -36,7 +36,9 @@
     "lod": 0.25,
     "feet": true,
     "hands": {
-      "scale": 0.7
+      "scale": 0.7,
+      "curl": 0.7,
+      "graft": true
     },
     "grip": {
       "gripLong": [-0.045, 0, -0.045],

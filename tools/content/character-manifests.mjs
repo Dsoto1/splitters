@@ -209,7 +209,9 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'graft', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together, graft; or l / r for one side)`);
+    // New hand geometry (handgraft.mjs): both hands, or one.
+    need(h?.graft === undefined || h.graft === true || h.graft === 'l' || h.graft === 'r', "fixes.hands.graft: true (both hands get new geometry: the rig's own hand, fitted) or 'l' / 'r'");
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');

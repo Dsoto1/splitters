@@ -38,6 +38,10 @@
     "triangles": 11000,
     "feet": true,
     "skinClean": true,
+    "hands": {
+      "curl": 0.7,
+      "graft": true
+    },
     "grip": {
       "gripLong": [-0.06, 0, -0.03],
       "supportLong": [-0.04, 0, 0.06],
