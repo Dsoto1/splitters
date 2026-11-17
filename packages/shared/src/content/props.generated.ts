@@ -546,6 +546,7 @@ export const CORE_PROPS: readonly PropDefinition[] = [
   {id: 'prop.hm_floor_lamp', file: 'props/hm_floor_lamp.glb', displayName: 'Floor Lamp', category: 'Home', size: [0.28,1.6,0.295], collision: null},
   {id: 'prop.hm_desk_lamp', file: 'props/hm_desk_lamp.glb', displayName: 'Desk Lamp', category: 'Home', size: [0.197,0.45,0.356], collision: null},
   {id: 'prop.hm_chandelier', file: 'props/hm_chandelier.glb', displayName: 'Chandelier', category: 'Home', size: [1.567,1,1.567], collision: null},
+  {id: 'prop.hm_open_shelf', file: 'props/hm_open_shelf.glb', displayName: 'Open Shelf Unit', category: 'Home', size: [0.424,1.9,0.391], collision: [0.424,1.9,0.391]},
   {id: 'prop.hm_wall_shelf', file: 'props/hm_wall_shelf.glb', displayName: 'Wall Shelf', category: 'Home', size: [0.089,0.4,0.082], collision: null},
   {id: 'prop.hm_window', file: 'props/hm_window.glb', displayName: 'Window', category: 'Home', size: [1.726,1.6,0.133], collision: null},
   {id: 'prop.nt_birch', file: 'props/nt_birch.glb', displayName: 'Birch', category: 'Trees', size: [3.81,8,5.551], collision: [0.5,8,0.5], boxes: [[-0.642,0,0.968,-0.137,1.25,1.565],[-0.503,1.25,0.86,-0.056,1.5,1.36],[-0.422,1.5,0.74,0.066,1.75,1.24],[-0.308,1.75,0.622,0.192,2.25,1.122]]},

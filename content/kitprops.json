@@ -82,6 +82,11 @@
         360,
         10
       ],
+      "wallshelf": [
+        400,
+        96,
+        24
+      ],
       "stall": [
         400,
         180,
@@ -789,6 +794,12 @@
       "model": "kit.pipe.junction",
       "variant": 0,
       "scale": 1
+    },
+    "prop.hm_wall_shelf": {
+      "model": "kit.shelf.wall",
+      "variant": 0,
+      "scale": 1,
+      "ownSize": true
     }
   }
 }
