@@ -148,9 +148,9 @@ export class Inspector {
     }
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
       this.app.pieces.pieceInspector(el, pieces[0]!);
-      // A buried set piece (a Lit Tunnel Run): a portal on each of its open ends, as for buried tiles.
+      // A buried set piece (a Lit Tunnel Run): its Family (format v44) and a portal or a Dead End on each of its open ends, as for buried tiles.
       const parts = [...this.app.expansion.partOf].filter(([, piece]) => piece === pieces[0]).map(([id]) => id);
-      const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), 'portals') : null;
+      const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), pieces[0], () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
@@ -166,7 +166,7 @@ export class Inspector {
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
       const tileOpts = tiles.length ? tileOptionPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
       if (tileOpts) el.append(tileOpts);
-      const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
+      const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
@@ -243,7 +243,7 @@ export class Inspector {
     if (def?.configurable) this.roomOptionsPanel(el, t);
     const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
     if (tileOpts) el.append(tileOpts);
-    const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
+    const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc);
     if (tunnel) el.append(tunnel);
     this.upperFloorsPanel(el, t);
     if (def && dressable(def)) this.dressPanel(el, t);

@@ -280,15 +280,17 @@ describe('tunnel kit: a chamber', () => {
 });
 
 describe('tunnel kit: the new shapes come in every family', () => {
-  it('stairs, slope, surface stairs, shaft, riser and chamber: the same cells, ports, collision and bore in brick', () => {
+  it('stairs, slope, surface stairs, shaft, riser and chamber: the same cells, ports, collision and bore in brick and mine', () => {
     for (const shape of ['stairs', 'slope', 'descent', 'shaft', 'riser', 'chamber']) {
       const base = coreCatalog.get(`core.tunnel_concrete_${shape}`)!;
-      const brick = coreCatalog.get(`core.tunnel_brick_${shape}`)!;
-      expect(brick.cells, shape).toEqual(base.cells);
-      expect(brick.ports, shape).toEqual(base.ports);
-      expect(brick.bore, shape).toEqual(base.bore);
-      const hard = (d: typeof base) => [...(d.extraFloors ?? []), ...(d.solids ?? []).filter((b) => b.kind !== 'trim')].map(({ surface: _s, ...b }) => b);
-      expect(hard(brick), shape).toEqual(hard(base));
+      for (const family of ['brick', 'mine']) {
+        const other = coreCatalog.get(`core.tunnel_${family}_${shape}`)!;
+        expect(other.cells, shape).toEqual(base.cells);
+        expect(other.ports, shape).toEqual(base.ports);
+        expect(other.bore, shape).toEqual(base.bore);
+        const hard = (d: typeof base) => [...(d.extraFloors ?? []), ...(d.solids ?? []).filter((b) => b.kind !== 'trim')].map(({ surface: _s, ...b }) => b);
+        expect(hard(other), `${family} ${shape}`).toEqual(hard(base));
+      }
     }
   });
 });

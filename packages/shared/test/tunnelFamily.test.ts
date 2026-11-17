@@ -27,7 +27,7 @@ import {
   type TilePlacement,
 } from '../src/index.ts';
 
-const SHAPES = ['straight', 'curve', 't', 'cross', 'end', 'portal'];
+const SHAPES = ['straight', 'curve', 't', 'cross', 'end', 'portal', 'outfall'];
 
 function mapOf(tiles: (Partial<TilePlacement> & { tile: string; x: number; y: number })[], hill = 0): MapDocument {
   const doc = newMapDocument('Tunnels');
@@ -56,8 +56,10 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     for (const shape of SHAPES) {
       const base = coreCatalog.get(`core.tunnel_concrete_${shape}`)!;
       const brick = coreCatalog.get(`core.tunnel_brick_${shape}`)!;
+      const mine = coreCatalog.get(`core.tunnel_mine_${shape}`)!;
       expect(base.familyOf).toEqual({ base: base.id, family: 'concrete', label: 'Concrete' });
-      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick (preview)' });
+      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick Sewer' });
+      expect(mine.familyOf).toEqual({ base: base.id, family: 'mine', label: 'Mine' });
       expect(isTileOptionTwin(base)).toBe(false);
       expect(isTileOptionTwin(brick)).toBe(true);
       expect(brick.cells).toEqual(base.cells);
@@ -67,8 +69,12 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       const hard = (d: typeof base) => [...(d.extraFloors ?? []), ...(d.solids ?? []).filter((b) => b.kind !== 'trim')].map(({ surface: _s, ...b }) => b);
       expect(hard(brick)).toEqual(hard(base));
       expect(new Set((brick.solids ?? []).map((b) => b.surface?.material))).not.toEqual(new Set((base.solids ?? []).map((b) => b.surface?.material)));
-      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id]);
-      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id]);
+      expect(mine.cells).toEqual(base.cells);
+      expect(mine.ports).toEqual(base.ports);
+      expect(mine.bore).toEqual(base.bore);
+      expect(hard(mine)).toEqual(hard(base));
+      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
+      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
     }
     expect(coreCatalog.familiesOf('core.room')).toEqual([]);
     expect(coreCatalog.familiesOf('core.tunnel_vault_buried')).toEqual([]);
@@ -90,7 +96,8 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(mapGroundBores(brick)).toEqual(mapGroundBores(plain));
     expect(tileFamilies(brick.classicStructure.tiles[0]!)).toEqual([
       { family: 'concrete', label: 'Concrete', on: false },
-      { family: 'brick', label: 'Brick (preview)', on: true },
+      { family: 'brick', label: 'Brick Sewer', on: true },
+      { family: 'mine', label: 'Mine', on: false },
     ]);
   });
 
