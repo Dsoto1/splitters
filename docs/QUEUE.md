@@ -101,9 +101,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · B · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
-- M · B · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
-- M · B · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
-- M · B · Mobile audit: Character Select phone layout (proposal 4).
+- M · A · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
+- M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
+- M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · B · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
 - L · B · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1 done 2026-11-15 (the Troop Buggy; `docs/DRIVING_PHYSICS_PLAN.md`, owner's answers 1a 2b 3a 4a 5a 6a). Next: the owner drives it; then step 2 (the other wheeled vehicles one by one, remote vehicles through the interpolator), bots (step 3), maps (step 4). Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
   - **Owner's answers to the Rapier plan (2026-11-16, `docs/DRIVING_PHYSICS_PLAN.md` on `wip/drive-physics-3b`):** 1a the buggy's body a Rapier rigid body with our own springs and tyres as forces (no bump stop, hull corners, sweep, 92 % keep or levelling); 2a air control only, no levelling; 3a rock and wall hits from real contacts; 4a prediction up to about 10 cm, faded; **5b straight to default** (no `?drive=rapier` trial: it replaces today's drive when it lands, the old way kept only behind a switch for comparison). Next for lane A's driving helper, after the bots-and-snags train lands.
@@ -116,21 +116,21 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · B · Scaling 4: bot path search budget by time (order 4).
 - M · B · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
 - L · B · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
-- S–M · B · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
+- S–M · A · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
 - M · B · Gun handling extras: sprint-exit time, movement speed per weapon (with prediction parity), scope holdover marks (GAPS §5, §27, §35-36; G2).
 - M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
-- S · B · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
+- S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
 - M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10).
 - M · B · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
 - S · B · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
 - L · B · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).
 - M · B · Cheaper movement for bots far from every human, for full dedicated hosts (PERF_96 round 4).
-- M · B · Per-player hub-signed join tickets, checked on every join (MULTIPLAYER_REVIEW §4 item 1).
+- M · A · Per-player hub-signed join tickets, checked on every join (MULTIPLAYER_REVIEW §4 item 1).
 - M–L · B · Host Service paired to an account through the hub, so hosting works from any device (HOSTING "Next steps"; MULTIPLAYER_SECURITY §6).
-- M · B · Hosted 48 v 48 bandwidth: binary player entries, skip the replay when the server agrees, lower snapshot rates for far players (PERF_96).
+- M · A · Hosted 48 v 48 bandwidth: binary player entries, skip the replay when the server agrees, lower snapshot rates for far players (PERF_96).
 - M · B · Host Service installer: start on boot, tray icon (HOSTING "Next steps").
-- S–M · B · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
+- S–M · A · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
 - M · B · Textures for the flat grey sci-fi guns (Flak, Swarm, Laser Rifle; MOBILE_AUDIT proposal 8).
 - M · B · Kit-prop generators, Phase 6 tail: scaffolding and rubble families, measure the share of generated props (PROCEDURAL_ENVIRONMENT §11).
 - XS–S · B · MapMaker: the grid of the level being edited drawn green, the other levels' grids blue (owner, 2026-11-16: "could be nice"), so the working level reads at a glance; keep it calm and readable in both themes, and the level list's highlight in the same green.
