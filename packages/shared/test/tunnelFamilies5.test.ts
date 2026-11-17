@@ -35,7 +35,7 @@ import {
  * on every shape, the barred outfall, a placed set piece's `family` (map format v44), "Close open ends", and the Lit
  * Tunnel Chamber.
  */
-const FAMILIES = ['concrete', 'brick', 'mine'];
+const FAMILIES = ['concrete', 'brick', 'mine', 'cave'];
 const MODULES: Record<string, string[]> = { straight: ['N', 'S'], curve: ['S', 'E'], t: ['E', 'W', 'S'], cross: ['N', 'E', 'S', 'W'], end: ['S'], portal: ['N'], outfall: ['N'], shaft: ['N', 'S'] };
 const DIRS: Record<string, [number, number]> = { N: [0, 1], E: [1, 0], S: [0, -1], W: [-1, 0] };
 
@@ -142,7 +142,7 @@ describe('a set piece\'s family (map format v44)', () => {
       const hard = (m: MapDocument) => buildMapGeometry(m).filter((x) => x.kind !== 'trim').map(({ surface: _s, ...x }) => x);
       expect(hard(b), kind).toEqual(hard(a));
       expect(mapGroundBores(b), kind).toEqual(mapGroundBores(a));
-      expect(setPieceFamilies(plain, plain.setPieces![0]!).map((f) => `${f.family}${f.on ? '*' : ''}`), kind).toEqual(['concrete*', 'brick', 'mine']);
+      expect(setPieceFamilies(plain, plain.setPieces![0]!).map((f) => `${f.family}${f.on ? '*' : ''}`), kind).toEqual(['concrete*', 'brick', 'mine', 'cave']);
       expect(setPieceFamilies(mine, mine.setPieces![0]!).find((f) => f.on)!.family, kind).toBe('mine');
     }
     // A piece with no tunnel parts has no families; a family no part comes in changes nothing.

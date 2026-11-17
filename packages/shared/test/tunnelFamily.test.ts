@@ -73,8 +73,13 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       expect(mine.ports).toEqual(base.ports);
       expect(mine.bore).toEqual(base.bore);
       expect(hard(mine)).toEqual(hard(base));
-      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
-      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
+      // (The cave family, Tileset 04 step 7: the same shell too.)
+      const cave = coreCatalog.get(`core.tunnel_cave_${shape}`)!;
+      expect(cave.ports).toEqual(base.ports);
+      expect(cave.bore).toEqual(base.bore);
+      expect(hard(cave)).toEqual(hard(base));
+      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
+      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
     }
     expect(coreCatalog.familiesOf('core.room')).toEqual([]);
     expect(coreCatalog.familiesOf('core.tunnel_vault_buried')).toEqual([]);
@@ -98,6 +103,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       { family: 'concrete', label: 'Concrete', on: false },
       { family: 'brick', label: 'Brick Sewer', on: true },
       { family: 'mine', label: 'Mine', on: false },
+      { family: 'cave', label: 'Cave', on: false },
     ]);
   });
 
