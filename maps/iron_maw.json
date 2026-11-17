@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_rojj5gymqkbvbqeo",
-      "revision": 13,
-      "contentHash": "sha256:5735a4864a4a344d693c03b869d00b0e1f78c7b789b56cbf32763ed789271e3d",
+      "versionId": "v_jo5ka532hlh4dv42",
+      "revision": 14,
+      "contentHash": "sha256:3619e43d0d86ae7e7f8510291c8495128e2a92aa980f219750f309d6970ce1d0",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T15:24:51.387Z"
+      "releasedAt": "2026-11-17T16:09:42.885Z"
     },
     "tier": "experimental"
   },
@@ -3849,9 +3849,9 @@
     {
       "id": "prop_172",
       "position": [
-        16,
+        12,
         -40,
-        -64
+        -70
       ],
       "kind": "prop",
       "model": "prop.cargo_crate_stack",
@@ -16250,60 +16250,6 @@
     "style": "invisible",
     "height": 60
   },
-  "backdrop": {
-    "sky": "sunset",
-    "scenery": "mesas",
-    "ground": "sand",
-    "haze": 0.35,
-    "border": "cliffs"
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      16,
-      16
-    ]
-  },
-  "dependencies": [],
-  "setPieces": [
-    {
-      "id": "mill_a",
-      "piece": "setpiece.loading_dock",
-      "x": -9,
-      "y": 19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "mill_b",
-      "piece": "setpiece.loading_dock",
-      "x": 4,
-      "y": 19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "nw_hq",
-      "piece": "setpiece.bunker",
-      "x": -16,
-      "y": 15,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "ne_hq",
-      "piece": "setpiece.bunker",
-      "x": 22,
-      "y": 13,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    }
-  ],
   "paths": [
     {
       "id": "rim_haul_road",
@@ -17638,6 +17584,60 @@
       "width": 9,
       "style": "dirt",
       "lay": false
+    }
+  ],
+  "backdrop": {
+    "sky": "sunset",
+    "scenery": "mesas",
+    "ground": "sand",
+    "haze": 0.35,
+    "border": "cliffs"
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      16,
+      16
+    ]
+  },
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "mill_a",
+      "piece": "setpiece.loading_dock",
+      "x": -9,
+      "y": 19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "mill_b",
+      "piece": "setpiece.loading_dock",
+      "x": 4,
+      "y": 19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "nw_hq",
+      "piece": "setpiece.bunker",
+      "x": -16,
+      "y": 15,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "ne_hq",
+      "piece": "setpiece.bunker",
+      "x": 22,
+      "y": 13,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }
