@@ -96,7 +96,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · **Procedural environment Phase 5: polish (owner, 2026-11-16: "yes")** (§11): ground-material transitions, seasonal and biome looks (autumn, snow-dusted, dry) across a whole map in one setting, LOD and shadow tuning for distant plants, a consistency pass.
 - M · B · MapMaker UI spec Phase 3: live minimap. **Built 2026-11-16 on `wip/mapmaker-ui-3`** (a helper of lane B's splitters22): Minimap | Outliner tabs, the compact card, click to select or go there, the selection and camera on it, redrawn after edits pause; `docs/MAPMAKER_UI_SPEC.md`, "Phase 3: as built". (Phase 2, synced selection and numeric transforms, landed 2026-11-16.)
 - M–L · ? · MapMaker UI spec Phase 4a: tile view (cell edges, props with fine snap, local/world). Phase 4b set-piece overrides: optional, L.
-- L · B · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
+- L · B · Tunnel kit steps 5–8: step 5 built (brick sewer and mine families, the outfall, lit chamber, "Close open ends", `family` on set pieces at map format v44), checking on `check/tunnels-5`; then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
 - M · B · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
