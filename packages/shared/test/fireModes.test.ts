@@ -171,8 +171,11 @@ describe('fire modes (spec §36)', () => {
     // No recoil control at all (the burst's rounds come 83 ms apart: too quick to pull against).
     const chest = [10, 20, 30, 40].map((d) => ({ d, single: ttk(SINGLE, d, 1.2), burst: ttk(BURST, d, 1.2) }));
     const head = [10, 20, 30].map((d) => ({ d, single: ttk(SINGLE, d, 1.6), burst: ttk(BURST, d, 1.6) }));
-    // (Measured 2026-11-16: chest 10 m 600/550, 20 m 400/167, 30 m 417/567, 40 m 2833/none; head 10 m 200/83, 20 m 200/550, 30 m 217/567.)
-    expect(chest[0]).toEqual({ d: 10, single: 600, burst: 550 });
+    // (Measured 2026-11-16: chest 10 m 600/550, 20 m 400/167, 30 m 417/567, 40 m 2833/none; head 10 m 200/83, 20 m 200/550, 30 m 217/567.
+    // 2026-11-17, arms their own zone at 0.9x: uncontrolled, the climb puts rounds on the forearms held in front of the chest, 22.5
+    // each, so a fifth round: chest 10 m 800/633, 20 m 400/167, 30 m 2817/733, 40 m 2833/none; heads unchanged. With the recoil
+    // pulled down (the test above) it is still 600/550.)
+    expect(chest[0]).toEqual({ d: 10, single: 800, burst: 633 });
     expect(head[0]!.burst).toBe(83);
     // The second round's sideways kick takes it off a head 20 m away.
     expect(head[1]!.burst!).toBeGreaterThan(head[1]!.single!);
