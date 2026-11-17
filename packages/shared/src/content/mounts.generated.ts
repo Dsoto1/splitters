@@ -77,11 +77,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // model: Cyber Fang Mk III (Meshy Community, CC0; content/guns.json vehicles/cyber_fang.glb, 2026-11-10): a heavy hover bike, 4.0 m long, 2.2 m wide and 2.2 m tall over its front fairing. The Quaternius Striker it replaced is the fallback (vehicles/speeder.glb).
   // seats: Measured on the model: the saddle at z -0.7 to -0.9, 1.6-1.7 m up, behind the fairing (2.0-2.2 m); the passenger on the tail hump behind it (z -1.3, 1.9 m). Roles, the pilot's blasters and their arc unchanged. Both sit astride (2026-11-11: they stood knee-deep in the saddle): the pilot on the saddle 1.65 m up, the passenger on the tail hump 1.9 m up.
   // cockpitEye: Over the fairing, so the pilot sees the way ahead.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   speeder: {
     id: 'speeder',
     displayName: 'Speeder',
     kind: 'vehicle',
     model: 'vehicles/cyber_fang.glb',
+    paint: 0.5,
     fallback: 'vehicles/speeder.glb',
     health: 300,
     half: [1.2, 0.65, 2.1],
@@ -111,11 +113,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // cockpitEye: A seated head height, under the front roof bar (1.47 m at z 0.55), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts).
   // rigid: Driving physics (docs/DRIVING_PHYSICS_PLAN.md; owner 2026-11-15: light, bouncy, easy to flip, grip that fails; then "really heavy"): a rigid chassis on these springs, the centre of mass 0.85 m up, gravity 0.85 of the players', tyre friction 1.05 times the load (0.75 of it kept while sliding, so it slides back down slopes past about 45 degrees once its speed runs out), the rear tyres looser at speed (`drift`), air control 12 and 8 rad/s², and tipped over it rolls back onto its wheels when the driver presses jump (after 0.3 s at rest), or on its own after 4 s empty.
   // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides; the suspension's contact points are the hubs (`wheels`, `hub` 0.42 m).
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   troop_buggy: {
     id: 'troop_buggy',
     displayName: 'Troop Buggy',
     kind: 'vehicle',
     model: 'vehicles/offroad_buggy.glb',
+    paint: 0.5,
     rideHeight: 0.24,
     wheels: {
       model: 'vehicles/offroad_tire.glb',
@@ -182,11 +186,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // half: Unchanged (the re-skin keeps handling): 3.2 m wide, so the hull and its side pods are inside it. The two thin fins amidships reach 2.76 m either side, outside the box: not solid, like the Tank's barrel.
   // seats: Measured on the model (slices of its triangles; the mount's frame is the model's plus the 0.35 m it hovers): the roof 2.45-2.55 m up, flat with low rails 0.85 m either side from z -2.4 to 0.2. The pilot sits in the nose (cushion 1.0 m, z 2.3), out of sight in the closed hull; the rocket gunner stands on the deck (z -0.9, a standing place: they can duck); the four passengers sit on the deck's edges facing out, two a side (z -0.2 and -1.7), legs down the hull's shoulder, like the Buggy's deck riders. Roles and the gunner's rockets unchanged.
   // cockpitEye: A seated head height in the nose. In your own cockpit view the nose's shell is cut away (client content/cockpits.ts, HAULER), so the pilot sees ahead.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   hauler: {
     id: 'hauler',
     displayName: 'Hauler',
     kind: 'vehicle',
     model: 'vehicles/ironbound_hauler.glb',
+    paint: 0.5,
     fallback: 'vehicles/hauler.glb',
     health: 700,
     half: [1.6, 1, 3.4],
@@ -234,11 +240,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
     blurb: 'A slow hovering transport for six: a pilot, a rocket gunner and four passengers',
   },
   // seats: The pilot sits in the cockpit (2026-11-11: they stood on the fuselage).
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   skyfighter: {
     id: 'skyfighter',
     displayName: 'Skyfighter',
     kind: 'vehicle',
     model: 'vehicles/skyfighter.glb',
+    paint: 0.5,
     health: 280,
     half: [1.6, 0.8, 2.2],
     seats: [
@@ -344,11 +352,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // pivot: Tracks (2026-11-07): it turns on the spot at 0.8 rad/s (a half turn in 4 s), fading out by 5 m/s: out of a dead end without a three-point turn, and a crew holding still can swing the gun onto a target.
   // bailHealth: Bots get out under a quarter of its health (300 of 1200: under two rockets left), not the 0.3 of other vehicles: inside is safe until it blows. It catches fire under 0.15 and blows 5 s later.
   // turret: Owner, 2026-11-11: with a gunner in the cannon seat the turret turns the full circle, at 1.2 rad/s (a half turn in 2.6 s, a quarter in 1.3: faster than the hull pivots, 0.8, slow enough that someone on foot can get round behind it), the short way round, and the cannon holds its shot until the barrel is within 3 degrees of the gunner's aim (trigger held, it fires as the barrel arrives), so a shell always goes where the gunner looks. A driver alone working the cannon (driverFires) keeps 0.6 rad either side of the hull (`driverArc`): they steer by where they look, and one player does not get the whole tank. The barrel pitches with the aim (drawn within -0.17..0.35 rad); the roof gun does not turn the turret. Shots leave from the gunner's eye, as for every mounted weapon.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   tank: {
     id: 'tank',
     displayName: 'Tank',
     kind: 'vehicle',
     model: 'vehicles/tank_wwii.glb',
+    paint: 0.5,
     fallback: 'vehicles/tank.glb',
     health: 1200,
     half: [1.47, 1, 3.06],
@@ -399,11 +409,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Measured on the model (slices of its triangles): two cab seats with cushions 0.92 m up at z -0.05 (backrests at z -0.3, the floor 0.7 m up under the dash); the gun's ring on the cage roof at z 0.3, 2.3 m up, so the gunner stands behind its breech on the console between the cab and the bed (feet 1.05 m), shoulders out of the roof like a hatch gunner; the bed (floor 0.7 m) runs from z -1.2 to -2.0 between walls 1.1 m high at x ±0.9, where the two rail riders sit facing out. Roles, weapon and arcs unchanged. Owner, 2026-11-13: the Gun Buggy (it was called the Gun Jeep; its id stays `gun_jeep`) seats three, the driver and passenger in the cab and the gunner standing at the roof gun; the two rail riders on the bed are gone.
   // cockpitEye: A seated head height over the driver's cushion, under the cage roof (2.0 m).
   // vehicle: Stiffer springs than the buggy's: a pickup. The suspension's contact points and hub height are unchanged (the handling is); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   gun_jeep: {
     id: 'gun_jeep',
     displayName: 'Gun Buggy',
     kind: 'vehicle',
     model: 'vehicles/recon_jeep.glb',
+    paint: 0.5,
     fallback: 'vehicles/gun_jeep.glb',
     rideHeight: 0.327,
     wheels: {
@@ -453,11 +465,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Measured on the model: the cab floor 0.7 m up from z 0.4 back to the tailgate, the windscreen at z 0.6-0.9, the roof and its rack 2.4-2.5 m up from z 0.6 to -2.2. The driver moves back from the old truck's cab (z 1.5, now the hood) to the front seat (z 0.05); the gunners stand on the rack at its front and back ends. Roles, weapons and arcs unchanged. The three inside sit (2026-11-11: standing on the floor their heads came out through the roof, 2.5 m): cushions 1.02 m up, the driver on the left front seat, the two passengers on a bench against the panel behind the front seats (the in-house cockpit draws the seats and the bench, client content/cockpits.ts). Owner, 2026-11-13: seven places: the driver and a front passenger (the right front seat, the driver's mirrored), the two on the bench behind, the rear gunner (the front gun is gone) and two hanging on the outside, one each side, standing on the sill beside the doors (x ±1.18, just outside the door panels at ±1.06, z 0.2 between the door pillars at z 0.98 and -0.55, feet 0.8 m up) facing out. Owner, 2026-11-13 (the rear gunner stood high on the rack): he stands inside at the rear gun like a hatch gunner (feet 1.35 m up, his shoulders out of the roof at 2.4-2.5 m, as the Gun Buggy's gunner), not on the rack; arc and facing unchanged.
   // cockpitEye: A seated head height in the driver's seat, under the roof, behind the windscreen.
   // vehicle: Speeds, turn, grip and mass unchanged. Suspension added 2026-11-12 so its tires steer and ride springs (a vehicle without it only rolls them): the Troop Truck's stiff truck springs (which were derived from this vehicle), on this body's four hubs. On level ground it drives as before; with a wheel off the ground (a crest, a kerb) it now grips less, as every sprung vehicle does.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   armored_rover: {
     id: 'armored_rover',
     displayName: 'Armored Rover',
     kind: 'vehicle',
     model: 'vehicles/dust_runner.glb',
+    paint: 0.5,
     fallback: 'vehicles/armored_rover.glb',
     rideHeight: 0.373,
     wheels: {
@@ -516,11 +530,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // model: TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).
   // seats: In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail. The rider sits astride the saddle (2026-11-11: they stood on it), thighs turned out either side.
   // cockpitEye: A seated head height over the saddle, so the nose shows below the view (the default stood a head higher).
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   hover_bike: {
     id: 'hover_bike',
     displayName: 'Hover Bike',
     kind: 'vehicle',
     model: 'vehicles/tnr_hover_bike.glb',
+    paint: 0.5,
     fallback: 'vehicles/hover_bike.glb',
     health: 170,
     half: [0.9, 0.5, 1.5],
@@ -536,11 +552,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // half: Fitted to the hull (2026-11-12; measured on the model, slices of its triangles; the mount's frame is the model's plus the 0.35 m it hovers): the hull is 4.2 m wide at its sills and front pods (the box was 4.8 m), the cab's roof 2.9-3.0 m up (the box was 2.4 m), 8.6 m long (unchanged). The step boards under the doors reach 3.0 m either side and the tail's cage 3.45 m up, outside the box: not solid, like the Hauler's fins. It hovers the class's 0.35 m, like the Speeder and the Hauler. The chase camera's distance and height come from this box (11.6 m back, was 11.3).
   // seats: Measured on the model: the cab's shell runs from z 1.2 to 3.0, its bottom 1.2 m up and its roof 2.6-2.65 m, 2.4 m wide; each door alcove from z -1.16 (the engine pod) to 0.93 (the open door), its sill 1.26 m up from x 1.2 to 1.8, its back wall at x 0.95, the roof's overhang 2.87 m up (1.6 m of headroom: a standing rider's head would go through it), the step board 0.93 m up from x 1.9 to 3.0. The pilot sits in the cab (cushion 1.55 m, z 1.9), out of sight in the closed shell like the Hauler's. Each door gunner sits on the sill's edge facing out (x 1.7, the alcove's middle), feet on the step board 0.33 m below, head 0.6 m under the overhang; at their eye's height (2.26 m) the open door and the engine pod stand clear of the gun's whole arc (the door's lower half shows beside the view at the arc's forward edge). Roles, guns and arcs unchanged. They stood on the old model's roof; seated, they no longer duck, and like every seated rider their rounds pass through their own craft.
   // cockpitEye: A seated head height in the cab (0.2 m under its roof, the windscreen 0.8 m ahead). The shell around the eye is not drawn in the cockpit view (its faces look away from it), so the pilot sees ahead over the hood's scoop and its two fins, low in the view; no cut needed in client content/cockpits.ts.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   gunship: {
     id: 'gunship',
     displayName: 'Gunship',
     kind: 'vehicle',
     model: 'vehicles/sky_cruiser.glb',
+    paint: 0.5,
     fallback: 'vehicles/gunship.glb',
     health: 950,
     half: [2.1, 1.5, 4.3],
@@ -597,11 +615,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Measured on the model (top-down height map of the built mesh): one long saddle from z -0.2 to -1.3, 0.55 m up where the driver sits and rising to 0.7 m at the back; the handlebars across at z -0.1, 1.1 m up; running boards 0.43 m up either side of the tunnel and footwells 0.36 m up at z 0 to 0.1. Both riders sit astride (`straddle`: thighs turned out either side of the saddle, 0.25-0.3 rad, enough for the knees to clear the side panels without splaying past the running boards), the driver's hips at z -0.55, the passenger's behind at z -1.02 on the rise. A small `legDrop` (0.1, 0.14) bends the shins forward so the driver's feet rest in the footwells under the front of the hood (0.36 m up, z 0 to 0.1) instead of hanging past the running boards. Tuned by eye on Frost Basin.
   // cockpitEye: A seated head height over the driver's hips (0.86 m above the saddle), just behind and above the handlebars, looking over the windscreen.
   // vehicle: Handling unchanged from the Kenney sled: the new model is 0.2 m longer and 0.4 m narrower, which only changes the collision box.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   snow_sled: {
     id: 'snow_sled',
     displayName: 'Snow Sled',
     kind: 'vehicle',
     model: 'vehicles/snowmobile.glb',
+    paint: 0.5,
     health: 200,
     half: [0.66, 0.55, 1.5],
     seats: [
@@ -621,11 +641,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // seats: Measured on the model (slices of its triangles): the cab, a closed shell (no seats of its own), from z 0.3 to the windscreen at 2.3, roof 2.3-2.5 m up; the two in it sit on cushions 1.2 m up at z 1.1, 0.45 m either side. The flatbed is 1.6 m up from z -0.1 to the tail at -2.8, 2.4 m wide, open overhead; four riders stand on it two by two (x ±0.55, z -0.9 and -2.0), like the Buggy's deck riders. No mounted gun.
   // cockpitEye: A seated head height in the driver's seat, under the cab roof, behind the windscreen.
   // vehicle: Wheeled heavy, from the Armored Rover (14 m/s, accel 7, turn 1.25, grip 0.38, mass 3.6): a little quicker (16 m/s, accel 8.5, turn 1.4), still heavy and grippy (grip 0.36, mass 3: it rams like the heavies and loses little in a crash); stiff truck springs on six wheels, barely loose at speed (drift 0.15). The suspension's contact points and hub height are unchanged; the rear two pairs of tires are drawn 4.5 cm off theirs (see model).
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   troop_truck: {
     id: 'troop_truck',
     displayName: 'Troop Truck',
     kind: 'vehicle',
     model: 'vehicles/troop_truck.glb',
+    paint: 0.5,
     rideHeight: 0.354,
     wheels: {
       model: 'vehicles/offroad_tire.glb',
@@ -686,11 +708,13 @@ export const MOUNT_DEFS: Readonly<Record<(typeof MOUNT_MODELS)[number], MountDef
   // cockpitEye: A seated head height (1.5 m), under the cage's front bar (1.6 m at z 0.4), looking over the wheel and dash. Up close the driver sees an in-house cockpit instead of the body's own (client content/cockpits.ts), refitted to this body.
   // vehicle: The Warthog feel: soft, long-travel springs (bouncy, leans out of turns), loose at speed so it powerslides. The suspension's contact points and hub height are the old buggy's (unchanged handling); the tires are drawn at this body's hubs (`wheels.at`), each riding the nearest contact point's spring.
   // resupply: Owner, 2026-11-12/13: ten resupplies from its back. The reach point is the tailgate (z -2.2, 1 m up); players on foot within 1.6 m of it press Use there (instead of getting in). Each use gives what a resupply gives (sim/resupply.ts: every carried gun's reserve full, underbarrel rounds full, grenades topped up), with a 4 s wait per player.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   supply_buggy: {
     id: 'supply_buggy',
     displayName: 'Supply Buggy',
     kind: 'vehicle',
     model: 'vehicles/sixer_buggy.glb',
+    paint: 0.5,
     rideHeight: 0.258,
     wheels: {
       model: 'vehicles/offroad_tire.glb',
@@ -743,11 +767,13 @@ export const ROUTE_CRAFT_DEFS: Readonly<Record<'airplane' | 'dropship_drop', Mou
   // model: The Hauler's model drawn 2.35 times its size (owner, 2026-11-12: "the transport plane can be replaced with a larger scaled version of the hauler"): the Ironbound Voyager (Meshy Community, CC0; content/guns.json vehicles/ironbound_hauler.glb, built 6.8 m long) at 16 m, the length the old plane's box had, so the air drop's exit (half its length and a metre behind, sim/airplane.ts dropOffsets) and the chase camera are where they were. `scale` (MountDef.scale), not a second build: one file serves both craft, and a build at 16 m with the same 2048 texture would look the same (the texels are 2.35 times larger either way: about 100 to the metre, on a craft seen from the ground or from the chase camera 22 m behind).
   // half: The hull at that size, measured on the model's triangles: a closed tube 4.2 m wide (4.7 with the deck rails) and 5.65 m tall from its lowest point, 16 m long. The fins amidships reach 6.5 m either side, outside the box, as on the Hauler. The old plane's box was 10.4 m wide (its wings); nothing collides with a route craft.
   // seats: 24 in the hold, two columns 0.9 m either side of the middle, twelve rows a metre apart from z 6 back to z -5, feet 2 m up: inside the hull everywhere (at a rider's heights it is 1.48 m wide a side at the front row, in the nose, and 1.8 m and more behind; its floor is 0.5 m up and its roof 5.2 m; aft of z -5.6 the tail's underside rises to 2 m, so no row is further back). Riders are out of sight in the closed hull, like the Hauler's pilot; yours is the chase camera.
+  // paint: Half strength (owner, 2026-11-17, "1a 2a"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange).
   airplane: {
     id: 'airplane',
     displayName: 'Drop Carrier',
     kind: 'vehicle',
     model: 'vehicles/ironbound_hauler.glb',
+    paint: 0.5,
     scale: 2.35,
     health: 1000000,
     half: [2.4, 2.83, 8],

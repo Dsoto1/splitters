@@ -4,6 +4,7 @@
   "displayName": "Hover Bike",
   "kind": "vehicle",
   "model": "vehicles/tnr_hover_bike.glb",
+  "paint": 0.5,
   "fallback": "vehicles/hover_bike.glb",
   "health": 170,
   "half": [0.9, 0.5, 1.5],
@@ -35,6 +36,7 @@
   "notes": {
     "model": "TNR 1017 (Meshy Community, CC0; content/guns.json vehicles/tnr_hover_bike.glb, 2026-11-10): a one-seat hover bike with handlebars, stub wings and twin thrusters, 3.0 m long. Its wings stand 0.16 m out of the box either side (not solid). The Space Kit speeder it replaced is the fallback (vehicles/hover_bike.glb).",
     "seats": "In the saddle (measured on the model: the saddle dips to 1.0-1.1 m at z 0.1-0.5, the tank ahead of it 1.4 m): the nose (+Z) leads and the twin thrusters trail. The rider sits astride the saddle (2026-11-11: they stood on it), thighs turned out either side.",
-    "cockpitEye": "A seated head height over the saddle, so the nose shows below the view (the default stood a head higher)."
+    "cockpitEye": "A seated head height over the saddle, so the nose shows below the view (the default stood a head higher).",
+    "paint": "Half strength (owner, 2026-11-17, \"1a 2a\"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange)."
   }
 }

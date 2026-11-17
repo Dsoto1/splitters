@@ -514,6 +514,7 @@ const gunCount = checkLocked(
         ...(entry?.glow ? [`glowing parts recoloured to ${entry.glow.color}, with an emissive map of them`] : []),
         ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []),
         ...(f.lodTriangles ? ['lower level of detail added'] : []),
+        ...(entry?.plate ? ['a flat deck plate added under the floor where the cut left holes in it, coloured like the floor (tools/content/deck-plate.mjs)'] : []),
         ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []),
         /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled',
         // (Entries from before the texture tiers keep their one line.)
