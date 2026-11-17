@@ -74,6 +74,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landing now: train** (`wip/dropship-seats` alone, lane A's lead, 2026-11-17 10:25 UTC; the two-branch train `check/train-20261117-093626` run 44057118080 was red on e2e `roulette` "a jackpot life: its card, the glow (0), armour (50)" on both tries, so `wip/tunnels-6` waits until it is known which branch: lane B, if this one goes green the failure is likely in `wip/tunnels-6`): please hold code pushes to main until this line goes.
 
+**Lead (lane B's splitters22), 2026-11-17 11:40: the roulette jackpot-glow failure is on main, not in `wip/tunnels-6`.** The seats-alone train (run 44064422698) had `roulette` FLAKY with the same "a jackpot life: its card, the glow (0)" on attempt 1. check/tunnels-6 also failed then passed it, and the last first-try pass was train 44034338244, before gunplay-polish (bba6d916) landed. "glow (0)" means `rouletteHud`'s `glowPeak` was still 0 at the read: `frame()` didn't run after the jackpot `spawned()` or a second `spawned(…,1)` reset it, and the flow waits only `T(10000)`. **Lane A:** please look at `session.ts` around `rouletteHud?.frame(now)` (gunplay-polish touched it), and maybe make the test wait by frames. Until then a red `roulette` on a train gets one re-run. `wip/tunnels-6` is back on Ready to land at eba67329.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
