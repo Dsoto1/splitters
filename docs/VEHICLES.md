@@ -81,6 +81,14 @@ Spaceships and Tank Pack (all CC0).
   with a bench along each side. Its box, seats and cockpit eye were refitted to it (measured on the model:
   `content/vehicles/dropship.json` notes); the drop route's dropship (`dropship_drop`) shares the model, its 12 riders
   seated six a side on the benches. Kept as `dropship` on the owner's word ("replaces the Dropship's look"), not a new id.
+  **Seats checked on the drawn model (2026-11-17):** the cushions' tops 1.24-1.26 m up, the floor 0.74 m, three
+  cushions a side from z -0.25 to -3.75; the four riders' places (z -1.0, -3.0, 1.2 m: hips 0.07-0.17 m over the
+  cushion) kept, the drop
+  route's twelve spread evenly over the benches (its end pair had sat half off them). Front riders looked standing in
+  a parked picture because a seated rider was drawn facing its aim with the hips turned back to the seat at most the
+  waist's 77°: one looking along the hull or out over the side (or a pilot looking back) had its legs swung off the
+  cushion into the backrest. A seated rider is now drawn turned no further from its seat's way than the waist turns
+  (`riderPlacement.ts` `seatDrawnYaw`, every vehicle), so the hips face the seat and the legs stay on it.
   **Ids name bodies** (owner, 2026-11-13): a vehicle's id stays with its model for good; a new body or a new job is a
   new id, and a retired id loads as its replacement (sim/mounts.ts RETIRED_MOUNTS). The id `buggy` named the Off-Road
   Beast until 2026-11-11 and the sci-fi buggy until 2026-11-13; it is retired to the Troop Buggy (the official maps'
