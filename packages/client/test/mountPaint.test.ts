@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { DROPSHIP_DROP_DEF, getMountDef } from '@tiletrigger/shared';
+import { AIRPLANE_DEF, DROPSHIP_DROP_DEF, MOUNT_DEFS, getMountDef } from '@tiletrigger/shared';
 import { paintColor } from '../src/game/mountVisuals.ts';
 
 /** A team colour (Shingle Point's attackers, the owner's screenshot of 2026-11-17). */
@@ -38,7 +38,10 @@ describe('mount paint strength (MountDef.paint)', () => {
     }
   });
 
-  it('other vehicles keep the full team colour', () => {
-    for (const id of ['tank', 'troop_truck', 'speeder']) expect(getMountDef(id)?.paint, id).toBeUndefined();
+  it('every vehicle takes its team colour at half strength (owner, 2026-11-17: all textured models); turrets keep the full colour', () => {
+    const vehicles = Object.values(MOUNT_DEFS).filter((d) => d.kind === 'vehicle');
+    expect(vehicles.length).toBeGreaterThan(10);
+    for (const def of [...vehicles, AIRPLANE_DEF, DROPSHIP_DROP_DEF]) expect(def.paint, def.id).toBe(0.5);
+    for (const def of Object.values(MOUNT_DEFS).filter((d) => d.kind !== 'vehicle')) expect(def.paint, def.id).toBeUndefined();
   });
 });
