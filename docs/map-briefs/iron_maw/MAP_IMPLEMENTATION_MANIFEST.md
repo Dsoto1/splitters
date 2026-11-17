@@ -61,7 +61,7 @@
 
 | Tunnel | Arc | Floor y | Clear width | Portals (x, z) |
 | T1 South Rim Tunnel | 236°–252° | 0 | 7 m (road bore) | mouths at (-92, -152) west, (-44, -152) east |
-| T2 West Bench Tunnel | 195.5°–214.5° | -24 | 7 m (concrete bore) | mouths at (-96, -52) north, (-68, -96) east |
+| T2 West Bench Tunnel | 195.5°–214.5° | -24 | 7 m (concrete bore) | mouths at (-96, -44) north, (-68, -96) east |
 | T3 Deep Drift | 317.5°–334.5° | -40 | 7 m (concrete bore) | mouths at (20, -64) west, (40, -52) north |
 
 (Rebuilt with the tunnel kit, 2026-11-17: buried 7 m bores through rock on the 8 m grid; before, cut-and-cover
