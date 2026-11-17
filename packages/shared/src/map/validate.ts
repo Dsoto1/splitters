@@ -7,7 +7,7 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
@@ -175,6 +175,39 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
           targetId: occ.placement.id,
         });
       }
+    }
+  }
+  return issues;
+}
+
+/**
+ * Two buried pieces joined port to port with different bores (Tileset 04 step 6: a 7 m bore against a 3.6 m passage):
+ * the walls don't meet, so the joint is open to the ground. A Reducer joins the two. Once for each joint.
+ */
+function boreProfileIssues(cells: ReturnType<typeof buildOccupancy>['cells']): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const portAt = (occ: CellOccupant, side: string) =>
+    occ.def.ports.find((p) => p.level === occ.level && (p.cell?.[0] ?? 0) === occ.local[0] && (p.cell?.[1] ?? 0) === occ.local[1] && rotateSide(p.side, occ.placement.rotation) === side);
+  for (const [key, occ] of cells) {
+    if (!occ.def.bore) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    // (Each joint once: from its west or south piece.)
+    for (const side of ['N', 'E'] as const) {
+      const mine = portAt(occ, side);
+      if (!mine) continue;
+      const [dx, dy] = SIDE_DIRS[side];
+      const next = cells.get(cellKey(gx + dx, gy + dy, gz));
+      if (!next?.def.bore || next.placement.id === occ.placement.id) continue;
+      const theirs = portAt(next, side === 'N' ? 'S' : 'W');
+      if (!theirs || (mine.bore ?? 'S') === (theirs.bore ?? 'S')) continue;
+      const wide = (mine.bore ?? 'S') === 'L' ? occ : next;
+      const narrow = wide === occ ? next : occ;
+      issues.push({
+        severity: 'warning',
+        code: 'tunnel.profile_mismatch',
+        message: `the ${wide.def.displayName} (7 m bore) meets the ${narrow.def.displayName} (3.6 m passage) at (${gx}, ${gy}): the walls don't meet there. Put a Reducer between them`,
+        targetId: narrow.placement.id,
+      });
     }
   }
   return issues;
@@ -389,6 +422,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...buriedMouthIssues(map, cells, catalog));
+  issues.push(...boreProfileIssues(cells));
   issues.push(...floodedBoreIssues(map, catalog));
   issues.push(...moundedRunIssues(map, cells, catalog));
   for (const t of map.classicStructure.tiles) {

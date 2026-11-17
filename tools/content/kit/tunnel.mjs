@@ -100,6 +100,13 @@ function moduleParts(profile, family, shape) {
     if (trim.plinth) put([face(0.04)[0], 0, from, face(0.04)[1], trim.plinth, to], m.trim);
     // The cast downstand where wall meets soffit (a flat-soffit lining's haunch; an arched stretch has its arch).
     if (lining.haunch && !arched) put([face(lining.haunch)[0], clear - lining.haunch, from, face(lining.haunch)[1], clear, to], m.soffit);
+    // A raised walkway along the wall (a road tunnel's), and a guardrail on the wall over it: posts every 2 m, a rail.
+    if (trim.walkway) put([face(trim.walkway.width)[0], 0, from, face(trim.walkway.width)[1], trim.walkway.height, to], trim.walkway.material);
+    if (trim.guardrail) {
+      const g = trim.guardrail;
+      put([face(0.12)[0], g.y - 0.15, from, face(0.12)[1], g.y, to], g.material, g.tint);
+      for (let z = Math.ceil(from / 2) * 2 + 1; z < to - 0.1; z += 2) put([face(0.1)[0], trim.walkway?.height ?? 0, z - 0.05, face(0.1)[1], g.y - 0.15, z + 0.05], g.material, g.tint);
+    }
     // Panel joints: a thin rib up the wall every `joints` metres.
     if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) put([face(0.015)[0], trim.plinth ?? 0, z - 0.02, face(0.015)[1], clear - (lining.haunch ?? 0), z + 0.02], m.trim);
   };
@@ -132,7 +139,7 @@ function moduleParts(profile, family, shape) {
   };
   // --- the floor's line down an arm from the middle (z = 0) out to `to`: a drain, a water channel between kerbs with a
   // grate, or a narrow-gauge track. `kerbFrom`: where the kerbs start (clear of a crossing arm's channel).
-  const floorRun = (k, to, kerbFrom = 0, drain = true) => {
+  const floorRun = (k, to, kerbFrom = 0, drain = true, rails = true) => {
     const put = (b, material, tint) => draw(turnBox(b, k), material, tint);
     if (trim.drain && drain) put([-trim.drain.width / 2, 0, 0, trim.drain.width / 2, 0.02, to], trim.drain.material);
     if (trim.channel) {
@@ -144,7 +151,21 @@ function moduleParts(profile, family, shape) {
       if (c.kerb) for (const sx of [-1, 1]) put([Math.min(sx * h, sx * (h + c.kerb.width)), 0, kerbFrom, Math.max(sx * h, sx * (h + c.kerb.width)), c.kerb.height, to], c.kerb.material);
       if (c.grate && to - 2 > 0.4) put([-h - 0.04, 0.025, 2 - 0.35, h + 0.04, 0.045, 2 + 0.35], c.grate.material, c.grate.tint);
     }
-    if (trim.rails) {
+    // A carriageway's lines: a dashed centre line (a dash centred in each 4 m, so runs of pieces keep the beat) and
+    // a solid edge line inside each walkway. Not across a junction's middle square.
+    if (trim.lanes) {
+      const ln = trim.lanes;
+      const from = line ? 0 : w;
+      const hw = ln.width / 2;
+      for (let c = 2; c - ln.dash / 2 < to; c += 4) {
+        const z0 = Math.max(from, c - ln.dash / 2);
+        const z1 = Math.min(to, c + ln.dash / 2);
+        if (z1 - z0 > 0.05) put([-hw, 0, z0, hw, 0.012, z1], ln.material, ln.tint);
+      }
+      const edge = w - (trim.walkway?.width ?? 0) - 0.3;
+      for (const sx of [-1, 1]) put([sx * edge - hw, 0, from, sx * edge + hw, 0.012, to], ln.material, ln.edge ?? ln.tint);
+    }
+    if (trim.rails && rails) {
       const r = trim.rails;
       for (let z = 0.35; z < to - 0.1; z += r.sleeperEvery) put([-r.gauge / 2 - 0.25, 0, z - 0.08, r.gauge / 2 + 0.25, 0.03, z + 0.08], r.sleeper);
       for (const sx of [-1, 1]) put([sx * r.gauge / 2 - 0.03, 0, 0, sx * r.gauge / 2 + 0.03, 0.06, to], r.material, r.tint);
@@ -154,13 +175,37 @@ function moduleParts(profile, family, shape) {
   // and the drain down the middle of the floor from the cell's centre.
   // (`kerbFrom`: on a line the kerbs run on through the middle; elsewhere they stop clear of the other arms' water.)
   const kerbFrom = line ? 0 : trim.channel ? r3(trim.channel.width / 2 + (trim.channel.kerb?.width ?? 0)) : 0;
+  // A track that turns: a curve's track follows the bend from the south edge to the east (a quarter circle about the
+  // cell's south-east corner), and a T's branch from the south turns into the east arm (a turnout), instead of each arm's
+  // straight stub ending in the middle.
+  const turns = trim.rails && arms.has('S') && arms.has('E') && !arms.has('N');
   const armTrim = (k, from, to, archFrom = from, rings = [archFrom, to]) => {
     for (const sx of [-1, 1]) wallTrim(k, sx, from, to, !!arch);
     if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
-    floorRun(k, to, kerbFrom);
+    floorRun(k, to, kerbFrom, true, !(turns && (SIDES[k] === 'S' || (SIDES[k] === 'E' && !arms.has('W')))));
     archRun(k, archFrom, to, rings);
     setsRun(k, from, to);
   };
+  if (turns) {
+    const r = trim.rails;
+    const segs = 12;
+    const at = (rad, a) => [E - rad * Math.cos(a), -E + rad * Math.sin(a)];
+    const yawed = (cx, cz, yaw, hx, hz, y1, material, tint) => trims.push({ box: [cx - hx, 0, cz - hz, cx + hx, y1, cz + hz].map(r3), kind: 'trim', yaw: r3(yaw), ...surf(material, tint) });
+    for (const sx of [-1, 1]) {
+      const rad = E + (sx * r.gauge) / 2;
+      for (let i = 0; i < segs; i++) {
+        const [x0, z0] = at(rad, (i * Math.PI) / 2 / segs);
+        const [x1, z1] = at(rad, ((i + 1) * Math.PI) / 2 / segs);
+        yawed((x0 + x1) / 2, (z0 + z1) / 2, Math.atan2(x1 - x0, z1 - z0), 0.03, Math.hypot(x1 - x0, z1 - z0) / 2 + 0.01, 0.06, r.material, r.tint);
+      }
+    }
+    const n = Math.round(((Math.PI / 2) * E) / r.sleeperEvery);
+    for (let i = 0; i < n; i++) {
+      const a = ((i + 0.5) * Math.PI) / 2 / n;
+      const [x, z] = at(E, a);
+      yawed(x, z, Math.atan2(Math.sin(a), Math.cos(a)), r.gauge / 2 + 0.25, 0.08, 0.03, r.sleeper);
+    }
+  }
   // On a line the arch and the sets run on through the middle square (the shaft's hatch leaves a gap in the arch).
   const lineArch = line && !mouth && arch;
   for (const [k, side] of SIDES.entries()) {
@@ -223,9 +268,13 @@ function moduleParts(profile, family, shape) {
   // --- a dead end's service door on its end wall (drawn only).
   if (shape.door && trim.door) {
     const k = SIDES.indexOf(shape.door);
-    draw(turnBox([-0.62, 0, w - 0.06, 0.62, 2.14, w], k), m.trim);
-    draw(turnBox([-0.55, 0, w - 0.09, 0.55, 2.07, w - 0.06], k), trim.door.material, trim.door.tint);
-    draw(turnBox([-0.55, 0.9, w - 0.11, 0.55, 1.12, w - 0.09], k), trim.hazard ?? trim.door.material);
+    const dw = (shape.doorWidth ?? 1.1) / 2;
+    const dh = shape.doorHeight ?? 2.07;
+    draw(turnBox([-dw - 0.07, 0, w - 0.06, dw + 0.07, dh + 0.07, w], k), m.trim);
+    draw(turnBox([-dw, 0, w - 0.09, dw, dh, w - 0.06], k), trim.door.material, trim.door.tint);
+    draw(turnBox([-dw, 0.9, w - 0.11, dw, 1.12, w - 0.09], k), trim.hazard ?? trim.door.material);
+    // A roll-up door's slats: a line every 0.3 m across it.
+    if (shape.doorWidth) for (let y = 0.3; y < dh - 0.1; y += 0.3) if (y < 0.85 || y > 1.17) draw(turnBox([-dw, y - 0.015, w - 0.1, dw, y + 0.015, w - 0.09], k), m.trim);
   }
 
   // (Cover: a hand of earth over the cap, 0.1 m: a level under new flat ground, which lies 0.15 m under a level, that is the ground as it is.)
@@ -371,7 +420,7 @@ function moduleParts(profile, family, shape) {
  *  - chamber: a room of 2 x 2 cells, an opening the size of the passage on each side.
  * Returns the tile's cells and ports too.
  */
-function specialParts(profile, family, shape) {
+function specialParts(profile, family, shape, profiles = {}) {
   const { half: w, clear, cap } = profile;
   const m = family.materials;
   const lining = family.lining ?? {};
@@ -386,12 +435,16 @@ function specialParts(profile, family, shape) {
   const T = r3(cap - clear);
   const cover = (y) => r3(y + 0.1);
 
-  if (shape.kind === 'flight' || shape.kind === 'descent') {
+  if (shape.kind === 'flight' || shape.kind === 'descent' || shape.kind === 'ramp') {
     const open = shape.kind === 'descent';
-    const a = Math.atan2(L, 2 * E);
+    // A ramp (the wide bore's, for wheels) climbs its level over two cells: 1 in 4. Flights and descents over one.
+    const n = shape.kind === 'ramp' ? 2 : 1;
+    const run = n * 2 * E;
+    const Z = -E + run;
+    const a = Math.atan2(L, run);
     const lean = Math.sin(a);
     // The flight's line: the floor's height at z (0 at the south edge, a level at the north).
-    const rise = (z) => ((z + E) * L) / (2 * E);
+    const rise = (z) => ((z + E) * L) / run;
     // A tilted box `t` thick whose face follows the flight from z0 to z1, `up` metres over the floor's line: lying over
     // that face (a soffit) or under it (a floor). Kept inside the cell: a tilted box's ends lean t x sin(a) past its face.
     const along = (x0, x1, z0, z1, up, t, over) => {
@@ -402,14 +455,22 @@ function specialParts(profile, family, shape) {
       return { box: [x0, cy - t / 2, cz - l / 2, x1, cy + t / 2, cz + l / 2].map(r3), pitch: r3(a) };
     };
     // The floor: 16 steps of 0.25 m, or a slab at 1 in 2 with a short level landing at its head.
-    if (shape.floor === 'ramp') {
+    if (shape.floor === 'ramp' || shape.kind === 'ramp') {
       const t = 0.5;
-      const head = E - t * lean - 0.01;
+      const head = Z - t * lean - 0.01;
       solids.push({ ...along(-w, w, -E, head, 0, t, false), kind: 'solid', ...surf(m.floor) });
-      solid([-w, L - t, head - 0.05, w, L, E], m.floor, 'solid');
+      solid([-w, L - t, head - 0.05, w, L, Z], m.floor, 'solid');
+      // A road's lines up the ramp: the centre dashes and the edge lines, laid on the slab.
+      if (trim.lanes) {
+        const ln = trim.lanes;
+        const hw = ln.width / 2;
+        for (let c = -E + 2; c < head; c += 4) trims.push({ ...along(-hw, hw, Math.max(-E, c - ln.dash / 2), Math.min(head, c + ln.dash / 2), 0, 0.012, true), kind: 'trim', ...surf(ln.material, ln.tint) });
+        const edge = w - (trim.walkway?.width ?? 0) - 0.3;
+        for (const sx of [-1, 1]) trims.push({ ...along(sx * edge - hw, sx * edge + hw, -E, head, 0, 0.012, true), kind: 'trim', ...surf(ln.material, ln.edge ?? ln.tint) });
+      }
     } else solids.push({ flight: { axis: 'z', dir: 1, from: -E, across: [-w, w], steps: 16 }, ...surf(m.floor) });
     // A handrail on each wall, following the flight. (Open to the sky it stops where it would stand over the low walls.)
-    const railTo = shape.kind === 'descent' ? 2.6 : E - 0.03;
+    const railTo = shape.kind === 'descent' ? 2.6 : Z - 0.03;
     for (const sx of [-1, 1]) trims.push({ ...along(sx * (w - 0.1) - 0.03, sx * (w - 0.1) + 0.03, -E + 0.03, railTo, 0.95, 0.06, true), kind: 'trim', ...surf(m.trim) });
     const bore = {};
     if (open) {
@@ -433,28 +494,34 @@ function specialParts(profile, family, shape) {
       // The walls and the earth cut and kept in four stretches, each as high as the soffit at its upper end.
       bore.cut = [];
       bore.cover = [];
-      for (let j = 0; j < 4; j++) {
+      const step = (2 * L) / run;
+      for (let j = 0; j < 4 * n; j++) {
         const z0 = -E + 2 * j;
-        const top = clear + (j + 1) + T;
+        const top = clear + (j + 1) * step + T;
         for (const sx of [-1, 1]) solid([Math.min(sx * w, sx * E), 0, z0, Math.max(sx * w, sx * E), Math.min(top, L + clear), z0 + 2], m.wall);
-        bore.cut.push([-E, j - 0.5, z0, E, r3(Math.min(top, L + cap)), z0 + 2].map(r3));
+        bore.cut.push([-E, j * step - 0.5, z0, E, r3(Math.min(top, L + cap)), z0 + 2].map(r3));
         bore.cover.push([-E, z0, E, z0 + 2, cover(Math.min(top, L + cap))]);
       }
       // The soffit climbs with the floor: one slab, its underside from the low passage's soffit to the high one's, and
       // a level piece at each end where the slab's leaning end would leave a slit against the next piece's cap.
       const foot = -E + T * lean + 0.01;
-      solids.push({ ...along(-E, E, foot, E - 0.01, clear, T, true), kind: 'wall', ...surf(m.soffit) });
+      solids.push({ ...along(-E, E, foot, Z - 0.01, clear, T, true), kind: 'wall', ...surf(m.soffit) });
       solid([-E, clear, -E, E, clear + T + 0.25, foot + 0.05], m.soffit);
-      solid([-E, L + clear, E - 0.3, E, L + cap, E], m.soffit);
-      if (lining.haunch) for (const sx of [-1, 1]) trims.push({ ...along(Math.min(sx * w, sx * (w - lining.haunch)), Math.max(sx * w, sx * (w - lining.haunch)), foot + 0.05, E - lining.haunch * lean - 0.02, clear - 0.02, lining.haunch, false), kind: 'trim', ...surf(m.soffit) });
-      if (trim.light) {
+      solid([-E, L + clear, Z - 0.3, E, L + cap, Z], m.soffit);
+      if (lining.haunch) for (const sx of [-1, 1]) trims.push({ ...along(Math.min(sx * w, sx * (w - lining.haunch)), Math.max(sx * w, sx * (w - lining.haunch)), foot + 0.05, Z - lining.haunch * lean - 0.02, clear - 0.02, lining.haunch, false), kind: 'trim', ...surf(m.soffit) });
+      // One fixture a cell along the soffit (a flight's one, in the middle).
+      const zc = -E + run / 2;
+      for (const c of n === 1 ? [zc] : [zc - E, zc + E]) {
+        if (!trim.light) break;
         const l = trim.light;
-        trims.push({ ...along(-0.14, 0.14, -l.length / 2 - 0.08, l.length / 2 + 0.08, clear - 0.02, 0.06, false), kind: 'trim', ...surf(m.trim) });
-        trims.push({ ...along(-0.06, 0.06, -l.length / 2, l.length / 2, clear - 0.08, 0.05, false), kind: 'trim', ...surf(l.material, l.tint) });
+        trims.push({ ...along(-0.14, 0.14, c - l.length / 2 - 0.08, c + l.length / 2 + 0.08, clear - 0.02, 0.06, false), kind: 'trim', ...surf(m.trim) });
+        trims.push({ ...along(-0.06, 0.06, c - l.length / 2, c + l.length / 2, clear - 0.08, 0.05, false), kind: 'trim', ...surf(l.material, l.tint) });
       }
     }
-    bore.plan = [[-w, -E, -w, E], [w, -E, w, E]];
-    return { cells: [[0, 0, 0], [0, 0, 1]], ports: [{ side: 'S', level: 0 }, { side: 'N', level: 1 }], solids: [...solids, ...trims], floors: [{ box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }], bore };
+    bore.plan = [[-w, -E, -w, Z], [w, -E, w, Z]];
+    const cells = n === 1 ? [[0, 0, 0], [0, 0, 1]] : [[0, 0, 0], [0, 1, 0], [0, 0, 1], [0, 1, 1]];
+    const ports = n === 1 ? [{ side: 'S', level: 0 }, { side: 'N', level: 1 }] : [{ side: 'S', level: 0 }, { side: 'N', level: 1, cell: [0, 1] }];
+    return { cells, ports, solids: [...solids, ...trims], floors: [{ box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }], bore };
   }
 
   if (shape.kind === 'riser') {
@@ -528,7 +595,17 @@ function specialParts(profile, family, shape) {
       draw([-d, 0, lo, d, 0.02, hi], trim.drain.material);
       draw([lo, 0, -d, hi, 0.02, d], trim.drain.material);
     }
-    if (trim.light) {
+    if (trim.light?.style === 'lantern') {
+      // A lantern at each fixture's place instead of a strip light (brick, mine), hung from the soffit.
+      const l = trim.light;
+      const f = l.frame ?? m.trim;
+      for (const [x, z] of [[E, 0.5], [E, 2 * E - 0.5], [0.5, E], [2 * E - 0.5, E], [E, E]]) {
+        draw([x - 0.015, clear - 0.45, z - 0.015, x + 0.015, clear, z + 0.015], f);
+        draw([x - 0.13, clear - 0.5, z - 0.13, x + 0.13, clear - 0.44, z + 0.13], f);
+        draw([x - 0.09, clear - 0.76, z - 0.09, x + 0.09, clear - 0.5, z + 0.09], l.material, l.tint);
+        draw([x - 0.11, clear - 0.8, z - 0.11, x + 0.11, clear - 0.76, z + 0.11], f);
+      }
+    } else if (trim.light) {
       const l = trim.light;
       for (const [x, z] of [[E, 0.5], [E, 2 * E - 0.5], [0.5, E], [2 * E - 0.5, E], [E, E]]) {
         draw([x - 0.14, clear - 0.05, z - l.length / 2 - 0.08, x + 0.14, clear, z + l.length / 2 + 0.08], m.trim);
@@ -544,6 +621,40 @@ function specialParts(profile, family, shape) {
       bore,
     };
   }
+  if (shape.kind === 'reducer') {
+    // The wide bore (this shape's profile) to the south, the service passage (S) to the north: the walls step in at the
+    // middle of the cell, the soffit steps down there. A hazard band on each step's face.
+    const s = profiles.S;
+    for (const sx of [-1, 1]) {
+      solid([Math.min(sx * w, sx * E), 0, -E, Math.max(sx * w, sx * E), clear, 0], m.wall);
+      solid([Math.min(sx * s.half, sx * E), 0, 0, Math.max(sx * s.half, sx * E), clear, E], m.wall);
+      if (trim.plinth) {
+        draw([Math.min(sx * w, sx * (w - 0.04)), 0, -E, Math.max(sx * w, sx * (w - 0.04)), trim.plinth, 0], m.trim);
+        draw([Math.min(sx * s.half, sx * (s.half - 0.04)), 0, 0, Math.max(sx * s.half, sx * (s.half - 0.04)), trim.plinth, E], m.trim);
+      }
+      if (trim.walkway) draw([Math.min(sx * w, sx * (w - trim.walkway.width)), 0, -E, Math.max(sx * w, sx * (w - trim.walkway.width)), trim.walkway.height, -0.02], trim.walkway.material);
+      if (trim.hazard) draw([Math.min(sx * s.half, sx * w), 0, -0.03, Math.max(sx * s.half, sx * w), 1.0, 0], trim.hazard);
+    }
+    solid([-E, s.clear, 0, E, clear, E], m.soffit);
+    solid([-E, clear, -E, E, cap, E], m.soffit);
+    if (lining.haunch) for (const sx of [-1, 1]) draw([Math.min(sx * w, sx * (w - lining.haunch)), clear - lining.haunch, -E, Math.max(sx * w, sx * (w - lining.haunch)), clear, 0], m.soffit);
+    if (trim.light?.style === 'lantern') {
+      const l = trim.light;
+      const f = l.frame ?? m.trim;
+      draw([-0.015, clear - 0.45, -2.015, 0.015, clear, -1.985], f);
+      draw([-0.09, clear - 0.76, -2.09, 0.09, clear - 0.45, -1.91], l.material, l.tint);
+    } else if (trim.light) {
+      const l = trim.light;
+      draw([-0.14, clear - 0.05, -2 - l.length / 4 - 0.08, 0.14, clear, -2 + l.length / 4 + 0.08], m.trim);
+      draw([-0.06, clear - 0.1, -2 - l.length / 4, 0.06, clear - 0.05, -2 + l.length / 4], l.material, l.tint);
+    }
+    const bore = {
+      cut: [[-E, -0.5, -E, E, cap, E]],
+      cover: [[-E, -E, E, E, cover(cap)]],
+      plan: [[-w, -E, -w, 0], [w, -E, w, 0], [-s.half, 0, -s.half, E], [s.half, 0, s.half, E], [-w, 0, -s.half, 0], [s.half, 0, w, 0]],
+    };
+    return { cells: [[0, 0, 0]], ports: [{ side: 'S', level: 0, bore: 'L' }, { side: 'N', level: 0 }], solids: [...solids, ...trims], floors: [{ box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }], bore };
+  }
   throw new Error(`tunnel kit: ${shape.id}: no kind ${shape.kind}`);
 }
 
@@ -552,14 +663,20 @@ export function tunnelTiles(data) {
   const out = [];
   // The first family is the shapes' own (the tile MapMaker's palette shows); the others are reached by a placed
   // piece's `family` (map format v37), or by their own tile ids.
-  const first = Object.keys(data.families ?? {})[0];
+  // A shape comes in the families it names (the first its own), else in every family whose `profiles` take its
+  // profile, in order. A port of an L shape says so (`bore: 'L'`); an S port says nothing.
+  const familiesOf = (shape) => shape.families ?? Object.keys(data.families ?? {}).filter((f) => (data.families[f].profiles ?? Object.keys(data.profiles)).includes(shape.profile ?? 'S'));
   for (const [fid, family] of Object.entries(data.families ?? {})) {
     for (const shape of data.shapes ?? []) {
-      const profile = data.profiles?.[shape.profile ?? 'S'];
-      if (!profile) throw new Error(`tunnel kit: ${shape.id}: no profile ${shape.profile ?? 'S'}`);
-      const special = shape.kind ? specialParts(profile, family, shape) : null;
+      const fams = familiesOf(shape);
+      if (!fams.includes(fid)) continue;
+      const first = fams[0];
+      const pid = shape.profile ?? 'S';
+      const profile = data.profiles?.[pid];
+      if (!profile) throw new Error(`tunnel kit: ${shape.id}: no profile ${pid}`);
+      const special = shape.kind ? specialParts(profile, family, shape, data.profiles) : null;
       const parts = special ?? moduleParts(profile, family, shape);
-      const ports = special?.ports ?? [...shape.arms, ...(shape.mouth ? [shape.mouth] : [])].map((side) => ({ side, level: 0 }));
+      const ports = (special?.ports ?? [...shape.arms, ...(shape.mouth ? [shape.mouth] : [])].map((side) => ({ side, level: 0 }))).map((p) => (pid !== 'S' && shape.kind !== 'reducer' ? { ...p, bore: pid } : p));
       out.push({
         id: `core.tunnel_${fid}_${shape.id}`,
         category: 'Tunnels',

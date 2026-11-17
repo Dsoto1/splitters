@@ -1,6 +1,7 @@
 import { pathGeometry, pathUses } from './track.ts';
 import { TERRAIN_SURFACES, groundIndex, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument, MapPath, PathStyle } from './schema.ts';
+import { groundCutAt, mapGroundBores, type GroundCut } from './groundBore.ts';
 
 /**
  * Paths: roads, streets, trails and walkways, the race track and AI routes,
@@ -42,8 +43,11 @@ const smooth = (v: number): number => {
  * path's height, flat across; over `shoulder` metres either side it blends
  * back; the cells wholly under it are painted the path's ground, and the
  * cells it crosses lose their plants. Returns the same terrain when no path lays.
+ * Where a path runs through a buried tunnel (`cuts`: its point is inside a bore, the ground well over it: Tileset 04
+ * step 6, a road through a road tunnel) the ground is left alone there: the hill stays over the tunnel, and the road
+ * is the tunnel's floor.
  */
-export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): TerrainData {
+export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[], cuts: readonly GroundCut[] = []): TerrainData {
   const laid = paths.filter((p) => p.lay && pathDrawn(p) && p.points.length >= 2);
   if (!laid.length) return t;
   const heights = t.heights.slice();
@@ -69,6 +73,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
     // The path's height: the ground along it, smoothed (an average over ~12 m), so it follows the hills
     // instead of cutting straight between its points, and stays level across.
     const ground = g.samples.map((q) => terrainHeightAt(t, q.x, q.z) ?? q.y);
+    const buried = g.samples.map((q, i) => ground[i]! - q.y > 2 && groundCutAt(cuts, q.x, q.y + 0.5, q.z));
     const target = ground.map((_, i) => {
       let sum = 0;
       let n = 0;
@@ -91,7 +96,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         const x = t.origin[0] + c * t.spacing;
         const z = t.origin[1] + r * t.spacing;
         const near = g.nearest(x, z, reach + 1);
-        if (!near) continue;
+        if (!near || buried[near.index]) continue;
         const d = Math.abs(near.lateral);
         if (d > half + shoulder || near.dist > reach) continue;
         const i = r * t.cols + c;
@@ -137,7 +142,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
  */
 export function withPathsLaid(map: MapDocument): MapDocument {
   if (!map.terrain || !map.paths?.some((p) => p.lay && pathDrawn(p))) return map;
-  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
+  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths, mapGroundBores(map).cuts), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
 }
 
 /**

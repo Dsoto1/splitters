@@ -129,7 +129,7 @@ function schemas(root, materials, edgeIds = []) {
     builders[k] = sch;
     part.shape[`${k}?`] = sch;
   }
-  const port = obj({ 'side?': en(sides), 'level?': int, 'cell?': tup(2, int), 'allSides?': int, 'perimeter?': tup(2, int), 'levels?': arr(int, 1) });
+  const port = obj({ 'side?': en(sides), 'level?': int, 'cell?': tup(2, int), 'bore?': en(['S', 'L']), 'allSides?': int, 'perimeter?': tup(2, int), 'levels?': arr(int, 1) });
   const tile = obj({
     id: str, displayName: str, category: en(categories), 'blurb?': str, 'cells?': arr(tup(3, int), 1), 'footprint?': arr(int, 2),
     floors: arr(int), ports: arr(port), 'open?': bool, 'edgeDefault?': str, 'edgeDefaults?': map(str), 'configurable?': bool,
