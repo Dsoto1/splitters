@@ -39,9 +39,10 @@
       "graft": true
     },
     "grip": {
-      "gripLong": [-0.03, 0.015, -0.045],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.06, 0.02, -0.04]
+      "gripLong": [0, 0.015, -0.045],
+      "supportLong": [-0.03, 0, 0.03],
+      "supportPistol": [-0.09, 0.02, -0.04],
+      "gripPistol": [0.065, 0, 0]
     }
   }
 }

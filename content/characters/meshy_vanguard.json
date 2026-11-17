@@ -44,10 +44,11 @@
     },
     "grip": {
       "gripLong": [-0.06, 0, -0.03],
-      "supportLong": [-0.04, 0, 0.06],
-      "supportPistol": [-0.02, 0.04, -0.04],
+      "supportLong": [-0.07, -0.02, 0.06],
+      "supportPistol": [-0.065, 0.04, -0.04],
       "curlR": 1.2,
-      "curlL": 1
+      "curlL": 1,
+      "gripPistol": [0.05, 0, 0]
     }
   },
   "landmarks": {
