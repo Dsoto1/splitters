@@ -332,7 +332,7 @@ describe('the wall styles the bays are built with', () => {
   it('the classroom windows are four sashes 1.25 m wide from 0.9 to 3.2 m, clear of a facade\'s buttresses; one pane each', () => {
     expect(EDGE_SHAPES.windows_school!.openings).toEqual([[-3.1, -1.85, 0.9, 3.2], [-1.45, -0.2, 0.9, 3.2], [0.2, 1.45, 0.9, 3.2], [1.85, 3.1, 0.9, 3.2]]);
     // The Collegiate facades' buttresses stand 0.13 to 0.77 m in from a side's ends (half − 0.45 ± 0.32).
-    for (const [u0, u1] of EDGE_SHAPES.windows_school!.openings) expect(Math.max(Math.abs(u0), Math.abs(u1))).toBeLessThan(4 - 0.45 - 0.32 - 0.1);
+    for (const [u0, u1] of EDGE_SHAPES.windows_school!.openings as [number, number, number, number][]) expect(Math.max(Math.abs(u0), Math.abs(u1))).toBeLessThan(4 - 0.45 - 0.32 - 0.1);
     const map = mapOf([{ id: 'bay0', piece: 'setpiece.classroom_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
     const panes = windowPanes(map);
     expect(panes).toHaveLength(8);
