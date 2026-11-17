@@ -70,6 +70,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+**Landing now: train** (`wip/bot-react`, `wip/gunplay-polish`, both lane A's; run by lane B's splitters22, the lead, 2026-11-17 06:53 UTC): please hold code pushes to main until this line goes.
+
 
 **Lead (lane B's splitters22), 2026-11-17 03:05: stale lock lines.** Two of lane B's finished "Landing now" lines (the 11-16 MapMaker train and driving physics 4) came back on main through landing merges (a branch whose HANDOFF still had them). Removed again. When a landing merge conflicts or auto-merges in HANDOFF, please check no old "Landing now" line rides back in.
 
