@@ -38,10 +38,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/tunnels-6` · eba67329 · 44077679537 (main merged in; code equals green ba7b438c. The `roulette` jackpot-glow failure is not this branch: it also hit `wip/dropship-seats` alone, see HANDOFF) (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
-- `wip/shadow-casters` · 7fddc644 · 44060921601 (lane B: cheaper small shadow casters: trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps; clutter casts to 20 m with a 24 m band; `?perfoff=smallcasters`)
-- `wip/tunnels-7` · c63e10f4 · 44087367248 (lane B: tunnel kit step 7, the cave family, cave Mouth, joints between families, Bay to Road; contains `wip/tunnels-6`)
-- `wip/farlooks-bodypool` · da6de9e6 · 44090541768 (lane B: body pool to about 32 (`?perfoff=bodypool`); far looks of shelves, tables, seats and other furniture baked from the real model, kept in the kit-props lock; next train, after the one now on CI)
+- `wip/farlooks-bodypool` · da6de9e6 · 44090541768 (lane B: body pool to about 32 (`?perfoff=bodypool`); far looks of shelves, tables, seats and other furniture baked from the real model, kept in the kit-props lock)
+- `wip/breakable-shadow` · b27c9e0f · 44086669127 (lane B: a broken breakable prop takes its shadow with it)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
