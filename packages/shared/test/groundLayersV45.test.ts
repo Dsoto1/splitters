@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   GROUND_THEMES,
+  MAP_FORMAT_VERSION,
   MAX_GROUNDS,
   TERRAIN_MATERIALS,
   TERRAIN_SURFACES,
@@ -82,7 +83,7 @@ describe('groundLayersV45: a release stamp from before keeps its version', () =>
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.issues.filter((i) => i.code === 'release.changed')).toEqual([]);
-    expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion: 45 });
+    expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion: MAP_FORMAT_VERSION });
     // A real edit to the ground is a change.
     const edited = { ...file, terrain: { ...file.terrain, materials: file.terrain.materials.map((m: number, i: number) => (i === 0 ? (m + 1) % 8 : m)) } };
     const e = loadMap(edited, undefined, { forEditing: true });
