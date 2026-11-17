@@ -38,7 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/st-johns-spruces` · 575b964c · 44143716184 (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts in the school colours: a new Royal purple variant of the banner lamp, white band, red trim; placed in MapMaker; next train)
+- `wip/st-johns-spruces` · 42e797fc · 44165705834 (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts in the school colours: a new Royal purple variant of the banner lamp, white band, red trim; placed in MapMaker; next train)
 - `wip/landing-lock` · 9e2ddefd · 44151224415 (lane B: the landing lock as the `landing-lock` branch run by train.mjs: `--holder`, `--lock-status`, `--lock`/`--unlock` for hand landings, `--force-unlock` after 3 h)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
