@@ -262,7 +262,7 @@ if (rescore) {
       resized.push({ input: text(title, views.length * TILE, HEAD, 16, 700, r.score ? '#ffcf6a' : '#9be39b'), left: 0, top: 0 });
       await sharp({ create: { width: views.length * TILE, height: HEAD + LABEL + TILE, channels: 3, background: '#15181d' } }).composite(resized).png().toFile(join(out, `${c.id}.png`));
     }
-    console.log(`${c.id}: ${r.score} ${r.flags.join(',')} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
+    console.log(`${c.id}: ${r.score} ${r.flags.join(',')} tear ${tearOf(r)} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
   }
   await browser.close();
 
@@ -275,17 +275,26 @@ if (!rescore) {
 }
 results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results }, null, 1));
+/** The hands' tear (tools/gripAudit.ts `tear`), worst over the weapons: longest edge stretch, then triangles turned over. */
+function tearOf(r) {
+  const t = { r: null, l: null };
+  for (const m of Object.values(r.weapons)) for (const s of ['r', 'l']) {
+    const x = m.audit?.tear?.[s];
+    if (x) t[s] = t[s] ? { max: Math.max(t[s].max, x.max), flipped: Math.max(t[s].flipped, x.flipped) } : { max: x.max, flipped: x.flipped };
+  }
+  return ['r', 'l'].map((s) => (t[s] ? `${t[s].max}x ${t[s].flipped}` : '-')).join(' / ');
+}
 const n = (x, d = 2) => (x === null || x === undefined ? '-' : Number(x).toFixed(d));
 const rows = results.map((r) => {
   const a = r.weapons.rifle?.audit;
   const d = r.weapons.rifle?.drawn;
-  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${n(d?.sideR)}/${n(d?.palmL)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) |`;
+  return `| ${r.name} | ${r.rig} | ${r.score} | ${r.flags.join(' ') || 'ok'} | ${n(a?.gun?.headToGun)} | ${n(a?.gun?.elbowSide.r)} | ${n(a?.elbows.r?.flex)}/${n(a?.elbows.l?.flex)} | ${n(a?.hands.r?.fingerShare)}/${n(a?.hands.l?.fingerShare)} | ${n(a?.hands.r?.tips)}/${n(a?.hands.l?.tips)} | ${n(d?.r)}/${n(d?.l)} | ${n(d?.sideR)}/${n(d?.palmL)} | ${a?.stretch.spikes ?? '-'} (${a?.stretch.max ?? '-'}) | ${tearOf(r)} |`;
 });
 writeFileSync(
   join(out, 'summary.md'),
   [
-    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) | hand tear R/L |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
     `Flags per weapon (${weapons.map(([w]) => w).join(', ')}):`,
