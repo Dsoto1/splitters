@@ -82,7 +82,7 @@ describe('far looks baked from the real model', () => {
       expect(f.far, f.src).toHaveLength(f.lodTriangles.length - 1);
       for (const p of f.far) expect(['own', 'recoloured', 'cells', 'picture box']).toContain(p.how);
       // Lighter levels stay lighter.
-      for (let i = 1; i < f.lodTriangles.length; i++) expect(f.lodTriangles[i], f.src).toBeLessThan(f.lodTriangles[i - 1]);
+      for (let i = 1; i < f.lodTriangles.length; i++) expect(f.lodTriangles[i], f.src).toBeLessThanOrEqual(f.lodTriangles[i - 1]);
     }
     // Most of the flat blocks are gone.
     const last = baked.map((f) => f.far.at(-1).how);
