@@ -73,6 +73,18 @@
             "banner": "#5b5f63",
             "band": "#9a9c9e"
           }
+        },
+        {
+          "index": 3,
+          "name": "royal_purple",
+          "seed": 11504,
+          "look": {
+            "iron": "#1b1c1e",
+            "glass": "#d9cfb4",
+            "banner": "#4b2a84",
+            "band": "#f2f0ea",
+            "trim": "#b3202a"
+          }
         }
       ]
     }

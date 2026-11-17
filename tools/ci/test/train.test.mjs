@@ -38,7 +38,7 @@ describe('the train (scratch repositories)', () => {
   const origin = join(tmp, 'origin.git');
   const clone = join(tmp, 'clone');
   const git = (cwd, ...a) => execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.invalid', ...a], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-  const env = { ...process.env, TRAIN_ROOT: clone, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid' };
+  const env = { ...process.env, TRAIN_ROOT: clone, LANDING_LOCK_HOLDER: 'session-a', GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.invalid', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.invalid' };
   const trainRun = (...a) => spawnSync('node', [script, ...a], { cwd: clone, env, encoding: 'utf8' });
   const branchOff = (name, file, text) => {
     git(clone, 'checkout', '-q', '-B', name, 'origin/main');
@@ -70,6 +70,23 @@ describe('the train (scratch repositories)', () => {
     expect(git(origin, 'show', `${train}:b.txt`)).toBe('b two');
     expect(git(origin, 'rev-parse', 'main')).toBe(mainBefore);
     expect(git(origin, 'rev-parse', 'wip/one')).toBe(git(clone, 'rev-parse', 'origin/wip/one'));
+    // It holds the landing lock for that train while its check runs.
+    expect(git(origin, 'log', '-1', '--format=%s', 'landing-lock')).toMatch(new RegExp(`^held by session-a, train ${train}, `));
+  });
+
+  it('a train needs a holder, refuses while another holds the lock, and gives the lock back when it stops before pushing', () => {
+    const noHolder = spawnSync('node', [script, 'wip/one'], { cwd: clone, env: { ...env, LANDING_LOCK_HOLDER: '' }, encoding: 'utf8' });
+    expect(noHolder.status).toBe(1);
+    expect(noHolder.stderr).toMatch(/--holder/);
+    const other = spawnSync('node', [script, '--holder', 'session-b', 'wip/two'], { cwd: clone, env, encoding: 'utf8' });
+    expect(other.status).toBe(1);
+    expect(other.stderr).toMatch(/held by session-a, train check\/train-\d{8}-\d{6}, for \d+ min/);
+    expect(trainRun('--unlock').status).toBe(0);
+    const clash = trainRun('wip/one', 'wip/clash');
+    expect(clash.status).toBe(1);
+    expect(clash.stderr).toMatch(/Freed the landing lock/);
+    expect(git(origin, 'log', '-1', '--format=%s', 'landing-lock')).toBe('free');
+    expect(trainRun('--lock-status').stdout).toMatch(/the landing lock is free/);
   });
 
   it('stops on a conflict, naming the branch and the files, and leaves no worktree behind', () => {
