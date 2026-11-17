@@ -15,13 +15,14 @@
  * rebuilt only when what they show changed, editor/editorApp.ts `refresh`; the character leak fix adds `bodyclones`, a
  * body's cloned materials and texture copies freed with it, content/ownedAssets.ts; Flavius Rule's memory round,
  * docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, adds `proxydata`, the shadow proxies' triangles not kept in the page,
- * game/shadowProxy.ts, `bodypoints`, the bodies' per-vertex picking points dropped, content/pointCache.ts, and
+ * game/shadowProxy.ts, `bodypoints`, the bodies' per-vertex picking points dropped, content/pointCache.ts,
  * `animcrowd`, all but the nearest characters of a crowd in view animated a rung or two slower, animLod.ts crowdStep,
- * `leveldata`, the merged level's vertex data kept as 32-bit floats, levelMerge.ts, and `netgarbage`, snapshots filed
- * without a pair array per player, interpolation.ts).
+ * `leveldata`, the merged level's vertex data kept as 32-bit floats, levelMerge.ts, `netgarbage`, snapshots filed
+ * without a pair array per player, interpolation.ts, and `aurashare`, the status aura's shapes made once a scene,
+ * arsenalVisuals.ts createAura).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare';
 
 let off: Set<string> | null = null;
 
