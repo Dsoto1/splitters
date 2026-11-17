@@ -90,6 +90,12 @@ const BOT_SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_
 const SIGHT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_SHOTS_ONLY);
 /** What wheels stand on (PhysicsWorld.groundBelow): everything solid but players and force fields. */
 const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
+/**
+ * A rigid vehicle's hull as a Rapier body (createChassisBody, driving physics 4): it meets what bodies meet (static
+ * geometry, vehicles' boxes, fields, glass, lattices), never players, shots-only shapes or other hulls; no query sees it.
+ */
+const GROUP_HULL = 0x0100;
+const HULL_COLLIDER_GROUPS = groups(GROUP_HULL, GROUP_WORLD | GROUP_FIELD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
 const DOWN = { x: 0, y: -1, z: 0 };
 const MAX_SLOPE_TAN = Math.tan((PLAYER.maxSlopeDegrees * Math.PI) / 180);
 
@@ -145,6 +151,31 @@ const CONTROLLER_OFFSET = 0.02;
  * settle it back keeps movement reliable and still deterministic.
  */
 const START_LIFT = CONTROLLER_OFFSET / 2;
+
+/** A rigid vehicle's state as Rapier steps it (wheelPhysics.ts RigidState's body part): written in, stepped, read back. */
+export interface ChassisPose {
+  pos: Vec3;
+  q: Rot;
+  vel: Vec3;
+  spin: Vec3;
+}
+
+/** What a hull's contacts did in one step (ChassisWorld.solve). */
+export interface ChassisContacts {
+  /** Touching something (a contact the solver pushed on). */
+  touching: boolean;
+  /** The normals of what it touched (pointing out of it, toward the hull). */
+  normals: Vec3[];
+}
+
+/** A rigid vehicle's hull in Rapier (createChassisBody): a dynamic body, switched off between its own steps. */
+export interface ChassisBody {
+  body: RAPIER.RigidBody;
+  hull: RAPIER.Collider;
+}
+
+/** A hull contact this close (m) or closer counts as touching (solveChassis). */
+const CHASSIS_TOUCH = 0.03;
 
 /**
  * Static map collision plus kinematic player capsules. Identical code runs on
@@ -610,9 +641,118 @@ export class PhysicsWorld {
     return { dist: hit.timeOfImpact, normal: { x: n.x, y: n.y, z: n.z }, terrain };
   }
 
-  /** The queries a rigid vehicle's step makes (wheelPhysics.ts ChassisWorld), against everything but its own box. */
-  chassisWorld(probe: RAPIER.Collider, body: RAPIER.Collider): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3; terrain: boolean } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] } } {
-    return { ray: (o, d, len) => this.groundRay(o, d, len, body), sweep: (c, q, d) => this.sweepChassis(probe, body, c, q, d) };
+  /**
+   * The queries a rigid vehicle's step makes (wheelPhysics.ts ChassisWorld), against everything but its own box.
+   * With `chassis` (driving physics 4) its hull is a Rapier body (`solve`); without, the step's own hull contacts and
+   * the capsule sweep (driving physics 3: `?drive=own`).
+   */
+  chassisWorld(
+    probe: RAPIER.Collider | null,
+    body: RAPIER.Collider,
+    chassis?: ChassisBody,
+  ): { ray(o: Vec3, d: Vec3, len: number): { dist: number; normal: Vec3; terrain: boolean } | null; sweep(c: Vec3, q: Rot, d: Vec3): { moved: Vec3; normals: Vec3[] }; solve?(pose: ChassisPose, dt: number): ChassisContacts } {
+    return {
+      ray: (o, d, len) => this.groundRay(o, d, len, body),
+      sweep: (c, q, d) => (probe ? this.sweepChassis(probe, body, c, q, d) : { moved: d, normals: [] }),
+      ...(chassis ? { solve: (pose: ChassisPose, dt: number) => this.solveChassis(chassis, body, pose, dt) } : {}),
+    };
+  }
+
+  /**
+   * A rigid vehicle's hull as a Rapier dynamic body (driving physics 4): a rounded convex hull (`points`, x y z in the
+   * body's frame, its origin the vehicle's feet), unit mass with its centre of mass `com` over the feet and principal
+   * inertia `inertia` (per kg, as wheelPhysics.ts's forces are accelerations), `friction` against what it meets. Off
+   * (disabled) except while solveChassis steps it, so the match's other steps and every query leave it alone.
+   */
+  createChassisBody(points: readonly number[], border: number, com: number, inertia: readonly [number, number, number], friction: number): ChassisBody {
+    const body = this.world.createRigidBody(
+      RAPIER.RigidBodyDesc.dynamic()
+        .setCanSleep(false)
+        .setLinearDamping(0)
+        .setAngularDamping(0)
+        .setGravityScale(0)
+        .setAdditionalMassProperties(1, { x: 0, y: com, z: 0 }, { x: inertia[0], y: inertia[1], z: inertia[2] }, { x: 0, y: 0, z: 0, w: 1 })
+        .setSoftCcdPrediction(0.3)
+        .setEnabled(false),
+    );
+    const desc = (border > 0 ? RAPIER.ColliderDesc.roundConvexHull(new Float32Array(points), border) : RAPIER.ColliderDesc.convexHull(new Float32Array(points)))!
+      .setDensity(0)
+      .setFriction(friction)
+      .setFrictionCombineRule(RAPIER.CoefficientCombineRule.Min)
+      .setRestitution(0)
+      .setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min)
+      .setCollisionGroups(HULL_COLLIDER_GROUPS)
+      .setActiveHooks(RAPIER.ActiveHooks.FILTER_CONTACT_PAIRS);
+    const hull = this.world.createCollider(desc, body);
+    return { body, hull };
+  }
+
+  removeChassisBody(c: ChassisBody): void {
+    this.world.removeRigidBody(c.body);
+  }
+
+  /** The solver's hooks and event queue for solveChassis (one hull at a time: `own` is its vehicle's box). */
+  private chassisOwn = -1;
+  private chassisEvents: RAPIER.EventQueue | null = null;
+  private readonly chassisHooks: RAPIER.PhysicsHooks = {
+    filterContactPair: (c1, c2) => (c1 === this.chassisOwn || c2 === this.chassisOwn ? null : RAPIER.SolverFlags.COMPUTE_IMPULSE),
+    filterIntersectionPair: () => true,
+  };
+
+  /**
+   * Step a rigid vehicle's hull body by `dt` from `pose` (written in), with Rapier resolving its contacts against the
+   * world (not `own`, the vehicle's own box), and read the pose back. Only this body is on while it steps (every other
+   * hull is switched off; the rest of the world is static), and it is switched on afresh each step, so no contact cache
+   * carries over: a step depends only on the pose and the world, which the driver's prediction replays as the host ran
+   * it. Deterministic: the same pose and world give the same result.
+   */
+  solveChassis(c: ChassisBody, own: RAPIER.Collider, pose: ChassisPose, dt: number): ChassisContacts {
+    const t0 = simProfile.on ? performance.now() : 0;
+    const { body, hull } = c;
+    body.setEnabled(true);
+    body.setTranslation(pose.pos, true);
+    body.setRotation(pose.q, true);
+    body.setLinvel(pose.vel, true);
+    body.setAngvel(pose.spin, true);
+    const w = this.world as unknown as Record<string, unknown> & { physicsPipeline: { step: (...a: unknown[]) => void }; integrationParameters: RAPIER.IntegrationParameters };
+    const ip = w.integrationParameters;
+    const dt0 = ip.dt;
+    const it0 = ip.numSolverIterations;
+    ip.dt = dt;
+    ip.numSolverIterations = 8;
+    this.chassisOwn = own.handle;
+    this.chassisEvents ??= new RAPIER.EventQueue(false);
+    // The pipeline directly (as commit): World.step's JS walk over every collider costs as much again on a big map.
+    w.physicsPipeline.step(w.gravity, ip, w.islands, w.broadPhase, w.narrowPhase, w.bodies, w.colliders, w.softBodies, w.impulseJoints, w.multibodyJoints, w.ccdSolver, this.chassisEvents, this.chassisHooks);
+    ip.dt = dt0;
+    ip.numSolverIterations = it0;
+    this.chassisEvents.clear();
+    const p = body.translation();
+    const q = body.rotation();
+    const v = body.linvel();
+    const a = body.angvel();
+    pose.pos = { x: p.x, y: p.y, z: p.z };
+    pose.q = { x: q.x, y: q.y, z: q.z, w: q.w };
+    pose.vel = { x: v.x, y: v.y, z: v.z };
+    pose.spin = { x: a.x, y: a.y, z: a.z };
+    const out: ChassisContacts = { touching: false, normals: [] };
+    this.world.contactPairsWith(hull, (other) => {
+      if (other.handle === own.handle) return;
+      this.world.contactPair(hull, other, (m, flipped) => {
+        // Touching: a contact point within a centimetre (a mesh's manifolds, the terrain's, list no solver contacts).
+        let near = false;
+        for (let i = 0, n = m.numContacts(); i < n && !near; i++) near = m.contactDist(i) < CHASSIS_TOUCH;
+        if (!near) return;
+        const n = m.normal();
+        // The manifold's normal points from the first collider to the second: out of the hull when it is first.
+        const k = flipped ? 1 : -1;
+        out.touching = true;
+        out.normals.push({ x: n.x * k, y: n.y * k, z: n.z * k });
+      });
+    });
+    body.setEnabled(false);
+    if (simProfile.on) simProfile.add('chassis', performance.now() - t0);
+    return out;
   }
 
   /** A rigid vehicle's hull for sweeps (sweepChassis): a capsule along its length (local +Z), out of the broad phase. */

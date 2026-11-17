@@ -193,6 +193,10 @@ describe('rigid vehicle prediction over a lagged link', () => {
       expect(r.err.p95).toBeLessThan(0.5);
       // Nothing visible jumps: corrections fade in.
       expect(r.drawnJump).toBeLessThan(0.15);
+      // Driving physics 4 (the hull a Rapier body; owner's answer 4a: up to about 10 cm, faded): its contacts replay
+      // a little differently on the client (the solver's order over the world's colliders), never by much; a lost
+      // packet's stall is the old story (the host went on without the input).
+      if (!loss) expect(r.err.max).toBeLessThan(0.15);
       if (rtt >= 100) expect(r.behind.p50).toBeGreaterThan(r.err.p50 * 4);
     });
   }

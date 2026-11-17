@@ -245,10 +245,11 @@ export class LocalTransport implements Transport {
     // The tab is closing (or reloading): friends hear it from us, not from a dead link.
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
-    // `?drive=classic` / `?drive=rigid`: every vehicle that has rigid driving drives the classic way, or rigid even where
-    // it is off (docs/DRIVING_PHYSICS_PLAN.md), for comparing.
+    // `?drive=classic` / `?drive=rigid` / `?drive=own`: every vehicle that has rigid driving drives the classic way, or
+    // rigid even where it is off, or rigid with driving physics 3's own hull contacts and sweep in place of the Rapier
+    // body (docs/DRIVING_PHYSICS_PLAN.md), for comparing.
     const drive = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('drive');
-    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' ? { drive } : {}), ...this.opts }, hidden: document.hidden };
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...this.opts }, hidden: document.hidden };
     if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
     if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }

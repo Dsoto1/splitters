@@ -213,7 +213,8 @@ export interface PrivateState {
   mo?: [number, number, number] | [number, number, number, number];
   /**
    * Driving a rigid vehicle (sim/wheelPhysics.ts): its whole state, to predict it from (rigidWire: [mount index,
-   * position, orientation, velocity, spin, steering, tipped, righting, air ticks, flags]). Older clients ignore it.
+   * position, orientation, velocity, spin, steering, tipped, righting, air ticks, flags, take-off controls, hull solver]).
+   * Older clients ignore it.
    */
   vp?: number[];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */

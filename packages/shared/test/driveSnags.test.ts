@@ -15,8 +15,10 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * (and what it met: terrain, a level box, a prop, an environment shape), a hull corner, a rolled-up corner, a bump
  * stop, the 92 % speed keep, a step-up, the air levelling, the tyres sliding, or the springs alone (the ground). And
  * each landing: what decided it. DRIVE_TRACE=<dir> runs it and writes snags-<map>.txt there (docs/DRIVING_PHYSICS_PLAN.md,
- * "Driving physics 3").
+ * "Driving physics 3"). Driving physics 4 (the hull a Rapier body): its contacts and the bump rubber are causes too;
+ * DRIVE_MODE=own drives driving physics 3's way (its own hull contacts and sweep), to compare.
  */
+const opts = process.env.DRIVE_MODE === 'own' ? { drive: 'own' as const } : {};
 const SHARP_SPEED = 1.0; // m/s in one tick (60 m/s²: three times what the engine or brakes do)
 const SHARP_SPIN = 1.5; // rad/s in one tick
 
@@ -33,7 +35,7 @@ function drive(file: string, ticks: number, seed: number): string {
   if (!r.ok) throw new Error(file);
   const first = r.map.entities.find((e: MapEntity) => e.kind === 'mount' && (e as { model: string }).model === 'troop_buggy');
   const map: MapDocument = { ...r.map, entities: r.map.entities.filter((e: MapEntity) => e.kind !== 'mount' || e === first) };
-  const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, seed);
+  const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, seed, opts);
   const me = match.addHuman('me')! as Combatant;
   let seq = 0;
   const send = (i: Partial<PlayerInput> = {}) => match.queueInputs(me.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: me.yaw, pitch: 0, buttons: 0, ...i }]);
@@ -169,6 +171,8 @@ function drive(file: string, ticks: number, seed: number): string {
     if (t.hardCorners) causes.push('hull corner');
     if (t.rollCorners) causes.push('rolled-up corner');
     if (t.bump) causes.push('bump stop');
+    if (t.rubber) causes.push('bump rubber');
+    if (t.hullContacts) causes.push(t.hullNormals.some((n) => Math.abs(n.y) < 0.5) ? 'hull contact, sideways (Rapier)' : 'hull contact, from below (Rapier)');
     if (t.keep > 0.2) causes.push('speed keep');
     if (t.stepSnaps) causes.push('step-up snap');
     else if (t.stepUps) causes.push("tyre's front ray");
@@ -178,6 +182,7 @@ function drive(file: string, ticks: number, seed: number): string {
     // Something you can see: the sweep or a corner against a wall, a rock, a prop or a placed body, sideways on.
     const solid = (h: number) => !what(h).startsWith('terrain') && !what(h).startsWith('floor');
     const seen =
+      t.hullNormals.some((n) => Math.abs(n.y) < 0.5) ||
       ((t.sweepBlocked > 0.02 || t.sweepImpact > 0.3) && t.met.some(solid) && t.sweepNormals.some((n) => Math.abs(n.y) < 0.5)) ||
       t.corners.some((c) => {
         if (c.roll || Math.abs(c.n.y) >= 0.5) return false;
@@ -196,7 +201,7 @@ function drive(file: string, ticks: number, seed: number): string {
   let landings = 0;
   for (let i = 0; i < trace.length; i++) {
     const t = trace[i]!;
-    if (t.contact === 0 && !t.hardCorners && !t.rollCorners) {
+    if (t.contact === 0 && !t.hardCorners && !t.rollCorners && !t.hullContacts) {
       air++;
       continue;
     }
@@ -208,6 +213,8 @@ function drive(file: string, ticks: number, seed: number): string {
         if (!u) continue;
         if (j < i && u.airLevel > 2) seen.add('air levelling before touchdown');
         if (j >= i && u.bump) seen.add('bump stop');
+        if (j >= i && u.rubber) seen.add('bump rubber');
+        if (j >= i && u.hullContacts) seen.add('hull contact (Rapier)');
         if (j >= i && u.hardCorners) seen.add('hull corner');
         if (j >= i && u.keep > 0.2) seen.add('speed keep');
         if (j >= i && (u.sweepBlocked > 0.02 || u.sweepImpact > 0.3)) seen.add('sweep');
@@ -281,7 +288,7 @@ function lines(file: string): string {
   // Apart from each other (no two within 20 m).
   const picked: typeof found = [];
   for (const f of found) if (picked.length < 24 && picked.every((p) => Math.hypot(p.x - f.x, p.z - f.z) > 10)) picked.push(f);
-  const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, 1);
+  const match = new Match(map, { ...rulesForMode(map, 'core.tdm'), scoreLimit: 0, timeLimitSeconds: 0 }, 1, opts);
   const me = match.addHuman('me')! as Combatant;
   let seq = 0;
   const send = (i: Partial<PlayerInput> = {}) => match.queueInputs(me.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: me.yaw, pitch: 0, buttons: 0, ...i }]);
@@ -312,13 +319,13 @@ function lines(file: string): string {
       if (!on) return;
       const dv = Math.abs(Math.hypot(t.vel1.x, t.vel1.z) - Math.hypot(t.vel0.x, t.vel0.z));
       const dw = Math.hypot(t.spin1.x - t.spin0.x, t.spin1.y - t.spin0.y, t.spin1.z - t.spin0.z);
-      if (t.contact === 0 && !t.hardCorners && !t.rollCorners) {
+      if (t.contact === 0 && !t.hardCorners && !t.rollCorners && !t.hullContacts) {
         flying++;
         air++;
       } else {
         if (flying >= 6) {
           landings++;
-          if (t.bump || t.hardCorners) hardLandings++;
+          if (t.bump || t.hardCorners || t.hullContacts) hardLandings++;
         }
         flying = 0;
       }
@@ -329,6 +336,8 @@ function lines(file: string): string {
       if (t.hardCorners) causes.push('hull corner');
       if (t.rollCorners) causes.push('rolled-up corner');
       if (t.bump) causes.push('bump stop');
+      if (t.rubber) causes.push('bump rubber');
+      if (t.hullContacts) causes.push('hull contact (Rapier)');
       if (t.keep > 0.2) causes.push('speed keep');
       if (t.stepSnaps) causes.push('step-up snap');
       else if (t.stepUps) causes.push("tyre's front ray");
@@ -350,7 +359,7 @@ function lines(file: string): string {
   }
   const km = metres / 1000;
   return [
-    `${map.metadata.name}, ${picked.length} clear lines (the bumpiest: ${picked[0]?.score.toFixed(1)} to ${picked.at(-1)?.score.toFixed(1)} m of ups and downs in 40 m), ${metres.toFixed(0)} m: ${sharp} sharp ticks, ${(sharp / km).toFixed(0)} a km; ${air} ticks in the air, ${landings} landings (${hardLandings} on a bump stop or a hull corner)`,
+    `${map.metadata.name}, ${picked.length} clear lines (the bumpiest: ${picked[0]?.score.toFixed(1)} to ${picked.at(-1)?.score.toFixed(1)} m of ups and downs in 40 m), ${metres.toFixed(0)} m: ${sharp} sharp ticks, ${(sharp / km).toFixed(0)} a km; ${air} ticks in the air, ${landings} landings (${hardLandings} on a bump stop or the hull)`,
     ...[...why].sort((a, b) => b[1] - a[1]).map(([key, n]) => `  ${String(n).padStart(4)}  ${(n / km).toFixed(0).padStart(4)}/km  ${key}`),
   ].join('\n');
 }

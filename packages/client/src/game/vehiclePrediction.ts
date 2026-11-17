@@ -1,4 +1,4 @@
-import { BUTTON_JUMP, BUTTON_STEER_LOOK, TICK_DT, cloneRigid, lookSteer, rigidFromWire, rigidSpeeds, rotate, stepRigid, yawPitchRoll, type ChassisWorld, type MountDef, type PhysicsWorld, type PlayerInput, type RigidSetup, type RigidState, type Vec3 } from '@tiletrigger/shared';
+import { BUTTON_JUMP, BUTTON_STEER_LOOK, TICK_DT, cloneRigid, lookSteer, rigidFromWire, rigidSpeeds, rigidWireRapier, rotate, stepRigid, yawPitchRoll, type ChassisBody, type ChassisWorld, type MountDef, type PhysicsWorld, type PlayerInput, type RigidSetup, type RigidState, type Vec3 } from '@tiletrigger/shared';
 
 type Collider = ReturnType<PhysicsWorld['createBox']>;
 type Quat = RigidState['q'];
@@ -53,7 +53,9 @@ export class VehiclePrediction {
   private errPos: Vec3 = { x: 0, y: 0, z: 0 };
   private errRot: Quat = { x: 0, y: 0, z: 0, w: 1 };
   private readonly world: ChassisWorld;
-  private readonly probe: Collider;
+  /** The hull: a Rapier body (driving physics 4, as the host's), or the capsule the step sweeps (`?drive=own` hosts). */
+  private readonly probe: Collider | null;
+  private readonly chassis: ChassisBody | null;
   /** Corrections taken (count, and the largest and last in metres), for the net lab and browser tests. */
   corrections = 0;
   lastCorrection = 0;
@@ -68,14 +70,18 @@ export class VehiclePrediction {
     body: Collider,
     wire: readonly number[],
   ) {
-    this.probe = physics.createChassisProbe(setup.probeR, setup.probeHalf);
-    this.world = physics.chassisWorld(this.probe, body);
+    // As the host solves it (the wire says).
+    const rapier = rigidWireRapier(wire);
+    this.probe = rapier ? null : physics.createChassisProbe(setup.probeR, setup.probeHalf);
+    this.chassis = rapier ? physics.createChassisBody(setup.hullPoints, setup.hullBorder, setup.com, [1 / setup.invI[0], 1 / setup.invI[1], 1 / setup.invI[2]], setup.hullFriction) : null;
+    this.world = physics.chassisWorld(this.probe, body, this.chassis ?? undefined);
     this.state = rigidFromWire(setup, wire)!;
     this.prev = cloneRigid(this.state);
   }
 
   dispose(): void {
-    this.physics.removeCollider(this.probe);
+    if (this.probe) this.physics.removeCollider(this.probe);
+    if (this.chassis) this.physics.removeChassisBody(this.chassis);
   }
 
   /** One predicted tick with this input (as the host turns it into the drive: Match.applyInputs). */
