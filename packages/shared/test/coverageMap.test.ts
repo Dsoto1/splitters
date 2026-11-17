@@ -90,6 +90,17 @@ describe('the coverage map', () => {
     expect(placements.filter((p) => !parts.has(`sp_${p.id}`)).map((p) => p.piece)).toEqual([]);
   });
 
+  it('has a set piece with paint on one part, and a look of your own that two pieces wear (painting Phase 5, made in MapMaker)', () => {
+    const placements = (raw.setPieces ?? []) as { id: string; pack?: string; overrides?: { paint?: Record<string, unknown> } }[];
+    expect(placements.some((p) => Object.keys(p.overrides?.paint ?? {}).length > 0)).toBe(true);
+    const looks = (raw.lookDefs ?? []) as { id: string }[];
+    expect(looks.length).toBeGreaterThan(0);
+    expect(looks.every((l) => placements.filter((p) => p.pack === l.id).length >= 1)).toBe(true);
+    expect(placements.filter((p) => p.pack === looks[0]!.id).length).toBeGreaterThanOrEqual(2);
+    // As played the looks are in their pieces' parts: the map carries none.
+    expect(map.lookDefs).toBeUndefined();
+  });
+
   it("has an Arena Corner with its gate (octagon phase 3): the set piece, both Gate tiles, the gatehouse tower and its 45° portcullis", () => {
     const placements = (raw.setPieces ?? []) as { id: string; piece: string }[];
     const gate = placements.find((p) => p.piece === 'setpiece.arena_corner_gate');

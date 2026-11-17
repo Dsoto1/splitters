@@ -404,7 +404,8 @@ export class SetPieceTools {
     const only = packs.size === 1 ? [...packs][0]! : '';
     const sel = this.lookSelect(null, only, (v) => this.applyLook(ids, v), packs.size > 1);
     sel.id = 'ed-insp-pieces-look';
-    return row(`Look (${ids.length} set pieces)`, sel);
+    sel.title = `The look of all ${ids.length} selected set pieces (their paint stays on top)`;
+    return row('Look', sel);
   }
 
   /** Put placements in a look (the inspector's Look, My looks' Apply): one undo step; your look goes into the map with them. */
@@ -745,6 +746,7 @@ export class SetPieceTools {
     d.title.textContent = 'Save as my look';
     d.note.textContent = `The look ${def.displayName} shows now (${pack ? pack.displayName : "the theme's"}${p.overrides?.roles ? ', with your paint across it' : ''}), kept in this browser under My looks. It fits any set piece; paint on single parts stays with this piece. Roles the look leaves to the theme keep following it.`;
     const take = (lookId: string) => saveLookCommand(this.app.doc, id, d.name.value, lookId, this.app.setPieceLib);
+    d.name.value = current ? current.displayName : `${pack?.displayName ?? def.displayName} (mine)`;
     const preview = take(current?.id ?? 'my_preview');
     d.swatches.replaceChildren('error' in preview ? small(preview.error) : this.lookSwatches(preview.look.roles));
     d.updateRow.hidden = !current;
@@ -753,7 +755,6 @@ export class SetPieceTools {
       const n = lookUses(this.app.doc, current.id);
       d.updateRow.querySelector('span')!.textContent = `Update "${current.displayName}" instead of saving a new look${n > 1 ? ` (${n} pieces here wear it and change with it)` : ''}`;
     }
-    d.name.value = current ? current.displayName : `${pack?.displayName ?? def.displayName} (mine)`;
     const sync = () => {
       d.ok.textContent = d.update.checked ? 'Update look' : 'Save to my looks';
       d.ok.disabled = !d.name.value.trim();
