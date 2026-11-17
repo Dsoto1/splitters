@@ -28,11 +28,11 @@ function portSides(occ: CellOccupant): Side[] {
   return cellPorts(occ).map((p) => p.side);
 }
 
-/** A cell's ports: the world side each is on and its bore profile (S, the 3.6 m passage, unless it says L). */
-function cellPorts(occ: CellOccupant): { side: Side; bore: 'S' | 'L' }[] {
+/** A cell's ports: the world side each is on, its bore profile (S, the 3.6 m passage, unless it says L) and, on a transition, the family that side is in. */
+function cellPorts(occ: CellOccupant): { side: Side; bore: 'S' | 'L'; family?: string }[] {
   return occ.def.ports
     .filter((p) => p.level === occ.level && (p.cell?.[0] ?? 0) === occ.local[0] && (p.cell?.[1] ?? 0) === occ.local[1])
-    .map((p) => ({ side: rotateSide(p.side, occ.placement.rotation), bore: p.bore ?? 'S' }));
+    .map((p) => ({ side: rotateSide(p.side, occ.placement.rotation), bore: p.bore ?? 'S', ...(p.family ? { family: p.family } : {}) }));
 }
 
 /** Whether a side of a cell has been closed with a wall style (a dead end the map maker made). */
@@ -174,6 +174,8 @@ export interface OpenEnd {
   z: number;
   /** The end's bore: S, the 3.6 m passage, or L, the 7 m bore (Tileset 04 step 6): the portal or Dead End put there is of that bore. */
   bore: 'S' | 'L';
+  /** A transition's family on that side (step 7), when it isn't the placed piece's. */
+  family?: string;
 }
 
 /** The open ends of the given buried pieces (all of the map's when none are given). */
@@ -186,21 +188,21 @@ export function openEnds(doc: MapDocument, tileIds?: readonly string[], catalog:
     // (A portal's own mouth is no open end: it is the way out. Nor are steps down from the surface.)
     if (!occ.def.bore || occ.def.bore.open || occ.def.bore.sky || (want && !want.has(occ.placement.id))) continue;
     const [x, y, z] = key.split(',').map(Number) as [number, number, number];
-    for (const { side, bore } of cellPorts(occ)) {
+    for (const { side, bore, family } of cellPorts(occ)) {
       const [dx, dy] = SIDE_DIRS[side];
       if (cells.has(cellKey(x + dx, y + dy, z)) || walledUp(cells, x, y, z, side, cellSize, levelHeight)) continue;
-      out.push({ tile: occ.placement.id, side, x: x + dx, y: y + dy, z, bore });
+      out.push({ tile: occ.placement.id, side, x: x + dx, y: y + dy, z, bore, ...(family ? { family } : {}) });
     }
   }
   return out;
 }
 
 /** The portal that goes on a buried piece's end: the tunnel kit's, of the end's bore, in the piece's family, or the vaulted Tunnel Portal. */
-function portalFor(placement: TilePlacement, bore: 'S' | 'L', catalog: TileCatalog): { tile: string; family?: string } | null {
+function portalFor(placement: TilePlacement, bore: 'S' | 'L', catalog: TileCatalog, family?: string): { tile: string; family?: string } | null {
   const def = catalog.get(placement.tile);
   if (!def?.bore) return null;
   if (!def.familyOf) return catalog.get('core.tunnel_portal') ? { tile: 'core.tunnel_portal' } : null;
-  return kitShape(placement, 'portal', bore, catalog);
+  return kitShape(placement, 'portal', bore, catalog, family);
 }
 
 /**
@@ -208,8 +210,8 @@ function portalFor(placement: TilePlacement, bore: 'S' | 'L', catalog: TileCatal
  * placed kit piece: the shape's base tile, and the piece's family when the shape comes in it and it isn't the base's
  * own (a reducer's narrow end in the road family gets the plain passage's shape in its own first family).
  */
-function kitShape(placement: TilePlacement, shape: string, bore: 'S' | 'L', catalog: TileCatalog): { tile: string; family?: string } | null {
-  const family = catalog.drawn(placement)?.familyOf?.family;
+function kitShape(placement: TilePlacement, shape: string, bore: 'S' | 'L', catalog: TileCatalog, side?: string): { tile: string; family?: string } | null {
+  const family = side ?? catalog.drawn(placement)?.familyOf?.family;
   const name = bore === 'L' ? `wide_${shape}` : shape;
   const families = [...new Set(catalog.all().flatMap((d) => (d.familyOf ? [d.familyOf.family] : [])))];
   const own = family ? catalog.get(`core.tunnel_${family}_${name}`) : undefined;
@@ -231,7 +233,7 @@ export function addPortalsCommand(doc: MapDocument, tileIds?: readonly string[],
   const placed: TilePlacement[] = [];
   for (const end of ends) {
     const key = cellKey(end.x, end.y, end.z);
-    const portal = portalFor(byId.get(end.tile)!, end.bore, catalog);
+    const portal = portalFor(byId.get(end.tile)!, end.bore, catalog, end.family);
     if (!portal || taken.has(key)) continue;
     taken.add(key);
     // The portal's tunnel side is its north: turned so that faces back at the piece.
@@ -257,7 +259,7 @@ export function closeOpenEndsCommand(doc: MapDocument, tileIds?: readonly string
     const key = cellKey(end.x, end.y, end.z);
     const from = byId.get(end.tile)!;
     const def = catalog.get(from.tile);
-    const shape = def?.familyOf ? kitShape(from, 'end', end.bore, catalog) : null;
+    const shape = def?.familyOf ? kitShape(from, 'end', end.bore, catalog, end.family) : null;
     if (!shape || taken.has(key)) continue;
     taken.add(key);
     // The Dead End's passage runs south: turned so that faces back at the piece.

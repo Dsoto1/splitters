@@ -30,6 +30,11 @@ export interface TilePort {
    * 3.6 m passage. Two buried pieces' ports meet cleanly only in the same profile (validate-map warns otherwise).
    */
   bore?: 'S' | 'L';
+  /**
+   * A tunnel transition's family on this side (Tileset 04 step 7: a Joint to Cave is its placed family to the south
+   * and a cave to the north): what a portal or Dead End put on this end is drawn in. Absent: the placed piece's.
+   */
+  family?: string;
 }
 
 /**

@@ -16,6 +16,35 @@ const SIDES = ['N', 'E', 'S', 'W'];
 const EIGHTHS = [0, 1, 2, 3].map((i) => Math.round(((i * Math.PI) / 4) * 1000) / 1000);
 const r3 = (v) => Math.round(v * 1000) / 1000;
 
+/** A seeded random number generator (mulberry32): the same rock for the same shape every build. */
+function seeded(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const hashOf = (text) => [...text].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+
+/**
+ * The passage's rock profile (a cave): a squircle from the floor at one wall over the crown to the other, so the
+ * walls stand nearly upright to head height and the rock comes in no more than `depth` past them (a player walking
+ * a body's width off the line never meets it). `segs` points along it, [x, y] each.
+ */
+function rockProfile(w, clear, segs) {
+  const pts = [];
+  for (let i = 0; i <= segs; i++) {
+    const th = (i * Math.PI) / segs;
+    const c = Math.cos(th);
+    const sn = Math.sin(th);
+    pts.push([Math.sign(c) * w * Math.abs(c) ** (2 / 3), clear * Math.abs(sn) ** (2 / 3)]);
+  }
+  return pts;
+}
+
 /** A box [x0, y0, z0, x1, y1, z1] turned `turns` quarter turns clockwise seen from above (N to E), as tiles turn. */
 function turnBox(b, turns) {
   let [x0, y0, z0, x1, y1, z1] = b;
@@ -179,7 +208,50 @@ function moduleParts(profile, family, shape) {
   // cell's south-east corner), and a T's branch from the south turns into the east arm (a turnout), instead of each arm's
   // straight stub ending in the middle.
   const turns = trim.rails && arms.has('S') && arms.has('E') && !arms.has('N');
+  // --- a rock shell (a cave): rings of broken rock slabs from `from` to `to` (north frame turned k), each slab set
+  // in by a seeded amount and its ring a seeded length, so no two look alike; drawn only, inside the clear box.
+  const rand = seeded((lining.rock?.seed ?? 1) + hashOf(shape.id));
+  const rockRun = (k, from, to, depth = lining.rock?.depth ?? 0, material) => {
+    const rk = lining.rock;
+    if (!rk || to - from < 0.05) return;
+    const prof = rockProfile(w, clear, rk.segs);
+    for (let z = from; z < to - 0.05; z += rk.every) {
+      const z0 = Math.max(from, z - rand() * 0.15);
+      const z1 = Math.min(to, z + rk.every * (0.9 + rand() * 0.35));
+      for (let i = 0; i < prof.length - 1; i++) {
+        const [ax, ay] = prof[i];
+        const [bx, by] = prof[i + 1];
+        const dx = bx - ax;
+        const dy = by - ay;
+        const len = Math.hypot(dx, dy);
+        const nx = dy / len;
+        const ny = -dx / len;
+        const j = rand() * depth;
+        const cx = (ax + bx) / 2 + nx * (rk.t / 2 - j);
+        const cy = (ay + by) / 2 + ny * (rk.t / 2 - j);
+        const half = len / 2 + 0.05 + rand() * 0.08;
+        // (Not below the floor: the lowest slabs stand on it.)
+        const lift = Math.max(0, rk.t / 2 - cy);
+        drawRolled(k, [cx - half, cy + lift - rk.t / 2, z0, cx + half, cy + lift + rk.t / 2, z1], Math.atan2(dy, dx) + (rand() - 0.5) * 0.12, material ?? (rand() < 0.3 ? rk.accent : rk.material));
+      }
+    }
+  };
+  // --- rubble: low stones along the foot of each wall (under a step, so nothing to climb), drawn only.
+  const rubbleRun = (k, from, to) => {
+    const rb = trim.rubble;
+    if (!rb) return;
+    for (let z = from + rand() * rb.every; z < to - 0.2; z += rb.every * (0.7 + rand() * 0.6)) {
+      for (const sx of [-1, 1]) {
+        if (rand() < 0.3) continue;
+        const half = 0.12 + rand() * 0.1;
+        const x = sx * (w - 0.18 - rand() * 0.12);
+        draw(turnBox([x - half, 0, z - half, x + half, rb.height * (0.5 + rand() * 0.5), z + half], k), rb.material);
+      }
+    }
+  };
   const armTrim = (k, from, to, archFrom = from, rings = [archFrom, to]) => {
+    rockRun(k, archFrom, to);
+    rubbleRun(k, from, to);
     for (const sx of [-1, 1]) wallTrim(k, sx, from, to, !!arch);
     if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
     floorRun(k, to, kerbFrom, true, !(turns && (SIDES[k] === 'S' || (SIDES[k] === 'E' && !arms.has('W')))));
@@ -224,6 +296,23 @@ function moduleParts(profile, family, shape) {
     // A dead end's arch runs on to its end wall; a straight's two arms' arches meet at the middle (no ring there).
     if (lineArch && !arms.has('N')) archRun(2, -w, 0, []);
     if (line) setsRun(0, -w, w);
+    // A cave's middle square: off a line, rock slabs on each closed side and broken rock over the soffit; a dead end's
+    // shell runs on to its end wall.
+    if (lining.rock) {
+      if (line && !arms.has('N')) rockRun(2, -w, 0);
+      if (!line) {
+        const rk = lining.rock;
+        for (const [k, side] of SIDES.entries()) {
+          if (arms.has(side)) continue;
+          for (let x = -w; x < w - 0.05; x += 0.9) {
+            const j = rand() * rk.depth;
+            const x1 = Math.min(w, x + 0.9 + rand() * 0.2);
+            draw(turnBox([x, 0, w - 0.05 - j, x1, clear, w + 0.25 - j], k), rand() < 0.3 ? rk.accent : rk.material);
+          }
+        }
+        for (let x = -w; x < w - 0.05; x += 1.2) for (let z = -w; z < w - 0.05; z += 1.2) draw([x, clear - 0.08 - rand() * 0.22, z, Math.min(w, x + 1.3), clear, Math.min(w, z + 1.3)], rand() < 0.3 ? rk.accent : rk.material);
+      }
+    }
   }
 
   // An eight-sided pipe from z = `from` to the cell's north edge: four slats, each as wide as the pipe and as thick as
@@ -295,6 +384,49 @@ function moduleParts(profile, family, shape) {
     // The lining of the stretch behind the headwall replaces the full north arm's.
     trims.length = 0;
     armTrimFrom(back);
+    if (shape.collapse) {
+      // A cave mouth: no masonry. The hill's broken rock either side of the opening (big blocks, set a little askew),
+      // a slab of rock over it, and boulders tumbling down to the ends of the apron instead of wing walls. Its own
+      // collision (a shape of its own, like the outfall).
+      const yawed = (box, yaw, material = m.headwall) => solids.push({ box: box.map(r3), kind: 'wall', yaw: r3(yaw), ...surf(material) });
+      for (const sx of [-1, 1]) {
+        yawed([Math.min(sx * (w + 0.05), sx * (E - 0.1)), 0, front - 0.2, Math.max(sx * (w + 0.05), sx * (E - 0.1)), h.top - 0.2, back], sx * 0.04);
+        yawed([Math.min(sx * (w + 0.3), sx * (E - 0.1)), 0, front - 0.9, Math.max(sx * (w + 0.3), sx * (E - 0.1)), clear, front + 0.2], -sx * 0.06, m.trim);
+        // Boulders down the apron's sides, smaller towards the foot (turned a little, kept inside the cell).
+        [[front - 1.5, 2.4, 0.75], [front - 2.6, 1.7, 0.65], [-E + 0.8, 1.1, 0.55]].forEach(([z, top, half], i) => {
+          const x = sx * (E - half * 1.3);
+          yawed([x - half, 0, z - half, x + half, top, z + half], (i + 1) * 0.2 * sx, i % 2 ? m.trim : m.headwall);
+        });
+      }
+      solids.push({ box: [-w - 0.4, clear, front - 0.45, w + 0.4, h.top - 0.1, back].map(r3), kind: 'wall', pitch: 0.06, ...surf(m.headwall) });
+      solid([-E, clear, front, E, h.top - 0.3, back], m.headwall);
+      // Rock lumps on the faces, drawn: a ragged edge round the opening.
+      for (let i = 0; i < 9; i++) {
+        const a = (i / 8) * Math.PI;
+        const x = Math.cos(a) * (w + 0.15);
+        const y = Math.min(clear + 0.1, Math.sin(a) * (clear + 0.2));
+        const r = 0.25 + rand() * 0.2;
+        drawRolled(0, [x - r, y - r * 0.6, front - 0.3 - rand() * 0.2, x + r, y + r * 0.6, front + 0.1], a + (rand() - 0.5) * 0.6, rand() < 0.5 ? m.trim : m.headwall);
+      }
+      rockRun(0, front, back, 0.15);
+      floorRun(2, E, 0, false);
+      bore.cut = [
+        [-E, -0.5, front, E, cap, E],
+        [-E, -0.5, -E, E, 1000, front],
+      ];
+      bore.cover = [[-E, back, E, E, r3(cap + 0.1)]];
+      bore.open = [[-E, 0, -E, E, 4, -E]];
+      bore.out = 'S';
+      bore.rim = [
+        { line: [-E, front, E, front], y: [r3(h.top - 0.4), r3(h.top - 0.4)], mode: 'lower' },
+        ...[-1, 1].flatMap((sx) => [
+          { line: [sx * E, front, sx * E, g.foot], y: [r3(g.top - 0.6), r3(g.low - 0.4)], mode: 'both' },
+          { line: [sx * E, g.foot, sx * E, -E], y: [r3(g.low - 0.4), r3(g.low - 0.4)], mode: 'both' },
+        ]),
+      ];
+      solid(capBox, m.soffit);
+      return { solids: [...solids, ...trims], floor: { box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }, bore };
+    }
     // The headwall: a pier either side of the opening, the lintel over it, a coping.
     for (const sx of [-1, 1]) solid([Math.min(sx * w, sx * E), 0, front, Math.max(sx * w, sx * E), h.top, back], m.headwall);
     solid([-w, clear, front, w, h.top, back], m.headwall);
@@ -584,6 +716,35 @@ function specialParts(profile, family, shape, profiles = {}) {
     side('N', 'x');
     side('W', 'z');
     side('E', 'z');
+    // A cave's chamber: stalactites hung from the soffit (seeded, each a few stacked tapering blocks, their tips over
+    // head height), rubble along the walls' feet. Drawn only.
+    if (trim.stalactites) {
+      const st = trim.stalactites;
+      const rand = seeded(hashOf(`${shape.id}:stalactites`));
+      for (let i = 0; i < 26; i++) {
+        const x = lo + wt + 0.4 + rand() * (hi - lo - 2 * wt - 0.8);
+        const z = lo + wt + 0.4 + rand() * (hi - lo - 2 * wt - 0.8);
+        if ((shape.columns ?? []).some(([cx, cz]) => Math.abs(cx - x) < 0.7 && Math.abs(cz - z) < 0.7)) continue;
+        const len = st.length * (0.35 + rand() * 0.65);
+        const r0 = 0.12 + rand() * 0.14;
+        for (let j = 0; j < 3; j++) {
+          const r = r0 * (1 - j * 0.3);
+          draw([x - r, clear - (len * (j + 1)) / 3, z - r, x + r, clear - (len * j) / 3 + 0.02, z + r], st.material);
+        }
+      }
+    }
+    if (trim.rubble) {
+      const rb = trim.rubble;
+      const rand = seeded(hashOf(`${shape.id}:rubble`));
+      for (let i = 0; i < 18; i++) {
+        const along = lo + wt + rand() * (hi - lo - 2 * wt);
+        const side = Math.floor(rand() * 4);
+        const off = 0.15 + rand() * 0.2;
+        const [x, z] = [[along, lo + wt + off], [along, hi - wt - off], [lo + wt + off, along], [hi - wt - off, along]][side];
+        const r = 0.12 + rand() * 0.12;
+        draw([x - r, 0, z - r, x + r, rb.height * (0.5 + rand() * 0.5), z + r], rb.material);
+      }
+    }
     for (const [cx, cz] of shape.columns ?? []) {
       solid([cx - 0.4, 0, cz - 0.4, cx + 0.4, clear, cz + 0.4], m.wall);
       draw([cx - 0.5, 0, cz - 0.5, cx + 0.5, trim.plinth ?? 0.3, cz + 0.5], m.trim);
@@ -658,6 +819,117 @@ function specialParts(profile, family, shape, profiles = {}) {
   throw new Error(`tunnel kit: ${shape.id}: no kind ${shape.kind}`);
 }
 
+/** A box's z extent clipped to [z0, z1] (null when nothing is left): boxes along the passage, whose yaw is 0 or a half turn. */
+function clipZ(part, z0, z1) {
+  const b = part.box;
+  const lo = Math.max(b[2], z0);
+  const hi = Math.min(b[5], z1);
+  if (hi - lo < 0.02) return null;
+  return { ...part, box: [b[0], b[1], r3(lo), b[3], b[4], r3(hi)] };
+}
+
+/**
+ * A transition (Tileset 04 step 7; `shape.joint`): one cell, the piece's own family `a` to the south and the joint's
+ * family `b` to the north, the joint in the middle. Built from the two families' straights (their lining and trim cut
+ * at z = 0; no fixtures: a light at the joint would be half of each) on one shell, the masses and cap split at the
+ * joint so each half shows its own family, plus a joint part for the pair. A reducer joint (`to_road`): the wide bore
+ * in `b` to the south, the passage in `a` to the north.
+ */
+function jointParts(data, a, b, aid, shape) {
+  const bid = shape.joint;
+  const S = data.profiles.S;
+  const E = 4;
+  const w = S.half;
+  const clear = S.clear;
+  const dark = (f) => ({ ...f, trim: { ...(f.trim ?? {}), light: undefined } });
+  const straight = { id: `${shape.id}`, arms: ['N', 'S'] };
+  const halves = (parts, z0, z1, fam) => parts.solids.flatMap((p) => {
+    if (p.kind !== 'trim') return [];
+    const c = clipZ(p, z0, z1);
+    return c ? [c] : [];
+  });
+  const surf = (material, tint) => ({ surface: tint ? { material, tint } : { material } });
+  const extra = [];
+  const draw = (box, material, tint) => extra.push({ box: box.map(r3), kind: 'trim', ...surf(material, tint) });
+  const drawRolled = (box, roll, material) => extra.push({ box: box.map(r3), kind: 'trim', ...(roll ? { roll: r3(roll) } : {}), ...surf(material) });
+  // A frame round the opening at the joint, in a material: jambs and a head standing `t` in from the walls.
+  const frame = (material, t = 0.15, d0 = -0.2, d1 = 0.2) => {
+    for (const sx of [-1, 1]) draw([Math.min(sx * w, sx * (w - t)), 0, d0, Math.max(sx * w, sx * (w - t)), clear, d1], material);
+    draw([-w, clear - t, d0, w, clear, d1], material);
+  };
+  if (shape.kind === 'reducer') {
+    // The wide bore in the road family to the south, the mine's passage to the north, a roll-up door rolled up over
+    // the narrow opening at the step.
+    const L = data.profiles.L;
+    const red = specialParts(L, dark(b), { ...shape, kind: 'reducer' }, data.profiles);
+    const north = moduleParts(S, dark(a), straight);
+    const solids = red.solids.filter((p) => p.kind !== 'trim').map((p) => ((p.box[2] + p.box[5]) / 2 > 0 ? { ...p, ...surf(p.box[1] >= S.clear - 1e-6 ? a.materials.soffit : a.materials.wall) } : p));
+    const trims = [...red.solids.filter((p) => p.kind === 'trim').flatMap((p) => clipZ(p, -E, 0) ?? []), ...halves(north, 0, E)];
+    const door = b.trim?.door?.material ?? 'core.pbr_rusted_plate';
+    for (const sx of [-1, 1]) draw([Math.min(sx * (w + 0.02), sx * (w + 0.14)), 0, -0.14, Math.max(sx * (w + 0.02), sx * (w + 0.14)), clear, -0.02], b.materials.trim);
+    draw([-w - 0.14, clear - 0.45, -0.5, w + 0.14, clear - 0.05, -0.02], door);
+    for (let y = clear - 0.4; y < clear - 0.05; y += 0.1) draw([-w - 0.12, y - 0.01, -0.52, w + 0.12, y + 0.01, -0.5], b.materials.trim);
+    if (b.trim?.hazard) draw([-w, clear - 0.48, -0.53, w, clear - 0.42, -0.5], b.trim.hazard);
+    // The mine's last timber set hard against the bay.
+    const st = a.lining?.sets;
+    if (st) {
+      for (const sx of [-1, 1]) draw([Math.min(sx * (w - 0.18), sx * (w + 0.05)), 0, 0.02, Math.max(sx * (w - 0.18), sx * (w + 0.05)), clear, 0.4], st.material);
+      draw([-w, clear - 0.4, 0.02, w, clear, 0.4], st.material);
+    }
+    return { solids: [...solids, ...trims, ...extra], bore: red.bore, cells: red.cells, ports: red.ports.map((p) => (p.bore === 'L' ? { ...p, family: bid } : p)), floors: red.floors };
+  }
+  const south = moduleParts(S, dark(a), straight);
+  const north = moduleParts(S, dark(b), straight);
+  // The shell: the straight's, each mass in the family of the half it stands in; the cap split at the joint.
+  const solids = [];
+  for (const p of south.solids) {
+    if (p.kind === 'trim') continue;
+    const zc = (p.box[2] + p.box[5]) / 2;
+    if (p.box[2] < -0.01 && p.box[5] > 0.01) {
+      solids.push(clipZ(p, -E, 0));
+      const twin = north.solids.find((q) => q.kind !== 'trim' && JSON.stringify(q.box) === JSON.stringify(p.box));
+      solids.push(clipZ(twin ?? p, 0, E));
+    } else solids.push(zc < 0 ? p : north.solids.find((q) => q.kind !== 'trim' && JSON.stringify(q.box) === JSON.stringify(p.box)) ?? p);
+  }
+  const trims = [...halves(south, -E, 0), ...halves(north, 0, E)];
+  // The joint, by pair: into a cave a collar (cast from concrete, a ring of the sewer's stone from brick, a heavy
+  // timber set from a mine) with rock breaking over its north edge; into concrete a cast frame with a grate across the
+  // floor; otherwise a frame in the north family's trim. The south family's own end: its arch's ring, its last set.
+  if (a.lining?.arch) {
+    const arch = archOf(w, a.lining.arch, clear);
+    for (const s of arch.slabs) drawRolled([s.x - s.half, s.y - arch.t / 2 - 0.06, -0.3, s.x + s.half, s.y + arch.t / 2, 0], s.roll, a.materials.trim);
+    for (const sp of arch.spandrels) for (const sx of [-1, 1]) draw([Math.min(sx * sp.x, sx * w), sp.y0, -0.3, Math.max(sx * sp.x, sx * w), sp.y1, 0], a.materials.wall);
+  }
+  if (a.lining?.sets) {
+    const st = a.lining.sets;
+    for (const sx of [-1, 1]) draw([Math.min(sx * (w - 0.2), sx * (w + 0.05)), 0, -0.42, Math.max(sx * (w - 0.2), sx * (w + 0.05)), clear, -0.02], st.material);
+    draw([-w, clear - 0.42, -0.42, w, clear, -0.02], st.material);
+  }
+  if (bid === 'cave') {
+    if (!a.lining?.arch && !a.lining?.sets) frame(a.materials.trim, 0.2, -0.35, 0.05);
+    // Rock breaking over the collar: a short ring of slabs set further in, straddling the joint.
+    const rk = b.lining.rock;
+    const rand = seeded(hashOf(`${aid}:${shape.id}`));
+    const prof = rockProfile(w, clear, rk.segs);
+    for (let i = 0; i < prof.length - 1; i++) {
+      if (rand() < 0.35) continue;
+      const [ax, ay] = prof[i];
+      const [bx, by] = prof[i + 1];
+      const dx = bx - ax;
+      const dy = by - ay;
+      const len = Math.hypot(dx, dy);
+      const j = 0.1 + rand() * 0.2;
+      const cx = (ax + bx) / 2 + (dy / len) * (rk.t / 2 - j);
+      const cy = Math.max(rk.t / 2, (ay + by) / 2 + (-dx / len) * (rk.t / 2 - j));
+      drawRolled([cx - len / 2 - 0.1, cy - rk.t / 2, -0.1 - rand() * 0.2, cx + len / 2 + 0.1, cy + rk.t / 2, 0.5 + rand() * 0.3], Math.atan2(dy, dx) + (rand() - 0.5) * 0.3, rand() < 0.4 ? rk.accent : rk.material);
+    }
+  } else {
+    frame(b.materials.trim, 0.15, -0.05, 0.3);
+    if (bid === 'concrete') draw([-w + 0.15, 0, -0.45, w - 0.15, 0.03, 0.45], 'core.grate');
+  }
+  return { solids: [...solids, ...trims, ...extra], bore: south.bore, cells: [[0, 0, 0]], ports: [{ side: 'N', level: 0, family: bid }, { side: 'S', level: 0 }], floors: [south.floor] };
+}
+
 /** Every tunnel tile: one for each family and shape, as content/tiles/core.json's tiles (with `notes`). */
 export function tunnelTiles(data) {
   const out = [];
@@ -674,20 +946,21 @@ export function tunnelTiles(data) {
       const pid = shape.profile ?? 'S';
       const profile = data.profiles?.[pid];
       if (!profile) throw new Error(`tunnel kit: ${shape.id}: no profile ${pid}`);
-      const special = shape.kind ? specialParts(profile, family, shape, data.profiles) : null;
-      const parts = special ?? moduleParts(profile, family, shape);
-      const ports = (special?.ports ?? [...shape.arms, ...(shape.mouth ? [shape.mouth] : [])].map((side) => ({ side, level: 0 }))).map((p) => (pid !== 'S' && shape.kind !== 'reducer' ? { ...p, bore: pid } : p));
+      const special = shape.joint ? null : shape.kind ? specialParts(profile, family, shape, data.profiles) : null;
+      const joined = shape.joint ? jointParts(data, family, data.families[shape.joint], fid, shape) : null;
+      const parts = joined ?? special ?? moduleParts(profile, family, shape);
+      const ports = (joined?.ports ?? special?.ports ?? [...shape.arms, ...(shape.mouth ? [shape.mouth] : [])].map((side) => ({ side, level: 0 }))).map((p) => (pid !== 'S' && shape.kind !== 'reducer' ? { ...p, bore: pid } : p));
       out.push({
         id: `core.tunnel_${fid}_${shape.id}`,
         category: 'Tunnels',
         displayName: `${family.label} ${shape.name}`.trim(),
         blurb: `${shape.blurb} ${family.blurb}`,
-        cells: special?.cells ?? [[0, 0, 0]],
+        cells: joined?.cells ?? special?.cells ?? [[0, 0, 0]],
         floors: [],
         ports,
         edgeDefault: 'open',
         familyOf: { base: `core.tunnel_${first}_${shape.id}`, family: fid, label: `${family.label.replace(/ Tunnel$/, '')}${family.preview ? ' (preview)' : ''}` },
-        extraFloors: special?.floors ?? [parts.floor],
+        extraFloors: joined?.floors ?? special?.floors ?? [parts.floor],
         solids: parts.solids,
         bore: parts.bore,
         notes: {
