@@ -52,6 +52,8 @@ const NO_COLLISION = new Set([
   'kit.door.painted_open', 'kit.shop.awning',
   // The Wall Shelf hangs on a wall above the floor, as the Quaternius piece it replaces (no collision).
   'kit.shelf.wall',
+  // St. John's step 4b: the Sand Court is walked on as the ground under it.
+  'kit.sport.court_sand',
 ]);
 
 describe('kit families', () => {

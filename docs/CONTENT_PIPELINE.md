@@ -862,7 +862,15 @@ bed 6 × 9 m with a fieldstone wall 0.4 m high, mulch and flower clumps; three s
 `kit.wall.fieldstone_short` (2 m; variants fieldstone and limestone), `kit.wall.pier` and `kit.wall.pier_lamp` (a
 gate pier with a blank bronze plaque; the lamp's globe in an iron cage is paint: stand a light by it),
 `kit.lamp.post_banner` (a black lamp post with a lantern and a banner of plain colours and a chevron on an arm reaching
-+x; collides as the post), `kit.seat.bench_stone`. Nothing in them glows or blinks.
++x; collides as the post), `kit.seat.bench_stone`. Nothing in them glows or blinks. Step 4b added
+`kit.booth.guard_post` (Guard Post, Military: a stone guard post 3.4 × 3.0 m, 3.45 m tall, for a gate: layered stone
+walls by `fieldFace` with the openings left out, a wide front window (+z), a window on −x and a door on +x, dark glass
+in white frames, a dressed lintel band, a white fascia and a low hipped slate roof; collides as its box: cover, not a
+room; variants lannon and grey), `kit.sport.volleyball_net` (two steel posts 10.6 m apart over all and a 9.5 m net
+with its top at 2.43 m; collides as its posts and the net's band, a lattice to sight as the chain-link fence is:
+`LATTICE_KIT_KINDS` in `map/geometry.ts`, and fabric, so rounds pass) and `kit.sport.court_sand` (Sand Court: a sand
+bed 15 × 24 m and 4 cm deep with the lines of a 9 × 18 m court and a centre line across; no collision, so lay it on
+ground made flat with the Terrain tab's Flatten and stand the net across its middle, turned as the court is).
 
 #### The dome kit
 

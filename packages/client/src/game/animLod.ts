@@ -89,6 +89,63 @@ export function animStepByShare(share: number): AnimStep {
 }
 
 /**
+ * Crowds (docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, "Animation by distance"): the bands above give every character in
+ * view its rate by its own size on screen, however many there are, so an arena with 60 in view (Flavius Rule: nearly
+ * the whole match in sight from the stands) paid for 60. With more than CROWD_KEEP in view, the nearest CROWD_KEEP keep
+ * their bands; the rest are one rung slower on the rate ladder (every frame, 30, 20, 15, 10, 5 Hz), and from the
+ * CROWD_FAR_RANK-th nearest two rungs, each smoothed and with its band's own after-clip detail (never coarser up close).
+ * Anyone nearer than about 8 m (ANIM_SHARE_FINE) is never slowed. `?perfoff=animcrowd` turns it off.
+ */
+export const CROWD_KEEP = 8;
+export const CROWD_FAR_RANK = 24;
+
+/** The rate ladder's rungs: [ms, frames] from every frame to 5 Hz (the bands' own rates). */
+const RUNGS: readonly [number, number][] = [
+  [0, 1],
+  [1000 / 30, 2],
+  [1000 / 20, 3],
+  [1000 / 15, 4],
+  [100, 6],
+  [200, 12],
+];
+/** Steps made once (a crowd's per-frame choice makes no garbage): by detail, then rung. */
+const LADDER = new Map<AnimStep['detail'], AnimStep[]>(
+  (['full', 'cached', 'coarse'] as const).map((d) => [d, RUNGS.map(([ms, frames], i) => ({ ms, frames, detail: d, smooth: i > 0 }))]),
+);
+
+/** The rung of a step's rate (the first rung at least as slow). */
+function rungOf(step: AnimStep): number {
+  for (let i = RUNGS.length - 1; i >= 0; i--) if (step.frames >= RUNGS[i]![1] && step.ms >= RUNGS[i]![0] - 0.5) return i;
+  return 0;
+}
+
+/**
+ * The step of a character whose band says `step`, at `rank` among the characters in view (0 the nearest), filling
+ * `share` of the view's height, with `inView` characters in view.
+ */
+export function crowdStep(step: AnimStep, rank: number, share: number, inView: number): AnimStep {
+  if (inView <= CROWD_KEEP || rank < CROWD_KEEP || share >= ANIM_SHARE_FINE) return step;
+  const down = rank >= CROWD_FAR_RANK ? 2 : 1;
+  const rung = Math.min(RUNGS.length - 1, rungOf(step) + down);
+  return LADDER.get(step.detail)![rung]!;
+}
+
+/** Ascending numbers (a sort's compare, made once). */
+export const byNumber = (a: number, b: number): number => a - b;
+
+/** How many of `sorted` (ascending) are less than `x`: a character's rank among those in view, by squared distance. */
+export function rankIn(sorted: readonly number[], x: number): number {
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (sorted[mid]! < x) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
  * How a character in view at `dist` m (from the camera, across the ground) was animated by distance alone: round 2
  * (`round2` true) or round 1. Kept for the switches that measure against them.
  */

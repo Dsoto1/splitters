@@ -13,6 +13,7 @@ import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { RawTexture2DArray } from '@babylonjs/core/Materials/Textures/rawTexture2DArray';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { Constants } from '@babylonjs/core/Engines/constants';
+import { perfOn } from './game/perfSwitches.ts';
 
 /**
  * Level draw merging (docs/PERF_96.md, "Performance round 2"). The level (tiles, free blocks, trim and terrain) is
@@ -288,10 +289,14 @@ export async function mergeLevel(scene: Scene, sources: readonly MergeSource[], 
       if (!c.indices.length) continue;
       const mesh = new Mesh(`${name}_merged_${size}_${key}`, scene);
       const vd = new VertexData();
-      vd.positions = c.positions;
-      vd.normals = c.normals;
-      vd.uvs = c.uvs;
-      vd.indices = c.positions.length / 3 > 65535 ? new Uint32Array(c.indices) : c.indices;
+      // Kept by the mesh (the shadow proxies and other readers of the level read them back): as 32-bit floats, half the
+      // size of the plain arrays and outside the script heap (about 110 MB of Flavius Rule's heap as plain arrays,
+      // docs/PERF_FLAVIUS_MEMORY_2026-11-16.md; `?perfoff=leveldata` keeps the plain arrays).
+      const typed = perfOn('leveldata');
+      vd.positions = typed ? new Float32Array(c.positions) : c.positions;
+      vd.normals = typed ? new Float32Array(c.normals) : c.normals;
+      vd.uvs = typed ? new Float32Array(c.uvs) : c.uvs;
+      vd.indices = c.positions.length / 3 > 65535 ? new Uint32Array(c.indices) : typed ? new Uint16Array(c.indices) : c.indices;
       vd.applyToMesh(mesh);
       mesh.setVerticesData('levelA', new Float32Array(c.a), false, 4);
       mesh.setVerticesData('levelB', new Float32Array(c.b), false, 4);

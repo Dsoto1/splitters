@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, ANIM_SHARE_FULL, ANIM_SHARE_MID, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, FrameCap, StepClock, TORSO_MEASURES_PER_FRAME, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_FULL, ANIM_LOD_NEAR, ANIM_SHARE_FAR, ANIM_SHARE_FINE, CROWD_FAR_RANK, CROWD_KEEP, byNumber, crowdStep, rankIn, ANIM_SHARE_FULL, ANIM_SHARE_MID, ANIM_SHARE_NEAR, ANIM_SHARE_TINY, EVERY_FRAME, FrameCap, StepClock, TORSO_MEASURES_PER_FRAME, animStep, animStepByShare, blendAt } from '../src/game/animLod.ts';
 import { screenShare } from '../src/game/ragdollBudget.ts';
 import { DEFAULT_FOV } from '../src/game/view.ts';
 
@@ -200,5 +200,64 @@ describe('a crowd coming into view together (the match-start spike, docs/PERF_ST
     }
     expect(waiting.size).toBe(0);
     expect(frames).toBe(Math.ceil(29 / TORSO_MEASURES_PER_FRAME));
+  });
+});
+
+describe('animation in a crowd (Flavius Rule, 2026-11-16)', () => {
+  const at = (m: number) => screenShare(m, DEFAULT_FOV);
+  /** Evaluations a second of a step at 60 fps. */
+  const hz = (step: ReturnType<typeof animStepByShare>): number => {
+    const clock = new StepClock();
+    let n = 0;
+    for (let f = 0; f < 600; f++) if (clock.due((f * 1000) / 60, f, step, 0)) n++;
+    return n / 10;
+  };
+
+  it('leaves a small group alone, and the nearest of a crowd', () => {
+    for (const m of [10, 20, 30, 60, 100, 200]) {
+      const band = animStepByShare(at(m));
+      expect(crowdStep(band, 20, at(m), CROWD_KEEP)).toBe(band);
+      expect(crowdStep(band, CROWD_KEEP - 1, at(m), 60)).toBe(band);
+    }
+  });
+
+  it('never slows anyone within about 8 m, however big the crowd', () => {
+    const band = animStepByShare(at(6));
+    expect(crowdStep(band, 50, at(6), 60)).toBe(band);
+    expect(hz(crowdStep(band, 50, at(6), 60))).toBe(60);
+  });
+
+  it('slows the rest a rung, and the far ranks two, keeping each band\'s detail and smoothing', () => {
+    // 8-15 m: every frame → 30 Hz, then 20 Hz.
+    const near = animStepByShare(at(12));
+    expect(hz(near)).toBe(60);
+    const one = crowdStep(near, CROWD_KEEP, at(12), 60);
+    const two = crowdStep(near, CROWD_FAR_RANK, at(12), 60);
+    expect(hz(one)).toBe(30);
+    expect(hz(two)).toBe(20);
+    for (const s of [one, two]) {
+      expect(s.detail).toBe(near.detail);
+      expect(s.smooth).toBe(true);
+    }
+    // 25-40 m: 20 Hz → 15 Hz; 80-150 m: 10 Hz → 5 Hz at most two rungs down, and never past the last rung.
+    expect(hz(crowdStep(animStepByShare(at(30)), CROWD_KEEP, at(30), 60))).toBe(15);
+    expect(hz(crowdStep(animStepByShare(at(100)), CROWD_FAR_RANK, at(100), 60))).toBe(5);
+    expect(hz(crowdStep(animStepByShare(at(300)), CROWD_FAR_RANK, at(300), 60))).toBe(5);
+    // Every step is slower than or as slow as its band's, never faster.
+    for (const m of [9, 14, 18, 30, 50, 90, 120, 200]) for (const r of [CROWD_KEEP, CROWD_FAR_RANK]) expect(hz(crowdStep(animStepByShare(at(m)), r, at(m), 60))).toBeLessThanOrEqual(hz(animStepByShare(at(m))));
+  });
+
+  it('makes no new step objects frame to frame', () => {
+    const band = animStepByShare(at(30));
+    expect(crowdStep(band, 30, at(30), 60)).toBe(crowdStep(band, 31, at(31), 60));
+  });
+
+  it('ranks by squared distance among those in view', () => {
+    const d2 = [400, 25, 900, 100, 25].sort(byNumber);
+    expect(rankIn(d2, 25)).toBe(0);
+    expect(rankIn(d2, 100)).toBe(2);
+    expect(rankIn(d2, 900)).toBe(4);
+    expect(rankIn(d2, 1e6)).toBe(5);
+    expect(rankIn([], 4)).toBe(0);
   });
 });
