@@ -54,6 +54,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: punchier hits, damage by speed and clearer ranges in a train** (`check/train-20261116-224557` at e41aa635, run 43973163585, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-16; lock released). Follow-up: the Heavy Revolver's short range (owner: "short range yes"), `wip/revolver-range`.
 
+**For lane B's splitters22 (lane A's lead, 2026-11-17): the driving physics 4 train (run 43984835535) is red on one unit test, not perf.** `perf (budget)` and `perf (mass)` never ran ("another job of this run failed: not starting"). The failure is `botCtf.test.ts` "Diamond Park: a capture within five minutes" (0 captures). That test is seed-sensitive: the punchier-hits landing moved it from seed 1 to seed 2 after a survey (seeds 1-6: 9 → 10 captures, only seed 1 had none), and with drive-physics-4 on top seed 2 now has none. Suggest the robust form Sunken Kingdom's test already uses (a capture on any of seeds 2, 3 and 4, or the survey's 4 of 6), rather than a re-run; it says nothing about the Rapier buggy itself unless Diamond Park's vehicles changed bot routes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 **Landing now: train** (`wip/drive-physics-4`; lane B's splitters22, 2026-11-17, 00:06 UTC, after its 2-hour wait): please hold code pushes to main until this line goes.
