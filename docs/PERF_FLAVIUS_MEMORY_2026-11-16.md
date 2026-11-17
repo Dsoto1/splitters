@@ -111,11 +111,35 @@ material code. The largest items, from the allocation profile before the fixes:
 
 The total allocation rate moves with how many bodies a run happens to build, so compare the items, not the totals.
 
+## Body pool (2026-11-17)
+
+The owner's answer to the body-builds question ("recs"): keep about 32 spare bodies in big matches, measured first. A
+helper of lane B's splitters22, on `wip/farlooks-bodypool`. `game/bodyPool.ts`: a match keeps 16 bodies in all, as
+before, until more than 32 other players are drawn; then one for every two players, up to 32 (two a look, as before).
+`?perfoff=bodypool` keeps 16 in every match. The probe counts the pool (`window.__bodyPool`: bodies built for an avatar,
+taken from the pool, put in it, thrown out when it was full) over its measured steps, and `PROF_POOL=<n>` sets the size
+for a comparison.
+
+Flavius Rule, 64 bots, the production build, `PROF_STEPS=alloc,heap PROF_WARM=60 PROF_SECONDS=150` (one load each, the
+same build; the window is the allocation profile's 150-190 s):
+
+| Pool in all | Bodies built | Taken from the pool | Thrown out (pool full) | Built a minute | Respawns reusing a body | Heap after a collection | Allocation |
+|---|---|---|---|---|---|---|---|
+| 16 (`?perfoff=bodypool`) | 61 | 32 | 34 | **24** | 34 % | 635 MB | 5.5 MB/s |
+| 24 (`PROF_POOL=24`) | 43 | 25 | 21 | 13 | 37 % | 646 MB | 4.8 MB/s |
+| **32** (the rule) | 33 | 34 | 12 | **13** | **51 %** | 648 MB | 5.3 MB/s |
+
+32 roughly halves the body builds a minute (each 10-25 ms after a frame and several MB of garbage) for about 13 MB
+more heap after a collection: the character files' structure is shared, so a kept body costs well under 1 MB here.
+24 cut the builds nearly as much in this run but reused fewer (its run was longer and slower; the counts swing with
+how the match goes), and threw out a body every nine seconds. The rest of the respawns still build: a bot's own body
+is still a corpse when it respawns (corpses stay up to 32, sinking after some seconds), and with about 60 looks in
+play two bodies a look are not always that look's. The allocation rate moves with how many bodies a run builds and
+with the match; compare the build counts, not the totals.
+
 ## Left for later
 
-- **Body builds per death.** With 64 players and a pool of 16 kept bodies (`BODY_POOL_TOTAL`), most respawns build a
-  new body while the old one still lies as a corpse: 10-25 ms and several MB of garbage per death. A bigger pool
-  would mean fewer builds and more memory (see the question in the report).
+- **Body builds per death.** Done 2026-11-17 ("Body pool" above): up to 32 kept bodies in a big match, half the builds.
 - **The snapshot message format.** Structured-cloned objects come to 1.2 MB a second at 64 players; a binary snapshot
   would remove most of it.
 - **Frame time on a real GPU.** The owner's next recording on Flavius Rule shows what the smaller heap does to the

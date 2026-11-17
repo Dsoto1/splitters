@@ -421,7 +421,7 @@ function stepFeet(t: TerrainData, foot: ReadonlyMap<number, number>, floors: rea
  * made (the laid ground changes none of them); `boxes` is that geometry when the caller has it.
  */
 export function withGroundAsPlayed(map: MapDocument, catalog: TileCatalog = coreCatalog, boxes?: readonly WorldBox[]): MapDocument {
-  const laid = withPathsLaid(map);
+  const laid = withPathsLaid(map, mapGroundBores(map, catalog).cuts);
   const made = map.terrain;
   if (!laid.terrain || !made) return laid;
   const geometry = boxes ?? buildMapGeometry(map, catalog);
