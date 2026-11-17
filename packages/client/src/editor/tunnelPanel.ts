@@ -18,9 +18,11 @@ import {
  *    with "Whole run" ticked every buried piece joined to them, set pieces in the run included, in one undo step;
  *  - **Add portal**: a portal on each open end of the selected pieces (an end that leads to nothing built);
  *  - **Close open ends**: a Dead End on each of those ends instead.
- * Null when no selected tile has any of these.
+ * Null when no selected tile has any of these. A click works on the map as it is then (`current`), not as the panel was
+ * drawn from: MapMaker redraws the inspector on its next frame, and a click before it (a slow frame) acted on the map
+ * before the last edit (a Family change, then Close open ends at once, closed the ends in the old family).
  */
-export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (label: string, cmd: EditCommand | { error: string }) => unknown, piece?: string): HTMLElement | null {
+export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (label: string, cmd: EditCommand | { error: string }) => unknown, piece?: string, current: () => MapDocument = () => doc): HTMLElement | null {
   const ids = new Set(tileIds);
   const tiles = doc.classicStructure.tiles.filter((t) => ids.has(t.id));
   const placement = piece ? doc.setPieces?.find((p) => p.id === piece) : undefined;
@@ -48,14 +50,14 @@ export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (
     whole.id = 'ed-tunnel-run';
     whole.checked = sessionRun;
     whole.addEventListener('change', () => (sessionRun = whole.checked));
-    const runTiles = () => connectedRun(doc, tileIds);
-    const runPieces = () => connectedRunPieces(doc, tileIds);
+    const runTiles = () => connectedRun(current(), tileIds);
+    const runPieces = () => connectedRunPieces(current(), tileIds);
     select.addEventListener('change', () => {
       if (!select.value) return;
       const targets = whole.checked ? runTiles() : placement ? [] : [...tileIds];
       const pieces = whole.checked ? runPieces() : placement ? [placement.id] : [];
       const label = families.find((f) => f.family === select.value)?.label ?? select.value;
-      run(`Tunnel family: ${label}${whole.checked ? ' (whole run)' : ''}`, setRunFamilyCommand(doc, targets, pieces, select.value));
+      run(`Tunnel family: ${label}${whole.checked ? ' (whole run)' : ''}`, setRunFamilyCommand(current(), targets, pieces, select.value));
     });
     const row = document.createElement('label');
     row.className = 'row';
@@ -81,7 +83,7 @@ export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (
     add.textContent = ends.length === 1 ? 'Add a portal at the open end' : `Add portals at the ${ends.length} open ends`;
     add.title = 'An end of a buried tunnel that leads to nothing built: a portal there opens the ground and brings the earth to its walls.';
     add.addEventListener('click', () => {
-      const made = addPortalsCommand(doc, tileIds);
+      const made = addPortalsCommand(current(), tileIds);
       run(ends.length === 1 ? 'Add a portal' : 'Add portals', 'error' in made ? made : made.command);
     });
     const close = document.createElement('button');
@@ -89,7 +91,7 @@ export function tunnelPanel(doc: MapDocument, tileIds: readonly string[], run: (
     close.textContent = ends.length === 1 ? 'Close the open end' : `Close the ${ends.length} open ends`;
     close.title = "A Dead End on each end that leads to nothing built, in the piece's family (a chamber's unused openings too). The vaulted tunnels have no Dead End: wall them up with Sides.";
     close.addEventListener('click', () => {
-      const made = closeOpenEndsCommand(doc, tileIds);
+      const made = closeOpenEndsCommand(current(), tileIds);
       run(ends.length === 1 ? 'Close the open end' : 'Close open ends', 'error' in made ? made : made.command);
     });
     box.append(add, close);
