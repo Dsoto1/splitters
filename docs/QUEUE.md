@@ -39,6 +39,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/dropship-seats` · b6f72f77 · 44034422634 (lane A: the Dropship's riders stay on their seats: a seated rider is drawn turned no further from its seat than the waist turns; the drop route's twelve spread along the benches)
+- `wip/tunnels-6` · ba7b438c · 44044279105 (**held, lane B fixing**: with today's main it fails e2e `roulette` jackpot glow; trains skip it until a new green sha is here) (lane B: tunnel kit step 6, the 7 m road bore, wide pieces, ramp, reducer, profile-mismatch warning; curved mine track; chamber lanterns)
+- `wip/shadow-casters` · 7fddc644 · 44060921601 (lane B: cheaper small shadow casters: trees, rocks and near/far props cast from fixed full-detail shadow copies the static cache keeps; clutter casts to 20 m with a 24 m band; `?perfoff=smallcasters`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
@@ -99,6 +101,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
 ## Features
+- M · B · **Far looks baked from the real model** (owner, 2026-11-17, "recs": the far-look follow-up after the prop pop fix): props' lighter levels made from their own models (not flat blocks), so the switch at 20-60 m is hard to see; then, later, a soft cross-fade and loading models before the view reaches them.
+- S · B · **Body pool to about 32** (owner, 2026-11-17, "recs"): keep up to ~32 spare character bodies in big matches so most respawns reuse one (no build hitch, less garbage); measured first on Flavius Rule with 64 bots (memory vs hitches), `?perfoff=` switch.
 - M · B · **Cheaper small shadow casters** (owner, 2026-11-17, "4a", for St. John's spruces and curved limestone wall): batch or drop small and far shadow casters (merged caster batches, a size/distance cut for the shadow pass), measured on St. John's and Flavius Rule; then St. John's spruces and limestone wall go in through MapMaker.
 - M · B · **Procedural environment Phase 4: more variety (owner, 2026-11-16: "yes")** (docs/PROCEDURAL_ENVIRONMENT.md §11): more species and variants (trees, bushes, grasses, flowers, desert and alpine plants, rock and cliff shapes) through the same generators, then existing maps' bought/downloaded natural props swapped for ours (Phase 4's migration), with collision, surface types, LODs, budgets and tests per species.
 - S · B · **Save your own environment mixes (owner, 2026-11-16: "yes")**: a custom brush mix (species, weights, density, filters) saved by name next to Temperate / Jungle / Alpine / Arid, kept with the map or the player's MapMaker settings.
