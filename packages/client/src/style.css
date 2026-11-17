@@ -239,9 +239,10 @@ button.cta:hover { background: #ffc46e; }
 .quick-play .qp-modes { grid-template-columns: 1fr 1fr 1fr; }
 /* Pick a map (docs/MOBILE_AUDIT.md, proposal 2): Match Setup with the map cards open. */
 .quick-play .qp-pick-icon { font-size: 26px; line-height: 28px; color: var(--cyan); }
-/* A phone upright: the two modes side by side, Pick a map a row under them; the panel solid over the menu. */
+/* On a phone the panel is solid over the menu (the featured map's words showed through). */
+html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
+/* A phone upright: the two modes side by side, Pick a map a row under them. */
 @media (max-width: 520px) {
-  .quick-play { background: rgba(14, 20, 33, 0.97); }
   .quick-play .qp-modes { grid-template-columns: 1fr 1fr; }
   .quick-play .qp-pick { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; }
   .quick-play .qp-pick .qp-pick-icon { grid-row: span 2; }
@@ -1851,6 +1852,13 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
   .prof-sec { padding: 10px 14px; }
   .prof-char > img { width: 64px; height: 64px; }
   .menu-footer .hintbar { display: none; }
+}
+/* Phones sideways under ~420 px tall (an S25+ at 832 × 384): the menu's last button (Options) ran under the news bar. */
+@media (max-height: 420px) {
+  #menu .screen.home { padding-top: 8px; }
+  .logo { font-size: clamp(26px, 4.4vw, 36px); }
+  .nav { margin-top: 8px; }
+  .nav button, html.touch .nav button { min-height: 34px; padding: 4px 14px; font-size: 15px; }
 }
 /* Smaller phones sideways (~320 px tall): the stats as numbers, no tags, so the name, stats and buttons share a row. */
 @media (max-height: 360px) {

@@ -5647,6 +5647,13 @@ async function mobileMenus(browser) {
       await page.goto(`${CLIENT}/?test=1`);
       await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
       const wide = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+      // Every main menu button can be tapped (none under the news bar or the featured map).
+      const covered = await page.evaluate(() => [...document.querySelectorAll('.nav button')].filter((b) => {
+        const r = b.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !top || !b.contains(top);
+      }).map((b) => b.textContent));
+      check(covered.length === 0, `${label}: every main menu button is clear to tap (${covered.join(', ') || 'all clear'})`);
       // Quick Play → Pick a map.
       await page.tap('#nav-quick');
       await page.waitForSelector('#qp-pick', { timeout: T(5000) });
