@@ -39,6 +39,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/stjohns-4b` · 237d20b6 · 43998415404 (lane B: St. John's step 4b, the gateway moved over St. John's Road with a Cadet Post, the parking strip, the volleyball court; new kit props Guard Post, Volleyball Net, Sand Court)
+- `wip/flavius-memory` · 137a785a · 44008157836 (lane B: Flavius Rule's heap −40 % after a collection, animation by distance in crowds, less garbage; each behind a `?perfoff=` switch)
+
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
 - **Owner's direction on maps (2026-11-16):** no map is "official" until the owner has vetted it: tested, played, and edited in MapMaker as needed, then Published from their account (Publish replaces the built-in map for everyone). That is the **final step**, after the tools exist properly: "I like my tools to exist properly before performing work that may be final." So: tools first (MapMaker, kits, set pieces, environment, painting, performance); then **a pass on every map**, using everything built and established, all through MapMaker (no hand edits, no map scripts); then the owner's vetting and Publish, map by map. The like-for-like map pass below is a small part of that pass; the full pass is planned once the tools settle.
@@ -101,9 +103,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · B · Tunnel kit steps 5–8: brick sewer and mine families, lit chamber, "Close open ends", `family` on set pieces (needs map format v39); then road (7 m bore), caves and transitions · `docs/map-briefs/tunnels/PLAN_2026-11-13.md`
 - S · B · See Tileset 11's new pieces in the game: the four materials on real surfaces, the door and awning looks, the street pieces and fences (only the two wall styles have been through a browser). Needs a scratch map; the owner said no demo map yet.
 - M · B · Player profiles.
-- M · B · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
-- M · B · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
-- M · B · Mobile audit: Character Select phone layout (proposal 4).
+- M · A · Mobile audit: map cards on phones and "Pick a map" in Quick Play (proposal 2).
+- M · A · Mobile audit: touch layout options: button size, opacity, left-handed, aim hold or toggle (proposal 3).
+- M · A · Mobile audit: Character Select phone layout (proposal 4).
 - M · B · Material surface types: 0 of 150 materials set `surface`, so footsteps and impacts can't tell metal from wood (owner: end of queue).
 - L · B · Driving physics (owner, 2026-11-15): vehicles as real bodies with sprung raycast wheels and tyre grip that can fail. Buggies light, bouncy and easy to flip; jumps land with weight and momentum; the body follows the ground on steep edges and slides back when grip runs out. Multiplayer smooth: the driver's vehicle predicted on their own machine and reconciled, others interpolated. Step 1 done 2026-11-15 (the Troop Buggy; `docs/DRIVING_PHYSICS_PLAN.md`, owner's answers 1a 2b 3a 4a 5a 6a). Next: the owner drives it; then step 2 (the other wheeled vehicles one by one, remote vehicles through the interpolator), bots (step 3), maps (step 4). Today the chassis moves like a character controller (`PhysicsWorld.moveVehicle`), with a drawn-only sprung body (`sim/suspension.ts`). After the hitches fix (owner: "finish hitches fix").
   - **Owner's answers to the Rapier plan (2026-11-16, `docs/DRIVING_PHYSICS_PLAN.md` on `wip/drive-physics-3b`):** 1a the buggy's body a Rapier rigid body with our own springs and tyres as forces (no bump stop, hull corners, sweep, 92 % keep or levelling); 2a air control only, no levelling; 3a rock and wall hits from real contacts; 4a prediction up to about 10 cm, faded; **5b straight to default** (no `?drive=rapier` trial: it replaces today's drive when it lands, the old way kept only behind a switch for comparison). Next for lane A's driving helper, after the bots-and-snags train lands.
@@ -116,21 +118,21 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · B · Scaling 4: bot path search budget by time (order 4).
 - M · B · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
 - L · B · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
-- S–M · B · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
+- S–M · A · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
 - M · B · Gun handling extras: sprint-exit time, movement speed per weapon (with prediction parity), scope holdover marks (GAPS §5, §27, §35-36; G2).
 - M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
-- S · B · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
+- S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
 - M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10).
 - M · B · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
 - S · B · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
 - L · B · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).
 - M · B · Cheaper movement for bots far from every human, for full dedicated hosts (PERF_96 round 4).
-- M · B · Per-player hub-signed join tickets, checked on every join (MULTIPLAYER_REVIEW §4 item 1).
+- M · A · Per-player hub-signed join tickets, checked on every join (MULTIPLAYER_REVIEW §4 item 1).
 - M–L · B · Host Service paired to an account through the hub, so hosting works from any device (HOSTING "Next steps"; MULTIPLAYER_SECURITY §6).
-- M · B · Hosted 48 v 48 bandwidth: binary player entries, skip the replay when the server agrees, lower snapshot rates for far players (PERF_96).
+- M · A · Hosted 48 v 48 bandwidth: binary player entries, skip the replay when the server agrees, lower snapshot rates for far players (PERF_96).
 - M · B · Host Service installer: start on boot, tray icon (HOSTING "Next steps").
-- S–M · B · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
+- S–M · A · The seven Roster Board characters still needing hand or face work (alienbiker, anubis, beaniealien, pruitt, resolvesoldier, vanguard, zhao; the board's open requests).
 - M · B · Textures for the flat grey sci-fi guns (Flak, Swarm, Laser Rifle; MOBILE_AUDIT proposal 8).
 - M · B · Kit-prop generators, Phase 6 tail: scaffolding and rubble families, measure the share of generated props (PROCEDURAL_ENVIRONMENT §11).
 - XS–S · B · MapMaker: the grid of the level being edited drawn green, the other levels' grids blue (owner, 2026-11-16: "could be nice"), so the working level reads at a glance; keep it calm and readable in both themes, and the level list's highlight in the same green.
@@ -154,6 +156,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-17 · A · The Heavy Revolver's short range (`wip/revolver-range`, train `check/train-20261117-021254` at ec810269; owner "short range yes"): full damage to 25 m, a 40 % floor by 65 m, reach 110 m (was 300 m at 70 %); a head shot kills to about 45 m.
 - 2026-11-16 · A · Punchier hits, damage by impact speed, clearer ranges (`wip/punchier-hits`, train `check/train-20261116-224557` at e41aa635): shoves up (Battle Rifle 12 → 31 cm, shotguns and snipers 33-38 → 52, Heavy Revolver 90 → 131), 1.5× on someone in the air, harder flinch and stagger, a small camera kick when hit (calmer with Reduce flashing); rounds slow in flight and hit by impact speed under Standard and Advanced (Standard keeps every kill distance); pistols and SMGs reach 100-110 m with 35-40 % floors (were 200-250 m at 55-65 %). Heavy Revolver's short range follows on `wip/revolver-range`.
 - 2026-11-16 · A+B · Train `check/train-20261116-205423` (e80e056e): random bots are random (a per-match shuffle of the allowed looks from the seed, no repeats until the pool runs out); the Dropship is the owner's hover carrier (Meshy, owned; pilot in the cockpit, gunner on the deck, four on the benches, twelve in drops); e2e `hostgame` holds the host's match open (bots had reached the score limit mid-flow); MapMaker's Paint list fits its panel.
 - 2026-11-16 · A · The Battle Rifle (`wip/battle-rifle`, train `check/train-20261116-193406` at 9d06e486): fire modes Single / 3-round Burst on U (shared `sim/fireModes.ts`, predicted, bots pick by range), the full-quality held model (60,000 triangles for your hands, the download's own metal and roughness), and a real 3.5x optic through the model's own scope (`game/opticView.ts`).
