@@ -4,6 +4,7 @@ import { itemColor } from '../game/pickupVisuals.ts';
 import type { EditorApp } from './editorApp.ts';
 import { bakeDelay, bakeScale, boxLevel, minimapArea, pictureArea, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader, type SelectionMark } from './minimapModel.ts';
 import { mergeSelections } from './outlinerPanel.ts';
+import { focusRefAt, focusRefFor } from './tileViewModel.ts';
 import { drawIcon } from './planView.ts';
 import './minimap.css';
 
@@ -98,6 +99,7 @@ export class MinimapPanel {
       button('ed-minimap-in', '+', 'Zoom the minimap in', () => this.zoomBy(1.5)),
       button('ed-minimap-out', '−', 'Zoom the minimap out', () => this.zoomBy(1 / 1.5)),
       button('ed-minimap-fit', '⌂', 'Fit the minimap to the level', () => this.fit()),
+      button('ed-minimap-tile', '⊞', 'Tile View: the selection from above (Enter, or double-click)', () => this.app.openTileView()),
     );
     this.root.append(this.canvas, this.levelChip, tools);
     new ResizeObserver((entries) => {
@@ -525,8 +527,18 @@ export class MinimapPanel {
       },
       { passive: false },
     );
-    // (Double-click is kept for Tile View, the spec's Phase 4a.)
-    c.addEventListener('dblclick', (e) => e.preventDefault());
+    // Double-click: Tile View on the tile or set piece there (else the selection the first click made, else that cell).
+    c.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      const f = this.frameNow;
+      if (!f) return;
+      const p = this.local(e);
+      const at = screenToPlan(f, this.w, this.h, p.x, p.y);
+      const app = this.app;
+      const ref = app.selCount() ? focusRefFor(app.doc, app.selection) : null;
+      const here = focusRefAt(app.doc, app.level, at.x, at.z, this.reader());
+      app.openTileView(here.kind === 'region' && ref ? ref : here);
+    });
     c.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 

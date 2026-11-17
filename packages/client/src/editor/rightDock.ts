@@ -2,6 +2,7 @@ import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 import {
   clampDockWidth,
+  DEFAULT_TILE_SNAP,
   DOCK_KEY,
   LEGACY_SIDEBARS_KEY,
   nextDockState,
@@ -155,8 +156,51 @@ export class RightDock {
       t.setAttribute('aria-selected', String(on));
       t.tabIndex = on ? 0 : -1;
     }
-    $('ed-minimap-host').hidden = this.tab !== 'minimap';
+    // Tile View (Phase 4a) takes the minimap's place while it is open.
+    const tile = this.app.tileView.isOpen;
+    $('ed-minimap-host').hidden = this.tab !== 'minimap' || tile;
+    $('ed-tileview-host').hidden = this.tab !== 'minimap' || !tile;
     $('ed-outliner').hidden = this.tab !== 'outliner';
+  }
+
+  /**
+   * Tile View opened or closed (UI spec Phase 4a): it shows in the expanded dock in the Minimap's place. Opening it is
+   * asked for (Enter, a double-click, its button), so the dock expands and shows the Minimap tab; closing it gives the
+   * minimap back.
+   */
+  tileViewChanged(open: boolean): void {
+    if (open) {
+      this.app.mapSettings.close();
+      this.ensureExpanded();
+      if (this.outlinerFolded) document.querySelector<HTMLButtonElement>('#ed-outliner-panel .ed-nav-fold')?.click();
+      if (this.tab !== 'minimap') this.setTab('minimap');
+    }
+    this.applyTab();
+    this.syncViews();
+  }
+
+  /** Tile View's snap step (cm) and coordinates, kept with the dock (never in the map). */
+  tileSnapCm(): number {
+    return this.prefs.tileSnap ?? DEFAULT_TILE_SNAP;
+  }
+
+  setTileSnapCm(cm: number): void {
+    const want = cm === DEFAULT_TILE_SNAP ? undefined : cm;
+    if (this.prefs.tileSnap === want) return;
+    if (want) this.prefs.tileSnap = want;
+    else delete this.prefs.tileSnap;
+    this.save();
+  }
+
+  tileFrame(): 'local' | 'world' {
+    return this.prefs.tileFrame ?? 'local';
+  }
+
+  setTileFrame(f: 'local' | 'world'): void {
+    if (this.tileFrame() === f) return;
+    if (f === 'world') this.prefs.tileFrame = 'world';
+    else delete this.prefs.tileFrame;
+    this.save();
   }
 
   /** The minimap's zoom, kept with the dock (never in the map). */
@@ -175,7 +219,9 @@ export class RightDock {
   private syncOutliner(): void {
     // The minimap: in the compact card, or the expanded dock's Minimap tab while it shows; else nothing of it runs.
     const panels = this.state === 'expanded' && !this.app.mapSettings.isOpen && !this.outlinerFolded;
-    this.app.minimap.show(this.state === 'compact' ? $('ed-minimap-mini') : panels && this.tab === 'minimap' ? $('ed-minimap-host') : null);
+    const tile = this.app.tileView.isOpen;
+    this.app.minimap.show(this.state === 'compact' ? $('ed-minimap-mini') : panels && this.tab === 'minimap' && !tile ? $('ed-minimap-host') : null);
+    this.app.tileView.show(this.state === 'expanded' && panels && this.tab === 'minimap' && tile ? $('ed-tileview-host') : null);
     const seen = panels && this.tab === 'outliner';
     if (seen === this.app.outliner.open) return;
     // (While MapMaker is still being put together there is no map to list yet: the flag alone.)

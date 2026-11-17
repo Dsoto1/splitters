@@ -17,7 +17,15 @@ export interface DockPrefs {
   tab?: DockTab;
   /** The minimap's zoom (1: the whole level; minimapModel.ts); absent, 1. */
   minimapZoom?: number;
+  /** Tile View's snap step in cm (UI spec Phase 4a: 1, 5, 10 or 50); absent, 10. */
+  tileSnap?: number;
+  /** Tile View's coordinates: absent, local (tile-relative); 'world'. */
+  tileFrame?: 'world';
 }
+
+/** Tile View's snap steps (cm) and the one it starts with. */
+export const TILE_SNAP_STEPS = [1, 5, 10, 50] as const;
+export const DEFAULT_TILE_SNAP = 10;
 
 /** The expanded dock's tabs above Properties: the minimap or the outliner. */
 export type DockTab = 'minimap' | 'outliner';
@@ -49,7 +57,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
       if (v && typeof v === 'object') {
         const width = typeof v.width === 'number' && Number.isFinite(v.width) ? Math.round(v.width) : undefined;
         const zoom = typeof v.minimapZoom === 'number' && Number.isFinite(v.minimapZoom) && v.minimapZoom > 1 ? Math.min(16, Math.round(v.minimapZoom * 100) / 100) : undefined;
-        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}), ...(v.tab === 'minimap' ? { tab: 'minimap' as const } : {}), ...(zoom ? { minimapZoom: zoom } : {}) };
+        const snap = (TILE_SNAP_STEPS as readonly unknown[]).includes(v.tileSnap) && v.tileSnap !== DEFAULT_TILE_SNAP ? (v.tileSnap as number) : undefined;
+        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}), ...(v.tab === 'minimap' ? { tab: 'minimap' as const } : {}), ...(zoom ? { minimapZoom: zoom } : {}), ...(snap ? { tileSnap: snap } : {}), ...(v.tileFrame === 'world' ? { tileFrame: 'world' as const } : {}) };
       }
     }
   } catch {
@@ -69,7 +78,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
 /** As stored: the same state always writes the same text. */
 export function serializeDockPrefs(p: DockPrefs): string {
   const zoom = p.minimapZoom && p.minimapZoom > 1 ? Math.min(16, Math.round(p.minimapZoom * 100) / 100) : 0;
-  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}), ...(p.tab === 'minimap' ? { tab: 'minimap' } : {}), ...(zoom ? { minimapZoom: zoom } : {}) });
+  const snap = p.tileSnap && (TILE_SNAP_STEPS as readonly number[]).includes(p.tileSnap) && p.tileSnap !== DEFAULT_TILE_SNAP ? p.tileSnap : 0;
+  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}), ...(p.tab === 'minimap' ? { tab: 'minimap' } : {}), ...(zoom ? { minimapZoom: zoom } : {}), ...(snap ? { tileSnap: snap } : {}), ...(p.tileFrame === 'world' ? { tileFrame: 'world' } : {}) });
 }
 
 /** Shift+\: expanded, then compact, then hidden, then expanded again. */
