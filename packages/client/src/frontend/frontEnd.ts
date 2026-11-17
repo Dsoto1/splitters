@@ -240,6 +240,8 @@ const SETUP_ROWS = ['setup-variants-row'] as const;
  * Small screens and phones open one of the setup's rows at a time (the stylesheet's narrow and short layouts start
  * at the same sizes); a desktop opens as many as you like.
  */
+/** Narrow windows (a phone upright, most phones sideways): Match Setup takes the whole width and the map list opens as a picker over it (style.css, the 900 px rule). */
+const narrowSetup = (): boolean => typeof matchMedia === 'function' && matchMedia('(max-width: 900px)').matches;
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
@@ -550,6 +552,8 @@ export class FrontEnd {
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
     // Back (and Choose) on Character Select return to the screen that opened it.
     if (screen === 'characters' && this.screen !== 'characters') this.charFrom = this.screen;
+    // The map picker (a phone's Match Setup) is open only on Match Setup.
+    if (screen !== 'play') this.mapPicking = false;
     this.screen = screen;
     this.footer.dataset.screen = screen;
     this.scene.setLook(this.previewed ?? this.look);
@@ -659,7 +663,7 @@ export class FrontEnd {
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play');
+    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.mapPicking ? document.getElementById('map-browse') : null);
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -831,6 +835,14 @@ export class FrontEnd {
       b.addEventListener('click', () => void this.quickPlay(mode));
       modes.append(b);
     }
+    // Pick a map: Match Setup with the map cards open (on a phone, the full-screen picker; docs/MOBILE_AUDIT.md, proposal 2).
+    const pick = el('button', { type: 'button', class: 'qp-mode qp-pick', id: 'qp-pick' }, el('span', { class: 'qp-pick-icon', textContent: '▦' }), el('b', { textContent: 'Pick a map' }), el('small', { textContent: 'Choose the map, then play' }));
+    pick.addEventListener('click', () => {
+      this.quickOpen = false;
+      this.mapPicking = narrowSetup();
+      this.go('play');
+    });
+    modes.append(pick);
     const close = el('button', { type: 'button', class: 'qp-close', title: 'Close (Esc)', textContent: '✕' });
     close.dataset.cancel = '';
     close.setAttribute('aria-label', 'Close');
@@ -1093,6 +1105,27 @@ export class FrontEnd {
     });
   }
 
+  /** A phone's (narrow window's) Match Setup: the map cards open full screen over the setup. */
+  private mapPicking = false;
+
+  private openMapPicker(): void {
+    this.mapPicking = true;
+    const screen = this.body.querySelector<HTMLElement>('.screen.play');
+    if (!screen) return;
+    screen.classList.add('picking');
+    // The map played now, in view.
+    const cards = screen.querySelector<HTMLElement>('#map-cards');
+    const on = cards?.querySelector<HTMLElement>('.map-card.on');
+    if (cards && on) cards.scrollTop = this.mapScroll = Math.max(0, on.offsetTop - cards.offsetTop - 8);
+    screen.querySelector<HTMLElement>('#map-pick-close')?.focus({ preventScroll: true });
+  }
+
+  private closeMapPicker(): void {
+    this.mapPicking = false;
+    this.body.querySelector('.screen.play')?.classList.remove('picking');
+    document.getElementById('arcade-map-pick')?.focus({ preventScroll: true });
+  }
+
   private arcade(): HTMLElement {
     const cards = el('div', { class: `map-cards${this.browse.view === 'list' ? ' list' : ''}`, id: 'map-cards' });
     // Picking a map redraws the setup only: the list stays where it was.
@@ -1260,6 +1293,7 @@ export class FrontEnd {
           const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
           if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
           this.refreshSetup();
+          if (this.mapPicking) this.closeMapPicker();
         });
         cards.append(card);
         lazy(card, draw);
@@ -1283,12 +1317,19 @@ export class FrontEnd {
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
     this.fillSetup(panel);
+    // A phone's picker: its own head with Close (hidden where the list sits beside the setup).
+    const closePick = el('button', { type: 'button', class: 'qp-close', id: 'map-pick-close', title: 'Close (Esc)', textContent: '✕' });
+    closePick.setAttribute('aria-label', 'Close');
+    closePick.dataset.cancel = '';
+    closePick.addEventListener('click', () => this.closeMapPicker());
+    const pickHead = el('div', { class: 'map-pick-head' }, el('h3', { textContent: 'Pick a map' }), closePick);
+    if (this.mapPicking) requestAnimationFrame(() => this.openMapPicker());
     // (The stylesheet lays these out as the mock-up does: the title over the map list, the setup panel the screen's whole height beside them.)
     return el(
       'div',
-      { class: 'screen play' },
+      { class: `screen play${this.mapPicking ? ' picking' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse' }, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, pickHead, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
     );
   }
 
@@ -1333,7 +1374,10 @@ export class FrontEnd {
     // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
     const thumbs = mapThumbs(map, isBuiltInEntry(current));
     requestAnimationFrame(thumbs.draw);
-    // The list is hidden on small screens: there, this picks the map.
+    // The list is hidden on narrow screens: there, this button opens it full screen (docs/MOBILE_AUDIT.md, proposal
+    // 2). The plain list stays in the page, hidden (tests and anything that reads it).
+    const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
+    mapPick.addEventListener('click', () => this.openMapPicker());
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
@@ -1385,6 +1429,7 @@ export class FrontEnd {
         ...(current.contentHash ? [el('p', { class: 'setup-community hint' }, `A player's map${current.metadata.author ? ` by ${current.metadata.author}` : ''}. `, reportButton(current.contentHash, map.metadata.name))] : []),
         facts,
         mapSelect,
+        mapPick,
       ),
       fitChip(fit, this.fitOpen, toggleFit, 'setup-fit'),
     );
@@ -3019,6 +3064,7 @@ export class FrontEnd {
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
       // Match setup's saved setups menu, open: Esc closes it (one level per press).
       if (this.screen === 'home' && this.quickOpen) return this.closeQuickPlay();
+      if (this.screen === 'play' && this.mapPicking) return this.closeMapPicker();
       const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open], #arcade-where-menu[open]') : null;
       if (menu) {
         menu.open = false;

@@ -128,6 +128,11 @@ button.cta { border-color: transparent; background: var(--orange); color: #24140
 button.cta:hover { background: #ffc46e; }
 .profile-entry .cta { padding: 9px 14px; }
 .featured { position: absolute; right: 36px; bottom: 76px; width: min(360px, 40vw); padding: 0; overflow: hidden; }
+/* A phone upright: no room for the featured map beside the menu (it covered Quick Play); Quick Play's Pick a map and
+   Match Setup's picker show every map. */
+@media (max-width: 520px) and (orientation: portrait) {
+  .home .featured { display: none; }
+}
 .featured-pic { height: 170px; }
 .featured .meta { display: flex; gap: 12px; align-items: center; padding: 10px 14px 12px; }
 .featured .card-plan { width: 84px; height: 84px; }
@@ -231,6 +236,17 @@ button.cta:hover { background: #ffc46e; }
 .quick-play .qp-mode small { font: 500 13px var(--font-body); color: var(--muted); }
 .quick-play .qp-mode:focus-visible, .quick-play .qp-mode:hover { outline: none; border-color: var(--cyan); background: rgba(0, 209, 255, 0.14); }
 .quick-play .qp-last { position: absolute; top: 10px; right: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(0, 209, 255, 0.16); color: var(--cyan); font: 700 10px var(--font-display); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; }
+.quick-play .qp-modes { grid-template-columns: 1fr 1fr 1fr; }
+/* Pick a map (docs/MOBILE_AUDIT.md, proposal 2): Match Setup with the map cards open. */
+.quick-play .qp-pick-icon { font-size: 26px; line-height: 28px; color: var(--cyan); }
+/* A phone upright: the two modes side by side, Pick a map a row under them; the panel solid over the menu. */
+@media (max-width: 520px) {
+  .quick-play { background: rgba(14, 20, 33, 0.97); }
+  .quick-play .qp-modes { grid-template-columns: 1fr 1fr; }
+  .quick-play .qp-pick { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; }
+  .quick-play .qp-pick .qp-pick-icon { grid-row: span 2; }
+  .quick-play .qp-mode b { font-size: 16px; }
+}
 .quick-play .qp-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .quick-play .qp-link { padding: 6px 10px; background: transparent; color: var(--muted); font-size: 12px; }
 .quick-play .qp-link:hover, .quick-play .qp-link:focus-visible { color: var(--text); outline: none; border-color: var(--cyan); }
@@ -397,6 +413,12 @@ button.cta:hover { background: #ffc46e; }
 .setup-title { min-width: 0; }
 .setup-title h3 { overflow: hidden; text-overflow: ellipsis; }
 #arcade-map { display: none; max-width: 100%; margin: 4px 0; padding: 4px 6px; }
+/* A phone's map button and picker (docs/MOBILE_AUDIT.md, proposal 2): shown under the 900 px rule below. */
+#arcade-map-pick { display: none; align-items: center; gap: 10px; max-width: 100%; min-width: 0; margin: 4px 0; padding: 6px 12px; text-align: left; text-transform: none; letter-spacing: 0; background: rgba(11, 15, 26, 0.8); border-color: rgba(0, 209, 255, 0.55); }
+#arcade-map-pick b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 16px var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; }
+#arcade-map-pick span { flex: none; color: var(--cyan); font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+#arcade-map-pick span::after { content: ' ▸'; }
+.map-pick-head { display: none; }
 /* The modes the map can't play, in one line (each one's reason on hover or focus). */
 .setup-hint { margin: 0; color: var(--muted); font: 500 13px/1.35 var(--font-body); }
 .cap-note { margin: 0; padding: 5px 8px; color: var(--warning); border-left: 2px solid var(--warning); background: rgba(241, 196, 15, 0.08); font: 500 13px/1.35 var(--font-body); }
@@ -618,9 +640,36 @@ button.cta:hover { background: #ffc46e; }
   #menu .screen.play { grid-template-columns: minmax(0, 1fr); }
   .screen.play .map-browse { display: none; }
   .screen.play .setup { grid-column: 1; grid-row: 2; }
-  #arcade-map { display: block; }
+  #arcade-map-pick { display: flex; }
+  /* The picker: the map list (its tabs, Filter maps, search, sort, favourites) full screen over the setup. */
+  .screen.play.picking .map-browse { display: flex; position: fixed; inset: 0; z-index: 40; gap: 8px; padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left)); background: var(--deep-space); }
+  .screen.play.picking .map-pick-head { display: flex; align-items: center; gap: 10px; }
+  .map-pick-head h3 { margin: 0; font: italic 700 22px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+  .map-pick-head .qp-close { margin-left: auto; min-width: 44px; padding: 4px 10px; }
+  .screen.play.picking .map-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .screen.play.picking .map-tabs { flex: 1 1 100%; }
+  /* Small cards: the name gets the width (no plan tile; the setup's header shows it once picked), two lines if it needs. */
+  .screen.play.picking .map-card .meta { height: auto; min-height: 58px; padding: 6px 8px 8px 10px; }
+  .screen.play.picking .map-card .meta .card-plan { display: none; }
+  .screen.play.picking .map-card b { font-size: 14px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .screen.play.picking .map-card .meta-text { gap: 4px; }
+  .screen.play.picking .view-pick { display: none; }
+  .screen.play.picking .map-tools { flex-wrap: nowrap; min-width: 0; }
+  .screen.play.picking #map-sort { flex: 0 1 auto; min-width: 0; }
   .setup-title h3, .setup-title > small { display: none; }
   .menu-footer[data-screen='play'] #hint-filter { display: none; }
+}
+/* A phone sideways, picking a map: the title gives way, Close sits at the end of one bar (tabs scroll, then Filter
+   maps, search and sort), so two rows of cards show. */
+@media (max-width: 900px) and (max-height: 500px) {
+  .screen.play.picking .map-browse { padding-top: 8px; padding-right: calc(64px + env(safe-area-inset-right)); }
+  .screen.play.picking .map-pick-head { position: absolute; top: 8px; right: max(12px, env(safe-area-inset-right)); }
+  .screen.play.picking .map-pick-head h3 { display: none; }
+  .screen.play.picking .map-bar { flex-wrap: nowrap; }
+  .screen.play.picking .map-tabs { flex: 1 1 0; min-width: 0; }
+  .screen.play.picking .map-tools { flex: 0 1 auto; }
+  .screen.play.picking .view-pick { display: none; }
+  .screen.play.picking #map-search { flex: 0 1 140px; }
 }
 /* Little room (down to 640 × 360, a phone sideways): tighter screen, header, tabs and sections, small mode tiles; the setup body scrolls and the foot stays. */
 @media (max-height: 600px), (max-width: 700px) {
@@ -630,8 +679,8 @@ button.cta:hover { background: #ffc46e; }
   .setup-head { display: flex; align-items: center; gap: 8px; padding: 6px 52px 6px 10px; }
   .setup-head h3 { font-size: 18px; margin: 0; }
   .setup-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; padding-right: 0; }
-  .setup-facts, #arcade-map { margin: 0; }
-  #arcade-map { flex: 1 1 130px; min-width: 0; }
+  .setup-facts, #arcade-map, #arcade-map-pick { margin: 0; }
+  #arcade-map, #arcade-map-pick { flex: 1 1 130px; min-width: 0; }
   .setup-facts { font-size: 12px; }
   .setup-facts > span { padding: 0 8px; }
   .setup-head small, .setup-head .inspired, .setup-blurb { display: none; }
