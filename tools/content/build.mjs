@@ -355,7 +355,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.graft ? [`new hand geometry: the hands replaced by the rig's own (Quaternius Universal Base Characters, CC0, the athlete body part), fitted to them (tools/content/handgraft.mjs)`] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');
@@ -514,6 +514,7 @@ const gunCount = checkLocked(
         ...(entry?.glow ? [`glowing parts recoloured to ${entry.glow.color}, with an emissive map of them`] : []),
         ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []),
         ...(f.lodTriangles ? ['lower level of detail added'] : []),
+        ...(entry?.plate ? ['a flat deck plate added under the floor where the cut left holes in it, coloured like the floor (tools/content/deck-plate.mjs)'] : []),
         ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []),
         /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled',
         // (Entries from before the texture tiers keep their one line.)

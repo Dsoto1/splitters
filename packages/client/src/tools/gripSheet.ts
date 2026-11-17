@@ -11,6 +11,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
+import { gripInside } from './gripInside.ts';
 import { CharacterAnimator, PISTOL, setCurlShare, setPistolTune, type MotionState } from '../game/characterAnimator.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
@@ -21,7 +22,7 @@ import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.
 import { DEFAULT_FOV } from '../game/view.ts';
 import { auditGrip } from './gripAudit.ts';
 import { setPalmRule, skinHandFrame } from '../game/handProbe.ts';
-import type { CharacterInstance } from '../content/characters.ts';
+import type { CharacterInstance, HandData } from '../content/characters.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
 
 /** How a pose is shown: the character from outside, its own first-person arms from the eye, or its whole body from the eye (full-body first person). */
@@ -93,6 +94,19 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     scene.render();
     frames++;
   });
+  /** The gun the posed character holds (third person or full-body first person; `__grips.inside`). */
+  let held: TransformNode | null = null;
+  /**
+   * `__grips.tune(look, { grip, hands })`: a look's GripTune and measured hands changed for the poses that follow (to
+   * tune a look live before writing its manifest); `__grips.tune(look, null)` clears it.
+   */
+  const tunes = new Map<string, { grip?: Partial<NonNullable<CharacterInstance['grip']>>; hands?: { l?: Partial<HandData>; r?: Partial<HandData> } }>();
+  const tuned = (look: string, ch: CharacterInstance) => {
+    const t = tunes.get(look);
+    if (!t) return;
+    if (t.grip) ch.grip = { ...(ch.grip ?? {}), ...t.grip };
+    for (const s of ['l', 'r'] as const) if (t.hands?.[s] && ch.hands[s]) ch.hands[s] = { ...ch.hands[s]!, ...t.hands[s] };
+  };
   const settle = async (n: number) => {
     const until = frames + n;
     while (frames < until) await new Promise((r) => setTimeout(r, 10));
@@ -100,6 +114,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
 
   /** Show `look` holding `weapon` from `view`; resolves once the pose has settled and is on screen. */
   async function pose(look: string, weapon: string, view: GripView): Promise<void> {
+    held = null;
     creature?.dispose();
     creature = null;
     current?.dispose();
@@ -114,11 +129,13 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       ground.setEnabled(true);
       const holder = new TransformNode('grip_body', scene);
       const ch = await characters.create({ look }, 'grip_char');
+      tuned(look, ch);
       fitFirstPersonBody(ch, holder);
       const viewRoot = new TransformNode('grip_view', scene);
       viewRoot.parent = eye;
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
       node.parent = viewRoot;
+      held = node;
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
       const [vx, vy, vz] = def.view.viewOffset;
       viewRoot.position.set(vx, vy, vz);
@@ -144,11 +161,13 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     } else if (view === 'third') {
       ground.setEnabled(true);
       const ch = await characters.create({ look }, 'grip_char');
+      tuned(look, ch);
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / Math.max(0.5, max.y - min.y));
       const anim = new CharacterAnimator(scene, ch);
       const node = await models.instantiate(def.view.model, 'grip_weapon');
       anim.hold(node, def.view.hold);
+      held = node;
       current = { anim, dispose: () => anim.dispose() };
       joints = ch.joints;
       posed = { ch, weapon: node, hold: def.view.hold };
@@ -305,6 +324,9 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       orbit.radius = radius;
       await settle(4);
     },
+    /** How far the held gun goes into each hand as drawn (tools/gripInside.ts), third person or full-body first person. */
+    tune: (look: string, t: Parameters<typeof tunes.set>[1] | null) => (t ? tunes.set(look, t) : tunes.delete(look), undefined),
+    inside: () => (held && current ? gripInside([...(rig?.drawnMeshes ?? []), ...current.anim.ch.meshes], held) : null),
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
     /** Curl test: close the hands by this share of their curl (1 as the game does; 0 open), and redraw. */

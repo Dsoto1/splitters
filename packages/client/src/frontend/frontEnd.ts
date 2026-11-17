@@ -106,6 +106,7 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
 import { vibrationSupported } from '../game/rumble.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
@@ -239,6 +240,8 @@ const SETUP_ROWS = ['setup-variants-row'] as const;
  * Small screens and phones open one of the setup's rows at a time (the stylesheet's narrow and short layouts start
  * at the same sizes); a desktop opens as many as you like.
  */
+/** Narrow windows (a phone upright, most phones sideways): Match Setup takes the whole width and the map list opens as a picker over it (style.css, the 900 px rule). */
+const narrowSetup = (): boolean => typeof matchMedia === 'function' && matchMedia('(max-width: 900px)').matches;
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
@@ -386,6 +389,24 @@ function statBars(look: string, sizes: boolean): HTMLElement {
   );
 }
 
+/** Character Select's favourites (kept in this browser). */
+const CHAR_FAVS_KEY = 'tiletrigger.charFavs';
+function loadCharFavs(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(CHAR_FAVS_KEY) ?? '[]') as unknown;
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 300) : [];
+  } catch {
+    return [];
+  }
+}
+/** Keep or drop a favourite; whether it's kept now. */
+function toggleCharFav(id: string): boolean {
+  const favs = loadCharFavs();
+  const now = !favs.includes(id);
+  storage(CHAR_FAVS_KEY, JSON.stringify(now ? [...favs, id] : favs.filter((x) => x !== id)));
+  return now;
+}
+
 function storage(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
@@ -459,6 +480,11 @@ export class FrontEnd {
   private charFrom: ScreenId = 'home';
   /** The character shown on Character Select (clicked, not yet chosen): `look` changes only when it's confirmed. */
   private previewed: string | null = null;
+  /** Character Select's search (this visit) and Favourites-only filter. */
+  private charQuery = '';
+  private charFavsOnly = false;
+  /** A phone's Character Select: the details sheet is pulled up (style.css; docs/MOBILE_AUDIT.md, proposal 4). */
+  private charSheet = false;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
   /** The footer's fullscreen hint label shown now, and whether the page listener for it is on. */
   private fsLabel: HTMLElement | null = null;
@@ -549,6 +575,12 @@ export class FrontEnd {
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
     // Back (and Choose) on Character Select return to the screen that opened it.
     if (screen === 'characters' && this.screen !== 'characters') this.charFrom = this.screen;
+    // The map picker (a phone's Match Setup) is open only on Match Setup.
+    if (screen !== 'play') this.mapPicking = false;
+    if (screen !== 'characters') {
+      this.charSheet = false;
+      this.charQuery = '';
+    }
     this.screen = screen;
     this.footer.dataset.screen = screen;
     this.scene.setLook(this.previewed ?? this.look);
@@ -658,7 +690,7 @@ export class FrontEnd {
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play');
+    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.mapPicking ? document.getElementById('map-browse') : null);
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -830,6 +862,14 @@ export class FrontEnd {
       b.addEventListener('click', () => void this.quickPlay(mode));
       modes.append(b);
     }
+    // Pick a map: Match Setup with the map cards open (on a phone, the full-screen picker; docs/MOBILE_AUDIT.md, proposal 2).
+    const pick = el('button', { type: 'button', class: 'qp-mode qp-pick', id: 'qp-pick' }, el('span', { class: 'qp-pick-icon', textContent: '▦' }), el('b', { textContent: 'Pick a map' }), el('small', { textContent: 'Choose the map, then play' }));
+    pick.addEventListener('click', () => {
+      this.quickOpen = false;
+      this.mapPicking = narrowSetup();
+      this.go('play');
+    });
+    modes.append(pick);
     const close = el('button', { type: 'button', class: 'qp-close', title: 'Close (Esc)', textContent: '✕' });
     close.dataset.cancel = '';
     close.setAttribute('aria-label', 'Close');
@@ -1092,6 +1132,27 @@ export class FrontEnd {
     });
   }
 
+  /** A phone's (narrow window's) Match Setup: the map cards open full screen over the setup. */
+  private mapPicking = false;
+
+  private openMapPicker(): void {
+    this.mapPicking = true;
+    const screen = this.body.querySelector<HTMLElement>('.screen.play');
+    if (!screen) return;
+    screen.classList.add('picking');
+    // The map played now, in view.
+    const cards = screen.querySelector<HTMLElement>('#map-cards');
+    const on = cards?.querySelector<HTMLElement>('.map-card.on');
+    if (cards && on) cards.scrollTop = this.mapScroll = Math.max(0, on.offsetTop - cards.offsetTop - 8);
+    screen.querySelector<HTMLElement>('#map-pick-close')?.focus({ preventScroll: true });
+  }
+
+  private closeMapPicker(): void {
+    this.mapPicking = false;
+    this.body.querySelector('.screen.play')?.classList.remove('picking');
+    document.getElementById('arcade-map-pick')?.focus({ preventScroll: true });
+  }
+
   private arcade(): HTMLElement {
     const cards = el('div', { class: `map-cards${this.browse.view === 'list' ? ' list' : ''}`, id: 'map-cards' });
     // Picking a map redraws the setup only: the list stays where it was.
@@ -1259,6 +1320,7 @@ export class FrontEnd {
           const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
           if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
           this.refreshSetup();
+          if (this.mapPicking) this.closeMapPicker();
         });
         cards.append(card);
         lazy(card, draw);
@@ -1282,12 +1344,19 @@ export class FrontEnd {
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
     this.fillSetup(panel);
+    // A phone's picker: its own head with Close (hidden where the list sits beside the setup).
+    const closePick = el('button', { type: 'button', class: 'qp-close', id: 'map-pick-close', title: 'Close (Esc)', textContent: '✕' });
+    closePick.setAttribute('aria-label', 'Close');
+    closePick.dataset.cancel = '';
+    closePick.addEventListener('click', () => this.closeMapPicker());
+    const pickHead = el('div', { class: 'map-pick-head' }, el('h3', { textContent: 'Pick a map' }), closePick);
+    if (this.mapPicking) requestAnimationFrame(() => this.openMapPicker());
     // (The stylesheet lays these out as the mock-up does: the title over the map list, the setup panel the screen's whole height beside them.)
     return el(
       'div',
-      { class: 'screen play' },
+      { class: `screen play${this.mapPicking ? ' picking' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse' }, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, pickHead, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
     );
   }
 
@@ -1332,7 +1401,10 @@ export class FrontEnd {
     // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
     const thumbs = mapThumbs(map, isBuiltInEntry(current));
     requestAnimationFrame(thumbs.draw);
-    // The list is hidden on small screens: there, this picks the map.
+    // The list is hidden on narrow screens: there, this button opens it full screen (docs/MOBILE_AUDIT.md, proposal
+    // 2). The plain list stays in the page, hidden (tests and anything that reads it).
+    const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
+    mapPick.addEventListener('click', () => this.openMapPicker());
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
@@ -1384,6 +1456,7 @@ export class FrontEnd {
         ...(current.contentHash ? [el('p', { class: 'setup-community hint' }, `A player's map${current.metadata.author ? ` by ${current.metadata.author}` : ''}. `, reportButton(current.contentHash, map.metadata.name))] : []),
         facts,
         mapSelect,
+        mapPick,
       ),
       fitChip(fit, this.fitOpen, toggleFit, 'setup-fit'),
     );
@@ -2081,7 +2154,9 @@ export class FrontEnd {
 
     // Q / E (LB / RB) at the ends of the strip: buttons too.
     const bumper = (dir: 1 | -1) => {
-      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} section (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'));
+      // On a touch screen an arrow instead of the key caps (style.css).
+      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} section (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'), el('span', { class: 'bumper-arrow', textContent: dir > 0 ? '▶' : '◀' }));
+      b.setAttribute('aria-label', `${dir > 0 ? 'Next' : 'Previous'} section`);
       b.addEventListener('click', () => this.cycle(dir));
       return b;
     };
@@ -2094,10 +2169,17 @@ export class FrontEnd {
       chip.addEventListener('click', () => this.jumpToSection(s.id));
       chips.append(chip);
     }
-    const jump = el('nav', { class: 'char-jump' }, bumper(-1), chips, bumper(1));
+    // Search by name, and Favourites only (the star on a portrait keeps one; docs/MOBILE_AUDIT.md, proposal 4).
+    const search = el('input', { type: 'search', id: 'char-search', class: 'char-search', placeholder: 'Search…', value: this.charQuery, maxLength: 30, autocomplete: 'off' });
+    search.setAttribute('aria-label', 'Search characters');
+    const favsOnly = el('button', { type: 'button', id: 'char-favs-only', class: `char-favs-only${this.charFavsOnly ? ' on' : ''}`, title: 'Favourites only', textContent: '★' });
+    favsOnly.setAttribute('aria-pressed', String(this.charFavsOnly));
+    favsOnly.setAttribute('aria-label', 'Favourites only');
+    const jump = el('nav', { class: 'char-jump' }, bumper(-1), chips, bumper(1), el('div', { class: 'char-find' }, search, favsOnly));
     jump.setAttribute('aria-label', 'Character sections');
 
     const grid = el('div', { class: 'char-grid loading' });
+    const favs = new Set(loadCharFavs());
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
     // here (a design of yours, a look new since the last capture) shimmers in its own tile until it's ready,
     // instead of holding back the whole grid.
@@ -2110,6 +2192,27 @@ export class FrontEnd {
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}${c.id === selected ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
       // Your current character wears a badge; the one shown (previewed) is outlined.
       if (c.id === this.look) tile.append(el('em', { class: 'chosen-badge', textContent: 'Chosen' }));
+      // A favourite's star (a span: buttons can't hold buttons), shown on hover, focus, a touch screen, or when kept.
+      const fav = favs.has(c.id);
+      const star = el('span', { class: `char-fav${fav ? ' on' : ''}`, role: 'button', tabIndex: -1, title: fav ? 'Favourite: tap to drop' : 'Keep as a favourite', textContent: fav ? '★' : '☆' });
+      star.setAttribute('aria-pressed', String(fav));
+      star.setAttribute('aria-label', `Favourite: ${c.name}`);
+      const flip = (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const now = toggleCharFav(c.id);
+        if (now) favs.add(c.id);
+        else favs.delete(c.id);
+        for (const s of grid.querySelectorAll<HTMLElement>(`.char-tile[data-look="${CSS.escape(c.id)}"] .char-fav`)) {
+          s.classList.toggle('on', now);
+          s.textContent = now ? '★' : '☆';
+          s.setAttribute('aria-pressed', String(now));
+        }
+        if (this.charFavsOnly) filter();
+      };
+      star.addEventListener('click', flip);
+      star.addEventListener('pointerdown', (e) => e.stopPropagation());
+      tile.append(star);
       const load = () =>
         this.portraits.get(c.id).then(
           async (src) => {
@@ -2142,6 +2245,42 @@ export class FrontEnd {
       sec.setAttribute('aria-label', s.label);
       grid.append(sec);
     }
+    // The search and Favourites only: tiles that don't match hide, and so do sections (and their chips) left empty.
+    const empty = el('p', { class: 'char-empty', hidden: true });
+    grid.append(empty);
+    const filter = () => {
+      const q = this.charQuery.trim().toLowerCase();
+      let shown = 0;
+      for (const sec of grid.querySelectorAll<HTMLElement>('.char-sec')) {
+        let n = 0;
+        for (const t of sec.querySelectorAll<HTMLElement>('.char-tile[data-look]')) {
+          const name = (t.title || '').toLowerCase();
+          const ok = (!q || name.includes(q)) && (!this.charFavsOnly || favs.has(t.dataset.look!));
+          t.hidden = !ok;
+          if (ok) n++;
+        }
+        const design = sec.querySelector<HTMLElement>('.char-tile.new');
+        if (design) design.hidden = !!q || this.charFavsOnly;
+        sec.hidden = n === 0 && (!!q || this.charFavsOnly);
+        chips.querySelector<HTMLElement>(`.char-chip[data-section="${CSS.escape(sec.dataset.section!)}"]`)?.toggleAttribute('hidden', sec.hidden);
+        shown += n;
+      }
+      empty.hidden = shown > 0;
+      empty.textContent = this.charFavsOnly && !favs.size ? 'No favourites yet: the star on a portrait keeps one here.' : `No characters match${q ? ` "${this.charQuery.trim()}"` : ''}${this.charFavsOnly ? ' among your favourites' : ''}.`;
+      onScroll();
+    };
+    search.addEventListener('input', () => {
+      this.charQuery = search.value;
+      grid.scrollTop = 0;
+      filter();
+    });
+    favsOnly.addEventListener('click', () => {
+      this.charFavsOnly = !this.charFavsOnly;
+      favsOnly.classList.toggle('on', this.charFavsOnly);
+      favsOnly.setAttribute('aria-pressed', String(this.charFavsOnly));
+      grid.scrollTop = 0;
+      filter();
+    });
     void Promise.all(pending).then(() => {
       grid.classList.remove('loading');
       for (const start of live) start();
@@ -2159,6 +2298,7 @@ export class FrontEnd {
     };
     for (const ev of ['wheel', 'touchstart', 'pointerdown'] as const) grid.addEventListener(ev, takeOver, { passive: true });
     new ResizeObserver(onScroll).observe(grid);
+    if (this.charQuery || this.charFavsOnly) requestAnimationFrame(filter);
     // Open on your character (or the one shown): their section scrolled to, unless they're in the first view.
     this.charSection = null;
     requestAnimationFrame(() => {
@@ -2167,14 +2307,14 @@ export class FrontEnd {
       this.markSection(this.sectionInView(grid));
     });
 
-    const info = el('div', { class: 'char-info panel' });
+    const info = el('div', { class: `char-info panel${this.charSheet ? ' sheet-open' : ''}`, id: 'char-info' });
     this.fillInfo(info, selected);
     return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>'), jump, grid, info, this.spinZone());
   }
 
   /** The section at the top of the grid's view (the last one once the grid is scrolled to its end). */
   private sectionInView(grid: HTMLElement): string | null {
-    const secs = [...grid.querySelectorAll<HTMLElement>('.char-sec')];
+    const secs = [...grid.querySelectorAll<HTMLElement>('.char-sec:not([hidden])')];
     if (!secs.length) return null;
     if (grid.scrollTop > 0 && grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 2) return secs[secs.length - 1]!.dataset.section!;
     let at = secs[0]!;
@@ -2231,7 +2371,7 @@ export class FrontEnd {
 
   /** Q / E (LB / RB) on Character Select: the previous or next section (round from the last to the first). */
   private stepSection(dir: 1 | -1): void {
-    const ids = [...this.body.querySelectorAll<HTMLElement>('.char-sec')].map((s) => s.dataset.section!);
+    const ids = [...this.body.querySelectorAll<HTMLElement>('.char-sec:not([hidden])')].map((s) => s.dataset.section!);
     if (!ids.length) return;
     const i = Math.max(0, ids.indexOf(this.charSection ?? ids[0]!));
     this.jumpToSection(ids[(i + dir + ids.length) % ids.length]!, true);
@@ -2247,7 +2387,7 @@ export class FrontEnd {
     const grid = this.body.querySelector<HTMLElement>('.char-grid');
     const f = document.activeElement as HTMLElement | null;
     if (!grid || (f && f !== document.body && !grid.contains(f))) return false;
-    const tiles = [...grid.querySelectorAll<HTMLElement>('.char-tile')];
+    const tiles = [...grid.querySelectorAll<HTMLElement>('.char-tile')].filter((t) => !t.hidden && !t.closest('[hidden]'));
     const from = f && grid.contains(f) ? f : (grid.querySelector<HTMLElement>('.char-tile.previewing') ?? tiles[0]);
     if (!from) return false;
     let to: HTMLElement | undefined;
@@ -2347,12 +2487,13 @@ export class FrontEnd {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
       const group = lookGroup(id);
       const kind = group ? CHARACTER_GROUP_LABELS[group] : NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
-      info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout, el('div', { class: 'char-actions' }, choose));
+      info.replaceChildren(this.sheetToggle(), img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout, el('div', { class: 'char-actions' }, choose));
       return;
     }
     const bot = CHARACTER_PROFILES[id];
     const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
+      this.sheetToggle(),
       img,
       el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       ...(stats ? [stats] : []),
@@ -2361,8 +2502,31 @@ export class FrontEnd {
     );
   }
 
+  /**
+   * A phone's details sheet (style.css: Character Select on a phone): its handle pulls it up or lets it down. Down, the
+   * sheet is a strip with the name and Choose; up, everything (stats, loadout, Customise).
+   */
+  private sheetToggle(): HTMLElement {
+    const b = el('button', { type: 'button', class: 'char-sheet-toggle', id: 'char-sheet-toggle', title: this.charSheet ? 'Hide the details' : 'Show the details' }, el('span', { textContent: this.charSheet ? '▾' : '▴' }));
+    b.setAttribute('aria-expanded', String(this.charSheet));
+    b.setAttribute('aria-label', this.charSheet ? 'Hide the details' : 'Show the details');
+    b.addEventListener('click', () => this.setCharSheet(!this.charSheet));
+    return b;
+  }
+
+  private setCharSheet(open: boolean): void {
+    this.charSheet = open;
+    const info = this.body.querySelector<HTMLElement>('.char-info');
+    if (!info) return;
+    info.classList.toggle('sheet-open', open);
+    info.querySelector('.char-sheet-toggle')?.replaceWith(this.sheetToggle());
+  }
+
   private preview(id: string): void {
     this.previewed = id;
+    // A phone: the details come up with the character shown (a tap on the one already up lets the sheet stay).
+    this.charSheet = true;
+    this.body.querySelector('.char-info')?.classList.add('sheet-open');
     this.scene.setLook(id);
     for (const t of this.body.querySelectorAll<HTMLElement>('.char-tile[data-look]')) t.classList.toggle('previewing', t.dataset.look === id);
     const info = this.body.querySelector('.char-info');
@@ -2707,7 +2871,26 @@ export class FrontEnd {
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
     aimMode.id = 'opt-aim-mode';
-    aimMode.addEventListener('change', () => saveCombatPrefs({ aim: aimMode.value as AimMode }));
+    // The same setting in Controls → Touch (a phone or tablet): the two stay in step.
+    const touchAim = el('select', { id: 'opt-touch-aim' }, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
+    aimMode.addEventListener('change', () => {
+      saveCombatPrefs({ aim: aimMode.value as AimMode });
+      touchAim.value = aimMode.value;
+    });
+    touchAim.addEventListener('change', () => {
+      saveCombatPrefs({ aim: touchAim.value as AimMode });
+      aimMode.value = touchAim.value;
+    });
+    // The touch controls' layout (game/touchLayout.ts; docs/MOBILE_AUDIT.md, proposal 3).
+    const tl = touchLayout();
+    const touchSize = el('select', { id: 'opt-touch-size' }, ...TOUCH_SIZES.map((z) => el('option', { value: z, textContent: TOUCH_SIZE_LABELS[z], selected: z === tl.size })));
+    touchSize.addEventListener('change', () => saveTouchLayout({ size: touchSize.value as TouchSize }));
+    const touchOpacity = el('input', { id: 'opt-touch-opacity', type: 'range', min: String(MIN_TOUCH_OPACITY), max: '1', step: '0.05', value: String(tl.opacity) });
+    const touchOpacityVal = el('output', { textContent: `${Math.round(tl.opacity * 100)}%` });
+    touchOpacity.addEventListener('input', () => (touchOpacityVal.textContent = `${Math.round(Number(touchOpacity.value) * 100)}%`));
+    touchOpacity.addEventListener('change', () => saveTouchLayout({ opacity: Number(touchOpacity.value) }));
+    const leftHanded = el('input', { id: 'opt-touch-left', type: 'checkbox', checked: tl.leftHanded });
+    leftHanded.addEventListener('change', () => saveTouchLayout({ leftHanded: leftHanded.checked }));
     const shake = el('select', {}, ...SHAKE_LEVELS.map((l) => el('option', { value: l, textContent: SHAKE_LABELS[l], selected: l === combat.shake })));
     shake.id = 'opt-camera-shake';
     shake.addEventListener('change', () => saveCombatPrefs({ shake: shake.value as ShakeLevel }));
@@ -2806,11 +2989,11 @@ export class FrontEnd {
     const pad = 'Controller: ';
     // Phones and tablets (game/touchControls.ts).
     const touchList = bindingList([
-      ['Move (push past the rim to sprint)', 'Left pad'],
+      ['Move (push past the rim to sprint)', touchLayout().leftHanded ? 'Right pad' : 'Left pad'],
       ['Jump · crouch', "Tap · hold the pad's middle"],
-      ['Look', 'Drag on the right half'],
+      ['Look', touchLayout().leftHanded ? 'Drag on the left half' : 'Drag on the right half'],
       ['Fire (drag it to aim while firing)', 'Fire'],
-      ['Aim down sights (toggle)', 'Aim'],
+      ['Aim down sights (hold or toggle: Aim above)', 'Aim'],
       ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
@@ -2912,7 +3095,16 @@ export class FrontEnd {
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
-        ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),
+        ...(isTouchDevice()
+          ? [
+              el('h3', { class: 'opt-sub', textContent: 'Touch' }),
+              row('Button size', touchSize, 'The movement pad and the buttons. Large is kept a little smaller on short screens, so the buttons stay clear of the kill feed.'),
+              row('Button opacity', el('span', { class: 'opt-range' }, touchOpacity, touchOpacityVal), 'How solid the pad and buttons are drawn: lower to see more of the game behind them. A pressed button always shows in full.'),
+              row('Left-handed', toggle(leftHanded), 'The pad on the right and the buttons on the left; drag on the left half to look.'),
+              row('Aim', touchAim, 'Hold: aim while the Aim button is held. Toggle (the default on a phone): tap to aim, tap again to stop; changing weapons, getting in a vehicle or dying lets go. The same setting as Accessibility → Aim.'),
+              touchList,
+            ]
+          : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
         keyboard,
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
@@ -2930,7 +3122,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
-        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone the Aim button always toggles. Also in the pause menu.'),
+        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
           ? [
@@ -2990,6 +3182,7 @@ export class FrontEnd {
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
       // Match setup's saved setups menu, open: Esc closes it (one level per press).
       if (this.screen === 'home' && this.quickOpen) return this.closeQuickPlay();
+      if (this.screen === 'play' && this.mapPicking) return this.closeMapPicker();
       const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open], #arcade-where-menu[open]') : null;
       if (menu) {
         menu.open = false;

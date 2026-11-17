@@ -78,7 +78,7 @@ describe('aim: hold or toggle', () => {
     expect(a.update(true, 'toggle')).toBe(true);
   });
 
-  it('in play: right mouse toggles ADS (the same button scopes and works the Battle Rifle optic), a weapon change lets go, touch keeps its own latch', async () => {
+  it('in play: right mouse toggles ADS (the same button scopes and works the Battle Rifle optic), a weapon change lets go, the touch Aim button follows the setting', async () => {
     const { InputState } = await import('../src/game/input.ts');
     const canvas = new EventTarget() as unknown as HTMLCanvasElement;
     (document as unknown as { pointerLockElement: unknown }).pointerLockElement = canvas;
@@ -112,9 +112,17 @@ describe('aim: hold or toggle', () => {
       expect(input.zooming).toBe(true);
       mouse('pointerup', 0);
       expect(input.zooming).toBe(false);
-      // Touch's Aim button is already a toggle (it holds X until tapped again): it works the same with either setting.
+      // Touch's Aim button holds X while pressed and follows the setting (docs/MOBILE_AUDIT.md, proposal 3): Toggle
+      // latches on a tap and the next tap lets go; Hold aims only while the finger is down.
       saveCombatPrefs({ aim: 'toggle' });
       input.setTouchEngaged(true);
+      input.virtualKey('KeyX', true);
+      input.virtualKey('KeyX', false);
+      expect(input.zooming).toBe(true);
+      input.virtualKey('KeyX', true);
+      input.virtualKey('KeyX', false);
+      expect(input.zooming).toBe(false);
+      saveCombatPrefs({ aim: 'hold' });
       input.virtualKey('KeyX', true);
       expect(input.zooming).toBe(true);
       input.virtualKey('KeyX', false);
