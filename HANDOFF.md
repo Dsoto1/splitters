@@ -105,6 +105,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Green: the Dropship's model bug** (`wip/dropship-model-fix` at 7ef3332a, green on `check/dropship-model-fix`, run 44125908518; a helper of lane B's splitters22, 2026-11-17; ready to land). Not a broken model and not a regression (the model file is unchanged since it landed on 2026-11-16; all its meshes, both detail levels and its texture load and draw). Cause: team paint multiplies the whole model by the team colour; the owner's olive-and-white carrier under Shingle Point's blue (#3f7fd8) turns its olive near black and its white flat blue, so a team-owned Dropship read as a black and blue box. The open deck, benches and floor seen from above are the model's design (an open carrier, no roof); the smoke was its damage state. Fix: `MountDef.paint` (0 to 1, default 1: the tint mixed that far from white before it multiplies), 0.5 on `dropship` and `dropship_drop`; every other vehicle unchanged. Test `client/test/mountPaint.test.ts`. Owner question pending in the lead's report: the other textured vehicles darken the same way under team paint (about 4 times darker).
 
+**Landing now: train** (`wip/farlooks-kit2`, `wip/tunnels-8-ironmaw`; lane B's splitters22, 2026-11-17 19:00 UTC): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/st-johns-spruces` · run 44143716184 (St. John's spruces, curved wall and the Royal purple banner lamp posts, at 575b964c; a helper of lane B's splitters22)
 
