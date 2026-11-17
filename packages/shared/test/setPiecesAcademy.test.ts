@@ -146,6 +146,11 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
       ...[0, 4, 8].flatMap((y) => [-2, 2, 6, 10].map((cx): P3[] => [[4, y, 4], [cx, y, 8.3], [4, y, 4]])),
     ],
   },
+  // St. John's step 5 (Stangeland / Cord): the classroom bay. Along the hall (as far as the closed east end allows);
+  // into each classroom at its back door, to the back by the windows, along the front aisle past the rows, and out.
+  'setpiece.classroom_bay': {
+    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [-2.2, 0, 1.4], [0, 0, 4]]))],
+  },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
     chains: [[[-3, 0, -3.5], [-3, 0, 3.5], [3.5, 0, 3.5]]],
@@ -289,6 +294,16 @@ describe('the wall styles the bays are built with', () => {
     expect(segs).toContainEqual([-0.6, 0.6, 3, 4, 0.5]);
   });
 
+  it('the classroom windows are four sashes 1.25 m wide from 0.9 to 3.2 m, clear of a facade\'s buttresses; one pane each', () => {
+    expect(EDGE_SHAPES.windows_school!.openings).toEqual([[-3.1, -1.85, 0.9, 3.2], [-1.45, -0.2, 0.9, 3.2], [0.2, 1.45, 0.9, 3.2], [1.85, 3.1, 0.9, 3.2]]);
+    // The Collegiate facades' buttresses stand 0.13 to 0.77 m in from a side's ends (half − 0.45 ± 0.32).
+    for (const [u0, u1] of EDGE_SHAPES.windows_school!.openings) expect(Math.max(Math.abs(u0), Math.abs(u1))).toBeLessThan(4 - 0.45 - 0.32 - 0.1);
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.classroom_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const panes = windowPanes(map);
+    expect(panes).toHaveLength(8);
+    expect(panes.every((p) => p.kind === 'breakable')).toBe(true);
+  });
+
   it('the sash is drawn in the wall by the glass, in its own paint; nothing of it collides', () => {
     const trim = edgeTrimBoxes('window_sash', 4, 4);
     const sash = trim.filter((p) => p.surface);
@@ -352,6 +367,9 @@ describe('what the bays are made of, and what they cost', () => {
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
+    // A classroom bay: two rooms of 7 props (door, three rows of four desks, the teacher's desk, chalkboard, screen).
+    expect(made('setpiece.classroom_bay')).toMatchObject({ tiles: 2, blocks: 10, props: 14, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks']);
   });
 
   it('no door of a hall thinks: every door is a still prop (no door entities, no breakable props but the ones the catalogue leaves)', () => {
