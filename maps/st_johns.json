@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_is7hex4sibe4frjv",
-      "revision": 18,
-      "contentHash": "sha256:1775f2e477d12ff62d22de1b503a02963a180fa4f5dcba5beb45a0217163c663",
+      "versionId": "v_eulxjzhgxys47wk3",
+      "revision": 19,
+      "contentHash": "sha256:39140256088ae87989c8d9c0e2b374e76a2e288b2387256ad761f082347253e4",
       "schemaVersion": 45,
-      "releasedAt": "2026-11-17T13:27:20.078Z"
+      "releasedAt": "2026-11-17T17:19:58.476Z"
     }
   },
   "classicStructure": {
@@ -52145,12 +52145,12 @@
     },
     {
       "id": "prop_qts0c1br1c",
-      "kind": "prop",
       "position": [
         -116,
         -0.09,
         -57
       ],
+      "kind": "prop",
       "model": "env.conifer.spruce",
       "yaw": 0.401,
       "scale": 0.75,
@@ -52159,12 +52159,12 @@
     },
     {
       "id": "prop_znk7r12n0o",
-      "kind": "prop",
       "position": [
         -108,
         -0.08,
         -57
       ],
+      "kind": "prop",
       "model": "env.conifer.spruce",
       "yaw": 2.094,
       "scale": 0.75,
@@ -52173,102 +52173,102 @@
     },
     {
       "id": "prop_0sag0luw3t",
-      "kind": "prop",
       "position": [
         -128.5,
         -0.84,
         -55.5
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": 0.698,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_4tw978dgz3",
-      "kind": "prop",
       "position": [
         -127,
         -0.75,
         -56.5
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": 0.419,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_58q7mf5eb8",
-      "kind": "prop",
       "position": [
         -125,
         -0.64,
         -57
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": 0.14,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_3459ewaolt",
-      "kind": "prop",
       "position": [
         -123,
         -0.46,
         -57
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": -0.14,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_zzt4gpx8uz",
-      "kind": "prop",
       "position": [
         -121,
         -0.3,
         -56.5
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": -0.419,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_7mfvzrvurk",
-      "kind": "prop",
       "position": [
         -119.5,
         -0.3,
         -55.5
       ],
+      "kind": "prop",
       "model": "kit.wall.stone",
       "yaw": -0.698,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_qafubgr7py",
-      "kind": "prop",
       "position": [
         -118,
         -0.21,
         -56
       ],
+      "kind": "prop",
       "model": "kit.wall.pier",
       "yaw": 0,
       "scale": 1,
@@ -52277,31 +52277,33 @@
     },
     {
       "id": "prop_cr7rogzi50",
-      "kind": "prop",
       "position": [
         -114.5,
         -0.32,
         -54.5
       ],
+      "kind": "prop",
       "model": "kit.lamp.post_banner",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_u2ewet59uc",
-      "kind": "prop",
       "position": [
         -109.5,
         -0.31,
         -54.5
       ],
+      "kind": "prop",
       "model": "kit.lamp.post_banner",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     }
   ],
   "factions": [],
