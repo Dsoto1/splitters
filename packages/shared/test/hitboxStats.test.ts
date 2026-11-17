@@ -16,6 +16,8 @@ import {
   classStats,
   getLook,
   getWeapon,
+  gunplayOf,
+  FAMILY_DEFAULTS,
   headPoint,
   initPhysics,
   lookAngles,
@@ -113,6 +115,52 @@ describe('zones in the match come from the shapes', () => {
       expect(zoneAt((b) => ({ x: b.move.pos.x - mid[2] * k, y: mid[1] * k, z: b.move.pos.z + mid[0] * k }))).toEqual({ hit: 1, z: 2 });
     });
   }
+});
+
+describe('arms are their own zone (GUNPLAY_SPEC §11)', () => {
+  for (const look of ['core.ranger', 'core.knight', 'core.hyena']) {
+    it(`${look}: a round that clips a forearm held out in front, side-on, is an arm shot for the family's arm multiple; through the chest it is a body shot`, () => {
+      const shoot = (to: (b: Combatant) => { x: number; y: number; z: number }, sideOn: boolean) => {
+        const { d, a, b } = pair(look);
+        give(a, 'core.revolver');
+        // Side-on: b turned a quarter from facing a, its right side towards a.
+        if (sideOn) b.yaw += Math.PI / 2;
+        const before = b.health;
+        const aim = lookAngles(eye(a.move.pos), to(b));
+        const ev = d.run(30, () => (d.input(a, { ...aim, buttons: BUTTON_FIRE }), d.input(b, { yaw: b.yaw })));
+        return { ...landed(ev)[0], dealt: before - b.health };
+      };
+      const box = lookHitbox(look).box.stand;
+      const k = matchStats(look, rules).size;
+      // The forearm nearest the shooter when side-on (its right arm: +x in the body frame), near its tip.
+      const arm = box.arms.reduce((p, q) => (Math.max(q.a[0], q.b[0]) > Math.max(p.a[0], p.b[0]) ? q : p));
+      const u = 0.85;
+      const at = [arm.a[0] + (arm.b[0] - arm.a[0]) * u, arm.a[1] + (arm.b[1] - arm.a[1]) * u, arm.a[2] + (arm.b[2] - arm.a[2]) * u] as const;
+      const world = (b: Combatant) => {
+        const sin = Math.sin(b.yaw), cos = Math.cos(b.yaw);
+        return { x: b.move.pos.x + (at[0] * cos + at[2] * sin) * k, y: b.move.pos.y + at[1] * k, z: b.move.pos.z + (-at[0] * sin + at[2] * cos) * k };
+      };
+      const t = box.torso!;
+      const chest = (b: Combatant) => ({ x: b.move.pos.x, y: ((t.a[0] + t.b[0]) / 2) * k, z: b.move.pos.z });
+      const armShot = shoot(world, true);
+      const bodyShot = shoot(chest, true);
+      expect(armShot.hit).toBe(1);
+      expect(armShot.z).toBe(3);
+      expect(bodyShot.z).toBe(0);
+      const arms = gunplayOf(getWeapon('core.revolver')).arms;
+      expect(arms).toBe(0.9);
+      expect(armShot.dealt).toBeCloseTo(bodyShot.dealt * arms, 5);
+    });
+  }
+
+  it('every bullet family sets an arm multiple within the spec (0.8-1.0), at or above its legs and under its head', () => {
+    for (const [id, f] of Object.entries(FAMILY_DEFAULTS)) {
+      expect(f.arms, id).toBeGreaterThanOrEqual(0.8);
+      expect(f.arms, id).toBeLessThanOrEqual(1);
+      expect(f.arms, id).toBeGreaterThanOrEqual(f.legs);
+      expect(f.arms, id).toBeLessThan(f.head);
+    }
+  });
 });
 
 describe('lag compensation uses the same shapes', () => {
