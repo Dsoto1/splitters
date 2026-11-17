@@ -326,6 +326,8 @@ power weapons.
 
 ## The benchmark seven
 
+(2026-11-16: the clearer ranges changed the Pistol's and SMG's far columns; the current figures are in GUNPLAY_SPEC.md §10's TTK table and §37, and `docs/gunplay-audit.json`.)
+
 | | Service Pistol | Heavy Revolver | SMG | Assault Rifle | Shotgun | Precision Rifle | Rocket Launcher |
 |---|---|---|---|---|---|---|---|
 | Weapon | `core.pistol` | `core.revolver` | `core.smg` | `core.rifle` | `core.shotgun` | `core.sniper` | `core.rockets` |

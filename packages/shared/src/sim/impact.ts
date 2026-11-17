@@ -18,41 +18,49 @@ import { hypot } from '../math.ts';
  * so the local player's prediction replays it on reconciliation like any push.
  */
 export const IMPACT = {
-  /** Shove (m/s along the shot) at stopping power 1, for a full-damage hit. */
-  shove: 3.6,
-  /** Share of speed taken away at stopping power 1. */
-  slow: 0.42,
-  /** Stagger seconds at stopping power 0 and at 1. */
+  /** Shove (m/s along the shot) at stopping power 1, for a full-damage hit (3.6 before the owner's "punchier" of 2026-11-16). */
+  shove: 4.4,
+  /** Share of speed taken away at stopping power 1 (0.42 before 2026-11-16). */
+  slow: 0.48,
+  /** Stagger seconds at stopping power 0 and at 1 (0.12-0.42 before 2026-11-16). */
   minSeconds: 0.12,
-  maxSeconds: 0.42,
-  /** Caps per stagger window: total shove (m/s), deepest slow, longest window. */
-  maxShove: 4.5,
+  maxSeconds: 0.5,
+  /**
+   * Caps per stagger window: total shove (m/s), deepest slow, longest window. The no-stun-lock caps (slow, window,
+   * immunity) are as they were; the shove's cap grew with the shove (4.5 at 3.6), so one full blast is never cut.
+   */
+  maxShove: 5.5,
   maxSlow: 0.5,
   maxStaggerSeconds: 0.6,
   /** After a window: no stopping power for this long. */
   immunitySeconds: 0.5,
+  /** Someone in the air has no ground to take the shove back off: it is this much harder too (on top of the cap). */
+  airShove: 1.5,
 } as const;
 
 /** Stopping power (0..1) by weapon category, when a weapon sets none of its own. */
 export const STOPPING_BY_CATEGORY: Record<WeaponCategory, number> = {
-  pistol: 0.15,
-  smg: 0.12,
+  // Owner, 2026-11-16 ("punchier please"): the heavy hitters most, rifles a little more (through IMPACT.shove), SMGs
+  // and pistols as light as before (0.12 and 0.15 at the old shove).
+  pistol: 0.12,
+  smg: 0.1,
   rifle: 0.3,
-  shotgun: 0.8,
-  sniper: 0.9,
+  shotgun: 1,
+  sniper: 1,
   explosive: 0.4,
   melee: 0.55,
   special: 0.25,
 };
-/** Heavy revolvers and hand cannons hit like a rifle round. */
-const REVOLVER_STOPPING = 0.45;
+/** By family, over the category: heavy revolvers and hand cannons (0.45 before 2026-11-16) and the Battle Rifle (a rifle's 0.3) hit hard. */
+const STOPPING_BY_FAMILY: Partial<Record<string, number>> = { revolver: 0.75, battle_rifle: 0.6 };
 /** Mounted guns, tools and anything without a category. */
 const DEFAULT_STOPPING = 0.3;
 
 /** A weapon's stopping power, 0..1: its own, its family's (revolvers), or its category's. */
 export function stoppingPower(def: Pick<WeaponDefinition, 'stoppingPower' | 'category' | 'family' | 'kind'>): number {
   if (def.stoppingPower !== undefined) return Math.max(0, Math.min(1, def.stoppingPower));
-  if (def.family === 'revolver') return REVOLVER_STOPPING;
+  const fam = def.family ? STOPPING_BY_FAMILY[def.family] : undefined;
+  if (fam !== undefined) return fam;
   return def.category ? STOPPING_BY_CATEGORY[def.category] : DEFAULT_STOPPING;
 }
 

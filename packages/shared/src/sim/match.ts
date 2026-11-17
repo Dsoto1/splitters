@@ -108,13 +108,13 @@ import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, impactFalloff, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
   type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
 import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
-import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
+import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -555,6 +555,13 @@ interface Bullet {
   energy: number;
   /** Damage left after penetrations and ricochets (1 = full). */
   scale: number;
+  /**
+   * Damage by impact speed (gunplay.ts impactFalloff): the speed its muzzle speed has become through what it passed
+   * (penetration, water, a ricochet: their damage is in `scale`), so speed / ref is what drag alone left; and its
+   * speed at the start of the segment being flown (the strike's speed is read along it).
+   */
+  ref: number;
+  seg: number;
   pens: number;
   rics: number;
   /** Surfaces it passed through or glanced off (drawn as impacts). */
@@ -3731,11 +3738,12 @@ export class Match {
   /**
    * Stopping power (sim/impact.ts): a hit by `weapon` with `share` of a full shot's damage shoves a
    * living body a little along `dir` and slows it briefly, within the stagger caps and immunity.
-   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly.
+   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly; someone in the air takes
+   * IMPACT.airShove times as much, and keeps it until they land.
    */
   private stagger(victim: Combatant, power: number, dir: Vec3, share: number): void {
     if (!victim.alive || victim.mount || victim.invulnerable) return;
-    const shove = hitImpact(victim.impact, power, share);
+    const shove = hitImpact(victim.impact, power, share) * (victim.move.grounded ? 1 : IMPACT.airShove);
     if (shove <= 0) return;
     const h = hypot(dir.x, dir.z);
     if (h < 0.05) return;
@@ -4092,7 +4100,7 @@ export class Match {
     let armored = false;
     for (let p = 0; p < Math.max(1, def.pellets); p++) {
       const dir = this.spreadDir(aim, spread);
-      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, pens: 0, rics: 0, marks: [], born: this.tick };
+      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, ref: phys.speed, seg: phys.speed, pens: 0, rics: 0, marks: [], born: this.tick };
       // Near range: one straight ray, no time taken.
       const near = add(eye, scale(dir, Math.min(NEAR_INSTANT_M, def.range)));
       b.pos = near;
@@ -4175,6 +4183,7 @@ export class Match {
   private flyTick(b: Bullet, targets: ShotTargets): BulletEnd | null {
     const dt = TICK_DT / BULLET_SUBSTEPS;
     for (let i = 0; i < BULLET_SUBSTEPS; i++) {
+      b.seg = hypot(b.vel.x, b.vel.y, b.vel.z);
       const seg = flyBullet(b, b.gravity, b.drag, dt);
       b.age += dt;
       const end = this.bulletSegment(b, seg.from, seg.to, targets);
@@ -4242,7 +4251,7 @@ export class Match {
       }
       const kept = left / b.energy;
       b.energy = left;
-      b.vel = scale(b.vel, Math.sqrt(kept));
+      this.slowBullet(b, Math.sqrt(kept));
       b.scale *= kept;
     }
     // Breakable glass before whatever stops it shatters, and the round goes on a little weaker (GLASS.passDamage).
@@ -4254,7 +4263,7 @@ export class Match {
     if (victim) {
       const at = add(a, scale(u, best));
       const gp = gunplayOf(getWeapon(b.trig.id));
-      const damage = b.trig.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, b.travelled + best) * b.scale;
+      const damage = b.trig.damage * zoneScale(gp, zone) * this.bulletFalloff(b, gp, best, len) * b.scale;
       return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
     }
     if (wall) {
@@ -4265,14 +4274,15 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
-      this.noteTargetHit(owner, wall.handle, raw * falloffAt(gunplayOf(getWeapon(b.trig.id)).falloff, b.travelled + wall.dist), at);
+      this.noteTargetHit(owner, wall.handle, raw * this.bulletFalloff(b, gunplayOf(getWeapon(b.trig.id)), wall.dist, len), at);
       if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
       const grazing = Math.asin(Math.min(1, Math.abs(u.x * n.x + u.y * n.y + u.z * n.z)));
       if (b.rics < MAX_RICOCHETS && spec.ricochet > 0 && grazing < RICOCHET_MAX_ANGLE && ricochets(mat, grazing, this.rng())) {
         const vn = b.vel.x * n.x + b.vel.y * n.y + b.vel.z * n.z;
-        b.vel = scale({ x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z }, 0.6);
+        b.vel = { x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z };
+        this.slowBullet(b, 0.6);
         b.pos = add(at, scale(n, 0.02));
         b.scale *= 0.5;
         b.energy *= 0.4;
@@ -4290,7 +4300,7 @@ export class Match {
           if (left !== null) {
             const kept = left / b.energy;
             b.energy = left;
-            b.vel = scale(b.vel, Math.sqrt(kept));
+            this.slowBullet(b, Math.sqrt(kept));
             b.scale *= kept;
             b.pens++;
             b.travelled += wall.dist + thick;
@@ -4304,6 +4314,23 @@ export class Match {
     }
     b.travelled += len;
     return null;
+  }
+
+  /** A bullet slowed by what it passed (penetration, water, a ricochet): its damage takes that share through `scale`, so the speed reference goes down with it. */
+  private slowBullet(b: Bullet, k: number): void {
+    b.vel = scale(b.vel, k);
+    b.ref *= k;
+    b.seg *= k;
+  }
+
+  /**
+   * Damage multiple of a bullet striking `at` metres along the segment it is flying (`len` long): by its speed at the
+   * strike over its muzzle speed under Standard and Advanced ballistics, by distance flown under Arcade (impactFalloff).
+   */
+  private bulletFalloff(b: Bullet, gp: Gunplay, at: number, len: number): number {
+    const end = hypot(b.vel.x, b.vel.y, b.vel.z);
+    const speed = b.seg + (end - b.seg) * Math.min(1, Math.max(0, at / Math.max(len, 1e-6)));
+    return impactFalloff(gp, this.rules, b.travelled + at, b.ref > 0 ? speed / b.ref : 1);
   }
 
   /** Where a ray entering a surface at `at` comes out (null: thicker than a metre or so, or solid all the way). */

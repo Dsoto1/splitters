@@ -122,6 +122,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { SteadyArcs } from './steadyArcs.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
@@ -1005,11 +1006,12 @@ export class GameView {
     const anim = a?.anim;
     if (!a || !(anim instanceof CharacterAnimator)) return;
     const k = Math.min(1, strength / 2);
-    anim.flinch(zone, dir, 0.35 + 0.65 * k);
+    anim.flinch(zone, dir, 0.45 + 0.55 * k, reduceFlashing());
     // The hit clip over the flinch only where it shows (as remote shots' recoil, SHOT_OVERLAY_REACH).
     const eye = this.scene.activeCamera?.globalPosition;
     const near = !eye || Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) <= SHOT_OVERLAY_REACH;
-    if (strength >= 1.6 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+    // Heavy hits (stopping power 0.6 and up: the Battle Rifle, revolvers, shotguns, snipers) play the hit clip.
+    if (strength >= 1.3 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
   }
 
   /** The low-health warning's grey (lowHealth.ts): colour taken off the world grade's saturation (`delta` ≤ 0). */
@@ -1699,6 +1701,13 @@ export class GameView {
     this.steadyEye.pos.set(eye.x, eye.y, eye.z);
     this.steadyEye.yaw = yaw;
     this.steadyEye.pitch = pitch;
+    // The hit kick (hitKick.ts): presentation only, the aim stays where it is.
+    if (this.hitKickState) {
+      const k = kickAt(this.hitKickState, performance.now() / 1000);
+      if (k.pitch === 0 && k.yaw === 0) this.hitKickState = null;
+      yaw += k.yaw;
+      pitch += k.pitch;
+    }
     const shake = this.currentShake();
     if (shake > 0) {
       // Trauma squared: big blasts jolt, small ones barely tremble.
@@ -3421,6 +3430,16 @@ export class GameView {
       const p = { x: at.x + (Math.random() - 0.5) * radius, y: at.y + Math.random() * radius * 0.6, z: at.z + (Math.random() - 0.5) * radius };
       this.impacts.puff(p, i % 3 ? '#1b1917' : '#3a3633', radius * (0.5 + Math.random() * 0.4), 2.2 + Math.random() * 1.5, 1.6 + Math.random());
     }
+  }
+
+  private hitKickState: HitKick | null = null;
+
+  /**
+   * You were hit (owner, 2026-11-16): the view kicks a little, up and away from the round (`side`: -1 it came from
+   * the left .. 1 the right), by `power` (stopping power times the hit's share). Calmer with Reduce flashing on.
+   */
+  hitKick(power: number, side: number): void {
+    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing());
   }
 
   // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.

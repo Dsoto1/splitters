@@ -9,7 +9,7 @@
   "damage": 15,
   "spread": 0.006,
   "fireIntervalTicks": 4,
-  "range": 200,
+  "range": 100,
   "magazine": 32,
   "reserveMax": 192,
   "pickupAmmo": 64,
@@ -29,6 +29,7 @@
     "muzzleAt": [0, 0.072, 0.435]
   },
   "notes": {
+    "range": "Best within 15 m: full damage, 7 body shots. Down to 35 % (20 shots) by 35 m; reaches 100 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.",
     "model": "The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback."
   }
