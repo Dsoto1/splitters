@@ -80,6 +80,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Claims (lane B's splitters22), 2026-11-17 11:55** (owner: "1a 2a 3a" on the shadow casters' questions): `wip/breakable-shadow` (a broken breakable prop's shadow goes with it, also for props without near/far looks placed fewer than 8 times) and `wip/st-johns-spruces` (2 spruces by the arch and the curved sandstone Low Stone Wall, a pier and 2 banner lamp posts at St. John's, through MapMaker; built on `wip/shadow-casters`). `maps/st_johns.json` is lane B's until it lands.
 
+**Landing now: train** (`wip/chars-faces`, green 2c3f6449 run 44060937176: Sgt. Mackie's and Kenji's faces, owner OK; lane A's lead, 2026-11-17): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
