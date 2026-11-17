@@ -21,10 +21,11 @@
  * without a pair array per player, interpolation.ts, and `aurashare`, the status aura's shapes made once a scene,
  * arsenalVisuals.ts createAura); cheaper small shadow casters, docs/PERF_SHADOW_CASTERS_2026-11-17.md, adds
  * `smallcasters`: trees and rocks cast through static shadow-only batches by cascade, props with levels of detail through
- * the shadow proxies at full detail, small clutter's near shadows with a band (game/shadowCasters.ts).
+ * the shadow proxies at full detail, small clutter's near shadows with a band (game/shadowCasters.ts); the body pool to
+ * about 32 adds `bodypool`, a big match keeping up to 32 spare character bodies instead of 16, bodyPool.ts.
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool';
 
 let off: Set<string> | null = null;
 
