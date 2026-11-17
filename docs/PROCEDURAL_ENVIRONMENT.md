@@ -159,7 +159,7 @@ Additions only: no earlier model, picture or table entry changed (the build is b
 cell), so every shipped map looks and plays as before. MapMaker's Environment group lists them; the four presets append
 them. **Cost, measured** (`PERF_STILL=1`, medium, mean of 4 views): the showcase (2,526 placements, today's 8 species
 variants) 177 draws, 1.202 M triangles, 348 casters; the same placements with half of each category swapped to the new
-species (about 30 variants) 371 draws, 1.112 M triangles, 463 casters. Triangles fall (the new species are lighter),
+species (about 30 variants) 371 draws, 1.112 M triangles, 463 casters (High: 284 → 499 draws, 1.813 → 1.701 M triangles, 370 → 484 casters; a loaded box, so High's views did not all settle). Triangles fall (the new species are lighter),
 but each variant is its own batch in each square, so draws grow with the number of different variants in view: a
 mix of many species costs draws, not triangles. Batching a species' variants together (one model, colour per copy) is
 the Phase 5 lever. Still to do in Phase 4: the migration (existing maps' bought or downloaded natural props swapped for
