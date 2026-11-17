@@ -135,9 +135,11 @@ detail.
   ~400-caster readings of views near a map's middle (St. John's middle spawn, Flavius Rule's) are mostly those. This
   change keeps the column comparable with earlier readings (it changes nothing in how it counts); `PERF_SPLIT=1`'s
   shadow draws are the cost.
-- **Found, not changed:** a breakable prop without levels of detail, in fewer than 8 copies (its own node of GPU
-  instances), is merged into the shadow proxies and keeps its shadow after it breaks until the proxies are rebuilt.
-  Props with levels that can break are kept out of the proxies here.
+- **Fixed after (owner, 2026-11-17, "2a"; `wip/breakable-shadow`):** a breakable prop without levels of detail, in
+  fewer than 8 copies (its own node of GPU instances), was merged into the shadow proxies and kept its shadow after it
+  broke until the proxies were rebuilt. Every prop that can break now casts on its own (`proxyable`: its meshes are
+  marked `breakable`, propVisuals.ts), so its shadow goes when its node is switched off; test
+  `packages/client/test/breakableShadow.test.ts`. A few more casters a frame on destruction maps (one draw per model).
 - The `?perfoff=smallcasters` switch restores the old paths whole (no static sets, levels cast as drawn, 15 m line).
 - WebGPU and WebGL1 have no static cache: there the static sets draw every frame (their squares cut by the cascade test),
   about as many draws as the drawn batches made, at full detail near.
