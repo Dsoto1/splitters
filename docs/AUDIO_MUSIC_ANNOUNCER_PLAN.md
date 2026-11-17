@@ -4,7 +4,7 @@ The owner made 10 music tracks and 39 announcer lines and put them in their Driv
 - **Tools:** music with Lyria 3 Pro, the voice with MiniMax Speech-02 HD (file names), made by the owner through Artlist.
 - **Licence:** owner (2026-11-17): "we are good with the license, since i made those sounds and we are not giving out the individual files for them".
 - **Provenance:** record each as made by the owner (Artlist; tool named), owned.
-- **Shipping:** processed files only (loudness-normalised, trimmed, Ogg/Opus or the project's audio format), never the raw downloads.
+- **Shipping:** the owner's files may go in the game as they are (owner, 2026-11-17: "we can put the file in, we just can distribute it through our game"); they reach players only inside the game, never offered as separate downloads. The helper may still trim silence and even out loudness, or re-encode to a smaller format, where that helps.
 - **Mapping:** owner "ok" on the mapping below, and keep both quoted lines.
 
 ## Music
