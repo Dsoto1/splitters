@@ -802,7 +802,8 @@ export class TileViewPanel {
       grid.append(field(local ? 'X (local)' : 'X', x, 'm'), field(local ? 'Z (local)' : 'Z', z, 'm'), field('Height', y, 'm'));
       if ('yaw' in e && typeof e.yaw === 'number') {
         const deg = local ? localFacingDeg(f, e.yaw) : localFacingDeg({ rotation: 0 }, e.yaw);
-        const face = numberInput(deg, 1, (v) => app.transform('Turn', { face: { id: e.id, deg: local ? worldFacingDeg(f, v) : v } }));
+        // (To a tenth of a degree: a turn by R is stored to the millimetre-radian.)
+        const face = numberInput(Math.round(deg * 10) / 10, 1, (v) => app.transform('Turn', { face: { id: e.id, deg: local ? worldFacingDeg(f, v) : v } }));
         face.id = 'ed-tv-facing';
         grid.append(field(local ? 'Facing (local)' : 'Facing', face, '°'));
       }
@@ -831,7 +832,10 @@ export class TileViewPanel {
       glass.addEventListener('change', apply);
       const grid = document.createElement('div');
       grid.className = 'ed-tv-fields';
-      grid.append(field('Style', sel), field('Glass', glass));
+      const glassField = field('Glass', glass);
+      glassField.hidden = glass.hidden;
+      sel.addEventListener('change', () => (glassField.hidden = !GLASS_EDGES.has(sel.value as never)));
+      grid.append(field('Style', sel), glassField);
       el.append(grid);
       line('Doors and windows are how a cell side is built: change the style here (Automatic: as the tiles meet). Door leaves are things of their own.');
       return;

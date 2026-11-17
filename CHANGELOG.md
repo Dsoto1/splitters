@@ -8,6 +8,8 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+- **MapMaker: Tile View.** Select a room, a set piece or a group and press **Enter** (or double-click it, in the view or on the minimap): the dock shows it from straight above, with everything standing in it. Click a prop, block, light or door to pick it, drag it to move it on a fine snap (1, 5, 10 or 50 cm; hold Ctrl or Shift for none), nudge it with the arrow keys, turn it with R, or type its X, Z, height and facing, in the room's own coordinates (turned with the room) or the map's. Click a wall side to make it a door, a window or any other style, on every side of a big room. A set piece's insides are shown read-only. Each move is one undo step; Esc steps back to the room, then to the minimap.
+
 ## 0.10.0 (2026-11-17)
 
 **Highlights:** MapMaker painting made clear (Structure and Ground painters, the Ground theme, themes first in the palette) and a live minimap; the tunnel kit (brick, mine, cave and 7 m road tunnels, joins between them; Iron Maw's tunnels rebuilt through the rock); the Troop Buggy as a real physics body; the Battle Rifle, punchier hits and the Heavy Revolver's short range; much less memory and cheaper shadows and far looks; St. John's dorm halls, entrance, grounds and school colours; phone layouts for map cards, touch controls and Character Select; the Dropship's riders on their seats, its whole deck and calmer team paint on every vehicle.
