@@ -38,7 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/drive-physics-4` · f5909242 · 43974011193 (lane B: driving physics 4, the Troop Buggy on a Rapier rigid body, the default; owner 1a 2a 3a 4a 5b)
+- (none)
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
 - **Owner's direction on maps (2026-11-16):** no map is "official" until the owner has vetted it: tested, played, and edited in MapMaker as needed, then Published from their account (Publish replaces the built-in map for everyone). That is the **final step**, after the tools exist properly: "I like my tools to exist properly before performing work that may be final." So: tools first (MapMaker, kits, set pieces, environment, painting, performance); then **a pass on every map**, using everything built and established, all through MapMaker (no hand edits, no map scripts); then the owner's vetting and Publish, map by map. The like-for-like map pass below is a small part of that pass; the full pass is planned once the tools settle.
