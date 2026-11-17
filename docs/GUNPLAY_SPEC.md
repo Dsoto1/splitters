@@ -552,7 +552,7 @@ Tactical by about 0.72.
 | Gun | 10 m | 25 m | 50 m | 100 m |
 |---|---|---|---|---|
 | Pistol | .67 (5) | .70 (5) | 1.10 (7) → **1.78 (11)** | 1.23 (7) → **1.97 (11)** |
-| Heavy Revolver | .67 (2) | .72 (2) | .80 (2) | .97 → **1.00** (2) |
+| Heavy Revolver | .67 (2) | .72 (2) | .80 (2) | .97 (2) → **1.67 (3)** |
 | Hand Cannon | .50 (2) | .55 (2) | 1.13 (3) → **1.63 (4)** | 1.30 (3) → **2.33 (5)** |
 | Machine Pistol | .75 (16) | 2.43 (29) → **3.03 (41)** | 2.50 (29) → **3.12 (41)** | – (reach 60 m) |
 | Pulse Pistol | .60 (5) | .75 (6) | 1.35 (10) → **1.95 (14)** | 1.35 (10) → **– (reach 90 m)** |
@@ -1531,7 +1531,7 @@ and others') fly with the same drag.
 | Machine Pistol | 360 | 1.8 | 100 % (8 m) | 91 % (25 m) | 35 % | 8–17 m | 74 % at 60 m |
 | SMG | 400 | 1.5 | 97 % (15 m) | 90 % (35 m) | 35 % | 12–22 m | 65 % at 100 m |
 | Hand Cannon | 300 | 0.6 | 98 % (20 m) | 91 % (55 m) | 40 % | 14–33 m | 79 % at 110 m |
-| Heavy Revolver | 300 | 0.6 | 97 % (25 m) | 90 % (60 m) | 70 % | 17–36 m | 41 % at 300 m |
+| Heavy Revolver | 300 | 0.6 | 97 % (25 m) | 89 % (65 m) | 40 % | 17–38 m | 79 % at 110 m |
 | Assault / Burst Rifle | 820 | 0.6 | 99 % (25 m) | 95 % (70 m) | 60 % | 17–41 m | 64 % at 500 m |
 | Battle Rifle | 880 | 0.5 | 98 % (40 m) | 95 % (100 m) | 75 % | 25–57 m | 66 % at 600 m |
 | Spin Gun (LMG) | 760 | 0.6 | 98 % (30 m) | 94 % (80 m) | 70 % | 20–46 m | 77 % at 300 m |
@@ -1551,7 +1551,7 @@ against the data and the sim (the stated body shots at the best range, at Standa
 | Machine Pistol | 8 m | 15 | 35 % (25 m), was 50 % | 60 m (60: already short) |
 | Pulse Pistol | 15 m | 5 | 30 % (45 m), was 45 % | 90 m (110) |
 | Hand Cannon | 20 m | 2 | 40 % (55 m), was 70 % from 60 m | 110 m (140) |
-| Heavy Revolver | 25 m | 2 | 70 % (60 m) | 300 m (benchmark B, a head shot kills at any range) |
+| Heavy Revolver | 25 m | 2 (to about 50 m; a head shot kills to about 45 m) | 40 % (65 m), was 70 % from 60 m | 110 m (300; owner, 2026-11-16: "short range yes") |
 | Assault Rifle | 25 m | 6 | 60 % (70 m) | 500 m |
 | Burst Rifle | 25 m | 6 | 60 % (70 m) | 160 m |
 | Battle Rifle | 40 m | 4 | 75 % (100 m) | 600 m |
@@ -1561,7 +1561,7 @@ against the data and the sim (the stated body shots at the best range, at Standa
 | Shotgun / Sawed-Off / Auto | 8 m | 1 / 1 / 2 blasts | 25 % (28 m) | 40 / 25 / 40 m |
 
 Bots' weapon bands were re-measured (`pnpm gun-report --bands`): the Pistol and Pulse Pistol 45 → 37.5 m, the SMG
-27.5 → 22.5 m; the long guns' bands did not move. The Hand Cannon's hand-set stand-off is 3–30 m (was 35).
+27.5 → 22.5 m; the long guns' bands did not move. The Hand Cannon's and the Heavy Revolver's hand-set stand-off is 3–30 m (was 35 and 40); the revolver's measured band stays 0–27.5 m (its two-shot kill holds to about 50 m).
 
 ---
 
