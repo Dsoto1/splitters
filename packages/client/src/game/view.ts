@@ -148,7 +148,8 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
-import { CharacterAnimator, HIP_TURN_MAX, type OneShot } from './characterAnimator.ts';
+import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { seatDrawnYaw } from './riderPlacement.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { sliced } from './sliced.ts';
@@ -422,15 +423,6 @@ interface PickupVisual {
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
-/**
- * The way a seated rider is drawn facing (its root's yaw): its aim, turned back toward the seat's way to within how far
- * the waist turns (CharacterAnimator's HIP_TURN_MAX), so the hips always face the seat and the legs stay on it.
- */
-export function seatDrawnYaw(aimYaw: number, seatYaw: number): number {
-  const d = angleDelta(seatYaw, aimYaw);
-  return seatYaw + Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, d));
-}
-
 export class GameView {
   readonly scene: Scene;
   /** Draw every body's hit shapes over it (Options → Display → Show hitboxes, a dev and test setting). */
