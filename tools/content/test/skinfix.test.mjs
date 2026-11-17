@@ -212,6 +212,22 @@ describe('fixes.rejoint (moveJoints)', () => {
     for (let v = 0; v < pts.length; v++) expect(W[v * 4] + W[v * 4 + 1] + W[v * 4 + 2] + W[v * 4 + 3]).toBeCloseTo(1, 5);
     expect(share(0.4, 0)).toBe(0);
   });
+  it('takes a set limb radius (metres at a 1.8 m body) instead of the measured one', () => {
+    const run = (move) => {
+      const { rest, pts, J, W } = make();
+      const [r] = moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm_l: move } });
+      const v = pts.findIndex((p) => Math.abs(p[0] - 0.17) < 1e-6 && Math.abs(p[1] - 1.3) < 1e-6);
+      let s = 0;
+      for (let k = 0; k < 4; k++) if (J[v * 4 + k] === 2) s += W[v * 4 + k];
+      return { r, s };
+    };
+    // Measured: about the arm's 5 cm, so 10 cm below its line stays with the body.
+    expect(run(0.6).s).toBe(0);
+    // The model is 0.3 tall: 1.2 m at 1.8 m is 0.2 here, so that skin goes to the upper arm.
+    const wide = run({ share: 0.6, radius: 1.2 });
+    expect(wide.r.radius).toBeCloseTo(0.2, 6);
+    expect(wide.s).toBeGreaterThan(0.99);
+  });
   it('moves both sides for a joint named without its side, and refuses a joint the rig lacks', () => {
     const { rest, pts, J, W } = make();
     expect(() => moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm: 0.6 } })).toThrow(/upperarm_r/);
