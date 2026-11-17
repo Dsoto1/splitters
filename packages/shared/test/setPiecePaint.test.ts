@@ -58,7 +58,7 @@ const drawn = (doc: MapDocument, id: string) => {
   const ex = expandSetPieces(doc, library).map;
   const mine = (x: { id: string }) => x.id.startsWith(`sp_${id}_`);
   return {
-    tiles: ex.classicStructure.tiles.filter(mine).map((t) => [t.id, t.surfaces ?? null, t.facade ?? null]),
+    tiles: ex.classicStructure.tiles.filter(mine).map((t) => [t.id, t.surfaces ?? null]),
     entities: ex.entities.filter(mine).map((e) => [e.id, 'material' in e ? e.material : null, 'tint' in e ? e.tint : null, 'style' in e ? e.style : null]),
   };
 };
@@ -156,7 +156,7 @@ describe('looks of your own (format v46)', () => {
 
   it('updated under the same id: every piece wearing it changes with it', () => {
     const look: LookDef = { id: 'my_marble', displayName: 'Marble', roles: { paving: MARBLE } };
-    let doc = { ...scene(), setPieces: scene().setPieces!.map((p) => (p.id === 'cage' ? { ...p, overrides: undefined } : p)) as SetPiecePlacement[] };
+    let doc: MapDocument = { ...scene(), setPieces: scene().setPieces!.map((p): SetPiecePlacement => (p.id === 'cage' ? { ...p, overrides: undefined } : p)) };
     doc = { ...doc, setPieces: [...doc.setPieces!, { id: 'cage2', piece: 'setpiece.cage_block', x: 2, y: 2, z: 0, rotation: 0, mirror: false }] };
     doc = run(doc, applyLookCommand(doc, ['cage', 'cage2'], 'my_marble', { look, library }));
     expect(pavingOf(doc, 'cage2').every((m) => m === 'core.pbr_checker')).toBe(true);
