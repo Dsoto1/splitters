@@ -76,6 +76,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Lead (lane B's splitters22), 2026-11-17 11:40: the roulette jackpot-glow failure is on main, not in `wip/tunnels-6`.** The seats-alone train (run 44064422698) had `roulette` FLAKY with the same "a jackpot life: its card, the glow (0)" on attempt 1. check/tunnels-6 also failed then passed it, and the last first-try pass was train 44034338244, before gunplay-polish (bba6d916) landed. "glow (0)" means `rouletteHud`'s `glowPeak` was still 0 at the read: `frame()` didn't run after the jackpot `spawned()` or a second `spawned(…,1)` reset it, and the flow waits only `T(10000)`. **Lane A:** please look at `session.ts` around `rouletteHud?.frame(now)` (gunplay-polish touched it), and maybe make the test wait by frames. Until then a red `roulette` on a train gets one re-run. `wip/tunnels-6` is back on Ready to land at eba67329.
 
+**Claims (lane B's splitters22), 2026-11-17 11:55** (owner: "1a 2a 3a" on the shadow casters' questions): `wip/breakable-shadow` (a broken breakable prop's shadow goes with it, also for props without near/far looks placed fewer than 8 times) and `wip/st-johns-spruces` (2 spruces by the arch and the curved sandstone Low Stone Wall, a pier and 2 banner lamp posts at St. John's, through MapMaker; built on `wip/shadow-casters`). `maps/st_johns.json` is lane B's until it lands.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
