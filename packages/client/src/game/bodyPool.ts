@@ -5,12 +5,13 @@
  * A body goes to the pool when its avatar goes (a corpse that sank away, one past MAX_CORPSES, a player who left), and a
  * respawn of that look takes it back at once instead of building a new one (10-25 ms and several MB of garbage each).
  * Small matches keep 16 at most, as before. Big matches (owner, 2026-11-17, "recs": "about 32") keep one for every two
- * players, up to 32: with 64 players and a pool of 16, most respawns built a new body, because the corpse of the last
- * life had not yet sunk away and the pool's other bodies were other looks.
+ * players, up to 32. Measured on Flavius Rule with 64 bots (docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, "Body pool"):
+ * with 16, two respawns in three built a body (24 builds a minute) and the pool threw away a body every few seconds;
+ * with 32, half reuse one (13 a minute), for about 13 MB more heap after a collection (well under 1 MB a body: the
+ * character files' structure is shared).
  *
- * Why not more: every kept body is a skeleton with its meshes, bones and paused clips (about 4-6 MB of heap with its
- * share of the character files' structure, measured on Flavius Rule), and Roulette, which deals every life another
- * look, keeps the pool full of bodies that will rarely come back.
+ * Why not more: every kept body is a skeleton with its paused clips on the scene's list of animations, and Roulette,
+ * which deals every life another look, keeps the pool full of bodies that will rarely come back.
  *
  * `?perfoff=bodypool` keeps the old 16 in every match.
  */
