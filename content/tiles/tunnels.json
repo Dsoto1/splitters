@@ -116,11 +116,11 @@
     "cave": {
       "profiles": ["S"],
       "label": "Cave",
-      "blurb": "Raw rock: a shell of broken rock lining the passage, rubble on a gravel floor, stalactites in its chambers, no fixtures (natural caves, collapsed diggings; light it with lights).",
+      "blurb": "Raw rock: a shell of broken rock lining the passage, rubble on a dirt floor, stalactites in its chambers, no fixtures (natural caves, collapsed diggings; light it with lights).",
       "materials": {
         "wall": "core.pbr_rock",
         "soffit": "core.pbr_rock",
-        "floor": "core.pbr_gravel",
+        "floor": "core.packed_dirt",
         "trim": "core.pbr_jungle_rock",
         "headwall": "core.pbr_rock"
       },
