@@ -5000,6 +5000,15 @@ async function offlineFlow(browser) {
   await page.click('.opt-row:has-text("Reduce flashing") .switch');
   const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
   check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
+  // Combat accessibility (game/combatPrefs.ts): Aim hold/toggle and Camera shake, saved; vibration only where the browser can rumble a controller.
+  const combatDefault = await page.evaluate(() => ({ aim: document.getElementById('opt-aim-mode')?.value, shake: document.getElementById('opt-camera-shake')?.value }));
+  await page.selectOption('#opt-aim-mode', 'toggle');
+  await page.selectOption('#opt-camera-shake', 'reduced');
+  const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  await page.selectOption('#opt-aim-mode', 'hold');
+  await page.selectOption('#opt-camera-shake', 'full');
+  check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character

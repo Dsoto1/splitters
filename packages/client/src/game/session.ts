@@ -158,6 +158,8 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
+import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
@@ -400,16 +402,24 @@ export class GameSession {
     const len = Math.hypot(dx, dz) || 1;
     // Right of the view is (cos yaw, -sin yaw): + when the round came from the right.
     const side = ((dx * Math.cos(this.input.yaw) - dz * Math.sin(this.input.yaw)) / len);
-    this.view.hitKick(stoppingPower(def) / Math.max(1, def.pellets), side);
+    const power = stoppingPower(def) / Math.max(1, def.pellets);
+    this.view.hitKick(power, side);
+    rumble(hitRumble(power * Math.max(1, Math.min(3, def.pellets / 3))), this.input.padActive);
   }
 
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     const target = hits.find((h): h is number => h !== null && h !== undefined);
     if (target === undefined) return;
     const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
-    this.hud.hit(head ? 'head' : armor ? 'armor' : 'body');
+    // Under spawn protection (its shield takes the round, no damage): a ring, by shape and sound (GUNPLAY_SPEC §21).
+    const shield = hits.every((h) => h === null || h === undefined || this.shieldedSlots.has(h));
+    this.hud.hit(shield ? 'shield' : head ? 'head' : armor ? 'armor' : 'body');
     this.hud.showTarget(this.targetLabel(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
   }
+  /** Players under spawn protection in the last snapshot (FX_PROTECTED): your hits on them show the shield marker. */
+  private shieldedSlots = new Set<number>();
+  /** Held weapon, life and seat last frame: a change lets a toggled aim go. */
+  private aimState = '';
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
   private npcInfo = new Map<number, { role: number; faction: number; size: number }>();
@@ -719,6 +729,7 @@ export class GameSession {
     }
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
+    this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
     this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
@@ -983,6 +994,30 @@ export class GameSession {
     flashBox.checked = reduceFlashing();
     flashBox.addEventListener('change', () => saveReduceFlashing(flashBox.checked), { signal });
     window.addEventListener(REDUCE_FLASHING_EVENT, () => (flashBox.checked = reduceFlashing()), { signal });
+    // Combat accessibility (also Options → Accessibility; combatPrefs.ts): aim held or toggled, camera shake, controller vibration.
+    const aimSel = $('aim-mode') as HTMLSelectElement;
+    const shakeSel = $('camera-shake') as HTMLSelectElement;
+    const vibBox = $('pad-vibration') as HTMLInputElement;
+    const vibStrength = $('pad-vibration-strength') as HTMLInputElement;
+    $('pad-vibration-row').hidden = !vibrationSupported();
+    const showCombat = () => {
+      const c = combatPrefs();
+      aimSel.value = c.aim;
+      shakeSel.value = c.shake;
+      vibBox.checked = c.vibration;
+      vibStrength.value = String(c.vibrationStrength);
+      vibStrength.disabled = !c.vibration;
+    };
+    showCombat();
+    aimSel.addEventListener('change', () => saveCombatPrefs({ aim: aimSel.value as AimMode }), { signal });
+    shakeSel.addEventListener('change', () => saveCombatPrefs({ shake: shakeSel.value as ShakeLevel }), { signal });
+    vibBox.addEventListener('change', () => saveCombatPrefs({ vibration: vibBox.checked }), { signal });
+    vibStrength.addEventListener('change', () => {
+      saveCombatPrefs({ vibrationStrength: Number(vibStrength.value) });
+      // A taste of the new strength.
+      rumble(hitRumble(0.6), this.input.padActive);
+    }, { signal });
+    window.addEventListener(COMBAT_PREFS_EVENT, showCombat, { signal });
     // Room lights (also Options → Display): the map's lamps light the rooms, applied at once (roomLights.ts).
     const roomBox = $('room-lights') as HTMLInputElement;
     roomBox.checked = roomLightsOn();
@@ -2064,6 +2099,7 @@ export class GameSession {
         this.holdUse = msg.me?.hu ? { kind: HOLD_KINDS[msg.me.hu[0]] ?? 'resupply', done: msg.me.hu[1], total: msg.me.hu[2], at: performance.now() } : null;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
+        this.shieldedSlots = new Set(msg.players.filter((p) => p.s !== this.slot && ((p.fx ?? 0) & FX_PROTECTED) !== 0).map((p) => p.s));
         if (this.classesOn) {
           // Players held back from this snapshot (far away in a big match) keep the class they had.
           const kept = msg.hold ? [...this.classOf].filter(([slot]) => msg.hold!.includes(slot)) : [];
@@ -2273,13 +2309,19 @@ export class GameSession {
             const cam = this.view.cameraPosition();
             const reach = ev.r * (ev.m !== undefined ? 6 : 3.5);
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / reach;
-            if (near > 0) this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+            if (near > 0) {
+              this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+              rumble(blastRumble(near), this.input.padActive);
+            }
           } else if (ev.e === 'crash') {
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
             this.view.impacts.sparkBurst(at, Math.round(6 + ev.n * 18), 2 + ev.n * 5);
             const cam = this.view.cameraPosition();
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
-            if (near > 0) this.view.shake(near * ev.n * 0.6);
+            if (near > 0) {
+              this.view.shake(near * ev.n * 0.6);
+              rumble(blastRumble(near * ev.n * 0.6), this.input.padActive);
+            }
           } else if (ev.e === 'hold') {
             // A hold to use stopped short (sim/holdUse.ts): say why.
             if (ev.s === this.slot) this.hud.pickup(`${HOLD_KINDS[ev.k] === 'heal' ? 'Healing' : 'Resupply'} stopped: ${HOLD_CANCEL_TEXT[ev.x]}`);
@@ -3296,6 +3338,8 @@ export class GameSession {
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
           const visual = shot.alt ? (shot.def.alt?.kick?.visual ?? 0) : shot.def.kind === 'melee' ? 0 : (gunplayOf(shot.def).kick?.visual ?? 0);
           if (visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
+          // Controller vibration (Options → Accessibility): a buzz a round for automatics, a thump for heavy shots.
+          if (shot.def.kind !== 'melee' || shot.alt) rumble(fireRumble(visual || 0.4, shot.def.fireIntervalTicks <= 8), this.input.padActive);
         }
       }
       if (netProbe.on) for (const i of this.outbox) netProbe.inputAt.set(i.seq, now);
@@ -3422,6 +3466,12 @@ export class GameSession {
           this.view.setCamera(head, aimed.yaw, aimed.pitch, fov, this.zipLean(local, dt, now));
           this.view.firstPersonEye = true;
         }
+      }
+      // A toggled aim (Options → Accessibility) lets go on a weapon change, death or getting in a vehicle.
+      const aimState = `${local.alive ? local.held : -1}:${this.seat ? 1 : 0}`;
+      if (aimState !== this.aimState) {
+        this.aimState = aimState;
+        this.input.cancelAim();
       }
       this.view.setViewmodel(weapon);
       // Guns no longer carried free their first-person copies (and a held copy's video memory).
