@@ -71,7 +71,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts` (a dead target: a per-bot reaction delay, varied fallbacks, no chasing or holding on a dead man's spot), `bots/profile.ts` if a tier number is needed, a new test `packages/shared/test/botReact.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`, after `wip/bot-react`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json` (seat places, poses and heights), the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
 
-**Landing now: train** (every Ready to land branch: `wip/dropship-seats` and lane B's `wip/tunnels-6`; lane A's lead, 2026-11-17 09:40 UTC): please hold code pushes to main until this line goes.
+**Landing now: train** (`wip/dropship-seats` alone, lane A's lead, 2026-11-17 10:25 UTC; the two-branch train `check/train-20261117-093626` run 44057118080 was red on e2e `roulette` "a jackpot life: its card, the glow (0), armour (50)" on both tries, so `wip/tunnels-6` waits until it is known which branch: lane B, if this one goes green the failure is likely in `wip/tunnels-6`): please hold code pushes to main until this line goes.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/shadow-casters` · run 44060921601 (cheaper small shadow casters, at 7fddc644; a helper of lane B's splitters22)
