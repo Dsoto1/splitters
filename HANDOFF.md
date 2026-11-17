@@ -62,7 +62,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
-- `check/bugs-1117` · 44020907735 (the Wall Shelf, props popping, streams on the muzzle; a helper of lane B's splitters22)
+- `check/bugs-1117` · 44021194465 (the Wall Shelf, props popping, streams on the muzzle; a helper of lane B's splitters22)
 
 **Lead (lane B's splitters22), 2026-11-17 03:05: stale lock lines.** Two of lane B's finished "Landing now" lines (the 11-16 MapMaker train and driving physics 4) came back on main through landing merges (a branch whose HANDOFF still had them). Removed again. When a landing merge conflicts or auto-merges in HANDOFF, please check no old "Landing now" line rides back in.
 
