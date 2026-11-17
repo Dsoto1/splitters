@@ -73,8 +73,13 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       expect(mine.ports).toEqual(base.ports);
       expect(mine.bore).toEqual(base.bore);
       expect(hard(mine)).toEqual(hard(base));
-      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
-      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id]);
+      // (The cave family, Tileset 04 step 7: the same shell too.)
+      const cave = coreCatalog.get(`core.tunnel_cave_${shape}`)!;
+      expect(cave.ports).toEqual(base.ports);
+      expect(cave.bore).toEqual(base.bore);
+      expect(hard(cave)).toEqual(hard(base));
+      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
+      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
     }
     expect(coreCatalog.familiesOf('core.room')).toEqual([]);
     expect(coreCatalog.familiesOf('core.tunnel_vault_buried')).toEqual([]);
@@ -98,6 +103,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       { family: 'concrete', label: 'Concrete', on: false },
       { family: 'brick', label: 'Brick Sewer', on: true },
       { family: 'mine', label: 'Mine', on: false },
+      { family: 'cave', label: 'Cave', on: false },
     ]);
   });
 
@@ -161,7 +167,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     // The vaulted tunnel's end takes the vaulted Tunnel Portal.
     expect(placed['3,0']).toMatchObject({ tile: 'core.tunnel_portal', rotation: 3 });
     const done = applyCommand(brick, made.command);
-    expect(openEnds(done)).toEqual([{ tile: 'tile_6', side: 'N', x: -4, y: 5, z: 0 }, { tile: 'tile_6', side: 'S', x: -4, y: 3, z: 0 }]);
+    expect(openEnds(done)).toEqual([{ tile: 'tile_6', side: 'N', x: -4, y: 5, z: 0, bore: 'S' }, { tile: 'tile_6', side: 'S', x: -4, y: 3, z: 0, bore: 'S' }]);
     // Under a hill the open ends are the validator's buried mouths; with the portals on, none of that run's are left.
     const buried = (m: MapDocument) => validateMap({ ...m, terrain: { ...m.terrain!, heights: m.terrain!.heights.map(() => 800) } }).filter((i) => i.code === 'tunnel.mouth_buried').map((i) => i.targetId);
     expect(buried(brick).sort()).toEqual(['tile_0', 'tile_1', 'tile_3', 'tile_4', 'tile_6', 'tile_6']);

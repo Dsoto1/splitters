@@ -54,6 +54,9 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
       if (small) m.metadata = { ...(m.metadata as object | null), smallCaster: true };
       // Indoors (under a roof or the floor above: shared `indoorProps`) it casts no sun shadow at all: the roof's covers it.
       if (indoor) m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
+      // It can break (its root switched off): it never casts through the merged shadow proxies with its levels of detail
+      // (shadowProxy.ts), which would keep a broken prop's shadow.
+      if (breakable) m.metadata = { ...(m.metadata as object | null), breakable: true };
     }
   });
   return root;

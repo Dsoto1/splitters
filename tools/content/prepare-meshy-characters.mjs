@@ -278,8 +278,10 @@ async function readMeshy(file, ual, c) {
       for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + b]) b = k;
       return names[J[v * 4 + b]];
     };
+    const head = { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE, dense: true };
     const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, metalRough, [
-      { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE },
+      ...faceParts(c, P, head),
+      head,
       { inside: (v) => /Hand/.test(major(v)), share: c.handsShare ?? REBAKE_HANDS_SHARE },
     ]);
     const J2 = new J.constructor(out.from.length * 4);
@@ -657,7 +659,8 @@ async function readUnrigged(file, c, ual) {
       const normalImage = glb ? (mat?.getNormalTexture()?.getImage() ?? null) : existsSync(file.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(file.replace(/\.fbx$/i, '_normal.png')) : null;
       const full = { P: pos, N: new Float32Array(p.getAttribute('NORMAL').getArray()), UV: new Float32Array(p.getAttribute('TEXCOORD_0').getArray()), I: new Uint32Array(p.getIndices().getArray()) };
       const mrImage = glb && c.finishMaps ? (mat?.getMetallicRoughnessTexture()?.getImage() ?? null) : null;
-      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, mrImage, [{ ...parts[0], share: c.headShare ?? HEAD_SHARE }, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
+      const head = { ...parts[0], share: c.headShare ?? HEAD_SHARE, dense: true };
+      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, mrImage, [...faceParts(c, pos, head), head, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
       const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(doc.getRoot().listBuffers()[0]);
       p.setAttribute('POSITION', acc('VEC3', rebaked.P)).setAttribute('NORMAL', acc('VEC3', rebaked.N)).setAttribute('TEXCOORD_0', acc('VEC2', rebaked.UV)).setIndices(acc('SCALAR', rebaked.I));
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
@@ -897,6 +900,31 @@ async function recolor(image, rules) {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
 }
 
+/**
+ * `fixes.face` (`{ box, share }`): the face as its own part of a rebaked cut, ahead of the rest of the head, with its
+ * own share of the budget out of the head's (the head part's share less it), its charts laid out as finely as the
+ * head's. A head part's share counts the hair, a cap or a helmet too, and cut by error alone a face's eyes went: Sgt.
+ * Mackie's brim and cap took the head's triangles, and a wedge of cheek ran up over each eye (owner, 2026-11-17: "face
+ * still softer than the download"). `box` is in shares of the download's height in its own pose (feet at 0, x and z
+ * from its origin, +z its front: the `landmarks` and `rigid` frame). `P`: the download's positions; `head`: its head
+ * part (its share is lowered by the face's).
+ */
+function faceParts(c, P, head) {
+  if (!c.face) return [];
+  let [lo, hi] = [Infinity, -Infinity];
+  for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];
+  const H = hi - lo;
+  const [x0, y0, z0, x1, y1, z1] = c.face.box;
+  head.share = Math.max(0.02, head.share - c.face.share);
+  const inside = (v) => {
+    const x = P[v * 3] / H;
+    const y = (P[v * 3 + 1] - lo) / H;
+    const z = P[v * 3 + 2] / H;
+    return x >= x0 && x <= x1 && y >= y0 && y <= y1 && z >= z0 && z <= z1;
+  };
+  return [{ inside, share: c.face.share, dense: true }];
+}
+
 /** The colour map a rebaked character is painted at (px). */
 const REBAKE_SIZE = 1024;
 /** Its charts: grown while each triangle faces within this many degrees of the chart's first (meshy-mesh.mjs rebake). */
@@ -945,10 +973,18 @@ async function rebakeDownload(mesh, image, normalImage, target, metalRoughImage,
   const at = (k) => [pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]];
   const cut = cutKeeping(Uint32Array.from(tris), pos, target, parts.map((p) => ({ share: p.share, inside: (k) => p.inside(first[k], at(k)) })), { errors: [0.004, 0.008] });
   console.log(`  seams closed: ${n} vertices welded to ${first.length}, ${I.length / 3} triangles cut to ${cut.length / 3}`);
+  // Each part's triangles after the cut (a triangle in the first part with two of its corners inside), for the log.
+  const counts = parts.map(() => 0);
+  for (let t = 0; t < cut.length; t += 3) {
+    const k = parts.findIndex((p) => [0, 1, 2].filter((i) => p.inside(first[cut[t + i]], at(cut[t + i]))).length >= 2);
+    if (k >= 0) counts[k]++;
+  }
+  console.log(`  parts kept: ${counts.join(' / ')} triangles (shares ${parts.map((p) => p.share).join(' / ')})`);
   const map = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   // The head's charts laid out finer (REBAKE_HEAD_DENSITY): at one density for the whole body a face got a few dozen
   // texels across and read as a smear up close.
-  const headK = (k) => parts[0].inside(first[k], at(k));
+  const denseParts = parts.filter((p) => p.dense);
+  const headK = (k) => denseParts.some((p) => p.inside(first[k], at(k)));
   const dense = (t) => (headK(cut[t * 3]) + headK(cut[t * 3 + 1]) + headK(cut[t * 3 + 2]) >= 2 ? REBAKE_HEAD_DENSITY : 1);
   const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
   const hiMap = normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;

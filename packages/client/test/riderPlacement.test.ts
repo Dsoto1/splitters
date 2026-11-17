@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mountToWorld, type MapDocument, type MountSnapshot } from '@tiletrigger/shared';
 import { MountState } from '../src/game/mountState.ts';
-import { RIDER_BLEND_SECONDS, RiderPlacement } from '../src/game/riderPlacement.ts';
+import { HIP_TURN_MAX, RIDER_BLEND_SECONDS, RiderPlacement, seatDrawnYaw } from '../src/game/riderPlacement.ts';
 import { SessionAudio } from '../src/game/sessionAudio.ts';
 import type { RemotePose } from '../src/game/interpolation.ts';
 import type { AudioSystem } from '../src/audio/audio.ts';
@@ -146,5 +146,19 @@ describe('sounds while seated', () => {
     expect(engines.filter((e) => !e.at).length).toBe(2);
     expect(engines.filter((e) => (e.at as { x: number } | undefined)?.x === 10).length).toBe(2);
     expect(engines.filter((e) => (e.at as { x: number } | undefined)?.x === 5).length).toBe(0);
+  });
+});
+
+describe('a seated rider is drawn with its legs on the seat', () => {
+  it('turned toward its aim no further than the waist turns, so the hips always face the seat', () => {
+    const seat = Math.PI / 2;
+    // Within the waist's reach: drawn as it aims.
+    expect(seatDrawnYaw(seat + 0.5, seat)).toBeCloseTo(seat + 0.5);
+    expect(seatDrawnYaw(seat - 1.2, seat)).toBeCloseTo(seat - 1.2);
+    // Looking along the hull, out over the side or straight back: turned back to the waist's limit.
+    expect(seatDrawnYaw(seat + Math.PI / 2, seat)).toBeCloseTo(seat + HIP_TURN_MAX);
+    expect(seatDrawnYaw(seat - 3, seat)).toBeCloseTo(seat - HIP_TURN_MAX);
+    // Across the wrap (yaw -pi..pi): the short way round.
+    expect(seatDrawnYaw(-Math.PI + 0.1, Math.PI - 0.1)).toBeCloseTo(Math.PI + 0.1);
   });
 });

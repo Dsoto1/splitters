@@ -1,4 +1,4 @@
-import type { Vec3 } from '@tiletrigger/shared';
+import { angleDelta, type Vec3 } from '@tiletrigger/shared';
 import type { RemotePose } from './interpolation.ts';
 
 /** A rider's seat: the mount (index) and the seat's offset in the mount's frame (feet, m). */
@@ -6,6 +6,19 @@ export interface RiderSeat {
   mount: number;
   offset: readonly [number, number, number];
 }
+
+/** How far (rad) a character's hips turn from its shoulders (CharacterAnimator: strafing, and a seated rider's aim). */
+export const HIP_TURN_MAX = 1.35;
+
+/**
+ * The way a seated rider is drawn facing (its root's yaw): its aim, turned back toward the seat's way to within how far
+ * the waist turns (HIP_TURN_MAX), so the hips always face the seat and the legs stay on it.
+ */
+export function seatDrawnYaw(aimYaw: number, seatYaw: number): number {
+  const d = angleDelta(seatYaw, aimYaw);
+  return seatYaw + Math.max(-HIP_TURN_MAX, Math.min(HIP_TURN_MAX, d));
+}
+
 
 /** Seconds a rider takes to ease onto the seat when getting in, and off it when getting out. */
 export const RIDER_BLEND_SECONDS = 0.25;

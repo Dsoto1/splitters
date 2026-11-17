@@ -25,6 +25,16 @@ export interface TilePort {
   level: number;
   /** Which cell (local [dx, dy]) of a multi-cell tile; default [0, 0]. */
   cell?: readonly [number, number];
+  /**
+   * The tunnel kit's bore profile on this side (Tileset 04 step 6): 'L', the 7 m bore, or 'S' (the default), the
+   * 3.6 m passage. Two buried pieces' ports meet cleanly only in the same profile (validate-map warns otherwise).
+   */
+  bore?: 'S' | 'L';
+  /**
+   * A tunnel transition's family on this side (Tileset 04 step 7: a Joint to Cave is its placed family to the south
+   * and a cave to the north): what a portal or Dead End put on this end is drawn in. Absent: the placed piece's.
+   */
+  family?: string;
 }
 
 /**

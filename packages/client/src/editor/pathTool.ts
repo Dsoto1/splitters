@@ -328,7 +328,8 @@ export class PathTool {
   pointerDown(p: Vec3 | null, shift: boolean): void {
     if (!p) return;
     const doc = this.host.doc();
-    const at = trackPointAt(doc.terrain, p.x, p.y, p.z);
+    // (On the ground as shown: a tunnel mouth's cutting is dug there, and a point on a buried tunnel's floor stays on it.)
+    const at = trackPointAt(this.host.ground() ?? doc.terrain, p.x, p.y, p.z);
     const hit = this.pointAt(p);
     if (hit) {
       // Its first point with the last selected (or the reverse): a click (no drag) joins the ends.
@@ -393,7 +394,7 @@ export class PathTool {
   pointerMove(p: Vec3 | null): void {
     const d = this.drag;
     if (!d || !p) return;
-    const at = trackPointAt(this.host.doc().terrain, p.x, p.y, p.z);
+    const at = trackPointAt(this.host.ground() ?? this.host.doc().terrain, p.x, p.y, p.z);
     if (Math.hypot(at[0] - d.at[0], at[2] - d.at[2]) > 0.1) d.moved = true;
     d.at = at;
     this.drawMarkers();

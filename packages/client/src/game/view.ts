@@ -153,6 +153,7 @@ import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
+import { seatDrawnYaw } from './riderPlacement.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, CROWD_KEEP, SHOT_OVERLAY_REACH, animStep, animStepByShare, byNumber, crowdStep, rankIn } from './animLod.ts';
 import { BODY_POOL_PER_LOOK, bodyPoolStats, bodyPoolTotal } from './bodyPool.ts';
 import { perfOn } from './perfSwitches.ts';
@@ -745,7 +746,9 @@ export class GameView {
     // (A log given health breaks: it is drawn as an ordinary prop node below, as ?env=0 draws every species, so breakProp can switch it off.)
     const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e) && !isBreakableProp(e)) : [];
     if (env.length) {
-      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
+      // With shadows, trees and rocks cast through static shadow-only batches (game/shadowCasters.ts; `?perfoff=smallcasters`:
+      // through the batches they are drawn with, as before).
+      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality(), { shadowSets: perfOn('smallcasters') && loadGraphicsQuality() !== 'low' });
       void this.environment.setPlacements(env, doc.terrain);
     }
     const drawnAsEnv = new Set(env.map((e) => e.id));
@@ -754,7 +757,7 @@ export class GameView {
     // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
     // A batch reads a prop's matrix once its model is in (never in this loop), so the hung and flush lifts below are in it.
     this.propBatches?.dispose();
-    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH, perfOn('smallcasters') && loadGraphicsQuality() !== 'low') : null;
     const batches = this.propBatches;
     // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
     const copies = new Map<string, number>();
@@ -2310,7 +2313,11 @@ export class GameView {
           if (t >= 1) a.emergeAt = undefined;
           else a.root.position.y -= EMERGE_DEPTH * (1 - t) * (1 - t);
         }
-        a.root.rotation.y = p.yaw;
+        // A rider in a real seat is drawn turned no further from the seat's way than the waist turns, so the hips and
+        // legs stay on the seat: one looking over its shoulder (a bench rider aiming out over the side, a pilot looking
+        // back) had its legs swung off the cushion, back into the backrest, and read as standing (seatDrawnYaw).
+        const sitAt = sitting.get(p.slot);
+        a.root.rotation.y = sitAt ? seatDrawnYaw(p.yaw, sitAt.yaw) : p.yaw;
       }
       // Show hitboxes (dev and test setting): the shapes the host tests shots against, over the body.
       if (this.showHitboxes && p.alive && !a.ragdoll) {
@@ -2411,7 +2418,7 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
-          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
+          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
