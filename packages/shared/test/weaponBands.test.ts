@@ -66,9 +66,9 @@ describe("bots' weapon bands (G4: from gun-report's measured TTK)", () => {
   it('clearer ranges (owner, 2026-11-16): bots fight the close-range guns close, the long guns far', () => {
     const far = (id: string) => botBand(getWeapon(id))[1];
     // Measured with the 2026-11-16 ranges (before: Pistol and Pulse Pistol 45 m, SMG 27.5 m).
-    for (const id of ['core.pistol', 'core.pulse_pistol', 'core.hand_cannon']) expect(far(id), id).toBeLessThanOrEqual(40);
+    for (const id of ['core.pistol', 'core.pulse_pistol', 'core.hand_cannon', 'core.revolver']) expect(far(id), id).toBeLessThanOrEqual(40);
     for (const id of ['core.smg', 'core.machine_pistol']) expect(far(id), id).toBeLessThanOrEqual(25);
-    for (const id of ['core.pistol', 'core.smg', 'core.machine_pistol', 'core.pulse_pistol', 'core.hand_cannon']) {
+    for (const id of ['core.pistol', 'core.smg', 'core.machine_pistol', 'core.pulse_pistol', 'core.hand_cannon', 'core.revolver']) {
       expect(far(id), id).toBeLessThan(far('core.rifle'));
       // The hand-set stand-off distance stays inside the gun's reach and its band.
       expect(getWeapon(id).botRange[1], id).toBeLessThanOrEqual(Math.min(getWeapon(id).range, far(id) + 5));
