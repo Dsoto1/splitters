@@ -7367,8 +7367,9 @@ async function setupLimitsFlow(browser) {
 }
 
 /**
- * Bot characters: match setup's Bots step offers them; a soldiers-only offline match fills with soldiers named
- * after their looks (the first in each look takes its name) or a rank and a surname, every name its own.
+ * Bot characters: match setup's Bots step offers them; an Army-only offline match (Soldiers & Spies' Army: no agents,
+ * spies or Santa) fills with soldiers named after their looks (the first in each look takes its name) or a rank and a
+ * surname, every name its own.
  */
 async function botCastFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -7380,19 +7381,19 @@ async function botCastFlow(browser) {
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
   const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
-  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots & AI tab offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
-  await page.selectOption('#arcade-cast', 'soldiers');
+  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('army') && offered.includes('agency') && offered.includes('pirate'), `the Bots & AI tab offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
+  await page.selectOption('#arcade-cast', 'army');
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot').length >= 15, null, T(30000));
   const bots = await sim(page, (m, me, a, mod) => ({
     cast: m.botCast,
-    bots: m.combatants().filter((c) => c.kind === 'bot').map((c) => ({ name: c.name, look: c.look, ok: mod.castAllows(['soldiers'], c.look), theme: mod.lookTheme(c.look) })),
+    bots: m.combatants().filter((c) => c.kind === 'bot').map((c) => ({ name: c.name, look: c.look, ok: mod.castAllows(['army'], c.look), theme: mod.lookTheme(c.look) })),
     names: m.combatants().map((c) => c.name),
   }));
   const wrong = bots.bots.filter((b) => !b.ok || b.theme !== 'soldier');
   const ranked = bots.bots.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
-  check(bots.bots.length === 15 && !wrong.length, `a soldiers-only match: every bot a soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
+  check(bots.bots.length === 15 && !wrong.length, `an Army-only match: every bot an Army soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
   check(new Set(bots.names).size === bots.names.length && ranked.length >= 1, `soldier bots have names of their own, ranks among them (${bots.bots.map((b) => b.name).join(', ')})`);
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
