@@ -163,7 +163,7 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
       if (cells.has(cellKey(gx + dx, gy + dy, gz))) continue;
       // Closed by the map maker (the side's wall style in the inspector): a dead end, as meant.
       if (edgeSegments(resolveEdge(cells, gx, gy, gz, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1)) continue;
-      ground ??= terrainUnderFloors(withPathsLaid(map), undefined, catalog)!;
+      ground ??= terrainUnderFloors(withPathsLaid(map, mapGroundBores(map, catalog).cuts), undefined, catalog)!;
       const floor = gz * levelHeight;
       let over = -Infinity;
       for (const out of [0.4, 1.2, 2]) over = Math.max(over, (terrainHeightAt(ground, (gx + dx * 0.5) * cellSize + dx * out, (gy + dy * 0.5) * cellSize + dy * out) ?? -Infinity) - floor);
@@ -221,7 +221,7 @@ function moundedRunIssues(map: MapDocument, cells: ReturnType<typeof buildOccupa
   const t = map.terrain;
   if (!t || !mapGroundBores(map, catalog).tiles.size) return [];
   const { cellSize, levelHeight } = map.classicStructure;
-  const made = withPathsLaid(map).terrain ?? t;
+  const made = withPathsLaid(map, mapGroundBores(map, catalog).cuts).terrain ?? t;
   const mounded: string[] = [];
   for (const [key, occ] of cells) {
     const cover = occ.def.bore?.cover?.[0]?.[4];

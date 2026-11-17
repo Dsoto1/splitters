@@ -1,7 +1,7 @@
 import type { ValidationIssue } from './validate.ts';
 import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
-import { groundCutAt, terrainCuts } from './groundBore.ts';
+import { groundCutAt, terrainCuts } from './terrainCuts.ts';
 import { hypot } from '../math.ts';
 import { liveMount } from '../sim/mounts.ts';
 

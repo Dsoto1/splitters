@@ -1,7 +1,7 @@
 import { pathGeometry, pathUses } from './track.ts';
 import { TERRAIN_SURFACES, groundIndex, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument, MapPath, PathStyle } from './schema.ts';
-import { groundCutAt, mapGroundBores, type GroundCut } from './groundBore.ts';
+import { groundCutAt, type GroundCut } from './terrainCuts.ts';
 
 /**
  * Paths: roads, streets, trails and walkways, the race track and AI routes,
@@ -138,11 +138,12 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[], c
 /**
  * The map as played: its terrain with the paths laid in, and each path
  * marked as laid (`lay: false`), so laying again (a host's map loaded by its
- * players) changes nothing. loadMap does this; MapMaker shows it without storing it.
+ * players) changes nothing. `cuts`: the map's buried tunnels' (groundBore.ts mapGroundBores), where a road runs
+ * through a bore and leaves the hill alone. loadMap does this; MapMaker shows it without storing it.
  */
-export function withPathsLaid(map: MapDocument): MapDocument {
+export function withPathsLaid(map: MapDocument, cuts: readonly GroundCut[] = []): MapDocument {
   if (!map.terrain || !map.paths?.some((p) => p.lay && pathDrawn(p))) return map;
-  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths, mapGroundBores(map).cuts), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
+  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths, cuts), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
 }
 
 /**
