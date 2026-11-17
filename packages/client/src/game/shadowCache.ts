@@ -220,8 +220,15 @@ class DepthCopy {
 
 const emptyList = (): SubList => ({ data: [], length: 0 });
 
-/** Is this a static caster for good (a shadow proxy), drawn into the cache? */
-export const isStaticCaster = (m: AbstractMesh): boolean => (m.metadata as { shadowProxy?: boolean } | null)?.shadowProxy === true;
+/**
+ * Is this a static caster for good, drawn into the cache: a shadow proxy, or a shadow-only batch made never to change
+ * (`staticCaster`: the trees' and rocks' static shadow sets, game/shadowCasters.ts)? Atmosphere invalidates the cache
+ * when one joins the shadow map's list or leaves it.
+ */
+export const isStaticCaster = (m: AbstractMesh): boolean => {
+  const meta = m.metadata as { shadowProxy?: boolean; staticCaster?: boolean } | null;
+  return meta?.shadowProxy === true || meta?.staticCaster === true;
+};
 
 /**
  * Can this caster be cached while it stands still? Plain meshes only: no skeleton or morphs, no instances (one draw

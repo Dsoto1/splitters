@@ -7,6 +7,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { pickPropLevel, propLodEdges } from './propLod.ts';
+import { bySquare, smallCasts } from './shadowCasters.ts';
 
 /**
  * Static props drawn in batches (docs/PERF_96.md, "Performance round 3"). Every placed prop used to be a node of
@@ -22,7 +23,10 @@ import { pickPropLevel, propLodEdges } from './propLod.ts';
  *   pop a few metres away, no flicker at the line); a batch's buffer is rebuilt only when a copy joins or leaves.
  * - **Shadows**: batches that never change (no levels of detail) are static thin instances, merged into the shadow
  *   proxies like the instances were. Batches with levels of detail cast as they draw (as instances did). Small clutter
- *   casts only within `smallReach` of the camera: one shadow-only batch per model holds the copies that near.
+ *   casts only within `smallReach` of the camera: one shadow-only batch per model holds the copies that near. With
+ *   `shadowSets` (cheaper small casters, game/shadowCasters.ts; `?perfoff=smallcasters` turns it off) batches with
+ *   levels of detail cast nothing: a static shadow-only batch per square at full detail does, merged into the proxies
+ *   like the others, and small clutter's near batch takes copies in a band (in at 20 m, out past 24 m: no flicker).
  * - Collision and shots never used these meshes (the level's shapes and the server do); nothing about them changes.
  *
  * - **Breakable props** (a destruction map's, a log given health: shared `isBreakableProp`) are copies too, in batches of
@@ -89,6 +93,8 @@ interface Copy {
   small: boolean;
   /** Under a roof or the floor above (shared `indoorProps`): out of the sun's shadow pass. */
   indoor: boolean;
+  /** In its model's near-shadow batch now (small clutter, `shadowSets`: the band's memory). */
+  nearIn: boolean;
   /** Whether it casts no shadow at range: every copy of the model in its PROP_SECTOR square is small clutter, or it is indoors. */
   quiet: boolean;
   /** It can break: in a batch of breakable copies, drawn only while its root is enabled. */
@@ -113,6 +119,8 @@ interface Group {
   /** Copies joined since the batches were made: they are made again (sizes change). */
   stale: boolean;
   batches: Map<string, Batch>;
+  /** Static shadow-only batches at full detail (`shadowSets`, models with levels of detail). */
+  shadows: Mesh[];
 }
 
 /** Shadow-only batch of a model's small copies near the camera. */
@@ -134,6 +142,8 @@ export interface PropBatchStats {
   /** Of `copies`, those that can break, and of those the ones broken now (out of their batch). */
   breakable?: number;
   hidden?: number;
+  /** Static shadow-only batch meshes (`shadowSets`). */
+  shadows?: number;
 }
 
 /** Where a copy is drawn (tests and the e2e flows): its batch's meshes, how many copies they draw, whether it is one. */
@@ -167,6 +177,8 @@ export class PropBatches {
     private readonly sources: StaticSources,
     /** Small clutter casts within this many metres of the camera (Atmosphere.SMALL_CASTER_REACH). */
     private readonly smallReach: number,
+    /** Cheaper small casters (game/shadowCasters.ts): static full-detail shadow batches, the near band. */
+    private readonly shadowSets = false,
   ) {}
 
   /**
@@ -199,10 +211,10 @@ export class PropBatches {
     const s = Math.max(w.getRow(0)!.length(), w.getRow(1)!.length(), w.getRow(2)!.length());
     const color: [number, number, number, number] = tint ? [...Color3.FromHexString(tint).asArray(), 1] as [number, number, number, number] : [1, 1, 1, 1];
     let g = this.groups.get(path);
-    if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map() }));
+    if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map(), shadows: [] }));
     const r = model.radius * s;
     const edges = propLodEdges(model.levels.map((l) => l.distance), r);
-    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r, level: -1, edges, small, indoor, quiet: small || indoor, breakable };
+    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r, level: -1, edges, small, indoor, nearIn: false, quiet: small || indoor, breakable };
     g.copies.push(copy);
     this.byRoot.set(root, { g, copy });
     if (tint) g.tinted = true;
@@ -252,6 +264,7 @@ export class PropBatches {
         // Every level's batches made now, not when a copy first needs one: no meshes come and go as you walk about
         // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.
         for (let l = 0; l < g.model.levels.length; l++) for (const k of g.copies) this.batch(g, l, k);
+        this.shadowBatches(g);
       }
       for (const c of g.copies) {
         const d = Math.hypot(c.x - camera.x, c.y - camera.y, c.z - camera.z);
@@ -321,12 +334,38 @@ export class PropBatches {
       // (shadowProxy.ts). Small clutter casts through its shadow-only batch near the camera instead. Breakable copies
       // are never merged: a proxy would keep a broken prop's shadow.
       // They say when their copies change (`thinVersion`), so the static shadow cache keeps them while they don't.
-      mesh.metadata = allSmall ? { castsNoShadow: true, propBatch: true, ...(c.breakable ? { breakable: true } : {}) } : c.breakable ? { propBatch: true, breakable: true, thinVersion: 0 } : lod ? { propBatch: true } : { staticThin: true, propBatch: true };
+      // With `shadowSets` a batch with levels of detail casts nothing: the model's static shadow batches do.
+      mesh.metadata = allSmall ? { castsNoShadow: true, propBatch: true, ...(c.breakable ? { breakable: true } : {}) } : c.breakable ? { propBatch: true, breakable: true, thinVersion: 0 } : lod ? (this.shadowSets ? { propBatch: true, castsNoShadow: true } : { propBatch: true }) : { staticThin: true, propBatch: true };
       return mesh;
     });
     b = { level, copies, meshes, matrices, colors, dirty: true };
     g.batches.set(key, b);
     return b;
+  }
+
+  /**
+   * `shadowSets`: a model with levels of detail casts through static shadow-only batches of its full detail, one per
+   * PROP_SECTOR square of its copies that cast (not quiet, not breakable: a broken prop's shadow goes with it), drawn by
+   * no camera. They never change (until copies join), so they are merged into the shadow proxies (`staticThin`) and a
+   * shadow no longer changes with the level the camera draws a copy at.
+   */
+  private shadowBatches(g: Group): void {
+    for (const m of g.shadows) m.dispose(false, false);
+    g.shadows = [];
+    if (!this.shadowSets || g.model.levels.length < 2) return;
+    const casting = g.copies.filter((k) => !k.quiet && !k.breakable);
+    for (const [sector, copies] of bySquare(casting, PROP_SECTOR)) {
+      const matrices = new Float32Array(copies.length * 16);
+      copies.forEach((k, i) => matrices.set(k.matrix, 16 * i));
+      g.model.levels[0]!.parts.forEach((part, pi) => {
+        const mesh = this.partMesh(`static_shadow_${this.seq++}_${g.model.path}_p${pi}_${sector}`, part);
+        mesh.thinInstanceSetBuffer('matrix', matrices, 16, true);
+        mesh.thinInstanceRefreshBoundingInfo(false);
+        mesh.layerMask = 0;
+        mesh.metadata = { staticThin: true, propBatch: true, propShadow: true, thinVersion: 0 };
+        g.shadows.push(mesh);
+      });
+    }
   }
 
   /** A batch mesh from a level part: its own geometry (thin instance buffers live on the geometry), placed for good. */
@@ -395,7 +434,9 @@ export class PropBatches {
     let count = 0;
     for (const c of n.copies) {
       const d = Math.hypot(c.x - camera.x, c.y - camera.y, c.z - camera.z) - c.r;
-      if (d > this.smallReach || !c.root.isEnabled(false)) continue;
+      // With `shadowSets`, in within 20 m and out past 24 m (shadowCasters.ts smallCasts); before, a hard line.
+      c.nearIn = this.shadowSets ? smallCasts(d, c.nearIn) : d <= this.smallReach;
+      if (!c.nearIn || !c.root.isEnabled(false)) continue;
       n.matrices.set(c.matrix, 16 * count++);
     }
     if (count === 0 && n.shown === 0) return;
@@ -420,23 +461,30 @@ export class PropBatches {
     let copies = 0;
     let breakable = 0;
     let hidden = 0;
+    let shadows = 0;
     const models = new Set<string>();
     for (const g of this.groups.values()) {
       copies += g.copies.length;
       models.add(g.model.path);
       for (const b of g.batches.values()) meshes += b.meshes.length;
+      shadows += g.shadows.length;
       for (const c of g.copies) {
         if (!c.breakable) continue;
         breakable++;
         if (!c.root.isEnabled(false)) hidden++;
       }
     }
-    return breakable ? { meshes, copies, models: models.size, breakable, hidden } : { meshes, copies, models: models.size };
+    const out: PropBatchStats = breakable ? { meshes, copies, models: models.size, breakable, hidden } : { meshes, copies, models: models.size };
+    if (shadows) out.shadows = shadows;
+    return out;
   }
 
   dispose(): void {
     this.disposed = true;
-    for (const g of this.groups.values()) for (const b of g.batches.values()) this.disposeBatch(b);
+    for (const g of this.groups.values()) {
+      for (const b of g.batches.values()) this.disposeBatch(b);
+      for (const m of g.shadows) m.dispose(false, false);
+    }
     this.groups.clear();
     this.byRoot.clear();
     for (const n of this.near.values()) for (const m of n.meshes) m.dispose(false, false);

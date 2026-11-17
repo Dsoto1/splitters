@@ -25,7 +25,8 @@
 // PERF_STILL_EXTRA adds views (JSON, see stillViews; a view may set its own `fov`, radians). PERF_DSF=2 renders at that
 // device scale factor and PERF_SIZE=1280x720 sets the viewport (pictures for the owner); PERF_NOGUN=1 hides the
 // first-person weapon and arms (their draws then leave the counts too). PERF_BREAKDOWN=1 also prints each view's draws by pass (main view,
-// shadow map, sun shafts, reflections) and by the mesh drawing them (names, digits stripped; PERF_BREAKDOWN_TOP=40).
+// shadow map, sun shafts, reflections) and by the mesh drawing them (names, digits stripped; PERF_BREAKDOWN_TOP=40), and the
+// shadow casters the column counts, by name.
 //
 // SwiftShader renders on the CPU, so its frame rate is far below a real GPU's;
 // compare runs on the same machine, and lean on draw calls, meshes and triangles.
@@ -204,11 +205,20 @@ async function measureStill(id, ctx, page, errors) {
       if (noGun) for (const mesh of scene.meshes) if (mesh.renderingGroupId === 1 && mesh.isEnabled(false)) mesh.setEnabled(false);
       if (noFx) for (const mesh of scene.meshes) if (mesh.isEnabled(false) && /^(gv_|sc_flame)/.test(mesh.name)) mesh.setEnabled(false);
       still.draws = 0;
+      still.shadowDraws = 0;
       if (bd) {
         if (bd.frame.size) bd.last = bd.frame;
         bd.frame = new Map();
       }
     });
+    // The shadow pass's own draws a frame (every cascade), for PERF_SPLIT's line.
+    for (const l of scene.lights) {
+      const sm = l.getShadowGenerator?.()?.getShadowMap();
+      if (!sm) continue;
+      let at = 0;
+      sm.onBeforeBindObservable.add(() => (at = still.draws));
+      sm.onAfterUnbindObservable.add(() => (still.shadowDraws += still.draws - at));
+    }
     scene.onAfterRenderObservable.add(() => {
       let casters = 0;
       for (const l of scene.lights) {
@@ -216,7 +226,7 @@ async function measureStill(id, ctx, page, errors) {
         const list = sm?.renderList ?? [];
         casters += (sm?.getCustomRenderList ? sm.getCustomRenderList(0, list, list.length)?.length : undefined) ?? list.length;
       }
-      still.frames.push([still.draws, scene.getActiveMeshes().length, scene.meshes.length, scene.getActiveIndices() / 3, casters, scene.materials.length]);
+      still.frames.push([still.draws, scene.getActiveMeshes().length, scene.meshes.length, scene.getActiveIndices() / 3, casters, scene.materials.length, still.shadowDraws ?? 0]);
       if (still.frames.length > 400) still.frames.splice(0, 200);
     });
   }, [process.env.PERF_STILL_FX === '1', process.env.PERF_BREAKDOWN === '1', process.env.PERF_NOGUN === '1']);
@@ -294,8 +304,54 @@ async function measureStill(id, ctx, page, errors) {
         const rows = [...last].filter(([k]) => k.split('|')[0] === p).sort((a, b) => b[1] - a[1]).slice(0, top);
         lines.push(`  ${p}: ${rows.map(([k, n]) => `${k.split('|')[1]} ${n}`).join(' | ')}`);
       }
+      // The shadow casters the map's list holds this frame (what the Shadow casters column counts), by mesh name.
+      const scene = window.__cs.view.scene;
+      const names = new Map();
+      for (const l of scene.lights) {
+        const sm = l.getShadowGenerator?.()?.getShadowMap();
+        const list = sm?.renderList ?? [];
+        for (const m of (sm?.getCustomRenderList ? sm.getCustomRenderList(0, list, list.length) : null) ?? list) {
+          const k = m.name.replace(/[0-9]+/g, '#').slice(0, 48);
+          names.set(k, (names.get(k) ?? 0) + 1);
+        }
+      }
+      lines.push(`  casters: ${[...names].sort((a, b) => b[1] - a[1]).slice(0, top).map(([k, n]) => `${k} ${n}`).join(' | ')}`);
       return lines.join('\n');
     }, Number(process.env.PERF_BREAKDOWN_TOP ?? 40)));
+    // PERF_SPLIT=1: the page's own time a frame at this view (the frame split of docs/PERF_TOOLS.md, on this machine:
+    // SwiftShader's numbers are for comparing runs, not real hardware), and the shadow pass's draws, over 40 frames.
+    // PERF_WALK=<m>: then the camera walks that far ahead at 0.1 m a frame (cascades move, levels of detail change) and
+    // the same is read over the walk: what a still view hides (the static shadow cache redraws as the camera moves).
+    if (process.env.PERF_SPLIT === '1' || process.env.PERF_WALK) {
+      const split = async (walk) => page.evaluate(async (walk) => {
+        const perf = window.__perf;
+        perf.use('client-perf', true);
+        perf.keep = 0;
+        const scene = window.__cs.view.scene;
+        const pose = window.__still.pose;
+        const start = { ...pose.eye };
+        const frames = walk ? Math.round(walk / 0.1) : 40;
+        const dir = { x: Math.sin(pose.yaw), z: Math.cos(pose.yaw) };
+        const nextFrame = () => new Promise((r) => { const f = scene.getFrameId(); const t = setInterval(() => { if (scene.getFrameId() > f) { clearInterval(t); r(); } }, 5); });
+        await nextFrame();
+        perf.reset();
+        window.__still.frames.length = 0;
+        for (let i = 0; i < frames; i++) {
+          if (walk) pose.eye = { x: start.x + dir.x * 0.1 * (i + 1), y: start.y, z: start.z + dir.z * 0.1 * (i + 1) };
+          await nextFrame();
+        }
+        const f = perf.frames.slice(1);
+        const rows = window.__still.frames.slice(1);
+        pose.eye = start;
+        perf.use('client-perf', false);
+        const avg = (g) => (f.length ? f.reduce((n, x) => n + g(x), 0) / f.length : 0);
+        const ravg = (j) => (rows.length ? rows.reduce((n, r) => n + r[j], 0) / rows.length : 0);
+        return { n: f.length, render: avg((x) => x.render), shadow: avg((x) => x.sys[7]), cull: avg((x) => x.sys[9]), post: avg((x) => x.sys[8]), js: avg((x) => x.js), draws: ravg(0), casters: ravg(4), shadowDraws: ravg(6), shadowMax: Math.max(0, ...rows.map((r) => r[6])), tris: ravg(3) };
+      }, walk);
+      const say = (label, r) => console.log(`  ${label}: render ${r.render.toFixed(1)} ms (shadow ${r.shadow.toFixed(1)}, cull ${r.cull.toFixed(1)}, post ${r.post.toFixed(1)}) · game js ${r.js.toFixed(1)} ms · draws ${r.draws.toFixed(0)} · shadow draws ${r.shadowDraws.toFixed(1)} (max ${r.shadowMax}) · casters ${r.casters.toFixed(0)} · ${(r.tris / 1e6).toFixed(3)} M tris · ${r.n} frames`);
+      say('still', await split(0));
+      if (process.env.PERF_WALK) say(`walk ${process.env.PERF_WALK} m`, await split(Number(process.env.PERF_WALK)));
+    }
     const row = `| ${id} | ${GRAPHICS} | ${v.name} | ${last[0]} | ${last[1]} / ${last[2]} | ${(last[3] / 1e6).toFixed(3)} M | ${last[4]} | ${last[5]} | ${range} |`;
     console.log(row, process.env.PERF_DEBUG ? JSON.stringify(pose) : '');
     rows.push(row);
