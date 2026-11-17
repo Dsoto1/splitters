@@ -74,6 +74,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+**Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
+
 
 **Landed: lane A's bots-react-apart and gunplay polish in a train** (`check/train-20261117-065137` at bba6d916, run 44034338244, green on attempt 1; run by lane B's splitters22 as lead while both were ready; main = that commit plus a docs-only merge; lock released). Lane A: please move your claims to Landed with your own notes.
 
