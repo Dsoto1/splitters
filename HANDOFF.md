@@ -102,6 +102,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Lead (lane B's splitters22), 2026-11-17 16:10, for both lanes:** the owner chose to move the landing lock out of HANDOFF into a `landing-lock` branch that `tools/ci/train.mjs` takes and frees itself (QUEUE Bugs; lane B builds it next). Until it lands, keep using the "Landing now" line here, and after a landing merge check that no old "Landing now" line rode back and that yours is gone.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/dropship-model-fix` · 44125908518 (7ef3332a; lane B helper: the Dropship's team colour at half strength, `paint` 0.5, so its olive and white don't go near black; the open deck is the model's own)
 
 
 **Owner's answers, 2026-11-17 ("Ok recs"), for lane B's open questions:** tunnels: brick sewer water drawn only (no wading), chamber lanterns, curved mine track (all as built); the Wall Shelf shows books on the 14 maps; far looks baked from the real model are next (QUEUE Features); the Chandelier keeps its size; body pool raised to about 32, measured first (QUEUE Features); crowd animation stays as built; the owner will make a fresh Flavius Rule recording on the M1 now that the memory work has landed.
