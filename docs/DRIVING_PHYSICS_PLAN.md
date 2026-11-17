@@ -369,3 +369,5 @@ righting only on the driver's key (jump; empty ones still right themselves after
 this box at load 5): classic 0.11-0.34 ms a tick, rigid 0.08-0.26 ms; within the noise of each other. The lag harness
 replays its inputs per snapshot on top (6-9 steps at 100-150 ms) without showing in its run time (600 ticks with
 three links in about 0.3 s each).
+
+**The owner's answers on driving physics 4 (2026-11-17, "1a 2a 3a"):** keep the real nose hit at the foot of a steep face (no help up it); jumps land as they are taken, air control only (no levelling); a buggy that lands on its roof off a high ledge is fine, jump flips it back. All as built.
