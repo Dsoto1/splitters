@@ -355,7 +355,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.graft ? [`new hand geometry: the hands replaced by the rig's own (Quaternius Universal Base Characters, CC0, the athlete body part), fitted to them (tools/content/handgraft.mjs)`] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');

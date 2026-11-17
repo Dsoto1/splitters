@@ -876,8 +876,8 @@ ground made flat with the Terrain tab's Flatten and stand the net across its mid
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
 was usually a flat block of two colours (`geom.mjs` `standIn`): a shop shelf of goods turned into a grey box, a chair
-into a cube. For the families of the types `content/kitprops.json` lists in `farLooks` (shop shelves and shop stands,
-bookcases, tables, seats, sofas, cabinets, beds, appliances, stalls), every lighter level is now chosen from candidates
+into a cube. For the families of the types `content/kitprops.json` lists in `farLooks` (every kit type since
+2026-11-17, "1a"), every lighter level is now chosen from candidates
 made from that variant's own level 0 (`tools/content/kit/farLook.mjs`):
 
 - **Recoloured**: the generator's own level (its outline), its faces divided where level 0's picture varies across
@@ -899,12 +899,23 @@ own; an alias's level 1 stays within the retired prop's triangles). The choice i
 bake (`FAR_VERSION`) searches again (about 3 minutes for the 186 variants). The kind budgets
 (`budgets.triangles`) were raised to the baked levels. Tested in `tools/content/test/farLook.test.mjs`.
 
-As built (2026-11-17): level 1 recoloured in 84 of 186 variants (the generator's own outline kept, unchanged, in 102);
-level 2 baked as cells in 67, a picture box in 14, the generator's level recoloured in 83, unchanged in 22. Not yet
-baked: the other kit types (crates, drums, fences, walls, containers, machines, street furniture, domes). The
-catalogue packs have no flat blocks: 35 of 1,378 props (hero pieces) have a lighter level, and it is their own model
-simplified (`prepare-props.mjs` `HERO_LOD`); the rest are drawn whole. The environment's trees end on a picture card
-already rendered from the tree.
+As built (2026-11-17), shop shelves and furniture first (186 variants): level 1 recoloured in 84, unchanged in 102;
+level 2 cells in 67, a picture box in 14, recoloured in 83, unchanged in 22. Then every other kit type (`wip/farlooks-kit2`,
+612 variants in all): level 1 recoloured in 211, unchanged in 401; level 2 cells in 122, a picture box in 29, recoloured
+in 319, unchanged in 142. Thin lattices (chain-link, iron railings) mostly keep the generator's levels: a coarse bake
+fills their gaps, and the picture says so.
+
+**The byte budget.** A variant whose file would pass `budgets.maxBytes` with its baked levels is baked again with every
+lighter level held to the generator's own triangles (`tight` in its plan: recoloured at most), and if it is still over,
+keeps the generator's levels (`key: "own"`): ten files went tight (whole and hall domes, a shipping container), and
+the five 12-panel hall domes keep the generator's levels.
+
+**Making it again.** A plan keeps what the search found down to the recolouring's steps (`tries`) and the palette's
+size (`k`), so a build makes each level once: the whole kit builds in about 13 s, the kit test builds it twice.
+
+The catalogue packs have no flat blocks: 35 of 1,378 props (hero pieces) have a lighter level, and it is their own
+model simplified (`prepare-props.mjs` `HERO_LOD`); the rest are drawn whole. The environment's trees end on a picture
+card already rendered from the tree.
 
 #### The dome kit
 

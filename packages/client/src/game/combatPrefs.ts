@@ -1,8 +1,9 @@
 /**
  * Combat accessibility (Options → Accessibility, and the pause menu's Settings; docs/GUNPLAY_SPEC.md §42):
  * - **Aim**: hold the aim button to aim down the sights or scope (the default), or press once to aim and again to stop.
- *   Touch play is always a toggle (its Aim button latches). A toggled aim lets go when you change weapons, die, get in
- *   a vehicle or leave play (input.ts, AimLatch).
+ *   On a phone or tablet the default is Toggle (the Aim button latches), and the setting is offered in Options →
+ *   Controls → Touch as well. A toggled aim lets go when you change weapons, die, get in a vehicle or leave play
+ *   (input.ts, AimLatch).
  * - **Camera shake**: Off, Reduced or Full (the default), for the view's own movement on top of your aim: the jolt of a
  *   heavy round leaving the barrel, the hit kick when you are struck, and blasts and crashes near you. The weapon's
  *   mechanical recoil is where your rounds go, so it stays (GUNPLAY_SPEC §29). Reduce flashing keeps its own limits on
@@ -11,6 +12,8 @@
  *   (rumble.ts): firing, taking hits and blasts near you. Hidden where the browser can't vibrate a controller.
  * Saved in this browser with the other options; a running match applies a change at once.
  */
+
+import { isTouchDevice } from '../touchDevice.ts';
 
 export const AIM_MODES = ['hold', 'toggle'] as const;
 export type AimMode = (typeof AIM_MODES)[number];
@@ -26,6 +29,8 @@ export interface CombatPrefs {
 }
 
 export const DEFAULT_COMBAT_PREFS: Readonly<CombatPrefs> = { aim: 'hold', shake: 'full', vibration: true, vibrationStrength: 0.7 };
+/** A phone or tablet's defaults: its Aim button latches until the setting says otherwise. */
+export const TOUCH_COMBAT_DEFAULTS: Readonly<CombatPrefs> = { ...DEFAULT_COMBAT_PREFS, aim: 'toggle' };
 
 const KEY = 'tiletrigger.combat';
 /** Fired on window when a setting changes (the pause menu and Options keep in step, a running match applies it). */
@@ -43,7 +48,7 @@ const clampStrength = (v: unknown): number => {
 };
 
 /** A stored value read back: anything unknown or missing is the default. */
-export function parseCombatPrefs(raw: string | null): CombatPrefs {
+export function parseCombatPrefs(raw: string | null, defaults: Readonly<CombatPrefs> = DEFAULT_COMBAT_PREFS): CombatPrefs {
   let o: Partial<Record<keyof CombatPrefs, unknown>> = {};
   try {
     const v = raw ? (JSON.parse(raw) as unknown) : null;
@@ -52,7 +57,7 @@ export function parseCombatPrefs(raw: string | null): CombatPrefs {
     // A damaged value: the defaults.
   }
   return {
-    aim: AIM_MODES.find((m) => m === o.aim) ?? DEFAULT_COMBAT_PREFS.aim,
+    aim: AIM_MODES.find((m) => m === o.aim) ?? defaults.aim,
     shake: SHAKE_LEVELS.find((s) => s === o.shake) ?? DEFAULT_COMBAT_PREFS.shake,
     vibration: typeof o.vibration === 'boolean' ? o.vibration : DEFAULT_COMBAT_PREFS.vibration,
     vibrationStrength: clampStrength(o.vibrationStrength),
@@ -61,10 +66,10 @@ export function parseCombatPrefs(raw: string | null): CombatPrefs {
 
 export function loadCombatPrefs(): CombatPrefs {
   try {
-    return parseCombatPrefs(localStorage.getItem(KEY));
+    return parseCombatPrefs(localStorage.getItem(KEY), isTouchDevice() ? TOUCH_COMBAT_DEFAULTS : DEFAULT_COMBAT_PREFS);
   } catch {
     // Private windows: the defaults.
-    return { ...DEFAULT_COMBAT_PREFS };
+    return { ...(isTouchDevice() ? TOUCH_COMBAT_DEFAULTS : DEFAULT_COMBAT_PREFS) };
   }
 }
 
@@ -77,7 +82,7 @@ export function combatPrefs(): Readonly<CombatPrefs> {
 
 /** Change some settings, save them and tell the page. */
 export function saveCombatPrefs(change: Partial<CombatPrefs>): void {
-  const next = parseCombatPrefs(JSON.stringify({ ...combatPrefs(), ...change }));
+  const next = parseCombatPrefs(JSON.stringify({ ...combatPrefs(), ...change }), combatPrefs());
   current = next;
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
