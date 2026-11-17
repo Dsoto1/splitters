@@ -42,7 +42,8 @@ export const CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'c
 const KINDS = { broadleaf: 'tree', conifer: 'tree', palm: 'tree', cactus: 'tree', shrub: 'plant', hedge: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', rosette: 'groundcover', pebbles: 'rock', boulder: 'boulder', slab: 'boulder', outcrop: 'boulder', cliff: 'cliff', log: 'deadwood' };
 const { num, int, str, bool, en, tup, arr, obj, map } = shape;
 const ID = /^env\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
-const mm = (v) => Math.round(v * 1000) / 1000;
+// (+ 0 turns -0 into 0: a table entry must read back from JSON, which has no -0.)
+const mm = (v) => Math.round(v * 1000) / 1000 + 0;
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
