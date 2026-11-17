@@ -23,6 +23,7 @@ import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
+import { dropPointCaches } from './pointCache.ts';
 import { OwnedAssets } from './ownedAssets.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 import type { ClipLoop } from '../game/gait.ts';
@@ -220,6 +221,8 @@ export class CharacterLibrary {
     let p = this.files.get(file);
     if (!p) {
       p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
+      // The file's own meshes (kept for the match, every body is cloned from them) need no picking points either.
+      if (perfOn('bodypoints')) p = p.then((c) => (dropPointCaches(c.meshes), c));
       this.files.set(file, p);
     }
     return p;
@@ -429,6 +432,8 @@ export class CharacterLibrary {
       // Eyes sit inside the head: their shadow would land on the inside of the skull.
       if (m.material?.name === 'MI_Eyes') m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
     }
+    // The per-vertex picking points Babylon made for each skinned clone (pointCache.ts): a body is never picked.
+    if (perfOn('bodypoints')) dropPointCaches(holder.getChildMeshes(false));
     // Our materials left on no mesh (parts merged into one, low-detail copies, the female mannequin's swap) go now.
     own.keepOnly(new Set(holder.getChildMeshes(false).flatMap((m) => (m.material instanceof MultiMaterial ? [m.material, ...m.material.subMaterials] : [m.material]))));
     return {

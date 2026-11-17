@@ -6,6 +6,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Shadow proxies (docs/PERF_96.md, "Market Town on an M1 Pro"): the shadow map's stand-ins for static geometry.
@@ -143,6 +144,10 @@ export function buildShadowProxies(scene: Scene, meshes: readonly AbstractMesh[]
     vd.normals = cell.normals;
     vd.indices = cell.positions.length / 3 > 65535 ? new Uint32Array(cell.indices) : cell.indices;
     vd.applyToMesh(mesh);
+    // Its triangles are on the graphics card now, and nothing reads them back (a rebuild starts again from the
+    // sources): no copy kept in the page. Kept, they were plain number arrays, eight bytes a coordinate: 220 MB of
+    // Flavius Rule's 1 GB script heap (docs/PERF_FLAVIUS_MEMORY_2026-11-16.md; `?perfoff=proxydata` keeps them).
+    if (perfOn('proxydata')) mesh.geometry?.clearCachedData();
     mesh.material = mat;
     mesh.isPickable = false;
     mesh.layerMask = 0;

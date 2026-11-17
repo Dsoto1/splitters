@@ -13,10 +13,13 @@
  * on the check's own navmesh instead of building another, editor/mapTestWorkerCore.ts, `navstop`, the check stopped
  * when Test starts, editor/mapChecks.ts `pause`, and `editlight`, an edit's outliner rows, level picker and hover card
  * rebuilt only when what they show changed, editor/editorApp.ts `refresh`; the character leak fix adds `bodyclones`, a
- * body's cloned materials and texture copies freed with it, content/ownedAssets.ts).
+ * body's cloned materials and texture copies freed with it, content/ownedAssets.ts; Flavius Rule's memory round,
+ * docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, adds `proxydata`, the shadow proxies' triangles not kept in the page,
+ * game/shadowProxy.ts, `bodypoints`, the bodies' per-vertex picking points dropped, content/pointCache.ts, and
+ * `animcrowd`, all but the nearest characters of a crowd in view animated a rung or two slower, animLod.ts crowdStep).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd';
 
 let off: Set<string> | null = null;
 
