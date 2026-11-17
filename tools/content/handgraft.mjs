@@ -102,6 +102,7 @@ export function graftHands({ target, donor, sides, measure, smooth = 1, log = ()
     };
     let added = 0;
     let dropped = 0;
+    let turnedAll = 0;
     target.meshes.forEach((m) => {
       const dm = donor.meshes.find((x) => x.lod === m.lod) ?? donor.meshes[0];
       const uvOf = (v) => (m.uv ? [m.uv[v * 2], m.uv[v * 2 + 1]] : [0, 0]);
@@ -154,6 +155,19 @@ export function graftHands({ target, donor, sides, measure, smooth = 1, log = ()
         const [a, b, c] = [keep[dm.idx[i]], keep[dm.idx[i + 1]], keep[dm.idx[i + 2]]];
         if (a >= 0 && b >= 0 && c >= 0 && a !== b && b !== c && a !== c) hand.idx.push(a, b, c);
       }
+      // Every triangle facing out, as its vertices' normals do: the donor part is drawn two-sided, and some of its
+      // palm's triangles are wound inward; on a character drawn one-sided they were holes, the pistol's grip showing
+      // through the palm (owner, 2026-11-17).
+      let turned = 0;
+      for (let i = 0; i < hand.idx.length; i += 3) {
+        const [a, b, c] = [hand.idx[i], hand.idx[i + 1], hand.idx[i + 2]];
+        const face = cross(sub(hand.pos[b], hand.pos[a]), sub(hand.pos[c], hand.pos[a]));
+        if (dot(face, add(add(hand.nrm[a], hand.nrm[b]), hand.nrm[c])) < 0) {
+          [hand.idx[i + 1], hand.idx[i + 2]] = [c, b];
+          turned++;
+        }
+      }
+      turnedAll += turned;
       for (let level = 0; level < (m.lod ? 0 : smooth); level++) subdivide(hand);
       // Its surface from the old hand's: each new triangle takes its texture coordinates from the old triangle nearest
       // it (its corners projected onto that triangle's plane, kept within a little of it), so the skin's tone, a
@@ -200,7 +214,7 @@ export function graftHands({ target, donor, sides, measure, smooth = 1, log = ()
       moved.set(name, toTarget(donor.world.get(name).t));
     }
     done.push(s);
-    log(`hand_${s}: new hand geometry (the rig's own hand fitted: ${(ht.length * 100).toFixed(1)} cm long, ${(ht.width * 100).toFixed(1)} wide): ${added} vertices for ${dropped} old triangles`);
+    log(`hand_${s}: new hand geometry (the rig's own hand fitted: ${(ht.length * 100).toFixed(1)} cm long, ${(ht.width * 100).toFixed(1)} wide): ${added} vertices for ${dropped} old triangles${turnedAll ? `, ${turnedAll} donor triangles turned to face out` : ''}`);
   }
   return { moved, sides: done };
 }

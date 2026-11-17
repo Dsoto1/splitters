@@ -12,9 +12,13 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
  * deep (owner, 2026-11-17: "some of the palms show the pistol grip through it").
  */
 export interface GripInside {
+  /** The hand's vertices inside the gun: how many, the deepest (m), of how many. */
   verts: number;
   depth: number;
   of: number;
+  /** The gun's vertices inside the hand (behind the hand's nearest face: the grip showing through the palm). */
+  gunVerts: number;
+  gunDepth: number;
 }
 
 /** Further than this behind a gun's face is not "inside" it (a thin grip's far side, or a hand past the gun). */
@@ -83,22 +87,26 @@ function nearest(p: Vector3, t: Tri): Vector3 {
   return t.a.add(ab.scale(vb * den)).add(ac.scale(vc * den));
 }
 
-/** Each hand's skin as drawn, in world space (skinned here through the skeleton's last matrices). */
-function handPoints(meshes: readonly AbstractMesh[], side: 'l' | 'r'): Vector3[] {
+/** Each hand's skin as drawn, in world space (skinned here through the skeleton's last matrices): its vertices and its triangles. */
+function handSkin(meshes: readonly AbstractMesh[], side: 'l' | 'r'): { pts: Vector3[]; tris: Tri[] } {
   const re = HAND(side);
-  const out: Vector3[] = [];
+  const pts: Vector3[] = [];
+  const tris: Tri[] = [];
   for (const mesh of meshes) {
     if (!mesh.skeleton || mesh.isDisposed() || !mesh.isEnabled() || /_lod/i.test(mesh.name)) continue;
     const bi = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
     const bw = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
     const pos = mesh.getVerticesData(VertexBuffer.PositionKind);
+    const idx = mesh.getIndices();
     if (!bi || !bw || !pos) continue;
     const sk = mesh.skeleton;
     const on = sk.bones.map((b) => re.test(b.getTransformNode()?.name ?? b.name));
     const mats = sk.getTransformMatrices(mesh);
     mesh.computeWorldMatrix(true);
     const w = mesh.getWorldMatrix();
+    const flip = w.determinant() < 0 ? -1 : 1;
     const count = Math.min(pos.length / 3, bw.length / 4);
+    const drawn = new Map<number, Vector3>();
     for (let v = 0; v < count; v++) {
       let held = 0;
       for (let k = 0; k < 4; k++) if (on[bi[v * 4 + k]!]) held += bw[v * 4 + k]!;
@@ -117,47 +125,67 @@ function handPoints(meshes: readonly AbstractMesh[], side: 'l' | 'r'): Vector3[]
         ay += wk * (mats[o + 1]! * x + mats[o + 5]! * y + mats[o + 9]! * z + mats[o + 13]!);
         az += wk * (mats[o + 2]! * x + mats[o + 6]! * y + mats[o + 10]! * z + mats[o + 14]!);
       }
-      out.push(Vector3.TransformCoordinates(new Vector3(ax, ay, az), w));
+      const p = Vector3.TransformCoordinates(new Vector3(ax, ay, az), w);
+      drawn.set(v, p);
+      pts.push(p);
+    }
+    if (!idx) continue;
+    for (let t = 0; t + 2 < idx.length; t += 3) {
+      const a = drawn.get(idx[t]!);
+      const b = drawn.get(idx[t + 1]!);
+      const c = drawn.get(idx[t + 2]!);
+      if (!a || !b || !c) continue;
+      const n = Vector3.Cross(b.subtract(a), c.subtract(a)).scale(flip);
+      const l = n.length();
+      if (l > 1e-12) tris.push({ a, b, c, n: n.scale(1 / l) });
     }
   }
-  return out;
+  return { pts, tris };
 }
 
-/** The gun inside each hand, as drawn. */
-export function gripInside(meshes: readonly AbstractMesh[], weapon: TransformNode): Record<'l' | 'r', GripInside> {
-  const tris = gunTriangles(weapon);
-  // The gun's box, grown by REACH: hand points outside it can't be inside the gun.
+/** Points behind the nearest of `faces` (inside what they wrap), within REACH: how many and the deepest. */
+function behind(points: readonly Vector3[], faces: readonly Tri[]): { verts: number; depth: number } {
   const lo = new Vector3(Infinity, Infinity, Infinity);
   const hi = new Vector3(-Infinity, -Infinity, -Infinity);
-  for (const t of tris) for (const p of [t.a, t.b, t.c]) {
+  for (const t of faces) for (const p of [t.a, t.b, t.c]) {
     lo.minimizeInPlace(p);
     hi.maximizeInPlace(p);
   }
-  const result = {} as Record<'l' | 'r', GripInside>;
-  for (const side of ['l', 'r'] as const) {
-    const pts = handPoints(meshes, side);
-    let verts = 0;
-    let depth = 0;
-    for (const p of pts) {
-      if (p.x < lo.x - REACH || p.y < lo.y - REACH || p.z < lo.z - REACH || p.x > hi.x + REACH || p.y > hi.y + REACH || p.z > hi.z + REACH) continue;
-      let best = Infinity;
-      let behind = 0;
-      for (const t of tris) {
-        const q = nearest(p, t);
-        const d = Vector3.DistanceSquared(p, q);
-        if (d < best) {
-          best = d;
-          behind = -Vector3.Dot(p.subtract(q), t.n);
-        }
-      }
-      const dist = Math.sqrt(best);
-      // Inside: behind its nearest face (and that face sees it square on: not past an edge), within reach.
-      if (behind > TOUCH && behind > 0.7 * dist && dist < REACH) {
-        verts++;
-        depth = Math.max(depth, dist);
+  let verts = 0;
+  let depth = 0;
+  for (const p of points) {
+    if (p.x < lo.x - REACH || p.y < lo.y - REACH || p.z < lo.z - REACH || p.x > hi.x + REACH || p.y > hi.y + REACH || p.z > hi.z + REACH) continue;
+    let best = Infinity;
+    let back = 0;
+    for (const t of faces) {
+      const q = nearest(p, t);
+      const d = Vector3.DistanceSquared(p, q);
+      if (d < best) {
+        best = d;
+        back = -Vector3.Dot(p.subtract(q), t.n);
       }
     }
-    result[side] = { verts, depth: Math.round(depth * 1000) / 1000, of: pts.length };
+    const dist = Math.sqrt(best);
+    // Inside: behind its nearest face (and that face sees it square on: not past an edge), within reach.
+    if (back > TOUCH && back > 0.7 * dist && dist < REACH) {
+      verts++;
+      depth = Math.max(depth, dist);
+    }
+  }
+  return { verts, depth: Math.round(depth * 1000) / 1000 };
+}
+
+/** The gun inside each hand, as drawn: the hand's skin inside the gun, and the gun inside the hand. */
+export function gripInside(meshes: readonly AbstractMesh[], weapon: TransformNode): Record<'l' | 'r', GripInside> {
+  const gun = gunTriangles(weapon);
+  // (The gun's corners and its faces' middles: a grip's flat side has few corners.)
+  const gunPts = gun.flatMap((t) => [t.a, t.b, t.c, t.a.add(t.b).add(t.c).scale(1 / 3)]);
+  const result = {} as Record<'l' | 'r', GripInside>;
+  for (const side of ['l', 'r'] as const) {
+    const hand = handSkin(meshes, side);
+    const inGun = behind(hand.pts, gun);
+    const inHand = hand.tris.length ? behind(gunPts, hand.tris) : { verts: 0, depth: 0 };
+    result[side] = { verts: inGun.verts, depth: inGun.depth, of: hand.pts.length, gunVerts: inHand.verts, gunDepth: inHand.depth };
   }
   return result;
 }

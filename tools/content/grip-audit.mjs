@@ -278,10 +278,14 @@ if (!rescore) {
 }
 results.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 writeFileSync(join(out, 'audit.json'), JSON.stringify({ when: new Date().toISOString(), flags: FLAGS, results }, null, 1));
-/** The pistol inside the hands (tools/gripInside.ts), third person then full-body first person: deepest cm and vertices, R / L. */
+/**
+ * The pistol in the hands (tools/gripInside.ts), third person then full-body first person, R / L: the gun's own points
+ * inside the hand (the grip showing through the palm or fingers), deepest cm and how many, then the hand's skin
+ * inside the gun the same way.
+ */
 function insideOf(r) {
   const m = r.weapons.pistol;
-  const f = (x) => (x ? ['r', 'l'].map((s) => `${(x[s].depth * 100).toFixed(1)} (${x[s].verts})`).join(' / ') : '-');
+  const f = (x) => (x ? ['r', 'l'].map((s) => `${(x[s].gunDepth * 100).toFixed(1)} (${x[s].gunVerts}) · ${(x[s].depth * 100).toFixed(1)} (${x[s].verts})`).join(' / ') : '-');
   return m ? `${f(m.inside)}; ${f(m.fpInside)}` : '-';
 }
 /** The hands' tear (tools/gripAudit.ts `tear`), worst over the weapons: longest edge stretch, then triangles turned over. */
@@ -302,7 +306,7 @@ const rows = results.map((r) => {
 writeFileSync(
   join(out, 'summary.md'),
   [
-    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) | hand tear R/L | pistol in hand R/L (cm, verts; third / first) |',
+    '| Character | Rig | Score | Flags | head-gun m | R elbow side | elbow flex R/L | finger share R/L | tips m R/L | drawn m R/L | palms R/L | spikes (max) | hand tear R/L | pistol in hand R/L (gun in hand cm (points) · hand in gun cm (verts); third; first) |',
     '|---|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...rows,
     '',
