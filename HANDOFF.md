@@ -62,6 +62,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+- `check/bugs-1117` · 44021194465 (the Wall Shelf, props popping, streams on the muzzle; a helper of lane B's splitters22)
+
 **Lead (lane B's splitters22), 2026-11-17 03:05: stale lock lines.** Two of lane B's finished "Landing now" lines (the 11-16 MapMaker train and driving physics 4) came back on main through landing merges (a branch whose HANDOFF still had them). Removed again. When a landing merge conflicts or auto-merges in HANDOFF, please check no old "Landing now" line rides back in.
 
 - **Claimed (a helper of lane A's lead, 2026-11-16): punchier hits, damage by impact speed, clearer ranges** (`wip/punchier-hits`; QUEUE Features, lane A; the owner's asks of 2026-11-16). Files: shared `sim/impact.ts` (stopping power by class, the air shove), `sim/gunplay.ts` (bullet drag by family, the speed-to-damage curve), `sim/match.ts` (`stagger`, bullets' damage at impact: the bullet code only; `sim/fireModes.ts` untouched), `content/weapons/families.json` and the close-range guns' files (`smg`, `pistol`, `machine_pistol`, `pulse_pistol`, `hand_cannon`, others with a `range`/`falloff`), the generated weapon tables (`pnpm content:weapons`), `bots/weaponBands.generated.ts` and `docs/gunplay-audit.json` (`pnpm gun-report --bands`), client `game/session.ts` / `characterAnimator` flinch and a hit camera kick (within Reduce flashing), tests (`impact.test.ts`, a new `impactSpeed.test.ts`, `weaponBands.test.ts`, `ballistics.test.ts`, `benchmarks.test.ts`), docs/GUNPLAY_SPEC.md §23/§37, docs/GUNPLAY_AUDIT.md, CHANGELOG. No map format change.
