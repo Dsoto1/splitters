@@ -44,17 +44,18 @@ const geometryOf = (m: AbstractMesh): Mesh | null => (m.isAnInstance ? (m as Ins
 /**
  * Whether a mesh can cast through a proxy: placed for good (its world matrix frozen), drawn, opaque without an alpha
  * test, not skinned or morphed, no levels of detail (but a GPU instance of a model with levels casts its full detail,
- * `lodInstances`, unless a level is a turning picture card or nothing at all, or the prop can break), not a parked instance source (its copies are merged
- * instead), not hidden away out of the world (sources sit at y -10000).
+ * `lodInstances`, unless a level is a turning picture card or nothing at all), not a prop that can break, not a parked
+ * instance source (its copies are merged instead), not hidden away out of the world (sources sit at y -10000).
  */
 export function proxyable(m: AbstractMesh, lodInstances = perfOn('smallcasters')): boolean {
   if (m.isDisposed() || !m.isEnabled() || !m.isVisible || !m.isWorldMatrixFrozen || m.renderingGroupId !== 0) return false;
+  // A prop that can break (propVisuals.ts marks its meshes) casts on its own: a proxy would keep its shadow once it is
+  // broken (its node switched off), until the proxies were rebuilt. On its own its shadow goes with it.
+  if ((m.metadata as { breakable?: boolean } | null)?.breakable === true) return false;
   const g = geometryOf(m);
   if (!g || g.getTotalVertices() === 0 || g.skeleton || g.morphTargetManager) return false;
   const lods = g.getLODLevels();
-  // (Not a prop that can break: a proxy would keep its shadow once it is gone.)
-  const breakable = (m.metadata as { breakable?: boolean } | null)?.breakable === true;
-  if (lods.length && !(lodInstances && m.isAnInstance && !breakable && lods.every((l) => !!l.mesh && l.mesh.billboardMode === Mesh.BILLBOARDMODE_NONE))) return false;
+  if (lods.length && !(lodInstances && m.isAnInstance && lods.every((l) => !!l.mesh && l.mesh.billboardMode === Mesh.BILLBOARDMODE_NONE))) return false;
   // Thin instances only when they never change (the border's trees, rocks and facades say so); destructibles' do.
   if (g.hasThinInstances && (!(m.metadata as { staticThin?: boolean } | null)?.staticThin || g.thinInstanceCount * g.getTotalVertices() > THIN_VERTEX_CAP)) return false;
   if (!m.isAnInstance && g.hasInstances) return false;
