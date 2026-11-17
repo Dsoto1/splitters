@@ -19,6 +19,7 @@ import { MODEL_FALLBACKS, MOUNT_DEFS, THROWABLE_DEFS } from '@tiletrigger/shared
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { GLB, versioned } from '../assetUrl.ts';
 import { applyPropSurfaces } from './propSurfaces.ts';
+import { lodWithHysteresis, propLodEdges } from '../game/propLod.ts';
 
 /** Mount models (content/vehicles `fallback`) fall back to the ones they replaced when they fail to load. */
 const MOUNT_MODEL_FALLBACKS: Readonly<Record<string, string>> = Object.fromEntries(Object.values(MOUNT_DEFS).flatMap((d) => (d.fallback ? [[d.model, d.fallback]] : [])));
@@ -253,9 +254,15 @@ export class ModelLibrary {
       for (const m of out) m.dispose(false, false);
       return null;
     }
-    // Levels of detail (one-material models only: every level is one mesh): GPU instances pick theirs by distance.
+    // Levels of detail (one-material models only: every level is one mesh): GPU instances pick theirs by distance,
+    // from where the copy is small on screen, with hysteresis (game/propLod.ts; the prop batches read the written
+    // distance, `lodAuthored`, and size each copy themselves). Only placed props: models with a picture card (plants)
+    // and held guns (a crowd's, guns.json `lod`) keep their written distances.
     const levels = this.lods.get(path) ?? [];
     if (out.length === 1 && levels.length) {
+      const bb = out[0]!.getBoundingInfo().boundingBox;
+      const sized = /^(props|kit)\//.test(path) && !levels.some((l) => l.billboard);
+      const edges = !sized ? [0, ...levels.map((l) => l.distance)] : propLodEdges([0, ...levels.map((l) => l.distance)], bb.maximum.subtract(bb.minimum).length() / 2);
       let i = 0;
       for (const l of levels) {
         const lod = new Mesh(`static_${path}_lod${++i}`, this.scene);
@@ -265,8 +272,10 @@ export class ModelLibrary {
         if (l.billboard) lod.billboardMode = Mesh.BILLBOARDMODE_Y;
         lod.isPickable = false;
         lod.position.y = -10000;
-        out[0]!.addLODLevel(l.distance, lod);
+        lod.metadata = { lodAuthored: l.distance };
+        out[0]!.addLODLevel(edges[i]!, lod);
       }
+      lodWithHysteresis(out[0]!);
     }
     return out;
   }

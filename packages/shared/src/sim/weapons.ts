@@ -35,6 +35,14 @@ export const PROJECTILE_VISUALS = [
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
 /**
+ * Projectile looks fired as a stream (the flamethrower's flame, goo, bubbles, plasma, oil): the snapshot names a
+ * stream projectile's shooter, so clients draw it leaving the shooter's muzzle as drawn now and blend it into where
+ * the host has it (client game/streamBlend.ts). Drawn from the snapshot alone it left the eye about 100 ms in the
+ * past and trailed behind you while you moved.
+ */
+export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil']);
+
+/**
  * Lingering effects a hit leaves on a player: `burn` and `poison` hurt over
  * time, `slow` cuts speed, `chill` builds up (freeze ray) until the target
  * freezes solid for a moment.

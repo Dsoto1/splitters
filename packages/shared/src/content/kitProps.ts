@@ -56,6 +56,11 @@ export interface KitAlias {
   readonly variant: number;
   /** Multiplies the placement's own scale. */
   readonly scale: number;
+  /**
+   * The family keeps its own size, not the retired prop's: only for a prop and a family that both collide as
+   * nothing (the Wall Shelf for the Quaternius piece that was a shrunken bookcase), so play is unchanged.
+   */
+  readonly ownSize?: true;
 }
 
 export { KIT_ALIASES, KIT_FAMILIES, KIT_GENERATOR_VERSION, KIT_PROPS };

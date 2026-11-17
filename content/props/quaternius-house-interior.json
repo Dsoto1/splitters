@@ -332,6 +332,14 @@
       "collide": "none"
     },
     {
+      "id": "hm_open_shelf",
+      "src": "Shelf_1.glb",
+      "name": "Open Shelf Unit",
+      "category": "Home",
+      "height": 1.9,
+      "collide": "box"
+    },
+    {
       "id": "hm_wall_shelf",
       "src": "Shelf_1.glb",
       "name": "Wall Shelf",

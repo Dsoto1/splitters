@@ -3541,7 +3541,7 @@ export class GameSession {
     this.view.updatePickups(this.taken, now, this.pickupItems);
     this.view.updateDrops(this.drops);
     const shells = this.interp.sampleProjectiles(now);
-    this.view.updateProjectiles(shells);
+    this.view.updateProjectiles(shells, this.slot);
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;

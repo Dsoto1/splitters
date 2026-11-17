@@ -50,6 +50,8 @@ const NO_COLLISION = new Set([
   // Tileset 11 (Urban & Civilian): the Painted Door standing open, as the Oak Door; the Shop Awning hangs on a wall
   // above head height, as the game's other awnings (prop.awning, prop.mv_awning: no collision).
   'kit.door.painted_open', 'kit.shop.awning',
+  // The Wall Shelf hangs on a wall above the floor, as the Quaternius piece it replaces (no collision).
+  'kit.shelf.wall',
   // St. John's step 4b: the Sand Court is walked on as the ground under it.
   'kit.sport.court_sand',
 ]);
@@ -145,7 +147,9 @@ describe('kit aliases', () => {
     for (const a of KIT_ALIASES) {
       const was = getProp(a.from)!;
       const now = getProp(a.model)!;
-      expect(now.size.map((v) => v * a.scale), a.from).toEqual(was.size);
+      // A family of its own size only where nothing collides, before or after (the Wall Shelf).
+      if (a.ownSize) expect([was.collision, now.collision], a.from).toEqual([null, null]);
+      else expect(now.size.map((v) => v * a.scale), a.from).toEqual(was.size);
       expect(now.collision ? now.collision.map((v) => v * a.scale) : null, a.from).toEqual(was.collision);
       // A piece that collided as finer boxes (a fence's posts and rails) is replaced by a family with its own finer
       // boxes (owner, 2026-11-10: kit pieces collide as their own posts and rails; the gaps differ a little from the
@@ -232,8 +236,17 @@ describe('kit aliases', () => {
     expect(withPropAliases(expanded).entities.some((e) => e.kind === 'prop' && propAlias(e.model))).toBe(false);
     const before = withGroundAsPlayed(expanded, coreCatalog);
     const after = withGroundAsPlayed(withPropAliases(expanded), coreCatalog);
-    const strip = (m: MapDocument) => m.entities.map((e) => (e.kind === 'prop' ? { id: e.id, position: e.position, yaw: e.yaw } : { id: e.id }));
+    // (A family of its own size, the Wall Shelf, settles on the ground by its own footprint: within 5 cm, checked apart.)
+    const own = new Set(expanded.entities.filter((e) => e.kind === 'prop' && propAlias(e.model)?.ownSize).map((e) => e.id));
+    const strip = (m: MapDocument) => m.entities.map((e) => (e.kind === 'prop' && !own.has(e.id) ? { id: e.id, position: e.position, yaw: e.yaw } : { id: e.id }));
     expect(strip(after)).toEqual(strip(before));
+    const was = new Map(before.entities.map((e) => [e.id, e]));
+    for (const e of after.entities) {
+      if (!own.has(e.id) || e.kind !== 'prop') continue;
+      const b = was.get(e.id) as PropEntity;
+      expect([e.position[0], e.position[2], e.yaw], e.id).toEqual([b.position[0], b.position[2], b.yaw]);
+      expect(Math.abs(e.position[1] - b.position[1]), e.id).toBeLessThanOrEqual(0.05);
+    }
     // (Placements of a prop that collided as finer boxes take the family's own, inside the same bounds: left out here.)
     const reshaped = new Set(expanded.entities.filter((e) => e.kind === 'prop' && getProp(e.model)?.boxes && propAlias(e.model)).map((e) => e.id));
     const same = (boxes: ReturnType<typeof propBoxes>) => boxes.filter((b) => !reshaped.has(b.sourceId));
