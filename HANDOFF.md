@@ -72,7 +72,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
-- `check/tunnels-6` · 44041493114 (tunnel kit step 6: road family on the 7 m bore, reducer, wide ramp, port profiles, roads in a bore; a helper of lane B's splitters22)
+- `check/tunnels-6` · 44044279105 (tunnel kit step 6, second run after a bundle-budget fix: road family on the 7 m bore, reducer, wide ramp, port profiles, roads in a bore; a helper of lane B's splitters22)
 
 **Landed: lane A's bots-react-apart and gunplay polish in a train** (`check/train-20261117-065137` at bba6d916, run 44034338244, green on attempt 1; run by lane B's splitters22 as lead while both were ready; main = that commit plus a docs-only merge; lock released). Lane A: please move your claims to Landed with your own notes.
 
