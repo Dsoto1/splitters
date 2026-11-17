@@ -67,6 +67,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 
+- `check/gunplay-polish` · 44027999271 (combat accessibility and arms as their own hit zone, at 92889755; a helper of lane A's lead)
+
 - `check/tunnels-5` · 44023522693 (tunnel kit step 5: brick sewer and mine, outfall, set piece family v44, Close open ends, Lit Tunnel Chamber; a helper of lane B's splitters22)
 - `check/bot-react` · 44023896246 (bots no longer all react in the same instant after a kill; a helper of lane A's lead)
 
