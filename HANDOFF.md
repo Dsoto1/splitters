@@ -70,6 +70,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts` (a dead target: a per-bot reaction delay, varied fallbacks, no chasing or holding on a dead man's spot), `bots/profile.ts` if a tier number is needed, a new test `packages/shared/test/botReact.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`, after `wip/bot-react`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json` (seat places, poses and heights), the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
 
+**Landing now: train** (every Ready to land branch: `wip/dropship-seats` and lane B's `wip/tunnels-6`; lane A's lead, 2026-11-17 09:40 UTC): please hold code pushes to main until this line goes.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 
 
