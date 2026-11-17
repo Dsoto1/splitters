@@ -746,7 +746,9 @@ export class GameView {
     // (A log given health breaks: it is drawn as an ordinary prop node below, as ?env=0 draws every species, so breakProp can switch it off.)
     const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e) && !isBreakableProp(e)) : [];
     if (env.length) {
-      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
+      // With shadows, trees and rocks cast through static shadow-only batches (game/shadowCasters.ts; `?perfoff=smallcasters`:
+      // through the batches they are drawn with, as before).
+      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality(), { shadowSets: perfOn('smallcasters') && loadGraphicsQuality() !== 'low' });
       void this.environment.setPlacements(env, doc.terrain);
     }
     const drawnAsEnv = new Set(env.map((e) => e.id));
@@ -755,7 +757,7 @@ export class GameView {
     // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
     // A batch reads a prop's matrix once its model is in (never in this loop), so the hung and flush lifts below are in it.
     this.propBatches?.dispose();
-    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH, perfOn('smallcasters') && loadGraphicsQuality() !== 'low') : null;
     const batches = this.propBatches;
     // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
     const copies = new Map<string, number>();
