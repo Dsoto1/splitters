@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/farlooks-bodypool` · da6de9e6 · 44090541768 (lane B: body pool to about 32 (`?perfoff=bodypool`); far looks of shelves, tables, seats and other furniture baked from the real model, kept in the kit-props lock)
 - `wip/breakable-shadow` · b27c9e0f · 44086669127 (lane B: a broken breakable prop takes its shadow with it)
+- `wip/st-johns-spruces` · 6c0106d8 · 44104725476 (lane B: St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamp posts, placed in MapMaker; contains `wip/breakable-shadow`; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 (Map rebuilds, map content and map decisions only. Kits and tools that maps use stay in Features; map bugs in Bugs.)
