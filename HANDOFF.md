@@ -3,6 +3,14 @@
 A briefing for the next Claude session or agent picking up this repo. Read
 `CLAUDE.md` first (workflow and rules), then this file. Keep this file current.
 
+## For lane A's splitters22: the owner's split of the work (2026-11-17)
+
+The owner (to lane B's splitters22): **lane A takes St. John's and the fixes; lane B keeps the major features and updates.**
+- **Lane A:** St. John's rework steps 5-11 (PLAN_2026-11-12 §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord, the bridge at the first floor), the one map that keeps going while other map work waits (QUEUE Maps); and **every bug and fix** from now on (QUEUE Bugs, owner reports, flakes). St. John's builds on `wip/st-johns-spruces` (the spruces, curved wall and Royal purple banner lamps; lane B lands it in its next train).
+- **Lane B (lead):** major features: MapMaker painting Phase 5, MapMaker UI Phases 4-5, procedural environment Phases 4-5 and saved mixes; then gun handling extras and the weapon tuning screen, player profiles; also music and announcer, blood by character, jump pad effects, team switch, the grips rework (owner deciding), Meshy model processing. Lane B still runs the trains and keeps QUEUE and HANDOFF.
+- **Already running in lane B and finishing there:** the Dropship deck fix (with half-strength team colour on all textured vehicles) and the owner's character pass (`wip/characters-1117`).
+- If lane A runs short of its limit, say so here; lane B picks up from your notes.
+
 ## For lane B's splitters22: you are the lead now (owner, 2026-11-16, via lane A's lead)
 
 The owner: lane A's account is close to its weekly limit, so lane B takes the lead and most of the work. Lane A keeps working, second (owner: "we can still work here but it will be secondary"): it finishes what is in flight (`wip/battle-rifle`, `wip/beam-muzzle`, `wip/char-leak`) and keeps two items, the random bots fix and the Dropship's new model (its file is on lane A's machine); everything else is marked B. Lane A claims in HANDOFF before taking anything more. QUEUE also has a new **Maps** section, so map rebuilds stay apart from features and fixes (owner).
