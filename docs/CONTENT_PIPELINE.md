@@ -917,6 +917,7 @@ chair pushed in at each on +z (one prop where there would be eight); collides as
 variant empty without chairs. The wall style Classroom windows (`windows_school`) and the set piece Classroom Bay
 (`setpiece.classroom_bay`, option East end) use them; the facade Collegiate fieldstone (`collegiate_fieldstone`)
 is St. John's Stangeland / Cord's. Map format v46 names the style and the facade. Nothing glows or blinks.
+Step 5b: `kit.board.pennants` (Pennant String: a 7 m string of triangular pennants sagging a little, both faces drawn, plain colours: school or bright; collides as nothing), hung by the Classroom Bay's Pennants option (off by default); the Classroom Entry Bay (`setpiece.classroom_entry_bay`); the 3-floor Stair End Bay's First-floor door option (a slim oak door over the lobby's, for a bridge).
 
 #### Far looks baked from the real model
 
