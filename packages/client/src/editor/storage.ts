@@ -1,4 +1,4 @@
-import { loadMap, newId, parseSetPiece, playableModes, serializeMap, stampMapRelease, type MapDocument, type SetPieceDefinition, type ValidationIssue } from '@tiletrigger/shared';
+import { SetPieceLookDef, loadMap, newId, parseSetPiece, playableModes, serializeMap, stampMapRelease, type MapDocument, type SetPieceDefinition, type ValidationIssue } from '@tiletrigger/shared';
 import { deleteLocalMap, hasLocalMap, listLocalMaps, readLocalMap, writeLocalMap, type LocalMapEntry } from '../localMaps.ts';
 
 /**
@@ -259,4 +259,56 @@ export async function importSetPieceFile(file: File): Promise<{ defs: SetPieceDe
     else problems.push(`piece ${i + 1}: ${r.problems.slice(0, 3).join('; ')}`);
   });
   return { defs, problems };
+}
+
+// ---------------------------------------------------------------- looks of your own (painting Phase 5)
+
+/**
+ * Your own looks (docs/MAPMAKER_PAINTING_PLAN.md, "Saved looks"): named role values saved in MapMaker, kept in this
+ * browser next to your set pieces; a map that one of its pieces wears carries its own copy (`lookDefs`). Nothing is
+ * uploaded.
+ */
+const LOOKS_KEY = 'cs.looks';
+/** The library holds at most this many looks (saving another drops the oldest). */
+export const LOOK_LIBRARY_MAX = 64;
+
+interface StoredLook {
+  look: unknown;
+  savedAt: string;
+}
+
+function storedLooks(): StoredLook[] {
+  try {
+    const list = JSON.parse(get(LOOKS_KEY) ?? '[]') as StoredLook[];
+    return Array.isArray(list) ? list.filter((s) => s && typeof s === 'object') : [];
+  } catch {
+    return [];
+  }
+}
+
+const storedLookId = (s: StoredLook): unknown => (s.look as { id?: unknown } | null)?.id;
+
+/** Your looks, newest first; each read as untrusted data (one that no longer parses is left out). */
+export function listLooks(): { look: SetPieceLookDef; savedAt: string }[] {
+  const out: { look: SetPieceLookDef; savedAt: string }[] = [];
+  for (const s of storedLooks()) {
+    const r = SetPieceLookDef.safeParse(s.look);
+    if (r.success) out.push({ look: r.data, savedAt: String(s.savedAt ?? '') });
+  }
+  return out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+}
+
+/** Keep a look in your library (replacing one with the same id). False when browser storage refused it. */
+export function saveLook(look: SetPieceLookDef): boolean {
+  const rest = storedLooks().filter((s) => storedLookId(s) !== look.id);
+  return set(LOOKS_KEY, JSON.stringify([{ look, savedAt: new Date().toISOString() }, ...rest].slice(0, LOOK_LIBRARY_MAX)));
+}
+
+/** Rename a look in your library (its id and place in the list stay). */
+export function renameLook(id: string, displayName: string): boolean {
+  return set(LOOKS_KEY, JSON.stringify(storedLooks().map((s) => (storedLookId(s) === id ? { ...s, look: { ...(s.look as object), displayName } } : s))));
+}
+
+export function deleteLook(id: string): void {
+  set(LOOKS_KEY, JSON.stringify(storedLooks().filter((s) => storedLookId(s) !== id)));
 }

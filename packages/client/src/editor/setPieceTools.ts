@@ -1,5 +1,7 @@
 import {
   addSetPieceDefCommand,
+  applyCommand,
+  applyLookCommand,
   buildMapGeometry,
   checkSetPieceDefinition,
   checkSetPiecePlacement,
@@ -13,6 +15,12 @@ import {
   FACADE_LABELS,
   FACADES,
   getProp,
+  isMyLook,
+  lookAsPack,
+  lookIdFor,
+  lookUses,
+  renameLookCommand,
+  saveLookCommand,
   GLASS_KIND_LABELS,
   GLASS_KINDS,
   levelName,
@@ -31,13 +39,16 @@ import {
   setPieceParts,
   setPiecePortStates,
   updateSetPieceCommand,
+  withMapLooks,
   type DoorStyle,
   type GlassKind,
   type MapDocument,
   type Selection,
   type SetPieceDefinition,
   type SetPieceLibrary,
+  type SetPieceLookDef,
   type SetPiecePlacement,
+  type SetPieceRolePack,
   type SetPieceRole,
   type SurfaceStyle,
   type WorldBox
@@ -48,13 +59,18 @@ import { PIECE_PART_KINDS, ROLE_LABELS, rolesUsed } from './editorParts.ts';
 import { type PieceOutline } from './editorView.ts';
 import {
   setPieceFamilyLabel,
-  setPieceFamilyOrder
+  setPieceFamilyOrder,
+  themeStylePacks
 } from './paletteCatalog.ts';
 import {
+  deleteLook,
   deleteSetPiece,
   exportSetPiece,
   importSetPieceFile,
+  listLooks,
   listSetPieces,
+  renameLook,
+  saveLook,
   saveSetPiece
 } from './storage.ts';
 
@@ -70,6 +86,36 @@ export class SetPieceTools {
 
   /** The pieces MapMaker can place: the shipped ones and the player's own (their library), with the role packs. */
   placeLibCache: { rev: number; lib: SetPieceLibrary } | null = null;
+
+  /** Your own looks (your library in this browser, storage.ts; painting Phase 5), by id; `myLooksRev` counts changes. */
+  myLooks = new Map<string, SetPieceLookDef>();
+  myLooksRev = 0;
+
+  /** The looks the map's pieces are drawn in: the shipped role packs and the map's own looks (`lookDefs`). */
+  get lookLib(): SetPieceLibrary {
+    return withMapLooks(this.app.doc, this.app.setPieceLib);
+  }
+
+  /**
+   * The looks MapMaker offers: the shipped ones, your library's (as you saved them: a piece put in one carries that
+   * copy into the map) and the map's own that aren't in your library.
+   */
+  get pickLib(): SetPieceLibrary {
+    const looks = this.app.doc.lookDefs;
+    if (this.pickLibCache?.rev !== this.myLooksRev || this.pickLibCache.looks !== looks) {
+      const packs = new Map<string, SetPieceRolePack>(this.app.setPieceLib.packs);
+      for (const l of this.myLooks.values()) if (!packs.has(l.id)) packs.set(l.id, lookAsPack(l));
+      for (const l of looks ?? []) if (!packs.has(l.id)) packs.set(l.id, lookAsPack(l));
+      this.pickLibCache = { rev: this.myLooksRev, looks, lib: { pieces: this.app.setPieceLib.pieces, packs } };
+    }
+    return this.pickLibCache.lib;
+  }
+  pickLibCache: { rev: number; looks: readonly SetPieceLookDef[] | undefined; lib: SetPieceLibrary } | null = null;
+
+  /** A look of yours by id: your library's copy, else the map's. */
+  myLook(id: string): SetPieceLookDef | undefined {
+    return this.myLooks.get(id) ?? this.app.doc.lookDefs?.find((l) => l.id === id);
+  }
 
   /** Replace all of a tile with a set piece (a retired tile's own replacement, or any), one undo step, and select them. */
   replaceTiles(tile: string, piece: string): void {
@@ -93,7 +139,7 @@ export class SetPieceTools {
    */
   ownBoxes(p: SetPiecePlacement, def: SetPieceDefinition): WorldBox[] {
     const view = this.app.viewDoc;
-    const parts = setPieceParts(p, def, view.classicStructure.theme, this.app.setPieceLib);
+    const parts = setPieceParts(p, def, view.classicStructure.theme, this.pickLib);
     const near = new Set<string>();
     for (const [x, y, z] of setPieceFootprint(p, def)) for (const [dx, dy] of [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]] as const) near.add(`${x + dx},${y + dy},${z}`);
     const neighbours = view.classicStructure.tiles.filter((t) => (placementCells(t) ?? []).some(([x, y, z]) => near.has(`${x},${y},${z}`)));
@@ -127,14 +173,14 @@ export class SetPieceTools {
     const span = (i: 0 | 1) => Math.max(...def.footprint.cells.map((c) => c[i])) - Math.min(...def.footprint.cells.map((c) => c[i])) + 1;
     const levels = def.footprint.levels[1] - def.footprint.levels[0] + 1;
     const theme = this.app.doc.classicStructure.theme;
-    const pack = placementPack(p, theme, this.app.setPieceLib);
-    const look = pack ? `${pack.displayName}${p.pack ? '' : " (the map theme's)"}` : `${coreThemes.get(theme)?.displayName ?? theme} (theme)`;
+    const pack = placementPack(p, theme, this.pickLib);
+    const look = pack ? `${pack.displayName}${p.pack ? (isMyLook(p.pack) ? ' (your look)' : '') : " (the map theme's)"}` : `${coreThemes.get(theme)?.displayName ?? theme} (theme)`;
     return [`${span(0)} × ${span(1)} cells · ${levels} level${levels === 1 ? '' : 's'}`, `Look: ${look}`, `Turned ${p.rotation * 90}°${p.mirror ? ' · mirrored' : ''} · ${def.ports.length} port${def.ports.length === 1 ? '' : 's'}`];
   }
 
   /** The look a set piece is placed in: the tool's (a role pack), or none (the map theme's). */
   lookFor(): string {
-    return this.pieceLook && this.app.setPieceLib.packs.has(this.pieceLook) ? this.pieceLook : '';
+    return this.pieceLook && this.pickLib.packs.has(this.pieceLook) ? this.pieceLook : '';
   }
 
   /** Place a set piece as one, at anchor cell (x, y) on level z, turned (R), mirrored (M) and in the tool's look. */
@@ -149,7 +195,11 @@ export class SetPieceTools {
     const inMap = this.app.doc.setPieceDefs?.find((d) => d.id === piece);
     const defCmd = own && JSON.stringify(inMap ?? null) !== JSON.stringify(own) ? addSetPieceDefCommand(this.app.doc, own) : null;
     if (defCmd && 'error' in defCmd) return this.app.toast(defCmd.error, true);
-    if (this.app.run(`Place ${def.displayName}`, defCmd ? { kind: 'batch', commands: [defCmd, r.command] } : r.command)) {
+    // A look of your own goes into the map with it (your library's copy), as the piece's definition does.
+    const lookCmd = isMyLook(look) ? applyLookCommand(applyCommand(this.app.doc, r.command), [r.placement.id], look, { look: this.myLooks.get(look), library: this.app.setPieceLib }) : null;
+    if (lookCmd && 'error' in lookCmd) return this.app.toast(lookCmd.error, true);
+    const commands = [...(defCmd ? [defCmd] : []), r.command, ...(lookCmd ? [lookCmd] : [])];
+    if (this.app.run(`Place ${def.displayName}`, commands.length > 1 ? { kind: 'batch', commands } : r.command)) {
       this.app.setSelection({ tiles: [], entities: [], setPieces: [r.placement.id] });
       if (inMap && defCmd) this.app.toast(`Placed ${def.displayName}; this map's copy of it now matches your library's`);
     }
@@ -190,9 +240,9 @@ export class SetPieceTools {
     this.app.pieceHover = { def, placement, ok: check.ok, reason: check.ok ? '' : check.reason, short: check.ok ? '' : check.short, blocked: ports.filter((s) => s.blockedBy).length };
     const theme = this.app.doc.classicStructure.theme;
     // Built once per piece, turn, mirror and look (at the grid's origin) and moved with the pointer.
-    const key = `${t.piece}:${this.app.rotation}:${this.app.pieceMirror}:${look}:${theme}:${this.myPiecesRev}`;
+    const key = `${t.piece}:${this.app.rotation}:${this.app.pieceMirror}:${look}:${theme}:${this.myPiecesRev}:${this.myLooksRev}`;
     const atOrigin = { ...placement, x: 0, y: 0, z: 0 };
-    this.app.view.setPieceGhost(this.app.doc, key, () => setPieceParts(atOrigin, def, theme, this.app.setPieceLib), [cell[0], cell[1], this.app.level], check.ok, {
+    this.app.view.setPieceGhost(this.app.doc, key, () => setPieceParts(atOrigin, def, theme, this.pickLib), [cell[0], cell[1], this.app.level], check.ok, {
       cells: setPieceFootprint(placement, def),
       ports: ports.map((s) => ({ x: s.x, y: s.y, z: s.z, side: s.side, kind: s.kind, closed: s.closed, blocked: !!s.blockedBy })),
     });
@@ -240,6 +290,11 @@ export class SetPieceTools {
     imp.title = 'Add set pieces from a file someone exported (a .setpiece.json file): checked before they go in';
     actions.append(save, imp);
     this.mineGrid.after(actions);
+    this.looksGrid = this.app.palette.group(pane, 'setpieces:looks', 'My looks', {
+      grid: 'ed-look-list',
+      note: "Looks you saved (Save as my look… in a set piece's inspector), kept in this browser. Apply puts the selected set pieces in one; maps carry the looks their pieces wear.",
+    });
+    this.looksGrid.id = 'ed-my-looks';
     $<HTMLInputElement>('ed-sp-import-file').addEventListener('change', (e) => {
       const input = e.target as HTMLInputElement;
       const file = input.files?.[0];
@@ -247,6 +302,7 @@ export class SetPieceTools {
       if (file) void this.importSetPieces(file);
     });
     this.loadMyPieces();
+    this.loadMyLooks();
     this.renderPieceInfo();
   }
 
@@ -281,6 +337,7 @@ export class SetPieceTools {
 
   /** "My set pieces": your library, then the map's own pieces that aren't in it (they came with the map). */
   renderMyPieces(force = false): void {
+    this.renderMyLooks();
     const grid = this.mineGrid;
     if (!grid) return;
     const inMap = (this.app.doc.setPieceDefs ?? []).filter((d) => !this.myPieces.has(d.id));
@@ -300,22 +357,70 @@ export class SetPieceTools {
     if (this.app.palettes.stylePack) this.app.palettes.filterPalette();
   }
 
-  /** A look picker: the map theme's, the looks the piece suits, then every other look. */
-  lookSelect(def: SetPieceDefinition, value: string, onChange: (v: string) => void): HTMLSelectElement {
+  /**
+   * A look picker (painting plan, "Saved looks"): the map theme's, then three groups: This map's themes (the looks of
+   * the packs that use the map's Structure theme), My looks (your library's and the map's own), All looks (the rest,
+   * those made for the piece first). `def` null: for several pieces at once ('' value: the map theme's; `mixed`: they differ).
+   */
+  lookSelect(def: SetPieceDefinition | null, value: string, onChange: (v: string) => void, mixed = false): HTMLSelectElement {
     const sel = document.createElement('select');
     const theme = this.app.doc.classicStructure.theme;
-    const themed = placementPack({}, theme, this.app.setPieceLib);
-    sel.append(new Option(`Map theme's (${themed?.displayName ?? coreThemes.get(theme)?.displayName ?? theme})`, '', false, !value));
-    const suits = document.createElement('optgroup');
-    suits.label = 'Made for it';
-    const others = document.createElement('optgroup');
-    others.label = 'Other looks';
-    for (const pack of this.app.setPieceLib.packs.values()) (def.packs.includes(pack.id) ? suits : others).append(new Option(pack.displayName, pack.id, false, pack.id === value));
-    if (suits.children.length) sel.append(suits);
-    sel.append(others);
-    sel.title = "The look (role pack) that themes it: the stone, trim, floors, roofs, facade, doors and glass it's built in";
+    const lib = this.pickLib;
+    const themed = placementPack({}, theme, lib);
+    if (mixed) {
+      const o = new Option('Mixed: pick one for all', '__mixed', true, true);
+      o.disabled = true;
+      sel.append(o);
+    }
+    sel.append(new Option(`Map theme's (${themed?.displayName ?? coreThemes.get(theme)?.displayName ?? theme})`, '', false, !mixed && !value));
+    const group = (label: string, key: string, packs: SetPieceRolePack[]) => {
+      if (!packs.length) return;
+      const g = document.createElement('optgroup');
+      g.label = label;
+      g.dataset.group = key;
+      for (const pack of packs) {
+        const made = def?.packs.includes(pack.id) && !isMyLook(pack.id);
+        g.append(new Option(`${pack.displayName}${made ? ' · made for it' : ''}`, pack.id, false, !mixed && pack.id === value));
+      }
+      sel.append(g);
+    };
+    const stylePacks = new Set(themeStylePacks(theme).map((p) => p.id));
+    const all = [...lib.packs.values()];
+    const mine = all.filter((p) => isMyLook(p.id));
+    const ofTheme = all.filter((p) => !isMyLook(p.id) && (p.themes.includes(theme) || (!!p.stylePack && stylePacks.has(p.stylePack)) || stylePacks.has(p.id)));
+    const rest = all.filter((p) => !isMyLook(p.id) && !ofTheme.includes(p));
+    const madeFirst = (list: SetPieceRolePack[]) => (def ? [...list.filter((p) => def.packs.includes(p.id)), ...list.filter((p) => !def.packs.includes(p.id))] : list);
+    group("This map's themes", 'themes', madeFirst(ofTheme));
+    group('My looks', 'mine', mine);
+    group('All looks', 'all', madeFirst(rest));
+    sel.title = "The look that themes it: the stone, trim, floors, roofs, facade, doors and glass it's built in. Your paint sits on top of it";
     sel.addEventListener('change', () => onChange(sel.value));
     return sel;
+  }
+
+  /** Several set pieces selected: one Look for them all (the inspector's, for a mixed selection). */
+  multiLookRow(ids: readonly string[]): HTMLElement {
+    const packs = new Set(ids.map((id) => this.app.placementOf(id)?.pack ?? ''));
+    const only = packs.size === 1 ? [...packs][0]! : '';
+    const sel = this.lookSelect(null, only, (v) => this.applyLook(ids, v), packs.size > 1);
+    sel.id = 'ed-insp-pieces-look';
+    sel.title = `The look of all ${ids.length} selected set pieces (their paint stays on top)`;
+    return row('Look', sel);
+  }
+
+  /** Put placements in a look (the inspector's Look, My looks' Apply): one undo step; your look goes into the map with them. */
+  applyLook(ids: readonly string[], pack: string): boolean {
+    const look = isMyLook(pack) ? this.myLook(pack) : undefined;
+    const r = applyLookCommand(this.app.doc, ids, pack, { look, library: this.app.setPieceLib });
+    if ('error' in r) {
+      this.app.toast(`Can't change the look: ${r.error}`, true);
+      return false;
+    }
+    const inMap = this.app.doc.lookDefs?.find((l) => l.id === pack);
+    const name = pack ? (this.pickLib.packs.get(pack)?.displayName ?? pack) : "the map theme's";
+    if (!this.app.run(ids.length === 1 ? 'Set piece look' : `Look of ${ids.length} set pieces`, r)) return false;
+    if (inMap && look && JSON.stringify(inMap) !== JSON.stringify(look)) this.app.toast(`${ids.length === 1 ? 'It wears' : `${ids.length} set pieces wear`} ${name}; this map's copy of it now matches your library's`);
+    return true;
   }
 
   /** The panel over the Set pieces tab: the piece being placed, its look, turn and mirror; your own piece's actions. */
@@ -340,6 +445,7 @@ export class SetPieceTools {
     const lookSel = this.lookSelect(def, look, (v) => {
       this.pieceLook = v;
       this.renderPieceInfo();
+      this.renderMyLooks();
       this.app.hover.updateHover();
     });
     lookSel.id = 'ed-sp-look';
@@ -514,6 +620,193 @@ export class SetPieceTools {
     name.select();
   }
 
+  // ---------------------------------------------------------------- looks of your own (painting Phase 5)
+
+  /** The My looks list in the Set pieces tab, and what it was drawn for. */
+  looksGrid?: HTMLElement;
+  looksKey = '';
+
+  /** Read your looks (storage.ts) and redraw My looks. */
+  loadMyLooks(): void {
+    this.myLooks = new Map(listLooks().map((s) => [s.look.id, s.look]));
+    this.myLooksRev++;
+    this.renderMyLooks(true);
+  }
+
+  /** A look's materials as little colour chips (stone, trim, floor…), for the lists and the dialog. */
+  lookSwatches(roles: SetPieceLookDef['roles']): HTMLElement {
+    const box = document.createElement('span');
+    box.className = 'ed-look-sw';
+    for (const role of SET_PIECE_MATERIAL_ROLES) {
+      const v = roles[role];
+      if (!v) continue;
+      const m = coreMaterials.get(v.material);
+      const chip = document.createElement('i');
+      chip.style.background = v.tint ?? m?.base ?? '#888';
+      chip.title = `${ROLE_LABELS[role]}: ${m?.displayName ?? v.material}`;
+      box.append(chip);
+    }
+    if (!box.children.length) box.append(small("the theme's"));
+    return box;
+  }
+
+  /**
+   * My looks: your library's looks, then the map's own that aren't in it, each with how many pieces here wear it and
+   * Apply (to the selected set pieces; with none selected, to the pieces you place next), Rename and Delete (or Save
+   * to my looks, for one that came with the map).
+   */
+  renderMyLooks(force = false): void {
+    const grid = this.looksGrid;
+    if (!grid) return;
+    const inMap = (this.app.doc.lookDefs ?? []).filter((l) => !this.myLooks.has(l.id));
+    const sel = this.app.selPieces();
+    const uses = [...this.myLooks.keys(), ...inMap.map((l) => l.id)].map((id) => `${id}:${lookUses(this.app.doc, id)}`).join(',');
+    const key = `${this.myLooksRev}|${JSON.stringify(this.app.doc.lookDefs ?? null).length}|${inMap.map((l) => l.id).join(',')}|${uses}|${sel.length}|${this.pieceLook}`;
+    if (!force && key === this.looksKey) return;
+    this.looksKey = key;
+    grid.replaceChildren();
+    const list = [...[...this.myLooks.values()].map((look) => ({ look, mine: true })), ...inMap.map((look) => ({ look, mine: false }))];
+    if (!list.length) grid.append(small('No looks yet. Select a set piece, paint it or pick its materials, then Save as my look… in its inspector.'));
+    for (const { look, mine } of list) {
+      const item = document.createElement('div');
+      item.className = 'ed-look-item';
+      item.dataset.look = look.id;
+      const name = document.createElement('b');
+      name.textContent = look.displayName;
+      const n = lookUses(this.app.doc, look.id);
+      const where = small(`${n ? `${n} here` : 'not used here'}${mine ? '' : " · this map's own (not in your library)"}${this.pieceLook === look.id ? ' · placing in it' : ''}`);
+      const head = document.createElement('div');
+      head.className = 'ed-look-head';
+      head.append(this.lookSwatches(look.roles), name);
+      const acts = document.createElement('div');
+      acts.className = 'buttons';
+      const apply = button(sel.length ? `Apply to ${sel.length === 1 ? 'selected piece' : `${sel.length} selected`}` : 'Place in it', () => {
+        if (this.app.selPieces().length) return void this.applyLook(this.app.selPieces(), look.id);
+        this.pieceLook = look.id;
+        this.renderPieceInfo();
+        this.renderMyLooks(true);
+        this.app.toast(`Set pieces you place now wear ${look.displayName} (the Look in the panel above)`);
+      });
+      apply.dataset.act = 'apply';
+      apply.title = sel.length ? 'Put the selected set pieces in this look (their paint stays on top)' : 'Place the next set pieces in this look (or select set pieces first to put them in it)';
+      acts.append(apply);
+      if (mine) {
+        const ren = button('Rename…', () => this.lookNameDialog(look.id));
+        ren.dataset.act = 'rename';
+        const del = button('Delete', () => {
+          if (!confirm(`Delete your look "${look.displayName}" from this browser? Maps whose pieces wear it keep their copy.`)) return;
+          deleteLook(look.id);
+          if (this.pieceLook === look.id && !this.app.doc.lookDefs?.some((l) => l.id === look.id)) this.pieceLook = '';
+          this.loadMyLooks();
+          this.app.toast(`Deleted "${look.displayName}" from your looks${n ? `; this map keeps its copy (${n} piece${n === 1 ? '' : 's'} wear it)` : ''}`);
+        });
+        del.dataset.act = 'delete';
+        acts.append(ren, del);
+      } else {
+        const keep = button('Save to my looks', () => {
+          if (!saveLook(look)) return this.app.toast('Could not save to browser storage', true);
+          this.loadMyLooks();
+          this.app.toast(`"${look.displayName}" is in your looks now`);
+        });
+        keep.dataset.act = 'keep';
+        acts.append(keep);
+      }
+      item.append(head, where, acts);
+      grid.append(item);
+    }
+  }
+
+  /** The look dialog's parts. */
+  private lookDialogParts() {
+    return {
+      dialog: $<HTMLDialogElement>('ed-look-dialog'),
+      title: $('ed-look-title'),
+      note: $('ed-look-note'),
+      name: $<HTMLInputElement>('ed-look-name'),
+      swatches: $('ed-look-swatches'),
+      updateRow: $('ed-look-update-row'),
+      update: $<HTMLInputElement>('ed-look-update'),
+      ok: $<HTMLButtonElement>('ed-look-ok'),
+      cancel: $<HTMLButtonElement>('ed-look-cancel'),
+    };
+  }
+
+  /**
+   * Save as my look… (painting plan, "Saved looks"): the piece's look as it shows, named; kept in your looks and worn
+   * by the piece (its paint across the piece folded in, so nothing changes on screen). When it wears a look of yours
+   * already, Update it is offered: every piece wearing it changes with it.
+   */
+  saveLookDialog(id: string): void {
+    const p = this.app.placementOf(id);
+    const def = p && this.app.pieceDef(p.piece);
+    if (!p || !def) return;
+    const d = this.lookDialogParts();
+    const current = isMyLook(p.pack) ? this.myLook(p.pack!) : undefined;
+    const pack = placementPack(p, this.app.doc.classicStructure.theme, this.lookLib);
+    d.title.textContent = 'Save as my look';
+    d.note.textContent = `The look ${def.displayName} shows now (${pack ? pack.displayName : "the theme's"}${p.overrides?.roles ? ', with your paint across it' : ''}), kept in this browser under My looks. It fits any set piece; paint on single parts stays with this piece. Roles the look leaves to the theme keep following it.`;
+    const take = (lookId: string) => saveLookCommand(this.app.doc, id, d.name.value, lookId, this.app.setPieceLib);
+    d.name.value = current ? current.displayName : `${pack?.displayName ?? def.displayName} (mine)`;
+    const preview = take(current?.id ?? 'my_preview');
+    d.swatches.replaceChildren('error' in preview ? small(preview.error) : this.lookSwatches(preview.look.roles));
+    d.updateRow.hidden = !current;
+    d.update.checked = false;
+    if (current) {
+      const n = lookUses(this.app.doc, current.id);
+      d.updateRow.querySelector('span')!.textContent = `Update "${current.displayName}" instead of saving a new look${n > 1 ? ` (${n} pieces here wear it and change with it)` : ''}`;
+    }
+    const sync = () => {
+      d.ok.textContent = d.update.checked ? 'Update look' : 'Save to my looks';
+      d.ok.disabled = !d.name.value.trim();
+    };
+    d.update.onchange = sync;
+    d.name.oninput = sync;
+    sync();
+    d.ok.onclick = () => {
+      const lookId = d.update.checked && current ? current.id : lookIdFor(d.name.value, (x) => this.myLooks.has(x) || !!this.app.doc.lookDefs?.some((l) => l.id === x) || this.app.setPieceLib.packs.has(x));
+      const r = take(lookId);
+      if ('error' in r) return this.app.toast(r.error, true);
+      if (!saveLook(r.look)) return this.app.toast('Could not save to browser storage: free some space, or Export your maps', true);
+      d.dialog.close();
+      this.loadMyLooks();
+      this.app.run(d.update.checked ? `Update look ${r.look.displayName}` : `Save look ${r.look.displayName}`, r.command);
+      this.app.toast(d.update.checked ? `Updated "${r.look.displayName}": every piece here wearing it shows it` : `Saved "${r.look.displayName}" to My looks: pick it in any set piece's Look, here or in another map`);
+    };
+    d.cancel.onclick = () => d.dialog.close();
+    d.dialog.showModal();
+    d.name.select();
+  }
+
+  /** Rename one of your looks: in your library, and in this map's copy (one undo step) when it has one. */
+  lookNameDialog(id: string): void {
+    const look = this.myLook(id);
+    if (!look) return;
+    const d = this.lookDialogParts();
+    d.title.textContent = 'Rename look';
+    d.note.textContent = 'Pieces wearing it keep it: only its name changes, in your library and in this map.';
+    d.swatches.replaceChildren(this.lookSwatches(look.roles));
+    d.updateRow.hidden = true;
+    d.name.value = look.displayName;
+    d.ok.textContent = 'Rename';
+    d.ok.disabled = false;
+    d.name.oninput = () => (d.ok.disabled = !d.name.value.trim());
+    d.update.onchange = null;
+    d.ok.onclick = () => {
+      const name = d.name.value.replace(/\s+/g, ' ').trim().slice(0, 48);
+      if (!name) return;
+      d.dialog.close();
+      if (this.myLooks.has(id)) renameLook(id, name);
+      const cmd = renameLookCommand(this.app.doc, id, name);
+      if (cmd) this.app.run('Rename look', cmd);
+      this.loadMyLooks();
+      this.renderPieceInfo();
+      this.app.toast(`Renamed to "${name}"`);
+    };
+    d.cancel.onclick = () => d.dialog.close();
+    d.dialog.showModal();
+    d.name.select();
+  }
+
   /** The inspector for one set piece: what it is, its look, mirror, place and turn, its ports, the overrides, Explode. */
   pieceInspector(el: HTMLElement, id: string): void {
     const p = this.app.placementOf(id)!;
@@ -526,13 +819,13 @@ export class SetPieceTools {
     if (def.blurb) el.append(small(def.blurb));
     const update = (label: string, after: SetPiecePlacement) => this.app.run(label, updateSetPieceCommand(this.app.doc, p, after, coreCatalog, this.app.placeLib));
     el.append(row('Piece', text(`${setPieceFamilyLabel(def.family)} · ${def.id.startsWith('local.') ? 'your own' : 'shipped'}`)));
-    const look = this.lookSelect(def, p.pack ?? '', (v) => {
-      const { pack: _old, ...rest } = p;
-      void _old;
-      update('Set piece look', v ? { ...rest, pack: v } : rest);
-    });
+    const look = this.lookSelect(def, p.pack ?? '', (v) => this.applyLook([p.id], v));
     look.id = 'ed-sp-insp-look';
     el.append(row('Look', look));
+    const saveLook = button('Save as my look…', () => this.saveLookDialog(p.id));
+    saveLook.id = 'ed-sp-save-look';
+    saveLook.title = 'Name this look as it shows (its look with your paint across the piece) and keep it in your looks, for other pieces and maps';
+    el.append(saveLook);
     const mirror = document.createElement('input');
     mirror.type = 'checkbox';
     mirror.id = 'ed-sp-insp-mirror';
@@ -574,7 +867,7 @@ export class SetPieceTools {
     if (roles.length) {
       const head = document.createElement('h3');
       head.textContent = 'Materials';
-      el.append(head, small("Each comes from its look; pick another here for this piece only."));
+      el.append(head, small('Each comes from its look (or the theme); pick another here for this piece only: your paint, over the look.'));
       for (const role of roles) el.append(row(ROLE_LABELS[role], this.roleSelect(p, def, role, update)));
     }
     // Options (format v42): a choice that swaps some of its parts (a dorm bay's room doors, wide or slim).
@@ -656,7 +949,7 @@ export class SetPieceTools {
   roleSelect(p: SetPiecePlacement, def: SetPieceDefinition, role: SetPieceRole, update: (label: string, after: SetPiecePlacement) => void): HTMLSelectElement {
     const sel = document.createElement('select');
     sel.dataset.role = role;
-    const pack = placementPack(p, this.app.doc.classicStructure.theme, this.app.setPieceLib);
+    const pack = placementPack(p, this.app.doc.classicStructure.theme, this.lookLib);
     const fromLook = pack?.roles[role] ?? def.roles?.[role];
     const label = (v: unknown): string => {
       if (v && typeof v === 'object' && 'material' in v) return coreMaterials.get((v as SurfaceStyle).material)?.displayName ?? (v as SurfaceStyle).material;
@@ -664,7 +957,11 @@ export class SetPieceTools {
       return "the theme's";
     };
     const now = p.overrides?.roles?.[role];
-    sel.append(new Option(`From the look (${label(fromLook)})`, '', false, now === undefined));
+    // Which layer it shows (painting plan, "Saved looks"): your paint, else the look, else the theme.
+    sel.dataset.layer = now !== undefined ? 'paint' : fromLook !== undefined ? 'look' : 'theme';
+    sel.classList.add(`layer-${sel.dataset.layer}`);
+    sel.title = now !== undefined ? 'Your paint on this piece (over its look)' : fromLook !== undefined ? 'From its look' : "From the map's Structure theme";
+    sel.append(new Option(`From the ${fromLook === undefined ? 'theme' : 'look'} (${label(fromLook)})`, '', false, now === undefined));
     const nowKey = now === undefined ? '' : typeof now === 'object' ? (now as SurfaceStyle).material : String(now);
     if ((SET_PIECE_MATERIAL_ROLES as readonly string[]).includes(role)) {
       let group: HTMLOptGroupElement | null = null;
