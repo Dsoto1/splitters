@@ -24,6 +24,10 @@ import {
   keepClearZones,
   newId,
   seasonCommand,
+  natureSwapCommand,
+  NATURE_ROCK_LOOKS,
+  NATURE_ROCK_LOOK_LABELS,
+  type NatureRockLook,
   terrainHeightAt,
   withPreset,
   type BudgetCounts,
@@ -77,6 +81,8 @@ export class EnvTools {
   preset: EnvPresetId | 'custom' = 'temperate';
   /** The season the pane's Apply sets the whole map to. */
   season: EnvSeason = 'autumn';
+  /** How the nature swap makes rocks (auto: sandstone on sandy ground). */
+  rockLook: NatureRockLook = 'auto';
   mode: 'paint' | 'erase' = 'paint';
   /** The eraser takes every species, not only the brush's. */
   eraseAll = false;
@@ -373,6 +379,26 @@ export class EnvTools {
       if (this.host.run(`Season: ${ENV_SEASON_LABELS[this.season]}`, cmd)) this.host.toast(`${cmd.after.length} placements set to ${ENV_SEASON_LABELS[this.season].toLowerCase()}`);
     });
     seasonRow.append(season, apply);
+    // The nature swap (shared/editor/natureSwap.ts): bought and downloaded trees, plants and rocks become ours, one undo step.
+    heading('Swap natural props for ours');
+    const swapRow = add(document.createElement('div'));
+    swapRow.className = 'ed-row-buttons';
+    const rocks = document.createElement('select');
+    rocks.id = 'ed-env-swap-rocks';
+    rocks.title = 'Rocks by the ground: sandstone where the ground is mostly sand, else grey (mossy ones stay mossy)';
+    for (const id of NATURE_ROCK_LOOKS) rocks.append(new Option(NATURE_ROCK_LOOK_LABELS[id], id, false, id === this.rockLook));
+    rocks.addEventListener('change', () => (this.rockLook = rocks.value as NatureRockLook));
+    const swap = document.createElement('button');
+    swap.id = 'ed-env-swap';
+    swap.textContent = 'Swap natural props for ours';
+    swap.title = 'Every Quaternius tree, bush, plant and log and every kit rock becomes our generated species, in its spot, turn and size (one undo step)';
+    swap.addEventListener('click', () => {
+      const r = natureSwapCommand(this.host.doc(), this.rockLook);
+      if (!r.command) return this.host.toast('No natural props to swap: the map uses ours already');
+      const n = r.command.after.length;
+      if (this.host.run('Swap natural props for ours', r.command)) this.host.toast(`${n} natural props swapped for ours${r.rockLook === 'sandstone' ? ' (rocks as sandstone)' : ''}${r.clamped ? ` · ${r.clamped} at the size limit` : ''}`);
+    });
+    swapRow.append(rocks, swap);
     const status = add(document.createElement('div'));
     status.id = 'ed-env-status';
     status.className = 'ed-note';
