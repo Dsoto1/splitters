@@ -15,6 +15,8 @@ const PHASE4 = [
   'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
   'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
 ];
+/** Environment Phase 5, the jungle set. */
+const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 describe('environment generator', () => {
@@ -24,7 +26,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass', ...PHASE4].sort());
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass', ...PHASE4, ...PHASE5].sort());
   });
 
   // The two builds are two tests: one test under one budget for both, a busy machine took 64 s against its 60.
@@ -82,6 +84,19 @@ describe('environment generator', () => {
     // Every level is lighter than the one before.
     for (const s of first.clientSpecies) for (let i = 1; i < s.triangles.length; i++) expect(s.triangles[i], s.id).toBeLessThan(s.triangles[i - 1]);
   }, 60000);
+
+  it('Phase 5, the jungle set: the tree fern wears fern fronds, the jungle tree hangs lianas, the elephant ear is vertex colour only', async () => {
+    first ??= await build(content, species);
+    const tris = Object.fromEntries(first.clientSpecies.map((s) => [s.id, s.triangles]));
+    const g = (id) => species.find((s) => s.id === id).generator;
+    // The jungle tree without its lianas is lighter: they are drawn (bark ropes and leaf cards), at every level.
+    const jungle = species.find((s) => s.id === 'env.broadleaf.jungle');
+    const bare = await build(content, [{ ...jungle, generator: { ...jungle.generator, vines: undefined } }]);
+    tris['env.broadleaf.jungle'].slice(0, 3).forEach((t, i) => expect(t, `level ${i}`).toBeGreaterThan(bare.clientSpecies[0].triangles[i]));
+    expect(g('env.fern.tree_fern').frondCards).toEqual(['fern.0']);
+    expect(first.files.has('env/shrub.elephant_ear.green.glb')).toBe(true);
+    expect(tris['env.shrub.elephant_ear'].length).toBe(3);
+  }, 120000);
 
   it('the leaf atlas cards cover at least 55 % of their rectangles (alpha-tested pixels, not empty overdraw)', async () => {
     first ??= await build(content, species);

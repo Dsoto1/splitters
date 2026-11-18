@@ -143,29 +143,30 @@
       "impostor": { "distance": 140, "size": 256 },
       "variants": [
         { "index": 0, "name": "summer", "look": { "bark": "#5a4a40", "leaves": ["#2f4a2c", "#36522f", "#2a4227"], "jitter": 0.1 } },
-        { "index": 1, "name": "snow", "look": { "bark": "#54463c", "leaves": ["#2c4429", "#334c2d", "#283e25"], "jitter": 0.1, "snow": 0.8 } }
+        { "index": 1, "name": "snow", "look": { "bark": "#54463c", "leaves": ["#2c4429", "#334c2d", "#283e25"], "jitter": 0.1, "snow": 0.8 } },
+        { "index": 2, "name": "alpine", "look": { "bark": "#5e4e42", "leaves": ["#46653e", "#4f7044", "#405c39"], "jitter": 0.12 } }
       ]
     },
     {
       "id": "env.conifer.mountain_pine",
       "displayName": "Mountain Pine",
       "category": "tree",
-      "assetVersion": 1,
-      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a short, crooked, wind-bent pine at the tree line: a strong lean, few long, gappy whorls rising up, a flat top; alpine slopes."},
+      "assetVersion": 2,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a short, crooked, wind-bent pine at the tree line: a strong lean, few long, gappy whorls rising up, a flat top; alpine slopes.", "2": "Lighter (Environment Phase 5, 2026-11-18; the Alpine preset read as dark solid cones): a brighter, warmer green, a bare trunk under the lowest live whorl, more open whorls, smaller far sprays and leader."},
       "nominalHeight": 5,
       "nav": "obstacle",
       "role": "cover",
       "placement": {"maxSlopeDegrees": 40, "minSpacing": 3, "scale": [0.75, 1.3]},
-      "generator": {"kind": "conifer", "seed": 63, "height": 5, "lean": [6, 12], "trunkRadius": 0.2, "firstWhorl": 0.5, "deadBelow": 0.7, "whorl": [5, 7], "whorlStep": [0.26, 0.4], "missing": 0.12, "maxBranch": 1.8, "elevation": [2, 30], "droop": 0.3, "minShapeRadius": 0.16},
+      "generator": {"kind": "conifer", "seed": 63, "height": 5, "lean": [6, 12], "trunkRadius": 0.2, "firstWhorl": 1.0, "deadBelow": 1.4, "whorl": [5, 7], "whorlStep": [0.3, 0.46], "missing": 0.18, "maxBranch": 1.8, "elevation": [2, 30], "droop": 0.3, "minShapeRadius": 0.16},
       "lods": [
         {"distance": 0, "trunkSides": 7, "branchSides": 3, "branchMin": 0.02, "barkBudget": 800, "sprays": 3.4, "minSprays": 2, "sprayScale": 1, "bend": 0.3, "leader": 5},
-        {"distance": 30, "trunkSides": 5, "branchSides": 3, "branchMin": 0.03, "barkBudget": 220, "step": 2, "sprays": 1.428, "minSprays": 1, "sprayScale": 1.5, "bend": 0, "leader": 3},
-        {"distance": 70, "trunkSides": 4, "branchSides": 3, "branchMin": 0.1, "barkBudget": 55, "step": 4, "sprays": 0.38, "minSprays": 0, "sprayScale": 2.25, "bend": 0, "leader": 2}
+        {"distance": 30, "trunkSides": 5, "branchSides": 3, "branchMin": 0.03, "barkBudget": 220, "step": 2, "sprays": 1.428, "minSprays": 1, "sprayScale": 1.3, "bend": 0, "leader": 2},
+        {"distance": 70, "trunkSides": 4, "branchSides": 3, "branchMin": 0.1, "barkBudget": 55, "step": 4, "sprays": 0.5, "minSprays": 1, "sprayScale": 1.7, "bend": 0, "leader": 1}
       ],
       "impostor": {"distance": 140, "size": 256},
       "variants": [
-        {"index": 0, "name": "summer", "look": {"bark": "#5e4e42", "leaves": ["#3c5232", "#445c36", "#36492d"], "jitter": 0.1}},
-        {"index": 1, "name": "snow", "look": {"bark": "#584a3e", "leaves": ["#354a2e", "#3c5232", "#30432a"], "jitter": 0.1, "snow": 0.8}}
+        {"index": 0, "name": "summer", "look": {"bark": "#6a5646", "leaves": ["#4c6a38", "#56763e", "#445f33"], "jitter": 0.12}},
+        {"index": 1, "name": "snow", "look": {"bark": "#625042", "leaves": ["#455f35", "#4e6a3a", "#3e5630"], "jitter": 0.1, "snow": 0.8}}
       ]
     },
     {

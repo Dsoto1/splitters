@@ -88,6 +88,7 @@
         {"index": 0, "name": "grey", "look": {"bark": "#5c5040", "leaves": ["#8a957a", "#97a086", "#7c876e"], "jitter": 0.1}},
         {"index": 1, "name": "dry", "look": {"bark": "#5c5040", "leaves": ["#9a9474", "#a49c7c", "#8a8466"], "jitter": 0.12}}
       ]
-    }
+    },
+    {"id": "env.shrub.elephant_ear", "displayName": "Elephant Ear", "category": "plant", "assetVersion": 1, "notes": {"1": "First version (Environment Phase 5, the jungle set, 2026-11-18): a broadleaf understory plant, long stalks holding big heart-shaped blades that hang out and down (tools/content/env/plants.mjs leafPlantMesh). Conceals like the shrubs."}, "nominalHeight": 1.5, "nav": "none", "role": "cover", "conceals": true, "placement": {"maxSlopeDegrees": 40, "minSpacing": 1.6, "scale": [0.7, 1.35]}, "generator": {"kind": "leafplant", "seed": 82, "leaves": [7, 9], "stalk": 1.15, "blade": 0.85, "width": 0.62, "elevation": [52, 80], "droop": 0.9}, "lods": [{"distance": 0, "segs": 5}, {"distance": 25, "segs": 2}], "impostor": {"distance": 60, "size": 128}, "variants": [{"index": 0, "name": "green", "look": {"stalk": "#5a7a34", "leaf": "#3e6a26", "alt": "#4a7a2c", "vein": "#8aa860"}}, {"index": 1, "name": "dark", "look": {"stalk": "#4e5a2e", "leaf": "#2e4a26", "alt": "#38542a", "vein": "#6a8050"}}]}
   ]
 }

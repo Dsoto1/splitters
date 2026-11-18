@@ -34,10 +34,12 @@ const PHASE4 = [
   'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
   'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
 ];
+/** Environment Phase 5, the jungle set (2026-11-18). */
+const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(40);
+    expect(ENV_SPECIES.length).toBe(43);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
@@ -46,6 +48,7 @@ describe('environment data', () => {
       'env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump',
       'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
       ...PHASE4,
+      ...PHASE5,
     ].sort());
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
@@ -75,7 +78,7 @@ describe('environment data', () => {
     expect(propMaterial('env.cliff.face')).toBe('stone');
     expect(propSurface('env.shrub.broadleaf')).toBe('foliage');
     // The shrub and the fern conceal (the rule bushes follow); grass is decoration only.
-    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.shrub.sagebrush']);
+    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.elephant_ear', 'env.shrub.laurel', 'env.shrub.sagebrush']);
     // Phase 2: palms and the saguaro are full cover like trunks; the hedges are walls of bark-hard cover (the Kenney
     // hedges they replace stopped rounds), the laurel bush foliage.
     for (const id of ['env.broadleaf.maple', 'env.broadleaf.acacia', 'env.conifer.spruce', 'env.palm.coconut', 'env.palm.leaning', 'env.cactus.saguaro', 'env.hedge.privet', 'env.hedge.yew']) expect(propMaterial(id), id).toBe('heavy_wood');
@@ -176,6 +179,15 @@ describe('environment data', () => {
     }
     expect(getEnvSpecies('env.shrub.sagebrush')!.role).toBe('cover');
     expect([getEnvSpecies('env.shrub.juniper')!.role, getEnvSpecies('env.shrub.juniper')!.conceals]).toEqual(['decorative', null]);
+    // The jungle set: the jungle tree and the tree fern are trees (their trunks stop everything, bots go round them;
+    // the lianas and fronds do not collide); the elephant ear is a plant that hides a crouched player, no collision.
+    for (const id of ['env.broadleaf.jungle', 'env.fern.tree_fern']) {
+      const s = getEnvSpecies(id)!;
+      expect([s.category, s.nav, s.role, propSurface(id)], id).toEqual(['tree', 'obstacle', 'cover', 'bark']);
+      expect(envVariant(s, 0).shapes.some((sh) => sh.blocks === 'all'), id).toBe(true);
+    }
+    const ear = getEnvSpecies('env.shrub.elephant_ear')!;
+    expect([ear.category, ear.nav, ear.role, envVariant(ear, 0).shapes.length, ear.conceals!.height > 1.1]).toEqual(['plant', 'none', 'cover', 0, true]);
   });
 
   it('every shape lies inside the species\' visual bounds', () => {

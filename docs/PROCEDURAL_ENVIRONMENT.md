@@ -167,6 +167,36 @@ ours) and retiring the legacy pieces.
 
 **Phase 5 — Polish:** terrain material transitions, seasonal/biome variations if appropriate, LOD/shadow tuning, visual consistency pass.
 
+**Phase 5 status (2026-11-18): built** (`wip/environment-5`; owner, 2026-11-16: "yes"; the lead's order: draw calls, the
+Alpine look, a jungle set, then the polish). docs/CONTENT_PIPELINE.md, "Environment Phase 5", has the detail.
+- **Draw calls: a species' looks share one batch per square** (`environment/envLooks.ts`, `EnvLooksPlugin`): looks of one
+  shape at a level are one mesh carrying each look's vertex colours, each copy naming its own; found at load from the
+  models, so every look draws exactly as before. Snow-laden conifers and the meadow flowers (another shape) and the
+  stand-ins (their own pictures) keep their own batches. Measured (`PERF_STILL=1`, Medium, mean of 4 views, this
+  machine): the showcase (2,526 placements, 8 species' looks) 177 → 147 draws, 1.202 → 1.205 M triangles; the Phase 4 stress copy (half of each category swapped to the new species, about
+  30 looks; scratch, never committed) 372 → 275 draws, 1.113 → 1.146 M triangles (a shared batch spans more copies,
+  so its bounds cull a little less). Shadow casters 350 → 284 and 463 → 281, partly because the hidden templates no
+  longer sit in the caster list (they never drew), partly the shared shadow sets.
+- **The Alpine look:** the "dark solid cones with no trunk" in the painted Alpine preset were the Spruce (foliage to the
+  ground, the darkest green; at the editor's distance its lighter levels). The Spruce model is unchanged (St. John's
+  and the other maps keep theirs); it gains a lighter `alpine` look, and the Alpine preset paints fewer of them, in that
+  look, among more mountain pines and larches, a little less densely. The Mountain Pine (on no map) is assetVersion 2:
+  brighter, a bare trunk under its branches, more open, smaller far sprays.
+- **The jungle set:** Jungle Tree (`env.broadleaf.jungle`, lianas from the broadleaf generator's new `vines`), Tree Fern
+  (`env.fern.tree_fern`, the palm generator with fern fronds), Elephant Ear (`env.shrub.elephant_ear`, a new `leafplant`
+  kind); the Jungle preset paints them. 43 species.
+- **Seasons across a whole map:** MapMaker's Environment pane, "Season (whole map)" (Summer, Autumn, Snow-dusted, Dry
+  season) and Apply: every placed species to its look for the season, one undo step (`shared/editor/envSeason.ts`).
+  An edit of the placements' looks, not a map setting: no map format change, nothing changes until an author applies
+  it, and a look can still be changed by hand afterwards. Looks picked on purpose (moss, flower colours) stay.
+- **Shadows of distant plants:** plants, ground cover and pebbles cast in the near cascades only (High's far cascade
+  drops them; Medium unchanged). The hidden template meshes are out of the shadow list (they never drew; the casters
+  column counted them).
+- **Left for later:** ground-material transitions (MapMaker's painted ground already blends its borders softly; a
+  noisier, less straight edge would change every shipped map's ground, so it waits for the owner); a consistency pass
+  over the older species' colours and levels of detail (the same reason: shipped maps); far-level tuning of the Spruce
+  and Tall Pine (their lighter levels read heavy; changing them changes St. John's).
+
 **Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic
 generator approach applied to simple man-made props. Families, each with endless variants under a stable family id:
 - crates and barrels;
