@@ -147,6 +147,8 @@ import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
 import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
+import { PickupBatch } from './pickupBatch.ts';
+import { setGlow } from './glow.ts';
 import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
 import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
@@ -340,14 +342,6 @@ const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b'
 const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
 const SMOKE_FOG_DENSITY = 0.42;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
-/**
- * A material's glow, set only when it differs: setting a colour makes Babylon look through every mesh of the scene
- * for the material's users (thousands in a big match), and a new avatar's "no glow" is usually what it has already
- * (several of a character's meshes share a material, too).
- */
-function setGlow(mat: { emissiveColor: Color3 }, color: Color3): void {
-  if (!mat.emissiveColor.equals(color)) mat.emissiveColor = color;
-}
 
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
@@ -458,6 +452,8 @@ export class GameView {
   /** The living characters in view this frame, as squared distances, nearest first (updateAvatars). */
   private readonly nearInView: number[] = [];
   private readonly pickups = new Map<string, PickupVisual>();
+  /** The pickups' shapes and models as thin instances (pickupBatch.ts; `?perfoff=pickupbatch`: GPU instances, as before). */
+  private pickupBatch: PickupBatch | null = null;
   /** When pickups were last updated (ms; their glows ease by the time since). */
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
@@ -745,6 +741,8 @@ export class GameView {
       // its blocks and props.
       const pickups = doc.entities.filter((e): e is PickupEntity => e.kind === 'pickup' && !isAmmoBoxPickup(e));
       const solid = pickups.length ? [...boxes, ...blockBoxes(doc), ...propBoxes(doc)] : [];
+      this.pickupBatch?.dispose();
+      this.pickupBatch = pickups.length && perfOn('pickupbatch') ? new PickupBatch(this.scene) : null;
       for (const e of pickups) this.addPickup(e, e.item, pickupRoom(e.position, solid));
     }
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
@@ -3057,7 +3055,7 @@ export class GameView {
   // ---------------------------------------------------------------- pickups
 
   private addPickup(e: PickupEntity, item = e.item, room = Infinity): void {
-    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook, room);
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook, room, this.pickupBatch ?? undefined);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
     this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0, room });
@@ -3117,7 +3115,7 @@ export class GameView {
         // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
         // drew every other copy of that gun, your own first-person one included, in plain white.
         p.root.dispose(false, false);
-        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook, p.room);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook, p.room, this.pickupBatch ?? undefined);
         p.root.position.copyFrom(at);
         p.item = want;
         p.glowKey = lootGlowKey(want);
@@ -3134,6 +3132,20 @@ export class GameView {
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }
+    this.pickupBatch?.update();
+  }
+
+  /** Whether a pickup's part (its gun: `_gun`) is drawn now, as a mesh of its own or in the pickups' batch (tests). */
+  pickupPartDrawn(id: string, part: string): boolean {
+    const p = this.pickups.get(id);
+    if (!p) return false;
+    if (this.pickupBatch) return this.pickupBatch.draws(p.root, part);
+    return p.root.getChildMeshes(false).some((m) => m.name.startsWith(`${p.root.name}${part}`) && m.getTotalVertices() > 0);
+  }
+
+  /** The pickups' batch meshes and the parts they draw (tests and the perf probe; null without the batch). */
+  pickupBatchStats(): { meshes: number; parts: number } | null {
+    return this.pickupBatch?.stats() ?? null;
   }
 
   /**
@@ -4460,6 +4472,7 @@ export class GameView {
     this.pooled.clear();
     this.atmosphere.dispose();
     this.propBatches?.dispose();
+    this.pickupBatch?.dispose();
     this.blood.dispose();
     this.impacts.dispose();
     this.environment?.dispose();

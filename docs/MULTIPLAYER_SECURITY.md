@@ -12,7 +12,7 @@ authenticate. Infrastructure: `infra/toshiro-trigger-multiplayer.yaml`,
 |---|---|---|---|---|
 | 22 | TCP | Lightsail browser console (`lightsail-connect` alias); the deploy shell's IP/32 during a run; optional `AdminSshCidr` | sshd | Administration only. Never a game endpoint. Key-only (Lightsail default); the deploy uses Lightsail's temporary SSH certificate. |
 | 80 | TCP | anywhere (IPv4/IPv6) | Caddy | ACME HTTP-01 challenge; redirect to HTTPS. |
-| 443 | TCP | anywhere | Caddy → hub 127.0.0.1:8080 | Site, `/lobby/*` (HTTPS), `/broker` (WSS signaling), later `/host` control (WSS). |
+| 443 | TCP | anywhere | Caddy → hub 127.0.0.1:8080 | Site, `/lobby/*` (HTTPS), `/broker` (WSS signaling), later `/host` control (WSS). With the CDN on, players reach it through CloudFront at `origin.trigger.toshiroplay.com` (below); the port stays open to everyone (CloudFront's addresses change; the edge key, not the firewall, tells its requests apart). |
 | 3478 | UDP + TCP | anywhere | coturn | STUN and TURN (auth required for TURN). |
 | 49160–49200 | UDP | anywhere | coturn relay | Relayed media/data (41 ports = at most ~41 concurrent allocations). |
 
@@ -39,6 +39,45 @@ Lightsail) is inside 172.16/12. The static IP is *not* denied: two relayed
 players reach each other relay-to-relay through it; reaching Caddy that way
 gives nothing the internet doesn't already have, and the hub's 8080 is on
 loopback.
+
+### CloudFront in front of the site (2026-11-18)
+
+With `SiteCdn=on` (docs/HOSTING.md, "CDN"), `trigger.toshiroplay.com` is a CloudFront alias and the box
+answers as `origin.trigger.toshiroplay.com`:
+
+- **TLS:** viewer → CloudFront with an ACM certificate (DNS-validated, renewed by AWS), minimum
+  `TLSv1.2_2021`, HTTP redirected to HTTPS (the hub's paths HTTPS only); CloudFront → box `https-only`,
+  TLS 1.2, the box's own Let's Encrypt certificate for the origin name verified. HSTS and the other headers
+  still come from Caddy. Nothing goes in clear.
+- **Caching:** only what the box marks cacheable (hashed `/assets/` a year; models and other static files an
+  hour with an ETag; pages `no-cache`). The hub's paths (`/lobby*`, `/broker*`, `/api/*`,
+  `/auth-config.js`) use the managed CachingDisabled policy and pass every header (Authorization included),
+  cookie and query string; no response of the hub is ever stored at the edge. Cookies are never part of
+  the static cache key or forwarded for static files.
+- **Client addresses:** CloudFront appends the viewer's address to `X-Forwarded-For` and adds
+  `X-Edge-Key: <random>` (SSM String `/toshiro/trigger/edge-key`, 48 hex characters, referenced by the
+  template). Caddy passes the incoming `X-Forwarded-For` on to the hub only when that key matches, and
+  removes the key before the hub sees it; any other request to the origin name gets Caddy's own entry, so the
+  last entry (the one `clientIp.ts` believes) is always the address that reached the trusted hop. The key is
+  not a credential for anything else: knowing it lets a caller choose the address its own rate limits count
+  against, nothing more. It is visible to anyone who can read the distribution's configuration in the
+  account. Rotate: `aws ssm put-parameter --name /toshiro/trigger/edge-key --type String --overwrite --value
+  "$(openssl rand -hex 24)"`, then re-run the deploy (it passes the parameter's new version to the template,
+  so CloudFront and Caddy both get the new key in that run).
+- **TURN** never goes through CloudFront: `turn.trigger.toshiroplay.com` → the static IP.
+- **The origin can still be reached directly** (same as before the CDN): the hub's own limits apply there.
+
+### Hard spend cap (2026-11-18)
+
+A budget alert and an hourly check stop the instance and disable the distribution
+(docs/HOSTING.md, "Hard spend cap"). The Lambda's role, all on single resource ARNs:
+`lightsail:StopInstance`, `lightsail:GetInstanceState`, `lightsail:GetInstanceMetricData` on the
+instance; `cloudfront:GetDistributionConfig`, `cloudfront:UpdateDistribution` on the distribution;
+`budgets:ViewBudget` on the cap's budget; `sns:Publish` on its email topic; `logs:CreateLogStream`,
+`logs:PutLogEvents` on its log group. It can't start anything, change the firewall, read secrets or touch
+other resources. The topic it listens on accepts publishes only from Budgets and CloudWatch in this
+account (`aws:SourceAccount`) and only over TLS. The worst a forged trigger could do is stop the game,
+which is also its job.
 
 ## 3. TURN authentication
 
@@ -83,7 +122,9 @@ loopback.
 | Admin token for a dedicated server | that server's own env (`ADMIN_TOKEN`) | the server | Owner's choice; constant-time compare already (`server.ts:153-155`). |
 | Host Service device keys | generated on the user's machine, private key never leaves it (section 6) | Host Service | Re-pair. |
 | Release signing key (Host Service updates) | offline / CI secret, never on the hub (section 7) | release CI | Key rollover via a signed key-transition manifest. |
-| AWS credentials | none on the instance (Lightsail has no instance roles; none needed) | — | — |
+| Backup writer key | IAM user (stack `BackupWriter`) whose only permission is `s3:PutObject` on `backups/*` of the backup bucket; access key made by the deploy, kept in SSM SecureString `/toshiro/trigger/backup-key` | deploy script → `/etc/tiletrigger-backup.conf` (root, 0600) → `tiletrigger-backup` (nightly, root) | `aws ssm delete-parameter --name /toshiro/trigger/backup-key`, then re-run the deploy: it deletes the user's old keys and makes a new one. A leaked key can only add objects (no list, read or delete; versioning keeps overwritten ones; 30-day expiry). |
+| CloudFront edge key | SSM String `/toshiro/trigger/edge-key` (not secret enough for a SecureString: CloudFront's configuration holds it in clear) | the template (`{{resolve:ssm}}`), the deploy → Caddyfile (root:caddy 0640) | See "CloudFront in front of the site". |
+| AWS credentials | only the backup writer key above (Lightsail has no instance roles); restores are downloaded by the deploy with the owner's credentials and copied over SSH, so the box never reads the bucket | — | — |
 
 Rules: nothing reusable in the browser bundle (the client only ever receives
 short-lived TURN credentials and its own tokens); no secrets on command lines
