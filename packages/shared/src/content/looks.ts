@@ -149,16 +149,8 @@ export const CHARACTER_BRANCHES = [
 ] as const satisfies readonly { id: string; label: string; group: CharacterGroup }[];
 export type CharacterBranch = (typeof CHARACTER_BRANCHES)[number]['id'];
 export const isCharacterBranch = (x: unknown): x is CharacterBranch => CHARACTER_BRANCHES.some((b) => b.id === x);
-/**
- * What a character bleeds when hit (`blood` in its manifest; owner, 2026-11-17): red for people, green or blue for
- * aliens, black oil with Electric FX sparks for robots and machines, bone dust for skeletons, a pale spectral wisp for
- * ghosts and spirits (no decals for the last two). A look without one (part-built presets, designs, soldier NPC
- * mannequins) bleeds the map's blood colour. The map's amount and the player's blood switch rule every kind.
- * The same list as BLOOD in tools/content/character-manifests.mjs (a test keeps them equal). IDs never change.
- */
-export const BLOOD_KINDS = ['red', 'green', 'blue', 'oil', 'bone', 'spirit'] as const;
-export type BloodKind = (typeof BLOOD_KINDS)[number];
-export const isBloodKind = (x: unknown): x is BloodKind => (BLOOD_KINDS as readonly unknown[]).includes(x);
+/** What a character bleeds when hit (BLOOD_KINDS in content/blood.ts, apart so the menu's first JS doesn't carry it). */
+export type BloodKind = 'red' | 'green' | 'blue' | 'oil' | 'bone' | 'spirit';
 export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
 
 /** Character Select's section for the experimental tier (after the groups, before Yours), and Yours (your designs). */
