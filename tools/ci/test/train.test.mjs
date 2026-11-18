@@ -4,7 +4,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { landRefusal, repoSlug, trainBranch, trainBranchName } from '../train.mjs';
+import { landRefusal, readyEntries, readyVerdict, repoSlug, trainBranch, trainBranchName } from '../train.mjs';
 
 const script = new URL('../train.mjs', import.meta.url).pathname;
 const sha = 'a'.repeat(40);
@@ -29,6 +29,37 @@ describe('landing checks', () => {
     expect(trainBranchName(new Date(Date.UTC(2026, 10, 3, 9, 5, 7)))).toBe('check/train-20261103-090507');
     expect(repoSlug('https://github.com/o/r.git')).toBe('o/r');
     expect(repoSlug('git@github.com:o/r')).toBe('o/r');
+  });
+});
+
+describe('--ready', () => {
+  const queue = ['# Q', '## In flight', '- `wip/x` · 1234567 · 44000000001', '## Ready to land', '(`branch · green sha · run`)', '', '- `wip/a` · 79480282 · 44224399843 (lane B: notes)', '- `check/b` · abcdef12 · run 44226740750', '- something else', '## Maps', '- `wip/m` · 1234567 · 44000000002'].join('\n');
+  const full = '79480282' + 'f'.repeat(32);
+  const entry = { branch: 'wip/a', sha: '79480282', run: 44224399843 };
+  const green = { id: 44224399843, head_sha: full, head_branch: 'check/a', status: 'completed', conclusion: 'success' };
+
+  it("reads QUEUE's Ready to land entries in order, and only those", () => {
+    const e = readyEntries(queue);
+    expect(e.map((x) => x.branch ?? x.error)).toEqual(['wip/a', 'check/b', 'not `branch` · sha · run']);
+    expect(e[0]).toMatchObject(entry);
+    expect(e[1].run).toBe(44226740750);
+    expect(readyEntries('# nothing')).toEqual([]);
+  });
+
+  it('confirms an entry only from a completed, successful latest run for its sha, the branch still there, not on main', () => {
+    const ok = { entry, run: green, latest: green, tip: full, onMain: false, docsSince: false };
+    expect(readyVerdict(ok).ok).toBe(true);
+    expect(readyVerdict({ ...ok, tip: 'e'.repeat(40), docsSince: true })).toMatchObject({ ok: true, why: expect.stringMatching(/docs only since/) });
+    expect(readyVerdict({ ...ok, run: null }).why).toMatch(/not found/);
+    expect(readyVerdict({ ...ok, run: { ...green, head_sha: 'b'.repeat(40) } }).why).toMatch(/is for bbbbbbbb/);
+    expect(readyVerdict({ ...ok, run: { ...green, status: 'in_progress', conclusion: null } }).why).toMatch(/in_progress/);
+    expect(readyVerdict({ ...ok, run: { ...green, conclusion: 'failure' } }).why).toMatch(/ended failure/);
+    expect(readyVerdict({ ...ok, latest: { ...green, id: 1, head_sha: 'c'.repeat(40), conclusion: 'failure' } }).why).toMatch(/newer run/);
+    expect(readyVerdict({ ...ok, latest: { ...green, conclusion: 'failure' } }).why).toMatch(/re-run/);
+    expect(readyVerdict({ ...ok, onMain: true }).why).toMatch(/on main already/);
+    expect(readyVerdict({ ...ok, tip: null }).why).toMatch(/not on origin/);
+    expect(readyVerdict({ ...ok, tip: 'e'.repeat(40) }).why).toMatch(/moved past/);
+    expect(readyVerdict({ entry: { line: 'x', error: 'bad' } })).toEqual({ ok: false, why: 'bad' });
   });
 });
 
@@ -58,6 +89,16 @@ describe('the train (scratch repositories)', () => {
   branchOff('wip/one', 'a.txt', 'a one\n');
   branchOff('wip/two', 'b.txt', 'b two\n');
   branchOff('wip/clash', 'a.txt', 'a clash\n');
+  // The shared notes: two branches adding to the same list, and one rewriting a line another added to.
+  git(clone, 'checkout', '-q', '-B', 'notes-base', 'origin/main');
+  writeFileSync(join(clone, 'HANDOFF.md'), '# H\n\n- claim a\n');
+  git(clone, 'add', '-A');
+  git(clone, 'commit', '-qm', 'notes');
+  git(clone, 'push', '-q', 'origin', 'HEAD:main');
+  git(clone, 'fetch', '-q', 'origin');
+  branchOff('wip/notes1', 'HANDOFF.md', '# H\n\n- claim a\n- claim one\n');
+  branchOff('wip/notes2', 'HANDOFF.md', '# H\n\n- claim a\n- claim two\n');
+  branchOff('wip/notes3', 'HANDOFF.md', '# H\n\n- claim a (done)\n');
   const mainBefore = git(origin, 'rev-parse', 'main');
 
   it('merges the branches in order and pushes a new check/train-* branch, nothing else', () => {
@@ -98,6 +139,18 @@ describe('the train (scratch repositories)', () => {
     expect(git(origin, 'for-each-ref', 'refs/heads')).toBe(before);
     expect(git(clone, 'worktree', 'list').split('\n')).toHaveLength(1);
     expect(readdirSync(tmpdir()).filter((d) => d.startsWith('train-')).every((d) => !existsSync(join(tmpdir(), d, '.git')))).toBe(true);
+  });
+
+  it('resolves a conflict only in HANDOFF/QUEUE as a union of added lines; stops when it is not one', () => {
+    const r = trainRun('--no-push', 'wip/notes1', 'wip/notes2');
+    expect(r.status, r.stderr).toBe(0);
+    expect(r.stdout).toMatch(/merged wip\/notes2 \(resolved HANDOFF\.md/);
+    const sha = r.stdout.match(/Candidate ([0-9a-f]{40})/)[1];
+    expect(git(clone, 'show', `${sha}:HANDOFF.md`)).toBe('# H\n\n- claim a\n- claim one\n- claim two');
+    const stop = trainRun('--no-push', 'wip/notes1', 'wip/notes3');
+    expect(stop.status).toBe(1);
+    expect(stop.stderr).toMatch(/wip\/notes3 conflicts with the candidate[\s\S]*HANDOFF\.md[\s\S]*not as a simple union/);
+    expect(git(clone, 'worktree', 'list').split('\n')).toHaveLength(1);
   });
 
   it('refuses branches that are not wip/ or check/, and --land off a train branch', () => {

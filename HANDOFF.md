@@ -62,6 +62,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: process tooling and MapMaker UI Phase 5 in a train** (`check/train-20261118-073142` at 5396d789, run 44259596787, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
+
 **Landed: environment Phase 4 and painting Phase 5 (map format v47) in a train** (`check/train-20261118-050653` at 81f7e8de, run 44242217181, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
 
 **Landed: MapMaker UI Phase 4a (Tile View) in a train** (`check/train-20261118-031402` at 47fac281, run 44228966768, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed). Painting Phase 5 left the train (map format v46 went to St. John's step 5; it moves to v47 and re-checks).
@@ -80,7 +82,6 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-18): grips auto-fit** (`wip/grips-autofit`; QUEUE Features, lane B; owner, 2026-11-18, "1a 2a autofit plan"). (1) Universal first-person arms for every character, tinted from its own model (skin/glove, sleeve, trim measured at content build); (2) third-person grip offsets fitted automatically from each character's drawn hands, with an audit of every character × hold (error per hand, outliers flagged; hand-set offsets kept only where the audit says the fit is worse); (3) tracers and muzzle flashes from the drawn muzzle in first and third person, with a drift test. Files: new `tools/content/grip-fit.mjs`, `tools/content/arm-colours.mjs`, `content/grip-fit.json`; `tools/content/character-manifests.mjs`, `content/characters/*.json` (`firstPerson`, `fixes.grip` only), `packages/shared/src/content/characters.generated.ts`, `looks.ts` (types); client `tools/gripSheet.ts`, `game/view.ts` (muzzle, tracers, flash), `game/session.ts` (your shots in third person), `game/impactVisuals.ts`, `game/muzzleAnchor.ts`, a new `game/muzzlePoint.ts`, `game/firstPersonBody.ts`; tests in `packages/shared/test/`, `packages/client/test/`, `tools/content/test/`; e2e `run.mjs` (a tracer drift check), `flowMap.mjs`; docs/CHARACTERS.md ("Holding weapons"), docs/QUEUE.md, CHANGELOG. No map format change; no map edited.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/train-20261118-073142` at 5396d789 (lane B's lead: the train with `wip/process-tools` and `wip/mapmaker-ui-5`; holds the landing lock).
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 

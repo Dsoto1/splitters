@@ -57,7 +57,7 @@ export type KeyAction =
   | 'nudgeWest'
   | 'nudgeEast';
 
-export const KEY_GROUPS = ['Tools', 'Edit', 'Selection', 'Levels', 'View and camera', 'Brushes', 'Placing', 'Map and panels', 'Mouse', 'Palette'] as const;
+export const KEY_GROUPS = ['Tools', 'Edit', 'Selection', 'Levels', 'View and camera', 'Brushes', 'Placing', 'Map and panels', 'Tile View and minimap', 'Mouse', 'Palette'] as const;
 export type KeyGroup = (typeof KEY_GROUPS)[number];
 
 /** A key the handler acts on when it's pressed. */
@@ -170,6 +170,17 @@ export const EDITOR_KEY_NOTES: readonly KeyNote[] = [
   { group: 'Mouse', keys: 'Double-click', what: 'Select: Tile View on what was clicked (the minimap too)' },
   { group: 'Mouse', keys: 'Right-drag', what: 'Look round' },
   { group: 'Mouse', keys: 'Wheel', what: 'Zoom (Shift: faster)' },
+  { group: 'Map and panels', keys: '← →', what: "The dock's edge, focused: narrower, wider (Shift: further; Home, End: narrowest, widest)" },
+  // The two plans' own keys while one has the focus (client editor/planKeys.ts, tileViewPanel.ts; UI Phase 5).
+  { group: 'Tile View and minimap', keys: '] or [', what: 'Tile View: pick the next or previous thing or wall side' },
+  { group: 'Tile View and minimap', keys: '↑ ↓ ← →', what: 'Tile View: nudge the picked thing a snap step (Shift: 1 cm); the minimap: pan' },
+  { group: 'Tile View and minimap', keys: 'R', what: 'Tile View: turn the picked thing 15° (Shift+R back)' },
+  { group: 'Tile View and minimap', keys: 'Enter', what: "Tile View: to the picked thing's fields (Esc back); the minimap: Tile View on the selection" },
+  { group: 'Tile View and minimap', keys: 'Alt+↑ ↓ ← →', what: 'Pan the plan (Shift: further)' },
+  { group: 'Tile View and minimap', keys: '+ or −', what: 'Zoom in, out' },
+  { group: 'Tile View and minimap', keys: 'Home', what: 'Fit the tile or the level' },
+  { group: 'Tile View and minimap', keys: 'Esc', what: 'Tile View: let the picked thing go, then back to the minimap' },
+  { group: 'Tile View and minimap', keys: 'Tab', what: 'Into a plan (its focus ring shows), and on to its buttons and fields' },
   { group: 'Palette', keys: '↑ ↓ ← →', what: 'Move between pieces (from the search box: ↓)' },
   { group: 'Palette', keys: 'Enter', what: 'In the search box: pick the best match' },
   { group: 'Palette', keys: 'F', what: 'Add the focused piece to your favourites (or right-click it)' },
