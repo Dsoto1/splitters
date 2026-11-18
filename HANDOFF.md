@@ -91,7 +91,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/characters-1117b` at 5ae7ac2c (the character pass follow-ups: Army-only Shingle Point, the Operatives Agency, rank insignia; a helper of lane B's splitters22)
 - `check/environment-5` at b394ec2f · run 44312534550 (a helper of lane B's splitters22: procedural environment Phase 5: shared looks (draw calls), the Alpine look, the jungle set, a season across the whole map, small species' shadows; no map format change, v48 not taken; first run 44300222821 red only on the envlab baseline, 10.1 % vs 10 %: the lab lineup now sits inside the lab's shadow bounds).
-- `check/grips-autofit` at b94b448e (a helper of lane B's splitters22: grips auto-fit).
+- `check/grips-autofit` at fd3603c2 (a helper of lane B's splitters22: grips auto-fit).
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 
