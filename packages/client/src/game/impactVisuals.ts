@@ -243,8 +243,8 @@ export class ImpactVisuals {
     this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive, to: new Vector3(to.x, to.y, to.z), ...(opts.start ? { start: opts.start } : {}) });
   }
 
-  /** The last tracers' starts as settled (tests: the tracer's start against the muzzle as drawn that frame), newest last. */
-  readonly settled: { from: Vec3; frame: number; n: number }[] = [];
+  /** The last rounds' starts as settled, tracer or not (tests: the start against the muzzle as drawn that frame), newest last. */
+  readonly settled: { from: Vec3; frame: number; n: number; tracer: boolean }[] = [];
   private settledCount = 0;
 
   /**
@@ -272,9 +272,9 @@ export class ImpactVisuals {
         const head = Math.min(b.travelled, b.dist);
         b.mesh.position.copyFrom(b.from.add(b.dir.scale(head)));
         b.mesh.scaling.z = Math.max(0.01, head - Math.max(0, head - b.length));
-        this.settled.push({ from: { x: p.x, y: p.y, z: p.z }, frame, n: ++this.settledCount });
-        if (this.settled.length > 32) this.settled.shift();
       }
+      this.settled.push({ from: { x: p.x, y: p.y, z: p.z }, frame, n: ++this.settledCount, tracer: !!b.mesh });
+      if (this.settled.length > 32) this.settled.shift();
     }
   }
 

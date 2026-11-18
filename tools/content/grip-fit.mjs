@@ -93,25 +93,44 @@ export function targetsOf(results) {
   return out;
 }
 
-/** A candidate's score: the weighted error of each hand, and its hand flags. */
+/**
+ * How far (cm) a hand and its gun go into each other past THROUGH_FREE, as drawn (tools/gripInside.ts): the hand's
+ * skin inside the gun, and the gun showing through the hand. A hand-set offset often fixed just that (a grip through a
+ * palm), which a target alone wouldn't see.
+ */
+export function throughOf(inside, s) {
+  const x = inside?.[s];
+  if (!x) return 0;
+  return round(Math.max(0, (x.depth ?? 0) - THROUGH_FREE) * 100 + Math.max(0, (x.gunDepth ?? 0) - THROUGH_FREE) * 100);
+}
+/** Interpenetration (m) that doesn't count: skin lying on a grip, a finger's pad pressed round it. */
+export const THROUGH_FREE = 0.01;
+/** Past this much (cm) through, a hold is flagged `through` (above the tenth worst: the pistol grip shows about 1 cm into most palms whatever the offsets, a hand shape the fit cannot change). */
+export const THROUGH_FLAG = 2.5;
+
+/** A candidate's score: the weighted error of each hand, how far hand and gun go into each other, and its hand flags. */
 export function scoreOf(m, hold, target) {
-  const eR = handError(m?.drawn?.atR, target[hold].r, AXES[hold].r);
-  const eL = handError(m?.drawn?.atL, target[hold].l, AXES[hold].l);
-  const flags = (m?.flags ?? []).filter((f) => HAND_FLAGS.includes(f));
+  const tR = throughOf(m?.inside, 'r');
+  const tL = throughOf(m?.inside, 'l');
+  const eR = round(handError(m?.drawn?.atR, target[hold].r, AXES[hold].r) + tR);
+  const eL = round(handError(m?.drawn?.atL, target[hold].l, AXES[hold].l) + tL);
+  const flags = [...(m?.flags ?? []).filter((f) => HAND_FLAGS.includes(f)), ...(Math.max(tR, tL) > THROUGH_FLAG ? ['through'] : [])];
   return { eR, eL, flags, total: round(eR + eL * 0.6 + flags.length * 3) };
 }
 
 /**
- * The choice for one hold: auto unless the hand-set offsets beat it by KEEP_MARGIN; an outlier where the chosen one is
- * still over THRESH or raises a hand flag.
+ * The choice for one hold: none, the fit, or the hand-set offsets (only where they beat both by KEEP_MARGIN); an
+ * outlier where the chosen one is still over THRESH or raises a hand flag.
  */
 export function choose(h, hold, target) {
   const auto = h.auto ? scoreOf(h.auto, hold, target) : null;
   const hand = h.hand ? scoreOf(h.hand, hold, target) : null;
   const none = scoreOf(h.none, hold, target);
-  let pick = 'auto';
-  if (!auto) pick = hand ? 'hand' : 'none';
-  else if (hand && hand.total + KEEP_MARGIN < auto.total) pick = 'hand';
+  // The best of them: no offsets at all where the shared hold already does as well as the fit (fewer numbers), the fit
+  // next, and hand-set offsets only where they beat both by KEEP_MARGIN.
+  let pick = !auto || none.total <= auto.total ? 'none' : 'auto';
+  const best = pick === 'none' ? none : auto;
+  if (hand && hand.total + KEEP_MARGIN < best.total) pick = 'hand';
   const s = pick === 'auto' ? auto : pick === 'hand' ? hand : none;
   const outlier = s.eR > THRESH.r || s.eL > THRESH.l || s.flags.length > 0;
   return { pick, score: s, scores: { none, hand, auto }, outlier };

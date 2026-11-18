@@ -7386,7 +7386,7 @@ async function physicsfxFlow(browser) {
 
 /**
  * Bullets come out of the gun (grips auto-fit, owner 2026-11-18: "ensure bullets come out of the gun properly
- * (especially in 3rd person)"): every tracer you fire starts at your gun's muzzle as drawn the frame it first shows,
+ * (especially in 3rd person)"): every round you fire (a tracer or not: the pistol draws none) starts at your gun's muzzle as drawn the frame it first shows,
  * in third person (your character's gun) and first person (the viewmodel), for a few builds of character (the
  * Ranger, the small Wealthy Otter, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
  * strafing and aiming. Two measures each tracer: the gap to the muzzle point the game keeps (view muzzleOf /
@@ -7411,7 +7411,13 @@ async function tracerMuzzleChecks(browser) {
     await page.keyboard.press('KeyH');
     const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
     await page.evaluate(() => window.__frameClock.freeze());
-    const step = (fn, arg) => page.evaluate(([src, a]) => { const ok = eval(src); for (let i = 0; i < 150 && !ok(a); i++) window.__frameClock.step(1000 / 60); return ok(a); }, [fn.toString(), arg]);
+    // One frame an evaluate: models load (network, promises) between them, not inside one synchronous loop.
+    const step = async (fn, arg) => {
+      for (let i = 0; i < 300; i++) {
+        if (await page.evaluate(([src, a]) => { const ok = eval(src); if (ok(a)) return true; window.__frameClock.step(1000 / 60); return false; }, [fn.toString(), arg])) return true;
+      }
+      return false;
+    };
     /** `frames` frames in a stance and motion, firing: each new tracer's gaps (cm) to the muzzle point and to the drawn gun. */
     const run = (o) =>
       page.evaluate(({ third, frames, crouch, strafe, aim }) => {
@@ -7420,9 +7426,9 @@ async function tracerMuzzleChecks(browser) {
         const yaw0 = cs.input.yaw;
         const settled = v.impacts.settled;
         let seen = settled.length ? settled[settled.length - 1].n : 0;
-        const r = { tracers: 0, drift: 0, toGun: 0, behind: 0, flash: 0, eye: 0 };
+        const r = { rounds: 0, tracers: 0, drift: 0, toGun: 0, behind: 0, flash: 0, eye: 0 };
         for (let f = 0; f < frames; f++) {
-          window.__autoInput = { right: strafe ? (Math.floor(f / 30) % 2 ? -1 : 1) : 0, forward: 0, buttons: (f % 8 < 2 ? 2 : 0) | (crouch ? 256 : 0), zoom: aim };
+          window.__autoInput = { right: strafe ? (Math.floor(f / 30) % 2 ? -1 : 1) : 0, forward: 0, buttons: (f % 6 < 3 ? 2 : 0) | (crouch ? 256 : 0), zoom: aim };
           cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.4;
           window.__frameClock.step(1000 / 60);
           const fresh = settled.filter((t) => t.n > seen);
@@ -7450,7 +7456,8 @@ async function tracerMuzzleChecks(browser) {
           const eye = cs.local.eye;
           for (const t of fresh) {
             const s = t.from;
-            r.tracers++;
+            r.rounds++;
+            if (t.tracer) r.tracers++;
             r.drift = Math.max(r.drift, Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z) * 100);
             r.toGun = Math.max(r.toGun, Math.min(...pts.map((p) => Math.hypot(p[0] - s.x, p[1] - s.y, p[2] - s.z))) * 100);
             r.behind = Math.max(r.behind, (front - (s.x * fwd.x + s.y * fwd.y + s.z * fwd.z) / fl) * 100);
@@ -7470,19 +7477,19 @@ async function tracerMuzzleChecks(browser) {
     for (const weapon of ['core.rifle', 'core.pistol']) {
       await page.evaluate((w) => window.__give(w), weapon);
       await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.muzzleOf(window.__cs.slot), weapon);
-      for (const c of [{ strafe: false, crouch: false, aim: false }, { strafe: true, crouch: false, aim: false }, { strafe: true, crouch: true, aim: true }]) cases.push({ look, weapon, third: true, ...c, r: await run({ third: true, frames: 72, ...c }) });
+      for (const c of [{ strafe: false, crouch: false, aim: false }, { strafe: true, crouch: false, aim: false }, { strafe: true, crouch: true, aim: true }]) cases.push({ look, weapon, third: true, ...c, r: await run({ third: true, frames: 48, ...c }) });
     }
     await page.keyboard.press('KeyH');
     const fpOn = await step(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
     if (look === 'core.ranger') for (const weapon of ['core.rifle', 'core.pistol']) {
       await page.evaluate((w) => window.__give(w), weapon);
       await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.localMuzzle(), weapon);
-      cases.push({ look, weapon, third: false, strafe: true, crouch: false, aim: false, r: await run({ third: false, frames: 72, strafe: true, crouch: false, aim: false }) });
+      cases.push({ look, weapon, third: false, strafe: true, crouch: false, aim: false, r: await run({ third: false, frames: 48, strafe: true, crouch: false, aim: false }) });
     }
     for (const c of cases) {
       // Third person: on the muzzle (within 1 cm), on the drawn gun (within 3 cm of it and no more than 3 cm behind its
       // front), never from the eyes, the flash on your character's gun. First person: the same from the viewmodel.
-      const bad = !c.r.tracers || c.r.drift > 1 || c.r.toGun > 3 || c.r.behind > 3 || c.r.eye > 0 || (c.third && !c.r.flash);
+      const bad = !c.r.rounds || (c.weapon === 'core.rifle' && !c.r.tracers) || c.r.drift > 1 || c.r.toGun > 3 || c.r.behind > 3 || c.r.eye > 0 || (c.third && !c.r.flash);
       if (bad || !tpOn || !fpOn) out.push(`${c.look} ${c.weapon} ${c.third ? 'third' : 'first'}${c.crouch ? ' crouched' : ''}${c.strafe ? ' strafing' : ''}${c.aim ? ' aiming' : ''}: ${JSON.stringify(c.r)}`);
     }
     if (errors.length) out.push(`${look}: page errors ${errors.join('; ')}`);

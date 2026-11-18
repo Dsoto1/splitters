@@ -34,7 +34,6 @@
     "feet": true,
     "hands": { "scale": 0.7 },
     "grip": {
-      "gripLong": [-0.045, 0.02, -0.03],
       "rollR": 0.3
     },
     "skin": {

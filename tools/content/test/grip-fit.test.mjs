@@ -30,6 +30,8 @@ describe('the grip fit (tools/content/grip-fit.mjs)', () => {
     const worse = at([0, 0.03, 0], [0, 0.05, 0]);
     expect(choose({ none: worse, hand: worse, auto: good }, 'pistol', target).pick).toBe('auto');
     expect(choose({ none: worse, hand: good, auto: worse }, 'pistol', target).pick).toBe('hand');
+    // No offsets at all where the shared hold does as well as the fit.
+    expect(choose({ none: good, auto: good }, 'pistol', target).pick).toBe('none');
     // Within the margin the fit wins: fewer hand-set numbers to keep.
     const near = at([0, 0.005 + KEEP_MARGIN / 300, 0], [0, 0.01, 0]);
     expect(choose({ none: worse, hand: good, auto: near }, 'pistol', target).pick).toBe('auto');

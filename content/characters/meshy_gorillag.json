@@ -35,18 +35,6 @@
     "hold": {
       "forward": -0.15
     },
-    "grip": {
-      "supportLong": [
-        0,
-        0.04,
-        0.1
-      ],
-      "gripLong": [
-        -0.04,
-        0.04,
-        -0.02
-      ]
-    },
     "fingers": "fit"
   }
 }

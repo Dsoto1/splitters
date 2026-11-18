@@ -41,11 +41,6 @@
           "except": "^Head$"
         }
       ]
-    },
-    "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
     }
   }
 }

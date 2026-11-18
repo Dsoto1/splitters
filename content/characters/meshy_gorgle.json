@@ -31,10 +31,6 @@
   "fixes": {
     "triangles": 11000,
     "feet": true,
-    "hands": { "r": { "curl": 0.8 } },
-    "grip": {
-      "gripLong": [-0.045, 0.015, -0.045],
-      "supportPistol": [-0.01, 0.03, -0.03]
-    }
+    "hands": { "r": { "curl": 0.8 } }
   }
 }

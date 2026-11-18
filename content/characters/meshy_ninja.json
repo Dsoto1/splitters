@@ -29,8 +29,6 @@
     "feet": true,
     "cloth": true,
     "grip": {
-      "gripLong": [-0.03, 0.03, -0.03],
-      "supportPistol": [0, 0.04, -0.08],
       "curlL": 1.2
     }
   }
