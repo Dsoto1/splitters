@@ -24,9 +24,6 @@
     "metallic": 0,
     "roughness": 0.85
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "tail": [
@@ -35,12 +32,7 @@
       [0, 0.3, -0.2],
       [0, 0.2, -0.32]
     ],
-    "feet": true,
-    "grip": {
-      "gripLong": [-0.03, 0, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
-    }
+    "feet": true
   },
   "landmarks": {
     "spine": [

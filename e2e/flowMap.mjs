@@ -183,6 +183,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, [...CHARACTER_FLOWS, 'offline', 'arsenal', 'visual'], ['client']],
   // The procedural environment (renderer behind ?env=1, materials, the lab).
   [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
+  // The grip page and its audit (the grip checks drive it).
+  [/^packages\/client\/src\/tools\/(gripSheet|gripAudit|gripInside)\.ts$/, [...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
@@ -208,7 +210,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
-  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
   [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],

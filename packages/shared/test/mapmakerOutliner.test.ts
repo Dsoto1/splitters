@@ -54,15 +54,16 @@ describe('outliner entries', () => {
     expect(found.map((r) => (r.type === 'item' ? r.entry.id : ''))).toEqual(['p1']);
   });
 
-  it('stays quick with 4,096 entities, and the window draws only the rows in view', () => {
+  it('stays quick with 8,192 entities (the cap since map format v48), and the window draws only the rows in view', () => {
     const doc = scene();
-    const many: MapDocument = { ...doc, entities: Array.from({ length: 4096 }, (_, i) => prop(`p${i}`, i % 2 ? 'prop.barrel' : 'prop.metal_crate', (i % 4) * 4)) };
+    const many: MapDocument = { ...doc, entities: Array.from({ length: 8192 }, (_, i) => prop(`p${i}`, i % 2 ? 'prop.barrel' : 'prop.metal_crate', (i % 4) * 4)) };
     const t0 = performance.now();
     const rows = outlineRows(outlineEntries(many), { query: '' });
     const searched = outlineRows(outlineEntries(many), { query: 'metal crate' });
     const ms = performance.now() - t0;
-    expect(rows.length).toBeGreaterThan(4096);
-    expect(searched.filter((r) => r.type === 'item').length).toBe(2048);
+    expect(rows.length).toBeGreaterThan(8192);
+    expect(searched.filter((r) => r.type === 'item').length).toBe(4096);
+    process.env.ENTCAP_LOG && process.stderr.write(`outliner 8,192: ${ms.toFixed(0)} ms\n`);
     expect(ms).toBeLessThan(500);
     const w = outlineWindow(2200, 400, 22, rows.length);
     expect(w.end - w.start).toBeLessThanOrEqual(Math.ceil(400 / 22) + 16);
