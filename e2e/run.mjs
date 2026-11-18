@@ -9219,7 +9219,7 @@ async function arsenalFlow(browser) {
   // its category (its roll pool is the category's pickups, holding both), at once, and the client draws it.
   const fixed = await sim(page, (m) => m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !p.entity.keepFixed).map((p) => [p.id, p.item.id]));
   // Their guns loaded first (drawing one again must not take the shared gun materials with it).
-  await page.waitForFunction((ids) => ids.every(([id]) => window.__cs.view.scene.meshes.some((m) => m.name.startsWith(`pickup_${id}_gun`) && m.getTotalVertices() > 0)), fixed, { timeout: T(15000) }).catch(() => {});
+  await page.waitForFunction((ids) => ids.every(([id]) => window.__cs.view.pickupPartDrawn(id, '_gun')), fixed, { timeout: T(15000) }).catch(() => {});
   await page.evaluate(() => {
     document.getElementById('host-controls').open = true;
     document.querySelector('#hc-mix [data-value="on"]')?.click();
@@ -9245,7 +9245,8 @@ async function arsenalFlow(browser) {
     const v = window.__cs.view;
     // Every gun drawn (pickups and the kept first-person guns): a disposed material is taken off every mesh that
     // used it (Babylon then draws them in its plain default material, white).
-    const meshes = v.scene.meshes.filter((m) => /^(view_|pickup_.*_gun)/.test(m.name) && m.getTotalVertices() > 0);
+    // (The pickups' guns are drawn in the pickups' batch: pickupBatch_<n>_<model>.)
+    const meshes = v.scene.meshes.filter((m) => /^(view_|pickup_.*_gun|pickupBatch_)/.test(m.name) && m.getTotalVertices() > 0);
     const bare = meshes.filter((m) => !m.material || m.material.getActiveTextures().some((t) => !t.getInternalTexture()));
     return { meshes: meshes.length, bare: bare.map((m) => m.name).slice(0, 4) };
   });

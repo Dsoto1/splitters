@@ -7,7 +7,7 @@ import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { isWeatherChoice } from '../map/weather.ts';
-import type { PlayerInput } from '../sim/movement.ts';
+import type { PlayerInput } from '../sim/inputs.ts';
 
 /**
  * Checking what a client sends: shared by the dedicated server and a browser
