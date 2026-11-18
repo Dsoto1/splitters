@@ -33,6 +33,7 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
+import { myCareer, myFavClass, recordMatch } from './careerStats.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
@@ -910,6 +911,20 @@ class App {
         return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
       },
       ...(o.tutorial ? { tutorial: true } : {}),
+      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial.
+      ...(o.exitOnF5 || o.tutorial
+        ? {}
+        : {
+            career: {
+              record: recordMatch,
+              favClass: myFavClass,
+              card: () => {
+                const f = this.front!;
+                const { career, where } = myCareer();
+                return { name: f.displayName, verified: f.verified, character: f.lookName(f.look), favClass: myFavClass(), career, where };
+              },
+            },
+          }),
       // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
       tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
       onExit: (reason, travel, how, end) => {

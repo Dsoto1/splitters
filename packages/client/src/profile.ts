@@ -1,4 +1,4 @@
-import { isRegion, regionForTimeZone, type Profile, type Region } from '@tiletrigger/shared';
+import { emptyCareer, isRegion, readCareer, regionForTimeZone, type Profile, type Region } from '@tiletrigger/shared';
 import { accessToken, currentAccount } from './account.ts';
 import { hubApi } from './publishedMaps.ts';
 
@@ -11,7 +11,23 @@ import { hubApi } from './publishedMaps.ts';
 const REGION_KEY = 'tiletrigger.region';
 let cache: { sub: string; profile: Profile } | null = null;
 
-async function call(path: string, init: RequestInit = {}): Promise<Response> {
+/** A profile as the hub sent it, filled in (an older hub sends no favourite class or career). */
+function readProfile(v: unknown): Profile {
+  const o = (typeof v === 'object' && v !== null ? v : {}) as Partial<Record<keyof Profile, unknown>>;
+  return {
+    username: typeof o.username === 'string' ? o.username : null,
+    region: isRegion(o.region) ? o.region : null,
+    favClass: typeof o.favClass === 'string' ? o.favClass : null,
+    career: readCareer(o.career) ?? emptyCareer(),
+  };
+}
+
+/** The signed-in profile with a new career (careerStats.ts, after the hub added a match). */
+export function setCachedCareer(career: Profile['career']): void {
+  if (cache && cache.sub === currentAccount()?.sub) cache = { sub: cache.sub, profile: { ...cache.profile, career } };
+}
+
+export async function call(path: string, init: RequestInit = {}): Promise<Response> {
   const url = hubApi(path);
   const token = accessToken();
   if (!url) throw new Error('no hub: profiles need the game server');
@@ -27,7 +43,7 @@ export async function loadProfile(): Promise<Profile | null> {
   if (!who) return null;
   if (cache?.sub === who.sub) return cache.profile;
   try {
-    const profile = (await (await call('profile')).json()) as Profile;
+    const profile = readProfile(await (await call('profile')).json());
     cache = { sub: who.sub, profile };
     return profile;
   } catch {
@@ -41,10 +57,10 @@ export function cachedProfile(): Profile | null {
   return cache && who && cache.sub === who.sub ? cache.profile : null;
 }
 
-export async function saveProfile(patch: { username?: string; region?: Region }): Promise<Profile> {
+export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null }): Promise<Profile> {
   const who = currentAccount();
   const res = await call('profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
-  const profile = (await res.json()) as Profile;
+  const profile = readProfile(await res.json());
   if (who) cache = { sub: who.sub, profile };
   if (patch.region) saveLocalRegion(patch.region);
   return profile;
