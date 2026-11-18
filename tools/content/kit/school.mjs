@@ -17,7 +17,7 @@
 // blocks); level 2 is a few boxes.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, box, hex, quad, scale3 } from './geom.mjs';
+import { Mesh, annulus, box, cyl, hex, quad, scale3, tri } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 import { seatMesh } from './furniture.mjs';
 
@@ -349,5 +349,78 @@ export function pennantMesh(seed, size, g, look, level) {
     const ib = [a, b, c].map((p) => m.vertex(p, [0, 0, -1], [0, 0], col));
     m.tri(ib[0], ib[1], ib[2]);
   }
+  return m;
+}
+
+// ---------------------------------------------------------------- the clock face
+
+/**
+ * A wall clock face for a tower (St. John's step 6, the clock tower): a round dial in a moulded ring, twelve hour
+ * marks, the hour and minute hands at a fixed time (`time`, [hours, minutes]; nothing moves or glows), a boss at the
+ * middle. It hangs on a wall: its back on the prop's −z face, the dial facing +z; the prop's foot is the ring's foot,
+ * so place it at the height it hangs. Collides as nothing (`collide: "none"`): it is thinner than the wall's dressing.
+ * Settings `g`: `ring` (the ring's width, m), `marks` ([length, width] of an hour mark, m), `time`. `look`: `dial`,
+ * `ring`, `marks`, `hands`, `grime`. No numerals, maker's name or mark of anyone's.
+ */
+export function clockFaceMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const R = Math.min(w, h) / 2;
+  const cy = h / 2;
+  const back = -d / 2;
+  const front = d / 2;
+  const ringW = g.ring ?? 0.16;
+  const dial = hex(look.dial);
+  const ringC = hex(look.ring);
+  const markC = hex(look.marks ?? look.hands);
+  const handC = hex(look.hands);
+  const grime = +(look.grime ?? 0);
+  const m = new Mesh();
+  const seg = level === 0 ? 32 : level === 1 ? 20 : 12;
+  // The dial, a little darker towards its rim (weathering), set back in the ring: a fan of triangles facing +z.
+  const zDial = front - Math.min(0.035, d * 0.4);
+  const rd = R - ringW * 0.5;
+  const dialCol = (p) => scale3(dial, 1 - grime * Math.min(1, Math.hypot(p[0], p[1] - cy) / R) * 0.6);
+  for (let k = 0; k < seg; k++) {
+    const a0 = (k / seg) * Math.PI * 2;
+    const a1 = ((k + 1) / seg) * Math.PI * 2;
+    tri(m, [0, cy, zDial], [Math.cos(a0) * rd, cy + Math.sin(a0) * rd, zDial], [Math.cos(a1) * rd, cy + Math.sin(a1) * rd, zDial], dialCol);
+  }
+  // The ring's face (and at the nearest look the band's outer edge and an inner bead).
+  annulus(m, 2, 0, cy, level >= 1 ? zDial + 0.004 : front, R - ringW, R, seg, 1, ringC);
+  if (level >= 2) return m;
+  if (level === 0) {
+    cyl(m, 2, 0, cy, back, front, R, seg, scale3(ringC, 0.85));
+    cyl(m, 2, 0, cy, zDial, front, R - ringW, seg, scale3(ringC, 0.7), { inside: true });
+  }
+  // Hour marks: twelve bars round the dial, the quarters longer.
+  const [ml, mw] = g.marks ?? [0.22, 0.06];
+  const zm = zDial + 0.006;
+  for (let k = 0; k < 12; k++) {
+    if (level === 1 && k % 3) continue;
+    const a = (k / 12) * Math.PI * 2;
+    const len = k % 3 ? ml : ml * 1.5;
+    const r1 = R - ringW - 0.06;
+    const r0 = r1 - len;
+    const [s, c] = [Math.sin(a), Math.cos(a)];
+    const half = (k % 3 ? mw : mw * 1.4) / 2;
+    // Corners along the radius (up the dial is +y), the bar's width across it.
+    const P = (rad, off) => [s * rad + c * off, cy + c * rad - s * off, zm];
+    quad(m, P(r0, -half), P(r0, half), P(r1, half), P(r1, -half), markC);
+  }
+  // The hands: tapering blades from the boss, the hour hand shorter and broader; both stand off the dial a little.
+  const [hh, mm] = g.time ?? [10, 10];
+  const hand = (ang, len, wid, z) => {
+    const [s, c] = [Math.sin(ang), Math.cos(ang)];
+    const P = (rad, off) => [s * rad + c * off, cy + c * rad - s * off, z];
+    // A tail behind the boss, a blade out to a point.
+    quad(m, P(-len * 0.18, -wid * 0.35), P(-len * 0.18, wid * 0.35), P(len * 0.8, wid * 0.5), P(len * 0.8, -wid * 0.5), handC);
+    tri(m, P(len * 0.8, -wid * 0.5), P(len * 0.8, wid * 0.5), P(len, 0), handC);
+  };
+  const minuteA = (mm / 60) * Math.PI * 2;
+  const hourA = ((hh % 12) / 12 + mm / 720) * Math.PI * 2;
+  hand(hourA, (R - ringW) * 0.55, 0.12, zDial + 0.012);
+  hand(minuteA, (R - ringW) * 0.85, 0.08, zDial + 0.02);
+  // The boss over the hands' arbor.
+  cyl(m, 2, 0, cy, zDial, Math.min(front, zDial + 0.035), 0.07, 8, scale3(handC, 1.1), { caps: '1' });
   return m;
 }
