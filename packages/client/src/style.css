@@ -1573,7 +1573,8 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 @media (max-height: 520px) {
   #scoreboard { padding: 6px 8px 8px; max-height: 94vh; }
   #profile-card { margin-top: 4px; padding: 3px 6px; font-size: 11px; }
-  #profile-card img { width: 28px; height: 28px; }
+  #profile-card img { display: none; }
+  #profile-card .pc-text { flex-direction: row; flex-wrap: wrap; column-gap: 10px; }
   #profile-card .pc-who b { font-size: 12px; }
   .sb { --sb-row: 18px; --sb-font: 12px; }
   .sb.sb-dense { --sb-row: 16px; --sb-font: 11px; }

@@ -2874,7 +2874,7 @@ export class FrontEnd {
       { class: 'prof-stats', id: 'profile-career' },
       tile('matches', 'Matches', String(c.matches)),
       tile('wins', `Wins · ${pct(careerWinRate(c))}`, String(c.wins)),
-      tile('kd', 'K / D', careerKd(c).toFixed(2)),
+      tile('kd', 'K / D', c.kills + c.deaths ? careerKd(c).toFixed(2) : '–'),
       tile('kills', 'Kills', String(c.kills)),
       tile('deaths', 'Deaths', String(c.deaths)),
       tile('accuracy', 'Accuracy', pct(careerAccuracy(c))),
