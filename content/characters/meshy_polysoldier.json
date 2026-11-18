@@ -6,6 +6,7 @@
   "name": "Virtua Soldier",
   "look": "core.polysoldier",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Low-poly, high morale. Counts his edges before every drop and has never come up one short.",
   "body": "male",

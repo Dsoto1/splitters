@@ -6,6 +6,7 @@
   "name": "Desert Ranger",
   "look": "core.desertranger",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
   "body": "female",

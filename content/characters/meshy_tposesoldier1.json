@@ -6,6 +6,7 @@
   "name": "Hollis",
   "look": "core.tposesoldier1",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Carries three days of rations and eats them all on the flight in. Still first off the ramp.",
   "body": "male",
