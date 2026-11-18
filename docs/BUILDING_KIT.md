@@ -34,7 +34,14 @@ is still there; this says where each one is now.
   - **compact:** a small card where the minimap will be (Phase 3 builds it), with Expand;
   - **hidden:** gone; the view has the width. Selecting something never opens a hidden dock; the status bar says what
     is selected.
-  Under 900 px wide the dock starts compact.
+  Under 900 px wide the dock starts compact, and narrowing the window past 900 px folds an expanded dock to compact
+  until it is widened again (not kept); a dragged width is fitted to 45 % of a smaller window (UI Phase 5). Its edge
+  also takes the arrow keys, Home and End.
+- **Kept in this browser** (UI Phase 5, `viewPrefs.ts`, `tiletrigger.editor.view`): View → Grid, Full grid and Snap.
+  Overlaps, the map layers and the plan view start fresh each visit.
+- **Tile View and the minimap from the keyboard** (UI Phase 5, `planKeys.ts`): Tab into either; Tile View's **]** / **[**
+  pick the next or previous thing or wall side and **Enter** goes to its fields; both take **+ / −**, **Home** and
+  **Alt+arrows** (the minimap the plain arrows too); the minimap's **Enter** opens Tile View. All in the `?` list.
 - **Tile View** (`tileViewPanel.ts`, maths in `tileViewModel.ts`; UI spec Phase 4a): the selected tile, set piece or
   group from straight above, in the expanded dock in the minimap's place. **Enter** (nothing else focused), a
   **double-click** on a selection in the view or on the minimap, or the minimap's **⊞** opens it; **Esc** steps back
