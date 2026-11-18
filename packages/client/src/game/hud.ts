@@ -213,14 +213,14 @@ export class Hud {
    * does; your class and the one you asked for marked, full ones dimmed.
    * Clicking one picks it (when the pointer is free); so does its number key.
    */
-  setClassMenu(open: boolean, menu: { current: number | null; next: number | null; full: readonly boolean[]; pick: (index: number) => void } | null): void {
+  setClassMenu(open: boolean, menu: { current: number | null; next: number | null; full: readonly boolean[]; /** Your favourite class (Profile), marked ★; -1 for none. */ fav?: number; pick: (index: number) => void } | null): void {
     let el = document.getElementById('class-menu');
     if (!open || !menu) {
       if (el) el.hidden = true;
       this.lastClassMenu = '';
       return;
     }
-    const key = `${menu.current}|${menu.next}|${menu.full.join()}`;
+    const key = `${menu.current}|${menu.next}|${menu.fav ?? -1}|${menu.full.join()}`;
     if (!el) {
       el = document.createElement('div');
       el.id = 'class-menu';
@@ -235,7 +235,7 @@ export class Hud {
       const def = CLASS_DEFS[id];
       const b = document.createElement('button');
       b.className = [i === menu.current ? 'on' : '', i === menu.next && menu.next !== menu.current ? 'next' : '', menu.full[i] ? 'full' : ''].filter(Boolean).join(' ');
-      b.innerHTML = `<kbd>${i + 1}</kbd><b>${escapeHtml(def.name)}</b> · ${def.role} · ${def.health} HP${i === menu.current ? ' · <em>playing</em>' : i === menu.next ? ' · <em>next</em>' : menu.full[i] ? ' · full' : ''}<small>${escapeHtml(def.blurb)}</small>`;
+      b.innerHTML = `<kbd>${i + 1}</kbd><b>${escapeHtml(def.name)}</b>${i === menu.fav ? ' <span class="fav" title="Your favourite class (Profile)">★</span>' : ''} · ${def.role} · ${def.health} HP${i === menu.current ? ' · <em>playing</em>' : i === menu.next ? ' · <em>next</em>' : menu.full[i] ? ' · full' : ''}<small>${escapeHtml(def.blurb)}</small>`;
       b.addEventListener('click', (e) => {
         e.stopPropagation();
         menu.pick(i);
@@ -1094,8 +1094,16 @@ export class Hud {
     this.boardAt = now;
     this.boardOpen = true;
     this.board.render(this.boardData(scores, localSlot, final));
+    this.card?.refresh(final);
   }
   private boardAt = 0;
+
+  /** Your profile card under the board (game/profileCard.ts; not on the pause menu's): `refresh` patches it as the board redraws. */
+  setProfileCard(card: { el: HTMLElement; refresh(final: boolean): void } | null): void {
+    this.card = card;
+    this.board.setExtra(card?.el ?? null);
+  }
+  private card: { el: HTMLElement; refresh(final: boolean): void } | null = null;
   private boardOpen = false;
 
   /** The pause menu's Match tab: the same board, in the menu's width (`final`: the match is over, so where it goes next too). */

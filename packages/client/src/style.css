@@ -778,6 +778,12 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .profile-panel button.link, .prof-foot a { padding: 0; color: var(--text); opacity: 0.8; background: none; border: 0; font: inherit; text-transform: none; letter-spacing: 0; text-decoration: underline; cursor: pointer; }
 .profile-panel button.link:hover, .prof-foot a:hover { opacity: 1; }
 .prof-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 12px 18px 14px; border-top: 1px solid var(--line); font-size: 12px; }
+.prof-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.prof-stat { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 3px; }
+.prof-stat b { font: 700 20px/1.1 var(--font-display); color: var(--text); }
+.prof-stat small { color: var(--muted); font: 600 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.prof-fav-weapon { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--muted); }
+.prof-fav-weapon b { color: var(--text); }
 
 /* Character select */
 #menu .screen.characters { display: flex; flex-direction: column; }
@@ -1431,6 +1437,7 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 #class-menu .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 #class-menu button { display: block; text-align: left; padding: 8px 10px; background: #1c2333; border: 1px solid #2f384c; color: inherit; font: inherit; cursor: pointer; }
 #class-menu button:hover, #class-menu button.next { border-color: var(--cyan, #00d1ff); }
+#class-menu .fav { color: var(--orange, #ffb347); }
 #class-menu button.on { background: #24304a; }
 #class-menu button.full { opacity: 0.45; }
 #class-menu button kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }
@@ -1509,6 +1516,15 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
  * their column; your row is sticky so it never scrolls out of sight.
  */
 #scoreboard { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 96vw; max-height: min(90vh, 940px); display: flex; flex-direction: column; padding: 10px 12px 12px; background: rgba(18, 24, 39, 0.95); border: 1px solid var(--line); border-top: 3px solid var(--cyan); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); pointer-events: auto; }
+/* Your profile card under the board (game/profileCard.ts). */
+#profile-card { flex: none; display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 6px 8px; border-top: 1px solid var(--line); background: linear-gradient(90deg, rgba(0, 209, 255, 0.08), transparent 70%); font: 500 13px var(--font-display); color: var(--text); }
+#profile-card img { flex: none; width: 44px; height: 44px; border-radius: 3px; object-fit: cover; border: 2px solid var(--orange); background: #121827; }
+#profile-card .pc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#profile-card .pc-who { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#profile-card .pc-who b { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+#profile-card .pc-who span, #profile-card .pc-career, #profile-card .pc-where { color: var(--muted); }
+#profile-card .pc-match { color: var(--cyan); }
+#profile-card .pc-where { margin-left: 6px; font-size: 11px; }
 .sb { --sb-row: 26px; --sb-font: 14px; font-family: var(--font-display); font-variant-numeric: tabular-nums; min-width: 0; }
 .sb.sb-dense { --sb-row: 20px; --sb-font: 12.5px; }
 .sb-head { flex: none; margin: 0 2px 8px; font: 600 13px var(--font-display); letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1558,6 +1574,10 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 /* Little room (640 × 360): tighter rows and heading. */
 @media (max-height: 520px) {
   #scoreboard { padding: 6px 8px 8px; max-height: 94vh; }
+  #profile-card { margin-top: 4px; padding: 3px 6px; font-size: 11px; }
+  #profile-card img { display: none; }
+  #profile-card .pc-text { flex-direction: row; flex-wrap: wrap; column-gap: 10px; }
+  #profile-card .pc-who b { font-size: 12px; }
   .sb { --sb-row: 18px; --sb-font: 12px; }
   .sb.sb-dense { --sb-row: 16px; --sb-font: 11px; }
   .sb-head { margin-bottom: 4px; font-size: 11px; }
@@ -1941,6 +1961,8 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #map-vote .mv-votes b, #map-vote .mv-votes span { position: relative; }
 #map-vote .mv-votes b { margin-right: 3px; }
 #map-vote .mv-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+/* The awards up without the vote: the board sits above them (awardsHud.ts sets --awards-h). */
+#hud.awards-on:not(.vote-on) #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(93vh - var(--awards-h, 0px) - 18px); }
 #hud.vote-on #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(100vh - var(--vote-h, 250px) - var(--awards-h, 0px) - 24px); }
 #hud.vote-on #match-awards { bottom: calc(var(--vote-h, 250px) + 4px); top: auto; width: min(860px, calc(100vw - 32px)); padding: 6px 10px 8px; gap: 6px 8px; }
 #hud.vote-on #match-awards .award { min-width: 150px; padding: 4px 8px; }
