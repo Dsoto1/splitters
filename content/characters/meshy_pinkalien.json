@@ -6,6 +6,7 @@
   "name": "Pink Mantis",
   "look": "core.pinkalien",
   "group": "horror",
+  "blood": "green",
   "nameTheme": "critter",
   "bio": "Folds his hands, bows politely, then eats the whole squad. Impeccable suit.",
   "body": "male",

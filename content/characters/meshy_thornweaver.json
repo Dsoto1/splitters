@@ -6,6 +6,7 @@
   "name": "Thornweaver",
   "look": "core.thornweaver",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Tracks anything across any ground, then waits for it.",
   "body": "female",

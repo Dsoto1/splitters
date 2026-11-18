@@ -84,6 +84,9 @@ import {
   type LiquidBox,
   type OBox,
   DEFAULT_BLOOD,
+  lookBlood,
+  NPC_LOOK_PREFIX,
+  type BloodKind,
   EffectsWorld,
   debrisBurst,
   vehicleDebris,
@@ -222,6 +225,8 @@ interface Fx {
 
 /** Reduce flashing: a fight's bright moments (armour breaking, a heavy hit, a streak's burst) at this size and brightness. */
 const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
+/** A spirit's wisp off a hit plays at this share of the pack's strength (blood by character; owner, 2026-11-18: softer). */
+const SPIRIT_GAIN = 0.45;
 
 /** Spawn protection's shimmer: the pack's ball at this strength, and the soft blue the body glows (both faint). */
 const SHIELD_SHIMMER = 0.32;
@@ -230,6 +235,8 @@ const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
 const SHIELD_GLOW_PEAK = 0.08;
 
 interface Avatar {
+  /** What it bleeds (its look's `blood`; null: the map's), kept by its body after death. */
+  blood?: BloodKind | null;
   /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
   shieldGlow?: number;
   shieldStep?: number;
@@ -621,6 +628,7 @@ export class GameView {
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
     this.throwArc = new ThrowArc(this.scene);
     this.blood.enabled = bloodPreference();
+    this.blood.onFx = (key, at) => this.bloodFx(key, at);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -1359,7 +1367,7 @@ export class GameView {
     if (body) {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
       body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
-      this.blood.hit(at, dir, o.strength);
+      this.blood.hit(at, dir, o.strength, owner?.a.blood);
       // Its time to settle starts again from the hit (else a body hit late in its fall froze mid-tumble).
       owner?.body.kick();
     } else {
@@ -1367,11 +1375,11 @@ export class GameView {
       const rest = this.restingBodyOnRay(o.eye, dir, len);
       if (rest) {
         const push = { x: dir.x * 2.5 * o.strength, y: 0.6 + dir.y * 2.5 * o.strength, z: dir.z * 2.5 * o.strength };
-        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength);
+        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength, rest.a.blood);
       }
     }
     if (o.victim !== null) {
-      this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
+      this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength, this.bloodKind(o.victim));
       this.accent(impactStyle('flesh').accent, o.to);
       return;
     }
@@ -1427,6 +1435,37 @@ export class GameView {
     const cam = this.scene.activeCamera?.globalPosition;
     if (!cam) return 1;
     return farFxSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z));
+  }
+
+  /** What a slot's character bleeds (its look's `blood`; null: the map's, or nobody drawn there). */
+  bloodKind(slot: number): BloodKind | null {
+    return this.avatars.get(slot)?.blood ?? null;
+  }
+
+  /** When each blood effect last played (performance.now ms), for Reduce flashing's one a second. */
+  private readonly bloodFxAt = new Map<string, number>();
+  /** Blood effects started (the `flashing` flow's `blood` moment reads it). */
+  bloodFxPlayed = 0;
+
+  /**
+   * A blood kind's pack effect at a hit (content/vfx.json map.gameplay `blood.oil` sparks, `blood.spirit` wisp): minor
+   * (dropped when many effects play, past the accents' range). Reduce flashing: smaller and dimmer, eased in, and at
+   * most one of each a second (no crackle under a machine gun's stream).
+   */
+  private bloodFx(key: 'blood.oil' | 'blood.spirit', at: Vec3): void {
+    const fx = gameplayFx(key);
+    if (!fx) return;
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE) return;
+    const calm = reduceFlashing();
+    const now = performance.now();
+    if (now - (this.bloodFxAt.get(key) ?? -Infinity) < (calm ? 1000 : 60)) return;
+    this.bloodFxAt.set(key, now);
+    this.bloodFxPlayed++;
+    const near = this.towardCamera(at, 0.3);
+    // The wisp is soft (owner, 2026-11-18: white-grey, not a pure white burst): 0.45 of the pack's strength, eased in.
+    const soft = key === 'blood.spirit' ? SPIRIT_GAIN : 1;
+    this.vfx.play(fx.pack, fx.effect, new Vector3(near.x, near.y, near.z), { scale: fx.scale * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain * soft, fadeIn: BLAST_FADE_IN } : soft < 1 ? { gain: soft, fadeIn: BLAST_FADE_IN } : {}) });
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */
@@ -2789,7 +2828,7 @@ export class GameView {
     const mat = solid(this.scene, `avatar_${slot}_mat`, spec.npc?.color ?? slotColor(slot));
     placeholder.material = mat;
     placeholder.isPickable = false;
-    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, ...(spec.npc?.zombie ? { unarmed: true } : {}) };
+    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, blood: lookBlood(spec.look ?? (spec.creature ? `${NPC_LOOK_PREFIX}${spec.creature}` : undefined)), ...(spec.npc?.zombie ? { unarmed: true } : {}) };
     if (spec.creature) {
       void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
         if (root.isDisposed()) return ch.dispose();

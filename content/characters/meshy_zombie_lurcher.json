@@ -6,6 +6,7 @@
   "name": "Lurcher",
   "look": "core.lurcher",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "All skin, no bones about it. Mostly skin.",
   "body": "male",

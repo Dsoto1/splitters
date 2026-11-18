@@ -6,6 +6,7 @@
   "name": "Gorgle",
   "look": "core.gorgle",
   "group": "horror",
+  "blood": "green",
   "nameTheme": "spooky",
   "bio": "Crawled out of a lab vent. Nobody wants to know which lab.",
   "body": "male",

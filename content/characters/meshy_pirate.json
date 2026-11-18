@@ -6,6 +6,7 @@
   "name": "Cap'n Rusty Barnacle",
   "look": "core.barnacle",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "pirate",
   "bio": "Lost a leg to a cannonball and his ship to a card game. Wants both back, in that order.",
   "body": "male",

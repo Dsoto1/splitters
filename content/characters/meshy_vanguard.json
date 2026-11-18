@@ -6,6 +6,7 @@
   "name": "Luther Vanguard",
   "look": "core.vanguard",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "First in, last out, never seen in between.",
   "body": "male",

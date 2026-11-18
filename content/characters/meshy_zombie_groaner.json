@@ -6,6 +6,7 @@
   "name": "Groaner",
   "look": "core.groaner",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "Says the same thing over and over. It is usually \"brains\".",
   "body": "male",

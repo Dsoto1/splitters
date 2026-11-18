@@ -181,7 +181,7 @@
       "default": { "pack": "explosion_fx", "effect": "vfx_ground_explosion_01", "scale": 0.38 }
     },
     "gameplay": {
-      "$comment": "Moments of play: pickups (by item kind: pickup.<kind>), spawns, portals, jump pads, traps (trap.<type>) and ziplines. armor.break: sparks off a body whose armour a hit just broke. hit.big: a heavy hit landing on a body (both on the body's near side, half a metre toward the camera) (content/match-play.json heavyHit; scale per metre of the body's size). streak: a short burst over a player on a kill streak (3, 5, 10... kills in one life). Pickups, armor.break, hit.big and streak grow with distance past 3 m (up to 4 times, game/view.ts farSize), so they read across a room as they do 3 m off. `tint` (#rrggbb) recolours an effect (its secondary colour, the one Binbun's controllers set, and a pale wash of it on its white core). Minor effects: dropped when many effects are playing; with Reduce flashing on, armor.break, hit.big and streak play smaller and dimmer (game/view.ts).",
+      "$comment": "Moments of play: pickups (by item kind: pickup.<kind>), spawns, portals, jump pads, traps (trap.<type>) and ziplines. armor.break: sparks off a body whose armour a hit just broke. hit.big: a heavy hit landing on a body (both on the body's near side, half a metre toward the camera) (content/match-play.json heavyHit; scale per metre of the body's size). streak: a short burst over a player on a kill streak (3, 5, 10... kills in one life). Pickups, armor.break, hit.big and streak grow with distance past 3 m (up to 4 times, game/view.ts farSize), so they read across a room as they do 3 m off. `tint` (#rrggbb) recolours an effect (its secondary colour, the one Binbun's controllers set, and a pale wash of it on its white core). Minor effects: dropped when many effects are playing; with Reduce flashing on, armor.break, hit.big and streak play smaller and dimmer (game/view.ts). blood.oil: the sparks off a robot or machine hit (with its black oil; minor); blood.spirit: the white-grey wisp off a ghost or spirit hit (in place of blood; minor); a character's `blood` picks them (game/bloodVisuals.ts), and with Reduce flashing on they play smaller and dimmer, at most one a second.",
       "pickup": { "pack": "hit_fx", "effect": "vfx_strike_02", "scale": 0.3 },
       "pickup.health": { "pack": "hit_fx", "effect": "vfx_strike_03", "scale": 0.3 },
       "pickup.weapon": { "pack": "hit_fx", "effect": "vfx_hit_01", "scale": 0.25 },
@@ -195,7 +195,9 @@
       "pad": { "pack": "hit_fx", "effect": "vfx_impact_04", "scale": 0.35 },
       "trap": { "pack": "hit_fx", "effect": "vfx_impact_06", "scale": 0.4 },
       "trap.shock": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.5 },
-      "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 }
+      "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 },
+      "blood.oil": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.22 },
+      "blood.spirit": { "pack": "hit_fx", "effect": "vfx_impact_05", "scale": 0.22, "tint": "#a9adb3" }
     },
     "arcs": {
       "$comment": "Lightning (the `arc` event): a bolt laid along each jump (`zap`: its tube stretched to the jump, rooted where it lands; `width` scales its thickness; `speed` fits the pack's 0.6 s bolt to the game's 0.1-0.15 s between arcs) and a crackle where the last one lands (`hit`, minor). By who made it: an arc sentry (`mount`, in its violet), an electric fence (`fence`) or a gun (`default`: the Arc Caster).",

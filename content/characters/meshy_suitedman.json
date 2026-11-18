@@ -6,6 +6,7 @@
   "name": "Mister Lanky",
   "look": "core.suitedman",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "All elbows and ears in a brown suit. Always polite, always armed.",
   "body": "male",

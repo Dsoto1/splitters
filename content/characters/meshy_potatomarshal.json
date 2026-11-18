@@ -6,6 +6,7 @@
   "name": "Spud Marshal",
   "look": "core.potatomarshal",
   "group": "space",
+  "blood": "blue",
   "sortAs": "Astronaut Explorer",
   "nameTheme": "alien",
   "bio": "Bred for battle, built like a boulder, and very proud of his helmet-shaped head.",

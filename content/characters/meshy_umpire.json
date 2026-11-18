@@ -6,6 +6,7 @@
   "name": "Umpire",
   "look": "core.umpire",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Has never once been wrong. Ask him.",
   "body": "male",

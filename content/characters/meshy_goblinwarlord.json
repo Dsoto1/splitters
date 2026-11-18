@@ -6,6 +6,7 @@
   "name": "Goblin Warlord",
   "look": "core.goblinwarlord",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "Rules the warren by fear, spite and a very large knife.",
   "body": "male",

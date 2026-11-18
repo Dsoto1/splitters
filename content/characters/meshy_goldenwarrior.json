@@ -6,6 +6,7 @@
   "name": "Sun Warrior",
   "look": "core.goldenwarrior",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "Plumed like the sunrise and armoured in gold. Hard to miss; harder to hit.",
   "body": "male",

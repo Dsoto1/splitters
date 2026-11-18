@@ -7,6 +7,7 @@
   "look": "core.dusttrooper",
   "group": "soldiers",
   "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Crossed the wastes on foot. Kept the mask on for the smell of the arena.",
   "body": "male",
