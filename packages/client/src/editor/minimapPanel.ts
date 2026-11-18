@@ -141,9 +141,11 @@ export class MinimapPanel {
       this.zoomRead = true;
       this.zoom = clampMinimapZoom(this.prefs.zoom());
     }
+    const moved = !!slot && this.root.parentElement !== slot;
+    if (moved) slot.append(this.root);
+    // (Called whenever the dock syncs its views: only a change draws again.)
+    if (moved || this.visible !== !!slot) this.drawnKey = '';
     this.visible = !!slot;
-    if (slot && this.root.parentElement !== slot) slot.append(this.root);
-    this.drawnKey = '';
     if (!slot && this.pending) {
       clearTimeout(this.pending.timer);
       this.pending = null;

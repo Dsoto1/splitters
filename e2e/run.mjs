@@ -2857,7 +2857,7 @@ async function editorPhase5Checks(browser) {
   await page.keyboard.press(']');
   await frames(page, 2);
   let s = await tv();
-  check(s.child === 'p5_shelf' && s.sel.join() === 'p5_shelf' && s.links === 2, `] picks the northernmost thing, selected everywhere; the breadcrumbs that go somewhere are buttons (${JSON.stringify({ child: s.child, sel: s.sel, links: s.links })})`);
+  check(s.child === 'p5_shelf' && s.sel.join() === 'p5_shelf' && s.links === 1, `] picks the northernmost thing, selected everywhere; the breadcrumb that goes somewhere (the tile) is a button (${JSON.stringify({ child: s.child, sel: s.sel, links: s.links })})`);
   await page.keyboard.press(']');
   await frames(page, 2);
   s = await tv();
@@ -2908,6 +2908,13 @@ async function editorPhase5Checks(browser) {
   await page.waitForFunction(() => document.getElementById('ed-right').dataset.state === 'compact', null, { timeout: T(5000) }).catch(() => {});
   s = await tv();
   const kept = await stored();
+  const clear = await page.evaluate(() => {
+    const card = document.getElementById('ed-right').getBoundingClientRect();
+    const bar = document.getElementById('ed-toolbar').getBoundingClientRect();
+    const hint = document.getElementById('ed-toolhint').getBoundingClientRect();
+    return { card: Math.round(card.left), bar: Math.round(bar.right), hint: Math.round(hint.right), rows: Math.round(bar.height) };
+  });
+  check(clear.bar <= clear.card && clear.hint <= clear.card && clear.rows < 120, `at 860 px the tool bar and its hint stay clear of the compact card, in at most two rows (${JSON.stringify(clear)})`);
   await shot('narrow');
   check(s.dock === 'compact' && !s.visible && s.open && kept.right === 'expanded', `narrowed to 860 px the dock goes compact, Tile View waits unseen, the kept state stays expanded (${JSON.stringify({ dock: s.dock, visible: s.visible, kept })})`);
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -2941,16 +2948,17 @@ async function editorPhase5Checks(browser) {
   await page.evaluate(() => window.__editor.setSelection({ tiles: ['p5_shop'], entities: [] }));
   await page.focus('#ed-minimap-canvas');
   const mm = () => page.evaluate(() => ({ ...window.__editor.minimap.state(), marks: null }));
-  await page.keyboard.press('+');
+  for (let i = 0; i < 3; i++) await page.keyboard.press('+');
   await frames(page, 3);
   const m1 = await mm();
-  await page.keyboard.press('ArrowRight');
+  // (West: the camera stands by the shop at the area's east edge, where the frame is held.)
+  await page.keyboard.press('ArrowLeft');
   await frames(page, 3);
   const m2 = await mm();
   await page.keyboard.press('Home');
   await frames(page, 3);
   const m3 = await mm();
-  check(m1.zoom > 1 && m2.frame.cx > m1.frame.cx && m3.zoom === 1, `the minimap takes the keyboard: + zooms, → pans east, Home fits (${JSON.stringify({ z1: m1.zoom, cx1: m1.frame?.cx, cx2: m2.frame?.cx, z3: m3.zoom })})`);
+  check(m1.zoom > 1 && m2.frame.cx < m1.frame.cx && m3.zoom === 1, `the minimap takes the keyboard: + zooms, ← pans west, Home fits (${JSON.stringify({ z1: m1.zoom, cx1: m1.frame?.cx, cx2: m2.frame?.cx, z3: m3.zoom })})`);
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
   check((await tv()).open, 'Enter in the minimap opens Tile View on the selection');

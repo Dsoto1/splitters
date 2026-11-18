@@ -771,14 +771,15 @@ export class TileViewPanel {
     list.forEach((label, i) => {
       if (i) this.crumbs.append(Object.assign(document.createElement('i'), { textContent: '›', ariaHidden: 'true' }));
       // The crumbs that go somewhere are buttons (reached with Tab, pressed with Enter or Space); the rest is text.
-      const link = i === 0 ? () => this.close() : i === 1 && list.length > 2 ? () => this.selectParent() : null;
+      // ("Map" is text: ← Map beside it is the same button, UI Phase 5's one way back.)
+      const link = i === 1 && list.length > 2 ? () => this.selectParent() : null;
       const span = document.createElement(link ? 'button' : 'span');
       span.textContent = label;
       if (i === list.length - 1) span.setAttribute('aria-current', 'location');
       if (link) {
         (span as HTMLButtonElement).type = 'button';
         span.className = 'ed-tv-crumb-link';
-        span.title = i === 0 ? 'Back to the minimap' : `Select ${f.name}`;
+        span.title = `Select ${f.name}`;
         span.addEventListener('click', link);
       }
       this.crumbs.append(span);

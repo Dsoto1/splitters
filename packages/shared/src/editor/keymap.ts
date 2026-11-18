@@ -170,7 +170,7 @@ export const EDITOR_KEY_NOTES: readonly KeyNote[] = [
   { group: 'Mouse', keys: 'Double-click', what: 'Select: Tile View on what was clicked (the minimap too)' },
   { group: 'Mouse', keys: 'Right-drag', what: 'Look round' },
   { group: 'Mouse', keys: 'Wheel', what: 'Zoom (Shift: faster)' },
-  { group: 'Map and panels', keys: '← → or Home or End', what: "The dock's edge, focused: narrower, wider (Shift: further), narrowest, widest" },
+  { group: 'Map and panels', keys: '← →', what: "The dock's edge, focused: narrower, wider (Shift: further; Home, End: narrowest, widest)" },
   // The two plans' own keys while one has the focus (client editor/planKeys.ts, tileViewPanel.ts; UI Phase 5).
   { group: 'Tile View and minimap', keys: '] or [', what: 'Tile View: pick the next or previous thing or wall side' },
   { group: 'Tile View and minimap', keys: '↑ ↓ ← →', what: 'Tile View: nudge the picked thing a snap step (Shift: 1 cm); the minimap: pan' },

@@ -9,8 +9,8 @@
 .ed-tv-crumbs i { font-style: normal; opacity: 0.6; }
 .ed-tv-crumbs span, .ed-tv-crumbs button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 14em; }
 .ed-tv-crumbs [aria-current] { color: var(--cyan); font-weight: 600; }
-.ed-tv-crumb-link { cursor: pointer; text-decoration: underline dotted; font: inherit; color: inherit; background: none; border: 0; padding: 0; }
-.ed-tv-crumb-link:hover { color: var(--text); }
+.ed-tv-head .ed-tv-crumb-link { cursor: pointer; text-decoration: underline dotted; font: inherit; color: inherit; text-transform: none; letter-spacing: inherit; background: none; border: 0; border-radius: 2px; padding: 0; }
+.ed-tv-head .ed-tv-crumb-link:hover { color: var(--text); }
 .ed-tv-bar { display: flex; align-items: center; gap: 6px; }
 .ed-tv-seg { display: inline-flex; }
 .ed-tv-seg button { border-radius: 0; }

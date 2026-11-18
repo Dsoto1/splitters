@@ -278,8 +278,12 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 @media (max-width: 1600px) { .tb-btn small { display: none; } }
 #ed-tb-delete kbd { font-size: 8px; }
 
-@media (max-width: 900px) {
-  #editor > #ed-overlay { right: 8px; }
+/* UI Phase 5 (resizing): under 900 px the dock is a compact card, not gone (Phase 1), so the overlay keeps clear of it;
+   under 1,000 px the tool bar shows its icons and keys only (each button keeps its name for screen readers and its
+   tooltip), so it stays on one or two rows beside the card instead of running under it. */
+@media (max-width: 1000px) {
+  #ed-toolbar .tb-btn { min-width: 40px; padding: 8px 6px 6px; }
+  #ed-toolbar .tb-btn .tb-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
 /* ------------------------------------------------------------------
