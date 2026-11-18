@@ -2,11 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: >-
   Tile Trigger (ToshiroPlay "Trigger") multiplayer control plane: one Lightsail
   instance (site + hub + coturn behind Caddy), its static IP and firewall,
-  Route 53 records in the existing toshiroplay.com zone, Lightsail alarms and
-  an AWS Budget. Matches run on players' machines, not here
-  (docs/MULTIPLAYER_DIRECTION.md). Deploy with infra/deploy-multiplayer.sh,
-  which also creates the SSM SecureStrings (TURN secret, hub signing secret)
-  that CloudFormation cannot create, and bootstraps the instance.
+  Route 53 records in the existing toshiroplay.com zone, Lightsail alarms, an
+  AWS Budget, a hard spend cap (budget/alarms -> SNS -> a Lambda that stops the
+  instance and the CDN), CloudFront in front of the site's static files
+  (SiteCdn) and nightly backups of the hub's state to a private S3 bucket.
+  Matches run on players' machines, not here (docs/MULTIPLAYER_DIRECTION.md).
+  Deploy with infra/deploy-multiplayer.sh, which also creates the SSM
+  SecureStrings (TURN secret, hub signing secret, backup key) that
+  CloudFormation cannot create, and bootstraps the instance.
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -17,6 +20,12 @@ Metadata:
         Parameters: [HostedZoneId, ZoneName, HubHostname, ManageHubRecord, ManageRootRecord, ManageTurnRecord, TurnHostname, DnsTtl]
       - Label: { default: Cost safety }
         Parameters: [AlertEmail, BudgetWarnUsd, BudgetLimitUsd, BudgetScope, CostTagKey, NetworkOutAlarmBytes]
+      - Label: { default: 'Hard spend cap (stops the instance and the CDN)' }
+        Parameters: [StopAtUsd, StopAtNetworkOutGbPerHour, CdnStopAtGbPerHour]
+      - Label: { default: 'CDN (CloudFront in front of the site)' }
+        Parameters: [SiteCdn, OriginHostname, CdnPriceClass]
+      - Label: { default: Backups }
+        Parameters: [BackupRetentionDays]
       - Label: { default: 'Secrets and auth (referenced, not created)' }
         Parameters: [SsmPrefix, CognitoRegion, CognitoUserPoolId, CognitoAppClientId, CognitoDomain]
       - Label: { default: Tags }
@@ -143,6 +152,63 @@ Parameters:
       would use the 2 GB plan's 3 TB monthly allowance. Normal play (site
       downloads, signaling, a few relayed players) is far below.
 
+  StopAtUsd:
+    Type: Number
+    Default: 30
+    MinValue: 0
+    Description: >-
+      Hard cap (USD, actual, month to date) for the WHOLE AWS ACCOUNT: when the
+      account's costs pass it, the instance is stopped and the CDN disabled
+      (a budget alert through SNS to a Lambda, plus the same Lambda checking
+      the budget every hour). The owner gets an email and restarts by hand
+      (infra/deploy-multiplayer.sh --resume). 0 turns the cap off.
+  StopAtNetworkOutGbPerHour:
+    Type: Number
+    Default: 6
+    MinValue: 0
+    Description: >-
+      Lightsail alarms can only email, not notify SNS, so the Lambda reads the
+      instance's NetworkOut itself every hour and stops it when each of the last
+      3 hours sent more than this many GB (6 GB/h is ~1.7 MB/s sustained: past
+      the 3 TB monthly allowance's pace and the NetworkOut alarm). 0 = off.
+  CdnStopAtGbPerHour:
+    Type: String
+    Default: '20'
+    AllowedPattern: '^[0-9]{1,5}$'
+    Description: >-
+      CloudFront bytes downloaded in one hour (CloudWatch alarm) that stop the
+      instance and disable the CDN. A first visit with one match is ~28 MB, so
+      20 GB is ~700 first visits in an hour; the free tier is 1 TB a month.
+      Whole GB; 0 = off.
+
+  SiteCdn:
+    Type: String
+    Default: 'off'
+    AllowedValues: ['off', prepare, 'on']
+    Description: >-
+      CloudFront in front of the site. off: HubHostname points at the box.
+      prepare: the distribution, its certificate and OriginHostname exist, but
+      HubHostname still points at the box (the deploy checks the CDN path
+      first). on: HubHostname is an alias of the distribution; the box serves
+      only OriginHostname. Needs the stack in us-east-1 and a HostedZoneId.
+      TURN moves to TurnHostname (it cannot go through CloudFront).
+  OriginHostname:
+    Type: String
+    Default: origin.trigger.toshiroplay.com
+    Description: Hostname of the box for CloudFront (A -> static IP; Caddy gets its own certificate for it).
+  CdnPriceClass:
+    Type: String
+    Default: PriceClass_100
+    AllowedValues: [PriceClass_100, PriceClass_200, PriceClass_All]
+    Description: CloudFront edge locations. PriceClass_100 (North America, Europe, Israel) is the cheapest.
+
+  BackupRetentionDays:
+    Type: Number
+    Default: 30
+    MinValue: 1
+    MaxValue: 3650
+    Description: Days the nightly backups of /var/lib/tiletrigger are kept in the backup bucket.
+
   SsmPrefix:
     Type: String
     Default: /toshiro/trigger
@@ -190,7 +256,17 @@ Conditions:
   HasAdminSsh: !Not [!Equals [!Ref AdminSshCidr, '']]
   MakeHubRecord: !And [!Condition HasZone, !Equals [!Ref ManageHubRecord, 'true']]
   MakeRootRecord: !And [!Condition HasZone, !Equals [!Ref ManageRootRecord, 'true']]
-  MakeTurnRecord: !And [!Condition HasZone, !Equals [!Ref ManageTurnRecord, 'true']]
+  # The CDN needs the zone (certificate validation, alias records).
+  CdnEnabled: !And [!Condition HasZone, !Not [!Equals [!Ref SiteCdn, 'off']]]
+  CdnOn: !And [!Condition CdnEnabled, !Equals [!Ref SiteCdn, 'on']]
+  # TURN can't go through CloudFront: with the CDN it gets its own name, pointing at the box.
+  MakeTurnRecord: !And [!Condition HasZone, !Or [!Equals [!Ref ManageTurnRecord, 'true'], !Condition CdnEnabled]]
+  HubRecordAtCdn: !And [!Condition MakeHubRecord, !Condition CdnOn]
+  HasCap: !Not [!Equals [!Ref StopAtUsd, 0]]
+  HasNetCap: !Not [!Equals [!Ref StopAtNetworkOutGbPerHour, 0]]
+  HasCdnCap: !And [!Condition CdnEnabled, !Not [!Equals [!Ref CdnStopAtGbPerHour, '0']]]
+  HasStopper: !Or [!Condition HasCap, !Condition HasNetCap, !Condition HasCdnCap]
+  HasSchedule: !Or [!Condition HasCap, !Condition HasNetCap]
   HasAppClient: !Not [!Equals [!Ref CognitoAppClientId, '']]
   ProjectBudget: !Equals [!Ref BudgetScope, project]
   BudgetOnAppName: !Equals [!Ref CostTagKey, AppName]
@@ -260,12 +336,39 @@ Resources:
       AttachedTo: !Ref HubInstance
 
   # ------------------------------------------------------------ DNS
+  # The site's name: at the box, or (SiteCdn on) an alias of the CloudFront distribution. The same
+  # logical record either way, so switching is an in-place UPSERT (no moment without a record).
   HubRecord:
     Type: AWS::Route53::RecordSet
     Condition: MakeHubRecord
     Properties:
       HostedZoneId: !Ref HostedZoneId
       Name: !Sub '${HubHostname}.'
+      Type: A
+      TTL: !If [CdnOn, !Ref AWS::NoValue, !Ref DnsTtl]
+      ResourceRecords: !If [CdnOn, !Ref AWS::NoValue, [!GetAtt HubStaticIp.IpAddress]]
+      AliasTarget: !If
+        - CdnOn
+        # Z2FDTNDATAQYW2: the hosted zone ID every CloudFront alias uses.
+        - { DNSName: !GetAtt SiteDistribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2, EvaluateTargetHealth: false }
+        - !Ref AWS::NoValue
+
+  HubRecordV6:
+    Type: AWS::Route53::RecordSet
+    Condition: HubRecordAtCdn
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${HubHostname}.'
+      Type: AAAA
+      AliasTarget: { DNSName: !GetAtt SiteDistribution.DomainName, HostedZoneId: Z2FDTNDATAQYW2, EvaluateTargetHealth: false }
+
+  # The box's own name for CloudFront to fetch from (Caddy gets a certificate for it over HTTP-01).
+  OriginRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CdnEnabled
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '${OriginHostname}.'
       Type: A
       TTL: !Ref DnsTtl
       ResourceRecords: [!GetAtt HubStaticIp.IpAddress]
@@ -289,6 +392,495 @@ Resources:
       Type: A
       TTL: !Ref DnsTtl
       ResourceRecords: [!GetAtt HubStaticIp.IpAddress]
+
+  # ------------------------------------------------------------ CDN (CloudFront)
+  # The whole site name goes through CloudFront; the box (OriginHostname, HTTPS, its own certificate) is the
+  # only origin. The default behaviour caches by the box's own headers (packages/server/src/site.ts):
+  # Vite's hashed /assets/ a year (immutable), the page never without asking (no-cache, 304 by ETag), other
+  # files (models, textures, sounds) an hour and then revalidated by ETag. The hub's paths (game browser and
+  # relay credentials /lobby, signaling /broker (WebSocket), /api, /auth-config.js) are never cached and go
+  # to the box with every header, cookie and query string. TURN does not go through here (TurnHostname).
+  # Why the box and not S3 as the origin: the box already has the exact build CI tested, switches and rolls
+  # back atomically (tiletrigger-update), and needs no credentials to publish anywhere; a second copy in S3
+  # would need an upload path and could disagree with the hub's code.
+  SiteCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: CdnEnabled
+    Properties:
+      DomainName: !Ref HubHostname
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - { DomainName: !Ref HubHostname, HostedZoneId: !Ref HostedZoneId }
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+        - { Key: Environment, Value: !Ref EnvironmentTag }
+
+  SiteCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Condition: CdnEnabled
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub '${ProjectTag}-${EnvironmentTag}-site'
+        Comment: The box's Cache-Control decides; query strings are part of the key (?v= cache busters).
+        MinTTL: 0
+        DefaultTTL: 0
+        MaxTTL: 31536000
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig: { HeaderBehavior: none }
+          CookiesConfig: { CookieBehavior: none }
+          QueryStringsConfig: { QueryStringBehavior: all }
+
+  SiteDistribution:
+    Type: AWS::CloudFront::Distribution
+    Condition: CdnEnabled
+    Properties:
+      DistributionConfig:
+        Comment: !Sub 'Tile Trigger site (${HubHostname}); origin ${OriginHostname}'
+        Enabled: true
+        Aliases: [!Ref HubHostname]
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: !Ref CdnPriceClass
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SiteCertificate
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Origins:
+          - Id: box
+            DomainName: !Ref OriginHostname
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+              HTTPSPort: 443
+              OriginReadTimeout: 30
+              OriginKeepaliveTimeout: 5
+            # Marks requests that really came through CloudFront: only then does Caddy pass on the viewer's
+            # address CloudFront appended to X-Forwarded-For (the hub's rate limits key on it). Not a
+            # credential for anything else; kept in SSM (a plain String the deploy creates).
+            OriginCustomHeaders:
+              - HeaderName: X-Edge-Key
+                HeaderValue: !Sub '{{resolve:ssm:${SsmPrefix}/edge-key}}'
+        DefaultCacheBehavior:
+          TargetOriginId: box
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: !Ref SiteCachePolicy
+        CacheBehaviors:
+          # 4135ea2d-…: managed CachingDisabled; b689b0a8-…: managed AllViewerExceptHostHeader.
+          - PathPattern: /lobby*
+            TargetOriginId: box
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+          - PathPattern: /broker*
+            TargetOriginId: box
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: false
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+          - PathPattern: /api/*
+            TargetOriginId: box
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+          - PathPattern: /auth-config.js
+            TargetOriginId: box
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD, OPTIONS]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+        # A box that is briefly down (a restart, an update) isn't remembered: errors are not cached.
+        CustomErrorResponses:
+          - { ErrorCode: 500, ErrorCachingMinTTL: 0 }
+          - { ErrorCode: 502, ErrorCachingMinTTL: 0 }
+          - { ErrorCode: 503, ErrorCachingMinTTL: 0 }
+          - { ErrorCode: 504, ErrorCachingMinTTL: 0 }
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+        - { Key: Environment, Value: !Ref EnvironmentTag }
+
+  # ------------------------------------------------------------ hard spend cap
+  # Lightsail can't be stopped by an AWS Budgets action, and Lightsail alarms can only email (they can't
+  # notify SNS), so: the account-wide budget at StopAtUsd and the CloudFront traffic alarm publish to
+  # StopTopic -> StopFunction stops the instance, disables the distribution and emails the owner
+  # (NotifyTopic). The same function runs hourly (StopSchedule): it reads the budget's actual spend (budget
+  # alerts fire once a month and lag; this also catches a restart while still over the cap) and the
+  # instance's NetworkOut (the path the Lightsail alarm can't take). Restart: deploy --resume.
+  # Note: a stopped Lightsail instance is still billed its plan (~12 USD/month); stopping ends the traffic
+  # costs (relay, transfer overage, CloudFront), not the plan. Deleting the stack ends that too.
+  NotifyTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasStopper
+    Properties:
+      DisplayName: Tile Trigger cost guard
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+
+  NotifyEmail:
+    Type: AWS::SNS::Subscription
+    Condition: HasStopper
+    Properties:
+      TopicArn: !Ref NotifyTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  StopTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasStopper
+    Properties:
+      DisplayName: Tile Trigger stop requests
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+
+  StopTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Condition: HasStopper
+    Properties:
+      Topics: [!Ref StopTopic]
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: BudgetsPublish
+            Effect: Allow
+            Principal: { Service: budgets.amazonaws.com }
+            Action: sns:Publish
+            Resource: !Ref StopTopic
+            Condition:
+              StringEquals: { 'aws:SourceAccount': !Ref AWS::AccountId }
+          - Sid: CloudWatchAlarmsPublish
+            Effect: Allow
+            Principal: { Service: cloudwatch.amazonaws.com }
+            Action: sns:Publish
+            Resource: !Ref StopTopic
+            Condition:
+              StringEquals: { 'aws:SourceAccount': !Ref AWS::AccountId }
+          - Sid: TlsOnly
+            Effect: Deny
+            Principal: '*'
+            Action: sns:Publish
+            Resource: !Ref StopTopic
+            Condition:
+              Bool: { 'aws:SecureTransport': 'false' }
+
+  StopTrigger:
+    Type: AWS::SNS::Subscription
+    Condition: HasStopper
+    Properties:
+      TopicArn: !Ref StopTopic
+      Protocol: lambda
+      Endpoint: !GetAtt StopFunction.Arn
+
+  StopInvokeFromSns:
+    Type: AWS::Lambda::Permission
+    Condition: HasStopper
+    Properties:
+      FunctionName: !Ref StopFunction
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref StopTopic
+
+  StopLogs:
+    Type: AWS::Logs::LogGroup
+    Condition: HasStopper
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${InstanceName}-cost-guard'
+      RetentionInDays: 90
+
+  # Least privilege: stop (and read the state and traffic of) this one instance, disable this one
+  # distribution, read this one budget, email through NotifyTopic, write its own log group.
+  StopRole:
+    Type: AWS::IAM::Role
+    Condition: HasStopper
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+            Condition:
+              StringEquals: { 'aws:SourceAccount': !Ref AWS::AccountId }
+      Policies:
+        - PolicyName: cost-guard
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [lightsail:StopInstance, lightsail:GetInstanceState, lightsail:GetInstanceMetricData]
+                Resource: !GetAtt HubInstance.InstanceArn
+              - Effect: Allow
+                Action: sns:Publish
+                Resource: !Ref NotifyTopic
+              - Effect: Allow
+                Action: [logs:CreateLogStream, logs:PutLogEvents]
+                Resource: !GetAtt StopLogs.Arn
+              - !If
+                - HasCap
+                - Effect: Allow
+                  Action: budgets:ViewBudget
+                  Resource: !Sub 'arn:${AWS::Partition}:budgets::${AWS::AccountId}:budget/${ProjectTag}-${EnvironmentTag}-spend-cap'
+                - !Ref AWS::NoValue
+              - !If
+                - CdnEnabled
+                - Effect: Allow
+                  Action: [cloudfront:GetDistributionConfig, cloudfront:UpdateDistribution]
+                  Resource: !Sub 'arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${SiteDistribution}'
+                - !Ref AWS::NoValue
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+
+  StopFunction:
+    Type: AWS::Lambda::Function
+    Condition: HasStopper
+    DependsOn: StopLogs
+    Properties:
+      FunctionName: !Sub '${InstanceName}-cost-guard'
+      Description: Stops the Tile Trigger box and its CDN at the spend cap or a traffic spike, and emails the owner.
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt StopRole.Arn
+      Timeout: 60
+      MemorySize: 128
+      Environment:
+        Variables:
+          INSTANCE_NAME: !Ref HubInstance
+          DISTRIBUTION_ID: !If [CdnEnabled, !Ref SiteDistribution, '']
+          NOTIFY_TOPIC_ARN: !Ref NotifyTopic
+          BUDGET_NAME: !If [HasCap, !Sub '${ProjectTag}-${EnvironmentTag}-spend-cap', '']
+          CAP_USD: !Ref StopAtUsd
+          NET_GB_PER_HOUR: !Ref StopAtNetworkOutGbPerHour
+          NET_HOURS: '3'
+      Code:
+        ZipFile: |
+          # Tile Trigger cost guard (infra/toshiro-trigger-multiplayer.yaml). Events:
+          #   SNS (budget alert, CloudFront traffic alarm): stop. Hourly schedule: stop if the budget's actual
+          #   spend is over the cap, or NetworkOut was over the limit in each of the last NET_HOURS hours.
+          #   {"dryRun": true}: say what it would do, change nothing.
+          import datetime, json, os
+          import boto3
+          E = os.environ
+          ls = boto3.client("lightsail")
+          sns = boto3.client("sns")
+
+          def spend():
+              if not E.get("BUDGET_NAME"):
+                  return None
+              acct = boto3.client("sts").get_caller_identity()["Account"]
+              b = boto3.client("budgets").describe_budget(AccountId=acct, BudgetName=E["BUDGET_NAME"])["Budget"]
+              return float(b.get("CalculatedSpend", {}).get("ActualSpend", {}).get("Amount", 0))
+
+          def network():
+              limit, hours = float(E.get("NET_GB_PER_HOUR") or 0), int(E.get("NET_HOURS") or 3)
+              if limit <= 0:
+                  return False, []
+              end = datetime.datetime.now(datetime.timezone.utc).replace(minute=0, second=0, microsecond=0)
+              data = ls.get_instance_metric_data(instanceName=E["INSTANCE_NAME"], metricName="NetworkOut", period=3600,
+                  startTime=end - datetime.timedelta(hours=hours), endTime=end, unit="Bytes", statistics=["Sum"])["metricData"]
+              gb = [round(d["sum"] / 1e9, 2) for d in sorted(data, key=lambda d: d["timestamp"])]
+              return len(gb) >= hours and all(g > limit for g in gb[-hours:]), gb
+
+          def stop(reason, dry):
+              done = []
+              if dry:
+                  done.append("dry run: nothing changed")
+              else:
+                  try:
+                      ls.stop_instance(instanceName=E["INSTANCE_NAME"])
+                      done.append("instance %s: stopping" % E["INSTANCE_NAME"])
+                  except Exception as e:
+                      done.append("instance %s: stop failed or already stopped (%s)" % (E["INSTANCE_NAME"], e))
+                  if E.get("DISTRIBUTION_ID"):
+                      try:
+                          cf = boto3.client("cloudfront")
+                          r = cf.get_distribution_config(Id=E["DISTRIBUTION_ID"])
+                          cfg = r["DistributionConfig"]
+                          if cfg["Enabled"]:
+                              cfg["Enabled"] = False
+                              cf.update_distribution(Id=E["DISTRIBUTION_ID"], IfMatch=r["ETag"], DistributionConfig=cfg)
+                          done.append("CloudFront %s: disabled" % E["DISTRIBUTION_ID"])
+                      except Exception as e:
+                          done.append("CloudFront %s: disable FAILED (%s)" % (E["DISTRIBUTION_ID"], e))
+              msg = "Tile Trigger cost guard: %s\n\n%s\n\nRestart (in CloudShell, after checking Billing):\n  infra/deploy-multiplayer.sh --resume\nIf the month's spend is still over the cap, raise it first: infra/deploy-multiplayer.sh --stop-at <USD>\n(docs/HOSTING.md, \"Cost guard\")." % (reason, "\n".join(done))
+              print(msg)
+              if not dry:
+                  sns.publish(TopicArn=E["NOTIFY_TOPIC_ARN"], Subject="Tile Trigger stopped: cost guard", Message=msg)
+              return {"stopped": not dry, "reason": reason, "done": done}
+
+          def handler(event, context):
+              dry = bool(event.get("dryRun"))
+              for rec in event.get("Records", []):
+                  m = rec.get("Sns", {})
+                  try:
+                      body = json.loads(m.get("Message") or "{}")
+                  except ValueError:
+                      body = {}
+                  if isinstance(body, dict) and body.get("NewStateValue") not in (None, "ALARM"):
+                      continue
+                  return stop("%s: %s" % (m.get("Subject") or "alert", (m.get("Message") or "")[:600]), dry)
+              usd, cap = spend(), float(E.get("CAP_USD") or 0)
+              if usd is not None and cap > 0 and usd >= cap:
+                  return stop("the account's actual spend this month is %.2f USD, at or over the %.2f USD cap" % (usd, cap), dry)
+              over, gb = network()
+              if over:
+                  return stop("the instance sent %s GB in each of the last hours (limit %s GB/h)" % (gb, E["NET_GB_PER_HOUR"]), dry)
+              result = {"stopped": False, "spendUsd": usd, "capUsd": cap, "networkOutGbPerHour": gb}
+              print(json.dumps(result))
+              return result
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+
+  StopSchedule:
+    Type: AWS::Events::Rule
+    Condition: HasSchedule
+    Properties:
+      Description: Tile Trigger cost guard, hourly (spend cap and NetworkOut).
+      ScheduleExpression: rate(1 hour)
+      State: ENABLED
+      Targets:
+        - { Id: cost-guard, Arn: !GetAtt StopFunction.Arn }
+
+  StopInvokeFromSchedule:
+    Type: AWS::Lambda::Permission
+    Condition: HasSchedule
+    Properties:
+      FunctionName: !Ref StopFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt StopSchedule.Arn
+
+  # Account-wide (the owner's other projects count too): its alert goes to the Lambda as well as email.
+  SpendCapBudget:
+    Type: AWS::Budgets::Budget
+    Condition: HasCap
+    Properties:
+      Budget:
+        BudgetName: !Sub '${ProjectTag}-${EnvironmentTag}-spend-cap'
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref StopAtUsd
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: !Ref StopAtUsd
+            ThresholdType: ABSOLUTE_VALUE
+          Subscribers:
+            - { SubscriptionType: SNS, Address: !Ref StopTopic }
+            - { SubscriptionType: EMAIL, Address: !Ref AlertEmail }
+    DependsOn: StopTopicPolicy
+
+  # CloudFront's own traffic metric (free, us-east-1): a download spike stops the CDN within the hour.
+  CdnTrafficAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasCdnCap
+    Properties:
+      AlarmName: !Sub '${InstanceName}-cdn-bytes'
+      AlarmDescription: CloudFront bytes downloaded in an hour over CdnStopAtGbPerHour; stops the box and the CDN.
+      Namespace: AWS/CloudFront
+      MetricName: BytesDownloaded
+      Dimensions:
+        - { Name: DistributionId, Value: !Ref SiteDistribution }
+        - { Name: Region, Value: Global }
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: !Sub '${CdnStopAtGbPerHour}000000000'
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref StopTopic]
+
+  # ------------------------------------------------------------ backups
+  # Nightly copy of /var/lib/tiletrigger (profiles, community, published maps) from the box
+  # (infra/tiletrigger-backup.py, a systemd timer). Private, encrypted (SSE-S3), TLS only, versioned (an
+  # overwrite can't destroy a backup), every version gone after BackupRetentionDays. Kept if the stack
+  # is deleted (Retain): delete it by hand once it isn't wanted.
+  BackupBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ ObjectOwnership: BucketOwnerEnforced }]
+      VersioningConfiguration: { Status: Enabled }
+      LifecycleConfiguration:
+        Rules:
+          - Id: keep-backups
+            Status: Enabled
+            Prefix: backups/
+            ExpirationInDays: !Ref BackupRetentionDays
+            NoncurrentVersionExpiration: { NoncurrentDays: !Ref BackupRetentionDays }
+            AbortIncompleteMultipartUpload: { DaysAfterInitiation: 1 }
+          - Id: clean-delete-markers
+            Status: Enabled
+            ExpiredObjectDeleteMarker: true
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
+        - { Key: Environment, Value: !Ref EnvironmentTag }
+
+  BackupBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref BackupBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: TlsOnly
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource: [!GetAtt BackupBucket.Arn, !Sub '${BackupBucket.Arn}/*']
+            Condition:
+              Bool: { 'aws:SecureTransport': 'false' }
+
+  # The box's only AWS identity (Lightsail has no instance roles): it may add new objects under backups/
+  # and nothing else (no read, list or delete; versioning keeps anything it overwrites). Its access key is
+  # made by the deploy script and kept in SSM (SecureString <SsmPrefix>/backup-key), never in this template.
+  BackupWriter:
+    Type: AWS::IAM::User
+    Properties:
+      Policies:
+        - PolicyName: backup-put-only
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub '${BackupBucket.Arn}/backups/*'
+      Tags:
+        - { Key: Project, Value: !Ref ProjectTag }
+        - { Key: AppName, Value: !Ref AppNameTag }
 
   # ------------------------------------------------------------ monitoring
   # Lightsail alarms (about 0.10 USD each a month). Email goes to the
@@ -410,6 +1002,30 @@ Outputs:
   SignalingUrl:
     Description: WebRTC signaling (PeerJS broker today; behind the transport abstraction).
     Value: !Sub 'wss://${HubHostname}/broker'
+  SiteCdn:
+    Description: CloudFront in front of the site (off, prepare, on).
+    Value: !If [CdnEnabled, !Ref SiteCdn, 'off']
+  CdnDomain:
+    Description: The CloudFront distribution's own domain name (checks before the cut-over).
+    Value: !If [CdnEnabled, !GetAtt SiteDistribution.DomainName, '']
+  CdnDistributionId:
+    Description: The CloudFront distribution ID (the cost guard disables it; --resume enables it).
+    Value: !If [CdnEnabled, !Ref SiteDistribution, '']
+  OriginHostname:
+    Description: The box's own name behind CloudFront.
+    Value: !If [CdnEnabled, !Ref OriginHostname, '']
+  BackupBucket:
+    Description: Private bucket with the nightly backups of /var/lib/tiletrigger (backups/).
+    Value: !Ref BackupBucket
+  BackupWriterUser:
+    Description: IAM user the box writes backups as (put-only); its key is in SSM <SsmPrefix>/backup-key.
+    Value: !Ref BackupWriter
+  CostGuardFunction:
+    Description: Lambda that stops the instance and the CDN at the cap (invoke with {"dryRun":true} to test).
+    Value: !If [HasStopper, !Ref StopFunction, '']
+  SpendCap:
+    Description: Account-wide monthly spend (USD) that stops the instance (0 = off).
+    Value: !Ref StopAtUsd
   TurnHostname:
     Description: Hostname in the TURN URLs the hub hands out.
     Value: !If [MakeTurnRecord, !Ref TurnHostname, !Ref HubHostname]
