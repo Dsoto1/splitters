@@ -143,6 +143,7 @@ Fit note: our Classic Grid uses 8 m cells and 4 m floors. Third-party modular ki
 | [Sonniss GDC Game Audio Bundle](https://gamefromscratch.com/soniss-release-16gb-of-sound-fx-for-free/) | Custom royalty-free (tier 3) | **Approved by the owner, 2026-11-06, for audio pass 2.** Hundreds of GB of professional SFX across yearly bundles; commercial use, no attribution. Its own licence, not CC, so keep the licence text with the provenance. Processed files only in the repo, never the raw bundle |
 | OpenGameArt | Per file | Filter to CC0/CC-BY |
 | Artlist SFX catalog | Artlist subscription licence | Human-recorded and good quality, but **not usable for shipped builds on a standard plan**. Artlist's [Enterprise plan page](https://help.artlist.io/hc/en-us/articles/33980035053213-Enterprise-plan-explained) says stock assets in games need an Enterprise plan. The standard licence lists games only for "background" use and bars standalone distribution, and a web game ships every sound as its own file. Use only with written confirmation from Artlist or an Enterprise agreement. Keep files out of the repo until then |
+| The owner's own Artlist creations | The owner's (owner, 2026-11-17) | Music and announcer lines the owner made themself through Artlist: cleared by the owner for the game, shipped processed inside it only, never listed or offered as separate downloads (`content/owner-audio.json`, docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md). The stock catalog above is unchanged |
 
 ### Music
 

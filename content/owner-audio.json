@@ -1,0 +1,71 @@
+{
+  "$comment": "The owner's own music and announcer (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md). Made by the owner through Artlist (music with Lyria 3 Pro, the voice with MiniMax Speech-02 HD); owned, shipped only inside the game, never listed or offered as separate downloads. `source`: the start of the owner's file name. tools/content/owner-audio.mjs <folder with the owner's files> trims silence, evens out loudness and encodes them (Ogg Opus) to packages/client/public/music and packages/client/public/voice, and records each in content/owner-audio.lock.json; `pnpm content:build` adds them to content/provenance.json and `pnpm content:check` holds the files to the lock. Never commit the owner's original files.",
+  "origin": {
+    "title": "Tile Trigger originals (music and announcer)",
+    "creator": "the owner (made by the owner through Artlist)",
+    "url": "https://artlist.io",
+    "license": "Owned"
+  },
+  "encode": {
+    "music": { "lufs": -16, "truePeak": -1.5, "kbps": 64, "channels": 2 },
+    "voice": { "lufs": -16, "truePeak": -1.5, "kbps": 48, "channels": 1 }
+  },
+  "budgets": { "musicTrackBytes": 2000000, "musicTotalBytes": 14000000, "voiceBytes": 64000 },
+  "music": {
+    "menu": [
+      { "id": "menu_1", "source": "Arena_Music_1" },
+      { "id": "menu_2", "source": "Arena_Music_2" },
+      { "id": "menu_3", "source": "Arena_Music_3" },
+      { "id": "menu_4", "source": "Arena_Music_4" },
+      { "id": "menu_5", "source": "Arena_Music_5" }
+    ],
+    "mapmaker": [
+      { "id": "mapmaker_1", "source": "Map_Maker_Music_1" },
+      { "id": "mapmaker_2", "source": "Map_Maker_Music_2" },
+      { "id": "mapmaker_3", "source": "Map_Maker_Music_3" },
+      { "id": "mapmaker_4", "source": "Map_Maker_Music_4" },
+      { "id": "mapmaker_5", "source": "Map_Maker_Music_5" }
+    ]
+  },
+  "announcer": {
+    "fight_321": { "source": "3_2_1_FIGHT" },
+    "one_minute_left": { "source": "One_minute_left" },
+    "ten_kills_left": { "source": "10_Kills_left" },
+    "attackers_win": { "source": "Attackers_Win" },
+    "defenders_win": { "source": "Defenders_Win" },
+    "next_in_queue": { "source": "Next_in_queue" },
+    "flag_taken": { "source": "The_flag_has_been_taken" },
+    "flag_dropped": { "source": "The_flag_has_been_dropped" },
+    "flag_returned": { "source": "The_flag_has_been_returned" },
+    "flag_captured": { "source": "The_flag_has_been_captured" },
+    "bomb_planted": { "source": "The_bomb_has_been_planted" },
+    "bomb_disarmed": { "source": "The_bomb_has_been_disarmed" },
+    "double_kill": { "source": "Double_Kill" },
+    "triple_kill": { "source": "Triple_Kill" },
+    "quadra_kill": { "source": "Quadra_Kill" },
+    "multi_kill": { "source": "Multi-kill" },
+    "mega_kill": { "source": "Mega_Ultra_Super_Nasty_Boy_Kil" },
+    "server_overload": { "source": "Server_overload" },
+    "headshot": { "source": "Headshot" },
+    "dome_shot": { "source": "Dome_shot" },
+    "brain_cave": { "source": "Brain_Cave" },
+    "killing_spree": { "source": "Killing_spree" },
+    "eviscerator": { "source": "Eviscerator" },
+    "never_stop": { "source": "Do_you_ever_stop_stopping" },
+    "twist_his_eggplant": { "source": "Twist_his_eggplant" },
+    "blew_up_a_dog": { "source": "That_guy_just_blew_up_a_dog_so" },
+    "mr_boombastic": { "source": "Mr_Boombastic_Say_me_fantastic" },
+    "later_gator": { "source": "Later_Gator" },
+    "hail_to_the_cheet": { "source": "Hail_to_the_cheet" },
+    "tree_fiddy": { "source": "Im_gonna_need_about_tree_fiddy" },
+    "this_is_wild": { "source": "This_is_wild" },
+    "incredible": { "source": "Incredible" },
+    "can_you_believe_it": { "source": "Can_you_believe_it" },
+    "i_freakin_love_it": { "source": "I_freakin_love_it" },
+    "did_you_see_that": { "source": "My_guy_did_you_just_see_that" },
+    "give_me_more": { "source": "Give_me_more" },
+    "irate_now": { "source": "Irate_now" },
+    "timmy": { "source": "What_the_heck_is_Timmy_gonna_d" },
+    "this_is_my_rifle": { "source": "This_is_my_rifle_There_are_man" }
+  }
+}

@@ -1,6 +1,6 @@
 # Audio
 
-**Status:** first audio pass (October 2026). Every shipped sound is either **CC0** (Kenney, and a few Freesound recordings by named authors) or **synthesised by our own code**. There are no generated (AI) sounds and no Artlist sounds; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md) for why Artlist is excluded.
+**Status:** first audio pass (October 2026). Every shipped sound is either **CC0** (Kenney, and a few Freesound recordings by named authors) or **synthesised by our own code**. The one exception is **the owner's own music and announcer** (2026-11-18): tracks and lines the owner made themself through Artlist, which the owner cleared for the game (owner, 2026-11-17: shipped inside the game only, never as separate downloads; [`AUDIO_MUSIC_ANNOUNCER_PLAN.md`](AUDIO_MUSIC_ANNOUNCER_PLAN.md)). Artlist's stock catalog stays excluded; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md).
 
 ## Where sounds come from
 
@@ -17,7 +17,8 @@
 | Hit marker | synthesised (`hitmark` recipe) | a short bright tick, four variants |
 | Kill confirm, health pickup | Kenney Interface Sounds (CC0) | |
 | Armor and powerup pickups | Kenney Impact / Sci-Fi Sounds (CC0) | |
-| Announcer | Kenney Voiceover Pack: Fighter (CC0) | "Fight!", "You win", "You lose", "Tie", "Multi kill" |
+| Announcer | **The owner's own lines** (39; `content/owner-audio.json`, made by the owner, owned) and Kenney Voiceover Pack: Fighter (CC0) | the owner's lines on the conditions in [`AUDIO_MUSIC_ANNOUNCER_PLAN.md`](AUDIO_MUSIC_ANNOUNCER_PLAN.md); Kenney's "You win", "You lose" and "Tie" (no owner line for them), and "Fight!" / "Multi kill" while an owner line isn't loaded |
+| Music | **The owner's own tracks** (`content/owner-audio.json`, owned) | five on the main menu, Match Setup and lobbies, five in MapMaker; none in a match |
 | Scenario (M3) | Kenney Sci-Fi / Impact / Interface (CC0) + synthesiser | doors, button press and refusal, spike/crusher/laser traps, crate and wall breaks, chime/buzzer cues, objective and message chimes; synthesised flame roar, mine warning beep and alarm siren |
 | Glass and water | Kenney Impact Sounds (CC0) + synthesiser | `break.glass` when a pane shatters; synthesised `glass.crack` (a bright tick and short ring) when bulletproof glass takes a hit, and `water.splash` (a falling "bloop" under filtered spray) when someone or something goes into water |
 
@@ -34,7 +35,10 @@ The cloud development environment could not reach Freesound, OpenGameArt, itch.i
   - Your own shots, footsteps, landings, reloads, weapon switches and dry fire play instantly from client prediction and aren't positioned.
   - Other players' shots, impacts (at most two per shotgun blast), knife swings, deaths, pickups, footsteps and explosions are positioned in the world.
   - The hit marker and kill confirm play when the server confirms a hit or kill. Two kills within 4 s trigger "Multi kill". Round start and end have announcer lines.
-- **Volume** is a slider in the pause menu, saved in the browser.
+- **Volume** is a slider in the pause menu, saved in the browser. **Music** and **Announcer** have their own sliders under it in Options (the Announcer in the pause menu too), saved as `cs.music` (default 50 %) and `cs.announcer` (100 %); 0 is off.
+- **The owner's music and announcer** (`content/owner-audio.json`): `node tools/content/owner-audio.mjs <folder with the owner's files>` trims their silence, evens loudness to -16 LUFS (two-pass EBU R128) and encodes Ogg Opus (music 64 kbps stereo to `public/music/`, lines 48 kbps mono to `public/voice/`), recording each in `content/owner-audio.lock.json`; `pnpm content:build` puts them in provenance (owned) and `pnpm content:check` holds the files to the lock and the budgets (2 MB a track, 14 MB of music, 64 KB a line). The owner's originals never go in the repo, and the files are never listed or offered for download on their own.
+- **Music** (`audio/music.ts`): each scene's tracks shuffled (none again until all have played), 3 s crossfades, a 1.2 s fade out when a match starts; streamed through an `<audio>` element into the music's bus, so only the playing track is fetched, and only after the first click or key (the menu's first paint and a match's start never wait on it); a hidden tab pauses it where it is. Browser tests leave it off unless `?music=1` (`?music=0` turns it off anywhere).
+- **Announcer** (`audio/announcer.ts`): one line at a time, at least 2.5 s from one start to the next, the most important first (match flow, objectives, multi-kills, streaks, special kills, hype); a newer line of the same kind replaces a waiting one, and a line that waited too long is dropped. Its lines load after the game's sounds.
 
 ## Tests
 
@@ -45,4 +49,4 @@ The cloud development environment could not reach Freesound, OpenGameArt, itch.i
 
 - **Gunshots are synthesised placeholders** until recorded CC0 gunshots are imported.
 - **Ogg Vorbis** files may not decode on older Safari versions. Those sounds are skipped and the game keeps running. Add an AAC/MP3 copy in the build if Safari matters before then.
-- No occlusion (sounds pass through walls), reverb zones, music, ambience or per-material footsteps yet. Remote reloads aren't audible because snapshots don't carry them.
+- No occlusion (sounds pass through walls), reverb zones, ambience or per-material footsteps yet. Remote reloads aren't audible because snapshots don't carry them.
