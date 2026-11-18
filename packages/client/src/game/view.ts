@@ -115,6 +115,8 @@ import {
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
+import type { InsigniaId } from '@tiletrigger/shared';
+import { INSIGNIA_HALF, createInsigniaMesh } from './insigniaMesh.ts';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
@@ -248,7 +250,7 @@ interface Avatar {
    * Team-colour marker over a teammate's head (Team Deathmatch): its own disc, or in crowds a plain node where the
    * disc goes, drawn through its colour's thin instances (GameView.drawTags).
    */
-  tag?: { node: TransformNode; color: string };
+  tag?: { node: TransformNode; color: string; ins: InsigniaId | null };
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -333,6 +335,9 @@ const PUSH_KEEP_MS = 1200;
  * draws a little behind the snapshots), which on a page drawing a frame a second is past PUSH_KEEP_MS.
  */
 const PUSH_KEEP_FRAMES = 3;
+/** Over-head rank badges (insigniaMesh.ts) are drawn at their size out to this distance (m), then grow with it. */
+const INSIGNIA_FULL_SIZE_M = 14;
+const INSIGNIA_MAX_GROW = 2.5;
 /** An enemy's marker colour (a downward triangle; allies get a diamond). */
 const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
 /** The fog's colour and thickness inside a smoke cloud: a mid grey (not white) through which you see about 2-3 m. */
@@ -2501,7 +2506,17 @@ export class GameView {
       const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
       // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
       const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
-      this.setTag(a, (cloaked || smoked) && enemy ? null : tag);
+      this.setTag(a, (cloaked || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
+      // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
+      if (a.tag?.ins) {
+        const c = this.camera.position, r = a.root.position;
+        const k = Math.min(INSIGNIA_MAX_GROW, Math.max(1, Math.hypot(r.x - c.x, r.y - c.y, r.z - c.z) / INSIGNIA_FULL_SIZE_M));
+        if (a.tag.node.scaling.x !== k) {
+          a.tag.node.scaling.setAll(k);
+          // Its foot stays where it was, clear of the head.
+          a.tag.node.position.y = PLAYER.height + 0.35 + (k - 1) * INSIGNIA_HALF;
+        }
+      }
       // Team leaders wear a gold star over their marker, for both sides to see.
       const leads = p.alive && !cloaked && this.leaderSlots.has(p.slot);
       if (leads || a.crown) {
@@ -2533,6 +2548,8 @@ export class GameView {
    * still show the sides) and glow (a jackpot life: a steady gold overlay, never a flash). Null: none.
    */
   auraOf: ((slot: number) => { outline: string | null; glow: string | null } | null) | null = null;
+  /** A soldier's rank badge (insignia.ts): their marker is drawn as it, in the marker's colour; null keeps the arrow. */
+  insigniaOf: ((slot: number) => InsigniaId | null) | null = null;
   /** Roulette: the loading gate's warm-up also draws its samples outlined and glowing (their shaders built before play). */
   auraWarm = false;
 
@@ -2871,28 +2888,32 @@ export class GameView {
     return mesh;
   }
 
-  private setTag(a: Avatar, color: string | null): void {
-    if (a.tag && a.tag.color !== color) {
+  private setTag(a: Avatar, color: string | null, ins: InsigniaId | null = null): void {
+    if (a.tag && (a.tag.color !== color || a.tag.ins !== ins)) {
       a.tag.node.dispose(false, a.tag.node instanceof MeshClass);
       a.tag = undefined;
     }
     if (!color || a.tag) return;
     // Crowds: a plain node where the disc goes; every marker of a colour is a thin instance of one disc, placed there
     // each frame (drawTags): one draw per colour and no mesh per player for the scene to look at.
-    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color);
+    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color, true, ins);
     if (this.crowd) {
-      this.tagBatch(color);
-      if (isEnemyTag(color)) node.rotation.z = -Math.PI / 2;
+      this.tagBatch(color, ins);
+      if (isEnemyTag(color) && !ins) node.rotation.z = -Math.PI / 2;
     }
     node.billboardMode = MeshClass.BILLBOARDMODE_ALL;
     node.parent = a.root;
     node.position.y = PLAYER.height + 0.35;
     if (node instanceof MeshClass) node.isPickable = false;
-    a.tag = { node, color };
+    a.tag = { node, color, ins };
   }
 
-  /** A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance. */
-  private tagDisc(name: string, color: string, turned = true): Mesh {
+  /**
+   * A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read
+   * apart at a glance. A soldier's is their rank badge instead (insigniaMesh.ts), on both sides, in the same colour.
+   */
+  private tagDisc(name: string, color: string, turned = true, ins: InsigniaId | null = null): Mesh {
+    if (ins) return createInsigniaMesh(name, ins, color, this.scene);
     const enemy = isEnemyTag(color);
     const mesh = CreateDisc(name, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
     if (enemy && turned) mesh.rotation.z = -Math.PI / 2;
@@ -2906,11 +2927,13 @@ export class GameView {
   /** Per colour, the disc every crowd marker of that colour is a thin instance of, and their matrices. */
   private readonly tagBatches = new Map<string, { mesh: Mesh; matrices: Float32Array; count: number }>();
 
-  private tagBatch(color: string): { mesh: Mesh; matrices: Float32Array; count: number } {
-    let b = this.tagBatches.get(color);
+  /** A crowd marker's batch: by colour, and badge (a soldier's) or none (the arrow). */
+  private tagBatch(color: string, ins: InsigniaId | null): { mesh: Mesh; matrices: Float32Array; count: number } {
+    const key = ins ? `${color}|${ins}` : color;
+    let b = this.tagBatches.get(key);
     if (!b) {
       // At the world's origin (its thin instances carry each marker's whole matrix, turned and placed by its node).
-      const mesh = this.tagDisc(`tag_${color}`, color, false);
+      const mesh = this.tagDisc(`tag_${key}`, color, false, ins);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
       // A handful of small discs: drawn without a bounds test (they move every frame), and they cast no shadow.
@@ -2919,7 +2942,7 @@ export class GameView {
       const matrices = new Float32Array(16 * 16);
       mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
       mesh.setEnabled(false);
-      this.tagBatches.set(color, (b = { mesh, matrices, count: 0 }));
+      this.tagBatches.set(key, (b = { mesh, matrices, count: 0 }));
     }
     return b;
   }
@@ -2934,7 +2957,7 @@ export class GameView {
     for (const a of this.avatars.values()) {
       const t = a.tag;
       if (!t || t.node instanceof MeshClass || a.hiddenSelf || (a.shown ?? 1) !== 1 || !t.node.isEnabled()) continue;
-      const b = this.tagBatches.get(t.color);
+      const b = this.tagBatches.get(t.ins ? `${t.color}|${t.ins}` : t.color);
       if (!b) continue;
       if (b.matrices.length < (b.count + 1) * 16) {
         const more = new Float32Array(b.matrices.length * 2);

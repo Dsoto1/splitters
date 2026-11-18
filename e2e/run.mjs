@@ -4124,6 +4124,17 @@ async function editorEnvironmentChecks(browser) {
   await stroke([-30, -8], [-10, 4]);
   const again = await plants();
   check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+  // A season across the whole map (environment Phase 5): Autumn turns the oaks and maples to their autumn look in one
+  // undo step, nothing moves, and Summer takes them back.
+  await page.selectOption('#ed-env-season', 'autumn');
+  await page.click('#ed-env-season-apply');
+  const autumn = await plants();
+  const where = (list) => list.map((p) => p.replace(/#\d+@/, '@')).sort();
+  const leafy = autumn.filter((p) => /^env\.broadleaf\.(oak|maple)#/.test(p));
+  check(leafy.length > 0 && leafy.every((p) => /#1@/.test(p)) && where(autumn).join('|') === where(painted).join('|') && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Season: Autumn', `Season → Autumn: the ${leafy.length} oaks and maples wear autumn, nothing moved, one step ("${await page.evaluate(() => window.__editor.history.undoLabel)}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const unseasoned = await plants();
+  check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);
@@ -5880,8 +5891,15 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
+  // The owner's announcer lines load after the game's sounds, and decode (Ogg Opus).
+  await page.waitForFunction(() => window.__audio.stats.voice + window.__audio.stats.voiceFailed >= 39, null, { timeout: T(30000) }).catch(() => {});
+  const voice = await page.evaluate(() => ({ voice: window.__audio.stats.voice, failed: window.__audio.stats.voiceFailed }));
+  check(voice.voice === 39 && voice.failed === 0, `the announcer's 39 lines load and decode (${JSON.stringify(voice)})`);
+  // No music in a match (browser tests leave it off anyway; ?music=1 below turns it on).
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? 0)) === 0, 'no music plays in a match');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await musicChecks(browser);
   await spectateChecks(browser);
 }
 
@@ -5890,6 +5908,29 @@ async function offlineFlow(browser) {
  * players (cycled with the arrow keys), Space flies the free camera, and you respawn as usual; then
  * spectating by choice from the pause menu (a bot fills the place) and joining again.
  */
+/** The menu's music (audio/music.ts): it waits for the first click, then streams a menu track; Music at 0 stops it. */
+async function musicChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?music=1`);
+  await page.waitForFunction(() => !!window.__audio && !!document.querySelector('#nav-play'), null, { timeout: T(60000) });
+  // The music's code isn't even loaded before a click or key (not in the menu's first JS).
+  const before = await page.evaluate(() => !!window.__music);
+  // A click unlocks audio (anywhere: the page's corner).
+  await page.mouse.click(4, 4);
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
+  const on = await page.evaluate(() => window.__music?.debug() ?? null);
+  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__audio.setMusicVolume(0));
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? -1)) === 0, 'Music at 0 stops it');
+  check(errors.length === 0, `no page errors on the menu with music (${errors.join('; ')})`);
+  await ctx.close();
+}
+
 async function spectateChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   livePages.add(page);
@@ -7995,6 +8036,10 @@ async function botCastFlow(browser) {
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
+  // Rank insignia (soldiers only): every Army bot's row wears its rank badge before the name.
+  const badges = await page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent, ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
+  const bare = badges.filter((b) => bots.bots.some((x) => x.name === b.name) && !b.ins);
+  check(badges.length >= 16 && !bare.length, `the Tab board shows each Army bot's rank badge (${badges.filter((b) => b.ins).slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
   await page.keyboard.up('Tab');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -11194,7 +11239,11 @@ async function environmentFlow(browser) {
   const stats = () => page.evaluate(() => window.__envlab.stats().env);
   const s0 = await stats();
   check(s0.copies >= 90 && s0.drawnBatches > 0 && s0.perLevel[0] > 0, `it draws every species as thin-instance batches (${JSON.stringify(s0)})`);
-  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).map((m) => m.name.split('_l')[0]))].sort());
+  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).flatMap((m) => {
+    // A batch of shared looks (environment Phase 5) names them all: env_broadleaf.oak.summer+autumn_l0_….
+    const [first, ...more] = m.name.split('_l')[0].split('+');
+    return [first, ...more.map((look) => `${first.slice(0, first.lastIndexOf('.'))}.${look}`)];
+  }))].sort());
   // Every variant of every species in content/environment/ (the lab's lineup has them all).
   const envDir = new URL('../content/environment/', import.meta.url);
   const variants = readdirSync(envDir).filter((f) => f.endsWith('.json')).reduce((n, f) => n + JSON.parse(readFileSync(new URL(f, envDir), 'utf8')).species.reduce((k, s) => k + s.variants.length, 0), 0);

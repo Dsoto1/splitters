@@ -1029,6 +1029,8 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #headshot.on { animation: headshot-pop 0.9s ease-out; }
 @keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 #feed .hs { color: #ff4b4b; margin-left: 4px; }
+/* A soldier's rank badge before their name (game/insigniaSvg.ts), in the name's colour. */
+#feed svg.ins { width: 1.15em; height: 1.15em; margin-right: 4px; vertical-align: -0.22em; }
 /* A team kill: the warning colour on its edge and a TK tag (no reward to show). */
 #feed .tk { border-right-color: var(--warning); }
 #feed .tk-tag { color: var(--deep-space); background: var(--warning); padding: 0 4px; margin-right: 2px; border-radius: 2px; font-weight: 700; letter-spacing: 0.04em; }
@@ -1551,6 +1553,10 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 .sb-nm.guest::after { content: 'GUEST'; margin-left: 5px; padding: 0 3px; border: 1px dashed var(--line); color: var(--muted); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-nm.bot::after { content: 'BOT'; margin-left: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--muted); font-size: 0.68em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark { flex: none; width: 1em; font-style: normal; text-align: center; font-size: 0.8em; }
+.sb-ins { flex: none; display: inline-flex; width: 1.15em; height: 1.15em; font-style: normal; }
+.sb-ins[hidden] { display: none; }
+.sb-ins svg { width: 100%; height: 100%; }
+.sb-row.dead .sb-ins { opacity: 0.45; }
 .sb-nm.party::before { content: 'PARTY'; margin-right: 5px; padding: 0 3px; background: rgba(255, 179, 71, 0.16); color: var(--orange); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark.leader { color: #ffd24a; font-size: 1em; text-shadow: 0 0 4px rgba(255, 210, 74, 0.6); }
 .sb-cls { color: var(--muted); font-size: 0.82em; letter-spacing: 0.05em; text-transform: uppercase; }

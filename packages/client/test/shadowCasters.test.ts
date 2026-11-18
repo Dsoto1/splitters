@@ -69,6 +69,9 @@ describe('static shadow sets for trees and rocks, by cascade', () => {
     // One level (grass, a rock): one set for every cascade.
     expect(envShadowSets([{ crossed: false }])).toEqual([{ level: 0, mask: ALL_CASCADES }]);
     expect(envShadowSets([{ crossed: true }])).toEqual([]);
+    // Small species (environment Phase 5): the near cascades only, at full detail.
+    expect(envShadowSets([{ crossed: false }, { crossed: false }, { crossed: true }], true)).toEqual([{ level: 0, mask: NEAR_CASCADES }]);
+    expect(envShadowSets([{ crossed: false }], true)).toEqual([{ level: 0, mask: NEAR_CASCADES }]);
   });
 
   it('each cascade draws its own set; Medium\'s one map is cascade 0; untagged casters draw everywhere', () => {
