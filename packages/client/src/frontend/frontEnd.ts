@@ -2915,6 +2915,17 @@ export class FrontEnd {
       this.audio.setVolume(Number(volume.value) / 100);
       storage('cs.volume', String(this.audio.getVolume()));
     });
+    // The owner's music (main menu and MapMaker) and announcer, each on its own slider under Volume; 0 is off.
+    const level = (get: () => number, set: (v: number) => void, key: string) => {
+      const input = el('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(get() * 100)) });
+      const out = el('output');
+      const show = () => (out.textContent = input.value === '0' ? 'Off' : `${input.value}%`);
+      show();
+      input.addEventListener('input', () => (set(Number(input.value) / 100), storage(key, String(get())), show()));
+      return el('span', { class: 'opt-range' }, input, out);
+    };
+    const musicVol = level(() => this.audio.getMusicVolume(), (v) => this.audio.setMusicVolume(v), 'cs.music');
+    const announcerVol = level(() => this.audio.getAnnouncerVolume(), (v) => this.audio.setAnnouncerVolume(v), 'cs.announcer');
     const graphics = el('select', {}, ...GRAPHICS_QUALITIES.map((q) => el('option', { value: q, textContent: { low: 'Low — fastest', medium: 'Medium — sun shadows', high: 'High — far shadows, ambient occlusion, bloom' }[q], selected: q === loadGraphicsQuality() })));
     graphics.addEventListener('change', () => saveGraphicsQuality(graphics.value as GraphicsQuality));
     const renderScale = el('select', {}, ...RENDER_SCALES.map((r) => el('option', { value: r, textContent: RENDER_SCALE_LABELS[r], selected: r === loadRenderScale() })));
@@ -3139,6 +3150,8 @@ export class FrontEnd {
         row('Player name', name, this.verified ? 'Your username: change it in Profile.' : 'What other players see.'),
         row('Clan tag', clan, 'Up to five letters, shown before your name.'),
         row('Volume', el('span', { class: 'opt-range' }, volume, volumeVal)),
+        row('Music', musicVol, 'On the main menu, Match Setup and in MapMaker; never in a match. Under Volume.'),
+        row('Announcer', announcerVol, 'The voice calling the match: the start, objectives, your multi-kills and streaks. Under Volume. Also in the pause menu.'),
       ]],
       ['display', 'Display', [
         row('Fullscreen', fullscreen, 'F11 or Alt+Enter also switch it.'),
