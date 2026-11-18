@@ -197,6 +197,53 @@ Alpine look, a jungle set, then the polish). docs/CONTENT_PIPELINE.md, "Environm
   over the older species' colours and levels of detail (the same reason: shipped maps); far-level tuning of the Spruce
   and Tall Pine (their lighter levels read heavy; changing them changes St. John's).
 
+**The nature swap (2026-11-18; owner: "start removing quaternius nature for our procedurally generated ones"):**
+MapMaker's Environment pane (Nature), **Swap natural props for ours**: every bought or downloaded natural prop on the
+map becomes our species in one undo step (`shared/editor/natureSwap.ts`), keeping its id, spot, turn, name and flags;
+its scale is the old scale times the table's factor, so it stands about as tall and wide as before (MapMaker's limits
+0.25 to 4). Play is kept: trees keep a trunk (their capsules instead of a 0.5 m box), bushes stay cover you hide in,
+rocks keep blocking shots and movement, logs keep a health of their own. A mix (two species for one old prop) is picked
+by the placement's id, so a rerun gives the same map. **Rocks** follow the menu beside the button: *by the ground*
+(sandstone where at least 40 % of the terrain is sand, else as listed), *grey (as listed)*, *mossy* (boulders moss,
+shards lichen) or *sandstone* (boulders become the Sandstone Boulder, sized between their height and width). A new
+species came with it: **Dead Tree** (`env.broadleaf.dead`, bare and pale looks; the broadleaf generator with no leaf
+cards), since nothing else stood for the dead trees. Picked by eye on a side-by-side sheet (old at scale 1 beside the
+new at its factor, from a standing eye and from the side; `?mode=lineup`).
+
+| Old prop | Generated (look, factor) |
+|---|---|
+| Birch / Autumn Birch | Silver Birch summer / autumn ×0.74 |
+| Snowy Birch | Dead Tree pale ×1.43 (a bare winter tree) |
+| Broadleaf Tree / Autumn Broadleaf | Oak ×0.8 (2 in 3) or Field Maple ×1.0, summer / autumn |
+| Broadleaf Tree (round) | Field Maple ×0.93 |
+| Snowy Broadleaf | Dead Tree pale ×1.25 |
+| Dead Tree, Dead Willow | Dead Tree bare ×1.07 |
+| Tall Pine / Snowy Tall Pine | Tall Pine summer / snow ×0.82 |
+| Young Pine | Spruce ×0.67 |
+| Autumn Pine | Larch autumn ×0.62 |
+| Curved Palm / Tall Palm | Leaning Palm ×0.8 / Coconut Palm ×0.74 |
+| Willow / Autumn Willow | Jungle Tree green / dry ×0.54 (the hanging lianas for the weeping crown) |
+| Saguaro Cactus | Saguaro ×1.04 |
+| Barrel Cactus / Flowering Cactus | Barrel Cactus ×1.29 / ×1.07 (both still collide) |
+| Leafy Bush | Broadleaf Shrub ×0.82 (3 in 4) or Laurel ×0.6: you hide in both |
+| Berry Bush / Snowy Bush | Laurel ×0.54 / Sagebrush grey ×1.0 (hidden in) |
+| Corn / Wheat | Tall Grass ×2.3 / dry ×1.16 (no longer hidden in: grass) |
+| Wildflowers | Meadow Flowers, the four colours mixed |
+| Wide Fern | Bracken ×1.6 (hidden in) |
+| Tall Boulder / Mossy Boulder / Snowy Boulder | Shard Boulder bare ×1.19 / lichen ×1.08 / snow ×1.08 |
+| Boulder | Angular or Round Boulder ×0.85 |
+| Flat Rock / Snowy Rock | Angular Boulder ×0.54 / ×0.81 |
+| Mossy Rock | Round Boulder moss ×0.86 |
+| Large / Mossy Stump | Fallen Log bare / moss ×1.2 (low cover; there is no stump species) |
+| Large / Mossy / Snowy Log | Fallen Log bare ×1.12 / moss ×1.22 / bare ×1.4 |
+| Kenney Boulder (`rock_large`) | Round Boulder ×1.0 or Angular ×0.95 |
+| Kenney Rock / Small Rock | Angular Boulder ×0.68 / ×0.47 |
+| Kenney Jagged Boulder / Flat Boulder / Round Boulder / Rock Spire | Rock Outcrop ×1.1 / ×0.65 / ×1.3 / ×1.0 |
+| Kenney Tall Rock | Shard Boulder ×2.2 |
+| Meshy Rock Pile / Mossy Rock Spire | Angular Boulder ×0.9 / moss ×1.25 |
+| Loafbrr Cave Rocks B / D | Shard Boulder ×1.29 / Angular Boulder ×1.05 |
+| Meshy Red Rock Spires | not swapped: a formation, built by hand as Sandstone Cliff panels and boulders |
+
 **Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic
 generator approach applied to simple man-made props. Families, each with endless variants under a stable family id:
 - crates and barrels;
