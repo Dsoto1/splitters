@@ -146,6 +146,11 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
       ...[0, 4, 8].flatMap((y) => [-2, 2, 6, 10].map((cx): P3[] => [[4, y, 4], [cx, y, 8.3], [4, y, 4]])),
     ],
   },
+  // St. John's step 5 (Stangeland / Cord): the classroom bay. Along the hall (as far as the closed east end allows);
+  // into each classroom at its back door, to the back by the windows, along the front aisle past the rows, and out.
+  'setpiece.classroom_bay': {
+    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [-2.2, 0, 1.4], [0, 0, 4]]))],
+  },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
     chains: [[[-3, 0, -3.5], [-3, 0, 3.5], [3.5, 0, 3.5]]],
@@ -275,6 +280,41 @@ describe("a two-floor L (Smythe Hall's shape)", () => {
   });
 });
 
+/**
+ * Stangeland / Cord's shape (St. John's step 5): a three-floor school hall along z = 4 (cells y 0, 1). The 3-floor Stair
+ * End Bay at x 0, four Classroom Bays a floor at x 1-4, the Stair End Bay (upper door) at the east end (x 5, turned
+ * half round, anchored a cell north) with a Carriageway beside it (x 6, y 0) whose door on each floor meets the end
+ * bay's lobby and the lobby's upper door; the top floor runs one bay further, closed at its east end, over the lower end bay.
+ */
+function stangeland(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, overrides?: SetPiecePlacement['overrides']): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(overrides ? { overrides } : {}) });
+  const out = [at('end_w', 'setpiece.stair_end_bay_3', 0, 0, 0), at('end_e', 'setpiece.stair_end_bay_bridge', 5, 1, 0, 2, { hide: [11] }), at('bridge', 'setpiece.carriageway_1', 6, 0, 0), at('top_e', 'setpiece.classroom_bay', 5, 0, 2, 0, { options: { end: 'east' } })];
+  for (let z = 0; z < 3; z++) for (const x of [1, 2, 3, 4]) out.push(at(`bay_${x}_${z}`, 'setpiece.classroom_bay', x, 0, z));
+  return out;
+}
+
+describe("a three-floor school hall joined to a bridge (Stangeland / Cord's shape)", () => {
+  it('every floor end to end, every classroom, both stairs, the bridge on the ground and the first floor', { timeout: 240_000 }, () => {
+    const map = mapOf(stangeland());
+    const nav = navOf(map);
+    for (const y of [0, 4, 8]) {
+      expect(miss(nav, v([4, y, 4]), v([36, y, 4])), `the hall at ${y} m, end to end`).toBeLessThan(1.2);
+      for (const x of [1, 4]) for (const north of [true, false]) expect(miss(nav, v([x * 8, y, 4]), v([x * 8 + 2.4, y, north ? 10.6 : -2.6])), `the classroom at x ${x}, ${north ? 'north' : 'south'}, ${y} m`).toBeLessThan(1.2);
+      // From the west lobby to every floor.
+      expect(miss(nav, v([0, 0, 7]), v([12, y, 4])), `west stair to ${y} m`).toBeLessThan(1.2);
+    }
+    // The top floor's last bay, over the east end bay, closed at its end.
+    expect(miss(nav, v([36, 8, 4]), v([42, 8, 4]))).toBeLessThan(1.2);
+    expect(miss(nav, v([36, 8, 4]), v([44.5, 8, 4]))).toBeGreaterThan(0.6);
+    // The bridge: in from its passage at the side door to the east lobby; its room over the arch to the first floor's hall.
+    expect(miss(nav, v([48, 0, 0]), v([40, 0, 0.5]))).toBeLessThan(1.2);
+    expect(miss(nav, v([48, 4, 0]), v([30, 4, 4]))).toBeLessThan(1.2);
+    // The east stair from the ground to the first floor.
+    expect(miss(nav, v([40, 0, 1]), v([36, 4, 4]))).toBeLessThan(1.2);
+    nav.destroy();
+  });
+});
+
 describe('the wall styles the bays are built with', () => {
   it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
     expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);
@@ -287,6 +327,16 @@ describe('the wall styles the bays are built with', () => {
     const segs = edgeSegments('window_sash', 4, 4);
     expect(segs).toContainEqual([-0.6, 0.6, 0, 0.9, 0.5]);
     expect(segs).toContainEqual([-0.6, 0.6, 3, 4, 0.5]);
+  });
+
+  it('the classroom windows are four sashes 1.25 m wide from 0.9 to 3.2 m, clear of a facade\'s buttresses; one pane each', () => {
+    expect(EDGE_SHAPES.windows_school!.openings).toEqual([[-3.1, -1.85, 0.9, 3.2], [-1.45, -0.2, 0.9, 3.2], [0.2, 1.45, 0.9, 3.2], [1.85, 3.1, 0.9, 3.2]]);
+    // The Collegiate facades' buttresses stand 0.13 to 0.77 m in from a side's ends (half − 0.45 ± 0.32).
+    for (const [u0, u1] of EDGE_SHAPES.windows_school!.openings as [number, number, number, number][]) expect(Math.max(Math.abs(u0), Math.abs(u1))).toBeLessThan(4 - 0.45 - 0.32 - 0.1);
+    const map = mapOf([{ id: 'bay0', piece: 'setpiece.classroom_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const panes = windowPanes(map);
+    expect(panes).toHaveLength(8);
+    expect(panes.every((p) => p.kind === 'breakable')).toBe(true);
   });
 
   it('the sash is drawn in the wall by the glass, in its own paint; nothing of it collides', () => {
@@ -352,6 +402,9 @@ describe('what the bays are made of, and what they cost', () => {
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
+    // A classroom bay: two rooms of 7 props (door, three rows of four desks, the teacher's desk, chalkboard, screen).
+    expect(made('setpiece.classroom_bay')).toMatchObject({ tiles: 2, blocks: 10, props: 14, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks']);
   });
 
   it('no door of a hall thinks: every door is a still prop (no door entities, no breakable props but the ones the catalogue leaves)', () => {

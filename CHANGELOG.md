@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. John's: Stangeland / Cord is a real school building.** The old open-walled block hall south of the court is rebuilt as a three-storey school in warm fieldstone with battlements: a hall down the middle of each floor and classrooms either side, each with a wall of tall sash windows, twelve desks facing a chalkboard and a pull-down screen, and the teacher's desk. Stairs at both ends; the east end meets the bridge (the archway beside it) on the ground and the first floor, so you can cross from the bridge's room straight into the school. New in MapMaker for everyone: the **Classroom Bay** set piece (it can close the end of a floor), the **Classroom windows** wall style, the **Collegiate fieldstone** facade, and props: **Chalkboard** (green, black or white board), **Projector Screen**, **Notice Board** (outdoor, under a little shingle roof) and **School Desks** (a row of four with chairs).
 
 ## 0.10.0 (2026-11-17)
 

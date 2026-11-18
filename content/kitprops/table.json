@@ -729,6 +729,109 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.table.school_desks",
+      "displayName": "School Desks (row of four)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5): four single school desks in a row, two each side of a 0.7 m aisle, each a wooden top on a steel frame with a book shelf, a Chair pushed in at each on +z (pupils face -z): what would be eight props is one (a map as played holds at most 4,096 entities). Collides as the four desks' boxes; the chairs, pushed in, do not. Variant 'empty': no chairs."
+      },
+      "size": [
+        3.5,
+        0.95,
+        0.95
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "schooldesks",
+        "desk": [
+          0.65,
+          0.74,
+          0.5
+        ],
+        "aisle": 0.7,
+        "gap": 0.1,
+        "chair": [
+          0.404,
+          0.95,
+          0.404
+        ],
+        "chairG": {
+          "seat": 0.46,
+          "seatT": 0.035,
+          "leg": 0.04,
+          "back": 0.15,
+          "slats": 0,
+          "rails": 2
+        },
+        "tuck": 0.32
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 21031,
+          "look": {
+            "top": "#b48a5a",
+            "steel": "#3a3c40",
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 21032,
+          "look": {
+            "top": "#c4a274",
+            "steel": "#3f5a45",
+            "chair": {
+              "wood": "#55684a",
+              "jitter": 0.08,
+              "grime": 0.25
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "empty",
+          "seed": 21033,
+          "set": {
+            "chairs": false
+          },
+          "look": {
+            "top": "#b48a5a",
+            "steel": "#3a3c40",
+            "chair": {
+              "wood": "#a67c4e"
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        }
+      ]
     }
   ]
 }
