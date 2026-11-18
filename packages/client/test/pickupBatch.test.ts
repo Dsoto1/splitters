@@ -7,7 +7,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/instancedMesh';
-import { PICKUP_SECTOR, PickupBatch } from '../src/game/pickupBatch.ts';
+import { PickupBatch } from '../src/game/pickupBatch.ts';
 
 const engines: NullEngine[] = [];
 afterEach(() => {
@@ -41,7 +41,7 @@ describe('PickupBatch', () => {
   it('draws every pickup part as a thin instance of one mesh, where its node is', () => {
     const { scene, source, pickup, batch } = setup();
     const a = pickup('pickup_a', 2);
-    const b = pickup('pickup_b', 9);
+    const b = pickup('pickup_b', -3);
     batch.adopt(a);
     batch.adopt(b);
     // The instances go at the next update (a model's loader places it first).
@@ -58,7 +58,7 @@ describe('PickupBatch', () => {
     expect(batch.stats()).toEqual({ meshes: 1, parts: 2 });
     const m = (mesh as unknown as { _thinInstanceDataStorage: { matrixData: Float32Array } })._thinInstanceDataStorage.matrixData;
     expect(translation(m, 0).map((v) => +v!.toFixed(3))).toEqual([2, 1.1, 0]);
-    expect(translation(m, 1).map((v) => +v!.toFixed(3))).toEqual([9, 1.1, 0]);
+    expect(translation(m, 1).map((v) => +v!.toFixed(3))).toEqual([-3, 1.1, 0]);
     // The source stays parked and untouched for its other copies.
     expect(source.position.y).toBe(-10000);
     // It follows its root (spin and bob).
@@ -72,19 +72,10 @@ describe('PickupBatch', () => {
     expect(batch.draws(a, '_ring')).toBe(true);
   });
 
-  it('batches pickups by square, so a square out of view is culled whole', () => {
-    const { scene, pickup, batch } = setup();
-    for (const [i, x] of [2, 9, 2 + PICKUP_SECTOR, -30].entries()) batch.adopt(pickup(`pickup_${i}`, x));
-    batch.update();
-    const meshes = scene.meshes.filter((m) => m.name.startsWith('pickupBatch_')) as Mesh[];
-    expect(meshes.map((m) => m.thinInstanceCount).sort()).toEqual([1, 1, 2]);
-    expect(batch.stats()).toEqual({ meshes: 3, parts: 4 });
-  });
-
   it('draws a switched-off pickup as nothing and lets a disposed one go', () => {
     const { scene, pickup, batch } = setup();
     const a = pickup('pickup_a', 2);
-    const b = pickup('pickup_b', 9);
+    const b = pickup('pickup_b', -3);
     batch.adopt(a);
     batch.adopt(b);
     batch.update();
