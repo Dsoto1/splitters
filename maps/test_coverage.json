@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 45,
+  "formatVersion": 46,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_keg6cjzo7rr2czch",
-      "revision": 39,
-      "contentHash": "sha256:103d9878b750cfb3a6bcc12cb503d8a077e3fe116449cba5d7099c1ad6121eac",
-      "schemaVersion": 45,
-      "releasedAt": "2026-11-17T10:15:52.450Z"
+      "versionId": "v_e4tyov3pcrnyrdbb",
+      "revision": 40,
+      "contentHash": "sha256:cf67799c2d4ea808022d7d7054e1b7e962693464292290f3d0e41b321a8c6903",
+      "schemaVersion": 46,
+      "releasedAt": "2026-11-17T21:35:47.198Z"
     },
     "testOnly": true
   },
@@ -912,11 +912,13 @@
         "edges": {
           "0,0,0:N": "window_sash",
           "0,0,0:E": "windows_sash",
-          "0,0,0:S": "door_room"
+          "0,0,0:S": "door_room",
+          "0,0,0:W": "windows_school"
         },
         "glass": {
           "0,0,0:N": "breakable",
-          "0,0,0:E": "reinforced"
+          "0,0,0:E": "reinforced",
+          "0,0,0:W": "breakable"
         }
       },
       {
@@ -6934,6 +6936,15 @@
       "rotation": 0,
       "mirror": false,
       "family": "mine"
+    },
+    {
+      "id": "setpiece_dmknfvybym",
+      "piece": "setpiece.classroom_bay",
+      "x": -1,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }

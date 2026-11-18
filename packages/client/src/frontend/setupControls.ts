@@ -1,4 +1,4 @@
-import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_CAST_CHOICES, CHARACTER_GROUPS, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_CAST_CHOICES, currentCastId, isCharacterCastId, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -566,9 +566,10 @@ export function botCastSelect(value: readonly string[] | undefined, mapCast: rea
   opt('all', 'All characters');
   const groups = el('optgroup', { label: 'Characters' });
   const themes = el('optgroup', { label: 'Named as' });
-  for (const c of BOT_CAST_CHOICES) (CHARACTER_GROUPS.some((g) => g.id === c.id) ? groups : themes).append(el('option', { value: c.id, textContent: c.label }));
+  for (const c of BOT_CAST_CHOICES) (isCharacterCastId(c.id) ? groups : themes).append(el('option', { value: c.id, textContent: c.label }));
   sel.append(groups, themes);
-  const key = value === undefined ? 'map' : !value.length ? 'all' : value.length === 1 ? value[0]! : value.join('+');
+  // A retired id (a saved "agents") shows as what it reads as now.
+  const key = value === undefined ? 'map' : !value.length ? 'all' : value.length === 1 ? currentCastId(value[0]!) : value.map(currentCastId).join('+');
   if (value && value.length > 1) opt(key, botCastLabel(value));
   sel.value = key;
   sel.addEventListener('change', () => {

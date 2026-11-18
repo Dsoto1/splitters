@@ -10,7 +10,7 @@
   "bio": "You hear him before you see him. Then it is too late.",
   "size": "large",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: skeleton.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: skeleton. 2026-11-17 (owner: \"doesn't stand as tall and straight as he could\"): his rig's spine is straight while the mesh hunches (chest pitched about 27 degrees forward, the skull 26 cm ahead of the head joint), so the clips held him stooped with his head hung over the gun. `lean` sits him up (the chest upright, the skull over the shoulders, the head turned up 14 degrees); his rig task 404s on this key, so the shipped file was leaned in place by tools/content/relean-built.mjs (a rebuild from the rigged download applies `lean` itself).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -38,6 +38,13 @@
     "hands": {
       "scale": 0.85,
       "curl": 1
+    },
+    "lean": {
+      "Spine02": 5,
+      "Spine01": 12,
+      "Spine": 12,
+      "neck": 8,
+      "Head": 14
     }
   }
 }

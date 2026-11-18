@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BOT_CAST_CHOICES,
   BOT_NAME_MAX,
+  CHARACTER_BRANCHES,
   CHARACTER_GROUPS,
   CORE_LOOKS,
   PICKABLE_LOOKS,
@@ -17,6 +18,7 @@ import {
   lookGroup,
   lookTheme,
   parseClientMessage,
+  parseRuleValue,
   rulesFromSetup,
   rulesForTravel,
   validBotCast,
@@ -43,6 +45,8 @@ const yard = (cast?: string[]): MapDocument => {
 const botsOf = (m: Match): Combatant[] => m.combatants().filter((c) => c.kind === 'bot');
 // (Bots draw from the core tier only: an experimental soldier is never a random bot's.)
 const soldierLooks = PICKABLE_LOOKS.filter((l) => l.group === 'soldiers').map((l) => l.id);
+// Soldiers & Spies' Army (a real battle's soldiers: no agents, spies or Santa).
+const armyLooks = PICKABLE_LOOKS.filter((l) => l.branch === 'army').map((l) => l.id);
 
 describe('bot name themes: the lists', () => {
   it(`every list has at least ${BOT_THEME_MIN} names, each unique, short enough, without digits`, () => {
@@ -71,7 +75,8 @@ describe('bot name themes: the lists', () => {
   it('theme ids never clash with group ids; the manifest checker knows the same themes', () => {
     for (const t of NAME_THEMES) expect(CHARACTER_GROUPS.some((g) => g.id === t.id), t.id).toBe(false);
     expect(MANIFEST_THEMES).toEqual(NAME_THEMES.map((t) => t.id));
-    expect(BOT_CAST_CHOICES).toHaveLength(CHARACTER_GROUPS.length + NAME_THEMES.length);
+    expect(BOT_CAST_CHOICES).toHaveLength(CHARACTER_GROUPS.length + CHARACTER_BRANCHES.length + NAME_THEMES.length);
+    for (const b of CHARACTER_BRANCHES) expect(NAME_THEMES.some((t) => t.id === b.id) || CHARACTER_GROUPS.some((g) => (g.id as string) === b.id), b.id).toBe(false);
     // The menu's ids and labels (botThemes.ts) and the lists (botNames.ts) name the same themes, each with its names.
     expect(NAME_THEMES.map((t) => t.id)).toEqual(NAME_THEME_INFO.map((t) => t.id));
   });
@@ -148,16 +153,16 @@ describe('bot names: what a bot is called', () => {
 });
 
 describe('bot characters: soldiers only', () => {
-  it(`${MAX_PLAYER_SLOTS} bots on a soldiers-only map: all soldiers, ${MAX_PLAYER_SLOTS} unique soldier names`, () => {
-    const match = new Match(yard(['soldiers']), { ...DEFAULT_RULES['core.tdm'], teamSizes: [MAX_PLAYER_SLOTS / 2, MAX_PLAYER_SLOTS / 2] }, 1);
+  it(`${MAX_PLAYER_SLOTS} bots on an Army-only map: all Army, ${MAX_PLAYER_SLOTS} unique soldier names`, () => {
+    const match = new Match(yard(['army']), { ...DEFAULT_RULES['core.tdm'], teamSizes: [MAX_PLAYER_SLOTS / 2, MAX_PLAYER_SLOTS / 2] }, 1);
     const bots = new BotFiller(match);
     bots.rebalance(MAX_PLAYER_SLOTS);
     const list = botsOf(match);
     expect(list).toHaveLength(MAX_PLAYER_SLOTS);
-    for (const c of list) expect(soldierLooks, c.look).toContain(c.look);
-    expect(new Set(list.map((c) => c.look)).size).toBe(soldierLooks.length);
+    for (const c of list) expect(armyLooks, c.look).toContain(c.look);
+    expect(new Set(list.map((c) => c.look)).size).toBe(armyLooks.length);
     expect(new Set(list.map((c) => c.name)).size).toBe(MAX_PLAYER_SLOTS);
-    const own = new Set(CORE_LOOKS.filter((l) => l.group === 'soldiers').map((l) => l.name));
+    const own = new Set(CORE_LOOKS.filter((l) => l.branch === 'army').map((l) => l.name));
     for (const c of list) expect(own.has(c.name) || /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z][a-z]+$/.test(c.name), c.name).toBe(true);
   });
 
@@ -203,7 +208,22 @@ describe('bot characters: soldiers only', () => {
     expect(castAllows(['monkey'], 'core.bigbab')).toBe(true);
     expect(castAllows([], 'core.scamp')).toBe(true);
     expect(botCastLabel(undefined)).toBe('All characters');
-    expect(botCastLabel(['soldiers'])).toBe('Soldiers');
+    expect(botCastLabel(['soldiers'])).toBe('Soldiers & Spies');
+    expect(botCastLabel(['army'])).toBe('Soldiers & Spies: Army');
+    // Army or Agency alone; Soldiers & Spies is both.
+    expect(castAllows(['army'], 'core.grunt68')).toBe(true);
+    expect(castAllows(['army'], 'core.stealthop')).toBe(false);
+    expect(castAllows(['agency'], 'core.stealthop')).toBe(true);
+    expect(castAllows(['soldiers'], 'core.stealthop')).toBe(true);
+    expect(castLooks(['army']).every((l) => l.branch === 'army')).toBe(true);
+    // Retired ids (saved setups, maps, server rules) read as what they went into (2026-11-17): Agents & Spies is
+    // Agency (the same characters), Creatures is in Horrors & Creatures.
+    expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'horror', 'pirate']);
+    expect(castAllows(['agents'], 'core.zhao')).toBe(true);
+    expect(castAllows(['agents'], 'core.grunt68')).toBe(false);
+    expect(castAllows(['creatures'], 'core.snikkit')).toBe(true);
+    expect(castAllows(['creatures'], 'core.rattles')).toBe(true);
+    expect(botCastLabel(['agents'])).toBe('Soldiers & Spies: Agency');
     // Match setup: absent the map's, [] all.
     const map = yard(['soldiers']);
     const base = { map: map.metadata.id, mode: 'core.deathmatch' as const, bots: 4, skill: 'normal' as const, scoreLimit: 20, minutes: 10 };
@@ -218,6 +238,10 @@ describe('bot characters: soldiers only', () => {
     spec.write(r, 'soldiers');
     expect(r.botCast).toEqual(['soldiers']);
     expect(spec.read(r)).toBe('soldiers');
+    // A host.json from before 2026-11-17 still reads.
+    expect(parseRuleValue(spec, 'agents')).toEqual({ ok: true, value: 'agency' });
+    expect(parseRuleValue(spec, 'creatures')).toEqual({ ok: true, value: 'horror' });
+    expect(parseRuleValue(spec, 'army')).toEqual({ ok: true, value: 'army' });
     spec.write(r, 'all');
     expect(r.botCast).toEqual([]);
     spec.write(r, 'map');
@@ -236,6 +260,7 @@ describe('bot characters: soldiers only', () => {
     expect('botCast' in applyCommand(next, { kind: 'setBotCast', before: ['soldiers'], after: null })).toBe(false);
     expect(validateMap({ ...map, botCast: ['soldiers', 'dinosaurs'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(true);
     expect(validateMap({ ...map, botCast: ['soldiers'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(false);
+    expect(validateMap({ ...map, botCast: ['army', 'agents', 'creatures'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(false);
     expect(lookGroup('core.grunt68')).toBe('soldiers');
     expect(lookGroup('core.astronaut')).toBe('space');
   });

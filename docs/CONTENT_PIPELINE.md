@@ -907,6 +907,17 @@ with its top at 2.43 m; collides as its posts and the net's band, a lattice to s
 bed 15 × 24 m and 4 cm deep with the lines of a 9 × 18 m court and a centre line across; no collision, so lay it on
 ground made flat with the Terrain tab's Flatten and stand the net across its middle, turned as the court is).
 
+**The classroom** (`tools/content/kit/school.mjs`; St. John's step 5). Family type `board`: `kit.board.chalk` (a
+3 × 1.25 m wall chalkboard in a wooden frame with a chalk ledge, chalk and a duster, a few pale strokes and no words;
+variants green, black, and a white board), `kit.board.screen` (a pull-down projector screen, its case under the
+ceiling and the sheet 0.8 m down); both hang on a wall (back on −z; place them at the height they hang) and collide as
+nothing. `kit.board.notice` (an outdoor notice board on two posts under a small shingle roof, blank sheets pinned on both
+faces; collides as its box). `kit.table.school_desks`: four single desks in a row, two each side of a 0.7 m aisle, a
+chair pushed in at each on +z (one prop where there would be eight); collides as the four desks, the chairs do not;
+variant empty without chairs. The wall style Classroom windows (`windows_school`) and the set piece Classroom Bay
+(`setpiece.classroom_bay`, option East end) use them; the facade Collegiate fieldstone (`collegiate_fieldstone`)
+is St. John's Stangeland / Cord's. Map format v46 names the style and the facade. Nothing glows or blinks.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
