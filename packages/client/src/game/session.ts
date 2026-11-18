@@ -2616,11 +2616,16 @@ export class GameSession {
     }
     // Throwables' models (content/throwables.json `view`, as the weapon set shows them: its `looks`): the grenade
     // everyone may start with (the set's first, else the frag) and what grenade pickups may hold, loaded and warmed like
-    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight. Every life is dealt one
+    // of the set's grenades (weaponSets.ts throwableFor), so any of them may be the first in a hand.
     const thrown = new Set<string>();
     const look = set?.id;
-    const first = rules.startingGrenades > 0 ? throwableModel((set && setThrowables(set)?.[0]) || 'frag', look) : null;
-    if (first) thrown.add(first);
+    if (rules.startingGrenades > 0) {
+      for (const kind of (set && setThrowables(set)) || ['frag' as const]) {
+        const model = throwableModel(kind, look);
+        if (model) thrown.add(model);
+      }
+    }
     for (const e of map.entities) {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
