@@ -69,11 +69,11 @@
       "category": "Industrial",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's step 10, photos 2 and 3: the gym's barrel vault on steel trusses): one 8 m bay of a barrel-vaulted roof 24 m across: the boarded underside rising 3.5 m from springing to crown, a steel bowstring truss across the bay's middle with its tie 1 m up, four pendant lamp shades hung from it (looks only: a set piece's light gives the light). Place its foot at the walls' springing height inside a tall room (the room's roof covers it). Drawn from inside. Collides as nothing."
+        "1": "First version (St. John's step 10, photos 2 and 3: the gym's barrel vault on steel trusses): one 8 m bay of a barrel-vaulted roof 24 m across: the boarded underside rising 2.3 m from springing to crown with a sheet roof over it (so a hall left open at the top is roofed by it), a steel bowstring truss across the bay's middle, four pendant lamp shades hung from its tie (looks only: a set piece's light gives the light). Its springing is 1.6 m over its foot: place the foot 1.6 m under the walls' top. Variant end fills the vault's end on -z (the gable over a hall's end wall). Collides as nothing."
       },
       "size": [
         24.0,
-        3.6,
+        4.0,
         8.0
       ],
       "collide": "none",
@@ -82,10 +82,11 @@
       "detail": "wood",
       "generator": {
         "kind": "vaultbay",
-        "rise": 3.5,
-        "tie": 1.0,
+        "spring": 1.6,
+        "rise": 2.3,
+        "tie": 0.0,
         "lamps": 4,
-        "drop": 0.6
+        "drop": 0.9
       },
       "lods": [
         {
@@ -106,7 +107,23 @@
           "look": {
             "boards": "#c9a77a",
             "steel": "#3c4045",
-            "shade": "#2c2f33"
+            "shade": "#2c2f33",
+            "roof": "#55595e"
+          }
+        },
+        {
+          "index": 1,
+          "name": "end",
+          "seed": 35002,
+          "set": {
+            "ends": "back"
+          },
+          "look": {
+            "boards": "#c9a77a",
+            "steel": "#3c4045",
+            "shade": "#2c2f33",
+            "roof": "#55595e",
+            "gable": "#8a4a36"
           }
         }
       ]

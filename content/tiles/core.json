@@ -461,6 +461,47 @@
       "notes": {"design":"Two flights side by side (no stairwell gap), joined by a landing at 2 m."}
     },
     {
+      "id": "core.hall_tall",
+      "category": "Rooms",
+      "displayName": "Tall Hall",
+      "blurb": "Two storeys high with no column: a hall's bay (a chapel's nave, a gym, a pool); doorways on either level",
+      "cells": [[0,0,0],[0,0,1]],
+      "floors": [0],
+      "ports": [{"allSides":0},{"allSides":1}],
+      "configurable": true,
+      "notes": {"design":"The Tall Room without its middle column (St. John's chapel, gym and pool, docs/map-briefs/st_johns): a row of them makes one hall two storeys high. Room options (ceiling, corners) apply; its roof is at 8 m."}
+    },
+    {
+      "id": "core.porch_round",
+      "category": "Curves",
+      "displayName": "Round Porch",
+      "blurb": "A round room 6.5 m across in one cell: doorways north and south, windows east and west, a flat roof to set a cone on",
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"side":"S","level":0},{"side":"N","level":0}],
+      "open": true,
+      "edgeDefault": "open",
+      "solids": [
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[-0.7845,-0.1175],"y":[0,4],"t":0.5}},
+        {"arcTrim":{"centre":[0,0],"r":3.25,"turns":[-0.7845,-0.1175]}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[0.1175,0.7845],"y":[0,4],"t":0.5}},
+        {"arcTrim":{"centre":[0,0],"r":3.25,"turns":[0.1175,0.7845]}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[1.2155,1.8825],"y":[0,4],"t":0.5}},
+        {"arcTrim":{"centre":[0,0],"r":3.25,"turns":[1.2155,1.8825]}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[2.1175,2.7845],"y":[0,4],"t":0.5}},
+        {"arcTrim":{"centre":[0,0],"r":3.25,"turns":[2.1175,2.7845]}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[-1.2155,-0.7845],"y":[2.9,4],"t":0.5}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[0.7845,1.2155],"y":[2.9,4],"t":0.5}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[-0.1175,0.1175],"y":[0,1.0],"t":0.5}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[-0.1175,0.1175],"y":[2.6,4],"t":0.5}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[1.8825,2.1175],"y":[0,1.0],"t":0.5}},
+        {"arc":{"centre":[0,0],"r":3.25,"turns":[1.8825,2.1175],"y":[2.6,4],"t":0.5}},
+        {"discStrips":{"centre":[0,0],"r":3.5,"strips":6,"width":0.6,"y":[3.6,4.0]},"kind":"floor"},
+        {"turned":{"turns":2,"pivot":[0,0],"parts":[{"discStrips":{"centre":[0,0],"r":3.5,"strips":6,"width":0.6,"y":[3.6,4.0]},"kind":"floor"}]}}
+      ],
+      "notes": {"design":"A round porch (St. John's Memorial Hall, the library: photo 14's low stone building under its tall red cone, docs/map-briefs/st_johns): a full circle of wall 0.5 m thick (its middle 3.25 m from the cell's centre), 2.2 m doorways south (the way in) and north (into the hall behind it), windows east and west (sill 1 m, head 2.6 m), trim round both faces, and a flat roof on the wall at 4 m (strips under a cone: the Cone Roof, red, at scale 2, sits on it). Open ground round it in the cell's corners."}
+    },
+    {
       "id": "core.stair_spiral",
       "category": "Vertical",
       "displayName": "Spiral Stair",

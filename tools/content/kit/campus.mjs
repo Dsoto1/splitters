@@ -627,12 +627,13 @@ export function honoursMesh(seed, size, g, look, level) {
 // ---------------------------------------------------------------- the gym's vault bay
 
 /**
- * One 8 m bay of a barrel-vaulted hall's roof (the gym, photos 2 and 3): the vault's boarded underside across the room
- * from springing to springing (x), a segmental arch `rise` high, the length of the bay (z), boards drawn along it;
- * a steel bowstring truss across the bay's middle (a curved top chord under the boards, a straight tie, a zigzag of
- * webs, plates where it bears on the walls); `lamps` pendant lamp shades hung from the tie (looks only: a set piece's
- * light gives the light). Place it with its foot at the walls' springing height. Drawn from inside (the boards face
- * down); the room's own roof covers it. Collides as nothing.
+ * One 8 m bay of a barrel-vaulted hall's roof (the gym, photos 2 and 3): a segmental vault across the room (x) from
+ * springing to springing, `rise` high, springing `spring` m over the prop's foot, the length of the bay (z): its boarded
+ * underside facing into the room and, over it, a sheet roof facing the sky (so a hall left open at the top, ceiling
+ * Open, is roofed by it); a steel bowstring truss across the bay's middle (a curved top chord under the boards, a
+ * straight tie at the springing, a zigzag of webs, plates where it bears on the walls); `lamps` pendant lamp shades
+ * hung from the tie (looks only: a set piece's light gives the light). `ends: "back"` also fills the vault's end on −z
+ * with a wall (the gable over a hall's end wall, `gable` colour). Collides as nothing.
  */
 export function vaultBayMesh(seed, size, g, look, level) {
   const [w, h, d] = size;
@@ -640,41 +641,41 @@ export function vaultBayMesh(seed, size, g, look, level) {
   const boards = hex(look.boards ?? '#c9a77a');
   const steel = hex(look.steel ?? '#3c4045');
   const shade = hex(look.shade ?? '#2c2f33');
+  const sheet = hex(look.roof ?? '#55595e');
+  const gable = hex(look.gable ?? '#8a4a36');
   const X = w / 2;
   const Z = d / 2;
-  const rise = Math.min(g.rise ?? h - 0.1, h);
+  const s0 = g.spring ?? 0;
+  const rise = Math.min(g.rise ?? h - s0 - 0.1, h - s0 - 0.06);
   const R = (X * X + rise * rise) / (2 * rise);
-  const yc = rise - R;
+  const yc = s0 + rise - R;
   const n = level === 0 ? 24 : level === 1 ? 12 : 6;
   const a0 = Math.asin(X / R);
   const at = (t, rr = R) => {
     const a = -a0 + 2 * a0 * t;
     return [rr * Math.sin(a), yc + rr * Math.cos(a)];
   };
-  // The boards: strips along z, facing down into the room, in two tones by turns.
   for (let i = 0; i < n; i++) {
     const [x0, y0] = at(i / n);
     const [x1, y1] = at((i + 1) / n);
     const c = level === 0 && i % 2 ? scale3(boards, 0.9) : boards;
+    // The boards, facing down into the room; the sheet roof a little over them, facing up.
     quadN(m, [x0, y0, -Z], [x1, y1, -Z], [x1, y1, Z], [x0, y0, Z], [-(x0 + x1) / 2, yc - (y0 + y1) / 2, 0], c);
-    if (level === 0) {
-      // Joints between boards: thin dark lines along z at each quarter of a strip.
-      for (const t of [0.5]) {
-        const x = x0 + (x1 - x0) * t;
-        const y = y0 + (y1 - y0) * t;
-        const nx = -x / R;
-        const ny = (yc - y) / R;
-        quadN(m, [x - 0.01 * ny + nx * 0.003, y + 0.01 * nx + ny * 0.003, -Z], [x + 0.01 * ny + nx * 0.003, y - 0.01 * nx + ny * 0.003, -Z], [x + 0.01 * ny + nx * 0.003, y - 0.01 * nx + ny * 0.003, Z], [x - 0.01 * ny + nx * 0.003, y + 0.01 * nx + ny * 0.003, Z], [nx, ny, 0], scale3(boards, 0.6));
-      }
+    const [u0, v0] = [x0, y0 + 0.06];
+    const [u1, v1] = [x1, y1 + 0.06];
+    quadN(m, [u0, v0, -Z], [u1, v1, -Z], [u1, v1, Z], [u0, v0, Z], [(u0 + u1) / 2, (v0 + v1) / 2 - yc, 0], sheet);
+    if (g.ends === 'back') {
+      // The gable on −z: the segment between the arc and the springing line, both faces.
+      for (const dir of [-1, 1]) triN(m, [0, s0, -Z + 0.01 + dir * 0.005], [u0, v0, -Z + 0.01 + dir * 0.005], [u1, v1, -Z + 0.01 + dir * 0.005], [0, 0, dir], gable);
+      for (const dir of [-1, 1]) triN(m, [0, s0, -Z + 0.01 + dir * 0.005], [-X, s0, -Z + 0.01 + dir * 0.005], [X, s0, -Z + 0.01 + dir * 0.005], [0, 0, dir], gable);
     }
   }
   if (level >= 2) return m;
-  // The truss across the middle: a top chord 0.15 m under the boards, a tie `tie` m up, webs between.
-  const tie = g.tie ?? 0.5;
+  const tie = s0 + (g.tie ?? 0);
   const t = 0.12;
   const zt = g.at ?? 0;
   const k = level === 0 ? 16 : 8;
-  const chord = Array.from({ length: k + 1 }, (_, i) => at(i / k, R - 0.2)).map(([x, y]) => [x, Math.max(y, 0.1)]);
+  const chord = Array.from({ length: k + 1 }, (_, i) => at(i / k, R - 0.2)).map(([x, y]) => [x, Math.max(y, tie + 0.05)]);
   for (let i = 0; i < k; i++) bar(m, [chord[i][0], chord[i][1], zt], [chord[i + 1][0], chord[i + 1][1], zt], t, steel);
   bar(m, [-X + 0.3, tie, zt], [X - 0.3, tie, zt], t * 0.8, steel, { ends: true });
   for (let i = 1; i < k; i++) {
@@ -683,12 +684,12 @@ export function vaultBayMesh(seed, size, g, look, level) {
     if (y - tie < 0.15) continue;
     bar(m, [x, y, zt], [xb, tie, zt], t * 0.5, steel);
   }
-  for (const s of [-1, 1]) box(m, [s > 0 ? X - 0.3 : -X, 0, zt - 0.15], [s > 0 ? X : -X + 0.3, 0.4, zt + 0.15], steel, []);
+  for (const s of [-1, 1]) box(m, [s > 0 ? X - 0.3 : -X, tie - 0.3, zt - 0.15], [s > 0 ? X : -X + 0.3, tie + 0.1, zt + 0.15], steel, []);
   // Pendant lamps hung from the tie on rods.
   const lamps = g.lamps ?? 4;
+  const drop = Math.min(g.drop ?? 1, tie - 0.32);
   for (let i = 0; i < lamps; i++) {
     const x = -X + (w * (i + 0.5)) / lamps;
-    const drop = g.drop ?? 1.2;
     bar(m, [x, tie, zt + 0.6], [x, tie - drop, zt + 0.6], 0.03, steel);
     const c = new Mesh();
     lathe(c, [[0.04, 0.3], [0.12, 0.26], [0.3, 0.02], [0.32, 0]], level === 0 ? 10 : 6, () => shade);
@@ -698,7 +699,6 @@ export function vaultBayMesh(seed, size, g, look, level) {
       c.P[j + 2] += zt + 0.6;
     }
     append(m, c);
-    // The lamp's underside: a pale disc (not lit: the light part shines).
     const discPts = arcPts(0, 0, 0.3, 0, TAU, 8).slice(0, 8);
     for (let j = 1; j + 1 < discPts.length; j++) triN(m, [x + discPts[0][0], tie - drop - 0.29, zt + 0.6 + discPts[0][1]], [x + discPts[j][0], tie - drop - 0.29, zt + 0.6 + discPts[j][1]], [x + discPts[j + 1][0], tie - drop - 0.29, zt + 0.6 + discPts[j + 1][1]], [0, -1, 0], hex('#e9e4d4'));
   }
@@ -729,8 +729,8 @@ export function bleacherMesh(seed, size, g, look, level) {
     const zf = Z - run * i;
     boxes.push([-X, 0, -Z, X, top, zf]);
     const tone = woodTone(plank, r, look, seed + i);
-    // The step: its riser (steel) and its tread (planks).
-    quadN(m, [-X, top - rise, zf], [X, top - rise, zf], [X, top, zf], [-X, top, zf], [0, 0, 1], steel);
+    // The step: its riser (steel) and its tread (planks); far off, the treads alone.
+    if (level < 2) quadN(m, [-X, top - rise, zf], [X, top - rise, zf], [X, top, zf], [-X, top, zf], [0, 0, 1], steel);
     quadN(m, [-X, top, zf], [X, top, zf], [X, top, zf - run], [-X, top, zf - run], [0, 1, 0], tone);
     if (level === 0) {
       // The seat plank along the tread's front, standing a little proud.
@@ -740,7 +740,7 @@ export function bleacherMesh(seed, size, g, look, level) {
     }
   }
   // The ends: steel side frames stepping up, and the back.
-  for (const s of [-1, 1]) {
+  for (const s of level < 2 ? [-1, 1] : []) {
     for (let i = 0; i < tiers; i++) {
       const top = rise * (i + 1);
       const zf = Z - run * i;
@@ -770,7 +770,7 @@ export function courtLinesMesh(seed, size, g, look, level) {
   const yk = h * 0.25;
   const X = L / 2;
   const Zs = W / 2;
-  const seg = level === 0 ? 24 : 10;
+  const seg = level === 0 ? 24 : level === 1 ? 10 : 6;
   floorBand(m, [[-X, -Zs], [X, -Zs], [X, Zs], [-X, Zs], [-X, -Zs]], lw, y, line);
   floorBand(m, [[0, -Zs], [0, Zs]], lw, y, line);
   floorBand(m, arcPts(0, 0, 1.8, 0, TAU, seg), lw, y, line);
@@ -783,8 +783,8 @@ export function courtLinesMesh(seed, size, g, look, level) {
     const key = [[kx, -kw], [kx - s * kd, -kw], [kx - s * kd, kw], [kx, kw]];
     if (keyC) floorPoly(m, key, yk, keyC);
     floorBand(m, [[kx, -kw], [kx - s * kd, -kw], [kx - s * kd, kw], [kx, kw]], lw, y, line);
-    // The free-throw circle at the key's top.
-    floorBand(m, arcPts(kx - s * kd, 0, 1.8, 0, TAU, seg), lw, y, line);
+    // The free-throw circle at the key's top (not far off).
+    if (level < 2) floorBand(m, arcPts(kx - s * kd, 0, 1.8, 0, TAU, seg), lw, y, line);
     // The three-point line: straights 0.9 m in from the sides, then an arc round the basket (1.575 m from the end).
     const bx = kx - s * 1.575;
     const R = 6.75;

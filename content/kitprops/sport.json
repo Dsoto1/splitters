@@ -147,10 +147,10 @@
       "category": "Town & Market",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's step 10, Gerber Pool): a pool's four lanes, 24 x 10 m: three lane ropes floating at the prop's top (the water's surface) in bands of red, white and blue, red near the walls; dark lane stripes with a T on the floor; a target on each end wall. Its foot on the pool's floor. Collides as nothing (the water and the basin do)."
+        "1": "First version (St. John's step 10, Gerber Pool): a pool's four lanes, 22 x 10 m: three lane ropes floating at the prop's top (the water's surface) in bands of red, white and blue, red near the walls; dark lane stripes with a T on the floor; a target on each end wall. Its foot on the pool's floor. Collides as nothing (the water and the basin do)."
       },
       "size": [
-        24.0,
+        22.0,
         1.45,
         10.0
       ],
