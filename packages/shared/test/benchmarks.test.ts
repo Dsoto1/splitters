@@ -4,7 +4,7 @@
  * pin the personalities, not exact numbers: the revolver absurd but
  * punishing, the SMG steady then wild, the shotgun close, the precision rifle
  * patient with drop, the rocket slow with splash and self-damage; switches
- * fast, hip fire strong, sprinting never delays a shot.
+ * fast, hip fire strong, out of a sprint the first shot comes quickly.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -276,14 +276,20 @@ describe('do not accidentally make (GUNPLAY_DIRECTION.md)', () => {
     expect(new Set(sig).size).toBe(ids.length);
   });
 
-  it('sprinting never delays a shot: fire while sprinting goes off in that same input', () => {
-    for (const id of [BENCH.pistol, BENCH.rifle, BENCH.shotgun]) {
+  it('no slow sprint-to-fire: fire while sprinting ends the sprint and the shot follows within 150 ms (its sprint-exit time)', () => {
+    // GUNPLAY_SPEC §27: a sprint can't fire at once, but the transition stays responsive (the handling note's table).
+    for (const id of [BENCH.pistol, BENCH.rifle, BENCH.shotgun, BENCH.smg]) {
       const { a, step } = setup(id, []);
       for (let i = 0; i < 20; i++) step({ forward: 1, yaw: Math.PI / 2, buttons: BUTTON_SPRINT });
       expect(a.move.sprint, id).toBe(true);
-      const ev = step({ forward: 1, yaw: Math.PI / 2, buttons: BUTTON_SPRINT | BUTTON_FIRE });
-      expect(ev.some((e) => e.e === 'shot' && e.s === a.slot), id).toBe(true);
-      expect(a.move.sprint).toBeFalsy();
+      let fired = -1;
+      for (let t = 0; t < 30 && fired < 0; t++) {
+        const ev = step({ forward: 1, yaw: Math.PI / 2, buttons: BUTTON_SPRINT | BUTTON_FIRE });
+        expect(a.move.sprint).toBeFalsy();
+        if (ev.some((e) => e.e === 'shot' && e.s === a.slot)) fired = t;
+      }
+      expect(fired, id).toBe(gunplayOf(getWeapon(id)).handling.sprintExit);
+      expect((fired * 1000) / TICK_RATE, id).toBeLessThanOrEqual(150);
     }
   });
 });

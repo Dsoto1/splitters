@@ -206,6 +206,7 @@ import { TipBook, type TipId } from './tips.ts';
 import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
+import { holdoverFor } from './holdover.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
@@ -3380,7 +3381,8 @@ export class GameSession {
       const frame = opticSpec && this.opticBlend > 0 ? opticFrame(opticSpec, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, this.opticBlend) : null;
       if (frame) this.fov = frame.worldFov;
       this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
-      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex' } : null);
+      // Holdover marks (spec §5) on the optic's reticle: its glass's edge spans the world's half-angle times its share.
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
       // The optic sways and steadies like a scope once the eye is on it.
       this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
@@ -3484,8 +3486,9 @@ export class GameSession {
         }
       }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
-      this.hud.setScope(zoomed);
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
+      // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
+      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : []);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend));
       this.updateScopeSway(dt, this.scopedNow);
       this.hud.setHealth(local.health, local.armor, local.alive);
