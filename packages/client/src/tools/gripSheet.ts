@@ -82,10 +82,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   let creature: { anim: CreatureAnimator; dispose(): void } | null = null;
   let creatures: CreatureLibrary | null = null;
 
-  /** Full-body first person: the body's own animator (its arms cut away; `current` is the universal arms holding the gun). */
-  let fpBodyAnim: CharacterAnimator | null = null;
   engine.runRenderLoop(() => {
-    fpBodyAnim?.update(1 / 30, { ...still, pitch: eyePitch });
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
     creature?.anim.update(1 / 30, { ...still, pitch: eyePitch });
     for (const a of crowd) a.update(1 / 30, { ...still, pitch: eyePitch });
@@ -155,27 +152,17 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
       const [vx, vy, vz] = def.view.viewOffset;
       viewRoot.position.set(vx, vy, vz);
-      // The body without its arms; the universal first-person arms hold the gun (as the game: view.ts showFpBody).
-      const bodyAnim = new CharacterAnimator(scene, ch);
-      const r = new FirstPersonBodyRig(scene, ch, bodyAnim, holder);
-      rig = r;
-      const armsRoot = new TransformNode('grip_fp', scene);
-      armsRoot.parent = eye;
-      const arms = await characters.create({ look: armsLookFor(look), armsOnly: true }, 'grip_arms');
-      fitFirstPersonArms(arms, armsRoot);
-      const anim = new CharacterAnimator(scene, arms);
+      const anim = new CharacterAnimator(scene, ch);
       anim.gripExternal(node, def.view.hold);
-      fpBodyAnim = bodyAnim;
+      const r = new FirstPersonBodyRig(scene, ch, anim, holder);
+      rig = r;
       current = {
         anim,
         dispose: () => {
-          fpBodyAnim = null;
           r.dispose();
-          bodyAnim.dispose();
           anim.dispose();
           node.dispose();
           viewRoot.dispose();
-          armsRoot.dispose();
           holder.dispose();
         },
       };
@@ -334,7 +321,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     /** The posed character's animator (tests: where its hands are drawn, gripCheck). */
     anim: () => current?.anim ?? null,
     /** Where the posed hands are drawn on the gun (model m from each hand's skin centre to its point; handProbe.ts). */
-    drawn: () => current?.anim.drawnGrip(current.anim.ch.meshes) ?? null,
+    drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
     upper,
     /**
@@ -400,7 +387,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const pick = (x: HandData | undefined) => (x ? { length: x.length, width: x.width, thickness: x.thickness, curl: x.curl, fingers: x.fingers } : null);
       return h ? { r: pick(h.r), l: pick(h.l) } : null;
     },
-    inside: () => (held && current ? gripInside(current.anim.ch.meshes, held) : null),
+    inside: () => (held && current ? gripInside([...(rig?.drawnMeshes ?? []), ...current.anim.ch.meshes], held) : null),
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),
     /** Curl test: close the hands by this share of their curl (1 as the game does; 0 open), and redraw. */

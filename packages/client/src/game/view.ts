@@ -1764,6 +1764,7 @@ export class GameView {
       v.node.setEnabled(true);
       this.viewmodel = v.node;
       this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold);
     };
     const kept = this.viewmodels.get(def.id);
     if (kept) return show(kept);
@@ -1837,6 +1838,7 @@ export class GameView {
       node.setEnabled(true);
       this.viewmodel?.setEnabled(false);
       this.fpArms?.anim?.gripExternal(node, THROW_HOLD);
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, THROW_HOLD);
     });
   }
 
@@ -1877,6 +1879,7 @@ export class GameView {
     const node = def ? (this.viewmodel ?? null) : null;
     node?.setEnabled(true);
     this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null);
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null);
   }
 
   /**
@@ -1897,6 +1900,7 @@ export class GameView {
         if (this.viewmodel === old) {
           this.viewmodel = node;
           this.fpArms?.anim?.gripExternal(node, def.view.hold);
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold);
         }
         old.dispose();
       },
@@ -1919,14 +1923,14 @@ export class GameView {
 
   setLocalLook(look: string | undefined): void {
     this.localLook = look;
-    // The universal arms hold the gun in both first-person modes (full body draws your character without its arms).
-    this.buildFpArms();
+    // Full body draws your own character instead: the arms are built only if first person falls back to them.
+    if (this.fpMode === 'arms') this.buildFpArms();
   }
 
   /** First person: your whole character ('body') or arms only ('arms'); applies from the next frame. */
   setFirstPersonMode(mode: FirstPersonMode): void {
     this.fpMode = mode;
-    this.buildFpArms();
+    if (mode === 'arms') this.buildFpArms();
   }
 
   get firstPersonMode(): FirstPersonMode {
@@ -2092,7 +2096,7 @@ export class GameView {
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.viewHidden = o.hidden || !def;
     // Full body: your own character's hands hold the gun instead of the arms.
-    const arms = !o.hidden && !!def && this.opticBlend === 0;
+    const arms = !o.hidden && !!def && !this.fpBody && this.opticBlend === 0;
     this.fpArms?.root.setEnabled(arms);
     if (arms && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
@@ -2594,10 +2598,12 @@ export class GameView {
   gripReport(): { local: ({ mode: 'body' | 'arms' } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>) | null; remote: ({ slot: number; dist: number } & NonNullable<ReturnType<CharacterAnimator['drawnGrip']>>)[]; creatures: { slot: number; report: ReturnType<CreatureAnimator['drawnGrip']> }[] } {
     const active = this.drawnByCamera();
     let local: ReturnType<GameView['gripReport']>['local'] = null;
-    // The universal arms hold the gun in both modes (full body draws your character round them).
-    if (this.fpArms?.anim && this.fpArms.root.isEnabled()) {
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) {
+      const g = this.fpBody.a.anim.drawnGrip([...this.fpBody.rig.drawnMeshes, ...this.fpBody.a.anim.ch.meshes]);
+      if (g) local = { mode: 'body', ...g };
+    } else if (this.fpArms?.anim && this.fpArms.root.isEnabled()) {
       const g = this.fpArms.anim.drawnGrip();
-      if (g) local = { mode: this.fpBody ? 'body' : 'arms', ...g };
+      if (g) local = { mode: 'arms', ...g };
     }
     const cam = this.scene.activeCamera?.globalPosition ?? Vector3.Zero();
     const remote: ReturnType<GameView['gripReport']>['remote'] = [];
@@ -2638,10 +2644,11 @@ export class GameView {
       a.weaponSlot = -1;
       a.weaponNode?.dispose();
       a.weaponNode = undefined;
-      // Drawn without its arms: the universal first-person arms hold the gun (grips auto-fit, owner 2026-11-18).
       fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
       this.fpBody = fp;
-      this.buildFpArms();
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      // Your own arms aren't needed while the body holds the gun.
+      this.fpArms?.root.setEnabled(false);
     }
     const shown = !this.viewHidden && this.opticBlend === 0;
     a.root.setEnabled(shown);
