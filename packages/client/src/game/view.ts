@@ -31,6 +31,7 @@ import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
 import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
 import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
+import { muzzlePoint } from './muzzlePoint.ts';
 import { streamPoint, streamStart, type StreamStart } from './streamBlend.ts';
 import type { ProjectileSample } from './interpolation.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -535,11 +536,12 @@ export class GameView {
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
-  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
   private muzzleY = 0.02;
+  private muzzleX = 0;
   private kickAmount = 0;
   /** The last kick was a melee weapon's barrel going off (a gun's recoil, heavier), not a swing. */
   private kickShot = false;
@@ -1293,7 +1295,7 @@ export class GameView {
   localMuzzle(): Vec3 | null {
     if (!this.viewmodel || !this.viewRoot.isEnabled(false)) return null;
     this.viewRoot.computeWorldMatrix(true);
-    const p = Vector3.TransformCoordinates(new Vector3(0, this.muzzleY, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
+    const p = Vector3.TransformCoordinates(new Vector3(this.muzzleX, this.muzzleY, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
   }
 
@@ -1337,7 +1339,12 @@ export class GameView {
       return;
     }
     // Bullets fly at their real speed (and only tracer rounds draw); `land: false` when the server's impact will land it.
-    this.impacts.fire(o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z }, o.to, o.color, o.land === false ? undefined : () => this.landRound(o), o.local ? 1.5 : 0, { ...(o.speed ? { speed: o.speed } : {}), ...(o.tracer === false ? { tracer: false } : {}) });
+    // The round leaves the gun as drawn: yours in first person (the viewmodel's muzzle), your character's in third
+    // person, anyone else's in their hands; its start settles on that muzzle once the frame has placed the guns
+    // (ImpactVisuals.settleStarts). With no gun drawn it starts just under the eye.
+    const anchor = this.muzzleAnchor(o);
+    const from = o.muzzle ?? anchor?.() ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z };
+    this.impacts.fire(from, o.to, o.color, o.land === false ? undefined : () => this.landRound(o), o.local ? 1.5 : 0, { ...(o.speed ? { speed: o.speed } : {}), ...(o.tracer === false ? { tracer: false } : {}), start: anchor });
   }
 
   /** What happens where a round lands (see shotVisual). */
@@ -1755,8 +1762,8 @@ export class GameView {
     this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
-    const show = (v: { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
-      ({ muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
+      ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
       v.node.setEnabled(true);
       this.viewmodel = v.node;
       this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
@@ -1770,8 +1777,9 @@ export class GameView {
       node.parent = this.viewRoot;
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      const at = def.view.muzzleAt;
-      const v = { node, muzzleZ: at ? at[2] : bounds.max.z, muzzleY: at ? at[1] : (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      // The muzzle as drawn (muzzlePoint.ts): the weapon's `muzzleAt`, else the middle of the model's front-most geometry.
+      const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
+      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
@@ -2000,8 +2008,13 @@ export class GameView {
   }
 
   /** Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). */
-  kick(def: WeaponDefinition, alt = false): void {
+  kick(def: WeaponDefinition, alt = false, slot?: number): void {
     const barrel = alt ? def.view.altShot : undefined;
+    // Third person: the flash is on your character's gun as drawn (followMuzzles keeps it there), as everyone sees it.
+    if (slot !== undefined && !this.viewRoot.isEnabled(false) && (def.kind !== 'melee' || alt) && !def.view.beam) {
+      const a = this.avatars.get(slot);
+      if (a?.muzzle && !a.hiddenSelf) this.remoteFlash(slot, def, alt);
+    }
     this.kickShot = !!barrel;
     // Reduce flashing: your own flash is smaller and dimmer (in the dark it was the brightest thing on screen).
     const calm = reduceFlashing();
@@ -2140,11 +2153,11 @@ export class GameView {
     }
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing && this.starFlash);
-    this.flashRig.root.position.set(0, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
+    this.flashRig.root.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
     this.flashRig.update();
     if (flashing) {
       this.flash.parent = this.viewRoot;
-      this.flash.position.set(0, this.muzzleY, this.muzzleZ + 0.08);
+      this.flash.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + 0.08);
     }
   }
 
@@ -2722,10 +2735,8 @@ export class GameView {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // A held gun's shadow is a speck past a few metres: it casts only near the camera.
       castSmall(node);
-      // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
-      const { min, max } = node.getHierarchyBoundingVectors(true);
-      const at = def.view.muzzleAt;
-      a.muzzle = { node, local: at ? new Vector3(at[0], at[1], at[2]) : new Vector3(0, (min.y + max.y) / 2 + (max.y - min.y) * 0.2, max.z) };
+      // The muzzle as drawn (muzzlePoint.ts), measured before it's put in a hand: the same point as your own copy's.
+      a.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;
@@ -4394,6 +4405,7 @@ export class GameView {
    */
   private followMuzzles(now: number): void {
     for (const lay of this.onMuzzle) lay();
+    this.impacts.settleStarts(this.scene.getFrameId());
     // Stream pieces in their first moments: off the muzzle, blending into the host's path.
     for (const p of this.projectiles.values()) {
       if (!p.stream) continue;

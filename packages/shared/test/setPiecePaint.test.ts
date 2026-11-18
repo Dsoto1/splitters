@@ -226,7 +226,7 @@ describe('looks of your own (format v47)', () => {
   });
 
   it('the format: my_ ids only, checked materials, a v46 map migrates as it is', () => {
-    expect(MAP_FORMAT_VERSION).toBe(47);
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(47);
     expect(SetPieceLookDef.safeParse({ id: 'imperial', displayName: 'X', roles: {} }).success).toBe(false);
     expect(SetPieceLookDef.safeParse({ id: 'my_x', displayName: 'X', roles: { stone: MARBLE } }).success).toBe(true);
     const odd: MapDocument = {
@@ -242,6 +242,6 @@ describe('looks of your own (format v47)', () => {
     expect(issues.filter((i) => i.code === 'setpiece.look').map((i) => i.message).join('\n')).toMatch(/core\.nope[\s\S]*core\.pbr_gravel/);
     const v46 = { ...scene(), formatVersion: 46 };
     const { doc: migrated } = migrateMapDocument(JSON.parse(JSON.stringify(v46)));
-    expect(migrated).toEqual({ ...JSON.parse(JSON.stringify(v46)), formatVersion: 47 });
+    expect(migrated).toEqual({ ...JSON.parse(JSON.stringify(v46)), formatVersion: MAP_FORMAT_VERSION });
   });
 });

@@ -16,7 +16,7 @@ import {
 import type { EditorApp } from './editorApp.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 
-/** One row of the list (px): the list draws only the rows in view (outlineWindow), so 4,096 things stay quick. */
+/** One row of the list (px): the list draws only the rows in view (outlineWindow), so 8,192 things (the entity cap) stay quick. */
 const ROW = 22;
 const FLAGS_KEY = (mapId: string) => `tiletrigger.editor.outliner.${mapId}`;
 const CLOSED_KEY = 'tiletrigger.editor.outliner.closed';
