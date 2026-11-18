@@ -363,7 +363,9 @@ export class EnvironmentVisuals {
     const templates = set ? this.lookTemplates.get(set.key) : this.templates.get(g.file)?.[level];
     const meshes = (templates ?? []).map((tpl, pi) => {
       // Instance buffers live on the geometry: each batch has its own copy.
-      const mesh = tpl.clone(`env_${species}${set ? '_looks' : ''}_l${level}_p${pi}_${sector}`, null, true)!;
+      // A shared batch names its looks after the base's file: env_broadleaf.oak.summer+autumn_l0_… (the lab and the e2e
+      // `environment` flow count the looks drawn from the names).
+      const mesh = tpl.clone(`env_${species}${set ? set.files.slice(1).map((f) => `+${f.slice(f.lastIndexOf('.', f.length - 5) + 1, -4)}`).join('') : ''}_l${level}_p${pi}_${sector}`, null, true)!;
       mesh.makeGeometryUnique();
       mesh.thinInstanceSetBuffer('matrix', buffer, 16, false);
       if (looks) mesh.thinInstanceSetBuffer(ENV_LOOK_KIND, looks, 1, false);
