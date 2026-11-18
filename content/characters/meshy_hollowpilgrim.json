@@ -6,6 +6,7 @@
   "name": "The Hollow Pilgrim",
   "look": "core.hollowpilgrim",
   "group": "horror",
+  "blood": "spirit",
   "nameTheme": "myth",
   "bio": "No face, no footsteps. It drifts across the field in silk robes and nobody hears it coming.",
   "body": "male",

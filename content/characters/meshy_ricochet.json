@@ -6,6 +6,7 @@
   "name": "Ricochet",
   "look": "core.ricochet",
   "group": "space",
+  "blood": "blue",
   "nameTheme": "alien",
   "bio": "Bounces off walls, ceilings and, given half a chance, you.",
   "body": "male",

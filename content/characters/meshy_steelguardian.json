@@ -6,6 +6,7 @@
   "name": "Steel Guardian",
   "look": "core.steelguardian",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Stood watch so long the gate rusted first.",
   "body": "male",

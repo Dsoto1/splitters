@@ -6,6 +6,7 @@
   "name": "Merrow the Wise",
   "look": "core.merrow",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "wizard",
   "bio": "Studied magic for four hundred years. Found the rifle quicker.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Imperial Guard",
   "look": "core.imperialguard",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Stood guard for a dynasty. Standing guard for you now.",
   "body": "male",

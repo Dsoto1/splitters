@@ -6,6 +6,7 @@
   "name": "Elephant Warrior",
   "look": "core.elephantwarrior",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "barbarian",
   "bio": "Never forgets a face. Especially one that shot at him.",
   "body": "male",

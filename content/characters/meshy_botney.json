@@ -6,6 +6,7 @@
   "name": "Botney Mullz",
   "look": "core.botney",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Lands every trick. Lands every shot. Can't climb stairs.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Gorilla G",
   "look": "core.gorillag",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "monkey",
   "bio": "Big chain, bigger arms. Peels bananas and enemies the same way.",
   "body": "male",

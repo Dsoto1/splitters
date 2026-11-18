@@ -6,6 +6,7 @@
   "name": "Sir Galloway",
   "look": "core.galloway",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Swore an oath to protect the realm. The realm has since moved on; he has not.",
   "body": "male",

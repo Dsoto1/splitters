@@ -6,6 +6,7 @@
   "name": "Starfarer",
   "look": "core.darkastronaut",
   "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Came back from the far side of the Moon with a new suit, a purple glow and no explanation.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Lion in a Suit",
   "look": "core.lionsuit",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "cat",
   "bio": "Runs the boardroom and the savanna. Today he's here to close a deal.",
   "body": "male",

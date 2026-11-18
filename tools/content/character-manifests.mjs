@@ -53,6 +53,8 @@ export const TIERS = ['core', 'experimental'];
 export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
 /** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
 export const BRANCHES = { army: 'soldiers', agency: 'soldiers' };
+/** What a character bleeds (`blood`; BLOOD_KINDS in looks.ts, a test keeps them equal): every built manifest names one (docs/CHARACTERS.md, "Blood"). */
+export const BLOOD = ['red', 'green', 'blue', 'oil', 'bone', 'spirit'];
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
 export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 /**
@@ -147,6 +149,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     const wants = Object.entries(BRANCHES).filter(([, g]) => g === m.group).map(([b]) => b);
     need(wants.length ? wants.includes(m.branch) : m.branch === undefined, wants.length ? `branch: ${wants.join(' or ')} (${m.group} names one)` : `branch: only for ${[...new Set(Object.values(BRANCHES))].join(', ')}`);
   }
+  need(BLOOD.includes(m.blood), `blood: what it bleeds when hit (${BLOOD.join(', ')}): red for people, green or blue for aliens, oil for robots and machines, bone for skeletons, spirit for ghosts`);
   need(m.sortAs === undefined || (typeof m.sortAs === 'string' && m.sortAs.length > 0 && m.sortAs.length <= 24), 'sortAs: the name Character Select lists it as (1–24 characters), or left out');
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
@@ -443,7 +446,7 @@ function lookLine(m) {
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.blood ? [`blood: ${q(m.blood)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

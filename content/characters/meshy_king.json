@@ -6,6 +6,7 @@
   "name": "King Aldric",
   "look": "core.aldric",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Rules three kingdoms and one leaderboard. Only one of them by election.",
   "body": "male",

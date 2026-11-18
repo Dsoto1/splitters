@@ -6,6 +6,7 @@
   "name": "Scary Larry",
   "look": "core.larry",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "spooky",
   "bio": "Lives under the stairs of every map. Comes out for the scoreboard.",
   "body": "male",

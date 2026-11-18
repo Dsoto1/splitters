@@ -6,6 +6,7 @@
   "name": "Spacewalker",
   "look": "core.astronaut",
   "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Six hours outside the airlock without a scratch. Six seconds down here and somebody's shooting.",
   "body": "male",

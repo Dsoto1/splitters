@@ -1004,7 +1004,7 @@ export class GameSession {
       },
       { signal },
     );
-    this.sfx.bloodOn = () => this.view.blood.on;
+    this.sfx.bloodOn = (victim) => this.view.blood.wet(this.view.bloodKind(victim));
     // Reduce flashing (also Options → Accessibility): on unless switched off, applied at once (reduceFlashing.ts).
     const flashBox = $('reduce-flashing') as HTMLInputElement;
     flashBox.checked = reduceFlashing();
@@ -2314,7 +2314,7 @@ export class GameSession {
               const len = Math.hypot(d.x, d.z) || 1;
               const dir = { x: d.x / len, y: 0.1, z: d.z / len };
               // Fists draw no blood, just the hit flash.
-              if (!ev.u) this.view.blood.hit(at, dir, 1.4);
+              if (!ev.u) this.view.blood.hit(at, dir, 1.4, this.view.bloodKind(ev.hit!));
               this.view.hitFx(at, 'melee');
               this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
               this.view.flinchPlayer(ev.hit!, dir, ev.u === 1 ? 1 : 0, ev.u === 1 ? 1 : 1.8);
@@ -2380,8 +2380,9 @@ export class GameSession {
               this.hud.killConfirm(this.killTimes.length);
             }
             const at = this.view.chestOf(ev.victim);
-            if (at) this.view.blood.kill(at);
-            if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
+            const bled = this.view.bloodKind(ev.victim);
+            if (at) this.view.blood.kill(at, bled);
+            if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2, bled);
             if (ev.hs && !ev.tk && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);

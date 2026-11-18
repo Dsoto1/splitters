@@ -6,6 +6,7 @@
   "name": "Fearsome Undead",
   "look": "core.fearsomeundead",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "Dug himself out for one more round. He plans to stay for several.",
   "body": "male",

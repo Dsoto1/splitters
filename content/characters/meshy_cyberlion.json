@@ -6,6 +6,7 @@
   "name": "Cyber Lion",
   "look": "core.cyberlion",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "cat",
   "bio": "King of the jungle, version two. Now with fewer feelings.",
   "body": "male",

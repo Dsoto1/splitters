@@ -6,6 +6,7 @@
   "name": "Bonejack",
   "look": "core.bonejack",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "undead",
   "bio": "Sailed off the edge of the map and came back lighter.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Sgt. Mackie",
   "look": "core.pruitt",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Thirty years on the beat. Has heard every excuse, and believes none of them.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "CRT Robot",
   "look": "core.crtrobot",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Runs on vacuum tubes and spite. The screen shows what it thinks of you.",
   "body": "male",

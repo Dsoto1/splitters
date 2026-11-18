@@ -7,6 +7,7 @@
   "look": "core.stancesoldier",
   "group": "soldiers",
   "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Puts the kettle on between rounds. Has never once missed tea, or a flank.",
   "body": "male",

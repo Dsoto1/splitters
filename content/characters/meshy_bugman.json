@@ -6,6 +6,7 @@
   "name": "Spike Scavenger",
   "look": "core.bugman",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Goggles down, spikes up. Picks the field clean once the shooting stops.",
   "body": "male",

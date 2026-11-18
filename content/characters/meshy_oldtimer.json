@@ -6,6 +6,7 @@
   "name": "Old Timer",
   "look": "core.oldtimer",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Ninety-three, still drives, still wins.",
   "body": "male",

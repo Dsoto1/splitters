@@ -6,6 +6,7 @@
   "name": "Old King Halvard",
   "look": "core.halvard",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Reigned for fifty years and outlived every rival. Not planning to stop now.",
   "body": "male",

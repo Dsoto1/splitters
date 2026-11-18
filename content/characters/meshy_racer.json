@@ -6,6 +6,7 @@
   "name": "The Racer",
   "look": "core.racer",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Fastest on the track since 1932. Out of the car, just as quick.",
   "body": "female",

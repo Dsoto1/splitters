@@ -6,6 +6,7 @@
   "name": "Octo Buddy",
   "look": "core.octobuddy",
   "group": "animals",
+  "blood": "blue",
   "nameTheme": "critter",
   "bio": "Eight arms, one grudge. He only brought two of them to the fight.",
   "body": "male",

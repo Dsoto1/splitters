@@ -6,6 +6,7 @@
   "name": "The Prospector",
   "look": "core.prospector",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "cowboy",
   "bio": "Forty years digging for gold. Found a rifle instead, and kept it.",
   "body": "male",

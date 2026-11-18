@@ -6,6 +6,7 @@
   "name": "The Purple Comet",
   "look": "core.purplehero",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "Purple suit, gold trim, no powers to speak of. Shows up anyway.",
   "body": "male",

@@ -1,4 +1,4 @@
-import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
+import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type BloodKind, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
 import { NPC_ROLE_BOTS, NPC_ROLE_SPECS } from '../content/npcRoles.generated.ts';
 import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
@@ -190,6 +190,20 @@ export const lookBranch = (id: string | undefined): CharacterBranch | null => {
   if (npcLookRole(id)) return NPC_LOOK_BRANCHES[id!] ?? null;
   const key = (id && RETIRED_LOOKS[id]) || id;
   return CORE_LOOKS.find((l) => l.id === key)?.branch ?? null;
+};
+
+/**
+ * What the creature NPC skins bleed (BLOOD_KINDS; docs/CHARACTERS.md, "Blood"). The soldier mannequins (trooper,
+ * gunner, heavy, sniper: the Dummy) have none and bleed the map's blood; the zombie skin is red. Roles drawn as a
+ * character look bleed what that look's manifest says.
+ */
+export const NPC_SKIN_BLOOD: Readonly<Partial<Record<NpcRole, BloodKind>>> = { imp: 'red', puglin: 'red', cyclops: 'blue', oculus: 'green', scolitex: 'green', zombie: 'red' };
+/** What a look bleeds (`blood` in its manifest, an NPC skin's above); null: the map's blood (a design of yours, a part-built preset, the mannequins, anything unknown). */
+export const lookBlood = (id: string | undefined): BloodKind | null => {
+  const role = npcLookRole(id);
+  if (role) return NPC_SKIN_BLOOD[role] ?? null;
+  const key = (id && RETIRED_LOOKS[id]) || id;
+  return CORE_LOOKS.find((l) => l.id === key)?.blood ?? null;
 };
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */

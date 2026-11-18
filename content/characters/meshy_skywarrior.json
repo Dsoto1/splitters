@@ -6,6 +6,7 @@
   "name": "Warrior of the Skies",
   "look": "core.skywarrior",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "An eagle in gold armour. Came down from the clouds for this fight.",
   "body": "male",

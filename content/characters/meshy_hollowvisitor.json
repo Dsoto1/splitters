@@ -6,6 +6,7 @@
   "name": "The Hollow Visitor",
   "look": "core.hollowvisitor",
   "group": "horror",
+  "blood": "green",
   "nameTheme": "alien",
   "bio": "Nobody has seen inside the hood. Nobody who stayed to tell, anyway.",
   "body": "male",
