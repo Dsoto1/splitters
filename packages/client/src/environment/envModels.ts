@@ -70,5 +70,7 @@ export function partMesh(scene: Scene, name: string, part: EnvPart, materials: E
   mesh.material = materials.get(part.material, part.texture, looks.length);
   mesh.isPickable = false;
   mesh.setEnabled(false);
+  // Never drawn (only cloned): not a shadow caster either (the shadow list and its count leave it out).
+  mesh.metadata = { castsNoShadow: true, envTemplate: true };
   return mesh;
 }

@@ -373,7 +373,8 @@ export class EnvironmentVisuals {
       mesh.isVisible = this.visible;
       // Light levels and the stand-in cast no shadow (a far shadow is a smudge; near levels cast). With the static
       // shadow sets none of the drawn batches casts: the sets do.
-      if (far || this.shadowSets) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
+      // (Set outright: the template's own metadata says it casts nothing, and a clone takes it.)
+      mesh.metadata = far || this.shadowSets ? { castsNoShadow: true } : null;
       return mesh;
     });
     b = { level, copies, meshes, buffer, looks, set, dirty: false };
