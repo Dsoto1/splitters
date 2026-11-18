@@ -12,13 +12,15 @@ import type { AudioSystem } from '../src/audio/audio.ts';
 describe('team kill sounds', () => {
   const run = (events: GameEvent[]) => {
     const played: string[] = [];
-    const audio = { play: (id: string) => played.push(id) } as unknown as AudioSystem;
+    // The announcer's lines (audio/announcer.ts) are heard as their ids.
+    const audio = { play: (id: string) => played.push(id), speak: (id: string) => (played.push(id), 1), duration: () => 1 } as unknown as AudioSystem;
     const sfx = new SessionAudio(audio, () => 0);
     const poses = () => [3, 4, 5].map((slot) => ({ slot, x: slot, y: 0, z: 0, alive: false }) as unknown as RemotePose);
     events.forEach((ev, i) => sfx.event(ev, poses, 1000 + i * 100));
+    sfx.tick(1000 + events.length * 100);
     return played;
   };
-  const CONFIRM = ['ui.kill.confirm', 'ui.kill', 'announce.multikill'];
+  const CONFIRM = ['ui.kill.confirm', 'ui.kill', 'double_kill', 'announce.multikill'];
 
   it('an enemy kill confirms (and two in a row call the multi-kill)', () => {
     const played = run([
@@ -26,7 +28,7 @@ describe('team kill sounds', () => {
       { e: 'kill', killer: 0, victim: 4, weapon: 'core.rifle' },
     ]);
     expect(played.filter((id) => id === 'ui.kill.confirm')).toHaveLength(2);
-    expect(played).toContain('announce.multikill');
+    expect(played).toContain('double_kill');
   });
 
   it('a team kill plays the death only: no confirmation, and it does not count toward a multi-kill', () => {
