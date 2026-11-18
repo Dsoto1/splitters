@@ -32,6 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- `wip/painting-5` (lane B: painting Phase 5; was green at 3b9e19e5 but conflicts with main since St. John's step 5 took map format v46: a helper is merging main and moving `lookDefs` to **v47**, then re-checking on `check/painting-5b`).
 - `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
@@ -39,7 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/painting-5` · 3b9e19e5 · 44205365593 (lane B: MapMaker painting Phase 5, save and name your own looks: Save as my look, My looks list, apply/rename/delete, looks travel with maps; map format v46; next train)
+- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
@@ -170,12 +171,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
 
 ## Parked
-- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive `sounds/sonniss/<year>/` (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
+- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive (arriving since 2026-11-18 01:14 UTC in `sounds/sfx/GDC 2016/` and `sounds/sfx/GDC 2017/`, e.g. Gunshots and bullets, Ambiance, heartbeat and breathing; starts once the owner says the upload is done) (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
 - L · B · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · B · Sound pass 2 (paused by the owner).
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-18 · B · MapMaker UI Phase 4a, Tile View: a north-up plan of a tile, set piece or group in the minimap's place (Enter, double-click, ⊞); pick, drag on a snap, nudge, R turns, Local/World fields, wall sides (train `check/train-20261118-031402` at 47fac281, run 44228966768).
 - 2026-11-18 · A+B · Train `check/train-20261118-004220` (37a68194, run 44210289769): St. John's step 5, Stangeland / Cord (lane A); the owner's character pass: Warrior Sentinel's shoulder, Rattles straighter, Horrors & Creatures, Soldiers & Spies with Army/Agency, the moves, the astronauts together (lane B).
 - 2026-11-17 · B · **Version 0.10.0** (check/release-0.10.0 at fee86ac3, run 44182239032), with the Dropship's whole deck (floor plates over the processed model's holes, every level of detail) and half-strength team colour on every textured vehicle (`wip/dropship-deck`, 5fd62a08).
 - 2026-11-17 · B · St. John's spruces by the arch, the curved sandstone wall, a pier and two banner lamps in the school colours (a new Royal purple banner lamp: white band, red trim), and the landing lock as the `landing-lock` branch run by train.mjs (train `check/train-20261117-204000` at 2e335777, run 44171323597).
