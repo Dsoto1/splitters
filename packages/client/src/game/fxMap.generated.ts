@@ -387,7 +387,7 @@ export const FX_MAP = {
     "blood.spirit": {
       "pack": "hit_fx",
       "effect": "vfx_impact_05",
-      "scale": 0.26,
+      "scale": 0.22,
       "tint": "#a9adb3"
     }
   },

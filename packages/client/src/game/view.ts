@@ -224,7 +224,7 @@ interface Fx {
 /** Reduce flashing: a fight's bright moments (armour breaking, a heavy hit, a streak's burst) at this size and brightness. */
 const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
 /** A spirit's wisp off a hit plays at this share of the pack's strength (blood by character; owner, 2026-11-18: softer). */
-const SPIRIT_GAIN = 0.6;
+const SPIRIT_GAIN = 0.45;
 
 /** Spawn protection's shimmer: the pack's ball at this strength, and the soft blue the body glows (both faint). */
 const SHIELD_SHIMMER = 0.32;
@@ -1465,9 +1465,9 @@ export class GameView {
     this.bloodFxAt.set(key, now);
     this.bloodFxPlayed++;
     const near = this.towardCamera(at, 0.3);
-    // The wisp is soft (owner, 2026-11-18: white-grey, not a pure white burst): at most 0.6 of the pack's strength.
+    // The wisp is soft (owner, 2026-11-18: white-grey, not a pure white burst): 0.45 of the pack's strength, eased in.
     const soft = key === 'blood.spirit' ? SPIRIT_GAIN : 1;
-    this.vfx.play(fx.pack, fx.effect, new Vector3(near.x, near.y, near.z), { scale: fx.scale * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain * soft, fadeIn: BLAST_FADE_IN } : soft < 1 ? { gain: soft } : {}) });
+    this.vfx.play(fx.pack, fx.effect, new Vector3(near.x, near.y, near.z), { scale: fx.scale * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain * soft, fadeIn: BLAST_FADE_IN } : soft < 1 ? { gain: soft, fadeIn: BLAST_FADE_IN } : {}) });
   }
 
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */

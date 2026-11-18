@@ -197,7 +197,7 @@
       "trap.shock": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.5 },
       "zipline": { "pack": "hit_fx", "effect": "vfx_strike_01", "scale": 0.14 },
       "blood.oil": { "pack": "electric_fx", "effect": "vfx_impact_lightning_01", "scale": 0.22 },
-      "blood.spirit": { "pack": "hit_fx", "effect": "vfx_impact_05", "scale": 0.26, "tint": "#a9adb3" }
+      "blood.spirit": { "pack": "hit_fx", "effect": "vfx_impact_05", "scale": 0.22, "tint": "#a9adb3" }
     },
     "arcs": {
       "$comment": "Lightning (the `arc` event): a bolt laid along each jump (`zap`: its tube stretched to the jump, rooted where it lands; `width` scales its thickness; `speed` fits the pack's 0.6 s bolt to the game's 0.1-0.15 s between arcs) and a crackle where the last one lands (`hit`, minor). By who made it: an arc sentry (`mount`, in its violet), an electric fence (`fence`) or a gun (`default`: the Arc Caster).",
