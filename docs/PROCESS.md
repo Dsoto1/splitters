@@ -9,7 +9,7 @@ HANDOFF.md keeps the current state: the notes for each lane, live claims, the "C
 ## Which branches are ready: `train.mjs --ready`
 
 ```
-node tools/ci/train.mjs --ready                      # or: pnpm ci:ready
+node tools/ci/train.mjs --ready                      
 node tools/ci/train.mjs --ready --run --holder "<session>"
 ```
 
@@ -33,7 +33,7 @@ When a branch's merge into the train's candidate conflicts only in HANDOFF.md an
 ## Disk clean-up: `tools/dev/cleanup.mjs`
 
 ```
-node tools/dev/cleanup.mjs            # or: pnpm cleanup  (lists, removes nothing)
+node tools/dev/cleanup.mjs            # lists, removes nothing
 node tools/dev/cleanup.mjs --yes      # removes, prints the space freed
 node tools/dev/cleanup.mjs --min-age 6
 ```
@@ -43,7 +43,7 @@ A worktree is removed only when it isn't the main checkout, the one you're in, o
 ## The daily flake list: `tools/ci/flakes.mjs`
 
 ```
-node tools/ci/flakes.mjs              # or: pnpm ci:flakes  (last 7 days; writes docs/FLAKES.md)
+node tools/ci/flakes.mjs              # last 7 days; writes docs/FLAKES.md
 node tools/ci/flakes.mjs --days 2 --print
 ```
 
