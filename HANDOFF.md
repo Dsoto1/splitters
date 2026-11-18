@@ -120,7 +120,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Content order (lead, 2026-11-18 21:52):** `wip/stjohns-6` (coverage map + St. John's) lands before any `wip/nature-swap*` batch that touches `maps/test_coverage.json`; the nature swap does St. John's last, after `wip/stjohns-6` and `wip/stjohns-kit`.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/fixes-20261118` (a helper of lane B's splitters22: the fix batch of 2026-11-18, fixes 1-5)
+- `check/fixes-20261118` (a helper of lane B's splitters22: the fix batch of 2026-11-18, fixes 1-5; run 44406158312 red on its own e2e: Esc during the new loading screen, the board wait, fixed-grenade checks; fixed, re-checking)
 - `check/nature-swap-1` · 182ba8e7 (the nature swap, batch 1: the tool, the Dead Tree species and 10 maps; a helper of lane B's splitters22)
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
