@@ -640,14 +640,14 @@ check_cdn() {
   page="$(curl -fsS --max-time 15 "$@" "$base/")" || { note "FAIL CDN: no page from $base"; FAIL=1; return; }
   script="$(grep -o '/assets/[A-Za-z0-9._-]*\.js' <<<"$page" | head -n 1)"
   [ -n "$script" ] || { note "FAIL CDN: no /assets/ script in the page"; FAIL=1; return; }
-  h1="$(curl -fsSI --max-time 15 "$@" "$base$script")"
-  for _ in 1 2 3; do h2="$(curl -fsSI --max-time 15 "$@" "$base$script")"; grep -qi '^x-cache: hit from cloudfront' <<<"$h2" && break; sleep 2; done
+  h1="$(curl -fsS -o /dev/null -D - --max-time 30 "$@" "$base$script")"
+  for _ in 1 2 3; do h2="$(curl -fsS -o /dev/null -D - --max-time 30 "$@" "$base$script")"; grep -qi '^x-cache: hit from cloudfront' <<<"$h2" && break; sleep 2; done
   if grep -qi '^cache-control: public, max-age=31536000, immutable' <<<"$h2" && grep -qi '^x-cache: hit from cloudfront' <<<"$h2"; then
     note "CDN: hashed files cached a year, served from the edge ($script: $(grep -i '^x-cache' <<<"$h1" | tr -d '\r' | cut -d' ' -f2-) then hit)"
   else note "FAIL CDN: $script not cached as expected ($(grep -i '^x-cache\|^cache-control' <<<"$h2" | tr -d '\r' | paste -sd ' '))"; FAIL=1; fi
   if curl -fsSI --max-time 15 "$@" "$base/" | grep -qi '^cache-control: no-cache'; then note "CDN: the page is revalidated every time (no-cache)"
   else note "FAIL CDN: the page is not no-cache"; FAIL=1; fi
-  if curl -fsSI --max-time 15 "$@" "$base/lobby/health" | grep -qi '^x-cache: miss from cloudfront'; then note "CDN: /lobby goes to the box uncached"
+  if curl -fsS -o /dev/null -D - --max-time 15 "$@" "$base/lobby/health" | grep -qi '^x-cache: miss from cloudfront'; then note "CDN: /lobby goes to the box uncached"
   else note "FAIL CDN: /lobby/health looks cached"; FAIL=1; fi
 }
 resolves_here() { [ "$(python3 -c 'import socket,sys; print(socket.gethostbyname(sys.argv[1]))' "$1" 2>/dev/null || true)" = "$STATIC_IP" ]; }
