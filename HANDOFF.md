@@ -121,6 +121,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/stjohns-kit` at 87328157, run 44360059891 (a helper of lane A's lead: the St. John's kit for steps 7-10): **red only on the bundle budget** (menu's first JS 2805.6 kB raw, budget 2800; gzip 786.7 of 800): the new tiles' and kit props' tables in the menu bundle. Every unit shard, check and bots green; e2e skipped (build failed). Needs menu headroom (QUEUE's performance batch) or a budget call by the lead.
+**Content order (lead, 2026-11-18 21:52):** `wip/stjohns-6` (coverage map + St. John's) lands before any `wip/nature-swap*` batch that touches `maps/test_coverage.json`; the nature swap does St. John's last, after `wip/stjohns-6` and `wip/stjohns-kit`.
+
+**Checking** (branch · run; remove the line when it turns green or red):
+- `check/nature-swap-1` · 182ba8e7 (the nature swap, batch 1: the tool, the Dead Tree species and 10 maps; a helper of lane B's splitters22)
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 
