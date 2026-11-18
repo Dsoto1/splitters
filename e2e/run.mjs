@@ -2853,6 +2853,7 @@ async function editorPhase5Checks(browser) {
   });
 
   // Keyboard: into the plan, ] and [ pick, Enter goes to the fields.
+  await page.waitForFunction(() => !!window.__editor.tileView.state().frame, null, { timeout: T(5000) });
   await page.focus('#ed-tv-canvas');
   await page.keyboard.press(']');
   await frames(page, 2);

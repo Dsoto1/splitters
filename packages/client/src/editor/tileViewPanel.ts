@@ -1041,12 +1041,17 @@ export class TileViewPanel {
 
   /** A plan key (planKeys.ts) acted on; false when it means nothing here (Enter with nothing picked: MapMaker's). */
   private planKey(act: PlanKeyAction): boolean {
+    if (!this.focus) return false;
+    // (Picking needs only what is in the focus, made now if no frame has run yet since Tile View opened.)
+    if (act.kind === 'pick') {
+      this.pickNext(act.step);
+      return true;
+    }
     const v = this.view;
-    if (!v || !this.focus) return false;
+    if (!v) return act.kind !== 'fields';
     if (act.kind === 'pan') this.view = planMove(v, act.dx * 2 * v.halfW, -act.dy * 2 * v.halfH);
     else if (act.kind === 'zoom') this.view = planZoom(v, 1 / act.k);
     else if (act.kind === 'fit') this.fit();
-    else if (act.kind === 'pick') this.pickNext(act.step);
     else if (act.kind === 'fields') {
       const first = this.detail.querySelector<HTMLElement>('input, select');
       if (!first || !(this.childId || this.edge)) return false;
@@ -1059,6 +1064,8 @@ export class TileViewPanel {
 
   /** `]` / `[`: the next or previous thing, wall side or part picked, as a click on it would (tileViewModel cyclePick). */
   pickNext(step: 1 | -1): void {
+    if (!this.rebuild()) return;
+    this.syncChild();
     const b = this.built;
     if (!b) return;
     const blocked = this.app.outliner.blocked;
