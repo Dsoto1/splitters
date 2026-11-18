@@ -33,6 +33,7 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
+import { myCareer, myFavClass, recordMatch } from './careerStats.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
@@ -910,6 +911,20 @@ class App {
         return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
       },
       ...(o.tutorial ? { tutorial: true } : {}),
+      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial.
+      ...(o.exitOnF5 || o.tutorial
+        ? {}
+        : {
+            career: {
+              record: recordMatch,
+              favClass: myFavClass,
+              card: () => {
+                const f = this.front!;
+                const { career, where } = myCareer();
+                return { name: f.displayName, verified: f.verified, character: f.lookName(f.look), favClass: myFavClass(), career, where };
+              },
+            },
+          }),
       // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
       tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
       onExit: (reason, travel, how, end) => {
@@ -964,7 +979,7 @@ function onceBack(f: () => void): void {
 
 const app = new App();
 // The start-up loading screen is the game's: the /host page and the team tools show straight away.
-if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters') finishBoot();
+if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters' || params.get('mode') === 'weapons') finishBoot();
 // trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
@@ -1005,6 +1020,10 @@ else if (params.get('mode') === 'assets') {
     const { engine } = await createEngine($<HTMLCanvasElement>('view'));
     await openPropLineup(engine);
   })();
+} else if (params.get('mode') === 'weapons') {
+  // Team tool: weapons side by side (recoil path, spread cones, damage and time to kill over distance, holdover).
+  $('menu').hidden = true;
+  void import('./tools/weaponTuning.ts').then((m) => m.openWeaponTuning());
 } else if (params.get('mode') === 'grips') {
   // Team tool: one character holding one weapon at a time, for tools/content/grip-sheet.mjs.
   void (async () => {

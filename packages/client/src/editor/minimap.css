@@ -8,7 +8,8 @@
 @media (pointer: coarse) { .ed-minimap-tools button { width: 32px; height: 30px; } }
 .ed-minimap-slot[hidden] { display: none; }
 #ed-minimap-mini { height: 132px; }
-#ed-minimap-host { height: 230px; margin-top: 2px; }
+/* UI Phase 5: the minimap and Tile View's plan follow the window's height (a 720 px laptop keeps Properties in view; a tall screen gets a bigger map). */
+#ed-minimap-host { height: clamp(170px, 28vh, 340px); margin-top: 2px; }
 #ed-outliner[hidden] { display: none; }
 
 /* The expanded dock's Minimap | Outliner tabs: the fold first (as every panel's), then the tabs. */
@@ -19,3 +20,5 @@
 .ed-nav-tabs [role='tab'][aria-selected='true'] { color: var(--cyan); border-color: rgba(0, 209, 255, 0.4); border-bottom-color: transparent; background: rgba(0, 209, 255, 0.08); }
 .ed-nav-tabs [role='tab']:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
 #ed-outliner-panel[data-tab='minimap'] #ed-ol-count { display: none; }
+/* UI Phase 5: the minimap takes the keyboard (planKeys.ts); its focus ring sits inside the card. */
+#ed-minimap-canvas:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }

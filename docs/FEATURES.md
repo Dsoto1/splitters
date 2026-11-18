@@ -215,6 +215,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 | `?offline=<map>` | the only way into retired maps |
 | `?mode=editor`, `?mode=designer` | open MapMaker or the Character Designer directly |
 | `?mode=assets`, `?mode=characters` | asset and character viewers |
+| `?mode=weapons` | weapon tuning: up to three weapons side by side (stat bars, recoil path, spread cones, damage and time to kill over distance, drop and holdover); `&w=core.smg,core.revolver&ballistics=advanced&hp=100` |
 | `?test=1`, `?god=1` | localhost only |
 | `?stats` | stats overlay |
 | `?sim=main` | runs the match on the page's main thread |

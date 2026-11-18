@@ -26,6 +26,7 @@ export type KeyAction =
   | 'notes'
   | 'botHints'
   | 'focus'
+  | 'tileView'
   | 'resetView'
   | 'logic'
   | 'paint'
@@ -56,7 +57,7 @@ export type KeyAction =
   | 'nudgeWest'
   | 'nudgeEast';
 
-export const KEY_GROUPS = ['Tools', 'Edit', 'Selection', 'Levels', 'View and camera', 'Brushes', 'Placing', 'Map and panels', 'Mouse', 'Palette'] as const;
+export const KEY_GROUPS = ['Tools', 'Edit', 'Selection', 'Levels', 'View and camera', 'Brushes', 'Placing', 'Map and panels', 'Tile View and minimap', 'Mouse', 'Palette'] as const;
 export type KeyGroup = (typeof KEY_GROUPS)[number];
 
 /** A key the handler acts on when it's pressed. */
@@ -113,7 +114,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'toggleSidePanel', group: 'Map and panels', keys: 'Shift+\\', what: 'The right dock: expanded, compact (the minimap only), hidden', codes: ['Backslash'], shift: true },
   { action: 'togglePalette', group: 'Map and panels', keys: '\\', what: 'Fold the asset browser to the left rail, or open it', codes: ['Backslash'], shift: false },
   tool('select', 'V', 'KeyV', 'Select: pick, move and edit things'),
-  { action: 'escape', group: 'Tools', keys: 'Esc', what: 'Cancel a ring turn mid-drag, else clear a measurement, else back to Select (with Select in hand: select none)', codes: ['Escape'] },
+  { action: 'escape', group: 'Tools', keys: 'Esc', what: 'Cancel a ring turn mid-drag, else clear a measurement, else step back out of Tile View, else back to Select (with Select in hand: select none)', codes: ['Escape'] },
   tool('place', 'P', 'KeyP', 'Place: the last piece picked from the palette'),
   tool('erase', 'X', 'KeyX', 'Erase: click anything to delete it'),
   tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
@@ -143,6 +144,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'planView', group: 'View and camera', keys: 'K', what: 'Plan view: the level from straight above, with spawns, objectives and pickups (again: back)', codes: ['KeyK'] },
   { action: 'showAll', group: 'Levels', keys: 'H', what: 'Show the levels above too', codes: ['KeyH'] },
   { action: 'focus', group: 'View and camera', keys: 'F', what: 'Frame the selection', codes: ['KeyF'] },
+  { action: 'tileView', group: 'View and camera', keys: 'Enter', what: 'Tile View: the selected tile, set piece or group from above, in the dock (or double-click it; Esc: back to the map)', codes: ['Enter', 'NumpadEnter'], shift: false },
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
   { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Environment brush)', codes: ['BracketRight'] },
   { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Environment brush)', codes: ['BracketLeft'] },
@@ -165,8 +167,20 @@ export const EDITOR_KEY_NOTES: readonly KeyNote[] = [
   { group: 'Mouse', keys: 'Shift+drag', what: 'Terrain: the brush the other way (lower, for Raise)' },
   { group: 'Mouse', keys: 'Right-click', what: 'Select: the selection menu; Walls: back to automatic; paths: remove a point' },
   { group: 'Mouse', keys: 'Ring drag', what: "Select: drag the gizmo's ring to turn the selection (Shift: a finer step; Esc cancels)" },
+  { group: 'Mouse', keys: 'Double-click', what: 'Select: Tile View on what was clicked (the minimap too)' },
   { group: 'Mouse', keys: 'Right-drag', what: 'Look round' },
   { group: 'Mouse', keys: 'Wheel', what: 'Zoom (Shift: faster)' },
+  { group: 'Map and panels', keys: '← →', what: "The dock's edge, focused: narrower, wider (Shift: further; Home, End: narrowest, widest)" },
+  // The two plans' own keys while one has the focus (client editor/planKeys.ts, tileViewPanel.ts; UI Phase 5).
+  { group: 'Tile View and minimap', keys: '] or [', what: 'Tile View: pick the next or previous thing or wall side' },
+  { group: 'Tile View and minimap', keys: '↑ ↓ ← →', what: 'Tile View: nudge the picked thing a snap step (Shift: 1 cm); the minimap: pan' },
+  { group: 'Tile View and minimap', keys: 'R', what: 'Tile View: turn the picked thing 15° (Shift+R back)' },
+  { group: 'Tile View and minimap', keys: 'Enter', what: "Tile View: to the picked thing's fields (Esc back); the minimap: Tile View on the selection" },
+  { group: 'Tile View and minimap', keys: 'Alt+↑ ↓ ← →', what: 'Pan the plan (Shift: further)' },
+  { group: 'Tile View and minimap', keys: '+ or −', what: 'Zoom in, out' },
+  { group: 'Tile View and minimap', keys: 'Home', what: 'Fit the tile or the level' },
+  { group: 'Tile View and minimap', keys: 'Esc', what: 'Tile View: let the picked thing go, then back to the minimap' },
+  { group: 'Tile View and minimap', keys: 'Tab', what: 'Into a plan (its focus ring shows), and on to its buttons and fields' },
   { group: 'Palette', keys: '↑ ↓ ← →', what: 'Move between pieces (from the search box: ↓)' },
   { group: 'Palette', keys: 'Enter', what: 'In the search box: pick the best match' },
   { group: 'Palette', keys: 'F', what: 'Add the focused piece to your favourites (or right-click it)' },

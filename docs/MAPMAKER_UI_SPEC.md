@@ -286,8 +286,122 @@ drawing and the pointer), `minimap.css`, and the dock (`rightDock.ts`, `dockPref
 ### Phase 4 — Tile Detail precision editor
 Implement tile focus, child picking, move/rotate/snap, numeric transforms, local/world coordinates, history integration, and immediate 3D updates. Gate generated-child overrides behind verified generator support.
 
+**Phase 4a: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-4`, 2026-11-17; no map format change).** The
+lead's note 3 and owner answers 1 and 8. Phase 4b (set-piece overrides) is **not built**: owner answer 9 parks it until
+4a is in use. Files under `packages/client/src/editor/`: `tileViewModel.ts` (the maths, pure), `tileViewPanel.ts` (the
+drawing, pointer and keys), `tileView.css`; wired in `rightDock.ts`, `dockPrefs.ts`, `editorApp.ts` (`openTileView`),
+`editorInput.ts` (Enter, double-click, Esc), `minimapPanel.ts` (double-click, ⊞) and shared `editor/keymap.ts`.
+
+- **Opening it** (owner answer 1): **Enter** on a selection (only with nothing else focused, so Enter on a button stays
+  the button's), a **double-click** with Select in the view or on the minimap (the tile or set piece there), or the
+  minimap's **⊞**. It is an asked-for action, so it expands the dock and shows the Minimap tab; selecting alone still
+  never opens a hidden dock. **Esc** (in the plan or the view) lets the picked thing go and selects the focus, then goes
+  back to the minimap; **← Map** and the breadcrumbs' "Map" too.
+- **Where it shows** (a choice the spec left open, taken as recommended): in the expanded dock **in the minimap's
+  place** (the spec says "under the minimap"; the dock is too short for both and Properties), with Properties below.
+  A compact or hidden dock shows the minimap card or nothing, and Tile View runs nothing while unseen.
+- **The focus** (owner answer 8): a tile, a set piece or a group (what the selection is: a whole group first, then its
+  tile or set piece), else an **area**: the cells round the things selected; on the minimap, the cell clicked. The level
+  shown is the one being edited if the focus has cells there, else its lowest (MapMaker's level follows it).
+- **The plan** (north up, like the minimap; recommendation, owner question 2): the level drawn from MapMaker's cached
+  boxes, the focus bright and the rest dimmed, its outline white (the parent) or cyan (selected), a grid on the snap
+  step from the frame's origin, the local axes (x red, z green) at the anchor, a scale bar and N, the pointer's place in
+  the chosen coordinates. Wheel zoom about the pointer, drag empty space (or right/middle drag) to pan, ⌂ fits.
+  Breadcrumbs: **Map › Shop › Prop 1** (the focus's crumb selects it).
+- **Children** (the audit's §6): things standing in it on that level (props, blocks, lights, door leaves, logic…): a
+  click picks one and selects it everywhere (`setSelection`, single, so a group's member can be picked; a moving build
+  whole); a **drag** previews in the plan and commits **one** shared transform (`{ by: { metres } }`) on release, on
+  the snap step **1 / 5 / 10 / 50 cm** (Ctrl, Shift or Meta held: free, to the millimetre); the **arrow keys** nudge a
+  step along the frame's axes (Shift: 1 cm), **R** turns 15° (Shift+R back), each one undo step. The fields under the
+  plan: **X, Z, Height, Facing**, in **Local** (tile-relative: from the anchor cell's middle, turned by the tile's
+  quarter turns; a group's or area's from its south-west corner, unturned: recommendation, owner question 3) or
+  **World**. Typed values go through the same command (X/Z as a move, Height as `set`, Facing as `face`). The snap and
+  the frame are kept in `tiletrigger.editor.dock` (`tileSnap`, `tileFrame`; defaults 10 cm and Local not written),
+  never in the map. The numbers are in Tile View, not in Properties (which keeps its world X / Height / Z: owner
+  question 6).
+- **Cell sides** (lead's note 3: doors and windows are edge styles): every outer side of the focus's tiles, coloured by
+  what is built (door-like green, window blue, wall grey, open dashed). A click picks one (its tile becomes the
+  selection), and Style and Glass change it through `setEdge`, as the Walls tool and the inspector do. This also
+  reaches multi-cell tiles' sides, which the inspector's Walls rows leave to the Walls tool.
+- **Generated content** (§4.3): a set piece's parts are drawn hollow and dashed, can be picked (named "… (part)"), and
+  say they are made by the set piece, pointing to Properties' Parts and Explode to tiles; a drag on one moves nothing.
+  A set piece's tile sides aren't listed. Nothing pretends to be editable.
+- **Kept the same:** no map format change; collision, the minimap and checks follow every edit because Tile View only
+  makes the existing commands; locked and hidden things can't be picked; the shipped maps are untouched.
+- **Not done:** Phase 4b; a rotate handle in the plan (R and the Facing field instead); dragging a door leaf along its
+  wall (it is a thing, moved like any other); snap to wall segment, edge or anchor (the grid snap only).
+- **Tests:** unit `client/test/tileView.test.ts` (local/world under every turn, a turned tile carrying its thing's local
+  place and facing, the snap, a drag as one command and one undo, the focus kinds and how a selection or point picks
+  them, children and parts by level, cell sides and a style change, picks, breadcrumbs, the kept prefs); e2e
+  `editorTileViewChecks` in `editortools` (kept out of `editorux`, already about 20 minutes on CI; Enter, the dock, breadcrumbs, click, drag on the turned tile's snap as one undo,
+  arrow and R, Local and World fields, a side made a door, Esc twice, a double-click on the minimap's set piece and its
+  read-only part, nothing in the map, compact) and `editorTileViewMoveChecks` (a moving build picked
+  whole, dragged as one step, a local Facing in a room turned 180°).
+
+**Owner questions on Phase 4a** (recommended first; built as recommended):
+1. Where Tile View shows: (a) in the expanded dock in the minimap's place, Properties below; (b) under the minimap as
+   the spec says (both smaller); (c) a third dock tab.
+2. The plan's orientation: (a) north up like the minimap, with the tile's local axes drawn; (b) turned so the tile's
+   own north is up.
+3. A group's or area's local origin: (a) its south-west corner; (b) its middle.
+4. R in Tile View: (a) 15° (Shift+R back), the Facing field for any angle; (b) MapMaker's own R step for that kind.
+5. Phase 4b (set-piece overrides): (a) still parked until 4a is in use (owner answer 9); (b) start it next.
+6. Local numbers: (a) only in Tile View, Properties keeps world X / Height / Z; (b) Local fields in Properties too while
+   Tile View is open.
+
 ### Phase 5 — Hardening and polish
 Test existing saved maps, serialization/migrations, collision/pathing updates, browser resizing, large-map performance, keyboard accessibility, and user preference persistence. Remove redundant instructional chrome.
+
+**Phase 5: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-5`, 2026-11-18; no map format change).** Every
+item of the line above, as recommended where the spec left a choice. Files under `packages/client/src/editor/` unless
+shared.
+
+- **Saved maps and migrations** (shared `test/savedMapsCheck.ts`, `savedMaps1..3.test.ts`): every map in `maps/` (format
+  versions 15 to 46, so the migrations from each run) and the old map fixtures are opened as MapMaker opens them
+  (`loadMap` forEditing) and saved as Save, Export and Publish write them (`serializeMap`); a second open and save
+  writes the same file, a draft (the map as JSON in this browser) reads back the same, the saved file carries the
+  current format, and it plays exactly as the original (the map as played from both is the same text: every tile,
+  thing, set-piece part, mode and setting kept). 95 files, about 20 s. All passed on the first run: nothing was lost.
+- **Collision and pathing after edits** (shared `test/editsRebuild.test.ts`): a pillar moved by the shared transform
+  command moves its box, what shots and bodies hit, and where the bots' navmesh walks; undo puts all three back
+  exactly; a typed Height lifts it so shots pass under and its footprint walks again.
+- **Resizing** (`dockPrefs.ts` `resizedDockState`, `dockMaxWidth`; `rightDock.ts`): narrowed past 900 px an expanded
+  dock folds to compact (as it would start: owner answer 7), widened back it returns; neither is kept (the saved choice
+  is only what someone picked). A dragged width is fitted to 45 % of a smaller window and comes back on a bigger one
+  (the kept number stays). Once a frame at most. The grip is a WAI-ARIA window splitter: `aria-valuemin/max/now`, the
+  arrows (Shift: 64 px), Home and End. Under 1,000 px the tool bar shows icons and keys only (names kept for screen
+  readers and tooltips); under 900 px the overlay keeps clear of the compact card (a Phase 1-era rule had it run
+  under the card). The minimap and Tile View's plan follow the window's height (`clamp`), so a 720 px laptop keeps
+  Properties in view.
+- **Large maps** (`tools/perf/editor-tileview.mjs`; St. John's and Flavius Rule, a 3 × 3-cell area round the densest
+  cell, software rendering): the pointer's place was in Tile View's redraw key, so every pointer move drew the whole
+  plan, and every draw gathered and sorted the whole map's boxes, breakable props and moving blocks again. Now the
+  readout is text updated on its own, the level's boxes are sorted once per drawn map, level and hidden set, and the
+  dock's view sync no longer forces Tile View or the minimap to draw again unless what shows changed. 60 pointer
+  moves: 60 draws, 133 ms (St. John's) / 114 ms (Flavius Rule) → 0 draws, 0 ms; a 12-step drag: 32 → 16 ms / 39 → 14
+  ms of drawing; a wheel zoom step about 0.9 ms.
+- **Keyboard** (`planKeys.ts`, pure; `tileViewPanel.ts`, `minimapPanel.ts`): both plans take the focus (a cyan ring) and
+  their keys stay theirs. Tile View: **]** / **[** pick the next or previous thing (north to south, west to east), then
+  the wall sides, then the set pieces' parts (`tileViewModel.ts` `cyclePick`; locked and hidden left out); **Enter**
+  goes to the picked thing's fields; **+ / −** zoom, **Home** fits, **Alt+arrows** pan (Shift: further); the plain
+  arrows still nudge and R still turns. The minimap: focusable, **+ / −**, the arrows pan (zooming in a step first when
+  the whole level shows), **Home** fits, **Enter** opens Tile View on the selection. The tile crumb is a button; "Map"
+  is text, ← Map beside it being the one way back. The `?` list has a **Tile View and minimap** section and the dock
+  edge's keys (shared `keymap.ts`, notes only: no binding changed).
+- **Preferences kept** (`viewPrefs.ts`, `tiletrigger.editor.view`): View → Grid and Full grid, and Snap, as left; the
+  defaults are written as nothing; anything unreadable reads as the defaults. Not kept, on purpose: Overlaps and the
+  map layers (coming back to a map with props hidden reads as props lost) and the plan view. Everything else MapMaker
+  keeps (the dock's state, width and tab, the minimap's zoom, Tile View's snap and frame, the panels' folds) is checked
+  to read back from nonsense.
+- **Instructional chrome removed:** the hover tooltips over the minimap and Tile View's plan (they covered what you
+  pointed at; the keys are in the aria labels and the `?` list), the duplicate "Map" crumb, and Tile View's side note
+  cut to its one fact.
+- **Not done:** keyboard picking in the 3D view (the outliner and Tile View cover it); a rotate handle in Tile View.
+- **Tests:** unit `client/test/editorPhase5.test.ts` (resize states, widths, view prefs and every kept pref from
+  nonsense, the plans' keys, keyboard picking order), shared `savedMaps*`, `editsRebuild`; e2e `editorPhase5Checks` in
+  `editortools` (not `editorux`): `]`/`[`/Enter, zoom, pan and fit, no draws on pointer moves, 860 px compact and back
+  with the tool bar clear of the card, the grip's End fitted to a 1,000 px window and restored, the minimap's keys and
+  Enter, the `?` section, Grid and Snap kept for a new page and nothing kept at the defaults.
 
 ## 11. Acceptance criteria
 

@@ -713,6 +713,41 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
     breakable (species carry no breakable data; `prop.log` has 60 health).
   They are in MapMaker's Environment group (Boulders, Deadwood) but not in the brush presets (a new species in a
   preset's mix changes what a seed paints). Their palette pictures come with the next `pnpm content:rebuild`.
+- **Environment Phase 4, more variety (2026-11-17, owner: "yes"):** seventeen species, every one through a generator
+  that was already there (one new kind, `rosette`), from the shared pictures (no new atlas cell, so no existing model
+  changes):
+  - trees: `env.broadleaf.birch` (Silver Birch: tall and slender, pale bark, a narrow open crown; summer, autumn),
+    `env.broadleaf.olive` (short, gnarled and leaning under a low, wide grey-green crown; green, dry),
+    `env.conifer.mountain_pine` (short and stocky, a lean, the tree line's pine; summer, snow), `env.conifer.larch`
+    (tall and open, light upturned branches; summer, autumn gold), `env.conifer.cypress` (Italian Cypress: a narrow dark
+    column; green, dry);
+  - bushes: `env.shrub.juniper` (Creeping Juniper: a low wide mat of needle sprays, 0.7 m; decoration, no
+    concealment; green, blue; the shrub generator's new `cards` names the atlas pictures it uses, the broadleaf ones by
+    default) and `env.shrub.sagebrush` (a rounded silver-grey desert bush, 0.95 m, conceals like the other bushes; grey,
+    dry);
+  - grasses: `env.grass.tall` (0.9 m, arching; summer, dry) and `env.grass.tussock` (a dense upright bunch, 0.5 m;
+    green, straw), 60 triangles each;
+  - flowers: `env.flower.alpine` (a low cushion of small heads, 0.18 m; blue, pink, white) and `env.flower.desert`
+    (Desert Marigold: wiry grey stems, a daisy head each; yellow, orange);
+  - desert: `env.cactus.barrel` (a squat ribbed barrel, no arms, one capsule; green, dry) and `env.succulent.agave`
+    (family `succulent`, generator `rosette` in `env/plants.mjs`: twelve stiff sword leaves in two rings, vertex colour
+    only, 60 triangles, decoration; blue, green);
+  - rocks: `env.rock.boulder_shard` (a tall sharp-edged block, 1.3 × 2.4 × 1.4 m; bare, lichen, snow) and
+    `env.rock.sandstone` (Sandstone Boulder, wide, low and flat-bedded; tan, red), one hull each (a species name never
+    holds `_l`: the renderer names its meshes `env_<file>_l<level>`, and the lab and the e2e `environment` flow split on it);
+  - cliffs: `env.cliff.sandstone` (8 × 7 m, thin beds and deep ledges; tan, red) and `env.cliff.crag` (Mountain Crag,
+    8 × 10 m, vertical ribs and tall joints, a ragged top; bare, snow), each its own family (`familySeed`), so its
+    panels butt seamlessly with each other (the seam test checks every family).
+  Each has the levels of detail and far stand-in of its kind (trees three levels and the crossed cards at 140 m, the
+  barrel cactus at 100 m, bushes two and the cards at 60 m, boulders and cliffs three, ground cover one), so the static
+  shadow sets (game/shadowCasters.ts) and the level hysteresis take them as they take the others. MapMaker lists them
+  in the Environment group by category; the presets append them (Temperate: birch, tall grass; Jungle: tall grass, green
+  agave; Alpine: mountain pine, larch, juniper, tussock, alpine flowers, shard boulder; Arid: barrel cactus, agave,
+  sagebrush, straw tussock, desert marigold, sandstone boulder, olive, cypress), the earlier entries unchanged
+  (`envBrush.test.ts`); a preset's mix is a new one, so a brush seed paints a different set than before (placed plants
+  are stored in the map: no map changes). `?envlab` has them in a lineup of their own (views `variety`,
+  `variety-small`, `variety-cliffs`). The table's rounding now writes `0` for `-0` (a shape must read back from the
+  fixture's JSON); no earlier entry had one.
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.

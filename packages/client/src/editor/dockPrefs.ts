@@ -17,7 +17,15 @@ export interface DockPrefs {
   tab?: DockTab;
   /** The minimap's zoom (1: the whole level; minimapModel.ts); absent, 1. */
   minimapZoom?: number;
+  /** Tile View's snap step in cm (UI spec Phase 4a: 1, 5, 10 or 50); absent, 10. */
+  tileSnap?: number;
+  /** Tile View's coordinates: absent, local (tile-relative); 'world'. */
+  tileFrame?: 'world';
 }
+
+/** Tile View's snap steps (cm) and the one it starts with. */
+export const TILE_SNAP_STEPS = [1, 5, 10, 50] as const;
+export const DEFAULT_TILE_SNAP = 10;
 
 /** The expanded dock's tabs above Properties: the minimap or the outliner. */
 export type DockTab = 'minimap' | 'outliner';
@@ -49,7 +57,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
       if (v && typeof v === 'object') {
         const width = typeof v.width === 'number' && Number.isFinite(v.width) ? Math.round(v.width) : undefined;
         const zoom = typeof v.minimapZoom === 'number' && Number.isFinite(v.minimapZoom) && v.minimapZoom > 1 ? Math.min(16, Math.round(v.minimapZoom * 100) / 100) : undefined;
-        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}), ...(v.tab === 'minimap' ? { tab: 'minimap' as const } : {}), ...(zoom ? { minimapZoom: zoom } : {}) };
+        const snap = (TILE_SNAP_STEPS as readonly unknown[]).includes(v.tileSnap) && v.tileSnap !== DEFAULT_TILE_SNAP ? (v.tileSnap as number) : undefined;
+        return { right: isState(v.right) ? v.right : 'expanded', left: v.left === 'rail' ? 'rail' : 'open', ...(width ? { width } : {}), ...(v.tab === 'minimap' ? { tab: 'minimap' as const } : {}), ...(zoom ? { minimapZoom: zoom } : {}), ...(snap ? { tileSnap: snap } : {}), ...(v.tileFrame === 'world' ? { tileFrame: 'world' as const } : {}) };
       }
     }
   } catch {
@@ -69,7 +78,8 @@ export function parseDockPrefs(raw: string | null, legacy: string | null = null)
 /** As stored: the same state always writes the same text. */
 export function serializeDockPrefs(p: DockPrefs): string {
   const zoom = p.minimapZoom && p.minimapZoom > 1 ? Math.min(16, Math.round(p.minimapZoom * 100) / 100) : 0;
-  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}), ...(p.tab === 'minimap' ? { tab: 'minimap' } : {}), ...(zoom ? { minimapZoom: zoom } : {}) });
+  const snap = p.tileSnap && (TILE_SNAP_STEPS as readonly number[]).includes(p.tileSnap) && p.tileSnap !== DEFAULT_TILE_SNAP ? p.tileSnap : 0;
+  return JSON.stringify({ left: p.left, right: p.right, ...(p.width ? { width: Math.round(p.width) } : {}), ...(p.tab === 'minimap' ? { tab: 'minimap' } : {}), ...(zoom ? { minimapZoom: zoom } : {}), ...(snap ? { tileSnap: snap } : {}), ...(p.tileFrame === 'world' ? { tileFrame: 'world' } : {}) });
 }
 
 /** Shift+\: expanded, then compact, then hidden, then expanded again. */
@@ -84,6 +94,22 @@ export function startingDockState(saved: DockState, windowWidth: number): DockSt
 
 /** A dragged width kept within the dock's limits for this window. */
 export function clampDockWidth(w: number, windowWidth: number): number {
-  const max = Math.max(DOCK_MIN_W, Math.min(DOCK_MAX_W, Math.floor(windowWidth * DOCK_MAX_SHARE)));
+  const max = dockMaxWidth(windowWidth);
   return Math.round(Math.max(DOCK_MIN_W, Math.min(max, w)));
+}
+
+/**
+ * The dock's state after the window is resized (UI Phase 5): narrowed past 900 px, an expanded dock folds to compact,
+ * as it would start (owner's answer 7); widened back past it, the dock as it was left comes back. Neither is kept: the
+ * saved choice is only what someone picked. Any other resize leaves the dock as it is.
+ */
+export function resizedDockState(current: DockState, saved: DockState, before: number, after: number): DockState {
+  if (current === 'expanded' && before >= NARROW_WINDOW && after < NARROW_WINDOW) return 'compact';
+  if (current === 'compact' && saved === 'expanded' && before < NARROW_WINDOW && after >= NARROW_WINDOW) return 'expanded';
+  return current;
+}
+
+/** The widest the dock may be in this window (the grip's aria-valuemax). */
+export function dockMaxWidth(windowWidth: number): number {
+  return Math.max(DOCK_MIN_W, Math.min(DOCK_MAX_W, Math.floor(windowWidth * DOCK_MAX_SHARE)));
 }

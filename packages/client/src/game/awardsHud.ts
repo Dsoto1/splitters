@@ -28,6 +28,7 @@ export class AwardsHud {
   }
 
   dispose(): void {
+    this.panel.parentElement?.classList.remove('awards-on');
     this.panel.remove();
   }
 
@@ -60,6 +61,12 @@ export class AwardsHud {
         .join('')}`;
     }
     this.panel.hidden = !show;
+    // The board moves up above the panel (style.css `awards-on`), so the panel never covers its rows or your profile card.
+    const hud = this.panel.parentElement;
+    if (hud && hud.classList.contains('awards-on') !== show) {
+      hud.classList.toggle('awards-on', show);
+      hud.style.setProperty('--awards-h', show ? `${this.panel.offsetHeight + 8}px` : '0px');
+    }
     if (phase !== 'intermission' && phase !== 'playing') {
       if (this.aw.length) this.hud.setSquadAwards([]);
       this.aw = [];

@@ -43,6 +43,7 @@
               <line x1="-4" y1="10" x2="4" y2="10" stroke-width="0.6" /><line x1="-3" y1="20" x2="3" y2="20" stroke-width="0.6" />
             </g>
             <path class="chevron" d="M -6 6 L 0 0 L 6 6" fill="none" stroke="#05080a" stroke-width="1.2" />
+            <g id="optic-holdover" class="holdover" fill="#05080a" stroke="#05080a"></g>
             <circle r="0.9" fill="#c8302a" />
           </svg>
         </div>
@@ -70,6 +71,7 @@
             <circle cx="-16" r="0.9" /><circle cx="-8" r="0.9" /><circle cx="8" r="0.9" /><circle cx="16" r="0.9" />
             <circle cy="-16" r="0.9" /><circle cy="-8" r="0.9" /><circle cy="8" r="0.9" /><circle cy="16" r="0.9" />
           </g>
+          <g id="scope-holdover" class="holdover" fill="#000" stroke="#000"></g>
           <circle r="0.7" fill="#ff2a2a" />
         </svg>
         <div id="scope-breath"><span>Shift: hold breath</span><i></i></div>
@@ -401,7 +403,7 @@
         <div id="ed-dock-panels">
         <section class="ed-panel" data-panel="outliner" id="ed-outliner-panel" data-tab="outliner">
           <h3 class="ed-panel-head ed-nav-head"><button type="button" class="ed-nav-fold" aria-expanded="true" aria-label="Fold the Minimap and Outliner" title="Fold the Minimap and Outliner"></button><span class="ed-nav-tabs" role="tablist" aria-label="Map navigation"><button type="button" role="tab" id="ed-tab-minimap" data-tab="minimap" aria-controls="ed-minimap-host" aria-selected="false" tabindex="-1" title="The level from above: the camera, the selection; click to select or go there">Minimap</button><button type="button" role="tab" id="ed-tab-outliner" data-tab="outliner" aria-controls="ed-outliner" aria-selected="true" title="Everything in the map: search, select and frame, hide and lock (editor only)">Outliner</button></span><span id="ed-ol-count"></span></h3>
-          <div class="ed-panel-body ed-nav-body"><div id="ed-minimap-host" class="ed-minimap-slot" role="tabpanel" aria-labelledby="ed-tab-minimap" hidden></div><div id="ed-outliner" role="tabpanel" aria-labelledby="ed-tab-outliner"></div></div>
+          <div class="ed-panel-body ed-nav-body"><div id="ed-minimap-host" class="ed-minimap-slot" role="tabpanel" aria-labelledby="ed-tab-minimap" hidden></div><div id="ed-tileview-host" class="ed-tileview-slot" role="region" aria-label="Tile View" hidden></div><div id="ed-outliner" role="tabpanel" aria-labelledby="ed-tab-outliner"></div></div>
         </section>
         <section class="ed-panel" data-panel="inspector">
           <h3 class="ed-panel-head"><button type="button" aria-expanded="true">Properties</button></h3>
@@ -463,6 +465,17 @@
         <div class="ed-dialog-actions">
           <button id="ed-sp-save-ok" class="primary">Save to my set pieces</button>
           <button id="ed-sp-save-cancel">Cancel</button>
+        </div>
+      </dialog>
+      <dialog id="ed-look-dialog">
+        <h2 id="ed-look-title">Save as my look</h2>
+        <p id="ed-look-note" class="ed-note"></p>
+        <label class="ed-dialog-field"><span>Name</span><input id="ed-look-name" maxlength="48" /></label>
+        <div id="ed-look-swatches" class="ed-look-swatches"></div>
+        <label id="ed-look-update-row" class="ed-dialog-check" hidden><input type="checkbox" id="ed-look-update" /> <span></span></label>
+        <div class="ed-dialog-actions">
+          <button id="ed-look-ok" class="primary">Save to my looks</button>
+          <button id="ed-look-cancel">Cancel</button>
         </div>
       </dialog>
       <dialog id="ed-quit-dialog">

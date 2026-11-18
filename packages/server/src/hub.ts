@@ -29,7 +29,7 @@ import { TicketSigner } from './tickets.ts';
  *   PORT (9000), HOST (0.0.0.0), TRUST_PROXY=1 behind a reverse proxy on the same box (Caddy; see clientIp.ts),
  *   MAPS_DIR (../../../maps: the suite, for listing rules),
  *   PUBLISHED_MAPS_DIR (where published maps are kept; unset: publishing is off), OWNER_SUBS (accounts that may publish),
- *   PROFILES_DIR (players' usernames and regions, profiles.ts; unset: profiles are off),
+ *   PROFILES_DIR (players' usernames, regions, favourite classes and career stats, profiles.ts; unset: profiles are off),
  *   COMMUNITY_DIR (community maps' play statistics and Community Picks, community.ts; unset: next to PROFILES_DIR,
  *     as <its parent>/community, or off without either), COMMUNITY_THRESHOLDS (JSON, any of the promotion thresholds:
  *     shared/net/community.ts DEFAULT_THRESHOLDS), COMMUNITY_BLOCKED_WORDS (more words for the word filter, by commas).
@@ -113,3 +113,10 @@ server.listen(port, host, () => {
   );
   if (site && lanHttp().length) console.log(`On your network, open the game at: ${lanHttp().join('  ')}`);
 });
+// A stop (systemd's restart on an update, Ctrl+C) writes any match a profile is still holding (profiles.ts: a match waits ~2 s).
+for (const sig of ['SIGTERM', 'SIGINT'] as const) {
+  process.once(sig, () => {
+    profiles?.flush();
+    process.exit(0);
+  });
+}

@@ -226,8 +226,10 @@ export function deleteCommand(doc: MapDocument, sel: Selection): EditCommand {
       after.push({ ...m, blocks, props: props.length ? props : undefined });
     }
   }
-  const defs = setPieces.length ? unusedDefsCommand(doc, new Set(setPieces.map((p) => p.id))) : null;
-  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }, { kind: 'removeSetPieces', setPieces }, ...(defs ? [defs] : [])] };
+  const pieceIds = new Set(setPieces.map((p) => p.id));
+  const defs = setPieces.length ? unusedDefsCommand(doc, pieceIds) : null;
+  const looks = setPieces.length ? unusedLooksCommand(doc, pieceIds) : null;
+  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }, { kind: 'removeSetPieces', setPieces }, ...(defs ? [defs] : []), ...(looks ? [looks] : [])] };
 }
 
 /**
@@ -242,6 +244,20 @@ export function unusedDefsCommand(doc: MapDocument, gone: ReadonlySet<string>): 
   const after = before.filter((d) => used.has(d.id));
   if (after.length === before.length) return null;
   return { kind: 'setSetPieceDefs', before, after: after.length ? after : null };
+}
+
+/**
+ * The map's own looks (`lookDefs`, v47) that no placement names once the placements `gone` are taken out, dropped
+ * from the map; null when there are none. A look travels with a map only so its placements play anywhere: it stays in
+ * your library.
+ */
+export function unusedLooksCommand(doc: MapDocument, gone: ReadonlySet<string>): EditCommand | null {
+  const before = doc.lookDefs ?? null;
+  if (!before?.length) return null;
+  const used = new Set((doc.setPieces ?? []).filter((p) => !gone.has(p.id)).map((p) => p.pack));
+  const after = before.filter((l) => used.has(l.id));
+  if (after.length === before.length) return null;
+  return { kind: 'setLookDefs', before, after: after.length ? after : null };
 }
 
 /**

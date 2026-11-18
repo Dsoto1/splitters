@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { coreThemes } from '../map/materials.ts';
-import { MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TilePlacement, type MapDocument } from '../map/schema.ts';
+import { MapEntity, MapGroup, SetPieceDefinition, SetPieceLookDef, SetPiecePlacement, TilePlacement, type MapDocument } from '../map/schema.ts';
 import { piecesFor, setPieceFootprint, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import { applyCommand, type EditCommand } from './commands.ts';
@@ -38,6 +38,8 @@ export const MapClipboard = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024),
   /** The source map's own set pieces the copy's placements use. */
   setPieceDefs: z.array(SetPieceDefinition).max(64),
+  /** The source map's own looks (v47) the copy's placements wear (absent in a copy made before them: none). */
+  lookDefs: z.array(SetPieceLookDef).max(64).default([]),
   /** Groups copied whole. */
   groups: z.array(MapGroup).max(256),
 });
@@ -78,6 +80,7 @@ export function copySelection(doc: MapDocument, sel: Selection, catalog: TileCat
     entities,
     setPieces,
     setPieceDefs: (doc.setPieceDefs ?? []).filter((d) => used.has(d.id)),
+    lookDefs: (doc.lookDefs ?? []).filter((l) => setPieces.some((x) => x.pack === l.id)),
     groups: (doc.groups ?? []).filter((g) => g.members.every((m) => ids.has(m))),
   };
 }
@@ -98,6 +101,10 @@ export function pasteRefusal(doc: MapDocument, clip: MapClipboard): string | nul
   for (const d of clip.setPieceDefs) {
     const mine = doc.setPieceDefs?.find((x) => x.id === d.id);
     if (mine && JSON.stringify(mine) !== JSON.stringify(d)) return `${from}: it uses the set piece ${d.displayName} (${d.id}), and this map has a different piece of that name`;
+  }
+  for (const l of clip.lookDefs) {
+    const mine = doc.lookDefs?.find((x) => x.id === l.id);
+    if (mine && JSON.stringify(mine.roles) !== JSON.stringify(l.roles)) return `${from}: it wears your look ${l.displayName} (${l.id}), and this map has a different look of that name`;
   }
   return null;
 }
@@ -139,6 +146,12 @@ export function pasteCommand(
     if (doc.setPieceDefs?.some((x) => x.id === d.id)) continue;
     const c = addSetPieceDefCommand(at, d);
     if ('error' in c) return c;
+    defs.push(c);
+    at = applyCommand(at, c);
+  }
+  const looks = clip.lookDefs.filter((l) => !doc.lookDefs?.some((x) => x.id === l.id));
+  if (looks.length) {
+    const c: EditCommand = { kind: 'setLookDefs', before: at.lookDefs ?? null, after: [...(at.lookDefs ?? []), ...looks] };
     defs.push(c);
     at = applyCommand(at, c);
   }
