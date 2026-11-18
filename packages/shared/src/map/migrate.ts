@@ -136,6 +136,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // looks saved in MapMaker that its set pieces name in `pack`). Absent = none: v46 data is valid as is. The bump is
   // for the other direction: an older build would draw a placement in an unknown look as the theme's.
   [46, (doc) => ({ ...doc })],
+  // v47 -> v48: a map holds up to 8,192 entities (MAP_MAX_ENTITIES; 4,096 before; owner, 2026-11-18). v47 data is
+  // valid as is. The bump is for the other direction: an older build refuses a v48 map outright (it could hold more
+  // entities than that build's schema takes) instead of failing on its entity count.
+  [47, (doc) => ({ ...doc })],
 ]);
 
 /**
