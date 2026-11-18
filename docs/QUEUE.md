@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/music-announcer` · 72423463 · 44309807673 (lane B: the owner's music and announcer; the audio code now loads after the first click / with the match; menu first JS 2799.3 of 2800 kB; next train)
 - `wip/characters-1117b` · 5ae7ac2c · 44312728840 (lane B: character follow-ups: Shingle Point bots Army only (MapMaker), Operative Agency, rank insignia for soldiers in the kill feed, Tab and pause boards and over heads (others keep the arrows); Army bots take ranked names; next train)
+- `wip/entity-cap` · bcbfef48 · 44338641895 (lane A: entity cap 4,096 → 8,192 a map, map format v48; tests and perf in docs/MAP_BUDGETS.md "Entity cap"; lane B lands it)
 - `wip/grips-autofit` · fd3603c2 · 44316256586 (lane B: grips auto-fit: universal first-person arms tinted to each character (Arms only mode), third-person grips fitted from each character's hands for 295 of 300 holds with an audit (32 outliers listed), tracers and flash from the drawn muzzle, your own third-person shots now leave your gun; next train)
 - `wip/environment-5` · 6f64af8c · 44321158864 (lane B: environment Phase 5: a species' looks share one batch (mixed forest 372 → 275 draw calls on Medium), the Alpine preset with a lighter alpine spruce and a brighter mountain pine, a jungle set (jungle tree with lianas, tree fern, elephant ear), MapMaker's Season (whole map) for summer/autumn/snow/dry, small plants shadow only near; no map format change; next train)
 
