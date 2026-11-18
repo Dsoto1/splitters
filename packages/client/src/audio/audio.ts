@@ -104,8 +104,12 @@ export class AudioSystem {
       this.announcerBus = this.ctx.createGain();
       this.announcerBus.gain.value = this.announcerVolume;
       this.announcerBus.connect(this.master);
-      // The announcer's lines after the game's own sounds: a match never waits on them (a line not in yet falls back).
-      void this.load().then(() => this.loadVoice());
+      // The announcer's lines after the game's own sounds, when the page is idle: a match (or MapMaker's Test) never
+      // waits on them, and a line not in yet falls back or is skipped.
+      void this.load().then(() => {
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(() => void this.loadVoice(), { timeout: 4000 });
+        else setTimeout(() => void this.loadVoice(), 1000);
+      });
       for (const f of this.unlockListeners.splice(0)) f();
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
