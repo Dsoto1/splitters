@@ -145,6 +145,7 @@ import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
 import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
 import { PickupBatch } from './pickupBatch.ts';
+import { setGlow } from './glow.ts';
 import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
 import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
@@ -335,14 +336,6 @@ const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b'
 const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
 const SMOKE_FOG_DENSITY = 0.42;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
-/**
- * A material's glow, set only when it differs: setting a colour makes Babylon look through every mesh of the scene
- * for the material's users (thousands in a big match), and a new avatar's "no glow" is usually what it has already
- * (several of a character's meshes share a material, too).
- */
-function setGlow(mat: { emissiveColor: Color3 }, color: Color3): void {
-  if (!mat.emissiveColor.equals(color)) mat.emissiveColor = color;
-}
 
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
