@@ -26,8 +26,8 @@ import {
   type TerrainData,
 } from '../src/index.ts';
 
-/** Backwoods as shipped (v36): moss 47 %, grass 33 %, dirt, mud, gravel and stone. */
-const raw = JSON.parse(readFileSync(new URL('../../../maps/backwoods.json', import.meta.url), 'utf8')) as { formatVersion: number; terrain: { materials: number[]; foliage: number[] } };
+/** Backwoods as shipped at v36 (its ground only: the map itself is newer since the nature swap): moss 47 %, grass 33 %, dirt, mud, gravel and stone. */
+const raw = JSON.parse(readFileSync(new URL('./fixtures/backwoods-v36-ground.json', import.meta.url), 'utf8')) as { formatVersion: number; terrain: { materials: number[]; foliage: number[] } };
 const old = raw.terrain.materials;
 const moss = TERRAIN_MATERIALS.indexOf('moss');
 
