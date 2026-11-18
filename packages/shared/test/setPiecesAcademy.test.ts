@@ -155,6 +155,14 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
   'setpiece.classroom_entry_bay': {
     chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]]],
   },
+  // St. John's step 6 (Welles): the mess hall bay. Along its middle and both sides past the tables and benches.
+  'setpiece.refectory_bay': {
+    chains: [[[-3, 0, 4], [3.5, 0, 4]], [[-2.6, 0, -2.4], [3.5, 0, -2.4]], [[-2.6, 0, 10.4], [3.5, 0, 10.4]]],
+  },
+  // The clock tower: in at its door and up the stair round its core to the belfry gallery along the south wall.
+  'setpiece.clock_tower': {
+    chains: [[[0, 0, -7], [0, 0, -2.2], [-2, 17.5, -2.2]]],
+  },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
     chains: [[[-3, 0, -3.5], [-3, 0, 3.5], [3.5, 0, 3.5]]],
