@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_mfbkoae66r6m55hc",
-      "revision": 29,
-      "contentHash": "sha256:9ee8f2ec7840a98f49313a72dee956b840969bd05e8f657ed12858c13cb1cc57",
+      "versionId": "v_6vm4yhqoepbndd7c",
+      "revision": 30,
+      "contentHash": "sha256:bac25f4e949c2a72fabf36eb6745ba929b3ea1db5f5b96d06f8afd2f903199d4",
       "schemaVersion": 47,
-      "releasedAt": "2026-11-18T15:37:35.823Z"
+      "releasedAt": "2026-11-18T17:03:30.155Z"
     }
   },
   "classicStructure": {
@@ -10988,28 +10988,6 @@
       "yaw": 0.02443,
       "material": "core.pbr_flagstone",
       "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1240",
-      "position": [
-        52.573,
-        16.34,
-        -70.995
-      ],
-      "kind": "block",
-      "size": [
-        47.341,
-        0.8999999999999986,
-        0.5
-      ],
-      "yaw": 0.00873,
-      "material": "core.stone_trim",
-      "tint": "#d8d3c6",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
