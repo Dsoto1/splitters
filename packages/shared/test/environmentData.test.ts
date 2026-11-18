@@ -36,10 +36,12 @@ const PHASE4 = [
 ];
 /** Environment Phase 5, the jungle set (2026-11-18). */
 const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
+/** The nature swap (2026-11-18): the dead tree, the Quaternius dead trees' replacement. */
+const NATURE_SWAP = ['env.broadleaf.dead'];
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(43);
+    expect(ENV_SPECIES.length).toBe(44);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
@@ -49,6 +51,7 @@ describe('environment data', () => {
       'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
       ...PHASE4,
       ...PHASE5,
+      ...NATURE_SWAP,
     ].sort());
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
