@@ -5,6 +5,8 @@ import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { envModelFile, envTilts, getEnvSpecies, groundNormal, terrainHeightAt, type EnvSpeciesData, type PropEntity, type TerrainData } from '@tiletrigger/shared';
 import { EnvMaterials, ENV_TIERS, type EnvTier } from './envMaterials.ts';
 import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
+import { lookSets, speciesOfFile } from './envLooks.ts';
+import { ENV_LOOK_KIND } from './envMaterials.ts';
 import { bySquare, envShadowSector, envShadowSets } from '../game/shadowCasters.ts';
 
 /**
@@ -15,6 +17,10 @@ import { bySquare, envShadowSector, envShadowSets } from '../game/shadowCasters.
  * made a draw (and a shadow and light-shaft draw) for every one or two of them (St. John's 139 trees were 133 batches). Each copy picks its level of detail from its
  * distance to the camera (hysteresis ±10 %) whenever the camera has moved a metre; a batch's buffer is rebuilt only
  * when a copy joins or leaves it. Babylon's mesh LOD is not used (it doesn't see thin instances).
+ *
+ * Shared looks (Phase 5, environment/envLooks.ts): a species' looks of one shape at a level (summer and autumn, green
+ * and dry: the same model painted differently) are one batch per square, each copy wearing its own look's colours, so a
+ * mixed wood costs draws by species, not by look. Looks of another shape and the stand-ins keep their own batches.
  *
  * Shadows (`shadowSets`, the game's view with `?perfoff=smallcasters` not set: game/shadowCasters.ts): the drawn batches
  * cast nothing; each species variant casts through static shadow-only batches made once per square (its full detail for
@@ -45,12 +51,22 @@ interface Copy {
   y: number;
   z: number;
   level: number;
+  group: Group;
+}
+
+/** Looks of one species sharing a batch at one level (envLooks.ts): their files, the first the base. */
+interface LookSet {
+  key: string;
+  files: string[];
+  groups: Group[];
 }
 
 /** The copies of one species variant. */
 interface Group {
   file: string;
   copies: Copy[];
+  /** Per level: the looks it shares that level's batches with (null: its own), and its look's place in them. */
+  shared: ({ set: LookSet; look: number } | null)[];
 }
 
 /** The meshes (one per part) drawing one species variant's copies at one level in one square of that level's size. */
@@ -60,6 +76,10 @@ interface Batch {
   copies: Copy[];
   meshes: Mesh[];
   buffer: Float32Array;
+  /** Shared looks: each drawn copy's look (the `envLook` instance value). */
+  looks: Float32Array | null;
+  /** Shared looks: the look of each copy's group. */
+  set: LookSet | null;
   dirty: boolean;
 }
 
@@ -81,6 +101,8 @@ export class EnvironmentVisuals {
   private models = new Map<string, Promise<EnvModel | null>>();
   private loaded = new Map<string, EnvModel>();
   private templates = new Map<string, Mesh[][]>();
+  /** Shared looks' templates by `<set key>` (one level's parts, the other looks' colours on them). */
+  private lookTemplates = new Map<string, Mesh[]>();
   private groups: Group[] = [];
   /** Batches by `<file>|<level>|<square>`, made on first use. */
   private batches = new Map<string, Batch>();
@@ -130,12 +152,13 @@ export class EnvironmentVisuals {
       const file = envModelFile(e.model, e.variant)!;
       const matrix = placementMatrix(e, species, terrain);
       let g = byFile.get(file);
-      if (!g) byFile.set(file, (g = { file, copies: [] }));
-      g.copies.push({ matrix, x: e.position[0], y: e.position[1], z: e.position[2], level: -1 });
+      if (!g) byFile.set(file, (g = { file, copies: [], shared: [] }));
+      g.copies.push({ matrix, x: e.position[0], y: e.position[1], z: e.position[2], level: -1, group: g });
     }
     await Promise.all([...byFile.keys()].map((f) => this.model(f)));
     if (build !== this.build) return;
     this.groups = [...byFile.values()].filter((g) => this.loaded.has(g.file));
+    this.shareLooks();
     this.lastX = this.lastY = this.lastZ = Infinity;
     if (this.shadowSets) this.buildShadowSets();
   }
@@ -146,12 +169,20 @@ export class EnvironmentVisuals {
    * the static shadow cache keeps them from the start (`staticCaster`).
    */
   private buildShadowSets(): void {
+    // A shadow has no colour: looks sharing a level cast as one batch (the base look's shape is every look's).
+    const done = new Set<string>();
     for (const g of this.groups) {
       const m = this.loaded.get(g.file)!;
       const species = g.file.slice(4, -4);
       for (const set of envShadowSets(m.levels)) {
+        const shared = g.shared[set.level];
+        if (shared) {
+          if (shared.set.files[0] !== g.file || done.has(`${shared.set.key}|${set.mask}`)) continue;
+          done.add(`${shared.set.key}|${set.mask}`);
+        }
+        const all = shared ? shared.set.groups.flatMap((o) => o.copies) : g.copies;
         const size = envShadowSector(set.mask);
-        for (const [sq, copies] of bySquare(g.copies, size)) {
+        for (const [sq, copies] of bySquare(all, size)) {
           const buffer = new Float32Array(copies.length * 16);
           copies.forEach((c, i) => buffer.set(c.matrix, 16 * i));
           (this.templates.get(g.file)?.[set.level] ?? []).forEach((tpl, pi) => {
@@ -168,6 +199,46 @@ export class EnvironmentVisuals {
             mesh.metadata = { envShadow: true, shadowLayers: set.mask, staticCaster: true };
             this.shadowMeshes.push(mesh);
           });
+        }
+      }
+    }
+  }
+
+  /**
+   * Sort the placed looks of each species into sets sharing a batch, level by level (envLooks.ts), and make each
+   * set's templates: the base look's parts with the others' colours on them. A look alone keeps its own batches.
+   */
+  private shareLooks(): void {
+    const bySpecies = new Map<string, Group[]>();
+    for (const g of this.groups) {
+      const k = speciesOfFile(g.file);
+      const list = bySpecies.get(k);
+      if (list) list.push(g);
+      else bySpecies.set(k, [g]);
+    }
+    for (const groups of bySpecies.values()) {
+      for (const g of groups) g.shared = [];
+      if (groups.length < 2) continue;
+      const levels = Math.max(...groups.map((g) => this.loaded.get(g.file)!.levels.length));
+      for (let level = 0; level < levels; level++) {
+        const sets = lookSets(
+          groups.map((g) => g.file),
+          (f) => this.loaded.get(f)!.levels[level],
+        );
+        for (const files of sets) {
+          if (files.length < 2) continue;
+          const key = `looks:${files.join('+')}:${level}`;
+          const set: LookSet = { key, files, groups: files.map((f) => groups.find((g) => g.file === f)!) };
+          set.groups.forEach((g, look) => (g.shared[level] = { set, look }));
+          if (!this.lookTemplates.has(key)) {
+            const base = this.loaded.get(files[0]!)!.levels[level]!;
+            this.lookTemplates.set(
+              key,
+              base.parts.map((part, pi) =>
+                partMesh(this.scene, `env_tpl_${key}_${pi}`, part, this.materials, files.slice(1).map((f) => this.loaded.get(f)!.levels[level]!.parts[pi]!)),
+              ),
+            );
+          }
         }
       }
     }
@@ -244,12 +315,17 @@ export class EnvironmentVisuals {
     for (const b of this.changed.splice(0)) {
       b.dirty = false;
       let count = 0;
-      for (const c of b.copies) if (c.level === b.level) b.buffer.set(c.matrix, 16 * count++);
+      for (const c of b.copies) {
+        if (c.level !== b.level) continue;
+        if (b.looks) b.looks[count] = c.group.shared[b.level]?.look ?? 0;
+        b.buffer.set(c.matrix, 16 * count++);
+      }
       for (const mesh of b.meshes) {
         mesh.setEnabled(count > 0);
         if (!count) continue;
         mesh.thinInstanceCount = count;
         mesh.thinInstanceBufferUpdated('matrix');
+        if (b.looks) mesh.thinInstanceBufferUpdated(ENV_LOOK_KIND);
         // Bounds over the copies drawn, so the batch is culled on its own.
         mesh.thinInstanceRefreshBoundingInfo(false);
       }
@@ -265,24 +341,31 @@ export class EnvironmentVisuals {
     this.changed.push(b);
   }
 
-  /** The batch drawing copy `c` of group `g` at `level` (made on first use: one clone of each part's template). */
+  /**
+   * The batch drawing copy `c` of group `g` at `level` (made on first use: one clone of each part's template): the
+   * group's own, or its shared looks' (every look of the set in the square).
+   */
   private batch(g: Group, level: number, c: Copy): Batch {
     const size = sectorSize(this.sector, level);
     const sx = Math.floor(c.x / size);
     const sz = Math.floor(c.z / size);
     const sector = `${sx}:${sz}`;
-    const key = `${g.file}|${level}|${sector}`;
+    const set = g.shared[level]?.set ?? null;
+    const key = `${set ? set.key : g.file}|${level}|${sector}`;
     let b = this.batches.get(key);
     if (b) return b;
-    const copies = g.copies.filter((o) => Math.floor(o.x / size) === sx && Math.floor(o.z / size) === sz);
+    const copies = (set ? set.groups.flatMap((o) => o.copies) : g.copies).filter((o) => Math.floor(o.x / size) === sx && Math.floor(o.z / size) === sz);
     const buffer = new Float32Array(copies.length * 16);
+    const looks = set ? new Float32Array(copies.length) : null;
     const species = g.file.slice(4, -4);
     const far = level >= Math.max(2, (this.loaded.get(g.file)?.levels.length ?? 0) - 1);
-    const meshes = (this.templates.get(g.file)?.[level] ?? []).map((tpl, pi) => {
+    const templates = set ? this.lookTemplates.get(set.key) : this.templates.get(g.file)?.[level];
+    const meshes = (templates ?? []).map((tpl, pi) => {
       // Instance buffers live on the geometry: each batch has its own copy.
-      const mesh = tpl.clone(`env_${species}_l${level}_p${pi}_${sector}`, null, true)!;
+      const mesh = tpl.clone(`env_${species}${set ? '_looks' : ''}_l${level}_p${pi}_${sector}`, null, true)!;
       mesh.makeGeometryUnique();
       mesh.thinInstanceSetBuffer('matrix', buffer, 16, false);
+      if (looks) mesh.thinInstanceSetBuffer(ENV_LOOK_KIND, looks, 1, false);
       mesh.freezeWorldMatrix();
       mesh.doNotSyncBoundingInfo = true;
       mesh.isPickable = false;
@@ -292,7 +375,7 @@ export class EnvironmentVisuals {
       if (far || this.shadowSets) mesh.metadata = { ...(mesh.metadata as object | null), castsNoShadow: true };
       return mesh;
     });
-    b = { level, copies, meshes, buffer, dirty: false };
+    b = { level, copies, meshes, buffer, looks, set, dirty: false };
     this.batches.set(key, b);
     return b;
   }
@@ -337,6 +420,8 @@ export class EnvironmentVisuals {
     this.clearBatches();
     for (const list of this.templates.values()) for (const l of list) for (const m of l) m.dispose();
     this.templates.clear();
+    for (const list of this.lookTemplates.values()) for (const m of list) m.dispose();
+    this.lookTemplates.clear();
     this.materials.dispose();
   }
 }

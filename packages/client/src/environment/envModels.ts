@@ -8,7 +8,7 @@ import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import { freeIfSceneGone } from '../content/sceneGone.ts';
 import '../content/gltf.ts';
 import { GLB, versioned } from '../assetUrl.ts';
-import { ENV_WIND_KIND, type EnvMaterials } from './envMaterials.ts';
+import { ENV_LOOK_KIND, ENV_WIND_KIND, type EnvMaterials } from './envMaterials.ts';
 
 /** One part of a level of detail: its geometry in the species' own (game) space, wind weights and material. */
 export interface EnvPart {
@@ -54,13 +54,20 @@ export async function loadEnvModel(scene: Scene, file: string): Promise<EnvModel
   return { levels, triangles: levels.map((l) => l.parts.reduce((n, p) => n + (p.data.indices?.length ?? 0) / 3, 0)) };
 }
 
-/** A hidden template mesh for one part, with its material and wind weights, ready to clone per batch. */
-export function partMesh(scene: Scene, name: string, part: EnvPart, materials: EnvMaterials): Mesh {
+/**
+ * A hidden template mesh for one part, with its material and wind weights, ready to clone per batch. `looks`: the
+ * same part of the species' other looks of this shape (environment/envLooks.ts), their colours carried as
+ * `envLook1`… for the looks material.
+ */
+export function partMesh(scene: Scene, name: string, part: EnvPart, materials: EnvMaterials, looks: readonly EnvPart[] = []): Mesh {
   const mesh = new Mesh(name, scene);
   part.data.applyToMesh(mesh, false);
   if (part.wind) mesh.setVerticesData(ENV_WIND_KIND, part.wind, false, 2);
+  const verts = (part.data.positions?.length ?? 0) / 3;
+  // Colours come as 3 or 4 numbers a vertex (the shader reads a vec4; a missing alpha is 1).
+  looks.forEach((l, i) => mesh.setVerticesData(`${ENV_LOOK_KIND}${i + 1}`, Float32Array.from(l.data.colors!), false, verts ? l.data.colors!.length / verts : 4));
   mesh.sideOrientation = part.sideOrientation;
-  mesh.material = materials.get(part.material, part.texture);
+  mesh.material = materials.get(part.material, part.texture, looks.length);
   mesh.isPickable = false;
   mesh.setEnabled(false);
   return mesh;
