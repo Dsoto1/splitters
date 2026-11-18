@@ -94,30 +94,43 @@ built. The groups are `CHARACTER_GROUPS` in looks.ts (section order and labels);
 every built-in look names exactly one, and a unit test
 (`packages/shared/test/lookGroups.test.ts`) keeps it that way:
 
-The owner's Roster Board (2026-11-14, categories decided 2026-11-15) set these nine, in this order. Knights &
-Legends became Legends (`legends`), Creatures & Machines split into Creatures (`creatures`) and Machines (`machines`),
+The owner's Roster Board (2026-11-14, categories decided 2026-11-15) set nine. Knights &
+Legends became Legends (`legends`), Creatures & Machines split into Creatures and Machines (`machines`),
 Animals renamed Animalia (`animals`, the board's Animalia merged in), Undead & Horror renamed Horrors (`horror`, the
 board's Supernatural merged in), the board's Future merged into Outer Space; its "other" was empty and dropped.
+The owner's pass of 2026-11-17 made it seven: Creatures merged into **Horrors & Creatures** (`horror`) and Agents &
+Spies into **Soldiers & Spies** (`soldiers`); Steel Guardian moved to Machines, Shadow Enforcer to Outer Space, Teddy,
+The Hollow Pilgrim and Scary Larry to Horrors & Creatures. The retired ids still read (`CHARACTER_GROUP_ALIASES`;
+in a bot-characters setting `CAST_ID_ALIASES`: `agents` is Agency, the same characters as before, `creatures` is
+`horror`), so saved setups, maps and host.json files that name them keep working.
 Retired looks (Capt. Nova, Bamboo, Uncle Bao, the Rusty Mech and the earlier ones in `RETIRED_LOOKS`) sort as the
 look they play.
 
+**Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
+**Army** (the uniformed soldiers; the old Soldiers) or **Agency** (agents and spies; the old Agents & Spies: Customs
+Agent Zhao, Kenji, Santa, Stealth Operative and the Dummy). A map's Bot characters (MapMaker's Map properties), Match
+Setup, the pause menu and the server's `cast` rule offer "Soldiers & Spies: Army" and "...: Agency" (`army`,
+`agency`), so a map that recreates a real battle (Shingle Point) can field Army only. `lookBranch(id)` reads it; the
+manifest checker wants one on every `soldiers` character and none elsewhere. Character Select shows it as a tag.
+
+**Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
+Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
+
 | Group (`id`) | Who |
 |---|---|
-| Soldiers (`soldiers`) | Azure Sentinel, Desert Ranger, Flt. Lt. Ember, Gas Mask Engineer, Grunt '68, Pemberton, Sentinel in Green, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
-| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Scary Larry, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
-| Outer Space (`space`) | Alien Biker, Alien Encounter, Astronaut Explorer, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Space Marine, Spacewalker, Spud Marshal, Star Voyager, Starfarer, Steampunk Warrior, Steel Guardian, The Visitor |
-| Agents & Spies (`agents`) | Customs Agent Zhao, Dummy (NPC skin), Kenji, Santa, Stealth Operative |
-| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Shadow Enforcer, Sun Warrior, The Hollow Pilgrim, The Purple Comet |
-| Creatures (`creatures`) | Cool Hands Rex, Goblin Gunslinger, Goblin Warlord, Goblina, Pink Mantis, Snikkit |
-| Animalia (`animals`) | Bandit, Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Salamander Warlord, Scamp, Seetah J. Chloth, Shellback, Shiba, Teddy, Warrior of the Skies |
-| Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, T-TreeFitty |
-| Horrors (`horror`) | Bonejack, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Punkin, Rattles, Shambler, Spiked Skeleton Biker, Sugar Skull, The Masked Figure, Zombie Soldier A |
+| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Gas Mask Engineer, Grunt '68, Kenji, Pemberton, Santa, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
+| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
+| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
+| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Sun Warrior, The Purple Comet |
+| Animalia (`animals`) | Bandit, Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Salamander Warlord, Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
+| Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
+| Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
 copied into characters.generated.ts); an NPC skin gets it from
-`NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures, the zombie → Horrors,
-the Dummy (trooper) → Agents & Spies, the other soldier roles → Soldiers). `lookGroup(id)` reads any of
+`NPC_LOOK_GROUPS` in sim/npc.ts (creatures and the zombie → Horrors & Creatures,
+the Dummy (trooper) → Soldiers & Spies as Agency, the other soldier roles as Army). `lookGroup(id)` reads any of
 them; a design of yours has none and goes under **Yours**. The screen is one
 grid that scrolls through the sections in that order (each group with anyone
 in it, its characters by name, then Yours with **Design new**), each under a
@@ -586,7 +599,12 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   stays rigid when the arms move; a head hung low over the chest keeps off it.
 - **Stance:** hunched bodies (goblin, boglurker) lean back per spine joint when
   re-posed (`lean`), the head keeping the way it faced, so the shared clips
-  stand them up. The hyena's digitigrade legs have their joints on the leg's
+  stand them up. A character whose rigged download can't be fetched (its Meshy
+  rig task 404s on this key) is leaned in its shipped file instead:
+  `ONLY=<id> node tools/content/relean-built.mjs` turns the built chain back the
+  same way (the collarbones and arms ride the chest without turning), moves the
+  joints and bind matrices with it and records the lean in the file, so a
+  second run does nothing (Rattles, 2026-11-17). The hyena's digitigrade legs have their joints on the leg's
   centre line (hock as the ankle, paw as the foot), so straightening them
   turns the thigh and shin only a little. The goblin's rags are hundreds of
   small texture islands: its simplification collapses across seams only where
@@ -686,9 +704,11 @@ repo; they live in a downloads dir outside it.
 | `kind`, `use` | `character` (rides our rig) or `creature` (not built here: creatures keep their own rigs); `player`, `npc` or `player+npc`. An NPC-only character gets a look (`WHOLE_BODY_NPC_LOOKS`) but isn't on the roster; NPC roles name looks in `NPC_ROLE_SPECS` by hand. |
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
-| `group` | What the character is, for Character Select's sections: `soldiers`, `folk`, `space`, `agents`, `legends`, `creatures`, `animals`, `machines` or `horror` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `group` | What the character is, for Character Select's sections: `soldiers`, `folk`, `space`, `legends`, `animals`, `machines` or `horror` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `branch` | `soldiers` only, and needed there: `army` or `agency` (Soldiers & Spies' Army or Agency; `CHARACTER_BRANCHES`). A bot-characters setting can ask for one. |
+| `sortAs` | Optional: the name Character Select lists it under within its section (left out: its `name`). |
 | `tier` | `core` or `experimental` (left out: core): an experimental character sits under its own heading in Character Select and is never a bot's, a random character's or Roulette's pick (see Looks, Tier). |
-| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
+| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
 | `source.license` | `owned` (the owner says they made it, or we generated it through the Meshy API with their approval; provenance pack `meshy-owned`) or `CC0` (a community model, which is what a model from the owner's Drive is unless the owner says they made it, 2026-11-06; pack `meshy-community-characters`, with `community.model` as named on its page or download). A licence changed in a manifest reaches the lock without the download: `node tools/content/prepare-meshy-characters.mjs <any empty dir>` gives every character it keeps its manifest's pack (content:check fails until it has). |

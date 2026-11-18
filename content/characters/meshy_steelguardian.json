@@ -5,7 +5,7 @@
   "order": 122,
   "name": "Steel Guardian",
   "look": "core.steelguardian",
-  "group": "space",
+  "group": "machines",
   "nameTheme": "robot",
   "bio": "Stood watch so long the gate rusted first.",
   "body": "male",

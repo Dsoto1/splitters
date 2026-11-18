@@ -18,7 +18,9 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const FILE = 'content/roulette.json';
 const GENERATED = 'packages/shared/src/content/roulette.generated.ts';
 /** Character Select's groups: the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (and GROUPS in character-manifests.mjs). */
-const GROUPS = ['soldiers', 'folk', 'space', 'agents', 'legends', 'creatures', 'animals', 'machines', 'horror'];
+const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
+/** Soldiers & Spies' branches (CHARACTER_BRANCHES): a branch's fallback, where it has one, comes before its group's. */
+const BRANCHES = ['army', 'agency'];
 
 const { num, int, str, map, obj } = shape;
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
@@ -70,7 +72,7 @@ export function build(content) {
   }
   for (const g of GROUPS) if (!d.groups[g]) problems.push(`${FILE}: groups.${g} is missing (every group needs a fallback)`);
   for (const [g, w] of Object.entries(d.groups)) {
-    if (!GROUPS.includes(g)) problems.push(`${FILE}: groups.${g} isn't a character group (${GROUPS.join(', ')})`);
+    if (!GROUPS.includes(g) && !BRANCHES.includes(g)) problems.push(`${FILE}: groups.${g} isn't a character group or branch (${[...GROUPS, ...BRANCHES].join(', ')})`);
     weapon(w, `${FILE}: groups.${g}`);
   }
   for (const [from, to] of Object.entries(d.jackpot)) {

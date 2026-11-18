@@ -5,7 +5,7 @@
   "order": 126,
   "name": "Goblin Gunslinger",
   "look": "core.goblingunslinger",
-  "group": "creatures",
+  "group": "horror",
   "nameTheme": "goblin",
   "bio": "Fastest draw under four feet tall.",
   "body": "male",

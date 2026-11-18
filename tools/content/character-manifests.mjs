@@ -50,7 +50,9 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 /** A character's tier (CHARACTER_TIERS in packages/shared/src/content/looks.ts; a test keeps them equal): left out, core. */
 export const TIERS = ['core', 'experimental'];
-export const GROUPS = ['soldiers', 'folk', 'space', 'agents', 'legends', 'creatures', 'animals', 'machines', 'horror'];
+export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
+/** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
+export const BRANCHES = { army: 'soldiers', agency: 'soldiers' };
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
 export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 /**
@@ -86,6 +88,7 @@ export function hitboxOverrideProblems(o) {
   return out;
 }
 
+const rejointShare = (v) => typeof v === 'number' && v >= 0.3 && v <= 1;
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
@@ -140,6 +143,11 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(typeof m.bio === 'string' && m.bio.length > 0, 'bio: one line for character select');
   need(GROUPS.includes(m.group) || (m.group === undefined && !isPlayable(m)), `group: what the character is, for Character Select's tabs (${GROUPS.join(', ')}); a player look needs one`);
   need(m.tier === undefined || TIERS.includes(m.tier), `tier: ${TIERS.join(' or ')} (experimental: under its own heading in Character Select, never a bot's or a random pick; docs/CHARACTERS.md, "Tier"), or left out (core)`);
+  if (GROUPS.includes(m.group)) {
+    const wants = Object.entries(BRANCHES).filter(([, g]) => g === m.group).map(([b]) => b);
+    need(wants.length ? wants.includes(m.branch) : m.branch === undefined, wants.length ? `branch: ${wants.join(' or ')} (${m.group} names one)` : `branch: only for ${[...new Set(Object.values(BRANCHES))].join(', ')}`);
+  }
+  need(m.sortAs === undefined || (typeof m.sortAs === 'string' && m.sortAs.length > 0 && m.sortAs.length <= 24), 'sortAs: the name Character Select lists it as (1–24 characters), or left out');
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
@@ -201,7 +209,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
   need(x.fingers === undefined || x.fingers === 'own' || x.fingers === 'fit', "fixes.fingers: 'own' (a rigged download's own finger joints and weights, where its finger chains are whole; the default) or 'fit' (re-fitted from the mesh, hands.mjs)");
   // `rejoint`: rig joints moved along their bone toward their parent (skinfix.mjs moveJoints): { <rig joint>: share }.
-  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && typeof v === 'number' && v >= 0.3 && v <= 1)), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share (0.3–1) of the way from its parent it sits at }');
+  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && (rejointShare(v) || (v && typeof v === 'object' && Object.keys(v).every((q) => q === 'share' || q === 'radius') && rejointShare(v.share) && (v.radius === undefined || (typeof v.radius === 'number' && v.radius >= 0.03 && v.radius <= 0.3)))))), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share (0.3–1) of the way from its parent it sits at, or { share, radius } with the limb\'s radius (0.03–0.3 m at 1.8 m) set }');
   if (x.hold !== undefined) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
@@ -435,7 +443,7 @@ function lookLine(m) {
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

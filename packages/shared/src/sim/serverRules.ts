@@ -3,7 +3,7 @@ import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
-import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
+import { BOT_CAST_CHOICES, CAST_ID_ALIASES } from '../content/botThemes.ts';
 import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
 import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
@@ -39,7 +39,7 @@ export type RuleApply = 'live' | 'restart' | 'next';
 
 export type RuleType =
   | { kind: 'int'; min: number; max: number; step?: number; unit?: string; zero?: string }
-  | { kind: 'choice'; values: readonly (readonly [string, string])[] }
+  | { kind: 'choice'; values: readonly (readonly [string, string])[]; aliases?: Readonly<Record<string, string>> }
   | { kind: 'bool'; on: string; off: string }
   | { kind: 'list'; max: number; pattern?: RegExp };
 
@@ -105,7 +105,7 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     read: (r) => r.botStyle ?? 'mixed', write: (r, v) => (v === 'mixed' ? delete r.botStyle : (r.botStyle = v as 'arena' | 'tactical')),
   },
   {
-    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals, creatures) or a name theme (pirate, monkey, knight…).", type: choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), apply: 'live',
+    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals…), army or agency (Soldiers & Spies' two) or a name theme (pirate, monkey, knight…).", type: { ...choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), aliases: CAST_ID_ALIASES } as RuleType, apply: 'live',
     read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = castFromRuleValue(v as string) ?? [])),
   },
   {
@@ -247,7 +247,8 @@ export function parseRuleValue(spec: RuleSpec, raw: unknown): { ok: true; value:
     return { ok: false, error: `${spec.key} is on or off` };
   }
   if (t.kind === 'choice') {
-    const w = String(text).replace(/\s+/g, '');
+    const typed = String(text).replace(/\s+/g, '');
+    const w = t.aliases?.[typed] ?? typed;
     const hit = t.values.find(([v, label]) => v === w || label.toLowerCase().replace(/\s+/g, '') === w);
     if (!hit) return { ok: false, error: `${spec.key} is one of ${t.values.map(([v]) => v).join(', ')}` };
     return { ok: true, value: hit[0] };

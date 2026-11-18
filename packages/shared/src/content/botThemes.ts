@@ -5,7 +5,7 @@
  * keep its random bots to some groups and/or themes (MapDocument.botCast), and the host can change it
  * (MatchRules.botCast).
  */
-import { CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
+import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
 
 /**
  * Every name theme's id and label, by kind of creature. IDs never change (maps and server rules name them); never
@@ -76,31 +76,52 @@ const themeOf = (l: Pick<CharacterLook, 'nameTheme' | 'group'>): string | null =
 // ---------------------------------------------------------------- bot characters (which looks random bots wear)
 
 /**
- * Which looks random bots wear: character groups (CHARACTER_GROUPS ids) and/or name themes (NAME_THEME_INFO ids). A
- * look is in when its group or its theme is listed. Empty: every look (all).
+ * Which looks random bots wear: character groups (CHARACTER_GROUPS ids), Soldiers & Spies' branches (CHARACTER_BRANCHES:
+ * `army`, `agency`) and/or name themes (NAME_THEME_INFO ids). A look is in when its group, its branch or its theme is
+ * listed. Empty: every look (all).
  */
 export type BotCast = readonly string[];
 /** Most entries in a bot-characters setting. */
 export const BOT_CAST_MAX = 8;
 
 const isGroupId = (x: string) => CHARACTER_GROUPS.some((g) => g.id === x);
-export const isCastId = (x: unknown): x is string => typeof x === 'string' && (isGroupId(x) || THEMES_BY_ID.has(x));
+const isBranchId = (x: string) => CHARACTER_BRANCHES.some((b) => b.id === x);
+/**
+ * Retired cast ids and what they read as now (saved setups, maps, server rules; 2026-11-17): Agents & Spies is
+ * Soldiers & Spies' Agency (the same characters as before), Creatures is in Horrors & Creatures.
+ */
+export const CAST_ID_ALIASES: Readonly<Record<string, string>> = { agents: 'agency', creatures: 'horror' };
+/** A cast id as it reads now (a retired one's replacement). */
+export const currentCastId = (x: string): string => CAST_ID_ALIASES[x] ?? x;
+/** A choice that picks characters by what they are (a group or a branch), not by their names' theme. */
+export const isCharacterCastId = (x: string): boolean => isGroupId(x) || isBranchId(x);
+/** A known cast id, a retired one included (it reads as its replacement). */
+export const isCastId = (x: unknown): x is string => typeof x === 'string' && (isCharacterCastId(currentCastId(x)) || THEMES_BY_ID.has(x));
 
-/** A bot-characters setting made valid: known ids only, each once, at most BOT_CAST_MAX. Not a list: empty (all). */
+/** A bot-characters setting made valid: known ids only (retired ones as their replacement), each once, at most BOT_CAST_MAX. Not a list: empty (all). */
 export function validBotCast(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
-  for (const x of raw) if (isCastId(x) && !out.includes(x) && out.length < BOT_CAST_MAX) out.push(x);
+  for (const x of raw) {
+    if (!isCastId(x)) continue;
+    const id = currentCastId(x);
+    if (!out.includes(id) && out.length < BOT_CAST_MAX) out.push(id);
+  }
   return out;
 }
+
+/** Whether a look (group, branch, theme) answers a cast id. */
+const castHas = (x: string, l: Pick<CharacterLook, 'group' | 'branch'> | undefined, theme: string | null): boolean => {
+  const id = currentCastId(x);
+  return id === (l?.group ?? null) || id === (l?.branch ?? null) || x === theme;
+};
 
 /** Whether a look is in a bot-characters setting (empty: every look is). */
 export function castAllows(cast: BotCast | undefined, look: string): boolean {
   if (!cast?.length) return true;
   const l = builtInLook(look);
-  const group = l?.group ?? null;
   const theme = lookTheme(look);
-  return cast.some((x) => x === group || x === theme);
+  return cast.some((x) => castHas(x, l, theme));
 }
 
 /** The looks random bots wear under a bot-characters setting, in roster order; every look when none fits. */
@@ -112,16 +133,19 @@ export function castLooks(cast: BotCast | undefined): readonly CharacterLook[] {
 export function castLooksFrom(roster: readonly CharacterLook[], cast: BotCast | undefined): readonly CharacterLook[] {
   const pool = pickableLooks(roster);
   if (!cast?.length) return pool;
-  const out = pool.filter((l) => cast.some((x) => x === (l.group ?? null) || x === themeOf(l)));
+  const out = pool.filter((l) => cast.some((x) => castHas(x, l, themeOf(l))));
   return out.length ? out : pool;
 }
 
-/** The choices a menu offers, groups first: { id, label }. */
-export const BOT_CAST_CHOICES: readonly { id: string; label: string }[] = [...CHARACTER_GROUPS.map((g) => ({ id: g.id, label: g.label })), ...NAME_THEME_INFO.map((t) => ({ id: t.id, label: t.label }))];
+/** The choices a menu offers, groups first (each group's branches after it: "Soldiers & Spies: Army"), then the name themes: { id, label }. */
+export const BOT_CAST_CHOICES: readonly { id: string; label: string }[] = [
+  ...CHARACTER_GROUPS.flatMap((g) => [{ id: g.id as string, label: g.label as string }, ...CHARACTER_BRANCHES.filter((b) => b.group === g.id).map((b) => ({ id: b.id as string, label: `${g.label}: ${b.label}` }))]),
+  ...NAME_THEME_INFO.map((t) => ({ id: t.id, label: t.label })),
+];
 
-/** "Soldiers", "Pirates + Knights & Kings", or "All characters". */
+/** "Soldiers & Spies", "Pirates + Knights & Kings", or "All characters". */
 export function botCastLabel(cast: BotCast | undefined): string {
   if (!cast?.length) return 'All characters';
-  return cast.map((x) => BOT_CAST_CHOICES.find((c) => c.id === x)?.label ?? x).join(' + ');
+  return cast.map((x) => BOT_CAST_CHOICES.find((c) => c.id === currentCastId(x))?.label ?? x).join(' + ');
 }
 

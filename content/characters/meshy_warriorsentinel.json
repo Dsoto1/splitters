@@ -6,6 +6,7 @@
   "name": "Warrior Sentinel",
   "look": "core.warriorsentinel",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Shaved head, short temper, and arms that do most of the talking.",
   "body": "male",
@@ -33,6 +34,12 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "rejoint": {
+      "upperarm": {
+        "share": 0.8,
+        "radius": 0.1
+      }
+    }
   }
 }
