@@ -45,6 +45,13 @@ QUEUE Features, lane B (the owner's next priority after gun handling, 2026-11-18
 
 Nothing on AWS changes: no new table, bucket, template or host. The hub's code changed (new routes on the existing `/api/v1/profile`, profile file fields), so **redeploy the hub** as for any hub change (`infra/deploy-multiplayer.sh`, or the update script that pulls the release). Older profiles read as empty careers. Until the hub is redeployed, signed-in players' matches wait in their browsers (up to 20) and the favourite class stays in the browser.
 
-## Open questions (built with the ★ pick)
+## Open questions (Phase 1 built with the ★ pick)
 
-See the report to the lead (QUEUE "Waiting on the owner" once landed).
+1. Bot matches in the career: a ★ all count · b only matches with other people · c two careers (bots, online)
+2. Who counts a match: a ★ the player's browser, the hub checks it's plausible · b the host vouches (Phase 4 now)
+3. A guest's career at the first sign-in: a ★ moves onto the account once · b stays in the browser · c ask
+4. Favourite loadout: a ★ a favourite class, picked for you in class matches · b also a favourite weapon set for Match Setup · c marked only, never picked
+5. Profile cards: a ★ your own now, other players' in Phase 2 · b other players' now too
+6. End of match: a ★ card under the board, the board moved above the awards · b card on Tab only
+7. Shortest match that counts: a ★ 30 s · b 2 min · c any
+8. Next: a ★ Phase 2 (emblems, other players' cards) · b Phase 3 (history, per-mode) · c stop here
