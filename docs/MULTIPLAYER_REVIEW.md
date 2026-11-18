@@ -273,7 +273,7 @@ says.
 | Budget | Today | To implement (default; host-configurable down, never up) |
 |---|---|---|
 | Map data size | none before `JSON.parse` (thumbnail ≤ 48 k chars) | **2 MiB** raw JSON, checked before parsing, everywhere a map arrives (hub, Host Service, browser host, joiner) |
-| Total entities | ≤ 4,096 (`schema.ts:771`) | keep 4,096 schema; plus runtime **6,000** live entities incl. spawned |
+| Total entities | ≤ 8,192 since map format v48 (`MAP_MAX_ENTITIES`, `mapKeys.ts`; 4,096 before) | keep **8,192** schema (also the map as played, `SET_PIECE_PLAYED_MAX`); runtime live entities incl. spawned **10,000** (was 6,000): nothing adds map entities while a match runs (scenario actions only switch the map's own), and what is spawned has its own caps (`RESOURCE_BUDGETS`: 64 NPCs, 512 projectiles; debris is the client's effect physics, not the match's), so 8,192 + those stays under 10,000 without a counter of its own (not built: a counter would only matter once something spawns map entities). Entity indices travel as JSON numbers (no bit widths in the protocol), the welcome (≤ 2 MiB map) inflates under `MAX_INFLATED_MESSAGE` (4 MiB) |
 | Tiles | ≤ 4,096 (`schema.ts:143`) | keep |
 | Terrain | ≤ 161 × 161 vertices (`terrain.ts:36`) | keep |
 | Map size (play area) | tile grid ±256 × ±16 (`schema.ts:116-118`), airplane routes ±2,000 m | **2 km × 2 km** bounds; refuse entities outside |
