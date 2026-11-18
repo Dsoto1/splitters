@@ -1958,6 +1958,8 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #map-vote .mv-votes b, #map-vote .mv-votes span { position: relative; }
 #map-vote .mv-votes b { margin-right: 3px; }
 #map-vote .mv-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+/* The awards up without the vote: the board sits above them (awardsHud.ts sets --awards-h). */
+#hud.awards-on:not(.vote-on) #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(93vh - var(--awards-h, 0px) - 18px); }
 #hud.vote-on #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(100vh - var(--vote-h, 250px) - var(--awards-h, 0px) - 24px); }
 #hud.vote-on #match-awards { bottom: calc(var(--vote-h, 250px) + 4px); top: auto; width: min(860px, calc(100vw - 32px)); padding: 6px 10px 8px; gap: 6px 8px; }
 #hud.vote-on #match-awards .award { min-width: 150px; padding: 4px 8px; }
