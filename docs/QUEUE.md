@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Ready to land
+- `wip/stjohns-6` · fbf350fe · 44370682761 (lane A: St. John's step 6, Welles Hall and its clock tower; no format change; draws +10-14 % inside the hall, lead's call)
 (`branch · green sha · run`; the next train takes them all in this order)
 
 
