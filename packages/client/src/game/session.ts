@@ -26,6 +26,7 @@ import {
   heightAboveGround,
   matchStats,
   CORE_WEAPONS,
+  type MatchSummary,
   gunplayOf,
   bulletPhysics,
   traceBullet,
@@ -192,6 +193,8 @@ import type { MinimapBlip } from './minimap.ts';
 import { SQUAD_COLOR, SquadHud } from './squadHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
+import { CareerTally } from './careerTally.ts';
+import { ProfileCard, type ProfileCardData } from './profileCard.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
@@ -206,6 +209,7 @@ import { TipBook, type TipId } from './tips.ts';
 import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
+import { holdoverFor } from './holdover.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
@@ -290,6 +294,11 @@ export interface SessionOptions {
   tutorial?: boolean;
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
   tips?: boolean;
+  /**
+   * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
+   * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
+   */
+  career?: { record(m: MatchSummary): void; card(): ProfileCardData; /** Your favourite class (a ClassId): picked for you as you join a match with classes. */ favClass(): string | null };
 }
 
 /** How a match stood when it ended for this player: the last standings, and enough to host the same match again. */
@@ -369,6 +378,9 @@ export class GameSession {
   private readonly specCam = new SpectatorCam();
   /** Spectating by choice (the roster marks you `sp`): out of the match until you join again. */
   private spectator = false;
+  /** Your match for your career (careerTally.ts) and your profile card under the scoreboard (profileCard.ts): with `opts.career` only. */
+  private careerTally: CareerTally | null = null;
+  private profileCard: ProfileCard | null = null;
   /** The host lets players spectate by choice (welcome `spectate`). */
   private canSpectate = false;
   /** Out of play this frame: spectating, or dead in a running match. */
@@ -448,7 +460,11 @@ export class GameSession {
       // The HUD's portrait is the body you play now, not the one picked in the menu.
       const want = look;
       this.portraitLook = want;
-      void this.opts.portraitOf?.(want).then((src) => this.portraitLook === want && this.hud.setPortrait(src), () => undefined);
+      void this.opts.portraitOf?.(want).then((src) => {
+        if (this.portraitLook !== want) return;
+        this.hud.setPortrait(src);
+        this.profileCard?.setPortrait(src);
+      }, () => undefined);
     }
     this.view.characters.preload({ look });
   }
@@ -2020,6 +2036,12 @@ export class GameSession {
         this.classesOn = classesInPlay(msg.rules);
         this.input.classCount = this.classesOn ? CLASS_IDS.length : 0;
         this.input.classMenu = this.classesOn;
+        // Your favourite class (Profile) is picked for you as you join; the class screen stays open to change it.
+        const fav = this.classesOn ? CLASS_IDS.indexOf(this.opts.career?.favClass() as (typeof CLASS_IDS)[number]) : -1;
+        if (fav >= 0 && !this.myClass) {
+          this.input.chooseClass(fav);
+          this.input.classMenu = true;
+        }
         this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         // The announcer: a new match's counts, and what it asks of the match.
@@ -2038,6 +2060,14 @@ export class GameSession {
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
         this.awardsHud?.dispose();
         this.awardsHud = new AwardsHud(this.hud, () => this.slot, () => this.squadHud.current?.id ?? null);
+        // Your career's count of this match and your profile card (a few counters; the card is drawn only with the board).
+        if (this.opts.career && !this.careerTally) {
+          const career = this.opts.career;
+          this.careerTally = new CareerTally(() => this.slot, (a, b) => (this.allied ? b >= NPC_ID_BASE : !(this.hud.team(a) && this.hud.team(a)?.id === this.hud.team(b)?.id)), performance.now());
+          const card = (this.profileCard = new ProfileCard(this.opts.portrait));
+          const tally = this.careerTally;
+          this.hud.setProfileCard({ el: card.el, refresh: (final) => card.update(career.card(), this.spectator ? null : tally, final) });
+        }
         // Between matches: the vote on the next map (hosts that have one send it; mapVoteHud.ts).
         this.voteHud?.dispose();
         this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
@@ -2084,7 +2114,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -2225,6 +2255,7 @@ export class GameSession {
           if (ev.e === 'rl' && ev.a === 'swap' && ev.s !== undefined && ev.l) this.relook(ev.s, ev.l);
           if (ev.e === 'rl') this.rouletteHud?.event(ev);
           if (ev.e === 'awards' || ev.e === 'callout') this.awardsHud?.event(ev);
+          this.careerTally?.event(ev);
           if (ev.e === 'kill') this.streakMoment(ev, posesNow);
           if (ev.e === 'elim' && ev.a === 'start') this.elimRound = ev.round;
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
@@ -2410,7 +2441,11 @@ export class GameSession {
             this.hud.nextMap = ev.up ? nextMapLine(ev.up.map, ev.up.mode) : '';
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
+            // Your career: this match, summed in (not while spectating; a match you were in under half a minute doesn't count).
+            const summary = this.careerTally?.finish(ev, this.rules?.mode ?? 'core.deathmatch', this.hud.team(this.slot)?.id ?? null, performance.now());
+            if (summary && !this.spectator) this.opts.career?.record(summary);
           } else if (ev.e === 'round_start') {
+            this.careerTally?.reset(performance.now());
             this.outcome = null;
             this.hud.nextMap = '';
             // A new round: any vote is over (the match replayed).
@@ -2663,6 +2698,11 @@ export class GameSession {
     const rules = this.rules;
     const set = map && rules ? weaponSetInPlay(rules, map) : null;
     for (const id of set && rules ? (setWeaponsInPlay(set, rules) ?? []) : []) void this.view.models.load(getWeapon(id).view.model).catch(() => undefined);
+  }
+
+  /** Your favourite class's index in CLASS_IDS (the class screen marks it ★), or -1. */
+  private favClassIndex(): number {
+    return CLASS_IDS.indexOf(this.opts.career?.favClass() as (typeof CLASS_IDS)[number]);
   }
 
   /** Everyone on one side against NPCs (co-op missions and Zombies). */
@@ -3429,7 +3469,8 @@ export class GameSession {
       const frame = opticSpec && this.opticBlend > 0 ? opticFrame(opticSpec, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, this.opticBlend) : null;
       if (frame) this.fov = frame.worldFov;
       this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
-      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex' } : null);
+      // Holdover marks (spec §5) on the optic's reticle: its glass's edge spans the world's half-angle times its share.
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
       // The optic sways and steadies like a scope once the eye is on it.
       this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
@@ -3533,8 +3574,9 @@ export class GameSession {
         }
       }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
-      this.hud.setScope(zoomed);
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
+      // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
+      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : []);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend));
       this.updateScopeSway(dt, this.scopedNow);
       this.hud.setHealth(local.health, local.armor, local.alive);
@@ -3568,7 +3610,7 @@ export class GameSession {
       this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
       this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
-      this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);
+      this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
       // A spectator isn't waiting to respawn: no "Respawning…".

@@ -128,12 +128,24 @@ export interface FalloffSpec {
   curve: 'linear' | 'smooth' | 'steep';
 }
 
+/**
+ * Handling (spec §27, §35; GAPS G2): how a weapon carries. `move`: running speed holding it, a share of everyone's
+ * (sprinting is the same with every weapon, so getting about a map never depends on what you hold); `sprintExit`:
+ * ticks from leaving a sprint to the first round (Match and client prediction hold the trigger with the raise timer).
+ * Mild on purpose (GUNPLAY_DIRECTION.md: no severe movement penalties, no slow sprint-to-fire).
+ */
+export interface HandlingSpec {
+  move: number;
+  sprintExit: number;
+}
+
 /** A family's defaults (content/weapons/families.json `families`). */
 export interface FamilyDefaults {
   ballistic: BallisticSpec | null;
   accuracy: AccuracySpec;
   kick: KickSpec;
   falloff: FalloffSpec;
+  handling: HandlingSpec;
   head: number;
   legs: number;
   arms: number;
@@ -153,10 +165,15 @@ export interface Gunplay {
   kick: KickSpec | null;
   reload: ReloadSpec;
   falloff: FalloffSpec | null;
+  handling: HandlingSpec;
   head: number;
   legs: number;
   arms: number;
 }
+
+/** Handling of a weapon without a family: full speed; melee straight out of a sprint, anything else after 0.1 s. */
+const DEFAULT_MOVE = 1;
+const DEFAULT_SPRINT_EXIT = 6;
 
 /** Head / leg multipliers for weapons without a family (unchanged from before the gunplay pass; weapons.ts exports them). */
 const DEFAULT_HEAD = 2;
@@ -182,6 +199,7 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
     reload: def.reload ?? { type: 'magazine', tactical: def.reloadTicks, empty: def.reloadTicks, out: 0.35, in: 1 },
     falloff: def.falloff ?? fam?.falloff ?? null,
+    handling: { move: def.handling?.move ?? fam?.handling.move ?? DEFAULT_MOVE, sprintExit: def.handling?.sprintExit ?? fam?.handling.sprintExit ?? (def.kind === 'melee' ? 0 : DEFAULT_SPRINT_EXIT) },
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,
     legs: def.legshot ?? fam?.legs ?? DEFAULT_LEGS,
     arms: def.armshot ?? fam?.arms ?? DEFAULT_ARMS,
@@ -635,6 +653,16 @@ export function flightTo(b: BallisticSpec, dist: number, rules: Pick<MatchRules,
   // Drag slows the fall too: v_y = g (1 - e^(-kt)) / k.
   const time = -Math.log(1 - slow) / p.drag;
   return { time, drop: (p.gravity / p.drag) * (time - (1 - Math.exp(-p.drag * time)) / p.drag) };
+}
+
+/**
+ * Scope holdover marks (spec §5: "Scopes may provide optional markings that correspond to useful holdover
+ * distances"): for each distance, the angle (radians) below the aim a target there has to sit for a level shot to
+ * land on it, under the match's ballistics rule. Rounds leave from the eye along the aim (Match.fire), so the marks
+ * are the drop itself: no zero distance, nothing to compensate automatically.
+ */
+export function holdoverMarks(b: BallisticSpec, rules: Pick<MatchRules, 'ballistics'>, distances: readonly number[]): { dist: number; angle: number }[] {
+  return distances.map((dist) => ({ dist, angle: Math.atan2(flightTo(b, dist, rules).drop, Math.max(1, dist)) }));
 }
 
 /** Whether round number `n` (0-based, of the trigger pulls since the weapon was drawn) is drawn as a tracer, with `left` rounds remaining in the magazine after it. */

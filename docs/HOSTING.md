@@ -737,6 +737,14 @@ which listings carry so the game browser shows nearby games first. Kept on the
 hub in `PROFILES_DIR` (`/var/lib/tiletrigger/profiles` on the box; set by
 `infra/host-setup.sh`), `GET/PUT /api/v1/profile`, `GET /api/v1/profile/check`.
 
+**Career stats and the favourite class** (docs/PLAYER_PROFILES_PLAN.md, Phase 1)
+live in the same file: each match a signed-in player finishes sends one small
+summary (`POST /api/v1/profile/match`, checked against `shared/net/career.ts`
+`matchProblem`, a few a minute per account), a guest career moves onto a new
+account once (`POST /api/v1/profile/career`), and `PUT /api/v1/profile` takes
+`favClass`. Match writes reach the file within 2 s (flushed when the hub
+stops). No new AWS resource: redeploying the hub is all it takes.
+
 ## Publishing maps (the owner)
 
 Every map, the official ones included, is made and edited in MapMaker. The

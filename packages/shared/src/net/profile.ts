@@ -1,3 +1,4 @@
+import type { Career } from './career.ts';
 import { claimsOfficial } from './lobby.ts';
 
 /**
@@ -69,4 +70,11 @@ export interface Profile {
   /** Null until the player picks one. */
   username: string | null;
   region: Region | null;
+  /** Your favourite class (a ClassId): picked for you when you join a match with classes (docs/PLAYER_PROFILES_PLAN.md). */
+  favClass: string | null;
+  /** Career stats (net/career.ts), summed match by match. */
+  career: Career;
 }
+
+/** A class id as a profile keeps it (the class list itself is content: sim/classes.ts checks it is one). */
+export const isFavClassId = (v: unknown): v is string => typeof v === 'string' && /^[a-z][a-z0-9_]{0,23}$/.test(v);

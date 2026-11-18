@@ -97,7 +97,15 @@ import {
   classStats,
   lookStats,
   type StatKey,
+  CLASS_DEFS,
+  CLASS_IDS,
+  careerAccuracy,
+  careerKd,
+  careerWinRate,
+  favouriteWeapon,
 } from '@tiletrigger/shared';
+import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
+import { weaponName } from '../game/profileCard.ts';
 import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
@@ -530,7 +538,11 @@ export class FrontEnd {
     onPadPress((b) => this.onPad(b));
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
-    void loadProfile().then((p) => this.applyProfile(p?.username ?? null));
+    void loadProfile().then((p) => {
+      this.applyProfile(p?.username ?? null);
+      // Signed in: a guest career here moves onto the account once, and matches the hub missed go now (careerStats.ts).
+      if (p) void syncCareer().then(() => !this.root.hidden && this.screen === 'profile' && this.go('profile'));
+    });
     // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
     setTimeout(() => void this.warmPortraits(), 1500);
   }
@@ -970,7 +982,7 @@ export class FrontEnd {
     return box;
   }
 
-  private lookName(id: string): string {
+  lookName(id: string): string {
     const npc = NPC_LOOKS.find((l) => l.id === id);
     if (npc) return npc.name;
     return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
@@ -2768,7 +2780,17 @@ export class FrontEnd {
     const privacyLink = el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' });
     const foot = el('div', { class: 'prof-foot hint' }, el('span', { textContent: 'Your Google name and email are never shown to anyone: players see your username.' }), privacyLink);
     const head = this.head('Your <em>Profile</em>');
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, region, foot));
+    // Your favourite class (the loadout you play in matches with classes; docs/PLAYER_PROFILES_PLAN.md).
+    const favNote = el('small', { class: 'hint', textContent: 'Picked for you when a match plays with classes; change it any time on the class screen.' });
+    const favPick = el('select', { id: 'profile-fav-class' }, el('option', { value: '', textContent: 'None (choose each match)' }), ...CLASS_IDS.map((id) => el('option', { value: id, textContent: `${CLASS_DEFS[id].name} · ${CLASS_DEFS[id].role}`, selected: id === myFavClass() })));
+    favPick.addEventListener('change', () => {
+      setFavClass(favPick.value || null).then(
+        () => (favNote.textContent = 'Saved.'),
+        (e: Error) => (favNote.textContent = `Saved in this browser; not on your account: ${e.message}`),
+      );
+    });
+    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote);
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.
@@ -2833,6 +2855,46 @@ export class FrontEnd {
     foot.append(id);
     // Your community maps on the hub (and the owner's summary): communityUi.ts.
     return hubSetting() ? panel(form, communityPanel(kicker)) : panel(form);
+  }
+
+  /** Profile's career stats (careerStats.ts): matches, wins, kills, deaths, K/D, accuracy, headshots, best streak, time, favourite weapon. */
+  private careerSection(kicker: (text: string) => HTMLElement, signedIn: boolean): HTMLElement {
+    const { career: c, where } = myCareer();
+    const pct = (v: number | null) => (v === null ? '–' : `${Math.round(v)}%`);
+    const hours = c.seconds >= 3600 ? `${(c.seconds / 3600).toFixed(1)} h` : `${Math.round(c.seconds / 60)} min`;
+    const fav = favouriteWeapon(c);
+    const tile = (id: string, label: string, value: string, ...extra: Node[]) => {
+      const t = el('div', { class: 'prof-stat' }, el('b', { textContent: value }), el('small', { textContent: label }), ...extra);
+      t.dataset.stat = id;
+      return t;
+    };
+    const icon = fav ? weaponIcon(fav, 'wicon') : null;
+    const grid = el(
+      'div',
+      { class: 'prof-stats', id: 'profile-career' },
+      tile('matches', 'Matches', String(c.matches)),
+      tile('wins', `Wins · ${pct(careerWinRate(c))}`, String(c.wins)),
+      tile('kd', 'K / D', c.kills + c.deaths ? careerKd(c).toFixed(2) : '–'),
+      tile('kills', 'Kills', String(c.kills)),
+      tile('deaths', 'Deaths', String(c.deaths)),
+      tile('accuracy', 'Accuracy', pct(careerAccuracy(c))),
+      tile('headshots', 'Headshot kills', String(c.headshots)),
+      tile('streak', 'Best streak', String(c.bestStreak)),
+      tile('time', 'Played', hours),
+    );
+    const favRow = el('div', { class: 'prof-fav-weapon', id: 'profile-fav-weapon' }, ...(icon ? [icon] : []), el('span', {}, 'Favourite weapon: ', el('b', { textContent: weaponName(fav) })));
+    const note = el('small', {
+      class: 'hint',
+      textContent:
+        where === 'account'
+          ? 'Kept on your ToshiroPlay account.'
+          : signedIn
+            ? 'Kept in this browser until your account can be reached.'
+            : c.matches
+              ? 'Kept in this browser. Sign in and it moves onto your account (once).'
+              : 'Play a match to the end and it counts here. Kept in this browser; sign in to keep it on your account.',
+    });
+    return el('section', { class: 'prof-sec prof-career' }, kicker('Career'), grid, favRow, note);
   }
 
   private options(): HTMLElement {

@@ -443,7 +443,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G2 burst rifle | ✅ | `match.ts:2937` burst trigger; `content/weapons/burst_rifle.json` |
 | G2 lever action | ❌ | no weapon, no family, no model (pass 2: the Frontier Rifle is not a lever gun; HANDOFF has the proposal) |
 | G2 battle rifle | ✅ | pass 2: `content/weapons/battle_rifle.json` (the `battle_rifle` family's first weapon) |
-| G2 handling extras | ❌ | no sprint-exit time, per-weapon movement speed or scope holdover marks (spec §35, §5) |
+| G2 handling extras | ✅ | `handling` per family (`gunplayOf(def).handling`: move 90-100 %, sprint exit 3-13 ticks; `match.ts` movement step and raise timer, `prediction.ts`), holdover marks (`holdoverMarks`, client `game/holdover.ts`); `shared/test/gunHandling.test.ts`, `benchmarks.test.ts` (no slow sprint-to-fire), 2026-11-18 |
 | **G3** server authority, kill validation | ✅ | hits and damage only on the host: `match.ts:5305` `damage`, `kill` after it |
 | G3 latency simulation | ✅ | `pnpm net-report` (G3 above): 8 players over 0-250 ms, jitter, 1-5 % loss; prediction exact (corrections only from being hit); rewind bounded at 18 ticks `match.ts` MAX_REWIND_TICKS (too short past ~120 ms: for the owner) |
 | G3 projectile reconciliation | ✅ | bullets catch up the shooter's latency then fly live (`ballistics.test.ts:197`); net-report: the host's rewound bodies within 6-11 cm (p95) of the screen's |
