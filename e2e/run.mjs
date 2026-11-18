@@ -5289,6 +5289,15 @@ async function offlineFlow(browser) {
     await page.click('#profile-change-character');
     await page.waitForSelector('.char-grid .char-tile[data-look]');
   };
+  // Profile (docs/PLAYER_PROFILES_PLAN.md): your career (a guest's, in this browser: nothing yet) and your favourite
+  // class, saved when picked.
+  await page.click('#profile-badge');
+  await page.waitForSelector('#profile-career');
+  await page.selectOption('#profile-fav-class', 'medic');
+  const prof = await page.evaluate(() => ({ stats: [...document.querySelectorAll('#profile-career .prof-stat')].map((t) => t.dataset.stat), matches: document.querySelector('#profile-career [data-stat="matches"] b')?.textContent, fav: localStorage.getItem('tiletrigger.favClass'), weapon: document.getElementById('profile-fav-weapon')?.textContent }));
+  await page.selectOption('#profile-fav-class', '');
+  const favCleared = await page.evaluate(() => localStorage.getItem('tiletrigger.favClass'));
+  check(prof.stats.join() === 'matches,wins,kd,kills,deaths,accuracy,headshots,streak,time' && prof.matches === '0' && prof.fav === '"medic"' && favCleared === null && /Favourite weapon/.test(prof.weapon ?? ''), `Profile shows your career and saves a favourite class (${JSON.stringify({ prof, favCleared })})`);
   // Character Select: whole square tiles row under row, and the grid ends above the info panel (it scrolls).
   await openChars();
   const charFit = await page.evaluate(() => {
@@ -11099,6 +11108,13 @@ async function fireteamsFlow(browser) {
     return { squad: s.id, points: m.fireteams.scores.squad(s.id).points, me: m.fireteams.scores.points(me.slot), mate: m.fireteams.scores.player(mate.slot).assists - assists, squads: m.fireteams.squads.filter((q) => q.team === me.faction).length };
   });
   check(scored.points >= 15 && scored.me >= 10 && scored.mate >= 1, `your kill (10) and your squadmate's assist (5) go to your squad (${JSON.stringify(scored)})`);
+  // Player profiles (docs/PLAYER_PROFILES_PLAN.md): the match counts into your career at its end (a guest's, in this
+  // browser). A match counts after 30 s in it: the count's start moved back so this short one does.
+  const careerBefore = await page.evaluate(() => {
+    const t = window.__cs.career();
+    if (t) t.startedAt -= 60_000;
+    return { tally: !!t, matches: JSON.parse(localStorage.getItem('tiletrigger.career') ?? '{}').matches ?? 0 };
+  });
   // (The scoreboard held up for the checks and the pictures.)
   await sim(page, (m) => {
     m.endMatch();
@@ -11117,6 +11133,12 @@ async function fireteamsFlow(browser) {
     return { lines: lines.length, best: sb.querySelectorAll('.sb-squad.best').length, mine: { first: mine.previousElementSibling?.classList.contains('sb-hd'), name: mine.querySelector('.sb-sqname').textContent, points: Number(mine.querySelector('.sb-sqpts').textContent), mvp: mine.querySelector('.sb-sqmvp').textContent, best: mine.classList.contains('best'), rows: after.length, me: after.includes(window.__cs.slot) }, pts: [...sb.querySelectorAll('.sb-hd')].some((h) => /Pts/.test(h.textContent)), awards: [...awards.querySelectorAll('.award b')].map((b) => b.textContent), blink: [...sb.querySelectorAll('.sb-squad, .sb-squad *'), ...awards.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none') };
   }, scored.squad, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-desktop.png` });
+  const career = await page.waitForFunction(() => {
+    const card = document.querySelector('#scoreboard #profile-card');
+    const c = JSON.parse(localStorage.getItem('tiletrigger.career') ?? 'null');
+    return card && c ? { card: card.textContent, matches: c.matches, kills: c.kills, rifle: c.weaponKills?.['core.rifle'] ?? 0 } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(careerBefore.tally && !!career && career.matches === careerBefore.matches + 1 && career.kills >= 1 && career.rifle >= 1 && /GUEST/.test(career.card) && /This match: [1-9]\d* K/.test(career.card) && /Career: \d+ match/.test(career.card), `the match ends into your career, and your profile card shows under the board (${JSON.stringify({ careerBefore, career })})`);
   check(!!board && board.lines >= scored.squads * 2 - 1 && board.mine.rows === 4 && board.mine.me && board.mine.points >= 15 && board.pts && board.mine.first, `the scoreboard groups each team by squad (${board?.lines} squad lines; yours: ${JSON.stringify(board?.mine)})`);
   check(!!board && /^MVP \S/.test(board.mine.mvp) && board.best === 1 && board.awards.includes('Best Squad') && board.awards.includes("Your Squad's MVP") && !board.blink, `the end of the match with the vote: every squad's MVP on its line, Best Squad and your squad's MVP among the awards, nothing animated (${JSON.stringify(board?.awards)})`);
   // A phone's size: the board keeps its squads (the awards make room for the vote there).

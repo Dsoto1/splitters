@@ -23,7 +23,8 @@ export class CareerTally {
   bestStreak = 0;
   private streak = 0;
   private readonly weapons = new Map<string, number>();
-  private startedAt: number;
+  /** When counting started (performance.now ms; browser tests move it back to make a short match count). */
+  startedAt: number;
   /** The summary was made: nothing more counts until the next round starts. */
   private done = false;
 
