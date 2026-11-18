@@ -2808,6 +2808,181 @@ async function editorPiecePaintChecks(browser) {
   await page.context().close();
 }
 
+/**
+ * MapMaker UI Phase 5 (docs/MAPMAKER_UI_SPEC.md, "Phase 5: as built"): keyboard use, resizing and kept preferences, on
+ * Tile View, the minimap and the dock. Tile View: `]` and `[` pick the things north to south and then the wall sides,
+ * Enter goes to the picked thing's fields, + / Home / Alt+arrows zoom, fit and pan, its breadcrumbs are buttons, and
+ * a pointer moving over the plan draws nothing. The minimap: focusable, + zooms, the arrows pan, Home fits, Enter
+ * opens Tile View. The dock: narrowed past 900 px it goes compact (not kept) and comes back when widened; the grip's
+ * End takes the widest, fitted again to a narrower window without forgetting the kept width. View → Grid and Snap are
+ * kept for the next visit (not in the map). The `?` list has the plans' keys. Screenshots (E2E_DSF=2) to E2E_SHOTS.
+ */
+async function editorPhase5Checks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-phase5-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position, yaw = 0) => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'p5_shop', tile: 'core.shop', x: 3, y: 0, z: 0, rotation: 1 }] },
+        { kind: 'addEntities', entities: [prop('p5_shelf', 'core.crate', [25.3, 0, -1.7]), prop('p5_drum', 'kit.drum.steel', [22, 0, -10])] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['p5_shop'], entities: [] });
+    ed.view.focus({ x: 24, y: 0, z: -4 });
+  });
+  await frames(page, 3);
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  const tv = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.tileView.state();
+    return { open: st.open, visible: st.visible, child: st.child, edge: st.edge, crumbs: st.crumbs, frame: st.frame, sel: [...ed.selection.entities, ...ed.selection.tiles], focus: document.activeElement?.id ?? '', links: document.querySelectorAll('#ed-tv-crumbs button').length, dock: document.getElementById('ed-right').dataset.state };
+  });
+
+  // Keyboard: into the plan, ] and [ pick, Enter goes to the fields.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  let s = await tv();
+  check(s.child === 'p5_shelf' && s.sel.join() === 'p5_shelf' && s.links === 2, `] picks the northernmost thing, selected everywhere; the breadcrumbs that go somewhere are buttons (${JSON.stringify({ child: s.child, sel: s.sel, links: s.links })})`);
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  const second = s.child;
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  check(second === 'p5_drum' && !s.child && !!s.edge && s.sel.join() === 'p5_shop', `] goes on to the next thing, then the wall sides (the tile selected) (${JSON.stringify({ second, edge: s.edge, sel: s.sel })})`);
+  await page.keyboard.press('[');
+  await frames(page, 2);
+  s = await tv();
+  check(s.child === 'p5_drum', `[ goes back (${s.child})`);
+  await page.keyboard.press('Enter');
+  s = await tv();
+  check(s.focus === 'ed-tv-x', `Enter goes to the picked thing's fields (${s.focus})`);
+  await shot('fields');
+  await page.focus('#ed-tv-canvas');
+  const f0 = (await tv()).frame;
+  await page.keyboard.press('+');
+  await frames(page, 2);
+  const f1 = (await tv()).frame;
+  await page.keyboard.press('Alt+ArrowUp');
+  await frames(page, 2);
+  const f2 = (await tv()).frame;
+  await page.keyboard.press('Home');
+  await frames(page, 2);
+  const f3 = (await tv()).frame;
+  check(f1.halfH < f0.halfH && f2.cz > f1.cz && Math.abs(f3.halfH - f0.halfH) < 1e-6 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'p5_drum').position.join())) === '22,0,-10', `+ zooms, Alt+↑ pans north, Home fits again, and none of it moves the picked thing (${JSON.stringify({ f0, f1, f2, f3 })})`);
+  // A pointer moving over the plan only changes the readout (UI Phase 5, large maps): no draws.
+  const box = await page.locator('#ed-tv-canvas').boundingBox();
+  await page.evaluate(() => {
+    const tvp = window.__editor.tileView;
+    window.__tvDraws = 0;
+    const draw = tvp.draw;
+    tvp.draw = function (...a) {
+      window.__tvDraws++;
+      return draw.apply(this, a);
+    };
+  });
+  for (let i = 0; i < 8; i++) await page.mouse.move(box.x + 30 + i * 12, box.y + 40 + i * 6);
+  await frames(page, 3);
+  const hover = await page.evaluate(() => ({ draws: window.__tvDraws, readout: document.getElementById('ed-tv-readout').textContent }));
+  check(hover.draws === 0 && /^Local -?\d/.test(hover.readout), `a pointer over the plan updates the readout without drawing the plan again (${JSON.stringify(hover)})`);
+
+  // Resizing: under 900 px the dock goes compact (not kept), widened it comes back with Tile View.
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}'));
+  await page.setViewportSize({ width: 860, height: 700 });
+  await page.waitForFunction(() => document.getElementById('ed-right').dataset.state === 'compact', null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  const kept = await stored();
+  await shot('narrow');
+  check(s.dock === 'compact' && !s.visible && s.open && kept.right === 'expanded', `narrowed to 860 px the dock goes compact, Tile View waits unseen, the kept state stays expanded (${JSON.stringify({ dock: s.dock, visible: s.visible, kept })})`);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  check(s.dock === 'expanded' && s.visible, `widened again it comes back expanded with Tile View (${JSON.stringify({ dock: s.dock, visible: s.visible })})`);
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('End');
+  await frames(page, 2);
+  const grip = () => page.evaluate(() => ({ now: document.getElementById('ed-dock-grip').getAttribute('aria-valuenow'), max: document.getElementById('ed-dock-grip').getAttribute('aria-valuemax'), w: Math.round(document.getElementById('ed-right').getBoundingClientRect().width) }));
+  const wide = await grip();
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '450', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const narrow = await grip();
+  const keptW = (await stored()).width;
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '520', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const back = await grip();
+  check(wide.now === '520' && wide.w === 520 && narrow.now === '450' && narrow.w === 450 && keptW === 520 && back.w === 520, `the grip's End takes the widest (520 px); a 1000 px window fits it to 45 % (450) and keeps 520 for when the window grows (${JSON.stringify({ wide, narrow, keptW, back })})`);
+  await shot('wide-dock');
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('Home');
+
+  // Tile View closed: the minimap takes the keyboard.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__editor.minimap.shown, null, { timeout: T(5000) });
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['p5_shop'], entities: [] }));
+  await page.focus('#ed-minimap-canvas');
+  const mm = () => page.evaluate(() => ({ ...window.__editor.minimap.state(), marks: null }));
+  await page.keyboard.press('+');
+  await frames(page, 3);
+  const m1 = await mm();
+  await page.keyboard.press('ArrowRight');
+  await frames(page, 3);
+  const m2 = await mm();
+  await page.keyboard.press('Home');
+  await frames(page, 3);
+  const m3 = await mm();
+  check(m1.zoom > 1 && m2.frame.cx > m1.frame.cx && m3.zoom === 1, `the minimap takes the keyboard: + zooms, → pans east, Home fits (${JSON.stringify({ z1: m1.zoom, cx1: m1.frame?.cx, cx2: m2.frame?.cx, z3: m3.zoom })})`);
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  check((await tv()).open, 'Enter in the minimap opens Tile View on the selection');
+
+  // The ? list has the plans' keys.
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Shift+Slash');
+  await page.waitForSelector('#ed-keys[open]', { timeout: T(3000) }).catch(() => {});
+  const keysText = await page.evaluate(() => document.getElementById('ed-keys')?.textContent ?? '');
+  await shot('keys');
+  check(keysText.includes('Tile View and minimap') && keysText.includes('pick the next or previous thing'), 'the ? list has a Tile View and minimap section');
+  await page.keyboard.press('Escape');
+
+  // View → Grid off and Snap 1 m are kept for the next visit (this browser, never the map).
+  await viewItem(page, 'ed-grid');
+  await page.selectOption('#ed-snap', 'coarse');
+  const inMap = await page.evaluate(() => JSON.stringify(window.__editor.doc).includes('coarse'));
+  const page2 = await context.newPage();
+  livePages.add(page2);
+  page2.on('pageerror', (e) => errors.push(e.message));
+  await page2.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page2.waitForFunction(() => window.__editor?.view, null, { timeout: T(60000) });
+  const again = await page2.evaluate(() => ({ grid: document.getElementById('ed-grid').getAttribute('aria-checked'), snap: document.getElementById('ed-snap').value, mode: window.__editor.snapMode, stored: localStorage.getItem('tiletrigger.editor.view') }));
+  check(again.grid === 'false' && again.snap === 'coarse' && again.mode === 'coarse' && !inMap, `View → Grid and Snap come back as left, kept in this browser only (${JSON.stringify(again)})`);
+  await viewItem(page2, 'ed-grid');
+  await page2.selectOption('#ed-snap', 'normal');
+  check((await page2.evaluate(() => localStorage.getItem('tiletrigger.editor.view'))) === null, 'back to the defaults, nothing is kept');
+  livePages.delete(page2);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
 async function editortoolsFlow(browser) {
   await editorPaintChecks(browser);
   await editorThemeWarningChecks(browser);
@@ -2815,6 +2990,7 @@ async function editortoolsFlow(browser) {
   await editorTransformChecks(browser);
   await editorTileViewChecks(browser);
   await editorTileViewMoveChecks(browser);
+  await editorPhase5Checks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);

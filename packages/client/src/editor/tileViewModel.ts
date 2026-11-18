@@ -350,3 +350,24 @@ export function edgeName(t: EdgeTarget): string {
 export function breadcrumbs(f: Pick<TileFocus, 'name'>, child: string | null): string[] {
   return child ? ['Map', f.name, child] : ['Map', f.name];
 }
+
+/**
+ * The next (or previous) thing to pick from the keyboard (UI Phase 5: `]` and `[` in Tile View): the map's own
+ * things north to south, west to east, then the cell sides, then the set pieces' parts (read-only, to read about);
+ * locked and hidden ones left out, as a click leaves them. From nothing picked, `]` takes the first and `[` the last.
+ */
+export function cyclePick(children: readonly FocusChild[], edges: readonly FocusEdge[], current: TileViewPick, step: 1 | -1, skip: (id: string) => boolean = () => false): TileViewPick {
+  const order = (a: { x: number; z: number }, b: { x: number; z: number }) => b.z - a.z || a.x - b.x;
+  const own = children.filter((c) => !c.partOf && !skip(c.id)).sort(order);
+  const parts = children.filter((c) => c.partOf && !skip(c.id) && !skip(c.partOf)).sort(order);
+  const list: NonNullable<TileViewPick>[] = [
+    ...own.map((c) => ({ kind: 'child' as const, id: c.id, part: null })),
+    ...edges.map((e) => ({ kind: 'edge' as const, edge: e })),
+    ...parts.map((c) => ({ kind: 'child' as const, id: c.id, part: c.partOf })),
+  ];
+  if (!list.length) return null;
+  const key = (p: TileViewPick) => (!p ? '' : p.kind === 'edge' ? `e:${edgeName(p.edge.target)}` : `c:${p.id}`);
+  const at = current ? list.findIndex((p) => key(p) === key(current)) : -1;
+  if (at < 0) return list[step > 0 ? 0 : list.length - 1]!;
+  return list[(at + step + list.length) % list.length]!;
+}

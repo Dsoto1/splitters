@@ -41,8 +41,9 @@ const counts = (m: MapDocument) => ({
   entities: m.entities.length,
   tiles: m.classicStructure.tiles.length,
   setPieces: (m as { setPieces?: unknown[] }).setPieces?.length ?? 0,
-  modes: JSON.stringify(m.modes ?? null),
-  rules: JSON.stringify((m as { rules?: unknown }).rules ?? null),
+  modes: JSON.stringify(m.metadata.supportedModes),
+  teams: JSON.stringify(m.teamSetup ?? null),
+  logic: m.logic.rules.length + m.logic.objectives.length + m.logic.timers.length + m.logic.variables.length,
 });
 
 export function checkSavedMaps(part: number): void {

@@ -10,6 +10,7 @@ import {
   GLASS_KINDS,
   levelName,
   planFrame,
+  planMove,
   planPan,
   planScale,
   planToScreen,
@@ -24,6 +25,7 @@ import {
   type MapDocument,
   type PlanFrame,
   type Selection,
+  type WorldBox,
 } from '@tiletrigger/shared';
 import { fillBox } from '../frontend/mapPlan.ts';
 import { DEFAULT_TILE_SNAP, TILE_SNAP_STEPS } from './dockPrefs.ts';
@@ -33,6 +35,7 @@ import { boxLevel } from './minimapModel.ts';
 import {
   breadcrumbs,
   buildFocus,
+  cyclePick,
   dragMove,
   edgeClass,
   edgeName,
@@ -48,8 +51,10 @@ import {
   type FocusEdge,
   type FocusRef,
   type TileFocus,
+  type TileViewPick,
   type TileViewReader,
 } from './tileViewModel.ts';
+import { planKeyAction, type PlanKeyAction } from './planKeys.ts';
 import './tileView.css';
 
 /** The selection's colour (the view's cyan, spec §8) and the focus's outline. */
@@ -185,8 +190,8 @@ export class TileViewPanel {
     this.canvas.id = 'ed-tv-canvas';
     this.canvas.tabIndex = 0;
     this.canvas.setAttribute('role', 'application');
-    this.canvas.setAttribute('aria-label', 'Tile View: click a thing to pick it, drag to move it; arrow keys nudge, R turns; click a wall side to change it; Esc goes back');
-    this.canvas.title = 'Click to pick · drag to move (Ctrl/Shift: free) · arrows nudge · R turns · wheel zooms · drag empty space to pan · Esc: back';
+    // (No hover tooltip over the plan, UI Phase 5: it covered what you were pointing at. The keys are in `?`.)
+    this.canvas.setAttribute('aria-label', 'Tile View: click a thing to pick it, drag to move it (Ctrl or Shift: free); ] and [ pick the next or previous, the arrow keys nudge, R turns, Enter goes to its fields; click a wall side to change it; + and − zoom, Alt and the arrows pan, Home fits; Esc goes back');
     this.levelChip = document.createElement('span');
     this.levelChip.className = 'ed-minimap-level';
     this.readout = document.createElement('span');
@@ -219,8 +224,12 @@ export class TileViewPanel {
 
   /** Shown in `slot` (the dock's Minimap place while Tile View is open), or hidden: nothing runs while hidden. */
   show(slot: HTMLElement | null): void {
-    this.visible = !!slot && this.isOpen;
-    if (slot && this.root.parentElement !== slot) slot.append(this.root);
+    const visible = !!slot && this.isOpen;
+    const moved = !!slot && this.root.parentElement !== slot;
+    if (moved) slot.append(this.root);
+    // (The dock calls this whenever it syncs its views, a pointer move among them: only a change draws again.)
+    if (visible === this.visible && !moved) return;
+    this.visible = visible;
     this.drawnKey = '';
     this.detailKey = '';
   }
@@ -302,7 +311,7 @@ export class TileViewPanel {
       child: this.childId,
       edge: this.edge ? edgeName(this.edge.target) : null,
       part: this.part?.id ?? null,
-      crumbs: [...this.crumbs.querySelectorAll('span')].map((s) => s.textContent ?? ''),
+      crumbs: [...this.crumbs.querySelectorAll('span, button')].map((s) => s.textContent ?? ''),
       frame: this.view,
       w: this.w,
       h: this.h,
@@ -373,11 +382,13 @@ export class TileViewPanel {
     const f = this.focus!;
     if (!this.view) this.view = this.fitFrame(f);
     const d = this.drag;
-    const key = `${this.app.history.revision}|${this.app.selectionRev}|${this.app.level}|${this.w}x${this.h}|${this.view.cx},${this.view.cz},${this.view.halfH}|${this.hover ? `${this.hover.x.toFixed(2)},${this.hover.z.toFixed(2)}` : ''}|${d?.delta?.join(',') ?? ''}|${this.edge ? edgeName(this.edge.target) : ''}|${this.part?.id ?? ''}|${this.childId ?? ''}|${this.prefs.frame()}|${this.prefs.snapCm()}`;
+    const key = `${this.app.history.revision}|${this.app.selectionRev}|${this.app.level}|${this.w}x${this.h}|${this.view.cx},${this.view.cz},${this.view.halfH}|${d?.delta?.join(',') ?? ''}|${this.edge ? edgeName(this.edge.target) : ''}|${this.part?.id ?? ''}|${this.childId ?? ''}|${this.prefs.frame()}|${this.prefs.snapCm()}`;
     if (key !== this.drawnKey) {
       this.drawnKey = key;
       this.draw();
     }
+    // The pointer's place is text beside the plan: a pointer move changes only that, never the drawing.
+    this.renderReadout();
     const dk = `${this.app.history.revision}|${this.app.selectionRev}|${this.childId ?? ''}|${this.edge ? edgeName(this.edge.target) : ''}|${this.part?.id ?? ''}|${this.prefs.frame()}|${f.level}`;
     if (dk !== this.detailKey && !this.detail.contains(document.activeElement)) {
       this.detailKey = dk;
@@ -427,26 +438,19 @@ export class TileViewPanel {
     const lh = doc.classicStructure.levelHeight;
     const cell = doc.classicStructure.cellSize;
     const level = f.level;
-    // The level as MapMaker draws it, in view (its cached boxes, and the breakable props and moving blocks).
-    const floors = [];
-    const solids = [];
-    const walls = [];
-    for (const b of [...app.mapBoxes(), ...propBoxes(doc, true), ...blockBoxes(doc, true)]) {
-      if (b.kind === 'barrier' || boxLevel(b, lh) !== level) continue;
-      if (b.max[0] < x0 || b.min[0] > x1 || b.max[2] < z0 || b.min[2] > z1) continue;
-      if (app.view.outlinerHidden(b.sourceId)) continue;
-      if (b.kind === 'floor') floors.push(b);
-      else if (b.kind === 'wall' || b.kind === 'trim') walls.push(b);
-      else solids.push(b);
-    }
+    // The level as MapMaker draws it, in view (its cached boxes, and the breakable props and moving blocks): sorted
+    // into floors, solids and walls once per map, level and hidden set (levelBoxes), only culled to the view here.
+    const lb = this.levelBoxes(doc, level, lh);
+    const inView = (b: WorldBox) => !(b.max[0] < x0 || b.min[0] > x1 || b.max[2] < z0 || b.min[2] > z1);
     g.fillStyle = '#26365a';
-    for (const b of floors) fillBox(g, b, px, py);
-    for (const b of solids) {
+    for (const b of lb.floors) if (inView(b)) fillBox(g, b, px, py);
+    for (const b of lb.solids) {
+      if (!inView(b)) continue;
       g.fillStyle = b.kind === 'prop' ? '#6a5434' : '#8a6a3f';
       fillBox(g, b, px, py);
     }
     g.fillStyle = '#b4c8e6';
-    for (const b of walls) fillBox(g, b, px, py);
+    for (const b of lb.walls) if (inView(b)) fillBox(g, b, px, py);
     // The snap grid inside the focus, from the frame's origin (local: the anchor; world: 0), where it isn't too fine.
     const step = this.snapM();
     const gridStep = step * s >= 8 ? step : s >= 8 ? 1 : 0;
@@ -582,6 +586,33 @@ export class TileViewPanel {
     this.drawScale(g, w, h, s);
     if (this.levelChip.textContent !== levelName(level)) this.levelChip.textContent = levelName(level);
     this.renderReadout();
+  }
+
+  /**
+   * The level's boxes as drawn, sorted by how they are drawn (UI Phase 5, large maps): made again only when the drawn
+   * map, the level or the outliner's hidden things change. Before, every draw (each pointer move over the plan) put
+   * the whole map's boxes, breakable props and moving blocks together and sorted them again.
+   */
+  private levelBoxCache: { doc: MapDocument; level: number; flags: number; floors: WorldBox[]; solids: WorldBox[]; walls: WorldBox[] } | null = null;
+
+  private levelBoxes(doc: MapDocument, level: number, lh: number): { floors: WorldBox[]; solids: WorldBox[]; walls: WorldBox[] } {
+    const app = this.app;
+    const flags = app.outliner.flagsRev;
+    const c = this.levelBoxCache;
+    if (c && c.doc === doc && c.level === level && c.flags === flags) return c;
+    const floors: WorldBox[] = [];
+    const solids: WorldBox[] = [];
+    const walls: WorldBox[] = [];
+    for (const list of [app.mapBoxes(), propBoxes(doc, true), blockBoxes(doc, true)])
+      for (const b of list) {
+        if (b.kind === 'barrier' || boxLevel(b, lh) !== level) continue;
+        if (app.view.outlinerHidden(b.sourceId)) continue;
+        if (b.kind === 'floor') floors.push(b);
+        else if (b.kind === 'wall' || b.kind === 'trim') walls.push(b);
+        else solids.push(b);
+      }
+    this.levelBoxCache = { doc, level, flags, floors, solids, walls };
+    return this.levelBoxCache;
   }
 
   /** The focus's cells (or rectangle) as a path. */
@@ -739,17 +770,16 @@ export class TileViewPanel {
     this.crumbs.replaceChildren();
     list.forEach((label, i) => {
       if (i) this.crumbs.append(Object.assign(document.createElement('i'), { textContent: '›', ariaHidden: 'true' }));
-      const span = document.createElement('span');
+      // The crumbs that go somewhere are buttons (reached with Tab, pressed with Enter or Space); the rest is text.
+      const link = i === 0 ? () => this.close() : i === 1 && list.length > 2 ? () => this.selectParent() : null;
+      const span = document.createElement(link ? 'button' : 'span');
       span.textContent = label;
       if (i === list.length - 1) span.setAttribute('aria-current', 'location');
-      if (i === 0) {
+      if (link) {
+        (span as HTMLButtonElement).type = 'button';
         span.className = 'ed-tv-crumb-link';
-        span.title = 'Back to the minimap';
-        span.addEventListener('click', () => this.close());
-      } else if (i === 1 && list.length > 2) {
-        span.className = 'ed-tv-crumb-link';
-        span.title = `Select ${f.name}`;
-        span.addEventListener('click', () => this.selectParent());
+        span.title = i === 0 ? 'Back to the minimap' : `Select ${f.name}`;
+        span.addEventListener('click', link);
       }
       this.crumbs.append(span);
     });
@@ -837,7 +867,7 @@ export class TileViewPanel {
       sel.addEventListener('change', () => (glassField.hidden = !GLASS_EDGES.has(sel.value as never)));
       grid.append(field('Style', sel), glassField);
       el.append(grid);
-      line('Doors and windows are how a cell side is built: change the style here (Automatic: as the tiles meet). Door leaves are things of their own.');
+      line('Automatic: as the tiles meet. Door leaves are things of their own.');
       return;
     }
     if (this.part) {
@@ -848,7 +878,7 @@ export class TileViewPanel {
     const parts = this.built?.children.filter((c) => c.partOf).length ?? 0;
     const sides = this.built?.edges.length ?? 0;
     const bits = [`${n} thing${n === 1 ? '' : 's'}`, ...(sides ? [`${sides} wall side${sides === 1 ? '' : 's'}`] : []), ...(parts ? [`${parts} set-piece part${parts === 1 ? '' : 's'} (read-only)`] : [])];
-    line(`${f.name} · ${levelName(f.level)} · ${bits.join(' · ')}. Click a thing or a wall side to pick it.`);
+    line(`${f.name} · ${levelName(f.level)} · ${bits.join(' · ')}. Click a thing or a wall side to pick it (or ] and [).`);
     if (f.kind === 'setpiece') line("A set piece's insides are generated: shown here read-only.", 'ed-tv-note ed-tv-readonly');
   }
 
@@ -983,6 +1013,13 @@ export class TileViewPanel {
         this.escape();
         return;
       }
+      // The plan's own keys (planKeys.ts): zoom, fit, pan, the next or previous pick, the picked thing's fields.
+      const act = planKeyAction(e, 'tile');
+      if (act && this.planKey(act)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       const dirs: Record<string, [number, number]> = { ArrowUp: [0, 1], ArrowDown: [0, -1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
       const dir = dirs[e.key];
       if (dir && this.childId && !e.altKey) {
@@ -999,6 +1036,52 @@ export class TileViewPanel {
         app.transform('Turn', { turn: ((e.shiftKey ? -TURN_DEG : TURN_DEG) * Math.PI) / 180 });
       }
     });
+  }
+
+  /** A plan key (planKeys.ts) acted on; false when it means nothing here (Enter with nothing picked: MapMaker's). */
+  private planKey(act: PlanKeyAction): boolean {
+    const v = this.view;
+    if (!v || !this.focus) return false;
+    if (act.kind === 'pan') this.view = planMove(v, act.dx * 2 * v.halfW, -act.dy * 2 * v.halfH);
+    else if (act.kind === 'zoom') this.view = planZoom(v, 1 / act.k);
+    else if (act.kind === 'fit') this.fit();
+    else if (act.kind === 'pick') this.pickNext(act.step);
+    else if (act.kind === 'fields') {
+      const first = this.detail.querySelector<HTMLElement>('input, select');
+      if (!first || !(this.childId || this.edge)) return false;
+      first.focus();
+      if (first instanceof HTMLInputElement) first.select();
+    } else return false;
+    this.drawnKey = '';
+    return true;
+  }
+
+  /** `]` / `[`: the next or previous thing, wall side or part picked, as a click on it would (tileViewModel cyclePick). */
+  pickNext(step: 1 | -1): void {
+    const b = this.built;
+    if (!b) return;
+    const blocked = this.app.outliner.blocked;
+    const skip = (id: string) => (blocked.size > 0 && blocked.has(id)) || this.app.view.outlinerHidden(id);
+    const now: TileViewPick = this.childId ? { kind: 'child', id: this.childId, part: null } : this.edge ? { kind: 'edge', edge: this.edge } : this.part ? { kind: 'child', id: this.part.id, part: this.part.piece } : null;
+    const next = cyclePick(b.children, b.edges, now, step, skip);
+    if (!next) {
+      this.app.toast('Nothing to pick here');
+      return;
+    }
+    if (next.kind === 'child' && !next.part) this.pickChild(next.id);
+    else if (next.kind === 'child') {
+      this.childId = null;
+      this.edge = null;
+      this.part = { id: next.id, piece: next.part! };
+    } else {
+      this.childId = null;
+      this.part = null;
+      this.edge = next.edge;
+      this.app.setTool({ kind: 'select' });
+      this.app.setSelection({ tiles: [next.edge.tileId], entities: [] }, true);
+    }
+    this.drawnKey = '';
+    this.detailKey = '';
   }
 
   /** Esc: a drag dropped, else the picked thing or side let go (the focus selected), else back to the minimap. */
