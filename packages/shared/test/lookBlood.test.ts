@@ -34,6 +34,13 @@ describe('blood by character', () => {
     expect(lookBlood('core.hollowpilgrim')).toBe('spirit');
     expect(lookBlood('core.slugger')).toBe('oil');
     expect(lookBlood('core.groaner')).toBe('red');
+    // The owner's answers (2026-11-18).
+    for (const id of ['core.alienbiker', 'core.potatomarshal', 'core.spacemarine']) expect(lookBlood(id), id).toBe('blue');
+    expect(lookBlood('core.brasshare')).toBe('red');
+    expect(lookBlood('core.bronzer')).toBe('stone');
+    // Retired looks bleed as the look they play (The Hollow Visitor plays The Visitor).
+    expect(lookBlood('core.hollowvisitor')).toBe(lookBlood('core.visitor'));
+    expect(lookBlood('core.visitor')).toBe('green');
   });
 
   it('NPC skins: the creatures by role, the soldier mannequins follow the map; retired and unknown looks resolve', () => {

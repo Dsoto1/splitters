@@ -209,7 +209,8 @@ What a character bleeds when hit (the owner, 2026-11-17, "a"): `blood` in its ma
 | `green`, `blue` | the same in MapMaker's Alien green or Coolant blue (aliens) |
 | `oil` | black oil drops, splats and pool, with Binbun Electric FX sparks (`blood.oil` in content/vfx.json map.gameplay; robots and machines) |
 | `bone` | a few pale bone chips and a drifting cloud of bone dust; no splats, no pool, no wet splat sound (skeletons) |
-| `spirit` | a pale spectral wisp that eases in, rises and fades, with Binbun Hit FX's `vfx_impact_05` tinted pale (`blood.spirit`); no drops, no splats, no pool, no wet splat sound (ghosts and spirits) |
+| `stone` | the same in grey: stone dust (a statue) |
+| `spirit` | a white-grey spectral wisp that eases in, rises and fades, with Binbun Hit FX's `vfx_impact_05` tinted white-grey (`blood.spirit`); no drops, no splats, no pool, no wet splat sound (ghosts and spirits) |
 
 **Who decides.** A character's own kind wins over the map's colour. Anyone without one bleeds the map's blood (MapMaker →
 Map properties → Blood; red unless set): the part-built presets (Ranger, Medic …), designs of yours, the soldier NPC
@@ -225,17 +226,24 @@ however fast the hits come (a machine gun on a robot crackles once a second, not
 60 ms. The `flashing` e2e flow records a robot, a skeleton and a ghost hit ten times a second each at night (moment
 `blood`).
 
-**Who gets what** (tagged by group first: Machines oil, every other group red; then by hand, in *italics*; 150
-characters):
+**Who gets what** (tagged by group first: Machines oil, every other group red; then by hand, in *italics*; the owner's
+answers of 2026-11-18: Alien Biker, Spud Marshal and Space Marine blue, Brass Hare red, Bronzer stone dust, the wisp
+white-grey; 133 characters on the roster):
 
 | Kind | How many | Who |
 |---|---|---|
-| **Red** (`red`) | 112 | Anoobys, Astronaut Explorer, Azure Sentinel, Bamboo, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill, Bill the Barbarian, Biscuit, Boglurker, Briggs, Brother Silencio, Cal, Cap'n Rusty Barnacle, Capt. Nova, Chef Basile, Coffee Brown, Cool Hands Rex, Crimson Operative, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dust Trooper, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Gas Mask Engineer, Giggles, Goblin, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Hollis, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rotter, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shade, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Uncle Bao, Vampire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, Wealthy Otter, WWII Infantry, Zombie Soldier A |
-| **Green** (`green`) | 9 | *Alien Biker*, *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *Space Marine*, *Spud Marshal*, *The Hollow Visitor*, *The Visitor* |
-| **Blue** (`blue`) | 3 | *Octo Buddy*, *Reef Wanderer*, *Ricochet* |
-| **Black oil and sparks** (`oil`) | 15 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, *Brass Hare*, *Bronzer*, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, *Ivory Rustwalker*, Rusty Mech, *Slugger-9*, Steel Guardian, T-TreeFitty |
+| **Red** (`red`) | 100 | Anoobys, Astronaut Explorer, Azure Sentinel, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Gas Mask Engineer, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
+| **Green** (`green`) | 5 | *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *The Visitor* |
+| **Blue** (`blue`) | 6 | *Alien Biker*, *Octo Buddy*, *Reef Wanderer*, *Ricochet*, *Space Marine*, *Spud Marshal* |
+| **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
 | **Bone dust** (`bone`) | 10 | *Bonejack*, *Count Bonesworth*, *Dog Tag Doyle*, *Grinning Gus*, *Mummy Bot*, *Pharaoh Mummy Warrior*, *Rattles*, *Spiked Skeleton Biker*, *Sugar Skull*, *Teddy* |
+| **Stone dust** (`stone`) | 1 | *Bronzer* |
 | **Spectral wisp** (`spirit`) | 1 | *The Hollow Pilgrim* |
+
+Retired looks (`RETIRED_LOOKS`) keep a `blood` in their manifests, but bleed as the look they play: Bamboo (as Shellback), Bill (as Cal), Briggs (as Grunt '68), Capt. Nova (as Spacewalker), Crimson Operative (as Stealth Operative), Dust Trooper (as Desert Ranger), Goblin (as Goblina), Hollis (as WWII Infantry), Ivory Rustwalker (as T-TreeFitty), Rotter (as Shambler), Rusty Mech (as T-TreeFitty), Shade (as Lancer Mei), Slugger-9 (as T-TreeFitty), The Hollow Visitor (as The Visitor), Uncle Bao (as Old Timer), Vampire (as Count Bonesworth), Wealthy Otter (as Brass Hare).
+
+**Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#8f8c86`), for a statue. The **wisp** is white-grey:
+its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.26 (softer than a white burst; owner, 2026-11-18).
 
 ## Character Designer
 

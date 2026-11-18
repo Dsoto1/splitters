@@ -6,7 +6,7 @@
   "name": "Space Marine",
   "look": "core.spacemarine",
   "group": "space",
-  "blood": "green",
+  "blood": "blue",
   "nameTheme": "soldier",
   "bio": "Short, green and fully kitted out. Passed every fitness test by standing on a crate.",
   "body": "male",

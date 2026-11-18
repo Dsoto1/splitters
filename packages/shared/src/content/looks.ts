@@ -150,7 +150,7 @@ export const CHARACTER_BRANCHES = [
 export type CharacterBranch = (typeof CHARACTER_BRANCHES)[number]['id'];
 export const isCharacterBranch = (x: unknown): x is CharacterBranch => CHARACTER_BRANCHES.some((b) => b.id === x);
 /** What a character bleeds when hit (BLOOD_KINDS in content/blood.ts, apart so the menu's first JS doesn't carry it). */
-export type BloodKind = 'red' | 'green' | 'blue' | 'oil' | 'bone' | 'spirit';
+export type BloodKind = 'red' | 'green' | 'blue' | 'oil' | 'bone' | 'spirit' | 'stone';
 export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
 
 /** Character Select's section for the experimental tier (after the groups, before Yours), and Yours (your designs). */

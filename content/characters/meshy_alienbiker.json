@@ -6,7 +6,7 @@
   "name": "Alien Biker",
   "look": "core.alienbiker",
   "group": "space",
-  "blood": "green",
+  "blood": "blue",
   "nameTheme": "alien",
   "bio": "Crossed four galaxies for the open road. Still can't find parking.",
   "body": "male",

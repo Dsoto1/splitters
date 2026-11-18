@@ -5,13 +5,13 @@ import { RETIRED_LOOKS, type BloodKind } from './looks.ts';
 
 /**
  * What a character bleeds when hit (`blood` in its manifest; owner, 2026-11-17): red for people, green or blue for
- * aliens, black oil with Electric FX sparks for robots and machines, bone dust for skeletons, a pale spectral wisp for
+ * aliens, black oil with Electric FX sparks for robots and machines, bone dust for skeletons, grey stone dust for statues (bone's dust, greyer; owner, 2026-11-18), a white-grey spectral wisp for
  * ghosts and spirits (no decals for the last two). A look without one (part-built presets, designs, the soldier NPC
  * mannequins) bleeds the map's blood colour. The map's amount and the player's blood switch rule every kind.
  * The same list as BLOOD in tools/content/character-manifests.mjs (a test keeps them equal). IDs never change.
  * Its own module (and its table, characterBlood.generated.ts): only the game reads it, so the menu's first JS doesn't.
  */
-export const BLOOD_KINDS = ['red', 'green', 'blue', 'oil', 'bone', 'spirit'] as const satisfies readonly BloodKind[];
+export const BLOOD_KINDS = ['red', 'green', 'blue', 'oil', 'bone', 'spirit', 'stone'] as const satisfies readonly BloodKind[];
 export const isBloodKind = (x: unknown): x is BloodKind => (BLOOD_KINDS as readonly unknown[]).includes(x);
 
 /**

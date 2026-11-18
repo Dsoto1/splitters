@@ -89,9 +89,9 @@ and light).
 Off hides all blood and the splat sound, whatever the map says.
 
 **Per character** (owner, 2026-11-17): each character names what it bleeds (`blood` in its manifest: red, green,
-blue, black oil with Electric FX sparks, bone dust, or a pale spectral wisp with no decals), and that wins over the
+blue, black oil with Electric FX sparks, bone dust, stone dust, or a white-grey spectral wisp with no decals), and that wins over the
 map's colour; anyone without one (part-built presets, designs, the soldier mannequins) bleeds the map's. The map's
-amount and the player's switch still rule every kind. Bone dust and wisps make no wet splat on a kill. Who gets what,
+amount and the player's switch still rule every kind. Bone and stone dust and wisps make no wet splat on a kill. Who gets what,
 and how each is drawn: [`CHARACTERS.md`](CHARACTERS.md#blood).
 
 ## Hit sounds

@@ -12,8 +12,11 @@ describe('blood kinds', () => {
 
   it('liquids splat and make the wet sound; bone dust and a wisp leave no decals', () => {
     for (const k of ['red', 'green', 'blue', 'oil'] as const) expect([bloodStyle(k).splats, bloodStyle(k).wet], k).toEqual([true, true]);
-    for (const k of ['bone', 'spirit'] as const) expect([bloodStyle(k).splats, bloodStyle(k).wet], k).toEqual([false, false]);
+    for (const k of ['bone', 'stone', 'spirit'] as const) expect([bloodStyle(k).splats, bloodStyle(k).wet], k).toEqual([false, false]);
     expect(bloodStyle('spirit').drops).toBe(0);
+    // Stone dust is bone's dust, greyer.
+    expect(bloodStyle('stone').puff).toBe(bloodStyle('bone').puff);
+    expect(bloodStyle('stone').color).not.toBe(bloodStyle('bone').color);
   });
 
   it("oil's sparks and a spirit's wisp are mapped pack effects", () => {

@@ -45,8 +45,10 @@ const STYLES: Readonly<Record<BloodKind | 'map', BloodStyle>> = {
   oil: { color: '#1b1b1f', ...LIQUID, drops: 0.8, fx: 'blood.oil' },
   // Bone dust: a few pale chips and a dusty cloud, no splats.
   bone: { color: '#d4c8aa', drops: 0.5, splats: false, puff: 'dust', wet: false },
-  // A ghost: no drops, no splats; a pale wisp that rises and fades (and the pack's, tinted pale).
-  spirit: { color: '#dcebff', drops: 0, splats: false, puff: 'wisp', fx: 'blood.spirit', wet: false },
+  // Stone dust (a statue: Bronzer; owner, 2026-11-18): bone's chips and cloud, in grey.
+  stone: { color: '#8f8c86', drops: 0.5, splats: false, puff: 'dust', wet: false },
+  // A ghost: no drops, no splats; a white-grey wisp that rises and fades (and the pack's, tinted so; owner, 2026-11-18: softer, not a pure white burst).
+  spirit: { color: '#c4c6ca', drops: 0, splats: false, puff: 'wisp', fx: 'blood.spirit', wet: false },
 };
 export const bloodStyle = (kind: BloodKind | null | undefined): BloodStyle => STYLES[kind ?? 'map'];
 
