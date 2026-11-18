@@ -50,9 +50,6 @@
     "metallic": 0.3,
     "roughness": 0.6
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,

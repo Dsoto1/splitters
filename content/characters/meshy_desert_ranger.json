@@ -29,9 +29,6 @@
     "metallic": 0.1,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 15000,
     "feet": true,

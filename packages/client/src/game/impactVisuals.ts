@@ -38,6 +38,10 @@ interface Bullet {
   /** Streak length (m): faster rounds draw longer streaks so they still read. */
   length: number;
   onArrive?: () => void;
+  /** Where it flies to (world). */
+  to: Vector3;
+  /** The gun it leaves, asked once when the frame it first shows is drawn (settleStarts): its start goes on the muzzle as drawn. */
+  start?: () => Vec3 | null;
 }
 
 /** Streak instances kept for reuse (pooled: automatic fire would otherwise create and dispose one per round). */
@@ -208,7 +212,7 @@ export class ImpactVisuals {
    * `speed` is its real velocity (bullets) and `tracer: false` flies it
    * without a streak (tracer intervals, GUNPLAY_SPEC §31): it still lands.
    */
-  fire(from: Vec3, to: Vec3, color: string, onArrive?: () => void, startAt = 0, opts: { speed?: number; tracer?: boolean } = {}): void {
+  fire(from: Vec3, to: Vec3, color: string, onArrive?: () => void, startAt = 0, opts: { speed?: number; tracer?: boolean; start?: (() => Vec3 | null) | null } = {}): void {
     const a = new Vector3(from.x, from.y, from.z);
     const d = new Vector3(to.x - from.x, to.y - from.y, to.z - from.z);
     const dist = d.length();
@@ -220,7 +224,7 @@ export class ImpactVisuals {
     const speed = opts.speed ?? BULLET_SPEED;
     const length = Math.min(12, STREAK_LENGTH * Math.max(1, speed / BULLET_SPEED));
     if (opts.tracer === false) {
-      this.bullets.push({ mesh: null, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive });
+      this.bullets.push({ mesh: null, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive, to: new Vector3(to.x, to.y, to.z) });
       return;
     }
     const mesh = this.streakPool.pop() ?? this.streak.createInstance('bullet');
@@ -236,7 +240,42 @@ export class ImpactVisuals {
     Quaternion.FromUnitVectorsToRef(Vector3.Forward(), d, mesh.rotationQuaternion);
     mesh.position.copyFrom(a);
     // Your own rounds start a little out from the muzzle: right at the gun they'd smear across the view.
-    this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive });
+    this.bullets.push({ mesh, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive, to: new Vector3(to.x, to.y, to.z), ...(opts.start ? { start: opts.start } : {}) });
+  }
+
+  /** The last tracers' starts as settled (tests: the tracer's start against the muzzle as drawn that frame), newest last. */
+  readonly settled: { from: Vec3; frame: number; n: number }[] = [];
+  private settledCount = 0;
+
+  /**
+   * Tracers that leave a gun start on its muzzle as drawn (grips auto-fit, owner 2026-11-18: bullets out of the gun,
+   * especially in third person). A shot is fired before the frame places the guns (your character's in third person
+   * moves with you, everyone's with their aim), so the muzzle known then is the frame before's, up to 10 cm behind a
+   * running gun. Run once the guns are placed (view.ts followMuzzles): each new tracer's start moves onto its gun's
+   * muzzle, still flying to the same point (the hit comes from the aim, as before), the part already flown kept.
+   */
+  settleStarts(frame: number): void {
+    for (const b of this.bullets) {
+      if (!b.start) continue;
+      const p = b.start();
+      b.start = undefined;
+      if (!p) continue;
+      b.from.set(p.x, p.y, p.z);
+      b.to.subtractToRef(b.from, b.dir);
+      const dist = b.dir.length();
+      if (dist < 0.05) continue;
+      b.dir.scaleInPlace(1 / dist);
+      b.dist = dist;
+      b.travelled = Math.min(b.travelled, dist * 0.5);
+      if (b.mesh) {
+        Quaternion.FromUnitVectorsToRef(Vector3.Forward(), b.dir, b.mesh.rotationQuaternion ??= new Quaternion());
+        const head = Math.min(b.travelled, b.dist);
+        b.mesh.position.copyFrom(b.from.add(b.dir.scale(head)));
+        b.mesh.scaling.z = Math.max(0.01, head - Math.max(0, head - b.length));
+        this.settled.push({ from: { x: p.x, y: p.y, z: p.z }, frame, n: ++this.settledCount });
+        if (this.settled.length > 32) this.settled.shift();
+      }
+    }
   }
 
   /** Done with a streak: back to the pool (hidden), or disposed past the pool's size. */

@@ -24,9 +24,6 @@
     "metallic": 0.45,
     "roughness": 0.45
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 16000,
     "surface": "rebake",

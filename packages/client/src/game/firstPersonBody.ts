@@ -30,6 +30,13 @@ const PIN_DOWN = 0.25;
 const PIN_UP = 0.08;
 /** Joints whose skin is drawn over the world with the gun (rendering group 1): forearms, hands and fingers. */
 const FOREARM = /^(lowerarm|hand|index|middle|ring|pinky|thumb)_/;
+/**
+ * The arms, which full-body first person leaves to the universal first-person arms (grips auto-fit, owner
+ * 2026-11-18: every character holds every gun the same way in first person): the body is drawn without them.
+ */
+const ARM = /^(upperarm|lowerarm|hand|index|middle|ring|pinky|thumb)_/;
+/** A vertex this much on the arm's joints goes with the arm. */
+const ARM_SHARE = 0.5;
 
 /**
  * Your own whole character seen from its eyes (Options -> Display -> First
@@ -65,11 +72,14 @@ export class FirstPersonBodyRig {
     private readonly anim: CharacterAnimator,
     /** The node the character hangs from (placed and turned by the rig). */
     private readonly holder: TransformNode,
+    /** `ownHands`: the body's own arms hold the gun (as before 2026-11-18); else they're cut away for the universal arms. */
+    opts: { ownHands?: boolean } = {},
   ) {
     this.neck = ch.joints.get('neck_01') ?? ch.joints.get('Head');
     this.headSize = 0.24;
-    this.forearms = forearmMeshes(ch);
-    this.headless = this.neck ? cutHead(ch, this.neck) : { hidden: [], cuts: [], shrink: true };
+    // The body's own forearms and hands drawn with the gun, or (the default) no arms at all: the universal arms hold it.
+    this.forearms = opts.ownHands ? forearmMeshes(ch) : [];
+    this.headless = this.neck ? cutHead(ch, this.neck, !opts.ownHands) : { hidden: [], cuts: [], shrink: true };
     for (const m of this.headless.hidden) m.setEnabled(false);
     // The head's shadow: a ball drawn into the shadow map only (no colour, no depth on screen).
     const ball = CreateSphere(`${ch.root.name}_fpHead`, { diameter: 1, segments: 6 }, scene);
@@ -316,14 +326,14 @@ function shoulderPads(m: Mesh): Uint8Array | null {
 }
 
 /**
- * Take the head off a character seen from inside it: meshes wholly on the
+ * Take the head off a character seen from inside it (and, `cutArms`, its arms: the universal arms hold the gun): meshes wholly on the
  * neck and head (or hung from them) are hidden; a mesh partly on them is
  * hidden and drawn instead as a copy without the triangles that touch the
  * head (Meshy characters are one mesh). `shrink`: a mesh that couldn't be
  * cut (morph targets, no skin weights) touches the head, so the neck is
  * shrunk away as well.
  */
-function cutHead(ch: CharacterInstance, neck: TransformNode): { hidden: AbstractMesh[]; cuts: Mesh[]; shrink: boolean } {
+function cutHead(ch: CharacterInstance, neck: TransformNode, cutArms = false): { hidden: AbstractMesh[]; cuts: Mesh[]; shrink: boolean } {
   const onHead = new Set<TransformNode>([neck, ...neck.getDescendants(false).filter((n): n is TransformNode => n instanceof TransformNode && !(n instanceof AbstractMesh))]);
   const hidden: AbstractMesh[] = [];
   const cuts: Mesh[] = [];
@@ -331,7 +341,7 @@ function cutHead(ch: CharacterInstance, neck: TransformNode): { hidden: Abstract
   for (const m of ch.meshes) {
     if (m.isDisposed() || (m instanceof Mesh && m.isBlocked)) continue;
     if (!m.skeleton) {
-      if (m.parent && onHead.has(m.parent as TransformNode)) hidden.push(m);
+      if (m.parent && (onHead.has(m.parent as TransformNode) || (cutArms && ARM.test(m.parent.name)))) hidden.push(m);
       continue;
     }
     const share = usable(m) ? boneShares(m, (j) => !!j && onHead.has(j)) : null;
@@ -341,7 +351,8 @@ function cutHead(ch: CharacterInstance, neck: TransformNode): { hidden: Abstract
     }
     const high = aboveNeck(m as Mesh);
     const pads = shoulderPads(m as Mesh);
-    const off = (v: number) => share[v]! >= HEAD_SHARE || (!!high && high[v] === 1) || (!!pads && pads[v] === 1);
+    const arm = cutArms ? boneShares(m as Mesh, (_j, name) => ARM.test(name)) : null;
+    const off = (v: number) => share[v]! >= HEAD_SHARE || (!!high && high[v] === 1) || (!!pads && pads[v] === 1) || (!!arm && arm[v]! >= ARM_SHARE);
     const indices = m.getIndices()!;
     const kept: number[] = [];
     for (let t = 0; t < indices.length; t += 3) {
