@@ -94,6 +94,22 @@ export function startingDockState(saved: DockState, windowWidth: number): DockSt
 
 /** A dragged width kept within the dock's limits for this window. */
 export function clampDockWidth(w: number, windowWidth: number): number {
-  const max = Math.max(DOCK_MIN_W, Math.min(DOCK_MAX_W, Math.floor(windowWidth * DOCK_MAX_SHARE)));
+  const max = dockMaxWidth(windowWidth);
   return Math.round(Math.max(DOCK_MIN_W, Math.min(max, w)));
+}
+
+/**
+ * The dock's state after the window is resized (UI Phase 5): narrowed past 900 px, an expanded dock folds to compact,
+ * as it would start (owner's answer 7); widened back past it, the dock as it was left comes back. Neither is kept: the
+ * saved choice is only what someone picked. Any other resize leaves the dock as it is.
+ */
+export function resizedDockState(current: DockState, saved: DockState, before: number, after: number): DockState {
+  if (current === 'expanded' && before >= NARROW_WINDOW && after < NARROW_WINDOW) return 'compact';
+  if (current === 'compact' && saved === 'expanded' && before < NARROW_WINDOW && after >= NARROW_WINDOW) return 'expanded';
+  return current;
+}
+
+/** The widest the dock may be in this window (the grip's aria-valuemax). */
+export function dockMaxWidth(windowWidth: number): number {
+  return Math.max(DOCK_MIN_W, Math.min(DOCK_MAX_W, Math.floor(windowWidth * DOCK_MAX_SHARE)));
 }
