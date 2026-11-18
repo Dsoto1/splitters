@@ -144,7 +144,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
 - S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
-- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **In work on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22, 2026-11-18; no map format change).
+- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **Built 2026-11-18 on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22; no map format change): every map opens and saves with nothing lost (95 files), edits reach collision and the navmesh, the dock follows the window, Tile View and the minimap from the keyboard, Grid and Snap remembered, Tile View draws nothing on pointer moves; `docs/MAPMAKER_UI_SPEC.md`, "Phase 5: as built".
 - M · B · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
 - S · B · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
 - L · B · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).

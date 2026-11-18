@@ -352,6 +352,57 @@ drawing, pointer and keys), `tileView.css`; wired in `rightDock.ts`, `dockPrefs.
 ### Phase 5 — Hardening and polish
 Test existing saved maps, serialization/migrations, collision/pathing updates, browser resizing, large-map performance, keyboard accessibility, and user preference persistence. Remove redundant instructional chrome.
 
+**Phase 5: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-5`, 2026-11-18; no map format change).** Every
+item of the line above, as recommended where the spec left a choice. Files under `packages/client/src/editor/` unless
+shared.
+
+- **Saved maps and migrations** (shared `test/savedMapsCheck.ts`, `savedMaps1..3.test.ts`): every map in `maps/` (format
+  versions 15 to 46, so the migrations from each run) and the old map fixtures are opened as MapMaker opens them
+  (`loadMap` forEditing) and saved as Save, Export and Publish write them (`serializeMap`); a second open and save
+  writes the same file, a draft (the map as JSON in this browser) reads back the same, the saved file carries the
+  current format, and it plays exactly as the original (the map as played from both is the same text: every tile,
+  thing, set-piece part, mode and setting kept). 95 files, about 20 s. All passed on the first run: nothing was lost.
+- **Collision and pathing after edits** (shared `test/editsRebuild.test.ts`): a pillar moved by the shared transform
+  command moves its box, what shots and bodies hit, and where the bots' navmesh walks; undo puts all three back
+  exactly; a typed Height lifts it so shots pass under and its footprint walks again.
+- **Resizing** (`dockPrefs.ts` `resizedDockState`, `dockMaxWidth`; `rightDock.ts`): narrowed past 900 px an expanded
+  dock folds to compact (as it would start: owner answer 7), widened back it returns; neither is kept (the saved choice
+  is only what someone picked). A dragged width is fitted to 45 % of a smaller window and comes back on a bigger one
+  (the kept number stays). Once a frame at most. The grip is a WAI-ARIA window splitter: `aria-valuemin/max/now`, the
+  arrows (Shift: 64 px), Home and End. Under 1,000 px the tool bar shows icons and keys only (names kept for screen
+  readers and tooltips); under 900 px the overlay keeps clear of the compact card (a Phase 1-era rule had it run
+  under the card). The minimap and Tile View's plan follow the window's height (`clamp`), so a 720 px laptop keeps
+  Properties in view.
+- **Large maps** (`tools/perf/editor-tileview.mjs`; St. John's and Flavius Rule, a 3 × 3-cell area round the densest
+  cell, software rendering): the pointer's place was in Tile View's redraw key, so every pointer move drew the whole
+  plan, and every draw gathered and sorted the whole map's boxes, breakable props and moving blocks again. Now the
+  readout is text updated on its own, the level's boxes are sorted once per drawn map, level and hidden set, and the
+  dock's view sync no longer forces Tile View or the minimap to draw again unless what shows changed. 60 pointer
+  moves: 60 draws, 133 ms (St. John's) / 114 ms (Flavius Rule) → 0 draws, 0 ms; a 12-step drag: 32 → 16 ms / 39 → 14
+  ms of drawing; a wheel zoom step about 0.9 ms.
+- **Keyboard** (`planKeys.ts`, pure; `tileViewPanel.ts`, `minimapPanel.ts`): both plans take the focus (a cyan ring) and
+  their keys stay theirs. Tile View: **]** / **[** pick the next or previous thing (north to south, west to east), then
+  the wall sides, then the set pieces' parts (`tileViewModel.ts` `cyclePick`; locked and hidden left out); **Enter**
+  goes to the picked thing's fields; **+ / −** zoom, **Home** fits, **Alt+arrows** pan (Shift: further); the plain
+  arrows still nudge and R still turns. The minimap: focusable, **+ / −**, the arrows pan (zooming in a step first when
+  the whole level shows), **Home** fits, **Enter** opens Tile View on the selection. The tile crumb is a button; "Map"
+  is text, ← Map beside it being the one way back. The `?` list has a **Tile View and minimap** section and the dock
+  edge's keys (shared `keymap.ts`, notes only: no binding changed).
+- **Preferences kept** (`viewPrefs.ts`, `tiletrigger.editor.view`): View → Grid and Full grid, and Snap, as left; the
+  defaults are written as nothing; anything unreadable reads as the defaults. Not kept, on purpose: Overlaps and the
+  map layers (coming back to a map with props hidden reads as props lost) and the plan view. Everything else MapMaker
+  keeps (the dock's state, width and tab, the minimap's zoom, Tile View's snap and frame, the panels' folds) is checked
+  to read back from nonsense.
+- **Instructional chrome removed:** the hover tooltips over the minimap and Tile View's plan (they covered what you
+  pointed at; the keys are in the aria labels and the `?` list), the duplicate "Map" crumb, and Tile View's side note
+  cut to its one fact.
+- **Not done:** keyboard picking in the 3D view (the outliner and Tile View cover it); a rotate handle in Tile View.
+- **Tests:** unit `client/test/editorPhase5.test.ts` (resize states, widths, view prefs and every kept pref from
+  nonsense, the plans' keys, keyboard picking order), shared `savedMaps*`, `editsRebuild`; e2e `editorPhase5Checks` in
+  `editortools` (not `editorux`): `]`/`[`/Enter, zoom, pan and fit, no draws on pointer moves, 860 px compact and back
+  with the tool bar clear of the card, the grip's End fitted to a 1,000 px window and restored, the minimap's keys and
+  Enter, the `?` section, Grid and Snap kept for a new page and nothing kept at the defaults.
+
 ## 11. Acceptance criteria
 
 - [ ] All current editor workspaces and tools remain accessible and functionally intact.
