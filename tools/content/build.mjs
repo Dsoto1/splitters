@@ -369,6 +369,16 @@ try {
     const pack = buildSpec(m).pack;
     for (const f of meshyLock.files) if ((f.id === m.id || f.id === `${m.id}_fparms` || f.id === `${m.id}_clips`) && f.source !== pack) problems.push(`${f.file}: content/meshy.lock.json records pack ${f.source}, its manifest's licence is ${pack}'s (run node tools/content/prepare-meshy-characters.mjs <downloads, or any empty dir>)`);
   }
+  // The grip fit (tools/content/grip-fit.mjs; docs/CHARACTERS.md, "Grips auto-fit"): every player character fitted; a fit
+  // measured on an older build of its model is noted (its offsets still apply until the fit is run again).
+  const fits = existsSync(join(ROOT, 'content/grip-fit.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/grip-fit.json'), 'utf8')).characters : {};
+  const stale = [];
+  for (const m of characters.filter((x) => /player/.test(x.use ?? ''))) {
+    const fit = fits[m.id];
+    if (!fit) problems.push(`content/characters/${m.id}.json: no grip fit (run ONLY=${m.id} WRITE=1 STRIP=1 node tools/content/grip-fit.mjs <preview url> <work dir>)`);
+    else if (fit.hash !== meshyLock.files.find((f) => f.id === m.id)?.sha256) stale.push(m.id);
+  }
+  if (stale.length) console.log(`grip fit measured on an older model (run tools/content/grip-fit.mjs with ONLY=${stale.join(',')}): ${stale.length}`);
   const sets = readClipSets();
   for (const c of sets) if (!clipSetLock.files.some((f) => f.id === `${c.id}_clips`)) problems.push(`content/clip-sets/${c.id}.json: not built (run node tools/content/clip-set.mjs --build <downloads> ${c.id})`);
   for (const f of clipSetLock.files) if (!sets.some((c) => f.id === `${c.id}_clips`)) problems.push(`${f.file}: no definition in content/clip-sets`);

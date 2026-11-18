@@ -24,9 +24,6 @@
     "metallic": 0.05,
     "roughness": 0.75
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -35,9 +32,6 @@
     "lod": 0.25,
     "feet": true,
     "grip": {
-      "gripLong": [-0.06, -0.015, -0.045],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03],
       "curlL": 1.4
     }
   }

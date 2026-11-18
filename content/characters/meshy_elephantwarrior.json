@@ -24,9 +24,6 @@
     "metallic": 0.1,
     "roughness": 0.6
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -43,13 +40,6 @@
       "forward": 0.14,
       "down": 0.14,
       "out": 0.06
-    },
-    "grip": {
-      "supportLong": [
-        0,
-        0.04,
-        0.03
-      ]
     }
   }
 }

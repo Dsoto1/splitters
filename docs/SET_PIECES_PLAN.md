@@ -58,7 +58,7 @@ Each file holds a family, e.g. `carriageway.json` with a 2-, 3- and 4-cell-wide 
 - Overrides are small per-placement tweaks: a role's material, or hiding a part by index.
 - **Expansion:** at load, every placement expands deterministically into tiles, blocks, props and so on, with stable
   derived IDs (`sp_<placementId>_<partIndex>`), before geometry, collision and nav are built.
-- **Doc size:** the doc stores only the placement, so it stays small, and the 4,096-entity cap counts placements,
+- **Doc size:** the doc stores only the placement, so it stays small, and the entity cap (8,192 since map format v48; 4,096 before) counts placements,
   not expanded parts.
 - **Older maps** load unchanged (migration from v26 adds nothing).
 - **Validation:**
@@ -110,7 +110,7 @@ docs/CONTENT_PIPELINE.md, "Set pieces". What the design settled while it was bui
   itself (`tileMirrorAxis`: its cells, ports, default edges and parts are their own mirror image), so a piece with one
   that isn't (stairs) says `mirror: "none"`; no mirrored twins were needed for Phase 1.
 - **Budgets:** the file's caps count what it stores (a placement is one `setPieces` entry, at most 1024). The map as
-  played (hand-placed pieces and parts together) holds at most 4096 tiles, 4096 entities and 2 MB of JSON, the
+  played (hand-placed pieces and parts together) holds at most 4096 tiles, 8192 entities (4096 before map format v48) and 2 MB of JSON, the
   schema's own caps: it is what a joining player's welcome carries and every client loads it again. Validation and
   the budgets see the expanded map; issues on a part name its placement.
 - **New kit pieces** (usable by any map, not only set pieces): the edge style **`arch_segmental`** (a 5 m shallow
@@ -744,7 +744,8 @@ bots do (0.45 m) walks in and out; bots in a match ordered to Hold in a room get
 (`setPiecesAcademy.test.ts`) run every piece with the slim doors too.
 
 What they needed to know:
-- **A map as played holds at most 4,096 entities** (`SET_PIECE_PLAYED_MAX`, the schema's cap). A Dorm Bay is about
+- **A map as played held at most 4,096 entities** then (`SET_PIECE_PLAYED_MAX`, the schema's cap; **8,192 since map
+  format v48**, owner 2026-11-18, for steps 7-10: docs/MAP_BUDGETS.md, "Entity cap"). A Dorm Bay is about
   50 entities as played (14 blocks, 36 props, a light), a closed one 45, the Hall Centre 200. Scott Johnston /
   Hazelwood at the plan's 9 cells and the first turret (97 blocks each) put St. John's at 4,634; the hall is 8 cells
   (four Dorm Bays a floor, not five), the turret 25 blocks and its top, the slim doors no extra blocks, the centre
