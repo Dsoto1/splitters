@@ -32,11 +32,11 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- `wip/stjohns-5b` (lane A, St. John's step 5 + the owner's answers: court door, three-floor east end, pennants in a few rooms). Lands as one with step 5; `wip/stjohns-5` is off Ready because it clashed with `wip/painting-5` on map format v46. Step 5 moves to v47 once painting-5 lands.
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
 ## Ready to land
-- `wip/stjohns-5` · 5e87035a · 44201563617 (lane A: St. John's step 5, Stangeland / Cord rebuilt as a three-floor fieldstone school of Classroom Bays, joined to the bridge on the ground and first floor; new Classroom Bay, Classroom windows, Collegiate fieldstone facade, Chalkboard, Projector Screen, Notice Board, School Desks; map format v46)
 (`branch · green sha · run`; the next train takes them all in this order)
 
 - `wip/characters-1117` · 8cc22b4f · 44187594735 (lane B: the owner's character pass: Warrior Sentinel's shoulder (rejoint), Rattles stands straighter (lean), Horrors & Creatures, Soldiers & Spies with Army/Agency, the moves, astronauts together)
