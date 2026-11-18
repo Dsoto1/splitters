@@ -3419,7 +3419,8 @@ export class GameSession {
             const len = Math.hypot(d.x, d.y, d.z);
             if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
           }
-          this.view.kick(shot.def, shot.alt);
+          this.view.kick(shot.def, shot.alt, this.slot);
+          // Your gun's muzzle as drawn: the viewmodel's in first person, your character's in third (view.shotVisual).
           const muzzle = this.view.localMuzzle();
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).

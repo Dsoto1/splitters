@@ -24,9 +24,6 @@
     "metallic": 0.15,
     "roughness": 0.55
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
@@ -44,11 +41,6 @@
           "except": "^Head$"
         }
       ]
-    },
-    "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
     }
   }
 }

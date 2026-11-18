@@ -18,6 +18,7 @@ import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
+import type { GRIP_FITS } from '@tiletrigger/shared/gripFit';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
@@ -323,9 +324,16 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
+      // A whole-body look's fitted grip and arms' colours (grips auto-fit; loaded with the first character, not the menu).
+      const fit = look.whole ? (await gripFits())[look.id] : undefined;
+      if (this.scene.isDisposed) {
+        holder.dispose();
+        return gone();
+      }
       if (!spec.armsOnly) {
         hold = look.whole?.hold;
-        grip = look.whole?.grip;
+        // The fitted offsets under the manifest's own (hand-set ones the audit kept, curls, rolls).
+        grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
@@ -349,7 +357,7 @@ export class CharacterLibrary {
         meshes.push(...attached);
       });
       // A whole-body character's first-person arms are its own (nothing to dye) or the universal ones, dyed to match it.
-      this.dress(meshes, own, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? null, cloth: look.whole.cloth ?? null, trim: look.whole.trim ?? null } : look);
+      this.dress(meshes, own, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? fit?.arms?.skin ?? null, cloth: look.whole.cloth ?? fit?.arms?.cloth ?? null, trim: look.whole.trim ?? fit?.arms?.trim ?? null } : look);
       if (!spec.armsOnly && !look.whole && (look.gear?.length || look.hair.includes(BEARD))) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const names = gearModels(look);
@@ -584,6 +592,13 @@ function clipLoopsOf(set: AssetContainer): CharacterInstance['clipLoops'] {
     }
   }
   return out;
+}
+
+let fits: Promise<typeof GRIP_FITS> | null = null;
+/** The grip fit's table (shared gripFit.generated.ts), loaded once, on the first character. */
+function gripFits(): Promise<typeof GRIP_FITS> {
+  fits ??= import('@tiletrigger/shared/gripFit').then((m) => m.GRIP_FITS);
+  return fits;
 }
 
 /** The measured hands a character file carries on its hand joints (glTF extras, read as metadata). */
