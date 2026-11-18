@@ -118,17 +118,18 @@ const LINEUP4: [string, number, number, number, number][] = [
 ];
 
 /**
- * Environment Phase 5's additions, every look, right of Phase 4's lineup: the jungle set (the jungle tree, the tree fern,
+ * Environment Phase 5's additions, every look, between Phase 4's trees and its cliffs (inside the lab's bounds, so the
+ * shadow map's extent and the visual baseline don't change): the jungle set (the jungle tree, the tree fern,
  * the elephant ear) and the spruce's alpine look. View: jungle.
  */
 const LINEUP5: [string, number, number, number, number][] = [
-  ['env.shrub.elephant_ear', 0, 78, -88, 0.4],
-  ['env.shrub.elephant_ear', 1, 81, -88, 1.9],
-  ['env.fern.tree_fern', 0, 75, -83, 0.3],
-  ['env.fern.tree_fern', 1, 85, -83, 2.2],
-  ['env.broadleaf.jungle', 0, 74, -72, 0.6],
-  ['env.broadleaf.jungle', 1, 87, -72, 2.6],
-  ['env.conifer.spruce', 2, 93, -80, 1.2],
+  ['env.shrub.elephant_ear', 0, 41, -62, 0.4],
+  ['env.shrub.elephant_ear', 1, 44, -62, 1.9],
+  ['env.fern.tree_fern', 0, 48, -61, 0.3],
+  ['env.fern.tree_fern', 1, 54, -61, 2.2],
+  ['env.broadleaf.jungle', 0, 43, -56, 0.6],
+  ['env.broadleaf.jungle', 1, 57, -56, 2.6],
+  ['env.conifer.spruce', 2, 61, -62, 1.2],
 ];
 
 const EYE = 1.7;
@@ -300,7 +301,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   VIEWS.variety = [new Vector3(51, EYE, -100), new Vector3(51, 3.2, -72)];
   VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
   VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
-  VIEWS.jungle = [new Vector3(82, EYE, -101), new Vector3(82, 4, -76)];
+  VIEWS.jungle = [new Vector3(51, EYE, -67), new Vector3(51, 4, -56)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 
