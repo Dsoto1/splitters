@@ -2245,9 +2245,12 @@ export class GameSession {
           }
           this.trackVehicle(msg.me?.vp);
           // Once a frame (the newest snapshot's, at the frame's start), unless the player lived or died: then now, as the
-          // checks above and a fresh life's gun state read it (and `?perfoff=reconcileframe`: every snapshot, as before).
+          // checks above and a fresh life's gun state read it. Also now while driving a predicted vehicle: its prediction
+          // is close, not exact, so it drifts for as long as it goes uncorrected (on a slow page with several snapshots
+          // a frame the e2e buggy's worst correction grew from under 1.5 m to 2.6-4.5 m). `?perfoff=reconcileframe`:
+          // every snapshot, as before.
           this.toReconcile = [me, msg.ack, msg.me, msg.tick];
-          if ((me.alive === 1) !== this.local.alive || !perfOn('reconcileframe')) this.reconcileLocal();
+          if ((me.alive === 1) !== this.local.alive || this.local.vehicle || !perfOn('reconcileframe')) this.reconcileLocal();
           this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
           // own switches (a better gun picked up, a thrown spear caught, `__give`).

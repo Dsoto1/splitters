@@ -1365,7 +1365,9 @@ SwiftShader on a shared 4-core box: counts compare, milliseconds only between ru
    own colour; later ones change it in place.
 5. **Reconcile once a frame** (`session.ts` `reconcileLocal`, `?perfoff=reconcileframe`): the snapshot handler keeps
    the newest snapshot's reconcile for the frame's start (after the transport's flush) or the next other message; a
-   life or a death still reconciles at once. `test/reconcileOnce.test.ts` runs bursts against per-snapshot reconciling:
+   life or a death still reconciles at once, and so does every snapshot while you drive a predicted vehicle (its
+   prediction is close, not exact: reconciled less often it drifted further, the e2e buggy's worst correction 2.6-4.5 m
+   against its 1.5 m limit on CI's slow page). `test/reconcileOnce.test.ts` runs bursts against per-snapshot reconciling:
    the same state every frame, no corrections; the prediction tests pass unchanged.
 6. **Held weapons in one material: not done.** An atlas means re-making every weapon model from its sources
    (`tools/content/prepare-guns.mjs` reads the Meshy and pack downloads outside the repo, 110 models, their colour,
