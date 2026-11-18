@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_7xcfv2iby23tho4d",
-      "revision": 42,
-      "contentHash": "sha256:ef3f87c217ff573a134991987ab4afdf4e5f0711fe695a6a42ce2f41a637d562",
+      "versionId": "v_vc7nvpixe2kq52qz",
+      "revision": 43,
+      "contentHash": "sha256:d9ff7877757fa1f0f5682bda684f6d02cf722f74b7041a0071c2dedb2750be96",
       "schemaVersion": 47,
-      "releasedAt": "2026-11-18T11:08:07.538Z"
+      "releasedAt": "2026-11-18T15:43:43.226Z"
     },
     "testOnly": true
   },
@@ -7000,6 +7000,29 @@
       "piece": "setpiece.classroom_entry_bay",
       "x": 1,
       "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_mv6cd5da2x",
+      "piece": "setpiece.refectory_bay",
+      "x": -4,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "fire_north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9h7b04edcw",
+      "piece": "setpiece.clock_tower",
+      "x": -1,
+      "y": -48,
       "z": 0,
       "rotation": 0,
       "mirror": false
