@@ -2853,6 +2853,19 @@ export class FrontEnd {
       this.audio.setVolume(Number(volume.value) / 100);
       storage('cs.volume', String(this.audio.getVolume()));
     });
+    // The owner's music (main menu and MapMaker) and announcer, each on its own slider under Volume; 0 is off.
+    const musicVol = el('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(this.audio.getMusicVolume() * 100)) });
+    musicVol.id = 'opt-music';
+    musicVol.addEventListener('input', () => {
+      this.audio.setMusicVolume(Number(musicVol.value) / 100);
+      storage('cs.music', String(this.audio.getMusicVolume()));
+    });
+    const announcerVol = el('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(this.audio.getAnnouncerVolume() * 100)) });
+    announcerVol.id = 'opt-announcer';
+    announcerVol.addEventListener('input', () => {
+      this.audio.setAnnouncerVolume(Number(announcerVol.value) / 100);
+      storage('cs.announcer', String(this.audio.getAnnouncerVolume()));
+    });
     const graphics = el('select', {}, ...GRAPHICS_QUALITIES.map((q) => el('option', { value: q, textContent: { low: 'Low — fastest', medium: 'Medium — sun shadows', high: 'High — far shadows, ambient occlusion, bloom' }[q], selected: q === loadGraphicsQuality() })));
     graphics.addEventListener('change', () => saveGraphicsQuality(graphics.value as GraphicsQuality));
     const renderScale = el('select', {}, ...RENDER_SCALES.map((r) => el('option', { value: r, textContent: RENDER_SCALE_LABELS[r], selected: r === loadRenderScale() })));
@@ -3070,6 +3083,11 @@ export class FrontEnd {
     const toggle = (input: HTMLInputElement) => el('label', { class: 'switch' }, input, el('span', { class: 'switch-track' }));
     const volumeVal = el('output', { textContent: `${volume.value}%` });
     volume.addEventListener('input', () => (volumeVal.textContent = `${volume.value}%`));
+    const pct = (v: string) => (v === '0' ? 'Off' : `${v}%`);
+    const musicVal = el('output', { textContent: pct(musicVol.value) });
+    musicVol.addEventListener('input', () => (musicVal.textContent = pct(musicVol.value)));
+    const announcerVal = el('output', { textContent: pct(announcerVol.value) });
+    announcerVol.addEventListener('input', () => (announcerVal.textContent = pct(announcerVol.value)));
     const crosshairPreview = el('div', { class: 'opt-stack' }, crosshairs, colours);
     const sections: [string, string, HTMLElement[]][] = [
       ['general', 'General', [
@@ -3077,6 +3095,8 @@ export class FrontEnd {
         row('Player name', name, this.verified ? 'Your username: change it in Profile.' : 'What other players see.'),
         row('Clan tag', clan, 'Up to five letters, shown before your name.'),
         row('Volume', el('span', { class: 'opt-range' }, volume, volumeVal)),
+        row('Music', el('span', { class: 'opt-range' }, musicVol, musicVal), 'On the main menu, Match Setup and in MapMaker; never in a match. Under Volume.'),
+        row('Announcer', el('span', { class: 'opt-range' }, announcerVol, announcerVal), 'The voice calling the match: the start, objectives, your multi-kills and streaks. Under Volume. Also in the pause menu.'),
       ]],
       ['display', 'Display', [
         row('Fullscreen', fullscreen, 'F11 or Alt+Enter also switch it.'),
