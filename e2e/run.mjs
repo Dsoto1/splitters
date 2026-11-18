@@ -5664,8 +5664,15 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
+  // The owner's announcer lines load after the game's sounds, and decode (Ogg Opus).
+  await page.waitForFunction(() => window.__audio.stats.voice + window.__audio.stats.voiceFailed >= 39, null, { timeout: T(30000) }).catch(() => {});
+  const voice = await page.evaluate(() => ({ voice: window.__audio.stats.voice, failed: window.__audio.stats.voiceFailed }));
+  check(voice.voice === 39 && voice.failed === 0, `the announcer's 39 lines load and decode (${JSON.stringify(voice)})`);
+  // No music in a match (browser tests leave it off anyway; ?music=1 below turns it on).
+  check((await page.evaluate(() => window.__music.debug().tracks.length)) === 0, 'no music plays in a match');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await musicChecks(browser);
   await spectateChecks(browser);
 }
 
@@ -5674,6 +5681,28 @@ async function offlineFlow(browser) {
  * players (cycled with the arrow keys), Space flies the free camera, and you respawn as usual; then
  * spectating by choice from the pause menu (a bot fills the place) and joining again.
  */
+/** The menu's music (audio/music.ts): it waits for the first click, then streams a menu track; Music at 0 stops it. */
+async function musicChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?music=1`);
+  await page.waitForFunction(() => window.__music?.debug().scene === 'menu', null, { timeout: T(60000) });
+  const before = await page.evaluate(() => window.__music.debug().started);
+  // A click unlocks audio (anywhere: the page's corner).
+  await page.mouse.click(4, 4);
+  await page.waitForFunction(() => window.__music.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
+  const on = await page.evaluate(() => window.__music.debug());
+  check(before === 0 && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__audio.setMusicVolume(0));
+  await page.waitForFunction(() => window.__music.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
+  check((await page.evaluate(() => window.__music.debug().tracks.length)) === 0, 'Music at 0 stops it');
+  check(errors.length === 0, `no page errors on the menu with music (${errors.join('; ')})`);
+  await ctx.close();
+}
+
 async function spectateChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   livePages.add(page);
