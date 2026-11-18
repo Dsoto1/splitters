@@ -1380,7 +1380,6 @@ async function editoruxFlow(browser) {
   await editorLayoutChecks(browser);
   await editorSelectionSyncChecks(browser);
   await editorMinimapChecks(browser);
-  await editorTileViewChecks(browser);
   await editorThemeViewChecks(browser);
   await editorAssetsFitChecks(browser);
   await editorTallWallChecks(browser);
@@ -1406,7 +1405,7 @@ async function editorTileViewChecks(browser) {
   livePages.add(page);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-tileview-${name}.png` }).catch(() => {}) : Promise.resolve());
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-tileview-${name}.png` }).catch(() => {}) : Promise.resolve());
   await page.goto(`${CLIENT}/?mode=editor&test=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
@@ -2033,7 +2032,8 @@ async function editorInterfaceChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
   await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
-  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  // (Waited for: right after a reload the click can land before the panel's fold is wired.)
+  check(await page.waitForSelector('#ed-issues', { state: 'visible', timeout: T(3000) }).then(() => true, () => false), 'and opens again from its heading');
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
 
@@ -2813,6 +2813,7 @@ async function editortoolsFlow(browser) {
   await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
   await editorTransformChecks(browser);
+  await editorTileViewChecks(browser);
   await editorTileViewMoveChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);

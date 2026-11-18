@@ -333,9 +333,9 @@ drawing, pointer and keys), `tileView.css`; wired in `rightDock.ts`, `dockPrefs.
 - **Tests:** unit `client/test/tileView.test.ts` (local/world under every turn, a turned tile carrying its thing's local
   place and facing, the snap, a drag as one command and one undo, the focus kinds and how a selection or point picks
   them, children and parts by level, cell sides and a style change, picks, breadcrumbs, the kept prefs); e2e
-  `editorTileViewChecks` in `editorux` (Enter, the dock, breadcrumbs, click, drag on the turned tile's snap as one undo,
+  `editorTileViewChecks` in `editortools` (kept out of `editorux`, already about 20 minutes on CI; Enter, the dock, breadcrumbs, click, drag on the turned tile's snap as one undo,
   arrow and R, Local and World fields, a side made a door, Esc twice, a double-click on the minimap's set piece and its
-  read-only part, nothing in the map, compact) and `editorTileViewMoveChecks` in `editortools` (a moving build picked
+  read-only part, nothing in the map, compact) and `editorTileViewMoveChecks` (a moving build picked
   whole, dragged as one step, a local Facing in a room turned 180°).
 
 **Owner questions on Phase 4a** (recommended first; built as recommended):
