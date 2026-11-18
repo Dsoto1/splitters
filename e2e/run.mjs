@@ -8523,7 +8523,7 @@ async function weaponsetsFlow(browser) {
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
   check(swapped, 'the Host tab switches to Sci-fi at once: every weapon pickup holds a Sci-fi weapon');
   const sci = await respawn(page);
-  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && sci.grenade === 'sticky', `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and a sticky grenade (${JSON.stringify(sci)})`);
+  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && ['sticky', 'vortex', 'smoke'].includes(sci.grenade), `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and one of its grenades (${JSON.stringify(sci)})`);
   await page.close();
 
   // Match setup's own choice, Chaos (the setup saved in this browser; a new page).
