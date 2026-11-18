@@ -11,7 +11,7 @@ import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
 import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
-import { MusicPlayer, type MusicScene } from './audio/music.ts';
+import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
@@ -298,8 +298,19 @@ announcerInput.addEventListener('input', () => {
   audio.setAnnouncerVolume(Number(announcerInput.value) / 100);
   storage('cs.announcer', String(audio.getAnnouncerVolume()));
 });
-const music = new MusicPlayer(audio, Math.random, params.get('music') === '1' || (params.get('music') !== '0' && !navigator.webdriver));
-(window as unknown as { __music: MusicPlayer }).__music = music;
+// The music's code loads after the first click or key (audio unlocked), never in the menu's first JS.
+let music: MusicPlayer | null = null;
+let musicScene: MusicScene | null = null;
+if (params.get('music') === '1' || (params.get('music') !== '0' && !navigator.webdriver)) {
+  audio.onUnlock(
+    () =>
+      void import('./audio/music.ts').then(({ MusicPlayer }) => {
+        music = new MusicPlayer(audio);
+        (window as unknown as { __music: MusicPlayer }).__music = music;
+        music.setScene(musicScene);
+      }),
+  );
+}
 const MUSIC_SCENES: Record<Mode, MusicScene | null> = { menu: 'menu', designer: 'menu', editor: 'mapmaker', game: null };
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
@@ -314,7 +325,8 @@ class App {
   }
   private set mode(m: Mode) {
     this.modeNow = m;
-    music.setScene(MUSIC_SCENES[m]);
+    musicScene = MUSIC_SCENES[m];
+    music?.setScene(musicScene);
   }
   private editor?: EditorApp;
   private session?: GameSession;

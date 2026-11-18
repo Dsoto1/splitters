@@ -1,4 +1,46 @@
-import type { SoundId, VoiceLine } from './audio.ts';
+import ownerAudio from '../../../../content/owner-audio.json';
+import type { AudioSystem, SoundId, VoiceLine } from './audio.ts';
+import { versioned } from '../assetUrl.ts';
+
+/** Every announcer line (content/owner-audio.json). */
+export const VOICE_LINES = Object.keys(ownerAudio.announcer) as VoiceLine[];
+
+let voiceAsked = false;
+
+/**
+ * Load the announcer's lines into `audio` (about half a megabyte): once audio is unlocked and the game's own sounds
+ * are in, when the page is idle, so a match (or MapMaker's Test) never waits on them; a line not in yet falls back
+ * or is skipped. Once a page.
+ */
+export function loadVoiceLines(audio: AudioSystem): void {
+  if (voiceAsked) return;
+  voiceAsked = true;
+  audio.onUnlock(() =>
+    void audio.load().then(() => {
+      const go = () => {
+        const ctx = audio.context;
+        if (!ctx) return;
+        for (const id of VOICE_LINES) {
+          void fetch(versioned(`${import.meta.env.BASE_URL}voice/${id}.ogg`))
+            .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(`${res.status}`))))
+            .then((data) => ctx.decodeAudioData(data))
+            .then(
+              (buf) => {
+                audio.voice.set(id, buf);
+                audio.stats.voice++;
+              },
+              (err) => {
+                audio.stats.voiceFailed++;
+                console.warn(`announcer line ${id} failed to load`, err);
+              },
+            );
+        }
+      };
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 4000 });
+      else setTimeout(go, 1000);
+    }),
+  );
+}
 
 /**
  * The announcer (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md, "Announcer"): which of the owner's lines to say, when.

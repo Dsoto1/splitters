@@ -73,7 +73,6 @@ export class MusicPlayer {
   constructor(
     private readonly audio: AudioSystem,
     rng: () => number = Math.random,
-    private readonly enabled = true,
   ) {
     this.decks = { menu: new ShuffleDeck(MUSIC_TRACKS.menu, rng), mapmaker: new ShuffleDeck(MUSIC_TRACKS.mapmaker, rng) };
     audio.onUnlock(() => this.refresh());
@@ -90,7 +89,7 @@ export class MusicPlayer {
 
   /** At 0 % (the slider's Off) it stops, and fetches nothing; moved up from 0 it starts. */
   private get wanted(): MusicScene | null {
-    return this.enabled && this.audio.getMusicVolume() > 0 ? this.scene : null;
+    return this.audio.getMusicVolume() > 0 ? this.scene : null;
   }
 
   private refresh(): void {

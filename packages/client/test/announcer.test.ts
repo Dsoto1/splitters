@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Announcer, COOLDOWN, HYPE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
-import { VOICE_LINES, type SoundId, type VoiceLine } from '../src/audio/audio.ts';
+import { Announcer, COOLDOWN, HYPE_LINES, VOICE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
+import type { SoundId, VoiceLine } from '../src/audio/audio.ts';
 
 const ME = 1;
 

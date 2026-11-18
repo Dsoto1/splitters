@@ -1,14 +1,11 @@
 import type { Vec3 } from '@tiletrigger/shared';
 import soundManifest from '../../../../content/sounds.json';
-import ownerAudio from '../../../../content/owner-audio.json';
 import { SYNTH_RATE, synthesize, type SynthRecipe } from './synth.ts';
 import { versioned } from '../assetUrl.ts';
 
 export const SOUND_BASE = `${import.meta.env.BASE_URL}sounds/`;
-/** The owner's announcer lines (content/owner-audio.json, tools/content/owner-audio.mjs). */
-export const VOICE_BASE = `${import.meta.env.BASE_URL}voice/`;
-export type VoiceLine = keyof typeof ownerAudio.announcer;
-export const VOICE_LINES = Object.keys(ownerAudio.announcer) as VoiceLine[];
+/** The lines themselves are listed by the announcer (audio/announcer.ts), which loads with a match: not in the menu's first JS. */
+export type VoiceLine = keyof (typeof import('../../../../content/owner-audio.json'))['announcer'];
 
 type Range = 'near' | 'mid' | 'far';
 
@@ -73,9 +70,8 @@ export class AudioSystem {
   private announcerVolume = 1;
   private musicBus: GainNode | null = null;
   private announcerBus: GainNode | null = null;
-  /** The owner's announcer lines, decoded once the game's sounds are in (never before: they wait their turn). */
-  private voiceBuffers = new Map<VoiceLine, AudioBuffer>();
-  private voiceLoading: Promise<void> | null = null;
+  /** The owner's announcer lines, decoded (audio/announcer.ts loads them, with a match: not in the menu's first JS). */
+  readonly voice = new Map<VoiceLine, AudioBuffer>();
   private readonly unlockListeners: (() => void)[] = [];
   private readonly musicListeners: (() => void)[] = [];
   /** Counters for tests and the stats overlay (`voice`: the announcer lines loaded). */
@@ -104,12 +100,7 @@ export class AudioSystem {
       this.announcerBus = this.ctx.createGain();
       this.announcerBus.gain.value = this.announcerVolume;
       this.announcerBus.connect(this.master);
-      // The announcer's lines after the game's own sounds, when the page is idle: a match (or MapMaker's Test) never
-      // waits on them, and a line not in yet falls back or is skipped.
-      void this.load().then(() => {
-        if (typeof requestIdleCallback === 'function') requestIdleCallback(() => void this.loadVoice(), { timeout: 4000 });
-        else setTimeout(() => void this.loadVoice(), 1000);
-      });
+      void this.load();
       for (const f of this.unlockListeners.splice(0)) f();
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
@@ -150,24 +141,9 @@ export class AudioSystem {
     return this.announcerVolume;
   }
 
-  /** Load the owner's announcer lines (small: about half a megabyte in all). */
-  loadVoice(): Promise<void> {
-    const ctx = this.ctx;
-    if (!ctx) return Promise.resolve();
-    this.voiceLoading ??= Promise.all(
-      VOICE_LINES.map(async (id) => {
-        try {
-          const res = await fetch(versioned(`${VOICE_BASE}${id}.ogg`));
-          if (!res.ok) throw new Error(`${res.status}`);
-          this.voiceBuffers.set(id, await ctx.decodeAudioData(await res.arrayBuffer()));
-          this.stats.voice++;
-        } catch (err) {
-          this.stats.voiceFailed++;
-          console.warn(`announcer line ${id} failed to load`, err);
-        }
-      }),
-    ).then(() => undefined);
-    return this.voiceLoading;
+  /** The audio context, once unlocked. */
+  get context(): AudioContext | null {
+    return this.ctx;
   }
 
   /**
@@ -176,7 +152,7 @@ export class AudioSystem {
    */
   speak(id: VoiceLine, gain = 1): number | null {
     const ctx = this.ctx;
-    const buf = this.voiceBuffers.get(id);
+    const buf = this.voice.get(id);
     if (!ctx || !this.announcerBus || ctx.state !== 'running' || !buf) return null;
     const src = ctx.createBufferSource();
     src.buffer = buf;

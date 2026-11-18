@@ -5885,7 +5885,7 @@ async function offlineFlow(browser) {
   const voice = await page.evaluate(() => ({ voice: window.__audio.stats.voice, failed: window.__audio.stats.voiceFailed }));
   check(voice.voice === 39 && voice.failed === 0, `the announcer's 39 lines load and decode (${JSON.stringify(voice)})`);
   // No music in a match (browser tests leave it off anyway; ?music=1 below turns it on).
-  check((await page.evaluate(() => window.__music.debug().tracks.length)) === 0, 'no music plays in a match');
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? 0)) === 0, 'no music plays in a match');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await musicChecks(browser);
@@ -5905,16 +5905,17 @@ async function musicChecks(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?music=1`);
-  await page.waitForFunction(() => window.__music?.debug().scene === 'menu', null, { timeout: T(60000) });
-  const before = await page.evaluate(() => window.__music.debug().started);
+  await page.waitForFunction(() => !!window.__audio && !!document.querySelector('#nav-play'), null, { timeout: T(60000) });
+  // The music's code isn't even loaded before a click or key (not in the menu's first JS).
+  const before = await page.evaluate(() => !!window.__music);
   // A click unlocks audio (anywhere: the page's corner).
   await page.mouse.click(4, 4);
-  await page.waitForFunction(() => window.__music.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
-  const on = await page.evaluate(() => window.__music.debug());
-  check(before === 0 && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
+  const on = await page.evaluate(() => window.__music?.debug() ?? null);
+  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
   await page.evaluate(() => window.__audio.setMusicVolume(0));
-  await page.waitForFunction(() => window.__music.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
-  check((await page.evaluate(() => window.__music.debug().tracks.length)) === 0, 'Music at 0 stops it');
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? -1)) === 0, 'Music at 0 stops it');
   check(errors.length === 0, `no page errors on the menu with music (${errors.join('; ')})`);
   await ctx.close();
 }

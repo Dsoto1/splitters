@@ -1,6 +1,6 @@
 import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
-import { Announcer } from '../audio/announcer.ts';
+import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
 
@@ -116,6 +116,8 @@ export class SessionAudio {
       },
       localSlot,
     );
+    // Its lines load once the game's sounds are in, when the page is idle (never on the match's way in).
+    if (typeof audio.onUnlock === 'function') loadVoiceLines(audio);
   }
 
   /** Every frame: the announcer says what's waiting once the last line is done. */
