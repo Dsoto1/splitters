@@ -32,7 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- `wip/painting-5` (lane B: painting Phase 5; was green at 3b9e19e5 but conflicts with main since St. John's step 5 took map format v46: a helper is merging main and moving `lookDefs` to **v47**, then re-checking on `check/painting-5b`).
+- `wip/gun-handling` (lane B: gun handling extras and the weapon tuning page; green alone at 75522232, but red in train `check/train-20261118-041849` (run 44236482355): the `editor` flow's "TEST starts within the 3 s budget" took 4.0-4.3 s (1.7 s on its own run, 0.5-0.8 s elsewhere); dropped from the train, back with its helper to root-cause).
 - `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
@@ -40,8 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**, lane B's lead holds the lock)
-- `wip/gun-handling` · 75522232 · 44227505839 (lane B: gun handling extras: run speed by weapon (sprint the same for all), sprint-to-fire time by weapon, scope holdover marks; the weapon tuning page `?mode=weapons`; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**)
+- `wip/process-tools` · a856acb0 · 44237103776 (lane B: process tooling: `train.mjs --ready`, notes-only conflicts merged in trains, e2e on 127.0.0.1 with free ports and `CHROMIUM`, `tools/dev/cleanup.mjs`, `tools/ci/flakes.mjs` → docs/FLAKES.md; HANDOFF already slimmed on main (03d41264); next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
@@ -178,6 +177,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-18 · B · Procedural environment Phase 4, more variety: 17 new species (trees, bushes, grasses, flowers, desert plants, boulders, cliffs), each with 2-3 looks; presets gain them; shipped maps unchanged. And MapMaker painting Phase 5: save and name your own looks (Save as my look, My looks, looks travel with maps; map format v47) (train `check/train-20261118-050653` at 81f7e8de, run 44242217181).
 - 2026-11-18 · B · MapMaker UI Phase 4a, Tile View: a north-up plan of a tile, set piece or group in the minimap's place (Enter, double-click, ⊞); pick, drag on a snap, nudge, R turns, Local/World fields, wall sides (train `check/train-20261118-031402` at 47fac281, run 44228966768).
 - 2026-11-18 · A+B · Train `check/train-20261118-004220` (37a68194, run 44210289769): St. John's step 5, Stangeland / Cord (lane A); the owner's character pass: Warrior Sentinel's shoulder, Rattles straighter, Horrors & Creatures, Soldiers & Spies with Army/Agency, the moves, the astronauts together (lane B).
 - 2026-11-17 · B · **Version 0.10.0** (check/release-0.10.0 at fee86ac3, run 44182239032), with the Dropship's whole deck (floor plates over the processed model's holes, every level of detail) and half-strength team colour on every textured vehicle (`wip/dropship-deck`, 5fd62a08).
