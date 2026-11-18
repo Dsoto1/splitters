@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 46,
+  "formatVersion": 47,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -48929,11 +48929,11 @@
       "mirror": false,
       "overrides": {
         "roles": {
-          "facade": "collegiate_fieldstone",
           "stone": {
             "material": "core.pbr_collegiate_rubble",
             "tint": null
-          }
+          },
+          "facade": "collegiate_fieldstone"
         }
       }
     }
