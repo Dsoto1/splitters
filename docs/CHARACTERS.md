@@ -242,8 +242,8 @@ white-grey; 133 characters on the roster):
 
 Retired looks (`RETIRED_LOOKS`) keep a `blood` in their manifests, but bleed as the look they play: Bamboo (as Shellback), Bill (as Cal), Briggs (as Grunt '68), Capt. Nova (as Spacewalker), Crimson Operative (as Stealth Operative), Dust Trooper (as Desert Ranger), Goblin (as Goblina), Hollis (as WWII Infantry), Ivory Rustwalker (as T-TreeFitty), Rotter (as Shambler), Rusty Mech (as T-TreeFitty), Shade (as Lancer Mei), Slugger-9 (as T-TreeFitty), The Hollow Visitor (as The Visitor), Uncle Bao (as Old Timer), Vampire (as Count Bonesworth), Wealthy Otter (as Brass Hare).
 
-**Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#8f8c86`), for a statue. The **wisp** is white-grey:
-its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.26 (softer than a white burst; owner, 2026-11-18).
+**Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#a6a39b`), for a statue. The **wisp** is white-grey:
+its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.26 of its size and 0.6 of its strength (softer than a white burst; owner, 2026-11-18).
 
 ## Character Designer
 
