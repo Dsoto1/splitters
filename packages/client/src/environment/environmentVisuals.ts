@@ -7,7 +7,7 @@ import { EnvMaterials, ENV_TIERS, type EnvTier } from './envMaterials.ts';
 import { loadEnvModel, partMesh, type EnvModel } from './envModels.ts';
 import { lookSets, speciesOfFile } from './envLooks.ts';
 import { ENV_LOOK_KIND } from './envMaterials.ts';
-import { bySquare, envShadowSector, envShadowSets } from '../game/shadowCasters.ts';
+import { SMALL_ENV_CATEGORIES, bySquare, envShadowSector, envShadowSets } from '../game/shadowCasters.ts';
 
 /**
  * The environment renderer (docs/PROCEDURAL_ENVIRONMENT_AUDIT.md §9.3), behind `?env=1` until Phase 4: every placed
@@ -174,7 +174,8 @@ export class EnvironmentVisuals {
     for (const g of this.groups) {
       const m = this.loaded.get(g.file)!;
       const species = g.file.slice(4, -4);
-      for (const set of envShadowSets(m.levels)) {
+      const small = SMALL_ENV_CATEGORIES.has(getEnvSpecies(`env.${speciesOfFile(g.file)}`)?.category ?? '');
+      for (const set of envShadowSets(m.levels, small)) {
         const shared = g.shared[set.level];
         if (shared) {
           if (shared.set.files[0] !== g.file || done.has(`${shared.set.key}|${set.mask}`)) continue;
