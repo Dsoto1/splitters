@@ -231,7 +231,8 @@ describe('environment collision', () => {
   });
 
   it('the same map gives the same colliders on every path (loaded twice, as a host and as a client would)', () => {
-    const doc = arena(ENV_SPECIES.map((s, i) => ({ model: s.id, position: [8 + i * 6, 0, i % 2 ? 3 : -3], yaw: i * 0.7, scale: 0.8 + i * 0.1, variant: i % 2 })));
+    // (Scales cycle within the map's 0.8-2.7: with every species, a scale growing with the index passed the schema's 4.)
+    const doc = arena(ENV_SPECIES.map((s, i) => ({ model: s.id, position: [8 + i * 6, 0, i % 2 ? 3 : -3], yaw: i * 0.7, scale: Math.round((0.8 + (i % 20) * 0.1) * 10) / 10, variant: i % 2 })));
     const json = JSON.stringify(doc);
     const host = loadMap(json);
     const client = loadMap(json);

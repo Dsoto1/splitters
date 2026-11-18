@@ -2729,6 +2729,7 @@ async function editorTallWallChecks(browser) {
 async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
   await editorPiecePaintChecks(browser);
+  await editorMyLooksChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
@@ -2988,6 +2989,127 @@ async function editorPhase5Checks(browser) {
   await page2.selectOption('#ed-snap', 'normal');
   check((await page2.evaluate(() => localStorage.getItem('tiletrigger.editor.view'))) === null, 'back to the defaults, nothing is kept');
   livePages.delete(page2);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
+/**
+ * Looks of your own (painting Phase 5, map format v47): Save as my look… names a set piece's look as it shows (its
+ * paint across the piece folded in: nothing changes on screen) and keeps it in this browser; My looks applies it to
+ * another piece, renames and deletes it; the map carries the looks its pieces wear (`lookDefs`); a theme change keeps
+ * it; a second map takes it from the library. Screenshots at device scale 2 with E2E_SHOTS (`editorpieces-looks-*`).
+ */
+async function editorMyLooksChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorpieces-looks-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => localStorage.removeItem('cs.looks'));
+  // Every confirm (a new map over unsaved changes, Delete) is accepted.
+  page.on('dialog', (d) => d.accept().catch(() => {}));
+  await newMap(page);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const piece = (id) => page.evaluate((id) => window.__editor.doc.setPieces.find((p) => p.id === id), id);
+  const drawnParts = (id) => page.evaluate((id) => JSON.stringify([window.__editor.viewDoc.classicStructure.tiles.filter((t) => t.id.startsWith(`sp_${id}_`)).map((t) => [t.id, t.surfaces ?? null]), window.__editor.viewDoc.entities.filter((e) => e.id.startsWith(`sp_${id}_`)).map((e) => [e.id, e.material ?? null])]), id);
+  const library = () => page.evaluate(() => JSON.parse(localStorage.getItem('cs.looks') ?? '[]').map((s) => s.look));
+  // A Cage Block and a Bus Shelter on the Imperial theme; the camera over them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' });
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }, { id: 'shelter', piece: 'setpiece.bus_shelter', x: -2, y: -3, z: 0, rotation: 0, mirror: false }] });
+    ed.view.yaw = 0.35;
+    ed.view.pitch = -0.55;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(6, 22, -54);
+    ed.showPane('setpieces');
+    ed.setSelection({ tiles: [], entities: [], setPieces: ['cage'] });
+  });
+  await settle();
+  const groups = await page.evaluate(() => [...document.querySelectorAll('#ed-sp-insp-look optgroup')].map((g) => g.dataset.group));
+  check(groups.join() === 'themes,all', `the Look select is grouped: This map's themes, then All looks (no looks of yours yet) (${groups.join()})`);
+  const empty = await page.evaluate(() => document.getElementById('ed-my-looks')?.textContent ?? '');
+  check(/No looks yet/.test(empty), `My looks says how to make one (${empty})`);
+  // Paint its Paving brick across the piece (the inspector's Materials), then Save as my look.
+  await page.selectOption('#ed-inspector select[data-role="paving"]', 'core.pbr_brick_old');
+  await settle();
+  const layer = await page.evaluate(() => document.querySelector('#ed-inspector select[data-role="paving"]').dataset.layer);
+  check(layer === 'paint', `a role you picked shows as your paint (${layer})`);
+  const before = await drawnParts('cage');
+  await page.click('#ed-sp-save-look');
+  await page.waitForFunction(() => document.getElementById('ed-look-dialog').open, null, { timeout: T(5000) });
+  const chips = await page.evaluate(() => document.querySelectorAll('#ed-look-swatches i').length);
+  check(chips >= 5, `the dialog shows the look's materials (${chips} chips)`);
+  await page.fill('#ed-look-name', 'Brick yard');
+  await shot('save');
+  await page.click('#ed-look-ok');
+  await settle();
+  let d = await doc();
+  let cage = await piece('cage');
+  check(d.lookDefs?.length === 1 && d.lookDefs[0].id === 'my_brick_yard' && d.lookDefs[0].displayName === 'Brick yard' && d.lookDefs[0].roles.paving?.material === 'core.pbr_brick_old', `the map carries the look (${JSON.stringify(d.lookDefs)})`);
+  check(cage.pack === 'my_brick_yard' && !cage.overrides, `the piece wears it, its paint folded in (${JSON.stringify(cage)})`);
+  check((await drawnParts('cage')) === before, 'saving the look changes nothing on screen');
+  check((await library()).some((l) => l.id === 'my_brick_yard'), 'the look is in your library (this browser)');
+  check((await page.evaluate(() => window.__editor.history.undoLabel)) === 'Save look Brick yard', 'saving is one undo step');
+  const item = await page.evaluate(() => document.querySelector('#ed-my-looks [data-look="my_brick_yard"]')?.textContent ?? '');
+  check(/Brick yard/.test(item) && /1 here/.test(item), `My looks lists it, worn once here (${item})`);
+  // Put the Bus Shelter in it from My looks.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['shelter'] }));
+  await settle();
+  const applyText = await page.evaluate(() => document.querySelector('#ed-my-looks [data-look="my_brick_yard"] [data-act="apply"]').textContent);
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="apply"]');
+  await settle();
+  const shelter = await piece('shelter');
+  const mine = await page.evaluate(() => [...document.querySelectorAll('#ed-sp-insp-look optgroup[data-group="mine"] option')].map((o) => o.value));
+  check(applyText === 'Apply to selected piece' && shelter.pack === 'my_brick_yard' && mine.includes('my_brick_yard') && (await page.inputValue('#ed-sp-insp-look')) === 'my_brick_yard', `Apply puts the selected piece in it; the Look select has it under My looks (${JSON.stringify({ applyText, pack: shelter.pack, mine })})`);
+  await shot('applied');
+  // Rename it from My looks: the pieces keep wearing it.
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="rename"]');
+  await page.waitForFunction(() => document.getElementById('ed-look-dialog').open, null, { timeout: T(5000) });
+  await page.fill('#ed-look-name', 'Harbour brick');
+  await page.click('#ed-look-ok');
+  await settle();
+  d = await doc();
+  check(d.lookDefs?.[0]?.displayName === 'Harbour brick' && (await library()).find((l) => l.id === 'my_brick_yard')?.displayName === 'Harbour brick' && (await piece('shelter')).pack === 'my_brick_yard', `Rename changes its name in the map and the library, not who wears it (${JSON.stringify(d.lookDefs)})`);
+  // A theme change keeps it.
+  const shelterBefore = await drawnParts('shelter');
+  await page.evaluate(() => window.__editor.history.execute('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.city' }));
+  await settle();
+  cage = await piece('cage');
+  check(cage.pack === 'my_brick_yard' && (await drawnParts('shelter')) === shelterBefore, 'a theme change keeps your look on both pieces');
+  // Several pieces selected: one Look row for all.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['cage', 'shelter'] }));
+  await settle();
+  const multi = await page.inputValue('#ed-insp-pieces-look').catch(() => null);
+  check(multi === 'my_brick_yard', `several set pieces get one Look (${multi})`);
+  await shot('mylooks');
+  // Another map: the look comes from your library.
+  await newMap(page);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'shelter2', piece: 'setpiece.bus_shelter', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] });
+    ed.setSelection({ tiles: [], entities: [], setPieces: ['shelter2'] });
+  });
+  await settle();
+  await page.selectOption('#ed-sp-insp-look', 'my_brick_yard');
+  await settle();
+  d = await doc();
+  check(d.lookDefs?.length === 1 && d.lookDefs[0].displayName === 'Harbour brick' && (await piece('shelter2')).pack === 'my_brick_yard', `another map takes the look from your library (${JSON.stringify(d.lookDefs)})`);
+  // Delete it from your library: the map keeps its copy, and offers to save it back.
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="delete"]');
+  await settle();
+  d = await doc();
+  const keep = await page.evaluate(() => !!document.querySelector('#ed-my-looks [data-look="my_brick_yard"] [data-act="keep"]'));
+  check(!(await library()).length && d.lookDefs?.length === 1 && keep, `Delete takes it out of your library; the map keeps its copy, with Save to my looks (${JSON.stringify({ lib: await library(), keep })})`);
+  // Back to the theme's look: the map drops the look nobody wears.
+  await page.selectOption('#ed-sp-insp-look', '');
+  await settle();
+  d = await doc();
+  check(!d.lookDefs && !(await piece('shelter2')).pack, 'with no piece wearing it, the map drops the look');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await context.close();
 }

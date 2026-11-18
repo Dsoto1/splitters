@@ -966,3 +966,19 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 #ed-tip .ed-layer.shown em::after { content: ' ✓'; color: var(--success); }
 #ed-tip .ed-click { color: var(--text); }
 #ed-tip .ed-click.bad { color: #ff8a80; }
+
+/* Looks of your own (painting Phase 5): My looks in the Set pieces tab, the look dialog, the inspector's layer marks. */
+.ed-look-list { display: flex; flex-direction: column; gap: 6px; }
+.ed-look-item { border: 1px solid var(--line, #333); border-radius: 6px; padding: 6px 8px; display: flex; flex-direction: column; gap: 3px; }
+.ed-look-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ed-look-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ed-look-item .buttons { margin: 2px 0 0; }
+.ed-look-item .buttons button { padding: 2px 8px; font-size: 12px; }
+.ed-look-sw { display: inline-flex; gap: 2px; flex: none; }
+.ed-look-sw i { width: 12px; height: 16px; border-radius: 2px; border: 1px solid rgba(0, 0, 0, 0.35); display: inline-block; }
+.ed-look-swatches { margin: 0 0 12px; }
+.ed-look-swatches .ed-look-sw i { width: 22px; height: 22px; }
+.ed-dialog-check { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 13px; }
+.ed-dialog-check[hidden] { display: none; }
+#ed-sp-save-look { margin: 4px 0 6px; }
+#ed-inspector select.layer-paint { box-shadow: inset 3px 0 0 var(--accent); }

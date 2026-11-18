@@ -1,5 +1,5 @@
 import type { ScenarioLogic } from '../map/logic.ts';
-import type { BloodSettings, BotHint, EditorNote, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, MapGroup, SetPieceDefinition, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
+import type { BloodSettings, BotHint, EditorNote, Faction, GlassSettings, MapBotSet, MapPath, MapPhysics, MapBounds, MapDocument, MapEntity, MapGroup, SetPieceDefinition, SetPieceLookDef, SetPiecePlacement, TeamSetup, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 import type { MapWeather } from '../map/weather.ts';
@@ -43,6 +43,8 @@ export type EditCommand =
   | { kind: 'updateSetPieces'; before: SetPiecePlacement[]; after: SetPiecePlacement[] }
   /** The map's own set-piece definitions, replaced as a list (null: none, and no `setPieceDefs` key). */
   | { kind: 'setSetPieceDefs'; before: SetPieceDefinition[] | null; after: SetPieceDefinition[] | null }
+  /** The map's own looks (v47, painting Phase 5), replaced as a list (null: none, and no `lookDefs` key). */
+  | { kind: 'setLookDefs'; before: SetPieceLookDef[] | null; after: SetPieceLookDef[] | null }
   /** MapMaker's groups (v31), replaced as a list (null or empty: none, and no `groups` key). */
   | { kind: 'setGroups'; before: MapGroup[] | null; after: MapGroup[] | null }
   /** Note pins (v31), replaced as a list: one added, edited, moved or deleted = one undo step (null or empty: none, and no `editorNotes` key). */
@@ -148,6 +150,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { setPieceDefs: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, setPieceDefs: cmd.after } : rest;
     }
+    case 'setLookDefs': {
+      const { lookDefs: _old, ...rest } = doc;
+      return cmd.after?.length ? { ...rest, lookDefs: cmd.after } : rest;
+    }
     case 'setGroups': {
       const { groups: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, groups: cmd.after } : rest;
@@ -231,6 +237,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'updateSetPieces', before: cmd.after, after: cmd.before };
     case 'setSetPieceDefs':
       return { kind: 'setSetPieceDefs', before: cmd.after, after: cmd.before };
+    case 'setLookDefs':
+      return { kind: 'setLookDefs', before: cmd.after, after: cmd.before };
     case 'setGroups':
       return { kind: 'setGroups', before: cmd.after, after: cmd.before };
     case 'setNotes':
@@ -279,6 +287,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setWeaponSet':
     case 'setPaths':
     case 'setSetPieceDefs':
+    case 'setLookDefs':
     case 'setGroups':
     case 'setNotes':
     case 'setBotHints':

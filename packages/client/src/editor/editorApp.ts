@@ -840,6 +840,7 @@ export class EditorApp {
     if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
+    this.pieces.renderMyLooks();
     this.topBar.syncToolbar();
     this.outliner.draw(true);
     // Picked anywhere else (the view, a problem, the budget pill): the outliner scrolls its row into view.
