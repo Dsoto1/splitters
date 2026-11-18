@@ -94,12 +94,13 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: MapMaker UI Phase 4a (Tile View) in a train** (`check/train-20261118-031402` at 47fac281, run 44228966768, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed). Painting Phase 5 left the train (map format v46 went to St. John's step 5; it moves to v47 and re-checks).
+
 **Landed: St. John's step 5 and the owner's character pass in a train** (`check/train-20261118-004220` at 37a68194, run 44210289769, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
 
 - **Claimed (a helper of lane B's splitters22, 2026-11-18): process tooling** (`wip/process-tools`; QUEUE Features, lane B; owner, 2026-11-18, "a"). Files: `tools/ci/train.mjs` (`--ready`, `--ready --run`, HANDOFF/QUEUE conflict auto-resolve), a new `tools/ci/docMerge.mjs` and its test in `tools/ci/test/`, a new `tools/ci/flakes.mjs` and `docs/FLAKES.md`, a new `tools/dev/cleanup.mjs`, `e2e/run.mjs` (127.0.0.1, free ports when unset, `CHROMIUM` executable path), `package.json` scripts, CLAUDE.md (Git workflow lines), docs/CI.md or the relevant docs, and **HANDOFF.md itself slimmed** (history moves to `docs/history/handoff-2026-11.md`; done last, from current main, landed fast). No game code, no map format change.
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/train-20261118-031402` at 47fac281 (lane B's lead: the train with `wip/mapmaker-ui-4`; holds the landing lock).
 - `check/gun-handling` at 75522232 · run 44227505839 (a helper of lane B's splitters22: gun handling extras and the weapon tuning page `?mode=weapons`; no map format change; full suite: shared sim and weapon content).
 - **Claimed (a helper of lane A's lead, 2026-11-17): bots all react in the same instant** (`wip/bot-react`; QUEUE Bugs, lane A). Files: shared `bots/brain.ts`, `bots/memory.ts`, `sim/match.ts` (the bots' view gets `fallen`), a new test `botReact.test.ts`, seed-sensitive `match.test.ts` and `airplane.test.ts`, docs/BOTS.md, CHANGELOG. No map format change.
 - **Claimed (the same helper, 2026-11-17): the Dropship's front bench riders look standing** (`wip/dropship-seats`; QUEUE Bugs, lane A). Files: `content/vehicles/dropship.json`, `dropship_drop.json`, the generated tables if they carry seats, `dropshipCarrier.test.ts`, docs/VEHICLES.md. No map format change.
