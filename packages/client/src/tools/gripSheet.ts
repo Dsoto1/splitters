@@ -8,6 +8,11 @@ import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
+import { muzzlePoint } from '../game/muzzlePoint.ts';
 import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -96,6 +101,10 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   });
   /** The gun the posed character holds (third person or full-body first person; `__grips.inside`). */
   let held: TransformNode | null = null;
+  /** The posed gun's weapon (its muzzle: `__grips.muzzle`). */
+  let heldWeapon: string | null = null;
+  /** `__grips.markMuzzle`: a dot on the muzzle and a tracer's first half metre from it, drawn over everything. */
+  let marker: { dot: Mesh; line: LinesMesh } | null = null;
   /**
    * `__grips.tune(look, { grip, hands })`: a look's GripTune and measured hands changed for the poses that follow (to
    * tune a look live before writing its manifest); `__grips.tune(look, null)` clears it.
@@ -115,6 +124,10 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   /** Show `look` holding `weapon` from `view`; resolves once the pose has settled and is on screen. */
   async function pose(look: string, weapon: string, view: GripView): Promise<void> {
     held = null;
+    heldWeapon = weapon;
+    marker?.dot.dispose();
+    marker?.line.dispose();
+    marker = null;
     creature?.dispose();
     creature = null;
     current?.dispose();
@@ -326,6 +339,54 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     },
     /** How far the held gun goes into each hand as drawn (tools/gripInside.ts), third person or full-body first person. */
     tune: (look: string, t: Parameters<typeof tunes.set>[1] | null) => (t ? tunes.set(look, t) : tunes.delete(look), undefined),
+    /**
+     * The posed character's GripTune replaced as it stands (third person; null: none), redrawn, and where its hands are
+     * then drawn (`drawn`): the grip fit (tools/content/grip-fit.mjs) tries offsets on one pose without reloading it.
+     */
+    retune: async (grip: CharacterInstance['grip'] | null, frames = 6) => {
+      if (!current) return null;
+      current.anim.ch.grip = grip ?? undefined;
+      await settle(frames);
+      return api.drawn();
+    },
+    /** Where the posed gun's tracers and flash start (world): its muzzle as drawn (game/muzzlePoint.ts). */
+    muzzle: () => {
+      if (!held || !heldWeapon) return null;
+      const def = getWeapon(heldWeapon);
+      held.computeWorldMatrix(true);
+      const p = Vector3.TransformCoordinates(muzzlePoint(held, def.view.muzzleAt, def.view.model), held.getWorldMatrix());
+      return [p.x, p.y, p.z];
+    },
+    /** Mark the posed gun's muzzle: a dot there and the first half metre of a tracer down the barrel (pictures). */
+    markMuzzle: async () => {
+      if (!held || !heldWeapon) return null;
+      const def = getWeapon(heldWeapon);
+      held.computeWorldMatrix(true);
+      const wm = held.getWorldMatrix();
+      const at = Vector3.TransformCoordinates(muzzlePoint(held, def.view.muzzleAt, def.view.model), wm);
+      const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), wm).normalize();
+      marker?.dot.dispose();
+      marker?.line.dispose();
+      const dot = CreateSphere('grip_muzzleDot', { diameter: 0.025, segments: 8 }, scene);
+      const mat = new StandardMaterial('grip_muzzleDotMat', scene);
+      mat.emissiveColor = new Color3(1, 0.15, 0.9);
+      mat.disableLighting = true;
+      dot.material = mat;
+      dot.position.copyFrom(at);
+      dot.renderingGroupId = 2;
+      const line = CreateLines('grip_tracer', { points: [at, at.add(fwd.scale(0.5))] }, scene);
+      line.color = new Color3(1, 0.85, 0.2);
+      line.renderingGroupId = 2;
+      marker = { dot, line };
+      await settle(2);
+      return [at.x, at.y, at.z];
+    },
+    /** The posed character's measured hands (length, width, thickness in model m; null: the rig's own). */
+    hands: () => {
+      const h = current?.anim.ch.hands;
+      const pick = (x: HandData | undefined) => (x ? { length: x.length, width: x.width, thickness: x.thickness, curl: x.curl, fingers: x.fingers } : null);
+      return h ? { r: pick(h.r), l: pick(h.l) } : null;
+    },
     inside: () => (held && current ? gripInside([...(rig?.drawnMeshes ?? []), ...current.anim.ch.meshes], held) : null),
     /** Measurements of the third-person pose as drawn (tools/gripAudit.ts; tools/content/grip-audit.mjs ranks them). */
     audit: () => (posed ? auditGrip(posed.ch, posed.weapon, posed.hold) : null),

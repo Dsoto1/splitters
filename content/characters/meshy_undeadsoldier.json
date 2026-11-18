@@ -26,9 +26,6 @@
     "roughness": 1,
     "maps": true
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 17000,
     "surface": "rebake",

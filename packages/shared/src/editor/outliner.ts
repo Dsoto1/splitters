@@ -5,7 +5,7 @@ import { entityLabel, entityNumberKey, levelName, type Selection } from './opera
 /**
  * MapMaker's outliner (docs/MAPMAKER_OVERHAUL_PLAN.md, Phase 2 item 3): everything in the map in one list, searchable,
  * grouped by kind and then by level. Hide and lock are editor-only: kept per map in the browser (OutlinerFlags), never
- * in the map file. The list is drawn virtualised (outlineWindow), so 4,096 things stay quick.
+ * in the map file. The list is drawn virtualised (outlineWindow), so 8,192 things (the entity cap) stay quick.
  */
 
 export type OutlineKind = 'tile' | 'setpiece' | 'entity';

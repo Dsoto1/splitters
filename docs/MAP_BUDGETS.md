@@ -9,7 +9,7 @@ players and bots.
 The validator (`validateMap`, MapMaker's warnings badge, `pnpm validate-map`)
 warns when a map goes over these. They are soft limits: the map still loads
 and plays, it may just run slowly on weaker machines. Hard limits come from
-the map format (4,096 entities, terrain 161 × 161 vertices).
+the map format (8,192 entities since map format v48, 4,096 before; terrain 161 × 161 vertices).
 
 | What | Budget | Why |
 |---|---|---|
@@ -46,6 +46,54 @@ Suggested sizes by player count:
 | Arena / skirmish | 2–6 | 40–100 m | 50–300 tiles, up to 300 props |
 | Standard | 4–12 | 100–200 m | 200–800 tiles or a 160 m terrain, up to 800 props |
 | Large (vehicles) | 8–24 | 200–400 m | 240–320 m terrain, up to 1,500 props, 4–10 vehicles |
+
+### Entity cap (map format v48)
+
+A map holds at most **8,192 entities** (owner, 2026-11-18, for St. John's steps 7-10 and the island direction;
+4,096 before): `MAP_MAX_ENTITIES` in `map/mapKeys.ts` is the schema's cap, `RESOURCE_BUDGETS.entities` (the load
+budget and MapMaker's Entities counter) and `SET_PIECE_PLAYED_MAX.entities` (the map as played, set pieces' parts
+included). The tile cap (4,096), the prop (1,500), block (3,000) and light (256) budgets and the 2 MiB JSON cap are
+unchanged. v48 is an identity step in `migrate.ts`: nothing an older map says changes; an older build refuses a v48
+map instead of failing on its entity count. Entity indices travel as JSON numbers (no bit widths in the protocol), so
+the net code needed no change; `entityCap.test.ts` loads an 8,192-entity map, refuses 8,193, and sends the last
+entity's state through the welcome and the snapshot stream.
+
+**Against the 2 MiB cap.** Compact JSON (the map as played, a joining player's welcome) costs about 150-215 bytes an
+entity; MapMaker's file is indented, a number array over several lines, about 290-330 bytes an entity. So:
+
+| Map | Entities | File (MapMaker) | As played (compact) |
+|---|---|---|---|
+| St. John's today | 3,872 as played | 1.04 MB | 1.0 MB (216 B an entity, 188 KB the rest) |
+| St. John's mix at the cap | 8,192 | over 2 MiB past ~5,600 entities placed by hand | ≈ 1.87 MiB (fits, 6 % spare) |
+| Made-up lean mix (`entityCapMap.ts`) | 8,192 | 2.3 MB (over) | 1.2 MB (welcome after defaults 1.6 MB) |
+
+An 8,192-entity map gets there through set pieces (their parts count as played, compact); a file of 8,192 things
+placed by hand is over the cap as MapMaker writes it today. If that's needed, the fix is in `serializeMap` (one
+entity a line, ~35 % smaller) rather than a bigger cap.
+
+**Measured** (2026-11-18, this container under load ~20, so read the ratios; the made-up 160 m map, 4,096 vs 8,192,
+same footprint, twice as dense):
+
+| | 4,096 | 8,192 |
+|---|---|---|
+| loadMap + validate (node, warm) | 280 + 150 ms | 320 + 100 ms |
+| Match build: physics, navmesh (node, warm) | 0.44 s | 0.58 s |
+| Tick, 16 bots (node) | 2.8-3.6 ms | 2.4-2.5 ms |
+| Snapshot to one friend | 2.2 KB | 2.1 KB (only changed states travel) |
+| Welcome: raw / compressed, host compress | 826 KB / 34 KB, 150-220 ms | 1.6 MB / 65 KB, 160-230 ms |
+| Joiner: inflate + parse, loadMap | 65 ms, 270-390 ms | 115-135 ms, 490-920 ms |
+| MapMaker Test to playing (browser, Medium) | 9.4-11.1 s | 7.0-11.2 s (no difference past the noise) |
+| JS heap in the match, MapMaker open | 450-505 MB | 645-660 MB |
+| Game scene meshes / draws (spinning view) | ~2,000 / 330-545 | ~2,150 / 435-610 |
+| MapMaker: all of it added at once, to the next frame | 4.0-8.0 s | 10.5-16.4 s |
+| MapMaker outliner rebuild | 6-31 ms | 20-53 ms (one 730 ms outlier) |
+
+Nothing scales worse than linearly. What grows: memory (+~170 MB, mostly MapMaker's own view, which keeps a node an
+entity: 7,750 → 13,200 meshes across scenes while the match's scene goes 2,000 → 2,150), the welcome and the
+joiner's loadMap (about twice), and MapMaker's cost of one huge edit (pasting thousands at once). Frame time could not
+be read here (software rendering under load: seconds a frame); draw calls grow about a quarter, since blocks merge.
+Not measured: a real browser host and joiner over WebRTC on this map (the perf tools play shipped maps only, and the
+test map isn't one); its pieces are the welcome and joiner rows above plus the scene build in Test.
 
 ### Weather (map format v34)
 

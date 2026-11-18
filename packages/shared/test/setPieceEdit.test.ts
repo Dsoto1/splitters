@@ -206,13 +206,13 @@ describe('set pieces: budgets count the parts', () => {
     const huge = expandSetPieces({ ...base(), setPieces: many }, library);
     expect(huge.issues.some((i) => i.code === 'budget.setpieces' && i.severity === 'error')).toBe(true);
     // The cap is on the map as played (what the schema takes again when a joining player loads it): pieces placed by
-    // hand and parts together. 4,090 lights by hand and one wide carriageway (17 entities) is too many; the file alone is not.
-    const lamps = Array.from({ length: 4090 }, (_, i) => ({ id: `lamp_${i}`, kind: 'light' as const, position: [-200 + (i % 64), 2, -200 + Math.floor(i / 64)] as [number, number, number], yaw: 0, fixture: 'none' as const, color: '#ffffff', intensity: 1, range: 4 }));
+    // hand and parts together. 8,186 lights by hand and one wide carriageway (17 entities) is too many; the file alone is not.
+    const lamps = Array.from({ length: 8186 }, (_, i) => ({ id: `lamp_${i}`, kind: 'light' as const, position: [-200 + (i % 128), 2, -200 + Math.floor(i / 128)] as [number, number, number], yaw: 0, fixture: 'none' as const, color: '#ffffff', intensity: 1, range: 4 }));
     const full: MapDocument = { ...base(), entities: [...base().entities, ...lamps] as MapDocument['entities'], setPieces: [{ id: 'gate_one', piece: 'setpiece.carriageway_2', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] };
-    expect(full.entities.length).toBeLessThanOrEqual(4096);
+    expect(full.entities.length).toBeLessThanOrEqual(8192);
     const over = expandSetPieces(full, library).issues.find((i) => i.code === 'budget.setpieces');
     expect(over?.severity).toBe('error');
-    expect(over?.message).toMatch(/as played the map has 5 tiles and 4108 entities \(its set pieces add 4 and 17\): at most 4096 and 4096/);
+    expect(over?.message).toMatch(/as played the map has 5 tiles and 8204 entities \(its set pieces add 4 and 17\): at most 4096 and 8192/);
   });
 
   it('placement ids are unique among themselves and with tiles and entities', () => {

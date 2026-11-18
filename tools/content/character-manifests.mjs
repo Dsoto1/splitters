@@ -172,10 +172,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need([f.metallic, f.roughness].every((x) => typeof x === 'number' && x >= 0 && x <= 1), 'finish: metallic and roughness, 0–1');
   need(f.maps === undefined || typeof f.maps === 'boolean', 'finish.maps: true to keep the download\'s metal-roughness map');
   const fp = m.firstPerson ?? {};
-  if (fp.arms === 'own' || fp.arms === undefined) need(fp.skin === undefined && fp.cloth === undefined && fp.trim === undefined, 'firstPerson: dyes only go with universal arms');
+  // Grips auto-fit (owner, 2026-11-18): universal arms unless a manifest says `own`; their colours are read off the
+  // model (content/grip-fit.json), and a manifest may set any of them itself.
+  if (fp.arms === 'own') need(fp.skin === undefined && fp.cloth === undefined && fp.trim === undefined, 'firstPerson: dyes only go with universal arms');
   else {
-    need(typeof fp.arms === 'string' && /^(ranger|peasant)_arms_[mf]$/.test(fp.arms), 'firstPerson.arms: own (the character\'s own forearms and hands) or a universal arms part (ranger_arms_m, peasant_arms_f, …)');
-    need([fp.skin, fp.cloth, fp.trim].every((c) => typeof c === 'string' && HEX.test(c)), 'firstPerson: universal arms take skin, cloth and trim as #rrggbb');
+    need(fp.arms === undefined || (typeof fp.arms === 'string' && /^(ranger|peasant)_arms_[mf]$/.test(fp.arms)), 'firstPerson.arms: left out (universal arms tinted from the model), own (the character\'s own forearms and hands) or a universal arms part (ranger_arms_m, peasant_arms_f, …)');
+    need([fp.skin, fp.cloth, fp.trim].every((c) => c === undefined || (typeof c === 'string' && HEX.test(c))), 'firstPerson: skin, cloth and trim are #rrggbb (each left out: read off the model)');
   }
   need(fp.body === undefined || fp.body === false, 'firstPerson.body: false (arms only in first person: the model fills the view from its own eyes) or left out');
   const x = m.fixes ?? {};
@@ -382,8 +384,8 @@ export function readClipSets() {
 
 /** The provenance pack a character's files are recorded under. */
 export const packOf = (m) => PACK[m.source.license];
-/** The part a look wears in first person: its own forearms (<id>_fparms) or a universal arms part. */
-export const armsOf = (m) => (!m.firstPerson?.arms || m.firstPerson.arms === 'own' ? `${m.id}_fparms` : m.firstPerson.arms);
+/** The part a look wears in first person: a universal arms part (the default), or its own forearms (<id>_fparms, `arms: own`). */
+export const armsOf = (m) => (m.firstPerson?.arms === 'own' ? `${m.id}_fparms` : (m.firstPerson?.arms ?? universalArms(m)));
 
 const SIDE_JOINTS = ['Shoulder', 'Arm', 'ForeArm', 'Hand', 'HandTip', 'UpLeg', 'Leg', 'Foot', 'ToeBase', 'ToeTip'];
 const SPINE_JOINTS = ['Hips', 'Spine02', 'Spine01', 'Spine', 'neck', 'Head', 'head_end'];
@@ -440,16 +442,62 @@ export function buildSpec(m) {
 
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/** The grip fit (tools/content/grip-fit.mjs): per character, fitted grip offsets, first-person arms colours, the audit. */
+export const GRIP_FIT_FILE = join(ROOT, 'content/grip-fit.json');
+let gripFit;
+/** One character's entry in content/grip-fit.json (null: not fitted yet). */
+export function gripFitOf(id) {
+  gripFit ??= existsSync(GRIP_FIT_FILE) ? JSON.parse(readFileSync(GRIP_FIT_FILE, 'utf8')).characters ?? {} : {};
+  return gripFit[id] ?? null;
+}
+/** Universal arms' colours for a character with none read yet (a neutral glove and sleeve). */
+const ARMS_FALLBACK = { skin: '#3a3530', cloth: '#4a4d50', trim: '#2a2b2c' };
+/** The universal arms part for a body. */
+const universalArms = (m) => `ranger_arms_${m.body === 'female' ? 'f' : 'm'}`;
+
 /** One generated look. */
 function lookLine(m) {
   const fp = m.firstPerson ?? {};
-  const own = !fp.arms || fp.arms === 'own';
+  const own = fp.arms === 'own';
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
+  // The manifest's own grip (hand-set offsets the audit kept, its curls and rolls); the fitted offsets and the arms'
+  // colours are in gripFit.generated.ts, loaded with the first character (kept out of the menu's first script).
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
-  const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
+  const dyes = ['skin', 'cloth', 'trim'].filter((k) => fp[k]).map((k) => `, ${k}: ${q(fp[k])}`).join('');
+  const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms ?? universalArms(m))}${dyes}${body} }`;
   const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
+}
+
+/** The grip fit's generated table (content/grip-fit.json, by look): fitted offsets and the universal arms' colours. */
+export const GRIP_FIT_TS = join(ROOT, 'packages/shared/src/content/gripFit.generated.ts');
+
+/** The TypeScript of the grip fit's table: each built look's fitted third-person offsets and first-person arms colours. */
+export function gripFitSource(list) {
+  const lines = [];
+  for (const m of list.filter((x) => !isQueued(x)).sort((a, b) => a.look.localeCompare(b.look))) {
+    const fit = gripFitOf(m.id);
+    const fp = m.firstPerson ?? {};
+    const own = new Set(Object.keys(m.fixes?.grip ?? {}));
+    const offsets = Object.entries(fit?.grip ?? {}).filter(([k]) => !own.has(k));
+    const parts = [];
+    if (offsets.length) parts.push(`grip: { ${offsets.map(([k, v]) => `${k}: [${v.join(', ')}]`).join(', ')} }`);
+    if (fp.arms !== 'own') {
+      const dye = { ...ARMS_FALLBACK, ...(fit?.arms ?? {}) };
+      parts.push(`arms: { skin: ${q(dye.skin)}, cloth: ${q(dye.cloth)}, trim: ${q(dye.trim)} }`);
+    }
+    if (parts.length) lines.push(`  ${q(m.look)}: { ${parts.join(', ')} },`);
+  }
+  return `// Generated by tools/content/character-manifests.mjs from content/grip-fit.json (tools/content/grip-fit.mjs) and
+// content/characters/*.json. Do not edit by hand. Loaded with the first character, not with the menu.
+import type { GripTune } from './looks.ts';
+
+/** Per look: the third-person grip offsets fitted from its drawn hands (under its manifest's own), and its universal first-person arms' colours. */
+export const GRIP_FITS: Readonly<Record<string, { grip?: GripTune; arms?: { skin: string; cloth: string; trim: string } }>> = {
+${lines.join('\n')}
+};
+`;
 }
 
 /** The generated TypeScript the shared looks read: one look and one bio per built manifest. */
@@ -496,6 +544,7 @@ export function looksProblems(list = readManifests()) {
   const out = [];
   if (!existsSync(LOOKS_FILE) || readFileSync(LOOKS_FILE, 'utf8') !== looksSource(list)) out.push('packages/shared/src/content/characters.generated.ts is out of date with content/characters (run node tools/content/character-manifests.mjs)');
   if (!existsSync(BLOOD_FILE) || readFileSync(BLOOD_FILE, 'utf8') !== bloodSource(list)) out.push('packages/shared/src/content/characterBlood.generated.ts is out of date with content/characters (run node tools/content/character-manifests.mjs)');
+  if (!existsSync(GRIP_FIT_TS) || readFileSync(GRIP_FIT_TS, 'utf8') !== gripFitSource(list)) out.push('packages/shared/src/content/gripFit.generated.ts is out of date with content/grip-fit.json (run node tools/content/character-manifests.mjs)');
   return out;
 }
 
@@ -540,6 +589,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   } else {
     writeFileSync(LOOKS_FILE, looksSource(list));
     writeFileSync(BLOOD_FILE, bloodSource(list));
+    writeFileSync(GRIP_FIT_TS, gripFitSource(list));
     console.log(`wrote the looks of ${list.filter((m) => !isQueued(m)).length} characters to packages/shared/src/content/characters.generated.ts`);
   }
 }

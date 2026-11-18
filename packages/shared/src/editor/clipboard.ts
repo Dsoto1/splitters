@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { coreThemes } from '../map/materials.ts';
+import { MAP_MAX_ENTITIES } from '../map/mapKeys.ts';
 import { MapEntity, MapGroup, SetPieceDefinition, SetPieceLookDef, SetPiecePlacement, TilePlacement, type MapDocument } from '../map/schema.ts';
 import { piecesFor, setPieceFootprint, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
@@ -34,7 +35,7 @@ export const MapClipboard = z.object({
   /** The cell and level the copy is placed by. */
   anchor: z.tuple([z.number().int(), z.number().int(), z.number().int()]),
   tiles: z.array(TilePlacement).max(4096),
-  entities: z.array(MapEntity).max(4096),
+  entities: z.array(MapEntity).max(MAP_MAX_ENTITIES),
   setPieces: z.array(SetPiecePlacement).max(1024),
   /** The source map's own set pieces the copy's placements use. */
   setPieceDefs: z.array(SetPieceDefinition).max(64),
