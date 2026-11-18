@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_ugkcw2eqkwqn3dv7",
-      "revision": 21,
-      "contentHash": "sha256:9aafb6fad7364946f18dd437c6a35a7fd6e5f1322d82283b673bbfcfd17f5cce",
+      "versionId": "v_g2y72otujafuaf4k",
+      "revision": 23,
+      "contentHash": "sha256:6aef03b845de3df0728eeac1eddf99fea1c0b84445953041af1d6d1866f41b60",
       "schemaVersion": 46,
-      "releasedAt": "2026-11-17T21:30:50.252Z"
+      "releasedAt": "2026-11-18T01:45:05.489Z"
     }
   },
   "classicStructure": {
@@ -48720,23 +48720,6 @@
       }
     },
     {
-      "id": "setpiece_uhvpde5oxf",
-      "piece": "setpiece.stair_end_bay_bridge",
-      "x": 0,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "hide": [
-          11
-        ]
-      }
-    },
-    {
       "id": "setpiece_7urz05z2la",
       "piece": "setpiece.classroom_bay",
       "x": -4,
@@ -48747,6 +48730,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "south"
         }
       }
     },
@@ -48754,20 +48740,6 @@
       "id": "setpiece_qcan2p1sny",
       "piece": "setpiece.classroom_bay",
       "x": -3,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_cjqcyfc9gl",
-      "piece": "setpiece.classroom_bay",
-      "x": -2,
       "y": -10,
       "z": 0,
       "rotation": 0,
@@ -48817,6 +48789,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "north"
         }
       }
     },
@@ -48845,6 +48820,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "south"
         }
       }
     },
@@ -48887,6 +48865,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "north"
         }
       }
     },
@@ -48905,23 +48886,6 @@
       }
     },
     {
-      "id": "setpiece_k1su9byu8v",
-      "piece": "setpiece.classroom_bay",
-      "x": 0,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "end": "east"
-        }
-      }
-    },
-    {
       "id": "setpiece_2nh2c4huvp",
       "piece": "setpiece.corner_tower_square",
       "x": -6,
@@ -48935,6 +48899,37 @@
             "material": "core.pbr_opus_incertum",
             "tint": null
           }
+        }
+      }
+    },
+    {
+      "id": "setpiece_a3c0dpzi2u",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": 0,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "upperDoor": "end"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9b80ywk7n9",
+      "piece": "setpiece.classroom_entry_bay",
+      "x": -2,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
         }
       }
     }

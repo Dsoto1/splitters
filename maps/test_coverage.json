@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_e4tyov3pcrnyrdbb",
-      "revision": 40,
-      "contentHash": "sha256:cf67799c2d4ea808022d7d7054e1b7e962693464292290f3d0e41b321a8c6903",
+      "versionId": "v_2sqn7vrz4mqwxqt5",
+      "revision": 41,
+      "contentHash": "sha256:651ab58e4d80383db81d206be7478e9cee4571688ba4b55060def7c97e6eff8e",
       "schemaVersion": 46,
-      "releasedAt": "2026-11-17T21:35:47.198Z"
+      "releasedAt": "2026-11-18T01:46:53.612Z"
     },
     "testOnly": true
   },
@@ -6941,6 +6941,15 @@
       "id": "setpiece_dmknfvybym",
       "piece": "setpiece.classroom_bay",
       "x": -1,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_58gjhesldt",
+      "piece": "setpiece.classroom_entry_bay",
+      "x": 1,
       "y": -51,
       "z": 0,
       "rotation": 0,
