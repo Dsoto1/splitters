@@ -79,6 +79,10 @@ export interface CharacterLook {
   whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number }; grip?: GripTune };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
+  /** Soldiers & Spies only: Army or Agency (CHARACTER_BRANCHES; `branch` in its manifest). */
+  branch?: CharacterBranch;
+  /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
+  sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
   tier?: CharacterTier;
   /** What kind of creature it is, for its bots' names (NAME_THEMES in botNames.ts); absent: its group's. */
@@ -117,22 +121,34 @@ export interface GripTune {
  * built-in look names one: the presets below, the whole-body manifests (`group` in content/characters/*.json,
  * whose checker keeps the same list) and the NPC skins (NPC_ROLE_SPECS). Designs of yours go under Yours.
  * The owner's Roster Board, 2026-11-14/15: Knights & Legends became Legends (`legends`), Creatures & Machines split
- * into Creatures (`creatures`) and Machines, Animals renamed Animalia (`animals`), Undead & Horror renamed Horrors
- * (`horror`); Outer Space and Agents & Spies are new.
+ * into Creatures and Machines, Animals renamed Animalia (`animals`), Undead & Horror renamed Horrors (`horror`); Outer
+ * Space and Agents & Spies are new. The owner's pass of 2026-11-17: Creatures merged into Horrors as Horrors &
+ * Creatures (`horror`), Agents & Spies into Soldiers as Soldiers & Spies (`soldiers`; each one's `branch` says Army or
+ * Agency). The old ids still read as their new group (CHARACTER_GROUP_ALIASES).
  */
 export const CHARACTER_GROUPS = [
-  { id: 'soldiers', label: 'Soldiers' },
+  { id: 'soldiers', label: 'Soldiers & Spies' },
   { id: 'folk', label: 'Everyday Folk' },
   { id: 'space', label: 'Outer Space' },
-  { id: 'agents', label: 'Agents & Spies' },
   { id: 'legends', label: 'Legends' },
-  { id: 'creatures', label: 'Creatures' },
   { id: 'animals', label: 'Animalia' },
   { id: 'machines', label: 'Machines' },
-  { id: 'horror', label: 'Horrors' },
+  { id: 'horror', label: 'Horrors & Creatures' },
 ] as const;
 export type CharacterGroup = (typeof CHARACTER_GROUPS)[number]['id'];
 export const CHARACTER_GROUP_LABELS = Object.fromEntries(CHARACTER_GROUPS.map((g) => [g.id, g.label])) as Record<CharacterGroup, string>;
+/** Retired group ids (saved settings, maps' bot casts, server rules) and the group each one went into (2026-11-17). */
+export const CHARACTER_GROUP_ALIASES: Readonly<Record<string, CharacterGroup>> = { agents: 'soldiers', creatures: 'horror' };
+/**
+ * Soldiers & Spies' sub-designators (`branch` on every look in `soldiers`): Army (the uniformed soldiers) or Agency
+ * (agents and spies). A map or a bot-characters setting can ask for one (a real battle's Army only). IDs never change.
+ */
+export const CHARACTER_BRANCHES = [
+  { id: 'army', label: 'Army', group: 'soldiers' },
+  { id: 'agency', label: 'Agency', group: 'soldiers' },
+] as const satisfies readonly { id: string; label: string; group: CharacterGroup }[];
+export type CharacterBranch = (typeof CHARACTER_BRANCHES)[number]['id'];
+export const isCharacterBranch = (x: unknown): x is CharacterBranch => CHARACTER_BRANCHES.some((b) => b.id === x);
 export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
 
 /** Character Select's section for the experimental tier (after the groups, before Yours), and Yours (your designs). */
@@ -141,10 +157,11 @@ export const MINE_SECTION = 'mine';
 /**
  * Character Select's sections for a roster whose entries say which section they sit in (`group`: a CHARACTER_GROUPS
  * id, EXPERIMENTAL_SECTION or MINE_SECTION): each group anyone is in (listed by name), then Experimental when there
- * is anyone in it, then Yours (always, in the order given: it holds "Design new").
+ * is anyone in it, then Yours (always, in the order given: it holds "Design new"). An entry with `sortAs` sits where that
+ * name would.
  */
-export function characterSections<T extends { name: string; group: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
-  const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => a.name.localeCompare(b.name));
+export function characterSections<T extends { name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
+  const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name));
   const groups = [...CHARACTER_GROUPS.map((g) => ({ id: g.id as string, label: g.label as string, looks: byName(g.id) })), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
   return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
 }
@@ -274,9 +291,9 @@ const ALL_LOOKS: readonly CharacterLook[] = [
   { id: 'core.huntress', name: 'Huntress', body: 'female', head: 'head_female', parts: ranger('f'), hair: ['hair_long'], colorways: [], skin: null, hairColor: '#b08850', cloth: '#7a2a2a', trim: '#2a2622', gear: ['bandolier'], group: 'folk' },
   // Two sizes off the standard: Sprout is small and quick, Bulwark big and tough.
   { id: 'core.sprout', name: 'Sprout', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c07a40', size: 'small', cloth: '#e0b84a', gear: ['headband'], group: 'folk', nameTheme: 'townsfolk' },
-  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['helmet', 'vest'], group: 'soldiers' },
-  { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'], group: 'soldiers' },
-  { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'], group: 'soldiers' },
+  { id: 'core.bulwark', name: 'Bulwark', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#4a4f58', trim: '#1e2126', gear: ['helmet', 'vest'], group: 'soldiers', branch: 'army' },
+  { id: 'core.warden', name: 'Warden', body: 'male', head: 'head_male', parts: ranger('m', false, true), hair: ['hair_buzzed', 'hair_beard'], colorways: ['ranger_moss'], skin: SKIN_TONES[3], hairColor: '#3a3030', cloth: '#2a3a5c', trim: '#3a2a22', gear: ['beret', 'radio'], group: 'soldiers', branch: 'army' },
+  { id: 'core.scout', name: 'Scout', body: 'female', head: 'head_female', parts: ranger('f', true, false), hair: ['hair_buns'], colorways: ['ranger_moss'], skin: SKIN_TONES[2], hairColor: '#4a3428', cloth: '#c8b88a', trim: '#6a4a30', gear: ['goggles', 'scarf'], group: 'soldiers', branch: 'army' },
   { id: 'core.farmhand', name: 'Farmhand', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[1], hairColor: '#c09060', gear: ['brim'], group: 'folk' },
   {
     id: 'core.tracker',
@@ -337,14 +354,14 @@ const ALL_LOOKS: readonly CharacterLook[] = [
   },
   { id: 'core.brawler', name: 'Brawler', body: 'male', head: 'head_male', parts: ['athlete_torso_m', 'peasant_legs_m', 'peasant_feet_m'], hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[2], hairColor: '#2a2422', cloth: '#c0392b', gear: ['headband'], group: 'folk' },
   // Uniforms and specialists: one outfit dyed and kitted out differently each time.
-  { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'], group: 'soldiers' },
-  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'], group: 'soldiers' },
-  { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'], group: 'soldiers' },
-  { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'], group: 'soldiers' },
+  { id: 'core.commando', name: 'Commando', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_buzzed'], colorways: [], skin: SKIN_TONES[4], hairColor: '#1e1a18', cloth: '#262a30', trim: '#1a1c20', gear: ['helmet', 'goggles', 'vest'], group: 'soldiers', branch: 'army' },
+  { id: 'core.frost', name: 'Frost', body: 'female', head: 'head_female', parts: ranger('f', false, false), hair: ['hair_long'], colorways: [], skin: SKIN_TONES[1], hairColor: '#f0e0c0', cloth: '#e8e4dc', trim: '#7a8088', gear: ['beanie', 'goggles', 'pack'], group: 'soldiers', branch: 'army' },
+  { id: 'core.operative', name: 'Operative', body: 'male', head: 'head_male', parts: ranger('m', false, false), hair: ['hair_simpleparted'], colorways: [], skin: SKIN_TONES[1], hairColor: '#2a2422', cloth: '#1e2126', trim: '#1e2126', gear: ['shades'], group: 'soldiers', branch: 'army' },
+  { id: 'core.medic', name: 'Medic', body: 'female', head: 'head_female', parts: peasant('f'), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[2], hairColor: '#3a2a22', cloth: '#e8e4dc', trim: '#a83030', gear: ['cap', 'pack'], group: 'soldiers', branch: 'army' },
   { id: 'core.engineer', name: 'Engineer', body: 'male', head: 'head_male', parts: peasant('m'), hair: ['hair_beard'], colorways: [], skin: SKIN_TONES[3], hairColor: '#5a4030', cloth: '#d07a2a', trim: '#3a3a3a', gear: ['mk2_helmet', 'tank'], group: 'folk' },
   // Whole-body characters, one per manifest in content/characters (generated: characters.generated.ts).
   ...WHOLE_BODY_LOOKS,
-  { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers' },
+  { id: 'core.sentinel', name: 'Sentinel', body: 'female', head: 'head_female', parts: ranger('f', false, true), hair: ['hair_buns'], colorways: [], skin: SKIN_TONES[3], hairColor: '#2a2422', size: 'large', cloth: '#9aa0a8', trim: '#3a3f48', gear: ['beret', 'vest'], group: 'soldiers', branch: 'army' },
 ];
 
 /**

@@ -5,7 +5,7 @@
   "order": 20,
   "name": "Goblina",
   "look": "core.grizzelda",
-  "group": "creatures",
+  "group": "horror",
   "nameTheme": "wizard",
   "bio": "Brews potions, curses rivals and keeps exact count of both.",
   "body": "female",

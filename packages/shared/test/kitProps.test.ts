@@ -54,6 +54,8 @@ const NO_COLLISION = new Set([
   'kit.shelf.wall',
   // St. John's step 4b: the Sand Court is walked on as the ground under it.
   'kit.sport.court_sand',
+  // St. John's step 5: the wall boards hang on a wall, thinner than it (the wall collides).
+  'kit.board.chalk', 'kit.board.screen',
 ]);
 
 describe('kit families', () => {

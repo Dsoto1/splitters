@@ -6,6 +6,7 @@
   "name": "Astronaut Explorer",
   "look": "core.astroexplorer",
   "group": "space",
+  "sortAs": "Spud Marshal",
   "nameTheme": "soldier",
   "bio": "Mapped the far side of the moon. This arena is a short walk.",
   "body": "male",

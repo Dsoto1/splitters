@@ -1,5 +1,5 @@
 {
-  "$comment": "Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): each character's signature weapon, the group fallback for a character not listed, a jackpot roll's better weapon, and the odds. `characters`: look id -> the weapon it spawns holding (signature loadouts). `groups`: a character group (Character Select's, looks.ts CHARACTER_GROUPS) -> the signature of a character with none of its own. `jackpot`: a signature -> the better one a jackpot roll hands out instead (one not listed keeps its own; the jackpot's armour comes either way). A weapon outside the match's weapon set falls back to the set's main gun (sim/weaponSets.ts inSetOr), so every one here is a weapon we already have that a pickup can hold. `odds`: per life, the chance of a jackpot roll and of a tiny roll; `pickJackpot`: the chance each card of a streak pick is a jackpot. `jackpotArmor`: armour a jackpot life spawns with. `tiny`: a tiny roll's body size (a multiple of the character's own) and speed (a multiple). `streakPick`: kills in one life that earn a pick. `rerollEvery`: kills per reroll token (Earned rerolls), `rerollMax`: tokens held at most. Edit, then run `node tools/content/roulette.mjs`.",
+  "$comment": "Roulette (docs/ROULETTE_MODE_PLAN.md; sim/roulette.ts): each character's signature weapon, the group fallback for a character not listed, a jackpot roll's better weapon, and the odds. `characters`: look id -> the weapon it spawns holding (signature loadouts). `groups`: a character group (Character Select's, looks.ts CHARACTER_GROUPS) or a Soldiers & Spies branch (CHARACTER_BRANCHES: army, agency; a branch's comes first) -> the signature of a character with none of its own. `jackpot`: a signature -> the better one a jackpot roll hands out instead (one not listed keeps its own; the jackpot's armour comes either way). A weapon outside the match's weapon set falls back to the set's main gun (sim/weaponSets.ts inSetOr), so every one here is a weapon we already have that a pickup can hold. `odds`: per life, the chance of a jackpot roll and of a tiny roll; `pickJackpot`: the chance each card of a streak pick is a jackpot. `jackpotArmor`: armour a jackpot life spawns with. `tiny`: a tiny roll's body size (a multiple of the character's own) and speed (a multiple). `streakPick`: kills in one life that earn a pick. `rerollEvery`: kills per reroll token (Earned rerolls), `rerollMax`: tokens held at most. Edit, then run `node tools/content/roulette.mjs`.",
   "characters": {
     "core.ranger": "core.spear",
     "core.sprout": "core.sawed_off",
@@ -101,15 +101,15 @@
     "core.darkastronaut": "core.plasma",
     "core.tortoise": "core.disc_launcher",
     "core.trex": "core.smg",
-    "core.fishyfred": "core.bubble_blaster"
+    "core.fishyfred": "core.bubble_blaster",
+    "core.goblingunslinger": "core.laser_rifle"
   },
   "groups": {
     "soldiers": "core.rifle",
     "folk": "core.shotgun",
     "space": "core.plasma",
-    "agents": "core.machine_pistol",
+    "agency": "core.machine_pistol",
     "legends": "core.spear",
-    "creatures": "core.laser_rifle",
     "animals": "core.smg",
     "machines": "core.laser_rifle",
     "horror": "core.sawed_off"

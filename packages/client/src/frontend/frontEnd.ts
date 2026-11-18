@@ -2,6 +2,7 @@ import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import {
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
+  CHARACTER_BRANCHES,
   CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
@@ -26,6 +27,7 @@ import {
   PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
+  lookBranch,
   lookGroup,
   validLookId,
   DEFAULT_LOOK,
@@ -2130,10 +2132,10 @@ export class FrontEnd {
   // ---------------------------------------------------------------- character select
 
   /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
-  private roster(): { id: string; name: string; group: string }[] {
+  private roster(): { id: string; name: string; group: string; sortAs?: string }[] {
     return [
       // An experimental character sits under Experimental, not with its group (the same rule as an experimental map).
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine') })),
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine'), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
       ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
@@ -2495,7 +2497,7 @@ export class FrontEnd {
     info.replaceChildren(
       this.sheetToggle(),
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(lookBranch(id) ? [el('span', { textContent: CHARACTER_BRANCHES.find((b) => b.id === lookBranch(id))!.label })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       ...(stats ? [stats] : []),
       loadout,
       el('div', { class: 'char-actions' }, choose, customise),

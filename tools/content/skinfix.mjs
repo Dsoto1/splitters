@@ -109,7 +109,9 @@ export function bindRigid({ count, at, J, W, rigOf, regions }) {
  * shoulders out at its robe's dropped shoulder seam (upper arm 9.7 cm, the arm a sixth of its height), so its hands
  * could not reach a rifle's handguard; the shoulder moved in along the collarbone gives the arm its length.
  * - `moves`: `{ <rig joint>: share }`, the share (0.3–1) of the way from the parent's joint to its own it then sits at;
- *   a joint named without its side (`upperarm`) moves on both sides.
+ *   a joint named without its side (`upperarm`) moves on both sides. Or `{ <rig joint>: { share, radius } }`: the
+ *   limb's radius set (metres at a 1.8 m body) instead of measured, where the measure takes in more than the limb
+ *   (Warrior Sentinel's big gauntlets made it 19.6 cm and handed his vest's back and front to the upper arms).
  * - The skin: a vertex the parent holds, past the new place along the bone (eased over BAND of the bone's length either
  *   side of it) and within the limb's radius of the bone's line (eased out to 1.5 radii: a robe's side under the arm
  *   stays with the body), goes to the joint by that share of the parent's weight. The radius is what the joint and its
@@ -132,7 +134,13 @@ export function moveJoints({ count, at, J, W, rest, parent, rigOf, moves }) {
     return J[v * 4 + b];
   };
   const report = [];
-  for (const [name, share] of Object.entries(moves)) {
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const q of pos) (lo = Math.min(lo, q[1])), (hi = Math.max(hi, q[1]));
+  const perMetre = (hi - lo) / 1.8;
+  for (const [name, move] of Object.entries(moves)) {
+    const share = typeof move === 'number' ? move : move.share;
+    const setRadius = typeof move === 'number' ? undefined : move.radius;
     const targets = /_[lr]$/.test(name) ? [name] : [`${name}_l`, `${name}_r`];
     for (const target of targets) {
       const j = rigOf.indexOf(target);
@@ -154,7 +162,7 @@ export function moveJoints({ count, at, J, W, rest, parent, rigOf, moves }) {
       const ds = [];
       for (let v = 0; v < count; v++) if (major(v) === j || (child >= 0 && major(v) === child && dot(sub(pos[v], was), dir) < L)) ds.push(off(pos[v]));
       ds.sort((x, y) => x - y);
-      const R = ds.length ? ds[Math.floor(0.9 * (ds.length - 1))] : L;
+      const R = setRadius !== undefined ? setRadius * perMetre : ds.length ? ds[Math.floor(0.9 * (ds.length - 1))] : L;
       let moved = 0;
       for (let v = 0; v < count; v++) {
         let kp = -1;

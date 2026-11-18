@@ -6,6 +6,7 @@
   "name": "Azure Sentinel",
   "look": "core.azuresentinel",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Breathes through a filter, sees through blue lenses, never takes the mask off.",
   "body": "male",
