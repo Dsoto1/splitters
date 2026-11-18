@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as npcs from '../npcs.mjs';
 import * as roulette from '../roulette.mjs';
-import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, gripFitOf, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
+import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, gripFitOf, gripFitSource, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
 
 describe('character manifests', () => {
   const list = readManifests();
@@ -87,10 +87,11 @@ describe('character manifests', () => {
     const grip = { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 };
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_cat.json')).toEqual([]);
     expect(looksSource([{ ...good, fixes: { ...good.fixes, grip } }])).toContain('grip: { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4');
-    // ...with the grip fit's offsets (content/grip-fit.json) after it, the manifest's own winning where both set one.
+    // The grip fit's offsets (content/grip-fit.json) go in their own table, without the ones the manifest sets itself.
     const fitted = gripFitOf('meshy_cat')?.grip ?? {};
-    const line = looksSource([{ ...good, fixes: { ...good.fixes, grip } }]);
-    for (const [k, v] of Object.entries(fitted)) if (!(k in grip)) expect(line).toContain(`${k}: [${v.join(', ')}]`);
+    const table = gripFitSource([{ ...good, fixes: { ...good.fixes, grip } }]);
+    for (const [k, v] of Object.entries(fitted)) expect(table.includes(`${k}: [${v.join(', ')}]`)).toBe(!(k in grip));
+    expect(table).toMatch(/arms: \{ skin: '#[0-9a-f]{6}'/);
     const gp = (g) => manifestProblems({ ...good, fixes: { ...good.fixes, grip: g } }, 'meshy_cat.json').join('\n');
     expect(gp({ wrist: 1 })).toMatch(/fixes.grip: \{/);
     expect(gp({ curlR: 2 })).toMatch(/fixes.grip.curlR/);
