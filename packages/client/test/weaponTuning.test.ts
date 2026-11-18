@@ -70,16 +70,18 @@ describe('scope holdover marks (spec §5)', () => {
     const sniper = getWeapon('core.sniper');
     const tanHalf = Math.tan(sniper.view.zoomFov! / 2);
     const marks = holdoverFor(sniper, {}, tanHalf);
-    expect(marks.length).toBeGreaterThanOrEqual(3);
+    expect(marks.length).toBeGreaterThanOrEqual(2);
     for (const m of marks) {
       const dist = Number(m.label) * 100;
       expect(m.y).toBeCloseTo((100 * flightTo(gunplayOf(sniper).ballistic!, dist).drop) / dist / tanHalf, 1);
       expect(m.major).toBe(dist % 200 === 0);
     }
-    for (let i = 1; i < marks.length; i++) expect(marks[i]!.y).toBeGreaterThan(marks[i - 1]!.y);
-    // Zoomed further in (the second zoom), the same marks spread out.
+    // Never crowded: each at least the gap below the last.
+    for (let i = 1; i < marks.length; i++) expect(marks[i]!.y - marks[i - 1]!.y).toBeGreaterThanOrEqual(2.6);
+    // Zoomed further in (the second zoom), they spread out and more distances get a mark.
     const closer = holdoverFor(sniper, {}, tanHalf * 0.45);
-    expect(closer[0]!.y).toBeGreaterThan(marks[0]!.y);
+    expect(closer.length).toBeGreaterThan(marks.length);
+    expect(closer.length).toBeGreaterThanOrEqual(4);
     // Advanced ballistics drop more: the marks sit lower.
     expect(holdoverFor(sniper, { ballistics: 'advanced' }, tanHalf)[0]!.y).toBeGreaterThan(marks[0]!.y);
   });

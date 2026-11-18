@@ -663,7 +663,11 @@ export class Hud {
   private readonly optic = $('optic');
   private opticKey = '';
   setOptic(o: { lens: number; blend: number; reticle: string; marks?: readonly HoldoverMark[] } | null): void {
-    if (o) drawHoldover($('optic-holdover'), o.marks ?? [], 1.4);
+    if (o) {
+      drawHoldover($('optic-holdover'), o.marks ?? [], 1.4);
+      // Holdover marks take the place of the duplex's two plain hash marks below the centre.
+      this.optic.classList.toggle('holdover-on', !!o.marks?.length);
+    }
     const key = o ? `${o.lens.toFixed(4)}|${o.blend.toFixed(3)}|${o.reticle}` : '';
     if (key === this.opticKey) return;
     this.opticKey = key;
@@ -1208,9 +1212,9 @@ function drawHoldover(g: HTMLElement, marks: readonly HoldoverMark[], k: number)
   g.dataset.key = key;
   g.innerHTML = marks
     .map((m) => {
-      const w = (m.major ? 2.6 : 1.8) * k;
+      const w = (m.major ? 2.4 : 1.6) * k;
       const y = m.y.toFixed(1);
-      return `<line x1="${-w}" y1="${y}" x2="${w}" y2="${y}" stroke-width="${(0.32 * k).toFixed(2)}" /><text x="${(w + 0.8 * k).toFixed(2)}" y="${y}" dy="${(0.9 * k).toFixed(2)}" font-size="${(2.6 * k).toFixed(2)}" stroke="none">${m.label}</text>`;
+      return `<line x1="${-w}" y1="${y}" x2="${w}" y2="${y}" stroke-width="${(0.32 * k).toFixed(2)}" /><text x="${(w + 0.8 * k).toFixed(2)}" y="${y}" dy="${(0.9 * k).toFixed(2)}" font-size="${(2.2 * k).toFixed(2)}" stroke="none">${m.label}</text>`;
     })
     .join('');
 }

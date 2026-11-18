@@ -16,7 +16,7 @@ const MAX = 3;
 
 const CSS = `
 :root { --wt-bg: #111417; --wt-surface: #1a1e22; --wt-line: #2b3137; --wt-grid: #262b30; --wt-ink: #e8ecef; --wt-ink2: #aab3bb; --wt-muted: #78828b; }
-#weapon-tuning { position: fixed; inset: 0; overflow: auto; background: var(--wt-bg); color: var(--wt-ink); font: 14px/1.4 Barlow, system-ui, sans-serif; z-index: 50; }
+#weapon-tuning { position: relative; min-height: 100vh; background: var(--wt-bg); color: var(--wt-ink); font: 14px/1.4 Barlow, system-ui, sans-serif; z-index: 50; }
 #weapon-tuning * { box-sizing: border-box; }
 #weapon-tuning header { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 12px 16px; background: rgba(17, 20, 23, 0.96); border-bottom: 1px solid var(--wt-line); }
 #weapon-tuning h1 { margin: 0 8px 0 0; font: italic 700 20px 'Chakra Petch', sans-serif; letter-spacing: 0.02em; }
@@ -36,9 +36,9 @@ const CSS = `
 #weapon-tuning .bars { display: grid; grid-template-columns: 112px 1fr; gap: 6px 12px; align-items: center; }
 #weapon-tuning .bars .k { color: var(--wt-ink2); font-size: 13px; }
 #weapon-tuning .bars .v { display: grid; gap: 3px; }
-#weapon-tuning .bar { display: grid; grid-template-columns: 1fr 92px; gap: 8px; align-items: center; }
-#weapon-tuning .bar i { display: block; height: 8px; border-radius: 0 4px 4px 0; min-width: 2px; }
-#weapon-tuning .bar span { color: var(--wt-ink2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#weapon-tuning .wt-bar { display: grid; grid-template-columns: 1fr 92px; gap: 8px; align-items: center; }
+#weapon-tuning .wt-bar i { display: block; height: 8px; border-radius: 0 4px 4px 0; min-width: 2px; }
+#weapon-tuning .wt-bar span { color: var(--wt-ink2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 #weapon-tuning table { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
 #weapon-tuning th, #weapon-tuning td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--wt-grid); }
 #weapon-tuning th:first-child, #weapon-tuning td:first-child { text-align: left; }
@@ -57,9 +57,12 @@ interface Pick {
   color: string;
 }
 
-/** What the arsenal's bars are measured against: the largest value any carried weapon has. */
+/**
+ * What the arsenal's bars are measured against: the largest value any gun of a family has (the explosive and exotic
+ * arsenal's splash damage would flatten everyone else's bars; theirs run off the end, capped).
+ */
 function arsenalMax(): Record<keyof WeaponStats, number> {
-  const all = Object.values(CORE_WEAPONS).filter((d) => d.slot > 0);
+  const all = Object.values(CORE_WEAPONS).filter((d) => d.slot > 0 && gunplayOf(d).family);
   const out = {} as Record<keyof WeaponStats, number>;
   for (const d of all) {
     const s = weaponStats(d);
@@ -94,6 +97,13 @@ export function openWeaponTuning(): void {
   const root = document.createElement('div');
   root.id = 'weapon-tuning';
   document.body.append(root);
+  // The page scrolls (the game's own pages never do).
+  for (const el of [document.documentElement, document.body]) {
+    el.style.overflow = 'auto';
+    el.style.height = 'auto';
+    el.style.background = '#111417';
+  }
+  for (const id of ['view', 'hud']) document.getElementById(id)?.style.setProperty('display', 'none');
 
   const params = new URLSearchParams(location.search);
   const carried = Object.values(CORE_WEAPONS)
@@ -178,7 +188,7 @@ export function openWeaponTuning(): void {
 
   /** Spec §45's comparison: each stat on one scale across the whole arsenal. */
   function barsSection(ps: Pick[]): HTMLElement {
-    const s = section('At a glance', 'Each bar on one scale across every carried weapon, so the extremes show. Recoil: the climb over the first ten rounds; spread: hip fire standing.');
+    const s = section('At a glance', 'Each bar on one scale across the guns of the arsenal, so the extremes show (explosive and exotic weapons can run off the end). Recoil: the climb over the first ten rounds; spread: hip fire standing, a shotgun\'s pattern included.');
     const rows: [string, keyof WeaponStats, (v: number) => string][] = [
       ['Damage', 'damage', (v) => `${fmt(v)} a pull`],
       ['Fire rate', 'rpm', (v) => `${fmt(v)} rpm`],
@@ -202,7 +212,7 @@ export function openWeaponTuning(): void {
         return `<span class="k">${label}</span><div class="v">${stats
           .map((st, i) => {
             const v = (st[key] as number | null) ?? 0;
-            return `<div class="bar"><i style="width:${Math.max(0.5, Math.min(100, share(v) * 100)).toFixed(1)}%;background:${ps[i]!.color}" title="${ps[i]!.def.displayName}"></i><span>${text(v)}</span></div>`;
+            return `<div class="wt-bar"><i style="width:${Math.max(0.5, Math.min(100, share(v) * 100)).toFixed(1)}%;background:${ps[i]!.color}" title="${ps[i]!.def.displayName}"></i><span>${text(v)}</span></div>`;
           })
           .join('')}</div>`;
       })
@@ -378,7 +388,7 @@ export function openWeaponTuning(): void {
     tip.hidden = true;
     card.append(c, tip);
     const L = 46;
-    const R = 12;
+    const R = 24;
     const T = 10;
     const B = 28;
     let hover: number | null = null;

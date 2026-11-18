@@ -130,7 +130,7 @@ export interface WeaponStats {
   capacity: number;
   /** Muzzle velocity (m/s; hitscan: null). */
   velocity: number | null;
-  /** Hip spread standing (radians). */
+  /** Hip spread standing, a pellet pattern included (radians). */
   spread: number;
   /** Movement speed (share of running speed). */
   move: number;
@@ -147,6 +147,7 @@ export interface WeaponStats {
 export function weaponStats(def: WeaponDefinition, mode = 0): WeaponStats {
   const gp = gunplayOf(def);
   const f = firingOf(def, mode);
+  const cones = spreadCones(def);
   const path = recoilPath(def, mode, 10);
   const perMin = f.burst && f.burst.count > 1 ? (f.burst.count * 60 * TICK_RATE) / Math.max(1, f.interval) : (60 * TICK_RATE) / Math.max(1, f.interval);
   const reload = gp.reload.type === 'magazine' ? gp.reload.empty : gp.reload.start + gp.reload.each * Math.max(1, def.magazine) + gp.reload.end;
@@ -156,7 +157,7 @@ export function weaponStats(def: WeaponDefinition, mode = 0): WeaponStats {
     recoil: path.length ? Math.hypot(path[path.length - 1]!.pitch, path[path.length - 1]!.yaw) : 0,
     capacity: def.magazine,
     velocity: gp.ballistic?.velocity ?? def.projectile?.speed ?? null,
-    spread: spreadCones(def)?.hip ?? def.spread,
+    spread: cones ? cones.hip + cones.pattern : def.spread,
     move: gp.handling.move,
     sprintExit: gp.handling.sprintExit / TICK_RATE,
     ads: (gp.accuracy?.adsTicks ?? 0) / TICK_RATE,
