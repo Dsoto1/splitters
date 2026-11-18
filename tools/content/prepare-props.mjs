@@ -25,7 +25,8 @@
 // Packs with `meshy: true` (Meshy community downloads, CC0 per the owner) are
 // Meshy's textured FBX folders, one per prop (the prop's own `download`):
 // tools/content/meshy-mesh.mjs cuts each to `triangles` and paints its colour
-// map afresh onto new charts (`surface`, default `rebake`), dropping what can't
+// map afresh onto new charts (`surface`, default `rebake`; `meshSurface` when `surface` names the prop's surface
+// type, as `texture`: the download's own charts kept, a cleaner look for a low, cel-shaded download), dropping what can't
 // be seen from outside first where `dropHidden` says so; `stone` turns the
 // colour map to weathered stone of that colour (a statue). `paintOut` (the
 // guns' colour rules, meshy-mesh.mjs `markings`) paints lettering and logos out
@@ -692,7 +693,7 @@ async function convertPiece(dir, pack, p) {
       }
       if (p.stone) stone(map, p.stone);
     } : null;
-    ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, lod: p.lod ?? (p.budget === 'hero' ? HERO_LOD : null), recolor, renormal, ...(p.bakeSize ? { textureSize: p.bakeSize } : {}) }));
+    ({ doc } = await meshyDocument(path, { triangles: p.triangles, maxError: p.maxError, surface: p.meshSurface ?? p.surface ?? 'rebake', dropHidden: p.dropHidden, normalSize: normalSizeOf(pack, p) ? 1024 : 0, lod: p.lod ?? (p.budget === 'hero' ? HERO_LOD : null), recolor, renormal, ...(p.bakeSize ? { textureSize: p.bakeSize } : {}) }));
   }
   else if (/\.fbx$/i.test(file)) ({ doc } = await fbxToDocument(path, { pick }));
   else {
