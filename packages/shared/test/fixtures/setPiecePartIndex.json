@@ -17,6 +17,5 @@
  "setpiece.loading_dock#17": "prop kit.drum.steel",
  "setpiece.loading_dock#18": "light",
  "setpiece.loading_dock#19": "light",
- "setpiece.loading_dock#20": "light",
- "setpiece.stair_end_bay_bridge#11": "block 8x0.3x8 {\"role\":\"roof\"}"
+ "setpiece.loading_dock#20": "light"
 }

@@ -52,3 +52,19 @@ Rules:
 | This_is_my_rifle_There_are_man | You finish a match as the top scorer |
 
 Reduce flashing doesn't apply: these are sounds only.
+
+## As built (2026-11-18, `wip/music-announcer`)
+- **Files:** `content/owner-audio.json` maps each track and line to the start of the owner's file name; `tools/content/owner-audio.mjs` encodes them (silence trimmed, -16 LUFS, Ogg Opus: music 64 kbps stereo, 1.0-1.5 MB a track, 13.5 MB in all; lines 48 kbps mono, 0.5 MB in all) and `content/owner-audio.lock.json` records them; provenance lists each as the owner's own (owned). Nothing in the game lists the files or offers them for download.
+- **Music:** `audio/music.ts`, by the app's screen: menu (also Match Setup, lobbies and the character designer), MapMaker, none in a match or test play. Starts only after the first click or key, streams only the track playing; Music at 0 fetches nothing.
+- **Announcer:** `audio/announcer.ts` (the rules, unit-tested) fed by `game/sessionAudio.ts` (events) and `game/session.ts` (the clock, scores and who is alive, from snapshots).
+  - "3, 2, 1, FIGHT!" starts at 3 s left in the countdown, so FIGHT lands on the start (the beeps stop under it); a round start without a countdown says it as the round begins.
+  - One minute left: the clock crossing 60 s (once a match). Ten kills left: Deathmatch, Team Deathmatch and Roulette only, score limit 20 or more (the other modes' scores aren't kills).
+  - Attackers / Defenders win: Breakthrough (the team attacking that round) and Bomb (the mode's first team attacks); Elimination keeps Kenney's win / lose.
+  - Next in queue: the match's end when the rotation or "next map" names where it goes, after the result and "This is my rifle".
+  - Bomb planted / disarmed: Bomb mode, and Breakthrough's charges too.
+  - Mr Boombastic: a chain of 2 or 3 kills that were all blasts says it once, in place of Double / Triple Kill; 4 kills from one blast is Server overload.
+  - Special kills, one a kill, in this order: Later gator, the blown-up animal, melee, headshot.
+  - Hype: one time in three after a Triple Kill or better, a streak line or Server overload, at most once in 20 s, only into a quiet moment.
+  - Hail to the chief: you (free-for-all) or your team taking the lead outright, not in Co-op or Zombies.
+  - The last one alive: Elimination and Bomb, once a round, while an enemy still stands.
+

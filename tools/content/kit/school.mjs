@@ -299,3 +299,55 @@ export function schoolDesksMesh(seed, size, g, look, level) {
   if (level === 0) m.boxes = boxes;
   return m;
 }
+
+// ---------------------------------------------------------------- the pennant string
+
+/**
+ * A string of pennants to hang along a classroom wall under the ceiling (St. John's step 5b): a cord sagging a little
+ * from end to end along x at the top of the prop, triangular pennants hanging from it, both faces drawn. Plain
+ * colours, no marks. Settings `g`: `flag` ([width, drop] of one pennant, m), `gap` (between pennants), `sag` (how far
+ * the cord dips in the middle). `look`: `colours` (comma-separated hex, in turn), `cord`. Collides as nothing.
+ */
+export function pennantMesh(seed, size, g, look, level) {
+  const [w, h] = size;
+  const X = w / 2;
+  const [fw, drop] = g.flag ?? [0.28, 0.36];
+  const gap = g.gap ?? 0.08;
+  const sag = g.sag ?? 0.1;
+  const colours = (look.colours ?? '#4b2a84,#f2f0ea,#a8322d').split(',').map((c) => hex(c.trim()));
+  const cord = hex(look.cord ?? '#d9d4c6');
+  const m = new Mesh();
+  const yAt = (x) => h - 0.01 - sag * (1 - (x / X) ** 2);
+  // The cord: a thin strip, both faces.
+  const segs = level === 0 ? 8 : 2;
+  for (let i = 0; i < segs; i++) {
+    const xa = -X + (2 * X * i) / segs;
+    const xb = -X + (2 * X * (i + 1)) / segs;
+    const pts = [[xa, yAt(xa) - 0.01, 0], [xb, yAt(xb) - 0.01, 0], [xb, yAt(xb) + 0.01, 0], [xa, yAt(xa) + 0.01, 0]];
+    quad(m, ...pts, cord);
+    quad(m, pts[1], pts[0], pts[3], pts[2], cord);
+  }
+  if (level >= 2) {
+    // One band of colour where the pennants are.
+    const pts = [[-X, h - sag - drop * 0.6, 0], [X, h - sag - drop * 0.6, 0], [X, h - 0.02, 0], [-X, h - 0.02, 0]];
+    quad(m, ...pts, colours[0]);
+    quad(m, pts[1], pts[0], pts[3], pts[2], colours[0]);
+    return m;
+  }
+  const n = Math.floor((2 * X + gap) / (fw + gap));
+  const x0 = -((n * (fw + gap) - gap) / 2);
+  for (let i = 0; i < n; i++) {
+    const xa = x0 + i * (fw + gap);
+    const xb = xa + fw;
+    const xm = (xa + xb) / 2;
+    const col = colours[i % colours.length];
+    const a = [xa, yAt(xa), 0];
+    const b = [xb, yAt(xb), 0];
+    const c = [xm, yAt(xm) - drop, 0];
+    const ia = [a, b, c].map((p) => m.vertex(p, [0, 0, 1], [0, 0], col));
+    m.tri(ia[0], ia[2], ia[1]);
+    const ib = [a, b, c].map((p) => m.vertex(p, [0, 0, -1], [0, 0], col));
+    m.tri(ib[0], ib[1], ib[2]);
+  }
+  return m;
+}

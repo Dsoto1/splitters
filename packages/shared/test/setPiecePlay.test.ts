@@ -78,6 +78,7 @@ const OPEN_SIDED = [
   'setpiece.city_gate_wall',
   // The classroom bay (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, as the dorm bays'.
   'setpiece.classroom_bay',
+  'setpiece.classroom_entry_bay',
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
   'setpiece.command_bunker',

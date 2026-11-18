@@ -151,6 +151,10 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
   'setpiece.classroom_bay': {
     chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [-2.2, 0, 1.4], [0, 0, 4]]))],
   },
+  // St. John's step 5b: the court door. Along the hall; in under the arch to the hall; into the north classroom.
+  'setpiece.classroom_entry_bay': {
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]]],
+  },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
     chains: [[[-3, 0, -3.5], [-3, 0, 3.5], [3.5, 0, 3.5]]],
@@ -282,14 +286,16 @@ describe("a two-floor L (Smythe Hall's shape)", () => {
 
 /**
  * Stangeland / Cord's shape (St. John's step 5): a three-floor school hall along z = 4 (cells y 0, 1). The 3-floor Stair
- * End Bay at x 0, four Classroom Bays a floor at x 1-4, the Stair End Bay (upper door) at the east end (x 5, turned
+ * End Bay at x 0, four Classroom Bays a floor at x 1-4, the 3-floor Stair End Bay at the east end (x 5, turned
  * half round, anchored a cell north) with a Carriageway beside it (x 6, y 0) whose door on each floor meets the end
- * bay's lobby and the lobby's upper door; the top floor runs one bay further, closed at its east end, over the lower end bay.
+ * bay's lobby and its first-floor door (the 3-floor Stair End Bay's First-floor door option, St. John's step 5b); a
+ * Classroom Entry Bay turned half round opens the ground floor's hall to the north.
  */
 function stangeland(): SetPiecePlacement[] {
   const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, overrides?: SetPiecePlacement['overrides']): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(overrides ? { overrides } : {}) });
-  const out = [at('end_w', 'setpiece.stair_end_bay_3', 0, 0, 0), at('end_e', 'setpiece.stair_end_bay_bridge', 5, 1, 0, 2, { hide: [11] }), at('bridge', 'setpiece.carriageway_1', 6, 0, 0), at('top_e', 'setpiece.classroom_bay', 5, 0, 2, 0, { options: { end: 'east' } })];
-  for (let z = 0; z < 3; z++) for (const x of [1, 2, 3, 4]) out.push(at(`bay_${x}_${z}`, 'setpiece.classroom_bay', x, 0, z));
+  const out = [at('end_w', 'setpiece.stair_end_bay_3', 0, 0, 0), at('end_e', 'setpiece.stair_end_bay_3', 5, 1, 0, 2, { options: { upperDoor: 'end' } }), at('bridge', 'setpiece.carriageway_1', 6, 0, 0)];
+  // (St. John's step 5b: the court door, a Classroom Entry Bay turned half round on the ground floor; pennants in a few rooms.)
+  for (let z = 0; z < 3; z++) for (const x of [1, 2, 3, 4]) out.push(x === 2 && z === 0 ? at('entry', 'setpiece.classroom_entry_bay', 2, 1, 0, 2) : at(`bay_${x}_${z}`, 'setpiece.classroom_bay', x, 0, z, 0, x === 3 && z === 1 ? { options: { pennants: 'both' } } : undefined));
   return out;
 }
 
@@ -303,9 +309,11 @@ describe("a three-floor school hall joined to a bridge (Stangeland / Cord's shap
       // From the west lobby to every floor.
       expect(miss(nav, v([0, 0, 7]), v([12, y, 4])), `west stair to ${y} m`).toBeLessThan(1.2);
     }
-    // The top floor's last bay, over the east end bay, closed at its end.
-    expect(miss(nav, v([36, 8, 4]), v([42, 8, 4]))).toBeLessThan(1.2);
-    expect(miss(nav, v([36, 8, 4]), v([44.5, 8, 4]))).toBeGreaterThan(0.6);
+    // Both end stairs reach the top floor (the east one three floors, with the bridge's door on the first).
+    expect(miss(nav, v([40, 0, 1]), v([36, 8, 4])), 'east stair to the top floor').toBeLessThan(1.2);
+    // In from the court under the entry bay's arch (turned half round: the arch faces north), along the hall.
+    expect(miss(nav, v([20, 0, 15]), v([20, 0, 8]))).toBeLessThan(1.2);
+    expect(miss(nav, v([20, 0, 15]), v([4, 0, 4]))).toBeLessThan(1.2);
     // The bridge: in from its passage at the side door to the east lobby; its room over the arch to the first floor's hall.
     expect(miss(nav, v([48, 0, 0]), v([40, 0, 0.5]))).toBeLessThan(1.2);
     expect(miss(nav, v([48, 4, 0]), v([30, 4, 4]))).toBeLessThan(1.2);
@@ -405,6 +413,8 @@ describe('what the bays are made of, and what they cost', () => {
     // A classroom bay: two rooms of 7 props (door, three rows of four desks, the teacher's desk, chalkboard, screen).
     expect(made('setpiece.classroom_bay')).toMatchObject({ tiles: 2, blocks: 10, props: 14, doors: 0, lights: 1, tileIds: ['core.room'] });
     expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks']);
+    // St. John's step 5b: pennants are off unless a placement turns them on (the owner: a handful of rooms).
+    expect(made('setpiece.classroom_entry_bay')).toMatchObject({ tiles: 2, props: 9, lights: 1, tileIds: ['core.room'] });
   });
 
   it('no door of a hall thinks: every door is a still prop (no door entities, no breakable props but the ones the catalogue leaves)', () => {

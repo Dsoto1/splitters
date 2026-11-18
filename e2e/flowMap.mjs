@@ -153,9 +153,13 @@ const RULES = [
   [/^content\/sounds\.json$/, ['offline'], ['client']],
   // The procedural environment's species (tools/content/environment.mjs builds them): the lab, WebGPU, the baseline.
   [/^content\/environment(\/|\.json$|\.lock\.json$)/, ['environment', 'webgpu', 'visual'], ['client', 'content', 'shared']],
+  // The owner's music and announcer (tools/content/owner-audio.mjs encodes them): the offline flow loads the lines
+  // and plays the menu's music.
+  [/^content\/owner-audio(\.lock)?\.json$/, ['offline'], ['client', 'content']],
   [/^(content|assets-src)\//, FULL, UNIT_ALL],
   // A character's built files: its models (body, first-person arms) and its portrait.
   [CHARACTER_BUILT, CHARACTER_BUILT_FLOWS, CHARACTER_UNITS],
+  [/^packages\/client\/public\/(music|voice)\//, ['offline'], ['client']],
   [/^packages\/client\/(public|index\.html|vite\.config\.ts|package\.json|tsconfig\.json)/, FULL, ['client']],
   [/^packages\/client\/src\/(main|engine|assetUrl|renamedStorage|style)\./, FULL, ['client']],
   [/^packages\/client\/src\/game\/(session|hud|localTransport|matchHost|simWorker|input|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
