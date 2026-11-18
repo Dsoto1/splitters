@@ -62,6 +62,54 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.roof.vault_bay",
+      "displayName": "Vault Bay (truss)",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10, photos 2 and 3: the gym's barrel vault on steel trusses): one 8 m bay of a barrel-vaulted roof 24 m across: the boarded underside rising 3.5 m from springing to crown, a steel bowstring truss across the bay's middle with its tie 1 m up, four pendant lamp shades hung from it (looks only: a set piece's light gives the light). Place its foot at the walls' springing height inside a tall room (the room's roof covers it). Drawn from inside. Collides as nothing."
+      },
+      "size": [
+        24.0,
+        3.6,
+        8.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "vaultbay",
+        "rise": 3.5,
+        "tie": 1.0,
+        "lamps": 4,
+        "drop": 0.6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 40
+        },
+        {
+          "distance": 110
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "maple",
+          "seed": 35001,
+          "look": {
+            "boards": "#c9a77a",
+            "steel": "#3c4045",
+            "shade": "#2c2f33"
+          }
+        }
+      ]
     }
   ]
 }

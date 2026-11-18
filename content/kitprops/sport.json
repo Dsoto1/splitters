@@ -38,6 +38,153 @@
         { "index": 0, "name": "sand", "seed": 19511, "look": { "sand": "#cdb78f", "line": "#f2f1ec", "jitter": 0.05 } },
         { "index": 1, "name": "pale", "seed": 19512, "look": { "sand": "#ddd0b0", "line": "#2f5f8f", "jitter": 0.04 } }
       ]
+    },
+    {
+      "id": "kit.sport.court_lines",
+      "displayName": "Basketball Court Lines",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10): a basketball court's lines painted on a floor, 26 x 14 m: outline, centre line and circle, the keys filled in a colour, free-throw circles, three-point lines. Lies a hair over the floor (an Oak Planks floor reads as maple). Collides as nothing."
+      },
+      "size": [
+        26.2,
+        0.01,
+        14.2
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "courtlines",
+        "court": [
+          26,
+          14
+        ],
+        "width": 0.05
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 120
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 35011,
+          "look": {
+            "line": "#f2f0ea",
+            "key": "#4b2a84"
+          }
+        },
+        {
+          "index": 1,
+          "name": "plain",
+          "seed": 35012,
+          "look": {
+            "line": "#f2f0ea"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sport.hoop_wall",
+      "displayName": "Basketball Hoop (wall)",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10): a basketball hoop on a steel bracket from a wall (its back on -z): a white backboard 1.2 m out with its target square, an orange rim at 3.05 m with a cord net. Collides as nothing (above everyone's head)."
+      },
+      "size": [
+        1.9,
+        4.1,
+        1.9
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "metal",
+      "generator": {
+        "kind": "hoop",
+        "reach": 1.2
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 35021,
+          "look": {
+            "steel": "#4a4f55",
+            "board": "#f1f1ee",
+            "rim": "#d0571f",
+            "net": "#eeeeea"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sport.pool_lanes",
+      "displayName": "Pool Lanes",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10, Gerber Pool): a pool's four lanes, 24 x 10 m: three lane ropes floating at the prop's top (the water's surface) in bands of red, white and blue, red near the walls; dark lane stripes with a T on the floor; a target on each end wall. Its foot on the pool's floor. Collides as nothing (the water and the basin do)."
+      },
+      "size": [
+        24.0,
+        1.45,
+        10.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "plastic",
+      "detail": "plastic",
+      "generator": {
+        "kind": "poollanes",
+        "lanes": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 35
+        },
+        {
+          "distance": 100
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 35031,
+          "look": {
+            "stripe": "#1d2a44",
+            "colours": "#d33b2c,#f2f0ea,#2a5bd7",
+            "ends": "#d33b2c"
+          }
+        }
+      ]
     }
   ]
 }

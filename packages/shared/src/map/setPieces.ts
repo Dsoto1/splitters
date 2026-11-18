@@ -494,6 +494,12 @@ function placeEntityPart(
     else delete block.glass;
     return block;
   }
+  if (part.kind === 'water') {
+    // A box of water: no yaw of its own, its size turned with the piece as a block's is.
+    const r = p.rotation % 2 === 1;
+    const { size, ...rest } = part;
+    return { ...rest, id, position, size: r ? [size[2], size[1], size[0]] : [size[0], size[1], size[2]] };
+  }
   if (part.kind === 'door') {
     const { style, ...rest } = part;
     const s = style === undefined ? undefined : doorStyle(style);
