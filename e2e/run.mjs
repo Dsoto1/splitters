@@ -4124,6 +4124,17 @@ async function editorEnvironmentChecks(browser) {
   await stroke([-30, -8], [-10, 4]);
   const again = await plants();
   check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+  // A season across the whole map (environment Phase 5): Autumn turns the oaks and maples to their autumn look in one
+  // undo step, nothing moves, and Summer takes them back.
+  await page.selectOption('#ed-env-season', 'autumn');
+  await page.click('#ed-env-season-apply');
+  const autumn = await plants();
+  const where = (list) => list.map((p) => p.replace(/#\d+@/, '@')).sort();
+  const leafy = autumn.filter((p) => /^env\.broadleaf\.(oak|maple)#/.test(p));
+  check(leafy.length > 0 && leafy.every((p) => /#1@/.test(p)) && where(autumn).join('|') === where(painted).join('|') && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Season: Autumn', `Season → Autumn: the ${leafy.length} oaks and maples wear autumn, nothing moved, one step ("${await page.evaluate(() => window.__editor.history.undoLabel)}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const unseasoned = await plants();
+  check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);
