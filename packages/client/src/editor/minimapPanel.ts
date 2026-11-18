@@ -5,6 +5,7 @@ import type { EditorApp } from './editorApp.ts';
 import { bakeDelay, bakeScale, boxLevel, minimapArea, pictureArea, cameraMarker, clampMinimapZoom, horizontalHalfFov, minimapFrame, minimapPick, selectionMarks, type MinimapReader, type SelectionMark } from './minimapModel.ts';
 import { mergeSelections } from './outlinerPanel.ts';
 import { focusRefAt, focusRefFor } from './tileViewModel.ts';
+import { planKeyAction } from './planKeys.ts';
 import { drawIcon } from './planView.ts';
 import './minimap.css';
 
@@ -78,9 +79,9 @@ export class MinimapPanel {
     this.root.id = 'ed-minimap';
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'ed-minimap-canvas';
-    this.canvas.setAttribute('role', 'img');
-    this.canvas.setAttribute('aria-label', 'Minimap of the level being edited: click a thing to select it, open ground to move the camera there; the wheel zooms');
-    this.canvas.title = 'Click a thing to select it, open ground to go there · wheel: zoom · drag: pan when zoomed';
+    this.canvas.tabIndex = 0;
+    this.canvas.setAttribute('role', 'application');
+    this.canvas.setAttribute('aria-label', 'Minimap of the level being edited: click a thing to select it, open ground to move the camera there; the wheel or + and − zoom, the arrow keys pan, Home fits, Enter opens Tile View');
     this.levelChip = document.createElement('span');
     this.levelChip.className = 'ed-minimap-level';
     const tools = document.createElement('div');
@@ -110,6 +111,27 @@ export class MinimapPanel {
       this.drawnKey = '';
     }).observe(this.canvas);
     this.mountPointer();
+    this.mountKeys();
+  }
+
+  /** With the minimap focused (UI Phase 5, planKeys.ts): + / − zoom, the arrows pan, Home fits, Enter opens Tile View. */
+  private mountKeys(): void {
+    this.canvas.addEventListener('keydown', (e) => {
+      const act = planKeyAction(e, 'minimap');
+      if (!act || !this.frameNow) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (act.kind === 'zoom') this.zoomBy(act.k);
+      else if (act.kind === 'fit') this.fit();
+      else if (act.kind === 'tileView') this.app.openTileView();
+      else if (act.kind === 'pan') {
+        // Zoomed out the whole level shows: zoom in a step first, so the arrows always move something.
+        if (this.zoom <= 1) this.setZoom(1.5);
+        const f = this.frameNow;
+        this.panned = { x: f.cx + act.dx * 2 * f.halfW, z: f.cz - act.dy * 2 * f.halfH };
+        this.drawnKey = '';
+      }
+    });
   }
 
   /** Shown in `slot` (the expanded dock's Minimap tab or the compact card), or hidden (null): nothing runs while hidden. */
@@ -119,9 +141,11 @@ export class MinimapPanel {
       this.zoomRead = true;
       this.zoom = clampMinimapZoom(this.prefs.zoom());
     }
+    const moved = !!slot && this.root.parentElement !== slot;
+    if (moved) slot.append(this.root);
+    // (Called whenever the dock syncs its views: only a change draws again.)
+    if (moved || this.visible !== !!slot) this.drawnKey = '';
     this.visible = !!slot;
-    if (slot && this.root.parentElement !== slot) slot.append(this.root);
-    this.drawnKey = '';
     if (!slot && this.pending) {
       clearTimeout(this.pending.timer);
       this.pending = null;

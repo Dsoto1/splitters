@@ -8,6 +8,7 @@
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -19,10 +20,31 @@ import { assignShards, loadTimings } from './shards.mjs';
 import { installFrameClock } from './frameClock.mjs';
 import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
 
-// E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
-const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
-const CLIENT = `http://localhost:${CLIENT_PORT}`;
-const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
+/**
+ * A port for one of the run's servers: the E2E_*_PORT variable's when set; on CI the fixed one as ever; on a desk a
+ * free one, so runs in parallel worktrees don't reach each other's servers.
+ */
+async function pickPort(name, fixed) {
+  if (process.env[name]) return +process.env[name];
+  if (process.env.CI) return fixed;
+  return new Promise((resolve, reject) => {
+    const s = createServer();
+    s.unref();
+    s.on('error', reject);
+    s.listen(0, '127.0.0.1', () => {
+      const { port } = s.address();
+      s.close(() => resolve(port));
+    });
+  });
+}
+// Everything on 127.0.0.1 (never a name that may resolve to ::1 or another checkout's server). E2E_CLIENT_PORT /
+// E2E_SERVER_PORT (and the flows' E2E_*_HUB_PORT, E2E_*_CONTROL_PORT, E2E_PEER_PORT) pin a port.
+const CLIENT_PORT = String(await pickPort('E2E_CLIENT_PORT', 4173));
+const CLIENT = `http://127.0.0.1:${CLIENT_PORT}`;
+const SERVER_PORT = await pickPort('E2E_SERVER_PORT', 7787);
+/** CHROMIUM (or PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH): the browser binary to launch instead of Playwright's own. */
+const CHROMIUM = process.env.CHROMIUM || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '';
+const launchOpts = (opts) => (CHROMIUM ? { ...opts, executablePath: CHROMIUM } : opts);
 const procs = [];
 /** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
 const SLOW = process.env.CI ? 3 : 1;
@@ -2810,6 +2832,190 @@ async function editorPiecePaintChecks(browser) {
 }
 
 /**
+ * MapMaker UI Phase 5 (docs/MAPMAKER_UI_SPEC.md, "Phase 5: as built"): keyboard use, resizing and kept preferences, on
+ * Tile View, the minimap and the dock. Tile View: `]` and `[` pick the things north to south and then the wall sides,
+ * Enter goes to the picked thing's fields, + / Home / Alt+arrows zoom, fit and pan, its breadcrumbs are buttons, and
+ * a pointer moving over the plan draws nothing. The minimap: focusable, + zooms, the arrows pan, Home fits, Enter
+ * opens Tile View. The dock: narrowed past 900 px it goes compact (not kept) and comes back when widened; the grip's
+ * End takes the widest, fitted again to a narrower window without forgetting the kept width. View → Grid and Snap are
+ * kept for the next visit (not in the map). The `?` list has the plans' keys. Screenshots (E2E_DSF=2) to E2E_SHOTS.
+ */
+async function editorPhase5Checks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-phase5-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position, yaw = 0) => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'p5_shop', tile: 'core.shop', x: 3, y: 0, z: 0, rotation: 1 }] },
+        { kind: 'addEntities', entities: [prop('p5_shelf', 'core.crate', [25.3, 0, -1.7]), prop('p5_drum', 'kit.drum.steel', [22, 0, -10])] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['p5_shop'], entities: [] });
+    ed.view.focus({ x: 24, y: 0, z: -4 });
+  });
+  await frames(page, 3);
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  const tv = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.tileView.state();
+    return { open: st.open, visible: st.visible, child: st.child, edge: st.edge, crumbs: st.crumbs, frame: st.frame, sel: [...ed.selection.entities, ...ed.selection.tiles], focus: document.activeElement?.id ?? '', links: document.querySelectorAll('#ed-tv-crumbs button').length, dock: document.getElementById('ed-right').dataset.state };
+  });
+
+  // Keyboard: into the plan, ] and [ pick, Enter goes to the fields.
+  await page.waitForFunction(() => !!window.__editor.tileView.state().frame, null, { timeout: T(5000) });
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  let s = await tv();
+  check(s.child === 'p5_shelf' && s.sel.join() === 'p5_shelf' && s.links === 1, `] picks the northernmost thing, selected everywhere; the breadcrumb that goes somewhere (the tile) is a button (${JSON.stringify({ child: s.child, sel: s.sel, links: s.links })})`);
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  const second = s.child;
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  check(second === 'p5_drum' && !s.child && !!s.edge && s.sel.join() === 'p5_shop', `] goes on to the next thing, then the wall sides (the tile selected) (${JSON.stringify({ second, edge: s.edge, sel: s.sel })})`);
+  await page.keyboard.press('[');
+  await frames(page, 2);
+  s = await tv();
+  check(s.child === 'p5_drum', `[ goes back (${s.child})`);
+  await page.keyboard.press('Enter');
+  s = await tv();
+  check(s.focus === 'ed-tv-x', `Enter goes to the picked thing's fields (${s.focus})`);
+  await shot('fields');
+  await page.focus('#ed-tv-canvas');
+  const f0 = (await tv()).frame;
+  await page.keyboard.press('+');
+  await frames(page, 2);
+  const f1 = (await tv()).frame;
+  await page.keyboard.press('Alt+ArrowUp');
+  await frames(page, 2);
+  const f2 = (await tv()).frame;
+  await page.keyboard.press('Home');
+  await frames(page, 2);
+  const f3 = (await tv()).frame;
+  check(f1.halfH < f0.halfH && f2.cz > f1.cz && Math.abs(f3.halfH - f0.halfH) < 1e-6 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'p5_drum').position.join())) === '22,0,-10', `+ zooms, Alt+↑ pans north, Home fits again, and none of it moves the picked thing (${JSON.stringify({ f0, f1, f2, f3 })})`);
+  // A pointer moving over the plan only changes the readout (UI Phase 5, large maps): no draws.
+  const box = await page.locator('#ed-tv-canvas').boundingBox();
+  await page.evaluate(() => {
+    const tvp = window.__editor.tileView;
+    window.__tvDraws = 0;
+    const draw = tvp.draw;
+    tvp.draw = function (...a) {
+      window.__tvDraws++;
+      return draw.apply(this, a);
+    };
+  });
+  for (let i = 0; i < 8; i++) await page.mouse.move(box.x + 30 + i * 12, box.y + 40 + i * 6);
+  await frames(page, 3);
+  const hover = await page.evaluate(() => ({ draws: window.__tvDraws, readout: document.getElementById('ed-tv-readout').textContent }));
+  check(hover.draws === 0 && /^Local -?\d/.test(hover.readout), `a pointer over the plan updates the readout without drawing the plan again (${JSON.stringify(hover)})`);
+
+  // Resizing: under 900 px the dock goes compact (not kept), widened it comes back with Tile View.
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}'));
+  await page.setViewportSize({ width: 860, height: 700 });
+  await page.waitForFunction(() => document.getElementById('ed-right').dataset.state === 'compact', null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  const kept = await stored();
+  const clear = await page.evaluate(() => {
+    const card = document.getElementById('ed-right').getBoundingClientRect();
+    const bar = document.getElementById('ed-toolbar').getBoundingClientRect();
+    const hint = document.getElementById('ed-toolhint').getBoundingClientRect();
+    return { card: Math.round(card.left), bar: Math.round(bar.right), hint: Math.round(hint.right), rows: Math.round(bar.height) };
+  });
+  check(clear.bar <= clear.card && clear.hint <= clear.card && clear.rows < 120, `at 860 px the tool bar and its hint stay clear of the compact card, in at most two rows (${JSON.stringify(clear)})`);
+  await shot('narrow');
+  check(s.dock === 'compact' && !s.visible && s.open && kept.right === 'expanded', `narrowed to 860 px the dock goes compact, Tile View waits unseen, the kept state stays expanded (${JSON.stringify({ dock: s.dock, visible: s.visible, kept })})`);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  check(s.dock === 'expanded' && s.visible, `widened again it comes back expanded with Tile View (${JSON.stringify({ dock: s.dock, visible: s.visible })})`);
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('End');
+  await frames(page, 2);
+  const grip = () => page.evaluate(() => ({ now: document.getElementById('ed-dock-grip').getAttribute('aria-valuenow'), max: document.getElementById('ed-dock-grip').getAttribute('aria-valuemax'), w: Math.round(document.getElementById('ed-right').getBoundingClientRect().width) }));
+  const wide = await grip();
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '450', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const narrow = await grip();
+  const keptW = (await stored()).width;
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '520', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const back = await grip();
+  check(wide.now === '520' && wide.w === 520 && narrow.now === '450' && narrow.w === 450 && keptW === 520 && back.w === 520, `the grip's End takes the widest (520 px); a 1000 px window fits it to 45 % (450) and keeps 520 for when the window grows (${JSON.stringify({ wide, narrow, keptW, back })})`);
+  await shot('wide-dock');
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('Home');
+
+  // Tile View closed: the minimap takes the keyboard.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__editor.minimap.shown, null, { timeout: T(5000) });
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['p5_shop'], entities: [] }));
+  await page.focus('#ed-minimap-canvas');
+  const mm = () => page.evaluate(() => ({ ...window.__editor.minimap.state(), marks: null }));
+  for (let i = 0; i < 3; i++) await page.keyboard.press('+');
+  await frames(page, 3);
+  const m1 = await mm();
+  // (West: the camera stands by the shop at the area's east edge, where the frame is held.)
+  await page.keyboard.press('ArrowLeft');
+  await frames(page, 3);
+  const m2 = await mm();
+  await page.keyboard.press('Home');
+  await frames(page, 3);
+  const m3 = await mm();
+  check(m1.zoom > 1 && m2.frame.cx < m1.frame.cx && m3.zoom === 1, `the minimap takes the keyboard: + zooms, ← pans west, Home fits (${JSON.stringify({ z1: m1.zoom, cx1: m1.frame?.cx, cx2: m2.frame?.cx, z3: m3.zoom })})`);
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  check((await tv()).open, 'Enter in the minimap opens Tile View on the selection');
+
+  // The ? list has the plans' keys.
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Shift+Slash');
+  await page.waitForSelector('#ed-keys[open]', { timeout: T(3000) }).catch(() => {});
+  const keysText = await page.evaluate(() => document.getElementById('ed-keys')?.textContent ?? '');
+  await shot('keys');
+  check(keysText.includes('Tile View and minimap') && keysText.includes('pick the next or previous thing'), 'the ? list has a Tile View and minimap section');
+  await page.keyboard.press('Escape');
+
+  // View → Grid off and Snap 1 m are kept for the next visit (this browser, never the map).
+  await viewItem(page, 'ed-grid');
+  await page.selectOption('#ed-snap', 'coarse');
+  const inMap = await page.evaluate(() => JSON.stringify(window.__editor.doc).includes('coarse'));
+  const page2 = await context.newPage();
+  livePages.add(page2);
+  page2.on('pageerror', (e) => errors.push(e.message));
+  await page2.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page2.waitForFunction(() => window.__editor?.view, null, { timeout: T(60000) });
+  const again = await page2.evaluate(() => ({ grid: document.getElementById('ed-grid').getAttribute('aria-checked'), snap: document.getElementById('ed-snap').value, mode: window.__editor.snapMode, stored: localStorage.getItem('tiletrigger.editor.view') }));
+  check(again.grid === 'false' && again.snap === 'coarse' && again.mode === 'coarse' && !inMap, `View → Grid and Snap come back as left, kept in this browser only (${JSON.stringify(again)})`);
+  await viewItem(page2, 'ed-grid');
+  await page2.selectOption('#ed-snap', 'normal');
+  check((await page2.evaluate(() => localStorage.getItem('tiletrigger.editor.view'))) === null, 'back to the defaults, nothing is kept');
+  livePages.delete(page2);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
+/**
  * Looks of your own (painting Phase 5, map format v47): Save as my look… names a set piece's look as it shows (its
  * paint across the piece folded in: nothing changes on screen) and keeps it in this browser; My looks applies it to
  * another piece, renames and deletes it; the map carries the looks its pieces wear (`lookDefs`); a theme change keeps
@@ -2937,6 +3143,7 @@ async function editortoolsFlow(browser) {
   await editorTransformChecks(browser);
   await editorTileViewChecks(browser);
   await editorTileViewMoveChecks(browser);
+  await editorPhase5Checks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
@@ -5411,6 +5618,15 @@ async function offlineFlow(browser) {
     await page.click('#profile-change-character');
     await page.waitForSelector('.char-grid .char-tile[data-look]');
   };
+  // Profile (docs/PLAYER_PROFILES_PLAN.md): your career (a guest's, in this browser: nothing yet) and your favourite
+  // class, saved when picked.
+  await page.click('#profile-badge');
+  await page.waitForSelector('#profile-career');
+  await page.selectOption('#profile-fav-class', 'medic');
+  const prof = await page.evaluate(() => ({ stats: [...document.querySelectorAll('#profile-career .prof-stat')].map((t) => t.dataset.stat), matches: document.querySelector('#profile-career [data-stat="matches"] b')?.textContent, fav: localStorage.getItem('tiletrigger.favClass'), weapon: document.getElementById('profile-fav-weapon')?.textContent }));
+  await page.selectOption('#profile-fav-class', '');
+  const favCleared = await page.evaluate(() => localStorage.getItem('tiletrigger.favClass'));
+  check(prof.stats.join() === 'matches,wins,kd,kills,deaths,accuracy,headshots,streak,time' && prof.matches === '0' && prof.fav === '"medic"' && favCleared === null && /Favourite weapon/.test(prof.weapon ?? ''), `Profile shows your career and saves a favourite class (${JSON.stringify({ prof, favCleared })})`);
   // Character Select: whole square tiles row under row, and the grid ends above the info panel (it scrolls).
   await openChars();
   const charFit = await page.evaluate(() => {
@@ -11221,6 +11437,13 @@ async function fireteamsFlow(browser) {
     return { squad: s.id, points: m.fireteams.scores.squad(s.id).points, me: m.fireteams.scores.points(me.slot), mate: m.fireteams.scores.player(mate.slot).assists - assists, squads: m.fireteams.squads.filter((q) => q.team === me.faction).length };
   });
   check(scored.points >= 15 && scored.me >= 10 && scored.mate >= 1, `your kill (10) and your squadmate's assist (5) go to your squad (${JSON.stringify(scored)})`);
+  // Player profiles (docs/PLAYER_PROFILES_PLAN.md): the match counts into your career at its end (a guest's, in this
+  // browser). A match counts after 30 s in it: the count's start moved back so this short one does.
+  const careerBefore = await page.evaluate(() => {
+    const t = window.__cs.career();
+    if (t) t.startedAt -= 60_000;
+    return { tally: !!t, matches: JSON.parse(localStorage.getItem('tiletrigger.career') ?? '{}').matches ?? 0 };
+  });
   // (The scoreboard held up for the checks and the pictures.)
   await sim(page, (m) => {
     m.endMatch();
@@ -11239,6 +11462,12 @@ async function fireteamsFlow(browser) {
     return { lines: lines.length, best: sb.querySelectorAll('.sb-squad.best').length, mine: { first: mine.previousElementSibling?.classList.contains('sb-hd'), name: mine.querySelector('.sb-sqname').textContent, points: Number(mine.querySelector('.sb-sqpts').textContent), mvp: mine.querySelector('.sb-sqmvp').textContent, best: mine.classList.contains('best'), rows: after.length, me: after.includes(window.__cs.slot) }, pts: [...sb.querySelectorAll('.sb-hd')].some((h) => /Pts/.test(h.textContent)), awards: [...awards.querySelectorAll('.award b')].map((b) => b.textContent), blink: [...sb.querySelectorAll('.sb-squad, .sb-squad *'), ...awards.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none') };
   }, scored.squad, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-desktop.png` });
+  const career = await page.waitForFunction(() => {
+    const card = document.querySelector('#scoreboard #profile-card');
+    const c = JSON.parse(localStorage.getItem('tiletrigger.career') ?? 'null');
+    return card && c ? { card: card.textContent, matches: c.matches, kills: c.kills, rifle: c.weaponKills?.['core.rifle'] ?? 0 } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(careerBefore.tally && !!career && career.matches === careerBefore.matches + 1 && career.kills >= 1 && career.rifle >= 1 && /GUEST/.test(career.card) && /This match: [1-9]\d* K/.test(career.card) && /Career: \d+ match/.test(career.card), `the match ends into your career, and your profile card shows under the board (${JSON.stringify({ careerBefore, career })})`);
   check(!!board && board.lines >= scored.squads * 2 - 1 && board.mine.rows === 4 && board.mine.me && board.mine.points >= 15 && board.pts && board.mine.first, `the scoreboard groups each team by squad (${board?.lines} squad lines; yours: ${JSON.stringify(board?.mine)})`);
   check(!!board && /^MVP \S/.test(board.mine.mvp) && board.best === 1 && board.awards.includes('Best Squad') && board.awards.includes("Your Squad's MVP") && !board.blink, `the end of the match with the vote: every squad's MVP on its line, Best Squad and your squad's MVP among the awards, nothing animated (${JSON.stringify(board?.awards)})`);
   // A phone's size: the board keeps its squads (the awards make room for the vote there).
@@ -12191,9 +12420,9 @@ async function designerFlow(browser) {
  * scene's pass-free BRDF table (content/brdf.ts).
  */
 async function webgpuFlow() {
-  const browser = await chromium.launch({
+  const browser = await chromium.launch(launchOpts({
     args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--use-vulkan=swiftshader', '--use-webgpu-adapter=swiftshader', '--disable-vulkan-surface', '--ignore-gpu-blocklist'],
-  });
+  }));
   try {
     const context = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await context.addInitScript({ path: new URL('./webgpuShim.js', import.meta.url).pathname });
@@ -12944,7 +13173,7 @@ async function onlineFlow(browser) {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://localhost:${SERVER_PORT}`);
+    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${SERVER_PORT}`);
     await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     return { page, errors };
   };
@@ -12964,7 +13193,7 @@ async function onlineFlow(browser) {
 /** Community hub: a host lists its match in the game browser and a stranger joins from the list. */
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
-  const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
+  const HUB_PORT = await pickPort('E2E_HUB_PORT', 9078);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
   await sleep(5000);
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
@@ -13098,7 +13327,7 @@ async function lobbyFlow(browser) {
  * blocked word, and its Community Picks show in their own tab of the map list.
  */
 async function communityFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_COMMUNITY_HUB_PORT ?? 9082);
+  const HUB_PORT = await pickPort('E2E_COMMUNITY_HUB_PORT', 9082);
   const dir = mkdtempSync(join(tmpdir(), 'tt-community-e2e-'));
   // A Community Pick the hub already keeps (its numbers and its file), for the Community Picks tab.
   const arena = JSON.parse(readFileSync(new URL('../maps/phase0_arena.json', import.meta.url), 'utf8'));
@@ -13229,8 +13458,8 @@ async function hubUntil(pred, ms) {
  * moves and gets snapshots; an admin joined by code kicks another player from the pause menu.
  */
 async function dedicatedhostFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_DEDICATED_HUB_PORT ?? 9079);
-  const CONTROL_PORT = +(process.env.E2E_DEDICATED_CONTROL_PORT ?? 7801);
+  const HUB_PORT = await pickPort('E2E_DEDICATED_HUB_PORT', 9079);
+  const CONTROL_PORT = await pickPort('E2E_DEDICATED_CONTROL_PORT', 7801);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
   // AFK_SECONDS 0: no idle takeover. The test's players sit still for minutes on a slow runner (the visitor after
@@ -13402,8 +13631,8 @@ async function hostpageLiveChecks(page, controlPort, token) {
 
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
-  const CONTROL_PORT = +(process.env.E2E_HOSTPAGE_CONTROL_PORT ?? 7802);
+  const HUB_PORT = await pickPort('E2E_HOSTPAGE_HUB_PORT', 9080);
+  const CONTROL_PORT = await pickPort('E2E_HOSTPAGE_CONTROL_PORT', 7802);
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
   page.on('pageerror', (e) => errors.push(e.message));
@@ -13504,7 +13733,7 @@ async function hostpageFlow(browser) {
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -13848,7 +14077,7 @@ async function hostcontrolsFlow(browser) {
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -14015,7 +14244,7 @@ async function partyFlow(browser) {
   // Online: a hub, a host, a friend by the host's invite link.
   // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
   // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
+  const HUB_PORT = await pickPort('E2E_PARTY_HUB_PORT', 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
@@ -14125,7 +14354,7 @@ async function handoffFlow(browser) {
 }
 
 async function handoffPages(separate) {
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const hub = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -14313,12 +14542,12 @@ function report() {
 }
 
 try {
-  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
+  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--host', '127.0.0.1', '--port', CLIENT_PORT, '--strictPort']);
   // (The flows' server stays on its map: no vote between matches travelling it elsewhere mid-run.)
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1', MAP_VOTE: '0' });
   await waitForHttp(CLIENT);
   await sleep(1500);
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch(launchOpts({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }));
   // The contexts it opened (the run closes those a flow left open).
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;

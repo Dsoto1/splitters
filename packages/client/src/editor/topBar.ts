@@ -1,3 +1,4 @@
+import { keepViewPref, readViewPrefs } from './viewPrefs.ts';
 import {
   coreThemes,
   terrainGroundTheme,
@@ -106,7 +107,14 @@ export class TopBar {
     const bots = $<HTMLSelectElement>('ed-bots');
     for (let i = 0; i <= 15; i++) bots.append(new Option(`${i} bot${i === 1 ? "" : "s"}`, String(i), i === 3, i === 3));
 
-    $<HTMLSelectElement>('ed-snap').addEventListener('change', (e) => (this.app.snapMode = (e.target as HTMLSelectElement).value as typeof this.app.snapMode));
+    // Snap and View → Grid as they were left (UI Phase 5, viewPrefs.ts; never in the map).
+    const snap = $<HTMLSelectElement>('ed-snap');
+    snap.value = this.app.snapMode = readViewPrefs().snap;
+    snap.addEventListener('change', () => {
+      this.app.snapMode = snap.value as typeof this.app.snapMode;
+      keepViewPref({ snap: this.app.snapMode });
+    });
+    this.app.viewMenu.applyKept();
     // The Structure theme's chip (painting Phase 3: the top bar's theme select went) and the Ground theme's (Phase 4):
     // each opens Map settings at its theme, so a theme is changed in one place, through the warning.
     $('ed-theme-chip').addEventListener('click', () => this.openSetting('ed-prop-theme'));
