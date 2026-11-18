@@ -1332,3 +1332,47 @@ High, render scale auto, 60 fps cap, a recording running with a 10 s trace:
 - Shared evaluation for characters on the same clip and phase, and fewer bones on far skeletons: not done; the clip
   sampling is a fifth of a crowd's animation now, the after-clip work most of it.
 
+
+## The performance batch (18 Nov 2026, `wip/perf-1118`)
+
+The owner moved performance up (2026-11-18). One commit each, measured before and after on the same build where a
+`?perfoff=` switch gives the old path, else on builds a commit apart; still cameras (`PERF_STILL=1`, medium, 960 × 540,
+SwiftShader on a shared 4-core box: counts compare, milliseconds only between runs here).
+
+| Item | Before | After |
+|---|---|---|
+| 1. Menu's first JS (`bundle-budget.mjs`, with music and announcer) | 2799.3 kB raw (main with music and announcer) | 2642.3 kB raw, 752.9 kB gzip (157.7 kB under 2800; budget unchanged) |
+| 2. Pickups, still cameras, Riot Junction (59 pickups), mean of 4 views (same build, `?perfoff=pickupbatch` before) | 530 draws, 1146 / 2405 meshes (active / all), 1.215 M triangles, 196 casters | 534 draws, 1083 / 2322 meshes, 1.322 M triangles, 200 casters (each view: 79-81 fewer active meshes, 0-14 more draws; the middle eye view 0.854 → 1.076 M triangles: pickups behind the camera) |
+| 2. … Iron Maw (57 pickups), overview SW | 396 draws, 588 / 1531 meshes, 1.594 M triangles | 403 draws, 510 / 1490 meshes, 1.705 M triangles |
+| 3. MapMaker's pad check on the check's navmesh | already on main (913676da, 2026-11-16: PERF_MAPMAKER_TRACE fix 1; a map without pads makes no match) | nothing to do |
+| 4. `setGlow` (spawn shimmer, 20 eased steps, six-material body) | 120 walks of `scene.meshes`; 3000-mesh test scene ~42 ms | 6 walks; ~2.5 ms |
+| 5. Reconciles of the local player (offline bot match, 24 bots, 30 s; SwiftShader on the loaded box drew 5-9 frames in that time, so many snapshots fell in each) | Riot Junction 898 (43.6 ms in all, 15.4 ms in the worst frame); Iron Maw 796 (45.8 ms, worst frame 12.1 ms) | 47 (4.7 ms, worst frame 2.0 ms); 36 (0.8 ms, worst frame 0.3 ms) |
+
+1. **Menu headroom.** Three small things the menu reads lived in big modules: the buttons in `sim/movement.ts` (with
+   the movement code, the nav links and through `passages.ts` the kit props' 156 kB table), `racePath` in
+   `map/track.ts`, `setIdRandom` in `editor/commands.ts`. Now `sim/inputs.ts`, `map/racePath.ts`, `editor/ids.ts`
+   (re-exported where they were; docs/LOADING.md). Nothing moved to match start: the match and MapMaker already import
+   those modules, and the menu's idle prefetch brings them in.
+2. **Pickups as thin instances** (`game/pickupBatch.ts`, `?perfoff=pickupbatch`). Each pickup keeps its nodes (it spins,
+   bobs and hides when taken); its parts become slots in one thin-instanced copy of their shape or model, filled once a
+   frame. Batches per 48 m square were tried (abd03d0a) and taken back: a draw per shape per square, about 60 more
+   draws at Riot Junction's overviews, for triangles saved behind the camera (draws cost the CPU, triangles the GPU). One
+   batch for the map draws the pickups behind the camera too: more triangles at some eye views (below). Shadows: a batch
+   is small clutter (casts within the small-caster reach of its bounds). Dropped weapons and MapMaker keep their meshes.
+3. **The pad check** was already done; the queue line was stale.
+4. **`setGlow`** (`game/glow.ts`, `?perfoff=glowinplace`): a PBR material's emissive setter walks every mesh of the
+   scene to mark the material's users dirty, but the glow is only a uniform. The first change gives the material its
+   own colour; later ones change it in place.
+5. **Reconcile once a frame** (`session.ts` `reconcileLocal`, `?perfoff=reconcileframe`): the snapshot handler keeps
+   the newest snapshot's reconcile for the frame's start (after the transport's flush) or the next other message; a
+   life or a death still reconciles at once, and so does every snapshot while you drive a predicted vehicle (its
+   prediction is close, not exact: reconciled less often it drifted further, the e2e buggy's worst correction 2.6-4.5 m
+   against its 1.5 m limit on CI's slow page). `test/reconcileOnce.test.ts` runs bursts against per-snapshot reconciling:
+   the same state every frame, no corrections; the prediction tests pass unchanged.
+6. **Held weapons in one material: not done.** An atlas means re-making every weapon model from its sources
+   (`tools/content/prepare-guns.mjs` reads the Meshy and pack downloads outside the repo, 110 models, their colour,
+   normal and metal maps per material, some tiling): bigger than this batch. It stays clear of the grips auto-fit
+   (which measures the muzzle from the geometry, not the materials), so it can come later on its own.
+
+Left for later: far characters cheaper (waits for grips), bots far from humans, a binary worker snapshot, the ground
+mist's depth pass, indoor clustered lights, a true `.wasm` Rapier.

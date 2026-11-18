@@ -10,8 +10,11 @@ import { isIP } from 'node:net';
  * Caddy appended for the client it saw. Earlier entries are whatever the
  * client sent and are ignored, so a client can't pick its own address. A hub
  * with TRUST_PROXY reached directly (not through the proxy) falls back to the
- * socket address. Put another proxy (CloudFront…) in front only with a
- * matching change here.
+ * socket address. With CloudFront in front (docs/HOSTING.md, "CDN"), Caddy
+ * passes on CloudFront's X-Forwarded-For, whose last entry is the viewer
+ * CloudFront saw, only for requests carrying the edge key CloudFront adds
+ * (infra/host-setup.sh); anything else reaching the box directly gets
+ * Caddy's own entry as before. So the last entry stays the one to believe.
  *
  * IPv6 addresses are keyed by their /64 (one household or server), IPv4 by
  * the full address.

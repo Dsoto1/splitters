@@ -13,7 +13,7 @@ import { horizontalDistance, lookAngles, type Vec3, hypot } from '../math.ts';
 import { FX_CLOAK, FX_OVERCHARGE, type GameEvent, type PrivateState } from '../protocol.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import type { Combatant } from './match.ts';
-import { BUTTON_ALT, BUTTON_FIRE, BUTTON_THROW, type PlayerInput } from './movement.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_THROW, type PlayerInput } from './inputs.ts';
 import { restrictedWeapons, type MatchRules } from './rules.ts';
 import { getWeapon, weaponCode, type ThrowableKind } from './weapons.ts';
 import { ABILITIES, CLASS_ABILITIES, CLASS_DEFS, CLASS_IDS } from '../content/weapons.generated.ts';

@@ -174,6 +174,7 @@ import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
 import { BotDebugView, botDebugWanted } from './botDebugView.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
+import { perfOn } from './perfSwitches.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
 import { loadHitboxOverlay } from './hitboxPrefs.ts';
 import { PerfRecorder, captureTrace, downloadJson, fileStamp, type RecorderContext } from './perfRecorder.ts';
@@ -2007,8 +2008,25 @@ export class GameSession {
   /** The map as the welcome brought it (before this page added anything to it), for hosting the match again. */
   private welcomeMap: MapDocument | null = null;
 
+  /**
+   * The newest snapshot's reconciliation of the local player, waiting for the next frame (reconcileLocal): a burst of
+   * snapshots replays the pending inputs once, not once each (2-10 ms net spikes; PERF_STJOHNS_2026-11-14). The
+   * colliders it replays against (doors, crates, vehicles) are already as that snapshot left them.
+   */
+  private toReconcile: Parameters<LocalPlayer['reconcile']> | null = null;
+
+  /** Reconcile the local player with the newest snapshot, if one is waiting (the frame's start; before other messages). */
+  private reconcileLocal(): void {
+    const r = this.toReconcile;
+    if (!r) return;
+    this.toReconcile = null;
+    this.local?.reconcile(...r);
+  }
+
   private onMessage(msg: ServerMessage): void {
     if (this.closed) return;
+    // Anything but a snapshot sees the local player as the snapshots so far left it.
+    if (msg.t !== 'snapshot') this.reconcileLocal();
     switch (msg.t) {
       case 'welcome': {
         this.welcomed = true;
@@ -2248,7 +2266,13 @@ export class GameSession {
             this.wantWeapon = 0;
           }
           this.trackVehicle(msg.me?.vp);
-          this.local.reconcile(me, msg.ack, msg.me, msg.tick);
+          // Once a frame (the newest snapshot's, at the frame's start), unless the player lived or died: then now, as the
+          // checks above and a fresh life's gun state read it. Also now while driving a predicted vehicle: its prediction
+          // is close, not exact, so it drifts for as long as it goes uncorrected (on a slow page with several snapshots
+          // a frame the e2e buggy's worst correction grew from under 1.5 m to 2.6-4.5 m). `?perfoff=reconcileframe`:
+          // every snapshot, as before.
+          this.toReconcile = [me, msg.ack, msg.me, msg.tick];
+          if ((me.alive === 1) !== this.local.alive || this.local.vehicle || !perfOn('reconcileframe')) this.reconcileLocal();
           this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
           // own switches (a better gun picked up, a thrown spear caught, `__give`).
@@ -3355,6 +3379,8 @@ export class GameSession {
     }
     // Snapshots that came in a burst and wait merged: this frame draws the newest, not the one before it.
     this.opts.transport.flush?.();
+    // Then the local player, reconciled once with the newest of them.
+    this.reconcileLocal();
     const dt = Math.min(0.25, (now - this.last) / 1000);
     this.frameMs = now - this.last;
     this.last = now;
