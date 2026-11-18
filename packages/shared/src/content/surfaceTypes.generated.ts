@@ -102,6 +102,7 @@ export const PROP_SURFACES: Readonly<Record<string, SurfaceTypeId>> = {
   'prop.mn_shrub': 'foliage',
   'prop.mn_rock_spires': 'rock',
   'prop.rock_pile': 'rock',
+  'prop.mining_excavator_deck': 'metal',
   'prop.rn_dead_tree': 'bark',
   'prop.nt_birch': 'bark',
   'prop.nt_birch_autumn': 'bark',
