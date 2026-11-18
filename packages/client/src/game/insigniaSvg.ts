@@ -13,7 +13,7 @@ export function insigniaSvg(id: InsigniaId): string {
   if (!s) {
     const polys = INSIGNIA_SHAPES[id].map((p) => `<polygon points="${p.map(([x, y]) => `${x},${-y}`).join(' ')}"/>`).join('');
     const label = INSIGNIA_LABELS[id];
-    s = `<svg class="ins ins-${id}" viewBox="-1.2 -1.2 2.4 2.4" role="img" aria-label="${label}"><title>${label}</title><g fill="rgba(6,9,16,0.85)" stroke="rgba(6,9,16,0.85)" stroke-width="0.2" stroke-linejoin="round">${polys}</g><g fill="currentColor">${polys}</g></svg>`;
+    s = `<svg class="ins ins-${id}" viewBox="-1.2 -1.2 2.4 2.4" role="img" aria-label="${label}"><title>${label}</title><g fill="rgba(6,9,16,0.85)" stroke="rgba(6,9,16,0.85)" stroke-width="0.2" stroke-linejoin="round">${polys}</g><g fill="currentColor" stroke="currentColor" stroke-width="0.03">${polys}</g></svg>`;
     cache.set(id, s);
   }
   return s;
