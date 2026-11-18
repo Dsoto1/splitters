@@ -15,6 +15,7 @@
  * players get to know the first names.
  */
 import { NAME_THEME_INFO, nameThemeInfo, lookTheme, builtInLook } from './botThemes.ts';
+import { SOLDIER_RANKS } from './insignia.ts';
 
 /** Fewest names in a theme's list: a full match (MAX_PLAYER_SLOTS) of one look never repeats one. */
 export const BOT_THEME_MIN = 96;
@@ -41,8 +42,8 @@ export const BOT_NAMES: readonly string[] = [
   'Vesper', 'Hatchet', 'Tuppence', 'Grimsby', 'Slate', 'Mister Mottle', 'Fable',
 ];
 
-/** Soldier ranks, as written before a surname. */
-export const SOLDIER_RANKS = ['Pvt.', 'Pfc.', 'Cpl.', 'Sgt.', 'SSgt.', 'Lt.', 'Capt.', 'Maj.', 'Col.'] as const;
+/** Soldier ranks, as written before a surname (insignia.ts has them, and their badges). */
+export { SOLDIER_RANKS };
 /** The order soldier names take ranks: mostly the ranks that fight, now and then an officer. */
 const RANK_ORDER: readonly (typeof SOLDIER_RANKS)[number][] = ['Pvt.', 'Cpl.', 'Pfc.', 'Sgt.', 'Pvt.', 'Lt.', 'Pfc.', 'Cpl.', 'SSgt.', 'Pvt.', 'Capt.', 'Sgt.', 'Pfc.', 'Maj.', 'Cpl.', 'Pvt.', 'Sgt.', 'Col.'];
 /** Soldiers' surnames (at most 14 letters, so the longest rank still fits 20). */

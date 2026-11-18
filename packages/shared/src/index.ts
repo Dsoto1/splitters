@@ -93,6 +93,7 @@ export * from './sim/creatures.ts';
 export * from './content/looks.ts';
 export * from './content/characterGates.ts';
 export * from './content/botThemes.ts';
+export * from './content/insignia.ts';
 export * from './content/props.ts';
 export * from './content/kitProps.ts';
 export * from './map/propAliases.ts';

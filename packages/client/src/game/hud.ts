@@ -1,4 +1,4 @@
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, soldierInsignia, weaponByCode, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
@@ -14,6 +14,7 @@ const HOLD_RING_R = 26;
 const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
 import { feedLines } from './feedLimit.ts';
+import { insigniaSvg } from './insigniaSvg.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -258,6 +259,12 @@ export class Hud {
   /** Free-for-all: whether `slot` is in your party (friendly name and marker). */
   partyMate(slot: number, self = this.self): boolean {
     return ffaPartyMate(this.roster, self, slot);
+  }
+
+  /** A player's rank badge: soldiers only (their look's branch, their name's rank; insignia.ts), else null. */
+  insignia(slot: number): InsigniaId | null {
+    const p = this.roster.get(slot);
+    return p ? soldierInsignia(p.look, p.name) : null;
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -790,7 +797,12 @@ export class Hud {
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
     const color = (slot: number | null) => (slot === null ? '#ccc' : this.nameColor(slot, localSlot));
-    const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
+    // A soldier's rank badge before their name (insignia.ts).
+    const badge = (slot: number | null) => {
+      const ins = slot === null ? null : this.insignia(slot);
+      return ins ? insigniaSvg(ins) : '';
+    };
+    const name = (slot: number | null) => `<span style="color:${color(slot)}">${badge(slot)}${escapeHtml(this.name(slot))}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     // Weapon icon between the names (reference board), rendered from the weapon's model.
     const icon = killer !== null ? weaponIcon(weapon) : null;
@@ -1128,6 +1140,7 @@ export class Hud {
       return {
         slot: s.s,
         name: this.name(s.s),
+        ins: this.insignia(s.s),
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
