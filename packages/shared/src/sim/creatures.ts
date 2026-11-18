@@ -1,6 +1,6 @@
 import { CREATURE_ROLES } from '../map/mapKeys.ts';
-import type { PlayerInput } from './movement.ts';
-import { BUTTON_FIRE } from './movement.ts';
+import type { PlayerInput } from './inputs.ts';
+import { BUTTON_FIRE } from './inputs.ts';
 import type { Vec3 } from '../math.ts';
 import type { GripTune } from '../content/looks.ts';
 import { hypot } from '../math.ts';
