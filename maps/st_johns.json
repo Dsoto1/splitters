@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_g2y72otujafuaf4k",
-      "revision": 23,
-      "contentHash": "sha256:6aef03b845de3df0728eeac1eddf99fea1c0b84445953041af1d6d1866f41b60",
+      "versionId": "v_6j252cs4xlk2cwp5",
+      "revision": 24,
+      "contentHash": "sha256:2ac179fbcfc1d35261d786ae67a3df38c6a1f5a706a4070ef3b8fac9ce8ead55",
       "schemaVersion": 46,
-      "releasedAt": "2026-11-18T01:45:05.489Z"
+      "releasedAt": "2026-11-18T10:45:41.143Z"
     }
   },
   "classicStructure": {
@@ -48929,7 +48929,11 @@
       "mirror": false,
       "overrides": {
         "roles": {
-          "facade": "collegiate_fieldstone"
+          "facade": "collegiate_fieldstone",
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          }
         }
       }
     }
