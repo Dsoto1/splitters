@@ -471,7 +471,7 @@ function placeEntityPart(
   const { when: _w, ...part } = partIn;
   void _w;
   const position = placePoint(p, def, part.position);
-  const yaw = placeYaw(p, part.yaw);
+  const yaw = placeYaw(p, 'yaw' in part ? part.yaw : 0);
   if (part.kind === 'block') {
     const { material: m, glass: g, tint, size, pitch, roll, ...rest } = part;
     const surface = m === null ? undefined : typeof m === 'string' ? { material: m, tint: null } : material(m);

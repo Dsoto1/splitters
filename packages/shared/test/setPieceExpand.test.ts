@@ -188,7 +188,7 @@ describe('set pieces: the turn and the mirror move every part as one', () => {
           const e = parts.find((x) => x.id === `sp_piece_1_${i}`)!;
           expect(e.position).toEqual(placePoint(p, def, part.position));
           // Facing: the part's forward (sin yaw, cos yaw) carried through the mirror and the turn.
-          if (part.kind === 'block' && !part.pitch && !part.roll) return;
+          if ((part.kind === 'block' && !part.pitch && !part.roll) || part.kind === 'water') return;
           const yaw = (e as { yaw: number }).yaw;
           let [fx, fz] = [Math.sin(part.yaw), Math.cos(part.yaw)];
           if (mirror) fx = -fx;
