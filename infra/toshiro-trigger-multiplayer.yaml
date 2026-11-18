@@ -1026,6 +1026,9 @@ Outputs:
   SpendCap:
     Description: Account-wide monthly spend (USD) that stops the instance (0 = off).
     Value: !Ref StopAtUsd
+  SpendCapBudgetName:
+    Description: The account-wide budget the cost guard reads.
+    Value: !If [HasCap, !Sub '${ProjectTag}-${EnvironmentTag}-spend-cap', '']
   TurnHostname:
     Description: Hostname in the TURN URLs the hub hands out.
     Value: !If [MakeTurnRecord, !Ref TurnHostname, !Ref HubHostname]

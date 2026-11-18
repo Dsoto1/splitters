@@ -4,7 +4,7 @@
 #
 #   sudo bash host-setup.sh /path/to/bootstrap.env
 #
-# tiletrigger-update.sh must sit next to this script (the deploy script copies both).
+# tiletrigger-update.sh and tiletrigger-backup.py must sit next to this script (the deploy script copies them).
 #
 # bootstrap.env (written by the deploy script, mode 0600, deleted after use):
 #   DOMAIN=trigger.toshiroplay.com      site + hub hostname (Caddy, HTTPS/WSS)
@@ -22,6 +22,14 @@
 #   COGNITO_REGION=… COGNITO_USER_POOL_ID=… COGNITO_APP_CLIENT_ID=… COGNITO_DOMAIN=…
 #   HOST_FIREWALL=1                     ufw on the box as well as Lightsail's firewall
 #   OWNER_SUBS=…                        accounts that may publish maps from MapMaker (Cognito user IDs, comma-separated)
+#   CDN=off|prepare|on                  CloudFront in front of the site (docs/HOSTING.md, "CDN"): with prepare/on Caddy
+#   ORIGIN_HOST=origin.trigger…         also serves ORIGIN_HOST (CloudFront's origin); with on, only that name
+#   EDGE_KEY=…                          (DOMAIN then points at CloudFront). Requests with X-Edge-Key: EDGE_KEY came
+#                                       through CloudFront: their X-Forwarded-For (viewer address last) is passed on
+#   BACKUP_BUCKET=… BACKUP_REGION=…     nightly backups of /var/lib/tiletrigger (tiletrigger-backup, a timer)
+#   BACKUP_KEY_ID=… BACKUP_SECRET=…     the put-only key (from SSM); unset: no backups
+#   RESTORE_FILE=/path/backup.tar.gz    unpack it into the state folder before the hub starts (a fresh box);
+#   RESTORE_FORCE=1                     also over a non-empty one (stops the hub, moves the old state aside)
 #
 # Same pieces as deploy/aws-lightsail-setup.sh (site + hub + coturn + Caddy),
 # with: secrets from SSM instead of generated on the box, 1 h TURN
@@ -48,6 +56,14 @@ AUTO_UPDATE="${AUTO_UPDATE:-}"
 PROVENANCE="${PROVENANCE:-required}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 [ -f "$HERE/tiletrigger-update.sh" ] || { echo "tiletrigger-update.sh must be next to host-setup.sh"; exit 1; }
+[ -f "$HERE/tiletrigger-backup.py" ] || { echo "tiletrigger-backup.py must be next to host-setup.sh"; exit 1; }
+CDN="${CDN:-off}"
+ORIGIN_HOST="${ORIGIN_HOST:-}"
+EDGE_KEY="${EDGE_KEY:-}"
+case "$CDN" in off) ;; prepare|on) [ -n "$ORIGIN_HOST" ] && [[ "$EDGE_KEY" =~ ^[0-9a-f]{32,128}$ ]] || { echo "CDN=$CDN needs ORIGIN_HOST and EDGE_KEY (hex)"; exit 1; } ;; *) echo "CDN must be off, prepare or on"; exit 1 ;; esac
+RESTORE_FILE="${RESTORE_FILE:-}"
+RESTORE_FORCE="${RESTORE_FORCE:-0}"
+STATE_DIR=/var/lib/tiletrigger
 ICE_TTL="${ICE_TTL:-3600}"
 HOST_FIREWALL="${HOST_FIREWALL:-1}"
 APP=/opt/tiletrigger
@@ -133,9 +149,74 @@ HEALTH_URL=http://127.0.0.1:8080
 KEEP=3
 CONF
 
+# ---------------------------------------------------------------- backups and restore
+# The hub's state (profiles, community, published maps) lives in $STATE_DIR (systemd's StateDirectory).
+# A fresh box gets the latest backup before the hub first starts (the deploy downloads it from the bucket
+# with the owner's credentials and copies it here; the box's own key can't read the bucket).
+install -m 755 "$HERE/tiletrigger-backup.py" /usr/local/bin/tiletrigger-backup
+if [ -n "$RESTORE_FILE" ]; then
+  if [ "$RESTORE_FORCE" = 1 ]; then
+    systemctl stop tiletrigger-hub 2>/dev/null || true
+    log "Restoring $(basename "$RESTORE_FILE") over the current state (moved aside)"
+    /usr/local/bin/tiletrigger-backup --restore "$RESTORE_FILE" --force
+  elif [ -d "$STATE_DIR" ] && [ -n "$(ls -A "$STATE_DIR" 2>/dev/null)" ]; then
+    log "State folder not empty: not restoring (deploy with --restore to replace it)"
+  else
+    systemctl stop tiletrigger-hub 2>/dev/null || true
+    log "Restoring $(basename "$RESTORE_FILE") into the empty state folder"
+    /usr/local/bin/tiletrigger-backup --restore "$RESTORE_FILE"
+  fi
+fi
+if [ -n "${BACKUP_BUCKET:-}" ] && [ -n "${BACKUP_KEY_ID:-}" ] && [ -n "${BACKUP_SECRET:-}" ]; then
+  umask 077
+  cat > /etc/tiletrigger-backup.conf.new <<CONF
+# Managed by infra/host-setup.sh (from SSM; re-run the deploy script to change it). Put-only key.
+BUCKET=$BACKUP_BUCKET
+REGION=${BACKUP_REGION:-us-east-1}
+KEY_ID=$BACKUP_KEY_ID
+SECRET=$BACKUP_SECRET
+CONF
+  chmod 600 /etc/tiletrigger-backup.conf.new && mv /etc/tiletrigger-backup.conf.new /etc/tiletrigger-backup.conf
+  umask 022
+  cat > /etc/systemd/system/tiletrigger-backup.service <<'UNIT'
+[Unit]
+Description=Tile Trigger: back up /var/lib/tiletrigger to the backup bucket
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/tiletrigger-backup
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/tiletrigger
+UNIT
+  cat > /etc/systemd/system/tiletrigger-backup.timer <<'UNIT'
+[Unit]
+Description=Tile Trigger: nightly backup
+
+[Timer]
+OnCalendar=*-*-* 03:20:00 UTC
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+  BACKUPS=on
+else
+  BACKUPS=off
+fi
+
 # ---------------------------------------------------------------- hub runtime config
 # The hub reads TURN_SECRET/TURN_URLS/ICE_TTL today (packages/server/src/ice.ts);
 # the rest is for the authenticated hub (docs/MULTIPLAYER_PROTOCOL.md).
+# A changed environment (a rotated secret, TURN on its own name with the CDN) needs a hub restart below.
+ENV_BEFORE="$(cat "$ENV_FILE" 2>/dev/null || true)"
 umask 027
 cat > "$ENV_FILE.new" <<ENV
 TURN_SECRET=$TURN_SECRET
@@ -265,6 +346,7 @@ WantedBy=multi-user.target
 UNIT
 HUB_UNIT_CHANGED=0
 [ "$HUB_UNIT_BEFORE" = "$(cat /etc/systemd/system/tiletrigger-hub.service)" ] || HUB_UNIT_CHANGED=1
+[ "$ENV_BEFORE" = "$(cat "$ENV_FILE")" ] || HUB_UNIT_CHANGED=1
 
 # Optional hourly auto-update (off unless AUTO_UPDATE=on): installs a new green main build, verified like
 # any update (a build that was rolled back from is not retried). Low priority, so it never competes with
@@ -296,9 +378,13 @@ WantedBy=timers.target
 UNIT
 
 # ---------------------------------------------------------------- Caddy
+# CDN off: DOMAIN is served here. CDN prepare: DOMAIN and ORIGIN_HOST (CloudFront's origin, checked before the
+# cut-over). CDN on: DOMAIN points at CloudFront, so only ORIGIN_HOST is here (its certificate over HTTP-01;
+# DOMAIN's certificate is CloudFront's, from ACM). TLS stays end to end: viewer -> CloudFront (TLS 1.2+),
+# CloudFront -> ORIGIN_HOST (HTTPS only, certificate checked).
 {
   printf '{\n\tadmin localhost:2019\n}\n\n'
-  printf '%s {\n' "$DOMAIN"
+  printf '(site) {\n'
   printf '\tencode zstd gzip\n'
   printf '\trequest_body {\n\t\tmax_size 1MB\n\t}\n'
   printf '\theader {\n'
@@ -309,13 +395,27 @@ UNIT
   printf '\t\tPermissions-Policy "camera=(), microphone=(), geolocation=()"\n'
   printf '\t\t-Server\n'
   printf '\t}\n'
-  printf '\treverse_proxy 127.0.0.1:8080\n'
-  printf '}\n'
+  printf '}\n\n'
+  if [ "$CDN" != on ]; then
+    printf '%s {\n\timport site\n\treverse_proxy 127.0.0.1:8080\n}\n\n' "$DOMAIN"
+  fi
+  if [ "$CDN" != off ]; then
+    # Through CloudFront (the key matches): CloudFront appended the viewer's address to X-Forwarded-For; pass
+    # the header on as it came, so the hub's rate limits see the player (clientIp.ts takes the last entry).
+    # Anything else reaching this name directly is treated as today: Caddy sets X-Forwarded-For itself.
+    printf '%s {\n\timport site\n' "$ORIGIN_HOST"
+    printf '\t@edge header X-Edge-Key "%s"\n' "$EDGE_KEY"
+    printf '\thandle @edge {\n\t\treverse_proxy 127.0.0.1:8080 {\n\t\t\theader_up X-Forwarded-For {http.request.header.X-Forwarded-For}\n\t\t\theader_up -X-Edge-Key\n\t\t}\n\t}\n'
+    printf '\thandle {\n\t\treverse_proxy 127.0.0.1:8080 {\n\t\t\theader_up -X-Edge-Key\n\t\t}\n\t}\n'
+    printf '}\n\n'
+  fi
   if [ -n "$ROOT_DOMAIN" ]; then
     printf '\n%s {\n\tredir https://%s{uri} 302\n}\n' "$ROOT_DOMAIN" "$DOMAIN"
   fi
 } > /etc/caddy/Caddyfile.new
 caddy validate --config /etc/caddy/Caddyfile.new --adapter caddyfile >/dev/null 2>&1 || { echo "Caddyfile invalid"; caddy validate --config /etc/caddy/Caddyfile.new --adapter caddyfile; exit 1; }
+# The edge key is in it: readable by root and Caddy only.
+chown root:caddy /etc/caddy/Caddyfile.new && chmod 640 /etc/caddy/Caddyfile.new
 mv /etc/caddy/Caddyfile.new /etc/caddy/Caddyfile
 
 # ---------------------------------------------------------------- host firewall (defence in depth)
@@ -340,6 +440,12 @@ else
   systemctl enable -q coturn
   systemctl restart coturn
 fi
+if [ "$BACKUPS" = on ]; then
+  systemctl enable -q --now tiletrigger-backup.timer
+  log "Backups: nightly to s3://$BACKUP_BUCKET/backups/ (sudo tiletrigger-backup to run one now)"
+else
+  systemctl disable -q --now tiletrigger-backup.timer 2>/dev/null || true
+fi
 case "$AUTO_UPDATE" in
   on) systemctl enable -q --now tiletrigger-update.timer; log "Auto-update: on (hourly, main-latest)" ;;
   off) systemctl disable -q --now tiletrigger-update.timer 2>/dev/null || true ;;
@@ -352,7 +458,7 @@ log "Installing the site build (tiletrigger-update ${UPDATE_ARGS[*]})"
 /usr/local/bin/tiletrigger-update "${UPDATE_ARGS[@]}"
 # A changed hub unit (or a hub that isn't running) needs a restart of its own.
 if [ "$HUB_UNIT_CHANGED" = 1 ] || ! systemctl is-active --quiet tiletrigger-hub; then
-  log "Hub service changed: restarting it"
+  log "Hub service or its settings changed: restarting it"
   systemctl restart tiletrigger-hub
 fi
 # The site the box used to build in its checkout: served from $SITE_ROOT now.
