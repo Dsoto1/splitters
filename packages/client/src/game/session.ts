@@ -215,6 +215,7 @@ import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { VehiclePrediction, predictVehicles } from './vehiclePrediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { topScorer } from '../audio/announcer.ts';
 import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
 import { impactSoundId, impactStyle } from './fxMap.ts';
@@ -609,6 +610,46 @@ export class GameSession {
     }
   }
 
+  /** Elimination and Bomb: the round now (its `elim` start event). */
+  private elimRound = 0;
+
+  /**
+   * The announcer's snapshot lines (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md): the clock's last minute, the leader 10 from
+   * the score limit (kill modes), you or your team taking the lead, and being the last one standing on your team in
+   * Elimination and Bomb.
+   */
+  private announceSnapshot(timeLeft: number, players: readonly { s: number; alive: 0 | 1 }[]): void {
+    const a = this.sfx.announcer;
+    const now = performance.now() / 1000;
+    const mode = this.rules?.mode;
+    if (!mode || mode === 'core.coop' || mode === 'core.zombies') return;
+    a.clock(timeLeft, now);
+    const totals = this.hud.teamTotals(this.scores);
+    const team = this.hud.team(this.slot)?.id;
+    let leader: number;
+    let iLead: boolean;
+    if (totals.size && team) {
+      const mine = totals.get(team) ?? 0;
+      const rivals = [...totals].filter(([id]) => id !== team).map(([, n]) => n);
+      leader = Math.max(mine, ...rivals);
+      iLead = rivals.every((n) => mine > n);
+    } else {
+      const mine = this.scores.find((x) => x.s === this.slot)?.k ?? 0;
+      const others = this.scores.filter((x) => x.s !== this.slot).map((x) => x.k);
+      leader = Math.max(mine, ...others);
+      iLead = others.every((n) => mine > n);
+    }
+    const killScored = mode === 'core.deathmatch' || mode === 'core.tdm' || mode === 'core.roulette';
+    a.scores(leader, killScored ? (this.rules?.scoreLimit ?? 0) : 0, iLead, now);
+    if ((mode === 'core.elim' || mode === 'core.bomb') && team) {
+      const mates = players.filter((p) => this.hud.team(p.s)?.id === team);
+      const meAlive = mates.some((p) => p.s === this.slot && p.alive === 1);
+      const others = mates.filter((p) => p.s !== this.slot);
+      const enemiesUp = players.some((p) => p.alive === 1 && this.hud.team(p.s)?.id !== team);
+      if (meAlive && others.length > 0 && others.every((p) => p.alive !== 1) && enemiesUp) a.lastAlive(this.elimRound, now);
+    }
+  }
+
   /** A hit worth showing (the `hurt` event): armour breaking, a heavy hit (and, if it was you, the screen's edge). */
   private hurtMoment(ev: Extract<GameEvent, { e: 'hurt' }>): void {
     const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -738,6 +779,8 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
+    // A soldier's marker is their rank badge (insignia.ts), players only (the roster has their look and name).
+    this.view.insigniaOf = (slot) => (slot < NPC_ID_BASE ? this.hud.insignia(slot) : null);
     // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
     if (botDebugWanted() && opts.transport instanceof LocalTransport) {
       const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
@@ -2003,6 +2046,12 @@ export class GameSession {
         }
         this.hud.setMapName(loaded.map.metadata.name);
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
+        // The announcer: a new match's counts, and what it asks of the match.
+        this.sfx.announcer.reset();
+        this.sfx.lookOf = (slot) => this.looks.get(slot);
+        this.sfx.myPos = () => this.local?.state.pos;
+        this.sfx.topScorer = () => topScorer(this.scores, this.slot);
+        this.sfx.bombAttackers = () => (msg.rules.mode === 'core.bomb' ? (this.teamIds?.[0] ?? null) : null);
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
@@ -2094,11 +2143,12 @@ export class GameSession {
         break;
       case 'snapshot': {
         if (this.phase === 'countdown' && msg.phase === 'playing') this.hud.flashGo();
-        if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false);
+        if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false, msg.timeLeft);
         if (this.phase === 'countdown' && msg.phase === 'playing') this.sfx.countdownBeep(true);
         this.phase = msg.phase;
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
+        if (msg.phase === 'playing' && !this.spectator && !document.hidden) this.announceSnapshot(msg.timeLeft, msg.players);
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
@@ -2209,6 +2259,7 @@ export class GameSession {
           if (ev.e === 'awards' || ev.e === 'callout') this.awardsHud?.event(ev);
           this.careerTally?.event(ev);
           if (ev.e === 'kill') this.streakMoment(ev, posesNow);
+          if (ev.e === 'elim' && ev.a === 'start') this.elimRound = ev.round;
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
@@ -3673,6 +3724,7 @@ export class GameSession {
     );
     if (tAvatars) perfProbe.add(SYS.avatars, tAvatars);
     this.sfx.remoteSteps(poses, this.riderPlacement.placed);
+    this.sfx.tick(performance.now());
     if (this.fxWatch) {
       const me = this.local;
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);

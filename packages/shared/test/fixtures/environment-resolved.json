@@ -3062,6 +3062,49 @@
       "surface": "bark"
      }
     ]
+   },
+   {
+    "index": 2,
+    "name": "alpine",
+    "size": [
+     3.96,
+     8.891,
+     3.777
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.129,
+       3.497,
+       -0.041
+      ],
+      "r": 0.193,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.129,
+       3.497,
+       -0.041
+      ],
+      "b": [
+       0.243,
+       6.991,
+       -0.167
+      ],
+      "r": 0.131,
+      "blocks": "all",
+      "surface": "bark"
+     }
+    ]
    }
   ]
  },
@@ -12316,6 +12359,447 @@
      1.39,
      0.494,
      1.23
+    ],
+    "shapes": []
+   }
+  ]
+ },
+ "env.conifer.mountain_pine@2": {
+  "surface": "bark",
+  "nav": "obstacle",
+  "role": "cover",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "summer",
+    "size": [
+     5.144,
+     4.997,
+     4.741
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.086,
+       2.071,
+       0.328
+      ],
+      "r": 0.16,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.086,
+       2.071,
+       0.328
+      ],
+      "b": [
+       0.105,
+       3.804,
+       0.572
+      ],
+      "r": 0.12,
+      "blocks": "all",
+      "surface": "bark"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "name": "snow",
+    "size": [
+     5.144,
+     4.997,
+     4.741
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.086,
+       2.071,
+       0.328
+      ],
+      "r": 0.16,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.086,
+       2.071,
+       0.328
+      ],
+      "b": [
+       0.105,
+       3.804,
+       0.572
+      ],
+      "r": 0.12,
+      "blocks": "all",
+      "surface": "bark"
+     }
+    ]
+   }
+  ]
+ },
+ "env.broadleaf.jungle@1": {
+  "surface": "bark",
+  "nav": "obstacle",
+  "role": "cover",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "green",
+    "size": [
+     13.461,
+     12.999,
+     13.895
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.46,
+       3.558,
+       -0.07
+      ],
+      "r": 0.36,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.46,
+       3.558,
+       -0.07
+      ],
+      "b": [
+       1.192,
+       7.884,
+       -0.268
+      ],
+      "r": 0.36,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.978,
+       9.033,
+       0.652
+      ],
+      "r": 0.173,
+      "blocks": "shots",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.882,
+       8.639,
+       -0.988
+      ],
+      "r": 0.193,
+      "blocks": "shots",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.191,
+       9.007,
+       0.974
+      ],
+      "r": 0.16,
+      "blocks": "shots",
+      "surface": "bark"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "name": "dry",
+    "size": [
+     13.461,
+     12.999,
+     13.895
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.46,
+       3.558,
+       -0.07
+      ],
+      "r": 0.36,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.46,
+       3.558,
+       -0.07
+      ],
+      "b": [
+       1.192,
+       7.884,
+       -0.268
+      ],
+      "r": 0.36,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.978,
+       9.033,
+       0.652
+      ],
+      "r": 0.173,
+      "blocks": "shots",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.882,
+       8.639,
+       -0.988
+      ],
+      "r": 0.193,
+      "blocks": "shots",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       1.074,
+       7.094,
+       -0.227
+      ],
+      "b": [
+       1.191,
+       9.007,
+       0.974
+      ],
+      "r": 0.16,
+      "blocks": "shots",
+      "surface": "bark"
+     }
+    ]
+   }
+  ]
+ },
+ "env.fern.tree_fern@1": {
+  "surface": "bark",
+  "nav": "obstacle",
+  "role": "cover",
+  "conceals": null,
+  "variants": [
+   {
+    "index": 0,
+    "name": "green",
+    "size": [
+     4.391,
+     4.667,
+     3.965
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.017,
+       0.96,
+       -0.013
+      ],
+      "r": 0.16,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.017,
+       0.96,
+       -0.013
+      ],
+      "b": [
+       0.029,
+       2.159,
+       -0.038
+      ],
+      "r": 0.13,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.029,
+       2.159,
+       -0.038
+      ],
+      "b": [
+       0.044,
+       3.119,
+       -0.048
+      ],
+      "r": 0.13,
+      "blocks": "all",
+      "surface": "bark"
+     }
+    ]
+   },
+   {
+    "index": 1,
+    "name": "dry",
+    "size": [
+     4.391,
+     4.667,
+     3.965
+    ],
+    "shapes": [
+     {
+      "kind": "capsule",
+      "a": [
+       0,
+       0,
+       0
+      ],
+      "b": [
+       0.017,
+       0.96,
+       -0.013
+      ],
+      "r": 0.16,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.017,
+       0.96,
+       -0.013
+      ],
+      "b": [
+       0.029,
+       2.159,
+       -0.038
+      ],
+      "r": 0.13,
+      "blocks": "all",
+      "surface": "bark"
+     },
+     {
+      "kind": "capsule",
+      "a": [
+       0.029,
+       2.159,
+       -0.038
+      ],
+      "b": [
+       0.044,
+       3.119,
+       -0.048
+      ],
+      "r": 0.13,
+      "blocks": "all",
+      "surface": "bark"
+     }
+    ]
+   }
+  ]
+ },
+ "env.shrub.elephant_ear@1": {
+  "surface": "foliage",
+  "nav": "none",
+  "role": "cover",
+  "conceals": {
+   "radius": 1.012,
+   "height": 1.24
+  },
+  "variants": [
+   {
+    "index": 0,
+    "name": "green",
+    "size": [
+     2.023,
+     1.24,
+     2.254
+    ],
+    "shapes": []
+   },
+   {
+    "index": 1,
+    "name": "dark",
+    "size": [
+     2.023,
+     1.24,
+     2.254
     ],
     "shapes": []
    }

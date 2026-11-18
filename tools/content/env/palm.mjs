@@ -2,7 +2,9 @@
 // with leaf scars (the bark picture's palm strip), swelling into a bulb at the foot; a crown of 14–18 pinnate fronds
 // set round the top by the golden angle, the youngest standing up, the oldest arching out and down, each a long card
 // from the leaves atlas (palm.0 / palm.1) folded into a shallow V along its rachis and bent along its length; a few
-// dead fronds hanging against the trunk under the crown, and a cluster of nuts.
+// dead fronds hanging against the trunk under the crown, and a cluster of nuts. The tree fern (env.fern.tree_fern, the
+// jungle set) is this generator too: a short trunk, a crown of fern fronds (`frondCards`: atlas keys for the fronds,
+// the palm's own by default), a skirt of dead fronds and no nuts.
 // Collision (shared): the trunk as three capsules that stop everything; fronds none (they are overhead).
 
 import { rng } from './rng.mjs';
@@ -158,7 +160,7 @@ export function palmMesh(seed, sk, g, lod, look, atlas) {
     // Older fronds lower and darker, the youngest a fresher yellow-green.
     const v = f.tone * (0.78 + 0.3 * (1 - f.age));
     const colour = [base[0] * v * (1 + 0.15 * (1 - f.age)), base[1] * v, base[2] * v * 0.95];
-    frond(leaf, pts, { ...f, L: f.L }, atlas.cards[`palm.${f.card}`], colour, g.fold, (p, t) => [sway(p) + t * t * 0.6, t], g.frondWidth * (lod.widen ?? 1));
+    frond(leaf, pts, { ...f, L: f.L }, atlas.cards[g.frondCards ? g.frondCards[f.card % g.frondCards.length] : `palm.${f.card}`], colour, g.fold, (p, t) => [sway(p) + t * t * 0.6, t], g.frondWidth * (lod.widen ?? 1));
   }
   if (lod.dead)
     for (const f of sk.dead) {

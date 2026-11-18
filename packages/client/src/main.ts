@@ -11,6 +11,7 @@ import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
 import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
+import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
@@ -287,13 +288,46 @@ for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(
 installFullscreenKeys();
 installInputMode();
 (window as unknown as { __audio: AudioSystem }).__audio = audio;
+// The owner's music and announcer have their own volumes (Options); music plays on the menu and in MapMaker only
+// (audio/music.ts). Browser tests leave it off (nothing to fetch), unless a test asks with ?music=1.
+audio.setMusicVolume(Number(storage('cs.music') ?? 0.5));
+audio.setAnnouncerVolume(Number(storage('cs.announcer') ?? 1));
+const announcerInput = $<HTMLInputElement>('announcer-volume');
+announcerInput.value = String(Math.round(audio.getAnnouncerVolume() * 100));
+announcerInput.addEventListener('input', () => {
+  audio.setAnnouncerVolume(Number(announcerInput.value) / 100);
+  storage('cs.announcer', String(audio.getAnnouncerVolume()));
+});
+// The music's code loads after the first click or key (audio unlocked), never in the menu's first JS.
+let music: MusicPlayer | null = null;
+let musicScene: MusicScene | null = null;
+if (params.get('music') === '1' || (params.get('music') !== '0' && !navigator.webdriver)) {
+  audio.onUnlock(
+    () =>
+      void import('./audio/music.ts').then(({ MusicPlayer }) => {
+        music = new MusicPlayer(audio);
+        (window as unknown as { __music: MusicPlayer }).__music = music;
+        music.setScene(musicScene);
+      }),
+  );
+}
+const MUSIC_SCENES: Record<Mode, MusicScene | null> = { menu: 'menu', designer: 'menu', editor: 'mapmaker', game: null };
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
 class App {
   private engine!: AbstractEngine;
   private kind!: RendererKind;
   private canvas!: HTMLCanvasElement;
-  private mode: Mode = 'menu';
+  private modeNow: Mode = 'menu';
+  /** Where the app is; the music follows (the menu's, MapMaker's, none in a match). */
+  private get mode(): Mode {
+    return this.modeNow;
+  }
+  private set mode(m: Mode) {
+    this.modeNow = m;
+    musicScene = MUSIC_SCENES[m];
+    music?.setScene(musicScene);
+  }
   private editor?: EditorApp;
   private session?: GameSession;
   private designer?: CharacterDesigner;
