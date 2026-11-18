@@ -215,8 +215,8 @@ export function broadleafMesh(seed, sk, g, lod, look, atlas) {
  * Lianas (environment Phase 5, the jungle set; `g.vines` = { count, reach: [min, max] share of the way down, leaves
  * per metre, cardSize }): strands hanging from the crown's outer limbs, a slight curve and twist as they fall, a thin
  * three-sided rope (bark) with small leaf cards along it (`look.vine`, `look.vineLeaves`). Their own random stream, so
- * a tree without vines is drawn exactly as before. Lighter levels keep `lod.vines` of the strands (all by default), as
- * flat ribbons past the first level. Drawn only: no collision.
+ * a tree without vines is drawn exactly as before. Lighter levels keep `lod.vines` of the strands (all by default), in
+ * fewer segments. Drawn only: no collision.
  */
 function hangVines(bark, leaf, seed, sk, g, lod, look, atlas) {
   const v = g.vines;
@@ -240,8 +240,10 @@ function hangVines(bark, leaf, seed, sk, g, lod, look, atlas) {
   const keep = spread(all, Math.round(all.length * (lod.vines ?? 1)));
   const rope = toLinear(look.vine ?? look.bark);
   const greens = (look.vineLeaves ?? look.leaves).map(toLinear);
-  const segs = lod.cardScale > 1.2 ? 3 : 6;
-  const sides = lod.cardScale > 1.2 ? 0 : 3;
+  // A closed three-sided rope at every level (bark is one-sided: a flat ribbon vanished from behind), fewer segments on
+  // lighter levels.
+  const segs = lod.cardScale > 2 ? 2 : lod.cardScale > 1.2 ? 3 : 6;
+  const sides = 3;
   for (const s of keep) {
     const pts = [];
     for (let k = 0; k <= segs; k++) {
@@ -252,26 +254,20 @@ function hangVines(bark, leaf, seed, sk, g, lod, look, atlas) {
     // The strand sways more toward its foot (it hangs free).
     const windAt = (q) => [Math.min(1, 0.45 + 0.55 * Math.max(0, (s.a[1] - q[1]) / Math.max(1, s.drop))), 0.3];
     const col = rope.map((c) => c * s.tone);
-    const rad = 0.025;
-    if (sides) {
-      const rings = pts.map((p, k) => {
-        const along = norm(sub(pts[Math.min(segs, k + 1)], pts[Math.max(0, k - 1)]));
-        const x = perp(along);
-        const y = norm([along[1] * x[2] - along[2] * x[1], along[2] * x[0] - along[0] * x[2], along[0] * x[1] - along[1] * x[0]]);
-        return Array.from({ length: sides }, (_, j) => {
-          const a = (j / sides) * Math.PI * 2;
-          const n = norm(add(mul(x, Math.cos(a)), mul(y, Math.sin(a))));
-          return bark.vertex(add(p, mul(n, rad)), n, [0.02 + 0.04 * (j / sides), k / segs], col, windAt(p));
-        });
+    // Thicker on lighter levels, so a far strand still shows (a 5 cm rope is under a pixel at 30 m).
+    const rad = 0.025 * lod.cardScale;
+    const rings = pts.map((p, k) => {
+      const along = norm(sub(pts[Math.min(segs, k + 1)], pts[Math.max(0, k - 1)]));
+      const x = perp(along);
+      const y = norm([along[1] * x[2] - along[2] * x[1], along[2] * x[0] - along[0] * x[2], along[0] * x[1] - along[1] * x[0]]);
+      return Array.from({ length: sides }, (_, j) => {
+        const a = (j / sides) * Math.PI * 2;
+        const n = norm(add(mul(x, Math.cos(a)), mul(y, Math.sin(a))));
+        return bark.vertex(add(p, mul(n, rad)), n, [0.02 + 0.04 * (j / sides), k / segs], col, windAt(p));
       });
-      for (let k = 0; k < segs; k++) for (let j = 0; j < sides; j++) bark.quad(rings[k][j], rings[k][(j + 1) % sides], rings[k + 1][(j + 1) % sides], rings[k + 1][j]);
-    } else {
-      // A flat ribbon turned to the crown's outside (far away a rope is a line).
-      const out = norm([s.a[0] - sk.centre[0] || 1, 0, s.a[2] - sk.centre[2]]);
-      const side = norm([-out[2], 0, out[0]]);
-      const ids = pts.map((p, k) => [bark.vertex(add(p, mul(side, -rad * 1.6)), out, [0.02, k / segs], col, windAt(p)), bark.vertex(add(p, mul(side, rad * 1.6)), out, [0.06, k / segs], col, windAt(p))]);
-      for (let k = 0; k < segs; k++) bark.quad(ids[k][0], ids[k][1], ids[k + 1][1], ids[k + 1][0]);
-    }
+    });
+    for (let k = 0; k < segs; k++) for (let j = 0; j < sides; j++) bark.quad(rings[k][j], rings[k][(j + 1) % sides], rings[k + 1][(j + 1) % sides], rings[k + 1][j]);
+
     // Leaves along the strand, thinning toward its foot; bigger and fewer on lighter levels.
     const n = Math.max(1, Math.round(s.drop * v.leaves / lod.cardScale ** 2));
     for (let k = 0; k < n; k++) {
