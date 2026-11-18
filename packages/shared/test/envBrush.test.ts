@@ -200,7 +200,7 @@ describe('environment brush: budget, erase, presets', () => {
       temperate: ['env.broadleaf.birch', 'env.grass.tall'],
       jungle: ['env.grass.tall', 'env.succulent.agave'],
       alpine: ['env.conifer.mountain_pine', 'env.conifer.larch', 'env.shrub.juniper', 'env.grass.tussock', 'env.flower.alpine', 'env.rock.boulder_shard'],
-      arid: ['env.cactus.barrel', 'env.succulent.agave', 'env.shrub.sagebrush', 'env.grass.tussock', 'env.flower.desert', 'env.rock.boulder_layered', 'env.broadleaf.olive', 'env.conifer.cypress'],
+      arid: ['env.cactus.barrel', 'env.succulent.agave', 'env.shrub.sagebrush', 'env.grass.tussock', 'env.flower.desert', 'env.rock.sandstone', 'env.broadleaf.olive', 'env.conifer.cypress'],
     };
     for (const id of ENV_PRESET_IDS) {
       for (const [model, w] of before[id]) expect(weight(id, model), `${id} ${model}`).toBe(w);

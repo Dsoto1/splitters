@@ -11870,7 +11870,7 @@
    }
   ]
  },
- "env.rock.boulder_layered@1": {
+ "env.rock.sandstone@1": {
   "surface": "rock",
   "nav": "obstacle",
   "role": "cover",

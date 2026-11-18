@@ -32,7 +32,7 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
 const PHASE4 = [
   'env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch', 'env.conifer.cypress',
   'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
-  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.boulder_layered', 'env.cliff.sandstone', 'env.cliff.crag',
+  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
 ];
 
 describe('environment data', () => {
@@ -150,7 +150,7 @@ describe('environment data', () => {
     // The new broadleaf trees keep the broadleaf trees' 30° limit (MapMaker's brush keeps them off steeper ground).
     for (const id of ['env.broadleaf.birch', 'env.broadleaf.olive']) expect(getEnvSpecies(id)!.placement.maxSlopeDegrees, id).toBe(30);
     // Boulders: one hull of at most 32 points, stone, a solid nav obstacle.
-    for (const id of ['env.rock.boulder_shard', 'env.rock.boulder_layered']) {
+    for (const id of ['env.rock.boulder_shard', 'env.rock.sandstone']) {
       const s = getEnvSpecies(id)!;
       const shapes = envVariant(s, 0).shapes;
       expect([shapes.length, shapes[0]!.kind, shapes[0]!.blocks, s.nav, propMaterial(id)], id).toEqual([1, 'hull', 'all', 'obstacle', 'stone']);
@@ -158,7 +158,7 @@ describe('environment data', () => {
     }
     // The shard stands tall, the sandstone block lies wide.
     const shard = getEnvSpecies('env.rock.boulder_shard')!.variants[0]!.size;
-    const layered = getEnvSpecies('env.rock.boulder_layered')!.variants[0]!.size;
+    const layered = getEnvSpecies('env.rock.sandstone')!.variants[0]!.size;
     expect(shard[1]).toBeGreaterThan(Math.max(shard[0], shard[2]));
     expect(layered[1]).toBeLessThan(Math.min(layered[0], layered[2]));
     // Cliffs: 8 m panels, a mesh of at most 200 triangles, a nav boundary, blocking.

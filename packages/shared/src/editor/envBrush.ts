@@ -92,7 +92,7 @@ export const ENV_PRESETS: Record<EnvPresetId, EnvPreset> = {
   },
   arid: {
     label: 'Arid',
-    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1], ['env.cactus.barrel', 2, 'any'], ['env.succulent.agave', 2], ['env.shrub.sagebrush', 3], ['env.grass.tussock', 2, 'straw'], ['env.flower.desert', 1, 'any'], ['env.rock.boulder_layered', 1, 'any'], ['env.broadleaf.olive', 0.5], ['env.conifer.cypress', 0.5]],
+    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1], ['env.cactus.barrel', 2, 'any'], ['env.succulent.agave', 2], ['env.shrub.sagebrush', 3], ['env.grass.tussock', 2, 'straw'], ['env.flower.desert', 1, 'any'], ['env.rock.sandstone', 1, 'any'], ['env.broadleaf.olive', 0.5], ['env.conifer.cypress', 0.5]],
     materials: ['sand', 'dirt', 'gravel', 'stone'],
     density: 3,
   },

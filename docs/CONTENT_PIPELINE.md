@@ -733,7 +733,8 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
     (family `succulent`, generator `rosette` in `env/plants.mjs`: twelve stiff sword leaves in two rings, vertex colour
     only, 60 triangles, decoration; blue, green);
   - rocks: `env.rock.boulder_shard` (a tall sharp-edged block, 1.3 × 2.4 × 1.4 m; bare, lichen, snow) and
-    `env.rock.boulder_layered` (Sandstone Boulder, wide, low and flat-bedded; tan, red), one hull each;
+    `env.rock.sandstone` (Sandstone Boulder, wide, low and flat-bedded; tan, red), one hull each (a species name never
+    holds `_l`: the renderer names its meshes `env_<file>_l<level>`, and the lab and the e2e `environment` flow split on it);
   - cliffs: `env.cliff.sandstone` (8 × 7 m, thin beds and deep ledges; tan, red) and `env.cliff.crag` (Mountain Crag,
     8 × 10 m, vertical ribs and tall joints, a ragged top; bare, snow), each its own family (`familySeed`), so its
     panels butt seamlessly with each other (the seam test checks every family).

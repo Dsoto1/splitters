@@ -13,7 +13,7 @@ import { cliffMesh } from '../env/rock.mjs';
 const PHASE4 = [
   'env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch', 'env.conifer.cypress',
   'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
-  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.boulder_layered', 'env.cliff.sandstone', 'env.cliff.crag',
+  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
 ];
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 

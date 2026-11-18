@@ -106,7 +106,7 @@ const LINEUP4: [string, number, number, number, number][] = [
     [['env.grass.tall', 0], ['env.grass.tall', 1], ['env.grass.tussock', 0], ['env.grass.tussock', 1], ['env.flower.alpine', 0], ['env.flower.alpine', 1], ['env.flower.alpine', 2], ['env.flower.desert', 0], ['env.flower.desert', 1], ['env.succulent.agave', 0], ['env.succulent.agave', 1]] as const
   ).map(([m, v], i): [string, number, number, number, number] => [m, v, 42 + i * 1.8, -89, i * 0.7]),
   ...(
-    [['env.shrub.juniper', 0], ['env.shrub.juniper', 1], ['env.shrub.sagebrush', 0], ['env.shrub.sagebrush', 1], ['env.cactus.barrel', 0], ['env.cactus.barrel', 1], ['env.rock.boulder_shard', 0], ['env.rock.boulder_shard', 1], ['env.rock.boulder_shard', 2], ['env.rock.boulder_layered', 0], ['env.rock.boulder_layered', 1]] as const
+    [['env.shrub.juniper', 0], ['env.shrub.juniper', 1], ['env.shrub.sagebrush', 0], ['env.shrub.sagebrush', 1], ['env.cactus.barrel', 0], ['env.cactus.barrel', 1], ['env.rock.boulder_shard', 0], ['env.rock.boulder_shard', 1], ['env.rock.boulder_shard', 2], ['env.rock.sandstone', 0], ['env.rock.sandstone', 1]] as const
   ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + i * 2.4, -84.5, i * 0.9]),
   ...(
     [['env.broadleaf.birch', 0], ['env.broadleaf.olive', 0], ['env.conifer.mountain_pine', 0], ['env.conifer.larch', 0], ['env.conifer.cypress', 0], ['env.broadleaf.birch', 1], ['env.broadleaf.olive', 1], ['env.conifer.mountain_pine', 1], ['env.conifer.larch', 1], ['env.conifer.cypress', 1]] as const
