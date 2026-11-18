@@ -217,7 +217,8 @@ mannequins (the Dummy) and the hostages. NPC creature skins have theirs by role 
 imp, puglin and zombie red, cyclops blue, oculus and scolitex green); roles drawn as a character (goblin, otter …)
 bleed what that character's manifest says. The map's **amount** (None, Light, Heavy) and the player's **Blood** switch
 in the pause menu rule every kind: None or switched off, nothing is drawn, sparks and wisps included. `lookBlood(id)`
-reads it.
+reads it; the manifests' kinds are generated into `WHOLE_BODY_BLOOD` (characters.generated.ts), a table apart from the
+looks, so the menu's first JS doesn't carry it.
 
 **Reduce flashing.** The sparks and the wisp play smaller and dimmer, eased in, and at most one of each a second
 however fast the hits come (a machine gun on a robot crackles once a second, not ten times); off, at most one every

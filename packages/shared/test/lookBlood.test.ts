@@ -10,7 +10,7 @@ describe('blood by character', () => {
   });
 
   it('every whole-body character names a kind; part-built presets follow the map', () => {
-    for (const l of CORE_LOOKS.filter((x) => x.whole)) expect(isBloodKind(l.blood), l.id).toBe(true);
+    for (const l of CORE_LOOKS.filter((x) => x.whole)) expect(isBloodKind(lookBlood(l.id)), l.id).toBe(true);
     for (const l of CORE_LOOKS.filter((x) => !x.whole)) expect(lookBlood(l.id), l.id).toBeNull();
   });
 
@@ -24,10 +24,10 @@ describe('blood by character', () => {
 
   it('by group, then by hand', () => {
     // Machines bleed oil; people red.
-    for (const l of CORE_LOOKS.filter((x) => x.whole && x.group === 'machines')) expect(l.blood, l.id).toBe('oil');
-    for (const l of CORE_LOOKS.filter((x) => x.whole && (x.group === 'soldiers' || x.group === 'folk'))) expect(l.blood, l.id).toBe('red');
+    for (const l of CORE_LOOKS.filter((x) => x.whole && x.group === 'machines')) expect(lookBlood(l.id), l.id).toBe('oil');
+    for (const l of CORE_LOOKS.filter((x) => x.whole && (x.group === 'soldiers' || x.group === 'folk'))) expect(lookBlood(l.id), l.id).toBe('red');
     // Every alien is green or blue (the space people are red).
-    for (const l of CORE_LOOKS.filter((x) => x.whole && x.nameTheme === 'alien')) expect(['green', 'blue'], l.id).toContain(l.blood);
+    for (const l of CORE_LOOKS.filter((x) => x.whole && x.nameTheme === 'alien')) expect(['green', 'blue'], l.id).toContain(lookBlood(l.id));
     expect(lookBlood('core.astroexplorer')).toBe('red');
     expect(lookBlood('core.rattles')).toBe('bone');
     expect(lookBlood('core.bonejack')).toBe('bone');

@@ -81,8 +81,6 @@ export interface CharacterLook {
   group?: CharacterGroup;
   /** Soldiers & Spies only: Army or Agency (CHARACTER_BRANCHES; `branch` in its manifest). */
   branch?: CharacterBranch;
-  /** What it bleeds when hit (BLOOD_KINDS; `blood` in its manifest): absent, the map's blood (docs/CHARACTERS.md, "Blood"). */
-  blood?: BloodKind;
   /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
   sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */

@@ -1,5 +1,6 @@
 import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type BloodKind, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
+import { WHOLE_BODY_BLOOD } from '../content/characters.generated.ts';
 import { NPC_ROLE_BOTS, NPC_ROLE_SPECS } from '../content/npcRoles.generated.ts';
 import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
 import type { Faction, MapDocument, NpcRole, Relation } from '../map/schema.ts';
@@ -203,7 +204,7 @@ export const lookBlood = (id: string | undefined): BloodKind | null => {
   const role = npcLookRole(id);
   if (role) return NPC_SKIN_BLOOD[role] ?? null;
   const key = (id && RETIRED_LOOKS[id]) || id;
-  return CORE_LOOKS.find((l) => l.id === key)?.blood ?? null;
+  return (key && WHOLE_BODY_BLOOD[key]) || null;
 };
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */
