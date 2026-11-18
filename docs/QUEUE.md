@@ -43,6 +43,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/blood-by-character` · 4a329bb7 · 44382594803 (lane B: blood by character with the owner's answers of 2026-11-18: Alien Biker, Spud Marshal, Space Marine blue; Brass Hare red; Bronzer stone dust; a softer white-grey wisp; The Hollow Visitor retired, bleeds as The Visitor; table in docs/CHARACTERS.md "Blood")
 
+- `wip/fixes-20261118` · 36c88003 · 44413941879 (lane B's fix batch of 2026-11-18, one commit per fix: the editor TEST-start flake's cause, the grenade deck, one spree a life, sash bars go with the glass, staged Start match; Flavius Rule's stair headroom left out, `wip/stair-headroom`. Green on attempt 1, no flaky flows; menu JS 2639.6 of 2800 kB)
+
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
