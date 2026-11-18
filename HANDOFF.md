@@ -70,7 +70,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/process-tools` at a856acb0 · run 44237103776 (a helper of lane B's splitters22: process tooling; full suite, run.mjs and tools/ci are shared).
-- `check/train-20261118-041849` at 4dd2bb1d (lane B's lead: the train with `wip/environment-4` and `wip/gun-handling`; holds the landing lock).
+- `check/train-20261118-050653` at 81f7e8de (lane B's lead: the train with `wip/environment-4` and `wip/painting-5` (v47); holds the landing lock). The earlier train `check/train-20261118-041849` (environment-4 + gun-handling) went red on the `editor` flow's play-test start budget; gun-handling was dropped and is back with its helper.
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 

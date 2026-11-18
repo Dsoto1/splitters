@@ -32,7 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- `wip/painting-5` (lane B: painting Phase 5; was green at 3b9e19e5 but conflicts with main since St. John's step 5 took map format v46: a helper is merging main and moving `lookDefs` to **v47**, then re-checking on `check/painting-5b`).
+- `wip/gun-handling` (lane B: gun handling extras and the weapon tuning page; green alone at 75522232, but red in train `check/train-20261118-041849` (run 44236482355): the `editor` flow's "TEST starts within the 3 s budget" took 4.0-4.3 s (1.7 s on its own run, 0.5-0.8 s elsewhere); dropped from the train, back with its helper to root-cause).
 - `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
@@ -40,8 +40,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**, lane B's lead holds the lock)
-- `wip/gun-handling` · 75522232 · 44227505839 (lane B: gun handling extras: run speed by weapon (sprint the same for all), sprint-to-fire time by weapon, scope holdover marks; the weapon tuning page `?mode=weapons`; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**)
+- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; **in train `check/train-20261118-050653` at 81f7e8de**, lane B's lead holds the lock)
+- `wip/painting-5` · f7293b0a · 44237030075 (lane B: MapMaker painting Phase 5, save and name your own looks; map format **v47** (v46 went to St. John's step 5); **in train `check/train-20261118-050653` at 81f7e8de**)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
