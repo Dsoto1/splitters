@@ -14,7 +14,7 @@
 import { buildMapDecor, buildMapGeometry, type WorldBox } from '../map/geometry.ts';
 import { coreMaterials, coreThemes, SURFACE_SLOTS, type SurfaceSlot } from '../map/materials.ts';
 import { SET_PIECE_MATERIAL_ROLES, SET_PIECE_ROLES, type MapDocument, type MapEntity, type SetPieceDefinition, type SetPiecePlacement, type SetPieceRoleValues, type SurfaceStyle, type TilePlacement, type TileSurfaces } from '../map/schema.ts';
-import { expandSetPieces, piecesFor, placementPack, setPieceParts, type SetPieceExpansion, type SetPieceLibrary } from '../map/setPieces.ts';
+import { expandSetPieces, piecesFor, placementPack, setPieceParts, withMapLooks, type SetPieceExpansion, type SetPieceLibrary } from '../map/setPieces.ts';
 import { faceSlot, resolveSurface, styleKey, type ResolvedStyle } from '../map/surfaces.ts';
 import { cellGround, cellPainted, groundBase, groundIndex, groundThemeDef, terrainGroundTheme, type TerrainData } from '../map/terrain.ts';
 import type { EditCommand } from './commands.ts';
@@ -223,6 +223,7 @@ const asStyle = (s: ResolvedStyle): SurfaceStyle => ({ material: s.material.id, 
  * sides the underside): a block is one material, so each keeps the one it shows most (a slab its top, a wall its sides).
  */
 export function keepCurrentLookCommand(doc: MapDocument, library: SetPieceLibrary, to: string, boxes?: readonly WorldBox[]): { command: EditCommand; approximate: string[] } {
+  library = withMapLooks(doc, library);
   const { before, drawn } = compare(doc, library, to, boxes);
   const newDoc = withTheme(doc, to);
   const approximate: string[] = [];
@@ -365,6 +366,7 @@ const styled = (s: SurfaceStyle | undefined | null): ResolvedStyle | null => {
  * theme's floor, its sides the underside).
  */
 export function surfaceLayer(doc: MapDocument, library: SetPieceLibrary, target: StructureTarget, faceSlotHint?: SurfaceSlot): SurfaceLayers {
+  library = withMapLooks(doc, library);
   const theme = themeName(doc.classicStructure.theme);
   if (target.kind === 'tile') {
     const slot = target.slot;

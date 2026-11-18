@@ -144,6 +144,27 @@ Implement quality tiers that adjust density of non-gameplay decoration, shadow d
 
 **Phase 4 — Replace and migrate:** expand species/rock/cliff variants, migrate existing maps, retire legacy natural assets, run regression/performance tests.
 
+**Phase 4 status (2026-11-17): more variety built** (`wip/environment-4`; owner, 2026-11-16: "yes"). Seventeen species
+through the generators already there (docs/CONTENT_PIPELINE.md, "Environment Phase 4"), each with material variants,
+collision, surface, levels of detail, far stand-in, budgets and tests like its kind:
+- trees: Silver Birch, Olive, Mountain Pine, Larch, Italian Cypress;
+- bushes: Creeping Juniper, Sagebrush;
+- grasses: Tall Grass, Tussock;
+- flowers: Alpine Flowers, Desert Marigold;
+- desert: Barrel Cactus, Agave (a new `rosette` generator kind);
+- rocks: Shard Boulder, Sandstone Boulder;
+- cliffs: Sandstone Cliff, Mountain Crag (each its own seamless family).
+
+Additions only: no earlier model, picture or table entry changed (the build is byte-identical for them; no new atlas
+cell), so every shipped map looks and plays as before. MapMaker's Environment group lists them; the four presets append
+them. **Cost, measured** (`PERF_STILL=1`, medium, mean of 4 views): the showcase (2,526 placements, today's 8 species
+variants) 177 draws, 1.202 M triangles, 348 casters; the same placements with half of each category swapped to the new
+species (about 30 variants) 371 draws, 1.112 M triangles, 463 casters (High: 284 → 499 draws, 1.813 → 1.701 M triangles, 370 → 484 casters; a loaded box, so High's views did not all settle). Triangles fall (the new species are lighter),
+but each variant is its own batch in each square, so draws grow with the number of different variants in view: a
+mix of many species costs draws, not triangles. Batching a species' variants together (one model, colour per copy) is
+the Phase 5 lever. Still to do in Phase 4: the migration (existing maps' bought or downloaded natural props swapped for
+ours) and retiring the legacy pieces.
+
 **Phase 5 — Polish:** terrain material transitions, seasonal/biome variations if appropriate, LOD/shadow tuning, visual consistency pass.
 
 **Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic

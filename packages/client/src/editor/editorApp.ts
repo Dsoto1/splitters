@@ -110,6 +110,8 @@ import { LeftRail } from './leftRail.ts';
 import { MapSettingsView } from './mapSettingsView.ts';
 import { RightDock } from './rightDock.ts';
 import { MinimapPanel } from './minimapPanel.ts';
+import { TileViewPanel } from './tileViewPanel.ts';
+import { focusRefFor, type FocusRef } from './tileViewModel.ts';
 import { StatusBar } from './statusBar.ts';
 import type { EditorResume } from '../editorResume.ts';
 import { ToolBar } from './toolBar.ts';
@@ -177,6 +179,8 @@ export class EditorApp {
   readonly dock: RightDock;
   /** MapMaker UI spec Phase 3: the live minimap, in the dock's Minimap tab and its compact card (minimapPanel.ts). */
   readonly minimap: MinimapPanel;
+  /** MapMaker UI spec Phase 4a: Tile View, in the dock in the minimap's place while open (tileViewPanel.ts). */
+  readonly tileView: TileViewPanel;
   readonly mapSettings: MapSettingsView;
   readonly rail: LeftRail;
   readonly toolBar: ToolBar;
@@ -315,6 +319,13 @@ export class EditorApp {
     this.outliner = new OutlinerPanel(this, $('ed-outliner'));
     this.dock = new RightDock(this);
     this.minimap = new MinimapPanel(this, { zoom: () => this.dock.minimapZoom(), setZoom: (z) => this.dock.setMinimapZoom(z) });
+    this.tileView = new TileViewPanel(this, {
+      snapCm: () => this.dock.tileSnapCm(),
+      setSnapCm: (cm) => this.dock.setTileSnapCm(cm),
+      frame: () => this.dock.tileFrame(),
+      setFrame: (f) => this.dock.setTileFrame(f),
+      changed: (open) => this.dock.tileViewChanged(open),
+    });
     this.mapSettings = new MapSettingsView(this);
     this.rail = new LeftRail(this);
     this.toolBar = new ToolBar(this);
@@ -618,6 +629,7 @@ export class EditorApp {
     this.hints.frame();
     this.plan.update();
     this.minimap.frame();
+    this.tileView.frame();
     this.statusBar.memoryTick();
     this.view.render();
   }
@@ -828,6 +840,7 @@ export class EditorApp {
     if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
+    this.pieces.renderMyLooks();
     this.topBar.syncToolbar();
     this.outliner.draw(true);
     // Picked anywhere else (the view, a problem, the budget pill): the outliner scrolls its row into view.
@@ -966,6 +979,22 @@ export class EditorApp {
     if (this.plan.on) return this.plan.fit();
     this.view.resetView({ x: 0, y: this.level * this.doc.classicStructure.levelHeight, z: 0 });
     this.toast('View reset (Home)');
+  }
+
+  /**
+   * Tile View (UI spec Phase 4a; owner answers 1 and 8): the selected tile, set piece or group (else an area round the
+   * things selected) from above, in the dock. Enter, a double-click on a selection, or the minimap's button.
+   */
+  openTileView(ref: FocusRef | null = focusRefFor(this.doc, this.selection)): boolean {
+    if (!ref) {
+      this.toast('Tile View: select a tile, a set piece, a group or a thing first (then Enter)');
+      return false;
+    }
+    if (!this.tileView.open(ref)) {
+      this.toast("Tile View: there's nothing there to show", true);
+      return false;
+    }
+    return true;
   }
 
   focusSelection(): void {

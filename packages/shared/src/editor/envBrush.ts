@@ -67,29 +67,32 @@ interface EnvPreset {
   density: number;
 }
 
-/** Biome presets (§8). A preset only sets the mix and filters: any species can be added to any mix. */
+/**
+ * Biome presets (§8). A preset only sets the mix and filters: any species can be added to any mix. Environment Phase 4
+ * appended its species to the mixes (more variety; the earlier entries and their order kept).
+ */
 export const ENV_PRESETS: Record<EnvPresetId, EnvPreset> = {
   temperate: {
     label: 'Temperate woods',
-    species: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2, 'any'], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.rock.pebbles', 1]],
+    species: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2, 'any'], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.rock.pebbles', 1], ['env.broadleaf.birch', 2], ['env.grass.tall', 3]],
     materials: ['grass', 'dirt', 'moss', 'mud'],
     density: 6,
   },
   jungle: {
     label: 'Jungle',
-    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss']],
+    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.grass.tall', 3], ['env.succulent.agave', 1, 'green']],
     materials: ['grass', 'dirt', 'moss', 'mud', 'sand'],
     density: 10,
   },
   alpine: {
     label: 'Alpine',
-    species: [['env.conifer.spruce', 4], ['env.conifer.pine_tall', 3], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1]],
+    species: [['env.conifer.spruce', 4], ['env.conifer.pine_tall', 3], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1], ['env.conifer.mountain_pine', 3], ['env.conifer.larch', 2], ['env.shrub.juniper', 3], ['env.grass.tussock', 3], ['env.flower.alpine', 2, 'any'], ['env.rock.boulder_shard', 1.5]],
     materials: ['grass', 'dirt', 'stone', 'gravel', 'snow', 'moss'],
     density: 4,
   },
   arid: {
     label: 'Arid',
-    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1]],
+    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1], ['env.cactus.barrel', 2, 'any'], ['env.succulent.agave', 2], ['env.shrub.sagebrush', 3], ['env.grass.tussock', 2, 'straw'], ['env.flower.desert', 1, 'any'], ['env.rock.sandstone', 1, 'any'], ['env.broadleaf.olive', 0.5], ['env.conifer.cypress', 0.5]],
     materials: ['sand', 'dirt', 'gravel', 'stone'],
     density: 3,
   },

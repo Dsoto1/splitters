@@ -1,0 +1,25 @@
+{
+  "$comment": "Rosette succulents (tools/content/env/plants.mjs rosetteMesh). Ground cover: decorative only (no collision, no concealment), placeable as a prop and painted by the environment brush. Stiff sword leaves in vertex colour (env.grass), barely swaying. One level of detail. See broadleaf.json for the fields.",
+  "family": "succulent",
+  "species": [
+    {
+      "id": "env.succulent.agave",
+      "displayName": "Agave",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a rosette of stiff, thick sword leaves (0.75 m high, 1.5 m across), the outer ones spreading, the inner ones upright; arid and dry tropical ground. Decoration only (no collision, no concealment)."},
+      "nominalHeight": 0.75,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 35, "minSpacing": 1.2, "scale": [0.6, 1.4]},
+      "generator": {"kind": "rosette", "seed": 73, "length": 0.8, "width": 0.13, "leaves": [12, 12], "elevation": [18, 72]},
+      "lods": [
+        {"distance": 0}
+      ],
+      "variants": [
+        {"index": 0, "name": "blue", "look": {"root": "#556a5c", "tip": "#7f9a8e", "alt": "#8aa494"}},
+        {"index": 1, "name": "green", "look": {"root": "#4a6234", "tip": "#7e9a4e", "alt": "#a0a456"}}
+      ]
+    }
+  ]
+}

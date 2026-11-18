@@ -28,17 +28,25 @@ function shapePoints(sh: EnvShape): [number, number, number][] {
   return out;
 }
 
+/** Environment Phase 4, more variety (2026-11-17): species added through the existing generators. */
+const PHASE4 = [
+  'env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch', 'env.conifer.cypress',
+  'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
+  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
+];
+
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(23);
+    expect(ENV_SPECIES.length).toBe(40);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
-  it('the Phase 1 species, the plants brush flowers, fern, pebbles and eelgrass and the Phase 2 trees, bushes and hedges, each with material variants', () => {
+  it('the Phase 1 species, the plants brush flowers, fern, pebbles and eelgrass, the Phase 2 trees, bushes and hedges and the Phase 4 variety, each with material variants', () => {
     expect(ENV_SPECIES.map((s) => s.id).sort()).toEqual([
       'env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump',
       'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass',
-    ]);
+      ...PHASE4,
+    ].sort());
     for (const s of ENV_SPECIES) {
       expect(s.variants.length, s.id).toBeGreaterThanOrEqual(2);
       // Material variants share the structure, so they share the collision exactly.
@@ -67,7 +75,7 @@ describe('environment data', () => {
     expect(propMaterial('env.cliff.face')).toBe('stone');
     expect(propSurface('env.shrub.broadleaf')).toBe('foliage');
     // The shrub and the fern conceal (the rule bushes follow); grass is decoration only.
-    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.laurel']);
+    expect(ENV_SPECIES.filter((s) => s.conceals).map((s) => s.id).sort()).toEqual(['env.fern.bracken', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.shrub.sagebrush']);
     // Phase 2: palms and the saguaro are full cover like trunks; the hedges are walls of bark-hard cover (the Kenney
     // hedges they replace stopped rounds), the laurel bush foliage.
     for (const id of ['env.broadleaf.maple', 'env.broadleaf.acacia', 'env.conifer.spruce', 'env.palm.coconut', 'env.palm.leaning', 'env.cactus.saguaro', 'env.hedge.privet', 'env.hedge.yew']) expect(propMaterial(id), id).toBe('heavy_wood');
@@ -128,6 +136,46 @@ describe('environment data', () => {
     log.variants[0]!.size.forEach((v, k) => expect(Math.abs(v - getProp('prop.log')!.size[k]!), `log axis ${k}`).toBeLessThan(0.08));
     expect(getProp('env.deadwood.log')!.breakable).toBeUndefined();
     expect(envTilts('env.deadwood.log')).toBe(false);
+  });
+
+  it('Phase 4: the new species play like the ones of their kind (trunks solid, boulders a hull, cliffs a mesh, plants none)', () => {
+    // Trees and the barrel cactus: capsules, the trunk stopping everything; heavy wood.
+    for (const id of ['env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch', 'env.conifer.cypress', 'env.cactus.barrel']) {
+      const s = getEnvSpecies(id)!;
+      const shapes = envVariant(s, 0).shapes;
+      expect([s.category, s.nav, s.role, propMaterial(id)], id).toEqual(['tree', 'obstacle', 'cover', 'heavy_wood']);
+      expect(shapes.length > 0 && shapes.every((sh) => sh.kind === 'capsule') && shapes.some((sh) => sh.blocks === 'all'), id).toBe(true);
+    }
+    expect(envVariant(getEnvSpecies('env.cactus.barrel')!, 0).shapes.length).toBe(1);
+    // The new broadleaf trees keep the broadleaf trees' 30° limit (MapMaker's brush keeps them off steeper ground).
+    for (const id of ['env.broadleaf.birch', 'env.broadleaf.olive']) expect(getEnvSpecies(id)!.placement.maxSlopeDegrees, id).toBe(30);
+    // Boulders: one hull of at most 32 points, stone, a solid nav obstacle.
+    for (const id of ['env.rock.boulder_shard', 'env.rock.sandstone']) {
+      const s = getEnvSpecies(id)!;
+      const shapes = envVariant(s, 0).shapes;
+      expect([shapes.length, shapes[0]!.kind, shapes[0]!.blocks, s.nav, propMaterial(id)], id).toEqual([1, 'hull', 'all', 'obstacle', 'stone']);
+      expect((shapes[0] as Extract<EnvShape, { kind: 'hull' }>).points.length, id).toBeLessThanOrEqual(32);
+    }
+    // The shard stands tall, the sandstone block lies wide.
+    const shard = getEnvSpecies('env.rock.boulder_shard')!.variants[0]!.size;
+    const layered = getEnvSpecies('env.rock.sandstone')!.variants[0]!.size;
+    expect(shard[1]).toBeGreaterThan(Math.max(shard[0], shard[2]));
+    expect(layered[1]).toBeLessThan(Math.min(layered[0], layered[2]));
+    // Cliffs: 8 m panels, a mesh of at most 200 triangles, a nav boundary, blocking.
+    for (const id of ['env.cliff.sandstone', 'env.cliff.crag']) {
+      const s = getEnvSpecies(id)!;
+      const shapes = envVariant(s, 0).shapes;
+      expect([shapes.length, shapes[0]!.kind, s.nav, s.role, propMaterial(id)], id).toEqual([1, 'mesh', 'boundary', 'blocking', 'stone']);
+      expect((shapes[0] as Extract<EnvShape, { kind: 'mesh' }>).indices.length / 3, id).toBeLessThanOrEqual(200);
+      expect(s.variants[0]!.size[0], id).toBeCloseTo(8, 0);
+    }
+    // Plants: no collision; the sagebrush hides a crouched player like the other bushes, the low juniper mat does not.
+    for (const id of ['env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert', 'env.succulent.agave']) {
+      const s = getEnvSpecies(id)!;
+      expect([s.nav, envVariant(s, 0).shapes.length, propSurface(id)], id).toEqual(['none', 0, 'foliage']);
+    }
+    expect(getEnvSpecies('env.shrub.sagebrush')!.role).toBe('cover');
+    expect([getEnvSpecies('env.shrub.juniper')!.role, getEnvSpecies('env.shrub.juniper')!.conceals]).toEqual(['decorative', null]);
   });
 
   it('every shape lies inside the species\' visual bounds', () => {

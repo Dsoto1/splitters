@@ -318,6 +318,12 @@ export class EditorInput {
         if (this.drag.moved) this.updateDrag();
       }
     });
+    // Double-click with Select: Tile View on what was clicked (UI spec Phase 4a; owner answer 1). The first click
+    // has selected it.
+    window.addEventListener('dblclick', (e) => {
+      if (!this.app.active || e.target !== canvas() || e.button !== 0 || this.app.tool.kind !== 'select' || !this.app.selCount()) return;
+      this.app.openTileView();
+    });
     window.addEventListener('pointerdown', (e) => {
       if (!this.app.active || e.target !== canvas()) return;
       (document.activeElement as HTMLElement | null)?.blur?.();
@@ -445,6 +451,9 @@ export class EditorInput {
         return;
       }
       if (isTyping() || document.querySelector('#editor dialog[open]')) return;
+      // Enter on a focused button, tab or panel is theirs: Tile View is Enter with nothing else focused.
+      const focused = document.activeElement;
+      if (b?.action === 'tileView' && focused && focused !== document.body && focused !== this.app.host.canvas) return;
       this.app.keys.add(e.code);
       if (!b) return;
       this.keyActions[b.action](e);
@@ -478,6 +487,8 @@ export class EditorInput {
     // MapMaker overhaul Phase 4 item 3: bot hints (the last kind picked).
     botHints: () => this.app.setTool({ kind: 'bothint', hint: this.app.lastHint }),
     focus: () => this.app.focusSelection(),
+    // Enter: Tile View on the selection (UI spec Phase 4a; owner answer 1).
+    tileView: () => this.app.openTileView(),
     resetView: () => this.app.resetView(),
     logic: () => this.app.logic.toggle(),
     paint: () => this.app.setTool({ kind: 'paint' }),
@@ -508,6 +519,8 @@ export class EditorInput {
       if (this.app.measure.clear() && this.app.tool.kind === 'measure') return this.app.hover.updateHover();
       // Esc drops a jump link half placed, else lets the selected bot hint go.
       if (this.app.hints.escape()) return this.app.hover.updateHover();
+      // Esc in Tile View: the picked thing let go, then back to the minimap (UI spec Phase 4a).
+      if (this.app.tileView.escape()) return;
       this.selectTool();
     },
     showAll: () => this.app.setShowAll(!this.app.showAll),

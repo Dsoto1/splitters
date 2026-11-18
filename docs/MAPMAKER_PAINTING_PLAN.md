@@ -5,7 +5,7 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). **Phase 4 built** ("Phase 4: as built"; map format v45). |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). **Phase 4 built** ("Phase 4: as built"; map format v45). **Phase 5 built** ("Phase 5: as built"; map format v47). |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
 | Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) is **v45** (v44 kept for the tunnel kit's set piece `family`). |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
@@ -489,6 +489,45 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   - change the theme, and the paint stays;
   - save a look and put it on a second piece.
 - The coverage map gets one painted set-piece part and one saved look, placed in MapMaker, so its unit test covers them.
+
+**Phase 5: as built (2026-11-17, a helper of lane B's splitters22, `wip/painting-5`).** Map format **v47**. Per-part
+paint, both scopes and the look layer in the chain were built in Phases 1 and 2; this phase adds looks of your own.
+- **Format** (shared `map/schema.ts`): `MapDocument.lookDefs` (at most 32), each `{ id: my_<name>, displayName, roles }`
+  (`SetPieceLookDef`; the roles are `SetPieceRoleValues`); a placement wears one through its `pack`, as a shipped role
+  pack. Migration v46 -> v47 is an identity step (`migrate.ts` [46]). `withMapLooks` (map/setPieces.ts) adds the map's
+  looks to the role packs wherever a map is expanded (never replacing a shipped pack, never a theme's default); as
+  played the looks are in the parts and the map carries none. The validator: a look's id twice or a shipped id is an
+  error; a material the game hasn't got, or a ground material off floor, paving and roof (2a), a warning.
+- **Commands** (shared `editor/myLooks.ts`, command `setLookDefs`): `saveLookCommand` (the look as it shows:
+  `placementLookRoles`, each role from your paint across the piece, else the look, else the piece's own; a role none
+  gives is **left out**, so it keeps following the theme and the piece looks exactly the same; the piece then wears it,
+  its paint across the piece folded in, paint on single parts kept), `applyLookCommand` (a shipped look, one of yours,
+  or the theme's; your paint stays on top; the look goes into the map, its library copy replacing the map's; looks
+  nobody wears leave), `renameLookCommand`, `lookIdFor`. Deleting and Explode drop looks nobody wears
+  (`unusedLooksCommand`). Copy and paste carry the looks the copied pieces wear (`lookDefs` in the clipboard); a paste
+  into a map with a different look of the same id is refused, as for set pieces. Each is one undo step.
+- **MapMaker** (`setPieceTools.ts`, `storage.ts` `cs.looks`, `index.html` `ed-look-dialog`): the Look select is grouped
+  **This map's themes** / **My looks** / **All looks** (made-for-it ones first, marked), in the inspector and the
+  placing panel; **Save as my look…** under Look (name, the look's colour chips; on a piece wearing one of your looks,
+  an **Update** tick: every piece wearing it changes); **My looks** in the Set pieces tab (chips, how many pieces here
+  wear it, **Apply to selected** / **Place in it**, **Rename…**, **Delete**, **Save to my looks** for a map's own);
+  several set pieces selected get one Look row (`ed-insp-pieces-look`); Materials rows show their layer (your paint is
+  marked). Placing in one of your looks puts it in the map.
+- **Choices made here (the plan's recommendations where it had one):** a look holds roles only (7a); Update is offered
+  but off by default; a role no layer gives is left out of a saved look (exact, no swap) rather than pinned to today's
+  theme material; applying a look keeps the piece's paint across it; a look's library is this browser (no file
+  Export/Import of looks: a map carries the looks it uses); a clashing look on paste is refused.
+- **Tests:** `setPiecePaint.test.ts` (paint through copy and paste; save shows the same, one undo step; a role no layer
+  gives left out; on another piece and through a theme change; library to map and back to the theme; update; rename;
+  the map file and play; delete and Explode; paste; the format, validator and migration), `coverageMap.test.ts` (a
+  painted part and a look two pieces wear), `setPiecePartIndex.test.ts` (the Risks' part-index lock: every part a map in
+  maps/ hides or paints by index, pinned), `paintLooks.test.ts` (shipped maps the same; the coverage map's hash
+  updated). E2E `editorpieces` `editorMyLooksChecks` (save, nothing changes on screen, library, My looks, Apply, the
+  grouped select, rename, theme change, several pieces, a second map from the library, delete, the map dropping an
+  unworn look); screenshots `editorpieces-looks-*.png` at device scale 2 with `E2E_SHOTS`.
+- **Coverage map** (through MapMaker, Import / Structure paint / inspector / Export): one Cage Block pen's bars gold
+  (This surface only), the Bus Shelter's look (its metal rusted plate) saved as **Coverage rust**, worn by the Porch too.
+- Shipped maps: no file changed, every look hash the same. Nothing flashes: a dialog, a list and colour chips.
 
 **After each phase:** docs/BUILDING_KIT.md, HANDOFF and CHANGELOG (Unreleased). Run `pnpm typecheck`, `pnpm test:changed`
 and `pnpm e2e:changed`, then a check branch.

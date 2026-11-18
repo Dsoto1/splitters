@@ -32,6 +32,7 @@ import {
   type SetPieceMaterialRole,
   type SetPiecePart,
   type SetPiecePlacement,
+  type SetPieceLookDef,
   type SetPieceRoleValues,
   type SetPieceRoleValuesInput,
   type SurfaceStyle,
@@ -59,6 +60,27 @@ export type SetPieceRolePackInput = Omit<SetPieceRolePack, 'roles'> & { roles: S
 export interface SetPieceLibrary {
   pieces: ReadonlyMap<string, SetPieceDefinition>;
   packs: ReadonlyMap<string, SetPieceRolePack>;
+}
+
+/** A look of the player's own (a map's `lookDefs`, or their browser library) as a role pack: the default for no theme. */
+export const lookAsPack = (look: SetPieceLookDef): SetPieceRolePack => ({ id: look.id, displayName: look.displayName, themes: [], roles: look.roles });
+
+const lookCache = new WeakMap<readonly SetPieceLookDef[], { library: SetPieceLibrary; out: SetPieceLibrary }>();
+
+/**
+ * The library with the map's own looks (`lookDefs`, format v47) among its role packs, so a placement that names one is
+ * drawn and played in it. A map's look never replaces a shipped pack. No looks: the library as it is.
+ */
+export function withMapLooks<L extends SetPieceLibrary>(doc: Pick<MapDocument, 'lookDefs'>, library: L): L {
+  const looks = doc.lookDefs;
+  if (!looks?.length) return library;
+  const hit = lookCache.get(looks);
+  if (hit?.library === library) return hit.out as L;
+  const packs = new Map(library.packs);
+  for (const l of looks) if (!packs.has(l.id)) packs.set(l.id, lookAsPack(l));
+  const out = { ...library, packs };
+  lookCache.set(looks, { library, out });
+  return out;
 }
 
 /** The grid set pieces are built for: their tiles' parts and their entities' metres assume it. */
@@ -484,7 +506,7 @@ function placeEntityPart(
 
 /** What expanding a map's set pieces gives. */
 export interface SetPieceExpansion {
-  /** The map as played: every placement's parts added to its tiles and entities, and no `setPieces` (nor `setPieceDefs`). */
+  /** The map as played: every placement's parts added to its tiles and entities, and no `setPieces` (nor `setPieceDefs`, nor `lookDefs`). */
   map: MapDocument;
   /** What stopped a placement expanding, or was ignored: unknown pieces, mirrored pieces that can't be, overrides that don't apply. */
   issues: ValidationIssue[];
@@ -514,11 +536,18 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
   const issues: ValidationIssue[] = [];
   const partOf = new Map<string, string>();
   const footprints = new Map<string, [number, number, number][]>();
-  if (doc.setPieces === undefined && doc.setPieceDefs === undefined) return { map: doc, issues, partOf, footprints };
+  if (doc.setPieces === undefined && doc.setPieceDefs === undefined && doc.lookDefs === undefined) return { map: doc, issues, partOf, footprints };
   const pieces = piecesFor(doc, library);
-  const { setPieces: _p, setPieceDefs: _d, ...rest } = doc;
+  library = withMapLooks(doc, library);
+  const { setPieces: _p, setPieceDefs: _d, lookDefs: _l, ...rest } = doc;
   void _p;
   void _d;
+  void _l;
+  const lookIds = new Set<string>();
+  for (const l of doc.lookDefs ?? []) {
+    if (lookIds.has(l.id)) issues.push({ severity: 'error', code: 'setpiece.look_id', message: `the map defines look ${l.id} twice` });
+    lookIds.add(l.id);
+  }
   for (const d of doc.setPieceDefs ?? []) {
     if (!d.id.startsWith('local.')) issues.push({ severity: 'error', code: 'setpiece.def_id', message: `the map's own set piece ${d.id} must be named local.<name> (setpiece.* are the shipped ones)` });
     else if ((doc.setPieceDefs ?? []).filter((o) => o.id === d.id).length > 1) issues.push({ severity: 'error', code: 'setpiece.def_id', message: `the map defines set piece ${d.id} twice` });

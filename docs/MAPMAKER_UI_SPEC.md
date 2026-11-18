@@ -286,6 +286,69 @@ drawing and the pointer), `minimap.css`, and the dock (`rightDock.ts`, `dockPref
 ### Phase 4 — Tile Detail precision editor
 Implement tile focus, child picking, move/rotate/snap, numeric transforms, local/world coordinates, history integration, and immediate 3D updates. Gate generated-child overrides behind verified generator support.
 
+**Phase 4a: as built (a helper of lane B's splitters22, `wip/mapmaker-ui-4`, 2026-11-17; no map format change).** The
+lead's note 3 and owner answers 1 and 8. Phase 4b (set-piece overrides) is **not built**: owner answer 9 parks it until
+4a is in use. Files under `packages/client/src/editor/`: `tileViewModel.ts` (the maths, pure), `tileViewPanel.ts` (the
+drawing, pointer and keys), `tileView.css`; wired in `rightDock.ts`, `dockPrefs.ts`, `editorApp.ts` (`openTileView`),
+`editorInput.ts` (Enter, double-click, Esc), `minimapPanel.ts` (double-click, ⊞) and shared `editor/keymap.ts`.
+
+- **Opening it** (owner answer 1): **Enter** on a selection (only with nothing else focused, so Enter on a button stays
+  the button's), a **double-click** with Select in the view or on the minimap (the tile or set piece there), or the
+  minimap's **⊞**. It is an asked-for action, so it expands the dock and shows the Minimap tab; selecting alone still
+  never opens a hidden dock. **Esc** (in the plan or the view) lets the picked thing go and selects the focus, then goes
+  back to the minimap; **← Map** and the breadcrumbs' "Map" too.
+- **Where it shows** (a choice the spec left open, taken as recommended): in the expanded dock **in the minimap's
+  place** (the spec says "under the minimap"; the dock is too short for both and Properties), with Properties below.
+  A compact or hidden dock shows the minimap card or nothing, and Tile View runs nothing while unseen.
+- **The focus** (owner answer 8): a tile, a set piece or a group (what the selection is: a whole group first, then its
+  tile or set piece), else an **area**: the cells round the things selected; on the minimap, the cell clicked. The level
+  shown is the one being edited if the focus has cells there, else its lowest (MapMaker's level follows it).
+- **The plan** (north up, like the minimap; recommendation, owner question 2): the level drawn from MapMaker's cached
+  boxes, the focus bright and the rest dimmed, its outline white (the parent) or cyan (selected), a grid on the snap
+  step from the frame's origin, the local axes (x red, z green) at the anchor, a scale bar and N, the pointer's place in
+  the chosen coordinates. Wheel zoom about the pointer, drag empty space (or right/middle drag) to pan, ⌂ fits.
+  Breadcrumbs: **Map › Shop › Prop 1** (the focus's crumb selects it).
+- **Children** (the audit's §6): things standing in it on that level (props, blocks, lights, door leaves, logic…): a
+  click picks one and selects it everywhere (`setSelection`, single, so a group's member can be picked; a moving build
+  whole); a **drag** previews in the plan and commits **one** shared transform (`{ by: { metres } }`) on release, on
+  the snap step **1 / 5 / 10 / 50 cm** (Ctrl, Shift or Meta held: free, to the millimetre); the **arrow keys** nudge a
+  step along the frame's axes (Shift: 1 cm), **R** turns 15° (Shift+R back), each one undo step. The fields under the
+  plan: **X, Z, Height, Facing**, in **Local** (tile-relative: from the anchor cell's middle, turned by the tile's
+  quarter turns; a group's or area's from its south-west corner, unturned: recommendation, owner question 3) or
+  **World**. Typed values go through the same command (X/Z as a move, Height as `set`, Facing as `face`). The snap and
+  the frame are kept in `tiletrigger.editor.dock` (`tileSnap`, `tileFrame`; defaults 10 cm and Local not written),
+  never in the map. The numbers are in Tile View, not in Properties (which keeps its world X / Height / Z: owner
+  question 6).
+- **Cell sides** (lead's note 3: doors and windows are edge styles): every outer side of the focus's tiles, coloured by
+  what is built (door-like green, window blue, wall grey, open dashed). A click picks one (its tile becomes the
+  selection), and Style and Glass change it through `setEdge`, as the Walls tool and the inspector do. This also
+  reaches multi-cell tiles' sides, which the inspector's Walls rows leave to the Walls tool.
+- **Generated content** (§4.3): a set piece's parts are drawn hollow and dashed, can be picked (named "… (part)"), and
+  say they are made by the set piece, pointing to Properties' Parts and Explode to tiles; a drag on one moves nothing.
+  A set piece's tile sides aren't listed. Nothing pretends to be editable.
+- **Kept the same:** no map format change; collision, the minimap and checks follow every edit because Tile View only
+  makes the existing commands; locked and hidden things can't be picked; the shipped maps are untouched.
+- **Not done:** Phase 4b; a rotate handle in the plan (R and the Facing field instead); dragging a door leaf along its
+  wall (it is a thing, moved like any other); snap to wall segment, edge or anchor (the grid snap only).
+- **Tests:** unit `client/test/tileView.test.ts` (local/world under every turn, a turned tile carrying its thing's local
+  place and facing, the snap, a drag as one command and one undo, the focus kinds and how a selection or point picks
+  them, children and parts by level, cell sides and a style change, picks, breadcrumbs, the kept prefs); e2e
+  `editorTileViewChecks` in `editortools` (kept out of `editorux`, already about 20 minutes on CI; Enter, the dock, breadcrumbs, click, drag on the turned tile's snap as one undo,
+  arrow and R, Local and World fields, a side made a door, Esc twice, a double-click on the minimap's set piece and its
+  read-only part, nothing in the map, compact) and `editorTileViewMoveChecks` (a moving build picked
+  whole, dragged as one step, a local Facing in a room turned 180°).
+
+**Owner questions on Phase 4a** (recommended first; built as recommended):
+1. Where Tile View shows: (a) in the expanded dock in the minimap's place, Properties below; (b) under the minimap as
+   the spec says (both smaller); (c) a third dock tab.
+2. The plan's orientation: (a) north up like the minimap, with the tile's local axes drawn; (b) turned so the tile's
+   own north is up.
+3. A group's or area's local origin: (a) its south-west corner; (b) its middle.
+4. R in Tile View: (a) 15° (Shift+R back), the Facing field for any angle; (b) MapMaker's own R step for that kind.
+5. Phase 4b (set-piece overrides): (a) still parked until 4a is in use (owner answer 9); (b) start it next.
+6. Local numbers: (a) only in Tile View, Properties keeps world X / Height / Z; (b) Local fields in Properties too while
+   Tile View is open.
+
 ### Phase 5 — Hardening and polish
 Test existing saved maps, serialization/migrations, collision/pathing updates, browser resizing, large-map performance, keyboard accessibility, and user preference persistence. Remove redundant instructional chrome.
 

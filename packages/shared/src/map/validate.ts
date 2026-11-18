@@ -288,7 +288,7 @@ function groupIssues(map: MapDocument): ValidationIssue[] {
 }
 
 function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPieceLibrary): ValidationIssue[] {
-  if (map.setPieces === undefined && map.setPieceDefs === undefined) return validateExpanded(map, map, catalog);
+  if (map.setPieces === undefined && map.setPieceDefs === undefined && map.lookDefs === undefined) return validateExpanded(map, map, catalog);
   const ex = expandSetPieces(map, library, catalog);
   const issues: ValidationIssue[] = [];
   const taken = new Set([...map.classicStructure.tiles.map((t) => t.id), ...map.entities.map((e) => e.id)]);
@@ -301,6 +301,15 @@ function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPiec
   const played = ex.map === map ? 0 : utf8Length(JSON.stringify(ex.map));
   if (played > RESOURCE_BUDGETS.mapBytes) issues.push({ severity: 'error', code: 'budget.bytes', message: `as played (its set pieces expanded) the map is ${(played / 1048576).toFixed(1)} MB: at most ${RESOURCE_BUDGETS.mapBytes / 1048576} MB` });
   for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
+  // The map's own looks (v47): each role a material the game has; a ground material only on floor, paving and roof (painting plan, 2a).
+  for (const look of map.lookDefs ?? []) {
+    for (const [role, v] of Object.entries(look.roles)) {
+      if (!v || typeof v !== 'object') continue;
+      if (!coreMaterials.get(v.material)) issues.push({ severity: 'warning', code: 'setpiece.look', message: `the map's look "${look.displayName}" (${look.id}): ${role} is ${v.material}, which is not a material (it takes the theme's)` });
+      else if (isGroundMaterial(v.material) && role !== 'floor' && role !== 'paving' && role !== 'roof') issues.push({ severity: 'warning', code: 'setpiece.look', message: `the map's look "${look.displayName}" (${look.id}): ${role} is the ground material ${v.material}, which goes on floors, paving and roofs only` });
+    }
+    if (library.packs.has(look.id)) issues.push({ severity: 'error', code: 'setpiece.look_id', message: `the map's look ${look.id} has the id of a shipped look` });
+  }
   for (const i of validateExpanded(ex.map, map, catalog)) {
     const placement = i.targetId ? ex.partOf.get(i.targetId) : undefined;
     issues.push(placement ? { ...i, targetId: placement } : i);

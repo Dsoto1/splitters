@@ -1111,6 +1111,23 @@ export type SetPieceRoleValues = z.infer<typeof SetPieceRoleValues>;
 export type SetPieceRoleValuesInput = z.input<typeof SetPieceRoleValues>;
 
 /**
+ * A look of the player's own (format v47, painting Phase 5): a named set of role values, saved in MapMaker ("Save as
+ * my look…") from a set piece's look as it shows. It lives in the player's browser library and, once a placement uses
+ * it, in the map's `lookDefs`, so the map plays anywhere. A placement names it in `pack` as it names a shipped role
+ * pack. Roles only, so it fits any set piece (painting plan, question 7a); paint on single parts stays with its
+ * placement. Its id is `my_<name>` (shipped role packs never start with `my_`).
+ */
+export const SetPieceLookId = z.string().regex(/^my_[a-z0-9_]{1,29}$/, 'your own looks are named my_<name> (lower case letters, digits and _, up to 32 characters)');
+export const SetPieceLookDef = z.object({
+  id: SetPieceLookId,
+  displayName: z.string().min(1).max(48),
+  roles: SetPieceRoleValues,
+});
+export type SetPieceLookDef = z.infer<typeof SetPieceLookDef>;
+/** How many looks of its own a map may carry. */
+export const MAX_MAP_LOOK_DEFS = 32;
+
+/**
  * A set piece's options (format v42): named choices a placement makes in MapMaker's inspector (`overrides.options`),
  * such as a dorm bay's room doors, wide or slim. A part with `when` is in the piece only while every option it names
  * has that value (an option a placement leaves unset is its first choice), so a choice swaps parts in and out. Parts
@@ -1369,6 +1386,8 @@ export const MapDocument = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024).optional(),
   /** Set pieces this map defines itself (v27, `local.*`: saved from a selection in MapMaker), so it plays anywhere. Absent: none. */
   setPieceDefs: z.array(SetPieceDefinition).max(64).optional(),
+  /** Looks of the player's own its set pieces use (v47, `my_*`: saved in MapMaker), so it plays anywhere. Absent: none. */
+  lookDefs: z.array(SetPieceLookDef).max(MAX_MAP_LOOK_DEFS).optional(),
   /** MapMaker's groups (v31): things kept together while editing. Absent: none. Play ignores them. */
   groups: z.array(MapGroup).max(256).optional(),
   /** Notes for the map's makers, pinned on the map (v31): shown in MapMaker, never in play. Absent: none. */

@@ -45,6 +45,49 @@
         { "index": 0, "name": "green", "look": { "bark": "#4e4236", "leaves": ["#46682f", "#517536", "#3e5d2b"], "jitter": 0.12 } },
         { "index": 1, "name": "dry", "look": { "bark": "#5a4c3e", "leaves": ["#6e7040", "#7c7a46", "#62653a"], "jitter": 0.14 } }
       ]
+    },
+    {
+      "id": "env.shrub.juniper",
+      "displayName": "Creeping Juniper",
+      "category": "plant",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a low, wide mat of needle sprays (0.7 m high, 1.9 m across) on many short spreading stems; alpine slopes and rocky ground. Too low to hide in: decoration (no collision, no concealment)."},
+      "nominalHeight": 0.7,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 45, "minSpacing": 1.6, "scale": [0.7, 1.4]},
+      "generator": {"kind": "shrub", "seed": 66, "height": 0.7, "width": 1.9, "stems": [6, 8], "cardSize": 0.42, "stemReach": 0.9, "cards": ["needle.0", "needle.1", "needle.2", "needle.3"]},
+      "lods": [
+        {"distance": 0, "stems": true, "cards": 100, "cardScale": 1},
+        {"distance": 25, "stems": false, "cards": 44, "cardScale": 1.5}
+      ],
+      "impostor": {"distance": 60, "size": 128},
+      "variants": [
+        {"index": 0, "name": "green", "look": {"bark": "#4e4236", "leaves": ["#3c5a34", "#46663a", "#35502e"], "jitter": 0.1}},
+        {"index": 1, "name": "blue", "look": {"bark": "#4e4236", "leaves": ["#4c6660", "#587268", "#445c56"], "jitter": 0.1}}
+      ]
+    },
+    {
+      "id": "env.shrub.sagebrush",
+      "displayName": "Sagebrush",
+      "category": "plant",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a rounded, open desert bush of small silver-grey leaf clusters on woody stems (0.95 m); arid ground. Conceals like the other bushes (a crouched player)."},
+      "nominalHeight": 0.95,
+      "nav": "none",
+      "role": "cover",
+      "conceals": true,
+      "placement": {"maxSlopeDegrees": 40, "minSpacing": 1.4, "scale": [0.7, 1.4]},
+      "generator": {"kind": "shrub", "seed": 67, "height": 0.95, "width": 1.3, "stems": [6, 9], "cardSize": 0.34, "stemReach": 0.78},
+      "lods": [
+        {"distance": 0, "stems": true, "cards": 110, "cardScale": 1},
+        {"distance": 25, "stems": false, "cards": 48, "cardScale": 1.5}
+      ],
+      "impostor": {"distance": 60, "size": 128},
+      "variants": [
+        {"index": 0, "name": "grey", "look": {"bark": "#5c5040", "leaves": ["#8a957a", "#97a086", "#7c876e"], "jitter": 0.1}},
+        {"index": 1, "name": "dry", "look": {"bark": "#5c5040", "leaves": ["#9a9474", "#a49c7c", "#8a8466"], "jitter": 0.12}}
+      ]
     }
   ]
 }

@@ -132,6 +132,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // step 5, Stangeland / Cord). Nothing an older map says changes meaning: v45 data is valid as is. The bump is for the
   // other direction: an older build refuses a v46 map outright instead of failing on a style it has never heard of.
   [45, (doc) => ({ ...doc })],
+  // v46 -> v47: the map's own looks, `lookDefs` (docs/MAPMAKER_PAINTING_PLAN.md, "Format change B"; painting Phase 5:
+  // looks saved in MapMaker that its set pieces name in `pack`). Absent = none: v46 data is valid as is. The bump is
+  // for the other direction: an older build would draw a placement in an unknown look as the theme's.
+  [46, (doc) => ({ ...doc })],
 ]);
 
 /**

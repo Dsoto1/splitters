@@ -35,6 +35,21 @@ is still there; this says where each one is now.
   - **hidden:** gone; the view has the width. Selecting something never opens a hidden dock; the status bar says what
     is selected.
   Under 900 px wide the dock starts compact.
+- **Tile View** (`tileViewPanel.ts`, maths in `tileViewModel.ts`; UI spec Phase 4a): the selected tile, set piece or
+  group from straight above, in the expanded dock in the minimap's place. **Enter** (nothing else focused), a
+  **double-click** on a selection in the view or on the minimap, or the minimap's **⊞** opens it; **Esc** steps back
+  (the picked thing, then the minimap), as does **← Map**. Selecting things alone is an area round them.
+  - Breadcrumbs: Map › the focus › what is picked in it; the focus outlined white, the child cyan.
+  - Things standing in it (props, blocks, lights, door leaves, movers whole): click to pick, drag to move on the snap
+    step (**1 / 5 / 10 / 50 cm**; hold Ctrl or Shift: free), **arrow keys** nudge a step (Shift: 1 cm), **R** turns
+    15° (Shift+R back). Below the plan: **X / Z / Height / Facing** in **Local** (from the tile's anchor cell, turned
+    with it) or **World** coordinates. One drag is one undo step; everything goes through the same transform command
+    as the view.
+  - **Cell sides**: click a wall to change its style and glass (doors and windows are edge styles; never dragged). This
+    reaches every side of a multi-cell tile, which the inspector's Walls rows don't.
+  - **Set pieces**: their parts are shown and can be picked, but are read-only (Parts in Properties, or Explode to
+    tiles, to edit them).
+  - The snap and Local/World are kept in this browser with the dock, never in the map.
 - **Map settings** (`mapSettingsView.ts`, fields in `mapProperties.ts`): a view in the right dock, not a dialog, so
   the 3D view stays live beside it (the time-of-day preview, framing the picture and the card shot). The title, the
   rail's Map and the inspector's "Map settings…" open it; × closes it; selecting something closes it. Its groups:
@@ -447,6 +462,19 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   undo step. The **inspector** shows the piece and its family, its **Look**, **Mirror**, X / Y / Level and turn, its
   **ports**, and the **overrides**: a role's material (Stone, Trim, Floor, Paving, Roof, Wood, Metal; the facade, the
   doors' style, the glass) for this placement only, and its **parts**, each with a tick: untick one to leave it out.
+- **Looks of your own (painting Phase 5, format v47).** The inspector's **Look** is grouped: the map theme's, **This
+  map's themes** (the looks of the packs for the map's Structure theme), **My looks**, **All looks** (those made for the
+  piece first). **Save as my look…** (under Look) names the piece's look as it shows, your paint across the piece
+  included, and keeps it in this browser; the piece then wears it and looks exactly the same (a role no layer gives is
+  left out, so it keeps following the theme). On a piece wearing one of your looks the dialog offers **Update** it:
+  every piece wearing it changes with it. **My looks** (Set pieces tab) lists your looks and the map's own: **Apply**
+  puts the selected set pieces in one (with none selected, **Place in it** makes it the look new pieces are placed in),
+  **Rename…**, **Delete** (maps keep their copy), and **Save to my looks** for a look that came with a map. Several
+  set pieces selected get one Look row. A map carries the looks its pieces wear (`lookDefs`, ids `my_<name>`; at most
+  32), so it plays anywhere; a look nobody wears leaves the map (deleting, Explode, another look). A look holds roles
+  only (stone, trim, floor, paving, roof, wood, metal, facade, doors, glass), so it fits any piece; paint on single
+  parts stays with its placement. Layers: the Structure theme, then the look, then your paint. Copy and paste carry
+  the looks the copied pieces wear (a paste into a map with a different look of the same id is refused).
 - **Ports** (where a piece meets what's round it: its doors and openings) are drawn on the ghost's and the selected
   piece's outline: a door frame and an arrow out, blue for a door, green for an opening, **red and crossed where a wall
   stands in it** (a tile's wall or window, a block: MapMaker looks just outside the port, at waist to chest height),
