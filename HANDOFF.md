@@ -62,6 +62,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: gun handling and player profiles Phase 1 in a train** (`check/train-20261118-081943` at 4f7f3d40, run 44266084167, green on attempt 1; main fast-forwarded by `train.mjs --land`, the first train started with `--ready --run`; lane B's splitters22, 2026-11-18; lock freed). The owner redeploys the hub for profiles.
+
 **Landed: process tooling and MapMaker UI Phase 5 in a train** (`check/train-20261118-073142` at 5396d789, run 44259596787, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
 
 **Landed: environment Phase 4 and painting Phase 5 (map format v47) in a train** (`check/train-20261118-050653` at 81f7e8de, run 44242217181, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
