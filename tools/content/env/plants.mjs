@@ -318,3 +318,69 @@ export function rosetteMesh(seed, g, look) {
   }
   return { leaves: m };
 }
+
+/**
+ * A broadleaf understory plant (env.shrub.elephant_ear, the jungle set; environment Phase 5): a clump of long
+ * stalks rising from one root, each holding a big heart-shaped blade that hangs out and down from the stalk's top,
+ * folded along its midrib, the paler vein down its middle. Vertex colour only (env.grass: double-sided, no
+ * texture). `g` = { leaves: [min, max], stalk (m), blade (m), width (share of the blade), elevation: [outer, inner]
+ * (degrees), droop }; `look` = { stalk, leaf, alt, vein }; `lod` = { segs } (segments along a blade).
+ */
+export function leafPlantMesh(seed, g, look, lod) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const stalkCol = toLinear(look.stalk);
+  const leafCol = toLinear(look.leaf);
+  const altCol = toLinear(look.alt ?? look.leaf);
+  const veinCol = toLinear(look.vein ?? look.leaf);
+  const n = r.int(g.leaves[0], g.leaves[1]);
+  const segs = lod.segs ?? 5;
+  let az = r.next() * Math.PI * 2;
+  for (let b = 0; b < n; b++) {
+    az += ((137.5 + r.jitter(20)) * Math.PI) / 180;
+    const inner = b / Math.max(1, n - 1);
+    const out = [Math.cos(az), 0, Math.sin(az)];
+    const rise = ((g.elevation[0] + (g.elevation[1] - g.elevation[0]) * inner + r.jitter(6)) * Math.PI) / 180;
+    const stalkL = g.stalk * (0.75 + 0.35 * inner) * r.range(0.85, 1.1);
+    const sdir = norm(add(mul(out, Math.cos(rise)), [0, Math.sin(rise), 0]));
+    const top = add(mul(out, 0.04), mul(sdir, stalkL));
+    const side = norm(cross([0, 1, 0], out));
+    const tint = r.chance(0.35) ? altCol : leafCol;
+    const shade = 0.8 + 0.3 * r.next();
+    const sway = (p) => [Math.min(1, Math.max(0, p[1]) / (g.stalk + g.blade)) ** 1.3 * 0.7, 0];
+    // The stalk: a narrow strip, a little bowed.
+    const stalkPts = [0, 0.5, 1].map((t) => add(mul(sdir, stalkL * t), [0, 0, 0]).map((v, i) => v + out[i] * 0.04 * t + (i === 1 ? 0 : 0)));
+    strip(m, stalkPts, side, 0.05, 0.03, norm(add(out, [0, 0.4, 0])), () => stalkCol.map((v) => v * shade), (t) => sway(stalkPts[Math.round(t * 2)]), false);
+    // The blade: from the stalk's top, out and drooping, a heart's width profile to a point, folded along the midrib.
+    const L = g.blade * (0.8 + 0.3 * (1 - inner)) * r.range(0.9, 1.1);
+    const W = L * g.width;
+    const tilt = ((-10 - g.droop * 40 * (1 - inner) + r.jitter(8)) * Math.PI) / 180;
+    let dir = norm(add(mul(out, Math.cos(tilt)), [0, Math.sin(tilt), 0]));
+    const fold = 0.18 + r.next() * 0.12;
+    const rows = [];
+    let p = add(top, mul(dir, -L * 0.12));
+    for (let k = 0; k <= segs; k++) {
+      const t = k / segs;
+      // A heart: wide lobes at the stalk, widest a third along, to a point.
+      const half = (W / 2) * Math.max(0, Math.sin(Math.PI * (0.36 + 0.64 * t))) ** 0.6;
+      const up = norm(cross(dir, side));
+      const nrm = up[1] < 0 ? mul(up, -1) : up;
+      const edgeDrop = mul(nrm, -half * fold);
+      const w = sway(p);
+      const c = (k2) => tint.map((v, i) => (v * (0.85 + 0.25 * t) + (veinCol[i] - v) * k2) * shade);
+      rows.push([
+        m.vertex(add(add(p, mul(side, -half)), edgeDrop), nrm, [0, t], c(0), [w[0], 1]),
+        m.vertex(p, nrm, [0.5, t], c(0.55), [w[0], 1]),
+        m.vertex(add(add(p, mul(side, half)), edgeDrop), nrm, [1, t], c(0), [w[0], 1]),
+      ]);
+      // The blade curves down toward its tip.
+      dir = norm(add(dir, [0, -g.droop * 0.35 / segs, 0]));
+      p = add(p, mul(dir, L / segs));
+    }
+    for (let k = 0; k < segs; k++) {
+      m.quad(rows[k][0], rows[k][1], rows[k + 1][1], rows[k + 1][0]);
+      m.quad(rows[k][1], rows[k][2], rows[k + 1][2], rows[k + 1][1]);
+    }
+  }
+  return { leaves: m };
+}

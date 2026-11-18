@@ -4,6 +4,8 @@ import {
   ENV_CATEGORIES,
   ENV_PRESETS,
   ENV_PRESET_IDS,
+  ENV_SEASONS,
+  ENV_SEASON_LABELS,
   ENV_SPECIES,
   MAP_BUDGETS,
   TERRAIN_MATERIALS,
@@ -21,6 +23,7 @@ import {
   groundSampler,
   keepClearZones,
   newId,
+  seasonCommand,
   terrainHeightAt,
   withPreset,
   type BudgetCounts,
@@ -28,6 +31,7 @@ import {
   type EnvBrush,
   type EnvCategory,
   type EnvPresetId,
+  type EnvSeason,
   type KeepClearZone,
   type MapDocument,
   type PropDefinition,
@@ -71,6 +75,8 @@ const TURNS: readonly [number, string][] = [[180, 'Any way'], [90, '±90°'], [4
 export class EnvTools {
   brush: EnvBrush = structuredClone(ENV_BRUSH_DEFAULTS);
   preset: EnvPresetId | 'custom' = 'temperate';
+  /** The season the pane's Apply sets the whole map to. */
+  season: EnvSeason = 'autumn';
   mode: 'paint' | 'erase' = 'paint';
   /** The eraser takes every species, not only the brush's. */
   eraseAll = false;
@@ -348,6 +354,25 @@ export class EnvTools {
       this.overlayDoc = null;
       this.refresh();
     });
+    // A season across the whole map (Phase 5, shared/editor/envSeason.ts): one undo step, looks only.
+    heading('Season (whole map)');
+    const seasonRow = add(document.createElement('div'));
+    seasonRow.className = 'ed-row-buttons';
+    const season = document.createElement('select');
+    season.id = 'ed-env-season';
+    season.title = 'Every placed tree, plant and rock takes its look for the season; looks picked on purpose (moss, flower colours) stay';
+    for (const id of ENV_SEASONS) season.append(new Option(ENV_SEASON_LABELS[id], id, false, id === this.season));
+    season.addEventListener('change', () => (this.season = season.value as EnvSeason));
+    const apply = document.createElement('button');
+    apply.id = 'ed-env-season-apply';
+    apply.textContent = 'Apply to map';
+    apply.title = 'Set every placed species to its look for this season (one undo step; play is unchanged)';
+    apply.addEventListener('click', () => {
+      const cmd = seasonCommand(this.host.doc(), this.season);
+      if (!cmd) return this.host.toast(`Already ${ENV_SEASON_LABELS[this.season].toLowerCase()}: nothing to change`);
+      if (this.host.run(`Season: ${ENV_SEASON_LABELS[this.season]}`, cmd)) this.host.toast(`${cmd.after.length} placements set to ${ENV_SEASON_LABELS[this.season].toLowerCase()}`);
+    });
+    seasonRow.append(season, apply);
     const status = add(document.createElement('div'));
     status.id = 'ed-env-status';
     status.className = 'ed-note';

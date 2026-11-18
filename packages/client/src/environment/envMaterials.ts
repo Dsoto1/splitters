@@ -51,6 +51,9 @@ const ROCK_GAIN = (3.1).toFixed(2);
 /** The vertex attribute carrying wind weights (x: sway, 0 at the ground to 1 at branch tips; y: leaf flutter). */
 export const ENV_WIND_KIND = 'envWind';
 
+/** The instance value naming a copy's look, and (with 1, 2, 3 after it) the vertex attributes of the looks past the first (EnvLooksPlugin). */
+export const ENV_LOOK_KIND = 'envLook';
+
 class EnvWindPlugin extends MaterialPluginBase {
   constructor(
     material: Material,
@@ -121,6 +124,82 @@ class EnvWindPlugin extends MaterialPluginBase {
 // Cloning a material re-creates its plugins by class name (Tools.Instantiate): without this, cloning a species'
 // material (MapMaker's ghost of a tree in hand) threw "reading 'EnvWindPlugin'".
 RegisterClass('BABYLON.EnvWindPlugin', EnvWindPlugin);
+
+/**
+ * Shared looks (environment/envLooks.ts): a mesh drawing several looks of one species carries each look's vertex
+ * colours past the first as `envLook1`… and each copy its look as `envLook` (0 = the mesh's own colours); this picks
+ * that copy's colours in the vertex shader. Only the looks materials (`EnvMaterials.get(name, own, looks)`) have it,
+ * so every mesh drawn with them has the attributes. GLSL and WGSL.
+ */
+class EnvLooksPlugin extends MaterialPluginBase {
+  constructor(
+    material: Material,
+    /** How many looks past the first the meshes carry (1–3). */
+    private readonly extra: number = 1,
+  ) {
+    super(material, 'EnvLooks', 210, { ENVLOOKS: 0 });
+    this._enable(true);
+  }
+
+  override getClassName(): string {
+    return 'EnvLooksPlugin';
+  }
+
+  override isCompatible(shaderLanguage: ShaderLanguage): boolean {
+    return shaderLanguage === ShaderLanguage.GLSL || shaderLanguage === ShaderLanguage.WGSL;
+  }
+
+  override prepareDefines(defines: MaterialDefines): void {
+    defines['ENVLOOKS'] = this.extra;
+  }
+
+  override getAttributes(attributes: string[]): void {
+    attributes.push(ENV_LOOK_KIND);
+    for (let i = 1; i <= this.extra; i++) attributes.push(`${ENV_LOOK_KIND}${i}`);
+  }
+
+  override getCustomCode(shaderType: string, shaderLanguage: ShaderLanguage = ShaderLanguage.GLSL): Nullable<{ [pointName: string]: string }> {
+    if (shaderType !== 'vertex') return null;
+    const n = this.extra;
+    const ids = Array.from({ length: n }, (_, i) => i + 1);
+    if (shaderLanguage === ShaderLanguage.WGSL) {
+      return {
+        CUSTOM_VERTEX_DEFINITIONS: `attribute ${ENV_LOOK_KIND}: f32;\n${ids.map((i) => `attribute ${ENV_LOOK_KIND}${i}: vec4f;\n`).join('')}`,
+        CUSTOM_VERTEX_MAIN_END: `
+#ifdef VERTEXCOLOR
+{
+  var envLc = vertexInputs.color;
+${ids.map((i) => `  if (vertexInputs.${ENV_LOOK_KIND} > ${i - 0.5}) { envLc = vertexInputs.${ENV_LOOK_KIND}${i}; }\n`).join('')}
+#ifdef VERTEXALPHA
+  vertexOutputs.vColor = envLc;
+#else
+  vertexOutputs.vColor = vec4f(envLc.rgb, vertexOutputs.vColor.a);
+#endif
+}
+#endif
+`,
+      };
+    }
+    return {
+      CUSTOM_VERTEX_DEFINITIONS: `attribute float ${ENV_LOOK_KIND};\n${ids.map((i) => `attribute vec4 ${ENV_LOOK_KIND}${i};\n`).join('')}`,
+      CUSTOM_VERTEX_MAIN_END: `
+#ifdef VERTEXCOLOR
+{
+  vec4 envLc = color;
+${ids.map((i) => `  if (${ENV_LOOK_KIND} > ${i - 0.5}) envLc = ${ENV_LOOK_KIND}${i};\n`).join('')}
+#ifdef VERTEXALPHA
+  vColor = envLc;
+#else
+  vColor.rgb = envLc.rgb;
+#endif
+}
+#endif
+`,
+    };
+  }
+}
+
+RegisterClass('BABYLON.EnvLooksPlugin', EnvLooksPlugin);
 
 /**
  * Rock drawn tri-planar in world space (medium and high): the rock picture (albedo, roughness in its alpha) and its
@@ -333,13 +412,13 @@ export class EnvMaterials {
 
   /**
    * The material for a GLB material name: env.bark, env.leaf, env.rock, env.grass, or env.impostor.* (whose
-   * picture is the GLB's own, passed as `own`).
+   * picture is the GLB's own, passed as `own`). `looks` > 0: its twin for meshes carrying that many more looks.
    */
-  get(name: string, own?: BaseTexture | null): PBRMaterial {
-    const key = name.startsWith('env.impostor') ? name : name;
+  get(name: string, own?: BaseTexture | null, looks = 0): PBRMaterial {
+    const key = looks > 0 ? `${name}|looks${looks}` : name;
     let m = this.cache.get(key);
     if (m) return m;
-    m = new PBRMaterial(`env_${name}`, this.scene);
+    m = new PBRMaterial(looks > 0 ? `env_${name}_looks${looks}` : `env_${name}`, this.scene);
     m.metallic = 0;
     m.roughness = 0.9;
     m.albedoColor = Color3.White();
@@ -376,6 +455,8 @@ export class EnvMaterials {
     }
     // Everything sways but rock.
     if (name !== 'env.rock') new EnvWindPlugin(m, this.wind);
+    // Several looks in one mesh (environment/envLooks.ts): the copy's own colours.
+    if (looks > 0) new EnvLooksPlugin(m, looks);
     this.cache.set(key, m);
     return m;
   }

@@ -117,6 +117,21 @@ const LINEUP4: [string, number, number, number, number][] = [
   ['env.cliff.crag', 1, 63, -48, 0],
 ];
 
+/**
+ * Environment Phase 5's additions, every look, between Phase 4's trees and its cliffs (inside the lab's bounds, so the
+ * shadow map's extent and the visual baseline don't change): the jungle set (the jungle tree, the tree fern,
+ * the elephant ear) and the spruce's alpine look. View: jungle.
+ */
+const LINEUP5: [string, number, number, number, number][] = [
+  ['env.shrub.elephant_ear', 0, 41, -62, 0.4],
+  ['env.shrub.elephant_ear', 1, 44, -62, 1.9],
+  ['env.fern.tree_fern', 0, 48, -61, 0.3],
+  ['env.fern.tree_fern', 1, 54, -61, 2.2],
+  ['env.broadleaf.jungle', 0, 43, -56, 0.6],
+  ['env.broadleaf.jungle', 1, 57, -56, 2.6],
+  ['env.conifer.spruce', 2, 61, -62, 1.2],
+];
+
 const EYE = 1.7;
 
 interface LabState {
@@ -211,6 +226,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     oldEntities.push(ent(`old2_${i}`, old, [x + BEFORE_X, 0, z], undefined, yaw));
   }
   for (const [i, [model, variant, x, z, yaw]] of LINEUP4.entries()) entities.push(ent(`lineup4_${i}`, model, [x, 0, z], variant, yaw));
+  for (const [i, [model, variant, x, z, yaw]] of LINEUP5.entries()) entities.push(ent(`lineup5_${i}`, model, [x, 0, z], variant, yaw));
   // A cliff wall of four panels side by side (the seams), the old cliff pieces in the "before" set.
   for (let k = 0; k < 4; k++) {
     entities.push(ent(`wall_${k}`, 'env.cliff.face', [-12 + k * 8, 0, 30], k % 2));
@@ -285,6 +301,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   VIEWS.variety = [new Vector3(51, EYE, -100), new Vector3(51, 3.2, -72)];
   VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
   VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
+  VIEWS.jungle = [new Vector3(51, EYE, -67), new Vector3(51, 4, -56)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 

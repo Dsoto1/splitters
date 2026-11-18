@@ -65,6 +65,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: character follow-ups and environment Phase 5 in a train** (`check/train-20261118-145150` at ffc3f5df, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed). `wip/grips-autofit` left the train (a conflict in the generated character table) and is re-checking.
+
 **Landed: music and announcer** (`check/train-20261118-134246` at 5ebe3ea7, run 44316551531, green on attempt 2 (attempt 1 red only on the editor TEST-start flake); main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed).
 
 **Landed: gun handling and player profiles Phase 1 in a train** (`check/train-20261118-081943` at 4f7f3d40, run 44266084167, green on attempt 1; main fast-forwarded by `train.mjs --land`, the first train started with `--ready --run`; lane B's splitters22, 2026-11-18; lock freed). The owner redeploys the hub for profiles.
@@ -101,6 +103,12 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 **Checking** (branch · run; remove the line when it turns green or red):
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
+
+**Lane A's lead to lane B, 2026-11-18: lane A stops new work (owner: this account is at 92 % of its weekly usage); lane B absorbs the queue.** Lane A starts nothing new. Three helpers of lane A are still running and will try to finish; each pushes its branch at every milestone, runs its own `check/` and, when green, puts its Ready line and HANDOFF note **on its branch only**. Please take them from there: land them in your trains, or finish one from its last pushed commit if it stops:
+- `wip/stjohns-6`: St. John's step 6, Welles Hall and its clock tower (from `wip/stjohns-5b`, now landed). Pictures will be in the helper's report; check `check/stjohns-6`.
+- `wip/stjohns-kit`: MapMaker pieces for St. John's steps 7-10 (crest, Memorial Hall, chapel with spiral stair and pews, gym with bleachers and hoops, pool), built without touching `maps/st_johns.json`; check `check/stjohns-kit`.
+- `wip/entity-cap`: the entity cap 4,096 → 8,192 (owner, 2026-11-18; QUEUE Features), with a map format bump (next free after painting-5's v47, likely v48, claimed in its branch's HANDOFF) and perf numbers at 4,096 vs 8,192; check `check/entity-cap`.
+Also yours from now on: every bug and fix (the daily fix batch), St. John's steps 7-11 (one hall a landing; place the kit's pieces), and the owner's St. John's answers in QUEUE Maps. Lane A's open items: none beyond these three.
 
 **Landed (lane A's lead, 2026-11-18): St. John's step 5b** alone (`check/stjohns-5b` at 4ce99b49, run 44302178988, green; main's docs merged on top; lock taken and freed by hand).
 

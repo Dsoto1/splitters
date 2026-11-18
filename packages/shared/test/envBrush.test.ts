@@ -189,16 +189,17 @@ describe('environment brush: budget, erase, presets', () => {
   });
   it('Environment Phase 4: every preset paints some of the new species, and keeps its earlier mix as it was', () => {
     const weight = (id: (typeof ENV_PRESET_IDS)[number], model: string) => presetSpecies(id).find((m) => m.model === model)?.weight ?? 0;
-    // The mixes before Phase 4 (species and weights): appended to, never changed.
+    // The mixes before Phase 4 (species and weights): appended to, never changed, but for Alpine's (Phase 5: fewer
+    // spruces, in their lighter look, and fewer tall pines: the lead saw the dark spruces stand as solid cones).
     const before: Record<(typeof ENV_PRESET_IDS)[number], [string, number][]> = {
       temperate: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2], ['env.rock.boulder_angular', 0.5], ['env.rock.pebbles', 1]],
       jungle: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5]],
-      alpine: [['env.conifer.spruce', 4], ['env.conifer.pine_tall', 3], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1]],
+      alpine: [['env.conifer.spruce', 1.5], ['env.conifer.pine_tall', 2], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1]],
       arid: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 1], ['env.grass.clump', 3], ['env.rock.pebbles', 2], ['env.rock.boulder_angular', 1]],
     };
     const added: Record<(typeof ENV_PRESET_IDS)[number], string[]> = {
       temperate: ['env.broadleaf.birch', 'env.grass.tall'],
-      jungle: ['env.grass.tall', 'env.succulent.agave'],
+      jungle: ['env.grass.tall', 'env.succulent.agave', 'env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'],
       alpine: ['env.conifer.mountain_pine', 'env.conifer.larch', 'env.shrub.juniper', 'env.grass.tussock', 'env.flower.alpine', 'env.rock.boulder_shard'],
       arid: ['env.cactus.barrel', 'env.succulent.agave', 'env.shrub.sagebrush', 'env.grass.tussock', 'env.flower.desert', 'env.rock.sandstone', 'env.broadleaf.olive', 'env.conifer.cypress'],
     };
@@ -212,6 +213,8 @@ describe('environment brush: budget, erase, presets', () => {
     expect(presetSpecies('jungle').find((m) => m.model === 'env.succulent.agave')?.variant).toBe(1);
     expect(presetSpecies('arid').find((m) => m.model === 'env.grass.tussock')?.variant).toBe(1);
     expect(presetSpecies('arid').find((m) => m.model === 'env.cactus.barrel')?.variant).toBe('any');
+    // Alpine's spruces wear the lighter alpine look (Phase 5).
+    expect(presetSpecies('alpine').find((m) => m.model === 'env.conifer.spruce')?.variant).toBe(2);
   });
 });
 

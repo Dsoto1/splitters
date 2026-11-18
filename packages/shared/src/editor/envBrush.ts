@@ -69,7 +69,10 @@ interface EnvPreset {
 
 /**
  * Biome presets (§8). A preset only sets the mix and filters: any species can be added to any mix. Environment Phase 4
- * appended its species to the mixes (more variety; the earlier entries and their order kept).
+ * appended its species to the mixes (more variety; the earlier entries and their order kept). Phase 5: Jungle gains the jungle set (the
+ * jungle tree with its lianas, the tree fern, the elephant ear); Alpine reads lighter and more open (the spruce in its
+ * lighter `alpine` look and fewer of it, more mountain pines and larches, a little less dense), as the owner's lead saw
+ * the dark spruces stand as solid cones.
  */
 export const ENV_PRESETS: Record<EnvPresetId, EnvPreset> = {
   temperate: {
@@ -80,15 +83,15 @@ export const ENV_PRESETS: Record<EnvPresetId, EnvPreset> = {
   },
   jungle: {
     label: 'Jungle',
-    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.grass.tall', 3], ['env.succulent.agave', 1, 'green']],
+    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.grass.tall', 3], ['env.succulent.agave', 1, 'green'], ['env.broadleaf.jungle', 2], ['env.fern.tree_fern', 3], ['env.shrub.elephant_ear', 4]],
     materials: ['grass', 'dirt', 'moss', 'mud', 'sand'],
     density: 10,
   },
   alpine: {
     label: 'Alpine',
-    species: [['env.conifer.spruce', 4], ['env.conifer.pine_tall', 3], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1], ['env.conifer.mountain_pine', 3], ['env.conifer.larch', 2], ['env.shrub.juniper', 3], ['env.grass.tussock', 3], ['env.flower.alpine', 2, 'any'], ['env.rock.boulder_shard', 1.5]],
+    species: [['env.conifer.spruce', 1.5, 'alpine'], ['env.conifer.pine_tall', 2], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1], ['env.conifer.mountain_pine', 4], ['env.conifer.larch', 3], ['env.shrub.juniper', 3], ['env.grass.tussock', 3], ['env.flower.alpine', 2, 'any'], ['env.rock.boulder_shard', 1.5]],
     materials: ['grass', 'dirt', 'stone', 'gravel', 'snow', 'moss'],
-    density: 4,
+    density: 3,
   },
   arid: {
     label: 'Arid',

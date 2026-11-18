@@ -33,6 +33,9 @@ export function smallCasts(distance: number, was: boolean): boolean {
   return was;
 }
 
+/** Environment categories that cast only in the near cascades (envShadowSets' `small`). */
+export const SMALL_ENV_CATEGORIES: ReadonlySet<string> = new Set(['plant', 'groundcover', 'rock']);
+
 /** Cascades a static environment shadow set is drawn into: a bit per cascade (bit 0 is also Medium's one map). */
 export const NEAR_CASCADES = 0b011;
 export const FAR_CASCADES = 0b100;
@@ -48,13 +51,17 @@ export function castsInLayer(mask: number | undefined, layer: number): boolean {
  * never casts): the level the near cascades take (full detail) and the one the far cascade takes, each with its mask.
  * Today's rule for which levels cast at all is kept (environmentVisuals.ts: a level from max(2, levels - 1) on is
  * too light to cast): the far set is the lightest level that still casts. One casting level: one set for every cascade.
+ * `small` (SMALL_ENV_CATEGORIES): the near set only.
  */
-export function envShadowSets(levels: readonly { crossed: boolean }[]): { level: number; mask: number }[] {
+export function envShadowSets(levels: readonly { crossed: boolean }[], small = false): { level: number; mask: number }[] {
   const casting: number[] = [];
   const cut = Math.max(2, levels.length - 1);
   for (let i = 0; i < levels.length && i < cut; i++) if (!levels[i]!.crossed) casting.push(i);
   if (!casting.length) return [];
   const near = casting[0]!;
+  // Small species (plants, ground cover, pebbles; environment Phase 5): no far-cascade shadow. Past the near cascades
+  // a bush's or a fern's shadow is a speck of a quarter-metre texel; the trees', rocks' and cliffs' shadows stay.
+  if (small) return [{ level: near, mask: NEAR_CASCADES }];
   const far = casting[casting.length - 1]!;
   if (near === far) return [{ level: near, mask: ALL_CASCADES }];
   return [

@@ -780,6 +780,8 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
+    // A soldier's marker is their rank badge (insignia.ts), players only (the roster has their look and name).
+    this.view.insigniaOf = (slot) => (slot < NPC_ID_BASE ? this.hud.insignia(slot) : null);
     // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
     if (botDebugWanted() && opts.transport instanceof LocalTransport) {
       const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
