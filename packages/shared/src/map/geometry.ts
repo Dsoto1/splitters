@@ -10,7 +10,7 @@ import { mapGroundBores, terrainTrianglesCut } from './groundBore.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
-import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
+import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, GLASS_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
 import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
@@ -598,6 +598,9 @@ export function mapKillY(boxes: readonly WorldBox[], map?: MapDocument): number 
   return Number.isFinite(low) ? low - 14 : -40;
 }
 
+/** Edge styles with window openings glass can fill (sim/glass.ts GLASS_EDGES). */
+const GLASS_STYLES: ReadonlySet<string> = new Set<string>(GLASS_EDGE_STYLES);
+
 function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
   const { floorThickness } = TILE_DIMENSIONS;
@@ -625,7 +628,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         const [dx, dy] = SIDE_DIRS[side];
         const outer = !cells.has(cellKey(gx + dx, gy + dy, gz));
         const metal = edgePaint(style);
+        // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
+        const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
         for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) {
+          if (glazed && p.sash) continue;
           const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
           boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
         }

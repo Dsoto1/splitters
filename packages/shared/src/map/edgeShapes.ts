@@ -87,6 +87,12 @@ export interface SideTrim {
   depth?: number;
   /** A library material of its own (the style's `surface`), instead of the tile's trim surface. */
   surface?: { material: string; tint: string | null };
+  /**
+   * Set in the wall by the glass (a sash's inner frame, meeting rail and centre bars: a `v` piece): with glass in the
+   * window these go with the pane when it breaks and come back with it (sim/glass.ts windowPanes, game/glassVisuals.ts),
+   * so the level leaves them out (map/geometry.ts).
+   */
+  sash?: true;
 }
 
 /** How thick a segmental arch's soffit is (from the curve up into the wall: it covers the stepped collision above it). */
@@ -170,7 +176,7 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
       if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0, own(p)));
     } else if ('v' in p) {
       // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.
-      out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
+      out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], sash: true, ...own(p) });
     } else {
       const pieces: [number, number][] = [];
       if (p.repeat) {
