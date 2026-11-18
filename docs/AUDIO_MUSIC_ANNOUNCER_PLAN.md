@@ -65,6 +65,7 @@ Reduce flashing doesn't apply: these are sounds only.
   - Mr Boombastic: a chain of 2 or 3 kills that were all blasts says it once, in place of Double / Triple Kill; 4 kills from one blast is Server overload.
   - Special kills, one a kill, in this order: Later gator, the blown-up animal, melee, headshot.
   - Hype: one time in three after a Triple Kill or better, a streak line or Server overload, at most once in 20 s, only into a quiet moment.
+  - **One spree a life (fix batch, 2026-11-18; owner: "keep track of my spree and keep going and not repeat", option 1):** a streak line at 3, 5, 7, 10, 12, 15, 20 and 25 kills without dying (`STREAK_LINES`: Give me more, Killing spree, This is wild, Eviscerator, Can you believe it, Do you ever stop, Server overload, Mega Ultra Super Nasty Boy Kill; 3, 7 and 12 borrow hype lines until the owner records their own), each once a life. A chain is called only when it is longer than any called this life, so Double and Triple come at most once a life; no chain or streak line twice in a life (Mr Boombastic once a life, four from one blast Server overload once). Hype now fills the spree's quiet kills (from the second): one time in two, at most once in 8 s, from the hype lines the spree doesn't use, never the same twice running and never two hype lines back to back. A death (or a team kill) starts it all again.
   - Hail to the chief: you (free-for-all) or your team taking the lead outright, not in Co-op or Zombies.
   - The last one alive: Elimination and Bomb, once a round, while an enemy still stands.
 
