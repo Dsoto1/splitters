@@ -4124,6 +4124,17 @@ async function editorEnvironmentChecks(browser) {
   await stroke([-30, -8], [-10, 4]);
   const again = await plants();
   check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+  // A season across the whole map (environment Phase 5): Autumn turns the oaks and maples to their autumn look in one
+  // undo step, nothing moves, and Summer takes them back.
+  await page.selectOption('#ed-env-season', 'autumn');
+  await page.click('#ed-env-season-apply');
+  const autumn = await plants();
+  const where = (list) => list.map((p) => p.replace(/#\d+@/, '@')).sort();
+  const leafy = autumn.filter((p) => /^env\.broadleaf\.(oak|maple)#/.test(p));
+  check(leafy.length > 0 && leafy.every((p) => /#1@/.test(p)) && where(autumn).join('|') === where(painted).join('|') && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Season: Autumn', `Season → Autumn: the ${leafy.length} oaks and maples wear autumn, nothing moved, one step ("${await page.evaluate(() => window.__editor.history.undoLabel)}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const unseasoned = await plants();
+  check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);
@@ -11228,7 +11239,11 @@ async function environmentFlow(browser) {
   const stats = () => page.evaluate(() => window.__envlab.stats().env);
   const s0 = await stats();
   check(s0.copies >= 90 && s0.drawnBatches > 0 && s0.perLevel[0] > 0, `it draws every species as thin-instance batches (${JSON.stringify(s0)})`);
-  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).map((m) => m.name.split('_l')[0]))].sort());
+  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).flatMap((m) => {
+    // A batch of shared looks (environment Phase 5) names them all: env_broadleaf.oak.summer+autumn_l0_….
+    const [first, ...more] = m.name.split('_l')[0].split('+');
+    return [first, ...more.map((look) => `${first.slice(0, first.lastIndexOf('.'))}.${look}`)];
+  }))].sort());
   // Every variant of every species in content/environment/ (the lab's lineup has them all).
   const envDir = new URL('../content/environment/', import.meta.url);
   const variants = readdirSync(envDir).filter((f) => f.endsWith('.json')).reduce((n, f) => n + JSON.parse(readFileSync(new URL(f, envDir), 'utf8')).species.reduce((k, s) => k + s.variants.length, 0), 0);
