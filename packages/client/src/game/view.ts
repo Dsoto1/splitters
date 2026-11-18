@@ -113,7 +113,7 @@ import {
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import type { InsigniaId } from '@tiletrigger/shared';
-import { createInsigniaMesh } from './insigniaMesh.ts';
+import { INSIGNIA_HALF, createInsigniaMesh } from './insigniaMesh.ts';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
@@ -330,6 +330,9 @@ const PUSH_KEEP_MS = 1200;
  * draws a little behind the snapshots), which on a page drawing a frame a second is past PUSH_KEEP_MS.
  */
 const PUSH_KEEP_FRAMES = 3;
+/** Over-head rank badges (insigniaMesh.ts) are drawn at their size out to this distance (m), then grow with it. */
+const INSIGNIA_FULL_SIZE_M = 14;
+const INSIGNIA_MAX_GROW = 2.5;
 /** An enemy's marker colour (a downward triangle; allies get a diamond). */
 const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
 /** The fog's colour and thickness inside a smoke cloud: a mid grey (not white) through which you see about 2-3 m. */
@@ -2469,6 +2472,16 @@ export class GameView {
       // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
       const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
       this.setTag(a, (cloaked || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
+      // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
+      if (a.tag?.ins) {
+        const c = this.camera.position, r = a.root.position;
+        const k = Math.min(INSIGNIA_MAX_GROW, Math.max(1, Math.hypot(r.x - c.x, r.y - c.y, r.z - c.z) / INSIGNIA_FULL_SIZE_M));
+        if (a.tag.node.scaling.x !== k) {
+          a.tag.node.scaling.setAll(k);
+          // Its foot stays where it was, clear of the head.
+          a.tag.node.position.y = PLAYER.height + 0.35 + (k - 1) * INSIGNIA_HALF;
+        }
+      }
       // Team leaders wear a gold star over their marker, for both sides to see.
       const leads = p.alive && !cloaked && this.leaderSlots.has(p.slot);
       if (leads || a.crown) {
