@@ -26,6 +26,7 @@ export type KeyAction =
   | 'notes'
   | 'botHints'
   | 'focus'
+  | 'tileView'
   | 'resetView'
   | 'logic'
   | 'paint'
@@ -113,7 +114,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'toggleSidePanel', group: 'Map and panels', keys: 'Shift+\\', what: 'The right dock: expanded, compact (the minimap only), hidden', codes: ['Backslash'], shift: true },
   { action: 'togglePalette', group: 'Map and panels', keys: '\\', what: 'Fold the asset browser to the left rail, or open it', codes: ['Backslash'], shift: false },
   tool('select', 'V', 'KeyV', 'Select: pick, move and edit things'),
-  { action: 'escape', group: 'Tools', keys: 'Esc', what: 'Cancel a ring turn mid-drag, else clear a measurement, else back to Select (with Select in hand: select none)', codes: ['Escape'] },
+  { action: 'escape', group: 'Tools', keys: 'Esc', what: 'Cancel a ring turn mid-drag, else clear a measurement, else step back out of Tile View, else back to Select (with Select in hand: select none)', codes: ['Escape'] },
   tool('place', 'P', 'KeyP', 'Place: the last piece picked from the palette'),
   tool('erase', 'X', 'KeyX', 'Erase: click anything to delete it'),
   tool('measure', 'U', 'KeyU', 'Measure: distance, height difference and slope between points'),
@@ -143,6 +144,7 @@ export const EDITOR_KEYS: readonly KeyBinding[] = [
   { action: 'planView', group: 'View and camera', keys: 'K', what: 'Plan view: the level from straight above, with spawns, objectives and pickups (again: back)', codes: ['KeyK'] },
   { action: 'showAll', group: 'Levels', keys: 'H', what: 'Show the levels above too', codes: ['KeyH'] },
   { action: 'focus', group: 'View and camera', keys: 'F', what: 'Frame the selection', codes: ['KeyF'] },
+  { action: 'tileView', group: 'View and camera', keys: 'Enter', what: 'Tile View: the selected tile, set piece or group from above, in the dock (or double-click it; Esc: back to the map)', codes: ['Enter', 'NumpadEnter'], shift: false },
   { action: 'resetView', group: 'View and camera', keys: 'Home', what: "Back to the level's overview", codes: ['Home'] },
   { action: 'brushBigger', group: 'Brushes', keys: ']', what: 'Bigger brush (Terrain, Environment brush)', codes: ['BracketRight'] },
   { action: 'brushSmaller', group: 'Brushes', keys: '[', what: 'Smaller brush (Terrain, Environment brush)', codes: ['BracketLeft'] },
@@ -165,6 +167,7 @@ export const EDITOR_KEY_NOTES: readonly KeyNote[] = [
   { group: 'Mouse', keys: 'Shift+drag', what: 'Terrain: the brush the other way (lower, for Raise)' },
   { group: 'Mouse', keys: 'Right-click', what: 'Select: the selection menu; Walls: back to automatic; paths: remove a point' },
   { group: 'Mouse', keys: 'Ring drag', what: "Select: drag the gizmo's ring to turn the selection (Shift: a finer step; Esc cancels)" },
+  { group: 'Mouse', keys: 'Double-click', what: 'Select: Tile View on what was clicked (the minimap too)' },
   { group: 'Mouse', keys: 'Right-drag', what: 'Look round' },
   { group: 'Mouse', keys: 'Wheel', what: 'Zoom (Shift: faster)' },
   { group: 'Palette', keys: '↑ ↓ ← →', what: 'Move between pieces (from the search box: ↓)' },

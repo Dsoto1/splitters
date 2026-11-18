@@ -1392,6 +1392,191 @@ async function editoruxFlow(browser) {
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
 /**
+ * MapMaker UI spec Phase 4a, Tile View (editor/tileViewPanel.ts): Enter on a selected tile opens it in the dock in the
+ * minimap's place (the dock expanded, the Minimap tab); breadcrumbs Map › tile › child; a click picks a thing standing
+ * in the tile (the view, inspector and outliner follow), a drag moves it on the fine snap in the tile's own turned
+ * frame as one undo step, the arrow keys nudge it a step along the tile's axes, R turns it; its Local and World fields
+ * agree with the map; a cell side's style is changed from Tile View; a set piece's parts are read-only (a drag moves
+ * nothing); Esc steps back to the tile and then to the minimap; a double-click in the minimap opens it; nothing of it
+ * is kept in the map. Screenshots (E2E_DSF=2 for device scale 2) go to E2E_SHOTS when set.
+ */
+async function editorTileViewChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-tileview-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A two-cell shop turned a quarter (its cells run south), a shelf and a lamp in it, a set piece beside it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position, yaw = 0) => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'tv_shop', tile: 'core.shop', x: 3, y: 0, z: 0, rotation: 1 }] },
+        { kind: 'addEntities', entities: [prop('tv_shelf', 'core.crate', [25.3, 0, -1.7]), prop('tv_drum', 'kit.drum.steel', [22, 0, -10])] },
+        { kind: 'addSetPieces', setPieces: [{ id: 'tv_piece', piece: 'setpiece.cage_block', x: -3, y: -3, z: 0, rotation: 0, mirror: false }] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['tv_shop'], entities: [] });
+    ed.view.focus({ x: 24, y: 0, z: -4 });
+  });
+  await frames(page, 3);
+  const tv = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.tileView.state();
+    return { ...st, frame: null, focus: st.focus && { kind: st.focus.kind, id: st.focus.id, rotation: st.focus.rotation, cells: st.focus.cells }, sel: [...ed.selection.entities, ...ed.selection.tiles, ...(ed.selection.setPieces ?? [])], mini: ed.minimap.shown, dock: document.getElementById('ed-right').dataset.state, tab: document.getElementById('ed-outliner-panel').dataset.tab, host: document.getElementById('ed-tileview')?.parentElement?.id ?? null, hostShown: !!document.getElementById('ed-tv-canvas')?.offsetParent };
+  });
+  const pos = (id) => page.evaluate((id) => window.__editor.doc.entities.find((e) => e.id === id)?.position ?? null, id);
+  const at = (x, z) => page.evaluate(([x, z]) => window.__editor.tileView.clientPoint(x, z), [x, z]);
+  const steps = () => page.evaluate(() => window.__editor.history.revision);
+
+  // Selecting never opens a hidden dock: hide it, select, and Tile View waits for Enter.
+  await page.click('#ed-dock-hide');
+  await frames(page, 2);
+  let s = await tv();
+  check(s.dock === 'hidden' && !s.open, `a selection leaves the hidden dock hidden (${s.dock})`);
+  // Enter (nothing focused): Tile View opens on the shop, in the expanded dock in the minimap's place.
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await tv();
+  check(s.open && s.dock === 'expanded' && s.tab === 'minimap' && s.host === 'ed-tileview-host' && s.hostShown && !s.mini, `Enter opens Tile View in the expanded dock, in the minimap's place (${JSON.stringify({ dock: s.dock, tab: s.tab, host: s.host, mini: s.mini })})`);
+  check(s.focus?.kind === 'tile' && s.focus.id === 'tv_shop' && s.focus.rotation === 1 && s.focus.cells.length === 2, `it focuses the selected tile, turned a quarter (${JSON.stringify(s.focus)})`);
+  check(s.crumbs.join(' › ') === 'Map › Shop' && s.children === 2 && s.edges === 6, `breadcrumbs, the two things in it and its six outer sides (${JSON.stringify({ crumbs: s.crumbs, children: s.children, edges: s.edges })})`);
+  check(s.w > 200 && s.h > 200, `the plan has room in the dock (${s.w}×${s.h})`);
+  await shot('open');
+
+  // Click the shelf: picked in Tile View and selected everywhere (the inspector's X).
+  let p = await at(25.3, -1.7);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 3);
+  s = await tv();
+  const inspX = await page.evaluate(() => document.getElementById('ed-insp-x')?.value ?? null);
+  const document_name = await page.evaluate(() => document.querySelector('#ed-inspector h2')?.textContent ?? '');
+  check(s.child === 'tv_shelf' && s.sel.join() === 'tv_shelf' && inspX === '25.3' && s.crumbs.length === 3 && s.crumbs[2] === document_name, `a click picks the shelf: selected in the view and inspector, named in the breadcrumbs (${JSON.stringify({ child: s.child, sel: s.sel, inspX, crumbs: s.crumbs })})`);
+  // Local fields: the shop's anchor is (24, 0), turned a quarter: local X = −(z), local Z = x − 24.
+  const fields = () => page.evaluate(() => ['ed-tv-x', 'ed-tv-z', 'ed-tv-y', 'ed-tv-facing'].map((id) => document.getElementById(id)?.value ?? null));
+  let f = await fields();
+  check(f[0] === '1.7' && f[1] === '1.3' && f[3] === '-90', `Local X / Z / Facing are tile-relative under the tile's turn (${JSON.stringify(f)})`);
+  await shot('child');
+
+  // A drag: snapped to 10 cm in the tile's own frame, one undo step.
+  await page.selectOption('#ed-tv-snap', '10');
+  const rev0 = await steps();
+  p = await at(25.3, -1.7);
+  const q = await at(26.07, -2.26);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.mouse.move((p.x + q.x) / 2, (p.y + q.y) / 2, { steps: 4 });
+  await page.mouse.move(q.x, q.y, { steps: 4 });
+  await page.mouse.up();
+  await frames(page, 3);
+  const moved = await pos('tv_shelf');
+  f = await fields();
+  const rev1 = await steps();
+  const onStep = (v) => Math.abs(Number(v) * 10 - Math.round(Number(v) * 10)) < 1e-6;
+  check(moved[0] !== 25.3 && onStep(f[0]) && onStep(f[1]) && rev1 === rev0 + 1, `a drag moves the shelf onto the 10 cm step of the tile's frame, as one undo step (${JSON.stringify({ moved, fields: f, steps: rev1 - rev0 })})`);
+  await page.evaluate(() => window.__editor.undo());
+  await frames(page, 3);
+  check(JSON.stringify(await pos('tv_shelf')) === JSON.stringify([25.3, 0, -1.7]), 'one undo puts the dragged shelf back');
+
+  // Arrow up nudges along the tile's own north: for a quarter turn that is world east (+X), one step.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('ArrowUp');
+  await frames(page, 2);
+  let n = await pos('tv_shelf');
+  check(Math.abs(n[0] - 25.4) < 1e-6 && Math.abs(n[2] + 1.7) < 1e-6, `↑ nudges a snap step along the tile's own axis (world east here) (${JSON.stringify(n)})`);
+  await page.keyboard.press('KeyR');
+  await frames(page, 2);
+  const yaw = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'tv_shelf').yaw);
+  check(Math.abs(yaw - Math.PI / 12) < 1e-3, `R turns it 15° (${yaw})`);
+
+  // Typed: Local X = 2.5 lands at world z = −2.5; World shows the map's own numbers.
+  await page.fill('#ed-tv-x', '2.5');
+  await page.press('#ed-tv-x', 'Enter');
+  await page.focus('#ed-tv-canvas');
+  await frames(page, 3);
+  n = await pos('tv_shelf');
+  check(Math.abs(n[2] + 2.5) < 1e-6 && Math.abs(n[0] - 25.4) < 1e-6, `typing Local X moves it along the tile's turned axis (${JSON.stringify(n)})`);
+  await page.click('#ed-tv-world');
+  await frames(page, 3);
+  f = await fields();
+  check(f[0] === '25.4' && f[1] === '-2.5' && (await page.getAttribute('#ed-tv-world', 'aria-pressed')) === 'true', `World shows the map's coordinates (${JSON.stringify(f)})`);
+  await shot('world');
+  await page.click('#ed-tv-local');
+
+  // A cell side: picked, its style changed from Tile View (a door), undone.
+  // The shop's west side of its north cell: x = 20, z = 0.
+  await page.mouse.click(...Object.values(await at(20.05, 1)));
+  await frames(page, 3);
+  s = await tv();
+  check(s.edge === 'West side of cell 3, 0' && s.sel.join() === 'tv_shop' && s.crumbs[2] === 'West side of cell 3, 0', `a click on a wall picks that cell side, its tile selected (${JSON.stringify({ edge: s.edge, sel: s.sel, crumbs: s.crumbs })})`);
+  await page.selectOption('#ed-tv-edge-style', 'door');
+  await frames(page, 3);
+  const edges = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.find((t) => t.id === 'tv_shop').edges ?? {});
+  check(Object.values(edges).includes('door'), `its style is changed from Tile View (${JSON.stringify(edges)})`);
+  await shot('edge');
+
+  // Esc: the side let go (the tile selected), then back to the minimap.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('Escape');
+  await frames(page, 2);
+  s = await tv();
+  check(s.open && !s.edge && s.sel.join() === 'tv_shop' && s.crumbs.length === 2, `Esc lets the side go, the tile selected (${JSON.stringify({ edge: s.edge, sel: s.sel })})`);
+  await page.keyboard.press('Escape');
+  await frames(page, 3);
+  s = await tv();
+  check(!s.open && s.mini, `Esc again goes back to the minimap (${JSON.stringify({ open: s.open, mini: s.mini })})`);
+
+  // A double-click on the set piece in the minimap: Tile View on it; its parts are read-only.
+  const mp = await page.evaluate(() => window.__editor.minimap.clientPoint(-24, -24));
+  await page.mouse.dblclick(mp.x, mp.y);
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 4);
+  s = await tv();
+  check(s.focus?.kind === 'setpiece' && s.focus.id === 'tv_piece' && s.parts > 0 && s.edges === 0, `a double-click in the minimap opens Tile View on the set piece there (${JSON.stringify(s.focus)})`);
+  const part = await page.evaluate(() => {
+    const ed = window.__editor;
+    const e = ed.viewDoc.entities.find((x) => ed.expansion.partOf.get(x.id) === 'tv_piece');
+    return e ? { id: e.id, x: e.position[0], z: e.position[2] } : null;
+  });
+  {
+    check(!!part, 'the set piece has parts standing in it');
+    const rev = await steps();
+    const pp = await at(part.x, part.z);
+    await page.mouse.move(pp.x, pp.y);
+    await page.mouse.down();
+    await page.mouse.move(pp.x + 30, pp.y + 10, { steps: 5 });
+    await page.mouse.up();
+    await frames(page, 3);
+    s = await tv();
+    const note = await page.textContent('#ed-tv-detail');
+    check(s.part === part.id && (await steps()) === rev && /can't be moved/.test(note), `a set piece's part is picked read-only: a drag moves nothing, and it says how to edit it (${JSON.stringify({ part: s.part, note })})`);
+  }
+  await shot('setpiece');
+
+  // Nothing of Tile View in the map; its snap and frame kept in this browser.
+  await page.selectOption('#ed-tv-snap', '5');
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}'));
+  check(!/tileSnap|tileFrame|tileview/i.test(json) && stored.tileSnap === 5, `Tile View's snap is kept in this browser, never in the map (${JSON.stringify(stored)})`);
+  // Compact: Tile View steps aside (the card is the minimap) and runs nothing.
+  await page.click('#ed-dock-compact');
+  await frames(page, 3);
+  s = await tv();
+  check(!s.visible && s.mini, `a compact dock shows the minimap, Tile View hidden (${JSON.stringify({ visible: s.visible, mini: s.mini })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
  * MapMaker UI spec Phase 3, the live minimap (editor/minimapPanel.ts): the expanded dock's Minimap | Outliner tabs
  * (kept in this browser, never in the map); a click on a thing in the minimap selects it in the view, the inspector and
  * the outliner, and a selection made elsewhere shows on it without a new picture; open ground moves the camera; a
@@ -1847,7 +2032,8 @@ async function editorInterfaceChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
   await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
-  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  // (Waited for: right after a reload the click can land before the panel's fold is wired.)
+  check(await page.waitForSelector('#ed-issues', { state: 'visible', timeout: T(3000) }).then(() => true, () => false), 'and opens again from its heading');
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
 
@@ -2627,6 +2813,8 @@ async function editortoolsFlow(browser) {
   await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
   await editorTransformChecks(browser);
+  await editorTileViewChecks(browser);
+  await editorTileViewMoveChecks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
@@ -4035,6 +4223,77 @@ async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
  * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
  * E2E_SHOTS when set.
  */
+/**
+ * MapMaker UI spec Phase 4a, Tile View's moves through the shared transform command (editor/tileViewPanel.ts): a moving
+ * build picked in Tile View is picked whole (its lift and barrel with it, as from the view), a drag moves all of it the
+ * same snapped distance as one undo step, and the Facing field turns it as the inspector's does.
+ */
+async function editorTileViewMoveChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 860 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'tvm_room', tile: 'core.room', x: 5, y: 5, z: 0, rotation: 2 }] },
+        { kind: 'addEntities', entities: [
+          { id: 'tvm_lift', kind: 'block', position: [41, 0.15, 41], yaw: 0, size: [2, 0.3, 2], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+          { id: 'tvm_barrel', kind: 'prop', model: 'kit.drum.steel', position: [41, 0.3, 41], yaw: 0, scale: 1, solid: true, tint: null },
+          { id: 'tvm_mover', kind: 'mover', position: [41, 0, 41], yaw: 0, blocks: ['tvm_lift'], props: ['tvm_barrel'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+        ] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['tvm_room'], entities: [] });
+    ed.openTileView();
+  });
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 3);
+  const pos = () => page.evaluate(() => Object.fromEntries(window.__editor.doc.entities.filter((e) => e.id.startsWith('tvm_')).map((e) => [e.id, e.position])));
+  const at = (x, z) => page.evaluate(([x, z]) => window.__editor.tileView.clientPoint(x, z), [x, z]);
+  // Pick the mover (its marker) and drag it about 1.5 m: snapped to 50 cm in the turned room's frame.
+  await page.selectOption('#ed-tv-snap', '50');
+  await page.evaluate(() => window.__editor.tileView.pickChild('tvm_mover'));
+  await frames(page, 2);
+  const sel = await page.evaluate(() => [...window.__editor.selection.entities].sort().join());
+  check(sel === 'tvm_barrel,tvm_lift,tvm_mover', `a moving build picked in Tile View is picked whole (${sel})`);
+  const before = await pos();
+  const rev0 = await page.evaluate(() => window.__editor.history.revision);
+  const p = await at(41, 41);
+  const q = await at(42.6, 40.1);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.mouse.move(q.x, q.y, { steps: 6 });
+  await page.mouse.up();
+  await frames(page, 3);
+  const after = await pos();
+  const rev1 = await page.evaluate(() => window.__editor.history.revision);
+  const d = (id) => [after[id][0] - before[id][0], after[id][2] - before[id][2]].map((v) => Math.round(v * 1000) / 1000);
+  const same = JSON.stringify(d('tvm_mover')) === JSON.stringify(d('tvm_lift')) && JSON.stringify(d('tvm_mover')) === JSON.stringify(d('tvm_barrel'));
+  const half = d('tvm_mover').every((v) => Math.abs(v * 2 - Math.round(v * 2)) < 1e-6) && d('tvm_mover').some((v) => v !== 0);
+  check(same && half && rev1 === rev0 + 1, `a Tile View drag moves the whole build the same 50 cm-snapped distance, one undo step (${JSON.stringify({ mover: d('tvm_mover'), lift: d('tvm_lift'), barrel: d('tvm_barrel'), steps: rev1 - rev0 })})`);
+  await page.evaluate(() => window.__editor.undo());
+  await frames(page, 2);
+  check(JSON.stringify(await pos()) === JSON.stringify(before), 'one undo puts the whole build back');
+  // Facing (local) 90 in a room turned 180°: the world's -90 (270), the build turning with it.
+  await page.evaluate(() => window.__editor.tileView.pickChild('tvm_mover'));
+  await frames(page, 3);
+  await page.fill('#ed-tv-facing', '90');
+  await page.press('#ed-tv-facing', 'Enter');
+  await frames(page, 3);
+  const yaw = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'tvm_mover').yaw);
+  check(Math.abs(Math.sin(yaw) + 1) < 1e-3, `a local Facing of 90° in a room turned 180° faces the world's west (${yaw})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 /**
  * MapMaker UI spec Phase 2, the shared transform command (shared editor/transform.ts): typing X, Height or Z in the
  * inspector moves a thing exactly as a drag or a nudge does (rounded to the millimetre, a prop on the terrain bedded
