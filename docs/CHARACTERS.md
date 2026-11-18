@@ -112,6 +112,20 @@ Agent Zhao, Kenji, Santa, Stealth Operative and the Dummy). A map's Bot characte
 Setup, the pause menu and the server's `cast` rule offer "Soldiers & Spies: Army" and "...: Agency" (`army`,
 `agency`), so a map that recreates a real battle (Shingle Point) can field Army only. `lookBranch(id)` reads it; the
 manifest checker wants one on every `soldiers` character and none elsewhere. Character Select shows it as a tag.
+Santa stays Agency (owner, 2026-11-17); the Operatives (the retired Operative preset and Crimson Operative, held back)
+are Agency too. Shingle Point's Bot characters are "Soldiers & Spies: Army" (set in MapMaker).
+
+**Rank insignia (soldiers only; owner, 2026-11-17).** A Soldiers & Spies character wears a badge
+(`soldierInsignia(look, name)`, shared `content/insignia.ts`): Agency the Agency mark (a ring round a dot), the Army
+the rank its name starts with, as the soldier name theme gives it ("Sgt. Dunmore"): Pvt. one chevron, Pfc. one
+chevron and a rocker, Cpl. two chevrons, Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one
+star, Col. two stars. Random Army bots go by rank and surname (`botNameFor`: an Army look whose own name has no rank skips its own name for the soldier theme's; Flt. Lt. Ember keeps his and wears a captain's bars, a Flight Lieutenant's rank). An Army player whose name has no rank wears none, and no one outside Soldiers & Spies does.
+The badge shows before the name in the kill feed and on the scoreboard (inline SVG in the name's colour with a dark
+outline, `game/insigniaSvg.ts`), and is the marker over the soldier's head on both sides (`game/insigniaMesh.ts`: a
+flat shape with a dark rim, in the marker's colour: your ally colour from Options → markers over teammates, red over
+enemies where enemy markers are shown; hidden as the arrow is, under smoke or a cloak). Everyone else keeps the arrow
+(the ally diamond, the enemy's downward triangle). Each badge is a few simple polygons in a -1..1 box (`INSIGNIA_SHAPES`),
+so it reads at kill-feed size and at a distance.
 
 **Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
 Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.

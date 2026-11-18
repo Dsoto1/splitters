@@ -8113,6 +8113,10 @@ async function botCastFlow(browser) {
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
+  // Rank insignia (soldiers only): every Army bot's row wears its rank badge before the name.
+  const badges = await page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent, ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
+  const bare = badges.filter((b) => bots.bots.some((x) => x.name === b.name) && !b.ins);
+  check(badges.length >= 16 && !bare.length, `the Tab board shows each Army bot's rank badge (${badges.filter((b) => b.ins).slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
   await page.keyboard.up('Tab');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
