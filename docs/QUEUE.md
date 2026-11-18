@@ -32,7 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- `wip/stjohns-5b` (lane A, St. John's step 5 + the owner's answers: court door, three-floor east end, pennants in a few rooms). Lands as one with step 5; `wip/stjohns-5` is off Ready because it clashed with `wip/painting-5` on map format v46. Step 5 moves to v47 once painting-5 lands.
+- `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
