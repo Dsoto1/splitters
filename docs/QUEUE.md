@@ -32,6 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- `wip/painting-5` (lane B: painting Phase 5; was green at 3b9e19e5 but conflicts with main since St. John's step 5 took map format v46: a helper is merging main and moving `lookDefs` to **v47**, then re-checking on `check/painting-5b`).
 - `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
@@ -39,7 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/painting-5` · 3b9e19e5 · 44205365593 (lane B: MapMaker painting Phase 5, save and name your own looks: Save as my look, My looks list, apply/rename/delete, looks travel with maps; map format v46; next train)
+- `wip/mapmaker-ui-4` · 79480282 · 44224399843 (lane B: MapMaker UI Phase 4a, Tile View: Enter/double-click/⊞ opens a north-up plan of a tile, set piece or group in the minimap's place; pick, drag on a snap, nudge, R turns, Local/World fields, wall sides; no map format change; **in train `check/train-20261118-031402` at 47fac281**, lane B's lead holds the lock)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
