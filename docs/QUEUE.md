@@ -39,7 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-6` · fbf350fe · 44370682761 (lane A, landing by lane B: St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
+- `wip/stjohns-6` · 037dc346 · 44408870209 (lane A, landing by lane B; re-checked by lane B's helper after main's excavator and v48: coverage pieces placed again through MapMaker, paint-look hashes regenerated; St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
 
 - `wip/blood-by-character` · 4a329bb7 · 44382594803 (lane B: blood by character with the owner's answers of 2026-11-18: Alien Biker, Spud Marshal, Space Marine blue; Brass Hare red; Bronzer stone dust; a softer white-grey wisp; The Hollow Visitor retired, bleeds as The Visitor; table in docs/CHARACTERS.md "Blood")
 
