@@ -840,6 +840,8 @@ export class GameSession {
       };
     }
     this.hud.reset();
+    // The loading screen from the start: nothing is drawn until the map is in (drawFrame).
+    this.hud.showLoading('Loading');
     this.setUpCoach();
 
     const signal = this.abort.signal;
@@ -3799,6 +3801,10 @@ export class GameSession {
     );
     this.perf.visible = this.showStats;
     if (tHud && perfProbe.on) perfProbe.add(SYS.hud, tHud);
+    // Nothing to draw before the welcome (no map yet: the loading screen is up). Drawing the empty scene compiled its
+    // sky and effect shaders in one long frame (over a second in software on a busy machine), and the welcome waited
+    // behind it: the editor flow's TEST-start flake (2026-11-18). Those shaders build after the map, under the loading screen.
+    if (!this.map) return;
     if (!perfProbe.on) return this.view.render();
     this.view.countDraws();
     const r0 = performance.now();

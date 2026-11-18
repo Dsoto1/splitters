@@ -118,11 +118,20 @@ export class Hud {
   show(): void {
     applyCrosshair();
     applyHitmarker();
+    this.root.classList.remove('only-loading');
     this.root.hidden = false;
   }
 
   hide(): void {
+    this.root.classList.remove('only-loading');
     this.root.hidden = true;
+  }
+
+  /** Before the match has let us in: the loading screen alone (show() brings the rest of the HUD). */
+  showLoading(text: string): void {
+    this.root.classList.add('only-loading');
+    this.root.hidden = false;
+    this.setLoading(text, 0);
   }
 
   /** Clear per-match state left over from a previous session. */
