@@ -203,6 +203,64 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.board.pennants",
+      "displayName": "Pennant String",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5b): a 7 m string of triangular pennants (0.28 m wide, 0.36 m drop) sagging 0.1 m along x, to hang along a wall under the ceiling; its top is the prop's top. Both faces drawn; plain colours, no marks. Collides as nothing. Variants: school (royal purple, white, red: St. John's colours), bright."
+      },
+      "size": [
+        7.0,
+        0.5,
+        0.04
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": {
+        "kind": "pennants",
+        "flag": [
+          0.28,
+          0.36
+        ],
+        "gap": 0.08,
+        "sag": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "school",
+          "seed": 21141,
+          "look": {
+            "colours": "#4b2a84,#f2f0ea,#a8322d",
+            "cord": "#d9d4c6"
+          }
+        },
+        {
+          "index": 1,
+          "name": "bright",
+          "seed": 21142,
+          "look": {
+            "colours": "#d9a51e,#2f7fbf,#c0392b,#3f8f4a",
+            "cord": "#d9d4c6"
+          }
+        }
+      ]
     }
   ]
 }
