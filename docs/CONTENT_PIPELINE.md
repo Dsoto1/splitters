@@ -749,6 +749,41 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
   are stored in the map: no map changes). `?envlab` has them in a lineup of their own (views `variety`,
   `variety-small`, `variety-cliffs`). The table's rounding now writes `0` for `-0` (a shape must read back from the
   fixture's JSON); no earlier entry had one.
+- **Environment Phase 5, polish (2026-11-18, owner: "yes"):**
+  - **Shared looks (draw calls).** A species' looks of one shape at a level (summer and autumn, green and dry: the
+    same model painted differently) draw as one batch per square: the batch's mesh carries each look's vertex colours
+    past the first as `envLook1`… and each copy names its look (`envLook`, a per-copy value; `EnvLooksPlugin` in
+    `environment/envMaterials.ts` picks the colour in the vertex shader, GLSL and WGSL). Which looks share is worked
+    out at load from the models themselves (`environment/envLooks.ts`: same positions, indices, normals, uvs, wind
+    and material; at most four looks a mesh), so nothing in the content says it and the looks look exactly as before.
+    Looks of another shape (the snow-laden conifers, the meadow flowers' heads) and the crossed-card stand-ins (each
+    look its own picture) keep their own batches. The static shadow sets cast shared looks as one batch too. Measured
+    (`PERF_STILL=1`, Medium, mean of the 4 views): docs/PROCEDURAL_ENVIRONMENT.md §11, "Phase 5 status".
+  - **The jungle set:** `env.broadleaf.jungle` (Jungle Tree: 13 m, a buttressed trunk under a high, wide crown of big
+    leaves, a dozen lianas hanging from its outer limbs; green, dry; the broadleaf generator's new `vines` =
+    { count, reach, leaves, cardSize }: three-sided ropes, flat ribbons past the first level, `lod.vines` of them kept,
+    small leaf cards along each, their own random stream so a tree without `vines` is drawn byte for byte as before),
+    `env.fern.tree_fern` (Tree Fern: 3.6 m, a fibrous trunk under arching fern fronds and a skirt of dead ones; green,
+    dry; the palm generator with `frondCards: ["fern.0"]`, a tree: the trunk stops everything) and
+    `env.shrub.elephant_ear` (Elephant Ear: 1.2 m of long stalks holding big heart-shaped blades that hang out and down,
+    folded on a pale midrib; green, dark; a new kind `leafplant` in `env/plants.mjs`, vertex colour only, two levels
+    and the stand-in at 60 m (an `env.grass` part is pictured untextured for it), conceals like the bushes). Jungle's
+    preset gains all three.
+  - **Alpine reads lighter.** The Mountain Pine (on no map) is assetVersion 2: a brighter, warmer green, a bare trunk
+    under its lowest live whorl, more open whorls, smaller far sprays and leader. The Spruce gains a third look,
+    `alpine` (a lighter green; the same model, so it shares the summer spruce's batches); its summer and snow models are
+    unchanged (St. John's and the other maps look as before). The Alpine preset paints fewer spruces, in that look, fewer
+    tall pines, more mountain pines and larches, a little less densely: the dark spruces were the "solid cones with no
+    trunk" in the painted preset.
+  - **A season across the whole map:** the Environment pane's **Season (whole map)**, Summer / Autumn / Snow-dusted /
+    Dry season and **Apply to map** (`shared/editor/envSeason.ts`): every placed species takes its look for the season
+    in one undo step (oak and maple autumn, pines snow, grass dry; ground cover with no autumn look dries in autumn; a
+    species with no look for the season goes back to its first). Looks picked on purpose (moss, the flowers' colours,
+    red sandstone, the alpine spruce) stay. Only `variant` changes, which the looks share collision, size and
+    concealment for: play and the map format are unchanged.
+  - **Small species' shadows:** plants, ground cover and pebbles cast only in the near cascades (High's far cascade
+    drops them: a bush's shadow there is a speck of a quarter-metre texel); trees, rocks and cliffs as before. Medium's
+    one map is a near cascade, so Medium is unchanged.
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.
