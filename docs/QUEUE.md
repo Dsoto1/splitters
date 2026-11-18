@@ -41,10 +41,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/stjohns-6` · fbf350fe · 44370682761 (lane A, landing by lane B: St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
 
-- `wip/blood-by-character` · c20139fc · 44359862913 (lane B: blood by character; **the owner sees the who-gets-what table first**, docs/CHARACTERS.md "Blood")
+- `wip/blood-by-character` · 4a329bb7 · 44382594803 (lane B: blood by character with the owner's answers of 2026-11-18: Alien Biker, Spud Marshal, Space Marine blue; Brass Hare red; Bronzer stone dust; a softer white-grey wisp; The Hollow Visitor retired, bleeds as The Visitor; table in docs/CHARACTERS.md "Blood")
 
-- `wip/perf-1118` · 975b82e5 · 44370424412 (lane B: performance batch: menu first JS 2799 → 2642 kB, pickups batched (~80 fewer meshes a view), respawn shimmer 120 → 6 scene walks, the local player reconciled once a frame on foot (Riot Junction 898 → 47 reconciles in 30 s); held weapons in one material not done (too big); next train)
-- `wip/hosting-guard` · 9e3a898c · 44376149557 (lane B: hosting cost guard: CloudFront in front of the site (box as origin, hub paths uncached, TURN on its own name), an automatic stop at $30/month for the whole account plus traffic stops, nightly S3 backups with restore, ETags on the hub's static files; nothing changed in AWS: the owner deploys from CloudShell after it lands; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -225,6 +223,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-18 · B · Performance batch (menu first JS 2799 → 2642 kB, pickups batched, respawn shimmer 120 → 6 scene walks, the local player reconciled once a frame on foot) and the hosting cost guard (CloudFront, an automatic stop at $30/month for the account, nightly S3 backups with restore, ETags; **the owner deploys from CloudShell**) (train `check/train-20261118-200957` at 7504cf9d, run 44388144258).
 - 2026-11-18 · B · The owner's excavator: `prop.mining_excavator_deck`, a walkable deck, 9k triangles, in MapMaker's Mines & Caves (train `check/train-20261118-190150` at 98a9b82e, run 44376111562). Follow-up: alias the old `mining_excavator` to it everywhere (owner).
 - 2026-11-18 · B · Grips auto-fit (universal first-person arms tinted to each character, third-person grips fitted from each character's hands, tracers and flash from the drawn muzzle) and lane A's entity cap 4,096 → 8,192 a map (map format v48) (train `check/train-20261118-171426` at 3fa6d8ca, run 44356469730).
 - 2026-11-18 · B · Character follow-ups (rank insignia for soldiers in the kill feed, boards and over heads; Army bots with ranked names; Shingle Point bots Army only; Operative Agency) and environment Phase 5 (shared batches per species, the Alpine preset's lighter spruce and mountain pine, a jungle set, MapMaker's Season for the whole map) (train `check/train-20261118-145150` at ffc3f5df).
