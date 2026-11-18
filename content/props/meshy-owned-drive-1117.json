@@ -1,0 +1,136 @@
+{
+  "pack": {
+    "title": "Tile Trigger originals (made with Meshy): the owner's models of 2026-11-17 (textured GLB downloads from the owner's Drive)",
+    "creator": "Meshy, owned (made by the owner on their Meshy subscription; QUEUE, 2026-11-17: the owner's new Meshy models, Meshy, owned)",
+    "url": "https://www.meshy.ai",
+    "license": "Owned",
+    "licenseFile": "assets-src/meshy-owned/License.txt",
+    "retrieved": "2026-11-17",
+    "download": "owned-drive-1117",
+    "meshy": true,
+    "convert": true,
+    "textureSize": 1024
+  },
+  "order": 860,
+  "props": [
+    {
+      "id": "mining_excavator_deck",
+      "src": "Meshy_AI_CelShadedExcavator_1117150026_texture.glb",
+      "name": "Bucket-Wheel Excavator (Walkable Deck)",
+      "category": "Mines & Caves",
+      "height": 16,
+      "collide": "boxes",
+      "surface": "texture",
+      "triangles": 9000,
+      "maxError": 0.03,
+      "budget": "hero",
+      "source": {
+        "model": "Cel-shaded Excavator (the owner's own Meshy model, owner's Drive, for Iron Maw)",
+        "date": "2026-11-17"
+      },
+      "lod": [
+        0.45,
+        60
+      ],
+      "boxes": [
+        [
+          -9.5,
+          0,
+          -5.2,
+          6.0,
+          3.0,
+          -3.0
+        ],
+        [
+          -9.5,
+          0,
+          3.0,
+          6.0,
+          3.0,
+          5.2
+        ],
+        [
+          -7.0,
+          0.95,
+          -3.0,
+          0.5,
+          3.0,
+          3.0
+        ],
+        [
+          -7.5,
+          3.0,
+          -4.0,
+          1.5,
+          5.0,
+          4.0
+        ],
+        [
+          -9.5,
+          5.0,
+          -3.0,
+          -0.5,
+          9.2,
+          3.0
+        ],
+        [
+          -0.5,
+          5.0,
+          -3.0,
+          1.5,
+          8.6,
+          3.0
+        ],
+        [
+          1.5,
+          5.5,
+          -1.3,
+          3.5,
+          10.0,
+          1.4
+        ],
+        [
+          3.5,
+          7.5,
+          -1.3,
+          6.0,
+          12.0,
+          1.4
+        ],
+        [
+          6.0,
+          9.5,
+          -1.3,
+          8.5,
+          14.0,
+          1.4
+        ],
+        [
+          8.5,
+          10.1,
+          -2.0,
+          15.2,
+          16.0,
+          2.0
+        ],
+        [
+          -13.5,
+          8.5,
+          -1.5,
+          -9.5,
+          11.5,
+          1.6
+        ],
+        [
+          -15.2,
+          8.3,
+          -2.1,
+          -13.5,
+          12.2,
+          2.1
+        ]
+      ],
+      "fills": "the booms' open lattices (the counterweight boom's truss, the wheel boom) are a box each: keeping every gap open takes some 800 voxel boxes (hero budget 160); the rest is boxes round the tracks, the turntable and the house, whose roof is the walkable deck at 9.2 m"
+    }
+  ]
+}
