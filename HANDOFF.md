@@ -69,6 +69,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-18): process tooling** (`wip/process-tools`; QUEUE Features, lane B; owner, 2026-11-18, "a"). Files: `tools/ci/train.mjs` (`--ready`, `--ready --run`, HANDOFF/QUEUE conflict auto-resolve), a new `tools/ci/docMerge.mjs` and its test in `tools/ci/test/`, a new `tools/ci/flakes.mjs` and `docs/FLAKES.md`, a new `tools/dev/cleanup.mjs`, `e2e/run.mjs` (127.0.0.1, free ports when unset, `CHROMIUM` executable path), `package.json` scripts, CLAUDE.md (Git workflow lines), docs/CI.md or the relevant docs, and **HANDOFF.md itself slimmed** (history moves to `docs/history/handoff-2026-11.md`; done last, from current main, landed fast). No game code, no map format change.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/process-tools` at a856acb0 · run 44237103776 (a helper of lane B's splitters22: process tooling; full suite, run.mjs and tools/ci are shared).
 - `check/train-20261118-041849` at 4dd2bb1d (lane B's lead: the train with `wip/environment-4` and `wip/gun-handling`; holds the landing lock).
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
