@@ -654,14 +654,20 @@ export class Hud {
     this.pickupTimer = window.setTimeout(() => this.pickupMsg.classList.remove('on'), 1200);
   }
 
-  setScope(on: boolean): void {
+  setScope(on: boolean, marks: readonly HoldoverMark[] = []): void {
     this.scope.hidden = !on;
+    if (on) drawHoldover($('scope-holdover'), marks, 1);
   }
 
   /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
   private readonly optic = $('optic');
   private opticKey = '';
-  setOptic(o: { lens: number; blend: number; reticle: string } | null): void {
+  setOptic(o: { lens: number; blend: number; reticle: string; marks?: readonly HoldoverMark[] } | null): void {
+    if (o) {
+      drawHoldover($('optic-holdover'), o.marks ?? [], 1.4);
+      // Holdover marks take the place of the duplex's two plain hash marks below the centre.
+      this.optic.classList.toggle('holdover-on', !!o.marks?.length);
+    }
     const key = o ? `${o.lens.toFixed(4)}|${o.blend.toFixed(3)}|${o.reticle}` : '';
     if (key === this.opticKey) return;
     this.opticKey = key;
@@ -1186,4 +1192,29 @@ export interface ScreenMarker {
   label: string;
   icon: string;
   edge?: number;
+}
+
+/** A scope's holdover mark (spec §5): `y` below the centre in the reticle's own units (100: the edge), and its label. */
+export interface HoldoverMark {
+  y: number;
+  label: string;
+  /** Every 200 m: a longer tick. */
+  major?: boolean;
+}
+
+/**
+ * Holdover marks on a reticle (game/holdover.ts works out where): a short tick on the lower post for each distance,
+ * its hundreds of metres beside it. Redrawn only when they move. `k`: line weight (the optic's svg is drawn smaller).
+ */
+function drawHoldover(g: HTMLElement, marks: readonly HoldoverMark[], k: number): void {
+  const key = marks.map((m) => `${m.y.toFixed(1)}:${m.label}`).join('|');
+  if (g.dataset.key === key) return;
+  g.dataset.key = key;
+  g.innerHTML = marks
+    .map((m) => {
+      const w = (m.major ? 2.4 : 1.6) * k;
+      const y = m.y.toFixed(1);
+      return `<line x1="${-w}" y1="${y}" x2="${w}" y2="${y}" stroke-width="${(0.32 * k).toFixed(2)}" /><text x="${(w + 0.8 * k).toFixed(2)}" y="${y}" dy="${(0.9 * k).toFixed(2)}" font-size="${(2.2 * k).toFixed(2)}" stroke="none">${m.label}</text>`;
+    })
+    .join('');
 }

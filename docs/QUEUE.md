@@ -140,8 +140,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · Scaling 5: spawn-first build order, no unloading (owner 1b; order 5).
 - L · B · Later: tiled navmesh, when breakable walls should open bot routes (owner 5a). Foliage: nothing until a profile says it costs (owner 6a).
 - S–M · A · Combat accessibility: toggle aim (ADS), a camera-shake setting, controller vibration (GUNPLAY_GAPS §42).
-- M · B · Gun handling extras: sprint-exit time, movement speed per weapon (with prediction parity), scope holdover marks (GAPS §5, §27, §35-36; G2).
-- M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
+- M · B · Gun handling extras: sprint-exit time, movement speed per weapon (with prediction parity), scope holdover marks (GAPS §5, §27, §35-36; G2). **Built on `wip/gun-handling`** (2026-11-18; GUNPLAY_SPEC §5/§27 notes).
+- M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45). **Built on `wip/gun-handling`** as a team tool page, `?mode=weapons` (GUNPLAY_SPEC §45 note).
 - S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
 - M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **Built 2026-11-18 on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22; no map format change): every map opens and saves with nothing lost (95 files), edits reach collision and the navmesh, the dock follows the window, Tile View and the minimap from the keyboard, Grid and Snap remembered, Tile View draws nothing on pointer moves; `docs/MAPMAKER_UI_SPEC.md`, "Phase 5: as built".

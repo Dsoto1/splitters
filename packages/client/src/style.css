@@ -1043,6 +1043,8 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #optic .chevron { display: none; }
 #optic[data-reticle='chevron'] .chevron { display: inline; }
 #optic[data-reticle='chevron'] .duplex line:nth-child(n + 5) { display: none; }
+#optic.holdover-on .duplex line:nth-child(n + 7) { display: none; }
+.holdover text { font-family: Barlow, sans-serif; font-weight: 600; }
 #optic-breath { position: absolute; left: 50%; bottom: 9vh; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
 #optic-breath i { display: block; width: 120px; height: 3px; background: rgba(255, 255, 255, 0.15); }
 #optic-breath i::after { content: ''; display: block; height: 100%; width: var(--breath, 100%); background: var(--cyan); }

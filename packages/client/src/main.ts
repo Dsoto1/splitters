@@ -964,7 +964,7 @@ function onceBack(f: () => void): void {
 
 const app = new App();
 // The start-up loading screen is the game's: the /host page and the team tools show straight away.
-if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters') finishBoot();
+if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters' || params.get('mode') === 'weapons') finishBoot();
 // trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
@@ -1005,6 +1005,10 @@ else if (params.get('mode') === 'assets') {
     const { engine } = await createEngine($<HTMLCanvasElement>('view'));
     await openPropLineup(engine);
   })();
+} else if (params.get('mode') === 'weapons') {
+  // Team tool: weapons side by side (recoil path, spread cones, damage and time to kill over distance, holdover).
+  $('menu').hidden = true;
+  void import('./tools/weaponTuning.ts').then((m) => m.openWeaponTuning());
 } else if (params.get('mode') === 'grips') {
   // Team tool: one character holding one weapon at a time, for tools/content/grip-sheet.mjs.
   void (async () => {
