@@ -5,7 +5,7 @@ Lane B's splitters22, 2026-11-15. A plan only: no code yet. It answers the QUEUE
 
 | | |
 |---|---|
-| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). **Phase 4 built** ("Phase 4: as built"; map format v45). **Phase 5 built** ("Phase 5: as built"; map format v46). |
+| Status | Owner: all picks (1a–8a), 2026-11-15, and every part of a set piece designable. **Phase 1 built** ("Phase 1: as built", below), with per-part set-piece paint brought forward from Phase 5. **Phase 2 built** ("Phase 2: as built"). **Phase 3 built** ("Phase 3: as built"). **Phase 4 built** ("Phase 4: as built"; map format v45). **Phase 5 built** ("Phase 5: as built"; map format v47). |
 | Pictures | `map-briefs/painting/mockup-painters.png` (the two painters, the cursor label) and `map-briefs/painting/mockup-theme-warning.png` (the layers, Map settings, the warning). Their HTML sources are beside them. |
 | Map format | **v41** (Phase 1: a tile's `metal` surface and a set piece's `overrides.paint`; v40 stays free for the tunnel kit). Format change A (the Ground theme, Phase 4) is **v45** (v44 kept for the tunnel kit's set piece `family`). |
 | Shipped maps | Look exactly the same after every phase. A test proves it. |
@@ -490,11 +490,11 @@ Each phase is small and lands green by itself. Phases 1–3 need no format chang
   - save a look and put it on a second piece.
 - The coverage map gets one painted set-piece part and one saved look, placed in MapMaker, so its unit test covers them.
 
-**Phase 5: as built (2026-11-17, a helper of lane B's splitters22, `wip/painting-5`).** Map format **v46**. Per-part
+**Phase 5: as built (2026-11-17, a helper of lane B's splitters22, `wip/painting-5`).** Map format **v47**. Per-part
 paint, both scopes and the look layer in the chain were built in Phases 1 and 2; this phase adds looks of your own.
 - **Format** (shared `map/schema.ts`): `MapDocument.lookDefs` (at most 32), each `{ id: my_<name>, displayName, roles }`
   (`SetPieceLookDef`; the roles are `SetPieceRoleValues`); a placement wears one through its `pack`, as a shipped role
-  pack. Migration v45 -> v46 is an identity step (`migrate.ts` [45]). `withMapLooks` (map/setPieces.ts) adds the map's
+  pack. Migration v46 -> v47 is an identity step (`migrate.ts` [46]). `withMapLooks` (map/setPieces.ts) adds the map's
   looks to the role packs wherever a map is expanded (never replacing a shipped pack, never a theme's default); as
   played the looks are in the parts and the map carries none. The validator: a look's id twice or a shipped id is an
   error; a material the game hasn't got, or a ground material off floor, paving and roof (2a), a warning.

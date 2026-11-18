@@ -1080,6 +1080,53 @@
         {"kind":"prop","model":"kit.roof.cone","position":[2.25,14.2,-2.25],"yaw":0.0,"scale":1,"variant":1,"unbreakable":true,"when":{"top":"red"}}
       ],
       "notes": {"design": "A solid round turret of blocks in the cell's south-east corner (its centre 1.75 m in from the cell's east and south edges, so its cone's eaves stay in the cell: it stands 0.25 m off a hall on the cell's east side, over the facade's corner buttress, and 0.25 m behind that hall's south front): twelve wall faces of the look's stone 0.5 m thick, a dressed cornice at 14 m and a cap over the hollow inside: 25 blocks and its top, kept few because a map as played holds at most 4,096 entities (St. John's is near it). Top (an option): merlons on every other face of the cornice, or the Conical Turret Roof (kit.roof.cone) in slate or red shingle. Nobody gets in: it is a landmark and cover."}
+    },
+    {
+      "id": "setpiece.classroom_bay",
+      "displayName": "Classroom Bay",
+      "category": "Interiors",
+      "blurb": "8 m of a school floor, 1 × 2 cells: a hall down the middle, a classroom each side with a wall of sash windows, twelve desks facing a chalkboard and a screen, the teacher's desk. Place bays end to end.",
+      "packs": ["collegiate", "gothic"],
+      "footprint": {"cells":[[0,0],[0,1]],"levels":[0,0]},
+      "mirror": "free",
+      "options": [{"name":"end","label":"East end","choices":[{"value":"open","label":"Open (the hall goes on)","blurb":"The hall and the rooms run on into the next bay east, as every bay but the last."},{"value":"east","label":"Closed (the hall's end)","blurb":"An outer wall across the east end: the last bay of a floor that ends here (the top floor over a lower end bay)."}]}],
+      "ports": [{"side":"W","cell":[0,0],"level":0,"kind":"opening"},{"side":"W","cell":[0,1],"level":0,"kind":"opening"},{"side":"E","cell":[0,0],"level":0,"kind":"opening"},{"side":"E","cell":[0,1],"level":0,"kind":"opening"}],
+      "parts": [
+        {"kind":"tile","tile":"core.room","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"windows_school","0,0,0:N":"open","0,0,0:E":"open","0,0,0:W":"open"},"glass":{"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"walls":{"material":"core.pbr_plaster_white"},"solids":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"underside":{"material":"core.pbr_plaster_white"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"facade":{"role":"facade"},"ceiling":"roof"},"when":{"end":"open"}},
+        {"kind":"tile","tile":"core.room","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"windows_school","0,0,0:S":"open","0,0,0:E":"open","0,0,0:W":"open"},"glass":{"0,0,0:N":{"role":"glass"}},"surfaces":{"floor":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"walls":{"material":"core.pbr_plaster_white"},"solids":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"underside":{"material":"core.pbr_plaster_white"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"facade":{"role":"facade"},"ceiling":"roof"},"when":{"end":"open"}},
+        {"kind":"block","name":"Corridor wall","position":[-1.35,0.0,2.65],"size":[5.3,2.6,0.3],"material":"core.pbr_plaster_white"},
+        {"kind":"block","name":"Corridor wall","position":[-1.35,0.0,5.35],"size":[5.3,2.6,0.3],"material":"core.pbr_plaster_white"},
+        {"kind":"block","name":"Corridor wall","position":[3.65,0.0,2.65],"size":[0.7,2.6,0.3],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"block","name":"Corridor wall (over the door)","position":[0.0,2.6,2.65],"size":[8.0,0.9,0.3],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"block","name":"Corridor wall","position":[3.65,0.0,5.35],"size":[0.7,2.6,0.3],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"block","name":"Corridor wall (over the door)","position":[0.0,2.6,5.35],"size":[8.0,0.9,0.3],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"block","name":"End partition","position":[-3.97,0.0,-0.5],"size":[0.06,3.5,6.0],"material":"core.pbr_plaster_white"},
+        {"kind":"block","name":"End partition","position":[3.97,0.0,-0.5],"size":[0.06,3.5,6.0],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"block","name":"End partition","position":[-3.97,0.0,8.5],"size":[0.06,3.5,6.0],"material":"core.pbr_plaster_white"},
+        {"kind":"block","name":"End partition","position":[3.97,0.0,8.5],"size":[0.06,3.5,6.0],"material":"core.pbr_plaster_white","when":{"end":"open"}},
+        {"kind":"prop","model":"kit.door.oak_open","position":[2.3,0.0,1.82],"yaw":-3.141593,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[-1.765,0.0,-1.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[-0.465,0.0,-1.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[0.835,0.0,-1.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.desk","position":[-3.24,0.0,-1.55],"yaw":-1.570796,"scale":1,"variant":1},
+        {"kind":"prop","model":"kit.board.chalk","position":[-3.89,0.85,-1.55],"yaw":1.570796,"scale":1,"unbreakable":true},
+        {"kind":"prop","model":"kit.board.screen","position":[-3.87,2.1,-1.55],"yaw":1.570796,"scale":1,"unbreakable":true},
+        {"kind":"prop","model":"kit.door.oak_open","position":[2.3,0.0,6.18],"yaw":0.0,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[-1.765,0.0,9.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[-0.465,0.0,9.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.school_desks","position":[0.835,0.0,9.55],"yaw":1.570796,"scale":1},
+        {"kind":"prop","model":"kit.table.desk","position":[-3.24,0.0,9.55],"yaw":-1.570796,"scale":1,"variant":1},
+        {"kind":"prop","model":"kit.board.chalk","position":[-3.89,0.85,9.55],"yaw":1.570796,"scale":1,"unbreakable":true},
+        {"kind":"prop","model":"kit.board.screen","position":[-3.87,2.1,9.55],"yaw":1.570796,"scale":1,"unbreakable":true},
+        {"kind":"light","position":[0.0,3.3,4.0],"fixture":"ceiling","color":"#ffe9c4","intensity":0.9,"range":9},
+        {"kind":"tile","tile":"core.room","x":0,"y":0,"z":0,"rotation":0,"edges":{"0,0,0:S":"windows_school","0,0,0:N":"open","0,0,0:E":"wall","0,0,0:W":"open"},"glass":{"0,0,0:S":{"role":"glass"}},"surfaces":{"floor":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"walls":{"material":"core.pbr_plaster_white"},"solids":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"underside":{"material":"core.pbr_plaster_white"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"facade":{"role":"facade"},"ceiling":"roof"},"when":{"end":"east"}},
+        {"kind":"tile","tile":"core.room","x":0,"y":1,"z":0,"rotation":0,"edges":{"0,0,0:N":"windows_school","0,0,0:S":"open","0,0,0:E":"wall","0,0,0:W":"open"},"glass":{"0,0,0:N":{"role":"glass"}},"surfaces":{"floor":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"walls":{"material":"core.pbr_plaster_white"},"solids":{"material":"core.pbr_terrazzo","tint":"#b0b3b2"},"underside":{"material":"core.pbr_plaster_white"},"trim":{"role":"trim"},"roof":{"role":"roof"}},"options":{"facade":{"role":"facade"},"ceiling":"roof"},"when":{"end":"east"}},
+        {"kind":"block","name":"Corridor wall","position":[3.4,0.0,2.65],"size":[0.2,2.6,0.3],"material":"core.pbr_plaster_white","when":{"end":"east"}},
+        {"kind":"block","name":"Corridor wall (over the door)","position":[-0.25,2.6,2.65],"size":[7.5,0.9,0.3],"material":"core.pbr_plaster_white","when":{"end":"east"}},
+        {"kind":"block","name":"Corridor wall","position":[3.4,0.0,5.35],"size":[0.2,2.6,0.3],"material":"core.pbr_plaster_white","when":{"end":"east"}},
+        {"kind":"block","name":"Corridor wall (over the door)","position":[-0.25,2.6,5.35],"size":[7.5,0.9,0.3],"material":"core.pbr_plaster_white","when":{"end":"east"}}
+      ],
+      "notes": {"design": "Two Rooms open to each other and at both ends; the hall straddles the line between them (z 2.8 to 5.2 m from the anchor cell's centre) between plastered walls 0.3 m thick, each with a 2 m doorway at the back of its classroom (x 1.3 to 3.3: bots keep 0.8 m off walls) and an Oak Door standing open in it. A half partition at each end, so two bays side by side make a whole one. Each classroom is 7.9 m long and 6 m from the hall wall to the windows (Classroom windows: four sashes). It faces west: a Chalkboard hung 0.85 m up on the west partition with a Projector Screen above it, the teacher's Desk before it, then three School Desks rows (four desks and their chairs each, one prop a row, two each side of an aisle), from the windows to 0.3 m short of the hall's side; the aisle along the hall wall (2.3 m) and the back (2.6 m) are clear for bots. One light, in the hall. East end Closed swaps the east side's open edges for an outer wall and stops the hall's walls at it (the top floor over a lower end bay). Props a bay: 14."}
     }
   ]
 }

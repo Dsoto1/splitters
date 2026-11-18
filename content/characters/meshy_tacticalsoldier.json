@@ -6,6 +6,7 @@
   "name": "Tactical Soldier",
   "look": "core.tacticalsoldier",
   "group": "soldiers",
+  "branch": "army",
   "nameTheme": "soldier",
   "bio": "Plate carrier, six mags, one plan. The plan is the six mags.",
   "body": "male",

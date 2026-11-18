@@ -1,4 +1,4 @@
-// MapMaker painting Phase 5 (docs/MAPMAKER_PAINTING_PLAN.md, "Phase 5"; map format v46): set-piece paint lasting
+// MapMaker painting Phase 5 (docs/MAPMAKER_PAINTING_PLAN.md, "Phase 5"; map format v47): set-piece paint lasting
 // through copy and paste (the rest of its lasting is in paintTargets.test.ts), and looks of your own: Save as my look
 // names a piece's look as it shows (no silent swap), the map carries the looks its pieces wear (`lookDefs`), they go
 // on other pieces, last through a theme change and the map file, are renamed and updated, and leave the map with the
@@ -83,7 +83,7 @@ describe('set-piece paint lasts through copy and paste', () => {
   });
 });
 
-describe('looks of your own (format v46)', () => {
+describe('looks of your own (format v47)', () => {
   it('an id from the name: my_<name>, free', () => {
     expect(lookIdFor('Rusty Harbour!', () => false)).toBe('my_rusty_harbour');
     expect(lookIdFor('Rusty Harbour', (id) => id === 'my_rusty_harbour')).toBe('my_rusty_harbour_2');
@@ -225,8 +225,8 @@ describe('looks of your own (format v46)', () => {
     expect('error' in refused && /different look/.test(refused.error)).toBe(true);
   });
 
-  it('the format: my_ ids only, checked materials, a v45 map migrates as it is', () => {
-    expect(MAP_FORMAT_VERSION).toBe(46);
+  it('the format: my_ ids only, checked materials, a v46 map migrates as it is', () => {
+    expect(MAP_FORMAT_VERSION).toBe(47);
     expect(SetPieceLookDef.safeParse({ id: 'imperial', displayName: 'X', roles: {} }).success).toBe(false);
     expect(SetPieceLookDef.safeParse({ id: 'my_x', displayName: 'X', roles: { stone: MARBLE } }).success).toBe(true);
     const odd: MapDocument = {
@@ -240,8 +240,8 @@ describe('looks of your own (format v46)', () => {
     const issues = validateMap(odd);
     expect(issues.some((i) => i.code === 'setpiece.look_id' && i.severity === 'error')).toBe(true);
     expect(issues.filter((i) => i.code === 'setpiece.look').map((i) => i.message).join('\n')).toMatch(/core\.nope[\s\S]*core\.pbr_gravel/);
-    const v45 = { ...scene(), formatVersion: 45 };
-    const { doc: migrated } = migrateMapDocument(JSON.parse(JSON.stringify(v45)));
-    expect(migrated).toEqual({ ...JSON.parse(JSON.stringify(v45)), formatVersion: 46 });
+    const v46 = { ...scene(), formatVersion: 46 };
+    const { doc: migrated } = migrateMapDocument(JSON.parse(JSON.stringify(v46)));
+    expect(migrated).toEqual({ ...JSON.parse(JSON.stringify(v46)), formatVersion: 47 });
   });
 });

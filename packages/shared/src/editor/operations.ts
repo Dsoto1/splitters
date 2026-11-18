@@ -247,7 +247,7 @@ export function unusedDefsCommand(doc: MapDocument, gone: ReadonlySet<string>): 
 }
 
 /**
- * The map's own looks (`lookDefs`, v46) that no placement names once the placements `gone` are taken out, dropped
+ * The map's own looks (`lookDefs`, v47) that no placement names once the placements `gone` are taken out, dropped
  * from the map; null when there are none. A look travels with a map only so its placements play anywhere: it stays in
  * your library.
  */

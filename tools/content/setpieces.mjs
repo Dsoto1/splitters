@@ -83,7 +83,7 @@ export function build(content, root = ROOT, opts = {}) {
     problems.push(...bad);
     if (bad.length) continue;
     if (!PACK_ID.test(p.id)) problems.push(`${where}: id is 2-32 lower case letters, digits and _`);
-    if (String(p.id).startsWith('my_')) problems.push(`${where}: id ${p.id}: my_ ids are players' own looks (map format v46)`);
+    if (String(p.id).startsWith('my_')) problems.push(`${where}: id ${p.id}: my_ ids are players' own looks (map format v47)`);
     if (packIds.has(p.id)) problems.push(`${where}: id ${p.id} is listed twice`);
     packIds.add(p.id);
     if (p.stylePack && !stylePacks.has(p.stylePack)) problems.push(`${where}: stylePack ${p.stylePack} is not a Style Pack (editor/stylePacks.ts)`);
@@ -151,7 +151,7 @@ export function build(content, root = ROOT, opts = {}) {
   // Maps name pieces and packs by id: one they use can't be renamed or removed.
   for (const [kind, id, where] of namedByMaps(root)) {
     if (kind === 'piece' && id.startsWith('setpiece.') && !ids.has(id)) problems.push(`${where}: places set piece ${id}, which isn't in ${DIR}/ (an id never changes)`);
-    // (A look of the map's own, `my_*` in its lookDefs, travels in the map: map format v46.)
+    // (A look of the map's own, `my_*` in its lookDefs, travels in the map: map format v47.)
     if (kind === 'pack' && !id.startsWith('my_') && !packIds.has(id)) problems.push(`${where}: names role pack ${id}, which isn't in ${ROLES} (an id never changes)`);
   }
 

@@ -38,7 +38,7 @@ export const MapClipboard = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024),
   /** The source map's own set pieces the copy's placements use. */
   setPieceDefs: z.array(SetPieceDefinition).max(64),
-  /** The source map's own looks (v46) the copy's placements wear (absent in a copy made before them: none). */
+  /** The source map's own looks (v47) the copy's placements wear (absent in a copy made before them: none). */
   lookDefs: z.array(SetPieceLookDef).max(64).default([]),
   /** Groups copied whole. */
   groups: z.array(MapGroup).max(256),

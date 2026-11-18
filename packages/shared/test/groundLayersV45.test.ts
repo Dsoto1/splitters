@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MAP_FORMAT_VERSION,
   GROUND_THEMES,
+  MAP_FORMAT_VERSION,
   MAX_GROUNDS,
   TERRAIN_MATERIALS,
   TERRAIN_SURFACES,

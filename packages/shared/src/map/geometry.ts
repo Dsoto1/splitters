@@ -1248,7 +1248,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'collegiate_red' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'collegiate_red' | 'collegiate_fieldstone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1270,6 +1270,9 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   // The same rubble with its dressing (plinth, string course, hood moulds, pinnacle caps) in red sandstone (St. John's
   // Scott Johnston / Hazelwood: PLAN_2026-11-12.md, "red trim").
   collegiate_red: { skin: 'core.pbr_collegiate_rubble', tint: '#c8cad2', depth: 0.14 },
+  // The same rubble left warm, brown and buff field stones (St. John's Stangeland / Cord: the 1902 fieldstone hall,
+  // PLAN_2026-11-12.md Q13), with dressed limestone trim.
+  collegiate_fieldstone: { skin: 'core.pbr_collegiate_rubble', tint: '#e8dcc6', depth: 0.14 },
   manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
   temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
@@ -1374,11 +1377,12 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           break;
         case 'gothic_stone':
         case 'collegiate_stone':
-        case 'collegiate_red': {
+        case 'collegiate_red':
+        case 'collegiate_fieldstone': {
           // A stone plinth, buttresses at the ends of each wall, a string course, hood moulds over the openings and a
           // battlemented parapet with pinnacles over the buttresses: dark flagstone dressing on Gothic stone, dressed
           // limestone on Collegiate stone.
-          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : facade === 'collegiate_red' ? ['core.stone_trim', '#9a5446', '#b4644f'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
+          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' || facade === 'collegiate_fieldstone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : facade === 'collegiate_red' ? ['core.stone_trim', '#9a5446', '#b4644f'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
           // The plinth runs under the wall and stops at a doorway (where no wall stands on the floor): a skybridge's
           // door ends, a hall's doors.
           if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);

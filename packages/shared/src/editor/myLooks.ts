@@ -1,5 +1,5 @@
 /**
- * Looks of your own (docs/MAPMAKER_PAINTING_PLAN.md, Phase 5, "Saved looks"; map format v46): a set piece's look as
+ * Looks of your own (docs/MAPMAKER_PAINTING_PLAN.md, Phase 5, "Saved looks"; map format v47): a set piece's look as
  * it shows, saved under a name ("Save as my look…"), kept in your browser library and, once a placement uses it, in
  * the map's `lookDefs`, so the map plays anywhere. A look is roles only (question 7a), so it fits any set piece; paint
  * on single parts stays with its placement. The layers stay as they were: the base theme, then the look, then your

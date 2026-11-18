@@ -447,7 +447,7 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   undo step. The **inspector** shows the piece and its family, its **Look**, **Mirror**, X / Y / Level and turn, its
   **ports**, and the **overrides**: a role's material (Stone, Trim, Floor, Paving, Roof, Wood, Metal; the facade, the
   doors' style, the glass) for this placement only, and its **parts**, each with a tick: untick one to leave it out.
-- **Looks of your own (painting Phase 5, format v46).** The inspector's **Look** is grouped: the map theme's, **This
+- **Looks of your own (painting Phase 5, format v47).** The inspector's **Look** is grouped: the map theme's, **This
   map's themes** (the looks of the packs for the map's Structure theme), **My looks**, **All looks** (those made for the
   piece first). **Save as my look…** (under Look) names the piece's look as it shows, your paint across the piece
   included, and keeps it in this browser; the piece then wears it and looks exactly the same (a role no layer gives is

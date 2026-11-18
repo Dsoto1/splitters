@@ -1111,7 +1111,7 @@ export type SetPieceRoleValues = z.infer<typeof SetPieceRoleValues>;
 export type SetPieceRoleValuesInput = z.input<typeof SetPieceRoleValues>;
 
 /**
- * A look of the player's own (format v46, painting Phase 5): a named set of role values, saved in MapMaker ("Save as
+ * A look of the player's own (format v47, painting Phase 5): a named set of role values, saved in MapMaker ("Save as
  * my look…") from a set piece's look as it shows. It lives in the player's browser library and, once a placement uses
  * it, in the map's `lookDefs`, so the map plays anywhere. A placement names it in `pack` as it names a shipped role
  * pack. Roles only, so it fits any set piece (painting plan, question 7a); paint on single parts stays with its
@@ -1386,7 +1386,7 @@ export const MapDocument = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024).optional(),
   /** Set pieces this map defines itself (v27, `local.*`: saved from a selection in MapMaker), so it plays anywhere. Absent: none. */
   setPieceDefs: z.array(SetPieceDefinition).max(64).optional(),
-  /** Looks of the player's own its set pieces use (v46, `my_*`: saved in MapMaker), so it plays anywhere. Absent: none. */
+  /** Looks of the player's own its set pieces use (v47, `my_*`: saved in MapMaker), so it plays anywhere. Absent: none. */
   lookDefs: z.array(SetPieceLookDef).max(MAX_MAP_LOOK_DEFS).optional(),
   /** MapMaker's groups (v31): things kept together while editing. Absent: none. Play ignores them. */
   groups: z.array(MapGroup).max(256).optional(),

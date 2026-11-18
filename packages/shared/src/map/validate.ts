@@ -301,7 +301,7 @@ function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPiec
   const played = ex.map === map ? 0 : utf8Length(JSON.stringify(ex.map));
   if (played > RESOURCE_BUDGETS.mapBytes) issues.push({ severity: 'error', code: 'budget.bytes', message: `as played (its set pieces expanded) the map is ${(played / 1048576).toFixed(1)} MB: at most ${RESOURCE_BUDGETS.mapBytes / 1048576} MB` });
   for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
-  // The map's own looks (v46): each role a material the game has; a ground material only on floor, paving and roof (painting plan, 2a).
+  // The map's own looks (v47): each role a material the game has; a ground material only on floor, paving and roof (painting plan, 2a).
   for (const look of map.lookDefs ?? []) {
     for (const [role, v] of Object.entries(look.roles)) {
       if (!v || typeof v !== 'object') continue;

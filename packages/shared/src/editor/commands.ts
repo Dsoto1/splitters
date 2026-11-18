@@ -43,7 +43,7 @@ export type EditCommand =
   | { kind: 'updateSetPieces'; before: SetPiecePlacement[]; after: SetPiecePlacement[] }
   /** The map's own set-piece definitions, replaced as a list (null: none, and no `setPieceDefs` key). */
   | { kind: 'setSetPieceDefs'; before: SetPieceDefinition[] | null; after: SetPieceDefinition[] | null }
-  /** The map's own looks (v46, painting Phase 5), replaced as a list (null: none, and no `lookDefs` key). */
+  /** The map's own looks (v47, painting Phase 5), replaced as a list (null: none, and no `lookDefs` key). */
   | { kind: 'setLookDefs'; before: SetPieceLookDef[] | null; after: SetPieceLookDef[] | null }
   /** MapMaker's groups (v31), replaced as a list (null or empty: none, and no `groups` key). */
   | { kind: 'setGroups'; before: MapGroup[] | null; after: MapGroup[] | null }

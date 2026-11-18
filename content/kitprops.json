@@ -6,6 +6,7 @@
     "barrier",
     "bed",
     "bin",
+    "board",
     "bookcase",
     "booth",
     "box",
@@ -462,6 +463,26 @@
         560,
         280,
         110
+      ],
+      "chalkboard": [
+        220,
+        90,
+        44
+      ],
+      "screen": [
+        200,
+        80,
+        28
+      ],
+      "noticeboard": [
+        400,
+        160,
+        40
+      ],
+      "schooldesks": [
+        1600,
+        500,
+        120
       ]
     }
   },

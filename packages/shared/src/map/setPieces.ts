@@ -68,7 +68,7 @@ export const lookAsPack = (look: SetPieceLookDef): SetPieceRolePack => ({ id: lo
 const lookCache = new WeakMap<readonly SetPieceLookDef[], { library: SetPieceLibrary; out: SetPieceLibrary }>();
 
 /**
- * The library with the map's own looks (`lookDefs`, format v46) among its role packs, so a placement that names one is
+ * The library with the map's own looks (`lookDefs`, format v47) among its role packs, so a placement that names one is
  * drawn and played in it. A map's look never replaces a shipped pack. No looks: the library as it is.
  */
 export function withMapLooks<L extends SetPieceLibrary>(doc: Pick<MapDocument, 'lookDefs'>, library: L): L {
