@@ -183,6 +183,45 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   the face and the portrait's picture, clipping in first person. A new experimental character has no shipped portrait
   until the next capture (the menu draws it live), so `portrait` reports until then.
 
+## Blood
+
+What a character bleeds when hit (the owner, 2026-11-17, "a"): `blood` in its manifest, one of `BLOOD_KINDS`
+(`packages/shared/src/content/looks.ts`; the manifest checker wants one on every built character). Drawn by
+`game/bloodVisuals.ts` (`bloodStyle`) at every hit on the character and its body, its kill and its headshot:
+
+| Kind | Drawn as |
+|---|---|
+| `red` | the red spray, mist, splats and pool (people) |
+| `green`, `blue` | the same in MapMaker's Alien green or Coolant blue (aliens) |
+| `oil` | black oil drops, splats and pool, with Binbun Electric FX sparks (`blood.oil` in content/vfx.json map.gameplay; robots and machines) |
+| `bone` | a few pale bone chips and a drifting cloud of bone dust; no splats, no pool, no wet splat sound (skeletons) |
+| `spirit` | a pale spectral wisp that eases in, rises and fades, with Binbun Hit FX's `vfx_impact_05` tinted pale (`blood.spirit`); no drops, no splats, no pool, no wet splat sound (ghosts and spirits) |
+
+**Who decides.** A character's own kind wins over the map's colour. Anyone without one bleeds the map's blood (MapMaker →
+Map properties → Blood; red unless set): the part-built presets (Ranger, Medic …), designs of yours, the soldier NPC
+mannequins (the Dummy) and the hostages. NPC creature skins have theirs by role (`NPC_SKIN_BLOOD` in `sim/npc.ts`:
+imp, puglin and zombie red, cyclops blue, oculus and scolitex green); roles drawn as a character (goblin, otter …)
+bleed what that character's manifest says. The map's **amount** (None, Light, Heavy) and the player's **Blood** switch
+in the pause menu rule every kind: None or switched off, nothing is drawn, sparks and wisps included. `lookBlood(id)`
+reads it.
+
+**Reduce flashing.** The sparks and the wisp play smaller and dimmer, eased in, and at most one of each a second
+however fast the hits come (a machine gun on a robot crackles once a second, not ten times); off, at most one every
+60 ms. The `flashing` e2e flow records a robot, a skeleton and a ghost hit ten times a second each at night (moment
+`blood`).
+
+**Who gets what** (tagged by group first: Machines oil, every other group red; then by hand, in *italics*; 150
+characters):
+
+| Kind | How many | Who |
+|---|---|---|
+| **Red** (`red`) | 112 | Anoobys, Astronaut Explorer, Azure Sentinel, Bamboo, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill, Bill the Barbarian, Biscuit, Boglurker, Briggs, Brother Silencio, Cal, Cap'n Rusty Barnacle, Capt. Nova, Chef Basile, Coffee Brown, Cool Hands Rex, Crimson Operative, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dust Trooper, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Gas Mask Engineer, Giggles, Goblin, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Hollis, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rotter, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shade, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Uncle Bao, Vampire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, Wealthy Otter, WWII Infantry, Zombie Soldier A |
+| **Green** (`green`) | 9 | *Alien Biker*, *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *Space Marine*, *Spud Marshal*, *The Hollow Visitor*, *The Visitor* |
+| **Blue** (`blue`) | 3 | *Octo Buddy*, *Reef Wanderer*, *Ricochet* |
+| **Black oil and sparks** (`oil`) | 15 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, *Brass Hare*, *Bronzer*, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, *Ivory Rustwalker*, Rusty Mech, *Slugger-9*, Steel Guardian, T-TreeFitty |
+| **Bone dust** (`bone`) | 10 | *Bonejack*, *Count Bonesworth*, *Dog Tag Doyle*, *Grinning Gus*, *Mummy Bot*, *Pharaoh Mummy Warrior*, *Rattles*, *Spiked Skeleton Biker*, *Sugar Skull*, *Teddy* |
+| **Spectral wisp** (`spirit`) | 1 | *The Hollow Pilgrim* |
+
 ## Character Designer
 
 Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).

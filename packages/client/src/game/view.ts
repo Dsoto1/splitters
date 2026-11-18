@@ -1432,6 +1432,8 @@ export class GameView {
 
   /** When each blood effect last played (performance.now ms), for Reduce flashing's one a second. */
   private readonly bloodFxAt = new Map<string, number>();
+  /** Blood effects started (the `flashing` flow's `blood` moment reads it). */
+  bloodFxPlayed = 0;
 
   /**
    * A blood kind's pack effect at a hit (content/vfx.json map.gameplay `blood.oil` sparks, `blood.spirit` wisp): minor
@@ -1447,6 +1449,7 @@ export class GameView {
     const now = performance.now();
     if (now - (this.bloodFxAt.get(key) ?? -Infinity) < (calm ? 1000 : 60)) return;
     this.bloodFxAt.set(key, now);
+    this.bloodFxPlayed++;
     const near = this.towardCamera(at, 0.3);
     this.vfx.play(fx.pack, fx.effect, new Vector3(near.x, near.y, near.z), { scale: fx.scale * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain, fadeIn: BLAST_FADE_IN } : {}) });
   }

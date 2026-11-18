@@ -12298,6 +12298,35 @@ async function flashingScene(browser, scene) {
           for (const c of m.combatants()) c.burnTicks = c.poisonTicks = c.slowTicks = 0;
         }).then(() => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality))),
     },
+    // Blood by character (game/bloodVisuals.ts; docs/CHARACTERS.md, "Blood"): a robot, a skeleton and a ghost 3 m in
+    // front of you at night, each hit ten times a second (a machine gun's stream): black oil with Electric FX sparks,
+    // bone dust, a pale spectral wisp. With the setting on the sparks and the wisp play smaller, dimmer and at most once
+    // a second each.
+    {
+      name: 'blood',
+      label: 'a robot, a skeleton and a ghost 3 m in front of you at night, each hit ten times a second (oil and sparks, bone dust, a pale wisp)',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1.1, 11]),
+      bots: [],
+      before: () => page.evaluate(() => (window.__cs.view.bloodFxPlayed = 0)),
+      at: Object.fromEntries(
+        Array.from({ length: 20 }, (_, k) => [
+          1 + k * 3,
+          () =>
+            page.evaluate(() => {
+              const b = window.__cs.view.blood;
+              const d = { x: 0, y: 0.1, z: 1 };
+              b.hit({ x: -1.2, y: 1.2, z: 11 }, d, 1, 'oil');
+              b.hit({ x: 0, y: 1.2, z: 11 }, d, 1, 'bone');
+              b.hit({ x: 1.2, y: 1.2, z: 11 }, d, 1, 'spirit');
+            }),
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ played: window.__cs.view.bloodFxPlayed, on: window.__cs.view.blood.on })),
+      // Sparks and wisps both came: with the setting on at most one of each a second (2 s recorded), off one a hit.
+      sees: (on, s) => s.on && (on ? s.played >= 2 && s.played <= 4 : s.played >= 20),
+    },
     {
       name: 'alarm',
       label: 'the red alarm light blinking 4 times a second, in its dark room',
