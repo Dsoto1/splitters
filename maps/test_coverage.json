@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 46,
+  "formatVersion": 47,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_e4tyov3pcrnyrdbb",
-      "revision": 40,
-      "contentHash": "sha256:cf67799c2d4ea808022d7d7054e1b7e962693464292290f3d0e41b321a8c6903",
-      "schemaVersion": 46,
-      "releasedAt": "2026-11-17T21:35:47.198Z"
+      "versionId": "v_rsecn2jqg3zh7p6m",
+      "revision": 41,
+      "contentHash": "sha256:3bb09ed5a1ff4116f99b39bf2053348ebff39ce36a75b0a20854287e1af1ed66",
+      "schemaVersion": 47,
+      "releasedAt": "2026-11-18T03:26:34.182Z"
     },
     "testOnly": true
   },
@@ -6094,6 +6094,45 @@
   "blood": null,
   "teamSetup": null,
   "dependencies": [],
+  "lookDefs": [
+    {
+      "id": "my_coverage_rust",
+      "displayName": "Coverage rust",
+      "roles": {
+        "stone": {
+          "material": "core.pbr_brick_old",
+          "tint": null
+        },
+        "trim": {
+          "material": "core.pbr_concrete",
+          "tint": "#d6d2c8"
+        },
+        "floor": {
+          "material": "core.pbr_terrazzo",
+          "tint": null
+        },
+        "paving": {
+          "material": "core.pbr_hex_paving",
+          "tint": "#c4c0b8"
+        },
+        "roof": {
+          "material": "core.pbr_concrete_dark",
+          "tint": null
+        },
+        "wood": {
+          "material": "core.pbr_planks",
+          "tint": null
+        },
+        "metal": {
+          "material": "core.pbr_rusted_plate",
+          "tint": null
+        },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    }
+  ],
   "setPieces": [
     {
       "id": "setpiece_10e8y0g228",
@@ -6354,7 +6393,17 @@
       "y": -24,
       "z": 0,
       "rotation": 0,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "paint": {
+          "2": {
+            "metal": {
+              "material": "core.gold_leaf",
+              "tint": null
+            }
+          }
+        }
+      }
     },
     {
       "id": "setpiece_uayqdvdl2k",
@@ -6759,7 +6808,7 @@
       "z": 0,
       "rotation": 0,
       "mirror": false,
-      "pack": "urban"
+      "pack": "my_coverage_rust"
     },
     {
       "id": "setpiece_rca301406m",
@@ -6769,7 +6818,7 @@
       "z": 0,
       "rotation": 0,
       "mirror": false,
-      "pack": "urban"
+      "pack": "my_coverage_rust"
     },
     {
       "id": "setpiece_4p6sm7lgyw",
