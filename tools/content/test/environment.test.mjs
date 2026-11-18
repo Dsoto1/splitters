@@ -9,6 +9,12 @@ import { describe, expect, it } from 'vitest';
 import { ROOT, budgetProblems, build, load, validate } from '../environment.mjs';
 import { cliffMesh } from '../env/rock.mjs';
 
+/** Environment Phase 4, more variety (2026-11-17): species added through the existing generators. */
+const PHASE4 = [
+  'env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch', 'env.conifer.cypress',
+  'env.shrub.juniper', 'env.shrub.sagebrush', 'env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert',
+  'env.cactus.barrel', 'env.succulent.agave', 'env.rock.boulder_shard', 'env.rock.sandstone', 'env.cliff.sandstone', 'env.cliff.crag',
+];
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 describe('environment generator', () => {
@@ -18,7 +24,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass']);
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass', ...PHASE4].sort());
   });
 
   // The two builds are two tests: one test under one budget for both, a busy machine took 64 s against its 60.
@@ -60,6 +66,19 @@ describe('environment generator', () => {
     // Pebbles and eelgrass: light enough to grow by the thousand (Kenney's stones 16, the Meshy eelgrass 751).
     expect(tris['env.rock.pebbles'][0]).toBeLessThanOrEqual(64);
     expect(tris['env.water.eelgrass'][0]).toBeLessThanOrEqual(64);
+    // Phase 4: the new ground cover grows by the thousand like the clump (<= 64); the new bushes are no heavier than the
+    // laurel, the new trees than the oak and the cypress (a packed column) within the tree budget.
+    for (const id of ['env.grass.tall', 'env.grass.tussock', 'env.flower.alpine', 'env.flower.desert', 'env.succulent.agave']) expect(tris[id].length === 1 && tris[id][0] <= 64, id).toBe(true);
+    for (const id of ['env.shrub.juniper', 'env.shrub.sagebrush']) expect(tris[id][0], id).toBeLessThanOrEqual(500);
+    for (const id of ['env.broadleaf.birch', 'env.broadleaf.olive', 'env.conifer.mountain_pine', 'env.conifer.larch']) expect(tris[id][0], id).toBeLessThanOrEqual(2800);
+    // Every new species has the levels of detail and far stand-in (the crossed cards) of its kind (a new kind: of its category).
+    const render = Object.fromEntries(first.clientSpecies.map((s) => [s.id, s]));
+    for (const id of PHASE4) {
+      const s = species.find((x) => x.id === id);
+      const kin = species.find((x) => x.generator.kind === s.generator.kind && !PHASE4.includes(x.id)) ?? species.find((x) => x.category === s.category && !PHASE4.includes(x.id));
+      expect(!!s.impostor, id).toBe(!!kin.impostor);
+      expect(render[id].lods.length, id).toBe(render[kin.id].lods.length);
+    }
     // Every level is lighter than the one before.
     for (const s of first.clientSpecies) for (let i = 1; i < s.triangles.length; i++) expect(s.triangles[i], s.id).toBeLessThan(s.triangles[i - 1]);
   }, 60000);
@@ -69,8 +88,12 @@ describe('environment generator', () => {
     for (const [k, c] of Object.entries(first.atlas.cards)) expect(c.coverage, k).toBeGreaterThanOrEqual(0.55);
   }, 60000);
 
-  it('cliff panels butt seamlessly: the left edge of one is the right edge of the next, in every variant and level', () => {
-    const cliff = species.find((s) => s.id === 'env.cliff.face');
+  it('cliff panels butt seamlessly: the left edge of one is the right edge of the next, in every family, variant and level', () => {
+    const cliffs = species.filter((s) => s.category === 'cliff');
+    expect(cliffs.map((s) => s.id).sort()).toEqual(['env.cliff.crag', 'env.cliff.face', 'env.cliff.sandstone']);
+    // Each cliff species is its own family (its own edge profile and ledges).
+    expect(new Set(cliffs.map((s) => s.generator.familySeed)).size).toBe(cliffs.length);
+    for (const cliff of cliffs) {
     const g = cliff.generator;
     for (const lod of cliff.lods) {
       const edges = cliff.variants.map((v) => {
@@ -92,6 +115,7 @@ describe('environment generator', () => {
         expect(e.left, 'left edge = right edge (same height, depth and normal)').toEqual(e.right);
       }
       expect(edges[1].left).toEqual(edges[0].left);
+    }
     }
   });
 

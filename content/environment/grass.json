@@ -18,6 +18,44 @@
         { "index": 0, "name": "summer", "look": { "root": "#3c4a22", "tip": "#7f9a46", "alt": "#93a554" } },
         { "index": 1, "name": "dry", "look": { "root": "#5a5232", "tip": "#b8a768", "alt": "#a39a5c" } }
       ]
+    },
+    {
+      "id": "env.grass.tall",
+      "displayName": "Tall Grass",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a tall, loose clump of long blades (0.9 m) that arch over; meadows, field edges and verges. Decoration only."},
+      "nominalHeight": 0.9,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 40, "minSpacing": 0.35, "scale": [0.7, 1.3]},
+      "generator": {"kind": "grass", "seed": 68, "height": 0.9, "width": 0.045, "spread": 0.12, "blades": [11, 12]},
+      "lods": [
+        {"distance": 0}
+      ],
+      "variants": [
+        {"index": 0, "name": "summer", "look": {"root": "#3e4c24", "tip": "#8ea04e", "alt": "#a6ad60"}},
+        {"index": 1, "name": "dry", "look": {"root": "#5c5434", "tip": "#c4b274", "alt": "#b0a266"}}
+      ]
+    },
+    {
+      "id": "env.grass.tussock",
+      "displayName": "Tussock Grass",
+      "category": "groundcover",
+      "assetVersion": 1,
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a dense, spiky bunch of fine blades from a tight crown (0.5 m), standing more upright than the clump; alpine meadows and dry plains. Decoration only."},
+      "nominalHeight": 0.5,
+      "nav": "none",
+      "role": "decorative",
+      "placement": {"maxSlopeDegrees": 45, "minSpacing": 0.3, "scale": [0.7, 1.4]},
+      "generator": {"kind": "grass", "seed": 69, "height": 0.5, "width": 0.026, "spread": 0.05, "blades": [12, 12]},
+      "lods": [
+        {"distance": 0}
+      ],
+      "variants": [
+        {"index": 0, "name": "green", "look": {"root": "#44502a", "tip": "#93a05a", "alt": "#7e8c4a"}},
+        {"index": 1, "name": "straw", "look": {"root": "#6a5c38", "tip": "#d0bc80", "alt": "#bca66a"}}
+      ]
     }
   ]
 }

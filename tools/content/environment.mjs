@@ -23,7 +23,7 @@ import { writeModel } from './env/mesh.mjs';
 import { crossedImpostor } from './env/impostor.mjs';
 import { broadleafMesh, broadleafShapes, broadleafSkeleton } from './env/tree.mjs';
 import { coniferMesh, coniferShapes, coniferSkeleton } from './env/conifer.mjs';
-import { eelgrassMesh, fernMesh, flowerMesh, grassMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
+import { eelgrassMesh, fernMesh, flowerMesh, grassMesh, rosetteMesh, shrubMesh, shrubSkeleton } from './env/plants.mjs';
 import { palmMesh, palmShapes, palmSkeleton } from './env/palm.mjs';
 import { cactusMesh, cactusShapes, cactusSkeleton } from './env/cactus.mjs';
 import { hedgeMesh, hedgeShapes, hedgeSkeleton } from './env/hedge.mjs';
@@ -39,10 +39,11 @@ const SHARED = 'packages/shared/src/content/environment.generated.ts';
 const CLIENT = 'packages/client/src/content/environment.generated.ts';
 
 export const CATEGORIES = ['tree', 'plant', 'groundcover', 'rock', 'boulder', 'cliff', 'deadwood'];
-const KINDS = { broadleaf: 'tree', conifer: 'tree', palm: 'tree', cactus: 'tree', shrub: 'plant', hedge: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', pebbles: 'rock', boulder: 'boulder', slab: 'boulder', outcrop: 'boulder', cliff: 'cliff', log: 'deadwood' };
+const KINDS = { broadleaf: 'tree', conifer: 'tree', palm: 'tree', cactus: 'tree', shrub: 'plant', hedge: 'plant', grass: 'groundcover', flower: 'groundcover', fern: 'groundcover', eelgrass: 'groundcover', rosette: 'groundcover', pebbles: 'rock', boulder: 'boulder', slab: 'boulder', outcrop: 'boulder', cliff: 'cliff', log: 'deadwood' };
 const { num, int, str, bool, en, tup, arr, obj, map } = shape;
 const ID = /^env\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
-const mm = (v) => Math.round(v * 1000) / 1000;
+// (+ 0 turns -0 into 0: a table entry must read back from JSON, which has no -0.)
+const mm = (v) => Math.round(v * 1000) / 1000 + 0;
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
@@ -166,6 +167,8 @@ export async function build(content, species) {
           return [{ distance: 0, parts: [{ material: 'env.leaf', mesh: fernMesh(g.seed, g, look, atlas).fronds }] }];
         case 'eelgrass':
           return [{ distance: 0, parts: [{ material: 'env.grass', mesh: eelgrassMesh(g.seed, g, look).grass }] }];
+        case 'rosette':
+          return [{ distance: 0, parts: [{ material: 'env.grass', mesh: rosetteMesh(g.seed, g, look).leaves }] }];
         case 'pebbles':
           return [{ distance: 0, parts: [{ material: 'env.rock', mesh: pebblesMesh(g.seed, g, look).rock }] }];
         case 'outcrop':

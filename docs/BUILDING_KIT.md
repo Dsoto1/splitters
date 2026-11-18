@@ -462,6 +462,19 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   undo step. The **inspector** shows the piece and its family, its **Look**, **Mirror**, X / Y / Level and turn, its
   **ports**, and the **overrides**: a role's material (Stone, Trim, Floor, Paving, Roof, Wood, Metal; the facade, the
   doors' style, the glass) for this placement only, and its **parts**, each with a tick: untick one to leave it out.
+- **Looks of your own (painting Phase 5, format v47).** The inspector's **Look** is grouped: the map theme's, **This
+  map's themes** (the looks of the packs for the map's Structure theme), **My looks**, **All looks** (those made for the
+  piece first). **Save as my look…** (under Look) names the piece's look as it shows, your paint across the piece
+  included, and keeps it in this browser; the piece then wears it and looks exactly the same (a role no layer gives is
+  left out, so it keeps following the theme). On a piece wearing one of your looks the dialog offers **Update** it:
+  every piece wearing it changes with it. **My looks** (Set pieces tab) lists your looks and the map's own: **Apply**
+  puts the selected set pieces in one (with none selected, **Place in it** makes it the look new pieces are placed in),
+  **Rename…**, **Delete** (maps keep their copy), and **Save to my looks** for a look that came with a map. Several
+  set pieces selected get one Look row. A map carries the looks its pieces wear (`lookDefs`, ids `my_<name>`; at most
+  32), so it plays anywhere; a look nobody wears leaves the map (deleting, Explode, another look). A look holds roles
+  only (stone, trim, floor, paving, roof, wood, metal, facade, doors, glass), so it fits any piece; paint on single
+  parts stays with its placement. Layers: the Structure theme, then the look, then your paint. Copy and paste carry
+  the looks the copied pieces wear (a paste into a map with a different look of the same id is refused).
 - **Ports** (where a piece meets what's round it: its doors and openings) are drawn on the ghost's and the selected
   piece's outline: a door frame and an arrow out, blue for a door, green for an opening, **red and crossed where a wall
   stands in it** (a tile's wall or window, a block: MapMaker looks just outside the port, at waist to chest height),

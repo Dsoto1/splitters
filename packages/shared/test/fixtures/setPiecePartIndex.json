@@ -1,0 +1,22 @@
+{
+ "setpiece.arena_corner_gate#5": "door",
+ "setpiece.cage_block#2": "tile core.room 0,1,0",
+ "setpiece.crossroads_plaza#10": "prop prop.yard_lamp",
+ "setpiece.crossroads_plaza#15": "prop kit.seat.bench",
+ "setpiece.crossroads_plaza#16": "prop prop.yard_lamp",
+ "setpiece.crossroads_plaza#21": "prop kit.seat.bench",
+ "setpiece.crossroads_plaza#22": "prop prop.yard_lamp",
+ "setpiece.crossroads_plaza#27": "prop kit.seat.bench",
+ "setpiece.crossroads_plaza#28": "prop prop.yard_lamp",
+ "setpiece.crossroads_plaza#9": "prop kit.seat.bench",
+ "setpiece.loading_dock#12": "prop prop.pallet",
+ "setpiece.loading_dock#13": "prop kit.crate.wood_long",
+ "setpiece.loading_dock#14": "prop prop.cargo_crate_stack",
+ "setpiece.loading_dock#15": "prop kit.crate.wood_long",
+ "setpiece.loading_dock#16": "prop kit.drum.steel",
+ "setpiece.loading_dock#17": "prop kit.drum.steel",
+ "setpiece.loading_dock#18": "light",
+ "setpiece.loading_dock#19": "light",
+ "setpiece.loading_dock#20": "light",
+ "setpiece.stair_end_bay_bridge#11": "block 8x0.3x8 {\"role\":\"roof\"}"
+}

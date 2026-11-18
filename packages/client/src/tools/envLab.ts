@@ -95,6 +95,28 @@ const LINEUP2: [string, number, string, number, number, number][] = [
   ['env.hedge.yew', 1, 'prop.hedge_large', 5.2, -91, 1.3],
 ];
 
+/**
+ * Environment Phase 4's species (more variety), every variant, in a lineup of their own to the right of the second's
+ * (so the earlier views and the visual baseline don't change): ground cover in front, bushes, cacti and boulders, trees
+ * in two rows, then the two new cliff families. [species, variant index, x, z, yaw]. Views: variety, variety-small,
+ * variety-cliffs (best with Show: new).
+ */
+const LINEUP4: [string, number, number, number, number][] = [
+  ...(
+    [['env.grass.tall', 0], ['env.grass.tall', 1], ['env.grass.tussock', 0], ['env.grass.tussock', 1], ['env.flower.alpine', 0], ['env.flower.alpine', 1], ['env.flower.alpine', 2], ['env.flower.desert', 0], ['env.flower.desert', 1], ['env.succulent.agave', 0], ['env.succulent.agave', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 42 + i * 1.8, -89, i * 0.7]),
+  ...(
+    [['env.shrub.juniper', 0], ['env.shrub.juniper', 1], ['env.shrub.sagebrush', 0], ['env.shrub.sagebrush', 1], ['env.cactus.barrel', 0], ['env.cactus.barrel', 1], ['env.rock.boulder_shard', 0], ['env.rock.boulder_shard', 1], ['env.rock.boulder_shard', 2], ['env.rock.sandstone', 0], ['env.rock.sandstone', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + i * 2.4, -84.5, i * 0.9]),
+  ...(
+    [['env.broadleaf.birch', 0], ['env.broadleaf.olive', 0], ['env.conifer.mountain_pine', 0], ['env.conifer.larch', 0], ['env.conifer.cypress', 0], ['env.broadleaf.birch', 1], ['env.broadleaf.olive', 1], ['env.conifer.mountain_pine', 1], ['env.conifer.larch', 1], ['env.conifer.cypress', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + (i % 5) * 6 + (i >= 5 ? 3 : 0), i < 5 ? -77 : -69, i * 1.1]),
+  ['env.cliff.sandstone', 0, 39, -48, 0],
+  ['env.cliff.sandstone', 1, 47, -48, 0],
+  ['env.cliff.crag', 0, 55, -48, 0],
+  ['env.cliff.crag', 1, 63, -48, 0],
+];
+
 const EYE = 1.7;
 
 interface LabState {
@@ -188,6 +210,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     entities.push(ent(`lineup2_${i}`, model, [x, 0, z], variant, yaw));
     oldEntities.push(ent(`old2_${i}`, old, [x + BEFORE_X, 0, z], undefined, yaw));
   }
+  for (const [i, [model, variant, x, z, yaw]] of LINEUP4.entries()) entities.push(ent(`lineup4_${i}`, model, [x, 0, z], variant, yaw));
   // A cliff wall of four panels side by side (the seams), the old cliff pieces in the "before" set.
   for (let k = 0; k < 4; k++) {
     entities.push(ent(`wall_${k}`, 'env.cliff.face', [-12 + k * 8, 0, 30], k % 2));
@@ -258,6 +281,10 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     VIEWS[k] = [new Vector3(...p), new Vector3(...t)];
     VIEWS[`before-${k}`] = [new Vector3(p[0] + BEFORE_X, p[1], p[2]), new Vector3(t[0] + BEFORE_X, t[1], t[2])];
   }
+  // Environment Phase 4's lineup (no "before" set: these are new species).
+  VIEWS.variety = [new Vector3(51, EYE, -100), new Vector3(51, 3.2, -72)];
+  VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
+  VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 

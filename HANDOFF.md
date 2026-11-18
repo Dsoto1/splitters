@@ -62,6 +62,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: environment Phase 4 and painting Phase 5 (map format v47) in a train** (`check/train-20261118-050653` at 81f7e8de, run 44242217181, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
+
 **Landed: MapMaker UI Phase 4a (Tile View) in a train** (`check/train-20261118-031402` at 47fac281, run 44228966768, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed). Painting Phase 5 left the train (map format v46 went to St. John's step 5; it moves to v47 and re-checks).
 
 **Landed: St. John's step 5 and the owner's character pass in a train** (`check/train-20261118-004220` at 37a68194, run 44210289769, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; landing lock freed).
@@ -72,7 +74,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-18): player profiles, plan and Phase 1** (`wip/player-profiles`; QUEUE Features, lane B). A plan (`docs/PLAYER_PROFILES_PLAN.md`), then Phase 1: the Profile screen gains a favourite class and career stats (matches, wins, kills, deaths, accuracy, favourite weapon), kept in this browser for guests and on the hub for signed-in players; your profile card on the Tab scoreboard and the end-of-match board. Files: shared `net/profile.ts`, new `net/career.ts` (+ index export), new tests `packages/shared/test/career.test.ts`; server `profiles.ts` (career fields, `/api/v1/profile/match`), `packages/server/test/profiles*.test.ts`; client `profile.ts`, new `careerStats.ts`, new `game/careerTally.ts`, new `game/profileCard.ts`, `game/session.ts` (event hook only, nothing at match start), `game/hud.ts` (card mount), `frontend/frontEnd.ts` (Profile screen), `style.css`, tests `packages/client/test/career*.test.ts`; e2e `run.mjs` (a check in an existing flow), `e2e/flowMap.mjs` if needed; docs/PLAYER_PROFILES_PLAN.md, docs/HOSTING.md (the endpoint), docs/QUEUE.md, CHANGELOG. No map format change, no AWS change live (the hub's profiles file grows; redeploy only).
 
 **Checking** (branch · run; remove the line when it turns green or red):
-- `check/train-20261118-050653` at 81f7e8de (lane B's lead: the train with `wip/environment-4` and `wip/painting-5` (v47); holds the landing lock). The earlier train `check/train-20261118-041849` (environment-4 + gun-handling) went red on the `editor` flow's play-test start budget; gun-handling was dropped and is back with its helper.
+- `check/mapmaker-ui-5` · 44254706046 (MapMaker UI Phase 5 at 7bfe71be; a helper of lane B's splitters22)
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 
