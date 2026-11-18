@@ -205,6 +205,8 @@ export class LocalPlayer {
   raiseTicks = 0;
   speedTicks = 0;
   damageTicks = 0;
+  /** Whether each input's predicted move ended sprinting (by seq): where a replay starts, for the sprint exit. */
+  private readonly sprintAfter = new Map<number, boolean>();
   private readonly collider;
   private pending: PlayerInput[] = [];
   private seq = 0;
@@ -311,10 +313,15 @@ export class LocalPlayer {
         this.gun.ads = 0;
         this.rounds = 0;
       }
+      const sprinted = !!this.state.sprint;
       if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1, true);
       else this.vehicle?.step(input);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.raiseTicks > 0) this.raiseTicks--;
+      // As the server: out of a sprint the weapon comes up before it fires (its sprint-exit time, on the raise timer).
+      if (!this.mounted && sprinted && !this.state.sprint) this.raiseTicks = Math.max(this.raiseTicks, this.handling(this.held).sprintExit);
+      this.sprintAfter.set(input.seq, !!this.state.sprint);
+      this.sprintAfter.delete(input.seq - 600);
       this.advanceReload();
       shot = this.predictFire(input);
     }
@@ -368,8 +375,14 @@ export class LocalPlayer {
     this.reloadTicks = 0;
   }
 
-  /** Same order as the server: move with the current boost, then count the boost down. */
-  private move(state: MoveState, input: PlayerInput, tick: number, live = false): MoveState {
+  /** A weapon's handling (spec §27): its running speed and sprint-exit time; full speed with nothing in hand. */
+  private handling(code: number): { move: number; sprintExit: number } {
+    const def = weaponByCode(code);
+    return def ? gunplayOf(def).handling : { move: 1, sprintExit: 0 };
+  }
+
+  /** Same order as the server: move with the current boost, then count the boost down. `held`: the weapon in hand for it. */
+  private move(state: MoveState, input: PlayerInput, tick: number, live = false, held = this.held): MoveState {
     if (this.platforms) {
       // The server moves platforms, then riders, then everyone's own movement (Match.step).
       this.platforms.poseAt(tick);
@@ -378,7 +391,7 @@ export class LocalPlayer {
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
-    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, weaponMove: this.handling(held).move, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
     // Portals, exactly as the server takes them (Match.step).
     const through = this.portals.length && next.zip === undefined ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
     if (through) {
@@ -595,8 +608,25 @@ export class LocalPlayer {
     };
     let t = serverTick ?? this.predTick - this.pending.length;
     if (this.alive && !this.mounted) {
-      for (const input of this.pending) this.state = this.move(this.state, input, ++t);
+      // Replayed as the server will apply them: each input's weapon switch first (its raise), then the move with
+      // the weapon then in hand, then the raise timer, then a sprint's exit time (Match.applyInputs).
+      let held = server.w;
+      let raise = me ? me.rs : this.raiseTicks;
+      let sprinted = this.sprintAfter.get(ack) ?? false;
+      for (const input of this.pending) {
+        if (input.weapon && input.weapon !== held && this.inventory.has(input.weapon)) {
+          held = input.weapon;
+          raise = weaponByCode(held)?.raiseTicks ?? 0;
+        }
+        this.state = this.move(this.state, input, ++t, false, held);
+        if (raise > 0) raise--;
+        if (sprinted && !this.state.sprint) raise = Math.max(raise, this.handling(held).sprintExit);
+        sprinted = !!this.state.sprint;
+        this.sprintAfter.set(input.seq, sprinted);
+      }
+      if (me) this.raiseTicks = raise;
     } else t += this.pending.length;
+    for (const seq of this.sprintAfter.keys()) if (seq < ack) this.sprintAfter.delete(seq);
     this.predTick = t;
     const err = distance(before, this.state.pos);
     if (wasAlive && this.alive && err > 0.01) {

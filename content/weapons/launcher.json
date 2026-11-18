@@ -23,6 +23,7 @@
     "visual": "grenade"
   },
   "ammo": "explosive",
+  "handling": { "move": 0.95, "sprintExit": 10 },
   "botDesirability": 0.75,
   "botRange": [6, 22],
   "view": {

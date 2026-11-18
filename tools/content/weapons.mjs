@@ -68,6 +68,7 @@ export function schemas(root = ROOT, families = []) {
   const ballistic = { velocity: num, gravityScale: num, 'drag?': num, energy: num, tracerEvery: int, 'tracerFinal?': int };
   const partial = (shape) => obj(Object.fromEntries(Object.entries(shape).map(([k, v]) => [k.endsWith('?') ? k : `${k}?`, v])));
   const falloff = obj({ start: num, end: num, min: num, curve: en(['linear', 'smooth', 'steep']) });
+  const handling = { move: num, sprintExit: int };
   const reload = oneOf('type', {
     magazine: obj({ type: str, tactical: int, empty: int, out: num, in: num }),
     shell: obj({ type: str, start: int, each: int, end: int }),
@@ -96,9 +97,9 @@ export function schemas(root = ROOT, families = []) {
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,
     'headshot?': num, 'legshot?': num, 'armshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
-    'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
+    'falloff?': falloff, 'handling?': partial(handling), botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });
-  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, arms: num, 'notes?': notes });
+  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, handling: obj(handling), head: num, legs: num, arms: num, 'notes?': notes });
   const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'handOnly?': bool, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
   const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
   return { weapon, family, throwable, projectile };
@@ -199,6 +200,12 @@ export function build(content, root = ROOT) {
   const familyIds = Object.keys(families.families ?? {});
   const S = schemas(root, familyIds);
   for (const [id, f] of Object.entries(families.families ?? {})) check(f, S.family, `families.json: families.${id}`, problems);
+  /** Handling (spec §27, §35): mild on purpose (GUNPLAY_DIRECTION: no severe movement penalties, no slow sprint-to-fire). */
+  const handlingProblems = (h, where) => {
+    if (h?.move !== undefined && (h.move < 0.85 || h.move > 1.1)) problems.push(`${where}: handling.move is a share of running speed, 0.85-1.1`);
+    if (h?.sprintExit !== undefined && (h.sprintExit < 0 || h.sprintExit > 18)) problems.push(`${where}: handling.sprintExit is 0-18 ticks (0.3 s at most)`);
+  };
+  for (const [id, f] of Object.entries(families.families ?? {})) handlingProblems(f.handling, `families.json: families.${id}`);
 
   const sounds = new Set(Object.keys(readJson(root, 'content/sounds.json').sounds));
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
@@ -243,6 +250,7 @@ export function build(content, root = ROOT) {
     if (def.id !== `core.${name}`) problems.push(`${file}: id must be core.${name}`);
     if (def.slot < 0 || def.slot > 9) problems.push(`${file}: slot ${def.slot} is not 0-9`);
     if (def.botRange[0] > def.botRange[1]) problems.push(`${file}: botRange runs backwards`);
+    handlingProblems(def.handling, file);
     if (def.vehicleDamage !== undefined && (def.vehicleDamage <= 0 || def.vehicleDamage > 5)) problems.push(`${file}: vehicleDamage multiplies what it does to vehicles, above 0 and at most 5`);
     for (const m of [def.view.model, def.view.fallback, def.view.held?.medium, def.view.held?.high]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
     const sound = def.view.sound ?? `fire.${name}`;

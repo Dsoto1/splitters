@@ -13,6 +13,7 @@
   "pickupAmmo": 8,
   "reloadTicks": 110,
   "raiseTicks": 28,
+  "handling": { "move": 0.93, "sprintExit": 12 },
   "botDesirability": 0.7,
   "botRange": [15, 150],
   "windupTicks": 24,

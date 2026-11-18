@@ -2,6 +2,7 @@
   "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` / `armshot` override them. Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
   "notes": {
     "codes": "Each weapon file carries its network `code`: never change one, never reuse one (content/codes.lock.json remembers every code ever given).",
+    "handling": "Handling (docs/GUNPLAY_SPEC.md §27, §35): `move` is your running speed holding the weapon (a share of everyone's; sprinting is the same for every weapon), `sprintExit` the ticks from leaving a sprint to the first round. Mild on purpose (GUNPLAY_DIRECTION.md: no severe movement penalties, no slow sprint-to-fire); a weapon's own `handling` overrides its family's, and a weapon without a family moves at 1 and fires 6 ticks after a sprint (melee at once).",
     "slots": "Slots: 1 melee and tools, sidearms in 2, rifles in 3, shotguns in 4, precision in 5, lobbers in 6, automatics in 7, heavy weapons in 8 and energy and chemical weapons in 9; pressing a number again cycles through what you carry in that slot. 0: mounted guns (never carried or picked up)."
   },
   "defaults": {
@@ -42,6 +43,7 @@
         "visual": 0.5
       },
       "falloff": { "start": 18, "end": 45, "min": 0.4, "curve": "linear" },
+      "handling": { "move": 1, "sprintExit": 3 },
       "head": 2,
       "legs": 0.8,
       "arms": 0.9
@@ -69,6 +71,7 @@
         "visual": 1.5
       },
       "falloff": { "start": 25, "end": 60, "min": 0.7, "curve": "smooth" },
+      "handling": { "move": 1, "sprintExit": 6 },
       "head": 1.75,
       "legs": 0.85,
       "arms": 0.9,
@@ -99,6 +102,7 @@
         "visual": 0.4
       },
       "falloff": { "start": 8, "end": 25, "min": 0.35, "curve": "steep" },
+      "handling": { "move": 1, "sprintExit": 4 },
       "head": 1.5,
       "legs": 0.85,
       "arms": 0.9
@@ -126,6 +130,7 @@
         "visual": 0.45
       },
       "falloff": { "start": 15, "end": 35, "min": 0.35, "curve": "steep" },
+      "handling": { "move": 1, "sprintExit": 5 },
       "head": 1.5,
       "legs": 0.85,
       "arms": 0.9,
@@ -156,6 +161,7 @@
         "visual": 0.6
       },
       "falloff": { "start": 25, "end": 70, "min": 0.6, "curve": "smooth" },
+      "handling": { "move": 0.97, "sprintExit": 8 },
       "head": 2,
       "legs": 0.8,
       "arms": 0.9
@@ -183,6 +189,7 @@
         "visual": 0.8
       },
       "falloff": { "start": 40, "end": 100, "min": 0.8, "curve": "smooth" },
+      "handling": { "move": 0.95, "sprintExit": 9 },
       "head": 2,
       "legs": 0.85,
       "arms": 0.9
@@ -210,6 +217,7 @@
         "visual": 0.8
       },
       "falloff": { "start": 60, "end": 150, "min": 0.85, "curve": "smooth" },
+      "handling": { "move": 0.95, "sprintExit": 10 },
       "head": 2,
       "legs": 0.85,
       "arms": 0.9
@@ -237,6 +245,7 @@
         "visual": 1.1
       },
       "falloff": { "start": 150, "end": 300, "min": 0.9, "curve": "linear" },
+      "handling": { "move": 0.93, "sprintExit": 12 },
       "head": 3,
       "legs": 0.9,
       "arms": 0.9,
@@ -268,6 +277,7 @@
         "visual": 0.45
       },
       "falloff": { "start": 30, "end": 80, "min": 0.7, "curve": "smooth" },
+      "handling": { "move": 0.9, "sprintExit": 13 },
       "head": 1.5,
       "legs": 0.85,
       "arms": 0.9
@@ -295,6 +305,7 @@
         "visual": 1
       },
       "falloff": { "start": 8, "end": 28, "min": 0.25, "curve": "steep" },
+      "handling": { "move": 0.97, "sprintExit": 7 },
       "head": 1.25,
       "legs": 0.85,
       "arms": 0.9,

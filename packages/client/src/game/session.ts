@@ -3484,7 +3484,7 @@ export class GameSession {
         }
       }
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
       this.hud.setScope(zoomed);
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend));
       this.updateScopeSway(dt, this.scopedNow);

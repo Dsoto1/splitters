@@ -24,6 +24,7 @@
     "impactDamage": 40
   },
   "ammo": "explosive",
+  "handling": { "move": 0.92, "sprintExit": 12 },
   "botDesirability": 0.8,
   "botRange": [7, 40],
   "vehicleDamage": 2,

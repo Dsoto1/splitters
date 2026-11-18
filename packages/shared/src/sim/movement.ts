@@ -178,6 +178,11 @@ export interface MoveEnv {
   team?: string | null;
   /** Character stats (sim/characterStats.ts): jump speed and how long stamina lasts, multiples of everyone's. */
   jump?: number;
+  /**
+   * The held weapon's running speed (gunplayOf(def).handling.move; spec §27): a multiple of walking and running, not
+   * of sprinting (a sprint is as fast with every weapon). Absent: 1.
+   */
+  weaponMove?: number;
   stamina?: number;
 }
 
@@ -347,7 +352,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   } else if (rest > 0) rest--;
   else stamina = quantize(Math.min(1, stamina + SPRINT.regen * dt));
   if (winded && stamina >= SPRINT.restart) winded = false;
-  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : 1) * (aiming ? ADS_SPEED : 1);
+  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : (env.weaponMove ?? 1)) * (aiming ? ADS_SPEED : 1);
 
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);

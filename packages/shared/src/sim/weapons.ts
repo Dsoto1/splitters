@@ -1,7 +1,7 @@
 import { add, dot, scale, type Vec3, hypot } from '../math.ts';
 import { PLAYER, type Stance } from './constants.ts';
 import { lastHit, rayBody, type HitBody, type LookHitbox } from './hitbox.ts';
-import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
+import type { AccuracySpec, BallisticSpec, FalloffSpec, HandlingSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CODES } from '../content/weapons.generated.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
@@ -482,6 +482,8 @@ export interface WeaponDefinition {
   reload?: ReloadSpec;
   /** Damage falloff over distance. */
   falloff?: FalloffSpec;
+  /** Running speed holding it and the time from a sprint to the first round (spec §27, §35; gunplayOf(def).handling). */
+  handling?: Partial<HandlingSpec>;
   /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
   botRange: [number, number];

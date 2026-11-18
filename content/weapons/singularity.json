@@ -12,6 +12,7 @@
   "pickupAmmo": 2,
   "reloadTicks": 110,
   "raiseTicks": 34,
+  "handling": { "move": 0.92, "sprintExit": 12 },
   "botDesirability": 0.65,
   "botRange": [8, 30],
   "ammo": "cells",

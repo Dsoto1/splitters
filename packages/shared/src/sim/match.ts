@@ -686,6 +686,12 @@ const CHEST = PLAYER.height * 0.55;
 const chest = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + CHEST, z: p.z });
 
 export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current)!;
+/** The held weapon's handling (spec §27): its running speed and sprint-exit time; full speed with nothing in hand. */
+const NO_HANDLING = { move: 1, sprintExit: 0 };
+const handlingOf = (c: Combatant): { move: number; sprintExit: number } => {
+  const w = c.weapons.get(c.current);
+  return w ? gunplayOf(w.def).handling : NO_HANDLING;
+};
 
 /**
  * Authoritative Deathmatch simulation. Contains no networking or Node/DOM
@@ -800,7 +806,7 @@ export class Match {
    */
   readonly watchers = new Set<number>();
   /** The movement environment handed to stepMovement, refilled per actor (applyInputs). */
-  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1 };
+  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1, weaponMove: 1 };
   /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
   private watched: Vec3[] | null = null;
   /** The cuts buried tunnels make in the ground (groundBore.ts): bots in or over one never move coarsely (relaxedMove). */
@@ -3172,6 +3178,7 @@ export class Match {
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
 
       const zipBefore = c.move.zip;
+      let sprintEnded = false;
       const seat = c.mount ? this.seatOf(c) : null;
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
@@ -3250,10 +3257,14 @@ export class Match {
           env.ground = detail !== 'full' && this.groundAt ? this.groundAt : undefined;
           env.ziplines = this.ziplines.length ? this.ziplines : undefined;
           env.team = this.ziplines.length ? c.faction : undefined;
+          // The held weapon's running speed (spec §27; client prediction passes the same).
+          env.weaponMove = handlingOf(c).move;
           // Bots ride a zipline to its end: a stray E (a door, a vehicle) or a stuck-hop must not drop them off it.
           if (c.bot && c.move.zip !== undefined) input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
+          const sprinted = !!c.move.sprint;
           const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
+          sprintEnded = sprinted && !stepped.sprint;
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
           const through = this.scenario.portals.length && c.move.zip === undefined ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
           if (through) {
@@ -3270,6 +3281,9 @@ export class Match {
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.meleeCooldown > 0) c.meleeCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
+      // Out of a sprint: the weapon comes up before it fires (spec §27, sprint-exit time), on the raise timer, so
+      // everything that waits for a raise waits for this too, and client prediction replays it (prediction.ts).
+      if (sprintEnded) c.raiseTicks = Math.max(c.raiseTicks, handlingOf(c).sprintExit);
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
       this.advanceReload(c);
