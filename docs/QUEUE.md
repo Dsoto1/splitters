@@ -32,13 +32,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
-- `wip/music-announcer` (lane B: music and announcer; green alone at 7059234f, but its train `check/train-20261118-114628` (run 44297762723) went over the menu bundle budget, 2804.9 of 2800 kB, with today's landings; back with its helper to load the audio code with a dynamic import).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
+- `wip/music-announcer` · 72423463 · 44309807673 (lane B: the owner's music and announcer; the audio code now loads after the first click / with the match; menu first JS 2799.3 of 2800 kB; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
@@ -187,6 +187,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
   - M · B · A UI parity pass against the reference; a per-look outfit atlas.
   - L · ? · Character extras: community presets, bot personalities, damage states, biographies, a collection gallery (CHARACTERS_BOTS_V2 §36).
   - XS · B · Doc cleanup: CHARACTERS_BOTS_V2 counts and naming, v1 details with no v2 home (OPEN_QUESTIONS).
+  - **Performance batch, first:** the menu's first JS is at 2799.3 of its 2800 kB budget (after music and announcer): move something the menu doesn't draw out of it (docs/LOADING.md) to give the next features room.
   - **Performance, added to the performance batch (after its own items):** reconcile the local player once a frame, not per snapshot (2-10 ms spikes; PERF_STJOHNS_2026-11-14); `setGlow` dirtying every mesh on respawn (~1 ms); a binary worker-to-page snapshot (1.2 MB/s of clones at 64 players; PERF_FLAVIUS_MEMORY); the ground-mist depth pass re-rendering the view (PERF_96 round 2); indoor clustered lights by interior visibility (SCALING_STUDY); the remaining big bundle chunks and a true `.wasm` Rapier.
 
 ## Waiting on the owner
