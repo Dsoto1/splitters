@@ -20,9 +20,10 @@ import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
 import { CLIP_SETS_LOCK, buildSpec, isQueued, looksProblems, readClipSets, readManifests } from './character-manifests.mjs';
 import { checkFxMap } from './vfx-map.mjs';
-import { lockProblems } from './lockfile.mjs';
+import { lockProblems, readLock } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { loadSurfaces } from './surfaces.mjs';
+import { ownerAudioEntries } from './owner-audio.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -274,6 +275,55 @@ for (const f of existsSync(SOUND_DIR) ? readdirSync(SOUND_DIR) : []) {
   else rmSync(join(SOUND_DIR, f));
 }
 console.log(`${check ? 'checked' : 'built  '} ${soundFiles.size} sound files`);
+
+// ---------------------------------------------------------------- the owner's music and announcer
+// Encoded by tools/content/owner-audio.mjs from the owner's own files (kept outside the repo); its lock records
+// each file, and this holds the shipped files to it. They ship only inside the game (owner, 2026-11-17).
+{
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'content/owner-audio.json'), 'utf8'));
+  const lockPath = join(ROOT, 'content/owner-audio.lock.json');
+  const lock = existsSync(lockPath) ? readLock(lockPath) : { files: [] };
+  const entries = ownerAudioEntries(manifest);
+  const b = manifest.budgets;
+  let musicBytes = 0;
+  for (const e of entries) {
+    const f = lock.files.find((x) => x.id === e.id && x.file === e.file);
+    if (!f) {
+      problems.push(`${e.file}: not built (run node tools/content/owner-audio.mjs <the owner's files> with ONLY=${e.id})`);
+      continue;
+    }
+    const path = join(ROOT, 'packages/client/public', f.file);
+    if (!existsSync(path)) {
+      problems.push(`${f.file}: missing (run node tools/content/owner-audio.mjs <the owner's files>)`);
+      continue;
+    }
+    const data = readFileSync(path);
+    if (createHash('sha256').update(data).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: differs from content/owner-audio.lock.json`);
+    if (e.kind === 'music') {
+      musicBytes += data.byteLength;
+      if (data.byteLength > b.musicTrackBytes) problems.push(`${f.file}: ${data.byteLength} bytes exceeds budget ${b.musicTrackBytes}`);
+    } else if (data.byteLength > b.voiceBytes) problems.push(`${f.file}: ${data.byteLength} bytes exceeds budget ${b.voiceBytes}`);
+    const enc = manifest.encode[e.kind];
+    ledger.assets.push({
+      file: f.file,
+      sha256: f.sha256,
+      bytes: data.byteLength,
+      source: `owner-audio/${f.source}`,
+      title: manifest.origin.title,
+      creator: manifest.origin.creator,
+      url: manifest.origin.url,
+      license: manifest.origin.license,
+      modifications: ['silence trimmed at both ends', `loudness evened out to ${enc.lufs} LUFS`, `encoded to Ogg Opus, ${enc.kbps} kbps ${enc.channels === 1 ? 'mono' : 'stereo'}`],
+    });
+  }
+  if (musicBytes > b.musicTotalBytes) problems.push(`music: ${musicBytes} bytes in all exceeds budget ${b.musicTotalBytes}`);
+  for (const f of lock.files) if (!entries.some((e) => e.id === f.id && e.file === f.file)) problems.push(`${f.file}: in content/owner-audio.lock.json but not content/owner-audio.json`);
+  for (const dir of ['music', 'voice']) {
+    const d = join(ROOT, 'packages/client/public', dir);
+    for (const f of existsSync(d) ? readdirSync(d) : []) if (!entries.some((e) => e.file === `${dir}/${f}`)) problems.push(`${dir}/${f}: not in content/owner-audio.json`);
+  }
+  console.log(`${check ? 'checked' : 'built  '} ${entries.length} owner audio files (music ${(musicBytes / 1e6).toFixed(2)} MB)`);
+}
 
 // ---------------------------------------------------------------- characters
 // Characters are prepared from the full pack downloads by
