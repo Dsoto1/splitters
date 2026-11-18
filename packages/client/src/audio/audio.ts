@@ -4,6 +4,8 @@ import { SYNTH_RATE, synthesize, type SynthRecipe } from './synth.ts';
 import { versioned } from '../assetUrl.ts';
 
 export const SOUND_BASE = `${import.meta.env.BASE_URL}sounds/`;
+/** The lines themselves are listed by the announcer (audio/announcer.ts), which loads with a match: not in the menu's first JS. */
+export type VoiceLine = keyof (typeof import('../../../../content/owner-audio.json'))['announcer'];
 
 type Range = 'near' | 'mid' | 'far';
 
@@ -43,6 +45,8 @@ export interface PlayOptions {
   gain?: number;
   /** Extra playback-rate multiplier (pitch and speed: the kill sound climbs with multi-kills). */
   rate?: number;
+  /** The announcer's own volume (its slider) on top of the master: the announcer's Kenney fallbacks. */
+  announcer?: boolean;
 }
 
 /**
@@ -61,8 +65,17 @@ export class AudioSystem {
   private loading: Promise<void> | null = null;
   private listener: Vec3 = { x: 0, y: 0, z: 0 };
   private volume = 0.8;
-  /** Counters for tests and the stats overlay. */
-  readonly stats = { loaded: 0, failed: 0, played: 0, culled: 0 };
+  /** The music's and the announcer's own volumes (Options), under the master volume. */
+  private musicVolume = 0.5;
+  private announcerVolume = 1;
+  private musicBus: GainNode | null = null;
+  private announcerBus: GainNode | null = null;
+  /** The owner's announcer lines, decoded (audio/announcer.ts loads them, with a match: not in the menu's first JS). */
+  readonly voice = new Map<VoiceLine, AudioBuffer>();
+  private readonly unlockListeners: (() => void)[] = [];
+  private readonly musicListeners: (() => void)[] = [];
+  /** Counters for tests and the stats overlay (`voice`: the announcer lines loaded). */
+  readonly stats = { loaded: 0, failed: 0, played: 0, culled: 0, voice: 0, voiceFailed: 0, spoken: 0 };
 
   /** Create the context and start loading. Call from a user gesture so the context can start. */
   unlock(): void {
@@ -81,9 +94,84 @@ export class AudioSystem {
       this.master = this.ctx.createGain();
       this.master.gain.value = this.volume;
       this.master.connect(comp);
+      this.musicBus = this.ctx.createGain();
+      this.musicBus.gain.value = this.musicVolume;
+      this.musicBus.connect(this.master);
+      this.announcerBus = this.ctx.createGain();
+      this.announcerBus.gain.value = this.announcerVolume;
+      this.announcerBus.connect(this.master);
       void this.load();
+      for (const f of this.unlockListeners.splice(0)) f();
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
+  }
+
+  /** Run `f` once audio is unlocked (now, if it already is): the music starts on the first click or key. */
+  onUnlock(f: () => void): void {
+    if (this.ctx) f();
+    else this.unlockListeners.push(f);
+  }
+
+  /** The context and the music's bus (music.ts), once unlocked. */
+  get musicOut(): { ctx: AudioContext; bus: GainNode } | null {
+    return this.ctx && this.musicBus ? { ctx: this.ctx, bus: this.musicBus } : null;
+  }
+
+  setMusicVolume(v: number): void {
+    this.musicVolume = Math.max(0, Math.min(1, v));
+    if (this.musicBus) this.musicBus.gain.value = this.musicVolume;
+    for (const f of this.musicListeners) f();
+  }
+
+  /** Call `f` when the music's volume changes (the player starts at the slider's first move up from 0, stops at 0). */
+  onMusicVolume(f: () => void): void {
+    this.musicListeners.push(f);
+  }
+
+  getMusicVolume(): number {
+    return this.musicVolume;
+  }
+
+  setAnnouncerVolume(v: number): void {
+    this.announcerVolume = Math.max(0, Math.min(1, v));
+    if (this.announcerBus) this.announcerBus.gain.value = this.announcerVolume;
+  }
+
+  getAnnouncerVolume(): number {
+    return this.announcerVolume;
+  }
+
+  /** The audio context, once unlocked. */
+  get context(): AudioContext | null {
+    return this.ctx;
+  }
+
+  /**
+   * Speak one of the owner's announcer lines (unpositioned, on the announcer's volume): its length in seconds, or
+   * null when it can't be heard yet (audio locked, or the line not loaded), so the announcer can fall back.
+   */
+  speak(id: VoiceLine, gain = 1): number | null {
+    const ctx = this.ctx;
+    const buf = this.voice.get(id);
+    if (!ctx || !this.announcerBus || ctx.state !== 'running' || !buf) return null;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const g = ctx.createGain();
+    g.gain.value = gain;
+    src.connect(g);
+    g.connect(this.announcerBus);
+    src.onended = () => {
+      src.disconnect();
+      g.disconnect();
+    };
+    src.start();
+    this.stats.spoken++;
+    return buf.duration;
+  }
+
+  /** A sound's length in seconds (its first variant), or null if it isn't loaded. */
+  duration(id: SoundId): number | null {
+    return this.buffers.get(id)?.[0]?.duration ?? null;
   }
 
   /** Number of sounds in the manifest. */
@@ -211,7 +299,7 @@ export class AudioSystem {
       lp.connect(panner);
       tail = panner;
     }
-    tail.connect(master);
+    tail.connect(opts.announcer && this.announcerBus ? this.announcerBus : master);
 
     this.limitVoices(id);
     const voice: Voice = { id, src, started: ctx.currentTime };
