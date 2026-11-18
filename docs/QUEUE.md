@@ -40,7 +40,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; next train)
+- `wip/environment-4` · 3e3ed302 · 44226740750 (lane B: procedural environment Phase 4, more variety: 17 new species (birch, olive, mountain pine, larch, cypress, juniper, sagebrush, grasses, flowers, barrel cactus, agave, shard and sandstone boulders, sandstone cliff, mountain crag), presets gain them; shipped maps unchanged; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**, lane B's lead holds the lock)
+- `wip/gun-handling` · 75522232 · 44227505839 (lane B: gun handling extras: run speed by weapon (sprint the same for all), sprint-to-fire time by weapon, scope holdover marks; the weapon tuning page `?mode=weapons`; no map format change; **in train `check/train-20261118-041849` at 4dd2bb1d**)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
@@ -143,7 +144,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
 - S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
-- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10).
+- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **In work on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22, 2026-11-18; no map format change).
 - M · B · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
 - S · B · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
 - L · B · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).
