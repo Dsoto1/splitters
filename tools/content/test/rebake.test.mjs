@@ -62,7 +62,7 @@ describe('rebake (characters: grown charts)', () => {
 });
 
 describe('manifest fixes.surface', () => {
-  const base = { id: 'meshy_x', name: 'X', order: 1, look: 'core.x', bio: 'b', group: 'folk', body: 'male', source: { license: 'owned', author: 'a', date: '2026-11-01', url: null }, finish: { metallic: 0, roughness: 1 } };
+  const base = { id: 'meshy_x', name: 'X', order: 1, look: 'core.x', bio: 'b', group: 'folk', blood: 'red', body: 'male', source: { license: 'owned', author: 'a', date: '2026-11-01', url: null }, finish: { metallic: 0, roughness: 1 } };
   it('takes rebake, and not with seamWeld', () => {
     expect(manifestProblems({ ...base, fixes: { surface: 'rebake' } }, 'meshy_x.json')).toEqual([]);
     expect(manifestProblems({ ...base, fixes: { surface: 'paint' } }, 'meshy_x.json').join('\n')).toMatch(/fixes.surface/);

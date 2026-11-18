@@ -163,7 +163,7 @@ describe('character manifests', () => {
     for (const tier of TIERS) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json')).toEqual([]);
     for (const tier of ['beta', 'Experimental', '', null, true]) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json').join('\n')).toMatch(/tier: core or experimental/);
     const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
-    expect(line({ ...good, tier: 'experimental' })).toMatch(/group: 'animals', tier: 'experimental'/);
+    expect(line({ ...good, tier: 'experimental' })).toMatch(/group: 'animals', blood: 'red', tier: 'experimental'/);
     // Absent = core: an explicit core writes the same look as none.
     expect(line({ ...good, tier: 'core' })).toBe(line(good));
     expect(line(good)).not.toMatch(/tier:/);
