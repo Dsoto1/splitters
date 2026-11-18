@@ -13,6 +13,7 @@ import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { LOOT_OUTLINE } from './lootGlow.ts';
+import type { PickupBatch } from './pickupBatch.ts';
 
 /** The small health pickup's model: the medkit (it falls back to the boxes-in-code case when it can't load). */
 const HEALTH_MODEL = 'guns/medkit.glb';
@@ -108,8 +109,9 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
  * `look`: the match's weapon set, whose looks grenades wear (the Military frag, the Sci-fi smoke canister).
  * `room`: how far the nearest wall is (pickupRoom), which a bigger gun keeps clear of.
+ * `batch`: the game's pickups drawn as thin instances (pickupBatch.ts; with `instanced`): its parts become slots there.
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string, room = Infinity): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string, room = Infinity, batch?: PickupBatch): TransformNode {
   const root = new TransformNode(name, scene);
   // Small and floating: its shadow is cast only near the camera (Atmosphere).
   castSmall(root);
@@ -121,7 +123,13 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     return m;
   };
   // In the game, a model's copies are GPU instances of it merged into one mesh (ModelLibrary.instantiateWhole).
-  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`));
+  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`))
+    .then((m) => {
+      // (In a batch: its instance becomes a slot under the same node at the batch's next update, after the code below
+      // has measured and placed the node.)
+      if (batch && instanced && !root.isDisposed()) batch.adopt(m);
+      return m;
+    });
   const fx = item?.effect;
   if (!fx) {
     part(CreateBox(`${name}_unknown`, { size: 0.4 }, scene), mat(scene, '#ff00ff', 0.5));
@@ -244,6 +252,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
   if (instanced) instanceParts(scene, root);
+  if (instanced && batch) batch.adopt(root);
   return root;
 }
 

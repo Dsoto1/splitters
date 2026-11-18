@@ -4,7 +4,7 @@
 // Usage: pnpm build && node tools/perf/client-perf.mjs [map ...]
 //   PERF_BOTS=96 (players in all, split over two teams), PERF_MODE=core.tdm,
 //   PERF_GRAPHICS=low|medium|high (default medium), PERF_SECONDS=10,
-//   PERF_PORT=4295, PERF_GPU=1 (use the machine's GPU instead of SwiftShader),
+//   CHROMIUM=<browser binary>, PERF_PORT=4295, PERF_GPU=1 (use the machine's GPU instead of SwiftShader),
 //   PERF_QUERY=env=1 (more URL parameters, e.g. the procedural environment renderer).
 //
 // PERF_STILL=1: a repeatable measurement instead (fixed cameras, no bots). The live sample above reads a
@@ -368,7 +368,9 @@ async function measureStill(id, ctx, page, errors) {
 }
 
 const args = process.env.PERF_GPU ? [] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
-const browser = await chromium.launch({ args });
+// CHROMIUM (or PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH): the browser binary to launch instead of Playwright's own (as e2e/run.mjs).
+const exe = process.env.CHROMIUM || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+const browser = await chromium.launch(exe ? { args, executablePath: exe } : { args });
 const rows = [];
 for (const id of maps) {
   const [vw, vh] = (process.env.PERF_SIZE ?? '960x540').split('x').map(Number);

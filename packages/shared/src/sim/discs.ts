@@ -9,7 +9,7 @@
  * `disc` spec (see ProjectileSpec.disc).
  */
 import type { Vec3 } from '../math.ts';
-import { BUTTON_JUMP, type PlayerInput } from './movement.ts';
+import { BUTTON_JUMP, type PlayerInput } from './inputs.ts';
 import type { ProjectileSpec } from './weapons.ts';
 import { hypot } from '../math.ts';
 

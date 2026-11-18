@@ -66,6 +66,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: performance batch and hosting cost guard in a train** (`check/train-20261118-200957` at 7504cf9d, run 44388144258, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed). Nothing changed in AWS: the owner runs `infra/deploy-multiplayer.sh`, confirms the SNS email, then `--cdn on` (HOSTING.md, "Cost guard, CDN and backups").
+
 **Landed: the owner's excavator** (`check/train-20261118-190150` at 98a9b82e, run 44376111562, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed).
 
 **Landed: grips auto-fit and lane A's entity cap (v48) in a train** (`check/train-20261118-171426` at 3fa6d8ca, run 44356469730, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed).
