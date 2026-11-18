@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 47,
+  "formatVersion": 48,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_kw3fxbnzo5c2vhum",
-      "revision": 43,
-      "contentHash": "sha256:28273beab5c58f6cdecd7a745eabb7e0582fb40071f5b81d0e8e5d447cd07f1e",
-      "schemaVersion": 47,
-      "releasedAt": "2026-11-18T15:10:01.666Z"
+      "versionId": "v_xqpl7tn4zdnwd5zi",
+      "revision": 44,
+      "contentHash": "sha256:469e7a516d86ef89c7c3409dbae05666809b0a33ba4b7216b12bbb23cfa16e45",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-18T21:23:07.594Z"
     },
     "testOnly": true
   },
@@ -5507,12 +5507,12 @@
     },
     {
       "id": "prop_jetkop37rj",
-      "kind": "prop",
       "position": [
         -35,
         -0.18,
         61.25
       ],
+      "kind": "prop",
       "model": "prop.mining_excavator_deck",
       "yaw": 0,
       "scale": 1,
@@ -6108,6 +6108,45 @@
   "blood": null,
   "teamSetup": null,
   "dependencies": [],
+  "lookDefs": [
+    {
+      "id": "my_coverage_rust",
+      "displayName": "Coverage rust",
+      "roles": {
+        "stone": {
+          "material": "core.pbr_brick_old",
+          "tint": null
+        },
+        "trim": {
+          "material": "core.pbr_concrete",
+          "tint": "#d6d2c8"
+        },
+        "floor": {
+          "material": "core.pbr_terrazzo",
+          "tint": null
+        },
+        "paving": {
+          "material": "core.pbr_hex_paving",
+          "tint": "#c4c0b8"
+        },
+        "roof": {
+          "material": "core.pbr_concrete_dark",
+          "tint": null
+        },
+        "wood": {
+          "material": "core.pbr_planks",
+          "tint": null
+        },
+        "metal": {
+          "material": "core.pbr_rusted_plate",
+          "tint": null
+        },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    }
+  ],
   "setPieces": [
     {
       "id": "setpiece_10e8y0g228",
@@ -6978,45 +7017,96 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
-    }
-  ],
-  "lookDefs": [
+    },
     {
-      "id": "my_coverage_rust",
-      "displayName": "Coverage rust",
-      "roles": {
-        "stone": {
-          "material": "core.pbr_brick_old",
-          "tint": null
-        },
-        "trim": {
-          "material": "core.pbr_concrete",
-          "tint": "#d6d2c8"
-        },
-        "floor": {
-          "material": "core.pbr_terrazzo",
-          "tint": null
-        },
-        "paving": {
-          "material": "core.pbr_hex_paving",
-          "tint": "#c4c0b8"
-        },
-        "roof": {
-          "material": "core.pbr_concrete_dark",
-          "tint": null
-        },
-        "wood": {
-          "material": "core.pbr_planks",
-          "tint": null
-        },
-        "metal": {
-          "material": "core.pbr_rusted_plate",
-          "tint": null
-        },
-        "facade": "brick",
-        "door": "oak",
-        "glass": "breakable"
-      }
+      "id": "setpiece_s20datniz2",
+      "piece": "setpiece.pool_hall",
+      "x": -19,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_uzlyeaqv23",
+      "piece": "setpiece.gym_bay",
+      "x": -13,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_qxycagmggu",
+      "piece": "setpiece.gym_entrance",
+      "x": -9,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5d94or4hpf",
+      "piece": "setpiece.admin_bay",
+      "x": -5,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5sb2klvqs9",
+      "piece": "setpiece.library_bay",
+      "x": -1,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_zuynhmcd1v",
+      "piece": "setpiece.chapel_bay",
+      "x": 3,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_o7k00gdk76",
+      "piece": "setpiece.chapel_chancel",
+      "x": 7,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_iym1dn54wo",
+      "piece": "setpiece.chapel_narthex",
+      "x": 11,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_mfpfh2s2ud",
+      "piece": "setpiece.library_porch",
+      "x": -16,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
     }
   ]
 }
