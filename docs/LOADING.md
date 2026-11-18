@@ -139,7 +139,7 @@ and the class cards) lived in `sim/movement.ts`, so the movement code, the nav l
 through them `content/kitProps.generated.ts` (156 kB raw) rode in the menu's `index` chunk; `hasTrack` (sim/rules.ts)
 reached `map/track.ts` for `racePath`; `setIdRandom` (main.ts, test mode) reached the edit commands. They now live in
 `sim/inputs.ts`, `map/racePath.ts` and `editor/ids.ts` (the old modules re-export them): the menu's first JS went from
-2796.6 to 2646.9 kB raw (784.6 to 753.9 kB gzip), the same budget. What left loads with the match and MapMaker, which
+2796.6 to 2646.9 kB raw (784.6 to 753.9 kB gzip; with music and announcer, merged after, 2799.3 to 2642.3 kB), the same budget. What left loads with the match and MapMaker, which
 already import those modules (and the idle prefetch brings them in while the menu is up). A module the menu reads is
 put in the menu's chunk whole, with everything it imports: keep what the menu needs in small modules of its own.
 
