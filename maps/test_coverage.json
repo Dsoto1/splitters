@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_xqpl7tn4zdnwd5zi",
+      "versionId": "v_dj5q737u3rcylibw",
       "revision": 44,
-      "contentHash": "sha256:469e7a516d86ef89c7c3409dbae05666809b0a33ba4b7216b12bbb23cfa16e45",
+      "contentHash": "sha256:6a8bc4641b402e1e42596dea95ba836a7571960f39c075890242b447617cd71c",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T21:23:07.594Z"
+      "releasedAt": "2026-11-18T20:29:17.057Z"
     },
     "testOnly": true
   },
@@ -7019,94 +7019,27 @@
       "mirror": false
     },
     {
-      "id": "setpiece_s20datniz2",
-      "piece": "setpiece.pool_hall",
-      "x": -19,
-      "y": -19,
+      "id": "setpiece_nut1ib3t65",
+      "piece": "setpiece.refectory_bay",
+      "x": -4,
+      "y": -49,
       "z": 0,
       "rotation": 0,
       "mirror": false,
-      "pack": "collegiate"
+      "overrides": {
+        "options": {
+          "walls": "fire_north"
+        }
+      }
     },
     {
-      "id": "setpiece_uzlyeaqv23",
-      "piece": "setpiece.gym_bay",
-      "x": -13,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_qxycagmggu",
-      "piece": "setpiece.gym_entrance",
-      "x": -9,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_5d94or4hpf",
-      "piece": "setpiece.admin_bay",
-      "x": -5,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_5sb2klvqs9",
-      "piece": "setpiece.library_bay",
+      "id": "setpiece_idef2bxeja",
+      "piece": "setpiece.clock_tower",
       "x": -1,
-      "y": -19,
+      "y": -48,
       "z": 0,
       "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_zuynhmcd1v",
-      "piece": "setpiece.chapel_bay",
-      "x": 3,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_o7k00gdk76",
-      "piece": "setpiece.chapel_chancel",
-      "x": 7,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_iym1dn54wo",
-      "piece": "setpiece.chapel_narthex",
-      "x": 11,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_mfpfh2s2ud",
-      "piece": "setpiece.library_porch",
-      "x": -16,
-      "y": -19,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
+      "mirror": false
     }
   ]
 }

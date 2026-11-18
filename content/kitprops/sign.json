@@ -1,5 +1,5 @@
 {
-  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks. The traffic cones (tools/content/kit/yard.mjs) are the sizes of the two Kenney cones they replace and, like them, have no collision (`collide: \"none\"`).",
+  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks. The traffic cones (tools/content/kit/yard.mjs) are the sizes of the two Kenney cones they replace and, like them, have no collision (`collide: \"none\"`). The tower clock face (tools/content/kit/school.mjs, `clockface`; St. John's step 6) hangs on a wall like the boards (its back on −z, its foot the ring's foot) and collides as nothing; its hands are fixed (nothing moves, glows or blinks).",
   "type": "sign",
   "props": [
     {
@@ -464,6 +464,72 @@
             "bronze": "#6e4f2a",
             "ground": "#3a2a1c",
             "figure": "#1d1a18"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.clock_face",
+      "displayName": "Clock Face",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 6, the clock tower): a 2.6 m tower clock face, a round dial in a moulded ring, twelve hour marks (the quarters longer), the hands fixed at ten past ten; its back on -z, hung with its foot at the height given. Collides as nothing. Variants: a cream dial with black hands in a stone ring; a black dial with gilt marks and hands. No numerals, no maker's name."
+      },
+      "size": [
+        2.6,
+        2.6,
+        0.08
+      ],
+      "collide": "none",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "clockface",
+        "ring": 0.16,
+        "marks": [
+          0.22,
+          0.06
+        ],
+        "time": [
+          10,
+          10
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "cream",
+          "seed": 21401,
+          "look": {
+            "dial": "#e9e2cf",
+            "ring": "#cfc8b6",
+            "marks": "#1d1e20",
+            "hands": "#1d1e20",
+            "grime": 0.18
+          }
+        },
+        {
+          "index": 1,
+          "name": "black",
+          "seed": 21402,
+          "look": {
+            "dial": "#1e2124",
+            "ring": "#cfc8b6",
+            "marks": "#c9a24a",
+            "hands": "#c9a24a",
+            "grime": 0.1
           }
         }
       ]
