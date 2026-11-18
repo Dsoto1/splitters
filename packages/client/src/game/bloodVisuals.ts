@@ -63,16 +63,85 @@ interface Drop {
   pos: Vector3;
   vel: Vector3;
   age: number;
-  /** The colour its splat takes where it lands; null: it leaves none (bone chips). */
-  color: Color3 | null;
+  /** The splats its landing leaves (its kind's colour); null: none (bone chips). */
+  splats: SplatSet | null;
 }
 
 interface Splat {
   /** Its world matrix (a row in the splats' thin-instance buffer). */
   matrix: Float32Array;
   born: number;
-  /** Its colour (the splats' thin-instance colours; the material is white). */
-  color: Color3;
+}
+
+/**
+ * Splats of one colour: thin instances of one unit disc, scaled to their size and faded by their instance colour's
+ * alpha (one draw and one mesh for them all; each was a mesh and a draw of its own, 50 in a busy fight's frame, then a
+ * GPU instance: one draw, but still 50 meshes Babylon looked at every frame). The colour is the material's (a set per
+ * colour in use: the map's, and each character kind's that has bled), a fifth darker than the drops.
+ */
+class SplatSet {
+  splats: Splat[] = [];
+  dirty = false;
+  private readonly base: Mesh;
+  private readonly mat: StandardMaterial;
+  private readonly matrices = new Float32Array(MAX_SPLATS * 16);
+  private readonly colors = new Float32Array(MAX_SPLATS * 4).fill(1);
+
+  constructor(scene: Scene, name: string, color: Color3) {
+    this.mat = new StandardMaterial(`bloodSplat_${name}`, scene);
+    this.mat.zOffset = -2;
+    this.mat.specularColor = new Color3(0.25, 0.25, 0.25);
+    this.setColor(color);
+    this.base = CreateDisc(`bloodSplatBase_${name}`, { radius: 1, tessellation: 9 }, scene);
+    this.base.material = this.mat;
+    this.base.isPickable = false;
+    // Flat on a surface: it catches shadows but casts none.
+    this.base.metadata = { castsNoShadow: true };
+    this.base.thinInstanceSetBuffer('matrix', this.matrices, 16, false);
+    this.base.thinInstanceSetBuffer('color', this.colors, 4, false);
+    this.base.thinInstanceCount = 0;
+    this.base.hasVertexAlpha = true;
+    this.base.alwaysSelectAsActiveMesh = true;
+    this.base.doNotSyncBoundingInfo = true;
+    this.base.freezeWorldMatrix();
+  }
+
+  setColor(color: Color3): void {
+    this.mat.diffuseColor = color.scale(0.8);
+  }
+
+  add(matrix: Float32Array, born: number, cap: number): void {
+    this.splats.push({ matrix, born });
+    while (this.splats.length > cap) this.splats.shift();
+    this.dirty = true;
+  }
+
+  /** Old ones gone, fading ones faded, into the thin-instance buffers (when one came, went or is fading). */
+  update(now: number): void {
+    const before = this.splats.length;
+    this.splats = this.splats.filter((s) => (now - s.born) / 1000 <= SPLAT_STAY + SPLAT_FADE);
+    if (this.splats.length !== before || this.splats.some((s) => (now - s.born) / 1000 > SPLAT_STAY)) this.dirty = true;
+    if (!this.dirty) return;
+    this.dirty = false;
+    let i = 0;
+    for (const s of this.splats) {
+      const age = (now - s.born) / 1000;
+      this.matrices.set(s.matrix, i * 16);
+      this.colors[i * 4 + 3] = age > SPLAT_STAY ? Math.max(0, 1 - (age - SPLAT_STAY) / SPLAT_FADE) : 1;
+      i++;
+    }
+    this.base.thinInstanceCount = i;
+    this.base.thinInstanceBufferUpdated('matrix');
+    this.base.thinInstanceBufferUpdated('color');
+    // Always drawn when any are there (alwaysSelectAsActiveMesh): no bounds to keep.
+    this.base.setEnabled(i > 0);
+  }
+
+  dispose(): void {
+    this.splats = [];
+    this.base.dispose();
+    this.mat.dispose();
+  }
 }
 
 interface Puff {
@@ -110,23 +179,14 @@ const EFFECT = { effect: true };
  */
 export class BloodVisuals {
   private drops: Drop[] = [];
-  private splats: Splat[] = [];
+  /** Splats by colour: `map` (the map's colour) and each kind's hex. */
+  private readonly splatSets = new Map<string, SplatSet>();
   private mist: Puff[] = [];
   private readonly dropBase: Mesh;
   private readonly dropPool: MeshPool<Mesh>;
   /** Mist: GPU instances of one sphere, faded by their instance colour's alpha (one draw for them all). */
   private readonly mistBase: Mesh;
   private readonly mistPool: MeshPool<InstancedMesh>;
-  /**
-   * Splats: thin instances of one unit disc, scaled to their size and faded by their instance colour's alpha (one draw
-   * and one mesh for them all; each was a mesh and a draw of its own, 50 in a busy fight's frame, then a GPU instance:
-   * one draw, but still 50 meshes Babylon looked at every frame).
-   */
-  private readonly splatBase: Mesh;
-  private readonly splatMatrices = new Float32Array(MAX_SPLATS * 16);
-  private readonly splatColors = new Float32Array(MAX_SPLATS * 4).fill(1);
-  private splatsDirty = false;
-  private readonly splatMat: StandardMaterial;
   private readonly dropMat: StandardMaterial;
   private readonly mistMat: StandardMaterial;
   private amount: BloodAmount = DEFAULT_BLOOD.amount;
@@ -142,16 +202,13 @@ export class BloodVisuals {
     private readonly physics: () => EffectsWorld | null,
   ) {
     this.dropMat = new StandardMaterial('bloodDrop', scene);
-    this.splatMat = new StandardMaterial('bloodSplat', scene);
-    this.splatMat.zOffset = -2;
     this.mistMat = new StandardMaterial('bloodMist', scene);
     this.mistMat.alpha = 0.35;
-    for (const m of [this.dropMat, this.splatMat, this.mistMat]) m.specularColor = new Color3(0.25, 0.25, 0.25);
-    // White materials, coloured per drop, puff and splat (their instance colours multiply the lit colour and the
-    // emissive alike, so a drop is lit as it was when the material carried the map's colour).
+    for (const m of [this.dropMat, this.mistMat]) m.specularColor = new Color3(0.25, 0.25, 0.25);
+    // White materials, coloured per drop and puff (their instance colours multiply the lit colour and the emissive
+    // alike, so a drop is lit as it was when the material carried the map's colour).
     this.dropMat.diffuseColor = Color3.White();
     this.dropMat.emissiveColor = new Color3(0.15, 0.15, 0.15);
-    this.splatMat.diffuseColor = Color3.White();
     this.mistMat.diffuseColor = Color3.White();
     this.mistMat.emissiveColor = new Color3(0.2, 0.2, 0.2);
     this.dropBase = CreateSphere('bloodDropBase', { diameter: 1, segments: 3 }, scene);
@@ -186,18 +243,6 @@ export class BloodVisuals {
       m.instancedBuffers.color = new Color4(1, 1, 1, 1);
       return m;
     }, MAX_MIST);
-    this.splatBase = CreateDisc('bloodSplatBase', { radius: 1, tessellation: 9 }, scene);
-    this.splatBase.material = this.splatMat;
-    this.splatBase.isPickable = false;
-    // Flat on a surface: it catches shadows but casts none.
-    this.splatBase.metadata = { castsNoShadow: true };
-    this.splatBase.thinInstanceSetBuffer('matrix', this.splatMatrices, 16, false);
-    this.splatBase.thinInstanceSetBuffer('color', this.splatColors, 4, false);
-    this.splatBase.thinInstanceCount = 0;
-    this.splatBase.hasVertexAlpha = true;
-    this.splatBase.alwaysSelectAsActiveMesh = true;
-    this.splatBase.doNotSyncBoundingInfo = true;
-    this.splatBase.freezeWorldMatrix();
     this.setLook(DEFAULT_BLOOD.color, DEFAULT_BLOOD.amount);
   }
 
@@ -206,14 +251,24 @@ export class BloodVisuals {
     this.dropPool.warm((m) => m.scaling.setAll(0.05));
     this.mistPool.warm((m) => m.scaling.setAll(0.3));
     // A splat out of sight (its shader, with the thin instances' colours, is built with the rest): gone in a frame.
-    this.splats.push({ matrix: Float32Array.from(Matrix.Compose(new Vector3(0.3, 0.25, 0.3), Quaternion.Identity(), new Vector3(0, -10000, 0)).m), born: performance.now() - (SPLAT_STAY + SPLAT_FADE) * 1000 + 50, color: this.mapColor });
-    this.splatsDirty = true;
-    this.flushSplats();
+    // (Another colour's set builds the same shader: Babylon reuses it.)
+    const set = this.setFor(null);
+    set.add(Float32Array.from(Matrix.Compose(new Vector3(0.3, 0.25, 0.3), Quaternion.Identity(), new Vector3(0, -10000, 0)).m), performance.now() - (SPLAT_STAY + SPLAT_FADE) * 1000 + 50, MAX_SPLATS);
+    set.update(performance.now());
   }
 
   setLook(color: string, amount: BloodAmount): void {
     this.amount = amount;
     this.mapColor = Color3.FromHexString(color);
+    this.splatSets.get('map')?.setColor(this.mapColor);
+  }
+
+  /** The splats of a style's colour (made the first time it bleeds). */
+  private setFor(color: string | null): SplatSet {
+    const key = color ?? 'map';
+    let set = this.splatSets.get(key);
+    if (!set) this.splatSets.set(key, (set = new SplatSet(this.scene, key.replace('#', ''), color ? Color3.FromHexString(color) : this.mapColor)));
+    return set;
   }
 
   /** Blood is drawn (the map allows it and the player hasn't switched it off). */
@@ -243,10 +298,11 @@ export class BloodVisuals {
     const color = this.colorOf(style);
     const heavy = this.amount === 'heavy';
     const n = Math.round((heavy ? 14 : 6) * Math.min(2.5, strength) * style.drops);
+    const splats = style.splats ? this.setFor(style.color) : null;
     const d = new Vector3(dir.x, dir.y, dir.z).normalize();
     for (let i = 0; i < n; i++) {
       const v = d.scale(2 + Math.random() * 3 * strength).add(new Vector3((Math.random() - 0.5) * 3, Math.random() * 2.2, (Math.random() - 0.5) * 3));
-      this.drop(new Vector3(at.x, at.y, at.z), v, color, style.splats);
+      this.drop(new Vector3(at.x, at.y, at.z), v, color, splats);
     }
     const puff = PUFFS[style.puff];
     for (let i = 0; i < puff.count && this.mist.length < MAX_MIST; i++) {
@@ -260,10 +316,10 @@ export class BloodVisuals {
       this.mist.push({ mesh: m, age: 0, kind: style.puff });
     }
     if (style.fx) this.onFx?.(style.fx, at);
-    if (!style.splats) return;
+    if (!splats) return;
     // A splat on whatever is right behind the target, along the shot.
     const wall = this.physics()?.raycast(at, { x: d.x, y: d.y, z: d.z }, heavy ? 3 : 1.8);
-    if (wall) this.splat(new Vector3(at.x + d.x * wall.dist, at.y + d.y * wall.dist, at.z + d.z * wall.dist), wall.normal, 0.25 + Math.random() * 0.2 * strength, color);
+    if (wall) this.splat(new Vector3(at.x + d.x * wall.dist, at.y + d.y * wall.dist, at.z + d.z * wall.dist), wall.normal, 0.25 + Math.random() * 0.2 * strength, splats);
   }
 
   /** A kill: a bigger burst, and a small pool on the ground under the body (liquids only). */
@@ -273,19 +329,19 @@ export class BloodVisuals {
     const style = bloodStyle(kind);
     if (!style.splats) return;
     const ground = this.physics()?.raycast(at, { x: 0, y: -1, z: 0 }, 3);
-    if (ground) this.splat(new Vector3(at.x, at.y - ground.dist, at.z), ground.normal, this.amount === 'heavy' ? 0.9 : 0.55, this.colorOf(style));
+    if (ground) this.splat(new Vector3(at.x, at.y - ground.dist, at.z), ground.normal, this.amount === 'heavy' ? 0.9 : 0.55, this.setFor(style.color));
   }
 
-  private drop(pos: Vector3, vel: Vector3, color: Color3, splats: boolean): void {
+  private drop(pos: Vector3, vel: Vector3, color: Color3, splats: SplatSet | null): void {
     if (this.drops.length >= MAX_DROPS) return;
     const mesh = this.dropPool.take();
     mesh.scaling.setAll(0.03 + Math.random() * 0.05);
     mesh.position.copyFrom(pos);
     ((mesh as unknown as InstancedMesh).instancedBuffers.color as Color4).set(color.r, color.g, color.b, 1);
-    this.drops.push({ mesh, pos, vel, age: 0, color: splats ? color : null });
+    this.drops.push({ mesh, pos, vel, age: 0, splats });
   }
 
-  private splat(at: Vector3, normal: Vec3, radius: number, color: Color3): void {
+  private splat(at: Vector3, normal: Vec3, radius: number, set: SplatSet): void {
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
     // Discs face -Z; turn them to face out of the surface, with a random twist.
     const q = new Quaternion();
@@ -293,38 +349,14 @@ export class BloodVisuals {
     Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
     q.multiplyToRef(Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2), turn);
     const m = Matrix.Compose(new Vector3(radius, radius * (0.6 + Math.random() * 0.5), radius), turn, at.add(n.scale(0.015)));
-    // Splats a fifth darker than the drops, as they were.
-    this.splats.push({ matrix: Float32Array.from(m.m), born: performance.now(), color: color.scale(0.8) });
-    const cap = this.amount === 'heavy' ? MAX_SPLATS : 50;
-    while (this.splats.length > cap) this.splats.shift();
-    this.splatsDirty = true;
+    set.add(Float32Array.from(m.m), performance.now(), this.amount === 'heavy' ? MAX_SPLATS : 50);
   }
 
   /** Splats lying now (tests). */
   get splatCount(): number {
-    return this.splats.length;
-  }
-
-  /** The splats into their thin-instance buffers (when one came, went or is fading). */
-  private flushSplats(): void {
-    if (!this.splatsDirty) return;
-    this.splatsDirty = false;
-    const now = performance.now();
-    let i = 0;
-    for (const s of this.splats) {
-      const age = (now - s.born) / 1000;
-      this.splatMatrices.set(s.matrix, i * 16);
-      this.splatColors[i * 4] = s.color.r;
-      this.splatColors[i * 4 + 1] = s.color.g;
-      this.splatColors[i * 4 + 2] = s.color.b;
-      this.splatColors[i * 4 + 3] = age > SPLAT_STAY ? Math.max(0, 1 - (age - SPLAT_STAY) / SPLAT_FADE) : 1;
-      i++;
-    }
-    this.splatBase.thinInstanceCount = i;
-    this.splatBase.thinInstanceBufferUpdated('matrix');
-    this.splatBase.thinInstanceBufferUpdated('color');
-    // Always drawn when any are there (alwaysSelectAsActiveMesh): no bounds to keep.
-    this.splatBase.setEnabled(i > 0);
+    let n = 0;
+    for (const set of this.splatSets.values()) n += set.splats.length;
+    return n;
   }
 
   /** Move drops, fade mist and old splats. Call every frame. */
@@ -337,7 +369,7 @@ export class BloodVisuals {
       const len = step.length();
       const hit = len > 0 && physics ? physics.raycast(d.pos, { x: step.x / len, y: step.y / len, z: step.z / len }, len) : null;
       if (hit || d.age > DROP_LIFE) {
-        if (hit && d.color && Math.random() < 0.6) this.splat(d.pos.add(step.scale(hit.dist / len)), hit.normal, 0.05 + Math.random() * 0.09, d.color);
+        if (hit && d.splats && Math.random() < 0.6) this.splat(d.pos.add(step.scale(hit.dist / len)), hit.normal, 0.05 + Math.random() * 0.09, d.splats);
         this.dropPool.give(d.mesh);
         return false;
       }
@@ -356,20 +388,17 @@ export class BloodVisuals {
       return false;
     });
     const now = performance.now();
-    const before = this.splats.length;
-    this.splats = this.splats.filter((s) => (now - s.born) / 1000 <= SPLAT_STAY + SPLAT_FADE);
-    if (this.splats.length !== before || this.splats.some((s) => (now - s.born) / 1000 > SPLAT_STAY)) this.splatsDirty = true;
-    this.flushSplats();
+    for (const set of this.splatSets.values()) set.update(now);
   }
 
   dispose(): void {
     for (const d of this.drops) d.mesh.dispose();
-    this.splats = [];
+    for (const set of this.splatSets.values()) set.dispose();
+    this.splatSets.clear();
     for (const m of this.mist) m.mesh.dispose();
     for (const p of [this.dropPool, this.mistPool]) p.dispose();
     this.mistBase.dispose();
-    this.splatBase.dispose();
     this.dropBase.dispose();
-    for (const m of [this.dropMat, this.splatMat, this.mistMat]) m.dispose();
+    for (const m of [this.dropMat, this.mistMat]) m.dispose();
   }
 }
