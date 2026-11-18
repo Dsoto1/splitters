@@ -172,7 +172,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.
 
 ## Parked
-- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive `sounds/sonniss/<year>/` (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
+- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive (arriving since 2026-11-18 01:14 UTC in `sounds/sfx/GDC 2016/` and `sounds/sfx/GDC 2017/`, e.g. Gunshots and bullets, Ambiance, heartbeat and breathing; starts once the owner says the upload is done) (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
 - L · B · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · B · Sound pass 2 (paused by the owner).
 - ? · B · Packed inputs to cut upload bandwidth.
