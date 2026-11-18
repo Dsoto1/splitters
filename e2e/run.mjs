@@ -8,6 +8,7 @@
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -19,10 +20,31 @@ import { assignShards, loadTimings } from './shards.mjs';
 import { installFrameClock } from './frameClock.mjs';
 import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
 
-// E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
-const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
-const CLIENT = `http://localhost:${CLIENT_PORT}`;
-const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
+/**
+ * A port for one of the run's servers: the E2E_*_PORT variable's when set; on CI the fixed one as ever; on a desk a
+ * free one, so runs in parallel worktrees don't reach each other's servers.
+ */
+async function pickPort(name, fixed) {
+  if (process.env[name]) return +process.env[name];
+  if (process.env.CI) return fixed;
+  return new Promise((resolve, reject) => {
+    const s = createServer();
+    s.unref();
+    s.on('error', reject);
+    s.listen(0, '127.0.0.1', () => {
+      const { port } = s.address();
+      s.close(() => resolve(port));
+    });
+  });
+}
+// Everything on 127.0.0.1 (never a name that may resolve to ::1 or another checkout's server). E2E_CLIENT_PORT /
+// E2E_SERVER_PORT (and the flows' E2E_*_HUB_PORT, E2E_*_CONTROL_PORT, E2E_PEER_PORT) pin a port.
+const CLIENT_PORT = String(await pickPort('E2E_CLIENT_PORT', 4173));
+const CLIENT = `http://127.0.0.1:${CLIENT_PORT}`;
+const SERVER_PORT = await pickPort('E2E_SERVER_PORT', 7787);
+/** CHROMIUM (or PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH): the browser binary to launch instead of Playwright's own. */
+const CHROMIUM = process.env.CHROMIUM || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '';
+const launchOpts = (opts) => (CHROMIUM ? { ...opts, executablePath: CHROMIUM } : opts);
 const procs = [];
 /** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
 const SLOW = process.env.CI ? 3 : 1;
@@ -12191,9 +12213,9 @@ async function designerFlow(browser) {
  * scene's pass-free BRDF table (content/brdf.ts).
  */
 async function webgpuFlow() {
-  const browser = await chromium.launch({
+  const browser = await chromium.launch(launchOpts({
     args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--use-vulkan=swiftshader', '--use-webgpu-adapter=swiftshader', '--disable-vulkan-surface', '--ignore-gpu-blocklist'],
-  });
+  }));
   try {
     const context = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await context.addInitScript({ path: new URL('./webgpuShim.js', import.meta.url).pathname });
@@ -12944,7 +12966,7 @@ async function onlineFlow(browser) {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://localhost:${SERVER_PORT}`);
+    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${SERVER_PORT}`);
     await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     return { page, errors };
   };
@@ -12964,7 +12986,7 @@ async function onlineFlow(browser) {
 /** Community hub: a host lists its match in the game browser and a stranger joins from the list. */
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
-  const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
+  const HUB_PORT = await pickPort('E2E_HUB_PORT', 9078);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
   await sleep(5000);
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
@@ -13098,7 +13120,7 @@ async function lobbyFlow(browser) {
  * blocked word, and its Community Picks show in their own tab of the map list.
  */
 async function communityFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_COMMUNITY_HUB_PORT ?? 9082);
+  const HUB_PORT = await pickPort('E2E_COMMUNITY_HUB_PORT', 9082);
   const dir = mkdtempSync(join(tmpdir(), 'tt-community-e2e-'));
   // A Community Pick the hub already keeps (its numbers and its file), for the Community Picks tab.
   const arena = JSON.parse(readFileSync(new URL('../maps/phase0_arena.json', import.meta.url), 'utf8'));
@@ -13229,8 +13251,8 @@ async function hubUntil(pred, ms) {
  * moves and gets snapshots; an admin joined by code kicks another player from the pause menu.
  */
 async function dedicatedhostFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_DEDICATED_HUB_PORT ?? 9079);
-  const CONTROL_PORT = +(process.env.E2E_DEDICATED_CONTROL_PORT ?? 7801);
+  const HUB_PORT = await pickPort('E2E_DEDICATED_HUB_PORT', 9079);
+  const CONTROL_PORT = await pickPort('E2E_DEDICATED_CONTROL_PORT', 7801);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
   // AFK_SECONDS 0: no idle takeover. The test's players sit still for minutes on a slow runner (the visitor after
@@ -13402,8 +13424,8 @@ async function hostpageLiveChecks(page, controlPort, token) {
 
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
-  const CONTROL_PORT = +(process.env.E2E_HOSTPAGE_CONTROL_PORT ?? 7802);
+  const HUB_PORT = await pickPort('E2E_HOSTPAGE_HUB_PORT', 9080);
+  const CONTROL_PORT = await pickPort('E2E_HOSTPAGE_CONTROL_PORT', 7802);
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
   page.on('pageerror', (e) => errors.push(e.message));
@@ -13504,7 +13526,7 @@ async function hostpageFlow(browser) {
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -13848,7 +13870,7 @@ async function hostcontrolsFlow(browser) {
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -14015,7 +14037,7 @@ async function partyFlow(browser) {
   // Online: a hub, a host, a friend by the host's invite link.
   // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
   // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
+  const HUB_PORT = await pickPort('E2E_PARTY_HUB_PORT', 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
@@ -14125,7 +14147,7 @@ async function handoffFlow(browser) {
 }
 
 async function handoffPages(separate) {
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const hub = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -14313,12 +14335,12 @@ function report() {
 }
 
 try {
-  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
+  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--host', '127.0.0.1', '--port', CLIENT_PORT, '--strictPort']);
   // (The flows' server stays on its map: no vote between matches travelling it elsewhere mid-run.)
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1', MAP_VOTE: '0' });
   await waitForHttp(CLIENT);
   await sleep(1500);
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch(launchOpts({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }));
   // The contexts it opened (the run closes those a flow left open).
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
