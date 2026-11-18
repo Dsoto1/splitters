@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Return visits download almost nothing.** Models, textures and sounds you already have are checked instead of downloaded again after an hour away (~0.1 MB instead of ~24 MB); the server side gains a CDN, a hard monthly spend cap and nightly backups of profiles and published maps (docs/HOSTING.md, "Cost guard, CDN and backups").
 - **Hands on guns fitted automatically; bullets from the gun.** In first person (Arms only) every character now holds every gun with the same arms, gloves and sleeves tinted to the character. In third person each character's grip is fitted from its own hands and checked by an audit, so far fewer need hand tuning. Your shots in third person now leave your character's gun and flash on it, and everyone's tracers start at the muzzle as drawn.
 - **Jungle plants in MapMaker.** The Environment group gains the Jungle Tree (lianas hanging from its limbs), the Tree Fern and the Elephant Ear, and the Jungle preset paints them.
 - **Alpine woods read lighter.** The Mountain Pine is brighter with a bare trunk under its branches, the Spruce has a lighter Alpine look, and the Alpine preset paints fewer, lighter spruces among more pines and larches.

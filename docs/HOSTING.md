@@ -14,12 +14,15 @@ script, run from **AWS CloudShell** (no local tools, no keys to manage):
 
 | File | What |
 |---|---|
-| `infra/toshiro-trigger-multiplayer.yaml` | Lightsail instance (Ubuntu 24.04, 2 GB), static IP, firewall, Route 53 records, alarms, monthly budget |
+| `infra/toshiro-trigger-multiplayer.yaml` | Lightsail instance (Ubuntu 24.04, 2 GB), static IP, firewall, Route 53 records, alarms, monthly budget, the hard spend cap (budget → SNS → Lambda), CloudFront, the backup bucket ([Cost guard, CDN and backups](#cost-guard-cdn-and-backups-owner-2026-11-18)) |
 | `infra/deploy-multiplayer.sh` | validates, creates secrets in SSM, deploys the stack, bootstraps the box over SSH, checks it |
 | `infra/host-setup.sh` | runs on the box: Caddy, hub, coturn, systemd restarts, ufw, log limits |
 | `infra/tiletrigger-update.sh` | runs on the box (`sudo tiletrigger-update`): installs the site build CI made, verified; rollback (see [Updates](#updates-how-new-code-reaches-the-box)) |
 | `tools/ci/client-release.sh` | CI: packages the site build and publishes it to GitHub Releases |
 | `infra/turn-check.py` | proves the relay refuses anyone without fresh credentials and won't reach private addresses |
+| `infra/tiletrigger-backup.py` | runs on the box (`sudo tiletrigger-backup`, a nightly timer): backs up `/var/lib/tiletrigger` to S3; the deploy's restore step unpacks with it |
+| `infra/test/cost-guard-check.py` | a local rehearsal of the cost guard Lambda (no AWS) |
+| `tools/perf/visit-bytes.mjs` | measures a first and a return visit's download size |
 | `infra/test/update-dry-run.sh` | a local rehearsal of updates, refusals and rollbacks (no AWS, no GitHub) |
 
 Security and costs: docs/MULTIPLAYER_SECURITY.md, docs/MULTIPLAYER_REVIEW.md
@@ -93,14 +96,170 @@ Options worth knowing (`infra/deploy-multiplayer.sh --help` for all):
   Lightsail console → instance → **Connect** → `sudo tiletrigger-update`
   (seconds), or re-run `infra/deploy-multiplayer.sh` (same settings are kept;
   also applies config changes). Back out with `sudo tiletrigger-update --rollback`.
+- **Stopped by the cost guard** (an email "Tile Trigger stopped: cost guard"): check Billing, then
+  `infra/deploy-multiplayer.sh --resume` ([Cost guard](#hard-spend-cap-stop-the-box-at-30-a-month)).
+- **Restore a backup**: `infra/deploy-multiplayer.sh --restore latest` ([Backups](#backups-varlibtiletrigger-every-night)).
 - **Relay abuse or a bandwidth alarm**: Connect → `sudo tiletrigger-relay off`
   (direct connections keep working; `on` to restore, `status` to look).
 - **Rotate the relay secret**: `aws ssm put-parameter --name /toshiro/trigger/turn-secret --type SecureString --overwrite --value "$(openssl rand -hex 32)"`, then re-run the deploy.
 - **Logs**: Connect → `sudo journalctl -u tiletrigger-hub -f` (hub),
   `-u coturn` (relay), `-u caddy` (HTTPS).
 - **Remove everything**: `aws cloudformation delete-stack --stack-name toshiro-trigger-multiplayer`
-  (instance, static IP, records, alarms, budget); the SSM parameters stay
-  until deleted with `aws ssm delete-parameter`.
+  (instance, static IP, records, alarms, budgets, cost guard, CDN, backup user); the SSM parameters and
+  the backup bucket stay until deleted by hand (`aws ssm delete-parameter`, the S3 console).
+
+### Cost guard, CDN and backups (owner, 2026-11-18)
+
+The owner: "I have no users today and want to run cheaply, I would rather shut it down before costs go nuts."
+Three pieces, all in the same template and deploy script (nothing is changed in AWS except by the owner's
+deploy from CloudShell):
+
+**Deploy steps (CloudShell, once this is on `main` and CI has published its build):**
+
+```
+cd splitters && git pull                       # or a fresh clone (see above)
+infra/deploy-multiplayer.sh                    # 1. cost guard ($30/month, whole account), backup bucket, nightly backups
+                                               # 2. click "Confirm subscription" in the "AWS Notification" email
+infra/deploy-multiplayer.sh --cdn on           # 3. CloudFront in front of the site (15-25 min; checks before it switches)
+aws lambda invoke --function-name toshiro-trigger-hub-cost-guard --cli-binary-format raw-in-base64-out \
+  --payload '{"dryRun":true}' /dev/stdout       # 4. optional: the cost guard says what it sees, changes nothing
+```
+
+Step 1 also installs the newest `main` build, whose hub sends ETags (below; the hub restarts once, as
+for any hub code change). Step 3 moves the relay to
+`turn.trigger.toshiroplay.com` (TURN can't go through CloudFront; the hub hands out the new name at once).
+
+#### Hard spend cap: stop the box at $30 a month
+
+- **What counts:** the whole AWS account's actual costs this month (Budget `toshiro-trigger-prod-spend-cap`,
+  no tag filter: the owner's other projects count too). `--stop-at <USD>` changes it, `--stop-at 0` turns it off.
+- **How it stops:** AWS Budgets can't stop a Lightsail instance itself, so the budget's alert goes to an SNS
+  topic and a small Lambda (`toshiro-trigger-hub-cost-guard`, Python, inline in the template) stops the
+  instance and disables the CloudFront distribution, then emails the owner (an SNS email subscription: confirm
+  it once) what it did and how to restart. The budget also emails directly.
+- **Three triggers, one Lambda:** (1) the budget's alert (Budgets checks a few times a day; billing data lags
+  up to a day); (2) an hourly run of the same Lambda, which reads the budget's actual spend itself (budget
+  alerts fire once a month, so this also catches a restart while still over the cap) and the instance's
+  **NetworkOut**: over `StopAtNetworkOutGbPerHour` (6 GB) in each of the last 3 hours stops it. **Lightsail
+  alarms can only email or text, not notify SNS**, so the Lightsail NetworkOut alarm can't take this path;
+  the hourly read is that path. (3) A CloudWatch alarm on CloudFront's bytes downloaded:
+  over `CdnStopAtGbPerHour` (20 GB, ~700 first visits) in an hour.
+- **Least privilege:** the Lambda's role may `lightsail:StopInstance`, `GetInstanceState` and
+  `GetInstanceMetricData` on this one instance's ARN, `cloudfront:GetDistributionConfig`/`UpdateDistribution`
+  on this one distribution, `budgets:ViewBudget` on this one budget, `sns:Publish` to its email topic and
+  write its own log group (90 days). Nothing else.
+- **What stopping saves:** the traffic costs (relay, transfer past the 3 TB allowance, CloudFront past its
+  free tier). **A stopped Lightsail instance is still billed its plan** (~12 USD/month): the cap stops costs
+  going nuts, it doesn't make the month free. To end that too, delete the stack.
+- **Restart** (after checking Billing → Bills): `infra/deploy-multiplayer.sh --resume` starts the instance,
+  re-enables the CDN and waits for the hub's health. It refuses while the month's spend is still at or over
+  the cap (the hourly check would stop it again): raise the cap first with a normal run,
+  `infra/deploy-multiplayer.sh --stop-at 40`. By hand: Lightsail console → instance → **Start**, and
+  CloudFront console → the distribution → **Enable**. The services start by themselves on boot.
+- **Rehearsal:** `python3 infra/test/cost-guard-check.py` runs the Lambda's code from the template against
+  stand-in AWS clients (budget alert, CloudFront alarm and its OK, hourly under/over the cap, NetworkOut,
+  dry run).
+
+#### CDN: CloudFront in front of the site
+
+- **What:** `trigger.toshiroplay.com` is an alias of a CloudFront distribution (IPv4 and IPv6, HTTP/2 and 3,
+  `PriceClass_100`: North America and Europe edges, the cheapest). Its one origin is the box, under its own
+  name `origin.trigger.toshiroplay.com` (an A record to the static IP; Caddy gets that name's certificate
+  itself). The viewer certificate is ACM's (DNS-validated in the zone by CloudFormation, renewed by AWS).
+  TLS end to end: viewer → CloudFront TLS 1.2+ (`TLSv1.2_2021`), CloudFront → box HTTPS only, the box's
+  certificate checked. HSTS and the other security headers come from Caddy as before.
+- **Why the box as origin, not S3:** the box already holds the exact build CI tested and switches and rolls
+  back atomically (`tiletrigger-update`); an S3 copy would need an upload path with credentials, could
+  disagree with the hub's code, and would make updates two steps. With the box as origin nothing about
+  updates changes, and CloudFront still serves almost every byte from its edges.
+- **What is cached** (the box's own headers decide; `packages/server/src/site.ts`):
+
+  | Path | Cache-Control | At the edge and in browsers |
+  |---|---|---|
+  | `/assets/*` (Vite's hashed JS, CSS, workers) | `public, max-age=31536000, immutable` | a year, never asked again |
+  | pages (`/`, `/privacy`, `/auth/callback`, …) | `no-cache` | asked every time (a 304 when unchanged), so an update shows at once |
+  | other files (models, textures, sounds, maps; their own names) | `public, max-age=3600` | an hour, then revalidated by ETag (a 304 when unchanged) |
+  | `/lobby*`, `/broker*` (WebSocket), `/api/*`, `/auth-config.js` | the hub's | never cached; every header, cookie and query string passed to the box |
+
+  Every static file now carries an **ETag** (its content hash): before, an expired model was downloaded
+  again in full; now it costs a ~200-byte 304. Query strings are part of the cache key (the `?v=` on weapon
+  icons). Error answers are not cached (a box restarting isn't remembered).
+- **The hub and the relay stay on the box:** the hub's paths go through CloudFront uncached (same origin for
+  the page, so nothing changes in the game); TURN is on `turn.trigger.toshiroplay.com` (an A record to the
+  static IP, made by the stack whenever the CDN is on) and never touches CloudFront.
+- **Players' addresses:** behind CloudFront every request arrives from a CloudFront address, and the hub's
+  rate limits key on the player's. CloudFront adds a header `X-Edge-Key` (a random value in SSM,
+  `/toshiro/trigger/edge-key`); Caddy passes CloudFront's `X-Forwarded-For` on (its last entry is the
+  viewer) only for requests that carry it, so a request straight to the origin can't pick its own address.
+- **Cut-over:** `--cdn on` from off deploys `prepare` first (the certificate, the distribution and the
+  origin name, `trigger.toshiroplay.com` still at the box), sets the box up for both names, checks the hub
+  directly, at the origin name and through CloudFront (`--connect-to`, before any DNS change: the page,
+  `/lobby/health`, `/lobby/ice`, HSTS, a hashed script cached and then a hit, the page `no-cache`, `/lobby`
+  not cached), and only then points the name at CloudFront. If a check fails it stops with the name still at
+  the box. Browsers with the old DNS answer (5 minutes) still reach the box. `--cdn off` goes back.
+- **Cost:** CloudFront's always-free tier is 1 TB out and 10 million requests a month; a first visit is
+  ~28 MB and ~600 requests, so ~35,000 first visits or ~16,000 visits' requests a month before any charge
+  (then ~0.085 USD/GB and ~0.01 USD per 10,000 requests). The certificate is free. The CloudFront alarm in
+  the cost guard stops it long before that matters.
+
+#### Backups: `/var/lib/tiletrigger` every night
+
+- **What:** the hub's state: `profiles/` (usernames, careers), `community/` (community map stats and
+  picks) and `maps/` (published maps and their versions), as one `tar.gz`, every night at ~03:20-03:50 UTC
+  (`tiletrigger-backup.timer`; `Persistent=true`, so a box that was off catches up). `sudo
+  tiletrigger-backup` runs one now; `--check` says what it would send.
+- **Where:** a private S3 bucket made by the stack (output `BackupBucket`): public access blocked,
+  encrypted at rest (SSE-S3), TLS only, versioned, and every version deleted after 30 days
+  (`BackupRetentionDays`). The bucket is kept if the stack is deleted (delete it by hand when it isn't
+  wanted). Cost: a few MB × 30, under a cent a month.
+- **Credentials (the narrowest possible):** Lightsail has no instance roles, so the box gets one IAM user's
+  access key whose only permission is `s3:PutObject` on `backups/*` of that bucket: it can't list, read or
+  delete anything, and versioning keeps whatever it overwrites. The deploy makes the key once and keeps it
+  in SSM (SecureString `/toshiro/trigger/backup-key`); the box keeps it in `/etc/tiletrigger-backup.conf`
+  (root, 0600). The box has no AWS CLI: `infra/tiletrigger-backup.py` signs the one PUT itself (Signature
+  V4, Python's standard library; checked against botocore's signer). Rotate: `aws ssm delete-parameter
+  --name /toshiro/trigger/backup-key`, then re-run the deploy (it deletes the old key and makes a new one).
+  Why not Lightsail object storage: its bucket costs 1 USD/month at least and its keys can read and delete
+  the bucket; this key can only add.
+- **Restore:** the deploy restores a **fresh box** by itself: when `/var/lib/tiletrigger` on the box is
+  empty (a new instance, a `--bundle` change), it downloads the newest backup with the owner's credentials in
+  CloudShell, copies it over SSH, and the box unpacks it (only `profiles/`, `community/`, `maps/`, plain files
+  and folders, Python's `data` filter) before the hub starts. `--restore latest` or `--restore
+  backups/tiletrigger-<time>.tar.gz` puts a backup over a box that has state (the hub is stopped, the old
+  state moved aside to `/var/lib/tiletrigger.before-restore-<time>`); `--no-restore` skips it. Before a
+  `--bundle` change run `sudo tiletrigger-backup` (Connect), so the new box gets today's state.
+
+#### What a visit downloads (measured 2026-11-18)
+
+`node tools/perf/visit-bytes.mjs` (the built site served by the hub's own file serving, Chromium, menu
+then Play → Start into the default match, Sandgate, until the network is quiet):
+
+| Visit | Over the wire | Requests |
+|---|---|---|
+| **First visit** (empty cache): menu + one match | **27.6 MB** (one run 38.5 MB: the bots' characters vary) | ~590 |
+| of which hashed JS/CSS (`/assets/`) | 3.9 MB | 112 |
+| of which models, textures, sounds (un-hashed names) | 23.8 MB | ~470 |
+| of which the page | 10 KB | 1 |
+| **Return visit within the hour** (cache kept) | **~0.02 MB** (the page; everything else from the cache) | ~590, all cached |
+| **Return visit after more than an hour**, with ETags (this change) | **~0.1 MB** (~480 small 304s) | ~590 |
+| the same before this change (no ETags: un-hashed files downloaded again) | ~24 MB | ~590 |
+
+So a returning player costs almost nothing either way now, and a first visit ~28 MB: 1 TB of CloudFront
+free tier is ~35,000 first visits a month.
+
+#### Monthly cost (us-east-1, with all three on)
+
+| Item | Monthly |
+|---|---|
+| Lightsail 2 GB plan (billed running or stopped) | 12.00 USD |
+| Lightsail alarms (3) | 0.30 |
+| Route 53 zone + queries (alias queries to CloudFront are free) | ~0.90 |
+| CloudFront (free tier: 1 TB, 10 M requests), ACM certificate | 0 |
+| Cost guard: Lambda (~750 runs), SNS (a few emails), EventBridge schedule, 1 CloudWatch alarm (10 free), logs | ~0 |
+| Budgets (alerts only; no budget actions or reports) | 0 |
+| S3 backups (a few MB × 30, ~30 PUTs) | < 0.01 |
+| SSM standard parameters, IAM | 0 |
+| **Total** | **~13 USD**, as before |
 
 ### Updates: how new code reaches the box
 

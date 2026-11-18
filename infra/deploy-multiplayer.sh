@@ -411,6 +411,7 @@ if ! aws ssm get-parameter --name "$SSM_PREFIX/edge-key" --query Parameter.Name 
   note "$SSM_PREFIX/edge-key: created"
 fi
 aws ssm get-parameter --name "$SSM_PREFIX/edge-key" --query Parameter.Value --output text > "$WORK/edge-key"
+EDGE_KEY_VERSION="$(aws ssm get-parameter --name "$SSM_PREFIX/edge-key" --query Parameter.Version --output text)"
 chmod 600 "$WORK/edge-key"
 
 # ------------------------------------------------------------------ 4. alarm contact
@@ -454,6 +455,7 @@ add CognitoAppClientId "$APP_CLIENT"
 [ -n "$BUDGET_LIMIT" ] && add BudgetLimitUsd "$BUDGET_LIMIT"
 [ -n "$STOP_AT" ] && add StopAtUsd "$STOP_AT"
 add SiteCdn "$STACK_CDN"
+add EdgeKeyVersion "$EDGE_KEY_VERSION"
 add OriginHostname "origin.$HOSTNAME_"
 add ZoneName "$ZONE"
 add HubHostname "$HOSTNAME_"

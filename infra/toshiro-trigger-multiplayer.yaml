@@ -23,7 +23,7 @@ Metadata:
       - Label: { default: 'Hard spend cap (stops the instance and the CDN)' }
         Parameters: [StopAtUsd, StopAtNetworkOutGbPerHour, CdnStopAtGbPerHour]
       - Label: { default: 'CDN (CloudFront in front of the site)' }
-        Parameters: [SiteCdn, OriginHostname, CdnPriceClass]
+        Parameters: [SiteCdn, OriginHostname, CdnPriceClass, EdgeKeyVersion]
       - Label: { default: Backups }
         Parameters: [BackupRetentionDays]
       - Label: { default: 'Secrets and auth (referenced, not created)' }
@@ -196,6 +196,13 @@ Parameters:
     Type: String
     Default: origin.trigger.toshiroplay.com
     Description: Hostname of the box for CloudFront (A -> static IP; Caddy gets its own certificate for it).
+  EdgeKeyVersion:
+    Type: String
+    Default: '1'
+    AllowedPattern: '^[0-9]{1,6}$'
+    Description: >-
+      Version of the SSM String <SsmPrefix>/edge-key that CloudFront sends (the deploy script passes the
+      current one, so a rotated key reaches CloudFront on the next run).
   CdnPriceClass:
     Type: String
     Default: PriceClass_100
@@ -462,7 +469,7 @@ Resources:
             # credential for anything else; kept in SSM (a plain String the deploy creates).
             OriginCustomHeaders:
               - HeaderName: X-Edge-Key
-                HeaderValue: !Sub '{{resolve:ssm:${SsmPrefix}/edge-key}}'
+                HeaderValue: !Sub '{{resolve:ssm:${SsmPrefix}/edge-key:${EdgeKeyVersion}}}'
         DefaultCacheBehavior:
           TargetOriginId: box
           ViewerProtocolPolicy: redirect-to-https
