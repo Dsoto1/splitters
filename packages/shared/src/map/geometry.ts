@@ -630,8 +630,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         const metal = edgePaint(style);
         // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
         const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
-        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) {
-          if (glazed && p.sash) continue;
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all')) {
           const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
           boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
         }

@@ -51,7 +51,7 @@ export interface GlassPane {
   /** Tint of a glass block (hex), when it has one. */
   tint?: string;
   /**
-   * A window pane's sash bars (its inner frame, meeting rail and centre bars: edgeShapes.ts SideTrim `sash`): drawn
+   * A window pane's sash bars (its inner frame, meeting rail and centre bars: the style's `v` trim, edgeTrimBoxes `sash`): drawn
    * with the pane, gone when it breaks, back with the glass. Upright boxes; `tint` is their paint's.
    */
   bars?: { box: OBox; tint: string | null }[];
@@ -87,7 +87,7 @@ export function windowPanes(map: MapDocument, catalog: TileCatalog = coreCatalog
       const cx = gx * cellSize;
       const cz = gy * cellSize;
       const baseY = gz * levelHeight;
-      const sash = edgeTrimBoxes(style, half, levelHeight).filter((p) => p.sash);
+      const sash = edgeTrimBoxes(style, half, levelHeight, false, 'only');
       windowOpenings(style, levelHeight).forEach(([u0, u1, y0, y1], n) => {
         const u = (u0 + u1) / 2;
         const hu = (u1 - u0) / 2;
