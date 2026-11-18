@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Our own trees and rocks on ten more maps.** Eagle Spires, Step Temple, Primeval Park, Coldwater Gulch, Norman Shores, Fernwood Moon, Sunstone Crag, Sandgate, Citadel and Backwoods swap their bought trees, bushes, logs and rocks for our generated ones, in the same spots and sizes (bushes still hide you, rocks still stop bullets); a new Dead Tree joins MapMaker. MapMaker's Environment pane gains **Swap natural props for ours** to do the same on any map in one undo step.
 - **Hands on guns fitted automatically; bullets from the gun.** In first person (Arms only) every character now holds every gun with the same arms, gloves and sleeves tinted to the character. In third person each character's grip is fitted from its own hands and checked by an audit, so far fewer need hand tuning. Your shots in third person now leave your character's gun and flash on it, and everyone's tracers start at the muzzle as drawn.
 - **Jungle plants in MapMaker.** The Environment group gains the Jungle Tree (lianas hanging from its limbs), the Tree Fern and the Elephant Ear, and the Jungle preset paints them.
 - **Alpine woods read lighter.** The Mountain Pine is brighter with a bare trunk under its branches, the Spruce has a lighter Alpine look, and the Alpine preset paints fewer, lighter spruces among more pines and larches.
