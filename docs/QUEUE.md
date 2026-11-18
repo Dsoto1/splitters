@@ -45,6 +45,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 - `wip/meshy-1117` · f01cd32a · 44354861370 (lane B: the owner's walkable-deck excavator, `prop.mining_excavator_deck`, Meshy, owned, in MapMaker's Mines & Caves and on the coverage map; no map format change; the haul truck and fuselage wait on the owner: over the Drive connector's 10 MB limit)
 - `wip/perf-1118` · 975b82e5 · 44370424412 (lane B: performance batch: menu first JS 2799 → 2642 kB, pickups batched (~80 fewer meshes a view), respawn shimmer 120 → 6 scene walks, the local player reconciled once a frame on foot (Riot Junction 898 → 47 reconciles in 30 s); held weapons in one material not done (too big); next train)
+- `wip/hosting-guard` · 9e3a898c · 44376149557 (lane B: hosting cost guard: CloudFront in front of the site (box as origin, hub paths uncached, TURN on its own name), an automatic stop at $30/month for the whole account plus traffic stops, nightly S3 backups with restore, ETags on the hub's static files; nothing changed in AWS: the owner deploys from CloudShell after it lands; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
