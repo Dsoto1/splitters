@@ -323,6 +323,68 @@ describe("a three-floor school hall joined to a bridge (Stangeland / Cord's shap
   });
 });
 
+/**
+ * Welles Hall's shape (St. John's step 6): three floors between two 3-floor Stair End Bays, the west one with its
+ * First-floor door meeting a Carriageway (x 0, y 1) on the ground and the first floor: the mess hall of Refectory Bays
+ * on the ground (one with doors both sides, one with the fireplace), Classroom Bays over it, Dorm Bays on top; the
+ * Clock Tower beside the bridge, north of the west end, turned half round (its door and belfry gallery face north).
+ */
+function welles(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, overrides?: SetPiecePlacement['overrides']): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(overrides ? { overrides } : {}) });
+  const out = [at('end_w', 'setpiece.stair_end_bay_3', 1, 0, 0, 0, { options: { upperDoor: 'end' } }), at('end_e', 'setpiece.stair_end_bay_3', 8, 1, 0, 2), at('bridge', 'setpiece.carriageway_1', 0, 1, 0), at('tower', 'setpiece.clock_tower', 1, 2, 0, 2)];
+  const walls: Record<number, string> = { 4: 'doors', 6: 'fire_south' };
+  for (let x = 2; x <= 7; x++) {
+    out.push(at(`mess_${x}`, 'setpiece.refectory_bay', x, 0, 0, 0, walls[x] ? { options: { walls: walls[x]! } } : undefined));
+    out.push(at(`class_${x}`, 'setpiece.classroom_bay', x, 0, 1));
+    out.push(at(`dorm_${x}`, x % 2 ? 'setpiece.dorm_bay' : 'setpiece.dorm_bay_closed', x, 0, 2, 0, { options: { roomDoors: 'slim' } }));
+  }
+  return out;
+}
+
+describe("a three-floor mess hall with its clock tower (Welles Hall's shape)", () => {
+  it('every floor end to end, the mess hall crossed, classrooms and rooms, both stairs, the bridge on two floors, the tower to its belfry', { timeout: 240_000 }, () => {
+    const map = mapOf(welles());
+    const nav = navOf(map);
+    for (const y of [0, 4, 8]) {
+      expect(miss(nav, v([16, y, 4]), v([56, y, 4])), `the hall at ${y} m, end to end`).toBeLessThan(1.2);
+      // From the west lobby and from the east lobby to every floor.
+      expect(miss(nav, v([8, 0, 8]), v([20, y, 4])), `west stair to ${y} m`).toBeLessThan(1.2);
+      expect(miss(nav, v([64, 0, 0]), v([52, y, 4])), `east stair to ${y} m`).toBeLessThan(1.2);
+    }
+    // The mess hall: between the tables and benches, along both sides; across it through the doors (x 4), in from outside.
+    for (const z of [-2.6, 10.6]) expect(miss(nav, v([18, 0, z]), v([58, 0, z])), `the mess hall along z ${z}`).toBeLessThan(1.2);
+    expect(miss(nav, v([32, 0, -9]), v([32, 0, 17])), 'through the mess hall from Exeter Street to the court').toBeLessThan(1.2);
+    // Classrooms on the first floor, rooms on the top floor (the open ones).
+    for (const x of [2, 7]) for (const north of [true, false]) expect(miss(nav, v([x * 8, 4, 4]), v([x * 8 + 2.4, 4, north ? 10.6 : -2.6])), `the classroom at x ${x}, ${north ? 'north' : 'south'}`).toBeLessThan(1.2);
+    for (const north of [true, false]) expect(miss(nav, v([24, 8, 4]), v(roomFloor(24 - 2, north, 8))), `a room of the dorm bay at x 3, ${north ? 'north' : 'south'}`).toBeLessThan(1.2);
+    // The bridge: through its side door into the west lobby; its room over the arch to the first floor's hall.
+    expect(miss(nav, v([0, 0, 8]), v([8, 0, 8]))).toBeLessThan(1.2);
+    expect(miss(nav, v([0, 4, 8]), v([24, 4, 4]))).toBeLessThan(1.2);
+    // The clock tower: in at its door from the north, up the stair round its core to the belfry's gallery (17.5 m).
+    expect(miss(nav, v([8, 0, 22]), v([8, 0, 18.2])), 'in at the tower door').toBeLessThan(1.2);
+    expect(miss(nav, v([8, 0, 22]), v([8, 17.5, 18.2])), 'up the tower to the belfry').toBeLessThan(1.2);
+    expect(miss(nav, v([16, 0, 4]), v([10, 17.5, 18.2])), 'from the mess hall to the belfry').toBeLessThan(1.2);
+    nav.destroy();
+  });
+
+  it('the belfry is a perch: its sills a metre over the gallery, nothing of the tower falls through or leans out', () => {
+    const map = mapOf([{ id: 'tower', piece: 'setpiece.clock_tower', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    // Standing on the gallery (the stair's last landing, along the south wall), the opening's sill stops a walk south.
+    const s = walk(physics, { x: -1.2, y: 17.6, z: -2.2 }, Math.PI, 60);
+    expect(s.pos.z).toBeGreaterThan(-3.5);
+    expect(s.pos.y).toBeGreaterThan(17.3);
+    // Every box stays inside its cell and under 24 m.
+    for (const b of buildMapGeometry(map).filter((b) => b.sourceId?.startsWith('sp_tower'))) {
+      expect(b.min[0]).toBeGreaterThanOrEqual(-4.001);
+      expect(b.max[0]).toBeLessThanOrEqual(4.001);
+      expect(b.min[2]).toBeGreaterThanOrEqual(-4.001);
+      expect(b.max[2]).toBeLessThanOrEqual(4.001);
+      expect(b.max[1]).toBeLessThanOrEqual(24.001);
+    }
+  });
+});
+
 describe('the wall styles the bays are built with', () => {
   it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
     expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);
@@ -415,6 +477,11 @@ describe('what the bays are made of, and what they cost', () => {
     expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks']);
     // St. John's step 5b: pennants are off unless a placement turns them on (the owner: a handful of rooms).
     expect(made('setpiece.classroom_entry_bay')).toMatchObject({ tiles: 2, props: 9, lights: 1, tileIds: ['core.room'] });
+    // St. John's step 6: a mess hall bay is two piers, two long tables with four benches, a chandelier and a banner, one
+    // light; the fireplace adds six blocks. The clock tower is its tile (no entities) and four clock faces, one light.
+    expect(made('setpiece.refectory_bay')).toMatchObject({ tiles: 2, blocks: 2, props: 8, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.refectory_bay').models).toEqual(['kit.seat.bench', 'prop.dg_banner', 'prop.dg_table_long', 'prop.hm_chandelier']);
+    expect(made('setpiece.clock_tower')).toMatchObject({ tiles: 1, blocks: 0, props: 4, doors: 0, lights: 1, tileIds: ['gothic.clock_tower'], models: ['kit.sign.clock_face'] });
   });
 
   it('no door of a hall thinks: every door is a still prop (no door entities, no breakable props but the ones the catalogue leaves)', () => {
