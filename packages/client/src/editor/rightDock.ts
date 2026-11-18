@@ -3,10 +3,13 @@ import { $ } from './editorDom.ts';
 import {
   clampDockWidth,
   DEFAULT_TILE_SNAP,
+  DOCK_MIN_W,
+  dockMaxWidth,
   DOCK_KEY,
   LEGACY_SIDEBARS_KEY,
   nextDockState,
   parseDockPrefs,
+  resizedDockState,
   serializeDockPrefs,
   startingDockState,
   type DockPrefs,
@@ -64,6 +67,41 @@ export class RightDock {
     this.mountGrip();
     if (this.prefs.width) this.applyWidth(this.prefs.width);
     this.set(startingDockState(this.prefs.right, innerWidth), false);
+    this.mountResize();
+  }
+
+  /**
+   * The window resized (UI Phase 5): a kept width is fitted to the new window again (never more than 45 % of it; the
+   * kept number stays, so widening the window gives it back), and crossing 900 px folds or restores the dock
+   * (dockPrefs resizedDockState). Once a frame at most; nothing is read from the page but the window's width.
+   */
+  private mountResize(): void {
+    requestAnimationFrame(() => this.syncGrip());
+    let width = innerWidth;
+    let queued = 0;
+    addEventListener('resize', () => {
+      if (queued) return;
+      queued = requestAnimationFrame(() => {
+        queued = 0;
+        const now = innerWidth;
+        if (now === width) return;
+        if (this.prefs.width) this.applyWidth(this.prefs.width);
+        else this.syncGrip();
+        const next = resizedDockState(this.state, this.prefs.right, width, now);
+        width = now;
+        if (next !== this.state) this.set(next, false);
+      });
+    });
+  }
+
+  /** The grip's value for screen readers: the dock's width now and its limits in this window. */
+  private syncGrip(w?: number): void {
+    const grip = document.getElementById('ed-dock-grip');
+    if (!grip) return;
+    grip.setAttribute('aria-valuemin', String(DOCK_MIN_W));
+    grip.setAttribute('aria-valuemax', String(dockMaxWidth(innerWidth)));
+    const now = w ?? this.prefs.width ?? Math.round(document.getElementById('ed-right')?.getBoundingClientRect().width ?? 0);
+    if (now) grip.setAttribute('aria-valuenow', String(now));
   }
 
   /** Shift+\: expanded → compact → hidden → expanded. */
@@ -244,7 +282,9 @@ export class RightDock {
   }
 
   private applyWidth(w: number): void {
-    $('editor').style.setProperty('--ed-dock-w', `${clampDockWidth(w, innerWidth)}px`);
+    const px = clampDockWidth(w, innerWidth);
+    $('editor').style.setProperty('--ed-dock-w', `${px}px`);
+    this.syncGrip(px);
   }
 
   /** The dock's inner edge drags its width (and the arrow keys, with it focused); kept once let go. */
@@ -277,12 +317,18 @@ export class RightDock {
       delete this.prefs.width;
       $('editor').style.removeProperty('--ed-dock-w');
       this.save();
+      requestAnimationFrame(() => this.syncGrip());
     });
+    // The arrows widen and narrow it 16 px (Shift: 64), Home and End go to its narrowest and widest (a WAI-ARIA
+    // window splitter).
+    const keySteps: Record<string, number> = { ArrowLeft: 16, ArrowRight: -16, ArrowUp: 16, ArrowDown: -16 };
     grip.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const step = keySteps[e.key];
+      const to = e.key === 'Home' ? DOCK_MIN_W : e.key === 'End' ? dockMaxWidth(innerWidth) : step !== undefined ? $('ed-right').getBoundingClientRect().width + step * (e.shiftKey ? 4 : 1) : null;
+      if (to === null) return;
       e.preventDefault();
       e.stopPropagation();
-      this.applyWidth($('ed-right').getBoundingClientRect().width + (e.key === 'ArrowLeft' ? 16 : -16));
+      this.applyWidth(to);
       commit();
     });
   }

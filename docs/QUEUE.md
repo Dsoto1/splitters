@@ -39,8 +39,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/process-tools` · a856acb0 · 44237103776 (lane B: process tooling: `train.mjs --ready`, notes-only conflicts merged in trains, e2e on 127.0.0.1 with free ports and `CHROMIUM`, `tools/dev/cleanup.mjs`, `tools/ci/flakes.mjs` → docs/FLAKES.md; HANDOFF already slimmed on main (03d41264); **in train `check/train-20261118-073142` at 5396d789**, lane B's lead holds the lock)
-- `wip/mapmaker-ui-5` · 7bfe71be · 44254706046 (lane B: MapMaker UI Phase 5, hardening: every saved map round-trips, collision and paths follow edits, resizing, faster Tile View on big maps, keyboard for Tile View and the minimap, view settings remembered; no map format change; **in train `check/train-20261118-073142` at 5396d789**)
 - `wip/gun-handling` · 29ace94c · 44255322957 (lane B: gun handling extras: run speed by weapon, sprint-to-fire by weapon, scope holdover marks; the weapon tuning page `?mode=weapons`; the earlier red train was not this branch: the same editor TEST-start check failed on `check/painting-5b` without it, same hour, same shard; next train)
 - `wip/player-profiles` · 850b4a22 · 44256499585 (lane B: player profiles Phase 1: career stats (local for guests, on the hub when signed in), favourite class, Profile Career section, a profile card under the Tab and end-of-match board; **the owner redeploys the hub** after it lands (no AWS change); next train)
 
@@ -146,7 +144,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - M · B · A weapon tuning screen: recoil path, spread cones and damage over distance side by side (GAPS §45).
 - S · A · Hit model: arms as their own hit zone, a shield/weak-point hit marker (GAPS §11, §21-22).
 - M · B · MapMaker painting Phase 5: save and name your own looks (MAPMAKER_PAINTING_PLAN "Phase 5"; answers given).
-- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **In work on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22, 2026-11-18; no map format change).
+- M · B · MapMaker UI spec Phase 5: hardening and polish (saved-map and migration tests, resizing, large-map speed, keyboard use, preferences kept; MAPMAKER_UI_SPEC §10). **Built 2026-11-18 on `wip/mapmaker-ui-5`** (a helper of lane B's splitters22; no map format change): every map opens and saves with nothing lost (95 files), edits reach collision and the navmesh, the dock follows the window, Tile View and the minimap from the keyboard, Grid and Snap remembered, Tile View draws nothing on pointer moves; `docs/MAPMAKER_UI_SPEC.md`, "Phase 5: as built".
 - M · B · Held weapons in one material (a content-pipeline atlas): fewer draws and shadow casters in crowds (PERF_96 round 3).
 - S · B · Pickups drawn as thin instances (35-55 meshes a map; PERF_96 round 3).
 - L · B · Far characters cheaper: shared animation for the same clip and phase, fewer bones far off, baked animation for merged far bodies (PERF_96 round 4; with the Flavius Rule animation-by-distance work).
@@ -180,6 +178,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-18 · B · Process tooling (`train.mjs --ready`, notes-only conflicts merged in trains, e2e on 127.0.0.1 with free ports, `tools/dev/cleanup.mjs`, `tools/ci/flakes.mjs` → docs/FLAKES.md; HANDOFF slimmed into docs/history) and MapMaker UI Phase 5, hardening (saved maps round-trip, edits rebuild collision and paths, resizing, faster Tile View, keyboard, remembered view settings) (train `check/train-20261118-073142` at 5396d789, run 44259596787).
 - 2026-11-18 · B · Procedural environment Phase 4, more variety: 17 new species (trees, bushes, grasses, flowers, desert plants, boulders, cliffs), each with 2-3 looks; presets gain them; shipped maps unchanged. And MapMaker painting Phase 5: save and name your own looks (Save as my look, My looks, looks travel with maps; map format v47) (train `check/train-20261118-050653` at 81f7e8de, run 44242217181).
 - 2026-11-18 · B · MapMaker UI Phase 4a, Tile View: a north-up plan of a tile, set piece or group in the minimap's place (Enter, double-click, ⊞); pick, drag on a snap, nudge, R turns, Local/World fields, wall sides (train `check/train-20261118-031402` at 47fac281, run 44228966768).
 - 2026-11-18 · A+B · Train `check/train-20261118-004220` (37a68194, run 44210289769): St. John's step 5, Stangeland / Cord (lane A); the owner's character pass: Warrior Sentinel's shoulder, Rattles straighter, Horrors & Creatures, Soldiers & Spies with Army/Agency, the moves, the astronauts together (lane B).

@@ -1,6 +1,7 @@
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 import { menuHeading, menuItem, popupMenu, setChecked, type PopupMenu } from './popupMenu.ts';
+import { keepViewPref, readViewPrefs } from './viewPrefs.ts';
 
 /** Map layers: editor-only view filters (EditorView.hiddenLayers), not saved with the map. */
 export const VIEW_LAYERS: readonly [string, string][] = [
@@ -50,18 +51,27 @@ export class ViewMenu {
     for (const [key] of VIEW_LAYERS) setChecked($(`ed-layer-${key}`), !this.app.view.hiddenLayers.has(key));
   }
 
-  setGrid(on: boolean): void {
+  /** View → Grid and Full grid as they were left (viewPrefs.ts), once the view exists. */
+  applyKept(): void {
+    const kept = readViewPrefs();
+    if (!kept.grid) this.setGrid(false, false);
+    else if (kept.gridFull) this.setGridFull(true, false);
+  }
+
+  setGrid(on: boolean, keep = true): void {
+    if (keep) keepViewPref({ grid: on, ...(on ? {} : { gridFull: false }) });
     setChecked($('ed-grid'), on);
     this.app.view.setGridVisible(on);
     // Off also leaves the full grid.
-    if (!on && this.app.view.area.gridFull) this.setGridFull(false);
+    if (!on && this.app.view.area.gridFull) this.setGridFull(false, keep);
   }
 
   /** Full grid: over the whole build area, out to the build limit (owner, 2026-11-05); turns Grid on. */
-  setGridFull(on: boolean): void {
+  setGridFull(on: boolean, keep = true): void {
+    if (keep) keepViewPref({ gridFull: on, ...(on ? { grid: true } : {}) });
     this.app.view.setGridFull(on);
     setChecked($('ed-grid-full'), on);
-    if (on && !$('ed-grid').classList.contains('on')) this.setGrid(true);
+    if (on && !$('ed-grid').classList.contains('on')) this.setGrid(true, keep);
   }
 
   /** Overlaps: highlight where two pieces' faces share a plane (the geometry.coplanar warning's places). */
