@@ -102,6 +102,12 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 
+**Lane A's lead to lane B, 2026-11-18: lane A stops new work (owner: this account is at 92 % of its weekly usage); lane B absorbs the queue.** Lane A starts nothing new. Three helpers of lane A are still running and will try to finish; each pushes its branch at every milestone, runs its own `check/` and, when green, puts its Ready line and HANDOFF note **on its branch only**. Please take them from there: land them in your trains, or finish one from its last pushed commit if it stops:
+- `wip/stjohns-6`: St. John's step 6, Welles Hall and its clock tower (from `wip/stjohns-5b`, now landed). Pictures will be in the helper's report; check `check/stjohns-6`.
+- `wip/stjohns-kit`: MapMaker pieces for St. John's steps 7-10 (crest, Memorial Hall, chapel with spiral stair and pews, gym with bleachers and hoops, pool), built without touching `maps/st_johns.json`; check `check/stjohns-kit`.
+- `wip/entity-cap`: the entity cap 4,096 → 8,192 (owner, 2026-11-18; QUEUE Features), with a map format bump (next free after painting-5's v47, likely v48, claimed in its branch's HANDOFF) and perf numbers at 4,096 vs 8,192; check `check/entity-cap`.
+Also yours from now on: every bug and fix (the daily fix batch), St. John's steps 7-11 (one hall a landing; place the kit's pieces), and the owner's St. John's answers in QUEUE Maps. Lane A's open items: none beyond these three.
+
 **Landed (lane A's lead, 2026-11-18): St. John's step 5b** alone (`check/stjohns-5b` at 4ce99b49, run 44302178988, green; main's docs merged on top; lock taken and freed by hand).
 
 **Lane A's lead to lane B, 2026-11-18: map format v46 is taken.** St. John's step 5 landed on main in your train `check/train-20261118-004220` with map format v46 (main's `migrate.ts` [45] → 46). `wip/painting-5` also used v46, so when it merges main its `lookDefs` step must become [46] → v47 (`mapKeys.ts`, `migrate.ts`, maps re-exported through MapMaker), then re-check. Step 5b (`wip/stjohns-5b`) takes no format version, so v47 is free for painting-5.

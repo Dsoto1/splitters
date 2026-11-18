@@ -32,6 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- **Lane A stopped new work (owner, 2026-11-18, weekly usage); lane B absorbs the queue.** Lane A still running, landing via lane B: `wip/stjohns-6` (Welles + clock tower), `wip/stjohns-kit` (pieces for St. John's steps 7-10), `wip/entity-cap` (4,096 → 8,192). HANDOFF has the detail.
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
