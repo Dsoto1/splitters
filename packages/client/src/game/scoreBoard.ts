@@ -360,7 +360,16 @@ export class ScoreBoard {
       this.groups.push({ el, name, score, list, hd });
     }
     this.root.append(this.head, this.note, this.body);
+    if (this.extra) this.root.append(this.extra);
   }
+
+  /** A strip under the board (your profile card: game/profileCard.ts), kept there across rebuilds; null removes it. */
+  setExtra(el: HTMLElement | null): void {
+    if (this.extra && this.extra !== el) this.extra.remove();
+    this.extra = el;
+    if (el && this.body && el.parentNode !== this.root) this.root.append(el);
+  }
+  private extra: HTMLElement | null = null;
 
   /** The row for a player, patched to `r` (only the cells that changed). */
   private row(r: BoardRow, rank: number): RowEls {

@@ -12,6 +12,7 @@
   "pickupAmmo": 100,
   "reloadTicks": 110,
   "raiseTicks": 24,
+  "handling": { "move": 0.95, "sprintExit": 8 },
   "botDesirability": 0.58,
   "botRange": [0, 8],
   "ammo": "fuel",
