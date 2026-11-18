@@ -40,8 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/stjohns-6` · 037dc346 · 44408870209 (lane A, landing by lane B; re-checked by lane B's helper after main's excavator and v48: coverage pieces placed again through MapMaker, paint-look hashes regenerated; St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
-
-
+- `wip/fixes-20261118` · 36c88003 · 44413941879 (lane B fix batch: editor TEST-start flake fixed at its cause (nothing drawn before the map arrives), grenade deck per life, announcer one spree a life, broken windows lose their bars, staged Start match with the card, the board and the countdown line; Flavius stairs not reproduced; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
