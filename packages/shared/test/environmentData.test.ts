@@ -147,6 +147,8 @@ describe('environment data', () => {
       expect(shapes.length > 0 && shapes.every((sh) => sh.kind === 'capsule') && shapes.some((sh) => sh.blocks === 'all'), id).toBe(true);
     }
     expect(envVariant(getEnvSpecies('env.cactus.barrel')!, 0).shapes.length).toBe(1);
+    // The new broadleaf trees keep the broadleaf trees' 30° limit (MapMaker's brush keeps them off steeper ground).
+    for (const id of ['env.broadleaf.birch', 'env.broadleaf.olive']) expect(getEnvSpecies(id)!.placement.maxSlopeDegrees, id).toBe(30);
     // Boulders: one hull of at most 32 points, stone, a solid nav obstacle.
     for (const id of ['env.rock.boulder_shard', 'env.rock.boulder_layered']) {
       const s = getEnvSpecies(id)!;

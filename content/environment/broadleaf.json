@@ -200,7 +200,7 @@
       "nominalHeight": 10,
       "nav": "obstacle",
       "role": "cover",
-      "placement": {"maxSlopeDegrees": 32, "minSpacing": 2.5, "scale": [0.8, 1.25]},
+      "placement": {"maxSlopeDegrees": 30, "minSpacing": 2.5, "scale": [0.8, 1.25]},
       "generator": {"kind": "broadleaf", "seed": 61, "height": 10, "lean": [1, 5], "crownBase": [0.42, 0.5], "lobes": [2, 3], "crownRadius": 2.1, "clumpScale": 0.5, "clumpCut": -0.05, "scaffold": [4, 6], "limbElevation": [52, 72], "attractors": 850, "segment": 0.3, "influence": 2.6, "kill": 0.45, "tipRadius": 0.01, "pipe": 2.0, "minShapeRadius": 0.25, "limbShapeRadius": 0.15, "tropism": 0.18, "trunkRadius": 0.17, "cardSize": 0.7},
       "lods": [
         {"distance": 0, "minRadius": 0.016, "barkBudget": 1250, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 760, "cardScale": 1},
