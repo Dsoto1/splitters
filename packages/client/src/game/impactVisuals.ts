@@ -224,7 +224,7 @@ export class ImpactVisuals {
     const speed = opts.speed ?? BULLET_SPEED;
     const length = Math.min(12, STREAK_LENGTH * Math.max(1, speed / BULLET_SPEED));
     if (opts.tracer === false) {
-      this.bullets.push({ mesh: null, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive, to: new Vector3(to.x, to.y, to.z) });
+      this.bullets.push({ mesh: null, from: a, dir: d, dist, travelled: Math.min(startAt, dist * 0.5), speed, length, onArrive, to: new Vector3(to.x, to.y, to.z), ...(opts.start ? { start: opts.start } : {}) });
       return;
     }
     const mesh = this.streakPool.pop() ?? this.streak.createInstance('bullet');

@@ -7437,7 +7437,9 @@ async function tracerMuzzleChecks(browser) {
         let seen = settled.length ? settled[settled.length - 1].n : 0;
         const r = { rounds: 0, tracers: 0, drift: 0, toGun: 0, behind: 0, flash: 0, eye: 0 };
         for (let f = 0; f < frames; f++) {
-          window.__autoInput = { right: strafe ? (Math.floor(f / 30) % 2 ? -1 : 1) : 0, forward: 0, buttons: (f % 6 < 3 ? 2 : 0) | (crouch ? 256 : 0), zoom: aim };
+          // The trigger held 8 frames and let go 8: an automatic fires through, a semi-automatic once a pull (a faster
+        // flutter never lets go for a whole tick, and a pistol fired nothing).
+        window.__autoInput = { right: strafe ? (Math.floor(f / 30) % 2 ? -1 : 1) : 0, forward: 0, buttons: (f % 16 < 8 ? 2 : 0) | (crouch ? 256 : 0), zoom: aim };
           cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.4;
           window.__frameClock.step(1000 / 60);
           const fresh = settled.filter((t) => t.n > seen);
