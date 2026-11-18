@@ -240,7 +240,10 @@ describe('Fort Wars', () => {
     // longer: of seeds 1-6 and 9, combat reached within 6 m on 5, 6 and 9 (3 takes on 9), seed 3 10 m short; seed 9.
     // Bot AI Phase A with the 11-06 characters (2026-11-06), seeds 1-12: within 6 m on 1-6 and 8, takes on 1, 2, 3
     // and 6 (two on 6); 7 and 9-12 end 6.7-9.8 m short. Seed 6.
-    const match = new Match(meadow(), rules, 6);
+    // Movement speed per weapon (gun handling, 2026-11-18) moved the bots again, seeds 1-9: all build walls, every
+    // team builds stairs but seed 6's first; combat within 6 m on 1, 2, 3, 6 and 9 (2.2-5.5 m), 4, 5, 7, 8 end
+    // 6.2-9.1 m short, no takes in 150 s. Seed 2.
+    const match = new Match(meadow(), rules, 2);
     for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
     const forts = fortsOf(match);
     steps(match, 60 * TICK_RATE - 5);

@@ -247,6 +247,10 @@ describe('auto-reload (the option, on by default)', () => {
     const s = setup('core.smg', 0);
     s.run(5, { buttons: BUTTON_AUTO_RELOAD | BUTTON_SPRINT, forward: 1 });
     expect(s.a.reloadTicks).toBe(0);
+    // Out of the sprint the gun comes up first (its sprint-exit time, spec §27), then the reload starts by itself.
+    const exit = gunplayOf(getWeapon('core.smg')).handling.sprintExit;
+    s.run(exit, { buttons: BUTTON_AUTO_RELOAD });
+    expect(s.a.reloadTicks).toBe(0);
     s.run(1, { buttons: BUTTON_AUTO_RELOAD });
     expect(s.a.reloadTicks).toBeGreaterThan(0);
     const t = setup('core.smg', 3);
