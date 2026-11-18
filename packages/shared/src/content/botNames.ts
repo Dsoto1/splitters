@@ -15,7 +15,8 @@
  * players get to know the first names.
  */
 import { NAME_THEME_INFO, nameThemeInfo, lookTheme, builtInLook } from './botThemes.ts';
-import { SOLDIER_RANKS } from './insignia.ts';
+import { SOLDIER_RANKS, nameRank } from './insignia.ts';
+import { lookBranch } from '../sim/npc.ts';
 
 /** Fewest names in a theme's list: a full match (MAX_PLAYER_SLOTS) of one look never repeats one. */
 export const BOT_THEME_MIN = 96;
@@ -424,13 +425,16 @@ export const nameTheme = (id: string | undefined): NameTheme | undefined => (id 
 // ---------------------------------------------------------------- naming a bot
 
 /**
- * A random bot's name for `look`: the look's own name ("Scamp"), else the next free name of its theme's list
+ * A random bot's name for `look`: the look's own name ("Scamp"; not for an Army soldier, below), else the next free name of its theme's list
  * (from `offset`, so matches differ), else the general list, else "Mildred 2"… `taken(name)`: whether a name is
  * in use in the match (any case): players', bots', the host's bot set's.
  */
 export function botNameFor(look: string | undefined, taken: (name: string) => boolean, offset = 0): string {
   const own = builtInLook(look)?.name;
-  if (own && !taken(own)) return own;
+  // An Army soldier goes by rank and surname ("Sgt. Dunmore"): their rank badge reads from it (insignia.ts). One whose
+  // own name has a rank ("Flt. Lt. Ember") keeps it.
+  const byRank = lookBranch(look) === 'army' && !nameRank(own);
+  if (own && !byRank && !taken(own)) return own;
   const theme = nameTheme(lookTheme(look) ?? undefined);
   if (theme) {
     const n = theme.names.length;

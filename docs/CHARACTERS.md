@@ -119,7 +119,7 @@ are Agency too. Shingle Point's Bot characters are "Soldiers & Spies: Army" (set
 (`soldierInsignia(look, name)`, shared `content/insignia.ts`): Agency the Agency mark (a ring round a dot), the Army
 the rank its name starts with, as the soldier name theme gives it ("Sgt. Dunmore"): Pvt. one chevron, Pfc. one
 chevron and a rocker, Cpl. two chevrons, Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one
-star, Col. two stars. An Army soldier whose name has no rank (a player's own name) wears none, and no one else does.
+star, Col. two stars. Random Army bots go by rank and surname (`botNameFor`: an Army look whose own name has no rank skips its own name for the soldier theme's; Flt. Lt. Ember keeps his and wears a captain's bars, a Flight Lieutenant's rank). An Army player whose name has no rank wears none, and no one outside Soldiers & Spies does.
 The badge shows before the name in the kill feed and on the scoreboard (inline SVG in the name's colour with a dark
 outline, `game/insigniaSvg.ts`), and is the marker over the soldier's head on both sides (`game/insigniaMesh.ts`: a
 flat shape with a dark rim, in the marker's colour: your ally colour from Options → markers over teammates, red over

@@ -34,9 +34,13 @@ export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = {
   agency: 'Agency',
 };
 
-/** The rank a name starts with ("Sgt. Dunmore" → "Sgt."), or null. */
+/** Other ranks a character's own name may carry, as the rank they wear (a Flight Lieutenant ranks with a Captain). */
+const OTHER_RANKS: Readonly<Record<string, SoldierRank>> = { 'Flt. Lt.': 'Capt.' };
+
+/** The rank a name starts with ("Sgt. Dunmore" → "Sgt."; "Flt. Lt. Ember" → "Capt."), or null. */
 export function nameRank(name: string | undefined): SoldierRank | null {
   if (!name) return null;
+  for (const [r, as] of Object.entries(OTHER_RANKS)) if (name.startsWith(`${r} `)) return as;
   for (const r of SOLDIER_RANKS) if (name.startsWith(`${r} `)) return r;
   return null;
 }

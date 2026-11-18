@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_LOOKS, INSIGNIA_IDS, INSIGNIA_SHAPES, SOLDIER_RANKS, nameRank, soldierInsignia } from '../src/index.ts';
-import { NAME_THEMES } from '../src/match.ts';
+import { NAME_THEMES, botNameFor } from '../src/match.ts';
 import { WHOLE_BODY_LOOKS } from '../src/content/characters.generated.ts';
 
 const army = CORE_LOOKS.find((l) => l.branch === 'army' && !l.id.startsWith('npc:'))!.id;
@@ -14,6 +14,7 @@ describe('rank insignia (soldiers only)', () => {
     expect(nameRank('Sergeant Gravy')).toBeNull();
     expect(nameRank('Capt.Pell')).toBeNull();
     expect(nameRank(undefined)).toBeNull();
+    expect(nameRank('Flt. Lt. Ember')).toBe('Capt.');
   });
 
   it('gives an Army soldier their rank, Agency the Agency mark, everyone else none', () => {
@@ -54,6 +55,16 @@ describe('rank insignia (soldiers only)', () => {
         expect(new Set(signs.filter((v) => v !== 0)).size).toBe(1);
       }
     }
+  });
+});
+
+describe('Army bots go by rank', () => {
+  it('names an Army bot by rank and surname, Agency and everyone else by their own name first', () => {
+    const none = () => false;
+    expect(nameRank(botNameFor('core.tacticalsoldier', none))).not.toBeNull();
+    expect(botNameFor('core.ember', none)).toBe('Flt. Lt. Ember');
+    expect(botNameFor('core.stealthop', none)).toBe('Stealth Operative');
+    expect(botNameFor('core.scamp', none)).toBe('Scamp');
   });
 });
 
