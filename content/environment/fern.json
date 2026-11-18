@@ -1,5 +1,5 @@
 {
-  "$comment": "Ferns (tools/content/env/plants.mjs fernMesh). Ground cover with no collision that conceals like a bush (sim/match.ts `hides`: radius half the smaller footprint side, the full height; at the 0.9 m of the Kenney fern it replaces, scale 1.62, it hides a crouched player), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. 5–7 fronds, each the leaves atlas' frond picture on a card bent along an arch (env.leaf, alpha-tested). One level of detail.",
+  "$comment": "Ferns (tools/content/env/plants.mjs fernMesh). Ground cover with no collision that conceals like a bush (sim/match.ts `hides`: radius half the smaller footprint side, the full height; at the 0.9 m of the Kenney fern it replaces, scale 1.62, it hides a crouched player), grown by the terrain's plants brush (packages/client/src/foliage.ts) and placeable as a prop. 5–7 fronds, each the leaves atlas' frond picture on a card bent along an arch (env.leaf, alpha-tested). One level of detail. The tree fern (env.fern.tree_fern, Environment Phase 5) is a tree made by the palm generator (tools/content/env/palm.mjs, `frondCards`): a short trunk that stops everything, fern fronds overhead, levels of detail and a stand-in like the palms.",
   "family": "fern",
   "species": [
     {
@@ -19,6 +19,7 @@
         { "index": 0, "name": "summer", "look": { "fronds": ["#4c6e2a", "#557a30", "#466628"] } },
         { "index": 1, "name": "autumn", "look": { "fronds": ["#9a6a2c", "#86602a", "#a8783a"] } }
       ]
-    }
+    },
+    {"id": "env.fern.tree_fern", "displayName": "Tree Fern", "category": "tree", "assetVersion": 1, "notes": {"1": "First version (Environment Phase 5, the jungle set, 2026-11-18): a short fibrous trunk under a crown of arching fern fronds, a skirt of dead fronds; the palm generator with fern fronds."}, "nominalHeight": 3.6, "nav": "obstacle", "role": "cover", "placement": {"maxSlopeDegrees": 35, "minSpacing": 2.5, "scale": [0.75, 1.3]}, "generator": {"kind": "palm", "seed": 81, "height": 3.6, "trunkShare": 0.86, "lean": [0, 7], "straighten": 0.6, "step": 0.24, "trunkRadius": 0.15, "fronds": [13, 16], "frondLength": 2.3, "elevation": [-24, 62], "droop": 1.15, "fold": 0.22, "dead": [6, 9], "nuts": 0, "minShapeRadius": 0.13, "frondWidth": 0.55, "frondCards": ["fern.0"]}, "lods": [{"distance": 0, "trunkSides": 7, "frondSegs": 6, "fronds": 1, "dead": true, "nuts": false}, {"distance": 25, "trunkSides": 5, "step": 2, "frondSegs": 3, "fronds": 1, "dead": true, "nuts": false}, {"distance": 55, "trunkSides": 4, "step": 4, "frondSegs": 2, "fronds": 0.6, "widen": 1.3, "dead": false, "nuts": false}], "impostor": {"distance": 110, "size": 128}, "variants": [{"index": 0, "name": "green", "look": {"bark": "#4a3b2e", "leaves": ["#4a7028", "#557c2e", "#3f6224"], "dead": "#7a5a36", "nut": "#4a3b2e", "jitter": 0.1}}, {"index": 1, "name": "dry", "look": {"bark": "#54443a", "leaves": ["#7a7a34", "#86803a", "#6a6c30"], "dead": "#8a6a40", "nut": "#54443a", "jitter": 0.12}}]}
   ]
 }
