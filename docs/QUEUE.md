@@ -32,6 +32,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
 ## In flight
+- `wip/music-announcer` (lane B: music and announcer; green alone at 7059234f, but its train `check/train-20261118-114628` (run 44297762723) went over the menu bundle budget, 2804.9 of 2800 kB, with today's landings; back with its helper to load the audio code with a dynamic import).
 - `wip/stjohns-5b` (lane A, the owner's answers on St. John's step 5: court door, three-floor east end, pennants in a few rooms; no map format bump: set piece options only). Step 5 itself landed on v46 (train `check/train-20261118-004220`).
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
@@ -39,7 +40,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/music-announcer` · 7059234f · 44267794232 (lane B: the owner's music and announcer: Arena music on the menu, Map Maker music in MapMaker, 39 announcer lines on the plan's conditions, Music and Announcer sliders; 13.5 MB music streamed only after a first click; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **Backlog for now (owner, 2026-11-17):** "put map refresh and rework to the back backlog… we need all other major features/updates implemented so we can focus on the map layouts/looks and play once all is set up." No map refreshes, rebuilds or reworks (Verdant, The Spillway, Sunken Kingdom, Dustwater, Mercy Ward, the tunnel rebuilds, placing new models on maps) until the features and updates are in; finished map work already built (St. John's spruces) still lands. **Exception: St. John's keeps going, with lane A** (owner, 2026-11-17: lane A takes St. John's and all fixes, lane B the major features) (owner, 2026-11-17: "finish St. Johns map work independently of that request"): the rework's steps 5-11 continue as their own track (PLAN §3.5; next, step 5: `classroom_bay`, boards, Stangeland / Cord rebuilt, the bridge joined at the first floor; `wip/stjohns-5`, lane A). New models are still processed into the game so they're ready.
