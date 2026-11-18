@@ -1,5 +1,5 @@
 import type { MapDocument } from '../map/schema.ts';
-import { racePath } from '../map/track.ts';
+import { racePath } from '../map/racePath.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
