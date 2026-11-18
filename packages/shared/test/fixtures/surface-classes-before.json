@@ -1372,6 +1372,7 @@
     "prop.mn_eelgrass": {"ballistic":"soil","effect":"dirt"},
     "prop.mn_rock_spires": {"ballistic":"stone","effect":"stone"},
     "prop.mining_excavator": {"ballistic":"concrete","effect":"metal"},
+    "prop.mining_excavator_deck": {"ballistic":"metal","effect":"metal"},
     "prop.mining_haul_truck": {"ballistic":"thin_metal","effect":"metal"},
     "prop.cargo_army_crate": {"ballistic":"thin_wood","effect":"wood"},
     "prop.cargo_wooden_crate": {"ballistic":"thin_wood","effect":"wood"},

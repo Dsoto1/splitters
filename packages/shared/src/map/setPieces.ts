@@ -92,7 +92,7 @@ export const SET_PIECE_GRID = { cellSize: 8, levelHeight: 4 } as const;
  * RESOURCE_BUDGETS.entities) and what a joining player's welcome carries: every client loads it again (loadMap), so it
  * must itself be a map the schema takes.
  */
-export const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities } as const;
+export const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities } as const; // entities 8,192 since map format v48
 
 /** The id of a placement's part. */
 export const setPiecePartId = (placementId: string, index: number): string => `sp_${placementId}_${index}`;

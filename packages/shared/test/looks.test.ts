@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
+import { GRIP_FITS } from '../src/content/gripFit.generated.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -37,9 +38,11 @@ describe('character looks', () => {
       // First person: its own forearms and hands, cut from the same model...
       if (l.whole!.arms === `${l.parts[0]}_fparms`) expect(meshy.files.find((f) => f.id === l.whole!.arms)?.role, l.id).toBe('meshy-fparms');
       else {
-        // ...or the universal arms (a base-body arms part for its body), dyed to match.
+        // ...or the universal arms (a base-body arms part for its body), dyed to match: its manifest's colours, else
+        // those the grip fit read off its model (gripFit.generated.ts; grips auto-fit, owner 2026-11-18).
         expect(partInfo(l.whole!.arms), l.id).toMatchObject({ slot: 'arms', body: l.body });
-        for (const c of [l.whole!.skin, l.whole!.cloth, l.whole!.trim]) expect(c, l.id).toMatch(/^#[0-9a-f]{6}$/);
+        const fit = GRIP_FITS[l.id]?.arms;
+        for (const c of [l.whole!.skin ?? fit?.skin, l.whole!.cloth ?? fit?.cloth, l.whole!.trim ?? fit?.trim]) expect(c, l.id).toMatch(/^#[0-9a-f]{6}$/);
       }
       expect(l.hair, l.id).toEqual([]);
       expect(lookProblems(l), l.id).toEqual([]);

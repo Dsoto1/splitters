@@ -3,6 +3,7 @@ import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
 import { groundCutAt, terrainCuts } from './terrainCuts.ts';
 import { hypot } from '../math.ts';
+import { pathUses, racePath } from './racePath.ts';
 import { liveMount } from '../sim/mounts.ts';
 
 /**
@@ -342,13 +343,8 @@ export function pathGeometry(p: MapPath): TrackGeometry {
   return g;
 }
 
-/** Does the path have this use? */
-export const pathUses = (p: MapPath, use: PathUse): boolean => p.uses.includes(use);
-
-/** The map's race track: its first path used as a race (null: none). */
-export function racePath(map: { paths?: readonly MapPath[] | undefined }): MapPath | null {
-  return map.paths?.find((p) => pathUses(p, 'race') && p.points.length >= 2) ?? null;
-}
+// pathUses and racePath live in racePath.ts (the menu's rules read them without the track geometry).
+export { pathUses, racePath };
 
 /** The race track's settings and points (track.ts's shape), or null when the map has none. */
 export function raceTrack(map: { paths?: readonly MapPath[] | undefined }): Track | null {

@@ -1,6 +1,7 @@
 import type { MapDocument } from './schema.ts';
 import { isBreakableProp } from './geometry.ts';
 import { isEnvModel } from '../content/environment.ts';
+import { MAP_MAX_ENTITIES } from './mapKeys.ts';
 import type { EventType, LogicAction, LogicRule } from './logic.ts';
 
 /**
@@ -15,8 +16,8 @@ export const RESOURCE_BUDGETS = {
   // ---- checked before / while loading
   /** Raw map JSON, checked before parsing wherever a map arrives. */
   mapBytes: 2 * 1024 * 1024,
-  /** Entities in the file (also the schema's cap). */
-  entities: 4096,
+  /** Entities in the file and in the map as played (also the schema's cap; 4,096 before map format v48). */
+  entities: MAP_MAX_ENTITIES,
   /** Vehicles, mounted guns and airplanes. */
   vehicles: 32,
   /** Destructibles plus blocks that break, crumble, drop or are glass. */

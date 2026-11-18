@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as npcs from '../npcs.mjs';
 import * as roulette from '../roulette.mjs';
-import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
+import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, gripFitOf, gripFitSource, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
 
 describe('character manifests', () => {
   const list = readManifests();
@@ -36,6 +36,9 @@ describe('character manifests', () => {
     expect(knight.pack).toBe('meshy-community-characters');
     expect(knight.triangles).toBe(11000);
     expect(armsOf({ id: 'meshy_x', firstPerson: { arms: 'own' } })).toBe('meshy_x_fparms');
+    // Everyone else wears the universal arms (grips auto-fit, owner 2026-11-18), tinted from the model.
+    expect(armsOf({ id: 'meshy_x', body: 'male' })).toBe('ranger_arms_m');
+    expect(armsOf({ id: 'meshy_x', body: 'female' })).toBe('ranger_arms_f');
     const cat = buildSpec(list.find((m) => m.id === 'meshy_cat'));
     expect(cat.pack).toBe('meshy-community-characters');
     expect(cat.community).toEqual({ model: 'T Pose Cat', date: '2026-03-11' });
@@ -83,7 +86,12 @@ describe('character manifests', () => {
     // This look's own hands and arms on a gun (GripTune), written into its generated look.
     const grip = { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 };
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_cat.json')).toEqual([]);
-    expect(looksSource([{ ...good, fixes: { ...good.fixes, grip } }])).toContain('grip: { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 }');
+    expect(looksSource([{ ...good, fixes: { ...good.fixes, grip } }])).toContain('grip: { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4');
+    // The grip fit's offsets (content/grip-fit.json) go in their own table, without the ones the manifest sets itself.
+    const fitted = gripFitOf('meshy_cat')?.grip ?? {};
+    const table = gripFitSource([{ ...good, fixes: { ...good.fixes, grip } }]);
+    for (const [k, v] of Object.entries(fitted)) expect(table.includes(`${k}: [${v.join(', ')}]`)).toBe(!(k in grip));
+    expect(table).toMatch(/arms: \{ skin: '#[0-9a-f]{6}'/);
     const gp = (g) => manifestProblems({ ...good, fixes: { ...good.fixes, grip: g } }, 'meshy_cat.json').join('\n');
     expect(gp({ wrist: 1 })).toMatch(/fixes.grip: \{/);
     expect(gp({ curlR: 2 })).toMatch(/fixes.grip.curlR/);

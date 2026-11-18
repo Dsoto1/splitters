@@ -234,7 +234,7 @@ describe('z-fighting audit over every set piece', () => {
       }
     }
     // In maps of 96 placements each, every piece where the one map had it: all of them as played are over a map's
-    // 4096 entities since the dormitory bays (47 parts a bay, in eight turns).
+    // entities (4,096 then) since the dormitory bays (47 parts a bay, in eight turns).
     for (let i = 0; i < pieces.length; i += 96) {
       const map = played(mapOf([room('home', -10, -10)], pieces.slice(i, i + 96)));
       const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];

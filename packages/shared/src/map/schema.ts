@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, MAP_MAX_ENTITIES, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
 import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
@@ -1344,7 +1344,7 @@ export const MapDocument = z.object({
   formatVersion: z.literal(MAP_FORMAT_VERSION),
   metadata: MapMetadata,
   classicStructure: ClassicStructure,
-  entities: z.array(MapEntity).max(4096),
+  entities: z.array(MapEntity).max(MAP_MAX_ENTITIES),
   /** NPC factions. Empty means the default enemy faction ("Syndicate"). */
   factions: z.array(Faction).max(16).default([]),
   /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules. */
