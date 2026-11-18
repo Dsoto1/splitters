@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 
+- **Guns handle differently.** What you carry sets how fast you run with it: sidearms and SMGs at full speed, rifles and shotguns 97 %, battle and marksman rifles 95 %, the sniper rifle 93 %, rocket launchers 92 % and the LMG 90 %. A sprint is as fast with every weapon. Coming out of a sprint the gun comes up before it fires: 50 ms for a pistol, about 0.1 s for an SMG, 0.13 s for a rifle, 0.2 s for the sniper rifle and launchers, 0.22 s for the LMG (a knife at once). Hold the trigger as you stop and it fires the moment the gun is up. Bots play by the same rules, and online play predicts it exactly.
+- **Holdover marks in scopes.** The sniper's scope and the Battle Rifle's optic carry short marks down the crosshair at 200, 300, 400 m and on (labelled in hundreds of metres): put the mark for the distance on your target and the round lands there. They follow the match's ballistics setting and the second zoom.
+- **Weapon tuning page (team tool).** `?mode=weapons` compares up to three weapons side by side: stat bars on one scale across the arsenal, the recoil path over a magazine, the spread cones at 25 m against a body, damage and time to kill over distance, and bullet drop with holdover.
+
 ## 0.10.0 (2026-11-17)
 
 **Highlights:** MapMaker painting made clear (Structure and Ground painters, the Ground theme, themes first in the palette) and a live minimap; the tunnel kit (brick, mine, cave and 7 m road tunnels, joins between them; Iron Maw's tunnels rebuilt through the rock); the Troop Buggy as a real physics body; the Battle Rifle, punchier hits and the Heavy Revolver's short range; much less memory and cheaper shadows and far looks; St. John's dorm halls, entrance, grounds and school colours; phone layouts for map cards, touch controls and Character Select; the Dropship's riders on their seats, its whole deck and calmer team paint on every vehicle.

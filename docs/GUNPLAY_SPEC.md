@@ -225,6 +225,14 @@ Scopes may provide optional markings that correspond to useful holdover distance
 
 Do not automatically compensate for drop unless a weapon specifically has that characteristic.
 
+**Implementation note (2026-11-18): holdover marks.** A scope (`view.zoomFov`) and a real optic (`view.optic`) on a
+bullet weapon carry short marks down the crosshair at 200, 300, 400, 500, 600 and 800 m (within its reach), labelled
+in hundreds of metres, longer every 200 m. Each sits the drop at that distance below the centre (`holdoverMarks` in
+`sim/gunplay.ts`, from `flightTo` under the match's ballistics rule; rounds leave from the eye along the aim, so there
+is no zero distance and nothing compensates by itself), placed for the view's own zoom (client `game/holdover.ts`; the
+second zoom spreads them). Marks closer than about 1 % of the reticle's radius to the centre are left off, so a gun
+whose drop never matters inside its reach (the Marksman Rifle) shows none.
+
 ### Creator Control
 
 Scenario rules may expose:
@@ -1197,6 +1205,31 @@ General philosophy:
 
 Arcade weapons may intentionally violate these rules.
 
+**Implementation note (2026-11-18): handling per weapon (G2).** Every family carries `handling` (content/weapons/
+families.json; a weapon's own overrides it; `gunplayOf(def).handling`): `move`, the running speed holding it (a share
+of everyone's: walking and running, never sprinting, which is the same with every weapon so getting about a map does
+not depend on what you hold), and `sprintExit`, the ticks from leaving a sprint to the first round. The sim holds the
+trigger on the raise timer for that long (Match.applyInputs; client prediction replays it, a correction's replay
+included), so a trigger held as you stop fires the moment the gun is up, and the scope waits for it. Values, mild on
+purpose (GUNPLAY_DIRECTION: no severe movement penalties, no slow sprint-to-fire):
+
+| Family | move | sprint exit |
+|---|---|---|
+| pistol | 100 % | 3 ticks (50 ms) |
+| machine pistol | 100 % | 4 (67 ms) |
+| SMG | 100 % | 5 (83 ms) |
+| revolver | 100 % | 6 (100 ms) |
+| shotgun | 97 % | 7 (117 ms) |
+| rifle | 97 % | 8 (133 ms) |
+| battle rifle | 95 % | 9 (150 ms) |
+| marksman | 95 % | 10 (167 ms) |
+| precision | 93 % | 12 (200 ms) |
+| LMG | 90 % | 13 (217 ms; its spin-up follows) |
+
+Weapons without a family: 100 % and 6 ticks (melee at once); rocket launchers (Rocket Launcher, Guided Rocket, Blast
+Rockets, Swarm Launcher, Singularity Cannon) 92 % and 12, the Grenade Launcher 95 % and 10, the Railgun 93 % and 12,
+the Flamethrower 95 % and 8. The content check holds `move` to 0.85-1.1 and `sprintExit` to 18 ticks at most.
+
 ---
 
 # 28. Suppression
@@ -1450,6 +1483,9 @@ feedback
 ```
 
 Do not bury fundamental behavior in weapon-specific code.
+
+As built, `handling.equipTime` is `raiseTicks`, `adsTime` is `accuracy.adsTicks`, and `sprintExitTime` /
+`movementModifier` are `handling.sprintExit` / `handling.move` (§27's note).
 
 ---
 
@@ -1795,6 +1831,16 @@ Spread       ██           ███████
 ```
 
 Extreme profiles should be visible immediately.
+
+**Implementation note (2026-11-18): the weapon tuning page.** An internal tool, as above, so a team tool page rather
+than an Options screen (players feel weapons in the Training Range, §44): `?mode=weapons` (client
+`tools/weaponTuning.ts`, its numbers in `tools/weaponTuningData.ts` from the sim's own functions). Up to three weapons
+side by side, with their fire modes: stat bars on one scale across the whole arsenal (damage, fire rate, recoil,
+capacity, velocity, spread, move speed, sprint to fire, sights up, draw, reload), the recoil path over up to 30 rounds
+with the recovery between them, spread cones at 25 m against a body (hip, sights, running, airborne, after a spray),
+damage and time to kill over distance (a crosshair and values on hover), and drop with the holdover angles, all under a
+chosen ballistics rule and health. Deep link: `?mode=weapons&w=core.smg,core.revolver&ballistics=advanced&hp=100`.
+Not yet shown: penetration energy, the reload timeline, velocity over distance.
 
 ---
 

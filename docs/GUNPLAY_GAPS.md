@@ -52,7 +52,7 @@ one marker (red for heads) and one kill sound. Bots led only projectiles.
 |---|---|---|
 | Subtle close, meaningful far | ❌ | ✅ 9.81 m/s² × `gravityScale` (rifle drops < 1 cm at 30 m, ~27 cm at 200 m; pistol ~70 cm at 150 m) |
 | Ballistics rule Arcade / Standard / Advanced | ❌ | ✅ `rules.ballistics` (velocity ×1.6/1/0.8, gravity ×0.25/1/1.75; arcade also turns off penetration) |
-| Scope holdover markings | ❌ | ❌ (G2) |
+| Scope holdover markings | ❌ | ✅ 200-800 m marks in scopes and optics, by the ballistics rule (spec §5 note) |
 
 ### §6 Leading
 | Item | Before | Now |
@@ -174,8 +174,8 @@ one marker (red for heads) and one kill sound. Bots led only projectiles.
 | Item | Before | Now |
 |---|---|---|
 | Walk / crouch / prone / airborne accuracy | ✅ | ✅ per weapon |
-| Sprint → ADS transition | 🟡 | 🟡 (no sprint-exit time yet; G2) |
-| Per-weapon movement speed (`movementModifier`) | ❌ | ❌ (G2: needs prediction-parity work) |
+| Sprint → ADS transition | 🟡 | ✅ sprint-exit time per family, 50-217 ms (spec §27 note) |
+| Per-weapon movement speed (`movementModifier`) | ❌ | ✅ `handling.move`, 90-100 %, not on sprints; host and prediction alike (spec §27 note) |
 
 ### §28 Suppression
 | Item | Before | Now |
@@ -217,7 +217,7 @@ revolver. Families exist for battle rifle and machine pistol.
 | Item | Before | Now |
 |---|---|---|
 | identity, fire, ammo | ✅ | ✅ + `family` |
-| handling (equip, ADS, sprint exit, movement) | 🟡 raise only | 🟡 raise + `adsTicks`; sprint exit and movement G2 |
+| handling (equip, ADS, sprint exit, movement) | 🟡 raise only | ✅ raise + `adsTicks` + `handling` (sprint exit, movement) |
 | projectile (type, velocity, gravity, drag, penetration, ricochet) | 🟡 slow projectiles only | ✅ `ballistic` |
 | accuracy | 🟡 | ✅ `accuracy` |
 | recoil | 🟡 | ✅ `kick` |
@@ -285,7 +285,7 @@ strength ✅ (2026-11-17: Options → Accessibility and the pause menu).
 |---|---|---|
 | Range: static targets at marked distances, moving targets, penetration materials, recoil wall | ❌ | ✅ `maps/training_range.json`, now the full test arena of GUNPLAY_DIRECTION.md (walking/sprinting, approaching and elevated targets, 5-200 m markers, water and dirt walls, destructibles, patrolling bots, duel room, medium lane; see GUNPLAY_AUDIT.md) |
 | Armor targets, damage readout, trajectory toggle | ❌ | ❌ (G2) |
-| Tuning UI (recoil path, cones, damage over distance, side by side) | ❌ | 🟡 the data and pure functions (`kickOf`, `spreadOf`, `falloffAt`, `flightTo`, `settleTicks`) are there for it; no UI |
+| Tuning UI (recoil path, cones, damage over distance, side by side) | ❌ | ✅ `?mode=weapons` (spec §45 note); penetration energy and the reload timeline not shown yet |
 
 ### §46–49 Feel validation, default character, extra systems, don'ts
 Chambered round ✅ (`unchambered` after an interrupted empty reload); heat
@@ -300,7 +300,7 @@ ballistics and latency masquerading as lead are now all fixed.
 |---|---|---|
 | **G0** feel prototype | ballistic bullets with near-range instant, drop, lead; split deterministic recoil with recovery and counter; spread model; staged and per-shell reloads with interrupts; equip times; falloff and body multipliers; distinct hit and kill feedback; Heavy Revolver; benchmark retune; training range | ✅ done |
 | **G1** material ballistics | material classes, energy penetration, bounded ricochet | ✅ core done. Left: per-material impact effects, decals and sound sets; MapMaker "material type" on props; destructible props reacting by weapon class |
-| **G2** archetype expansion | retune shotgun (slug, semi-auto), precision rifle, LMG handling, rocket launcher, burst rifle timing, lever action; sprint-exit time, per-weapon movement speed, pump/hold-release fire modes, scope holdover marks, range damage readout and trajectory toggle | ❌ |
+| **G2** archetype expansion | retune shotgun (slug, semi-auto), precision rifle, LMG handling, rocket launcher, burst rifle timing, lever action; sprint-exit time, per-weapon movement speed, pump/hold-release fire modes, scope holdover marks, range damage readout and trajectory toggle | 🟡 sprint-exit time, movement speed per weapon and holdover marks done (2026-11-18) |
 | **G3** network validation | 8+ players under latency/loss with projectile reconciliation; killcam; interest management for bullets; near-miss snaps; environment audio tails; controller impulse | ❌ |
 | **G4** AI | weapon-selection by effective range and falloff, reload decisions, per-NPC-archetype ballistics tuning | 🟡 lead / drop / recoil / burst discipline done |
 | **G5** creator controls | headshots, ammo, reload, pickups, power weapons, penetration, destruction, killcam, aim-assist policy, custom lethality and global scales with clamps; MapMaker per-object ballistic settings | 🟡 lethality and ballistics done |
