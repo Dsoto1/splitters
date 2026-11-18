@@ -1126,6 +1126,12 @@ export class GameSession {
     window.addEventListener(
       'keydown',
       (e) => {
+        // While loading or counting down the menu waits (updatePause); Esc there acts as it would with the menu up
+        // (in MapMaker's Test, back to MapMaker), and the menu stays up from then on.
+        if (e.code === 'Escape' && !this.input.locked && $('pause').hidden && !this.pauseAsked && (this.loadingUp || this.phase === 'countdown')) {
+          this.pauseAsked = true;
+          this.updatePause();
+        }
         const paused = !$('pause').hidden;
         if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
           e.preventDefault();
@@ -1237,7 +1243,7 @@ export class GameSession {
     const was = $('pause').hidden;
     // The vote between matches holds the screen (the mouse is free to pick a map) until Esc asks for the menu.
     // Not over the loading screen or the countdown (a click takes the mouse; the menu shows if it hasn't by the start).
-    $('pause').hidden = this.input.locked || !this.local || this.closed || this.loadingUp || this.phase === 'countdown' || (!!this.voteHud?.open && !this.votePause);
+    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown') && !this.pauseAsked) || (!!this.voteHud?.open && !this.votePause);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -2623,6 +2629,8 @@ export class GameSession {
   private loadingUp = true;
   /** The board on the loading screen: since when (performance.now), 0 while it isn't. */
   private stagedAt = 0;
+  /** Esc was pressed while the pause menu waited (loading, the countdown): it shows from then on. */
+  private pauseAsked = false;
   private boardUntil = 0;
 
   /** The match's goal and the Tab board join the loading screen (once). */
