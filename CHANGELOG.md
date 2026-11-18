@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. John's: Welles Hall and its clock tower.** The old block Welles south-east of the court is rebuilt as a three-storey Collegiate hall: a long mess hall on the ground floor (arched windows, stone piers, long tables and benches under chandeliers, a fireplace, doors to the court and Exeter Street), classrooms above it joined to the bridge, dorm rooms on top, stairs at both ends. Beside the bridge stands a new 24 m clock tower with four clock faces (the hands don't move) and a belfry you can climb to, a perch over the court. MapMaker: new Clock Tower tile and set piece, Refectory Bay set piece and Clock Face prop.
 - **Jungle plants in MapMaker.** The Environment group gains the Jungle Tree (lianas hanging from its limbs), the Tree Fern and the Elephant Ear, and the Jungle preset paints them.
 - **Alpine woods read lighter.** The Mountain Pine is brighter with a bare trunk under its branches, the Spruce has a lighter Alpine look, and the Alpine preset paints fewer, lighter spruces among more pines and larches.
 - **MapMaker: a season for the whole map.** Environment brush → **Season (whole map)**: Autumn, Snow-dusted, Dry season or Summer, then **Apply to map** turns every placed tree, plant and rock to its look for that season in one undo step (looks you picked on purpose, like moss or flower colours, stay).
