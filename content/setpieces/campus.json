@@ -88,7 +88,7 @@
         {"kind":"prop","model":"kit.roof.cone","position":[0,4.0,0],"yaw":0,"scale":2.1,"variant":1,"unbreakable":true},
         {"kind":"light","position":[0,3.2,0],"fixture":"ceiling","color":"#ffe9c4","intensity":0.8,"range":7}
       ],
-      "notes": {"design":"St. John's step 8 (photo 14: a low stone building under a tall red conical roof over a round-arched entrance; Q7 its entrance faces east / north-east to the grounds). The Round Porch tile (a round room, 2.2 m doorways south and north, windows east and west, a flat roof on the wall at 4 m) under the red Cone Roof at scale 2.1 (7.1 m across, 9.7 m tall, its top 13.7 m up). Put it against a Library Bay whose South door is a Round arch, turned so its south door faces the grounds. Turns only (the round wall's pieces are not their own mirror image). Two parts: one prop, one light."}
+      "notes": {"design":"St. John's step 8 (photo 14: a low stone building under a tall red conical roof over a round-arched entrance; Q7 its entrance faces east / north-east to the grounds). The Round Porch tile (a round room, 2.6 m doorways south and north, windows east and west, a flat roof on the wall at 4 m) under the red Cone Roof at scale 2.1 (7.1 m across, 9.7 m tall, its top 13.7 m up). Put it against a Library Bay whose South door is a Round arch, turned so its south door faces the grounds. Turns only (the round wall's pieces are not their own mirror image). Two parts: one prop, one light."}
     },
     {
       "id": "setpiece.chapel_bay",
