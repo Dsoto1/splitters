@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
+- `wip/blood-by-character` · c20139fc · 44359862913 (lane B: blood by character; **the owner sees the who-gets-what table first**, docs/CHARACTERS.md "Blood")
 
 - `wip/meshy-1117` · f01cd32a · 44354861370 (lane B: the owner's walkable-deck excavator, `prop.mining_excavator_deck`, Meshy, owned, in MapMaker's Mines & Caves and on the coverage map; no map format change; the haul truck and fuselage wait on the owner: over the Drive connector's 10 MB limit)
 
