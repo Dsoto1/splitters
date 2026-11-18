@@ -71,6 +71,9 @@ const OPEN_SIDED = [
   'setpiece.classroom_entry_bay',
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
+  // The clock tower (setPiecesAcademy.test.ts walks in at its door and up to the belfry): its door is in the tile's own
+  // stone walls, not a tile's edge.
+  'setpiece.clock_tower',
   'setpiece.command_bunker',
   'setpiece.concrete_frame',
   // A tower of blocks: its door is in its own block walls, not a tile's edge (setPiecesAcademy.test.ts walks it).
@@ -93,6 +96,8 @@ const OPEN_SIDED = [
   'setpiece.parking_deck_ramp',
   'setpiece.porch',
   'setpiece.ramp_junction',
+  // The mess hall bay (setPiecesAcademy.test.ts): the hall runs on out of each end, as the classroom bays'.
+  'setpiece.refectory_bay',
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
   'setpiece.shop_unit',
