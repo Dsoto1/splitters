@@ -72,9 +72,13 @@ export function nameRank(name: string | undefined): SoldierRank | null {
   return null;
 }
 
-/** A name without the soldier rank it starts with ("Sgt. Dunmore" → "Dunmore"); a character's own rank ("Flt. Lt. Ember") stays. */
-export function nameWithoutRank(name: string): string {
-  for (const r of SOLDIER_RANKS) if (name.startsWith(`${r} `) && name.length > r.length + 1) return name.slice(r.length + 1);
+/**
+ * A name without the soldier rank it starts with ("Sgt. Dunmore" → "Dunmore"); a character's own rank ("Flt. Lt.
+ * Ember") stays unless `own` (a rank title goes in its place).
+ */
+export function nameWithoutRank(name: string, own = false): string {
+  const ranks = own ? [...Object.keys(OTHER_RANKS), ...SOLDIER_RANKS] : SOLDIER_RANKS;
+  for (const r of ranks) if (name.startsWith(`${r} `) && name.length > r.length + 1) return name.slice(r.length + 1);
   return name;
 }
 

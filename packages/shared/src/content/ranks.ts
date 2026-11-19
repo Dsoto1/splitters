@@ -37,7 +37,7 @@ export const rankTitle = (group: RankGroup, step: number): string => RANK_TITLES
 
 /** What a ranked player is shown as: their title before their name (an Army soldier's own rank replaced). */
 export function rankedName(name: string, group: RankGroup, step: number): string {
-  return `${rankTitle(group, step)} ${group === 'army' ? nameWithoutRank(name) : name}`;
+  return `${rankTitle(group, step)} ${group === 'army' ? nameWithoutRank(name, true) : name}`;
 }
 
 /** A player's rank as shown: their group, step, title, badge and name. */

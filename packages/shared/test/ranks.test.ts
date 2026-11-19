@@ -56,6 +56,8 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     expect(nameWithoutRank('Sgt.')).toBe('Sgt.');
     expect(rankedName('Sgt. Dunmore', 'army', 1)).toBe('Pvt. Dunmore');
     expect(rankedName('Grimsby', 'horror', 4)).toBe('Ghast Grimsby');
+    expect(rankedName('Flt. Lt. Ember', 'army', 2)).toBe('Pfc. Ember');
+    expect(rankedName('Capt. Orion', 'space', 1)).toBe('Cadet Capt. Orion');
     const s = shownRank('core.scamp', 'Scamp', 2);
     expect(s.ins).toBe(`${s.group}2`);
     expect(s.name).toBe(`${RANK_TITLES[s.group][1]} Scamp`);
