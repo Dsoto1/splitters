@@ -10,6 +10,7 @@
  * runtime import cycle; the few box helpers are repeated here.
  */
 import type { LocalBox, Side, TileDefinition, TilePort } from './catalog.ts';
+import { switchback } from './packTilesMedieval.ts';
 
 // ---------------------------------------------------------------- helpers
 
@@ -380,7 +381,101 @@ function gothicTiles(): TileDefinition[] {
         iron(trim(-1.5, 3.3, 3.57, 1.5, 3.36, 3.63)),
       ],
     },
+    clockTower(),
   ];
+}
+
+/**
+ * Clock Tower (St. John's step 6, docs/map-briefs/st_johns/PLAN_2026-11-12.md: "a climbable square tower with a belfry,
+ * four clock faces, crenellated top"): 1 cell, 6 levels. A door in the south wall; a stair switching back round a
+ * solid stone core (2.4 m flights east and west, full-width landings north and south, 0.25 m steps) up to the belfry's
+ * floor 17.5 m up, the stair's last landing along the south wall (a perch behind the belfry's paired openings, its
+ * sills a metre up, on all four sides). A plain stone stage under the belfry for the clock faces (props: the Clock
+ * Tower set piece hangs four Clock Faces there, centred 15.3 m up), string courses, a roof at 21.8 m with a
+ * crenellated parapet and corner pinnacles to 24 m. Lancet slits light the stair. Walls, trim, stair and floors
+ * take the placement's surfaces (a set piece's stone, trim and paving), so it dresses as the hall it stands by.
+ */
+function clockTower(): TileDefinition {
+  const TOP = 17.5;
+  const SILL = TOP + 1.0;
+  const HEAD = 20.9;
+  const ROOF = 21.5;
+  const { steps } = switchback(3.4, 2.4, 70, [4]);
+  // Paired arched openings in each belfry wall (with the mullion between them), lancets lighting the stair.
+  const belfry: Opening[] = [
+    [-1.9, -0.45, SILL, HEAD],
+    [0.45, 1.9, SILL, HEAD],
+  ];
+  const lancet = (y: number): Opening => win(0, 0.45, y, y + 1.4);
+  const shaft = (axis: 'x' | 'z', at: number, a0: number, a1: number, open: Opening[]) => wall(axis, at, a0, a1, open, 0, ROOF, 0.5);
+  const out: Box[] = [
+    ...shaft('x', -3.65, -3.9, 3.9, [[-1.0, 1.0, 0, 2.7], lancet(6.0), lancet(11.0), ...belfry]),
+    ...shaft('x', 3.65, -3.9, 3.9, [lancet(7.25), lancet(12.25), ...belfry]),
+    ...shaft('z', -3.65, -3.4, 3.4, [lancet(9.0), ...belfry]),
+    ...shaft('z', 3.65, -3.4, 3.4, [lancet(4.0), lancet(10.5), ...belfry]),
+    // The stair round its core; the core's top is part of the belfry floor.
+    ...steps,
+    b(-1, 0, -1, 1, TOP, 1),
+    // The roof over the belfry, and its parapet: a low wall all round with three merlons a side, coped.
+    b(-3.9, ROOF, -3.9, 3.9, ROOF + 0.3, 3.9, 'floor'),
+  ];
+  const R = ROOF + 0.3;
+  for (const [axis, at] of [['x', -3.75], ['x', 3.75], ['z', -3.75], ['z', 3.75]] as const) {
+    const run = (u0: number, u1: number, y0: number, y1: number) => out.push(axis === 'x' ? b(u0, y0, at - 0.15, u1, y1, at + 0.15, 'wall') : b(at - 0.15, y0, u0, at + 0.15, y1, u1, 'wall'));
+    run(-3.9, 3.9, R, R + 0.6);
+    for (const u of [-2.3, 0, 2.3]) run(u - 0.55, u + 0.55, R + 0.6, R + 1.3);
+    const cope = (u0: number, u1: number, y: number) => out.push(axis === 'x' ? trim(u0, y, at - 0.2, u1, y + 0.08, at + 0.2) : trim(at - 0.2, y, u0, at + 0.2, y + 0.08, u1));
+    cope(-3.9, 3.9, R + 0.6);
+    for (const u of [-2.3, 0, 2.3]) cope(u - 0.6, u + 0.6, R + 1.3);
+  }
+  // Corner pinnacles, stepped to a point.
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const [cx, cz] = [sx * 3.62, sz * 3.62];
+      out.push(b(cx - 0.3, R, cz - 0.3, cx + 0.3, R + 1.7, cz + 0.3, 'wall'));
+      out.push(trim(cx - 0.34, R + 1.7, cz - 0.34, cx + 0.34, R + 1.82, cz + 0.34));
+      out.push(trim(cx - 0.18, R + 1.82, cz - 0.18, cx + 0.18, R + 2.12, cz + 0.18));
+      out.push(trim(cx - 0.07, R + 2.12, cz - 0.07, cx + 0.07, 24.0, cz + 0.07));
+    }
+  }
+  // Dressing (no collision): a plinth, string courses under and over the clock stage and at the roof, a hood over
+  // each belfry opening and its head stepped in towards an arch.
+  const band = (y0: number, y1: number, out0: number) => {
+    out.push(trim(-out0, y0, -out0, out0, y1, -3.9), trim(-out0, y0, 3.9, out0, y1, out0));
+    out.push(trim(-out0, y0, -3.9, -3.9, y1, 3.9), trim(3.9, y0, -3.9, out0, y1, 3.9));
+  };
+  // The plinth, left open at the door.
+  out.push(trim(-4.0, 0, -4.0, -1.0, 0.6, -3.9), trim(1.0, 0, -4.0, 4.0, 0.6, -3.9), trim(-4.0, 0, 3.9, 4.0, 0.6, 4.0));
+  out.push(trim(-4.0, 0, -3.9, -3.9, 0.6, 3.9), trim(3.9, 0, -3.9, 4.0, 0.6, 3.9));
+  band(13.6, 13.8, 4.0);
+  band(16.8, 17.0, 4.0);
+  band(ROOF - 0.2, ROOF + 0.1, 4.0);
+  for (const [axis, at, s] of [['x', -3.65, -1], ['x', 3.65, 1], ['z', -3.65, -1], ['z', 3.65, 1]] as const) {
+    for (const [u0, u1] of belfry.map((o) => [o[0], o[1]] as const)) {
+      const piece = (a0: number, a1: number, y0: number, y1: number, t0: number, t1: number) =>
+        out.push(axis === 'x' ? trim(a0, y0, at + t0, a1, y1, at + t1) : trim(at + t0, y0, a0, at + t1, y1, a1));
+      // The head: two steps in from each side, the full thickness of the wall.
+      piece(u0, u0 + 0.22, HEAD - 0.55, HEAD, -0.25, 0.25);
+      piece(u1 - 0.22, u1, HEAD - 0.55, HEAD, -0.25, 0.25);
+      piece(u0, u0 + 0.45, HEAD - 0.25, HEAD, -0.25, 0.25);
+      piece(u1 - 0.45, u1, HEAD - 0.25, HEAD, -0.25, 0.25);
+      // The hood mould outside, and the sill.
+      piece(u0 - 0.12, u1 + 0.12, HEAD, HEAD + 0.12, s > 0 ? 0.25 : -0.35, s > 0 ? 0.35 : -0.25);
+      piece(u0 - 0.06, u1 + 0.06, SILL - 0.1, SILL, s > 0 ? 0.25 : -0.33, s > 0 ? 0.33 : -0.25);
+    }
+  }
+  return {
+    id: 'gothic.clock_tower',
+    category: 'Vertical',
+    displayName: 'Clock Tower',
+    blurb: 'A square stone tower 24 m high: a door south, a stair round a stone core to a belfry 17.5 m up behind paired openings on all four sides (a perch), a stage for clock faces under it, a crenellated top',
+    cells: footprint(1, 1, 6),
+    floors: [0],
+    ports: [{ side: 'S', level: 0 }],
+    open: true,
+    edgeDefault: 'open',
+    solids: out,
+  };
 }
 
 // ---------------------------------------------------------------- 06 Jungle Ruins

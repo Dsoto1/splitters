@@ -58,6 +58,8 @@ const NO_COLLISION = new Set([
   'kit.board.chalk', 'kit.board.screen',
   // St. John's step 5b: a pennant string hangs under the ceiling.
   'kit.board.pennants',
+  // St. John's step 6: the tower's clock face hangs on its wall, thinner than the wall's dressing.
+  'kit.sign.clock_face',
 ]);
 
 describe('kit families', () => {
