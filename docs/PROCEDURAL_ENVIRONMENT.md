@@ -276,7 +276,15 @@ pictures). An older map that still places one loads all the same (`map/natureAli
 checked): each placement becomes the species the table names, by the same pick and the map's ground, keeping its id,
 spot, turn, name and flags; a map's own set pieces' props too. Their files are gone, so this happens in MapMaker as well
 (the kit aliases keep a map as made there): its next Export names the species. A prop counts as retired when the swap
-table lists it and the catalogue no longer has it, so the Kenney Nature Kit can leave the same way later. **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
+table lists it and the catalogue no longer has it, so the Kenney Nature Kit can leave the same way later.
+
+**The last batch, measured** (`PERF_STILL=1`, Medium, mean of the four standard views, same machine; draws ·
+triangles · shadow casters): Dustwater 226 · 0.358 M · 179 → 226 · 0.350 M · 181; Sunken Kingdom 242 · 0.589 M · 90 →
+244 · 0.586 M · 91; Iron Maw 319 · 1.417 M · 99 → 316 · 1.417 M · 94; Sandsweep 94 · 0.215 M · 143 → 94 · 0.218 M · 146;
+Backwoods 440 · 0.842 M · 269 → 442 · 0.843 M · 272; Primeval Park 439 · 1.188 M · 134 → 441 · 1.183 M · 134; Serpent
+Gorge 380 · 0.651 M · 265 → 386 · 0.652 M · 276; **St. John's 478 · 1.363 M · 82 → 438 · 1.209 M · 81**. The rest is
+within the noise of a busy machine (the coverage map's views did not settle). The download: the client build
+503.8 → 501.0 MB (the 40 retired models 2.67 MB, their palette atlases; the spires and the sandstone shard add 0.4 MB). **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
 before and after; draws, triangles, shadow casters):
 
 | Map | Before | After |
