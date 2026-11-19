@@ -69,6 +69,10 @@ describe('the nature swap (Quaternius nature and kit rocks to our species)', () 
     expect(a.variant).toBeUndefined();
     expect((after.entities[1] as PropEntity).solid).toBe(false);
     expect(after.entities[2]).toEqual(doc.entities[2]);
+    // The Kenney Big Log lay along x, ours along z: it turns a quarter (0.5 → 2.071), within one round.
+    expect((after.entities[3] as PropEntity).yaw).toBe(2.071);
+    expect(natureSwapEntity(prop('l', 'prop.log_big', { yaw: 3 }))!.yaw).toBe(-1.712);
+    expect(natureSwapEntity(prop('m', 'prop.nt_log_large', { yaw: 3 }))!.yaw).toBe(3);
     // A log keeps its own health (logs may break); a rock drops one it could not use.
     expect((after.entities[3] as PropEntity).health).toBe(300);
     expect(envCanBreak((after.entities[3] as PropEntity).model)).toBe(true);

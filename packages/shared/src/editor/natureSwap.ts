@@ -23,9 +23,11 @@ export interface NatureTarget {
   readonly k: number;
   /** Share among the old prop's targets (deterministic per placement id). Absent: 1. */
   readonly weight?: number;
+  /** Radians added to the turn, where the old model lay along another axis (a log along x; ours lie along z). */
+  readonly turn?: number;
 }
 
-const t = (model: string, look: string, k: number, weight?: number): NatureTarget => ({ model, look, k, ...(weight ? { weight } : {}) });
+const t = (model: string, look: string, k: number, weight?: number, turn?: number): NatureTarget => ({ model, look, k, ...(weight ? { weight } : {}), ...(turn ? { turn } : {}) });
 
 /**
  * The table: old prop id → its generated match (or a mix). Factors from the side-by-side sheet (old height and
@@ -111,7 +113,7 @@ export const NATURE_SWAP_TABLE: Readonly<Record<string, readonly NatureTarget[]>
   'prop.pine_ground': [t('env.conifer.mountain_pine', 'summer', 0.44)],
   'prop.palm_tall': [t('env.palm.coconut', 'green', 0.83)],
   'prop.palm_short': [t('env.palm.coconut', 'green', 0.46)],
-  'prop.log_big': [t('env.deadwood.log', 'bare', 1.4)],
+  'prop.log_big': [t('env.deadwood.log', 'bare', 1.4, undefined, Math.PI / 2)], // it lay along x
   'prop.stump_old': [t('env.deadwood.log', 'moss', 1.2)],
   'prop.stump_cut': [t('env.deadwood.log', 'bare', 1.2)],
 };
@@ -184,7 +186,9 @@ export function natureSwapEntity(e: PropEntity, look: Exclude<NatureRockLook, 'a
   const { variant: _v, tint: _t, health, unbreakable, ...rest } = e;
   // Only logs can be made breakable (envCanBreak); the rest drop a health they could not use.
   const wood = species.category === 'deadwood';
-  return { ...rest, model: target.model, scale, tint: null, ...(variant.index ? { variant: variant.index } : {}), ...(wood && health !== undefined ? { health } : {}), ...(wood && unbreakable !== undefined ? { unbreakable } : {}) } as PropEntity;
+  // A turned target keeps the turn within one round (-π up to π), to a thousandth of a radian like MapMaker's own.
+  const yaw = target.turn ? Math.round((((((e.yaw ?? 0) + target.turn + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI) * 1000) / 1000 : undefined;
+  return { ...rest, ...(yaw !== undefined ? { yaw } : {}), model: target.model, scale, tint: null, ...(variant.index ? { variant: variant.index } : {}), ...(wood && health !== undefined ? { health } : {}), ...(wood && unbreakable !== undefined ? { unbreakable } : {}) } as PropEntity;
 }
 
 export interface NatureSwapResult {

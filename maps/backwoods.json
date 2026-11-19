@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_k2k7gn3lnebdowxu",
-      "versionId": "v_3ile74fbtzhmhrya",
+      "versionId": "v_5h7wzwhrxc5xikae",
       "revision": 2,
-      "contentHash": "sha256:09bd34fb00381fb702e5c0b7b3b305667e78c9adc3fd30bb78df4287bdfd621e",
+      "contentHash": "sha256:80c06b49b8e485408d19d1f702b4b71587e339c7fc2a44a44bc0f35170447764",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:24:47.139Z"
+      "releasedAt": "2026-11-19T13:26:40.718Z"
     }
   },
   "classicStructure": {
@@ -4419,7 +4419,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 0.7,
+      "yaw": 2.271,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -4433,7 +4433,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": -0.4,
+      "yaw": 1.171,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -11951,7 +11951,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 4.62,
+      "yaw": -0.092,
       "scale": 1.33,
       "solid": true,
       "tint": null
@@ -12093,7 +12093,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 2.51,
+      "yaw": -2.202,
       "scale": 1.904,
       "solid": true,
       "tint": null
@@ -12193,7 +12193,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 3.95,
+      "yaw": -0.762,
       "scale": 1.806,
       "solid": true,
       "tint": null
@@ -14098,7 +14098,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 1.396,
+      "yaw": 2.967,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -14112,7 +14112,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 1.745,
+      "yaw": -2.967,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -14154,7 +14154,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 0,
+      "yaw": 1.571,
       "scale": 1.4,
       "solid": true,
       "tint": null
@@ -14168,7 +14168,7 @@
       ],
       "kind": "prop",
       "model": "env.deadwood.log",
-      "yaw": 0.175,
+      "yaw": 1.746,
       "scale": 1.4,
       "solid": true,
       "tint": null

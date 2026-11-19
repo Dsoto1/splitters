@@ -250,7 +250,7 @@ new at its factor, from a standing eye and from the side; `?mode=lineup`).
 | Kenney Thin Tree / Sapling | Silver Birch ×0.55 / ×0.28 |
 | Kenney Tall Pine / Tall Pine B / Round Pine / Small Pine / Low Pine | Tall Pine ×1.0 / ×0.91 / Mountain Pine ×1.4 / Spruce ×0.39 / Mountain Pine ×0.44 |
 | Kenney Tall Palm / Short Palm | Coconut Palm ×0.83 / ×0.46 |
-| Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4 / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
+| Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4, turned a quarter (it lay along x, ours along z) / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
 | Kenney Log Stack | not swapped: cut firewood, no generated woodpile yet |
 
 **Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick): a desert formation of five
