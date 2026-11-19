@@ -238,6 +238,9 @@ export class EditorInput {
     const c = this.cycle;
     const current = c?.list[c.index];
     if (!c || !current || e.shiftKey || e.altKey || Math.hypot(c.x - e.clientX, c.y - e.clientY) > CYCLE_SAME_PX || !this.isSelected(current)) return false;
+    // The same things still under the pointer (the view may have moved since: then it is a new click).
+    const top = this.app.hover.pick();
+    if (!top || top.kind !== c.list[0]!.kind || top.id !== c.list[0]!.id) return false;
     c.again = true;
     return true;
   }
