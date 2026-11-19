@@ -223,6 +223,18 @@ export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons
  */
 export const AKIMBO_READY: boolean = false;
 
+let akimboOn: boolean = AKIMBO_READY;
+/**
+ * Whether matches made from now on let anyone hold a pair (step 2: the match reads this, never the constant): the
+ * constant's value unless a test or a dev switch (`?akimbo=1`, through MatchOptions.akimbo) says otherwise. A match
+ * reads it once, when it is made.
+ */
+export const akimboReady = (): boolean => akimboOn;
+/** Tests: turn dual wielding on (or back to the constant's value with no argument) for the matches made after. */
+export function setAkimboReady(on: boolean = AKIMBO_READY): void {
+  akimboOn = on;
+}
+
 /** Whether a match allows dual wielding: the rule (default on, so a setup or server from before it reads as on). */
 export const akimboAllowed = (rules: Pick<MatchRules, 'akimbo'>): boolean => rules.akimbo !== false;
 

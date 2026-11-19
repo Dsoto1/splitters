@@ -474,7 +474,7 @@ export interface WeaponDefinition {
   family?: WeaponFamily;
   /**
    * Dual wielding: `true` makes the weapon eligible with its family's trade; an object overrides numbers, and `as`
-   * names the family to take them from (a weapon without one). See gunplay.ts akimboOf; unused in a match so far.
+   * names the family to take them from (a weapon without one). See gunplay.ts akimboOf.
    */
   akimbo?: true | (Partial<AkimboSpec> & { as?: WeaponFamily });
   /** Ballistic bullets (hitscan weapons with a bullet family fly by default); null forces hitscan. */

@@ -141,6 +141,13 @@ export class InputState {
   proneOn = false;
   /** Set by the session: right mouse fires the held weapon's second trigger instead of aiming (melee heavy swings). */
   altTrigger = false;
+  /**
+   * Set by the session while you hold a pair (dual wielding; with `altTrigger`): the aim button is the second gun's
+   * trigger, a press and release of it between two ticks still fires, and on touch the Fire button pulls both.
+   */
+  pairTrigger = false;
+  /** The aim button went down since the last tick sampled (pairTrigger). */
+  private altTap = false;
   /** Middle mouse (or V): the held weapon's second trigger. */
   private altDown = false;
   /** A side mouse button (or Y): quick melee. */
@@ -232,7 +239,10 @@ export class InputState {
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
       this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
       this.meleeDown = (e.buttons & 24) !== 0 && (press || this.meleeDown);
-      if (this.zoomDown && !wasZoom) this.aimLatch.press();
+      if (this.zoomDown && !wasZoom) {
+        this.aimLatch.press();
+        this.altTap = true;
+      }
       // A click with the wheel open picks the weapon it points at (and doesn't fire).
       if (this.wheelOpen && this.fireDown && !wasFire) {
         this.closeWheel(true);
@@ -302,7 +312,10 @@ export class InputState {
     if (e.code === 'KeyR') this.reloadQueued = true;
     // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
     if (e.code === 'KeyF') this.keyFire = true;
-    if (e.code === 'KeyX' && !e.repeat) this.aimLatch.press();
+    if (e.code === 'KeyX' && !e.repeat) {
+      this.aimLatch.press();
+      this.altTap = true;
+    }
     if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
     if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
     // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
@@ -478,6 +491,8 @@ export class InputState {
   }
 
   get zooming(): boolean {
+    // (A pair in hand has no aim: the button is the second gun's trigger.)
+    if (this.pairTrigger) return false;
     // Tests can hold the aim with window.__autoInput = { zoom: true }.
     return (this.locked && !this.wheelOpen && this.aiming()) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
   }
@@ -732,6 +747,10 @@ export class InputState {
     // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
     const aim = this.aiming();
     if (aim) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
+    // A pair in hand (dual wielding): a tap of the second trigger between two ticks is not lost, and touch's Fire
+    // button (it holds F) pulls both triggers.
+    if (this.pairTrigger && (this.altTap || (this.touchEngaged && this.keyFire))) buttons |= BUTTON_ALT;
+    this.altTap = false;
     // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
     if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;

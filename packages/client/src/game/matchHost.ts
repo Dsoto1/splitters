@@ -92,6 +92,11 @@ export interface LocalMatchOptions {
    * solver instead of the Rapier body (`?drive=`; MatchOptions.drive).
    */
   drive?: 'classic' | 'rigid' | 'own';
+  /**
+   * Dual wielding in play in this match while it is still being built (`?akimbo=1`, honoured where test mode is:
+   * testMode.ts allowedHere; MatchOptions.akimbo). Without it the match follows shared rules.ts akimboReady.
+   */
+  akimbo?: boolean;
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -285,7 +290,7 @@ export class MatchHost {
         from = 'the navmesh kept from an earlier match';
       }
     }
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}) });
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}), ...(this.opts.akimbo ? { akimbo: true } : {}) });
     this.loadMs = Math.round(performance.now() - t0);
     console.info(`match made in ${this.loadMs} ms (${match.navReused ? from || 'the navmesh kept in this thread' : 'navmesh built'})`);
     // (The navmesh's data is the match's now: not kept a second time.)

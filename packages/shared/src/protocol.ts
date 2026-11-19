@@ -204,7 +204,11 @@ export interface PlayerSnapshot {
    * a sniper scope's glint by it (GUNPLAY_SPEC section 15).
    */
   zm?: 1;
-  /** Reserved for dual wielding: holds a pair. Nothing writes it yet; the binary snapshot carries it if present. */
+  /**
+   * Dual wielding: a pair is drawn, a gun in each hand (the weapon in hand has its second gun and it is out;
+   * sim/match.ts `pairDrawn`). Absent otherwise, and from hosts older than the field (docs/MULTIPLAYER_PROTOCOL.md
+   * section 24).
+   */
   dw?: 1;
 }
 
@@ -236,6 +240,15 @@ export interface PrivateState {
   rd?: [number, number, number, number];
   /** Weapon codes with a magazine in but no round chambered (an empty reload stopped early). */
   uc?: number[];
+  /**
+   * Dual wielding: the second guns you hold, as [weapon code, magazine, flags] in code order (the reserve is the
+   * weapon's one, in `inv`). Flags (left out when 0): 1 its magazine is in but no round chambered, 2 it is put away
+   * (one gun in hand). Absent without a second gun.
+   */
+  ow?: [number, number, number?][];
+  /** The second gun's reload, as `rl` and `rd` are the first's (absent when it isn't reloading). A run at 0 inputs beside a first-gun reload under way is waiting its turn. */
+  rl2?: number;
+  rd2?: [number, number, number, number];
   /**
    * Damage you dealt lately (the HUD's optional damage numbers): [tick, amount, flags, x, y, z], one entry per target
    * per tick (a shotgun shell's pellets summed), the last few snapshots' worth (the client shows each tick once).
@@ -306,7 +319,7 @@ export const POWERUP_DAMAGE_BIT = 2;
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
   | {
-      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs, 3 arms), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1;
+      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs, 3 arms), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1; /** Dual wielding: the second gun of a pair fired it. */ off?: 1;
       /** Ballistic bullets: muzzle speed (m/s) and gravity (m/s²) they fly with, for client tracers. */ v?: number; g?: number;
       /** Pellet indices still in flight (their `to` is where they were when this was sent; an `impact` event follows). */ fl?: number[];
       /** A hit landed on armor. */ ar?: 1;

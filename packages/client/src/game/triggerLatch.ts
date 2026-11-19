@@ -1,4 +1,4 @@
-import { BUTTON_FIRE, BUTTON_SPRINT, TICK_DT } from '@tiletrigger/shared';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_SPRINT, TICK_DT } from '@tiletrigger/shared';
 
 /**
  * Ticks after the trigger is let go before a held sprint (Shift, or the pad's L3) takes over again: 0.5 s, longer
@@ -19,18 +19,24 @@ export const SPRINT_AFTER_CYCLE_TICKS = 15;
  * - a pull made while the gun is coming up (out of a sprint, or any raise) is kept held until the gun is up, so a
  *   quick click out of a sprint fires the moment it can instead of being lost.
  * Only the buttons sent change (the host and prediction run the same rules on them), so it works on every host.
+ *
+ * Dual wielding (`paired`: a pair in hand): the second trigger (BUTTON_ALT, the second gun's) is a trigger like the
+ * first: it keeps the sprint off the same way and a pull of it while the pair comes up is kept, by itself.
  */
 export class TriggerLatch {
   /** Ticks left before a held sprint counts again. */
   private rest = 0;
   /** A pull made while the gun was coming up, held until it is up. */
   private buffered = false;
+  /** The same for the second trigger of a pair. */
+  private buffered2 = false;
 
   /**
    * One tick's buttons, as sent. `raising`: the gun isn't up yet (LocalPlayer.raiseTicks > 0); `sprinting`: this
-   * tick starts in a sprint (a pull now ends it and starts the exit time); `cycleTicks`: the held gun's fire interval.
+   * tick starts in a sprint (a pull now ends it and starts the exit time); `cycleTicks`: the held gun's fire interval;
+   * `paired`: a pair is in hand, so BUTTON_ALT is the second gun's trigger.
    */
-  apply(buttons: number, raising: boolean, sprinting: boolean, cycleTicks = 0): number {
+  apply(buttons: number, raising: boolean, sprinting: boolean, cycleTicks = 0, paired = false): number {
     let b = buttons;
     if (b & BUTTON_FIRE && (raising || sprinting)) this.buffered = true;
     if (this.buffered) {
@@ -39,7 +45,15 @@ export class TriggerLatch {
       // ends a sprint keeps it: the exit time starts this tick.
       if (!raising && !sprinting) this.buffered = false;
     }
-    if (b & BUTTON_FIRE) this.rest = Math.max(SPRINT_AFTER_FIRE_TICKS, cycleTicks + SPRINT_AFTER_CYCLE_TICKS);
+    if (!paired) this.buffered2 = false;
+    else {
+      if (b & BUTTON_ALT && (raising || sprinting)) this.buffered2 = true;
+      if (this.buffered2) {
+        b |= BUTTON_ALT;
+        if (!raising && !sprinting) this.buffered2 = false;
+      }
+    }
+    if (b & BUTTON_FIRE || (paired && b & BUTTON_ALT)) this.rest = Math.max(SPRINT_AFTER_FIRE_TICKS, cycleTicks + SPRINT_AFTER_CYCLE_TICKS);
     else if (this.rest > 0) this.rest--;
     if (this.rest > 0) b &= ~BUTTON_SPRINT;
     return b;
@@ -48,7 +62,7 @@ export class TriggerLatch {
   /** A new life, a seat or a match: nothing carried over. */
   reset(): void {
     this.rest = 0;
-    this.buffered = false;
+    this.buffered = this.buffered2 = false;
   }
 }
 

@@ -3611,7 +3611,7 @@ export class GameSession {
         // Auto-reload (Options → Controls, on by default): the host starts an empty magazine's reload by itself.
         if (local.alive && autoReloadOn()) sample.buttons |= BUTTON_AUTO_RELOAD;
         // Taps fire at once with sprint held, and a pull while the gun comes up out of a sprint is kept (triggerLatch.ts).
-        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0);
+        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0, local.paired);
         else this.triggerLatch.reset();
         moving ||= sample.forward !== 0 || sample.right !== 0;
         this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
@@ -3619,7 +3619,7 @@ export class GameSession {
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
         if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
         this.meleeHeld = meleeNow;
-        const { input: cmd, shot, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        const { input: cmd, shot: shot1, shot2, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.
           this.input.yaw += local.portalTurn;
@@ -3641,7 +3641,9 @@ export class GameSession {
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1, !!this.seat);
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
-        if (shot) {
+        // (Dual wielding: the second gun's round the same tick is a shot like the first's.)
+        for (const shot of shot2 ? [shot1, shot2] : [shot1]) {
+          if (!shot) continue;
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
           this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma));
@@ -3833,8 +3835,14 @@ export class GameSession {
       // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
-      else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
-      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? local.fireMode() : null, local.weapon ? fireModeCount(local.weapon) : 1);
+      else {
+        const second = local.paired ? local.offs.get(local.held) : undefined;
+        this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy, second ? { mag: second.mag, reloading: local.reloadTicks2 > 0 } : null);
+      }
+      // (With a second gun of the held weapon, the fire-mode key is "both guns" or "one gun".)
+      const pairMode = local.pairMode();
+      const modeShown = pairMode ? { label: pairMode === 'pair' ? 'Pair' : 'One gun', mode: 'semi', burst: pairMode === 'pair' ? { count: 2 } : null } : local.fireMode();
+      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? modeShown : null, pairMode ? 2 : local.weapon ? fireModeCount(local.weapon) : 1);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
       const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
@@ -3846,7 +3854,10 @@ export class GameSession {
       } else this.view.throwArc.hide();
       // The throwable in your hands while you line it up (first person; your own model in third person throws as before).
       this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
-      this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
+      // A pair in hand (dual wielding): right mouse, LT and touch's Aim are the second gun's trigger, always held (no
+      // aiming, so no toggled aim), and touch's Fire pulls both.
+      this.input.pairTrigger = local.alive && !handsBusy && local.paired;
+      this.input.altTrigger = this.input.pairTrigger || (!!local.weapon?.alt && local.weapon.kind === 'melee');
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());

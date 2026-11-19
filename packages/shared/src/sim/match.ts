@@ -80,7 +80,7 @@ import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid
 import { terrainHeightAt } from '../map/terrain.ts';
 import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, akimboAllowed, akimboReady, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, CheckpointSquad, MatchCheckpoint } from '../net/handoff.ts';
 import { tallied, tallyOf, tallyRow } from './squadScores.ts';
@@ -109,8 +109,8 @@ import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, impactFalloff, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
-  type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, akimboCone, akimboKick, akimboLoader, akimboMove, akimboOf, akimboRaise, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, impactFalloff, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, offBox, pairReloadTurn, shotCone, spreadOf, stepAds, stepReload, storeOff, surfaceMaterial,
+  type AkimboSpec, type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
@@ -190,6 +190,12 @@ export interface WeaponState {
   mode?: number;
   /** A magazine is in but no round is chambered (an empty reload stopped before the bolt). */
   unchambered?: boolean;
+  /**
+   * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): the second gun of a pair, with its own magazine over
+   * the weapon's one reserve. `away`: put away with the fire-mode key (one gun in hand, with its sights; the second
+   * keeps its magazine). Only ever set for a person, when the match allows pairs (Match.canPair).
+   */
+  off?: { mag: number; unchambered?: boolean; away?: boolean };
   /** Mounted guns with limited ammunition (SeatDef.ammo): rounds aboard, and ticks toward the next one back. */
   shells?: number;
   shellTicks?: number;
@@ -440,6 +446,11 @@ export interface Combatant {
   throwable: { kind: ThrowableKind; count: number } | null;
   // Timers below count applied inputs (not server ticks) so client prediction can mirror them exactly.
   fireCooldown: number;
+  /** Dual wielding: the second gun's own timers and trigger latch (0 / false / null without a pair in hand). */
+  fireCooldown2: number;
+  reloadTicks2: number;
+  semiLatch2: boolean;
+  reload2: ReloadRun | null;
   throwCooldown: number;
   /** Unarmed quick melee: ticks until the next strike, and the tick of the last punch (punch, then kick). */
   meleeCooldown: number;
@@ -697,8 +708,13 @@ export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current
 const NO_HANDLING = { move: 1, sprintExit: 0 };
 const handlingOf = (c: Combatant): { move: number; sprintExit: number } => {
   const w = c.weapons.get(c.current);
-  return w ? gunplayOf(w.def).handling : NO_HANDLING;
+  if (!w) return NO_HANDLING;
+  const h = gunplayOf(w.def).handling;
+  const pair = pairOf(w);
+  return pair && pair.move !== 0 ? { move: akimboMove(h.move, pair), sprintExit: h.sprintExit } : h;
 };
+/** The pair in hand: the weapon has a second gun and it is out (not put away with the fire-mode key); its trade, or null. */
+const pairOf = (w: WeaponState): AkimboSpec | null => (w.off && !w.off.away ? akimboOf(w.def) : null);
 
 /**
  * Authoritative Deathmatch simulation. Contains no networking or Node/DOM
@@ -847,6 +863,9 @@ export class Match {
   /** The navmesh built at load, as data (a browser host keeps it in its storage: client game/navCache.ts); null when reused. Set it to null once kept. */
   navBuilt: PrebuiltNav | null;
 
+  /** Dual wielding is in play in this match (rules.ts akimboReady when it was made, or MatchOptions.akimbo); the rule decides on top. */
+  private readonly pairs: boolean;
+
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
     readonly map: MapDocument,
@@ -861,8 +880,9 @@ export class Match {
      * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
      * `navReused`), as the process's navCache is.
      */
-    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own' } = {},
+    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own'; /** Dual wielding on or off for this match whatever rules.ts akimboReady says (the client's `?akimbo=1`). */ akimbo?: boolean } = {},
   ) {
+    this.pairs = opts.akimbo ?? akimboReady();
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
     this.phys = matchPhysics(rules, map);
@@ -1444,6 +1464,10 @@ export class Match {
       current: 0,
       throwable: null,
       fireCooldown: 0,
+      fireCooldown2: 0,
+      reloadTicks2: 0,
+      semiLatch2: false,
+      reload2: null,
       meleeCooldown: 0,
       punchedAt: -1000,
       throwCooldown: 0,
@@ -3185,6 +3209,16 @@ export class Match {
       }
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
+      // Dual wielding: the fire-mode key puts the second gun away and brings it back (a pair has no fire modes: mode 1
+      // is one gun). Then, with the pair in hand: no aiming (not its walk either), and the second trigger ends a
+      // sprint as the first does. Before the move, so prediction replays it with the rest of the input.
+      const mine = c.weapons.get(c.current);
+      if (mine?.off && input.fireMode !== undefined) this.setPairAway(c, mine, input.fireMode === 1);
+      const pair = mine?.off && (!c.mount || this.gunSeatOf(c) === null) ? pairOf(mine) : null;
+      if (pair) {
+        input.buttons &= ~BUTTON_ZOOM;
+        if (input.buttons & BUTTON_ALT) input.buttons &= ~BUTTON_SPRINT;
+      }
 
       const zipBefore = c.move.zip;
       let sprintEnded = false;
@@ -3287,6 +3321,7 @@ export class Match {
         }
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
+      if (c.fireCooldown2 > 0) c.fireCooldown2--;
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.meleeCooldown > 0) c.meleeCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
@@ -3323,6 +3358,8 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      // The pair in hand (never from a seat's gun).
+      const paired = gun ? null : pair;
       // The fire mode the player wants for the gun in hand (spec §36): part of the input, so prediction replays it.
       if (!gun && input.fireMode !== undefined && def.fireModes) held.mode = clampFireMode(def, input.fireMode);
       const firing = firingOf(def, gun ? 0 : held.mode);
@@ -3331,18 +3368,23 @@ export class Match {
       const pressed = input.buttons & ~c.prevButtons;
       c.prevButtons = input.buttons;
       if (!fireDown) c.semiLatch = false;
+      if (!(input.buttons & BUTTON_ALT)) c.semiLatch2 = false;
       // Reloads give way to emergency actions (spec §16): breaking into a sprint, using something.
-      if (c.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload(c);
-      if (input.buttons & BUTTON_RELOAD) this.startReload(c);
+      if ((c.reload || c.reload2) && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload(c);
+      if (input.buttons & BUTTON_RELOAD) {
+        // A pair: both guns, one after the other (advanceReload: the emptier first).
+        this.startReload(c);
+        if (paired) this.startReloadOff(c);
+      }
       const frozen = c.frozenTicks > 0;
       const gp = gunplayOf(def);
-      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun);
+      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun && !paired);
       // Firing interrupts a reload whenever a round is ready: a loaded shell, a tactical reload's chambered round.
       // A melee weapon loading its barrel always swings (the loads already in stay); its barrel fires once one is in.
       if (c.reload && !gun && c.fireCooldown === 0 && c.raiseTicks === 0) {
         const swing = def.kind === 'melee' && ((fireDown && !c.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
         const shoot = (fireDown && !c.semiLatch && roundsReady(held) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && held.alt >= def.alt.cost);
-        if (swing || shoot) this.cancelReload(c);
+        if (swing || shoot) this.cancelReload(c, paired ? 1 : 0);
       }
       const ready = c.fireCooldown === 0 && (gun ? this.turretOnAim(c) : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
@@ -3366,7 +3408,7 @@ export class Match {
         else if (spendRound(held)) {
           c.fireCooldown = firing.interval;
           c.semiLatch = firing.mode !== 'auto';
-          this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
+          this.fire(c, paired ? pairTrigger(def, firing, paired, false) : primaryTrigger(def, firing), input.viewTick ?? 0);
           fired = true;
           if (firing.burst) {
             c.burstLeft = firing.burst.count - 1;
@@ -3383,6 +3425,27 @@ export class Match {
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared' || alt.reload) this.startReload(c);
       }
+      // Dual wielding: the second gun on the second trigger, by the first's rules with its own latch, cooldown,
+      // magazine and reload. Both guns kick the one aim and feed the one spray (GunState), so volume costs accuracy.
+      if (paired && held.off) {
+        const off = held.off;
+        const altDown = (input.buttons & BUTTON_ALT) !== 0;
+        const rounds = off.unchambered ? 0 : off.mag;
+        const up = c.fireCooldown2 === 0 && c.raiseTicks === 0 && altDown && !c.semiLatch2;
+        // Firing interrupts its reload whenever a round is ready, as for the first gun.
+        if (c.reload2 && up && rounds > 0) this.cancelReload(c, 2);
+        // (One hand holds a zipline's trolley: the first gun only.)
+        if (up && c.reloadTicks2 === 0 && !frozen && !unarmed && c.move.zip === undefined) {
+          if (rounds === 0) this.startReloadOff(c);
+          else {
+            off.mag--;
+            c.fireCooldown2 = firing.interval;
+            c.semiLatch2 = firing.mode !== 'auto';
+            this.fire(c, pairTrigger(def, firing, paired, true), input.viewTick ?? 0);
+            fired = true;
+          }
+        }
+      }
       // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
       if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
         if (def.kind === 'melee' && !getWeapon(def.id).heal) {
@@ -3394,13 +3457,15 @@ export class Match {
         } else {
           // Melee is an emergency action: the press breaks a reload where it is (spec §16), struck or not (prediction
           // mirrors it); the ammunition keeps the stage the reload reached.
-          if (c.reload) this.cancelReload(c);
+          if (c.reload || c.reload2) this.cancelReload(c);
           // (Not in Disc Arena, where nobody takes damage: discs only knock people off.)
           if (c.meleeCooldown === 0 && !def.projectile?.disc) this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
         }
       }
       // Auto-reload (the player's option): an empty magazine starts reloading by itself once the gun is ready.
       if (input.buttons & BUTTON_AUTO_RELOAD && !gun && !unarmed && !frozen && !fired && autoReloadDue(def, held, c, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload(c);
+      // (The second gun's own: an empty magazine reloads by itself while the first goes on firing.)
+      if (paired && input.buttons & BUTTON_AUTO_RELOAD && !unarmed && !frozen && !fired && autoReloadDue(def, offBox(held), { reloadTicks: c.reloadTicks2, fireCooldown: c.fireCooldown2, raiseTicks: c.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff(c);
       if (fired && gun) gun.firedTick = this.tick;
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
@@ -3438,7 +3503,9 @@ export class Match {
     const w = c.weapons.get(code);
     if (!w) return;
     c.current = code;
-    c.raiseTicks = w.def.raiseTicks;
+    // A pair comes up a little slower (its `raise`).
+    const pair = pairOf(w);
+    c.raiseTicks = pair ? akimboRaise(w.def, pair) : w.def.raiseTicks;
     // Swapping always beats a reload: whatever stage it reached stays done (spec §16, §19).
     this.cancelReload(c);
     c.windup = 0;
@@ -3454,29 +3521,109 @@ export class Match {
   private startReload(c: Combatant): void {
     if (c.reloadTicks > 0) return;
     const w = heldWeapon(c);
-    const run = beginReload(w.def, w);
+    // (One of a pair: its reload takes the pair's `reload` times as long.)
+    const run = beginReload(pairOf(w) ? akimboLoader(w.def) : w.def, w);
     if (!run) return;
     c.reload = run;
     c.reloadTicks = run.total;
     c.burstLeft = 0;
   }
 
-  /** Stop a reload where it is: the ammunition keeps the stage it reached. */
-  private cancelReload(c: Combatant): void {
-    c.reload = null;
-    c.reloadTicks = 0;
+  /** Dual wielding: start a reload of the second gun (it waits its turn while the first gun's is under way: advanceReload). */
+  private startReloadOff(c: Combatant): void {
+    const w = heldWeapon(c);
+    if (c.reloadTicks2 > 0 || !pairOf(w)) return;
+    const run = beginReload(akimboLoader(w.def), offBox(w));
+    if (!run) return;
+    c.reload2 = run;
+    c.reloadTicks2 = run.total;
+  }
+
+  /** Stop a reload where it is: the ammunition keeps the stage it reached. `which`: 1 the gun's, 2 the second gun's of a pair, 0 both. */
+  private cancelReload(c: Combatant, which: 0 | 1 | 2 = 0): void {
+    if (which !== 2) {
+      c.reload = null;
+      c.reloadTicks = 0;
+    }
+    if (which !== 1) {
+      c.reload2 = null;
+      c.reloadTicks2 = 0;
+    }
   }
 
   /** One applied input of reloading (something else zeroing `reloadTicks` cancels it). */
   private advanceReload(c: Combatant): void {
+    if (c.reload2) return this.advancePairReload(c);
     if (!c.reload || c.reloadTicks === 0) {
       c.reload = null;
       c.reloadTicks = 0;
       return;
     }
     const w = heldWeapon(c);
-    c.reload = stepReload(w.def, w, c.reload);
+    const pair = pairOf(w);
+    // (A pair's reload that waited for the other gun's starts from the ammunition as it is now.)
+    if (pair && c.reload.t === 0) c.reload = beginReload(akimboLoader(w.def), w);
+    if (c.reload) c.reload = stepReload(pair ? akimboLoader(w.def) : w.def, w, c.reload);
     c.reloadTicks = c.reload ? Math.max(1, c.reload.total - c.reload.t) : 0;
+  }
+
+  /**
+   * Dual wielding, the second gun's reload in play: one hand reloads at a time, so of the two guns' reloads the one
+   * under way goes on and the other waits at its start (the emptier gun first when both wait); the gun that waits or
+   * isn't reloading still fires (which cancels its wait). Nothing else is kept: the two runs say it all, so the
+   * snapshot's `rd` and `rd2` are enough for prediction.
+   */
+  private advancePairReload(c: Combatant): void {
+    const w = heldWeapon(c);
+    if (c.reloadTicks2 === 0 || !pairOf(w)) {
+      c.reload2 = null;
+      c.reloadTicks2 = 0;
+      return this.advanceReload(c);
+    }
+    if (c.reload && c.reloadTicks === 0) c.reload = null;
+    const def = akimboLoader(w.def);
+    if (pairReloadTurn(c.reload, c.reload2!, w.mag, w.off!.mag) === 1) {
+      if (c.reload!.t === 0) c.reload = beginReload(def, w);
+      if (c.reload) c.reload = stepReload(def, w, c.reload);
+      c.reloadTicks = c.reload ? Math.max(1, c.reload.total - c.reload.t) : 0;
+      return;
+    }
+    const b = offBox(w);
+    let run: ReloadRun | null = c.reload2!;
+    if (run.t === 0) run = beginReload(def, b);
+    if (run) run = stepReload(def, b, run);
+    storeOff(w, b);
+    c.reload2 = run;
+    c.reloadTicks2 = run ? Math.max(1, run.total - run.t) : 0;
+  }
+
+  /** Dual wielding: put the second gun away, or bring it back (the fire-mode key; a toggle beats a reload, like a swap). */
+  private setPairAway(c: Combatant, w: WeaponState, away: boolean): void {
+    if (!w.off || !!w.off.away === away) return;
+    if (away) w.off.away = true;
+    else delete w.off.away;
+    this.cancelReload(c);
+    c.semiLatch2 = false;
+    if (!away) this.pairOut(c, w);
+  }
+
+  /** The second gun comes out beside the one in hand: it takes the pair's raise before its first round; the first gun is never held up. No sights. */
+  private pairOut(c: Combatant, w: WeaponState): void {
+    const pair = akimboOf(w.def);
+    if (!pair) return;
+    c.fireCooldown2 = Math.max(c.fireCooldown2, akimboRaise(w.def, pair));
+    c.gun.ads = 0;
+  }
+
+  /** Whether `c` may make a pair of `def`: a person, in a match with dual wielding in play and allowed by its rule, an eligible weapon. Bots never pair. */
+  private canPair(c: Combatant, def: WeaponDefinition): boolean {
+    return this.pairs && c.kind === 'human' && akimboAllowed(this.rules) && akimboOf(def) !== null;
+  }
+
+  /** A second gun of a weapon `c` holds one of: now a pair, its magazine holding `mag`. */
+  private makePair(c: Combatant, w: WeaponState, mag: number): void {
+    w.off = { mag: Math.max(0, Math.min(w.def.magazine, mag)) };
+    if (c.weapons.get(c.current) === w) this.pairOut(c, w);
   }
 
   /** Where a shooter's rounds go: the view plus the mechanical recoil offset. */
@@ -3553,7 +3700,9 @@ export class Match {
     if (gp.accuracy && !def.alt) {
       // Gunplay spread (spec §14): base, movement, air and sustained fire, tightened by stance and the sights,
       // plus the pellet pattern of a shotgun.
-      spread = shotCone(def, gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
+      const ctx = { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] };
+      // (One of a pair: a wider aim cone, a wider pellet pattern.)
+      spread = def.akimbo ? akimboCone(def.akimbo, spreadOf(gp.accuracy, shooter.gun, ctx), def.pellets > 1 ? def.spread : 0) : shotCone(def, gp.accuracy, shooter.gun, ctx);
       // A scoped rifle fired from the hip is a gamble: fine across a room, a guess further out (not a lottery: ADS is never mandatory).
       const zoom = getWeapon(def.id).view.zoomFov;
       if (zoom && !shooter.npc && shooter.gun.ads < SCOPE_UP_ADS) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
@@ -3562,10 +3711,12 @@ export class Match {
       // shooting on the run or in the air; aiming down a scope tightens it, and a
       // scoped rifle fired from the hip is a guess.
       spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
+      if (def.akimbo) spread *= def.pellets > 1 ? def.akimbo.pattern : def.akimbo.cone;
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
     // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
-    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
+    if (def.akimbo) recoilShot(shooter.gun, akimboKick(gp.kick, def.akimbo.kick));
+    else if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
     else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
@@ -3662,7 +3813,7 @@ export class Match {
       if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance, keep: GLASS.passDamage ** broke });
       else if (world) bodies.push({ handle: world.handle, dist: world.dist, at: shot.end });
     }
-    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
+    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}), ...(def.off ? { off: 1 as const } : {}) });
     // A second trigger can bring its own falloff and head multiple (the Battle Axe's blunderbuss).
     const falloff = def.falloff ?? gp.falloff;
     for (const { slot, dir, zone, dist, keep } of struck) {
@@ -3813,7 +3964,7 @@ export class Match {
     c.meleeCooldown = s.cooldownTicks;
     if (kind === 'punch') c.punchedAt = this.tick;
     else c.punchedAt = -1000;
-    if (c.reload) this.cancelReload(c);
+    if (c.reload || c.reload2) this.cancelReload(c);
     const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
     const { hit, body } = this.meleeTrace(c, eye, s.range * c.size, this.targetsFor(c, viewTick));
     this.pendingEvents.push({ e: 'melee', s: c.slot, hit, u: kind === 'punch' ? 1 : 2 });
@@ -4158,6 +4309,7 @@ export class Match {
       ...(flying.length ? { fl: flying } : {}),
       ...(armored ? { ar: 1 as const } : {}),
       ...(marks.length ? { pn: marks } : {}),
+      ...(def.off ? { off: 1 as const } : {}),
     });
     for (const end of ends) this.bulletHit(shooter, def, end);
   }
@@ -5091,7 +5243,7 @@ export class Match {
     best.seats[seat] = c.slot;
     c.mount = { index: this.mounts.indexOf(best), seat };
     c.move = this.seatMove(best, seat);
-    c.reloadTicks = 0;
+    c.reloadTicks = c.reloadTicks2 = 0;
     c.windup = 0;
     c.burstLeft = 0;
     this.pendingEvents.push({ e: 'mount', s: c.slot, m: best.index, seat });
@@ -6483,6 +6635,15 @@ export class Match {
   private takeDrop(c: Combatant, d: WeaponDrop): boolean {
     const code = weaponCode(d.def);
     const owned = c.weapons.get(code);
+    if (owned && !owned.off && this.canPair(c, d.def)) {
+      // The second of a gun they hold: a pair, its magazine the drop's; the drop's reserve tops theirs up, and it goes.
+      this.makePair(c, owned, d.mag);
+      d.mag = 0;
+      takeDropAmmo(owned, d);
+      d.mag = d.reserve = d.alt = 0;
+      d.until = -1;
+      return true;
+    }
     if (owned) return takeDropAmmo(owned, d);
     c.weapons.set(code, { def: d.def, mag: Math.min(d.def.magazine, d.mag), reserve: Math.min(d.def.reserveMax, d.reserve), alt: d.alt });
     d.mag = d.reserve = d.alt = 0;
@@ -6584,7 +6745,10 @@ export class Match {
         const owned = c.weapons.get(weaponCode(def));
         if (owned) {
           const altMax = def.alt?.ammo === 'own' ? (def.alt.max ?? 0) : 0;
-          if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
+          // Dual wielding: the second of a gun they hold makes a pair (a full magazine), and still gives its ammo.
+          const pairs = !owned.off && this.canPair(c, def);
+          if (pairs) this.makePair(c, owned, def.magazine);
+          else if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
           owned.reserve = Math.min(def.reserveMax, owned.reserve + def.pickupAmmo);
           owned.alt = Math.min(altMax, owned.alt + (def.alt?.pickup ?? 0));
           return true;
@@ -6694,9 +6858,10 @@ export class Match {
     c.padFlight = false;
     c.breath = 0;
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
-    c.semiLatch = false;
+    c.semiLatch = c.semiLatch2 = false;
     c.gun = newGunState();
-    c.reload = null;
+    c.reload = c.reload2 = null;
+    c.fireCooldown2 = c.reloadTicks2 = 0;
     c.spawns = (c.spawns ?? 0) + 1;
     this.loadout(c, c.spawns);
     c.discPower = undefined;
@@ -6757,6 +6922,21 @@ export class Match {
    * the weapon set's (sim/weaponSets.ts setLoadout: its spawn weapons, its random gun for the life, a sniper-role
    * bot's scoped gun, its first grenade), or one spear or a hand of arena discs where the weapons are fixed.
    */
+  /**
+   * PlayerSnapshot.dw: a pair is drawn. Alive, the weapon in hand has its second gun and it is out (not put away
+   * with the fire-mode key), and not from a seat that takes the hands (a driver, a seat with a gun, the plane).
+   */
+  private pairDrawn(c: Combatant): boolean {
+    if (!this.pairs || !c.alive) return false;
+    const w = c.weapons.get(c.current);
+    if (!w?.off || w.off.away) return false;
+    if (c.mount) {
+      const seat = this.seatOf(c);
+      if (!seat || seat.role === 'driver' || seat.weapon || this.mounts[c.mount.index]?.def.airplane) return false;
+    }
+    return true;
+  }
+
   private loadout(c: Combatant, life: number): void {
     c.weapons = new Map();
     const set = this.weaponSet;
@@ -7259,6 +7439,7 @@ export class Match {
       if (c.move.chute) s.ch = c.move.chute;
       if (c.move.drop) s.dr = 1;
       if (this.scopeUp(c)) s.zm = 1;
+      if (this.pairDrawn(c)) s.dw = 1;
       if (c.move.zip !== undefined) s.zl = [c.move.zip, c.move.zs ?? 0, c.move.zv ?? 0];
       return s;
     });
@@ -7527,6 +7708,25 @@ export class Match {
     return { vp: rigidWire(m.index, m.rigid, !!m.chassisBody) };
   }
 
+  /**
+   * Dual wielding's private state: `ow`, the second guns ([weapon code, magazine, flags: 1 no round chambered, 2 put
+   * away]; flags left out when 0), and the second gun's reload (`rl2`, `rd2`, as `rl` and `rd`). Nothing without a pair.
+   */
+  private pairPrivate(c: Combatant): Pick<PrivateState, 'ow' | 'rl2' | 'rd2'> {
+    let ow: [number, number, number?][] | undefined;
+    for (const [code, w] of c.weapons) {
+      if (!w.off) continue;
+      const flags = (w.off.unchambered ? 1 : 0) | (w.off.away ? 2 : 0);
+      (ow ??= []).push(flags ? [code, w.off.mag, flags] : [code, w.off.mag]);
+    }
+    if (!ow) return {};
+    ow.sort((a, b) => a[0] - b[0]);
+    return {
+      ow,
+      ...(c.reload2 && c.reloadTicks2 > 0 ? { rl2: c.reloadTicks2, rd2: [RELOAD_KINDS.indexOf(c.reload2.kind), c.reload2.t, c.reload2.total, c.reload2.stage] as [number, number, number, number] } : {}),
+    };
+  }
+
   /** The owning player's inventory and timers. */
   privateState(slot: number): PrivateState | undefined {
     const c = this.slots[slot];
@@ -7542,6 +7742,7 @@ export class Match {
       rs: c.raiseTicks,
       ...(c.dealt?.some((d) => d[0] > this.tick - DEALT_KEEP_TICKS) ? { dd: c.dealt.filter((d) => d[0] > this.tick - DEALT_KEEP_TICKS).map((d) => [d[0], Math.round(d[1]), d[2], round2(d[3]), round2(d[4]), round2(d[5])] as [number, number, number, number, number, number]) } : {}),
       ...(c.reload && c.reloadTicks > 0 ? { rd: [RELOAD_KINDS.indexOf(c.reload.kind), c.reload.t, c.reload.total, c.reload.stage] as [number, number, number, number] } : {}),
+      ...(this.pairs ? this.pairPrivate(c) : {}),
       ...([...c.weapons.values()].some((w) => w.unchambered) ? { uc: [...c.weapons.entries()].filter(([, w]) => w.unchambered).map(([code]) => code) } : {}),
       sp: c.speedTicks,
       dm: c.damageTicks,
@@ -8188,6 +8389,9 @@ interface Trigger {
   kick?: KickSpec;
   /** The primary trigger's recoil in the fire mode it was pulled in (sim/fireModes.ts). */
   modeKick?: KickSpec | null;
+  /** Dual wielding: the round is one of a pair's (its trade applies), and `off` when the second gun fired it. */
+  akimbo?: AkimboSpec;
+  off?: true;
   falloff?: FalloffSpec;
 }
 
@@ -8267,6 +8471,14 @@ function primaryTrigger(def: WeaponDefinition, firing?: Firing): Trigger {
     ...(def.recoil ? { recoil: def.recoil } : {}),
     ...(def.headshot !== undefined ? { headshot: def.headshot } : {}),
   };
+}
+
+/** A round from one gun of a pair: the weapon's own trigger with the pair's trade; `off`: the second gun's. */
+function pairTrigger(def: WeaponDefinition, firing: Firing, akimbo: AkimboSpec, off: boolean): Trigger {
+  const t = primaryTrigger(def, firing);
+  t.akimbo = akimbo;
+  if (off) t.off = true;
+  return t;
 }
 
 /** Use one round (or add heat) for a shot; false when the weapon can't fire. */
