@@ -253,13 +253,13 @@ new at its factor, from a standing eye and from the side; `?mode=lineup`).
 | Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4 / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
 | Kenney Log Stack | not swapped: cut firewood, no generated woodpile yet |
 
-**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick): a desert formation of four
-weathered columns in a row, 13.5 × 7.9 × 4.8 m like the Meshy spires it replaces, each two or three masses stacked and
-narrowing upward, flat-bedded with deep horizontal grooves, and a low spur of fallen blocks at its foot. It is the
-outcrop generator with masses that stand on each other (`y`, a mass's lift), so the bedding and noise run through the
-whole formation; collision is one hull per mass (twelve), so the gaps between the columns stay open. A formation has
-its own triangle budget (`budget` on the species: 1,700 / 560 / 170 triangles), above one boulder's; the Meshy spires
-were 3,000 at their nearest.
+**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick): a desert formation of five
+tall, sharp spires in a row, 4.6 to 8 m, on two broad, low blocks that join their feet, and a fallen block in front;
+13.6 × 7.9 × 4.8 m like the Meshy spires it replaces. It is the outcrop generator with nine masses (the spires are tall,
+narrow masses, so they taper to points), the bedding and noise running through the whole formation; collision is one
+hull per mass, so the gaps between the spires stay open. A formation has its own triangle budget (`budget` on the
+species: 1,700 / 560 / 170 triangles), above one boulder's; the Meshy spires were 3,000 at their nearest. Side by side
+with the Meshy spires (`?mode=lineup`), the generated one is a little more open between its spires.
 
 **Run on 42 maps through MapMaker** (2026-11-18/19; Playwright on the real editor: Import, Environment → Nature, Swap
 natural props for ours with rocks by the ground, Export): 2,844 Quaternius placements and about 600 kit and Meshy rocks.
