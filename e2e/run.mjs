@@ -176,6 +176,16 @@ function check(cond, message) {
   }
 }
 
+/**
+ * Into play: Resume if the pause menu is up, else the click (a tap on a phone) that "Click to fight" asks for: a match
+ * opens straight into play, not paused (owner, 2026-11-19; session.ts showFightHint).
+ */
+async function fight(page, tap = false) {
+  const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
+  if (paused) return tap ? page.tap('#resume') : page.click('#resume');
+  return tap ? page.tap('#view', { force: true }) : page.click('#view', { force: true });
+}
+
 async function waitForHttp(url, ms = 20000) {
   const until = Date.now() + ms;
   while (Date.now() < until) {
@@ -5891,7 +5901,7 @@ async function offlineFlow(browser) {
   const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
-  await page.click('#resume');
+  await fight(page);
   // (A loaded machine decodes them slowly: the check below says what it got, rather than the wait throwing.)
   await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(60000) }).catch(() => {});
   const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
@@ -6090,8 +6100,9 @@ async function mobileFlow(browser) {
   // had you in the air (CI: grounded false, velY -1.0 / -2.5 at the tap), so the tap did nothing.
   await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
-  await page.tap('#resume');
+  const opens = await page.evaluate(() => ({ pause: !document.getElementById('pause').hidden, hint: document.getElementById('fight-hint')?.hidden === false ? document.getElementById('fight-hint').textContent : null, touch: !document.getElementById('touch-ui').hidden }));
+  check(!opens.pause && opens.hint === 'Tap to fight' && !opens.touch, `the match opens without the pause menu: "Tap to fight", the controls wait for the tap (${JSON.stringify(opens)})`);
+  await fight(page, true);
   await page.waitForFunction(() => !document.getElementById('touch-ui').hidden && document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
   check(await page.isVisible('#touch-ui .tc-pad') && (await page.isVisible('#touch-ui .tc-fire')) && (await page.isVisible('#touch-ui .tc-wheel')), 'Resume starts touch play: pad, Fire and Weapons buttons show (no pointer lock)');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-play.png` });
@@ -6240,7 +6251,7 @@ async function mobileTouchLayout(browser) {
   const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
   await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  await page.tap('#resume');
+  await fight(page, true);
   await page.waitForFunction(() => !document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).catch(() => {});
   const lay = await page.evaluate(() => {
     const r = (sel) => document.querySelector(sel).getBoundingClientRect();
@@ -11450,9 +11461,8 @@ async function fireteamsCtfChecks(browser) {
   check(setup.on === 'true' && setup.size === '4', `Match setup: CTF with Fireteams, squads of 4 (${JSON.stringify(setup)})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
-  // (The match opens paused in a headless page: Resume, once it's there.)
-  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
-  await page.click('#resume').catch(() => {});
+  // (Into play: the click "Click to fight" asks for in a headless page.)
+  await fight(page).catch(() => {});
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   // (A headless page without pointer lock plays as touch does, so the pause menu stays down for the HUD's picture.)
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
@@ -11536,9 +11546,8 @@ async function fireteamsFlow(browser) {
   check(led && squad?.leader && squad.human && squad.members === 4, `you lead a fireteam of 4 (HUD "Follow me"; ${JSON.stringify(squad)})`);
   check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 4), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
   // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
-  // (The match opens paused: Resume, once it's there, and the pause menu gone before the keys.)
-  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
-  await page.click('#resume').catch(() => {});
+  // (Into play: the click "Click to fight" asks for, and the pause menu gone before the keys.)
+  await fight(page).catch(() => {});
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
@@ -13068,7 +13077,7 @@ async function farBodies(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=26&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  await page.click('#resume').catch(() => {});
+  await fight(page).catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
   // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
@@ -13121,7 +13130,7 @@ async function farBodies(browser) {
     await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
     await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
     await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
-    await page.click('#resume').catch(() => {});
+    await fight(page).catch(() => {});
     setup = await sim(page, findGround);
   }
   if (!setup) {
@@ -13234,7 +13243,7 @@ async function gripsInPlay(browser) {
   };
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=12&look=core.dapper&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__cs.view.gripReport().local, null, { timeout: T(120000) });
-  await page.click('#resume').catch(() => {});
+  await fight(page).catch(() => {});
   const misses = [];
   const step = async (label, act) => {
     await act();
@@ -13262,7 +13271,7 @@ async function gripsInPlay(browser) {
     await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
     await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
     await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) });
-    await page.click('#resume').catch(() => {});
+    await fight(page).catch(() => {});
   });
   check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
   // Scoped when the gun's sharper held copy comes in (Medium and High fetch it once you hold the gun; on a big map that
@@ -14162,6 +14171,14 @@ async function hostcontrolsFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.mapVote', '0'));
   await page.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(playing, null, { timeout: T(60000) });
+  // After the countdown: straight to the fight (owner, 2026-11-19), no pause menu and no Tab board, only a calm
+  // "Click to fight" while the mouse isn't taken (a headless page); Esc still pauses.
+  const opening = await page.evaluate(() => ({ pause: !document.getElementById('pause').hidden, board: !document.getElementById('scoreboard').hidden, hint: document.getElementById('fight-hint')?.hidden === false ? document.getElementById('fight-hint').textContent : null }));
+  check(!opening.pause && !opening.board && opening.hint === 'Click to fight', `after the countdown the match is in play: no pause menu, no Tab board, "Click to fight" (${JSON.stringify(opening)})`);
+  await page.keyboard.press('Escape');
+  const escPaused = await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('fight-hint')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(escPaused, 'Esc still opens the pause menu (and the line goes)');
+  // (The Host tab's state comes with the pause menu.)
   const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
   check(state?.fill === 4 && state.teams === 0, `the offline player runs the match (${JSON.stringify(state)})`);
   // The pause menu: Match first; Esc goes back from a tab to Match; the host gets a Host tab.
