@@ -69,6 +69,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: Match Setup pickers, the St. John's kit and the tower trim in a train** (`check/train-20261119-085951` at 92ad0dda, run 44492385329, green on attempt 2 (the `hostcontrols` Esc flake; next fix batch); main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
+
 **Landed: the nature swap (42 maps) in a train** (`check/train-20261119-065518` at a930f60c, run 44475716230, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` (merge main + `pnpm content:rebuild`, thumbs/palette.json) and `wip/stjohns-tower-trim` (merge main + paint-looks --write) re-check, then one train.
 
 **Landed: Ranks & badges for everyone, alone** (`check/ranks-for-all` at 1824b77d, run 44469561973, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` once its helper re-checks fe36f21a, then `wip/nature-swap-3`.
