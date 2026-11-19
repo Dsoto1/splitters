@@ -13482,6 +13482,43 @@ async function gripsInPlay(browser) {
   check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
+  // Optics by gun (GUNPLAY_SPEC §15): a red dot's mark is on its own glass, on the aim, with no HUD dot; iron sights
+  // show no dot either; a gun with neither keeps the HUD's aim dot.
+  const aimWith = async (id) => {
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    const up = (w) => window.__cs.local.weapon?.id === w && window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+    for (let i = 0; i < 6 && !(await page.evaluate(up, id)); i++) {
+      if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== id) await page.evaluate((w) => window.__give(w), id);
+      await page.waitForFunction(up, id, { timeout: T(10000) }).catch(() => {});
+    }
+    await page.evaluate(() => (window.__autoInput = { zoom: true }));
+    // Aimed: the crosshair has faded out and the gun's frame has stopped growing.
+    await page.waitForFunction(() => document.getElementById('crosshair')?.style.opacity === '0' && Math.abs(window.__cs.view.camera.fov - 1.35 * 0.72) < 0.004, null, { timeout: T(20000) }).catch(() => {});
+    const seen = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const glass = v.viewmodel?.getChildMeshes().find((m) => m.name === 'opticGlass' && m.isEnabled());
+      let off = null;
+      if (glass) {
+        // The glass's middle against the view's axis, as drawn (degrees), and whether the axis passes inside its window.
+        glass.computeWorldMatrix(true);
+        const c = glass.getBoundingInfo().boundingSphere;
+        const p = c.centerWorld.subtract(v.camera.globalPosition);
+        const f = v.camera.getForwardRay(1).direction;
+        const along = p.x * f.x + p.y * f.y + p.z * f.z;
+        const across = Math.sqrt(Math.max(0, p.lengthSquared() - along * along));
+        off = { deg: +((Math.atan2(across, along) * 180) / Math.PI).toFixed(3), inside: across < c.radiusWorld * 0.5 };
+      }
+      return { held: v.viewWeapon, glass: !!glass, off, housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), picture: +v.opticRoot.scaling.x.toFixed(2), dot: document.getElementById('reddot')?.style.opacity ?? '' };
+    });
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    return seen;
+  };
+  const dotGun = await aimWith('core.laser_rifle');
+  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.6 && dotGun.picture > 1.5 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim, the gun drawn larger, no HUD dot (${JSON.stringify(dotGun)})`);
+  const ironsGun = await aimWith('core.pistol');
+  check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
+  const plainGun = await aimWith('core.rockets');
+  check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.
