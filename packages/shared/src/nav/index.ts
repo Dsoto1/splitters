@@ -1135,6 +1135,23 @@ export class NavWorld {
     return r.fromMain[s.index] === 1 && this.toMainNow()[s.index] === 1;
   }
 
+  /**
+   * Whether `p` stands on navmesh that doesn't route back to the main area (the spawns' area): ground behind a map's
+   * fence, a pit. False off the navmesh (on a prop, in the air) and when the navmesh has no main area to speak of.
+   */
+  stranded(p: Vec3): boolean {
+    const r = this.routesNow();
+    if (r.main < 0) return false;
+    const s = this.nearestPoly({ x: p.x, y: p.y + 0.3, z: p.z }, { x: 0.5, y: 0.8, z: 0.5 });
+    if (!s || !s.over) return false;
+    return this.toMainNow()[s.index] !== 1;
+  }
+
+  /** Whether `p` is in the main area (inMain), or the navmesh has no main area to speak of (then everywhere counts). */
+  inPlay(p: Vec3): boolean {
+    return this.routesNow().main < 0 || this.inMain(p);
+  }
+
   /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
   private reachOf(i: number): Uint8Array {
     const r = this.routesNow();

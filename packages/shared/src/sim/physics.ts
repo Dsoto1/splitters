@@ -115,7 +115,7 @@ export function mergeBoxes(boxes: readonly WorldBox[]): WorldBox[] {
     const other = axis === 0 ? 2 : 0;
     const groups = new Map<string, WorldBox[]>();
     for (const b of flat) {
-      const key = `${k(b.min[1])},${k(b.max[1])},${k(b.min[other])},${k(b.max[other])}${b.lattice ? ',l' : ''}`;
+      const key = `${k(b.min[1])},${k(b.max[1])},${k(b.min[other])},${k(b.max[other])}${b.lattice ? ',l' : ''}${b.bodyOnly ? ',b' : ''}`;
       let g = groups.get(key);
       if (!g) groups.set(key, (g = []));
       g.push(b);
@@ -223,7 +223,7 @@ export class PhysicsWorld {
       const hz = (b.max[2] - b.min[2]) / 2;
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz)
         .setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz)
-        .setCollisionGroups(b.lattice ? LATTICE_COLLIDER_GROUPS : WORLD_COLLIDER_GROUPS);
+        .setCollisionGroups(b.bodyOnly ? FIELD_COLLIDER_GROUPS : b.lattice ? LATTICE_COLLIDER_GROUPS : WORLD_COLLIDER_GROUPS);
       if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
       this.staticBoxes.set(this.world.createCollider(desc).handle, b);
