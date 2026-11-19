@@ -7395,16 +7395,11 @@ export class Match {
   }
 
   /**
-   * In the play area: inside the boundary and on ground that routes to and from the spawns' area (the navmesh's main
-   * area; everywhere when it has none). Where a squad may spawn beside a teammate.
+   * In the play area: inside the boundary, and not on ground that can't route back to the spawns' area (behind a fence,
+   * a pit: NavWorld.stranded). Where a squad may spawn beside a teammate, and where nobody is moved from.
    */
   inPlay(p: Vec3): boolean {
-    return this.insideBounds(p) && this.nav.inPlay(p);
-  }
-
-  /** Outside the play area for sure: past the boundary, or standing on ground that doesn't route back to the spawns. */
-  private outsidePlay(p: Vec3): boolean {
-    return !this.insideBounds(p) || this.nav.stranded(p);
+    return this.insideBounds(p) && !this.nav.stranded(p);
   }
 
   /**
@@ -7422,7 +7417,7 @@ export class Match {
       }
       // In the air: neither in nor out (a jump, a fall); the count waits for the ground.
       if (!c.move.grounded) continue;
-      if (!this.outsidePlay(c.move.pos)) {
+      if (this.inPlay(c.move.pos)) {
         c.outsideTicks = 0;
         continue;
       }

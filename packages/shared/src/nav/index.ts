@@ -1142,14 +1142,10 @@ export class NavWorld {
   stranded(p: Vec3): boolean {
     const r = this.routesNow();
     if (r.main < 0) return false;
-    const s = this.nearestPoly({ x: p.x, y: p.y + 0.3, z: p.z }, { x: 0.5, y: 0.8, z: 0.5 });
-    if (!s || !s.over) return false;
+    // The polygon under the feet, as a squad spawn's walkable test finds it.
+    const s = this.nearestPoly({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
+    if (!s) return false;
     return this.toMainNow()[s.index] !== 1;
-  }
-
-  /** Whether `p` is in the main area (inMain), or the navmesh has no main area to speak of (then everywhere counts). */
-  inPlay(p: Vec3): boolean {
-    return this.routesNow().main < 0 || this.inMain(p);
   }
 
   /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
