@@ -1,4 +1,4 @@
-import { getProp } from '../content/props.ts';
+import { getProp, type PropDefinition } from '../content/props.ts';
 import { propMaterial } from './gunplay.ts';
 import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot } from '../map/geometry.ts';
 import { placementShapes, type EnvWorldShape } from '../map/environment.ts';
@@ -317,16 +317,16 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>, everyth
 }
 
 /** A prop's catalogue boxes (its own space) placed as it stands: turned with it, as map/geometry.ts propBoxes turns them. */
-function propParts(e: Extract<MapEntity, { kind: 'prop' }>, boxes: readonly (readonly [number, number, number, number, number, number])[]): OBox[] {
+function propParts(e: Extract<MapEntity, { kind: 'prop' }>, boxes: NonNullable<PropDefinition['boxes']>): OBox[] {
   const c = Math.cos(e.yaw);
   const s = Math.sin(e.yaw);
-  return boxes.map(([x0, y0, z0, x1, y1, z1]) => {
+  return boxes.map(([x0, y0, z0, x1, y1, z1, own]) => {
     const cx = ((x0 + x1) / 2) * e.scale;
     const cz = ((z0 + z1) / 2) * e.scale;
     return {
       center: { x: e.position[0] + cx * c + cz * s, y: e.position[1] + ((y0 + y1) / 2) * e.scale, z: e.position[2] - cx * s + cz * c },
       half: { x: ((x1 - x0) / 2) * e.scale, y: ((y1 - y0) / 2) * e.scale, z: ((z1 - z0) / 2) * e.scale },
-      yaw: e.yaw,
+      yaw: e.yaw + (own ?? 0),
     };
   });
 }

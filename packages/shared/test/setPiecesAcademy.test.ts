@@ -488,7 +488,7 @@ describe('the wall styles the bays are built with', () => {
     // Shut and ajar close the doorway (the slab in it); open collides as its leaf beside the clear doorway (cover:
     // owner, 2026-11-19; doorLeaves.test.ts).
     expect(getProp('kit.door.oak')!.collision).toEqual([2, 2.6, 0.16]);
-    expect(getProp('kit.door.oak_ajar')!.boxes).toEqual([[-1, 0, -0.08, 1, 2.6, 0.08]]);
+    expect(getProp('kit.door.oak_ajar')!.boxes![0]).toEqual([-1, 0, -0.08, 1, 2.6, 0.08]);
     expect(getProp('kit.door.oak_open')!.boxes).toHaveLength(1);
     expect(getProp('kit.door.oak_open')!.boxes![0]![0]).toBeGreaterThan(0.8);
   });
