@@ -49,6 +49,12 @@ export interface WorldBox {
   paint?: 'walls' | 'metal';
   /** A bar, post or rail of a see-through edge (edgeLattice): it stops bodies and shots, never sight lines. */
   lattice?: true;
+  /**
+   * Stops bodies and shots but is left out of the bots' navmesh (nav/index.ts NavWorld.build): an open door's leaf
+   * (a kit family with a `passage`), which the navmesh's 0.8 m keep-off would otherwise grow until the room it opens
+   * into has no navmesh left. Bots walk past it with their real 0.4 m, on the passage's link through the doorway.
+   */
+  navThrough?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -462,7 +468,8 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const s = Math.sin(e.yaw);
     // Boxes turn with the prop (yaw like a mesh's rotation.y: local +Z goes to (sin, cos)), so a prop
     // turned at an angle collides with its own shape, not the much bigger square round it.
-    const lattice = isKitModel(e.model) && LATTICE_KIT_KINDS.has(getKitFamily(e.model)?.kind ?? '') ? ({ lattice: true } as const) : {};
+    const family = isKitModel(e.model) ? getKitFamily(e.model) : undefined;
+    const lattice = { ...(LATTICE_KIT_KINDS.has(family?.kind ?? '') ? ({ lattice: true } as const) : {}), ...(family?.passage ? ({ navThrough: true } as const) : {}) };
     const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
       e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw, ...lattice } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, ...lattice };
     if (def.boxes) {
