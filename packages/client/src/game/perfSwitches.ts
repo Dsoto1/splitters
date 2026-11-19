@@ -22,10 +22,10 @@
  * arsenalVisuals.ts createAura); cheaper small shadow casters, docs/PERF_SHADOW_CASTERS_2026-11-17.md, adds
  * `smallcasters`: trees and rocks cast through static shadow-only batches by cascade, props with levels of detail through
  * the shadow proxies at full detail, small clutter's near shadows with a band (game/shadowCasters.ts); the body pool to
- * about 32 adds `bodypool`, a big match keeping up to 32 spare character bodies instead of 16, bodyPool.ts; `pickupbatch`, the pickups as GPU instances instead of thin instances (pickupBatch.ts); `glowinplace`, a glow change set through the material's property every time (view.ts setGlow); `reconcileframe`, the local player reconciled at every snapshot instead of once a frame (session.ts).
+ * about 32 adds `bodypool`, a big match keeping up to 32 spare character bodies instead of 16, bodyPool.ts; `pickupbatch`, the pickups as GPU instances instead of thin instances (pickupBatch.ts); `glowinplace`, a glow change set through the material's property every time (view.ts setGlow); `reconcileframe`, the local player reconciled at every snapshot instead of once a frame (session.ts); `snapbin`, the local match's snapshots from its worker as binary messages read into reused objects instead of structured-cloned objects (localTransport.ts, shared net/snapshotBinary.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin';
 
 let off: Set<string> | null = null;
 
