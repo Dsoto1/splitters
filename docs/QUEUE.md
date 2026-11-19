@@ -34,6 +34,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## In flight
 - `wip/stjohns-kit` (lane A, for lane B to land): the MapMaker pieces for St. John's steps 7-10 (Admin Bay and our crest; Library Bay and Porch; Chapel Narthex, Nave Bay, Chancel and the Spiral Stair tile; Gym Entrance and Bay; Pool Hall with swimmable water), built and tested at a540083d. **Red only on the bundle budget** (run 44360059891: menu first JS 2805.6 kB of 2800; gzip 786.7 of 800): the new tiles' and props' tables load with the menu. Lane A's lead recommends waiting for the menu-bundle headroom in the performance batch, then re-checking; lane B decides. Owner, 2026-11-18: **build a "stair down" piece for the chapel's basement in step 9.** Pictures in the branch's HANDOFF note.
 - **Lane A stopped new work (owner, 2026-11-18, weekly usage); lane B absorbs the queue.** Lane A still running, landing via lane B: `wip/stjohns-6` (Welles + clock tower), `wip/stjohns-kit` (pieces for St. John's steps 7-10), `wip/entity-cap` (4,096 → 8,192). HANDOFF has the detail.
+- `wip/ranks-for-all` (lane B helper): Ranks & badges as a setting, for everyone (the Features line below); checking on `check/ranks-for-all`.
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
