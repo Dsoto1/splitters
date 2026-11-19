@@ -140,10 +140,15 @@ describe('Arc Turret (arc sentry)', () => {
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
     const c = match.addHuman('c')!;
+    // Placed from the start (the yard's one spawn point now puts b and c beside it, not on a), so the turret takes a.
+    const spots = () => {
+      place(a, 20, 10);
+      place(b, 22, 12);
+      place(c, 23, 7);
+    };
+    spots();
     run(match, [a, b, c], 2);
-    place(a, 20, 10);
-    place(b, 22, 12);
-    place(c, 23, 7);
+    spots();
     const ev = run(match, [a, b, c], WIND_UP + 40);
     const arcs = arcEvents(ev);
     expect(arcs.length).toBeGreaterThan(0);
