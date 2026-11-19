@@ -13,6 +13,11 @@ import { SET_PIECE_GRID, setPieceMirrorProblem, type SetPieceRolePack } from './
 
 /** Room to spare at the footprint's edge (a door's leaves sit on the cell boundary). */
 const EDGE = 1e-6;
+/**
+ * How far past the footprint's edge a prop that collides as nothing may stand: one drawn on an outer wall's face (a
+ * stained-glass window drawn on both faces of the wall it is set in, its outer face a hair proud of the wall's).
+ */
+const FACE = 0.05;
 
 /** What is wrong with a definition (empty: nothing). `packs`: the role packs it may name. */
 export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?: ReadonlyMap<string, SetPieceRolePack>; catalog?: TileCatalog } = {}): string[] {
@@ -25,9 +30,9 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
   if (l0 > l1) out.push(`footprint: levels [${l0}, ${l1}] go from the lowest to the highest`);
   const inCell = (x: number, y: number, z: number) => cells.has(`${x},${y}`) && z >= l0 && z <= l1;
   /** Whether a point in metres (piece frame) is over the footprint, within its levels. */
-  const inside = (px: number, py: number, pz: number) => {
+  const inside = (px: number, py: number, pz: number, edge = EDGE) => {
     if (py < l0 * levelHeight - EDGE || py > (l1 + 1) * levelHeight + EDGE) return false;
-    const near = (v: number) => [Math.floor((v + cellSize / 2 + EDGE) / cellSize), Math.floor((v + cellSize / 2 - EDGE) / cellSize)];
+    const near = (v: number) => [Math.floor((v + cellSize / 2 + edge) / cellSize), Math.floor((v + cellSize / 2 - edge) / cellSize)];
     return near(px).some((cx) => near(pz).some((cy) => cells.has(`${cx},${cy}`)));
   };
   for (const pack of def.packs) if (opts.packs && !opts.packs.has(pack)) out.push(`packs: ${pack} is not a role pack (content/setpieces/roles.json)`);
@@ -78,7 +83,8 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
         // Its own box, turned as it stands (a bed against the wall at the footprint's edge is inside it).
         const [w, h, d] = prop.size.map((v) => v * part.scale) as [number, number, number];
         const corners = ([[-1, -1], [1, -1], [1, 1], [-1, 1]] as const).map(([sx, sz]) => yawXZ((sx * w) / 2, (sz * d) / 2, part.yaw));
-        if (!corners.every(([ox, oz]) => inside(px + ox, py, pz + oz) && inside(px + ox, py + h, pz + oz))) out.push(`${where}: ${part.model} reaches outside the footprint`);
+        const edge = prop.collision === null && !prop.boxes?.length ? FACE : EDGE;
+        if (!corners.every(([ox, oz]) => inside(px + ox, py, pz + oz, edge) && inside(px + ox, py + h, pz + oz, edge))) out.push(`${where}: ${part.model} reaches outside the footprint`);
       }
       return;
     }

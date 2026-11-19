@@ -957,6 +957,27 @@ Step 5b: `kit.board.pennants` (Pennant String: a 7 m string of triangular pennan
 
 **The mess hall and the clock tower** (St. John's step 6). `kit.sign.clock_face` (Clock Face, `tools/content/kit/school.mjs` `clockface`; family type `sign`): a 2.6 m tower clock face, a round dial in a moulded ring, twelve hour marks (the quarters longer), the hour and minute hands fixed at ten past ten and a boss; its back on −z, hung with its foot at the height given; collides as nothing; variants cream (black hands, stone ring) and black (gilt marks and hands). No numerals or maker's name; nothing moves, glows or blinks. The tile **Clock Tower** (`gothic.clock_tower`, `map/packTiles2.ts`, in the Gothic Estate pack): a square stone tower, 1 cell and 6 levels (24 m): a door south, a stair of 0.25 m steps switching back round a solid stone core (2.4 m flights east and west, full-width landings north and south) to a belfry gallery 17.5 m up along the south wall, paired openings on all four sides with sills a metre up (a perch), a plain stage under the belfry for clock faces, string courses, a roof at 21.8 m with a crenellated parapet and pinnacles; tile boxes only, painted by the placement's surfaces. The set pieces **Clock Tower** (`setpiece.clock_tower`: the tile in its pack's stone and trim, four Clock Faces centred 15.3 m up, a light on the stair; option Clock faces: cream, black, none) and **Refectory Bay** (`setpiece.refectory_bay`: 8 m of a mess hall 16 m across, 1 × 2 cells with no wall between them, dressed stone walls, a beamed timber ceiling, a stone pier at the bay's west end against each long wall, two Long Tables with Benches either side, a Chandelier with one light, a Banner; option Long walls: Arched windows (default), a round-arched door south, north or both, or a solid wall with a fireplace of blocks (a cold hearth) north or south).
 
+**The campus kit** (`tools/content/kit/campus.mjs`, set pieces `content/setpieces/campus.json`; St. John's steps 7-10,
+built ahead of the halls: DeKoven, Memorial Hall, the chapel, the gym and pool). All generated in code, no downloads,
+no real school's crest or flag; nothing glows, flickers or moves (the stained glass is plain vertex colour).
+Props: `kit.seat.pew` and `kit.seat.pew_rows` (seven pews as one prop, collides as the seven boxes),
+`kit.seat.bleacher` (four tiers of 0.28 m, walked up as stairs), `kit.window.stained` (a pointed two-light window
+2.2 × 6.1 m) and `kit.window.rose` (a 3.2 m wheel), both drawn on both faces of the 0.5 m wall they are set in (the wall
+stays solid: a window to look at, not through; a prop that collides as nothing may stand 5 cm past a set piece's
+footprint, `map/setPieceCheck.ts`), `kit.table.altar` (altar and reredos), `kit.cabinet.organ`, `kit.cabinet.trophy`,
+`kit.sign.crest_floor` / `kit.sign.crest_wall` (the game's own crest: a shield, two gold stars on royal purple over a
+gold chevron, an open book on silver; Q12), `kit.sign.honours` (a faceless portrait between two bronze plaques),
+`kit.roof.vault_bay` (an 8 m bay of a barrel vault 24 m across on a steel bowstring truss, a sheet roof over its
+boards, four pendant lamp shades; variant end closes its gable), `kit.sport.court_lines`, `kit.sport.hoop_wall`,
+`kit.sport.pool_lanes`. Tiles (`content/tiles/core.json`): `core.stair_spiral` (Spiral Stair: 16 treads in one full
+turn round a newel in a round stone shaft against the cell's south wall, doors north on both floors; the kit's new
+`spiral` builder in `map/catalog.ts`; no tread over another, which kept the navmesh whole), `core.hall_tall` (Tall
+Hall: the Tall Room without its column), `core.porch_round` (a round room with doorways north and south). Set pieces:
+Admin Bay, Library Bay, Library Porch, Chapel Nave Bay, Chapel Chancel, Chapel Narthex (both spiral stairs and the
+gallery), Gym Bay, Gym Entrance, Pool Hall (its water is a set piece part: `water` parts, shipped pieces only;
+MapMaker's Make set piece leaves water out, so maps carry none). Walks in every turn: `setPiecesCampus.test.ts`. No map
+format change.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one

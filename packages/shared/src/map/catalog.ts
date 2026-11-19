@@ -174,6 +174,38 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
 }
 
 /**
+ * A spiral stair (the kit's `spiral`; St. John's chapel, docs/map-briefs/st_johns): `n` treads round a centre (cx,
+ * cz), each from radius `r0` to `r1` turned to face out from the centre, sweeping from angle `a0` by `sweep`
+ * (radians; 0 = +x/east, π/2 = +z/north; negative turns clockwise seen from above), the k-th one's top `base +
+ * height * k / n` high. Treads are slabs `slab` thick (so the turn below keeps its headroom), save those numbered
+ * `solid[0]`..`solid[1]` (from 1), which stand on the floor. Each ring of a tread is as long as the outer arc it
+ * covers, so the treads overlap a little and leave no crack;
+ * each is three boxes from the newel out (a wedge, near enough).
+ */
+function spiral(cx: number, cz: number, r0: number, r1: number, a0: number, sweep: number, n: number, height: number, base: number, slab: number, solid: readonly [number, number] | undefined): LocalBox[] {
+  const out: LocalBox[] = [];
+  const d = Math.abs(sweep) / n;
+  // Each tread in three rings, each as long as its own outer arc: a wedge, near enough, so a tread doesn't reach over
+  // its neighbours by the newel (which would leave a jumble of ledges there that the navmesh drops).
+  const rings = 3;
+  for (let k = 1; k <= n; k++) {
+    const a = a0 + (sweep * (k - 0.5)) / n;
+    const top = base + (height * k) / n;
+    const bottom = solid && k >= solid[0] && k <= solid[1] ? base : top - slab;
+    for (let i = 0; i < rings; i++) {
+      const ra = r0 + ((r1 - r0) * i) / rings;
+      const rb = r0 + ((r1 - r0) * (i + 1)) / rings;
+      const len = 2 * rb * Math.sin(d / 2) + 0.04;
+      const rm = (ra + rb) / 2;
+      const mx = cx + rm * Math.cos(a);
+      const mz = cz + rm * Math.sin(a);
+      out.push({ min: [mx - len / 2, bottom, mz - (rb - ra) / 2 - 0.01], max: [mx + len / 2, top, mz + (rb - ra) / 2 + 0.01], yaw: -(a + Math.PI / 2) });
+    }
+  }
+  return out;
+}
+
+/**
  * Steps down from the edge of a raised block at local z = `edge` (heading -z),
  * between x0 and x1: the first step `top` high, each next one 0.25 m lower,
  * `run` deep, standing on `floor`.
@@ -518,6 +550,7 @@ export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitc
   | { arcade: { centre: Pair; r: number; turns: Pair; bays: number; height?: number } }
   | { roundRoom: { centre: Pair; r: number; door: number; window: number } }
   | { discStrips: { centre: Pair; r: number; strips: number; width: number; y: Pair } }
+  | { spiral: { centre: Pair; r: Pair; turns: Pair; steps: number; height: number; base?: number; slab?: number; solid?: Pair } }
   | { vault: { axis: 'x' | 'z'; span: Pair; along: Pair; spring: number; crown: number; pieces?: number; t?: number } }
   | { block: { across: number; height: number } }
   | { turned: TurnedPart }
@@ -725,6 +758,10 @@ function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
   } else if ('wallRun' in p) {
     // A wall run is wall (it takes the walls' paint) unless the part says otherwise; its trim stays trim.
     return wallRunBoxes(p.wallRun, p.kind ?? 'wall');
+  } else if ('spiral' in p) {
+    // A spiral stair's treads; `turns` is [start, sweep] in quarter turns (a negative sweep climbs clockwise).
+    const a = p.spiral;
+    out = spiral(a.centre[0], a.centre[1], a.r[0], a.r[1], a.turns[0] * HALF_PI, a.turns[1] * HALF_PI, a.steps, a.height, a.base ?? 0, a.slab ?? 0.35, a.solid);
   } else if ('discStrips' in p) {
     // A half-disc floor in strips (z from the centre outward), each as wide as the circle there.
     const { centre: [cx, cz], r, strips, width, y } = p.discStrips;

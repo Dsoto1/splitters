@@ -832,6 +832,68 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.table.altar",
+      "displayName": "Altar",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9, photos 11 and 21): a pale stone altar 2.2 m wide under a white cloth, a frontal of cloth on its face (green, or red), two plain unlit candlesticks, before a reredos 3 m wide and 3.2 m high (blind arches, a plain brass cross). Front +z. Collides as the altar and the reredos (bounds within)."
+      },
+      "size": [
+        3.0,
+        3.2,
+        1.24
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "altar",
+        "altar": [
+          2.2,
+          1.0,
+          0.85
+        ],
+        "reredos": 0.3,
+        "arches": 7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "green",
+          "seed": 33001,
+          "look": {
+            "stone": "#ece7dc",
+            "frontal": "#2f5a3a",
+            "cloth": "#f3f1ea",
+            "brass": "#b48a3c"
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 33002,
+          "look": {
+            "stone": "#ece7dc",
+            "frontal": "#7a1f24",
+            "cloth": "#f3f1ea",
+            "brass": "#b48a3c"
+          }
+        }
+      ]
     }
   ]
 }

@@ -297,6 +297,178 @@
       ]
     },
     {
+      "id": "kit.sign.crest_floor",
+      "displayName": "Crest Roundel (floor)",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7: the crest set in DeKoven's floor; Q12: a crest of our own): a roundel 3 m across inlaid in the floor: a brass rim, a royal purple band with a gold laurel, a stone field, and the game's own crest in it (a shield: two gold stars on purple over a gold chevron, an open book on silver below, a gold border; no real school's mark). Lies flat a hair over the floor. Collides as nothing."
+      },
+      "size": [
+        3.0,
+        0.02,
+        3.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "crest",
+        "form": "floor"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 16
+        },
+        {
+          "distance": 45
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 34001,
+          "look": {
+            "field": "#4b2a84",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "ring": "#3a2266",
+            "stone": "#d9d3c4",
+            "rim": "#a8823a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 34002,
+          "look": {
+            "field": "#24543a",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "ring": "#1d3f2c",
+            "stone": "#d9d3c4",
+            "rim": "#a8823a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.crest_wall",
+      "displayName": "Crest Shield (wall)",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7): the game's own crest (as the floor roundel's) as a shield on a dark wood board 1.2 x 1.5 m, to hang on a wall; its back on -z. Collides as nothing."
+      },
+      "size": [
+        1.2,
+        1.5,
+        0.06
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "crest",
+        "form": "wall"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 34011,
+          "look": {
+            "field": "#4b2a84",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "board": "#3b2618"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 34012,
+          "look": {
+            "field": "#24543a",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "board": "#3b2618"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.honours",
+      "displayName": "Honours Board",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7: plaques and portraits in DeKoven's corridors): a portrait in a gilt frame (a dark oil of a head-and-shoulders shape: no face, nobody real) between two cast bronze plaques with raised borders and lines of relief standing for lettering (no words), 2.4 m across; its back on -z. Collides as nothing."
+      },
+      "size": [
+        2.4,
+        1.6,
+        0.1
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "honours",
+        "portrait": [
+          0.8,
+          1.05
+        ],
+        "plaque": [
+          0.5,
+          0.7
+        ],
+        "lines": 7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "bronze",
+          "seed": 34021,
+          "look": {
+            "gilt": "#b08d3e",
+            "bronze": "#6e4f2a",
+            "ground": "#3a2a1c",
+            "figure": "#1d1a18"
+          }
+        }
+      ]
+    },
+    {
       "id": "kit.sign.clock_face",
       "displayName": "Clock Face",
       "category": "Decor",

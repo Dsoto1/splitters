@@ -504,6 +504,170 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.seat.pew",
+      "displayName": "Pew",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9, the chapel): a dark wood church pew 3.6 m long: a seat 0.45 m up on solid bench ends with scrolled tops, a high panelled back, a book ledge on its rear for the row behind, a kneeler low behind it. Faces +z. Collides as its box."
+      },
+      "size": [
+        3.6,
+        1.0,
+        0.9
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "pew",
+        "rows": 1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "dark",
+          "seed": 31001,
+          "look": {
+            "wood": "#4a2e1c",
+            "jitter": 0.06,
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 1,
+          "name": "oak",
+          "seed": 31002,
+          "look": {
+            "wood": "#8a6037",
+            "jitter": 0.06,
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.seat.pew_rows",
+      "displayName": "Pew Rows",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9): seven Pews in rows 0.95 m apart as one prop (a block of the chapel's seating: one entity where there would be seven), the front row at +z. Collides as the seven pews' boxes (bounds within): the gaps between rows stay open."
+      },
+      "size": [
+        3.6,
+        1.0,
+        6.6
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "pew",
+        "rows": 7,
+        "pitch": 0.95
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 16
+        },
+        {
+          "distance": 45
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "dark",
+          "seed": 31011,
+          "look": {
+            "wood": "#4a2e1c",
+            "jitter": 0.06,
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 1,
+          "name": "oak",
+          "seed": 31012,
+          "look": {
+            "wood": "#8a6037",
+            "jitter": 0.06,
+            "grime": 0.15
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.seat.bleacher",
+      "displayName": "Bleachers",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10, the gym): a run of bleachers 8 m long, four tiers each 0.28 m up and 0.8 m deep rising to the back (-z), plank seats on steel risers. Walked up as stairs (no tier taller than a player steps): collides as one box a tier, stacked (bounds within)."
+      },
+      "size": [
+        8.0,
+        1.16,
+        3.2
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "bleacher",
+        "tiers": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 20
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "maple",
+          "seed": 31021,
+          "look": {
+            "plank": "#c79b62",
+            "steel": "#6b7077",
+            "jitter": 0.05,
+            "grime": 0.1
+          }
+        },
+        {
+          "index": 1,
+          "name": "purple",
+          "seed": 31022,
+          "look": {
+            "plank": "#c79b62",
+            "steel": "#4b2a84",
+            "jitter": 0.05,
+            "grime": 0.1
+          }
+        }
+      ]
     }
   ]
 }
