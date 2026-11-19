@@ -244,6 +244,28 @@ new at its factor, from a standing eye and from the side; `?mode=lineup`).
 | Loafbrr Cave Rocks B / D | Shard Boulder ×1.29 / Angular Boulder ×1.05 |
 | Meshy Red Rock Spires | not swapped: a formation, built by hand as Sandstone Cliff panels and boulders |
 
+**Run on 42 maps through MapMaker** (2026-11-18/19; Playwright on the real editor: Import, Environment → Nature, Swap
+natural props for ours with rocks by the ground, Export): 2,844 Quaternius placements and about 600 kit and Meshy rocks.
+Rocks came out sandstone on Sunstone Crag, Iron Maw, Sandsweep, Dustwater and Sunken Kingdom. Not swapped yet: the Red
+Rock Spires (Dustwater 12, Sunken Kingdom 6, Iron Maw 1), St. John's and the coverage map (last), and the Kenney Nature
+Kit's own trees and logs (not in this swap). **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
+before and after; draws, triangles, shadow casters):
+
+| Map | Before | After |
+|---|---|---|
+| Eagle Spires | 317 · 1.174 M · 92 | 294 · 0.868 M · 95 |
+| Step Temple | 372 · 1.290 M · 305 | 369 · 0.959 M · 295 |
+| Coldwater Gulch | 255 · 0.949 M · 95 | 244 · 0.826 M · 99 |
+| Primeval Park | 460 · 1.445 M · 130 | 435 · 1.180 M · 128 |
+| Norman Shores | 588 · 1.568 M · 106 | 512 · 1.336 M · 109 |
+| Sunstone Crag | 438 · 1.090 M · 122 | 348 · 0.972 M · 107 |
+| Iron Maw | 372 · 1.602 M · 97 | 322 · 1.424 M · 98 |
+| Frost Basin | 215 · 0.927 M · 110 | 197 · 0.838 M · 110 |
+| Apex Ring | 409 · 1.092 M · 89 | 372 · 0.973 M · 88 |
+
+Draws fall on every map but two (Gallows Yard +6, Hollowmere +1) and triangles on all of them (10-26 % on the
+forested ones); casters within a few. The download does not shrink until the Quaternius pack leaves the build.
+
 **Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic
 generator approach applied to simple man-made props. Families, each with endless variants under a stable family id:
 - crates and barrels;
