@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Iron sights that line up.** Aiming down sights now puts your eye behind each gun's own drawn sights, measured from the model: 13 guns (pistols, SMGs, the Assault and Burst Rifles, the shotguns and more), each within 0.1° of where the shot goes. Guns with no sights drawn keep their old aim; nothing about how a gun shoots has changed.
 - **MapMaker: building below ground.** On Basement the ground turns to glass with a clear circle at the pointer and the tunnels' roofs come off when seen from above, so a tunnel's layout shows and can be edited; its open ends and joints are marked, and the plan view shows the basement. A buried tunnel's unbuilt end is closed with a face of its own rock, brick or concrete (no more looking out at the sky) until a portal or a Dead End goes there.
 - **MapMaker: picking things inside others.** Spawns, pickups, lights and logic show through walls and set pieces as icons and are picked through them; a click again at the same spot steps through everything there (a small list says what); the move gizmo's handle drags a thing out from inside something.
 - **Simpler Match Setup pickers.** Bots & AI: a tick-box for each of the eight bot types (the long "Named as" list folded into them), then Ranks & badges and Themed names as plain switches. Teams & players: Teams and Per team steppers over one row of layouts (1v1 to 32v32, FFA) in place of the More layouts list. Saved setups keep loading.
