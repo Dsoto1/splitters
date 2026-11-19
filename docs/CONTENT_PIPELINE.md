@@ -884,7 +884,7 @@ A door that never opens is a prop, not a door entity: no logic, nothing each tic
 |---|---|---|
 | `kit.door.oak` Oak Door (shut) | its box, 2 × 2.6 × 0.16 m: a closed room | the middle of the wall, in the doorway |
 | `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway (`bounds: "within"`: the leaf reaches 0.8 m into the room and does not collide) | the same |
-| `kit.door.oak_open` (open, 90°) | none (`collide: "none"`): the doorway stays clear for players, bots (who need its full 2 m) and shots | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
+| `kit.door.oak_open` (open, 90°) | its leaf (asset version 2; owner, 2026-11-19: open doors are cover): a 7 cm box from the floor to the leaf's top, square into the room on the hinge side; the doorway beside it stays clear. A `passage` (sim/passages.ts) takes bots through, and the leaf is left out of the navmesh (`WorldBox.navThrough`), whose 0.8 m keep-off would otherwise close the room | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
 
 The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. Variants are leaves: `oak`
 (boards under three iron strap hinges, a ring handle each side), `glazed` (a half-glazed office door), `diamond` (a
@@ -892,7 +892,7 @@ diamond of mouldings on each panel), `dark`. They fit the wall style `door_room`
 frame of its own) and a 2 m gap in a partition of blocks (0.12 m: the frame stands 2 cm proud each side).
 
 **Painted doors** (Tileset 11, Urban & Civilian): `kit.door.painted` (shut) and `kit.door.painted_open` are the same
-frame, size and collision as the Oak Door's shut and open families, with painted leaves as variants: `red` and
+frame, size and collision (the open one: its leaf, and a passage) as the Oak Door's shut and open families, with painted leaves as variants: `red` and
 `blue` (a two-panel house door, a brass knob, a letter plate), `white` (half-glazed) and `shop` (a kick plate under
 one tall pane, an upright pull bar). Generator settings `leaf: 'framed' | 'shop'` and `handle: 'knob' | 'pull'`.
 A door that opens by itself is still the Door entity; a new door style there would be a schema change.

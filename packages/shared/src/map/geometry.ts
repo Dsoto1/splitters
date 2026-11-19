@@ -49,6 +49,14 @@ export interface WorldBox {
   paint?: 'walls' | 'metal';
   /** A bar, post or rail of a see-through edge (edgeLattice): it stops bodies and shots, never sight lines. */
   lattice?: true;
+  /**
+   * Stops bodies and shots but is left out of the bots' navmesh (nav/index.ts NavWorld.build): an open door's leaf
+   * (a kit family with a `passage`), which the navmesh's 0.8 m keep-off would otherwise grow until the room it opens
+   * into has no navmesh left. Bots walk past it with their real 0.4 m, on the passage's link through the doorway.
+   */
+  navThrough?: true;
+  /** A step of a stair flight (LocalBox.step): MapMaker's headroom check walks these (map/headroom.ts). */
+  step?: true;
   /** The face closing a buried passage's open end (buriedOpenEnds): gone once a portal, a Dead End or another piece is put there. */
   endCap?: true;
 }
@@ -523,7 +531,8 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const s = Math.sin(e.yaw);
     // Boxes turn with the prop (yaw like a mesh's rotation.y: local +Z goes to (sin, cos)), so a prop
     // turned at an angle collides with its own shape, not the much bigger square round it.
-    const lattice = isKitModel(e.model) && LATTICE_KIT_KINDS.has(getKitFamily(e.model)?.kind ?? '') ? ({ lattice: true } as const) : {};
+    const family = isKitModel(e.model) ? getKitFamily(e.model) : undefined;
+    const lattice = { ...(LATTICE_KIT_KINDS.has(family?.kind ?? '') ? ({ lattice: true } as const) : {}), ...(family?.passage ? ({ navThrough: true } as const) : {}) };
     const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
       e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw, ...lattice } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, ...lattice };
     if (def.boxes) {
@@ -722,6 +731,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   boxes.push(...buriedEndCaps(cells, cellSize, levelHeight, catalog));
   boxes.push(...propBoxes(map));
   boxes.push(...blockBoxes(map));
+  // Facade pieces deep enough to stand against collide (their boxes drawn as decor above).
+  const cover: WorldBox[] = [];
+  packFacadeBoxes(map, cells, cover);
+  boxes.push(...cover);
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
   if (map.bounds) {
     let floorY = Infinity;
@@ -1119,7 +1132,7 @@ function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: nu
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
-  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}) };
+  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}), ...(box.step ? { step: true as const } : {}) };
   if (box.yaw || box.pitch || box.roll) {
     // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
@@ -1384,8 +1397,22 @@ function floorRuns(segs: readonly [number, number, number, number, number][]): [
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
 const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
 
-/** The boxes of every Style Pack facade (visual only: trim with its own material). */
-function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
+/**
+ * How far a Style Pack facade's piece must stand proud of the cladding, and how tall it must be, to collide
+ * (FACADE_COVER_*): a buttress, pilaster, plinth, talud, cornice or pinnacle you can stand against or hide behind
+ * (owner, 2026-11-19: "same with some of the building trim"); thin dressing (courses, hood moulds, sills, corner boards,
+ * the cladding itself) stays drawn only, and so does what stands over the roofline (parapets, cornices over the eaves,
+ * pinnacles, merlons): the roofs bots and players reach stay as they were.
+ */
+export const FACADE_COVER_PROUD = 0.1;
+export const FACADE_COVER_HEIGHT = 0.25;
+
+/**
+ * The boxes of every Style Pack facade (trim with its own material, drawn with the level's decor). With `cover`, the
+ * pieces deep and tall enough to collide (FACADE_COVER_PROUD) are also put there as collision only (kind `prop`: never
+ * drawn, as a prop's own box; the piece's material for the rounds that strike it).
+ */
+function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>, cover?: WorldBox[]): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
   const half = cellSize / 2;
   const out: WorldBox[] = [];
@@ -1400,8 +1427,13 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
     const ground = !cells.has(`${gx},${gy},${gz - 1}`);
     const roofed = cells.has(`${gx},${gy},${gz + 1}`);
     const id = occ.placement.id;
+    // (`proud`: how far the piece stands out past the cladding's face, set once the cladding's depth is known.)
+    let face = 0;
+    let skin = false;
     const add = (side: Side, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, material: string, tint: string | null = null) => {
-      out.push({ ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } });
+      const b: WorldBox = { ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } };
+      out.push(b);
+      if (cover && !skin && face - v0 >= FACADE_COVER_PROUD - 1e-6 && y1 - y0 >= FACADE_COVER_HEIGHT - 1e-6 && y1 <= levelHeight + 1e-6) cover.push({ ...b, kind: 'prop' });
     };
     const dressed = new Set<Side>();
     for (const side of SIDES) {
@@ -1414,7 +1446,10 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
       const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
       const out0 = -base - look.depth;
       const segs = edgeSegments(style, half, levelHeight).filter((g) => g[4] >= 0.3);
+      face = out0;
+      skin = true;
       for (const [u0, u1, y0, y1] of segs) add(side, u0, u1, y0, y1, out0, -base, look.skin, look.tint);
+      skin = false;
       const top = Math.max(0, ...segs.map((g) => g[3]));
       const full = top >= levelHeight - 1e-6;
       switch (facade) {

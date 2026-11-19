@@ -43,16 +43,13 @@ const NO_COLLISION = new Set([
   'kit.window.stained', 'kit.window.rose', 'kit.sign.crest_floor', 'kit.sign.crest_wall', 'kit.sign.honours', 'kit.roof.vault_bay', 'kit.sport.court_lines', 'kit.sport.hoop_wall', 'kit.sport.pool_lanes',
   // The dome kit's ring trims: mouldings 0.2 m proud of the drum's wall, which is what collides.
   'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom',
-  // The Oak Door standing open (docs/map-briefs/st_johns, step 1): the doorway it stands in stays clear.
-  'kit.door.oak_open',
-  'kit.door.oak_slim_open',
   // The built-in closet's front: the wall it is set in is the closet, and collides.
   'kit.cabinet.closet_front',
   // The two either side of a doorway as one prop (St. John's step 4: lighter dorm rooms).
   'kit.cabinet.closet_front_pair',
-  // Tileset 11 (Urban & Civilian): the Painted Door standing open, as the Oak Door; the Shop Awning hangs on a wall
-  // above head height, as the game's other awnings (prop.awning, prop.mv_awning: no collision).
-  'kit.door.painted_open', 'kit.shop.awning',
+  // Tileset 11 (Urban & Civilian): the Shop Awning hangs on a wall above head height, as the game's other awnings
+  // (prop.awning, prop.mv_awning: no collision). (The doors standing open collide as their leaf since 2026-11-19.)
+  'kit.shop.awning',
   // The Wall Shelf hangs on a wall above the floor, as the Quaternius piece it replaces (no collision).
   'kit.shelf.wall',
   // St. John's step 4b: the Sand Court is walked on as the ground under it.

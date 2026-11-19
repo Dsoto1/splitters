@@ -54,6 +54,27 @@ export function bindFullscreenButton(button: HTMLButtonElement, signal?: AbortSi
 /** When fullscreen last ended and when the mouse was last released (performance.now()), for `browserTookEscape`. */
 let fullscreenEndedAt = -1e9;
 let unlockedAt = -1e9;
+/** The page let the mouse go itself (releasePointer): that release is no Esc the browser took. */
+let pageReleased = false;
+/** Bumped whenever the page lets the mouse go: a request for it made before is stale (pointerWanted). */
+let pointerEpoch = 0;
+
+/**
+ * The page lets the mouse go itself (a window over the pause menu needs it): any request for the mouse still under
+ * way is dropped (pointerWanted), and the release doesn't count as an Esc the browser took (`browserTookEscape`), so
+ * the next Esc acts on the menu.
+ */
+export function releasePointer(): void {
+  pointerEpoch++;
+  if (!document.pointerLockElement) return;
+  pageReleased = true;
+  document.exitPointerLock();
+}
+
+/** The current request for the mouse, for `pointerWanted`: taken when the page asks for it. */
+export const pointerAsk = (): number => pointerEpoch;
+/** Whether a request for the mouse (its `pointerAsk`) still stands: the page hasn't let the mouse go since. */
+export const pointerWanted = (ask: number): boolean => ask === pointerEpoch;
 
 /**
  * This Esc press isn't the page's to act on: the browser leaves fullscreen with it (fullscreen without
@@ -77,7 +98,9 @@ export function installFullscreenKeys(): void {
     escapeHeld = false;
   });
   document.addEventListener('pointerlockchange', () => {
-    if (!document.pointerLockElement) unlockedAt = performance.now();
+    if (document.pointerLockElement) return;
+    if (!pageReleased) unlockedAt = performance.now();
+    pageReleased = false;
   });
   window.addEventListener(
     'keydown',

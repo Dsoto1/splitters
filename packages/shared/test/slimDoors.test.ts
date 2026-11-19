@@ -70,11 +70,12 @@ const miss = (nav: NavWorld, a: Vec3, b: Vec3): number => {
 const room = (cx: number, north: boolean): [number, number, number] => [cx, 0, north ? 8.3 : -0.3];
 
 describe('the slim door props', () => {
-  it('are the Oak Door 1.2 m wide: shut and ajar collide as the frame, open has no collision and is a passage', () => {
+  it('are the Oak Door 1.2 m wide: shut and ajar collide as the frame, open collides as its leaf and is a passage', () => {
     expect(getKitFamily('kit.door.oak_slim_open')?.passage).toEqual({ frame: -0.52 });
     expect(getKitFamily('kit.door.oak_slim')?.passage).toBeUndefined();
     expect(getKitFamily('kit.door.oak_slim_ajar')?.passage).toBeUndefined();
-    expect(getKitFamily('kit.door.oak_open')?.passage).toBeUndefined();
+    // The wide open door is a passage too since its leaf collides (doorLeaves.test.ts).
+    expect(getKitFamily('kit.door.oak_open')?.passage).toEqual({ frame: -0.92 });
   });
   it('a passage is a link each way through the frame, PASSAGE_REACH either side, turned with the prop', () => {
     const links = passageLinks([{ kind: 'prop', model: 'kit.door.oak_slim_open', position: [10, 4, 20], yaw: Math.PI / 2, scale: 1 }]);
@@ -85,7 +86,7 @@ describe('the slim door props', () => {
     expect(links[0]!.start.z).toBeCloseTo(20, 5);
     expect(links[0]!.start.y).toBe(4);
     expect(links[1]).toEqual({ start: links[0]!.end, end: links[0]!.start });
-    expect(passageLinks([{ kind: 'prop', model: 'kit.door.oak_open', position: [0, 0, 0], yaw: 0, scale: 1 }])).toHaveLength(0);
+    expect(passageLinks([{ kind: 'prop', model: 'kit.door.oak', position: [0, 0, 0], yaw: 0, scale: 1 }])).toHaveLength(0);
   });
 });
 
@@ -125,10 +126,11 @@ describe('slim doorways', () => {
   it('are 1.2 m between the jambs, and the closed rooms stay shut', () => {
     const map = mapOf([bay(0, SLIM)]);
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
-    // Across the doorway in the wall's depth (z 5.5), 1 m up: from its middle, the jambs 0.6 m either side.
+    // Across the doorway in the wall's depth (z 5.5), 1 m up: from its middle, the jamb 0.6 m on the latch side; on the
+    // hinge side the open leaf, which collides (doorLeaves.test.ts), 0.454 m (a 1.05 m way through for a 0.8 m body).
     for (const cx of [-2, 2]) {
       const mid = { x: cx, y: 1, z: 5.5 };
-      expect(physics.raycastWorld(mid, { x: 1, y: 0, z: 0 }, 2)).toBeCloseTo(0.6, 2);
+      expect(physics.raycastWorld(mid, { x: 1, y: 0, z: 0 }, 2)).toBeCloseTo(0.454, 2);
       expect(physics.raycastWorld(mid, { x: -1, y: 0, z: 0 }, 2)).toBeCloseTo(0.6, 2);
     }
   });

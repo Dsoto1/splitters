@@ -234,8 +234,9 @@ export class NavWorld {
    * and its navmesh is the same as without).
    */
   static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false, drops: DropOptions | null = null): NavWorld {
-    // The ground round a built map is for players to stand on, not somewhere bots go.
-    const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground'));
+    // The ground round a built map is for players to stand on, not somewhere bots go; an open door's leaf is walked
+    // past, not kept off (WorldBox.navThrough).
+    const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground' && !b.navThrough));
     let positions = box.positions;
     let indices = box.indices;
     if (extra) {
