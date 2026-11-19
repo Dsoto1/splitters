@@ -134,6 +134,24 @@ describe('outside the play area', () => {
     match.destroy();
   });
 
+  it("a spawn on an island of its own doesn't make the rest of the map outside (MapMaker's blank starter: one room on open terrain)", () => {
+    const doc = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
+    const n = 49;
+    doc.terrain = { origin: [-48, -48], spacing: 2, cols: n, rows: n, baseY: -0.15, heights: new Array(n * n).fill(0), materials: new Array((n - 1) * (n - 1)).fill(0), boundary: true, foliage: [] } as unknown as MapDocument['terrain'];
+    const loaded = loadMap(JSON.stringify(doc));
+    if (!loaded.ok) throw new Error('starter');
+    const match = new Match(loaded.map, DEFAULT_RULES['core.deathmatch']);
+    const me = match.addHuman('me')!;
+    for (let i = 0; i < 5; i++) match.step();
+    expect(match.inPlay({ x: 24, y: -0.15, z: -10 })).toBe(true);
+    put(me, 24, -10);
+    const events: GameEvent[] = [];
+    for (let i = 0; i < (OUT_OF_BOUNDS.back + 1) * TICK_RATE; i++) events.push(...match.step());
+    expect(events.some((e) => e.e === 'msg' && e.s === me.slot)).toBe(false);
+    expect(Math.hypot(me.move.pos.x - 24, me.move.pos.z + 10)).toBeLessThan(0.5);
+    match.destroy();
+  });
+
   it('past the map boundary counts as outside too, and inside play nobody is moved', () => {
     const match = new Match(fencedYard({ min: [-4, -4], max: [20, 20], style: 'invisible', height: 8 }), DEFAULT_RULES['core.deathmatch']);
     const me = match.addHuman('me')!;

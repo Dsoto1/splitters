@@ -1137,15 +1137,33 @@ export class NavWorld {
 
   /**
    * Whether `p` stands on navmesh that doesn't route back to the main area (the spawns' area): ground behind a map's
-   * fence, a pit. False off the navmesh (on a prop, in the air) and when the navmesh has no main area to speak of.
+   * fence, a pit. Only a patch smaller than the main area counts: the main area is the bulk of a map's play, and when
+   * the navmesh leaves the spawns on a little island of their own (MapMaker's blank starter: one tile on open terrain
+   * the navmesh doesn't join it to), the rest is where play is, not a place nobody should be. False off the navmesh
+   * (on a prop, in the air) and when the navmesh has no main area to speak of.
    */
   stranded(p: Vec3): boolean {
     const r = this.routesNow();
     if (r.main < 0) return false;
     // The polygon under the feet, as a squad spawn's walkable test finds it.
     const s = this.nearestPoly({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
-    if (!s) return false;
-    return this.toMainNow()[s.index] !== 1;
+    if (!s || this.toMainNow()[s.index] === 1) return false;
+    const size = this.compSizesNow();
+    return size[r.comp[s.index]!]! < size[r.main]!;
+  }
+
+  private compSizes: Float64Array | null = null;
+
+  /** Each component of routes' walkable area (m², its polygons' areas). Worked out once. */
+  private compSizesNow(): Float64Array {
+    if (this.compSizes) return this.compSizes;
+    const r = this.routesNow();
+    const { area } = polyShapes(this.graph());
+    let n = 0;
+    for (let i = 0; i < r.comp.length; i++) n = Math.max(n, r.comp[i]! + 1);
+    const size = new Float64Array(n);
+    for (let i = 0; i < r.comp.length && i < area.length; i++) size[r.comp[i]!]! += area[i]!;
+    return (this.compSizes = size);
   }
 
   /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
