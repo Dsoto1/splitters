@@ -68,6 +68,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed (urgent, alone): the gunshot fix** (`check/train-20261119-005053` at 042c371c, run 44432311656, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
+
 **Landed: St. John's step 6 (Welles Hall and its clock tower)** (`check/train-20261118-232046` at f0b327b2, run 44419960458, green on attempt 2; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
 
 **Landed: blood by character** (`check/train-20261118-222033` at daed3056, run 44410669840, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed).
@@ -126,6 +128,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-18 23:20): URGENT gunshots lag** (`wip/urgent-gunshots`; owner, 2026-11-18 23:10, live site: "gunshots are lagging now… chugging"). Find which of today's landings makes the shot's sound or feedback stutter (audio buses, perf batch, gun handling, grips auto-fit's muzzle point, blood by character), fix the root cause with a per-shot regression test; lands alone when green. Files as needed in client `audio/`, `game/` fire path (`muzzlePoint.ts`, weapon view, effects), tests. Then **DM spawns spread out** (`wip/dm-spawns` unless small; owner, 2026-11-18): every spawn point used, far from others and enemies, one player per point, offsets/stagger when over capacity; shared spawn selection and its tests.
 
 **Content order (lead, 2026-11-18 21:52):** `wip/stjohns-6` (coverage map + St. John's) lands before any `wip/nature-swap*` batch that touches `maps/test_coverage.json`; the nature swap does St. John's last, after `wip/stjohns-6` and `wip/stjohns-kit`.
+
+- **Claimed (a helper of lane B's splitters22, 2026-11-19): St. John's clock tower headroom** (`wip/stjohns-clocktower`; owner, 2026-11-19: "the new clocktower also is not usable since its ceilings are too low"). The fault is in the tile, not the map: `gothic.clock_tower`'s switchback climbed 2.5 m a turn (2.2 m over every step and the door). Files: shared `map/packTiles2.ts` (the Clock Tower tile: a stair winding round the core on all four sides, door 2.4 m), `test/setPiecesAcademy.test.ts` (a headroom test), palette pictures from content:rebuild, CHANGELOG. No map file changes (St. John's and the coverage map use the tile); no format change.
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)

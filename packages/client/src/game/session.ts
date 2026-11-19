@@ -214,6 +214,7 @@ import { holdoverFor } from './holdover.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
+import { TriggerLatch, shotDelay } from './triggerLatch.ts';
 import { VehiclePrediction, predictVehicles } from './vehiclePrediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
 import { topScorer } from '../audio/announcer.ts';
@@ -377,6 +378,10 @@ export class GameSession {
   private killTimes: number[] = [];
   /** Out of play: the kill cam, following someone and the free camera (spectatorCam.ts). */
   private readonly specCam = new SpectatorCam();
+  /** Your trigger and sprint before each input goes out (triggerLatch.ts). */
+  private readonly triggerLatch = new TriggerLatch();
+  /** The frame time, smoothed (s): how far a slow frame's shots are spread back to their ticks (shotDelay). */
+  private frameEwma = 1 / 60;
   /** Spectating by choice (the roster marks you `sp`): out of the match until you join again. */
   private spectator = false;
   /** Your match for your career (careerTally.ts) and your profile card under the scoreboard (profileCard.ts): with `opts.career` only. */
@@ -3317,6 +3322,7 @@ export class GameSession {
     // Then the local player, reconciled once with the newest of them.
     this.reconcileLocal();
     const dt = Math.min(0.25, (now - this.last) / 1000);
+    this.frameEwma += (Math.min(0.25, Math.max(0, (now - this.last) / 1000)) - this.frameEwma) * 0.1;
     this.frameMs = now - this.last;
     this.last = now;
     const local = this.local;
@@ -3407,6 +3413,9 @@ export class GameSession {
         if (this.thirdPerson && !this.seat && local.alive) sample.buttons |= BUTTON_THIRD_PERSON;
         // Auto-reload (Options → Controls, on by default): the host starts an empty magazine's reload by itself.
         if (local.alive && autoReloadOn()) sample.buttons |= BUTTON_AUTO_RELOAD;
+        // Taps fire at once with sprint held, and a pull while the gun comes up out of a sprint is kept (triggerLatch.ts).
+        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0);
+        else this.triggerLatch.reset();
         moving ||= sample.forward !== 0 || sample.right !== 0;
         this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
@@ -3438,7 +3447,7 @@ export class GameSession {
         if (shot) {
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
-          this.sfx.localShot(shot.def, shot.alt);
+          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma));
           // The spray pattern (an option): single-round hitscan guns, round by round.
           if (!shot.alt && shot.def.kind === 'hitscan' && shot.def.pellets === 1 && shot.ends[0]) {
             const e = local.eye;
