@@ -16,6 +16,7 @@
     "dev": "tsx watch src/main.ts",
     "start": "tsx src/main.ts",
     "bench": "tsx src/tools/bench.ts",
+    "snapshot-bench": "node --expose-gc --max-semi-space-size=256 --import tsx src/tools/snapshot-bench.ts",
     "validate-map": "tsx src/tools/validate-map.ts",
     "quality-gates": "tsx src/tools/quality-gates.ts",
     "spawn-points": "tsx src/tools/spawn-points.ts",

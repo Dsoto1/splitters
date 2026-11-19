@@ -13,6 +13,8 @@ import {
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
   encodeSnapshots,
+  SNAPSHOT_BINARY_VERSION,
+  SnapshotBinaryEncoder,
   SnapshotStream,
   getWeapon,
   initPhysics,
@@ -122,6 +124,10 @@ export interface MatchHostSink {
   facts(f: HostFacts): void;
   /** The in-game bot debug view's frame (`?botdebug=1`: shared bots/debugView.ts), while the page has it on. */
   botdebug?(f: BotDebugFrame): void;
+  /** Buffers of binary snapshots the page has read and let go of (sinkTo): written again. */
+  recycle?(bufs: ArrayBuffer[]): void;
+  /** The page could not read a binary snapshot: this player's snapshots as objects from now on. */
+  objectsOnly?(): void;
 }
 
 /**
@@ -1014,6 +1020,16 @@ export class MatchHost {
     for (const r of this.remotes.values()) if (r.slot !== null) this.sink.send(r.id, text);
   }
 
+  /** Binary snapshots' buffers back from the page (sinkTo writes the next ones into them). */
+  snapshotBuffers(bufs: ArrayBuffer[]): void {
+    this.sink.recycle?.(bufs);
+  }
+
+  /** The page could not read a binary snapshot: objects from now on. */
+  snapshotObjects(): void {
+    this.sink.objectsOnly?.();
+  }
+
   private sendFacts(): void {
     const c = this.control;
     if (!c || !this.match || !this.me || this.stopped) return;
@@ -1027,7 +1043,15 @@ export class MatchHost {
 
 /** The page → the match host (a worker's messages; the same calls on the page's own thread). */
 export type ToSimHost =
-  | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean }
+  /**
+   * `snap`: the page reads binary snapshots of this version (shared/net/snapshotBinary.ts): a match host that
+   * writes that version sends them so; without it, or with another version, snapshots come as objects.
+   */
+  | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean; snap?: number }
+  /** Binary snapshots' buffers, read and handed back for the next ones. */
+  | { k: 'snapbufs'; bufs: ArrayBuffer[] }
+  /** The page could not read a binary snapshot: objects from now on. */
+  | { k: 'snapobjects' }
   | { k: 'input'; inputs: PlayerInput[] }
   | { k: 'ready' }
   /** The page's own player spectates by choice (on) or joins play again. */
@@ -1062,6 +1086,11 @@ export type ToSimHost =
 /** The match host → the page. */
 export type FromSimHost =
   | { k: 'local'; msg: ServerMessage }
+  /**
+   * This player's snapshot as a binary message (shared/net/snapshotBinary.ts), its buffer handed over, not copied:
+   * only to a page whose `start` said it reads this version.
+   */
+  | { k: 'snap'; b: ArrayBuffer }
   | { k: 'send'; id: number; text: string }
   /** Compressed pieces for a friend's link, ready to go on the wire as they are. */
   | { k: 'bytes'; id: number; pieces: Uint8Array[] }
@@ -1077,10 +1106,26 @@ export type FromSimHost =
  * compress get their stream compressed here, where the match runs (the sim worker): the page
  * only puts the pieces on the wire (`transfer` hands their buffers over without a copy).
  */
-export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void): MatchHostSink {
+export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void, opts: { snap?: number } = {}): MatchHostSink {
   const zips = new Map<number, Zipper>();
+  // This player's snapshots in binary, when the page said it reads the version written here (a worker's page:
+  // the buffer is transferred, and the page reads it into objects it reuses). Anything else: objects, as ever.
+  let binary = opts.snap === SNAPSHOT_BINARY_VERSION ? new SnapshotBinaryEncoder() : null;
   return {
-    local: (msg) => post({ k: 'local', msg }),
+    local: (msg) => {
+      if (binary && msg.t === 'snapshot') {
+        const b = binary.encode(msg);
+        if (b) return post({ k: 'snap', b }, [b]);
+        // A snapshot the format can't carry exactly (the type moved on without it): objects from now on.
+        console.warn(`binary snapshots off: ${binary.failed}`);
+        binary = null;
+      }
+      post({ k: 'local', msg });
+    },
+    recycle: (bufs) => {
+      if (binary) for (const b of bufs) binary.recycle(b);
+    },
+    objectsOnly: () => void (binary = null),
     send: (id, text) => {
       const zip = zips.get(id);
       if (!zip) return post({ k: 'send', id, text });
@@ -1153,6 +1198,10 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return;
     case 'stop':
       return host.stop();
+    case 'snapbufs':
+      return host.snapshotBuffers(m.bufs);
+    case 'snapobjects':
+      return host.snapshotObjects();
     case 'warm':
       return;
   }
