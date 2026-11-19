@@ -39,7 +39,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-clocktower` · eaa242ba · 44452280300 (lane B's helper; owner, 2026-11-19, high priority: St. John's clock tower was too low to use. The fault was in the Clock Tower tile: its switchback climbed 2.5 m a turn, 2.2 m over every step and the door. Now the stair winds round the core on all four sides with a landing in each corner: 3.7 m or more over every step and inside the door (a new test checks it), the belfry 4 m under its roof, door 2.4 m wide, bots path door to belfry in every turn; no map edited, no format change. Pictures inside each level and on the stairs: the helper's report)
 - `wip/nature-swap-3` · 7937bb54 · 44447563639 (the nature swap, batches 1-3: 42 maps, MapMaker's "Swap natural props for ours", the Dead Tree; pictures in the helper's report)
+- `wip/dm-spawns` · 89513aa6 · 44453426408 (lane B: Deathmatch spawns spread out: a point each, every point in play in free-for-all when shared ones run short, beside a point once all are taken; the random sequence kept as main's so team matches are unchanged; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
