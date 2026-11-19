@@ -188,8 +188,8 @@ plane); once the sights are up the eye eases onto it (0.12 s): the camera narrow
 scene's own rendering, post-processing, fog and level of detail: no second render), while the gun is drawn at a field
 of view of its own by squashing it across the view axis (a node between the camera and the gun), so the eyepiece's
 glass fills 62 % of the screen's half-height. A depth-only disc on the glass, drawn first in the gun's rendering group,
-keeps the tube's inside from covering the view; the HUD draws the reticle (duplex: posts, a fine cross, two holdover
-ticks and a small dim red dot) inside the glass and shades everything round it (the eyepiece's shadow), fading in over
+keeps the tube's inside from covering the view; the HUD draws the reticle (since the optics pass a chevron between
+three posts, its tip the aim, with the holdover ticks under it: spec §15, "Optics by gun") inside the glass and shades everything round it (the eyepiece's shadow), fading in over
 the second half of the move. Scope sway and Shift to hold your breath work as on the scoped rifles; zoomed look speed
 follows the zoom (spec §15). It is not a `zoomFov` scope to the sim: hip fire keeps the rifle's true first shot (no
 no-scope penalty) and the sights tighten it like any rifle's (spec §15: ADS never mandatory). No glint or bright

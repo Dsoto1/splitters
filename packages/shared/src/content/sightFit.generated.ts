@@ -60,7 +60,7 @@ export const SIGHT_EXCLUDED: Readonly<Record<string, string>> = {
   'core.mount_mg': 'mounted: never held in the hand',
   'core.mount_rockets': 'mounted: never held in the hand',
   'core.oil_slicker': 'no sights on the model: its top line starts on the stock',
-  'core.plasma': 'no iron sights: the model carries a scope-like tube on a mount (an optic for the next step of the sights pass)',
+  'core.plasma': 'no iron sights: the model carries an open sight box on a riser, which holds its holographic mark (content/optics.json)',
   'core.railgun': 'scope: the view is the scope overlay, the gun is hidden',
   'core.rockets': 'a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)',
   'core.sawed_off': 'no sights on the model: the hammers stand over a rib with no bead',
