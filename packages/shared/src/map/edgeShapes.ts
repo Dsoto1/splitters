@@ -136,7 +136,7 @@ function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number, sur
  * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
  * boundary), for a side nothing is built beyond.
  */
-export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
+export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false, sash: 'all' | 'only' | 'without' = 'all'): SideTrim[] {
   const shape = shapeOf(style);
   // The wall's own face: a style with thicker piers (the Grand arch's 0.8 m, the Gate arch's 1.2 m) dresses that face,
   // not one buried inside it, and its arch's soffit runs through the whole thickness (owner, 2026-11-16: the Grand
@@ -148,6 +148,9 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
   const at = (u0: number, u1: number, y0: number, y1: number, depth: number, surface: Pick<SideTrim, 'surface'> = {}) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth, ...surface });
   const v = (x: EdgeValue) => edgeValue(x, half, height);
   for (const p of shape?.trim ?? []) {
+    // `sash`: the pieces set in the wall by the glass (`v`: a sash's inner frame, meeting rail and centre bars), which
+    // a glazed window's pane carries (sim/glass.ts windowPanes): only those, or all but those (map/geometry.ts).
+    if (sash === 'only' && !('v' in p)) continue;
     if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
     else if ('cornice' in p) {
       if (height >= 3) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
@@ -170,7 +173,7 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
       if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0, own(p)));
     } else if ('v' in p) {
       // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.
-      out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
+      if (sash !== 'without') out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
     } else {
       const pieces: [number, number][] = [];
       if (p.repeat) {

@@ -66,14 +66,36 @@ const BLAST_WINDOW = 0.25;
 export const DOME_SHOT_RANGE = 40;
 /** Seconds a line may wait before it's dropped (match flow and objectives wait longer). */
 const STALE = { flow: 8, objective: 5, multi: 3, streak: 3.5, special: 3.5, hype: 4 } as const;
-/** Hype: about one time in three, at most once in this many seconds, and a beat after the line before it. */
-const HYPE_CHANCE = 1 / 3;
-const HYPE_GAP = 20;
+/**
+ * Hype fills the kills of a spree that say nothing else: about one time in two, at most once in this many seconds, a
+ * beat after the line before it, and never straight after another hype line.
+ */
+const HYPE_CHANCE = 1 / 2;
+const HYPE_GAP = 8;
 const HYPE_BEAT = 0.8;
 /** "Hail to the chief" at most once a minute. */
 const LEAD_GAP = 60;
 
 export const HYPE_LINES: readonly VoiceLine[] = ['this_is_wild', 'incredible', 'can_you_believe_it', 'i_freakin_love_it', 'did_you_see_that', 'give_me_more'];
+
+/**
+ * One spree a life (owner, 2026-11-18: "keep track of my spree and keep going and not repeat"): a line at each of these
+ * kills without dying, each once a life. 3, 7 and 12 take three of the hype lines until the owner records lines of their
+ * own; 20 and 25 reuse the biggest multi-kill lines (Server overload, Mega Ultra Super Nasty Boy Kill).
+ */
+export const STREAK_LINES: ReadonlyMap<number, VoiceLine> = new Map([
+  [3, 'give_me_more'],
+  [5, 'killing_spree'],
+  [7, 'this_is_wild'],
+  [10, 'eviscerator'],
+  [12, 'can_you_believe_it'],
+  [15, 'never_stop'],
+  [20, 'server_overload'],
+  [25, 'mega_kill'],
+]);
+
+/** The hype lines that fill a spree's quiet kills: those the spree doesn't say as its own. */
+const FILL_LINES: readonly VoiceLine[] = HYPE_LINES.filter((l) => ![...STREAK_LINES.values()].includes(l));
 const HEADSHOT_LINES: readonly VoiceLine[] = ['headshot', 'brain_cave', 'dome_shot'];
 
 /** What the announcer says through: an owner line (its length in seconds, or null if it can't be heard) or a Kenney sound. */
@@ -120,7 +142,11 @@ export class Announcer {
   private chain = 0;
   private chainAt = -Infinity;
   private chainExplosive = false;
-  private boombastic = false;
+  /** This life: the longest chain announced, and every line said for its kills (none is said twice in a life). */
+  private bestChain = 0;
+  private lifeLines = new Set<VoiceLine>();
+  /** Whether the last line heard was a hype line (two never come back to back). */
+  private lastWasHype = false;
   private blastKills = 0;
   private blastKey: string | null = null;
   private blastAt = -Infinity;
@@ -149,6 +175,7 @@ export class Announcer {
     this.queue = [];
     this.life = this.chain = this.blastKills = this.dryDeaths = 0;
     this.chainAt = this.blastAt = -Infinity;
+    this.newLife();
     this.lives.clear();
     this.saidOneMinute = this.saidTenLeft = false;
     this.lastTime = null;
@@ -181,6 +208,8 @@ export class Announcer {
     // Hype only into a quiet moment: never with another line waiting, and a beat after the last.
     if (next.prio === 'hype' && now < this.lastEnd + HYPE_BEAT) return;
     this.queue.shift();
+    // Never two hype lines back to back.
+    if (next.prio === 'hype' && this.lastWasHype) return;
     let secs: number | null;
     if ('line' in next.what) {
       secs = this.out.speak(next.what.line);
@@ -194,6 +223,7 @@ export class Announcer {
       if (secs !== null) this.said.push(next.what.sound);
     }
     if (secs === null) return;
+    this.lastWasHype = next.prio === 'hype';
     this.lastEnd = now + secs;
     this.freeAt = Math.max(now + COOLDOWN, this.lastEnd + BREATH);
   }
@@ -301,6 +331,7 @@ export class Announcer {
     if (k.victim === me) {
       this.life = 0;
       this.chain = 0;
+      this.newLife();
       // Three deaths in a row without a kill (however they came).
       if (++this.dryDeaths >= 3) {
         this.dryDeaths = 0;
@@ -311,6 +342,8 @@ export class Announcer {
     if (k.killer !== me) return;
     if (k.tk) {
       this.life = 0;
+      this.chain = 0;
+      this.newLife();
       return;
     }
     this.dryDeaths = 0;
@@ -322,7 +355,6 @@ export class Announcer {
     } else {
       this.chain = 1;
       this.chainExplosive = !!k.explosive;
-      this.boombastic = false;
     }
     this.chainAt = now;
     if (k.explosive && k.blast && k.blast === this.blastKey && now - this.blastAt <= BLAST_WINDOW) this.blastKills++;
@@ -330,41 +362,60 @@ export class Announcer {
     this.blastKey = k.explosive ? (k.blast ?? null) : null;
     this.blastAt = now;
 
-    let hyped = false;
+    let said = false;
     const multi = this.multiLine();
     if (multi) {
-      this.line(multi, 'multi', now, 'multi');
-      hyped = multi !== 'double_kill' && multi !== 'mr_boombastic';
+      this.lifeLine(multi, 'multi', now, 'multi');
+      said = true;
     }
-    const streak = this.life === 5 ? 'killing_spree' : this.life === 10 ? 'eviscerator' : this.life === 15 ? 'never_stop' : null;
-    if (streak) {
-      this.line(streak, 'streak', now, 'streak');
-      hyped = true;
+    const streak = STREAK_LINES.get(this.life);
+    if (streak && !this.lifeLines.has(streak)) {
+      this.lifeLine(streak, 'streak', now, 'streak');
+      said = true;
     }
     const special = victimStreak >= 5 ? 'later_gator' : k.explosive && k.victimAnimal ? 'blew_up_a_dog' : k.melee ? 'twist_his_eggplant' : k.headshot ? this.headshotLine(k.distance) : null;
-    if (special) this.line(special, 'special', now, 'special');
-    if (hyped && now - this.lastHypeAt >= HYPE_GAP && this.rng() < HYPE_CHANCE) {
+    if (special) {
+      this.line(special, 'special', now, 'special');
+      said = true;
+    }
+    // Hype fills the spree's quiet kills (from the second on): never the spree's own lines, never the last one again.
+    if (!said && this.life >= 2 && now - this.lastHypeAt >= HYPE_GAP && this.rng() < HYPE_CHANCE) {
+      const pool = FILL_LINES.filter((l) => l !== this.lastHype);
       this.lastHypeAt = now;
-      const pool = HYPE_LINES.filter((l) => l !== this.lastHype);
-      this.lastHype = pool[Math.floor(this.rng() * pool.length)] ?? HYPE_LINES[0]!;
+      this.lastHype = pool[Math.floor(this.rng() * pool.length)] ?? pool[0]!;
       this.line(this.lastHype, 'hype', now, 'hype');
     }
   }
 
+  /** A new life (or a new match): the spree, its best chain and the lines it said start again. */
+  private newLife(): void {
+    this.bestChain = 0;
+    this.lifeLines.clear();
+  }
+
+  /** A line about this life's spree: remembered, so it isn't said again before you die. */
+  private lifeLine(line: VoiceLine, prio: Priority, now: number, group: string): void {
+    this.lifeLines.add(line);
+    this.line(line, prio, now, group);
+  }
+
+  /**
+   * The chain's line, if it is news: a chain longer than any announced this life (Double and Triple once a life at
+   * most), never a line this life has said already; four or more from one blast is Server overload, once a life.
+   */
   private multiLine(): VoiceLine | null {
     const n = this.chain;
-    if (this.blastKills >= 4 || n >= 8) return 'server_overload';
-    if (n >= 6) return 'mega_kill';
-    if (n === 5) return 'multi_kill';
-    if (n === 4) return 'quadra_kill';
-    // Two or three kills, every one of them a blast: "Mr Boombastic" (once a chain) in place of Double or Triple.
-    if ((n === 2 || n === 3) && this.chainExplosive && !this.boombastic) {
-      this.boombastic = true;
-      return 'mr_boombastic';
+    if (this.blastKills >= 4 && !this.lifeLines.has('server_overload')) {
+      this.bestChain = Math.max(this.bestChain, n);
+      return 'server_overload';
     }
-    if (n === 3) return 'triple_kill';
-    if (n === 2) return 'double_kill';
-    return null;
+    if (n < 2 || n <= this.bestChain) return null;
+    let line: VoiceLine = n >= 8 ? 'server_overload' : n >= 6 ? 'mega_kill' : n === 5 ? 'multi_kill' : n === 4 ? 'quadra_kill' : n === 3 ? 'triple_kill' : 'double_kill';
+    // Two or three kills, every one of them a blast: "Mr Boombastic" (once a life) in place of Double or Triple.
+    if ((n === 2 || n === 3) && this.chainExplosive && !this.lifeLines.has('mr_boombastic')) line = 'mr_boombastic';
+    if (this.lifeLines.has(line)) return null;
+    this.bestChain = n;
+    return line;
   }
 
   private headshotLine(distance: number | null | undefined): VoiceLine {

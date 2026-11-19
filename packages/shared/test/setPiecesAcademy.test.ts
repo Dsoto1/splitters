@@ -468,11 +468,13 @@ describe('the wall styles the bays are built with', () => {
     // The stone sill stands into the room; where nothing is built beyond, the surround is on the outer face too.
     expect(trim.some((p) => p.depth === 0.14 && p.y1 === 0.9)).toBe(true);
     expect(edgeTrimBoxes('window_sash', 4, 4, true).filter((p) => p.v1 === 0).length).toBe(4);
-    // Drawn as trim with that surface in a map; no collision box of the map comes from the sash.
+    // The bay's windows are glazed: each pane carries its sash in that paint (drawn with the glass, gone when it is
+    // shot out: owner, 2026-11-18, 2a), so the level's trim leaves it out; no collision box of the map comes from it.
     const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
-    const painted = buildMapDecor(map).filter((b) => b.surface?.material === 'core.paint_matte');
-    expect(painted).toHaveLength(28);
-    expect(painted.every((b) => b.kind === 'trim')).toBe(true);
+    expect(buildMapDecor(map).filter((b) => b.surface?.material === 'core.paint_matte')).toHaveLength(0);
+    const bars = windowPanes(map).flatMap((p) => p.bars ?? []);
+    expect(bars).toHaveLength(28);
+    expect(bars.every((b) => b.tint === '#e6e1d3')).toBe(true);
     expect(buildMapGeometry(map).some((b) => b.surface?.material === 'core.paint_matte')).toBe(false);
   });
 

@@ -42,6 +42,10 @@ import {
   setCategoryPool,
   setHas,
   setLoadout,
+  setThrowables,
+  throwableFor,
+  THROWABLE_DEFS,
+  dealPickup,
   setMainGun,
   setMainGuns,
   setPickupPool,
@@ -123,27 +127,54 @@ describe('the sets (content/weapon-sets.json)', () => {
 describe('spawn loadouts', () => {
   const kit = (id: (typeof WEAPON_SET_IDS)[number], rules: MatchRules = DEFAULT_TDM_RULES, o: { life?: number; sniper?: boolean; slot?: number } = {}) => setLoadout(set(id), rules, { seed: 5, slot: o.slot ?? 2, life: o.life ?? 1, sniper: o.sniper });
 
-  it("each set's spawn weapons, the last one held, and its first grenade", () => {
+  it("each set's spawn weapons, the last one held, and a grenade of the set's", () => {
     expect(kit('standard')).toEqual({ weapons: ['core.knife', 'core.pistol'], throwable: { kind: 'frag', count: 1 } });
     // Standard keeps the mode's own: co-op adds a rifle, Zombies two grenades.
     expect(kit('standard', DEFAULT_COOP_RULES).weapons).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
     expect(kit('standard', DEFAULT_ZOMBIES_RULES).throwable).toEqual({ kind: 'frag', count: 2 });
-    expect(kit('military')).toEqual({ weapons: ['core.knife', 'core.pistol', 'core.rifle'], throwable: { kind: 'frag', count: 1 } });
-    expect(kit('scifi')).toEqual({ weapons: ['core.knife', 'core.pulse_pistol', 'core.plasma'], throwable: { kind: 'sticky', count: 1 } });
-    expect(kit('medieval')).toEqual({ weapons: ['core.knife', 'core.spear'], throwable: { kind: 'incendiary', count: 1 } });
+    expect(kit('military').weapons).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
+    expect(kit('scifi').weapons).toEqual(['core.knife', 'core.pulse_pistol', 'core.plasma']);
+    expect(kit('medieval').weapons).toEqual(['core.knife', 'core.spear']);
+    for (const id of ['military', 'scifi', 'medieval', 'chaos'] as const) {
+      const t = kit(id).throwable!;
+      expect(setThrowables(set(id)), id).toContain(t.kind);
+      expect(t.count, id).toBe(1);
+    }
     // The sets' own spawn replaces the mode's (co-op in Military is still knife, pistol and rifle).
     expect(kit('military', DEFAULT_COOP_RULES).weapons).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
-    // At most what a player carries: one holy bomb, one sheep.
-    expect(kit('chaos', DEFAULT_ZOMBIES_RULES).throwable).toEqual({ kind: 'sheep', count: 1 });
+    // At most what a player carries: one holy bomb, one sheep (Zombies gives two).
+    for (let life = 1; life <= 6; life++) {
+      const t = kit('chaos', DEFAULT_ZOMBIES_RULES, { life }).throwable!;
+      expect(t.count).toBe(Math.min(2, THROWABLE_DEFS[t.kind].max));
+    }
     const chaos = kit('chaos');
     expect(chaos.weapons.slice(0, 2)).toEqual(['core.knife', 'core.pistol']);
     expect(chaos.weapons).toHaveLength(3);
     expect(setMainGuns(set('chaos')).map((w) => w.id)).toContain(chaos.weapons[2]);
-    expect(chaos.throwable).toEqual({ kind: 'sheep', count: 1 });
     const mixed = kit('mixed');
     expect(mixed.weapons).toHaveLength(3);
     expect(getWeapon(mixed.weapons[2]!).slot).toBeGreaterThanOrEqual(3);
-    expect(mixed.throwable).toEqual({ kind: 'frag', count: 1 });
+    expect(setThrowables(set('mixed'))).toContain(mixed.throwable!.kind);
+  });
+
+  it("each life's grenade is dealt from a shuffled deck of the set's (owner, 2026-11-18: not the same group every time)", () => {
+    for (const id of ['military', 'scifi', 'medieval', 'chaos', 'mixed'] as const) {
+      const kinds = setThrowables(set(id))!;
+      const lives = Array.from({ length: kinds.length * 6 }, (_, i) => throwableFor(set(id), 7, 3, i + 1));
+      // The same every time from the seed, the slot and the life.
+      expect(Array.from({ length: lives.length }, (_, i) => throwableFor(set(id), 7, 3, i + 1))).toEqual(lives);
+      // Every kind once in each round of lives, and (with three or more) never the same twice running.
+      for (let r = 0; r < lives.length; r += kinds.length) expect(new Set(lives.slice(r, r + kinds.length)).size, id).toBe(kinds.length);
+      if (kinds.length > 2) expect(lives.filter((k, i) => i > 0 && k === lives[i - 1]), id).toEqual([]);
+      // setLoadout hands out the same.
+      expect(kit(id, DEFAULT_TDM_RULES, { slot: 3, life: 4 }).throwable?.kind).toBe(throwableFor(set(id), 5, 3, 4));
+    }
+    // Not everyone starts with the same one: across 16 players' first lives, more than one kind.
+    expect(new Set(Array.from({ length: 16 }, (_, slot) => throwableFor(set('chaos'), 11, slot, 1))).size).toBeGreaterThan(1);
+    // Two grenades (Medieval) take turns; Standard keeps frags.
+    const med = Array.from({ length: 6 }, (_, i) => throwableFor(set('medieval'), 2, 0, i + 1));
+    expect(med.filter((k, i) => i > 0 && k === med[i - 1])).toEqual([]);
+    expect(throwableFor(set('standard'), 2, 0, 3)).toBe('frag');
   });
 
   it("a sniper-role bot carries the set's scoped gun in place of the main gun", () => {
@@ -242,6 +273,16 @@ describe('pickups roll within the set', () => {
     expect(every.length).toBe(CORE_ITEMS.filter((i) => i.effect.kind === 'throwable').length);
     expect(setThrowablePool(set('military'))).toBe(setThrowablePool(set('military')));
   });
+
+  it('a grenade pickup deals from a deck of the set\'s grenades: every kind before a repeat, never twice running', () => {
+    const pool = setThrowablePool(set('chaos'))!;
+    const deals = Array.from({ length: 18 }, (_, n) => dealPickup(4, 'pickup_3', n, pool).id);
+    expect(Array.from({ length: 18 }, (_, n) => dealPickup(4, 'pickup_3', n, pool).id)).toEqual(deals);
+    for (let r = 0; r < deals.length; r += pool.length) expect(new Set(deals.slice(r, r + pool.length)).size).toBe(pool.length);
+    expect(deals.filter((d, i) => i > 0 && d === deals[i - 1])).toEqual([]);
+    // Each pickup its own order.
+    expect(Array.from({ length: 6 }, (_, n) => dealPickup(4, 'pickup_4', n, pool).id).join()).not.toBe(deals.slice(0, 6).join());
+  });
 });
 
 /** A room with pickups along x (the first, at -1 0 2, on the spawn). */
@@ -261,32 +302,36 @@ describe('in a match', () => {
     const a = m.addHuman('a')!;
     expect(carried(a)).toEqual(['core.knife', 'core.pistol', 'core.rifle']);
     expect(held(a)).toBe('core.rifle');
-    expect(a.throwable).toEqual({ kind: 'frag', count: 1 });
+    expect(['frag', 'mine', 'smoke']).toContain(a.throwable?.kind);
     // The host's choice wins over the map's.
     const s = new Match(map, { ...rules, weaponSet: 'scifi' }, 3);
     const b = s.addHuman('b')!;
     expect(carried(b)).toEqual(['core.knife', 'core.pulse_pistol', 'core.plasma']);
-    expect(b.throwable).toEqual({ kind: 'sticky', count: 1 });
+    expect(['sticky', 'vortex', 'smoke']).toContain(b.throwable?.kind);
     // A map without a set, and a host choice no build has: Standard, the mode's own loadout.
     const std = new Match(room([]), { ...rules, weaponSet: 'nonsense' }, 3);
     expect(std.weaponSet?.id).toBe('standard');
     expect(carried(std.addHuman('c')!)).toEqual(['core.knife', 'core.pistol']);
   });
 
-  it("Chaos: a random oddball each life, the same in every match with that seed, and the sheep", () => {
+  it("Chaos: a random oddball and grenade each life, the same in every match with that seed", () => {
     const lifeGuns = (seed: number) => {
       const m = new Match(room([]), { ...rules, weaponSet: 'chaos', respawnDelayTicks: 1 }, seed);
       const c = m.addHuman('a')!;
       const guns: string[] = [];
+      const nades: string[] = [];
       for (let life = 0; life < 12; life++) {
         guns.push(held(c)!);
-        expect(c.throwable).toEqual({ kind: 'sheep', count: 1 });
+        expect(['sheep', 'holy', 'cluster']).toContain(c.throwable?.kind);
+        nades.push(c.throwable!.kind);
         (m as unknown as { kill(v: Combatant, k: Combatant | null, w: string): void }).kill(c, null, 'core.rifle');
         for (let i = 0; i < 5 && !c.alive; i++) {
           m.queueInputs(c.slot, [{ seq: m.tick + 1, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 }]);
           m.step();
         }
       }
+      // Chaos's three grenades, each once every three lives.
+      for (let r = 0; r < 12; r += 3) expect(new Set(nades.slice(r, r + 3)).size).toBe(3);
       return guns;
     };
     const a = lifeGuns(9);
