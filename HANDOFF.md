@@ -136,6 +136,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-19): St. John's clock tower headroom** (`wip/stjohns-clocktower`; owner, 2026-11-19: "the new clocktower also is not usable since its ceilings are too low"). The fault is in the tile, not the map: `gothic.clock_tower`'s switchback climbed 2.5 m a turn (2.2 m over every step and the door). Files: shared `map/packTiles2.ts` (the Clock Tower tile: a stair winding round the core on all four sides, door 2.4 m), `test/setPiecesAcademy.test.ts` (a headroom test), palette pictures from content:rebuild, CHANGELOG. No map file changes (St. John's and the coverage map use the tile); no format change.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/nature-swap-3` · 7937bb54 (the nature swap, batches 1-3 together: 42 maps, the tool, the Dead Tree; replaces batch 1's own landing, which conflicted with main after St. John's step 6; a helper of lane B's splitters22)
 - `check/dm-spawns` · 028a1d17 (Deathmatch spawns spread out: a point each, every point in play, beside one when all are taken; a helper of lane B's splitters22)
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)
 
