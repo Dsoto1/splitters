@@ -475,6 +475,96 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.cabinet.organ",
+      "displayName": "Pipe Organ",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9): a pipe organ 3 m wide and 4.5 m tall: a dark wood case with three towers of front pipes, a cornice, the console (two manuals, a music desk) and its bench standing out in front (+z). Collides as its box."
+      },
+      "size": [
+        3.0,
+        4.5,
+        1.6
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "organ",
+        "console": 0.7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "walnut",
+          "seed": 33011,
+          "look": {
+            "wood": "#3d2618",
+            "pipe": "#b9bcbf",
+            "jitter": 0.05,
+            "grime": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.cabinet.trophy",
+      "displayName": "Trophy Case",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7, DeKoven Hall: glass cases of trophies and awards): a wood cabinet 2 m wide, its upper part a glass-fronted display lined in dark purple with two glass shelves of cups and shields (gold and silver, no words). Front +z. Collides as its box."
+      },
+      "size": [
+        2.0,
+        2.1,
+        0.5
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "trophycase",
+        "base": 0.8
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "walnut",
+          "seed": 33021,
+          "look": {
+            "wood": "#4a2c1a",
+            "lining": "#2b1d3d",
+            "gold": "#c9a23a",
+            "silver": "#c2c5c8",
+            "jitter": 0.05,
+            "grime": 0.1
+          }
+        }
+      ]
     }
   ]
 }

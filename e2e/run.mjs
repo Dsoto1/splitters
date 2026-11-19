@@ -522,14 +522,15 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: tick Soldiers, the map keeps it (one undo step).
+  // Map properties → Bots → Bot characters: the eight bot types, all ticked; None, then Soldiers: the map keeps it (one undo step).
   await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
-  await page.evaluate(() => (document.getElementById('ed-cast').open = true));
-  await page.click('#ed-cast input[data-cast="soldiers"]');
-  await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers & Spies', null, { timeout: T(5000) }).catch(() => {});
-  const cast = { doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => document.querySelector('#ed-cast input[data-cast="soldiers"]')?.checked) };
-  check(JSON.stringify(cast.doc) === '["soldiers"]' && cast.sum === 'Soldiers & Spies' && cast.ticked, `map properties set the bot characters (${JSON.stringify(cast)})`);
+  const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
+  await page.evaluate(() => document.getElementById('ed-cast-none').click());
+  await page.evaluate(() => document.getElementById('ed-cast-army').click());
+  await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
+  const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
+  check(types.length === 8 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eight types, all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -8020,11 +8021,11 @@ async function teamsFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // Arcade: Team Deathmatch on Sandgate as 2v2v2v2v2v2v12 (24 players, 7 teams).
-  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
+  // (An uneven layout like this one comes from the steppers and the team cards; the setup saves it as it is.)
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [2, 2, 2, 2, 2, 2, 12] })));
   await page.goto(CLIENT);
   await page.click('#nav-play');
-  // More layouts (beside the size presets worked out for the map): any fixed shape.
-  await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
+  await page.waitForFunction(() => document.getElementById('arcade-team-total')?.textContent.startsWith('2v2v2v2v2v2v12'), null, { timeout: T(30000) });
   // Bots & AI tab → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
   await setupTab(page, 'bots');
   await page.click('#arcade-botset');
@@ -8232,7 +8233,7 @@ async function teamKillCheck(page) {
  * before suggestions, at the old 40 points and 10 minutes, follows the size.
  */
 async function setupLimitsFlow(browser) {
-  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 32v32 since performance round 4): points and minutes.
+  // The curve's values for St. John's layouts (the 4v4 chip, the Map's pick 12v12, the 32v32 chip): points and minutes.
   const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '32v32': [650, 20] };
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -8263,9 +8264,15 @@ async function setupLimitsFlow(browser) {
   };
   const four = await read();
   check(suggests(four, '4v4'), `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
+  // Per team (the stepper beside Teams): every team one more; Teams: one team more, at that size.
+  await page.evaluate(() => document.getElementById('arcade-per-team-plus').click());
+  const perTeam = await page.evaluate(() => ({ teams: JSON.parse(localStorage.getItem('cs.arcade')).teams?.join(), on: document.querySelector('#setup-sizes .size-chip.on')?.dataset.preset ?? null, per: document.getElementById('arcade-per-team')?.value }));
+  await page.evaluate(() => document.getElementById('arcade-team-count-plus').click());
+  const three = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade')).teams?.join());
+  check(perTeam.teams === '5,5' && perTeam.on === null && perTeam.per === '5' && three === '5,5,5', `the Per team stepper sets every team's size and Teams adds one at that size (${JSON.stringify({ perTeam, three })})`);
   await preset('pick');
   const twelve = await read();
-  await preset('max');
+  await preset('32v32');
   const big = await read();
   // Opening the setup doesn't write it; the first change saves it with the marks (score and time following the size).
   const marks = { scoreAuto: twelve.saved.scoreAuto, timeAuto: twelve.saved.timeAuto, score: big.saved.scoreLimit, minutes: big.saved.minutes };
@@ -8300,9 +8307,16 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
-  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('army') && offered.includes('agency') && offered.includes('pirate'), `the Bots & AI tab offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
-  await page.selectOption('#arcade-cast', 'army');
+  // The eight bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,animals:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eight bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
+  await page.evaluate(() => document.getElementById('arcade-cast-none').click());
+  await page.evaluate(() => document.getElementById('arcade-cast-army').click());
+  const picked = await page.evaluate(() => ({ saved: JSON.parse(localStorage.getItem('cs.arcade')).botCast, ticked: [...document.querySelectorAll('#arcade-cast input[data-type]:checked')].map((b) => b.dataset.type) }));
+  await page.evaluate(() => document.getElementById('arcade-cast-army').click());
+  const last = await page.evaluate(() => ({ ticked: [...document.querySelectorAll('#arcade-cast input[data-type]:checked')].map((b) => b.dataset.type), hint: document.getElementById('arcade-cast-hint')?.textContent }));
+  check(picked.saved?.join() === 'army' && picked.ticked.join() === 'army' && last.ticked.join() === 'army' && /At least one/.test(last.hint ?? ''), `None then Soldiers picks Army only, and the last type can't be unticked (${JSON.stringify({ picked, last })})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot').length >= 15, null, T(30000));
@@ -8441,7 +8455,7 @@ async function setupLayoutFlow(browser) {
   const fixed = { teams: (await setup()).teams, ...(await read()) };
   check(fixed.teams?.join() === '12,12' && fixed.fit === 'fits' && fixed.preset === 'pick' && fixed.who === 'You + 23 bots · 12v12', `"Use 12v12" sets the map's pick, and it fits (${JSON.stringify(fixed)})`);
   // Adding bots grows the teams (Even teams: both); past the limit it says whose limit it is.
-  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="max"]').click());
+  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="32v32"]').click());
   await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
   const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
@@ -8570,7 +8584,7 @@ async function customSetupFlow(browser) {
   await page.evaluate(() => (document.getElementById('setup-saved').open = true));
   await page.fill('#setup-save-name', 'Three way');
   await page.evaluate(() => document.getElementById('setup-save').click());
-  await page.selectOption('#arcade-teams', '1,1');
+  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="1v1"]').click());
   const changed = await total();
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });

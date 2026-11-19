@@ -1170,7 +1170,7 @@ export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
     .optional(),
   when: PartWhen,
 });
-/** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder or a light, at a position in the piece's frame. */
+/** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder, a light or water, at a position in the piece's frame. */
 export const SetPieceBlockPart = BlockEntity.omit({ id: true }).extend({
   material: z.union([ContentId, MaterialRef]).nullable().default(null),
   glass: z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })]).optional(),
@@ -1184,10 +1184,14 @@ export const SetPiecePart = z.discriminatedUnion('kind', [
   SetPieceDoorPart,
   LadderEntity.omit({ id: true }).extend({ when: PartWhen }),
   LightEntity.omit({ id: true }).extend({ when: PartWhen }),
+  // A body of water (St. John's pool, docs/map-briefs/st_johns): only shipped pieces have one. MapMaker's "Make set
+  // piece" leaves water out (editor/setPieceEdit.ts PART_KINDS), so no map's own piece carries it and maps stay as
+  // readable as they were (no format change).
+  WaterEntity.omit({ id: true }).extend({ when: PartWhen }),
 ]);
 export type SetPiecePart = z.infer<typeof SetPiecePart>;
 /** The kinds of map piece a set piece is made of. */
-export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const;
+export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light', 'water'] as const;
 
 /** Where a piece meets what is built round it: a side of one of its cells, on one of its levels, facing out of its footprint. */
 export const SetPiecePort = z.object({

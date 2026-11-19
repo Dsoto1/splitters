@@ -471,7 +471,7 @@ function placeEntityPart(
   const { when: _w, ...part } = partIn;
   void _w;
   const position = placePoint(p, def, part.position);
-  const yaw = placeYaw(p, part.yaw);
+  const yaw = placeYaw(p, 'yaw' in part ? part.yaw : 0);
   if (part.kind === 'block') {
     const { material: m, glass: g, tint, size, pitch, roll, ...rest } = part;
     const surface = m === null ? undefined : typeof m === 'string' ? { material: m, tint: null } : material(m);
@@ -493,6 +493,12 @@ function placeEntityPart(
     if (kind) block.glass = kind;
     else delete block.glass;
     return block;
+  }
+  if (part.kind === 'water') {
+    // A box of water: no yaw of its own, its size turned with the piece as a block's is.
+    const r = p.rotation % 2 === 1;
+    const { size, ...rest } = part;
+    return { ...rest, id, position, size: r ? [size[2], size[1], size[0]] : [size[0], size[1], size[2]] };
   }
   if (part.kind === 'door') {
     const { style, ...rest } = part;

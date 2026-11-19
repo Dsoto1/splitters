@@ -3,7 +3,7 @@ import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
-import { BOT_CAST_CHOICES, CAST_ID_ALIASES } from '../content/botThemes.ts';
+import { BOT_CAST_CHOICES, CAST_ID_ALIASES, THEME_BOT_TYPES, validBotCast } from '../content/botThemes.ts';
 import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
 import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
@@ -105,8 +105,8 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     read: (r) => r.botStyle ?? 'mixed', write: (r, v) => (v === 'mixed' ? delete r.botStyle : (r.botStyle = v as 'arena' | 'tactical')),
   },
   {
-    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals…), army or agency (Soldiers & Spies' two) or a name theme (pirate, monkey, knight…).", type: { ...choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), aliases: CAST_ID_ALIASES } as RuleType, apply: 'live',
-    read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = castFromRuleValue(v as string) ?? [])),
+    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, soldiers (Soldiers & Spies), army (soldiers), agency (spies), folk, space, legends, animals, machines or horror. An old name set (pirate, monkey, knight…) reads as its type.", type: { ...choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), aliases: { ...CAST_ID_ALIASES, ...THEME_BOT_TYPES } } as RuleType, apply: 'live',
+    read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = validBotCast(castFromRuleValue(v as string) ?? []))),
   },
   {
     key: 'teams', label: 'Teams', help: 'How many teams (2 to 8) in Team Deathmatch, King of the Hill and Elimination; CTF, Fort Wars, Bomb and Hostage are always two.', type: { kind: 'int', min: 2, max: MAX_TEAMS }, apply: 'next',

@@ -134,6 +134,8 @@ describe('building kit navigation', () => {
   const cases: { name: string; tiles: Tile[]; from: [number, number, number]; to: [number, number, number] }[] = [
     { name: 'stairs', tiles: [t('s', 'core.stairs', 0, 0, 0), t('a', 'core.room', -1, 0, 0), t('b', 'core.room', 1, 0, 1)], from: [-8, 0, 0], to: [8, 4, 0] },
     { name: 'stairwell', tiles: [t('s', 'core.stairwell', 0, 0, 0), t('a', 'core.room', -1, 0, 0), t('b', 'core.room', -1, 0, 1)], from: [-8, 0, 0], to: [-8, 4, 0] },
+    // The spiral stair (St. John's chapel): in at its door from the room north of it, up one turn, out north into the room over that one.
+    { name: 'spiral stair', tiles: [t('s', 'core.stair_spiral', 0, 0, 0), t('a', 'core.room', 0, 1, 0), t('b', 'core.room', 0, 1, 1)], from: [0, 0, 8], to: [0, 4, 8] },
     { name: 'ramp', tiles: [t('s', 'core.ramp', 0, 0, 0), t('a', 'core.room', -1, 0, 0), t('b', 'core.room', 2, 0, 1)], from: [-8, 0, 0], to: [16, 4, 0] },
     { name: 'open stairs', tiles: [t('s', 'core.stairs_open', 0, 0, 0), t('a', 'core.room', -1, 0, 0), t('b', 'core.room', 1, 0, 1)], from: [-8, 0, 0], to: [8, 4, 0] },
     { name: 'atrium', tiles: [t('m', 'core.atrium', 0, 0, 0), t('a', 'core.room', -1, 0, 0), t('b', 'core.room', 2, 1, 1)], from: [-8, 0, 0], to: [16, 4, 8] },

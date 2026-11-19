@@ -589,7 +589,7 @@ export class SetPieceTools {
       }
       const d = r.definition;
       const count = (k: string) => d.parts.filter((p) => p.kind === k).length;
-      const parts = (['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const).map((k) => [k, count(k)] as const).filter(([, n]) => n).map(([k, n]) => `${n} ${k}${n === 1 ? '' : 's'}`);
+      const parts = (['tile', 'block', 'prop', 'door', 'ladder', 'light', 'water'] as const).map((k) => [k, count(k)] as const).filter(([, n]) => n).map(([k, n]) => `${n} ${k}${n === 1 ? '' : 's'}`);
       const span = (i: 0 | 1) => Math.max(...d.footprint.cells.map((c) => c[i])) - Math.min(...d.footprint.cells.map((c) => c[i])) + 1;
       const look = r.pack ? (this.app.setPieceLib.packs.get(r.pack)?.displayName ?? r.pack) : null;
       summary.textContent = `${parts.join(', ')} · ${span(0)} × ${span(1)} cells, ${d.footprint.levels[1] - d.footprint.levels[0] + 1} level(s) · ${d.ports.length} ports · ${d.mirror === 'free' ? 'mirrors' : 'turns only'}${look ? ` · materials of the ${look} look become roles, so it re-themes` : ' · its materials stay as they are'}${leftOut.length ? ` · left out: ${[...new Set(leftOut.map((e) => e.kind))].join(', ')} (a set piece holds tiles, blocks, props, doors, ladders and lights)` : ''}`;
@@ -1006,6 +1006,8 @@ export class SetPieceTools {
         return 'Door';
       case 'ladder':
         return 'Ladder';
+      case 'water':
+        return `Water ${part.size.map((v) => +v.toFixed(2)).join(' × ')} m`;
       default:
         return 'Light';
     }

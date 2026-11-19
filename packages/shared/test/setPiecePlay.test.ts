@@ -50,6 +50,16 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * frames, the bandstand, the shop unit with its open pavement).
  */
 const OPEN_SIDED = [
+  // The campus family (setPiecesCampus.test.ts walks them): bays and ends whose halls run out of an open side, and the
+  // round porch (an open tile round its round room).
+  'setpiece.admin_bay',
+  'setpiece.chapel_bay',
+  'setpiece.chapel_chancel',
+  'setpiece.chapel_narthex',
+  'setpiece.gym_bay',
+  'setpiece.gym_entrance',
+  'setpiece.library_bay',
+  'setpiece.library_porch',
   'setpiece.arena_arcade',
   'setpiece.arena_attic',
   'setpiece.arena_bay_podium',

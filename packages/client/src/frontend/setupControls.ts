@@ -1,4 +1,4 @@
-import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_CAST_CHOICES, currentCastId, isCharacterCastId, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_TYPES, botTypesOf, castOfTypes, foldBotCast, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -551,32 +551,65 @@ export function evenSwitch(id: string, on: boolean, onToggle: (on: boolean) => v
 }
 
 /**
- * Bot characters (which looks random bots wear, and so their names): the map's own, all, one character group
- * or one name theme. `value`: undefined the map's own, empty all, else the ids (several only when a map set them:
- * shown as they are). `mapCast`: the map's own, for the "Map" option's label.
+ * Bot types (owner, 2026-11-19: "isolate the selection of the bot types"): a tick-box for each of the eight
+ * (BOT_TYPES), every one ticked for all. `value`: the setting (undefined: the map's own, `mapCast`, shown ticked);
+ * a change that comes back to the map's own gives undefined again. `mapCast` undefined (MapMaker): every type is
+ * the default. All ticks every type; None clears the boxes to pick from scratch (nothing changes until one is ticked).
+ * IDs: `${id}` the group, each box `${id}-${type}` with data-type, `${id}-all`, `${id}-none`.
  */
-export function botCastSelect(value: readonly string[] | undefined, mapCast: readonly string[] | undefined, onChange: (v: string[] | undefined) => void, id?: string, disabled?: boolean): HTMLSelectElement {
-  const sel = el('select', { ...(id ? { id } : {}), disabled: !!disabled });
-  const opt = (v: string, label: string) => {
-    const o = el('option', { value: v, textContent: label });
-    sel.append(o);
-    return o;
+export function botTypePicker(o: { value: readonly string[] | undefined; mapCast?: readonly string[] | undefined; id: string; disabled?: string | null; onChange: (v: string[] | undefined) => void }): HTMLElement {
+  const shown = new Set<string>(botTypesOf(o.value ?? o.mapCast));
+  const mapOwn = foldBotCast(o.mapCast);
+  const emit = (types: Iterable<string>) => {
+    const next = castOfTypes(types);
+    o.onChange(o.mapCast !== undefined && next.join() === mapOwn.join() ? undefined : next);
   };
-  opt('map', `Map default (${botCastLabel(mapCast)})`);
-  opt('all', 'All characters');
-  const groups = el('optgroup', { label: 'Characters' });
-  const themes = el('optgroup', { label: 'Named as' });
-  for (const c of BOT_CAST_CHOICES) (isCharacterCastId(c.id) ? groups : themes).append(el('option', { value: c.id, textContent: c.label }));
-  sel.append(groups, themes);
-  // A retired id (a saved "agents") shows as what it reads as now.
-  const key = value === undefined ? 'map' : !value.length ? 'all' : value.length === 1 ? currentCastId(value[0]!) : value.map(currentCastId).join('+');
-  if (value && value.length > 1) opt(key, botCastLabel(value));
-  sel.value = key;
-  sel.addEventListener('change', () => {
-    const v = sel.value;
-    onChange(v === 'map' ? undefined : v === 'all' ? [] : v.split('+'));
+  const grid = el('div', { class: 'type-picks', id: o.id, role: 'group' });
+  grid.setAttribute('aria-label', 'Bot types');
+  const boxes: HTMLInputElement[] = [];
+  const hint = el('span', { class: 'type-hint', id: `${o.id}-hint`, role: 'status' });
+  for (const t of BOT_TYPES) {
+    const input = el('input', { type: 'checkbox', id: `${o.id}-${t.id}`, checked: shown.has(t.id), disabled: !!o.disabled });
+    input.dataset.type = t.id;
+    input.addEventListener('change', () => {
+      const on = boxes.filter((b) => b.checked).map((b) => b.dataset.type!);
+      // The last one can't go: bots have to be someone (None clears them all to start again).
+      if (!on.length) {
+        input.checked = true;
+        hint.textContent = 'At least one type: None clears them all to pick again.';
+        return;
+      }
+      emit(on);
+    });
+    boxes.push(input);
+    const box = el('label', { class: 'type-pick', htmlFor: input.id }, input, el('span', { textContent: t.label }));
+    grid.append(box);
+  }
+  const all = el('button', { type: 'button', class: 'link', id: `${o.id}-all`, textContent: 'All', disabled: !!o.disabled || shown.size === BOT_TYPES.length, title: 'Every type' });
+  all.addEventListener('click', () => emit(BOT_TYPES.map((t) => t.id)));
+  const none = el('button', { type: 'button', class: 'link', id: `${o.id}-none`, textContent: 'None', disabled: !!o.disabled, title: 'Clear the boxes, then tick the types you want' });
+  none.addEventListener('click', () => {
+    for (const b of boxes) b.checked = false;
+    hint.textContent = 'Tick the types you want.';
+    boxes[0]?.focus();
   });
-  return sel;
+  const foot = el('div', { class: 'type-foot' }, all, none, hint);
+  if (o.mapCast !== undefined && o.value === undefined && mapOwn.length) hint.textContent = `The map's own: ${botCastLabel(mapOwn)}.`;
+  else if (o.mapCast !== undefined && o.value !== undefined && mapOwn.length) {
+    const back = el('button', { type: 'button', class: 'link', id: `${o.id}-map`, textContent: "Map's own", title: `Back to the map's own: ${botCastLabel(mapOwn)}` });
+    back.addEventListener('click', () => o.onChange(undefined));
+    foot.insertBefore(back, hint);
+  }
+  const wrap = el('div', { class: 'type-picker' }, grid, foot);
+  if (o.disabled) why(wrap, o.disabled);
+  return wrap;
+}
+
+/** A labelled on/off switch for a bot option (Ranks & badges, Themed names): `id` the checkbox. */
+export function optionSwitch(id: string, label: string, tip: string, on: boolean, onToggle: (on: boolean) => void): HTMLElement {
+  const box = evenSwitch(id, on, onToggle, label, tip);
+  box.classList.add('opt-switch');
+  return box;
 }
 
 /**

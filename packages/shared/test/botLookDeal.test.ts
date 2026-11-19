@@ -82,10 +82,10 @@ describe('random bots: a per-match deal of looks', () => {
   it('a recast stays within the allowed categories, each bot a different look while the pool lasts', () => {
     const match = filled(8_675_309, 12);
     const control = new HostControl(match, new BotFiller(match), 13);
-    control.apply({ c: 'bots', cast: ['pirate', 'monkey'] });
-    const pool = castLooks(['pirate', 'monkey']).map((l) => l.id);
+    control.apply({ c: 'bots', cast: ['legends', 'machines'] });
+    const pool = castLooks(['legends', 'machines']).map((l) => l.id);
     const list = botsOf(match);
-    for (const c of list) expect(['pirate', 'monkey']).toContain(lookTheme(c.look));
+    for (const c of list) expect(pool).toContain(c.look);
     expect(new Set(list.map((c) => c.look)).size).toBe(Math.min(list.length, pool.length));
     control.apply({ c: 'bots', cast: ['soldiers'] });
     const soldiers = castLooks(['soldiers']).map((l) => l.id);

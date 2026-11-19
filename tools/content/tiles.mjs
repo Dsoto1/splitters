@@ -112,6 +112,7 @@ function schemas(root, materials, edgeIds = []) {
     arcade: obj({ centre: at2, r: num, turns: at2, bays: int, 'height?': num }),
     roundRoom: obj({ centre: at2, r: num, door: num, window: num }),
     discStrips: obj({ centre: at2, r: num, strips: int, width: num, y: at2 }),
+    spiral: obj({ centre: at2, r: at2, turns: at2, steps: int, height: num, 'base?': num, 'slab?': num, 'solid?': at2 }),
     vault: obj({ axis: en(['x', 'z']), span: at2, along: at2, spring: num, crown: num, 'pieces?': int, 't?': num }),
     block: obj({ across: num, height: num }),
   };
