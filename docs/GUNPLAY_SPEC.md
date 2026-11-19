@@ -866,8 +866,9 @@ are as they were. At the hip nothing changes.
 - **No fit** (`SIGHT_EXCLUDED`, each with its reason): guns whose models have no usable sights keep the placement they
   had: the flat-topped kit guns (Arc Caster, Bubble Blaster, Flak Cannon, Laser Rifle, Oil Slicker, Flamethrower,
   Swarm Launcher, Disc Launcher, Arena Disc), the tube launchers (Rocket Launcher, Guided Rocket, Blast Rockets,
-  Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (a scope
-  tube, no irons), the Flare Gun (drawn broken open), the Gilded Pistol (its cock stands in the line) and the Spear.
+  Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (an open
+  sight box, no irons), the Flare Gun (drawn broken open), the Gilded Pistol (its cock stands in the line) and the Spear.
+  Eight of them carry an optic since step 2 (below); the rest keep that placement.
   Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun) hide the gun behind the scope overlay, the Battle
   Rifle brings its optic's eyepiece to the eye (`view.optic`), and melee weapons, tools and mounted guns do not aim.
 - **The audit** is the sight sheet, `?mode=sights` (client `tools/sightSheet.ts`): each weapon from the eye as the game
@@ -882,29 +883,69 @@ it on the sight sheet, then add it to `FITTED` in `sightPose.test.ts`. When the 
 **correction** (`rear` and/or `front` points read off the model, with the reason) when the gun has sights the tool
 misread, or an **exclusion** (with the reason) when it has none. No corrections were needed for the first 13.
 
-**What parts 2 and 3 need** (optics by gun; scope feel), from what step 1 found:
+### Optics by gun
 
-- **The aim reticle is one HUD mark for every gun**: `#reddot` (hud.ts `setAds`, style.css), a red ring and dot that
-  fades in over the crosshair at 60 % of the aim. It now sits on the front sight's top. Real red dots and holographic
-  sights need a mark drawn on the gun's own glass (it must stay on the aim through the kick and bob), and the irons
-  want no HUD dot at all.
-- **Depth is the limit on sight size.** The camera's near plane (0.1 m) is the world's, so a long gun aims with its
-  rear sight 0.45-0.66 m from the eye and its sights a few pixels across. Optics that fill the view need the gun
-  nearer: the Battle Rifle's optic already does it by drawing the gun at its own field of view (`opticView.ts`
-  `squash`, a depth mask on the glass, the HUD shading round the lens); the same frame can carry a 2-3× optic and a
-  sniper scope on the model instead of the full-screen overlay.
-- **Which models carry an optic today**: the Battle Rifle (`guns/frontier_rifle.glb`, eyepiece at `view.optic.eye`),
-  the Marksman Rifle and the Precision Rifle (scope tubes on the model, hidden behind the `#scope` overlay), the Plasma
-  Rifle (a tube on a mount, unused). None has a rail part to hang a red dot on: the M4 (Burst Rifle) has a flat-top
-  rail under its flip-up aperture, the natural first mount. A mounted optic's eye point and axis fit the same table
-  (a `kind` per optic, the rear point the glass's middle).
-- **Reticles and holdover**: `#scope` and `#optic` (hud.ts `setScope`, `setOptic`; reticles `duplex` and `chevron`),
-  holdover marks from `game/holdover.ts` placed for the view's zoom; they carry over unchanged if each optic gives its
-  half-angle as the two do now.
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 2: "real optics by gun: red dot
+or holographic for close range, 2-3x for rifles and carbines, a full scope for snipers, each with its own reticle,
+keeping the holdover marks").** Every hand-held gun carries one optic, or none with its reason. **No gun's zoom
+changed**: each got the optic that matches the zoom it had (the sights' 0.72 of the hip field of view is 1.52×).
+
+| Optic (kind) | Reticle | Guns | Zoom |
+|---|---|---|---|
+| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle | 1.52× |
+| Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off | 1.52× |
+| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Arc Caster, Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box) | 1.52× |
+| 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
+| Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
+| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Singularity Cannon, Flare Gun, Gilded Pistol, Spear | 1.52× |
+
+- **The table** is `content/optics.json`: `kinds` (reticle, housing, aimed field of view: `adsFov` for 1× sights, a
+  `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: the loadout's
+  choice comes later; today every gun shows its default), `none` with reasons. `tools/content/optics.mjs` (run by
+  `pnpm content:rebuild`, checked by `pnpm content:check`) checks it and writes
+  `packages/shared/src/content/optics.generated.ts`, loaded with the match's view, not the menu. A zoom stays in the
+  weapon file (`view.zoomFov`, `view.optic.mag`); the tool only checks it lies inside its kind's range.
+- **Housings** for the red dot (a tube) and the holographic sight (a hooded frame) are built in code
+  (`game/opticHousing.ts`: a few boxes and a tube in one mesh, no outside models) and stand on the gun's top at the
+  **mount** the tool measures from the model: the rearmost flat stretch of the top from the hand forward that the rest of
+  the gun does not stand in front of, sized to the gun's length (0.85-1.2); a `mount` or, for a model with an open sight
+  of its own (the Plasma Rifle), a `window` can be set by hand with its reason. They are on your own gun, in third person
+  and on other players' guns; crowds (GPU-instanced guns), pickups and icons show the plain model.
+- **Reticles on the glass, not the HUD.** The glass's material works out for each of its pixels where that pixel is in
+  the view (the tangents of its angles from the view's axis, from its clip position and the projection) and lights the
+  mark's pixels. So the mark is on the point of aim itself (the middle of the view: rounds leave the eye along the aim,
+  §5), stays there while the gun bobs and kicks, is hidden outside the window, and is one screen pixel sharp at any
+  resolution. Steady, brightness capped (0.92; 0.8 with Reduce flashing), a red under High's bloom threshold: no
+  flicker, no bloom, no halo. Iron sights show no HUD dot; `#reddot` remains only for the guns with no optic.
+- **Magnified reticles** are the HUD's (`#optic`, `#scope`, `data-reticle`): `chevron` (its tip the aim) for the 2-3×
+  optics, `fine` for the sniper scopes, with the holdover marks of §5 placed for each view's own half-angle
+  (`game/holdover.ts`, unchanged).
+- **The sight picture.** A glass 0.4-0.7 m from the eye is a few dozen pixels across, so an aimed gun with a glass is
+  drawn larger about the view axis as it comes up (`optics.ts` `pictureScale`: its window's half-height brought to 0.2
+  of the screen's, at most 3×), the frame the Battle Rifle's optic uses: only x and y scale, every depth stays, nothing
+  nears the near plane. Long guns' iron sights get it gently (`ironsPicture`: the rear sight as large as at 0.36 m, at
+  most 1.6×: the Assault Rifle, SMG and shotguns 1.6×, the Burst Rifle 1.26×; handguns unchanged). Points on the axis
+  stay on it, so the sights stay on the aim. The gun's bob and kick are drawn that much smaller, so they move the
+  picture as far as before; the hands keep their own size.
+- **The audit**: the sight sheet shows every weapon that aims with its optic (scopes with their own view and marks) and
+  `__sights.audit()` adds the reticle's distance from the aim: a glass's mark found on the drawn frame (the pixels it
+  changes when switched off), a HUD reticle's origin as laid out. All measured 0.00° (glass marks at most 0.01°).
+  `packages/client/test/optics.test.ts` names every gun's optic and zoom and holds the rest (a weapon without an entry
+  fails with what to do); `tools/content/test/optics.test.mjs` covers the tool.
+
+**Adding a gun or changing its optic.** Give it an entry in `content/optics.json` (`weapons`, or `none` with a reason),
+run `node tools/content/optics.mjs` (`--report` prints the table and mounts), look at it on the sight sheet, then name
+it in `optics.test.ts`. A new kind: add it to `kinds`; a new housing shape or mark needs its builder or shader branch
+in `opticHousing.ts`.
+
+**What part 3 needs** (scope feel):
+
 - **Scope feel exists in part**: sway with a Shift breath-hold on its own meter (session.ts `updateScopeSway`,
   `hud.setBreath`: 3.5 s to hold, not yet on stamina), a second zoom on the wheel (`zoomLevel`, ×0.45), a 0.16 s
   `scope-in` fade. Missing: the edge darkening as it comes up, stamina, the glint (a new bright moment: it needs its
   moment in the `flashing` flow and a calm form under Reduce flashing).
+- **The Marksman and Sniper scopes are still the full-screen overlay** with the gun hidden; their models carry scope
+  tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead.
 
 ---
 

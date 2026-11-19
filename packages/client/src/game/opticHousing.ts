@@ -73,8 +73,9 @@ function bodyMaterial(scene: Scene): StandardMaterial {
   let m = bodies.get(scene);
   if (!m) {
     m = new StandardMaterial('opticBody', scene);
-    m.diffuseColor = new Color3(0.085, 0.09, 0.1);
-    m.specularColor = new Color3(0.22, 0.22, 0.24);
+    m.diffuseColor = new Color3(0.2, 0.21, 0.23);
+    m.emissiveColor = new Color3(0.07, 0.074, 0.082);
+    m.specularColor = new Color3(0.3, 0.3, 0.32);
     m.specularPower = 28;
     m.backFaceCulling = false;
     bodies.set(scene, m);
