@@ -485,10 +485,12 @@ describe('the wall styles the bays are built with', () => {
     expect(frame).toHaveLength(3);
     expect(frame.every((p) => p.surface!.material === 'core.oak_beam')).toBe(true);
     for (const id of ['kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open']) expect(getProp(id)!.size.slice(0, 2), id).toEqual([2, 2.6]);
-    // Shut and ajar close the doorway (the slab in it); open leaves it clear.
+    // Shut and ajar close the doorway (the slab in it); open collides as its leaf beside the clear doorway (cover:
+    // owner, 2026-11-19; doorLeaves.test.ts).
     expect(getProp('kit.door.oak')!.collision).toEqual([2, 2.6, 0.16]);
     expect(getProp('kit.door.oak_ajar')!.boxes).toEqual([[-1, 0, -0.08, 1, 2.6, 0.08]]);
-    expect(getProp('kit.door.oak_open')!.collision).toBeNull();
+    expect(getProp('kit.door.oak_open')!.boxes).toHaveLength(1);
+    expect(getProp('kit.door.oak_open')!.boxes![0]![0]).toBeGreaterThan(0.8);
   });
 });
 
@@ -541,8 +543,9 @@ describe('what the bays are made of, and what they cost', () => {
     const one = cost([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
     // Measured 2026-11-13: 100 collision boxes (walls, slabs and roofs 18, entry walls and partitions 14, furniture 68:
     // a bunk is 12, a desk 2, the sink 1; the closets are the entry walls, the chairs are not solid), 130 trim boxes,
-    // 4 panes. (2026-11-12, with free-standing closets and one desk a room: 110.)
-    expect(one.collision).toBeLessThanOrEqual(104);
+    // 4 panes. (2026-11-12, with free-standing closets and one desk a room: 110.) 2026-11-19: 114, with the four open
+    // doors' leaves and the facade's plinth and buttresses colliding (doorLeaves.test.ts, facadeCover.test.ts).
+    expect(one.collision).toBeLessThanOrEqual(114);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
     expect(one.props).toBe(20);

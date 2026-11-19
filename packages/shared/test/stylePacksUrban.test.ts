@@ -96,13 +96,13 @@ describe('Style Pack 14 Urban & Civilian', () => {
     expect(names('kit.door.painted')).toEqual(['red', 'blue', 'white', 'shop']);
     expect(names('kit.door.painted_open')).toEqual(['red', 'blue', 'white', 'shop']);
     expect(names('kit.shop.awning')).toEqual(['red', 'green', 'blue', 'yellow', 'faded']);
-    // The painted door is the Oak Door's size and collides as it does: shut closes the doorway, open leaves it clear.
+    // The painted door is the Oak Door's size and collides as it does: shut closes the doorway, open as its leaf beside it.
     const [oak, shut, open] = [getProp('kit.door.oak')!, getProp('kit.door.painted')!, getProp('kit.door.painted_open')!];
     expect(shut.size).toEqual(oak.size);
     expect(shut.collision).toEqual(oak.collision);
     expect(shut.boxes).toEqual(oak.boxes);
     expect(open.size).toEqual(getProp('kit.door.oak_open')!.size);
-    expect(open.collision).toBeNull();
+    expect(open.boxes).toEqual(getProp('kit.door.oak_open')!.boxes);
     // The awning hangs over a shop window: nothing to walk into or to stop a round, as the game's other awnings.
     expect(getProp('kit.shop.awning')).toMatchObject({ size: [3.2, 1, 1.3], collision: null, category: 'Shop' });
     expect(getProp('prop.awning')!.collision).toBeNull();
