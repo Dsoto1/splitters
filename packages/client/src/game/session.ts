@@ -165,7 +165,7 @@ import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type Sh
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, pointerAsk, pointerWanted, releasePointer, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -873,9 +873,11 @@ export class GameSession {
         return;
       }
       // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
-      // the option, so ask again plainly.
+      // the option, so ask again plainly: unless the page has let the mouse go since (a window opened over the pause
+      // menu), when the refusal comes back late and a lock now would hide the menu under it (the hostcontrols flake).
+      const ask = pointerAsk();
       const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
-      if (raw instanceof Promise) raw.catch(() => opts.canvas.requestPointerLock());
+      if (raw instanceof Promise) raw.catch(() => (pointerWanted(ask) ? opts.canvas.requestPointerLock() : undefined));
     };
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
@@ -1157,16 +1159,20 @@ export class GameSession {
           return;
         }
         if (e.code !== 'Escape') return;
-        if (this.input.locked) {
+        // A window over the pause menu (the Bots window) takes this Esc even if the mouse is still held (a late lock
+        // from Resume, released as the window opened: hostPanel.ts openBots): the mouse goes, the window closes.
+        const dialog = this.pauseMenu.dialogOpen;
+        if (this.input.locked && !dialog) {
           if (pageHoldsEscape() && !e.repeat) document.exitPointerLock();
           return;
         }
+        if (this.input.locked) releasePointer();
         if (!paused && this.voteHud?.open && !this.votePause) {
           // Over the vote: Esc opens the pause menu (Resume goes back to the vote).
           this.votePause = true;
           return this.updatePause();
         }
-        if (!paused) return;
+        if (!paused && !dialog) return;
         // The menu takes this Esc: a dialog under it (the Bots window) doesn't also act on it.
         e.preventDefault();
         e.stopPropagation();

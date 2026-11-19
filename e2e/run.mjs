@@ -14233,6 +14233,26 @@ async function hostcontrolsFlow(browser) {
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
   check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
+  // The flake's cause (2026-11-19): a lock Resume asked for came late, so the mouse was held when the window opened and
+  // Esc only let it go. Opening the window lets the mouse go itself; the first Esc closes it. (Where this headless page
+  // gets the mouse: a key press gives it the user activation a lock needs.)
+  await page.keyboard.press('Shift');
+  const held = await page.evaluate(async () => {
+    try {
+      await document.getElementById('view').requestPointerLock();
+    } catch {
+      return false;
+    }
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return !!document.pointerLockElement;
+  });
+  if (held) {
+    await page.evaluate(() => document.getElementById('hc-bots').click());
+    const openedHeld = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
+    await page.keyboard.press('Escape');
+    const closedHeld = await page.waitForFunction(() => !document.getElementById('bot-manager') && !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
+    check(openedHeld && closedHeld, `with the mouse held, Bots… lets it go and Esc closes the window over the pause menu (${openedHeld}, ${closedHeld})`);
+  } else console.log('NOTE the headless page did not get the mouse: the held-mouse case of the Bots window is not checked here');
   // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());

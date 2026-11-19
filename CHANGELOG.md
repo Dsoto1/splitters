@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Esc always closes the Bots window over the pause menu.** If the game took the mouse late after Resume, opening the Bots window now lets it go, and the first Esc closes the window.
 - **MapMaker warns about stairs too low to walk standing.** As you build, a stair or ramp with less room over it than the tallest character needs (2.62 m over steps, a little over 2.1 m on a ramp) shows a warning naming the piece, its clear height and what is over it.
 - **Flavius Rule: walk down the gate stairs standing.** The two stair wells beside each corner's Gladiator Gate, down to the hypogeum, have a room's height (3.7 m) over every step; the ground over their lower half came down to 2.5 m, so a large character had to crouch on the way down.
 - **Building trim you can stand against.** Buttresses, pilasters, plinths and other facade pieces that stand out at least 10 cm from a wall (St. John's halls, Flavius Rule, Step Temple and every map with a stone, Roman, temple or brick facade) are solid now: no walking through them, and they stop rounds as cover. Thin trim and the roofline stay as they were.
