@@ -6,6 +6,7 @@
   "name": "Vampire",
   "look": "core.vampire",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "spooky",
   "bio": "Five hundred years old, never once sunburnt. Bring your own garlic.",
   "body": "male",

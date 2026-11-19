@@ -6,6 +6,7 @@
   "name": "Ivory Rustwalker",
   "look": "core.rustwalker",
   "group": "horror",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Woke up in a scrapyard with no orders and a full magazine. Has been following both ever since.",
   "body": "male",

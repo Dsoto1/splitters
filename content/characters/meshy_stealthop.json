@@ -7,6 +7,7 @@
   "look": "core.stealthop",
   "group": "soldiers",
   "branch": "agency",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "You won't hear her coming. You'll hear the respawn timer.",
   "body": "female",

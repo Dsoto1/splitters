@@ -6,6 +6,7 @@
   "name": "Rotter",
   "look": "core.rotter",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "Falls apart a little more every round, and never seems to mind.",
   "body": "male",

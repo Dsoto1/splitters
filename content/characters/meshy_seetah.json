@@ -6,6 +6,7 @@
   "name": "Seetah J. Chloth",
   "look": "core.seetah",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "cat",
   "bio": "Fastest cat alive, for about four seconds a day. The rest is a very long nap with excellent aim.",
   "body": "male",

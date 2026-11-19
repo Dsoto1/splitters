@@ -6,6 +6,7 @@
   "name": "Salamander Warlord",
   "look": "core.warlord",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "frog",
   "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
   "body": "male",

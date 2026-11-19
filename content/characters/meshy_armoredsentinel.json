@@ -6,6 +6,7 @@
   "name": "Armored Sentinel",
   "look": "core.armoredsentinel",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "A cone-headed guard bot with shoulder pads big enough to hide behind.",
   "body": "male",

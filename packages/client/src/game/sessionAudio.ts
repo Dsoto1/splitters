@@ -98,8 +98,8 @@ export class SessionAudio {
    */
   worldImpact: (from: Vec3, to: Vec3) => SoundId | null = () => 'impact.world';
 
-  /** Whether blood is shown (the map's setting and the player's): the wet splat on a kill goes with it. */
-  bloodOn: () => boolean = () => true;
+  /** Whether a kill of this victim makes the wet splat: blood is shown (the map's setting and the player's) and the victim's blood is a liquid (not bone dust or a wisp). */
+  bloodOn: (victim: number) => boolean = () => true;
 
   constructor(
     private readonly audio: AudioSystem,
@@ -487,7 +487,7 @@ export class SessionAudio {
         const at = ev.victim === me ? undefined : poseOf(ev.victim);
         if (ev.victim === me) this.audio.play('death');
         else if (at) this.audio.play('death', { at });
-        if (at && this.bloodOn()) this.audio.play('blood.splat', { at });
+        if (at && this.bloodOn(ev.victim)) this.audio.play('blood.splat', { at });
         // A team kill: the death sounds only, no kill confirmation.
         if (ev.killer === me && ev.victim !== me && !ev.tk) {
           const t = now / 1000;

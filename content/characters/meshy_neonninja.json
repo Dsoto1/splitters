@@ -6,6 +6,7 @@
   "name": "Neon Shadow Ninja",
   "look": "core.neonninja",
   "group": "space",
+  "blood": "red",
   "nameTheme": "ninja",
   "bio": "A shadow that lights up. Nobody told him that defeats the point.",
   "body": "male",

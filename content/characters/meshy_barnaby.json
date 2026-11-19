@@ -6,6 +6,7 @@
   "name": "Barnaby Bruin",
   "look": "core.barnaby",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "bear",
   "bio": "Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.",
   "body": "male",

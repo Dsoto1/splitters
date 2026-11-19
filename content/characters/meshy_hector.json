@@ -6,6 +6,7 @@
   "name": "Bill the Barbarian",
   "look": "core.hector",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "barbarian",
   "bio": "Says little, carries a lot, and is always the last one standing at the bar.",
   "body": "male",
