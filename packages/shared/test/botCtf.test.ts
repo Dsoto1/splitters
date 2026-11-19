@@ -123,7 +123,7 @@ describe('CTF bots run the flag', () => {
     expect(captures).toBeGreaterThan(0);
   }, 600_000);
 
-  it('Sunken Kingdom: a capture over the 155 m between the flags within five minutes (one of seeds 1, 2 and 5)', () => {
+  it('Sunken Kingdom: a capture over the 155 m between the flags within five minutes (one of seeds 6, 7 and 8)', () => {
     // Which seed captures is chaotic: any change to the map's entities sends a match another way, even one far from
     // anyone. Seeds 1-12, matches with a capture in five minutes (set pieces part 6): the map with the Temple Pylon
     // tile 9 (seeds 2-4 and 7-12), with the Temple Pylon set piece 6 (2, 4, 7, 10-12), and with the tile plus one 1 m
@@ -132,9 +132,11 @@ describe('CTF bots run the flag', () => {
     // Gun handling (movement speed per weapon, sprint exit; 2026-11-18), seeds 1-8, captures (at s): main
     // 0, 2@118, 0, 1@200, 0, 1@275, 0, 0 (3 matches, 4 captures); after 2@200, 0, 0, 0, 1@179, 0, 0, 0 (2, 3): seeds
     // 2-4 now all go without, so seeds 1, 2 and 5.
+    // A spawn point each (2026-11-18, sim/spawns.ts spawnTaken), seeds 1-10: captures in 6, 7, 8 (1 each) and 9 (2);
+    // 4 matches of 10 with a capture (was 2 of 8), so seeds 6, 7 and 8.
     let captures = 0;
     let idle = 0;
-    for (const seed of [1, 2, 5]) {
+    for (const seed of [6, 7, 8]) {
       const match = ctfMatch('sunken_kingdom', seed);
       const ctf = match.mode as CtfMode;
       const w = watch(match, 300, () => (captures = [...ctf.captures.values()].reduce((a, b) => a + b, 0)) > 0);

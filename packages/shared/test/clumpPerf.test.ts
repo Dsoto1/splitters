@@ -51,8 +51,10 @@ describe('clumped 96-bot match', () => {
       expect(clumped.steering).toBeGreaterThan(ticks * 5);
       // Perception casts a few rays per look however many enemies are in view (was ~200 a tick).
       expect(clumped.rays).toBeLessThan(90);
-      // The budget: within 1.35x of the spread-out match's CPU a tick (it measured 0.9-1.2x).
-      expect(clumped.cpu / spread.cpu).toBeLessThan(1.35);
+      // The budget: within 1.6x of the spread-out match's CPU a tick. It measured 0.9-1.2x until spawns spread out
+      // (2026-11-18, a spawn point each: sim/spawns.ts spawnTaken): the spread-out match got cheaper (9.1-9.7 → 6.5-7.0
+      // ms a tick on a desk) and the clump too (9.7-11.0 → 8.5-9.1), so the same clump reads 1.2-1.5x.
+      expect(clumped.cpu / spread.cpu).toBeLessThan(1.6);
     } finally {
       simProfile.on = false;
       match.destroy();
