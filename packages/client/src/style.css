@@ -1148,7 +1148,30 @@ img:not([src]) { visibility: hidden; }
 @keyframes countdown-go { from { transform: scale(0.8); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 #loading-screen { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: radial-gradient(ellipse at center, #16213a, #070a12 70%); }
 #loading-screen[hidden] { display: none; }
+/* Before the match has let us in (Hud.showLoading): the loading screen alone. */
+#hud.only-loading > :not(#loading-screen):not(#scoreboard) { visibility: hidden; }
 #loading-screen b { font: italic 700 34px var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; }
+/* The map's card (loadingScreen.ts): its picture, name, mode and (partway through) the match's goal. */
+#loading-screen .ls-card { display: flex; align-items: center; gap: 18px; max-width: min(720px, 92vw); transition: transform 0.45s ease; }
+#loading-screen .ls-pic { width: min(320px, 42vw); aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--line); border-top: 3px solid var(--cyan); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); background: #121827; }
+#loading-screen .ls-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#loading-screen .ls-mode { color: var(--cyan); font: 600 15px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+#loading-screen .ls-goal { color: #d6deea; font: 500 14px var(--font-display); min-height: 1.2em; opacity: 0; transition: opacity 0.4s ease; }
+#hud.ls-staged #loading-screen .ls-goal { opacity: 1; }
+#loading-screen.ls-out { opacity: 0; transition: opacity 0.35s ease; }
+/* Partway through, the Tab board joins the loading screen: the card moves up, the board comes in under it. */
+#hud.ls-staged #loading-screen { justify-content: flex-start; padding-top: 5vh; }
+#hud.ls-staged #scoreboard { z-index: 21; top: auto; bottom: 3vh; transform: translateX(-50%); max-height: 58vh; animation: ls-board-in 0.45s ease-out; }
+#hud.ls-staged #loading-screen.ls-out ~ #scoreboard { opacity: 0; transition: opacity 0.35s ease; }
+@keyframes ls-board-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translateX(-50%); } }
+@media (max-height: 560px) { #loading-screen .ls-pic { width: min(200px, 32vw); } #hud.ls-staged #scoreboard { max-height: 52vh; } }
+/* Under the countdown's number: the map and mode, and the goal (it fades out with "Go!"). */
+#countdown-info { position: absolute; top: calc(24% + 140px); width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; text-shadow: 0 2px 6px #000; }
+#countdown-info[hidden] { display: none; }
+#countdown-info b { font: italic 700 22px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #fff; }
+#countdown-info span { font: 500 15px var(--font-display); color: #d6deea; }
+#countdown-info.go { animation: countdown-info-out 0.9s ease-out forwards; }
+@keyframes countdown-info-out { to { opacity: 0; } }
 #loading-screen .bar { width: min(420px, 70vw); height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
 #loading-screen .bar i { display: block; height: 100%; width: 0; background: var(--cyan); transition: width 0.2s ease; }
 #loading-screen small { color: #8ea2c0; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
