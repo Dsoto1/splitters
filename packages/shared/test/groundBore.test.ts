@@ -410,7 +410,8 @@ describe('the tunnel kit: one shell a shape, a family applied to it', () => {
       // (The portal's middle is its headwall: its passage is checked behind it, below.)
       if (shape === 'portal') continue;
       const doc = ridgeMap(2, [[`core.tunnel_concrete_${shape}`, 0, 0, 0]]);
-      const physics = new PhysicsWorld(buildMapGeometry(doc).filter((b) => b.sourceId === 'tile_0'), null);
+      // (The shell alone: a lone piece's ends are closed by end caps, tested in buriedEnds.test.ts.)
+      const physics = new PhysicsWorld(buildMapGeometry(doc).filter((b) => b.sourceId === 'tile_0' && !b.endCap), null);
       const out: Record<string, [number, number]> = { N: [0, 1], E: [1, 0], S: [0, -1], W: [-1, 0] };
       for (const [side, [dx, dz]] of Object.entries(out)) {
         for (const [off, y] of [[0, 0.2], [1.7, 0.2], [-1.7, 3.2], [1.7, 3.2]] as [number, number][]) {

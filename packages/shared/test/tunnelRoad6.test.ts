@@ -59,7 +59,7 @@ describe('the 7 m bore (profile L)', () => {
       };
       for (const fam of FAMILIES.slice(1)) expect(hard(fam), `${shape} ${fam}`).toEqual(hard('road'));
       const doc = mapOf([{ tile: base.id, x: 0, y: 0 }]);
-      const physics = new PhysicsWorld(buildMapGeometry(doc).filter((b) => b.kind !== 'trim'), null);
+      const physics = new PhysicsWorld(buildMapGeometry(doc).filter((b) => b.kind !== 'trim' && !b.endCap), null);
       for (const side of ARMS[shape]!) {
         const [dx, dz] = DIRS[side]!;
         for (const off of [-3.3, 0, 3.3]) for (const y of [0.2, 1.7, 3.3]) expect(physics.raycastWorld({ x: -dz * off, y, z: dx * off }, { x: dx, y: 0, z: dz }, 4), `${shape} ${side} ${off} ${y}`).toBeNull();
@@ -93,7 +93,7 @@ describe('the 7 m bore (profile L)', () => {
   it('the reducer: L to the south, S to the north, the walls stepping in at the middle; a mismatched joint is a warning until a reducer goes in', () => {
     const red = coreCatalog.get('core.tunnel_road_reducer')!;
     expect(red.ports).toEqual([{ side: 'S', level: 0, bore: 'L' }, { side: 'N', level: 0 }]);
-    const physics = new PhysicsWorld(buildMapGeometry(mapOf([{ tile: red.id, x: 0, y: 0 }])).filter((b) => b.kind !== 'trim'), null);
+    const physics = new PhysicsWorld(buildMapGeometry(mapOf([{ tile: red.id, x: 0, y: 0 }])).filter((b) => b.kind !== 'trim' && !b.endCap), null);
     // From the wide end, 2.6 m off the line, northward: the step at the middle. Down the middle: through.
     expect(physics.raycastWorld({ x: 2.6, y: 1, z: -3.9 }, { x: 0, y: 0, z: 1 }, 8)).toBeCloseTo(3.9, 1);
     expect(physics.raycastWorld({ x: 0, y: 1, z: -3.9 }, { x: 0, y: 0, z: 1 }, 8)).toBeNull();
