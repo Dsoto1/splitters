@@ -18,7 +18,32 @@ import {
 import { readClipboard } from './clipboardStore.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml, isTyping } from './editorDom.ts';
-import { LOOK_SENSITIVITY, snap, type DragState } from './editorParts.ts';
+import { LOOK_SENSITIVITY, snap, type DragState, type Hit } from './editorParts.ts';
+
+/** How near the move gizmo's handle a press grabs it (CSS pixels). */
+const GIZMO_GRAB_PX = 16;
+/** How near the last click a click counts as at the same spot, to step through what is there (CSS pixels). */
+const CYCLE_SAME_PX = 5;
+
+/** The small list by the pointer of what is under it, the one picked marked (a click again there picks the next). */
+function showCycleList(names: readonly string[], index: number, x: number, y: number): void {
+  let el = document.getElementById('ed-cycle');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'ed-cycle';
+    el.setAttribute('role', 'status');
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div class="ed-cycle-head">Here (click again for the next)</div>${names.map((n, i) => `<div class="ed-cycle-row${i === index ? ' on' : ''}">${escapeHtml(n)}</div>`).join('')}`;
+  el.style.left = `${x + 18}px`;
+  el.style.top = `${y + 12}px`;
+  el.hidden = false;
+}
+
+function hideCycleList(): void {
+  const el = document.getElementById('ed-cycle');
+  if (el) el.hidden = true;
+}
 
 /** MapMaker's input: the pointer on the view (pick, drag, box select, brushes, fly-look), right-click and its menu, and the keys through the key table (keymap.ts) (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class EditorInput {
@@ -201,6 +226,50 @@ export class EditorInput {
     }
   }
 
+  /**
+   * Click again to cycle (MapMaker: picking things inside others): the last click on the view and everything that was
+   * under it (Hover.pickAll), with the one picked. A press at the same spot (a few pixels) on what that click picked
+   * waits for the button to come up: a click then picks the next thing there, a drag moves the selection as before.
+   */
+  cycle: { x: number; y: number; list: Hit[]; index: number; again: boolean } | null = null;
+
+  private noteClick(e: PointerEvent, hit: Hit | null): void {
+    const c = this.cycle;
+    const same = !!c && !e.shiftKey && !e.altKey && Math.hypot(c.x - e.clientX, c.y - e.clientY) <= CYCLE_SAME_PX;
+    const current = c?.list[c.index];
+    if (same && c && current && this.isSelected(current)) {
+      c.again = true;
+      return;
+    }
+    hideCycleList();
+    if (!hit || e.shiftKey || e.altKey) {
+      this.cycle = null;
+      return;
+    }
+    const list = this.app.hover.pickAll();
+    this.cycle = { x: e.clientX, y: e.clientY, list, index: Math.max(0, list.findIndex((h) => h.kind === hit.kind && h.id === hit.id)), again: false };
+  }
+
+  /** Whether a pick target is what is selected now. */
+  private isSelected(h: Hit): boolean {
+    const sel = this.app.selection;
+    if (h.kind === 'tile') return sel.tiles.includes(h.id);
+    if (h.kind === 'setpiece') return this.app.selPieces().includes(h.id);
+    return sel.entities.includes(h.id);
+  }
+
+  /** The button came up from a click: on a click again at the same spot, the next thing under the pointer. */
+  private stepCycle(): void {
+    const c = this.cycle;
+    if (!c?.again) return;
+    c.again = false;
+    if (c.list.length < 2) return;
+    c.index = (c.index + 1) % c.list.length;
+    const h = c.list[c.index]!;
+    this.app.setSelection(h.kind === 'tile' ? { tiles: [h.id], entities: [] } : h.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [h.id] } : { tiles: [], entities: [h.id] }, true);
+    showCycleList(c.list.map((x) => this.app.hover.targetName(x)), c.index, c.x, c.y);
+  }
+
   endDrag(): void {
     const d = this.drag;
     this.drag = null;
@@ -276,6 +345,8 @@ export class EditorInput {
     const canvas = () => this.app.host.canvas;
     window.addEventListener('pointermove', (e) => {
       if (!this.app.active) return;
+      // The pointer left the spot: the list of what was there goes (a click elsewhere starts afresh).
+      if (this.cycle && Math.hypot(this.cycle.x - e.clientX, this.cycle.y - e.clientY) > 12) hideCycleList();
       if (this.app.looking) {
         const dx = e.movementX;
         const dy = e.movementY;
@@ -357,7 +428,23 @@ export class EditorInput {
         canvas().setPointerCapture(e.pointerId);
         return this.app.hover.updateHover();
       }
+      // The move gizmo's handle (drawn over everything): a drag on it moves the selection, even one inside a wall or
+      // a set piece, where a click would pick what stands in front of it.
+      const handle = !e.shiftKey && !e.altKey && this.app.view.gizmoAt ? this.app.view.projectInView(this.app.view.gizmoAt) : null;
+      if (handle && Math.hypot(handle.x - e.clientX, handle.y - e.clientY) < GIZMO_GRAB_PX && this.app.hoverPoint && this.app.hoverCell) {
+        this.cycle = null;
+        this.drag = { startCell: [this.app.hoverCell[0], this.app.hoverCell[1]], startPoint: { ...this.app.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
+        return;
+      }
       const hit = this.app.hover.pick();
+      // A click again at the same spot steps through everything under the pointer (decided when the button comes up
+      // without a drag: a press on the selection may be the start of moving it).
+      this.noteClick(e, hit);
+      if (this.cycle?.again) {
+        // (What the last click stepped to stays selected: a drag moves it, a click steps on when the button comes up.)
+        if (this.app.hoverPoint && this.app.hoverCell) this.drag = { startCell: [this.app.hoverCell[0], this.app.hoverCell[1]], startPoint: { ...this.app.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
+        return;
+      }
       if (!hit) {
         // Empty ground: drag a box to select what's in it (Shift adds to the selection); a plain click selects nothing.
         this.marquee = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY, add: e.shiftKey, moved: false };
@@ -411,7 +498,9 @@ export class EditorInput {
         }
         if (this.marquee) this.endMarquee();
         this.app.terrain.endStroke();
+        const clicked = !this.drag?.moved;
         this.endDrag();
+        if (clicked) this.stepCycle();
         this.app.paths.pointerUp();
         this.app.routes.pointerUp();
       }
