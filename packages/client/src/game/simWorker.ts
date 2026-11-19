@@ -22,7 +22,7 @@ function handle(c: Awaited<typeof core>, m: ToSimHost): void {
     return;
   }
   if (m.k === 'start') {
-    host = new c.MatchHost(m.map, m.opts, c.sinkTo(post));
+    host = new c.MatchHost(m.map, m.opts, c.sinkTo(post, { snap: m.snap }));
     host.setHidden(m.hidden);
     host.start().catch((err: Error) => post({ k: 'failed', error: err.message }));
     return;

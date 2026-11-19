@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_ug2hln4lgbbejjsi",
-      "versionId": "v_xazhbt7tybl7hbdd",
-      "revision": 1,
-      "contentHash": "sha256:88d8974eb937dd5bfcd28f808257bad33d6f328f18a4feac912d08bf0871e14d",
+      "versionId": "v_7shhrd4ezoogtjub",
+      "revision": 2,
+      "contentHash": "sha256:4a6d6add778cddea14a8a82bb89689c44c28113d718b97f285f9d2c18ffe4e8e",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:46:18.437Z"
+      "releasedAt": "2026-11-19T12:33:06.929Z"
     }
   },
   "classicStructure": {
@@ -4169,12 +4169,12 @@
   },
   "bounds": {
     "min": [
-      -8,
-      -8
+      -4,
+      -4
     ],
     "max": [
-      72,
-      72
+      68,
+      68
     ],
     "style": "invisible",
     "height": 8
