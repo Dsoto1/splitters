@@ -1,6 +1,7 @@
 import type { WeaponDefinition } from '@tiletrigger/shared';
 import { SIGHT_FITS, type SightFit } from '@tiletrigger/shared/sightFit';
 import { DEFAULT_RELIEF } from './opticView.ts';
+import { glassCentre, hasGlass, opticOf, type CarriedOptic } from './optics.ts';
 
 /**
  * Where the first-person gun sits aiming down the sights (docs/GUNPLAY_SPEC.md §15, "Sights that line up"; owner,
@@ -12,9 +13,10 @@ import { DEFAULT_RELIEF } from './opticView.ts';
  * aim, §5), seen through the aperture or over the notch as the fit's `rear` says. Only the placement at full aim
  * changes: the blend, the field of view, the bob, the kick and the sway are the view's own, as before.
  *
- * A gun with an optic (`view.optic`) brings its eyepiece to the eye (opticView.ts), and a gun without a fit (no
- * usable sights on its model: SIGHT_EXCLUDED) keeps the placement every gun had before: centred, the top of its
- * bounds just under the eye line, pushed forward until its stock is out of view.
+ * A gun with an optic in its model (`view.optic`) brings its eyepiece to the eye (opticView.ts); a gun that carries a
+ * red dot or a holographic sight (optics.ts, a housing built in code on its top) is moved so the eye looks along the
+ * barrel through the middle of its glass; and a gun with neither sights nor an optic keeps the placement every gun
+ * had before: centred, the top of its bounds just under the eye line, pushed forward until its stock is out of view.
  */
 
 /** Field of view while aiming down the sights, as a fraction of the normal one. */
@@ -73,12 +75,23 @@ export function unfittedPlacement(def: WeaponDefinition, bounds: GunBounds): Gun
 }
 
 /**
- * A weapon's placement at full aim: its optic's eyepiece on the eye, else its sight fit, else the unfitted placement.
- * `fitted: false` gives the placement from before the fit (the sight sheet's "before" picture).
+ * The placement of a gun aimed through a glass on its top (a red dot, a holographic sight): the glass's middle on the
+ * view axis, the gun level along it, as far ahead as an unfitted gun (its rear end STOCK_AHEAD of the eye).
  */
-export function aimPlacement(def: WeaponDefinition, bounds: GunBounds, fitted = true): GunPlacement {
+export function glassPlacement(def: WeaponDefinition, optic: CarriedOptic, bounds: GunBounds): GunPlacement {
+  const c = glassCentre(optic);
+  return { x: -c[0], y: -c[1], z: unfittedPlacement(def, bounds).z, pitch: 0, yaw: 0 };
+}
+
+/**
+ * A weapon's placement at full aim: its model's optic's eyepiece on the eye, else behind the glass of the optic it
+ * carries, else its sight fit, else the unfitted placement. `fitted: false` gives the placement from before the fit
+ * and the optics (the sight sheet's "before" picture). `carried`: the optic it carries (default: its own).
+ */
+export function aimPlacement(def: WeaponDefinition, bounds: GunBounds, fitted = true, carried: CarriedOptic | null = opticOf(def)): GunPlacement {
   const optic = def.view.optic;
   if (optic) return { x: -optic.eye[0], y: -optic.eye[1], z: (optic.relief ?? DEFAULT_RELIEF) - optic.eye[2], pitch: 0, yaw: 0 };
+  if (fitted && hasGlass(carried)) return glassPlacement(def, carried, bounds);
   const fit = fitted ? SIGHT_FITS[def.id] : undefined;
   return fit ? sightPlacement(fit) : unfittedPlacement(def, bounds);
 }

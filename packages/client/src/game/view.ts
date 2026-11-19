@@ -174,7 +174,9 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
-import { aimPlacement, blendPlacement, type GunPlacement } from './sightPose.ts';
+import { ADS_FOV, aimPlacement, blendPlacement, type GunPlacement } from './sightPose.ts';
+import { glassCentre, hasGlass, opticOf, pictureScale } from './optics.ts';
+import { attachOptic } from './opticHousing.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -521,8 +523,8 @@ export class GameView {
     const optic = def?.view.optic;
     const on = !!o && o.blend > 0 && !!optic;
     this.opticBlend = on ? o!.blend : 0;
-    const k = on ? o!.squash : 1;
-    this.opticRoot.scaling.set(k, k, 1);
+    // Off the optic the gun's own sight picture sets the scale (updateViewmodel).
+    if (on) this.opticRoot.scaling.set(o!.squash, o!.squash, 1);
     if (on && optic && !this.opticMask) {
       const mask = CreateDisc('opticMask', { radius: 1, tessellation: 48, sideOrientation: MeshClass.DOUBLESIDE }, this.scene);
       const mat = new StandardMaterial('opticMaskMat', this.scene);
@@ -1796,6 +1798,8 @@ export class GameView {
   private stockZ = -0.3;
   /** Where the shown viewmodel sits at full aim (sightPose.ts), worked out when first needed after it is shown. */
   private aimAt: GunPlacement | null = null;
+  /** How much larger the shown gun is drawn at full aim (optics.ts pictureScale: a gun with a glass), worked out with `aimAt`. */
+  private aimPicture = 1;
 
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
@@ -1824,6 +1828,8 @@ export class GameView {
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
       // The muzzle as drawn (muzzlePoint.ts): the weapon's `muzzleAt`, else the middle of the model's front-most geometry.
       const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
+      // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
+      attachOptic(this.scene, node, def, true);
       const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
@@ -1940,6 +1946,7 @@ export class GameView {
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+        attachOptic(this.scene, node, def, true);
         const old = v.node;
         // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
         takeOverViewmodel(old, node);
@@ -1997,7 +2004,9 @@ export class GameView {
     this.fpArms?.anim?.dispose();
     this.fpArms?.root.dispose();
     const root = new TransformNode('fpArms', this.scene);
-    root.parent = this.opticRoot;
+    // On the camera, not under the gun's frame: the hands follow the gun as it is drawn (a glass's larger sight
+    // picture included) at their own size, as your whole body's do; through a model's optic they are hidden.
+    root.parent = this.camera;
     const arms = { look, anim: null as CharacterAnimator | null, root };
     this.fpArms = arms;
     void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArmsChar').then((ch) => {
@@ -2156,17 +2165,26 @@ export class GameView {
     const ads = o.ads ?? 0;
     // Through an optic the gun holds still on the eye: no bob or kick (the camera's recoil still moves the view).
     const still = 1 - this.opticBlend;
-    const bob = this.bobAmount * (1 - ads * 0.8) * still;
     // Aiming down the sights (sightPose.ts): a gun with a sight fit is turned and moved so the eye sits behind its own
     // drawn sights with the front sight on the aim; a gun with an optic brings its eyepiece onto the eye, its relief
     // in front of it (opticView.ts); a gun without usable sights comes to the centre with its top just under the eye
     // line. Each far enough forward that the stock stays out of view.
-    const aim = blendPlacement(def, (this.aimAt ??= aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ })), ads);
+    if (!this.aimAt) {
+      this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ });
+      const carried = opticOf(def);
+      this.aimPicture = hasGlass(carried) ? pictureScale(carried, glassCentre(carried)[2] + this.aimAt.z, DEFAULT_FOV * ADS_FOV) : 1;
+    }
+    const aim = blendPlacement(def, this.aimAt, ads);
     const { x, y, z } = aim;
+    // The sight picture: a gun with a glass is drawn larger about the view axis as it comes up (optics.ts), and its bob
+    // and kick are drawn that much smaller, so they move the window on screen as far as they did.
+    const picture = 1 + (this.aimPicture - 1) * ads * ads * (3 - 2 * ads);
+    if (this.opticBlend === 0) this.opticRoot.scaling.set(picture, picture, 1);
+    const bob = (this.bobAmount * (1 - ads * 0.8) * still) / picture;
     // A melee weapon's barrel kicks like a heavy gun (back and up), not a swing.
     const melee = def.kind === 'melee' && !this.kickShot;
     const heavy = this.kickShot ? 2.6 : 1;
-    const kick = this.kickAmount * still;
+    const kick = (this.kickAmount * still) / picture;
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
       y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
@@ -2818,6 +2836,8 @@ export class GameView {
       castSmall(node);
       // The muzzle as drawn (muzzlePoint.ts), measured before it's put in a hand: the same point as your own copy's.
       a.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
+      // The optic it carries, as everyone sees it: the housing alone (crowds leave it off: a draw a gun).
+      if (!this.crowd) attachOptic(this.scene, node, def, false);
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;

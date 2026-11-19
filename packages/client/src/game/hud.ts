@@ -751,9 +751,13 @@ export class Hud {
     this.pickupTimer = window.setTimeout(() => this.pickupMsg.classList.remove('on'), 1200);
   }
 
-  setScope(on: boolean, marks: readonly HoldoverMark[] = []): void {
+  /** The full-screen scope with its optic kind's reticle (`fine`: a sniper scope's crosshair; `chevron`: a 2-3x optic's) and holdover marks. */
+  setScope(on: boolean, marks: readonly HoldoverMark[] = [], reticle = 'fine'): void {
     this.scope.hidden = !on;
-    if (on) drawHoldover($('scope-holdover'), marks, 1);
+    if (on) {
+      drawHoldover($('scope-holdover'), marks, 1);
+      if (this.scope.dataset.reticle !== reticle) this.scope.dataset.reticle = reticle;
+    }
   }
 
   /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
@@ -822,16 +826,20 @@ export class Hud {
     if (this.root.classList.contains('watching') !== on) this.root.classList.toggle('watching', on);
   }
 
-  /** Aiming down the sights (0..1): the crosshair fades out and a red-dot reticle takes its place. */
-  setAds(amount: number): void {
-    let dot = document.getElementById('reddot');
-    if (!dot) {
-      dot = document.createElement('div');
-      dot.id = 'reddot';
-      document.getElementById('crosshair')?.after(dot);
+  /**
+   * Aiming down the sights (0..1): the crosshair fades out. `dot`: the HUD's own aim dot takes its place, for a gun
+   * with neither sights nor an optic (game/optics.ts); iron sights show none (the front sight is the aim) and a red
+   * dot's or a holographic sight's mark is drawn on its glass (game/opticHousing.ts).
+   */
+  setAds(amount: number, dot = true): void {
+    let mark = document.getElementById('reddot');
+    if (!mark) {
+      mark = document.createElement('div');
+      mark.id = 'reddot';
+      document.getElementById('crosshair')?.after(mark);
     }
-    const on = amount > 0.6;
-    dot.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
+    const on = dot && amount > 0.6;
+    mark.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
     const cross = document.getElementById('crosshair');
     // Through an optic its reticle is the aim (the crosshair would sit on top of it).
     if (cross) cross.style.opacity = this.optic.hidden ? String(1 - Math.min(1, amount * 1.6)) : '0';
@@ -1343,7 +1351,7 @@ export interface HoldoverMark {
  * Holdover marks on a reticle (game/holdover.ts works out where): a short tick on the lower post for each distance,
  * its hundreds of metres beside it. Redrawn only when they move. `k`: line weight (the optic's svg is drawn smaller).
  */
-function drawHoldover(g: HTMLElement, marks: readonly HoldoverMark[], k: number): void {
+export function drawHoldover(g: HTMLElement | SVGElement, marks: readonly HoldoverMark[], k: number): void {
   const key = marks.map((m) => `${m.y.toFixed(1)}:${m.label}`).join('|');
   if (g.dataset.key === key) return;
   g.dataset.key = key;

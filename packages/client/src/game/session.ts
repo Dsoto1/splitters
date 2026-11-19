@@ -228,6 +228,7 @@ import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
+import { opticOf } from './optics.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
@@ -3602,7 +3603,7 @@ export class GameSession {
       if (frame) this.fov = frame.worldFov;
       this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
       // Holdover marks (spec §5) on the optic's reticle: its glass's edge spans the world's half-angle times its share.
-      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticOf(this.opticWeapon!)?.kind.reticle ?? opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
       // The optic sways and steadies like a scope once the eye is on it.
       this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
@@ -3708,8 +3709,9 @@ export class GameSession {
       const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
-      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : []);
-      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend));
+      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
+      // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
+      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend), !!weapon && !opticOf(weapon));
       this.updateScopeSway(dt, this.scopedNow);
       this.hud.setHealth(local.health, local.armor, local.alive);
       this.updateHoldAndWarning(local);

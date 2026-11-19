@@ -9,10 +9,12 @@ import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Ray } from '@babylonjs/core/Culling/ray';
 import '@babylonjs/core/Culling/ray';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import { CORE_WEAPONS, PLAYER, armsLookFor, getWeapon, type WeaponDefinition } from '@tiletrigger/shared';
+import { CORE_WEAPONS, PLAYER, armsLookFor, getWeapon, type MatchRules, type WeaponDefinition } from '@tiletrigger/shared';
+import { WEAPON_OPTICS, type OpticKindId } from '@tiletrigger/shared/optics';
 import { SIGHT_EXCLUDED, SIGHT_FITS } from '@tiletrigger/shared/sightFit';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
@@ -21,9 +23,17 @@ import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
+import { glassCentre, glassHalf, hasGlass, opticNone, opticOf, pictureScale, type CarriedOptic } from '../game/optics.ts';
+import { attachOptic, markAudit } from '../game/opticHousing.ts';
+import { opticFrame } from '../game/opticView.ts';
+import { holdoverFor } from '../game/holdover.ts';
+import { drawHoldover } from '../game/hud.ts';
 
-/** How a weapon aims on the sheet: its own sights (a fit), its optic, the old placement (no usable sights), or not at all. */
-export type SightStatus = 'fitted' | 'optic' | 'unfitted' | 'scope' | 'none';
+/**
+ * How a weapon aims on the sheet: its own sights (a fit), a glass built on it (a red dot, a holographic sight), its
+ * model's optic, the full-screen scope, the old placement (neither sights nor an optic), or not at all.
+ */
+export type SightStatus = 'fitted' | 'glass' | 'optic' | 'unfitted' | 'scope' | 'none';
 
 /** One weapon's row on the sheet. */
 export interface SightRow {
@@ -33,6 +43,8 @@ export interface SightRow {
   /** The fit's kind (`aperture`, `notch`, `post`, `bead`), or why there is none. */
   detail: string;
   corrected: boolean;
+  /** The optic it carries (content/optics.json): its kind and name, its reticle, its magnification over the hip view; null: none. */
+  optic: { id: OpticKindId; name: string; reticle: string; mag: number; allowed: readonly OpticKindId[] } | null;
 }
 
 /** What the audit measures of the shown weapon at full aim (degrees). */
@@ -51,16 +63,28 @@ export interface SightAudit {
   drawnAcross: number | null;
   /** Nearest drawn geometry to the eye inside the view (m): under the camera's near plane (0.1 m) it would be cut. */
   nearest: number;
+  /**
+   * The optic's reticle against the aim (degrees off the view's middle): a glass's mark found on the drawn frame (what
+   * it changes when switched off), a scope's or an optic's from where its centre is laid out. null: no reticle.
+   */
+  reticle: number | null;
+  /** A glass's window: its half-height as a share of the screen's, and how much larger the gun is drawn for it. */
+  window: number | null;
+  picture: number;
   pass: boolean;
 }
 
-const statusOf = (def: WeaponDefinition): SightStatus => (def.view.optic ? 'optic' : SIGHT_FITS[def.id] ? 'fitted' : def.view.zoomFov ? 'scope' : def.kind === 'melee' || def.slot === 0 ? 'none' : 'unfitted');
+const statusOf = (def: WeaponDefinition): SightStatus => (def.view.optic ? 'optic' : def.view.zoomFov ? 'scope' : hasGlass(opticOf(def)) ? 'glass' : SIGHT_FITS[def.id] ? 'fitted' : def.kind === 'melee' || def.slot === 0 ? 'none' : 'unfitted');
+/** The sheet's ballistics for holdover marks: the official default. */
+const RULES: Pick<MatchRules, 'ballistics'> = { ballistics: 'standard' };
 
 /**
  * Sight check (team tool, `?mode=sights`; docs/GUNPLAY_SPEC.md §15): every hand-held weapon aiming down its sights
- * from the player's eye, as the game places it (game/sightPose.ts, the first-person arms), with the crosshair's centre
- * marked and a target 15 m off, so a gun whose sights are off the aim shows at a glance. ←/→ step through the
- * weapons, A toggles the aim, B the placement from before the fit; `window.__sights` drives it (pictures, the audit).
+ * or through its optic from the player's eye, as the game places it (game/sightPose.ts, optics.ts, the first-person
+ * arms), with the crosshair's centre marked and a target 15 m off, so a gun whose sights or reticle are off the aim
+ * shows at a glance. Scopes show their own view (the reticle and its holdover marks at the scope's zoom). ←/→ step
+ * through the weapons, A toggles the aim, B the placement from before the fit, M the green centre mark; `window.__sights`
+ * drives it (pictures, the audit).
  */
 export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   const scene = new Scene(engine);
@@ -79,9 +103,11 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   const board = CreateBox('board', { width: 0.5, height: 1.8, depth: 0.05 }, scene);
   board.position.set(0, 0.9, 15);
   board.material = flat('boardMat', new Color3(0.82, 0.8, 0.74));
+  const targets: Mesh[] = [board];
   for (const [i, r] of [0.2, 0.12, 0.04].entries()) {
     const ring = CreateDisc(`ring${i}`, { radius: r, tessellation: 48 }, scene);
     ring.position.set(0, PLAYER.eyeHeight, 15 - 0.03 - i * 0.002);
+    targets.push(ring);
     ring.material = flat(`ringMat${i}`, i === 2 ? new Color3(0.85, 0.15, 0.1) : i === 1 ? new Color3(0.95, 0.95, 0.95) : new Color3(0.15, 0.15, 0.18));
   }
 
@@ -113,26 +139,76 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   const rows: SightRow[] = Object.values(CORE_WEAPONS).map((def) => {
     const status = statusOf(def);
     const fit = SIGHT_FITS[def.id];
-    return { id: def.id, name: def.displayName, status, detail: fit ? fit.kind : status === 'optic' ? 'optic' : (SIGHT_EXCLUDED[def.id] ?? ''), corrected: !!fit?.corrected };
+    const o = opticOf(def);
+    const fov = o ? (o.mag ? 2 * Math.atan(Math.tan(DEFAULT_FOV / 2) / o.mag) : DEFAULT_FOV * (o.kind.adsFov ?? 1)) : DEFAULT_FOV * ADS_FOV;
+    const optic = o ? { id: o.id, name: o.kind.name, reticle: o.kind.reticle, mag: Math.round((Math.tan(DEFAULT_FOV / 2) / Math.tan(fov / 2)) * 100) / 100, allowed: (WEAPON_OPTICS[def.id]?.allowed ?? []) } : null;
+    return { id: def.id, name: def.displayName, status, detail: status === 'fitted' && fit ? fit.kind : status === 'optic' ? 'optic' : (opticNone(def) ?? SIGHT_EXCLUDED[def.id] ?? ''), corrected: status === 'fitted' && !!fit?.corrected, optic };
   });
-  /** The weapons that aim with the gun in view: the sheet's pages. */
-  const pages = rows.filter((r) => r.status === 'fitted' || r.status === 'optic' || r.status === 'unfitted');
+  /** The weapons that aim: the sheet's pages (melee, tools and mounted guns have none). */
+  const pages = rows.filter((r) => r.status !== 'none');
+
+  // A scope's or a model optic's reticle: the game's own markup (index.html #scope, #optic), copied out of the hidden HUD.
+  const scopeEl = document.getElementById('scope')!.cloneNode(true) as HTMLElement;
+  const opticEl = document.getElementById('optic')!.cloneNode(true) as HTMLElement;
+  for (const el of [scopeEl, opticEl]) {
+    el.id = `sight-${el.id}`;
+    el.hidden = true;
+    el.style.cssText += ';position:fixed;inset:0;z-index:4;animation:none';
+    el.querySelector('[id$=breath]')?.remove();
+    document.body.append(el);
+  }
+  const scopeMarks = scopeEl.querySelector<SVGElement>('.holdover')!;
+  const opticMarks = opticEl.querySelector<SVGElement>('.holdover')!;
 
   let frames = 0;
-  let shown: { def: WeaponDefinition; node: TransformNode; viewRoot: TransformNode; bounds: GunBounds; anim: CharacterAnimator | null; dispose(): void } | null = null;
-  let state = { ads: 1, fitted: true, arms: true };
+  let shown: { def: WeaponDefinition; node: TransformNode; viewRoot: TransformNode; frame: TransformNode; bounds: GunBounds; anim: CharacterAnimator | null; optic: CarriedOptic | null; mask: Mesh | null; dispose(): void } | null = null;
+  let state: { ads: number; fitted: boolean; arms: boolean; optic?: OpticKindId } = { ads: 1, fitted: true, arms: true };
   let placement: GunPlacement | null = null;
+  let picture = 1;
 
   const place = () => {
     if (!shown) return;
-    const aim = aimPlacement(shown.def, shown.bounds, state.fitted);
-    placement = blendPlacement(shown.def, aim, state.ads);
+    const def = shown.def;
+    const aim = aimPlacement(def, shown.bounds, state.fitted, shown.optic);
+    placement = blendPlacement(def, aim, state.ads);
     shown.viewRoot.position.set(placement.x, placement.y, placement.z);
     shown.viewRoot.rotation.set(placement.pitch, placement.yaw, 0);
     // The game's fields of view: the hip's, easing to the sights' as the gun comes up.
     eye.fov = DEFAULT_FOV * (1 + (ADS_FOV - 1) * state.ads);
-    const row = rows.find((r) => r.id === shown!.def.id)!;
-    label.textContent = `${row.name}  (${row.id})\n${row.status}${row.status === 'fitted' ? `: ${row.detail}${row.corrected ? ', corrected by hand' : ''}` : row.detail ? `: ${row.detail}` : ''}\n${state.fitted ? 'as fitted' : 'before the fit'} · aim ${Math.round(state.ads * 100)} %   ←/→ weapon · A aim · B before/after`;
+    // A glass's sight picture (optics.ts): the gun drawn larger about the view axis as it comes up, as view.ts does.
+    const full = state.fitted && hasGlass(shown.optic) ? pictureScale(shown.optic, glassCentre(shown.optic)[2] + aim.z, DEFAULT_FOV * ADS_FOV) : 1;
+    picture = 1 + (full - 1) * state.ads * state.ads * (3 - 2 * state.ads);
+    shown.frame.scaling.set(picture, picture, 1);
+    scopeEl.hidden = true;
+    opticEl.hidden = true;
+    shown.viewRoot.setEnabled(true);
+    shown.mask?.setEnabled(false);
+    const aimed = state.ads >= 1 && state.fitted;
+    if (aimed && def.view.zoomFov) {
+      // A scope: its own view, the gun hidden behind the overlay (session.ts).
+      eye.fov = def.view.zoomFov;
+      shown.viewRoot.setEnabled(false);
+      scopeEl.hidden = false;
+      scopeEl.dataset.reticle = shown.optic?.kind.reticle ?? 'fine';
+      drawHoldover(scopeMarks, holdoverFor(def, RULES, Math.tan(eye.fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))), 1);
+    } else if (aimed && def.view.optic) {
+      // The model's own optic (opticView.ts), the eye fully on it.
+      const f = opticFrame(def.view.optic, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, 1);
+      eye.fov = f.worldFov;
+      shown.frame.scaling.set(f.squash, f.squash, 1);
+      shown.mask?.setEnabled(true);
+      opticEl.hidden = false;
+      opticEl.style.setProperty('--r', `${(f.lens * 50).toFixed(3)}vh`);
+      opticEl.style.setProperty('--o', '1');
+      opticEl.dataset.reticle = shown.optic?.kind.reticle ?? def.view.optic.reticle ?? 'duplex';
+      const marks = holdoverFor(def, RULES, Math.tan(f.worldFov / 2) * f.lens, 3.6);
+      drawHoldover(opticMarks, marks, 1.4);
+      opticEl.classList.toggle('holdover-on', marks.length > 0);
+    }
+    const row = rows.find((r) => r.id === def.id)!;
+    const o = shown.optic;
+    const carries = o ? `${o.kind.name}${o.id !== row.optic?.id ? ' (not its default)' : ''} · ${(Math.tan(DEFAULT_FOV / 2) / Math.tan(eye.fov / 2)).toFixed(2)}x${picture > 1.001 ? ` · gun drawn x${picture.toFixed(2)}` : ''}` : 'no optic: the aim it had';
+    label.textContent = `${row.name}  (${row.id})\n${carries}\n${row.status}${row.status === 'fitted' ? `: ${row.detail}${row.corrected ? ', corrected by hand' : ''}` : row.detail ? `: ${row.detail}` : ''}\n${state.fitted ? 'as fitted' : 'before the fit'} · aim ${Math.round(state.ads * 100)} %   ←/→ weapon · A aim · B before/after · M mark`;
   };
 
   engine.runRenderLoop(() => {
@@ -145,7 +221,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     while (frames < until) await new Promise((r) => setTimeout(r, 10));
   };
 
-  type ShowOptions = { ads?: number; fitted?: boolean; arms?: boolean; look?: string };
+  type ShowOptions = { ads?: number; fitted?: boolean; arms?: boolean; look?: string; optic?: OpticKindId };
   /** One weapon is loaded at a time: a `show` waits for the one before it. */
   let queue: Promise<void> = Promise.resolve();
   /** Show `weapon` from the eye: `ads` 0 (hip) to 1 (aimed), `fitted: false` for the placement from before the fit. */
@@ -154,19 +230,37 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     return queue;
   }
   async function showNow(weapon: string, opts: ShowOptions): Promise<void> {
-    state = { ads: opts.ads ?? 1, fitted: opts.fitted ?? true, arms: opts.arms ?? true };
-    if (shown?.def.id !== weapon || (shown.anim !== null) !== state.arms) {
+    state = { ads: opts.ads ?? 1, fitted: opts.fitted ?? true, arms: opts.arms ?? true, ...(opts.optic ? { optic: opts.optic } : {}) };
+    const carried = opticOf(getWeapon(weapon), state.optic);
+    if (shown?.def.id !== weapon || (shown.anim !== null) !== state.arms || shown.optic?.id !== carried?.id) {
       shown?.dispose();
       shown = null;
       const def = getWeapon(weapon);
+      // As view.ts hangs the gun: under a node that draws it larger about the view axis (the sight picture, an optic's frame).
+      const frame = new TransformNode('sight_frame', scene);
+      frame.parent = eye;
       const viewRoot = new TransformNode('sight_view', scene);
-      viewRoot.parent = eye;
+      viewRoot.parent = frame;
       const node = await models.instantiate(def.view.model, 'sight_viewmodel');
       // Measured as the view measures it (view.ts setViewmodel): before parenting, in the model's own space.
       const b = node.getHierarchyBoundingVectors(true);
       const bounds = { sightTop: b.max.y, stockZ: b.min.z };
       node.parent = viewRoot;
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+      attachOptic(scene, node, def, true, carried);
+      // A model optic's glass: a depth-only disc, drawn first, keeps the tube behind it out of the view (view.ts setOptic).
+      let mask: Mesh | null = null;
+      if (def.view.optic) {
+        mask = CreateDisc('sight_mask', { radius: def.view.optic.radius, tessellation: 48, sideOrientation: Mesh.DOUBLESIDE }, scene);
+        const mat = new StandardMaterial('sight_maskMat', scene);
+        mat.disableColorWrite = true;
+        mat.disableLighting = true;
+        mask.material = mat;
+        mask.renderingGroupId = 1;
+        mask.parent = viewRoot;
+        mask.position.set(...def.view.optic.eye);
+        mask.setEnabled(false);
+      }
       let anim: CharacterAnimator | null = null;
       let armsRoot: TransformNode | null = null;
       if (state.arms) {
@@ -181,13 +275,17 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
         def,
         node,
         viewRoot,
+        frame,
         bounds,
         anim,
+        optic: carried,
+        mask,
         dispose: () => {
           anim?.dispose();
           node.dispose();
           viewRoot.dispose();
           armsRoot?.dispose();
+          frame.dispose();
         },
       };
     }
@@ -195,8 +293,8 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     await settle(state.arms ? 30 : 4);
   }
 
-  /** The gun's meshes as drawn, for the audit's rays. */
-  const gunMeshes = (): AbstractMesh[] => (shown ? shown.node.getChildMeshes(false).filter((m) => m.isEnabled() && m.getTotalVertices() > 0) : []);
+  /** The gun's meshes as drawn, for the audit's rays (not its glass: the eye looks through it). */
+  const gunMeshes = (): AbstractMesh[] => (shown ? shown.node.getChildMeshes(false).filter((m) => m.isEnabled() && m.getTotalVertices() > 0 && m.name !== 'opticGlass') : []);
 
   /** The distance at which a ray from the eye, `up` and `right` degrees off the aim, first meets the gun (null: it misses). */
   function castAt(meshes: AbstractMesh[], up: number, right: number): number | null {
@@ -212,11 +310,12 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   }
 
   /** Measure the shown weapon at full aim (call after `show(id)`): see SightAudit. */
-  function audit(): SightAudit | null {
+  async function audit(): Promise<SightAudit | null> {
     if (!shown) return null;
     const def = shown.def;
-    const fit = state.fitted ? SIGHT_FITS[def.id] : undefined;
-    const aim = aimPlacement(def, shown.bounds, state.fitted);
+    const glass = state.fitted && hasGlass(shown.optic) ? shown.optic : null;
+    const fit = state.fitted && !glass ? SIGHT_FITS[def.id] : undefined;
+    const aim = aimPlacement(def, shown.bounds, state.fitted, shown.optic);
     scene.render();
     const meshes = gunMeshes();
     for (const m of meshes) m.computeWorldMatrix(true);
@@ -255,8 +354,61 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     }
     const placedError = fit ? sightError(fit, aim) : null;
     const round = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 1000);
-    const pass = !!fit && placedError! <= SIGHT_TOLERANCE_DEG && drawn !== null && Math.abs(drawn) <= SIGHT_TOLERANCE_DEG && Math.abs(drawnAcross ?? 0) <= SIGHT_TOLERANCE_DEG && nearest > eye.minZ;
-    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: round(drawn), drawnAcross: round(drawnAcross), nearest: Math.round(nearest * 1000) / 1000, pass };
+    // The reticle against the aim: a glass's mark as drawn, a scope's or an optic's as laid out.
+    const scoped = !scopeEl.hidden ? scopeEl : !opticEl.hidden ? opticEl : null;
+    const reticle = glass ? await markOffset() : scoped ? reticleOffset(scoped) : null;
+    const window = glass ? (glassHalf(glass)[1] * picture) / (glassCentre(glass)[2] + aim.z) / Math.tan(eye.fov / 2) : null;
+    const sightsPass = !!fit && placedError! <= SIGHT_TOLERANCE_DEG && drawn !== null && Math.abs(drawn) <= SIGHT_TOLERANCE_DEG && Math.abs(drawnAcross ?? 0) <= SIGHT_TOLERANCE_DEG;
+    // A glass: its mark on the aim, and nothing of the gun on the aim through it. A scope: its reticle on the aim.
+    const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (!glass || castAt(meshes, 0, 0) === null);
+    const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && (scoped === scopeEl || nearest > eye.minZ || !!def.view.optic);
+    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), window: round(window), picture: Math.round(picture * 100) / 100, pass };
+  }
+
+  /**
+   * How far a glass's mark is from the view's middle as drawn (degrees): the frame is drawn with the mark and without
+   * it, and the pixels that differ are the mark; their middle against the screen's.
+   * null when nothing differs: no mark in view.
+   */
+  async function markOffset(): Promise<number | null> {
+    const [w, h] = [engine.getRenderWidth(), engine.getRenderHeight()];
+    const half = Math.round(h * 0.12);
+    const [x0, y0] = [Math.floor(w / 2) - half, Math.floor(h / 2) - half];
+    const grab = async (off: boolean) => {
+      markAudit.off = off;
+      scene.render();
+      return new Uint8Array((await engine.readPixels(x0, y0, half * 2, half * 2)).buffer.slice(0));
+    };
+    // Without the target: its red middle is the mark's own colour.
+    for (const t of targets) t.setEnabled(false);
+    const on = await grab(false);
+    const off = await grab(true);
+    for (const t of targets) t.setEnabled(true);
+    markAudit.off = false;
+    scene.render();
+    let [sum, sx, sy] = [0, 0, 0];
+    for (let j = 0; j < half * 2; j++) {
+      for (let i = 0; i < half * 2; i++) {
+        const k = (j * half * 2 + i) * 4;
+        // Each pixel of the mark counts once: weighting by the change would lean towards the darker ground behind it.
+        if (Math.abs(on[k]! - off[k]!) + Math.abs(on[k + 1]! - off[k + 1]!) + Math.abs(on[k + 2]! - off[k + 2]!) < 24) continue;
+        sum++;
+        sx += x0 + i + 0.5 - w / 2;
+        sy += y0 + j + 0.5 - h / 2;
+      }
+    }
+    if (!sum) return null;
+    return (Math.atan((Math.hypot(sx / sum, sy / sum) * 2 * Math.tan(eye.fov / 2)) / h) * 180) / Math.PI;
+  }
+
+  /** How far a scope's or an optic's reticle is from the view's middle as laid out (degrees): its drawing's origin (every reticle's aim point) on the page. */
+  function reticleOffset(el: HTMLElement): number | null {
+    const svg = el.querySelector('svg');
+    const m = svg?.getScreenCTM();
+    if (!svg || !m) return null;
+    const p = new DOMPoint(0, 0).matrixTransform(m);
+    const px = Math.hypot(p.x - innerWidth / 2, p.y - innerHeight / 2);
+    return (Math.atan((px * 2 * Math.tan(eye.fov / 2)) / innerHeight) * 180) / Math.PI;
   }
 
   /** Where the shown fit's rear and front points are on screen (CSS pixels from the centre: x right, y up), as placed. */
@@ -298,6 +450,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       void show(pages[page]!.id, state);
     } else if (e.key.toLowerCase() === 'a') void show(pages[page]!.id, { ...state, ads: state.ads > 0.5 ? 0 : 1 });
     else if (e.key.toLowerCase() === 'b') void show(pages[page]!.id, { ...state, fitted: !state.fitted });
+    else if (e.key.toLowerCase() === 'm') mark.style.display = mark.style.display === 'none' ? '' : 'none';
   });
   await show(pages[page]!.id);
 }
