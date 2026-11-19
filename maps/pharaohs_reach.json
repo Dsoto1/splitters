@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 32,
+  "formatVersion": 48,
   "metadata": {
     "id": "pharaohs_reach",
     "name": "Pharaoh's Reach",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_kmgxzkmybosebj5y",
-      "versionId": "v_wlm6tvwtlflv53uv",
-      "revision": 1,
-      "contentHash": "sha256:f27b61b36ef61842100d3591ddb924cc7e39abbfa67f1fc5e9e0a0b4cf28257e",
-      "schemaVersion": 32,
-      "releasedAt": "2026-11-09T07:20:32.077Z"
+      "versionId": "v_sc4jbqpsnbnvrtum",
+      "revision": 2,
+      "contentHash": "sha256:b506152221a696688f676fef67c4be538cdb98988a2a1e2c0c69d4b851ddfe8b",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:21:49.261Z"
     }
   },
   "classicStructure": {
@@ -3131,9 +3131,9 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.nt_cactus_round",
+      "model": "env.cactus.barrel",
       "yaw": 0,
-      "scale": 1,
+      "scale": 1.29,
       "solid": true,
       "tint": null
     },

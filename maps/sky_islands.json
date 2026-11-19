@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 30,
+  "formatVersion": 48,
   "metadata": {
     "id": "sky_islands",
     "name": "Sky Islands",
@@ -16,7 +16,15 @@
     "supportedModes": [
       "core.deathmatch",
       "core.tdm"
-    ]
+    ],
+    "release": {
+      "mapId": "m_ahbd2mxvginmqmtq",
+      "versionId": "v_3c3iomi5gcppmzab",
+      "revision": 1,
+      "contentHash": "sha256:a7e94d7b4e96344d66edd3b5de7275dc639db72cead932e1f0ce4e7bb5a86d1d",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:16:16.057Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1839,9 +1847,9 @@
         38.5
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.laurel",
       "yaw": 0.7,
-      "scale": 1,
+      "scale": 0.54,
       "solid": false,
       "tint": null
     },
@@ -1853,9 +1861,9 @@
         47.4
       ],
       "kind": "prop",
-      "model": "prop.nt_birch",
+      "model": "env.broadleaf.birch",
       "yaw": 1.9,
-      "scale": 0.8,
+      "scale": 0.592,
       "solid": true,
       "tint": null
     },
@@ -1867,9 +1875,9 @@
         -35.5
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.3,
-      "scale": 1,
+      "scale": 0.82,
       "solid": false,
       "tint": null
     },
@@ -1881,9 +1889,9 @@
         -33.8
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.laurel",
       "yaw": 2.2,
-      "scale": 0.9,
+      "scale": 0.486,
       "solid": false,
       "tint": null
     },
@@ -1895,9 +1903,9 @@
         -47.5
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_small",
+      "model": "env.conifer.spruce",
       "yaw": 0.4,
-      "scale": 0.8,
+      "scale": 0.536,
       "solid": true,
       "tint": null
     },
@@ -1909,11 +1917,12 @@
         -35.5
       ],
       "kind": "prop",
-      "model": "prop.nt_rock_moss",
+      "model": "env.rock.boulder_round",
       "yaw": 0.9,
-      "scale": 1,
+      "scale": 0.86,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "pad_uk0eh8m93m",
