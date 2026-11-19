@@ -52,6 +52,8 @@ export interface LocalBox {
   paint?: 'walls' | 'metal';
   /** A bar, post or rail of a see-through wall run (edgeLattice): it stops bodies and shots, never sight lines. */
   lattice?: true;
+  /** A step of a flight (flight, descending): MapMaker's headroom check walks these (map/headroom.ts). */
+  step?: true;
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
@@ -168,7 +170,7 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
     const u0 = from + dir * i * run;
     const u1 = from + dir * (i + 1) * run;
     const top = base + (i + 1) * 0.25;
-    out.push(axis === 'x' ? box(Math.min(u0, u1), floor, a0, Math.max(u0, u1), top, a1) : box(a0, floor, Math.min(u0, u1), a1, top, Math.max(u0, u1)));
+    out.push({ ...(axis === 'x' ? box(Math.min(u0, u1), floor, a0, Math.max(u0, u1), top, a1) : box(a0, floor, Math.min(u0, u1), a1, top, Math.max(u0, u1))), step: true });
   }
   return out;
 }
@@ -211,7 +213,7 @@ function spiral(cx: number, cz: number, r0: number, r1: number, a0: number, swee
  * `run` deep, standing on `floor`.
  */
 function descending(edge: number, x0: number, x1: number, n: number, top: number, floor = 0, run = 0.5): LocalBox[] {
-  return Array.from({ length: n }, (_, i) => box(x0, floor, edge - (i + 1) * run, x1, top - i * 0.25, edge - i * run));
+  return Array.from({ length: n }, (_, i) => ({ ...box(x0, floor, edge - (i + 1) * run, x1, top - i * 0.25, edge - i * run), step: true as const }));
 }
 
 /** A thin rail (1 m high) along a line at height `y`. */

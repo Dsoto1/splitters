@@ -165,7 +165,7 @@ import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type Sh
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, pointerAsk, pointerWanted, releasePointer, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -872,10 +872,13 @@ export class GameSession {
         return;
       }
       // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
-      // the option, so ask again plainly.
+      // the option, so ask again plainly: unless the page has let the mouse go since (a window opened over the pause
+      // menu), when the refusal comes back late and a lock now would hide the menu under it (the hostcontrols flake).
+      const ask = pointerAsk();
       const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
-      if (raw instanceof Promise) raw.catch(() => opts.canvas.requestPointerLock());
+      if (raw instanceof Promise) raw.catch(() => (pointerWanted(ask) ? opts.canvas.requestPointerLock() : undefined));
     };
+    this.takeMouse = lock;
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.confirmLeave(), { signal });
@@ -1145,9 +1148,18 @@ export class GameSession {
       (e) => {
         // While loading or counting down the menu waits (updatePause); Esc there acts as it would with the menu up
         // (in MapMaker's Test, back to MapMaker), and the menu stays up from then on.
-        if (e.code === 'Escape' && !this.input.locked && $('pause').hidden && !this.pauseAsked && (this.loadingUp || this.phase === 'countdown')) {
+        // Before the first time in play ("Click to fight"): a key press takes the mouse (a real gesture), and Esc asks
+        // for the menu as it does while loading.
+        if (this.fightHint && !this.fightHint.hidden && !this.input.locked && e.code !== 'Escape' && !e.repeat && !/^(F\d+|Shift|Control|Alt|Meta|Tab)/.test(e.code)) this.takeMouse?.();
+        if (e.code === 'Escape' && !this.input.locked && $('pause').hidden && !this.pauseAsked && (this.loadingUp || this.phase === 'countdown' || !this.engaged)) {
           this.pauseAsked = true;
           this.updatePause();
+          // At "Click to fight" (in play, the mouse not yet taken) this Esc only opens the menu, as it would in play.
+          if (!this.loadingUp && this.phase !== 'countdown') {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
         }
         const paused = !$('pause').hidden;
         if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
@@ -1156,16 +1168,20 @@ export class GameSession {
           return;
         }
         if (e.code !== 'Escape') return;
-        if (this.input.locked) {
+        // A window over the pause menu (the Bots window) takes this Esc even if the mouse is still held (a late lock
+        // from Resume, released as the window opened: hostPanel.ts openBots): the mouse goes, the window closes.
+        const dialog = this.pauseMenu.dialogOpen;
+        if (this.input.locked && !dialog) {
           if (pageHoldsEscape() && !e.repeat) document.exitPointerLock();
           return;
         }
+        if (this.input.locked) releasePointer();
         if (!paused && this.voteHud?.open && !this.votePause) {
           // Over the vote: Esc opens the pause menu (Resume goes back to the vote).
           this.votePause = true;
           return this.updatePause();
         }
-        if (!paused) return;
+        if (!paused && !dialog) return;
         // The menu takes this Esc: a dialog under it (the Bots window) doesn't also act on it.
         e.preventDefault();
         e.stopPropagation();
@@ -1258,9 +1274,15 @@ export class GameSession {
 
   private updatePause(): void {
     const was = $('pause').hidden;
+    // In play once (the mouse taken, or touch play on): from then on, losing the mouse is a pause.
+    if (this.input.locked) this.engaged = true;
+    const vote = !!this.voteHud?.open && !this.votePause;
     // The vote between matches holds the screen (the mouse is free to pick a map) until Esc asks for the menu.
-    // Not over the loading screen or the countdown (a click takes the mouse; the menu shows if it hasn't by the start).
-    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown') && !this.pauseAsked) || (!!this.voteHud?.open && !this.votePause);
+    // Not over the loading screen or the countdown (a click takes the mouse), and not before the player has been in
+    // play at all (owner, 2026-11-19: after the countdown, straight to the fight): a calm "Click to fight" line instead
+    // (fightHint), until a click, a key or a controller's button takes the mouse; Esc still brings the menu.
+    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown' || !this.engaged) && !this.pauseAsked) || vote;
+    this.showFightHint(!this.input.locked && !!this.local && !this.closed && !this.engaged && !this.pauseAsked && !this.loadingUp && !vote);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -2650,6 +2672,41 @@ export class GameSession {
     }
   }
 
+  /** The player has been in play (had the mouse, or touch play on) this session: losing it since is a pause. */
+  private engaged = false;
+  /** The page's own way to ask for the mouse (Resume's, a click's), for a key or a controller's button at "Click to fight". */
+  private takeMouse: (() => void) | null = null;
+  /** "Click to fight": one small line over the view before the first time in play (no pause menu then). */
+  private fightHint: HTMLElement | null = null;
+  private fightPad: boolean[] = [];
+
+  private showFightHint(on: boolean): void {
+    if (!on && !this.fightHint) return;
+    if (!this.fightHint) {
+      const el = document.createElement('div');
+      el.id = 'fight-hint';
+      el.className = 'fight-hint';
+      el.setAttribute('role', 'status');
+      $('hud').append(el);
+      this.fightHint = el;
+    }
+    const pad = [...(navigator.getGamepads?.() ?? [])].some((g) => g?.connected && g.mapping === 'standard');
+    this.fightHint.textContent = this.touch ? 'Tap to fight' : pad ? 'Click or press A to fight' : 'Click to fight';
+    this.fightHint.hidden = !on;
+  }
+
+  /** At "Click to fight", a controller's A or Start takes the mouse, as the pause menu's Resume did. */
+  private pollFightPad(): void {
+    if (!this.fightHint || this.fightHint.hidden) return;
+    // In play by another way (a test's touch play, a lock no event has told us of yet): the line goes.
+    if (this.input.locked) return this.updatePause();
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
+    if (!pad) return;
+    const down = pad.buttons.map((b) => b.pressed);
+    if ((down[0] && !this.fightPad[0]) || (down[9] && !this.fightPad[9])) this.takeMouse?.();
+    this.fightPad = down;
+  }
+
   /** The loading screen is up (from the session's start until the match is loaded): no pause menu over it. */
   private loadingUp = true;
   /** The board on the loading screen: since when (performance.now), 0 while it isn't. */
@@ -3404,6 +3461,7 @@ export class GameSession {
       this.pauseMenu.pollPad();
       this.drawPause();
     }
+    this.pollFightPad();
     const now = performance.now();
     if (perfProbe.on) {
       perfProbe.beginFrame(t0);

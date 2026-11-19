@@ -174,4 +174,10 @@ so it looks and feels right"; the fix batch of 2026-11-18):
    test), then the screen fades into the countdown. If the match's start gate stops waiting (a very slow load) and
    the countdown begins, the screen goes at once.
 5. **The countdown** shows one line under the big number: map · mode, and the goal (`#countdown-info`); it fades
-   with "Go!". The pause menu waits until the countdown is over.
+   with "Go!".
+6. **Go**: straight into the fight (owner, 2026-11-19: "it should just let me go/fight, not pop up that screen"). No
+   pause menu and no Tab board: until the player has first been in play this session (the mouse taken, or touch play
+   on), a missing mouse is no pause. If the browser hasn't given the mouse (it only does on a click or key, not when a
+   countdown ends), one calm line says "Click to fight" ("Tap to fight" on a phone; "Click or press A to fight" with a
+   controller), steady, no flash (`GameSession.showFightHint`, `.fight-hint`); a click, a key or A / Start takes the
+   mouse. Esc there opens the pause menu, as in play; once in play, losing the mouse pauses as before.
