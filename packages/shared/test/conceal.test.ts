@@ -10,14 +10,14 @@ function yard(): MapDocument {
   const tiles = [];
   for (let x = 0; x < 4; x++) for (let y = 0; y < 2; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
   const map = makeMap(tiles, [[0, 0, 4], [12, 0, 4]]);
-  return { ...map, entities: [...map.entities, { id: 'bush', kind: 'prop' as const, model: 'prop.bush_large', position: [12, 0, 4] as [number, number, number], yaw: 0, scale: 1, solid: false, tint: null }] };
+  return { ...map, entities: [...map.entities, { id: 'bush', kind: 'prop' as const, model: 'prop.bush_leafy', position: [12, 0, 4] as [number, number, number], yaw: 0, scale: 1, solid: false, tint: null }] };
 }
 
 const concealed = (m: Match, c: Combatant): boolean => (m as unknown as { concealed(c: Combatant): boolean }).concealed(c);
 
 describe('hiding in bushes', () => {
   it('bush props are marked as cover to hide in', () => {
-    expect(getProp('prop.bush_large')?.conceals).toBe(true);
+    expect(getProp('prop.bush_leafy')?.conceals).toBe(true);
     expect(getProp('prop.bush')?.conceals).toBe(true);
     expect(getProp('prop.crate_large')?.conceals).toBeFalsy();
   });

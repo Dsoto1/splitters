@@ -121,16 +121,16 @@ describe('the nature swap (Quaternius nature and kit rocks to our species)', () 
     const base = newMapDocument('Old');
     const doc: MapDocument = {
       ...base,
-      entities: [...base.entities, prop('qa', 'prop.nt_pine_tall', { scale: 2, name: 'Old pine' }), prop('qb', 'prop.nt_boulder_moss'), prop('qc', 'prop.crate_small')],
+      entities: [...base.entities, prop('old_qa', 'prop.nt_pine_tall', { scale: 2, name: 'Old pine' }), prop('old_qb', 'prop.nt_boulder_moss'), prop('old_qc', 'prop.log_stack')],
       setPieceDefs: [{ id: 'local.grove', displayName: 'Grove', family: 'grove', category: 'Nature', footprint: { cells: [[0, 0]], levels: [0, 0] }, parts: [{ kind: 'prop', model: 'prop.nt_birch', position: [0, 0, 0], yaw: 0, scale: 1, solid: true, tint: null }] }],
     } as unknown as MapDocument;
     for (const forEditing of [true, false]) {
       const r = loadMap(serializeMap(doc), undefined, { forEditing });
       expect(r.ok, JSON.stringify(r.issues.filter((i) => i.severity === 'error'))).toBe(true);
       if (!r.ok) continue;
-      expect(r.map.entities.find((e) => e.id === 'qa')).toMatchObject({ model: 'env.conifer.pine_tall', scale: 1.64, name: 'Old pine' });
-      expect(r.map.entities.find((e) => e.id === 'qb')).toMatchObject({ model: 'env.rock.boulder_shard', variant: 1 });
-      expect(r.map.entities.find((e) => e.id === 'qc')).toMatchObject({ model: 'prop.crate_small' });
+      expect(r.map.entities.find((e) => e.id === 'old_qa')).toMatchObject({ model: 'env.conifer.pine_tall', scale: 1.64, name: 'Old pine' });
+      expect(r.map.entities.find((e) => e.id === 'old_qb')).toMatchObject({ model: 'env.rock.boulder_shard', variant: 1 });
+      expect(r.map.entities.find((e) => e.id === 'old_qc')).toMatchObject({ model: 'prop.log_stack' });
       if (forEditing) expect(r.map.setPieceDefs![0]!.parts[0]).toMatchObject({ kind: 'prop', model: 'env.broadleaf.birch', scale: 0.74 });
       expect(r.map.entities.some((e) => e.kind === 'prop' && isRetiredNatureProp(e.model))).toBe(false);
     }
