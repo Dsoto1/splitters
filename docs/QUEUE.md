@@ -38,11 +38,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Ready to land
-- `wip/stjohns-6` · fbf350fe · 44370682761 (lane A: St. John's step 6, Welles Hall and its clock tower; no format change; draws +10-14 % inside the hall, lead's call)
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-6` · 037dc346 · 44408870209 (lane A, landing by lane B; re-checked by lane B's helper after main's excavator and v48: coverage pieces placed again through MapMaker, paint-look hashes regenerated; St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
-
-
+- `wip/fixes-20261118` · 36c88003 · 44413941879 (lane B fix batch: editor TEST-start flake fixed at its cause (nothing drawn before the map arrives), grenade deck per life, announcer one spree a life, broken windows lose their bars, staged Start match with the card, the board and the countdown line; Flavius stairs not reproduced; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -73,6 +70,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · B · Iron Coast B/C defence balance ("leave for now") and an eye-level menu card for Step Temple (owner, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 
 ## Bugs
+- S–M · B · **St. John's: walking through wooden doors and building trim** (owner, 2026-11-19: "the wooden doors for dorms and such on st. johns map i seem to walk through, same with some of the building trim, i would like to hide behind doors for cover if possible"): find whether those doors are real doors (`DoorEntity`, which should block when closed) or decorative door props/set-piece parts with no collision, and fix it at the source (the piece or prop, not the map): door leaves solid for players, bots and bullets, open or closed (an open leaf is cover; wood can be shot through per its surface), and trim that sticks out enough to stand against (pilasters, cornices, sills over ~10 cm deep) collides; thin dressing stays walk-through. Check every St. John's building and the set pieces it uses; pictures and a test. Next fix batch.
 - S–M · B · **URGENT: gunshots lag and chug** (owner, 2026-11-18 23:10 UTC on the live site: "Gunshots are lagging now… chugging gunshots not natural like before"; the announcer is fine): a regression from today's landings (music/announcer audio, the perf batch's once-a-frame reconcile, grips' muzzle point, blood FX…); a helper is bisecting on `wip/urgent-gunshots`; lands alone when green.
 - S · B · **Deathmatch spawns clump** (owner, 2026-11-18: "better way to deploy bots/players in a DM. not all clumped on one another, stagger them"): spread starts across every spawn point, far from others, one per point, offsets on the navmesh when there are more players than points, a slight stagger; same helper, after the urgent fix.
 - S · A · **Announcer: one spree per life, no repeats** (owner, 2026-11-18: "between kills it would reset the announcer saying double, triple… I would want it to keep track of my spree and keep going and not repeat"; "sounds good" to the lead's option 1): streak lines at 3, 5, 7, 10, 12, 15, 20 and 25 kills without dying, each once a life (20 and 25 reuse the bigger lines, Server overload and Mega Ultra Super Nasty Boy Kill, until the owner records more); Double and Triple at most once a life, after that a quick chain is announced only if it beats the life's best chain; hype lines fill the in-between kills more often (never back to back); all reset on death (`audio/announcer.ts`, `game/sessionAudio.ts`, the plan's "As built"). Fix batch.
@@ -225,6 +223,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-19 · A/B · St. John's step 6: Welles Hall and its clock tower (lane A's branch, re-merged by lane B) (train `check/train-20261118-232046` at f0b327b2, run 44419960458, green on attempt 2: attempt 1 red only on the editor TEST-start flake).
 - 2026-11-18 · B · Blood by character: red, green, blue, oil with sparks, bone dust, stone dust (Bronzer) and the Hollow Pilgrim's white-grey spectral wisp; retired looks bleed as the look they play (train `check/train-20261118-222033` at daed3056, run 44410669840).
 - 2026-11-18 · B · Performance batch (menu first JS 2799 → 2642 kB, pickups batched, respawn shimmer 120 → 6 scene walks, the local player reconciled once a frame on foot) and the hosting cost guard (CloudFront, an automatic stop at $30/month for the account, nightly S3 backups with restore, ETags; **the owner deploys from CloudShell**) (train `check/train-20261118-200957` at 7504cf9d, run 44388144258).
 - 2026-11-18 · B · The owner's excavator: `prop.mining_excavator_deck`, a walkable deck, 9k triangles, in MapMaker's Mines & Caves (train `check/train-20261118-190150` at 98a9b82e, run 44376111562). Follow-up: alias the old `mining_excavator` to it everywhere (owner).
