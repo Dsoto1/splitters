@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 47,
+  "formatVersion": 48,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -22,18 +22,208 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_6vm4yhqoepbndd7c",
-      "revision": 30,
-      "contentHash": "sha256:bac25f4e949c2a72fabf36eb6745ba929b3ea1db5f5b96d06f8afd2f903199d4",
-      "schemaVersion": 47,
-      "releasedAt": "2026-11-18T17:03:30.155Z"
+      "versionId": "v_oeshxm5dh3vhu45c",
+      "revision": 31,
+      "contentHash": "sha256:ba5a00fbf670455864094f45bda4e43ec19dfa05bf10da31acac35d87025a9b4",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T06:20:27.600Z"
     }
   },
   "classicStructure": {
     "cellSize": 8,
     "levelHeight": 4,
     "theme": "core.castle",
-    "tiles": []
+    "tiles": [
+      {
+        "id": "sp_setpiece_g830vbnlk5_0",
+        "tile": "core.stairwell",
+        "x": 2,
+        "y": -11,
+        "z": 0,
+        "rotation": 1,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "walls": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": "#c8cad2"
+          },
+          "solids": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "roof": {
+            "material": "core.pbr_slate_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "wall",
+          "0,0,0:N": "open",
+          "0,0,0:S": "wall",
+          "0,0,0:W": "open",
+          "0,0,1:E": "window_sash",
+          "0,0,1:N": "open",
+          "0,0,1:S": "wall",
+          "0,0,1:W": "open"
+        },
+        "glass": {
+          "0,0,1:E": "breakable"
+        },
+        "options": {
+          "facade": "collegiate_stone"
+        }
+      },
+      {
+        "id": "sp_setpiece_g830vbnlk5_1",
+        "tile": "core.room",
+        "x": 2,
+        "y": -10,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "roof": {
+            "material": "core.pbr_slate_roof",
+            "tint": null
+          }
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "collegiate_stone"
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "door_room"
+        }
+      },
+      {
+        "id": "sp_setpiece_g830vbnlk5_3",
+        "tile": "core.room",
+        "x": 2,
+        "y": -11,
+        "z": 2,
+        "rotation": 0,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "walls": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "solids": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "roof": {
+            "material": "core.pbr_slate_roof",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "window_sash",
+          "0,0,0:W": "window_sash"
+        },
+        "glass": {
+          "0,0,0:S": "breakable",
+          "0,0,0:W": "breakable"
+        },
+        "options": {
+          "ceiling": "roof",
+          "facade": "collegiate_stone"
+        }
+      },
+      {
+        "id": "sp_setpiece_g830vbnlk5_23",
+        "tile": "core.stairwell",
+        "x": 2,
+        "y": -10,
+        "z": 1,
+        "rotation": 3,
+        "surfaces": {
+          "floor": {
+            "material": "core.pbr_terrazzo",
+            "tint": "#b0b3b2"
+          },
+          "walls": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": "#c8cad2"
+          },
+          "solids": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "underside": {
+            "material": "core.pbr_plaster_white",
+            "tint": null
+          },
+          "trim": {
+            "material": "core.stone_trim",
+            "tint": "#d8d3c6"
+          },
+          "roof": {
+            "material": "core.pbr_slate_roof",
+            "tint": null
+          }
+        },
+        "options": {
+          "facade": "collegiate_stone"
+        },
+        "edges": {
+          "0,0,0:E": "open",
+          "0,0,0:N": "open",
+          "0,0,0:S": "open",
+          "0,0,0:W": "open",
+          "0,0,1:E": "open",
+          "0,0,1:N": "wall",
+          "0,0,1:S": "open",
+          "0,0,1:W": "open"
+        }
+      }
+    ]
   },
   "entities": [
     {
@@ -37492,6 +37682,482 @@
       "solid": true,
       "variant": 3,
       "tint": null
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_4",
+      "position": [
+        19.75,
+        0,
+        -88.35
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_5",
+      "position": [
+        19.75,
+        0,
+        -79.65
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_6",
+      "position": [
+        19.75,
+        4,
+        -88.35
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_7",
+      "position": [
+        19.75,
+        4,
+        -79.65
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_8",
+      "position": [
+        19.75,
+        8,
+        -88.35
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_9",
+      "position": [
+        19.75,
+        8,
+        -79.65
+      ],
+      "name": "East wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.3
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_10",
+      "position": [
+        13.5,
+        3.75,
+        -85.05
+      ],
+      "name": "Landing",
+      "kind": "block",
+      "size": [
+        2,
+        0.25,
+        2.1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#b0b3b2",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_11",
+      "position": [
+        13.5,
+        3.5,
+        -85.05
+      ],
+      "name": "Landing ceiling",
+      "kind": "block",
+      "size": [
+        2,
+        0.25,
+        2.1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_12",
+      "position": [
+        14.25,
+        4,
+        -86.05
+      ],
+      "name": "Stair rail",
+      "kind": "block",
+      "size": [
+        3.5,
+        1,
+        0.1
+      ],
+      "yaw": 0,
+      "material": "core.oak_beam",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_13",
+      "position": [
+        18.75,
+        7.75,
+        -82.95
+      ],
+      "name": "Landing",
+      "kind": "block",
+      "size": [
+        2.5,
+        0.25,
+        2.1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_terrazzo",
+      "tint": "#b0b3b2",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_14",
+      "position": [
+        18.75,
+        7.5,
+        -82.95
+      ],
+      "name": "Landing ceiling",
+      "kind": "block",
+      "size": [
+        2.5,
+        0.25,
+        2.1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_15",
+      "position": [
+        17.75,
+        8,
+        -81.95
+      ],
+      "name": "Stair rail",
+      "kind": "block",
+      "size": [
+        3.5,
+        1,
+        0.1
+      ],
+      "yaw": 0,
+      "material": "core.oak_beam",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_16",
+      "position": [
+        16,
+        11.5,
+        -80
+      ],
+      "name": "Stair ceiling",
+      "kind": "block",
+      "size": [
+        8,
+        0.2,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_plaster_white",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_17",
+      "position": [
+        16,
+        11.7,
+        -80
+      ],
+      "name": "Stair roof",
+      "kind": "block",
+      "size": [
+        8,
+        0.3,
+        8
+      ],
+      "yaw": 0,
+      "material": "core.pbr_slate_roof",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_18",
+      "position": [
+        13.17,
+        0,
+        -80
+      ],
+      "kind": "prop",
+      "model": "kit.door.oak_open",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_19",
+      "position": [
+        16,
+        0,
+        -76.7
+      ],
+      "kind": "prop",
+      "model": "kit.seat.bench",
+      "yaw": 3.141592653589793,
+      "scale": 1,
+      "solid": true,
+      "unbreakable": true,
+      "tint": null
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_20",
+      "position": [
+        16,
+        3.3,
+        -81
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe9c4",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_21",
+      "position": [
+        16,
+        7.3,
+        -85
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe9c4",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_22",
+      "position": [
+        16,
+        11.3,
+        -87
+      ],
+      "kind": "light",
+      "yaw": 0,
+      "color": "#ffe9c4",
+      "intensity": 0.9,
+      "range": 9,
+      "fixture": "ceiling"
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_24",
+      "position": [
+        12.25,
+        4,
+        -79.05
+      ],
+      "name": "Upper door wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        6.1
+      ],
+      "yaw": 0,
+      "material": "core.pbr_collegiate_rubble",
+      "tint": "#c8cad2",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_25",
+      "position": [
+        12.25,
+        4,
+        -83.65
+      ],
+      "name": "Upper door wall",
+      "kind": "block",
+      "size": [
+        0.5,
+        3.5,
+        0.7
+      ],
+      "yaw": 0,
+      "material": "core.pbr_collegiate_rubble",
+      "tint": "#c8cad2",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_26",
+      "position": [
+        12.25,
+        6.6,
+        -82.7
+      ],
+      "name": "Upper door wall (over the door)",
+      "kind": "block",
+      "size": [
+        0.5,
+        0.9,
+        1.2
+      ],
+      "yaw": 0,
+      "material": "core.pbr_collegiate_rubble",
+      "tint": "#c8cad2",
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120
+    },
+    {
+      "id": "sp_setpiece_g830vbnlk5_27",
+      "position": [
+        12.6,
+        4,
+        -82.7
+      ],
+      "kind": "prop",
+      "model": "kit.door.oak_slim_open",
+      "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
     }
   ],
   "factions": [],
@@ -40404,20 +41070,6 @@
             "tint": null
           },
           "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_g830vbnlk5",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": 2,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "upperDoor": "end"
         }
       }
     },
