@@ -1,5 +1,6 @@
 import { SIDES, TILE_DIMENSIONS, coreCatalog, type TileCatalog } from '../map/catalog.ts';
 import { buildOccupancy, edgeKey, localSide, resolveEdge, type ResolvedEdge } from '../map/geometry.ts';
+import { edgeTrimBoxes } from '../map/edgeShapes.ts';
 import type { GlassKind, MapDocument, MapEntity } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import type { OBox } from './scenarioDefs.ts';
@@ -49,6 +50,11 @@ export interface GlassPane {
   entity?: number;
   /** Tint of a glass block (hex), when it has one. */
   tint?: string;
+  /**
+   * A window pane's sash bars (its inner frame, meeting rail and centre bars: the style's `v` trim, edgeTrimBoxes `sash`): drawn
+   * with the pane, gone when it breaks, back with the glass. Upright boxes; `tint` is their paint's.
+   */
+  bars?: { box: OBox; tint: string | null }[];
 }
 
 /** A block's world box (centre, half size, turn), as blockOBox in scenarioDefs. Kept here so this file has no runtime import of it. */
@@ -81,6 +87,7 @@ export function windowPanes(map: MapDocument, catalog: TileCatalog = coreCatalog
       const cx = gx * cellSize;
       const cz = gy * cellSize;
       const baseY = gz * levelHeight;
+      const sash = edgeTrimBoxes(style, half, levelHeight, false, 'only');
       windowOpenings(style, levelHeight).forEach(([u0, u1, y0, y1], n) => {
         const u = (u0 + u1) / 2;
         const hu = (u1 - u0) / 2;
@@ -89,7 +96,20 @@ export function windowPanes(map: MapDocument, catalog: TileCatalog = coreCatalog
         const y = baseY + y0 + hy;
         const center: Vec3 = side === 'N' ? { x: cx + u, y, z: cz + half - v } : side === 'S' ? { x: cx + u, y, z: cz - half + v } : side === 'E' ? { x: cx + half - v, y, z: cz + u } : { x: cx - half + v, y, z: cz + u };
         const halfBox = side === 'N' || side === 'S' ? { x: hu, y: hy, z: t } : { x: t, y: hy, z: hu };
-        out.push({ id: `${occ.placement.id}:${ek}${n ? `:${n}` : ''}`, box: { center, half: halfBox, yaw: 0 }, kind });
+        // The bars inside this opening, as boxes in the world.
+        const bars = sash
+          .filter((p) => p.u0 >= u0 - 1e-3 && p.u1 <= u1 + 1e-3 && !p.tilt)
+          .map((p) => {
+            const bu = (p.u0 + p.u1) / 2;
+            const bv = (p.v0 + p.v1) / 2;
+            const by = baseY + (p.y0 + p.y1) / 2;
+            const c: Vec3 = side === 'N' ? { x: cx + bu, y: by, z: cz + half - bv } : side === 'S' ? { x: cx + bu, y: by, z: cz - half + bv } : side === 'E' ? { x: cx + half - bv, y: by, z: cz + bu } : { x: cx - half + bv, y: by, z: cz + bu };
+            const hu2 = (p.u1 - p.u0) / 2;
+            const hv = (p.v1 - p.v0) / 2;
+            const h = side === 'N' || side === 'S' ? { x: hu2, y: (p.y1 - p.y0) / 2, z: hv } : { x: hv, y: (p.y1 - p.y0) / 2, z: hu2 };
+            return { box: { center: c, half: h, yaw: 0 }, tint: p.surface?.tint ?? null };
+          });
+        out.push({ id: `${occ.placement.id}:${ek}${n ? `:${n}` : ''}`, box: { center, half: halfBox, yaw: 0 }, kind, ...(bars.length ? { bars } : {}) });
       });
     }
   }

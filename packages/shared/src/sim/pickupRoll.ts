@@ -51,6 +51,41 @@ export function rollHash(text: string, salt: number): number {
 }
 
 /**
+ * A seeded deck of `n` for a round (0, 1, 2…) of deals, keyed by `key`: a shuffle whose first is never the round
+ * before's last, so every one comes up once before any comes up again and never the same twice running (two take
+ * turns). The weapon sets' random spawn guns and grenades, and grenade pickups, are dealt from these.
+ */
+export function seededDeck(n: number, key: string, seed: number, round: number): number[] {
+  if (n <= 2) return shuffled(n, key, seed, 0);
+  const deck = shuffled(n, key, seed, round);
+  // The round before's last is its shuffle's own: trading its first two places never moves the last of three or more.
+  if (round > 0 && deck[0] === shuffled(n, key, seed, round - 1)[n - 1]) [deck[0], deck[1]] = [deck[1]!, deck[0]!];
+  return deck;
+}
+
+function shuffled(n: number, key: string, seed: number, round: number): number[] {
+  const deck = Array.from({ length: n }, (_, k) => k);
+  for (let k = n - 1; k > 0; k--) {
+    const j = rollHash(`${key}_${round}_${k}`, seed >>> 0) % (k + 1);
+    [deck[k], deck[j]] = [deck[j]!, deck[k]!];
+  }
+  return deck;
+}
+
+/** Deal `n` (0, 1, 2…) of a list of `count` from the deck keyed `key`: its index. */
+export function dealFrom(count: number, key: string, seed: number, n: number): number {
+  return seededDeck(count, key, seed, Math.floor(n / count))[n % count]!;
+}
+
+/**
+ * Deal `n` (0, 1, 2…) of a grenade pickup `id` from `pool` (a weapon set's grenades): every kind once before any
+ * again, never the same twice running (weapon pickups roll: rollPickup).
+ */
+export function dealPickup(seed: number, id: string, n: number, pool: readonly ItemDefinition[]): ItemDefinition {
+  return pool[dealFrom(pool.length, `pickup_${id}`, seed, n)]!;
+}
+
+/**
  * Roll `n` (0, 1, 2…) of pickup `id` in a match seeded `seed`: an item of
  * `pool`. With more than one to choose from it never repeats `current` (the
  * weapon that lay there before), so a respawn always brings something new.

@@ -9,7 +9,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
@@ -38,6 +38,7 @@ import { myCareer, myFavClass, recordMatch } from './careerStats.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
+import { hideLoadingScreen, showLoadingScreen } from './loadingScreen.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
 import { shippedPicture } from './frontend/mapThumbs.ts';
@@ -429,6 +430,14 @@ class App {
     this.front!.show(status);
   }
 
+  /** The match's loading screen over everything, with the map's card (loadingScreen.ts; session.ts stages the rest). */
+  private showMatchLoading(map: Parameters<typeof rulesForMap>[0], mode: string): void {
+    const id = map.metadata.id;
+    const picture = map.metadata.thumbnail ?? (inSuite(id) ? shippedPicture(id) : null);
+    showLoadingScreen({ name: map.metadata.name, mode: (isGameMode(mode) ? MODE_LABELS[mode] : null) ?? '', picture }, 0.05);
+    $('menu').hidden = true;
+  }
+
   /** Polite prefetch (idle, after the menu is shown): the match code and the map Play opens on, so Start doesn't wait. */
   private prefetchPlay(): void {
     void this.front?.preloadCurrentMap();
@@ -448,6 +457,10 @@ class App {
       m = await loadMatchCode();
     } catch (e) {
       console.error('match code failed to load', e);
+      // Start match's loading screen comes down; back to where we were.
+      hideLoadingScreen();
+      if (this.mode === 'menu') $('menu').hidden = false;
+      else if (this.mode === 'editor') this.editor?.show();
       this.front?.setStatus('The game failed to load: check your connection and try again.');
       return;
     }
@@ -494,6 +507,7 @@ class App {
 
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
+    this.showMatchLoading(req.map, req.map.metadata.supportedModes[0] ?? 'core.deathmatch');
     void this.withMatch((m) => this.startTestWith(m, req, t0));
   }
 
@@ -614,6 +628,8 @@ class App {
    */
   /** `extra`: a match handed on from a host that left (its checkpoint), a line to greet with, or `spectate`: you join it watching (Match setup → Spectate). */
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean } = {}): void {
+    // The loading screen from the click (no grey frame while the match code and the map come in): the map's card.
+    this.showMatchLoading(map, rules.mode);
     void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, extra));
   }
 

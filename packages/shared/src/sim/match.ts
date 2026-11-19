@@ -59,7 +59,7 @@ import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
-import { rollPickup } from './pickupRoll.ts';
+import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
@@ -4959,9 +4959,9 @@ export class Match {
     return true;
   }
 
-  /** The throwable a resupply hands out when none is carried (the weapon set's first kind), or null. */
+  /** The throwable a resupply hands out when none is carried (this life's kind of the weapon set's), or null. */
   private resupplySpawnThrowable(c: Combatant): ThrowableKind | null {
-    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
+    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: c.spawns ?? 0, sniper: false }).throwable?.kind ?? null) : null;
   }
 
   /** A resupply would give `c` something now (worked out on copies: nothing is changed). */
@@ -6504,9 +6504,21 @@ export class Match {
     else p.item = p.placed;
   }
 
-  /** The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). */
+  /**
+   * The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). A grenade pickup in a
+   * set with grenades of its own is dealt from a deck of them (every kind before a repeat), and never the one that lay there.
+   */
   private reroll(p: PickupState): void {
-    if (p.pool) p.item = rollPickup(this.seed, p.id, p.rolls++, p.pool, p.item);
+    const pool = p.pool;
+    if (!pool) return;
+    if (pool[0]?.effect.kind !== 'throwable') {
+      p.item = rollPickup(this.seed, p.id, p.rolls++, pool, p.item);
+      return;
+    }
+    let item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    // (A deck never deals the same twice running; only the first deal can meet what was placed there.)
+    if (item === p.item && pool.length > 1) item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    p.item = item;
   }
 
   /** What random pickups hold now, where it isn't what was placed: [pickup ID, item ID] (the snapshot's `pw`). */
@@ -6735,7 +6747,7 @@ export class Match {
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
-    // A grenade or two of the set's first kind (frags, TimeSplitters-style; the rest are pickups after that).
+    // A grenade or two of the life's kind, dealt from the set's (frags without a set's own; the rest are pickups after that).
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
   }
 
