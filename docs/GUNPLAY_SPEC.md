@@ -1230,6 +1230,13 @@ Weapons without a family: 100 % and 6 ticks (melee at once); rocket launchers (R
 Rockets, Swarm Launcher, Singularity Cannon) 92 % and 12, the Grenade Launcher 95 % and 10, the Railgun 93 % and 12,
 the Flamethrower 95 % and 8. The content check holds `move` to 0.85-1.1 and `sprintExit` to 18 ticks at most.
 
+**The trigger and a held sprint (2026-11-18, owner: "gunshots are lagging now… chugging").** The sprint stops while
+the trigger is held, so with sprint held every gap between taps sprinted again and every tap waited the exit time (a
+rifle's 6-tick click fired nothing). The client's trigger latch (`packages/client/src/game/triggerLatch.ts`) sends the
+sprint button only once the trigger has been let go for 0.5 s (a slow gun: its fire interval and 0.25 s), and holds
+a pull made while the gun comes up (out of a sprint, or any raise) until it is up. Only the buttons sent change, so the
+host and prediction rules above are untouched and it works on every host. `packages/client/test/triggerLatch.test.ts`.
+
 ---
 
 # 28. Suppression
