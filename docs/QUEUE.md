@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/nature-swap-3` · 64c05608 · 44471168537 (the nature swap, batches 1-3: 42 maps, MapMaker's "Swap natural props for ours", the Dead Tree; numbers in docs/PROCEDURAL_ENVIRONMENT.md)
 - `wip/stjohns-kit` · a51400ec · 44459390298 (lane A's branch, re-checked by lane B's helper: the MapMaker pieces for St. John's steps 7-10; it now carries step 6's merge, main's fix batch (paint-look hashes regenerated) and the performance batch, and fits the menu bundle budget. **It conflicts with `wip/stjohns-clocktower` only in the generated `packages/client/public/thumbs/palette.json` (both rebuilt the gothic tiles' palette pictures): land them in separate trains, clock tower first; then merge origin/main into the kit, `pnpm content:rebuild`, re-check.**)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
