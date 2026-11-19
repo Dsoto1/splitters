@@ -653,6 +653,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         }
         client.slot = player.slot;
         client.who = who;
+        // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
+        if (msg.rx !== undefined) player.rankPoints = msg.rx;
         player.account = !!proof?.name;
         event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         if (back) notice(`${name} is back`);

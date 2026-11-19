@@ -39,7 +39,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/nature-swap-3` · 7937bb54 · 44447563639 (the nature swap, batches 1-3: 42 maps, MapMaker's "Swap natural props for ours", the Dead Tree; pictures in the helper's report)
 - `wip/stjohns-kit` · a51400ec · 44459390298 (lane A's branch, re-checked by lane B's helper: the MapMaker pieces for St. John's steps 7-10; it now carries step 6's merge, main's fix batch (paint-look hashes regenerated) and the performance batch, and fits the menu bundle budget. **It conflicts with `wip/stjohns-clocktower` only in the generated `packages/client/public/thumbs/palette.json` (both rebuilt the gothic tiles' palette pictures): land them in separate trains, clock tower first; then merge origin/main into the kit, `pnpm content:rebuild`, re-check.**)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
@@ -219,6 +218,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-19 · B · Ranks & badges as a setting, for everyone: an Options and pause switch (off by default), nine titles and a badge per group, ranks earned quietly by points and kills and kept with the career, a calm rank-up glow (`wip/ranks-for-all` at 1824b77d, run 44469561973, green on attempt 1; landed alone, main had moved only in docs).
 - 2026-11-19 · B · St. John's clock tower usable: a new winding stair with 3.7 m over every step, a 2.4 m door, bots climb it in every rotation; and Deathmatch spawns spread out (a point each, all points in play when shared ones run short, beside a point once all are taken; team matches unchanged) (train `check/train-20261119-043126` at 8ab42b07, run 44458922236).
 - 2026-11-19 · B · Fix batch 2026-11-18: the editor TEST-start flake fixed at its cause (nothing drawn before the map arrives), a grenade deck per life (weapon sets), the announcer's one spree a life, broken windows lose their bars, a staged Start match (card, board, the countdown's map · mode · goal line); Flavius stairs not reproduced (moved to the next batch with the owner's picture) (train `check/train-20261119-013318` at 9bf00926, run 44437797106).
 - 2026-11-19 · B · URGENT: gunshots no longer chug in big matches (your own shots can't be cut off by the bots' guns; far sounds give way to near ones; cut voices fade; a slow frame's shots keep their spacing; with sprint held each tap no longer waits the sprint exit) (train `check/train-20261119-005053` at 042c371c, run 44432311656).

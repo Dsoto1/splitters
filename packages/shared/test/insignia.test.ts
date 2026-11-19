@@ -21,11 +21,11 @@ describe('rank insignia (soldiers only)', () => {
     expect(soldierInsignia(army, 'Sgt. Dunmore')).toBe('sgt');
     expect(soldierInsignia(army, 'Col. Stroud')).toBe('col');
     expect(soldierInsignia(army, 'Dunmore')).toBeNull();
-    expect(soldierInsignia(agency, 'Sgt. Dunmore')).toBe('agency');
-    expect(soldierInsignia(agency, 'Anyone')).toBe('agency');
+    expect(soldierInsignia(agency, 'Sgt. Dunmore')).toBe('agency1');
+    expect(soldierInsignia(agency, 'Anyone')).toBe('agency1');
     expect(soldierInsignia(civilian, 'Sgt. Dunmore')).toBeNull();
     expect(soldierInsignia('npc:gunner', 'Pvt. Haskett')).toBe('pvt');
-    expect(soldierInsignia('npc:trooper', 'Pvt. Haskett')).toBe('agency');
+    expect(soldierInsignia('npc:trooper', 'Pvt. Haskett')).toBe('agency1');
     expect(soldierInsignia(undefined, 'Sgt. Dunmore')).toBeNull();
   });
 

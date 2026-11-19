@@ -34,7 +34,7 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
-import { myCareer, myFavClass, recordMatch } from './careerStats.ts';
+import { myCareer, myFavClass, myRankPoints, recordMatch } from './careerStats.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
@@ -634,7 +634,7 @@ class App {
   }
 
   private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), rankPoints: myRankPoints(), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -968,6 +968,7 @@ class App {
             career: {
               record: recordMatch,
               favClass: myFavClass,
+              points: myRankPoints,
               card: () => {
                 const f = this.front!;
                 const { career, where } = myCareer();

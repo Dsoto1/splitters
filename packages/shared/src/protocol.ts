@@ -26,7 +26,7 @@ export type ClientMessage =
    * server/src/tickets.ts), so a host knows the account without seeing the player's sign-in token.
    */
   /** `party`: the party tag this player came with (net/party.ts: from the invite link they followed, or their own). */
-  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string }
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string; rx?: number }
   /** Between matches: this player's vote for the next map (index into the open vote's options; sim/mapVote.ts). Older hosts ignore it. */
   | { t: 'vote'; i: number }
   | { t: 'input'; inputs: PlayerInput[] }
@@ -461,6 +461,8 @@ export interface RosterEntry {
   sp?: 1;
   /** The party this person came with (net/party.ts): people sharing it are marked as your party on the scoreboard. */
   py?: string;
+  /** A person's career rank points as their browser sent them on joining (content/ranks.ts; Options → Ranks & badges). Absent: none sent (an older browser). */
+  rx?: number;
 }
 
 export interface ServerStats {
