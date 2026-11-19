@@ -129,6 +129,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Content order (lead, 2026-11-18 21:52):** `wip/stjohns-6` (coverage map + St. John's) lands before any `wip/nature-swap*` batch that touches `maps/test_coverage.json`; the nature swap does St. John's last, after `wip/stjohns-6` and `wip/stjohns-kit`.
 
+- **Claimed (a helper of lane B's splitters22, 2026-11-19): St. John's clock tower headroom** (`wip/stjohns-clocktower`; owner, 2026-11-19: "the new clocktower also is not usable since its ceilings are too low"). The fault is in the tile, not the map: `gothic.clock_tower`'s switchback climbed 2.5 m a turn (2.2 m over every step and the door). Files: shared `map/packTiles2.ts` (the Clock Tower tile: a stair winding round the core on all four sides, door 2.4 m), `test/setPiecesAcademy.test.ts` (a headroom test), palette pictures from content:rebuild, CHANGELOG. No map file changes (St. John's and the coverage map use the tile); no format change.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)
 
