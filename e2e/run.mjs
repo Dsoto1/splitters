@@ -4303,11 +4303,11 @@ async function editorEnvironmentChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   const unseasoned = await plants();
   check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
-  // The nature swap (shared/editor/natureSwap.ts): a Quaternius pine, bush and boulder become ours in their spots, one undo step.
-  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.nt_pine_tall', -40], ['qb', 'prop.nt_bush_leafy', -42], ['qc', 'prop.nt_boulder', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  // The nature swap (shared/editor/natureSwap.ts): a Kenney Nature Kit pine, oak and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.pine_tall', -40], ['qb', 'prop.oak', -42], ['qc', 'prop.rock_large', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
   await page.click('#ed-env-swap');
   const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
-  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && /^env\.shrub\.(broadleaf|laurel)@-42\/0\.5$/.test(swapped.qs[1]) && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, a bush and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && swapped.qs[1] === 'env.broadleaf.oak@-42/0.5' && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, an oak and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
 
@@ -13516,6 +13516,43 @@ async function gripsInPlay(browser) {
   check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
+  // Optics by gun (GUNPLAY_SPEC §15): a red dot's mark is on its own glass, on the aim, with no HUD dot; iron sights
+  // show no dot either; a gun with neither keeps the HUD's aim dot.
+  const aimWith = async (id) => {
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    const up = (w) => window.__cs.local.weapon?.id === w && window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+    for (let i = 0; i < 6 && !(await page.evaluate(up, id)); i++) {
+      if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== id) await page.evaluate((w) => window.__give(w), id);
+      await page.waitForFunction(up, id, { timeout: T(10000) }).catch(() => {});
+    }
+    await page.evaluate(() => (window.__autoInput = { zoom: true }));
+    // Aimed: the crosshair has faded out and the gun's frame has stopped growing.
+    await page.waitForFunction(() => document.getElementById('crosshair')?.style.opacity === '0' && Math.abs(window.__cs.view.camera.fov - 1.35 * 0.72) < 0.004, null, { timeout: T(20000) }).catch(() => {});
+    const seen = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const glass = v.viewmodel?.getChildMeshes().find((m) => m.name === 'opticGlass' && m.isEnabled());
+      let off = null;
+      if (glass) {
+        // The glass's middle against the view's axis, as drawn (degrees), and whether the axis passes inside its window.
+        glass.computeWorldMatrix(true);
+        const c = glass.getBoundingInfo().boundingSphere;
+        const p = c.centerWorld.subtract(v.camera.globalPosition);
+        const f = v.camera.getForwardRay(1).direction;
+        const along = p.x * f.x + p.y * f.y + p.z * f.z;
+        const across = Math.sqrt(Math.max(0, p.lengthSquared() - along * along));
+        off = { deg: +((Math.atan2(across, along) * 180) / Math.PI).toFixed(3), inside: across < c.radiusWorld * 0.5 };
+      }
+      return { held: v.viewWeapon, glass: !!glass, off, housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), picture: +v.opticRoot.scaling.x.toFixed(2), dot: document.getElementById('reddot')?.style.opacity ?? '' };
+    });
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    return seen;
+  };
+  const dotGun = await aimWith('core.laser_rifle');
+  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.6 && dotGun.picture > 1.5 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim, the gun drawn larger, no HUD dot (${JSON.stringify(dotGun)})`);
+  const ironsGun = await aimWith('core.pistol');
+  check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
+  const plainGun = await aimWith('core.rockets');
+  check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.

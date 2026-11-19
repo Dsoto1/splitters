@@ -4961,7 +4961,7 @@
       ],
       "radius": 0.014,
       "relief": 0.12,
-      "reticle": "duplex"
+      "reticle": "chevron"
      },
      "sound": "fire.heavy"
     }
