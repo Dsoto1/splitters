@@ -69,6 +69,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: the nature swap (42 maps) in a train** (`check/train-20261119-065518` at a930f60c, run 44475716230, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` (merge main + `pnpm content:rebuild`, thumbs/palette.json) and `wip/stjohns-tower-trim` (merge main + paint-looks --write) re-check, then one train.
+
 **Landed: Ranks & badges for everyone, alone** (`check/ranks-for-all` at 1824b77d, run 44469561973, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` once its helper re-checks fe36f21a, then `wip/nature-swap-3`.
 
 **Landed: St. John's clock tower and Deathmatch spawns in a train** (`check/train-20261119-043126` at 8ab42b07, run 44458922236, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` alone (it conflicts with the clock tower in thumbs/palette.json: merge main + content:rebuild first), then `wip/nature-swap-3` after its re-merge.
@@ -141,7 +143,10 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 - **Claimed (a helper of lane B's splitters22, 2026-11-19): simpler Match Setup pickers** (`wip/match-setup-pickers`; QUEUE Features, "Simpler Match Setup pickers"; owner, 2026-11-19). Bot types as tick-boxes of the 8 groups (the "Named as" sets fold into them), plain switches under it (Ranks & badges from `game/ranksSetting.ts`, Themed names), teams as two steppers plus chips replacing the layouts modal; old saved setups and URLs mapped onto the new choices. No map format change. Files: client menu Match Setup (bots and teams pickers), their tests, the menu baselines it changes.
 
+- **Claimed and done (a helper of lane B's splitters22, 2026-11-19): the clock tower's neighbour trim** (`wip/stjohns-tower-trim`; coordinator, after the headroom fix). Files: `maps/st_johns.json` (through MapMaker: the Stair End Bay `setpiece_g830vbnlk5` at (2, -11) exploded, its north sides on the ground, first and second floors set Open with the Walls tool), paint-look hashes. Why Open: a facade dresses any wall whose neighbour cell is an `open` tile, and the Clock Tower tile is `open` (its walls are solids), so the bay's north face dressing stood inside the tower. **Green on `check/stjohns-tower-trim` at 34698d15, run 44475067067; on QUEUE's Ready to land.** A generic fix (facades skip a side whose neighbour tile draws its own wall there) would let the bay stay a set piece; not done.
+
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/match-setup-pickers` · f6990f86 (simpler Match Setup pickers: bot types as tick-boxes, Ranks & badges and Themed names switches, teams as steppers and chips; a helper of lane B's splitters22)
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
