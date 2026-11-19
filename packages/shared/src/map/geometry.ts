@@ -55,6 +55,8 @@ export interface WorldBox {
    * into has no navmesh left. Bots walk past it with their real 0.4 m, on the passage's link through the doorway.
    */
   navThrough?: true;
+  /** A step of a stair flight (LocalBox.step): MapMaker's headroom check walks these (map/headroom.ts). */
+  step?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -1067,7 +1069,7 @@ function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: nu
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
-  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}) };
+  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}), ...(box.step ? { step: true as const } : {}) };
   if (box.yaw || box.pitch || box.roll) {
     // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
