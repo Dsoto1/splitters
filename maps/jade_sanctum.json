@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 48,
   "metadata": {
     "id": "jade_sanctum",
     "name": "Jade Sanctum",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_z3bpasiq5c6jeb6p",
+      "versionId": "v_msp7mxc62mgclv3h",
+      "revision": 1,
+      "contentHash": "sha256:a365b7df4ed28ab0a80629431bdb909970c8cf232b96d7e7ba1de619b84a1d7f",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:04:17.510Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2813,9 +2821,9 @@
         17.5
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0.6,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -2827,9 +2835,9 @@
         42.2
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 2.1,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -2841,9 +2849,9 @@
         46.6
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.maple",
       "yaw": 1.4,
-      "scale": 0.95,
+      "scale": 0.884,
       "solid": true,
       "tint": null
     },
@@ -2855,9 +2863,9 @@
         13.6
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 0.4,
-      "scale": 1.2,
+      "scale": 0.984,
       "solid": false,
       "tint": null
     },
@@ -2869,9 +2877,9 @@
         22.5
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.laurel",
       "yaw": 2.2,
-      "scale": 1.1,
+      "scale": 0.594,
       "solid": false,
       "tint": null
     },
@@ -2883,9 +2891,9 @@
         42.8
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 1.1,
-      "scale": 1.2,
+      "scale": 0.984,
       "solid": false,
       "tint": null
     },
@@ -2897,9 +2905,9 @@
         48.8
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "env.fern.bracken",
       "yaw": 0.3,
-      "scale": 1,
+      "scale": 1.6,
       "solid": false,
       "tint": null
     },
@@ -2911,9 +2919,9 @@
         8.6
       ],
       "kind": "prop",
-      "model": "prop.nt_fern_wide",
+      "model": "env.fern.bracken",
       "yaw": 1.9,
-      "scale": 1,
+      "scale": 1.6,
       "solid": false,
       "tint": null
     },
@@ -2925,9 +2933,9 @@
         18.6
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_berries",
+      "model": "env.shrub.laurel",
       "yaw": 0.9,
-      "scale": 1.1,
+      "scale": 0.594,
       "solid": false,
       "tint": null
     },
@@ -2939,11 +2947,12 @@
         26.6
       ],
       "kind": "prop",
-      "model": "prop.nt_boulder_moss",
+      "model": "env.rock.boulder_shard",
       "yaw": 0.7,
-      "scale": 1,
+      "scale": 1.08,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_183",

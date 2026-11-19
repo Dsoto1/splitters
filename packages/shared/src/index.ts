@@ -160,6 +160,7 @@ export * from './editor/spawnExposure.ts';
 export * from './editor/mapModes.ts';
 export * from './editor/envBrush.ts';
 export * from './editor/envSeason.ts';
+export * from './editor/natureSwap.ts';
 export * from './editor/outliner.ts';
 export * from './editor/tour.ts';
 export * from './sim/forts.ts';

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 48,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_w7iioy47277enfak",
-      "revision": 8,
-      "contentHash": "sha256:091008341399e874d8baed6e6f9607e5ecee21f5369cfe4c1ce31d5a66085819",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T15:06:29.991Z"
+      "versionId": "v_qsodcjdvr662mann",
+      "revision": 9,
+      "contentHash": "sha256:1a1142a73aeef255669360043a2cb7f8fa52141abb78551b773f37aaaa1991d0",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:10:37.625Z"
     }
   },
   "classicStructure": {
@@ -2996,9 +2996,9 @@
         57
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -3010,9 +3010,9 @@
         54
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -3024,9 +3024,9 @@
         52
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -3038,9 +3038,9 @@
         44
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -3052,9 +3052,9 @@
         -72
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -3066,9 +3066,9 @@
         -64
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.maple",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.93,
       "solid": true,
       "tint": null
     },
@@ -3080,9 +3080,9 @@
         -12
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -3094,9 +3094,9 @@
         28
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.oak",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },

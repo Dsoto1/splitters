@@ -674,8 +674,9 @@ describe('published maps on a Host Service', () => {
 
     expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 0, online: true });
     expect(name('frost_basin')).toBe('Frost Basin');
-    // Published after the bundled Frost Basin's release (2026-11-13), so newer than it (shared publishedChoice.ts).
-    hub = { frost_basin: { text: doc('frost_basin', 'Frost Basin Fixed'), hash: 'h1', at: Date.parse('2026-11-14T00:00:00Z') }, owner_new: { text: doc('sandgate', 'New One', 'owner_new'), hash: 'h2', at: 2 } };
+    // Published a day after the bundled Frost Basin's release, so newer than it (shared publishedChoice.ts).
+    const released = Date.parse(JSON.parse(read(join(DEFAULT_MAPS_DIR, 'frost_basin.json'), 'utf8')).metadata.release.releasedAt);
+    hub = { frost_basin: { text: doc('frost_basin', 'Frost Basin Fixed'), hash: 'h1', at: released + 86_400_000 }, owner_new: { text: doc('sandgate', 'New One', 'owner_new'), hash: 'h2', at: 2 } };
     expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 2, added: ['owner_new'] });
     expect(name('frost_basin')).toBe('Frost Basin Fixed');
     expect(suiteIds(dir).has('owner_new')).toBe(true);
