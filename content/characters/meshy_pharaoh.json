@@ -6,6 +6,7 @@
   "name": "Pharaoh Mummy Warrior",
   "look": "core.pharaoh",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "undead",
   "bio": "Ruled the Nile for forty years. Rules this lobby for the next five minutes.",
   "body": "male",

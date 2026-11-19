@@ -6,6 +6,7 @@
   "name": "Shambler",
   "look": "core.shambler",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "Still wearing the shirt from his last day at the office. Still looking for the exit.",
   "body": "male",

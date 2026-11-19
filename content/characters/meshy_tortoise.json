@@ -6,6 +6,7 @@
   "name": "Shellback",
   "look": "core.tortoise",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "critter",
   "bio": "Slow to anger, slower to move, and nobody has ever knocked him over.",
   "body": "male",

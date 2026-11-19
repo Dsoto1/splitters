@@ -6,6 +6,7 @@
   "name": "Shiba",
   "look": "core.shiba",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "dog",
   "bio": "Very fast. Much aim. Wow.",
   "body": "male",

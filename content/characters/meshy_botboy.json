@@ -6,6 +6,7 @@
   "name": "Botboy",
   "look": "core.botboy",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",

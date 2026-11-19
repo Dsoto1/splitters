@@ -6,6 +6,7 @@
   "name": "The Mechanic",
   "look": "core.mechanic",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Fixes anything with a wrench. Breaks the rest with it too.",
   "body": "male",

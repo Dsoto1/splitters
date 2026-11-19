@@ -6,6 +6,7 @@
   "name": "Bamboo",
   "look": "core.panda",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "bear",
   "bio": "Eats forty kilos of bamboo a day and wants the other twenty.",
   "body": "male",

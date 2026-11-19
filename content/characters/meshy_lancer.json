@@ -6,6 +6,7 @@
   "name": "Lancer Mei",
   "look": "core.mei",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "ninja",
   "bio": "Trained with the lance for twenty years. Took about twenty seconds to learn the rifle.",
   "body": "female",

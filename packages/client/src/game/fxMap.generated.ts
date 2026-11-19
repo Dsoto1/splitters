@@ -378,6 +378,17 @@ export const FX_MAP = {
       "pack": "hit_fx",
       "effect": "vfx_strike_01",
       "scale": 0.14
+    },
+    "blood.oil": {
+      "pack": "electric_fx",
+      "effect": "vfx_impact_lightning_01",
+      "scale": 0.22
+    },
+    "blood.spirit": {
+      "pack": "hit_fx",
+      "effect": "vfx_impact_05",
+      "scale": 0.22,
+      "tint": "#a9adb3"
     }
   },
   "arcs": {

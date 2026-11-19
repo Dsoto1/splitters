@@ -6,6 +6,7 @@
   "name": "Alien Encounter",
   "look": "core.alienencounter",
   "group": "space",
+  "blood": "green",
   "nameTheme": "alien",
   "bio": "Small, green and absolutely sure you started it.",
   "body": "male",

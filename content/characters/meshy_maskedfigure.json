@@ -6,6 +6,7 @@
   "name": "The Masked Figure",
   "look": "core.maskedfigure",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "spooky",
   "bio": "Nobody has seen his face. Nobody wants to.",
   "body": "male",
