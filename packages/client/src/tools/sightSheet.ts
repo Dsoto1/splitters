@@ -23,8 +23,8 @@ import { CharacterAnimator, type MotionState } from '../game/characterAnimator.t
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
-import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
-import { glassCentre, glassHalf, hasGlass, opticNone, opticOf, pictureScale, type CarriedOptic } from '../game/optics.ts';
+import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
+import { glassCentre, glassHalf, hasGlass, opticNone, opticOf, type CarriedOptic } from '../game/optics.ts';
 import { attachOptic, markAudit } from '../game/opticHousing.ts';
 import { opticFrame } from '../game/opticView.ts';
 import { holdoverFor } from '../game/holdover.ts';
@@ -169,7 +169,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
 
   let frames = 0;
   let shown: { def: WeaponDefinition; node: TransformNode; viewRoot: TransformNode; frame: TransformNode; bounds: GunBounds; anim: CharacterAnimator | null; arms: TransformNode | null; optic: CarriedOptic | null; mask: Mesh | null; dispose(): void } | null = null;
-  let state: { ads: number; fitted: boolean; arms: boolean; optic?: OpticKindId } = { ads: 1, fitted: true, arms: true };
+  let state: { ads: number; fitted: boolean; arms: boolean; optic?: OpticKindId; picture?: number } = { ads: 1, fitted: true, arms: true };
   let placement: GunPlacement | null = null;
   let picture = 1;
 
@@ -182,8 +182,8 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     shown.viewRoot.rotation.set(placement.pitch, placement.yaw, 0);
     // The game's fields of view: the hip's, easing to the sights' as the gun comes up.
     eye.fov = DEFAULT_FOV * (1 + (ADS_FOV - 1) * state.ads);
-    // A glass's sight picture (optics.ts): the gun drawn larger about the view axis as it comes up, as view.ts does.
-    const full = state.fitted && hasGlass(shown.optic) ? pictureScale(shown.optic, glassCentre(shown.optic)[2] + aim.z, DEFAULT_FOV * ADS_FOV) : 1;
+    // The sight picture (optics.ts): the gun drawn larger about the view axis as it comes up, as view.ts does.
+    const full = state.picture ?? (state.fitted ? sightPicture(def, aim, shown.optic) : 1);
     picture = 1 + (full - 1) * state.ads * state.ads * (3 - 2 * state.ads);
     shown.frame.scaling.set(picture, picture, 1);
     scopeEl.hidden = true;
@@ -231,7 +231,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     while (frames < until) await new Promise((r) => setTimeout(r, 10));
   };
 
-  type ShowOptions = { ads?: number; fitted?: boolean; arms?: boolean; look?: string; optic?: OpticKindId };
+  type ShowOptions = { ads?: number; fitted?: boolean; arms?: boolean; look?: string; optic?: OpticKindId; picture?: number };
   /** One weapon is loaded at a time: a `show` waits for the one before it. */
   let queue: Promise<void> = Promise.resolve();
   /** Show `weapon` from the eye: `ads` 0 (hip) to 1 (aimed), `fitted: false` for the placement from before the fit. */
@@ -240,7 +240,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     return queue;
   }
   async function showNow(weapon: string, opts: ShowOptions): Promise<void> {
-    state = { ads: opts.ads ?? 1, fitted: opts.fitted ?? true, arms: opts.arms ?? true, ...(opts.optic ? { optic: opts.optic } : {}) };
+    state = { ads: opts.ads ?? 1, fitted: opts.fitted ?? true, arms: opts.arms ?? true, ...(opts.optic ? { optic: opts.optic } : {}), ...(opts.picture ? { picture: opts.picture } : {}) };
     const carried = opticOf(getWeapon(weapon), state.optic);
     if (shown?.def.id !== weapon || (shown.anim !== null) !== state.arms || shown.optic?.id !== carried?.id) {
       shown?.dispose();

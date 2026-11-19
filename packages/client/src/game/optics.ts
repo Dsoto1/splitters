@@ -91,6 +91,19 @@ export function pictureScale(o: CarriedOptic | null, depth: number, fov: number)
 }
 
 /**
+ * Iron sights on a long gun get the same frame, gently: a rear sight further than IRONS_DEPTH from the eye is drawn as
+ * large as it would be at that distance, the gun at most IRONS_MAX times larger (past that the hands, which keep their
+ * own size, look small on it). A handgun's sights are already that near: drawn plainly.
+ */
+export const IRONS_DEPTH = 0.36;
+export const IRONS_MAX = 1.6;
+
+/** How much larger a gun aimed down its iron sights is drawn: `rearDepth` its rear sight's distance ahead of the eye (m). */
+export function ironsPicture(rearDepth: number): number {
+  return Math.max(1, Math.min(IRONS_MAX, rearDepth / IRONS_DEPTH));
+}
+
+/**
  * The mark's brightness (0..1), steady: a reticle never flickers or blooms (CLAUDE.md, Accessibility). Capped under
  * the bloom threshold's reach; Reduce flashing lowers it a little more and drops the soft halo.
  */

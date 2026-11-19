@@ -174,8 +174,7 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
-import { ADS_FOV, aimPlacement, blendPlacement, type GunPlacement } from './sightPose.ts';
-import { glassCentre, hasGlass, opticOf, pictureScale } from './optics.ts';
+import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
 import { attachOptic } from './opticHousing.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
@@ -1798,7 +1797,7 @@ export class GameView {
   private stockZ = -0.3;
   /** Where the shown viewmodel sits at full aim (sightPose.ts), worked out when first needed after it is shown. */
   private aimAt: GunPlacement | null = null;
-  /** How much larger the shown gun is drawn at full aim (optics.ts pictureScale: a gun with a glass), worked out with `aimAt`. */
+  /** How much larger the shown gun is drawn at full aim (sightPose.ts sightPicture: a glass, a long gun's iron sights), worked out with `aimAt`. */
   private aimPicture = 1;
 
   setViewmodel(def: WeaponDefinition | undefined): void {
@@ -2171,12 +2170,12 @@ export class GameView {
     // line. Each far enough forward that the stock stays out of view.
     if (!this.aimAt) {
       this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ });
-      const carried = opticOf(def);
-      this.aimPicture = hasGlass(carried) ? pictureScale(carried, glassCentre(carried)[2] + this.aimAt.z, DEFAULT_FOV * ADS_FOV) : 1;
+      this.aimPicture = sightPicture(def, this.aimAt);
     }
     const aim = blendPlacement(def, this.aimAt, ads);
     const { x, y, z } = aim;
-    // The sight picture: a gun with a glass is drawn larger about the view axis as it comes up (optics.ts), and its bob
+    // The sight picture: a gun with a glass, and a long gun's iron sights, are drawn larger about the view axis as the gun
+    // comes up (optics.ts), and its bob
     // and kick are drawn that much smaller, so they move the window on screen as far as they did.
     const picture = 1 + (this.aimPicture - 1) * ads * ads * (3 - 2 * ads);
     if (this.opticBlend === 0) this.opticRoot.scaling.set(picture, picture, 1);

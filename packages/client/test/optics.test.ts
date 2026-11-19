@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon, gunplayOf, holdoverMarks, flightTo } from '@tiletrigger/shared';
 import { OPTIC_KINDS, OPTIC_NONE, WEAPON_OPTICS, type OpticKindId } from '@tiletrigger/shared/optics';
 import { SIGHT_FITS } from '@tiletrigger/shared/sightFit';
-import { GLASS_SHARE, HIP_FOV, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, glassCentre, glassHalf, hasGlass, onMark, opticNone, opticOf, pictureScale } from '../src/game/optics.ts';
-import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, offAxis, placed } from '../src/game/sightPose.ts';
+import { GLASS_SHARE, HIP_FOV, IRONS_DEPTH, IRONS_MAX, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, glassCentre, glassHalf, hasGlass, onMark, opticNone, opticOf, pictureScale } from '../src/game/optics.ts';
+import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, offAxis, placed, sightPicture } from '../src/game/sightPose.ts';
 import { LENS_SHARE, opticFrame } from '../src/game/opticView.ts';
 import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
 
@@ -137,6 +137,24 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
         expect(share, `${id} ${k}`).toBeLessThanOrEqual(GLASS_SHARE + 1e-9);
       }
     }
+  });
+
+  it('the sight picture: long guns\' irons are drawn larger about the aim, handguns\' and scopes plainly, the sights still on the aim', () => {
+    for (const id of CARRIES.irons) {
+      const def = getWeapon(id);
+      const at = aimPlacement(def, BOUNDS);
+      const rear = placed(SIGHT_FITS[id]!.rear, at);
+      const k = sightPicture(def, at);
+      expect(k, id).toBeGreaterThanOrEqual(1);
+      expect(k, id).toBeLessThanOrEqual(IRONS_MAX);
+      expect(k, id).toBeCloseTo(Math.max(1, Math.min(IRONS_MAX, rear[2] / IRONS_DEPTH)), 9);
+      // Drawn larger across the view axis only: a point on the axis stays on it, so the sights stay on the aim.
+      expect(offAxis([rear[0] * k, rear[1] * k, rear[2]]), id).toBeLessThan(SIGHT_TOLERANCE_DEG);
+    }
+    // Handguns are near enough already (all but unchanged); rifles, shotguns and the SMG are not.
+    for (const id of ['core.pistol', 'core.revolver', 'core.hand_cannon', 'core.pulse_pistol']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeLessThan(1.12);
+    for (const id of ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.shotgun']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeGreaterThan(1.2);
+    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...KEEP_THEIR_AIM]) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBe(1);
   });
 
   it('iron sights and the guns without an optic draw no glass', () => {

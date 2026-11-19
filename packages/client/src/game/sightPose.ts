@@ -1,7 +1,7 @@
 import type { WeaponDefinition } from '@tiletrigger/shared';
 import { SIGHT_FITS, type SightFit } from '@tiletrigger/shared/sightFit';
 import { DEFAULT_RELIEF } from './opticView.ts';
-import { glassCentre, hasGlass, opticOf, type CarriedOptic } from './optics.ts';
+import { HIP_FOV, glassCentre, hasGlass, ironsPicture, opticOf, pictureScale, type CarriedOptic } from './optics.ts';
 
 /**
  * Where the first-person gun sits aiming down the sights (docs/GUNPLAY_SPEC.md §15, "Sights that line up"; owner,
@@ -94,6 +94,18 @@ export function aimPlacement(def: WeaponDefinition, bounds: GunBounds, fitted = 
   if (fitted && hasGlass(carried)) return glassPlacement(def, carried, bounds);
   const fit = fitted ? SIGHT_FITS[def.id] : undefined;
   return fit ? sightPlacement(fit) : unfittedPlacement(def, bounds);
+}
+
+/**
+ * How much larger the gun is drawn about the view axis at full aim (optics.ts, "the sight picture"): a glass's window
+ * brought to a usable size, a long gun's iron sights to the size they have at a handgun's distance; 1 for a scope, a
+ * model's optic (its own frame, opticView.ts) and a gun with neither sights nor an optic. `at`: its placement at full aim.
+ */
+export function sightPicture(def: WeaponDefinition, at: GunPlacement, carried: CarriedOptic | null = opticOf(def)): number {
+  if (def.view.optic || def.view.zoomFov) return 1;
+  if (hasGlass(carried)) return pictureScale(carried, glassCentre(carried)[2] + at.z, HIP_FOV * ADS_FOV);
+  const fit = SIGHT_FITS[def.id];
+  return fit && carried?.kind.housing === 'none' ? ironsPicture(placed(fit.rear, at)[2]) : 1;
 }
 
 /** The placement `ads` (0..1) of the way from the hip (`view.viewOffset`) to the aim. */
