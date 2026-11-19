@@ -14131,7 +14131,14 @@ async function hostgameFlow(browser) {
 async function hostcontrolsFlow(browser) {
   const errors = [];
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
-  const openPanel = (page) => page.evaluate(() => (document.getElementById('host-controls').open = true));
+  /** The Host tab's controls, with the pause menu up (a match opens in play since 2026-11-19: Esc brings the menu). */
+  const openPanel = async (page) => {
+    if (await page.evaluate(() => document.getElementById('pause').hidden)) {
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
+    }
+    return page.evaluate(() => (document.getElementById('host-controls').open = true));
+  };
   const pickMap = async (page, id) => {
     await page.evaluate(() => document.getElementById('hc-map').click());
     // Under load the cards take a while: the picker has every map of our suite.
