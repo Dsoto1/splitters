@@ -148,8 +148,8 @@ const RULES = [
   [/^content\/guns(\.lock)?\.json$/, ['arsenal', ...CHARACTER_FLOWS, 'vehicles'], ['shared']],
   // The sight fit's corrections and exclusions (tools/content/sight-fit.mjs): where each gun sits aimed.
   [/^content\/sight-fit\.json$/, ['arsenal', 'offline', 'weaponsets'], ['client', 'content']],
-  // Optics by gun (tools/content/optics.mjs): the housings on the guns and their reticles (steady: the flicker check).
-  [/^content\/optics\.json$/, ['arsenal', 'offline', 'weaponsets', 'flashing'], ['client', 'content']],
+  // Optics by gun (tools/content/optics.mjs): the housings on the guns and their reticles (characters3 aims with them; steady: the flicker check).
+  [/^content\/optics\.json$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'flashing'], ['client', 'content']],
   // Effects: the flows that play them, and the flicker check (Reduce flashing: no new effect may flash).
   [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal', 'flashing'], ['client']],
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
@@ -218,7 +218,7 @@ const RULES = [
   // Where the first-person gun sits aiming down its sights (the sight fit).
   [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'visual'], ['client']],
   // The optics on the guns: their housings and glass, the reticles (steady: the flicker check).
-  [/^packages\/client\/src\/game\/(optics|opticHousing)\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'visual', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(optics|opticHousing)\.ts$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'physicsfx', 'visual', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
