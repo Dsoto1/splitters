@@ -96,6 +96,7 @@
      2,
      25
     ],
+    "akimbo": true,
     "pellets": 1,
     "fireIntervalTicks": 10,
     "view": {
@@ -1074,6 +1075,9 @@
      "rate": 0.1,
      "visual": 0.18
     },
+    "akimbo": {
+     "as": "pistol"
+    },
     "pellets": 1,
     "view": {
      "model": "guns/plasma_defender.glb",
@@ -1530,6 +1534,7 @@
      "maxBloom": 0.07,
      "recover": 0.002
     },
+    "akimbo": true,
     "pellets": 1,
     "botDesirability": 0.5,
     "view": {
@@ -2011,6 +2016,7 @@
      "maxBloom": 0,
      "recover": 0
     },
+    "akimbo": true,
     "view": {
      "model": "weapons/sawed_off.glb",
      "viewOffset": [

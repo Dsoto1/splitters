@@ -6,7 +6,7 @@ import { MAX_TEAMS } from './npc.ts';
 import { BOT_CAST_CHOICES, CAST_ID_ALIASES, THEME_BOT_TYPES, validBotCast } from '../content/botThemes.ts';
 import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
-import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
+import { AKIMBO_READY, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**
  * A dedicated server's match rules (the Host Service's RULES setting, its
@@ -70,8 +70,8 @@ export const castRuleValue = (cast: readonly string[] | undefined): string => (c
 /** A rule's word back as a bot-characters setting (undefined: the map's own). */
 export const castFromRuleValue = (v: string | undefined): string[] | undefined => (v === undefined || v === 'map' ? undefined : v === 'all' ? [] : [v]);
 
-/** Every rule, in the order the console and the launcher list them. */
-export const SERVER_RULES: readonly RuleSpec[] = [
+/** Every rule there is, in the order the console and the launcher list them (SERVER_RULES: the ones on offer). */
+const ALL_RULES: readonly RuleSpec[] = [
   {
     key: 'score', label: 'Score limit', help: 'The score that wins (0: none). Per mode: kills in Deathmatch and Team Deathmatch, captures in CTF, rounds in Elimination…', type: { kind: 'int', min: 0, max: SCORE_LIMIT_MAX, zero: 'none' }, apply: 'restart', perMode: true,
     modes: (m) => notCoop(m), read: (r) => r.scoreLimit, write: (r, v) => (r.scoreLimit = v as number),
@@ -95,6 +95,10 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   {
     key: 'drops', label: 'Drop weapon on death', help: "A fallen player's or bot's primary lies at the body for 30 s with the ammo it had left (off clears the ones lying about).", type: onOff, apply: 'live',
     modes: (m) => m !== 'core.discs', read: (r) => r.dropWeapons !== false, write: (r, v) => (v ? delete r.dropWeapons : (r.dropWeapons = false)),
+  },
+  {
+    key: 'akimbo', label: 'Dual wielding', help: 'Pick up a second of the same small gun to hold one in each hand.', type: onOff, apply: 'next',
+    modes: (m) => m !== 'core.discs', read: (r) => r.akimbo !== false, write: (r, v) => (v ? delete r.akimbo : (r.akimbo = false)),
   },
   {
     key: 'set', label: 'Weapon set', help: "What everyone spawns with and what weapon and grenade pickups hold: map (the map's own default; most maps: standard), standard (knife, pistol, the map's pickups as placed), military, scifi, medieval, chaos or mixed (a random gun each life).", type: choice(['map', 'Map default'], ...WEAPON_SET_IDS.map((id): [string, string] => [id, WEAPON_SET_DEFS[id].name])), apply: 'live',
@@ -215,6 +219,12 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     modes: (m) => m === 'core.forts', read: (r) => r.fortBudget ?? 420, write: (r, v) => (r.fortBudget = v as number),
   },
 ];
+
+/** Rules that aren't on offer yet: dual wielding until play reads it (rules.ts AKIMBO_READY). */
+const NOT_READY: ReadonlySet<string> = new Set(AKIMBO_READY ? [] : ['akimbo']);
+
+/** Every rule on offer, in the order the console and the launcher list them. */
+export const SERVER_RULES: readonly RuleSpec[] = ALL_RULES.filter((s) => !NOT_READY.has(s.key));
 
 // Built on first use, so a bundle that never reads the rules can drop this module (the menu's first JS).
 let byKey: Map<string, RuleSpec> | undefined;
@@ -381,7 +391,7 @@ export function applyServerRules(rules: MatchRules, sr: ServerRules, map: MapDoc
 
 /** The MatchRules fields each "next match" rule writes, put back to the base's. */
 const FIELDS: Record<string, (keyof MatchRules)[]> = {
-  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
+  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], akimbo: ['akimbo'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
   lethality: ['lethality'], ballistics: ['ballistics'], emotes: ['emotes'], weapons: ['weapons'], classes: ['classes', 'classLimit'], vehicles: ['vehicleDamage'], flagreturn: ['flagReturnSeconds'], hill: ['hillSeconds'],
   fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'],
 };

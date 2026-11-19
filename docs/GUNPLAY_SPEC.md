@@ -2106,13 +2106,67 @@ For bows/energy weapons.
 
 ## Akimbo / Dual Wield
 
-Worth supporting architecturally even if not initial-slice functionality.
+**Status: step 1 landed: data and rule; play arrives with step 2.** Nothing in a match reads any of this yet (no
+sim, protocol, HUD or view change), and the Match Setup switch is hidden until it does.
 
-Dual weapons may:
+Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
+shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
 
-- Fire independently.
-- Reload independently.
-- Trade ADS precision for volume.
+### The design in brief
+
+- **Making a pair.** Pick up a second of the same gun while you carry one and you hold one in each hand. Only the
+  same weapon pairs with itself, and only a weapon marked eligible.
+- **Ammunition.** The two guns share the reserve; each has its own magazine.
+- **Triggers.** Left mouse fires the gun you already held, as now; right mouse is the second gun's trigger. There
+  is no aiming down sights while paired. The fire-mode key puts the second gun away: back to one gun, with its
+  sights.
+- **Reload.** R reloads the emptier gun first, then the other; the gun that isn't being reloaded still fires.
+  (Responsiveness over realism: a reload never takes both triggers away.)
+- **The trade.** A pair is volume for precision, never a better gun: a wider cone (a wider pellet pattern for a
+  shotgun), more kick, slower reloads and a slower raise, as data per family (below). Weapons keep their identity:
+  the numbers multiply what the one gun has.
+- **The rule.** `MatchRules.akimbo`, default on ("Dual wielding" in Match Setup, with the weapon rules: "Pick up a
+  second of the same small gun to hold one in each hand."; `akimbo` in a dedicated server's RULES, taking effect at
+  the next match). Off: a second gun of the same kind is ammunition, as today.
+
+### The trade as data
+
+`content/weapons/families.json`: the top-level `akimbo` block is where every pair starts (everything × 1, the raise
+× 1.25), and a family's `akimbo` block is its trade. `cone`, `pattern`, `kick`, `reload` and `raise` multiply the one
+gun's aim cone, pellet pattern, recoil, reload time and raise time (each 1 to 3: never better than one gun); `move`
+is added to `handling.move` (−0.1 to 0, and the result stays at 0.85 or more: no severe movement penalties).
+
+| Family | Cone × | Pattern × | Kick × | Reload × | Raise × | Move |
+|---|---|---|---|---|---|---|
+| pistol | 1.5 | 1 | 1.2 | 1.35 | 1.25 | 0 |
+| machine_pistol | 1.6 | 1 | 1.25 | 1.35 | 1.25 | 0 |
+| smg | 1.7 | 1 | 1.3 | 1.4 | 1.25 | −0.03 |
+| shotgun (for the sawed-off) | 1 | 1.15 | 1.4 | 1.5 | 1.25 | 0 |
+
+A weapon is eligible only by its own flag, `"akimbo": true` in `content/weapons/<name>.json` (or an object that
+overrides numbers; `"as": "<family>"` names the family to take them from for a weapon that has none). Today:
+`core.pistol`, `core.machine_pistol`, `core.sawed_off` and `core.pulse_pistol` (as a pistol). Not the revolver, the
+hand cannon, the full-stock SMG, the gilded pistol, the flare gun, the goo gun, the freeze ray, the nailgun, the
+LMG, the shotgun or the auto shotgun; adding one is that one line (docs/CONTENT_PIPELINE.md, "Making a weapon
+eligible for dual wielding"). The generator refuses the flag on a weapon with an alt-fire, a zoom scope or fire
+modes (the pair needs right mouse and the fire-mode key, and can't aim), and on melee until melee pairs exist.
+
+In code: `akimboOf(def)` beside `gunplayOf` (`packages/shared/src/sim/gunplay.ts`) returns the resolved numbers
+(base, then family, then the weapon's own) or null for a weapon that can't be paired.
+
+### The four steps
+
+1. **Data and the rule (landed).** The trade and the eligible weapons as data, `akimboOf`, `MatchRules.akimbo` from
+   Match Setup and a dedicated server's rules to the match and the client. Hidden behind `AKIMBO_READY` (false, in
+   `packages/shared/src/sim/rules.ts`): no switch in Match Setup, no `akimbo` rule on a server, nothing in a rules
+   summary.
+2. **Play.** The sim and prediction: making a pair on pickup, the second trigger, two magazines over one reserve,
+   the staggered reload, the trade applied, the fire-mode key back to one gun, drops and bots; the wire for it. Sets
+   `AKIMBO_READY` true, which shows the switch and the server rule (and their row in docs/HOSTING.md).
+3. **Look and feel.** The second gun in the left hand in first and third person, its muzzle flash, kick and reload
+   animation, the HUD's two magazine counts, sounds.
+4. **Tuning and more pairs.** The numbers above played and adjusted; small SMGs and whatever else the owner adds;
+   melee pairs.
 
 ## Underbarrel Attachments
 
