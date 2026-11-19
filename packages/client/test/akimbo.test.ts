@@ -161,6 +161,10 @@ describe('prediction of a pair', () => {
     for (const lag of [0, 5]) {
       const { match, me, w, local, step } = sideBySide(PISTOL, { lag, mags: [5, 2], reserve: 40 });
       step({ buttons: BUTTON_RELOAD | BUTTON_AUTO_RELOAD });
+      step({ buttons: BUTTON_AUTO_RELOAD });
+      // Both are asked for; the hand is on the second gun (the emptier), and the HUD shows its cue only there.
+      expect(local.reloadTicks > 0 && local.reloadTicks2 > 0).toBe(true);
+      expect(local.pairReloading()).toEqual([false, true]);
       let mismatched = 0;
       let both = 0;
       let firedDuring = '';

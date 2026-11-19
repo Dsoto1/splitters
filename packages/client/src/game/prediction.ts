@@ -244,6 +244,18 @@ export class LocalPlayer {
     return !this.seatGun && this.pairOf() !== null;
   }
 
+  /**
+   * Which of a pair's guns a hand is on now, [the gun you held, the second gun]: one reloads at a time, and the other's
+   * reload, when asked for, waits its turn (that gun still fires, so it shows its rounds).
+   */
+  pairReloading(): [boolean, boolean] {
+    const first = this.reload && this.reloadTicks > 0 ? this.reload : null;
+    const second = this.reload2 && this.reloadTicks2 > 0 ? this.reload2 : null;
+    if (!second) return [!!first, false];
+    const turn = pairReloadTurn(first, second, this.inventory.get(this.held)?.[0] ?? 0, this.offs.get(this.held)?.mag ?? 0);
+    return [turn === 1, turn === 2];
+  }
+
   /** With a second gun of the held weapon: 'pair' (both out, as wanted: the host takes it with the next input) or 'single'; null without one. */
   pairMode(): 'pair' | 'single' | null {
     if (!this.offs.has(this.held) || this.seatGun) return null;

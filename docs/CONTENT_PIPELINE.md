@@ -364,7 +364,7 @@ throwables from these files; id, code, kind and holds are read-only there.
 
 #### Making a weapon eligible for dual wielding
 
-Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"; step 1: data only, play arrives with step 2) is one
+Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"; in the match since step 2, off in normal play until the second gun is drawn) is one
 line in the weapon's file:
 
 - `"akimbo": true` for a weapon whose `family` has an `akimbo` block in `families.json` (pistol, machine_pistol,

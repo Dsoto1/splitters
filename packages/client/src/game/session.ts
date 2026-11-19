@@ -3837,7 +3837,8 @@ export class GameSession {
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
       else {
         const second = local.paired ? local.offs.get(local.held) : undefined;
-        this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy, second ? { mag: second.mag, reloading: local.reloadTicks2 > 0 } : null);
+        const [busy, busy2] = second ? local.pairReloading() : [local.reloadTicks > 0, false];
+        this.hud.setWeapons(local.inventory, local.held, busy, local.alive, handsBusy, second ? { mag: second.mag, reloading: busy2 } : null);
       }
       // (With a second gun of the held weapon, the fire-mode key is "both guns" or "one gun".)
       const pairMode = local.pairMode();

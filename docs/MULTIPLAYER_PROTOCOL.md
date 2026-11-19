@@ -672,7 +672,7 @@ takes its own version only and refuses the rest, and a writer writes only when t
 | Version | |
 |---|---|
 | 1 | the first layout (November 2026) |
-| 2 | two more player bits: 32 `zm` (aiming through a magnified optic, section 23) and 64 `dw` (reserved for dual wielding: "holds a pair"; nothing writes it yet, the format carries it if present). No byte added: both go in the record's bits byte. A version 1 record is a valid version 2 record with neither bit |
+| 2 | two more player bits: 32 `zm` (aiming through a magnified optic, section 23) and 64 `dw` (dual wielding, a pair is drawn: section 24; reserved with this version, written since dual wielding step 2 with no change of version). No byte added: both go in the record's bits byte. A version 1 record is a valid version 2 record with neither bit |
 
 **Layout** (little-endian; version 2). Every message is whole in itself: nothing depends on an earlier one.
 
@@ -763,7 +763,7 @@ Two optional public fields on `PlayerSnapshot`, beside `sr`, `em`, `dr` and the 
     aim. It falls with the button, at once (the scope picture cuts out when the aim is let go);
   - the gun is ready (raised, not reloading: the client shows no scope picture otherwise) and the player is alive
     and not in a seat that takes their hands (a driver, a seat with a gun, the plane).
-- **`PlayerSnapshot.dw: 1`**: reserved for dual wielding ("holds a pair"). Nothing writes it yet.
+- **`PlayerSnapshot.dw: 1`**: dual wielding, a pair is drawn (section 24).
 
 Both are in the delta snapshots' optional keys (`net/interest.ts` `OPTIONAL_KEYS`): a delta names the field when it
 is set (`"zm":1`) and when it goes away (`"zm":null`), and not in between, so a player who stops aiming is cleared
@@ -776,3 +776,28 @@ record (section 22, version 2).
 has no build or capability list; `protocol` is 5 on both sides of this change) tells it from a host on which nobody
 is scoped, so on such a host nobody glints: the earlier guess from the held weapon and the bot's state was dropped
 rather than kept for hosts that cannot be recognised (a missing glint is better than a wrong one).
+
+## 24. Dual wielding (November 2026)
+
+docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield". **Optional fields only; `PROTOCOL_VERSION` stays 5 and
+`SNAPSHOT_BINARY_VERSION` stays 2.** An older client ignores them (it sees every player with one gun; holding a pair itself it cannot
+aim, and its second gun fires only from its second-trigger key, which sends `BUTTON_ALT`); an older host never sends
+them and never makes a pair. A
+match sends none of them unless dual wielding is in play in it and someone holds a second gun
+(`packages/shared/test/akimbo.test.ts`: with it off, the same inputs leave no trace of any of these).
+
+| Field | Where | |
+|---|---|---|
+| `dw: 1` | `PlayerSnapshot` (public) | A pair is drawn: the player is alive, the weapon in hand (`w`) has its second gun and it is out (not put away with the fire-mode key), and they are not in a seat that takes the hands. Absent otherwise. In the delta snapshots' optional keys (`net/interest.ts`: named when set, `null` when it goes, not in between); bit 64 of the player record in the binary snapshot (section 22) |
+| `ow: [code, magazine, flags?][]` | `PrivateState` (`me`) | The second guns the player holds, in weapon-code order: the second gun's magazine (the reserve is the weapon's one, in `inv`). `flags` is left out when 0: 1 = a magazine is in but no round chambered (as `uc` for the first gun), 2 = put away (one gun in hand). Absent without a second gun |
+| `rl2`, `rd2: [kind, inputs, total, stage]` | `PrivateState` | The second gun's reload, as `rl` and `rd` are the first's; both absent when it has none. One hand reloads at a time: a run at 0 inputs beside a first-gun reload under way (or the other way round) is waiting its turn (`gunplay.ts` `pairReloadTurn`) |
+| `off: 1` | the `shot` event | The second gun of a pair fired it (absent: the gun the player held). Not `alt`: it is the weapon's own trigger |
+
+No new input bit. The second gun's trigger is the existing `BUTTON_ALT` (a pair-eligible weapon has no second trigger
+of its own: the content check refuses it), and `PlayerInput.fireMode` (the fire mode wanted, an index: `sim/inputs.ts`)
+is 1 for "one gun" and anything else for "the pair" while the held weapon has a second gun (such a weapon has no fire
+modes: also refused by the content check). A host with dual wielding in play drops `BUTTON_ZOOM` from the input of a
+player with a pair in hand, and `BUTTON_SPRINT` with `BUTTON_ALT`, before it moves them; prediction does the same.
+
+`me` goes whole with every snapshot, so `ow`, `rl2` and `rd2` are gone the snapshot after their cause. Host handoff's
+checkpoint does not carry second guns: after a handoff a pair is one gun again.

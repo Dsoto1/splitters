@@ -91,7 +91,7 @@ const BIT_EMOTE = 4;
 const BIT_SPRINT = 8;
 const BIT_DROP = 16;
 const BIT_ZOOM = 32;
-/** Reserved for dual wielding (`dw`, holds a pair): carried when present, written by nothing yet. */
+/** Dual wielding (`dw`, a pair is drawn: sim/match.ts pairDrawn). */
 const BIT_PAIR = 64;
 const BITS_KNOWN = 127;
 const HAS_VX = 1;

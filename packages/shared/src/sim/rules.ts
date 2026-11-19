@@ -113,8 +113,8 @@ export interface MatchRules {
   dropWeapons?: boolean;
   /**
    * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): picking up a second of the same small gun puts one
-   * in each hand (the weapons gunplay.ts akimboOf resolves). Default true; false: one gun at a time. Step 1: the rule
-   * travels with a match but nothing in play reads it yet (AKIMBO_READY).
+   * in each hand (the weapons gunplay.ts akimboOf resolves). Default true; false: one gun at a time. The match reads
+   * it wherever dual wielding is in play (akimboReady, below); its switch stays hidden until AKIMBO_READY.
    */
   akimbo?: boolean;
   /**
@@ -218,8 +218,10 @@ export const SCORE_LIMIT_MAX = 5000;
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
 
 /**
- * Dual wielding is built in steps: until play reads the rule (step 2), Match Setup, the dedicated server's rules
- * and every rules summary leave it out, so nobody is shown a switch that does nothing. Step 2 sets this true.
+ * Dual wielding is built in steps (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): play is in the match since step 2,
+ * but the second gun is not drawn until step 3, so this stays false: no pair is ever made in a normal match, and
+ * Match Setup, the dedicated server's rules and every rules summary leave the rule out. The step that draws the
+ * second gun sets it true.
  */
 export const AKIMBO_READY: boolean = false;
 

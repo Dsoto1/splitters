@@ -2106,8 +2106,10 @@ For bows/energy weapons.
 
 ## Akimbo / Dual Wield
 
-**Status: step 1 landed: data and rule; play arrives with step 2.** Nothing in a match reads any of this yet (no
-sim, protocol, HUD or view change), and the Match Setup switch is hidden until it does.
+**Status: steps 1 and 2 landed: the data and the rule, then play (the match, prediction, the HUD's two counts, the
+snapshot's fields). It is still off in normal play:** `AKIMBO_READY` stays false until the second gun is drawn (step
+3), so no pair is ever made, nothing new is sent and a match plays bit for bit as before; the Match Setup switch
+stays hidden with it. To try it: `?akimbo=1` (below).
 
 Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
 shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
@@ -2160,13 +2162,83 @@ In code: `akimboOf(def)` beside `gunplayOf` (`packages/shared/src/sim/gunplay.ts
    Match Setup and a dedicated server's rules to the match and the client. Hidden behind `AKIMBO_READY` (false, in
    `packages/shared/src/sim/rules.ts`): no switch in Match Setup, no `akimbo` rule on a server, nothing in a rules
    summary.
-2. **Play.** The sim and prediction: making a pair on pickup, the second trigger, two magazines over one reserve,
-   the staggered reload, the trade applied, the fire-mode key back to one gun, drops and bots; the wire for it. Sets
-   `AKIMBO_READY` true, which shows the switch and the server rule (and their row in docs/HOSTING.md).
+2. **Play (landed, off by default).** The sim and prediction: making a pair on pickup, the second trigger, two
+   magazines over one reserve, the staggered reload, the trade applied, the fire-mode key back to one gun, drops and
+   bots; the wire for it; the HUD's two magazine counts. "As built" below.
 3. **Look and feel.** The second gun in the left hand in first and third person, its muzzle flash, kick and reload
-   animation, the HUD's two magazine counts, sounds.
+   animation, sounds. Sets `AKIMBO_READY` true, which makes pairs in normal matches and shows the switch and the
+   server rule (and their row in docs/HOSTING.md).
 4. **Tuning and more pairs.** The numbers above played and adjusted; small SMGs and whatever else the owner adds;
    melee pairs.
+
+### As built: play (step 2, 2026-11-19)
+
+In the match (`packages/shared/src/sim/match.ts`), mirrored by client prediction (`game/prediction.ts`); the numbers
+come from `akimboOf` through five small helpers in `gunplay.ts` (`akimboCone`, `akimboKick`, `akimboLoader`,
+`akimboRaise`, `akimboMove`).
+
+- **On or off.** A match makes pairs only when dual wielding is in play (`akimboReady()` in `rules.ts`: the
+  constant `AKIMBO_READY`, false; tests turn it on with `setAkimboReady`; a match can be told either way with
+  `MatchOptions.akimbo`) and its rule allows (`MatchRules.akimbo`). Off, nothing below exists: a second gun is
+  ammunition, the second trigger and the fire-mode key do what they did, and no new field is sent.
+- **`?akimbo=1`** turns it on for this browser's own matches (Play offline, MapMaker Test, the host's page of Host
+  game), where test mode is honoured: a dev server, a test-hooks build, or a page served from this machine
+  (`testMode.ts` `allowedHere`). The second gun is not drawn yet; the HUD, the triggers and the reloads are.
+- **Making a pair.** A person (never a bot) who walks over a pickup of an eligible gun they hold, or takes a drop of
+  one, holds a pair. A pickup's second gun has a full magazine and the pickup still gives its ammunition (a pair is
+  made even with a full reserve); a drop's second gun has the drop's magazine, its reserve tops yours up and the
+  drop is gone. A third gun is ammunition. A loadout never grants a pair. **The Pistol has no pickup and never
+  drops** (it is what everyone starts with), so today only the Machine Pistol, the Pulse Pistol and the Sawed-Off
+  can be paired in play; a Pistol pair waits for a way to find a second Pistol (an owner's decision).
+- **State.** `WeaponState.off` is the second gun: its magazine (and `unchambered`, and `away` when put away) over
+  the weapon's one reserve. The second gun has its own cooldown, semi-automatic latch and reload on the player
+  (`fireCooldown2`, `semiLatch2`, `reload2`, `reloadTicks2`). **One `GunState` for both**: every round of either gun
+  kicks the one aim and grows the one spray, so firing both doubles the climb and the bloom by itself.
+- **Triggers.** `BUTTON_FIRE` is the gun you held, `BUTTON_ALT` the second gun, by the same rules (an empty pull
+  starts that gun's reload; firing interrupts that gun's reload when a round is ready). Both can fire on one tick.
+  The second trigger ends a sprint as the first does (the sprint-exit time on the raise timer). On a zipline one
+  hand holds the trolley: the first gun only. The second gun comes out in the pair's raise (the weapon's × `raise`)
+  when the pair is made or brought back, without holding up the first gun; switching to a pair takes that raise.
+- **No aiming.** With the pair in hand the match drops the aim button: no sights, no aimed walk, no `zm`.
+- **One gun again.** The fire-mode key sends `PlayerInput.fireMode` 1 (one gun; the second is put away with its
+  magazine) or 0 (the pair); it beats a reload, like a swap. With one gun everything is today's weapon, sights
+  included.
+- **Reloads.** R asks for both; one hand reloads at a time (`pairReloadTurn`): the one under way goes on, the other
+  waits at its start, and of two waiting the emptier gun goes first (the gun you held on a tie). Each is the gun's
+  ordinary reload at the pair's pace (`akimboLoader`: every time × `reload`, the stages at the same shares; the
+  Sawed-Off shell by shell). A gun that waits or isn't reloading fires, which gives up its turn. Auto-reload is per
+  gun. A swap, a sprint, a use or a quick melee stops both.
+- **The trade.** Aim cone × `cone` and pellet pattern × `pattern` for every round of a pair; every kick × `kick`
+  (the settling is the gun's own); reloads × `reload`; the raise × `raise`; `move` added to the running speed.
+- **Switch, drop, death.** Switching away keeps the pair. A death drop is one gun with the first gun's magazine and
+  the reserve; a new life has no pair. There is no manual drop in the game.
+- **Controls.** While a pair is in hand the client sends the aim button (right mouse, X, a controller's LT, touch's
+  Aim) as `BUTTON_ALT`, always held (Aim: Toggle does not latch a trigger), a click of it between two ticks still
+  goes out, and touch's Fire pulls both. The trigger latch keeps a pull of either trigger made while the pair comes
+  up. The fire-mode key (U) shows "Pair" or "One gun".
+- **HUD.** Two magazine counts, "L | R" (the second gun left, the gun you held right), over the one reserve; a gun
+  that is reloading shows ↻ in its place; each count turns red when low by itself.
+- **Prediction.** The second gun's shots, cooldown, latch and reloads are predicted with the first's. A pair's
+  rounds fired in inputs the host has not acknowledged come off the host's magazines on each snapshot, so neither
+  count runs back up under latency.
+- **The wire.** docs/MULTIPLAYER_PROTOCOL.md section 24: public `dw`, private `ow`, `rl2`, `rd2`, `shot.off`.
+
+**Time to kill, one gun against a pair** (`packages/shared/test/akimbo.test.ts` prints it: a standing target, aimed
+at the chest, both triggers pulled whenever their gun is ready, recoil fully pulled back; seconds, 12 runs; in
+brackets the share that killed inside 6 s):
+
+| Gun | 5 m one | 5 m pair | 15 m one | 15 m pair | 30 m one | 30 m pair |
+|---|---|---|---|---|---|---|
+| Pistol | 0.73 | 0.37 | 0.75 | 0.35 | 0.97 | 0.34 |
+| Pulse Pistol | 0.67 | 0.33 | 0.67 | 0.29 | 1.00 | 0.49 |
+| Machine Pistol | 0.71 | 0.38 | 4.41 (75 %) | none | none | none |
+| Sawed-Off | 0.00 | 0.00 | 4.19 (92 %) | 5.73 (67 %) | none | none |
+
+Read with care: both triggers on the same tick put the second round one kick above the first, which at 15 and 30 m
+lifts it from the chest to the head, so the semi-automatic pairs look better at range than they are in a hand that
+has to aim; the Machine Pistol pair's wider cone and doubled spray take away what little range it had (and with no
+recoil control it is slower than one gun even at 5 m: 0.97 against 0.69 s). Up close a pair of pistols is two guns'
+worth. Tuning is step 4.
 
 ## Underbarrel Attachments
 
