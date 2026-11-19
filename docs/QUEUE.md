@@ -39,8 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/nature-swap-4` · 4b585aaa · run 44563372716 (the nature swap's last batch: Sandstone Spires, sandstone shards, Kenney Nature Kit trees and logs, St. John's and the coverage map, the Quaternius nature pack retired; green on attempt 1) **Owner, 2026-11-19: "1a 2a 3b"**: the Log Stack stays until a generated woodpile exists; generated Stone Campfire, Stone Pillar, Hanging Moss and Log Stack come later, then the Kenney kit retires with aliases; the Sandstone Spires get denser and more fused, like the Meshy one (`wip/nature-swap-5`, after this lands; recipe and content only).
-- `wip/nature-swap-5` · ddea1ed1 · run 44586438591 (denser, fused Sandstone Spires, owner 3b; contains `wip/nature-swap-4`, lands after it, re-checked after swap-4's re-merge)
+- `wip/nature-swap-5` · ece06ef8 · run 44600999946 (the nature swap's last batch plus the denser, fused Sandstone Spires, owner 3b; contains `wip/nature-swap-4` and lands in its place; re-merged after the fix batch, green on attempt 1)
 - `wip/fable-sights-2` · 8e36d6da · 44584521043 (lane F: real optics by gun, sights pass step 2; green on attempt 2, `perf (mass)` over budget on a slow runner in attempt 1)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
