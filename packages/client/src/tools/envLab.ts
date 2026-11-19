@@ -38,12 +38,12 @@ const BEFORE_X = 90;
 const LINEUP: [string, number, string, number, number][] = [
   ['env.broadleaf.oak', 0, 'prop.oak', -12, 4],
   ['env.broadleaf.oak', 1, 'prop.oak_autumn', -3.5, 4],
-  ['env.conifer.pine_tall', 0, 'prop.nt_pine_tall', 4.5, 4],
-  ['env.conifer.pine_tall', 1, 'prop.nt_pine_snow_tall', 11, 4],
+  ['env.conifer.pine_tall', 0, 'prop.pine_tall', 4.5, 4],
+  ['env.conifer.pine_tall', 1, 'prop.pine_tall_b', 11, 4],
   ['env.shrub.broadleaf', 0, 'prop.bush_large', -4, -4],
   ['env.shrub.broadleaf', 1, 'prop.bush_leafy', -1.6, -4],
-  ['env.rock.boulder_angular', 0, 'prop.nt_boulder', 1.6, -4],
-  ['env.rock.boulder_angular', 1, 'prop.nt_boulder_moss', 4.6, -4],
+  ['env.rock.boulder_angular', 0, 'prop.boulder_round', 1.6, -4],
+  ['env.rock.boulder_angular', 1, 'prop.boulder_jagged', 4.6, -4],
   ['env.grass.clump', 0, 'prop.grass_tall', -7.5, -5],
   ['env.grass.clump', 1, 'prop.grass_patch', -6.2, -5],
   // The plants brush's flowers and fern (foliage.ts), in front of the grass.

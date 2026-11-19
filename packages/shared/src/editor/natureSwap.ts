@@ -6,14 +6,13 @@ import type { EditCommand } from './commands.ts';
 /**
  * Swap natural props for ours (the nature swap, owner 2026-11-18; docs/PROCEDURAL_ENVIRONMENT.md, "The nature swap"):
  * MapMaker's Environment pane turns every bought or downloaded tree, bush, plant, log and rock on the map (the
- * Quaternius Ultimate Nature pack, the Kenney kit rocks, the Meshy community rock piles and spires) into our
- * generated species, keeping each one's spot, turn and name; its size is its scale times the table's factor, so the
- * new one stands about as tall and as wide as the old. One undo step; the ids stay, so groups, logic and links keep
+ * Quaternius Ultimate Nature pack, the Kenney Nature Kit's trees, logs and rocks, the Meshy community rock piles and
+ * spires) into our generated species, keeping each one's spot, turn and name; its size is its scale times the table's
+ * factor, so the new one stands about as tall and as wide as the old. One undo step; the ids stay, so groups, logic and links keep
  * pointing at them.
  *
  * Play is kept: trees keep a trunk (now its real capsules), bushes stay crouch cover (they conceal), rocks keep
- * blocking shots and movement. A placement the table has no match for (the Red Rock Spires, wide formations a
- * map maker builds as cliffs by hand) is left as it is and counted.
+ * blocking shots and movement. A placement the table has no match for is left as it is.
  */
 
 /** One generated match for an old prop: species, look (variant name), size factor and, for a mix, its weight. */
@@ -88,11 +87,38 @@ export const NATURE_SWAP_TABLE: Readonly<Record<string, readonly NatureTarget[]>
   'prop.rock_mossy_spire': [t('env.rock.boulder_angular', 'moss', 1.25)],
   'prop.mc_cave_rocks_b': [t('env.rock.boulder_shard', 'bare', 1.29)],
   'prop.mc_cave_rocks_d': [t('env.rock.boulder_angular', 'bare', 1.05)],
+  // The Meshy community Red Rock Spires: the generated spire formation, its size (owner, 2026-11-19).
+  'prop.mn_rock_spires': [t('env.rock.sandstone_spires', 'red', 1.0)],
+  // The Kenney Nature Kit's trees, logs and stumps (owner, 2026-11-19; stumps stay short Fallen Logs). Its Log Stack
+  // (cut firewood) stays: no generated woodpile stands for it.
+  'prop.oak': [t('env.broadleaf.oak', 'summer', 0.8)],
+  'prop.oak_dark': [t('env.broadleaf.oak', 'summer', 0.8)],
+  'prop.oak_autumn': [t('env.broadleaf.oak', 'autumn', 0.8)],
+  'prop.tree_round': [t('env.broadleaf.maple', 'summer', 0.79)],
+  'prop.tree_round_dark': [t('env.broadleaf.maple', 'summer', 0.79)],
+  'prop.tree_round_autumn': [t('env.broadleaf.maple', 'autumn', 0.79)],
+  'prop.tree_fat': [t('env.broadleaf.maple', 'summer', 0.72)],
+  'prop.tree_blocks': [t('env.broadleaf.maple', 'summer', 0.72)],
+  'prop.tree_detailed': [t('env.broadleaf.oak', 'summer', 0.69)],
+  'prop.tree_cone': [t('env.conifer.spruce', 'summer', 0.67)],
+  'prop.tree_plateau': [t('env.broadleaf.acacia', 'green', 0.81)],
+  'prop.tree_thin': [t('env.broadleaf.birch', 'summer', 0.55)],
+  'prop.tree_small': [t('env.broadleaf.birch', 'summer', 0.28)],
+  'prop.pine_tall': [t('env.conifer.pine_tall', 'summer', 1.0)],
+  'prop.pine_tall_b': [t('env.conifer.pine_tall', 'summer', 0.91)],
+  'prop.pine_round': [t('env.conifer.mountain_pine', 'summer', 1.4)],
+  'prop.pine_small': [t('env.conifer.spruce', 'summer', 0.39)],
+  'prop.pine_ground': [t('env.conifer.mountain_pine', 'summer', 0.44)],
+  'prop.palm_tall': [t('env.palm.coconut', 'green', 0.83)],
+  'prop.palm_short': [t('env.palm.coconut', 'green', 0.46)],
+  'prop.log_big': [t('env.deadwood.log', 'bare', 1.4)],
+  'prop.stump_old': [t('env.deadwood.log', 'moss', 1.2)],
+  'prop.stump_cut': [t('env.deadwood.log', 'bare', 1.2)],
 };
 
 /**
  * How rocks come out: as the table lists them; mossy (boulders moss, shards lichen); sandstone (boulders as the
- * Sandstone Boulder, for desert ground); or auto: sandstone where the map's ground is mostly sand, else as listed.
+ * Sandstone Boulder and shards in their sandstone look, for desert ground); or auto: sandstone where the map's ground is mostly sand, else as listed.
  */
 export const NATURE_ROCK_LOOKS = ['auto', 'listed', 'moss', 'sandstone'] as const;
 export type NatureRockLook = (typeof NATURE_ROCK_LOOKS)[number];
@@ -135,6 +161,8 @@ export function withRockLook(target: NatureTarget, look: Exclude<NatureRockLook,
     if (target.model === 'env.rock.boulder_shard' && target.look === 'bare') return { ...target, look: 'lichen' };
     return target;
   }
+  // On sandy ground a grey or lichen shard takes the sandstone look (the same shape: shards stay tall).
+  if (target.model === 'env.rock.boulder_shard') return target.look === 'bare' || target.look === 'lichen' ? { ...target, look: 'sandstone' } : target;
   if (!BOULDERS.has(target.model)) return target;
   // As tall and as wide as the boulder it stands for, between the two (the sandstone boulder is low and broad).
   const from = getEnvSpecies(target.model)!.variants[0]!.size;

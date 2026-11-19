@@ -60,20 +60,17 @@ const INTENDED: readonly [BallisticMaterial, BallisticMaterial, readonly string[
     'prop.oak', 'prop.oak_dark', 'prop.oak_autumn', 'prop.tree_round', 'prop.tree_round_dark', 'prop.tree_round_autumn', 'prop.tree_fat',
     'prop.tree_detailed', 'prop.tree_cone', 'prop.tree_thin', 'prop.tree_blocks', 'prop.tree_small', 'prop.pine_tall', 'prop.pine_tall_b',
     'prop.pine_round', 'prop.pine_small', 'prop.palm_tall', 'prop.palm_short', 'prop.stump_old', 'prop.stump_cut', 'prop.log_big', 'prop.log_stack',
-    'prop.jg_bamboo', 'prop.nt_birch', 'prop.nt_birch_autumn', 'prop.nt_birch_snow', 'prop.nt_common_tree', 'prop.nt_common_tree_2',
-    'prop.nt_common_tree_autumn', 'prop.nt_dead_tree', 'prop.nt_common_tree_snow', 'prop.nt_pine_tall', 'prop.nt_pine_small', 'prop.nt_pine_snow_tall',
-    'prop.nt_pine_autumn', 'prop.nt_palm_curved', 'prop.nt_palm_tall', 'prop.nt_willow', 'prop.nt_willow_autumn', 'prop.nt_willow_dead',
-    'prop.nt_stump_large', 'prop.nt_stump_moss', 'prop.nt_log_large', 'prop.nt_log_moss', 'prop.nt_log_snow', 'prop.rn_dead_tree', 'prop.eg_palm',
+    'prop.jg_bamboo', 'prop.rn_dead_tree', 'prop.eg_palm',
     'prop.mn_oak', 'prop.mn_birch', 'prop.mn_fir', 'prop.mn_banana', 'prop.jt_tree_trunk',
   ]],
   // tree_plateau read as "plate".
   ['metal', 'heavy_wood', ['prop.tree_plateau']],
   // Bushes read as "bus".
-  ['thin_metal', 'foliage', ['prop.bush', 'prop.bush_large', 'prop.bush_leafy', 'prop.bush_small', 'prop.bush_cone', 'prop.nt_bush_leafy', 'prop.nt_bush_berries', 'prop.nt_bush_snow']],
+  ['thin_metal', 'foliage', ['prop.bush', 'prop.bush_large', 'prop.bush_leafy', 'prop.bush_small', 'prop.bush_cone']],
   // The Meshy shrub (a bush by another name) was concrete.
   ['concrete', 'foliage', ['prop.mn_shrub']],
   // Boulders and cliffs were concrete: now rock, which shoots as stone (like the rocks already were).
-  ['concrete', 'stone', ['prop.boulder_round', 'prop.boulder_jagged', 'prop.boulder_flat', 'prop.cliff', 'prop.cliff_corner', 'prop.cliff_steps', 'prop.nt_boulder_tall', 'prop.nt_boulder', 'prop.nt_boulder_moss', 'prop.nt_boulder_snow']],
+  ['concrete', 'stone', ['prop.boulder_round', 'prop.boulder_jagged', 'prop.boulder_flat', 'prop.cliff', 'prop.cliff_corner', 'prop.cliff_steps']],
 ];
 
 /** The client's old effect words → the surface type that draws them now (stone was the old fallback). */
@@ -136,8 +133,8 @@ describe('surface types: trunks, bushes and boulders under fire', () => {
     // Heavy wood is not concrete's twin: bark never ricochets.
     expect(MATERIAL_BALLISTICS.heavy_wood.ricochet).toBe(0);
     expect(penetrate(rifle, propClass('prop.bush_large'), getProp('prop.bush_large')!.size[0])).not.toBeNull();
-    const boulder = getProp('prop.nt_boulder')!;
-    expect(penetrate(rifle, propClass('prop.nt_boulder'), Math.min(boulder.size[0], boulder.size[2]))).toBeNull();
+    const boulder = getProp('prop.boulder_jagged')!;
+    expect(penetrate(rifle, propClass('prop.boulder_jagged'), Math.min(boulder.size[0], boulder.size[2]))).toBeNull();
   });
 
   // A rifle shot from 6 m before a prop to a target 4 m behind it, through the live match (the server's rules).
@@ -171,7 +168,7 @@ describe('surface types: trunks, bushes and boulders under fire', () => {
     const open = shootThrough('prop.grass_tuft');
     expect(open).toBeGreaterThan(0);
     expect(shootThrough('prop.oak')).toBe(0);
-    expect(shootThrough('prop.nt_boulder_tall')).toBe(0);
+    expect(shootThrough('prop.boulder_jagged')).toBe(0);
     expect(shootThrough('prop.bush_large')).toBe(open);
   });
 });

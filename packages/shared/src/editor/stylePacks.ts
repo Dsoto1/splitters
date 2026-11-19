@@ -102,7 +102,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'locomotive', 'locomotive_red', 'passenger_car', 'ore_wagon', 'hopper_wagon', 'timber_wagon', 'flatbed_wagon', 'coal_car', 'lumber_car', 'railroad', 'railroad_broken',
       'hitching_post', 'water_trough', 'wagon_wheel', 'wanted_board', 'outhouse', 'tumbleweed', 'covered_wagon', 'wind_pump', 'rustic_market_stall',
       'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'hay_bale', 'cart', 'woodpile', 'planks_stack', 'signpost', 'bucket',
-      'nt_saguaro', 'nt_cactus_round', 'coffin', 'gravestone_cross', 'bar_stool', 'kit.table.dining', 'kit.seat.chair', 'dg_coin_pile', 'dg_coin_bag',
+      'coffin', 'gravestone_cross', 'bar_stool', 'kit.table.dining', 'kit.seat.chair', 'dg_coin_pile', 'dg_coin_bag',
       // loafbrr's Mines and Caves set (CC0).
       'mc_cart', 'mc_cart_empty', 'mc_cart_tipper', 'mc_rail', 'mc_rail_curve', 'mc_rail_end', 'mc_ladder', 'mc_support_frame', 'mc_support_post', 'mc_beam',
       'mc_mine_wall', 'mc_mine_entrance', 'mc_mine_tunnel', 'mc_cave_wall', 'mc_cave_entrance', 'mc_cave_rock_wall', 'mc_cave_rocks_a', 'mc_cave_rocks_b',
@@ -209,7 +209,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'ge_sarcophagus', 'ge_angel_statue', 'ge_headstone_tall', 'ge_iron_fence', 'ge_iron_gate', 'ge_hedge_wall', 'ge_hedge_arch', 'ge_topiary', 'ge_gas_lamp',
       // Already in the game: graveyard, house interior, ruins and dungeon pieces.
       'gravestone_cross', 'gravestone_round', 'gravestone_broken', 'grave', 'coffin', 'coffin_old', 'crypt', 'kit.fence.iron', 'kit.fence.iron_broken', 'lightpost', 'lantern', 'candles', 'urn', 'pumpkin',
-      'rn_candles', 'rn_arch_gothic', 'rn_door_gothic', 'rn_dead_tree', 'nt_dead_tree', 'hm_fireplace', 'hm_chandelier', 'hm_bed_king', 'hm_dresser', 'hm_armchair', 'fountain', 'dg_skull',
+      'rn_candles', 'rn_arch_gothic', 'rn_door_gothic', 'rn_dead_tree', 'hm_fireplace', 'hm_chandelier', 'hm_bed_king', 'hm_dresser', 'hm_armchair', 'fountain', 'dg_skull',
     ),
     materials: ['core.wallpaper_damask', 'core.pbr_slate_roof', 'core.pbr_mossy_cobble'],
     facades: ['gothic_stone', 'manor_brick'],
@@ -259,7 +259,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'jg_giant_fern', 'jg_monstera', 'jg_bamboo', 'jg_brazier', 'jg_rubble_blocks', 'jg_gold_idol',
       // Already in the game: ruins, rocks, jungle plants and an expedition camp.
       'rn_column_round', 'rn_column_broken', 'rn_wall_arch_ivy', 'rn_wall_broken', 'rn_stairs', 'rn_urn', 'rn_urn_broken',
-      'nt_palm_curved', 'nt_palm_tall', 'nt_boulder_moss', 'nt_rock_moss', 'nt_log_moss', 'nt_stump_moss', 'cliff', 'cliff_corner', 'cliff_steps',
+      'cliff', 'cliff_corner', 'cliff_steps',
       'sv_tent', 'sv_backpack', 'sv_radio', 'campfire', 'dg_skull', 'dg_coin_pile', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel',
     ),
     materials: [
@@ -400,13 +400,13 @@ export const STYLE_PACKS: readonly StylePack[] = [
       // The owner's Meshy pieces (the market stall, well and crane above are the owner's too): a stall, temple statues, fountains.
       'rustic_market_stall', 'temple_spear_statue', 'temple_monk_statue', 'eagle_fountain', 'lion_head_fountain', 'town_fountain',
       // Already in the game: crates, barrels, sandbags, palms, lanterns, pots, carts, ladders and water troughs.
-      'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'sandbag_wall', 'sandbag_wall_low', 'nt_palm_curved', 'lantern', 'ww_lantern', 'pot', 'urn',
+      'kit.crate.wood', 'kit.crate.wood_long', 'kit.drum.steel', 'kit.drum.steel_open', 'sandbag_wall', 'sandbag_wall_low', 'lantern', 'ww_lantern', 'pot', 'urn',
       'cart', 'rn_cart', 'ww_ladder', 'water_trough', 'im_velarium', 'kit.stall.market', 'awning', 'rug', 'hm_potted_palm',
       // Sands of Egypt (the pack this one replaced).
       'eg_obelisk', 'eg_sphinx', 'eg_statue_pharaoh', 'eg_anubis', 'eg_sarcophagus', 'eg_canopic_jars', 'eg_column_papyrus', 'eg_felucca', 'eg_reed_boat',
       'eg_palm', 'eg_papyrus', 'eg_torch', 'eg_chest', 'eg_stele', 'eg_cat_statue', 'eg_pyramidion',
       // Shared with 03 Imperial Arena and the game's ruins.
-      'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'nt_cactus_round', 'dg_coin_pile', 'dg_coin_bag',
+      'im_amphorae', 'im_brazier', 'im_altar', 'rn_column_broken', 'rn_urn', 'rn_urn_broken', 'dg_coin_pile', 'dg_coin_bag',
     ),
     materials: [
       'core.ashlar', 'core.stucco', 'core.dome_tiles', 'core.zellige', 'core.worn_paving', 'core.sandstone_tiles', 'core.rug_red', 'core.mashrabiya', 'core.canopy_red', 'core.cedar',
@@ -464,7 +464,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
       'castle_gate', 'castle_tower', 'castle_tower_round', 'castle_wall', 'castle_wall_door', 'castle_wall_corner', 'castle_stairs', 'siege_tower', 'portcullis',
       'kit.stall.market', 'kit.stall.counter', 'cart', 'cart_high', 'hay_bale', 'kit.tool.anvil', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.crate.wood', 'kit.crate.wood_long', 'woodpile', 'log_stack', 'bucket',
       'fountain', 'fountain_square', 'lantern', 'lantern_post', 'banner', 'banner_red', 'banner_green', 'banner_long', 'pennant', 'signpost', 'awning', 'water_wheel',
-      'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'nt_common_tree', 'nt_common_tree_2', 'kit.seat.bench', 'sv_tent', 'dg_woodfire',
+      'lf_wooden_fence_closed', 'lf_wooden_fence_open', 'lf_drystone_wall', 'kit.seat.bench', 'sv_tent', 'dg_woodfire',
     ),
     materials: ['core.cobblestones', 'core.road_setts', 'core.market_tiles', 'core.roof_tiles_red', 'core.timber_frame', 'core.wattle', 'core.packed_dirt', 'core.whitewash', 'core.oak_beam'],
     facades: ['timber_frame', 'village_plaster'],
@@ -547,8 +547,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     props: /* @__PURE__ */ props(
       'so_satellite_dish', 'so_antenna_mast', 'so_heater', 'so_generator', 'so_snowmobile', 'so_tarp_crates', 'so_lamp_post', 'so_flagpole',
       'so_chainlink_fence', 'so_snow_fence', 'so_pipe_run', 'so_drums', 'so_radio_console', 'so_ski_rack', 'so_supply_sled', 'so_snow_pile',
-      // Already in the game: snowy trees and rocks, sandbags and barriers, containers, crates, barrels and tanks, lights.
-      'nt_pine_snow_tall', 'nt_birch_snow', 'nt_common_tree_snow', 'nt_bush_snow', 'nt_boulder_snow', 'nt_rock_snow', 'nt_log_snow',
+      // Already in the game: sandbags and barriers, containers, crates, barrels and tanks, lights.
       'sandbag_wall', 'sandbag_wall_low', 'sandbag_corner', 'sandbag_nest', 'hesco_wall', 'hedgehog', 'razor_wire', 'camo_net', 'kit.barrier.concrete',
       'ammo_crate', 'ammo_stack', 'fuel_drum', 'fuel_tank', 'storage_tank', 'cargo_container', 'cargo_container_red', 'cargo_army_crate', 'cargo_crate_stack',
       'kit.container.shipping', 'kit.crate.framed', 'floodlight', 'yard_lamp', 'pallet', 'supply_truck', 'street_barrel', 'street_rusty_barrel', 'sv_radio', 'sv_propane',

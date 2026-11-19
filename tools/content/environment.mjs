@@ -72,6 +72,7 @@ export function validate(content, root = ROOT) {
       generator: obj({ kind: en(Object.keys(KINDS)), seed: int }),
       lods: arr(obj({ distance: num }), 1),
       'impostor?': obj({ distance: num, size: int }),
+      'budget?': arr(int, 1),
       variants: arr(obj({ index: int, name: str, look: map(num) }), 1),
     });
     for (const [i, s] of (data.species ?? []).entries()) {
@@ -311,7 +312,8 @@ export function budgetProblems(content, out) {
     if (f.bytes > max) problems.push(`${f.file}: ${f.bytes} bytes, over the budget ${max}`);
   }
   for (const s of out.clientSpecies) {
-    const caps = b.triangles[s.category];
+    // A formation (several masses, metres across) may carry its own triangle budget per level; else its category's.
+    const caps = content.families.flatMap((f) => f.data.species ?? []).find((x) => x.id === s.id)?.budget ?? b.triangles[s.category];
     if (!caps) {
       problems.push(`${s.id}: no triangle budget for category ${s.category} (content/environment.json budgets.triangles)`);
       continue;

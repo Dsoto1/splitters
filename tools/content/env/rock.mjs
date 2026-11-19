@@ -18,6 +18,8 @@
 // Outcrop (kind outcrop): two or three boulder masses of their own size, place and turn, fused where they overlap,
 // fitted together to `fit`. One surface each (the same bedding and noise right through, so it reads as one rock);
 // faces buried in a neighbour are dropped. Collision: one hull per mass (so the notches between them stay open).
+// A mass may stand on another (`y`, its lift in metres before fitting): stacked masses make a column, so a row of them
+// is a spire formation (env.rock.sandstone_spires).
 //
 // Cliff face (env.cliff.*): a displaced grid panel. Its left and right edge profiles are a function of height only
 // (from the family seed), and the panel's own detail fades to nothing at both edges, so any two panels side by side
@@ -547,7 +549,7 @@ export function slabHull(seed, g) {
 }
 
 /**
- * The outcrop: `g.masses` = [{ size, at: [x, z], yaw (degrees), sink? }], each a boulder hull of its own (at most
+ * The outcrop: `g.masses` = [{ size, at: [x, z], yaw (degrees), sink?, y? }], each a boulder hull of its own (at most
  * `maxPoints` points), turned and put in its place, then all fitted to `fit` together. Returns { masses: [{ hull,
  * surface, weight }] }: every mass has the detailed surface of a boulder, from the same seed (one bedding plane and
  * one noise field through the whole rock).
@@ -557,7 +559,7 @@ export function outcropStructure(seed, g) {
     const h = boulderHull(seed + 101 * (i + 1), { ...g, size: m.size });
     const c = Math.cos((m.yaw * Math.PI) / 180);
     const s = Math.sin((m.yaw * Math.PI) / 180);
-    const put = (p) => [p[0] * c - p[2] * s + m.at[0], p[1] - (m.sink ?? 0), p[0] * s + p[2] * c + m.at[1]];
+    const put = (p) => [p[0] * c - p[2] * s + m.at[0], p[1] - (m.sink ?? 0) + (m.y ?? 0), p[0] * s + p[2] * c + m.at[1]];
     return { ...h, points: h.points.map(put), centre: put(h.centre) };
   });
   fitPoints(hulls.map((h) => h.points), g.fit);
