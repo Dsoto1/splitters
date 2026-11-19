@@ -135,6 +135,7 @@ import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlash
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
 import { SteadyArcs } from './steadyArcs.ts';
+import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
@@ -478,6 +479,8 @@ export class GameView {
   private readonly vfx: GodotVfx;
   /** Lightning with flashing reduced: a steady beam per source instead of crackling bolts (steadyArcs.ts). */
   readonly steadyArcs: SteadyArcs;
+  /** Sniper glints: what you see of a sniper scope aimed your way (scopeGlint.ts). */
+  readonly glints: ScopeGlints;
   /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
   private readonly lasting: LastingFx;
   /** Pack auras round other characters with a status (statusFx.ts). */
@@ -666,6 +669,7 @@ export class GameView {
     installFlashHold();
     this.vfx = new GodotVfx(this.scene);
     this.steadyArcs = new SteadyArcs(this.scene);
+    this.glints = new ScopeGlints(this.scene);
     // Effects on a gun's muzzle are placed once every gun is, just before the frame is drawn (followMuzzles).
     this.scene.onBeforeRenderObservable.add(() => this.followMuzzles(performance.now()));
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).

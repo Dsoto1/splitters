@@ -213,8 +213,10 @@ import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
 import { holdoverFor } from './holdover.ts';
+import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, seemsScoped, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
+import type { GlintSource } from './scopeGlint.ts';
 import { markerSetting } from './crosshair.ts';
-import { Interpolator } from './interpolation.ts';
+import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
 import { TriggerLatch, shotDelay } from './triggerLatch.ts';
 import { VehiclePrediction, predictVehicles } from './vehiclePrediction.ts';
@@ -744,8 +746,7 @@ export class GameSession {
   private bytesInAt = 0;
   /** Scope sway state and breath (1 full). */
   private sway = { x: 0, y: 0, t: 0 };
-  private breath = 1;
-  private breathSpent = false;
+  private readonly breath = freshBreath();
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
   /** First-person roll riding a zipline (eased in and out). */
@@ -1214,30 +1215,73 @@ export class GameSession {
   private rejected = false;
 
   /**
-   * Scoped sway: the sights drift in a slow figure of eight, and the drift
-   * moves your real aim. Holding Shift steadies it while your breath lasts;
-   * run out and it sways harder until you've recovered.
+   * Scoped sway (scopeFeel.ts; its numbers are content/optics.json `feel`): the sights drift in a slow figure of
+   * eight, and the drift moves your real aim. Holding Shift steadies it while your breath lasts; run out and it sways
+   * harder until you've recovered. The drift's size eases between the three, so the aim never jumps.
    */
   private updateScopeSway(dt: number, zoomed: boolean): void {
-    const holding = zoomed && this.input.held('ShiftLeft') && !this.breathSpent;
-    this.breath = Math.max(0, Math.min(1, this.breath + (holding ? -dt / 3.5 : dt / 4)));
-    if (this.breath === 0) this.breathSpent = true;
-    if (this.breathSpent && this.breath > 0.5) this.breathSpent = false;
-    this.hud.setBreath(this.breath, this.breathSpent);
+    stepBreath(this.breath, dt, this.input.holdingBreath, zoomed);
+    this.hud.setBreath(this.breath.level, this.breath.spent);
     if (!zoomed) {
       this.sway = { x: 0, y: 0, t: 0 };
       return;
     }
-    const amp = 0.0035 * (holding ? 0.12 : this.breathSpent ? 2.2 : 1);
-    const t = (this.sway.t += dt);
-    const x = (Math.sin(t * 0.9) + Math.sin(t * 2.1) * 0.3) * amp;
-    const y = Math.sin(t * 1.4) * amp * 0.75;
+    const amp = SCOPE_FEEL.sway * this.breath.size;
+    const at = swayAt((this.sway.t += dt));
+    const x = at.x * amp;
+    const y = at.y * amp;
     // Apply only the change, so your own aiming adds on top.
     this.input.yaw += x - this.sway.x;
     this.input.pitch += y - this.sway.y;
     this.sway.x = x;
     this.sway.y = y;
   }
+
+  /**
+   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who hold a sniper scope and seem to be
+   * aiming through it (seemsScoped: the snapshot has no bit for aiming), seen from the camera. Riders are left out
+   * (their hands are on the vehicle).
+   */
+  private updateGlints(dt: number, poses: readonly RemotePose[]): void {
+    const riders = this.mounts?.riders();
+    const sources: GlintSource[] = [];
+    for (const p of poses) {
+      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !seemsScoped(p) || riders?.has(p.slot)) continue;
+      const def = weaponByCode(p.weapon);
+      if (!def || opticOf(def)?.id !== 'sniper') continue;
+      sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });
+    }
+    this.view.glints.update(dt, this.view.cameraPosition(), this.fov, sources);
+  }
+
+  /** The scope's shadow (scopeFeel.ts EYE_BOX): where its clear picture sits on the glass, and the view it last saw. */
+  private eyeBox: EyeBox = { rx: 0, ry: 0, x: 0, y: 0 };
+  private eyeBoxLast: { yaw: number; pitch: number; ry: number; rp: number } | null = null;
+
+  /**
+   * The eye box this frame: the shadow slides with your own turning, against the gun's kick and a little with the
+   * sway, and settles when the view is steady (and while you hold your breath: the sway it follows is small then).
+   * `aimed`: the view with its recoil (prediction's aimAngles).
+   */
+  private updateEyeBox(dt: number, scoped: boolean, fov: number, aimed: { yaw: number; pitch: number } | null): void {
+    if (!scoped || !aimed) {
+      this.eyeBoxLast = null;
+      return;
+    }
+    const [ry, rp] = [aimed.yaw - this.input.yaw, aimed.pitch - this.input.pitch];
+    const last = this.eyeBoxLast;
+    // Coming up to the eye: the shadow starts off the middle and opens.
+    if (!last) this.eyeBox = freshEyeBox(reduceFlashing());
+    const turn = last ? { x: angleDelta(last.yaw, this.input.yaw) - (this.sway.x - this.swayShown.x), y: this.input.pitch - last.pitch - (this.sway.y - this.swayShown.y) } : { x: 0, y: 0 };
+    const kick = last ? { x: ry - last.ry, y: rp - last.rp } : { x: 0, y: 0 };
+    this.eyeBoxLast = { yaw: this.input.yaw, pitch: this.input.pitch, ry, rp };
+    this.swayShown = { x: this.sway.x, y: this.sway.y };
+    const calm = reduceFlashing();
+    const dir = SCOPE_FEEL.sway > 0 ? { x: this.sway.x / SCOPE_FEEL.sway, y: this.sway.y / SCOPE_FEEL.sway } : { x: 0, y: 0 };
+    const e = stepEyeBox(this.eyeBox, dt, turn, kick, fov, dir, calm);
+    this.hud.setEyeBox(e.x, e.y, (calm ? EYE_BOX.calm : EYE_BOX.normal).dark);
+  }
+  private swayShown = { x: 0, y: 0 };
 
   /**
    * Aim assist (an option, for touchpads and controllers): when an enemy is
@@ -2196,7 +2240,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }) };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -3506,7 +3550,7 @@ export class GameSession {
       this.touch?.update();
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
-      if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = wheel > 0 ? 1 : 0;
+      if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = stepZoom(this.zoomLevel, wheel, zoomSteps(local.weapon));
       else if (wheel) {
         const owned = local.ownedCodes();
         const i = owned.indexOf(this.wantWeapon || local.held);
@@ -3647,7 +3691,7 @@ export class GameSession {
       // Aiming down the sights of any other gun: a slight zoom and the gun brought up to the eye.
       const ads = !!weapon && !weapon.view.zoomFov && weapon.kind !== 'melee' && this.input.zooming && ready;
       if (!zoomed) this.zoomLevel = 0;
-      const wantFov = zoomed ? weapon!.view.zoomFov! * (this.zoomLevel ? 0.45 : 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
+      const wantFov = zoomed ? weapon!.view.zoomFov! * (zoomSteps(weapon!)[this.zoomLevel] ?? 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
       // Scopes snap; sights ease in and out.
       this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
       this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
@@ -3771,6 +3815,7 @@ export class GameSession {
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
       this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend), !!weapon && !opticOf(weapon));
       this.updateScopeSway(dt, this.scopedNow);
+      this.updateEyeBox(dt, this.scopedNow && !this.thirdPerson, fov, local.alive ? local.aimAngles(this.input.yaw, this.input.pitch) : null);
       this.hud.setHealth(local.health, local.armor, local.alive);
       this.updateHoldAndWarning(local);
       // Took damage since last frame: flash, pointing at the latest shot or blast near you.
@@ -3913,6 +3958,7 @@ export class GameSession {
       this.mounts?.sitters(),
     );
     if (tAvatars) perfProbe.add(SYS.avatars, tAvatars);
+    this.updateGlints(dt, poses);
     this.sfx.remoteSteps(poses, this.riderPlacement.placed);
     this.sfx.tick(performance.now());
     if (this.fxWatch) {

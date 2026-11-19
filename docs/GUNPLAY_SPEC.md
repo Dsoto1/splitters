@@ -940,14 +940,75 @@ run `node tools/content/optics.mjs` (`--report` prints the table and mounts), lo
 it in `optics.test.ts`. A new kind: add it to `kinds`; a new housing shape or mark needs its builder or shader branch
 in `opticHousing.ts`.
 
-**What part 3 needs** (scope feel):
+### Scope feel
 
-- **Scope feel exists in part**: sway with a Shift breath-hold on its own meter (session.ts `updateScopeSway`,
-  `hud.setBreath`: 3.5 s to hold, not yet on stamina), a second zoom on the wheel (`zoomLevel`, ×0.45), a 0.16 s
-  `scope-in` fade. Missing: the edge darkening as it comes up, stamina, the glint (a new bright moment: it needs its
-  moment in the `flashing` flow and a calm form under Reduce flashing).
-- **The Marksman and Sniper scopes are still the full-screen overlay** with the gun hidden; their models carry scope
-  tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead.
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 3: "scope feel: sway with
+breath-hold on Shift/stamina, scope edge darkening, zoom steps, a soft sniper glint (calm under Reduce flashing)").**
+For the magnified optics: the Battle Rifle, the Marksman Rifle, the Sniper Rifle and the Railgun. Nothing about a shot
+changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/scopeFeel.ts` holds the rules,
+`content/optics.json` the feel numbers (`feel`, and `steps` per kind or gun).
+
+- **Sway and breath** (as before, now data). Through a magnified optic the aim drifts in a slow figure of eight, and
+  the drift moves the real aim: `sway` 0.0035 rad (0.2°), the same angle at every zoom. **Shift** (which sprints
+  otherwise; never while aiming) or a controller's sprint button holds your breath on a meter of its own, not on sprint
+  stamina: the drift shrinks to `swayHeld` 0.12 of its size for `breathSeconds` 3.5 s; run out and it grows to
+  `swaySpent` 2.2 × until the meter is back to `readyAt` 0.5 (2 s; a full refill takes `recoverSeconds` 4 s, scoped
+  or not). New: the drift's size **eases** between the three (`settle` 0.15 s) where it used to jump, which moved the
+  aim by up to a quarter degree in one frame when the breath was taken and far more when it ran out; the meter's label
+  reads "Out of breath" in red while spent (steady, no blinking); a controller can hold breath.
+- **Zoom steps** on the mouse wheel while scoped (`steps`: shares of the gun's own aimed field of view; the first is
+  always 1, the zoom the gun comes up at; unchanged from before, now data): Sniper Rifle 3.95× → 8.87×, Railgun
+  3.13× → 7.08×, Marksman Rifle 2.19× → 5.04× (`[1, 0.45]`). The Battle Rifle's tube has one zoom (3.5×). The
+  holdover marks are placed for the field of view of the step you are on, so they spread out at the second zoom.
+- **The eye box (scope shadow).** Inside the glass the picture darkens softly toward the edge, and a darker crescent
+  slides in from the side: with your own turning (the clear picture leads the turn), against a kick (the gun rises,
+  the shadow comes in from the top) and a little with the sway; it eases back when the view is steady, and holding
+  breath stills it with the sway. It is a dark sheet with a clear round hole the size of the glass (soft from 0.8 to
+  1.08 glass radii), clipped to the glass and slid by a CSS transform: no render pass, no repaint, as sharp as the
+  screen. The hole never moves further than 0.5 radii, so the reticle's centre is always at least 0.3 radii clear.
+  Coming up to the eye the shadow starts off the middle and opens.
+- **The surround** (the black round the glass) now comes in at once with the zoom and goes out over 0.1 s. It used
+  to fade in over 0.16 s and cut out: since the zoom snaps, the magnified picture showed all over the screen for a
+  few frames before the dark arrived (over pale ground, a bright flash), and leaving a scope cut from black to the
+  scene in one frame. Coming up to the eye is shown by the eye box opening instead.
+- **The glint.** Other players see a small, soft, steady point of light at the scope of a player who aims a
+  sniper-kind optic (Sniper Rifle, Railgun) their way: within 14° between that player's aim and the line to your eye
+  (full within 4°), from 18 m (full from 30 m; nearer you see the gun), down to 0.55 of its level by 320 m. It is one
+  square of four vertices facing the camera, its soft round worked out in its shader, drawn in the scene with the
+  scene's own depth, so walls, hills and crates hide it for nothing; no fog, no depth written. It spans the same angle
+  at any distance (its square the tangent 0.02 at the hip: 18 px across on a 720-line screen, the light its middle third;
+  through your own scope the square root of the zoom larger). Steady: its level only eases (0.15 s up, 0.25 s down), its colour stays under
+  High's bloom threshold, a thin dark ring keeps it readable against a bright sky. `game/scopeGlint.ts`.
+- **Who is scoped: the snapshot does not say.** `PlayerSnapshot` carries no bit for aiming (the host knows it:
+  `BUTTON_ZOOM` in the player's input). So the glint reads what the snapshot does carry (`seemsScoped`): the held
+  weapon's optic is sniper-kind, the player is alive and not sprinting, dancing, under a canopy, on a zipline or in a
+  seat; for a bot also that its state is `engage` or `cover` (bots scope when they fire or wait on a shot beyond 7 m).
+  A person holding a sniper rifle and facing you therefore glints whether or not the scope is up. **One bit would make
+  it exact**: `PlayerSnapshot.zm?: 1` ("zoom held this tick with a `view.zoomFov` weapon, ready"), binary snapshot
+  `BIT_ZOOM = 32` in the player record's bits byte (`BITS_KNOWN` 63), behind the format's version negotiation; the
+  client then shows the glint only with it. Not done here: it is a protocol change.
+- **Reduce flashing** (docs/LOOK.md): the shadow moves less far (0.3 radii), less dark (0.6 against 0.94) and through
+  a quarter-second filter, so turning hard left and right cannot swing a dark area from side to side; the surround
+  goes out over 0.22 s; the glint is dimmer (0.5 against 0.85) and comes up over half a second. The `flashing`
+  flow's `scope` (by day) and `glint` (at night) moments record them.
+
+| Number (`content/optics.json` unless noted) | Before | Now |
+|---|---|---|
+| `feel.sway`, `swayHeld`, `swaySpent` | 0.0035 rad, × 0.12, × 2.2 (in code) | the same, as data |
+| `feel.breathSeconds`, `recoverSeconds`, `readyAt` | 3.5 s, 4 s, 0.5 (in code) | the same, as data |
+| `feel.settle` (the drift's size easing) | 0 (a jump) | 0.15 s |
+| `steps`: sniper kind, and the Marksman Rifle | `[1, 0.45]` (in code, every scope overlay) | the same, as data |
+| `steps`: 2-3× kind (the Battle Rifle) | one zoom | `[1]` |
+| Surround fade in (`style.css`, then `scopeFeel.ts`) | 0.16 s, growing from 1.15 × | 0 (with the zoom) |
+| Surround fade out (`SCOPE_FADE`) | 0 (a cut) | 0.1 s (0.22 s calm) |
+| Eye box (`EYE_BOX`): turn 1.5, kick 2.2, sway 0.1, decay 0.12 s, most 0.5 radii, dark 0.94 | none | new (calm: 1, 1.2, 0.06, filter 0.25 s, 0.3, 0.6) |
+| Glint (`GLINT`): cone 14° (full 4°), 18-30 m in, 0.55 by 320 m, level 0.85, rise 0.15 s, fall 0.25 s | none | new (calm: level 0.5, rise 0.5 s) |
+
+Tests: `packages/client/test/scopeFeel.test.ts` (the numbers above, the breath's times, the easing, the shadow's
+limits, the glint's cone); `tools/content/test/optics.test.mjs` (the table's checks).
+
+**Left for later:** the Marksman and Sniper scopes are still the full-screen overlay with the gun hidden; their models
+carry scope tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead. The snapshot bit above.
 
 ---
 

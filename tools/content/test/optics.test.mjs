@@ -66,4 +66,28 @@ describe('optics by gun: the table and the mounts', () => {
       if (w.view?.optic) expect(weapons[w.id].mag).toBe(w.view.optic.mag);
     }
   });
+
+  it('zoom steps and scope feel are checked: the first step is the gun\'s own zoom, the model\'s tube has one', async () => {
+    const good = await buildOptics();
+    expect(good.weapons['core.marksman'].steps).toEqual([1, 0.45]);
+    expect(good.weapons['core.sniper'].steps).toBeUndefined();
+    expect(good.kinds.sniper.steps).toEqual([1, 0.45]);
+    expect(opticsSource(good)).toContain('export const SCOPE_FEEL = { sway: 0.0035, swayHeld: 0.12, swaySpent: 2.2, settle: 0.15, breathSeconds: 3.5, recoverSeconds: 4, readyAt: 0.5 } as const;');
+    const file = readOpticsFile();
+    file.weapons['core.sniper'].steps = [0.8, 0.45];
+    file.weapons['core.railgun'].steps = [1, 0.5, 0.6];
+    file.weapons['core.battle_rifle'].steps = [1, 0.5];
+    file.weapons['core.pistol'].steps = [1];
+    file.kinds.irons.steps = [1];
+    file.feel.breathSeconds = 0;
+    delete file.feel.sway;
+    const { problems } = await buildOptics(file);
+    expect(problems.some((p) => /core\.sniper: `steps` are its zoom steps/.test(p))).toBe(true);
+    expect(problems.some((p) => /core\.railgun: `steps` are its zoom steps/.test(p))).toBe(true);
+    expect(problems.some((p) => /core\.battle_rifle: the model's own tube has one zoom/.test(p))).toBe(true);
+    expect(problems.some((p) => /core\.pistol: only a magnified optic has zoom steps/.test(p))).toBe(true);
+    expect(problems.some((p) => /kind irons: only a magnified optic has zoom steps/.test(p))).toBe(true);
+    expect(problems.some((p) => /feel\.breathSeconds must be a number from 0\.5 to 30/.test(p))).toBe(true);
+    expect(problems.some((p) => /feel\.sway must be a number/.test(p))).toBe(true);
+  });
 });
