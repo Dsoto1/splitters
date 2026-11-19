@@ -68,6 +68,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed (urgent, alone): the gunshot fix** (`check/train-20261119-005053` at 042c371c, run 44432311656, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
+
 **Landed: St. John's step 6 (Welles Hall and its clock tower)** (`check/train-20261118-232046` at f0b327b2, run 44419960458, green on attempt 2; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
 
 **Landed: blood by character** (`check/train-20261118-222033` at daed3056, run 44410669840, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-18; lock freed).
