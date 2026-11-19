@@ -4,17 +4,17 @@
 // geometry.ts packFacadeBoxes), as collision only (never drawn twice). Thin dressing and the cladding stay walk-through,
 // and so does what stands over the roofline (roofs play as before).
 import { beforeAll, describe, expect, it } from 'vitest';
-import { FACADE_COVER_HEIGHT, FACADE_COVER_PROUD, PhysicsWorld, buildMapDecor, buildMapGeometry, initPhysics, isDrawnBox, type MapDocument, type Vec3 } from '../src/index.ts';
+import { FACADE_COVER_HEIGHT, FACADE_COVER_PROUD, PhysicsWorld, buildMapDecor, buildMapGeometry, initPhysics, isDrawnBox, type Facade, type MapDocument, type Vec3 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => initPhysics());
 
-const room = (facade: string): MapDocument => makeMap([{ id: 'hall', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, options: { facade, ceiling: 'roof' } }], [[0, 0, 0]]);
+const room = (facade: Facade): MapDocument => makeMap([{ id: 'hall', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0, options: { facade, ceiling: 'roof' } }], [[0, 0, 0]]);
 const cover = (map: MapDocument) => buildMapGeometry(map).filter((b) => b.kind === 'prop' && b.sourceId === 'hall');
 
 /** From 12 m out on each side toward the wall, at `u` along it and height `y`: how far the ray goes. */
 function reach(physics: PhysicsWorld, side: number, u: number, y: number): number {
-  const [ox, oz, dx, dz, ux, uz] = [[0, -12, 0, 1, 1, 0], [12, 0, -1, 0, 0, 1], [0, 12, 0, -1, -1, 0], [-12, 0, 1, 0, 0, -1]][side]!;
+  const [ox, oz, dx, dz, ux, uz] = ([[0, -12, 0, 1, 1, 0], [12, 0, -1, 0, 0, 1], [0, 12, 0, -1, -1, 0], [-12, 0, 1, 0, 0, -1]] as const)[side]!;
   const from: Vec3 = { x: ox + ux * u, y, z: oz + uz * u };
   return physics.raycastWorld(from, { x: dx, y: 0, z: dz }, 20) ?? 20;
 }
@@ -33,7 +33,7 @@ describe('facade trim deep enough to stand against collides', () => {
   });
 
   it('only deep, tall pieces below the roofline collide: collision only, the same boxes the decor draws', () => {
-    for (const facade of ['collegiate_stone', 'collegiate_red', 'gothic_stone', 'roman', 'egyptian', 'temple', 'manor_brick', 'clapboard', 'adobe']) {
+    for (const facade of ['collegiate_stone', 'collegiate_red', 'gothic_stone', 'roman', 'egyptian', 'temple', 'manor_brick', 'clapboard', 'adobe'] as const) {
       const map = room(facade);
       const boxes = cover(map);
       const decor = buildMapDecor(map);
@@ -49,7 +49,7 @@ describe('facade trim deep enough to stand against collides', () => {
         const out = Math.max(-4 - b.min[0], b.max[0] - 4, -4 - b.min[2], b.max[2] - 4);
         expect(out, facade).toBeGreaterThanOrEqual(FACADE_COVER_PROUD + 0.08 - 1e-6);
       }
-      if (['collegiate_stone', 'collegiate_red', 'gothic_stone', 'roman', 'temple'].includes(facade)) expect(boxes.length, facade).toBeGreaterThan(0);
+      if ((['collegiate_stone', 'collegiate_red', 'gothic_stone', 'roman', 'temple'] as readonly Facade[]).includes(facade)) expect(boxes.length, facade).toBeGreaterThan(0);
       // Clapboard's corner boards (4 cm), adobe's cladding: nothing to stand against.
       if (facade === 'clapboard' || facade === 'adobe') expect(boxes, facade).toHaveLength(0);
     }
