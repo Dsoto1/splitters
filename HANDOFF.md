@@ -69,6 +69,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: St. John's clock tower and Deathmatch spawns in a train** (`check/train-20261119-043126` at 8ab42b07, run 44458922236, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Next: `wip/stjohns-kit` alone (it conflicts with the clock tower in thumbs/palette.json: merge main + content:rebuild first), then `wip/nature-swap-3` after its re-merge.
+
 **Landed: fix batch 2026-11-18** (`check/train-20261119-013318` at 9bf00926, run 44437797106, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed). Fixes: (1) editor TEST-start flake: nothing is drawn until the map is in (85717c9a); (2) a grenade deck per life and for pickups (7c2efa0d); (3) the announcer's one spree a life (25ab9f89); (4) a broken sash window's bars and inner frame go with its pane (e48b6453); (5) staged Start match: card, board, the countdown line (84013b53). Not in it: Flavius Rule's stairs (not reproduced; the owner's picture is in the lead's scratchpad), the headroom check (`wip/stair-headroom`, not hooked up).
 
 **Landed (urgent, alone): the gunshot fix** (`check/train-20261119-005053` at 042c371c, run 44432311656, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-19; lock freed).
