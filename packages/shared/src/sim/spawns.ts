@@ -196,11 +196,19 @@ export function pickSpawn(c: SpawnChoice): number {
   const n = c.candidates.length;
   if (n === 0) return -1;
   const scored: { i: number; s: number; seen: number }[] = [];
+  // Every player their own spawn point (owner, 2026-11-18: "not all clumped on one another"): a point someone stands on,
+  // or one given out this tick, is never picked while a free one is left. (Before, the sight check below ran on the best
+  // few only, so on a small map where every free point was in someone's view, an occupied point that was never
+  // checked outscored them all and bots spawned on top of each other.) With every point taken, Match.spawn places the
+  // player beside the chosen point.
   // A little randomness (0-3) between near-equal points, so ties (a round's first spawns, nobody about) spread over all
-  // of them instead of going to the first listed.
+  // of them instead of going to the first listed. Every candidate is scored (and draws its random number) either way,
+  // so where no point is taken the choice is exactly what it was before.
   for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c) + c.rng() * 3, seen: 0 });
+  const taken = scored.filter((x) => spawnTaken(c.candidates[x.i]!, c));
+  if (taken.length && taken.length < n) for (const t of taken) scored.splice(scored.indexOf(t), 1);
   scored.sort((a, b) => b.s - a.s || a.i - b.i);
-  const checked = Math.min(n, W.sightCandidates);
+  const checked = Math.min(scored.length, W.sightCandidates);
   if (c.sees) {
     const near: { p: Vec3; d: number }[] = [];
     for (const s of scored.slice(0, checked)) {
@@ -236,6 +244,16 @@ export function pickSpawn(c: SpawnChoice): number {
   }
   const few = scored.slice(0, Math.min(W.safeFew, checked)).filter((s) => safe(s, W.margin));
   return few[Math.min(few.length - 1, Math.floor(c.rng() * few.length))]!.i;
+}
+
+/** Someone standing this close to a spawn point (m, on its floor) has it: the next player gets another. */
+export const SPAWN_TAKEN = 1.5;
+
+/** Whether a spawn point is taken: someone on it (SPAWN_TAKEN, on its floor), or given out this very tick. */
+export function spawnTaken(sp: SpawnSpot, c: Pick<SpawnChoice, 'occupants' | 'lastUsed' | 'tick'>): boolean {
+  if (c.lastUsed.get(sp) === c.tick) return true;
+  for (const o of c.occupants) if (Math.abs(o.y - sp.pos.y) <= 2 && horizontalDistance(o, sp.pos) < SPAWN_TAKEN) return true;
+  return false;
 }
 
 /** Free-for-all parties: `partyBonus` for each member within `partyRange` of a spawn point, up to `partyMax`. */
