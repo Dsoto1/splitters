@@ -6,9 +6,9 @@
 //           read inside its hood when it has one;
 //   rear    where the eye looks at the rear sight: the middle of an aperture's hole, the top of a notch's ears, or the
 //           top of whatever the line rests on at the back (a plain block, the receiver);
-//   eye     where the camera sits: on the line through rear and front, as far behind the gun as it was before the fit
-//           (the stock's end 0.2 m ahead of the eye, never nearer than the hip distance), so the arms and the near
-//           plane see the gun at the depth they always did;
+//   eye     where the camera sits: on the line through rear and front, as far behind the gun as it aimed before the
+//           fit (the stock's end 0.2 m ahead of the eye, never nearer than the hip distance): any nearer and the
+//           camera's near plane (0.1 m) cuts the stock open inside the view, so the arms and the depth are unchanged;
 // and checks them: the line from the eye to the front sight's top is clear of the model (exact ray tests), and the
 // flags below (a short sight radius, a line far off the bore, a rear point on the stock) mark a fit to look at.
 // Hand corrections and exclusions are in content/sight-fit.json (each with its reason); the audit page is the
@@ -39,7 +39,7 @@ const FINE = 0.0002;
 const ON_LINE = 0.0003;
 /** The line is tested this far above the sights it rests on (m). */
 const OVER = 0.0003;
-/** The stock's end stays this far ahead of the eye (m; view.ts's rule before the fit). */
+/** The stock's end stays this far ahead of the eye (m; view.ts's rule before the fit, kept). */
 export const STOCK_AHEAD = 0.2;
 /** The eye sits this far above the top of the model's bounds where there is no fit (m; view.ts's rule). */
 export const LEGACY_OVER = 0.006;
@@ -48,7 +48,7 @@ export const PLAIN_OVER = 0.0015;
 /** A sight stands at least this far above the gun's top either side of it (m); under it the fit is `top`. */
 const PROUD = 0.001;
 
-const round = (v, k = 1e4) => Math.round(v * k) / k || 0;
+const round = (v, k = 1e5) => Math.round(v * k) / k || 0;
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
@@ -374,7 +374,7 @@ export function fitSights(tris, { grip, muzzle, x0 }) {
   {
     const cs = crossSection(tris, cx, rear[2], rear[1] - 0.02, rear[1] + 0.012);
     const hole = enclosedHole(cs);
-    const through = hole && hole.top > rear[1] - 0.008 && Math.abs(hole.x - cx) < 0.003 ? [hole.x, hole.y, rear[2]] : null;
+    const through = hole && hole.top > rear[1] - 0.012 && Math.abs(hole.x - cx) < 0.003 ? [hole.x, hole.y, rear[2]] : null;
     if (through && firstHit(tris, [through[0], through[1], through[2] - SLAB * 2], [front[0], front[1] + OVER, front[2]]) === null) {
       rear = through;
       kind = 'aperture';
@@ -382,27 +382,34 @@ export function fitSights(tris, { grip, muzzle, x0 }) {
     } else if (!hood) {
       const tops = columnTops(cs);
       const c0 = cs.col(cx);
-      const side = Math.round(0.0006 / FINE);
-      let centre = -Infinity;
-      for (let c = c0 - side; c <= c0 + side; c++) centre = Math.max(centre, tops[c] ?? -Infinity);
+      const reach = Math.round(0.006 / FINE);
       const ear = (from, to) => {
         let m = -Infinity;
         for (let c = Math.max(0, from); c <= Math.min(cs.w - 1, to); c++) m = Math.max(m, tops[c]);
         return m;
       };
-      const reach = Math.round(0.006 / FINE);
-      const left = ear(c0 - reach, c0 - side - 1);
-      const right = ear(c0 + side + 1, c0 + reach);
-      const ears = Math.min(left, right);
-      if (ears - centre >= 0.0005 && ears - centre <= 0.01) {
+      // A notch on the plane: its floor is the top of the columns within 0.6 mm of it, its ears the tops either side.
+      // Else one beside the plane: the lowest column within a millimetre of it, with an ear on each side of that.
+      const tryNotch = (floor, half) => {
+        let centre = -Infinity;
+        for (let c = floor - half; c <= floor + half; c++) centre = Math.max(centre, tops[c] ?? -Infinity);
+        const ears = Math.min(ear(floor - reach, floor - half - 1), ear(floor + half + 1, floor + reach));
+        if (!(ears - centre >= 0.0005 && ears - centre <= 0.01)) return false;
         // The notch's own middle: the columns between the ears.
-        let l = c0;
-        let r = c0;
-        while (l > c0 - reach && tops[l - 1] < ears - 0.0003) l--;
-        while (r < c0 + reach && tops[r + 1] < ears - 0.0003) r++;
+        let l = floor;
+        let r = floor;
+        while (l > floor - reach && tops[l - 1] < ears - 0.0003) l--;
+        while (r < floor + reach && tops[r + 1] < ears - 0.0003) r++;
         rear = [cs.x((l + r) / 2), ears, rear[2]];
         kind = 'notch';
         gap = ears - centre;
+        return true;
+      };
+      if (!tryNotch(c0, Math.round(0.0006 / FINE))) {
+        const side = Math.round(0.001 / FINE);
+        let lowest = c0;
+        for (let c = c0 - side; c <= c0 + side; c++) if ((tops[c] ?? Infinity) < tops[lowest]) lowest = c;
+        tryNotch(lowest, 0);
       }
     }
   }
@@ -430,7 +437,7 @@ export function eyeOn(rear, front, depth) {
   return [rear[0] + d[0] * t, rear[1] + d[1] * t, -depth];
 }
 
-/** How far ahead of the eye the model's origin sits when aimed (m): view.ts's rule, kept by the fit. */
+/** How far ahead of the eye the model's origin sits when aimed (m): view.ts's rule from before the fit, kept. */
 export const aimDepth = (viewOffsetZ, minZ) => Math.max(viewOffsetZ, STOCK_AHEAD - minZ);
 
 /** The angle (degrees) at `eye` between the direction `axis` and the point `p`. */

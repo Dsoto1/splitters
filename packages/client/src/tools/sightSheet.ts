@@ -145,8 +145,15 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     while (frames < until) await new Promise((r) => setTimeout(r, 10));
   };
 
+  type ShowOptions = { ads?: number; fitted?: boolean; arms?: boolean; look?: string };
+  /** One weapon is loaded at a time: a `show` waits for the one before it. */
+  let queue: Promise<void> = Promise.resolve();
   /** Show `weapon` from the eye: `ads` 0 (hip) to 1 (aimed), `fitted: false` for the placement from before the fit. */
-  async function show(weapon: string, opts: { ads?: number; fitted?: boolean; arms?: boolean; look?: string } = {}): Promise<void> {
+  function show(weapon: string, opts: ShowOptions = {}): Promise<void> {
+    queue = queue.then(() => showNow(weapon, opts)).catch((e) => console.error(e));
+    return queue;
+  }
+  async function showNow(weapon: string, opts: ShowOptions): Promise<void> {
     state = { ads: opts.ads ?? 1, fitted: opts.fitted ?? true, arms: opts.arms ?? true };
     if (shown?.def.id !== weapon || (shown.anim !== null) !== state.arms) {
       shown?.dispose();

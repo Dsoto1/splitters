@@ -19,19 +19,19 @@ export interface SightFit {
 
 /** Per weapon that aims down its own sights. */
 export const SIGHT_FITS: Readonly<Record<string, SightFit>> = {
-  'core.auto_shotgun': { eye: [0, 0.1071, -0.675], rear: [0, 0.0988, -0.0982], front: [0, 0.092, 0.3766], kind: 'bead' },
-  'core.burst_rifle': { eye: [-0.0011, 0.1168, -0.63], rear: [-0.001, 0.1227, -0.1764], front: [-0.0009, 0.128, 0.2388], kind: 'aperture' },
-  'core.freeze_ray': { eye: [0.0003, 0.0934, -0.42], rear: [-0.0002, 0.1055, -0.1216], front: [-0.0007, 0.1174, 0.174], kind: 'notch' },
-  'core.goo_gun': { eye: [0.0001, 0.0907, -0.42], rear: [0.0001, 0.0963, -0.1648], front: [0.0001, 0.1008, 0.044], kind: 'bead' },
-  'core.hand_cannon': { eye: [0.0006, 0.0888, -0.42], rear: [0.0002, 0.087, -0.0828], front: [0, 0.0859, 0.1052], kind: 'post' },
-  'core.machine_pistol': { eye: [0.0008, 0.1196, -0.45], rear: [0.0008, 0.1185, -0.162], front: [0.0008, 0.1176, 0.0804], kind: 'aperture' },
-  'core.nailgun': { eye: [0, 0.1749, -0.55], rear: [0, 0.1715, -0.1384], front: [0, 0.1683, 0.2648], kind: 'bead' },
-  'core.pistol': { eye: [0.0006, 0.0779, -0.42], rear: [0.0006, 0.0757, -0.0704], front: [0.0006, 0.0747, 0.09], kind: 'notch' },
-  'core.pulse_pistol': { eye: [-0.0005, 0.0818, -0.42], rear: [-0.0005, 0.072, -0.0292], front: [-0.0005, 0.0697, 0.0644], kind: 'post' },
-  'core.revolver': { eye: [0, 0.0777, -0.42], rear: [0.0003, 0.0811, -0.0858], front: [0.0005, 0.0832, 0.135], kind: 'notch' },
-  'core.rifle': { eye: [-0.0046, 0.1209, -0.64], rear: [-0.0046, 0.1255, 0.0232], front: [-0.0046, 0.1283, 0.414], kind: 'notch' },
-  'core.shotgun': { eye: [0, 0.0964, -0.725], rear: [0, 0.0999, -0.1366], front: [0, 0.1036, 0.5006], kind: 'bead' },
-  'core.smg': { eye: [0.0001, 0.0997, -0.635], rear: [0, 0.0996, -0.0382], front: [-0.0001, 0.0995, 0.4182], kind: 'notch' },
+  'core.auto_shotgun': { eye: [0, 0.10707, -0.675], rear: [0, 0.09881, -0.0982], front: [0, 0.092, 0.3766], kind: 'bead' },
+  'core.burst_rifle': { eye: [-0.0011, 0.11681, -0.63], rear: [-0.00099, 0.12267, -0.1764], front: [-0.0009, 0.12804, 0.2388], kind: 'aperture' },
+  'core.freeze_ray': { eye: [0.00033, 0.09335, -0.42], rear: [-0.00018, 0.10545, -0.1216], front: [-0.00068, 0.11744, 0.174], kind: 'notch' },
+  'core.goo_gun': { eye: [0.00006, 0.09072, -0.42], rear: [0.00006, 0.09626, -0.1648], front: [0.00006, 0.10079, 0.044], kind: 'bead' },
+  'core.hand_cannon': { eye: [0.00056, 0.08879, -0.42], rear: [0.0002, 0.08696, -0.0828], front: [0, 0.08594, 0.1052], kind: 'post' },
+  'core.machine_pistol': { eye: [0.00079, 0.11955, -0.45], rear: [0.0008, 0.11849, -0.162], front: [0.00081, 0.1176, 0.0804], kind: 'aperture' },
+  'core.nailgun': { eye: [-0.00002, 0.17487, -0.55], rear: [-0.00002, 0.17154, -0.1384], front: [-0.00002, 0.16828, 0.2648], kind: 'bead' },
+  'core.pistol': { eye: [0.00062, 0.07789, -0.42], rear: [0.00062, 0.07567, -0.0704], front: [0.00062, 0.07465, 0.09], kind: 'notch' },
+  'core.pulse_pistol': { eye: [-0.0005, 0.08183, -0.42], rear: [-0.0005, 0.07203, -0.0292], front: [-0.0005, 0.06969, 0.0644], kind: 'post' },
+  'core.revolver': { eye: [-0.00002, 0.07774, -0.42], rear: [0.00028, 0.08105, -0.0858], front: [0.00048, 0.08324, 0.135], kind: 'notch' },
+  'core.rifle': { eye: [-0.00465, 0.12089, -0.64], rear: [-0.00465, 0.12554, 0.0232], front: [-0.00465, 0.12828, 0.414], kind: 'notch' },
+  'core.shotgun': { eye: [0, 0.09637, -0.725], rear: [0, 0.09986, -0.1366], front: [0, 0.10363, 0.5006], kind: 'bead' },
+  'core.smg': { eye: [0.00013, 0.09971, -0.635], rear: [0, 0.09957, -0.0382], front: [-0.0001, 0.09946, 0.4182], kind: 'notch' },
 };
 
 /** The weapons without a sight fit, and why (they keep the placement they had: view.ts). */
