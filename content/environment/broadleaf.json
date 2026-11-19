@@ -235,6 +235,28 @@
         {"index": 1, "name": "dry", "look": {"bark": "#746a5c", "leaves": ["#8a8a5a", "#969468", "#7a7a4e"], "jitter": 0.12}}
       ]
     },
-    {"id": "env.broadleaf.jungle", "displayName": "Jungle Tree", "category": "tree", "assetVersion": 1, "notes": {"1": "First version (Environment Phase 5, the jungle set, 2026-11-18): a tall rainforest tree, a buttressed trunk under a high, wide crown of big leaves, lianas hanging from its limbs (`vines` in tools/content/env/tree.mjs)."}, "nominalHeight": 13, "nav": "obstacle", "role": "cover", "placement": {"maxSlopeDegrees": 30, "minSpacing": 5, "scale": [0.8, 1.2]}, "generator": {"kind": "broadleaf", "seed": 83, "height": 13, "lean": [1, 5], "crownBase": [0.52, 0.6], "lobes": [2, 3], "crownRadius": 4.6, "clumpScale": 0.55, "clumpCut": -0.05, "scaffold": [3, 5], "limbElevation": [22, 42], "attractors": 900, "segment": 0.32, "influence": 2.8, "kill": 0.45, "tropism": 0.08, "tipRadius": 0.01, "pipe": 2.0, "trunkRadius": 0.36, "cardSize": 1.0, "minShapeRadius": 0.3, "limbShapeRadius": 0.16, "cards": ["shrub.0", "shrub.1", "shrub.2", "shrub.3"], "vines": {"count": 12, "reach": [0.45, 0.85], "leaves": 2.4, "cardSize": 0.32}}, "lods": [{"distance": 0, "minRadius": 0.016, "barkBudget": 1250, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 480, "cardScale": 1}, {"distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 136, "cardScale": 1.6, "vines": 0.6}, {"distance": 70, "minRadius": 0.09, "barkBudget": 110, "sides": [[0.15, 4], [0, 3]], "step": 3, "stepBelow": 1, "cards": 54, "cardScale": 2.6, "vines": 0.3}], "impostor": {"distance": 140, "size": 256}, "variants": [{"index": 0, "name": "green", "look": {"bark": "#6a6052", "leaves": ["#355e24", "#3e6a28", "#2e5420"], "jitter": 0.12, "vine": "#4a4a2a", "vineLeaves": ["#3e6a26", "#4a7a2c"]}}, {"index": 1, "name": "dry", "look": {"bark": "#6e6456", "leaves": ["#5e6a2c", "#6a7232", "#545e28"], "jitter": 0.14, "vine": "#55502e", "vineLeaves": ["#5e6a2c", "#6a7232"]}}]}
+    {"id": "env.broadleaf.jungle", "displayName": "Jungle Tree", "category": "tree", "assetVersion": 1, "notes": {"1": "First version (Environment Phase 5, the jungle set, 2026-11-18): a tall rainforest tree, a buttressed trunk under a high, wide crown of big leaves, lianas hanging from its limbs (`vines` in tools/content/env/tree.mjs)."}, "nominalHeight": 13, "nav": "obstacle", "role": "cover", "placement": {"maxSlopeDegrees": 30, "minSpacing": 5, "scale": [0.8, 1.2]}, "generator": {"kind": "broadleaf", "seed": 83, "height": 13, "lean": [1, 5], "crownBase": [0.52, 0.6], "lobes": [2, 3], "crownRadius": 4.6, "clumpScale": 0.55, "clumpCut": -0.05, "scaffold": [3, 5], "limbElevation": [22, 42], "attractors": 900, "segment": 0.32, "influence": 2.8, "kill": 0.45, "tropism": 0.08, "tipRadius": 0.01, "pipe": 2.0, "trunkRadius": 0.36, "cardSize": 1.0, "minShapeRadius": 0.3, "limbShapeRadius": 0.16, "cards": ["shrub.0", "shrub.1", "shrub.2", "shrub.3"], "vines": {"count": 12, "reach": [0.45, 0.85], "leaves": 2.4, "cardSize": 0.32}}, "lods": [{"distance": 0, "minRadius": 0.016, "barkBudget": 1250, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 480, "cardScale": 1}, {"distance": 30, "minRadius": 0.04, "barkBudget": 380, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 136, "cardScale": 1.6, "vines": 0.6}, {"distance": 70, "minRadius": 0.09, "barkBudget": 110, "sides": [[0.15, 4], [0, 3]], "step": 3, "stepBelow": 1, "cards": 54, "cardScale": 2.6, "vines": 0.3}], "impostor": {"distance": 140, "size": 256}, "variants": [{"index": 0, "name": "green", "look": {"bark": "#6a6052", "leaves": ["#355e24", "#3e6a28", "#2e5420"], "jitter": 0.12, "vine": "#4a4a2a", "vineLeaves": ["#3e6a26", "#4a7a2c"]}}, {"index": 1, "name": "dry", "look": {"bark": "#6e6456", "leaves": ["#5e6a2c", "#6a7232", "#545e28"], "jitter": 0.14, "vine": "#55502e", "vineLeaves": ["#5e6a2c", "#6a7232"]}}]},
+    {
+      "id": "env.broadleaf.dead",
+      "displayName": "Dead Tree",
+      "category": "tree",
+      "assetVersion": 1,
+      "notes": {"1": "First version (the nature swap, 2026-11-18): a dead tree, bare forked limbs and no leaves; the Quaternius dead trees' and dead willows' replacement."},
+      "nominalHeight": 6,
+      "nav": "obstacle",
+      "role": "cover",
+      "placement": {"maxSlopeDegrees": 30, "minSpacing": 3, "scale": [0.8, 1.25]},
+      "generator": {"kind": "broadleaf", "seed": 91, "height": 6, "lean": [1, 6], "crownBase": [0.35, 0.45], "lobes": [1, 2], "crownRadius": 2.6, "clumpScale": 0.55, "clumpCut": -0.05, "scaffold": [3, 4], "limbElevation": [30, 55], "attractors": 140, "segment": 0.35, "influence": 2.2, "kill": 0.9, "tropism": 0.2, "tipRadius": 0.012, "pipe": 2.0, "trunkRadius": 0.24, "cardSize": 0.5, "minShapeRadius": 0.2, "limbShapeRadius": 0.12},
+      "lods": [
+        {"distance": 0, "minRadius": 0.016, "barkBudget": 1000, "sides": [[0.15, 8], [0.07, 6], [0.035, 4], [0, 3]], "step": 1, "cards": 0, "cardScale": 1},
+        {"distance": 30, "minRadius": 0.04, "barkBudget": 320, "sides": [[0.15, 6], [0.07, 4], [0, 3]], "step": 2, "cards": 0, "cardScale": 1.6},
+        {"distance": 70, "minRadius": 0.09, "barkBudget": 100, "sides": [[0.15, 4], [0, 3]], "step": 3, "stepBelow": 1, "cards": 0, "cardScale": 2.6}
+      ],
+      "impostor": {"distance": 140, "size": 256},
+      "variants": [
+        {"index": 0, "name": "bare", "look": {"bark": "#5e554c", "leaves": ["#5e554c"], "jitter": 0.1}},
+        {"index": 1, "name": "pale", "look": {"bark": "#8f877c", "leaves": ["#8f877c"], "jitter": 0.1}}
+      ]
+    }
   ]
 }

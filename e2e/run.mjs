@@ -4135,6 +4135,13 @@ async function editorEnvironmentChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   const unseasoned = await plants();
   check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
+  // The nature swap (shared/editor/natureSwap.ts): a Quaternius pine, bush and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.nt_pine_tall', -40], ['qb', 'prop.nt_bush_leafy', -42], ['qc', 'prop.nt_boulder', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  await page.click('#ed-env-swap');
+  const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && /^env\.shrub\.(broadleaf|laurel)@-42\/0\.5$/.test(swapped.qs[1]) && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, a bush and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);

@@ -120,7 +120,7 @@ const LINEUP4: [string, number, number, number, number][] = [
 /**
  * Environment Phase 5's additions, every look, between Phase 4's trees and its cliffs (inside the lab's bounds, so the
  * shadow map's extent and the visual baseline don't change): the jungle set (the jungle tree, the tree fern,
- * the elephant ear) and the spruce's alpine look. View: jungle.
+ * the elephant ear) and the spruce's alpine look; then the nature swap's Dead Tree. View: jungle.
  */
 const LINEUP5: [string, number, number, number, number][] = [
   ['env.shrub.elephant_ear', 0, 41, -62, 0.4],
@@ -130,6 +130,9 @@ const LINEUP5: [string, number, number, number, number][] = [
   ['env.broadleaf.jungle', 0, 43, -56, 0.6],
   ['env.broadleaf.jungle', 1, 57, -56, 2.6],
   ['env.conifer.spruce', 2, 61, -62, 1.2],
+  // The nature swap (2026-11-18): the Dead Tree, both looks.
+  ['env.broadleaf.dead', 0, 64, -57, 0.8],
+  ['env.broadleaf.dead', 1, 66, -61, 2.4],
 ];
 
 const EYE = 1.7;
