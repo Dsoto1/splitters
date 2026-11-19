@@ -8,7 +8,8 @@
     "./match": "./src/match.ts",
     "./peerZip": "./src/net/peerZip.ts",
     "./propContacts": "./src/content/propContacts.generated.ts",
-    "./gripFit": "./src/content/gripFit.generated.ts"
+    "./gripFit": "./src/content/gripFit.generated.ts",
+    "./sightFit": "./src/content/sightFit.generated.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

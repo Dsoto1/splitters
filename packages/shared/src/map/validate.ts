@@ -332,6 +332,8 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   if (map.bounds) {
     const { min, max } = map.bounds;
     for (const e of map.entities) {
+      // Props and lights outside it are scenery (the scenery zone is meant to be built in: editor/ghostWhy.ts).
+      if (e.kind === 'prop' || e.kind === 'light') continue;
       const [x, , z] = e.position;
       if (x < min[0] || x > max[0] || z < min[1] || z > max[1]) {
         issues.push({ severity: e.kind === 'spawn' ? 'error' : 'warning', code: 'bounds.outside', message: `${e.kind} ${e.id} is outside the map boundary`, targetId: e.id });

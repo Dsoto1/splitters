@@ -1,10 +1,16 @@
-import { TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared';
+import { SNAPSHOT_INTERVAL_TICKS, TICK_RATE, angleDelta, type PlayerSnapshot } from '@tiletrigger/shared';
 import { perfOn } from './perfSwitches.ts';
 import { netProbe } from './netProbe.ts';
 
 /** Remote actors render this far behind the newest snapshot so there are always two to blend between. */
 const INTERP_DELAY_TICKS = 6; // 100 ms at 60 Hz
 const BUFFER_TICKS = TICK_RATE * 2;
+/**
+ * The most snapshots the buffer keeps at once (their players' objects with them): the newest and those of the
+ * BUFFER_TICKS before it. A transport that hands out reused player objects (localTransport.ts) must leave a
+ * snapshot's alone until more than this many newer ones have been delivered.
+ */
+export const INTERP_KEEPS_SNAPSHOTS = Math.ceil(BUFFER_TICKS / SNAPSHOT_INTERVAL_TICKS) + 1;
 /**
  * The server clock is estimated from snapshot arrivals. Each arrival only
  * nudges the estimate (by this share of its error): snapshots reach us a few

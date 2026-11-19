@@ -227,14 +227,13 @@ import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
+import { ADS_FOV } from './sightPose.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
-/** Field of view while aiming down the sights, as a fraction of the normal one. */
-const ADS_FOV = 0.72;
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
 /** How long a board that has just joined the loading screen stays before the countdown (ms). */

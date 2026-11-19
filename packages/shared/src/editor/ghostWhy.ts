@@ -92,7 +92,8 @@ const OUTSIDE_TEXT: Partial<Record<GhostEntityKind, string>> = {
  * - props past the build limit.
  * Notes: a prop outside the boundary is in the scenery zone (amber with a Boundary set, blue at the terrain's edge).
  * Objects (doors, zones, lights, logic pieces) only get the zone notes, never a refusal: many are meant to hang or float.
- * Only placing a new thing is refused; moving, pasting or editing what is on the map isn't (the validator warns as before).
+ * Only placing a new thing is refused; moving, pasting or editing what is on the map isn't (the validator warns as before,
+ * but not for props and lights there: scenery).
  */
 export function entityGhostNote(doc: Pick<MapDocument, 'bounds' | 'terrain' | 'classicStructure'>, kind: GhostEntityKind, at: readonly [number, number, number], ground: GhostGround, model = ''): GhostNote | null {
   const [x, y, z] = at;
