@@ -39,8 +39,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fable-snapshot-binary` · 7c4b29c6 · 44530094439 (lane F: binary snapshots in the local match; green on attempt 2, `characters3` flaky on attempt 1)
-- `wip/fable-sights-1` · 3d8f58e5 · 44548083086 (lane F: iron sights that line up, sights pass step 1; green on attempt 1)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -230,6 +228,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-19 · F · Binary snapshots in the local match (Flavius memory leftover; online play unchanged) and iron sights that line up (sights pass step 1), in one train (lane F's branches, landed by lane B).
 - 2026-11-19 · B · MapMaker: building below ground (see-through glass ground, the section cut from above, buried open ends closed with a face of their lining) and picking things inside others (icons through walls, click again to cycle, the gizmo on top) (`check/mapmaker-below-pick` at 60e059f8, run 44536190229, green on attempt 1 after merging main; landed alone, main had moved only in docs). Owner: all five as built.
 - 2026-11-19 · A/B · Simpler Match Setup pickers (8 bot-type tick-boxes, Ranks & badges and Themed names switches, team steppers and chips), the St. John's kit pieces for steps 7-10 (lane A's branch), and the Stair End Bay trim out of the clock tower's stair (train `check/train-20261119-085951` at 92ad0dda, run 44492385329, green on attempt 2: `hostcontrols` "Esc closes the Bots window" is a flake, failed and passed on the same code; into the next fix batch).
 - 2026-11-19 · B · Nature swap on 42 maps: our generated trees, plants and rocks replace the Quaternius nature and kit rocks (MapMaker's "Swap natural props for ours", a new Dead Tree; triangles down 10-26 % on wooded maps) (train `check/train-20261119-065518` at a930f60c, run 44475716230, green on attempt 1). Left: St. John's and the coverage map, then retiring the Quaternius pack; owner questions on the Red Rock Spires, Sandsweep's rocks, Kenney kit trees, stumps.
