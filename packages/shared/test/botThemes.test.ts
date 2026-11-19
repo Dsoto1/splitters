@@ -1,6 +1,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BOT_CAST_CHOICES,
+  BOT_TYPES,
+  THEME_BOT_TYPES,
+  botTypesOf,
+  builtInLook,
+  castOfTypes,
+  foldBotCast,
+  normalizeSetup,
   BOT_NAME_MAX,
   CHARACTER_BRANCHES,
   CHARACTER_GROUPS,
@@ -75,7 +82,10 @@ describe('bot name themes: the lists', () => {
   it('theme ids never clash with group ids; the manifest checker knows the same themes', () => {
     for (const t of NAME_THEMES) expect(CHARACTER_GROUPS.some((g) => g.id === t.id), t.id).toBe(false);
     expect(MANIFEST_THEMES).toEqual(NAME_THEMES.map((t) => t.id));
-    expect(BOT_CAST_CHOICES).toHaveLength(CHARACTER_GROUPS.length + CHARACTER_BRANCHES.length + NAME_THEMES.length);
+    // The bot types (2026-11-19): every group, Soldiers & Spies as its two branches; every old name set folds into one.
+    expect(BOT_TYPES.map((t) => t.id)).toEqual(CHARACTER_GROUPS.flatMap((g) => (g.id === 'soldiers' ? CHARACTER_BRANCHES.map((b) => b.id as string) : [g.id as string])));
+    expect(BOT_CAST_CHOICES).toHaveLength(BOT_TYPES.length + 1);
+    for (const t of NAME_THEMES) expect(BOT_TYPES.map((b) => b.id as string), t.id).toContain(THEME_BOT_TYPES[t.id]);
     for (const b of CHARACTER_BRANCHES) expect(NAME_THEMES.some((t) => t.id === b.id) || CHARACTER_GROUPS.some((g) => (g.id as string) === b.id), b.id).toBe(false);
     // The menu's ids and labels (botThemes.ts) and the lists (botNames.ts) name the same themes, each with its names.
     expect(NAME_THEMES.map((t) => t.id)).toEqual(NAME_THEME_INFO.map((t) => t.id));
@@ -173,12 +183,12 @@ describe('bot characters: soldiers only', () => {
     const control = new HostControl(match, bots, 12);
     expect(control.state().cast).toBeNull();
     expect(control.state().mapCast).toEqual(['soldiers']);
+    // An old name set (pirate, monkey) reads as its bot type (Legends, Animalia).
     const r = control.apply({ c: 'bots', cast: ['pirate', 'monkey'] });
-    expect(r.notice).toMatch(/pirates \+ monkeys/i);
-    for (const c of botsOf(match)) expect(['pirate', 'monkey']).toContain(lookTheme(c.look));
+    expect(r.notice).toMatch(/legends \+ animalia/i);
+    for (const c of botsOf(match)) expect(['legends', 'animals']).toContain(builtInLook(c.look)?.group);
     expect(new Set(match.combatants().map((c) => c.name)).size).toBe(12);
-    expect(botsOf(match).map((c) => c.name)).toEqual(expect.arrayContaining(['Scamp', "Cap'n Rusty Barnacle"]));
-    expect(control.state().cast).toEqual(['pirate', 'monkey']);
+    expect(control.state().cast).toEqual(['legends', 'animals']);
     // All: nobody has to change (every look is allowed).
     const before = botsOf(match).map((c) => `${c.name}/${c.look}`);
     control.apply({ c: 'bots', cast: [] });
@@ -186,6 +196,16 @@ describe('bot characters: soldiers only', () => {
     // The map's own again: soldiers.
     control.apply({ c: 'bots', cast: null });
     for (const c of botsOf(match)) expect(soldierLooks).toContain(c.look);
+  });
+
+  it('Themed names off: every random bot takes a general name, still one of its own', () => {
+    const match = new Match(yard(['army']), { ...DEFAULT_RULES['core.deathmatch'], themedNames: false }, 1);
+    new BotFiller(match).rebalance(12);
+    const list = botsOf(match);
+    expect(list).toHaveLength(12);
+    for (const c of list) expect(BOT_NAMES, c.name).toContain(c.name);
+    expect(new Set(list.map((c) => c.name)).size).toBe(12);
+    for (const c of list) expect(armyLooks).toContain(c.look);
   });
 
   it("the host's bot set keeps its own names and looks", () => {
@@ -200,7 +220,7 @@ describe('bot characters: soldiers only', () => {
   });
 
   it('settings: validated, kept on a map change, from match setup, server rules, the wire', () => {
-    expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'pirate']);
+    expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'legends']);
     expect(validBotCast('soldiers')).toEqual([]);
     expect(castLooks(['nope']).length).toBe(PICKABLE_LOOKS.length);
     expect(castAllows(['soldiers'], 'core.grunt68')).toBe(true);
@@ -209,7 +229,15 @@ describe('bot characters: soldiers only', () => {
     expect(castAllows([], 'core.scamp')).toBe(true);
     expect(botCastLabel(undefined)).toBe('All characters');
     expect(botCastLabel(['soldiers'])).toBe('Soldiers & Spies');
-    expect(botCastLabel(['army'])).toBe('Soldiers & Spies: Army');
+    expect(botCastLabel(['army'])).toBe('Soldiers');
+    expect(botCastLabel(['agency', 'animals'])).toBe('Spies + Animalia');
+    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'])).toBe('All characters');
+    // Bot types as tick-boxes: all ticked is all, Soldiers and Spies together are Soldiers & Spies.
+    expect(botTypesOf(undefined)).toHaveLength(BOT_TYPES.length);
+    expect(botTypesOf(['soldiers', 'cat'])).toEqual(['army', 'agency', 'animals']);
+    expect(castOfTypes(['animals', 'agency', 'army'])).toEqual(['soldiers', 'animals']);
+    expect(castOfTypes(BOT_TYPES.map((t) => t.id))).toEqual([]);
+    expect(foldBotCast(['robot', 'alien', 'agents'])).toEqual(['agency', 'space', 'machines']);
     // Army or Agency alone; Soldiers & Spies is both.
     expect(castAllows(['army'], 'core.grunt68')).toBe(true);
     expect(castAllows(['army'], 'core.stealthop')).toBe(false);
@@ -218,18 +246,23 @@ describe('bot characters: soldiers only', () => {
     expect(castLooks(['army']).every((l) => l.branch === 'army')).toBe(true);
     // Retired ids (saved setups, maps, server rules) read as what they went into (2026-11-17): Agents & Spies is
     // Agency (the same characters), Creatures is in Horrors & Creatures.
-    expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'horror', 'pirate']);
+    expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'legends', 'horror']);
     expect(castAllows(['agents'], 'core.zhao')).toBe(true);
     expect(castAllows(['agents'], 'core.grunt68')).toBe(false);
     expect(castAllows(['creatures'], 'core.snikkit')).toBe(true);
     expect(castAllows(['creatures'], 'core.rattles')).toBe(true);
-    expect(botCastLabel(['agents'])).toBe('Soldiers & Spies: Agency');
+    expect(botCastLabel(['agents'])).toBe('Spies');
     // Match setup: absent the map's, [] all.
     const map = yard(['soldiers']);
     const base = { map: map.metadata.id, mode: 'core.deathmatch' as const, bots: 4, skill: 'normal' as const, scoreLimit: 20, minutes: 10 };
     expect(rulesFromSetup(base, map).rules.botCast).toBeUndefined();
     expect(rulesFromSetup({ ...base, botCast: [] }, map).rules.botCast).toEqual([]);
-    expect(rulesFromSetup({ ...base, botCast: ['pirate', 'bogus'] }, map).rules.botCast).toEqual(['pirate']);
+    expect(rulesFromSetup({ ...base, botCast: ['pirate', 'bogus'] }, map).rules.botCast).toEqual(['legends']);
+    // A saved setup or link with an old set loads as its type; Themed names off plays general names.
+    expect(normalizeSetup({ ...base, botCast: ['monkey', 'army'] })?.botCast).toEqual(['army', 'animals']);
+    expect(normalizeSetup({ ...base, botCast: 'pirate' })?.botCast).toBeUndefined();
+    expect(rulesFromSetup({ ...base, themedNames: false }, map).rules.themedNames).toBe(false);
+    expect(rulesFromSetup(base, map).rules.themedNames).toBeUndefined();
     expect(rulesForTravel({ ...DEFAULT_RULES['core.deathmatch'], botCast: ['pirate'] }, yard(), 8).rules.botCast).toEqual(['pirate']);
     // Server rules: "cast" words.
     const spec = SERVER_RULES.find((s) => s.key === 'cast')!;
@@ -242,6 +275,8 @@ describe('bot characters: soldiers only', () => {
     expect(parseRuleValue(spec, 'agents')).toEqual({ ok: true, value: 'agency' });
     expect(parseRuleValue(spec, 'creatures')).toEqual({ ok: true, value: 'horror' });
     expect(parseRuleValue(spec, 'army')).toEqual({ ok: true, value: 'army' });
+    // An old name set reads as its type.
+    expect(parseRuleValue(spec, 'pirate')).toEqual({ ok: true, value: 'legends' });
     spec.write(r, 'all');
     expect(r.botCast).toEqual([]);
     spec.write(r, 'map');

@@ -97,6 +97,11 @@ export interface MatchRules {
    */
   botCast?: string[];
   /**
+   * Themed names (Match Setup's Bots & AI; default true): random bots take their character's name and then its theme's
+   * ("Scamp", "Coco Bean", "Sgt. Dunmore"). false: general names for every random bot ("Brassneck", "Mildred").
+   */
+  themedNames?: boolean;
+  /**
    * Mix up weapon pickups: every weapon pickup not marked "keep fixed" rolls a weapon of the same category
    * as the one placed there each time it comes back (sim/pickupRoll.ts). Default off.
    */

@@ -585,8 +585,9 @@ stays 4:
 
 Which looks random bots wear, and so their names (`shared/content/botNames.ts`):
 
-- **Host command** `{ c: "bots", cast }`: `cast` is a list of character group
-  ids (`soldiers`, `legends`, …) and/or name theme ids (`pirate`, `monkey`, …),
+- **Host command** `{ c: "bots", cast }`: `cast` is a list of bot type ids
+  (`army`, `agency`, `legends`, …; `soldiers` for both of the first two; an old
+  name theme id such as `pirate` is read as its type since 2026-11-19),
   `[]` for all characters, or `null` for the map's own (`MapDocument.botCast`,
   map data). The host keeps it to known ids, at most 8 (a list longer than 32
   or anything not a list is refused), like any other administrative action
