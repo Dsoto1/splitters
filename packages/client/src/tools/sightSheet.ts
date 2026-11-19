@@ -11,6 +11,7 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { Ray } from '@babylonjs/core/Culling/ray';
+import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
 import '@babylonjs/core/Culling/ray';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { CORE_WEAPONS, PLAYER, armsLookFor, getWeapon, type MatchRules, type WeaponDefinition } from '@tiletrigger/shared';
@@ -118,6 +119,12 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   scene.activeCamera = eye;
   window.addEventListener('resize', () => engine.resize());
 
+  // A model optic's depth-only disc goes first in the gun's rendering group (view.ts).
+  scene.setRenderingOrder(1, (a, b) => {
+    const ma = a.getMesh().name === 'sight_mask';
+    const mb = b.getMesh().name === 'sight_mask';
+    return ma === mb ? RenderingGroup.PainterSortCompare(a, b) : ma ? -1 : 1;
+  });
   const characters = new CharacterLibrary(scene, { atlas: true });
   const models = new ModelLibrary(scene);
   const still: MotionState = { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false };
@@ -147,11 +154,11 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   /** The weapons that aim: the sheet's pages (melee, tools and mounted guns have none). */
   const pages = rows.filter((r) => r.status !== 'none');
 
-  // A scope's or a model optic's reticle: the game's own markup (index.html #scope, #optic), copied out of the hidden HUD.
-  const scopeEl = document.getElementById('scope')!.cloneNode(true) as HTMLElement;
-  const opticEl = document.getElementById('optic')!.cloneNode(true) as HTMLElement;
+  // A scope's or a model optic's reticle: the game's own markup and styles (index.html #scope, #optic), taken out of the
+  // hidden HUD (this page has no match).
+  const scopeEl = document.getElementById('scope')!;
+  const opticEl = document.getElementById('optic')!;
   for (const el of [scopeEl, opticEl]) {
-    el.id = `sight-${el.id}`;
     el.hidden = true;
     el.style.cssText += ';position:fixed;inset:0;z-index:4;animation:none';
     el.querySelector('[id$=breath]')?.remove();
@@ -161,7 +168,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   const opticMarks = opticEl.querySelector<SVGElement>('.holdover')!;
 
   let frames = 0;
-  let shown: { def: WeaponDefinition; node: TransformNode; viewRoot: TransformNode; frame: TransformNode; bounds: GunBounds; anim: CharacterAnimator | null; optic: CarriedOptic | null; mask: Mesh | null; dispose(): void } | null = null;
+  let shown: { def: WeaponDefinition; node: TransformNode; viewRoot: TransformNode; frame: TransformNode; bounds: GunBounds; anim: CharacterAnimator | null; arms: TransformNode | null; optic: CarriedOptic | null; mask: Mesh | null; dispose(): void } | null = null;
   let state: { ads: number; fitted: boolean; arms: boolean; optic?: OpticKindId } = { ads: 1, fitted: true, arms: true };
   let placement: GunPlacement | null = null;
   let picture = 1;
@@ -183,11 +190,13 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     opticEl.hidden = true;
     shown.viewRoot.setEnabled(true);
     shown.mask?.setEnabled(false);
+    shown.arms?.setEnabled(true);
     const aimed = state.ads >= 1 && state.fitted;
     if (aimed && def.view.zoomFov) {
       // A scope: its own view, the gun hidden behind the overlay (session.ts).
       eye.fov = def.view.zoomFov;
       shown.viewRoot.setEnabled(false);
+      shown.arms?.setEnabled(false);
       scopeEl.hidden = false;
       scopeEl.dataset.reticle = shown.optic?.kind.reticle ?? 'fine';
       drawHoldover(scopeMarks, holdoverFor(def, RULES, Math.tan(eye.fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))), 1);
@@ -197,6 +206,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       eye.fov = f.worldFov;
       shown.frame.scaling.set(f.squash, f.squash, 1);
       shown.mask?.setEnabled(true);
+      shown.arms?.setEnabled(false);
       opticEl.hidden = false;
       opticEl.style.setProperty('--r', `${(f.lens * 50).toFixed(3)}vh`);
       opticEl.style.setProperty('--o', '1');
@@ -278,6 +288,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
         frame,
         bounds,
         anim,
+        arms: armsRoot,
         optic: carried,
         mask,
         dispose: () => {

@@ -180,25 +180,31 @@ function frameParts(scene: Scene, o: CarriedOptic): Mesh[] {
  */
 export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinition, own: boolean, optic: CarriedOptic | null = opticOf(def)): TransformNode | null {
   if (!hasGlass(optic)) return null;
+  if (!own && optic.window) return null;
   const root = new TransformNode(`optic_${def.id}`, scene);
   root.parent = gun;
-  root.position.set(optic.mount.at[0], optic.mount.at[1], optic.mount.at[2]);
-  root.scaling.setAll(optic.mount.scale);
-  const parts = optic.kind.housing === 'tube' ? tubeParts(scene, optic) : frameParts(scene, optic);
-  const body = Mesh.MergeMeshes(parts, true, true)!;
-  body.name = 'opticBody';
-  body.material = bodyMaterial(scene);
-  body.parent = root;
-  body.isPickable = false;
+  // The model's own open sight (`window`): nothing to build, the glass goes in its window.
+  const mount = optic.mount && !optic.window ? optic.mount : null;
+  if (mount) {
+    root.position.set(mount.at[0], mount.at[1], mount.at[2]);
+    root.scaling.setAll(mount.scale);
+    const parts = optic.kind.housing === 'tube' ? tubeParts(scene, optic) : frameParts(scene, optic);
+    const body = Mesh.MergeMeshes(parts, true, true)!;
+    body.name = 'opticBody';
+    body.material = bodyMaterial(scene);
+    body.parent = root;
+    body.isPickable = false;
+    if (own) body.renderingGroupId = 1;
+  }
   if (own) {
-    body.renderingGroupId = 1;
     const [hw, hh] = glassHalf(optic);
     const c = glassCentre(optic);
-    const glass = optic.kind.housing === 'tube' ? CreateDisc('opticGlass', { radius: hh, tessellation: 40, sideOrientation: Mesh.DOUBLESIDE }, scene) : CreatePlane('opticGlass', { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
+    const round = !!mount && optic.kind.housing === 'tube';
+    const glass = round ? CreateDisc('opticGlass', { radius: hh, tessellation: 40, sideOrientation: Mesh.DOUBLESIDE }, scene) : CreatePlane('opticGlass', { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
     glass.material = glassMaterial(scene, optic);
-    // On the gun itself (not under the housing's scale): the window's middle, a little ahead of the housing's.
+    // On the gun itself (not under the housing's scale): the window's middle, a little ahead of a built housing's.
     glass.parent = gun;
-    glass.position.set(c[0], c[1], c[2] + optic.kind.glass.length * optic.mount.scale * (optic.kind.housing === 'tube' ? 0.3 : 0.22));
+    glass.position.set(c[0], c[1], c[2] + (mount ? optic.kind.glass.length * mount.scale * (round ? 0.3 : 0.22) : 0));
     glass.renderingGroupId = 1;
     glass.isPickable = false;
     glass.metadata = { effect: true };

@@ -31,6 +31,8 @@ export interface CarriedOptic {
   mag?: number;
   /** Where a housing built in code stands (model space) and its size. */
   mount?: { at: readonly [number, number, number]; scale: number };
+  /** The model's own open sight instead: its window's middle and half width and height (no housing is built). */
+  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
 }
 
 /** The optic `def` carries (`choice`: another of its allowed ones; the loadout's choice comes later), or null: none. */
@@ -38,25 +40,27 @@ export function opticOf(def: Pick<WeaponDefinition, 'id'>, choice?: OpticKindId)
   const w = WEAPON_OPTICS[def.id];
   if (!w) return null;
   const id = choice && w.allowed.includes(choice) ? choice : w.default;
-  return { id, kind: OPTIC_KINDS[id], ...(w.mag ? { mag: w.mag } : {}), ...(w.mount ? { mount: w.mount } : {}) };
+  return { id, kind: OPTIC_KINDS[id], ...(w.mag ? { mag: w.mag } : {}), ...(w.mount ? { mount: w.mount } : {}), ...(w.window ? { window: w.window } : {}) };
 }
 
 /** Why a weapon carries no optic (undefined: it carries one). */
 export const opticNone = (def: Pick<WeaponDefinition, 'id'>): string | undefined => OPTIC_NONE[def.id];
 
 /** An optic whose housing is built in code and whose mark is drawn on its glass. */
-export function hasGlass(o: CarriedOptic | null): o is CarriedOptic & { mount: NonNullable<CarriedOptic['mount']>; kind: OpticKind & { glass: NonNullable<OpticKind['glass']>; mark: NonNullable<OpticKind['mark']> } } {
-  return !!o && (o.kind.housing === 'tube' || o.kind.housing === 'frame') && !!o.mount && !!o.kind.glass && !!o.kind.mark;
+export function hasGlass(o: CarriedOptic | null): o is CarriedOptic & { kind: OpticKind & { glass: NonNullable<OpticKind['glass']>; mark: NonNullable<OpticKind['mark']> } } {
+  return !!o && (o.kind.housing === 'tube' || o.kind.housing === 'frame') && (!!o.mount || !!o.window) && !!o.kind.glass && !!o.kind.mark;
 }
 
 /** The middle of a mounted optic's glass (model space, metres). */
 export function glassCentre(o: CarriedOptic): [number, number, number] {
+  if (o.window) return [o.window.at[0], o.window.at[1], o.window.at[2]];
   const m = o.mount!;
   return [m.at[0], m.at[1] + o.kind.glass!.rise * m.scale, m.at[2]];
 }
 
 /** The window's half width and height (metres). */
 export function glassHalf(o: CarriedOptic): [number, number] {
+  if (o.window) return [o.window.half[0], o.window.half[1]];
   const g = o.kind.glass!;
   return [g.half[0] * o.mount!.scale, g.half[1] * o.mount!.scale];
 }

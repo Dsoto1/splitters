@@ -41,6 +41,8 @@ export interface WeaponOptics {
   allowed: readonly OpticKindId[];
   mag?: number;
   mount?: { at: readonly [number, number, number]; scale: number };
+  /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
+  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
 }
 
 /** Per hand-held gun that carries an optic (iron sights included). */
@@ -61,6 +63,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19 },
   'core.nailgun': { default: 'irons', allowed: ['irons'] },
   'core.pistol': { default: 'irons', allowed: ['irons'] },
+  'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, 0.024], half: [0.022, 0.014] } },
   'core.pulse_pistol': { default: 'irons', allowed: ['irons'] },
   'core.railgun': { default: 'sniper', allowed: ['sniper'], mag: 3.13 },
   'core.revolver': { default: 'irons', allowed: ['irons'] },
@@ -89,7 +92,6 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.mount_mg': 'mounted: never held in the hand',
   'core.mount_rockets': 'mounted: never held in the hand',
   'core.oil_slicker': 'sprays a lobbed stream: a sight on the bore would point over where it lands',
-  'core.plasma': 'its model carries a closed sight box on a riser that cannot be looked through: an optic here needs the model\'s box opened (a later step)',
   'core.rockets': 'a tube launcher: aimed over the tube, as launchers are',
   'core.sentry_arc': 'mounted: never held in the hand',
   'core.sentry_gun': 'mounted: never held in the hand',

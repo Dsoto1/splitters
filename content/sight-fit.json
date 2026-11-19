@@ -16,7 +16,7 @@
     "core.launcher": "a tube launcher: no rear sight, its top line starts on the stock",
     "core.lmg": "a rotary gun held at the hip: its top is a housing and a crank, not a sight line",
     "core.oil_slicker": "no sights on the model: its top line starts on the stock",
-    "core.plasma": "no iron sights: the model carries a scope-like tube on a mount (an optic for the next step of the sights pass)",
+    "core.plasma": "no iron sights: the model carries an open sight box on a riser, which holds its holographic mark (content/optics.json)",
     "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
     "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
     "core.singularity": "no sights on the model: an organic shell with a sloping top",

@@ -128,10 +128,8 @@ export function readOpticsFile() {
 }
 
 /** Every weapon's optics from content/optics.json, checked; `problems` says what is wrong. */
-export async function buildOptics() {
-  const file = readOpticsFile();
+export async function buildOptics(file = readOpticsFile(), weapons = readWeapons()) {
   const problems = [];
-  const weapons = readWeapons();
   const { fits } = await fitAll();
   const kinds = file.kinds ?? {};
   for (const [id, k] of Object.entries(kinds)) {
@@ -195,7 +193,18 @@ export async function buildOptics() {
           if (w.view?.optic && (w.view.optic.reticle ?? 'duplex') !== k.reticle) problems.push(`${at}: its weapon file's view.optic.reticle (${w.view.optic.reticle ?? 'duplex'}) is not the ${id}'s (${k.reticle})`);
         }
       }
-      if ((k.housing === 'tube' || k.housing === 'frame') && k.glass && /\.glb$/.test(w.view?.model ?? '')) {
+      if ((k.housing === 'tube' || k.housing === 'frame') && entry.window) {
+        // The model's own open sight: no housing is built, the glass goes in its window.
+        const win = entry.window;
+        if (typeof win.reason !== 'string' || win.reason.length < 8 || !Array.isArray(win.at) || win.at.length !== 3 || !Array.isArray(win.half) || !(win.half[0] > 0 && win.half[1] > 0)) problems.push(`${at}: a \`window\` needs \`at\` [x, y, z], \`half\` [w, h] and its reason`);
+        else {
+          tris ??= await modelTriangles(join(MODELS, w.view.model));
+          bounds ??= boundsOf(tris);
+          if (firstHit(tris, [win.at[0], win.at[1], bounds[0][2] - 1], [win.at[0], win.at[1], bounds[1][2] + 1]) !== null) problems.push(`${at}: the model stands in the line along the barrel through its window's middle (${JSON.stringify(win.at)})`);
+          if (allowed.length > 1) problems.push(`${at}: a gun with a sight window of its own carries that optic only`);
+          row.window = { at: win.at.map((v) => round(v)), half: win.half.map((v) => round(v)) };
+        }
+      } else if ((k.housing === 'tube' || k.housing === 'frame') && k.glass && /\.glb$/.test(w.view?.model ?? '')) {
         tris ??= await modelTriangles(join(MODELS, w.view.model));
         bounds ??= boundsOf(tris);
         const [min, max] = bounds;
@@ -215,7 +224,7 @@ export async function buildOptics() {
     }
     out[w.id] = row;
     const k = kinds[row.default];
-    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}` : '-'} |`);
+    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}` : row.window ? `the model's own window ${JSON.stringify(row.window.at)}` : '-'} |`);
   }
   for (const id of [...Object.keys(file.weapons ?? {}), ...Object.keys(file.none ?? {})]) if (!weapons.some((w) => w.id === id)) problems.push(`content/optics.json: no weapon ${id}`);
   return { kinds, weapons: out, none, problems, report };
@@ -241,6 +250,7 @@ export function opticsSource({ kinds, weapons, none }) {
       const parts = [`default: ${q(w.default)}`, `allowed: ${list(w.allowed.map(q))}`];
       if (w.mag) parts.push(`mag: ${w.mag}`);
       if (w.mount) parts.push(`mount: { at: ${list(w.mount.at)}, scale: ${w.mount.scale} }`);
+      if (w.window) parts.push(`window: { at: ${list(w.window.at)}, half: ${list(w.window.half)} }`);
       return `  ${q(id)}: { ${parts.join(', ')} },`;
     });
   const noneLines = Object.keys(none)
@@ -285,6 +295,8 @@ export interface WeaponOptics {
   allowed: readonly OpticKindId[];
   mag?: number;
   mount?: { at: readonly [number, number, number]; scale: number };
+  /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
+  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
 }
 
 /** Per hand-held gun that carries an optic (iron sights included). */
