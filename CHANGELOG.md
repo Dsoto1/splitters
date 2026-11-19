@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Scope feel.** Inside a scope the picture darkens toward the edge and a shadow slides in as you turn, sway or take a kick, settling when you hold your breath (Shift; the controller's sprint button too) with an "Out of breath" cue when it's spent. A sniper looking your way shows a small, soft glint on the scope (steady, dimmer and slower under Reduce flashing). Entering a scope no longer flashes bright for a frame. Sway, breath and zoom steps are unchanged in size and are now data.
 - **Real optics by gun.** Guns with no sights of their own now carry one: a red dot on the Laser Rifle, Bubble Blaster and Sawed-Off; a holographic sight on the Arc Caster, Flak Cannon, Disc Launcher, Arena Disc and Plasma Rifle. The dot and ring are drawn on the glass and stay on your aim; iron sights show no dot and are drawn larger on long guns; the Battle Rifle and Marksman get a chevron, the Sniper Rifle and Railgun a fine crosshair. No gun's zoom has changed.
 - **After the countdown, straight into the fight.** No pause menu or Tab board pops up when a match starts; if the game doesn't have the mouse yet, one small "Click to fight" line shows instead (Tap on a phone). Esc still pauses.
 - **Esc always closes the Bots window over the pause menu.** If the game took the mouse late after Resume, opening the Bots window now lets it go, and the first Esc closes the window.
