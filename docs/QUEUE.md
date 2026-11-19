@@ -33,14 +33,13 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - **Lane F, the "Splitters FABLE 5.2" session (owner, 2026-11-19):** takes (1) the binary snapshot format (the Flavius Rule memory leftover), (2) the sights and scopes pass, (3) dual wielding (owner, 2026-11-19: one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short shotguns; melee could pair too: knives, axes, and the coming baseball bat, scimitar and katana; not rifles; a Match Setup toggle so a host can turn dual wielding off, on by default). It claims in HANDOFF, uses the same landing lock and counts toward the 4 check runs. Chat with mute and the error reports (4) and the hard bugs (5) may move there later. Lane B (splitters22) stays lead and keeps the rest.
+- S · F with B's lead · **The sniper glint knows who is scoped** (owner, 2026-11-19, "1a"; after sights step 3 lands): the snapshot has no aiming bit, so the glint guesses from the weapon held and a player merely holding a sniper glints. Add one optional per-player bit (`PlayerSnapshot.zm`, binary `BIT_ZOOM = 32`), back-compatible; lane B's lead decides how and when the protocol takes it.
 - **Lane A stopped new work (owner, 2026-11-18, weekly usage); lane B absorbs the queue.** Lane A still running, landing via lane B: `wip/stjohns-6` (Welles + clock tower), `wip/stjohns-kit` (pieces for St. John's steps 7-10), `wip/entity-cap` (4,096 → 8,192). HANDOFF has the detail.
 - Maps in flight are in "Maps" (Flavius Rule's octagon, lane B).
 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/nature-swap-5` · ece06ef8 · run 44600999946 (the nature swap's last batch plus the denser, fused Sandstone Spires, owner 3b; contains `wip/nature-swap-4` and lands in its place; re-merged after the fix batch, green on attempt 1)
-- `wip/fable-sights-2` · 8e36d6da · 44584521043 (lane F: real optics by gun, sights pass step 2; green on attempt 2, `perf (mass)` over budget on a slow runner in attempt 1)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -226,6 +225,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-19 · B/F · Nature swap finished: generated Sandstone Spires (dense and fused, owner's 3b) for the Red Rock Spires, a sandstone Shard Boulder, Kenney trees and logs swapped, St. John's and the coverage map swapped, the Quaternius nature pack and the Mossy Rock Spire retired with load aliases; and lane F's real optics by gun (sights pass step 2). One train.
 - 2026-11-19 · B · Fix batch 2026-11-19: open doors' leaves and deep facade trim (buttresses, plinths) are solid; Flavius Rule's gate stairs to the tunnels have 3.7 m headroom; MapMaker warns about low stair headroom; the `hostcontrols` Esc flake fixed at its cause; straight into the fight after the countdown ("Click to fight", no pause screen).
 - 2026-11-19 · B · URGENT: Atomic Court out of bounds fixed. See-through edges (fences, bars) with nothing beyond get an invisible body-only blocker (shots and sight still pass); Atomic Court's boundary moved onto its fence in MapMaker; team and squad spawns refuse a teammate outside the play area; anyone outside is warned after 1 s and put back after 6 s; `tools/maps/edge-escapes.ts` probes every map (Dockside Depot's crawl-through fence also closed). **Owner, 2026-11-19: "1a 2b 3a"**: the fence keeps its look (the blocker is invisible); the remaining jump-out spots (Serpent Gorge, Reactor, Cinder Foundry, Norman Shores, Sunken Kingdom) are left to the return; warn after 1 s, return after 6 s as built.
 - 2026-11-19 · F · Binary snapshots in the local match (Flavius memory leftover; online play unchanged) and iron sights that line up (sights pass step 1), in one train (lane F's branches, landed by lane B).
