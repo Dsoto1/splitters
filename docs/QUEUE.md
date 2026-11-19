@@ -39,7 +39,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-6` · 037dc346 · 44408870209 (lane A, landing by lane B; re-checked by lane B's helper after main's excavator and v48: coverage pieces placed again through MapMaker, paint-look hashes regenerated; St. John's step 6, Welles rebuilt at three floors with the mess hall, classrooms and dorms, and the 24 m clock tower with its belfry; Clock Tower tile and set piece, Refectory Bay, Clock Face; no format change; branch tip 6a9b47e5 adds docs only). **Owner, 2026-11-18: land as is** although draws inside the hall are +11 to +14 % (the 10 % rule); the whole-map mean is +6 %.
 - `wip/fixes-20261118` · 36c88003 · 44413941879 (lane B fix batch: editor TEST-start flake fixed at its cause (nothing drawn before the map arrives), grenade deck per life, announcer one spree a life, broken windows lose their bars, staged Start match with the card, the board and the countdown line; Flavius stairs not reproduced; next train)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
@@ -224,6 +223,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-19 · A/B · St. John's step 6: Welles Hall and its clock tower (lane A's branch, re-merged by lane B) (train `check/train-20261118-232046` at f0b327b2, run 44419960458, green on attempt 2: attempt 1 red only on the editor TEST-start flake).
 - 2026-11-18 · B · Blood by character: red, green, blue, oil with sparks, bone dust, stone dust (Bronzer) and the Hollow Pilgrim's white-grey spectral wisp; retired looks bleed as the look they play (train `check/train-20261118-222033` at daed3056, run 44410669840).
 - 2026-11-18 · B · Performance batch (menu first JS 2799 → 2642 kB, pickups batched, respawn shimmer 120 → 6 scene walks, the local player reconciled once a frame on foot) and the hosting cost guard (CloudFront, an automatic stop at $30/month for the account, nightly S3 backups with restore, ETags; **the owner deploys from CloudShell**) (train `check/train-20261118-200957` at 7504cf9d, run 44388144258).
 - 2026-11-18 · B · The owner's excavator: `prop.mining_excavator_deck`, a walkable deck, 9k triangles, in MapMaker's Mines & Caves (train `check/train-20261118-190150` at 98a9b82e, run 44376111562). Follow-up: alias the old `mining_excavator` to it everywhere (owner).
