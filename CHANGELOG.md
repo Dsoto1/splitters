@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Deathmatch spawns spread out.** Players and bots no longer start or respawn on top of each other: everyone gets a spawn point of their own (all of a map's points in free-for-all when the shared ones run short), and with more players than points they start beside one, clear of everyone.
 - **A new Bucket-Wheel Excavator in MapMaker, with a deck you can stand on.** Mines & Caves gets the **Bucket-Wheel Excavator (Walkable Deck)**: a cel-shaded 30 m bucket-wheel machine (the owner's own model) whose roof is a flat deck 9.2 m up, railed round, that players can stand and fight on; its tracks, house and booms block shots and players. Lighter than the older excavator (9,000 triangles, 4,000 from 60 m). Iron Maw gets it when the map is refreshed.
 - **A lighter start and smoother frames.** The main menu loads about 150 kB less script on a first visit; pickups, the spawn shield's shimmer and your own movement corrections cost less each frame (details in docs/PERF_96.md).
 - **Return visits download almost nothing.** Models, textures and sounds you already have are checked instead of downloaded again after an hour away (~0.1 MB instead of ~24 MB); the server side gains a CDN, a hard monthly spend cap and nightly backups of profiles and published maps (docs/HOSTING.md, "Cost guard, CDN and backups").
