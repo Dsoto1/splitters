@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Your automatic fire sounds whole in big matches.** In a crowded match the bots' gunfire cut your own shots' sound short after a few hundredths of a second, so full-auto stuttered; your own sounds are never cut for the world's now (distant sounds give way to near ones), and shots fired within one slow frame keep their even rhythm.
 - **Shots no longer lag with sprint held.** Holding Shift (or the pad's sprint) while tapping the trigger made every shot wait the gun's sprint-exit time, and a quick click with a rifle fired nothing; now only the first shot out of a real sprint waits (briefly, as before), every tap after it fires at once, and a click while the gun comes up fires as soon as it's up.
 - **A new Bucket-Wheel Excavator in MapMaker, with a deck you can stand on.** Mines & Caves gets the **Bucket-Wheel Excavator (Walkable Deck)**: a cel-shaded 30 m bucket-wheel machine (the owner's own model) whose roof is a flat deck 9.2 m up, railed round, that players can stand and fight on; its tracks, house and booms block shots and players. Lighter than the older excavator (9,000 triangles, 4,000 from 60 m). Iron Maw gets it when the map is refreshed.
 - **A lighter start and smoother frames.** The main menu loads about 150 kB less script on a first visit; pickups, the spawn shield's shimmer and your own movement corrections cost less each frame (details in docs/PERF_96.md).

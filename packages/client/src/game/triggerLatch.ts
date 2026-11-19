@@ -1,4 +1,4 @@
-import { BUTTON_FIRE, BUTTON_SPRINT } from '@tiletrigger/shared';
+import { BUTTON_FIRE, BUTTON_SPRINT, TICK_DT } from '@tiletrigger/shared';
 
 /**
  * Ticks after the trigger is let go before a held sprint (Shift, or the pad's L3) takes over again: 0.5 s, longer
@@ -50,4 +50,21 @@ export class TriggerLatch {
     this.rest = 0;
     this.buffered = false;
   }
+}
+
+/** The most a shot's sound waits to keep its tick's spacing (s). */
+export const SHOT_SPREAD_MAX = 0.05;
+
+/**
+ * Seconds to hold your own shot's sound so a slow frame's shots keep their ticks' spacing (owner, 2026-11-18,
+ * "chugging", a 64-player match): the game runs its 60 ticks a second in each frame's catch-up loop, so at 25 frames a
+ * second a 600-round-a-minute rifle's reports came in clumps on the frames (gaps of 80 and 120 ms, or two at once)
+ * instead of every 100 ms. Each tick's sound is put back where its tick falls: `behind` (the loop's time still owed
+ * after this tick, s) earlier than the frame's latest, against a budget of the smoothed frame time beyond a 60 Hz
+ * frame, at most SHOT_SPREAD_MAX. At 60 frames a second nothing waits; slower, the reports are even at the cost of at
+ * most that budget.
+ */
+export function shotDelay(behind: number, frameTime: number): number {
+  const budget = Math.min(SHOT_SPREAD_MAX, Math.max(0, frameTime - TICK_DT));
+  return Math.max(0, budget - Math.max(0, behind));
 }

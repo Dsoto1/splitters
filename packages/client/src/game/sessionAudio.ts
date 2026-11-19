@@ -176,11 +176,11 @@ export class SessionAudio {
     if (!this.countingDown) this.audio.play('message');
   }
 
-  /** A shot the local player just fired (predicted). */
-  localShot(def: WeaponDefinition, alt = false): void {
+  /** A shot the local player just fired (predicted); `delay`: seconds to wait, its tick's place in a slow frame (shotDelay). */
+  localShot(def: WeaponDefinition, alt = false, delay = 0): void {
     const own = alt ? def.view.altShot : undefined;
-    if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15 });
-    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
+    if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15, delay });
+    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), { delay });
   }
 
   /** Your own punch or kick: a swish as you throw it. */
