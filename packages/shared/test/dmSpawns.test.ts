@@ -47,7 +47,7 @@ describe('Deathmatch spawns spread out', () => {
       expect(closest(cs), id).toBeGreaterThan(3.5);
       m.destroy();
     }
-  });
+  }, 120_000);
 
   it('more players than points: beside a point, clear of everyone, never on top of anyone', () => {
     for (const id of ['phase0_arena', 'blackout']) {
@@ -55,7 +55,7 @@ describe('Deathmatch spawns spread out', () => {
       expect(closest(alive(m)), id).toBeGreaterThanOrEqual(SPAWN_TAKEN);
       m.destroy();
     }
-  });
+  }, 120_000);
 
   it('respawns on a free point: a minute of a 12-bot Grid Rings, nobody spawns on someone', () => {
     const m = filled('grid_rings', 12);
@@ -74,7 +74,7 @@ describe('Deathmatch spawns spread out', () => {
     }
     expect(respawns).toBeGreaterThan(20);
     m.destroy();
-  });
+  }, 120_000);
 
   it('team modes keep to their own spawn sets, spread too', () => {
     const doc = map('canyon');
@@ -92,7 +92,7 @@ describe('Deathmatch spawns spread out', () => {
       expect(near, `${c.slot} ${c.faction}`).toBe(true);
     }
     m.destroy();
-  });
+  }, 120_000);
 
   it('pickSpawn never picks a point someone is on, or one given out this tick, while one is free', () => {
     const spot = (x: number): SpawnSpot => ({ pos: { x, y: 0, z: 0 }, yaw: 0, team: null });

@@ -47,17 +47,13 @@ describe('clumped 96-bot match', () => {
       const clumped = run(area);
       process.stderr.write(`clumped 48 v 48: CPU ${clumped.cpu.toFixed(2)} ms a tick vs ${spread.cpu.toFixed(2)} spread (x${(clumped.cpu / spread.cpu).toFixed(2)}), ${clumped.rays.toFixed(0)} sight rays a tick, ${clumped.kills} kills\n`);
       // It is a fight: plenty of kills, fighting bots steer between thoughts. (Riot Junction plays Military: since each
-      // life's grenade is dealt from the set's deck, frags, mines and smoke, fewer go off as frags: 15 kills, was 28;
-      // with a spawn point each, the fight that the clump starts from differs: 8.)
-      expect(clumped.kills).toBeGreaterThan(5);
+      // life's grenade is dealt from the set's deck, frags, mines and smoke, fewer go off as frags: 15 kills, was 28.)
+      expect(clumped.kills).toBeGreaterThan(10);
       expect(clumped.steering).toBeGreaterThan(ticks * 5);
       // Perception casts a few rays per look however many enemies are in view (was ~200 a tick).
       expect(clumped.rays).toBeLessThan(90);
-      // The budget: within 1.8x of the spread-out match's CPU a tick. It measured 0.9-1.2x until spawns spread out
-      // (2026-11-18, a spawn point each: sim/spawns.ts spawnTaken): the spread-out match got cheaper (9.1-9.7 → 6.5-7.0
-      // ms a tick on a desk, 5.7-6.6 with the grenade deck) and the clump too (9.7-11.0 → 8.5-10.1), so the same clump
-      // reads 1.2-1.6x.
-      expect(clumped.cpu / spread.cpu).toBeLessThan(1.8);
+      // The budget: within 1.35x of the spread-out match's CPU a tick (it measured 0.9-1.2x).
+      expect(clumped.cpu / spread.cpu).toBeLessThan(1.35);
     } finally {
       simProfile.on = false;
       match.destroy();

@@ -201,11 +201,12 @@ export function pickSpawn(c: SpawnChoice): number {
   // few only, so on a small map where every free point was in someone's view, an occupied point that was never
   // checked outscored them all and bots spawned on top of each other.) With every point taken, Match.spawn places the
   // player beside the chosen point.
-  const free: number[] = [];
-  for (let i = 0; i < n; i++) if (!spawnTaken(c.candidates[i]!, c)) free.push(i);
   // A little randomness (0-3) between near-equal points, so ties (a round's first spawns, nobody about) spread over all
-  // of them instead of going to the first listed.
-  for (const i of free.length ? free : [...c.candidates.keys()]) scored.push({ i, s: spawnScore(c.candidates[i]!, c) + c.rng() * 3, seen: 0 });
+  // of them instead of going to the first listed. Every candidate is scored (and draws its random number) either way,
+  // so where no point is taken the choice is exactly what it was before.
+  for (let i = 0; i < n; i++) scored.push({ i, s: spawnScore(c.candidates[i]!, c) + c.rng() * 3, seen: 0 });
+  const taken = scored.filter((x) => spawnTaken(c.candidates[x.i]!, c));
+  if (taken.length && taken.length < n) for (const t of taken) scored.splice(scored.indexOf(t), 1);
   scored.sort((a, b) => b.s - a.s || a.i - b.i);
   const checked = Math.min(scored.length, W.sightCandidates);
   if (c.sees) {
