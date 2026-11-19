@@ -7386,6 +7386,9 @@ export class Match {
     return null;
   }
 
+  /** A place in the spawns' area that inPlay's hops head for (the navmesh's first main place), found once. */
+  private homeGoal: Vec3 | null | undefined;
+
   /** Inside the map's boundary rectangle (when it has one), with a little give for a body against its wall. */
   private insideBounds(p: Vec3): boolean {
     const b = this.map.bounds;
@@ -7395,11 +7398,26 @@ export class Match {
   }
 
   /**
-   * In the play area: inside the boundary, and not on ground that can't route back to the spawns' area (behind a fence,
-   * a pit: NavWorld.stranded). Where a squad may spawn beside a teammate, and where nobody is moved from.
+   * In the play area: inside the boundary, and not on ground that can't get back to the spawns' area: none that routes
+   * back (NavWorld.stranded), nor the step or hop bots take off a cut-off patch (NavWorld.escapes: a sunken court, a
+   * pool) with nothing a body bumps into in the way (a fence's posts and its body-only box count; sight lines don't).
+   * Where a squad may spawn beside a teammate, and where nobody is moved from.
    */
   inPlay(p: Vec3): boolean {
-    return this.insideBounds(p) && !this.nav.stranded(p);
+    if (!this.insideBounds(p)) return false;
+    if (!this.nav.stranded(p)) return true;
+    const goal = (this.homeGoal ??= this.nav.mainPlaces()[0] ?? null);
+    if (!goal) return true;
+    const moveRay = (a: Vec3, b: Vec3, h: number): boolean => {
+      const d = { x: b.x - a.x, y: 0, z: b.z - a.z };
+      const len = Math.hypot(d.x, d.z);
+      return len < 1e-3 || this.physics.moveRay({ x: a.x, y: a.y + h, z: a.z }, { x: d.x / len, y: 0, z: d.z / len }, len) === null;
+    };
+    const clear = (a: Vec3, b: Vec3) => {
+      const y = Math.max(a.y, b.y);
+      return moveRay({ ...a, y }, { ...b, y }, 0.5) && moveRay({ ...a, y }, { ...b, y }, 1.6);
+    };
+    return this.nav.escapes(p, goal, clear, 'body').length > 0;
   }
 
   /**

@@ -1322,9 +1322,10 @@ export class NavWorld {
    * navmesh) and the place across. From ground that routes to the main area, only onto ground that routes back to
    * it too (onto a dais the navmesh doesn't climb, never down into a pit). `clear`: a body gets straight across
    * from one to the other (nothing in the way). Empty when nothing is near enough, or a route reaches the goal.
-   * Cached per polygon and the goal's component of routes.
+   * Cached per polygon and the goal's component of routes, and per `kind` of `clear` (a caller with its own test
+   * names it, so its answers and the bots' never mix: Match.inPlay's 'body').
    */
-  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean): readonly NavEscape[] {
+  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean, kind = ''): readonly NavEscape[] {
     const ext = { x: 2, y: 3, z: 2 };
     const e = this.query.findNearestPoly(goal, { halfExtents: ext });
     if (!e.success || !e.nearestRef) return NO_ESCAPE;
@@ -1350,7 +1351,7 @@ export class NavWorld {
     }
     const landing = (poly: number) => poly >= 0 && toGoal[poly] === 1 && (!safe || toMain[poly] === 1);
     const goalComp = this.routesNow().comp[goalIdx]!;
-    const key = on ? `${s.nearestRef}>${goalComp}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${goalComp}`;
+    const key = `${on ? s.nearestRef : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}`}>${goalComp}${kind ? `:${kind}` : ''}`;
     const known = this.escapeCache.get(key);
     if (known) return known;
     const places = this.places();
