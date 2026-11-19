@@ -1030,7 +1030,7 @@ function onceBack(f: () => void): void {
 
 const app = new App();
 // The start-up loading screen is the game's: the /host page and the team tools show straight away.
-if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters' || params.get('mode') === 'weapons') finishBoot();
+if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters' || params.get('mode') === 'weapons' || params.get('mode') === 'sights') finishBoot();
 // trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
@@ -1083,6 +1083,15 @@ else if (params.get('mode') === 'assets') {
     const { openGripSheet } = await import('./tools/gripSheet.ts');
     const { engine } = await createEngine($<HTMLCanvasElement>('view'));
     await openGripSheet(engine);
+  })();
+} else if (params.get('mode') === 'sights') {
+  // Team tool: every weapon aiming down its sights from the eye, with the audit of the sight fit (docs/GUNPLAY_SPEC.md §15).
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openSightSheet } = await import('./tools/sightSheet.ts');
+    const { engine } = await createEngine($<HTMLCanvasElement>('view'));
+    await openSightSheet(engine);
   })();
 } else if (params.has('envlab')) {
   // Team tool: the environment species at eye height, with level of detail, wireframe, collider, wind and tier toggles.

@@ -137,11 +137,72 @@ is still a corpse when it respawns (corpses stay up to 32, sinking after some se
 play two bodies a look are not always that look's. The allocation rate moves with how many bodies a run builds and
 with the match; compare the build counts, not the totals.
 
+## Snapshot format (2026-11-19)
+
+The last leftover: the match worker's snapshots, structured-cloned into new objects on the page 30 times a second
+(`?perfoff=snapbin` is that). Lane F, on `wip/fable-snapshot-binary`. The format, its versioning and its fallbacks
+are in docs/MULTIPLAYER_PROTOCOL.md, section 22.
+
+**Measured first: where a snapshot crosses a boundary, and what it costs there.**
+
+| Boundary | Form before | Cost at 64 players (Flavius Rule, Team Deathmatch) |
+|---|---|---|
+| Match worker → its own page (offline, MapMaker TEST, the host's own view) | objects, structured clone | 14.1 KB a message; **55 KB of new objects a snapshot on the page, 1.2-1.6 MB a second** |
+| Host → a friend (browser host, Host Service, dedicated server) | delta JSON (`net/interest.ts`), deflated | 4.3 KB of text, **580 B on the wire, 17 KB a second** |
+| Hub | never sees gameplay messages | none |
+
+So the garbage is the local boundary's, and the network already sends a thirtieth of the clone's size. The binary
+message deflated on a friend's link would be 1,077 B a snapshot (it has no deltas; floats compress badly): worse
+than what is sent today. The binary format is therefore used between the worker and its page only, and networked
+play is unchanged.
+
+**What changed.** The worker writes the snapshot into a pooled `ArrayBuffer` and transfers it (no copy); the page
+reads it into a ring of reused player objects and rows, keeps the lists that didn't change, and hands the buffer
+back. Nothing is rounded: every number is the sim's own.
+
+**Before and after**, `pnpm --filter @tiletrigger/server snapshot-bench` (new; the same 900 snapshots of a 64-bot
+match both ways, V8's own structured-clone serialiser for "before", on the shared 4-core box):
+
+| | Objects (structured clone) | Binary |
+|---|---|---|
+| Message size | 14,062 B (as JSON text: 12,236 B) | 8,822 B |
+| Writing it, in the worker | median 0.054 ms, p95 0.083 ms | median 0.023 ms, p95 0.029 ms |
+| Reading it, on the page | median 0.087 ms, p95 0.119 ms | median 0.008 ms, p95 0.020 ms |
+| New objects on the page, a snapshot | 55 KB | 4.5 KB |
+| ... a second (30 snapshots) | **1.58 MB** | **0.13 MB (-92 %)** |
+
+What is left on the page is the message object itself, the views of the buffer, private state and events (parsed
+afresh, on purpose) and a score or pickup list when it changes. Read into new objects instead of the ring, the same
+messages make 38 KB a snapshot, so most of the saving is the reuse. With vehicles moving (the coverage map, 24
+bots, Capture the Flag) it is 31 KB a snapshot before and 12 KB after: moving vehicles' rows and the mode's state
+are new each time.
+
+**In the game**, the probe as above (`PROF_STEPS=alloc PROF_WARM=60 PROF_SECONDS=40`, the production build, Flavius
+Rule, 64 bots, one load each; "before" is the same build with `PROF_QUERY=perfoff=snapbin`):
+
+| Allocator | Before | After |
+|---|---|---|
+| The worker's message handler (the structured clone) | 0.77 MB/s | 0.008 MB/s |
+| The binary reader (`read`, `readRows`, `parse`, `intern`) | none | 0.023 MB/s |
+| **Snapshot messages in all** | **0.77 MB/s** | **0.03 MB/s** |
+
+(0.77 here against the 1.2 of the earlier runs: the heap profiler samples, and the object sizes differ a little
+between V8's serialiser in Node and the page's.) The totals of the two loads were 8.6 and 4.2 MB a second, but they
+moved with the match, as before: the "before" load built more bodies, the "after" load delivered more snapshots
+unmerged, which shows as more in `Interpolator.push` (0.11 and 0.32 MB a second; on identical snapshots the bench
+finds its allocation the same for cloned and binary-read ones, 21.3 KB a push). Compare the items.
+
+**Bundle.** The reader and writer are in the match's chunk and the worker's, not in the menu's first JS (2,651.7 kB
+with this change; budget 2,800).
+
+**Not measured:** frame time and GC pauses on a real GPU (SwiftShader here), and Safari or Firefox (the bench is
+V8's, the probe Chromium's).
+
 ## Left for later
 
 - **Body builds per death.** Done 2026-11-17 ("Body pool" above): up to 32 kept bodies in a big match, half the builds.
-- **The snapshot message format.** Structured-cloned objects come to 1.2 MB a second at 64 players; a binary snapshot
-  would remove most of it.
+- **The snapshot message format.** Done 2026-11-19 ("Snapshot format" below): binary messages from the match worker,
+  read into reused objects; the item drops from 0.8-1.2 MB a second to about 0.03.
 - **Frame time on a real GPU.** The owner's next recording on Flavius Rule shows what the smaller heap does to the
   swings and to GC pauses. The F3 overlay's `memory` line and the recording's `heapMB` column read it.
 - **The probe.** `tools/perf/match-profile.mjs` (`PROF_*` settings at its top); `PROF_DIST=dist-prof` serves an
