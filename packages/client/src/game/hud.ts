@@ -1,4 +1,4 @@
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, lookBranch, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
@@ -537,7 +537,7 @@ export class Hud {
     const p = this.roster.get(slot);
     if (!p) return `Player ${slot + 1}`;
     // Ranks & badges on: the title before the name; off: plain, an Army bot's rank left off ("Sgt. Dunmore" → "Dunmore").
-    return this.rank(slot)?.name ?? (p.bot ? nameWithoutRank(p.name) : p.name);
+    return this.rank(slot)?.name ?? (p.bot && lookBranch(p.look) === 'army' ? nameWithoutRank(p.name) : p.name);
   }
 
   /** The name a player joined with, as the roster has it (no rank title): for listings, not for show. */

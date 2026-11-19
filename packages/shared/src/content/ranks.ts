@@ -37,9 +37,9 @@ export function rankStep(points: number, floor = 1): number {
 /** A step's title in a group ("Sgt.", "Ghast"). */
 export const rankTitle = (group: RankGroup, step: number): string => RANK_TITLES[group][Math.max(1, Math.min(9, step)) - 1]!;
 
-/** What a ranked player is shown as: their title before their name (an Army bot's own rank replaced). */
+/** What a ranked player is shown as: their title before their name (an Army soldier's own rank replaced). */
 export function rankedName(name: string, group: RankGroup, step: number): string {
-  return `${rankTitle(group, step)} ${nameWithoutRank(name)}`;
+  return `${rankTitle(group, step)} ${group === 'army' ? nameWithoutRank(name) : name}`;
 }
 
 /** A player's rank as shown: their group, step, title, badge and name. */
