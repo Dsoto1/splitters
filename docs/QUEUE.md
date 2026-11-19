@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/fixes-20261120` · 8164b109 · run 44634649215 (fix batch 2026-11-20 so far: ajar door leaves solid at their angle; physicsfx split into physicsfx, beams and tracers/tracers2/tracers3, the cause of the e2e shards cut off at the 45-minute limit; green on attempt 1. Next risk: editorux took 1,251 s in this run, planned 55, its shard 43 of 45 min.)
 - `wip/fable-sights-3` · 7b85d497 · 44610281004 (lane F: scope feel, sights pass step 3; green on attempt 2, one shard cancelled at the time limit in attempt 1; checked before `wip/fable-sights-2` landed, which it contains)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
