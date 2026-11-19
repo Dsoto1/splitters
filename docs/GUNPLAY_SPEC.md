@@ -839,6 +839,73 @@ as far as it does in hip fire, for sights and every scope level alike. The playe
 (0.2–3×, default 1×) multiplies on top, easing in as the sights come up so nothing jumps
 (`zoomLookScale` in `packages/client/src/game/lookFilter.ts`).
 
+### Sights that line up
+
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 1).** Aiming down the sights
+puts the camera behind each gun's own drawn sights, with the front sight's top on the point of aim: the crosshair's
+centre, where the round goes (rounds leave from the eye along the aim, §5). The gun is turned and moved to the eye;
+nothing about the shot changes, and the blend, the field of view (0.72 of the hip's), the bob, the kick and the sway
+are as they were. At the hip nothing changes.
+
+- **The fit** (`tools/content/sight-fit.mjs`, run by `pnpm content:rebuild`, checked by `pnpm content:check`) reads each
+  gun's model. On the plane of the barrel it takes the gun's top profile and the line that rests on it across the
+  middle between the grip and the muzzle: its front end is the **front sight**'s top, its rear end the **rear sight**.
+  A slice across the rear sight then says what the eye does there: through the middle of an **aperture**'s hole, over
+  the ears of a **notch** (through the notch's own middle), or 1.5 mm over a plain **post** or, with a front sight
+  only, the receiver (**bead**), so the front sight shows above it. The **eye point** is on the line through the two,
+  as far behind the gun as it aimed before (the stock's end 0.2 m ahead of the eye, a handgun at its hip distance):
+  any nearer and the camera's near plane (0.1 m) cuts the stock open inside the view. The line from the eye to the
+  front sight is tested against the model's triangles and must be clear.
+- **The table** is `packages/shared/src/content/sightFit.generated.ts` (eye, rear and front points per weapon, in the
+  model's space like `view.muzzleAt`), loaded with the match's view, not with the menu. `game/sightPose.ts` turns it
+  into the gun's placement (`sightPlacement`); `view.ts` blends to it from the hip.
+- **Tolerance: 0.1°** (`SIGHT_TOLERANCE_DEG`) between the sights and the aim. Before the fit the 13 fitted guns were
+  0.6° to 4.1° off (the gun's highest point sat 6 mm under the eye line, centred on its bounds); as drawn (the sheet's rays)
+  the front sight's top is now within 0.03° of the aim's height and its middle within 0.09° across. `packages/client/test/sightPose.test.ts` holds every fitted gun to it and names the fitted, the
+  hand-corrected and the excluded weapons, so a new gun cannot slip in unfitted.
+- **No fit** (`SIGHT_EXCLUDED`, each with its reason): guns whose models have no usable sights keep the placement they
+  had: the flat-topped kit guns (Arc Caster, Bubble Blaster, Flak Cannon, Laser Rifle, Oil Slicker, Flamethrower,
+  Swarm Launcher, Disc Launcher, Arena Disc), the tube launchers (Rocket Launcher, Guided Rocket, Blast Rockets,
+  Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (a scope
+  tube, no irons), the Flare Gun (drawn broken open), the Gilded Pistol (its cock stands in the line) and the Spear.
+  Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun) hide the gun behind the scope overlay, the Battle
+  Rifle brings its optic's eyepiece to the eye (`view.optic`), and melee weapons, tools and mounted guns do not aim.
+- **The audit** is the sight sheet, `?mode=sights` (client `tools/sightSheet.ts`): each weapon from the eye as the game
+  places it, the crosshair's centre marked, a target 15 m off; ←/→ step through the weapons, A toggles the aim, B the
+  placement from before the fit. `window.__sights.audit()` casts rays at the gun as drawn and reports how far its
+  top edge on the centre column (the front sight's top) is from the aim, the blade's middle across, and the nearest
+  drawn point to the eye.
+
+**Adding a gun.** Run `node tools/content/sight-fit.mjs --report`. A gun whose sights it finds joins the table; look at
+it on the sight sheet, then add it to `FITTED` in `sightPose.test.ts`. When the tool reports `no-sights`, `off-bore`
+(the line is over 4° off the barrel), `rear-on-stock` or `blocked`, decide in `content/sight-fit.json`: a
+**correction** (`rear` and/or `front` points read off the model, with the reason) when the gun has sights the tool
+misread, or an **exclusion** (with the reason) when it has none. No corrections were needed for the first 13.
+
+**What parts 2 and 3 need** (optics by gun; scope feel), from what step 1 found:
+
+- **The aim reticle is one HUD mark for every gun**: `#reddot` (hud.ts `setAds`, style.css), a red ring and dot that
+  fades in over the crosshair at 60 % of the aim. It now sits on the front sight's top. Real red dots and holographic
+  sights need a mark drawn on the gun's own glass (it must stay on the aim through the kick and bob), and the irons
+  want no HUD dot at all.
+- **Depth is the limit on sight size.** The camera's near plane (0.1 m) is the world's, so a long gun aims with its
+  rear sight 0.45-0.66 m from the eye and its sights a few pixels across. Optics that fill the view need the gun
+  nearer: the Battle Rifle's optic already does it by drawing the gun at its own field of view (`opticView.ts`
+  `squash`, a depth mask on the glass, the HUD shading round the lens); the same frame can carry a 2-3× optic and a
+  sniper scope on the model instead of the full-screen overlay.
+- **Which models carry an optic today**: the Battle Rifle (`guns/frontier_rifle.glb`, eyepiece at `view.optic.eye`),
+  the Marksman Rifle and the Precision Rifle (scope tubes on the model, hidden behind the `#scope` overlay), the Plasma
+  Rifle (a tube on a mount, unused). None has a rail part to hang a red dot on: the M4 (Burst Rifle) has a flat-top
+  rail under its flip-up aperture, the natural first mount. A mounted optic's eye point and axis fit the same table
+  (a `kind` per optic, the rear point the glass's middle).
+- **Reticles and holdover**: `#scope` and `#optic` (hud.ts `setScope`, `setOptic`; reticles `duplex` and `chevron`),
+  holdover marks from `game/holdover.ts` placed for the view's zoom; they carry over unchanged if each optic gives its
+  half-angle as the two do now.
+- **Scope feel exists in part**: sway with a Shift breath-hold on its own meter (session.ts `updateScopeSway`,
+  `hud.setBreath`: 3.5 s to hold, not yet on stamina), a second zoom on the wheel (`zoomLevel`, ×0.45), a 0.16 s
+  `scope-in` fade. Missing: the edge darkening as it comes up, stamina, the glint (a new bright moment: it needs its
+  moment in the `flashing` flow and a calm form under Reduce flashing).
+
 ---
 
 # 16. Animation Priority & Interrupt Rules
