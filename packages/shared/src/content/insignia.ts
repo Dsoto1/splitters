@@ -29,7 +29,7 @@ const ARMY_IDS = ['pvt', 'pfc', 'cpl', 'sgt', 'ssgt', 'lt', 'capt', 'maj', 'col'
 const STEPS = [1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
 type MarkId = `${MarkGroup}${(typeof STEPS)[number]}`;
 /** Every badge: the Army's nine ranks, then each other group's nine steps (`horror1` … `horror9`). */
-export const INSIGNIA_IDS = [...ARMY_IDS, ...MARK_GROUPS.flatMap((g) => STEPS.map((n) => `${g}${n}` as MarkId))] as const;
+export const INSIGNIA_IDS = /* @__PURE__ */ (() => [...ARMY_IDS, ...MARK_GROUPS.flatMap((g) => STEPS.map((n) => `${g}${n}` as MarkId))] as const)();
 export type InsigniaId = (typeof ARMY_IDS)[number] | MarkId;
 
 const RANK_INSIGNIA: Readonly<Record<SoldierRank, InsigniaId>> = { 'Pvt.': 'pvt', 'Pfc.': 'pfc', 'Cpl.': 'cpl', 'Sgt.': 'sgt', 'SSgt.': 'ssgt', 'Lt.': 'lt', 'Capt.': 'capt', 'Maj.': 'maj', 'Col.': 'col' };
@@ -56,10 +56,10 @@ export const RANK_TITLES: Readonly<Record<RankGroup, readonly string[]>> = {
 export const MARK_NAMES: Readonly<Record<MarkGroup, string>> = { agency: 'Agency ring', horror: 'skull', space: 'star', machines: 'gear', legends: 'crown', animals: 'paw', folk: 'chevron' };
 
 /** Each badge's name (tooltips, screen readers): the rank's title. */
-export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = Object.fromEntries([
+export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = /* @__PURE__ */ (() => Object.fromEntries([
   ...ARMY_IDS.map((id, i) => [id, ARMY_RANK_NAMES[i]!]),
   ...MARK_GROUPS.flatMap((g) => STEPS.map((n) => [`${g}${n}`, RANK_TITLES[g][n - 1]!])),
-]) as Record<InsigniaId, string>;
+]) as Record<InsigniaId, string>)();
 
 /** Other ranks a character's own name may carry, as the rank they wear (a Flight Lieutenant ranks with a Captain). */
 const OTHER_RANKS: Readonly<Record<string, SoldierRank>> = { 'Flt. Lt.': 'Capt.' };
@@ -229,7 +229,7 @@ function fitBadge(b: Badge): { fill: readonly InsigniaPolygon[]; cut: readonly I
   return { fill: f.slice(0, b.fill.length), cut: f.slice(b.fill.length) };
 }
 
-const ARMY_SHAPES: Readonly<Record<(typeof ARMY_IDS)[number], InsigniaPolygon[]>> = {
+const armyShapes = (): Readonly<Record<(typeof ARMY_IDS)[number], InsigniaPolygon[]>> => ({
   pvt: chevrons(1, false),
   pfc: chevrons(1, true),
   cpl: chevrons(2, false),
@@ -239,14 +239,18 @@ const ARMY_SHAPES: Readonly<Record<(typeof ARMY_IDS)[number], InsigniaPolygon[]>
   capt: [rect(-0.78, -1, -0.3, 1), rect(0.3, -1, 0.78, 1)],
   maj: [star(0, 0, 1)],
   col: [star(-0.52, 0, 0.5), star(0.52, 0, 0.5)],
-};
+});
 
-const BADGES: Readonly<Record<InsigniaId, { fill: readonly InsigniaPolygon[]; cut: readonly InsigniaPolygon[] }>> = Object.fromEntries([
-  ...ARMY_IDS.map((id) => [id, { fill: fit(ARMY_SHAPES[id]), cut: [] }]),
-  ...MARK_GROUPS.flatMap((g) => STEPS.map((n) => [`${g}${n}`, fitBadge(markBadge(g, n))])),
-]) as Record<InsigniaId, { fill: readonly InsigniaPolygon[]; cut: readonly InsigniaPolygon[] }>;
+/** (Made only where something reads them, so the menu's bundle can leave them out.) */
+const BADGES: Readonly<Record<InsigniaId, { fill: readonly InsigniaPolygon[]; cut: readonly InsigniaPolygon[] }>> = /* @__PURE__ */ (() => {
+  const army = armyShapes();
+  return Object.fromEntries([
+    ...ARMY_IDS.map((id) => [id, { fill: fit(army[id]), cut: [] }]),
+    ...MARK_GROUPS.flatMap((g) => STEPS.map((n) => [`${g}${n}`, fitBadge(markBadge(g, n))])),
+  ]) as Record<InsigniaId, { fill: readonly InsigniaPolygon[]; cut: readonly InsigniaPolygon[] }>;
+})();
 
 /** Each badge's polygons, in a box from -1 to 1, y up. */
-export const INSIGNIA_SHAPES: Readonly<Record<InsigniaId, readonly InsigniaPolygon[]>> = Object.fromEntries(Object.entries(BADGES).map(([id, b]) => [id, b.fill])) as Record<InsigniaId, readonly InsigniaPolygon[]>;
+export const INSIGNIA_SHAPES: Readonly<Record<InsigniaId, readonly InsigniaPolygon[]>> = /* @__PURE__ */ (() => Object.fromEntries(Object.entries(BADGES).map(([id, b]) => [id, b.fill])) as Record<InsigniaId, readonly InsigniaPolygon[]>)();
 /** Each badge's cuts (drawn over it in the rim's dark colour): a skull's eyes, a gear's hole; empty for most. */
-export const INSIGNIA_CUTS: Readonly<Record<InsigniaId, readonly InsigniaPolygon[]>> = Object.fromEntries(Object.entries(BADGES).map(([id, b]) => [id, b.cut])) as Record<InsigniaId, readonly InsigniaPolygon[]>;
+export const INSIGNIA_CUTS: Readonly<Record<InsigniaId, readonly InsigniaPolygon[]>> = /* @__PURE__ */ (() => Object.fromEntries(Object.entries(BADGES).map(([id, b]) => [id, b.cut])) as Record<InsigniaId, readonly InsigniaPolygon[]>)();

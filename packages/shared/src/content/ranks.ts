@@ -18,8 +18,6 @@ export const RANK_STEP_POINTS = [0, 100, 250, 500, 900, 1500, 2400, 3600, 5000] 
 export const RANK_POINTS = { kill: RANK_KILL_POINTS, objective: 30 } as const;
 /** The step a leader wears at least, while leading (owner, 2026-11-18). */
 export const LEADER_STEP = { squad: 3, team: 4 } as const;
-/** The most rank points a joiner's career may bring (a sanity cap on what the roster carries). */
-export const RANK_POINTS_MAX = 10_000_000;
 
 /** One match's rank points from a scoreboard line: kills and objective plays, or Fireteams' points where higher. */
 export function matchRankPoints(s: { k: number; o?: number; p?: number }): number {
@@ -55,6 +53,3 @@ export function shownRank(look: string | undefined, name: string, step: number):
   const group = rankGroup(look);
   return { group, step, ins: rankInsignia(group, step), name: rankedName(name, group, step) };
 }
-
-/** A rank-points count from the wire (the roster, a hello): a whole number in range, else null. */
-export const readRankPoints = (v: unknown): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= RANK_POINTS_MAX ? v : null);

@@ -2,7 +2,7 @@ import { HOST_BOT_SKILLS, HOST_BOT_STYLES, type ClientMessage, type HostCommand,
 import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
 import { isPartyTag } from './party.ts';
-import { readRankPoints } from '../content/ranks.ts';
+import { readRankPoints } from './career.ts';
 import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';

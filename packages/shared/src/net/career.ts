@@ -169,6 +169,11 @@ export const RANK_KILL_POINTS = 10;
 /** A career's rank points (content/ranks.ts): its own, or its kills' worth for a career from before them. */
 export const careerRankPoints = (c: { kills: number; points?: number }): number => Math.max(c.points ?? 0, c.kills * RANK_KILL_POINTS);
 
+/** The most rank points a joiner's career may bring (a sanity cap on what the roster carries). */
+export const RANK_POINTS_MAX = 10_000_000;
+/** A rank-points count from the wire (the roster, a hello): a whole number in range, else null. */
+export const readRankPoints = (v: unknown): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= RANK_POINTS_MAX ? v : null);
+
 /** Hits over rounds fired, in percent (null before any rounds). */
 export const careerAccuracy = (c: Pick<Career, 'shots' | 'hits'>): number | null => (c.shots > 0 ? Math.round((c.hits / c.shots) * 1000) / 10 : null);
 /** Kills per death, to two places (kills alone before any death). */

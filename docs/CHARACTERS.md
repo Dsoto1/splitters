@@ -115,17 +115,46 @@ manifest checker wants one on every `soldiers` character and none elsewhere. Cha
 Santa stays Agency (owner, 2026-11-17); the Operatives (the retired Operative preset and Crimson Operative, held back)
 are Agency too. Shingle Point's Bot characters are "Soldiers & Spies: Army" (set in MapMaker).
 
-**Rank insignia (soldiers only; owner, 2026-11-17).** A Soldiers & Spies character wears a badge
-(`soldierInsignia(look, name)`, shared `content/insignia.ts`): Agency the Agency mark (a ring round a dot), the Army
-the rank its name starts with, as the soldier name theme gives it ("Sgt. Dunmore"): Pvt. one chevron, Pfc. one
-chevron and a rocker, Cpl. two chevrons, Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one
-star, Col. two stars. Random Army bots go by rank and surname (`botNameFor`: an Army look whose own name has no rank skips its own name for the soldier theme's; Flt. Lt. Ember keeps his and wears a captain's bars, a Flight Lieutenant's rank). An Army player whose name has no rank wears none, and no one outside Soldiers & Spies does.
-The badge shows before the name in the kill feed and on the scoreboard (inline SVG in the name's colour with a dark
-outline, `game/insigniaSvg.ts`), and is the marker over the soldier's head on both sides (`game/insigniaMesh.ts`: a
-flat shape with a dark rim, in the marker's colour: your ally colour from Options → markers over teammates, red over
-enemies where enemy markers are shown; hidden as the arrow is, under smoke or a cloak). Everyone else keeps the arrow
-(the ally diamond, the enemy's downward triangle). Each badge is a few simple polygons in a -1..1 box (`INSIGNIA_SHAPES`),
-so it reads at kill-feed size and at a distance.
+**Ranks & badges (owner, 2026-11-18; Options → Ranks & badges and the pause menu, off by default).** Off, names are
+plain and the marker over a head is the arrow (the ally diamond, the enemy's downward triangle), as before 11-18: an
+Army bot's "Sgt. Dunmore" shows as "Dunmore" (its name keeps the rank; a character's own, "Flt. Lt. Ember", stays). On,
+every player and bot wears a rank on nine steps: its title before the name and its badge, in the kill feed, on the Tab
+and pause boards and as the marker over the head on both sides (in the marker's colour: your ally colour, red over
+enemies where enemy markers are shown; hidden as the arrow is, under smoke or a cloak; far off it grows, up to 2.5 times).
+
+| Group (rank group) | Badge | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Soldiers & Spies: Army (`army`) | chevrons, bars, stars | Pvt. | Pfc. | Cpl. | Sgt. | SSgt. | Lt. | Capt. | Maj. | Col. |
+| Soldiers & Spies: Agency (`agency`) | Agency ring | Asset | Courier | Contact | Handler | Operative | Agent | Senior Agent | Station Chief | Spymaster |
+| Horrors & Creatures (`horror`) | skull | Ghoul | Shade | Wraith | Ghast | Fiend | Revenant | Horror | Dread Lord | Overlord |
+| Outer Space (`space`) | star | Cadet | Ensign | Pilot | Navigator | Flight Officer | Commander | Captain | Commodore | Admiral |
+| Machines (`machines`) | gear | Unit | Drone | Servo | Automaton | Android | Titan | Overseer | Mainframe | Prime |
+| Legends (`legends`) | crown | Squire | Knight | Champion | Baron | Earl | Duke | Prince | King | Emperor |
+| Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex |
+| Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
+
+The first and last titles are the owner's ("as written is fine"); the steps between are the lead's. **Badges**
+(`content/insignia.ts`, `INSIGNIA_SHAPES` and `INSIGNIA_CUTS`; a few flat polygons in a -1..1 box, so they read at
+kill-feed size and far off): the Army's are its military ranks (Pvt. one chevron, Pfc. one and a rocker, Cpl. two,
+Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one star, Col. two stars). Every other group
+wears its own mark, the step told the same way for all: steps 1-3 the bare mark, 4-6 the mark inside a ring, 7-9 inside
+a double ring, with no, one or two bars under it. A skull's eyes, nose and teeth and a gear's hole are cuts drawn in the
+dark outline colour. The badge shows in the name's colour with a dark outline (inline SVG, `game/insigniaSvg.ts`) and
+over the head as a flat mesh with a dark rim (`game/insigniaMesh.ts`; crowds batch markers by colour and badge).
+
+**Progression** (`content/ranks.ts`, `game/rankBook.ts`): rank points, a kill 10 and an objective play 30 (Fireteams'
+own points where higher); steps start at 0, 100, 250, 500, 900, 1,500, 2,400, 3,600 and 5,000 points. Everyone starts on
+step 1; a squad leader wears at least step 3 and a team leader step 4 while they lead. Ranks rise quietly over a
+session and carry from match to match: bots by name for the session (an Army bot's own rank left off its name; kept in
+the page until it closes), players with their career (`points` in `net/career.ts`, summed from each match's summary;
+a career from before them counts its kills at 10 each). A player's browser sends its career rank points as it joins
+(`rx` in the hello; the roster passes it on), so everyone sees the same rank for them. Every browser works ranks out
+from the roster and the scoreboard it already has: no message more and nothing at match start. Purely cosmetic.
+
+**Rank-up** (`game/rankGlow.ts`, style.css `rank-up`): when a rank rises from points, the badge swells (to 1.45 times)
+and a soft halo in its colour rises and fades over a second, in the kill feed (its lines naming them take the new title)
+and over the head. Under Reduce flashing it is smaller and dimmer (1.2 times, the halo at most 0.3) and eases in and
+out: a soft glow, no flash. The flicker check's `rankup` moment records it.
 
 **Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
 Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
