@@ -1,5 +1,5 @@
 import { coreCatalog, SIDES, SIDE_DIRS, type Side, type TileCatalog } from '../map/catalog.ts';
-import { buildOccupancy, cellKey, edgeSegments, resolveEdge, rotateSide, type CellOccupant } from '../map/geometry.ts';
+import { buildOccupancy, cellKey, rotateSide, walledUpSide, type CellOccupant } from '../map/geometry.ts';
 import type { MapDocument, Rotation, SetPiecePlacement, TilePlacement } from '../map/schema.ts';
 import { expandSetPieces } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
@@ -36,9 +36,7 @@ function cellPorts(occ: CellOccupant): { side: Side; bore: 'S' | 'L'; family?: s
 }
 
 /** Whether a side of a cell has been closed with a wall style (a dead end the map maker made). */
-function walledUp(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side, cellSize: number, levelHeight: number): boolean {
-  return edgeSegments(resolveEdge(cells, x, y, z, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1);
-}
+const walledUp = walledUpSide;
 
 /**
  * The buried pieces joined to the given ones port to port (a run and its branches), the given ones included: what

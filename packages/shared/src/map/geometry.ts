@@ -54,6 +54,8 @@ export interface WorldBox {
    * see-through edge with nothing built beyond it (boundaryLatticeBox), so nobody crawls out between its posts and rails.
    */
   bodyOnly?: true;
+  /** The face closing a buried passage's open end (buriedOpenEnds): gone once a portal, a Dead End or another piece is put there. */
+  endCap?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -400,6 +402,65 @@ export function isOpenEdge(cells: Map<string, CellOccupant>, x: number, y: numbe
   return !!here && !!there && hasPort(here, side) && hasPort(there, OPPOSITE[side]);
 }
 
+/** Whether a side of a cell has been closed with a wall style (a dead end the map maker made): a wall across the passage's middle, a metre up. */
+export function walledUpSide(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side, cellSize: number, levelHeight: number): boolean {
+  return edgeSegments(resolveEdge(cells, x, y, z, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1);
+}
+
+/** A buried passage: a piece with a bore the hill stays on top of (`cover`), not a mouth, not steps open to the sky. */
+export const isBuriedPassage = (def: TileDefinition): boolean => !!def.bore?.cover?.length && !def.bore.open && !def.bore.sky && !def.open;
+
+/** An end of a buried passage that joins nothing: its cell, the side, and the piece. */
+export interface BuriedOpenEnd {
+  occ: CellOccupant;
+  x: number;
+  y: number;
+  z: number;
+  side: Side;
+}
+
+/**
+ * The ends of buried passages (isBuriedPassage) that lead to nothing built and aren't walled up: without a portal or a
+ * Dead End there, the passage would look out into the ground's underside (owner, 2026-11-18). Each is closed with a
+ * plain face of the piece's own lining (buriedEndCaps) and validation warns about it (tunnel.mouth_buried).
+ */
+export function buriedOpenEnds(cells: Map<string, CellOccupant>, cellSize: number, levelHeight: number): BuriedOpenEnd[] {
+  const out: BuriedOpenEnd[] = [];
+  for (const [key, occ] of cells) {
+    if (!isBuriedPassage(occ.def)) continue;
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const side of SIDES) {
+      if (!hasPort(occ, side)) continue;
+      const [dx, dy] = SIDE_DIRS[side];
+      if (cells.has(cellKey(x + dx, y + dy, z)) || walledUpSide(cells, x, y, z, side, cellSize, levelHeight)) continue;
+      out.push({ occ, x, y, z, side });
+    }
+  }
+  return out;
+}
+
+/** How thick the face closing an open end is (inside the piece's own cell, so nothing past it changes). */
+export const END_CAP_THICKNESS = 0.3;
+
+/**
+ * The faces closing buried passages' open ends (buriedOpenEnds): a wall across the whole side, from under the floor to
+ * the top of the piece's bore, in the piece's own lining (its family's rock, brick or concrete), solid in play.
+ */
+function buriedEndCaps(cells: Map<string, CellOccupant>, cellSize: number, levelHeight: number, catalog: TileCatalog): WorldBox[] {
+  const half = cellSize / 2;
+  const out: WorldBox[] = [];
+  for (const { occ, x, y, z, side } of buriedOpenEnds(cells, cellSize, levelHeight)) {
+    const drawn = catalog.drawn(occ.placement) ?? occ.def;
+    const lining = drawn.solids?.find((b) => b.kind === 'wall' && b.surface)?.surface;
+    // The bore's top at this storey of the piece (its cut boxes are in the piece's frame, from its own level).
+    const cutTop = Math.max(...(occ.def.bore?.cut ?? []).map((c) => c[4] ?? 0), 0) - occ.level * levelHeight;
+    const top = Math.min(levelHeight, Math.max(2.5, cutTop));
+    const b = sideBox(side, x * cellSize, y * cellSize, half, -half, half, z * levelHeight - TILE_DIMENSIONS.floorThickness, z * levelHeight + top, 0, END_CAP_THICKNESS, occ.placement.id, 'wall');
+    out.push({ ...b, endCap: true, ...(lining ? { surface: { material: lining.material, tint: lining.tint ?? null } } : {}) });
+  }
+  return out;
+}
+
 /**
  * Convert the Classic Grid layout into world boxes. Unconnected ports become
  * solid walls (auto-cap) unless the tile or the creator says otherwise, so
@@ -668,6 +729,8 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     }
     return boxes;
   }
+  // Buried passages' ends that join nothing are closed (no looking out into the ground's underside).
+  boxes.push(...buriedEndCaps(cells, cellSize, levelHeight, catalog));
   boxes.push(...propBoxes(map));
   boxes.push(...blockBoxes(map));
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));

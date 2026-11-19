@@ -199,7 +199,10 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(lights.length).toBe(3);
     expect(lights.map((l) => l.position)).toEqual([[0, 3.1, 0], [0, 3.1, 8], [0, 3.1, 16]]);
     // Open along its whole length (and through the tile joined on at its south end): 32 m of passage.
-    const physics = new PhysicsWorld(buildMapGeometry(built).filter((b) => b.kind !== 'barrier'), null);
+    // (Its two ends join nothing yet: each is closed by an end cap until a portal goes on it.)
+    const geometry = buildMapGeometry(built);
+    expect(geometry.filter((b) => b.endCap).length).toBe(2);
+    const physics = new PhysicsWorld(geometry.filter((b) => b.kind !== 'barrier' && !b.endCap), null);
     for (const [x, y] of [[0, 1.5], [1.6, 0.3], [-1.6, 3.1]] as [number, number][]) expect(physics.raycastWorld({ x, y, z: -11.9 }, { x: 0, y: 0, z: 1 }, 31.8)).toBeNull();
     physics.free();
     // The map's own tile and the piece's are one run; its open ends are the tile's south and the piece's north.
@@ -208,6 +211,9 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     const made = addPortalsCommand(placed);
     if ('error' in made) throw new Error(made.error);
     expect(made.placed.map((p) => `${p.tile}@${p.x},${p.y}r${p.rotation}`).sort()).toEqual(['core.tunnel_concrete_portal@0,-2r0', 'core.tunnel_concrete_portal@0,3r2']);
+    // With the portals on, the caps are gone.
+    const portaled = expandSetPieces({ ...placed, classicStructure: { ...placed.classicStructure, tiles: [...placed.classicStructure.tiles, ...made.placed] } }, builtInSetPieces()).map;
+    expect(buildMapGeometry(portaled).filter((b) => b.endCap)).toEqual([]);
   });
 
   it('a hint, not a warning, for a buried run mounded on flat ground that would be flush a level down; none under a hill or a level down', () => {

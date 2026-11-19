@@ -39,7 +39,7 @@ import {
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml } from './editorDom.ts';
 import { perfOn } from '../game/perfSwitches.ts';
-import { pickRadius, type Hit } from './editorParts.ts';
+import { isSmallThing, pickRadius, type Hit } from './editorParts.ts';
 import { groundWords } from './paintTools.ts';
 import { raycastBoxes, type BoxHit } from './raycast.ts';
 
@@ -108,7 +108,27 @@ export class Hover {
   /** The drawn map's entities by id, per document as drawn (built once, not on every pointer move). */
   private readonly entitiesById = new WeakMap<object, Map<string, MapEntity>>();
 
-  private pickNow(): Hit | null {
+  /**
+   * Everything under the pointer, for a click again at the same spot to step through (MapMaker: picking things inside
+   * others): what a click picks first, then whatever else the pointer's ray passes through, nearest first (things,
+   * walls and floors of this level, set pieces), then a marker on the floor, the cell's tile and a set piece's cell.
+   */
+  pickAll(): Hit[] {
+    const out: Hit[] = [];
+    const seen = new Set<string>();
+    const add = (h: Hit | null) => {
+      if (!h || seen.has(`${h.kind}:${h.id}`)) return;
+      seen.add(`${h.kind}:${h.id}`);
+      out.push(h);
+    };
+    add(this.pick());
+    const all: { hit: Hit; d: number }[] = [];
+    this.pickNow(all);
+    for (const h of all.sort((a, b) => a.d - b.d)) add(h.hit);
+    return out;
+  }
+
+  private pickNow(all?: { hit: Hit; d: number }[]): Hit | null {
     // The map as drawn: a set piece's parts (tiles and entities of the expansion) pick their placement, as one.
     const view = this.app.viewDoc;
     const partOf = this.app.expansion.partOf;
@@ -131,13 +151,34 @@ export class Hover {
     const tileHere = (id: string): boolean => free(id) && (tilesById.get(id) ?? []).some((t) => (placementCells(t) ?? []).some((c) => c[2] === this.app.level));
     let best: { kind: 'tile' | 'entity'; id: string; d: number } | null = null;
     const ray = this.app.ray;
+    // A small thing (a spawn, a pickup, a light, logic) the ray passes through: drawn through walls (its icon), so
+    // picked through them too, whatever stands in front (a spawn dragged inside a set piece's stair).
+    let small: string | null = null;
     if (ray) {
-      const ent = this.app.view.pickEntities(ray.origin, ray.dir).find((h) => ok(byId.get(h.id)));
+      const ents = this.app.view.pickEntities(ray.origin, ray.dir).filter((h) => ok(byId.get(h.id)));
+      const ent = ents[0];
       if (ent) best = { kind: 'entity', id: ent.id, d: ent.distance };
-      const hit = this.nearestBox(ray, (b) => b.kind !== 'barrier' && (tileHere(b.sourceId) || ok(byId.get(b.sourceId))));
+      small = ents.find((h) => isSmallThing(byId.get(h.id)!))?.id ?? null;
+      const wanted = (b: WorldBox) => b.kind !== 'barrier' && (tileHere(b.sourceId) || ok(byId.get(b.sourceId)));
+      const hit = this.nearestBox(ray, wanted);
       // A model a hair behind the box it stands in still counts (crates in a doorway, props on a floor).
       if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tileHere(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
+      if (all) {
+        for (const h of ents) all.push({ hit: whole({ kind: 'entity', id: h.id }), d: h.distance });
+        for (const h of this.boxesAlong(ray, wanted)) all.push({ hit: whole({ kind: tileHere(h.box.sourceId) ? 'tile' : 'entity', id: h.box.sourceId }), d: h.distance });
+      }
     }
+    if (all) {
+      const p = this.app.hoverPoint;
+      if (p) for (const e of view.entities) if (Math.hypot(e.position[0] - p.x, e.position[2] - p.z) < pickRadius(e) && ok(e)) all.push({ hit: whole({ kind: 'entity', id: e.id }), d: Infinity });
+      const cell = this.app.hoverCell;
+      if (cell) {
+        const tile = tileAt(view, cell[0], cell[1], this.app.level);
+        if (tile && free(tile.id)) all.push({ hit: whole({ kind: 'tile', id: tile.id }), d: Infinity });
+        for (const [id, cells] of this.app.expansion.footprints) if (free(id) && cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.app.level)) all.push({ hit: { kind: 'setpiece', id }, d: Infinity });
+      }
+    }
+    if (small) return whole({ kind: 'entity', id: small });
     if (best?.kind === 'entity') return whole(best);
     const p = this.app.hoverPoint;
     if (p) {
@@ -202,6 +243,19 @@ export class Hover {
     return best;
   }
 
+  /** Every drawn box the ray hits that `wanted` takes, nearest first, one hit a box (as nearestBox, without stopping at the first). */
+  private boxesAlong(ray: { origin: Vec3; dir: Vec3 }, wanted: (b: WorldBox) => boolean): BoxHit[] {
+    const boxes = this.app.visibleBoxes;
+    const out: BoxHit[] = [];
+    const one: WorldBox[] = [boxes[0]!];
+    for (const b of boxes) {
+      one[0] = b;
+      const hit = raycastBoxes(ray.origin, ray.dir, one);
+      if (hit && wanted(hit.box)) out.push(hit);
+    }
+    return out.sort((a, b) => a.distance - b.distance);
+  }
+
   /** The buried piece (a tile with a bore: map/groundBore.ts) under the place on the ground the pointer is on, if any. */
   private buriedUnderPointer(free: (id: string) => boolean): string | null {
     const ray = this.app.ray;
@@ -241,10 +295,13 @@ export class Hover {
       const ray = this.app.view.pointerRay(clientX, clientY);
       const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
       if (hit && ray) ground = { at: hit, distance: Math.hypot(hit.x - ray.origin.x, hit.y - ray.origin.y, hit.z - ray.origin.z) };
+      // Below ground: the glass ground is cut away round where the pointer meets it.
+      this.app.view.setGroundCut(hit);
       if (hit && this.app.tool.kind === 'terrain') this.app.terrain.terrainHover = hit;
-      // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
+      // Spawns, pickups and props stand on the ground where it is nearer than the level plane (not below ground,
+      // where the ground is glass and things go on the level being edited).
       // (Tiles and set pieces go on the grid: the level being edited, not the ground.)
-      if (hit && ray && this.app.tool.kind !== 'tile' && this.app.tool.kind !== 'setpiece' && this.app.tool.kind !== 'terrain') {
+      if (hit && ray && !this.app.view.groundGlass && this.app.tool.kind !== 'tile' && this.app.tool.kind !== 'setpiece' && this.app.tool.kind !== 'terrain') {
         const dist = (p: Vec3) => Math.hypot(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
         if (!this.app.hoverPoint || dist(hit) < dist(this.app.hoverPoint)) {
           this.app.hoverPoint = hit;
