@@ -19,6 +19,7 @@
   "ammo": "light",
   "botDesirability": 0.35,
   "botRange": [2, 25],
+  "akimbo": true,
   "view": {
     "model": "guns/makarov.glb",
     "held": { "medium": "guns/makarov.medium.glb", "high": "guns/makarov.high.glb" },

@@ -1,8 +1,9 @@
 {
-  "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` / `armshot` override them. Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
+  "$comment": "Weapon defaults (docs/CONTENT_PIPELINE.md, \"How to add a weapon\"). `defaults`: what every weapon file starts from. `families`: gunplay defaults (docs/GUNPLAY_SPEC.md §34-37) a weapon with that `family` inherits through gunplayOf; its own `ballistic` / `accuracy` / `kick` / `falloff` / `headshot` / `legshot` / `armshot` override them. `akimbo`: dual wielding (see the note). Ticks are 1/60 s. Edit, then run `node tools/content/weapons.mjs`.",
   "notes": {
     "codes": "Each weapon file carries its network `code`: never change one, never reuse one (content/codes.lock.json remembers every code ever given).",
     "handling": "Handling (docs/GUNPLAY_SPEC.md §27, §35): `move` is your running speed holding the weapon (a share of everyone's; sprinting is the same for every weapon), `sprintExit` the ticks from leaving a sprint to the first round. Mild on purpose (GUNPLAY_DIRECTION.md: no severe movement penalties, no slow sprint-to-fire); a weapon's own `handling` overrides its family's, and a weapon without a family moves at 1 and fires 6 ticks after a sprint (melee at once).",
+    "akimbo": "Dual wielding (docs/GUNPLAY_SPEC.md, \"Akimbo / Dual Wield\"): what holding a pair of the same gun costs. `cone`, `pattern` (a shotgun's pellet spread), `kick`, `reload` and `raise` multiply what one gun has; `move` is added to handling.move. The top-level `akimbo` block is where every pair starts, a family's `akimbo` block is its trade, and a weapon is eligible only with its own `\"akimbo\": true` (or an object overriding numbers; `as` names the family to take them from when the weapon has none). Step 1: data only, nothing in a match reads it yet.",
     "slots": "Slots: 1 melee and tools, sidearms in 2, rifles in 3, shotguns in 4, precision in 5, lobbers in 6, automatics in 7, heavy weapons in 8 and energy and chemical weapons in 9; pressing a number again cycles through what you carry in that slot. 0: mounted guns (never carried or picked up)."
   },
   "defaults": {
@@ -19,6 +20,7 @@
     "botDesirability": 0.5,
     "botRange": [3, 30]
   },
+  "akimbo": { "cone": 1, "pattern": 1, "kick": 1, "reload": 1, "raise": 1.25, "move": 0 },
   "families": {
     "pistol": {
       "ballistic": { "velocity": 375, "drag": 1.5, "gravityScale": 1, "energy": 450, "tracerEvery": 0, "tracerFinal": 0 },
@@ -44,6 +46,7 @@
       },
       "falloff": { "start": 18, "end": 45, "min": 0.4, "curve": "linear" },
       "handling": { "move": 1, "sprintExit": 3 },
+      "akimbo": { "cone": 1.5, "kick": 1.2, "reload": 1.35 },
       "head": 2,
       "legs": 0.8,
       "arms": 0.9
@@ -103,6 +106,7 @@
       },
       "falloff": { "start": 8, "end": 25, "min": 0.35, "curve": "steep" },
       "handling": { "move": 1, "sprintExit": 4 },
+      "akimbo": { "cone": 1.6, "kick": 1.25, "reload": 1.35 },
       "head": 1.5,
       "legs": 0.85,
       "arms": 0.9
@@ -131,6 +135,7 @@
       },
       "falloff": { "start": 15, "end": 35, "min": 0.35, "curve": "steep" },
       "handling": { "move": 1, "sprintExit": 5 },
+      "akimbo": { "cone": 1.7, "kick": 1.3, "reload": 1.4, "move": -0.03 },
       "head": 1.5,
       "legs": 0.85,
       "arms": 0.9,
@@ -306,6 +311,7 @@
       },
       "falloff": { "start": 8, "end": 28, "min": 0.25, "curve": "steep" },
       "handling": { "move": 0.97, "sprintExit": 7 },
+      "akimbo": { "pattern": 1.15, "kick": 1.4, "reload": 1.5 },
       "head": 1.25,
       "legs": 0.85,
       "arms": 0.9,

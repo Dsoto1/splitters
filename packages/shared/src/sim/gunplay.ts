@@ -17,7 +17,7 @@ import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
 import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
-import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
+import { AKIMBO_BASE, FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
 import { SURFACE_TYPES, materialBallisticOf, propSurfaceOf } from './surfaceTypes.ts';
 
 // ---------------------------------------------------------------- families
@@ -139,6 +139,20 @@ export interface HandlingSpec {
   sprintExit: number;
 }
 
+/**
+ * Dual wielding ("akimbo"; docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): what holding a pair of the same gun costs.
+ * `cone` multiplies the aim cone, `pattern` a shotgun's pellet spread, `kick` the recoil, `reload` and `raise` those
+ * times; `move` is added to handling.move. Data only so far (step 1): nothing in a match reads it.
+ */
+export interface AkimboSpec {
+  cone: number;
+  pattern: number;
+  kick: number;
+  reload: number;
+  raise: number;
+  move: number;
+}
+
 /** A family's defaults (content/weapons/families.json `families`). */
 export interface FamilyDefaults {
   ballistic: BallisticSpec | null;
@@ -146,6 +160,8 @@ export interface FamilyDefaults {
   kick: KickSpec;
   falloff: FalloffSpec;
   handling: HandlingSpec;
+  /** The family's dual-wielding trade, over AKIMBO_BASE; a weapon is eligible only by its own `akimbo`. */
+  akimbo?: Partial<AkimboSpec>;
   head: number;
   legs: number;
   arms: number;
@@ -155,7 +171,7 @@ const acc = (base: number, move: number, air: number, perShot: number, tight: nu
 const kick = (pitch: number[], yaw: number[], variance: number, delay: number, settle: number, rate: number, visual: number): KickSpec => ({ pitch, yaw, variance, delay, settle, rate, visual });
 
 /** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff): content/weapons/families.json, with named fields. */
-export { FAMILY_DEFAULTS };
+export { AKIMBO_BASE, FAMILY_DEFAULTS };
 
 /** Everything gunplay needs to know about one weapon, defaults filled in. */
 export interface Gunplay {
@@ -206,6 +222,26 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
   };
   cache.set(def, g);
   return g;
+}
+
+const akimboCache = new WeakMap<WeaponDefinition, AkimboSpec | null>();
+
+/**
+ * A weapon's dual-wielding numbers, or null when it can't be paired: the base block (families.json `akimbo`), then
+ * its family's (or the family its `akimbo.as` names), then its own (cached). Step 1 of dual wielding: the sim doesn't
+ * call this yet.
+ */
+export function akimboOf(def: WeaponDefinition): AkimboSpec | null {
+  let a = akimboCache.get(def);
+  if (a !== undefined) return a;
+  if (!def.akimbo) a = null;
+  else {
+    const { as, ...own } = def.akimbo === true ? ({} as Exclude<WeaponDefinition['akimbo'], true | undefined>) : def.akimbo;
+    const from = as ?? def.family;
+    a = { ...AKIMBO_BASE, ...(from ? FAMILY_DEFAULTS[from].akimbo : undefined), ...own };
+  }
+  akimboCache.set(def, a);
+  return a;
 }
 
 // ---------------------------------------------------------------- creator rules (spec §10, §5, §43)

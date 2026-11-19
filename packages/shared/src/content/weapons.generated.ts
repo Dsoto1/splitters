@@ -57,6 +57,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'light',
     botDesirability: 0.35,
     botRange: [2, 25],
+    akimbo: true,
     pellets: 1,
     fireIntervalTicks: 10,
     view: {
@@ -405,6 +406,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       rate: 0.1,
       visual: 0.18,
     },
+    akimbo: { as: 'pistol' },
     pellets: 1,
     view: {
       model: 'guns/plasma_defender.glb',
@@ -570,6 +572,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [0, 14],
     ammo: 'light',
     recoil: { bloom: 0.006, maxBloom: 0.07, recover: 0.002 },
+    akimbo: true,
     pellets: 1,
     botDesirability: 0.5,
     view: {
@@ -713,6 +716,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'shells',
     knockback: 1.2,
     recoil: { bloom: 0, maxBloom: 0, recover: 0 },
+    akimbo: true,
     view: {
       model: 'weapons/sawed_off.glb',
       viewOffset: [0.21, -0.21, 0.52],
