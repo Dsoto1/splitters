@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **A door standing ajar is cover too.** Its leaf is solid at its angle, beside the doorway it still closes.
 - **After the countdown, straight into the fight.** No pause menu or Tab board pops up when a match starts; if the game doesn't have the mouse yet, one small "Click to fight" line shows instead (Tap on a phone). Esc still pauses.
 - **Esc always closes the Bots window over the pause menu.** If the game took the mouse late after Resume, opening the Bots window now lets it go, and the first Esc closes the window.
 - **MapMaker warns about stairs too low to walk standing.** As you build, a stair or ramp with less room over it than the tallest character needs (2.62 m over steps, a little over 2.1 m on a ramp) shows a warning naming the piece, its clear height and what is over it.
