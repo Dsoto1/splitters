@@ -17,6 +17,8 @@ export interface OpticKind {
   adsFov?: number;
   /** A magnified optic: the least and most magnification over the hip view it covers (each weapon's own is `WeaponOptics.mag`). */
   mag?: readonly [number, number];
+  /** A magnified optic's zoom steps on the wheel: shares of the weapon's aimed field of view, the first 1 (a weapon may give its own). */
+  steps?: readonly number[];
   /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length. */
   glass?: { rise: number; half: readonly [number, number]; length: number };
   /** Its mark's sizes: tangents of the angle at the eye. */
@@ -27,8 +29,8 @@ export const OPTIC_KINDS: Readonly<Record<OpticKindId, OpticKind>> = {
   irons: { name: 'Iron sights', reticle: 'none', housing: 'none', adsFov: 0.72 },
   reddot: { name: 'Red dot', reticle: 'dot', housing: 'tube', adsFov: 0.72, glass: { rise: 0.034, half: [0.017, 0.017], length: 0.058 }, mark: { dot: 0.004 } },
   holo: { name: 'Holographic sight', reticle: 'ring', housing: 'frame', adsFov: 0.72, glass: { rise: 0.036, half: [0.021, 0.016], length: 0.07 }, mark: { dot: 0.0016, ring: 0.022 } },
-  scope: { name: '2-3x optic', reticle: 'chevron', housing: 'model', mag: [2, 3.6] },
-  sniper: { name: 'Sniper scope', reticle: 'fine', housing: 'overlay', mag: [3, 10] },
+  scope: { name: '2-3x optic', reticle: 'chevron', housing: 'model', mag: [2, 3.6], steps: [1] },
+  sniper: { name: 'Sniper scope', reticle: 'fine', housing: 'overlay', mag: [3, 10], steps: [1, 0.45] },
 };
 
 /**
@@ -40,6 +42,8 @@ export interface WeaponOptics {
   default: OpticKindId;
   allowed: readonly OpticKindId[];
   mag?: number;
+  /** Its own zoom steps, where they differ from its kind's. */
+  steps?: readonly number[];
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
   window?: { at: readonly [number, number, number]; half: readonly [number, number] };
@@ -60,7 +64,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.hand_cannon': { default: 'irons', allowed: ['irons'] },
   'core.laser_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.2285, -0.08], scale: 1.2 } },
   'core.machine_pistol': { default: 'irons', allowed: ['irons'] },
-  'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19 },
+  'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19, steps: [1, 0.45] },
   'core.nailgun': { default: 'irons', allowed: ['irons'] },
   'core.pistol': { default: 'irons', allowed: ['irons'] },
   'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, -0.058], half: [0.0222, 0.0138] } },
@@ -101,3 +105,11 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.swarm': 'a launcher whose rockets home: no sight to line up',
   'core.tank_cannon': 'mounted: never held in the hand',
 };
+
+/**
+ * Scope feel for every magnified optic (content/optics.json `feel`; the client's game/scopeFeel.ts): the sway's size
+ * (radians of real aim), its multiples while holding breath and while out of breath, the seconds its size takes to
+ * ease between them, how long a full breath holds, how long an empty one takes to refill, and how full it must be
+ * after running out before it can be held again.
+ */
+export const SCOPE_FEEL = { sway: 0.0035, swayHeld: 0.12, swaySpent: 2.2, settle: 0.15, breathSeconds: 3.5, recoverSeconds: 4, readyAt: 0.5 } as const;

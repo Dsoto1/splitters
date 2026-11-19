@@ -13,6 +13,7 @@ import { LOW_HEALTH_LOOK } from './lowHealth.ts';
 const HOLD_RING_R = 26;
 const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
+import { EYE_BOX, eyeBoxShade, stepScopeFade } from './scopeFeel.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
 import { RankBook } from './rankBook.ts';
@@ -164,6 +165,7 @@ export class Hud {
     this.weaponName.textContent = '';
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
+    this.scopeLevel = 0;
     this.optic.hidden = true;
     this.scoreboard.hidden = true;
     this.scoreboard.parentElement?.classList.remove('sb-up');
@@ -751,14 +753,92 @@ export class Hud {
     this.pickupTimer = window.setTimeout(() => this.pickupMsg.classList.remove('on'), 1200);
   }
 
-  /** The full-screen scope with its optic kind's reticle (`fine`: a sniper scope's crosshair; `chevron`: a 2-3x optic's) and holdover marks. */
+  /**
+   * The full-screen scope with its optic kind's reticle (`fine`: a sniper scope's crosshair; `chevron`: a 2-3x optic's)
+   * and holdover marks. It fades in and out (scopeFeel.ts SCOPE_FADE; slower with Reduce flashing on): never a cut.
+   */
   setScope(on: boolean, marks: readonly HoldoverMark[] = [], reticle = 'fine'): void {
-    this.scope.hidden = !on;
+    const now = performance.now();
+    const dt = Math.max(0, Math.min(0.1, (now - this.scopeAt) / 1000));
+    this.scopeAt = now;
+    if (!on && this.scopeLevel <= 0) return;
+    this.scopeLevel = stepScopeFade(this.scopeLevel, on, dt, reduceFlashing());
+    this.scope.hidden = this.scopeLevel <= 0;
+    const shown = this.scopeLevel.toFixed(3);
+    if (shown !== this.scopeShown) this.scope.style.setProperty('--so', (this.scopeShown = shown));
     if (on) {
       drawHoldover($('scope-holdover'), marks, 1);
       if (this.scope.dataset.reticle !== reticle) this.scope.dataset.reticle = reticle;
     }
   }
+  private scopeLevel = 0;
+  private scopeAt = 0;
+  private scopeShown = '';
+
+  /**
+   * The eye box (scopeFeel.ts EYE_BOX): the scope's shadow slid `x`, `y` glass radii off the middle (x right, y down),
+   * `dark` its darkness. On whichever of the scope and the optic is up.
+   */
+  setEyeBox(x: number, y: number, dark: number): void {
+    this.eyeBox = { x, y, dark };
+    const host = !this.scope.hidden ? this.scope : !this.optic.hidden ? this.optic : null;
+    if (!host) return;
+    const el = (this.eyeBoxEls[host.id] ??= host.querySelector<HTMLElement>('.eyebox i'));
+    if (!el) return;
+    // (The sheet is three glass diameters across: a glass radius is a sixth of it.)
+    const key = `translate(${((x / 6) * 100).toFixed(2)}%, ${((y / 6) * 100).toFixed(2)}%)|${dark.toFixed(2)}`;
+    if (this.eyeBoxShown[host.id] === key) return;
+    this.eyeBoxShown[host.id] = key;
+    el.style.transform = key.slice(0, key.indexOf('|'));
+    el.style.opacity = dark.toFixed(2);
+  }
+  private eyeBox = { x: 0, y: 0, dark: 0 };
+  private readonly eyeBoxEls: Record<string, HTMLElement | null> = {};
+  private readonly eyeBoxShown: Record<string, string> = {};
+
+  /**
+   * The scope's or the optic's shade as drawn now, for the flicker check (it draws it over its frames, as it does the
+   * hurt vignette): the surround round the glass, the glass's darkened edge and the eye box's shadow. Null: none up.
+   */
+  scopeOverlay(): { image: HTMLCanvasElement; opacity: number } | null {
+    const scoped = !this.scope.hidden;
+    if (!scoped && this.optic.hidden) return null;
+    const c = (this.scopePicture ??= document.createElement('canvas'));
+    [c.width, c.height] = [320, Math.max(1, Math.round((320 * innerHeight) / Math.max(1, innerWidth)))];
+    const g = c.getContext('2d')!;
+    const [cx, cy] = [c.width / 2, c.height / 2];
+    // The glass's radius: the scope's is 92 of its 100 units (the shorter side's half), the optic's its --r.
+    const r = scoped ? 0.92 * Math.min(cx, cy) : (parseFloat(this.optic.style.getPropertyValue('--r')) / 50) * cy;
+    g.clearRect(0, 0, c.width, c.height);
+    g.save();
+    g.beginPath();
+    g.arc(cx, cy, r, 0, Math.PI * 2);
+    g.clip();
+    // The glass's own darkened edge, then the eye box's sheet with its clear hole slid off the middle.
+    const edge = g.createRadialGradient(cx, cy, 0, cx, cy, r);
+    edge.addColorStop(0.78, 'rgba(0,0,0,0)');
+    edge.addColorStop(0.93, 'rgba(0,0,0,0.45)');
+    edge.addColorStop(1, 'rgba(0,0,0,0.95)');
+    g.fillStyle = edge;
+    g.fillRect(0, 0, c.width, c.height);
+    const [hx, hy] = [cx + this.eyeBox.x * r, cy + this.eyeBox.y * r];
+    const shade = g.createRadialGradient(hx, hy, 0, hx, hy, r * EYE_BOX.full);
+    for (let i = 0; i <= 8; i++) {
+      const at = EYE_BOX.clear + ((EYE_BOX.full - EYE_BOX.clear) * i) / 8;
+      shade.addColorStop(at / EYE_BOX.full, `rgba(0,0,0,${(eyeBoxShade(at) * this.eyeBox.dark).toFixed(3)})`);
+    }
+    g.fillStyle = shade;
+    g.fillRect(0, 0, c.width, c.height);
+    g.restore();
+    // The surround: everything outside the glass.
+    g.fillStyle = scoped ? '#000' : 'rgba(0,0,0,0.9)';
+    g.beginPath();
+    g.rect(0, 0, c.width, c.height);
+    g.arc(cx, cy, r, 0, Math.PI * 2, true);
+    g.fill();
+    return { image: c, opacity: scoped ? this.scopeLevel : Number(this.optic.style.getPropertyValue('--o') || 1) };
+  }
+  private scopePicture: HTMLCanvasElement | null = null;
 
   /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
   private readonly optic = $('optic');

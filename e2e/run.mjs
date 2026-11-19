@@ -12053,6 +12053,13 @@ function installFrameGrab(size) {
         ctx.drawImage(low.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // A scope's surround and shadow (HTML too: hud.ts scopeOverlay).
+      const scope = window.__cs.hud.scopeOverlay?.();
+      if (scope && scope.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, scope.opacity);
+        ctx.drawImage(scope.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -12255,6 +12262,41 @@ const FLASHING_DAY = {
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
       },
+      // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
+      // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
+      // and goes three times in the two seconds, as fast as a hand can, then you turn hard left and right through it
+      // (the scope's shadow sliding across the glass). The surround fades both ways, slower with the setting on, and the
+      // shadow moves through a slow filter: no cut from black to daylight, no dark crescent jumping from side to side.
+      {
+        name: 'scope',
+        label: 'a sniper scope coming up and going away three times in two seconds, then hard turns through it, by day over white tiles',
+        weapon: 'core.sniper',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => page.evaluate(() => ((window.__scopeSeen = { fade: new Set(), box: 0 }), Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.3 }))),
+        at: Object.fromEntries(
+          Array.from({ length: 60 }, (_, f) => [
+            f,
+            () =>
+              page.evaluate((f) => {
+                const cs = window.__cs;
+                const seen = window.__scopeSeen;
+                const o = cs.hud.scopeOverlay();
+                if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
+                seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
+                const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
+                window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
+                // Hard turns: 1.8 rad/s, the other way every sixth of a second.
+                if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
+              }, f),
+          ]),
+        ),
+        seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
+        // The surround was seen part-way in or out on several frames (a fade, not a cut), and the shadow moved.
+        sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 8 : 4) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
+        after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
+      },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
       // where a jolt of the view swings most pixels across it), kicked as by a full-power hit (a shotgun blast or a
@@ -12419,7 +12461,7 @@ async function flashingScene(browser, scene) {
   if (!playing) return void (await ctx.close());
   await holdBots(page);
   // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
-  for (const id of ['core.lmg', 'core.arc_caster']) {
+  for (const id of ['core.lmg', 'core.sniper', 'core.arc_caster']) {
     await page.evaluate((w) => window.__give(w), id);
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
@@ -12604,6 +12646,55 @@ async function flashingScene(browser, scene) {
           delete window.__cs.hud.partyMate;
           if (document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
         }),
+    },
+    // The sniper glint (game/scopeFeel.ts GLINT, scopeGlint.ts): a bot 32 m off in the dark holds a Sniper Rifle; it
+    // turns its aim onto you as the recording starts, away after a second and back again, so the recording holds the
+    // glint coming up twice (with the setting on dimmer, over half a second), and through the second half you bring
+    // your own scope up onto it (the glint seen through a scope, and the scope coming up at night).
+    {
+      name: 'glint',
+      label: "a sniper's glint coming up twice 32 m off at night (a bot's scope turning onto you), the second time through your own scope",
+      weapon: 'core.sniper',
+      me: [-10, 0, -4],
+      look: aim([-10, 0, -4], [-10, 1.6, 28]),
+      bots: [[-10, 0, 28]],
+      before: () =>
+        page.evaluate(() => (window.__glintSeen = { most: 0, count: 0 })).then(() => sim(page, (m, me) => {
+          // The bots take a copy of your Sniper Rifle and stand as a bot does when it fights (the state the snapshot carries).
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            b.weapons.set(me.current, { ...me.weapons.get(me.current) });
+            b.current = me.current;
+            b.raiseTicks = 0;
+            Object.defineProperty(b.bot, 'state', { get: () => 'engage', set() {}, configurable: true });
+            self.__glintAim = Math.PI / 2;
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0, yaw: self.__glintAim, pitch: 0 })));
+          }
+        })),
+      at: Object.fromEntries(
+        Array.from({ length: 60 }, (_, f) => [
+          f,
+          async () => {
+            // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
+            if (f === 2 || f === 24 || f === 34) await sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), f === 24 ? Math.PI / 2 : Math.PI);
+            await page.evaluate((f) => {
+              const g = window.__cs.scope().glints;
+              window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
+              window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
+              if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
+            }, f);
+          },
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ ...window.__glintSeen, most: +window.__glintSeen.most.toFixed(2), now: +window.__cs.scope().glints.level.toFixed(2), scoped: window.__cs.scope().scoped })),
+      // One glint, never brighter than its level (0.5 with the setting on, 0.85 off), and up by the end.
+      sees: (on, s) => s.count === 1 && s.scoped && s.now > 0.3 && s.most <= (on ? 0.5 : 0.85) + 0.001 && (on || s.most > 0.6),
+      after: () =>
+        page.evaluate(() => (window.__autoInput = { buttons: 0 })).then(() => sim(page, (m) => {
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            Object.defineProperty(b.bot, 'state', { value: 'roam', writable: true, enumerable: true, configurable: true });
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+          }
+        })),
     },
     // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
     // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;

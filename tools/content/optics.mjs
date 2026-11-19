@@ -36,6 +36,19 @@ const FLAT = 0.006;
 /** Cell of the top profile (m). */
 const CELL = 0.002;
 
+/** Scope feel's numbers (content/optics.json `feel`) and the range each may take. */
+export const FEEL_KEYS = [
+  ['sway', 0, 0.02],
+  ['swayHeld', 0, 1],
+  ['swaySpent', 1, 5],
+  ['settle', 0, 2],
+  ['breathSeconds', 0.5, 30],
+  ['recoverSeconds', 0.5, 30],
+  ['readyAt', 0.05, 1],
+];
+/** Zoom steps: shares of the aimed field of view, the first 1 (the zoom the gun comes up at), each smaller than the last. */
+export const stepsOk = (s) => Array.isArray(s) && s.length >= 1 && s.length <= 4 && s[0] === 1 && s.every((v, i) => v >= 0.2 && v <= 1 && (i === 0 || v < s[i - 1]));
+
 const round = (v, k = 1e5) => Math.round(v * k) / k || 0;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -144,7 +157,10 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
     if (built && !(k.glass && k.glass.rise > 0 && Array.isArray(k.glass.half) && k.glass.half[0] > 0 && k.glass.half[1] > 0 && k.glass.length > 0 && k.glass.rise > k.glass.half[1])) problems.push(`${at}: a housing built in code needs glass { rise, half: [w, h], length }, the window clear of its foot`);
     if (built && !(k.mark && k.mark.dot > 0 && k.mark.dot < 0.006 && (k.reticle !== 'ring' || (k.mark.ring > k.mark.dot && k.mark.ring < 0.05)))) problems.push(`${at}: its reticle needs mark { dot${k.reticle === 'ring' ? ', ring' : ''} } (tangents of the angle at the eye; a dot under 0.006)`);
     if (!built && (k.glass || k.mark)) problems.push(`${at}: only a housing built in code has glass and a mark`);
+    if (magnified ? !stepsOk(k.steps) : k.steps !== undefined) problems.push(`${at}: ${magnified ? 'a magnified optic gives `steps`: its zoom steps as shares of the aimed field of view, the first 1, each smaller than the last, none under 0.2' : 'only a magnified optic has zoom steps'}`);
   }
+  const feel = file.feel ?? {};
+  for (const [key, lo, hi] of FEEL_KEYS) if (!(feel[key] >= lo && feel[key] <= hi)) problems.push(`content/optics.json: feel.${key} must be a number from ${lo} to ${hi}`);
   const out = {};
   const none = {};
   const report = [];
@@ -190,6 +206,11 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
           if (own < k.mag[0] || own > k.mag[1]) problems.push(`${at}: its zoom (${own.toFixed(2)}x) is outside a ${id}'s (${k.mag[0]}-${k.mag[1]}x): choose the kind that matches the zoom the gun has (a zoom change is a balance change: content/weapons)`);
           if (allowed.length > 1) problems.push(`${at}: a gun with a zoom of its own carries that optic only, for now`);
           row.mag = round(own, 100);
+          if (entry.steps !== undefined) {
+            if (!stepsOk(entry.steps)) problems.push(`${at}: \`steps\` are its zoom steps as shares of the aimed field of view: the first 1, each smaller than the last, none under 0.2`);
+            else row.steps = [...entry.steps];
+          }
+          if (w.view?.optic && (row.steps ?? k.steps ?? [1]).length > 1) problems.push(`${at}: the model's own tube has one zoom: give it \`steps\` [1]`);
           if (w.view?.optic && (w.view.optic.reticle ?? 'duplex') !== k.reticle) problems.push(`${at}: its weapon file's view.optic.reticle (${w.view.optic.reticle ?? 'duplex'}) is not the ${id}'s (${k.reticle})`);
         }
       }
@@ -224,21 +245,24 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
     }
     out[w.id] = row;
     const k = kinds[row.default];
-    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}` : row.window ? `the model's own window ${JSON.stringify(row.window.at)}` : '-'} |`);
+    if (entry.steps !== undefined && !row.mag) problems.push(`${at}: only a magnified optic has zoom steps`);
+    const zooms = row.mag && w.view?.zoomFov ? (row.steps ?? k?.steps ?? [1]).slice(1).map((s) => `${magOf(w.view.zoomFov * s).toFixed(2)}x`) : [];
+    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x${zooms.length ? `, ${zooms.join(', ')} on the wheel` : ''}` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}` : row.window ? `the model's own window ${JSON.stringify(row.window.at)}` : '-'} |`);
   }
   for (const id of [...Object.keys(file.weapons ?? {}), ...Object.keys(file.none ?? {})]) if (!weapons.some((w) => w.id === id)) problems.push(`content/optics.json: no weapon ${id}`);
-  return { kinds, weapons: out, none, problems, report };
+  return { kinds, weapons: out, none, feel, problems, report };
 }
 
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 const list = (a) => `[${a.join(', ')}]`;
 
 /** The generated table's TypeScript. */
-export function opticsSource({ kinds, weapons, none }) {
+export function opticsSource({ kinds, weapons, none, feel = {} }) {
   const kindLines = Object.entries(kinds).map(([id, k]) => {
     const parts = [`name: ${q(k.name)}`, `reticle: ${q(k.reticle)}`, `housing: ${q(k.housing)}`];
     if (k.adsFov !== undefined) parts.push(`adsFov: ${k.adsFov}`);
     if (k.mag) parts.push(`mag: ${list(k.mag)}`);
+    if (k.steps) parts.push(`steps: ${list(k.steps)}`);
     if (k.glass) parts.push(`glass: { rise: ${k.glass.rise}, half: ${list(k.glass.half)}, length: ${k.glass.length} }`);
     if (k.mark) parts.push(`mark: { dot: ${k.mark.dot}${k.mark.ring ? `, ring: ${k.mark.ring}` : ''} }`);
     return `  ${id}: { ${parts.join(', ')} },`;
@@ -249,6 +273,7 @@ export function opticsSource({ kinds, weapons, none }) {
       const w = weapons[id];
       const parts = [`default: ${q(w.default)}`, `allowed: ${list(w.allowed.map(q))}`];
       if (w.mag) parts.push(`mag: ${w.mag}`);
+      if (w.steps) parts.push(`steps: ${list(w.steps)}`);
       if (w.mount) parts.push(`mount: { at: ${list(w.mount.at)}, scale: ${w.mount.scale} }`);
       if (w.window) parts.push(`window: { at: ${list(w.window.at)}, half: ${list(w.window.half)} }`);
       return `  ${q(id)}: { ${parts.join(', ')} },`;
@@ -275,6 +300,8 @@ export interface OpticKind {
   adsFov?: number;
   /** A magnified optic: the least and most magnification over the hip view it covers (each weapon's own is \`WeaponOptics.mag\`). */
   mag?: readonly [number, number];
+  /** A magnified optic's zoom steps on the wheel: shares of the weapon's aimed field of view, the first 1 (a weapon may give its own). */
+  steps?: readonly number[];
   /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length. */
   glass?: { rise: number; half: readonly [number, number]; length: number };
   /** Its mark's sizes: tangents of the angle at the eye. */
@@ -294,6 +321,8 @@ export interface WeaponOptics {
   default: OpticKindId;
   allowed: readonly OpticKindId[];
   mag?: number;
+  /** Its own zoom steps, where they differ from its kind's. */
+  steps?: readonly number[];
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
   window?: { at: readonly [number, number, number]; half: readonly [number, number] };
@@ -308,6 +337,14 @@ ${weaponLines.join('\n')}
 export const OPTIC_NONE: Readonly<Record<string, string>> = {
 ${noneLines.join('\n')}
 };
+
+/**
+ * Scope feel for every magnified optic (content/optics.json \`feel\`; the client's game/scopeFeel.ts): the sway's size
+ * (radians of real aim), its multiples while holding breath and while out of breath, the seconds its size takes to
+ * ease between them, how long a full breath holds, how long an empty one takes to refill, and how full it must be
+ * after running out before it can be held again.
+ */
+export const SCOPE_FEEL = { ${FEEL_KEYS.map(([key]) => `${key}: ${feel[key]}`).join(', ')} } as const;
 `;
 }
 

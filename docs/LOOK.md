@@ -140,6 +140,8 @@ What flickered, and what the setting does to each:
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
 | Blood by character's sparks and wisps (`bloodVisuals.ts`; Binbun's Electric FX off a robot, Hit FX tinted white-grey off a ghost) | at the pack's size and strength (the wisp 0.45 of it, eased in), at most one of each every 60 ms | 0.8 of the size, 0.55 of the strength, eased in over 0.12 s, at most one of each a second (a machine gun on a robot no longer crackles ten times a second); the `flashing` flow's `blood` moment |
 | A rank-up's badge (`rankGlow.ts`; Options → Ranks & badges, the kill feed and over the head) | swells to 1.45 × and a soft halo in its colour rises and fades over a second | swells to 1.2 ×, the halo at most 0.3, eased in and out over the second |
+| A scope's surround and shadow (`scopeFeel.ts`; the Sniper Rifle, Railgun, Marksman and Battle Rifle) | the black round the glass fades in over 0.16 s and out over 0.1 s; the shadow at the glass's edge slides up to half the glass's radius with a turn or a kick, at 0.94 darkness | both fades 0.22 s; the shadow moves at most 0.3 of the radius, at 0.6 darkness, through a quarter-second filter (hard turns left and right barely move it). Its moment: `scope` |
+| The sniper glint (`scopeGlint.ts`: a sniper scope aimed your way, seen from 18 m) | a small soft point at 0.85, up over 0.15 s; steady, under the bloom threshold | 0.5, up over half a second. Its moment: `glint` |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
 storm lightning exists; a storm flash would have to be capped and eased the same way).
@@ -150,7 +152,7 @@ storm lightning exists; a storm flash would have to be capped and eased the same
 red alarm light blinking four times a second, an Arc Turret, an electric fence); in play the brightest moments are
 recorded frame by frame at 30 frames a second of the page's own time (`e2e/frameClock.mjs` freezes the page's clock
 and steps it a frame at a time, so a recorded second is a second of play however slowly CI draws), each canvas frame
-with the HUD's hurt tint drawn over it, at 160 × 90:
+with the HUD's hurt tint (and a scope's surround and shadow) drawn over it, at 160 × 90:
 - an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you);
 - the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each);
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
@@ -158,7 +160,9 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
 - a rank-up twice, a second apart: a bot's badge 3 m in front swelling and glowing over its head and in the kill feed (`rankup`);
 - by day, the low-health warning coming up over white tiles as your health drops to 10 % (`lowhealth`);
+- a sniper's glint coming up twice 32 m off at night, the second time through your own scope coming up (`glint`);
 - the alarm light in its dark room;
+- by day, a sniper scope coming up and going away three times in two seconds over white tiles, then hard turns through it (`scope`);
 - by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
   (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting
   on (`lootRingContrast`: the pickups' models hidden, the frame with the glows against the frame without).
