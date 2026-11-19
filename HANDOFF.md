@@ -141,6 +141,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 - **Claimed (a helper of lane B's splitters22, 2026-11-19): simpler Match Setup pickers** (`wip/match-setup-pickers`; QUEUE Features, "Simpler Match Setup pickers"; owner, 2026-11-19). Bot types as tick-boxes of the 8 groups (the "Named as" sets fold into them), plain switches under it (Ranks & badges from `game/ranksSetting.ts`, Themed names), teams as two steppers plus chips replacing the layouts modal; old saved setups and URLs mapped onto the new choices. No map format change. Files: client menu Match Setup (bots and teams pickers), their tests, the menu baselines it changes.
 
+- **Claimed and done (a helper of lane B's splitters22, 2026-11-19): the clock tower's neighbour trim** (`wip/stjohns-tower-trim`; coordinator, after the headroom fix). Files: `maps/st_johns.json` (through MapMaker: the Stair End Bay `setpiece_g830vbnlk5` at (2, -11) exploded, its north sides on the ground, first and second floors set Open with the Walls tool), paint-look hashes. Why Open: a facade dresses any wall whose neighbour cell is an `open` tile, and the Clock Tower tile is `open` (its walls are solids), so the bay's north face dressing stood inside the tower. **Green on `check/stjohns-tower-trim` at 34698d15, run 44475067067; on QUEUE's Ready to land.** A generic fix (facades skip a side whose neighbour tile draws its own wall there) would let the bay stay a set piece; not done.
+
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)
 
