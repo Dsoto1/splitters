@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { INSIGNIA_IDS, INSIGNIA_SHAPES } from '@tiletrigger/shared';
+import { INSIGNIA_CUTS, INSIGNIA_IDS, INSIGNIA_SHAPES } from '@tiletrigger/shared';
 import { insigniaSvg } from '../src/game/insigniaSvg.ts';
 import { INSIGNIA_HALF, insigniaGeometry } from '../src/game/insigniaMesh.ts';
 
@@ -9,7 +9,7 @@ describe('rank badges in the HUD and over heads', () => {
       const s = insigniaSvg(id);
       expect(s).toMatch(/^<svg class="ins ins-/);
       expect(s).toContain('fill="currentColor"');
-      expect(s.match(/<polygon /g)!.length).toBe(INSIGNIA_SHAPES[id].length * 2);
+      expect(s.match(/<polygon /g)!.length).toBe(INSIGNIA_SHAPES[id].length * 2 + INSIGNIA_CUTS[id].length);
     }
     expect(insigniaSvg('sgt')).toContain('<title>Sergeant</title>');
   });
@@ -25,7 +25,9 @@ describe('rank badges in the HUD and over heads', () => {
         expect(Math.abs(g.positions[i + 1]!)).toBeLessThanOrEqual(INSIGNIA_HALF * 1.11);
       }
       // The front (white, multiplied by the marker colour) is the last ninth of the triangles.
-      const verts = g.positions.length / 3;
+      // (Its cuts, in the rim's colour, come after it.)
+      const cutVerts = INSIGNIA_CUTS[id].reduce((n, p) => n + p.length + 1, 0);
+      const verts = g.positions.length / 3 - cutVerts;
       expect(g.colors[(verts - 1) * 4]).toBe(1);
       expect(g.colors[0]).toBeLessThan(0.1);
     }

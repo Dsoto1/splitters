@@ -1,4 +1,4 @@
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, soldierInsignia, weaponByCode, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
@@ -15,6 +15,8 @@ const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
+import { RankBook } from './rankBook.ts';
+import { ranksOn } from './ranksSetting.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 import { setLoadingCard, setLoadingProgress, showLoadingScreen, type LoadingCard } from '../loadingScreen.ts';
 
@@ -274,10 +276,77 @@ export class Hud {
     return ffaPartyMate(this.roster, self, slot);
   }
 
-  /** A player's rank badge: soldiers only (their look's branch, their name's rank; insignia.ts), else null. */
-  insignia(slot: number): InsigniaId | null {
+  /**
+   * A player's rank as shown (Options → Ranks & badges; shared content/ranks.ts, rankBook.ts): their title, badge and
+   * ranked name. Null with the switch off, and for NPCs and anyone not on the roster.
+   */
+  rank(slot: number): ShownRank | null {
+    if (!ranksOn() || slot >= NPC_ID_BASE) return null;
     const p = this.roster.get(slot);
-    return p ? soldierInsignia(p.look, p.name) : null;
+    if (!p) return null;
+    // Before their first scoreboard line: step 1, or a leader's.
+    const step = this.ranks?.step(slot) ?? this.leaderStep(slot);
+    // Asked every frame for each marker: kept until their look, name or step changes.
+    const hit = this.rankCache.get(slot);
+    if (hit && hit.look === p.look && hit.name === p.name && hit.r.step === step) return hit.r;
+    const r = shownRank(p.look, p.name, step);
+    this.rankCache.set(slot, { look: p.look, name: p.name, r });
+    return r;
+  }
+
+  /** A player's rank badge (Options → Ranks & badges), else null: the plain arrow over their head and no badge by their name. */
+  insignia(slot: number): InsigniaId | null {
+    return this.rank(slot)?.ins ?? null;
+  }
+
+  private readonly rankCache = new Map<number, { look: string; name: string; r: ShownRank }>();
+  /** Who ranks how (rankBook.ts): made when the switch is first on. `myPoints`: your career's rank points. */
+  private ranks: RankBook | null = null;
+  rankPoints: () => number = () => 0;
+  /** A player ranked up (from points): the session shows it over their head too (view.rankUp). */
+  onRankUp: ((slot: number) => void) | null = null;
+
+  /** A leader's least step: a team leader 4, a squad leader 3 (content/ranks.ts LEADER_STEP), else 1. */
+  private leaderStep(slot: number): number {
+    if (this.leaders.has(slot)) return 4;
+    return this.squadLeaders().has(slot) ? 3 : 1;
+  }
+  private squadLeaders(): Set<number> {
+    if (this.squadLeadCache?.raw !== this.squadsRaw) {
+      const set = new Set<number>();
+      if (this.squadsRaw) for (const q of readSquads(this.squadsRaw)) if (q.leader >= 0) set.add(q.leader);
+      this.squadLeadCache = { raw: this.squadsRaw, set };
+    }
+    return this.squadLeadCache.set;
+  }
+  private squadLeadCache: { raw: readonly (readonly number[])[] | null; set: Set<number> } | null = null;
+
+  /**
+   * The scoreboard changed (every score message): ranks again, with the switch on. A rank-up's badge swells and glows
+   * in the kill feed (its lines naming them) and over the head (onRankUp).
+   */
+  updateRanks(scores: readonly ScoreEntry[], localSlot: number): void {
+    if (!ranksOn()) return;
+    this.ranks ??= new RankBook(() => this.rankPoints());
+    const up = this.ranks.update(this.roster, scores, localSlot, (slot) => (this.leaders.has(slot) ? 'team' : this.squadLeaders().has(slot) ? 'squad' : null));
+    for (const slot of up) {
+      this.feedRankUp(slot);
+      this.onRankUp?.(slot);
+    }
+  }
+
+  /** The kill feed's names of `slot` take their new rank, the badge swelling and glowing (style.css `.rank-up`). */
+  private feedRankUp(slot: number): void {
+    for (const el of this.feed.querySelectorAll<HTMLElement>(`span[data-rs="${slot}"]`)) {
+      el.innerHTML = this.feedName(slot);
+      el.querySelector('svg.ins')?.classList.add('rank-up', ...(reduceFlashing() ? ['calm'] : []));
+    }
+  }
+
+  /** A name in the kill feed: the badge (with the switch on) and the name as shown. */
+  private feedName(slot: number | null): string {
+    const ins = slot === null ? null : this.insignia(slot);
+    return `${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}`;
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -465,6 +534,14 @@ export class Hud {
   name(slot: number | null): string {
     if (slot === null) return 'The arena';
     if (slot >= NPC_ID_BASE) return this.npcName(slot) ?? 'Enemy';
+    const p = this.roster.get(slot);
+    if (!p) return `Player ${slot + 1}`;
+    // Ranks & badges on: the title before the name; off: plain, an Army bot's rank left off ("Sgt. Dunmore" → "Dunmore").
+    return this.rank(slot)?.name ?? (p.bot ? nameWithoutRank(p.name) : p.name);
+  }
+
+  /** The name a player joined with, as the roster has it (no rank title): for listings, not for show. */
+  rosterName(slot: number): string {
     return this.roster.get(slot)?.name ?? `Player ${slot + 1}`;
   }
 
@@ -840,12 +917,8 @@ export class Hud {
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
     const color = (slot: number | null) => (slot === null ? '#ccc' : this.nameColor(slot, localSlot));
-    // A soldier's rank badge before their name (insignia.ts).
-    const badge = (slot: number | null) => {
-      const ins = slot === null ? null : this.insignia(slot);
-      return ins ? insigniaSvg(ins) : '';
-    };
-    const name = (slot: number | null) => `<span style="color:${color(slot)}">${badge(slot)}${escapeHtml(this.name(slot))}</span>`;
+    // With Ranks & badges on, the rank badge and title before the name (feedName; a rank-up redraws it: feedRankUp).
+    const name = (slot: number | null) => `<span style="color:${color(slot)}"${slot === null ? '' : ` data-rs="${slot}"`}>${this.feedName(slot)}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     // Weapon icon between the names (reference board), rendered from the weapon's model.
     const icon = killer !== null ? weaponIcon(weapon) : null;

@@ -118,6 +118,7 @@ import {
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import type { InsigniaId } from '@tiletrigger/shared';
 import { INSIGNIA_HALF, createInsigniaMesh } from './insigniaMesh.ts';
+import { rankGlow } from './rankGlow.ts';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
@@ -256,6 +257,8 @@ interface Avatar {
    * disc goes, drawn through its colour's thin instances (GameView.drawTags).
    */
   tag?: { node: TransformNode; color: string; ins: InsigniaId | null };
+  /** A rank-up's soft halo behind the badge (setRankHalo), while it shows. */
+  rankHalo?: Mesh;
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -2525,7 +2528,12 @@ export class GameView {
       // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
       if (a.tag?.ins) {
         const c = this.camera.position, r = a.root.position;
-        const k = Math.min(INSIGNIA_MAX_GROW, Math.max(1, Math.hypot(r.x - c.x, r.y - c.y, r.z - c.z) / INSIGNIA_FULL_SIZE_M));
+        // A rank-up (Options → Ranks & badges): the badge swells and glows in its colour, then settles (rankGlow.ts).
+        const up = this.rankUps.get(p.slot);
+        const g = up === undefined ? null : rankGlow((now - up) / 1000, reduceFlashing());
+        if (up !== undefined && !g) this.rankUps.delete(p.slot);
+        this.setRankHalo(a, g?.glow ?? 0);
+        const k = Math.min(INSIGNIA_MAX_GROW, Math.max(1, Math.hypot(r.x - c.x, r.y - c.y, r.z - c.z) / INSIGNIA_FULL_SIZE_M)) * (g?.scale ?? 1);
         if (a.tag.node.scaling.x !== k) {
           a.tag.node.scaling.setAll(k);
           // Its foot stays where it was, clear of the head.
@@ -2563,8 +2571,45 @@ export class GameView {
    * still show the sides) and glow (a jackpot life: a steady gold overlay, never a flash). Null: none.
    */
   auraOf: ((slot: number) => { outline: string | null; glow: string | null } | null) | null = null;
-  /** A soldier's rank badge (insignia.ts): their marker is drawn as it, in the marker's colour; null keeps the arrow. */
+  /** A player's rank badge (Options → Ranks & badges; insignia.ts): their marker is drawn as it, in the marker's colour; null keeps the arrow. */
   insigniaOf: ((slot: number) => InsigniaId | null) | null = null;
+  /** Rank-ups being shown over heads: when each began (ms). */
+  private readonly rankUps = new Map<number, number>();
+
+  /** A player ranked up: their badge over the head swells and glows for about a second (rankGlow.ts). */
+  rankUp(slot: number): void {
+    this.rankUps.set(slot, performance.now());
+  }
+
+  /** The soft halo behind a badge in a rank-up, in the marker's colour (`level` 0: none). */
+  private setRankHalo(a: Avatar, level: number): void {
+    if (level <= 0.002) {
+      if (a.rankHalo) {
+        a.rankHalo.dispose(false, true);
+        a.rankHalo = undefined;
+      }
+      return;
+    }
+    if (!a.tag) return;
+    if (!a.rankHalo || a.rankHalo.parent !== a.tag.node) {
+      a.rankHalo?.dispose(false, true);
+      const m = CreateDisc(`${a.root.name}_rankHalo`, { radius: INSIGNIA_HALF * 1.9, tessellation: 24 }, this.scene);
+      const mat = new StandardMaterial(`${a.root.name}_rankHaloMat`, this.scene);
+      mat.emissiveColor = Color3.FromHexString(a.tag.color);
+      mat.diffuseColor = Color3.Black();
+      mat.specularColor = Color3.Black();
+      mat.disableLighting = true;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = true;
+      m.material = mat;
+      m.isPickable = false;
+      m.parent = a.tag.node;
+      // Just behind the badge (its rim sits at +0.004).
+      m.position.z = 0.012;
+      a.rankHalo = m;
+    }
+    a.rankHalo.visibility = level;
+  }
   /** Roulette: the loading gate's warm-up also draws its samples outlined and glowing (their shaders built before play). */
   auraWarm = false;
 

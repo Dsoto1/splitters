@@ -116,6 +116,7 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
 import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
 import { vibrationSupported } from '../game/rumble.ts';
@@ -2940,6 +2941,10 @@ export class FrontEnd {
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
     const hitboxes = el('input', { type: 'checkbox', checked: loadHitboxOverlay() });
     hitboxes.addEventListener('change', () => saveHitboxOverlay(hitboxes.checked));
+    // Ranks & badges (game/ranksSetting.ts): off by default; the pause menu has it too.
+    const ranksBox = el('input', { type: 'checkbox', checked: ranksOn() });
+    ranksBox.id = 'opt-ranks';
+    ranksBox.addEventListener('change', () => saveRanksOn(ranksBox.checked));
     // Reduce flashing (game/reduceFlashing.ts): on by default; the pause menu has it too.
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
@@ -3194,6 +3199,7 @@ export class FrontEnd {
         row('Hit marker', hitStyle, 'What flashes on the crosshair when you hit someone.'),
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
+        row('Ranks & badges', toggle(ranksBox), 'Off by default: plain names and the arrows over heads. On: every player and bot wears a rank, its title before their name and a badge in their group\'s style (Army ranks, the Agency ring, a skull, a star, a gear, a crown, a paw, a chevron), in the kill feed, on the scoreboards and over heads. Ranks rise quietly with points and kills and carry from match to match; yours is kept with your career. Just for show. Also in the pause menu.'),
         row('Damage numbers', toggle(dmgNumbers), 'What each of your hits did, floating up from the target for a moment: gold for a head hit, cyan where armour took part, bolder for the kill. On the Training Range\'s boards it shows what that round would do to a body there.'),
         row('Spray pattern', toggle(sprayOn), 'A small panel plots where your last burst went, round by round, against a ring the width of a body at 25 m, and how long your aim took to settle. Handy on the Training Range\'s recoil wall.'),
         row('First-time tips', toggle(tipsOn), 'A short hint the first time something happens in a match: low ammo, a vehicle in reach, a pickup, armour, spawn protection, your first death. Each shows once.'),

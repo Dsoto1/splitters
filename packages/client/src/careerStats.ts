@@ -1,4 +1,4 @@
-import { addMatch, emptyCareer, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
+import { addMatch, careerRankPoints, emptyCareer, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
@@ -110,6 +110,9 @@ export async function syncCareer(): Promise<void> {
   }
   await sendPending(who.sub);
 }
+
+/** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
+export const myRankPoints = (): number => careerRankPoints(myCareer().career);
 
 /** Your favourite class (a ClassId): your profile's when signed in, else this browser's; null for none. */
 export function myFavClass(): string | null {
