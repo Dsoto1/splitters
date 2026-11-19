@@ -36,12 +36,12 @@ const PHASE4 = [
 ];
 /** Environment Phase 5, the jungle set (2026-11-18). */
 const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
-/** The nature swap (2026-11-18): the dead tree, the Quaternius dead trees' replacement. */
-const NATURE_SWAP = ['env.broadleaf.dead'];
+/** The nature swap (2026-11-18/19): the dead tree, the Quaternius dead trees' replacement; the sandstone spires, the Meshy red rock spires'. */
+const NATURE_SWAP = ['env.broadleaf.dead', 'env.rock.sandstone_spires'];
 
 describe('environment data', () => {
   it('every species matches the schema', () => {
-    expect(ENV_SPECIES.length).toBe(44);
+    expect(ENV_SPECIES.length).toBe(45);
     for (const s of ENV_SPECIES) expect(() => EnvironmentSpeciesSchema.parse(s), s.id).not.toThrow();
   });
 
@@ -199,8 +199,9 @@ describe('environment data', () => {
         const [w, h, d] = v.size;
         for (const sh of v.shapes)
           for (const [x, y, z] of shapePoints(sh)) {
-            // A little slack for the trunk capsule's rounded end below ground and the hull's worn edges.
-            expect(Math.abs(x) <= w / 2 + 0.05 && Math.abs(z) <= d / 2 + 0.05 && y <= h + 0.05 && y >= -1.6, `${s.id} ${sh.kind} (${x}, ${y}, ${z})`).toBe(true);
+            // A little slack for the trunk capsule's rounded end below ground and the hull's worn edges (a formation's
+            // hull tops stand about 1 % over its worn surface: 8 cm on the 8 m spires).
+            expect(Math.abs(x) <= w / 2 + 0.05 && Math.abs(z) <= d / 2 + 0.05 && y <= h + Math.max(0.05, h * 0.012) && y >= -1.6, `${s.id} ${sh.kind} (${x}, ${y}, ${z})`).toBe(true);
           }
       }
   });

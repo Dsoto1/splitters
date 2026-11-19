@@ -18,7 +18,7 @@ const PHASE4 = [
 /** Environment Phase 5, the jungle set. */
 const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
 /** The nature swap (2026-11-18): the dead tree, the Quaternius dead trees' replacement. */
-const NATURE_SWAP = ['env.broadleaf.dead'];
+const NATURE_SWAP = ['env.broadleaf.dead', 'env.rock.sandstone_spires'];
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 describe('environment generator', () => {

@@ -38,12 +38,12 @@ const BEFORE_X = 90;
 const LINEUP: [string, number, string, number, number][] = [
   ['env.broadleaf.oak', 0, 'prop.oak', -12, 4],
   ['env.broadleaf.oak', 1, 'prop.oak_autumn', -3.5, 4],
-  ['env.conifer.pine_tall', 0, 'prop.nt_pine_tall', 4.5, 4],
-  ['env.conifer.pine_tall', 1, 'prop.nt_pine_snow_tall', 11, 4],
+  ['env.conifer.pine_tall', 0, 'prop.pine_tall', 4.5, 4],
+  ['env.conifer.pine_tall', 1, 'prop.pine_tall_b', 11, 4],
   ['env.shrub.broadleaf', 0, 'prop.bush_large', -4, -4],
   ['env.shrub.broadleaf', 1, 'prop.bush_leafy', -1.6, -4],
-  ['env.rock.boulder_angular', 0, 'prop.nt_boulder', 1.6, -4],
-  ['env.rock.boulder_angular', 1, 'prop.nt_boulder_moss', 4.6, -4],
+  ['env.rock.boulder_angular', 0, 'prop.boulder_round', 1.6, -4],
+  ['env.rock.boulder_angular', 1, 'prop.boulder_jagged', 4.6, -4],
   ['env.grass.clump', 0, 'prop.grass_tall', -7.5, -5],
   ['env.grass.clump', 1, 'prop.grass_patch', -6.2, -5],
   // The plants brush's flowers and fern (foliage.ts), in front of the grass.
@@ -120,7 +120,8 @@ const LINEUP4: [string, number, number, number, number][] = [
 /**
  * Environment Phase 5's additions, every look, between Phase 4's trees and its cliffs (inside the lab's bounds, so the
  * shadow map's extent and the visual baseline don't change): the jungle set (the jungle tree, the tree fern,
- * the elephant ear) and the spruce's alpine look; then the nature swap's Dead Tree. View: jungle.
+ * the elephant ear) and the spruce's alpine look; then the nature swap's Dead Tree, sandstone shard and Sandstone
+ * Spires. Views: jungle, spires.
  */
 const LINEUP5: [string, number, number, number, number][] = [
   ['env.shrub.elephant_ear', 0, 41, -62, 0.4],
@@ -133,6 +134,10 @@ const LINEUP5: [string, number, number, number, number][] = [
   // The nature swap (2026-11-18): the Dead Tree, both looks.
   ['env.broadleaf.dead', 0, 64, -57, 0.8],
   ['env.broadleaf.dead', 1, 66, -61, 2.4],
+  // The nature swap's last batch (2026-11-19): the Shard Boulder's sandstone look and the Sandstone Spires, both looks.
+  ['env.rock.boulder_shard', 3, 68, -57, 1.3],
+  ['env.rock.sandstone_spires', 0, 24, -62, 0],
+  ['env.rock.sandstone_spires', 1, 24, -46, 0.4],
 ];
 
 const EYE = 1.7;
@@ -305,6 +310,7 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
   VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
   VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
   VIEWS.jungle = [new Vector3(51, EYE, -67), new Vector3(51, 4, -56)];
+  VIEWS.spires = [new Vector3(24, EYE, -84), new Vector3(24, 4, -62)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 

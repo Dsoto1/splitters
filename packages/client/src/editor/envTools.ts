@@ -391,7 +391,7 @@ export class EnvTools {
     const swap = document.createElement('button');
     swap.id = 'ed-env-swap';
     swap.textContent = 'Swap natural props for ours';
-    swap.title = 'Every Quaternius tree, bush, plant and log and every kit rock becomes our generated species, in its spot, turn and size (one undo step)';
+    swap.title = 'Every bought tree, bush, plant, log and rock (the Kenney Nature Kit, the kit rocks, the Meshy rocks and spires) becomes our generated species, in its spot, turn and size (one undo step)';
     swap.addEventListener('click', () => {
       const r = natureSwapCommand(this.host.doc(), this.rockLook);
       if (!r.command) return this.host.toast('No natural props to swap: the map uses ours already');
