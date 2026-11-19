@@ -17,6 +17,8 @@ const PHASE4 = [
 ];
 /** Environment Phase 5, the jungle set. */
 const PHASE5 = ['env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'];
+/** The nature swap (2026-11-18): the dead tree, the Quaternius dead trees' replacement. */
+const NATURE_SWAP = ['env.broadleaf.dead'];
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
 describe('environment generator', () => {
@@ -26,7 +28,7 @@ describe('environment generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass', ...PHASE4, ...PHASE5].sort());
+    expect(species.map((s) => s.id).sort()).toEqual(['env.broadleaf.acacia', 'env.broadleaf.maple', 'env.broadleaf.oak', 'env.cactus.saguaro', 'env.cliff.face', 'env.conifer.pine_tall', 'env.conifer.spruce', 'env.deadwood.log', 'env.fern.bracken', 'env.flower.meadow', 'env.grass.clump', 'env.hedge.privet', 'env.hedge.yew', 'env.palm.coconut', 'env.palm.leaning', 'env.rock.boulder_angular', 'env.rock.boulder_round', 'env.rock.outcrop', 'env.rock.pebbles', 'env.rock.slab', 'env.shrub.broadleaf', 'env.shrub.laurel', 'env.water.eelgrass', ...PHASE4, ...PHASE5, ...NATURE_SWAP].sort());
   });
 
   // The two builds are two tests: one test under one budget for both, a busy machine took 64 s against its 60.

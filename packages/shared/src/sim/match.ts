@@ -330,6 +330,8 @@ export interface Spectator {
   account?: boolean;
   /** Their party (Combatant.party), kept for when they join again. */
   party?: string;
+  /** Their career rank points (Combatant.rankPoints). */
+  rankPoints?: number;
   kills: number;
   deaths: number;
   selfKills: number;
@@ -410,6 +412,8 @@ export interface Combatant {
    * modes put a joining member on the team most of their party is on (takeOverBot). People only; the roster says it (`py`).
    */
   party?: string;
+  /** A person's career rank points as their browser sent them on joining (content/ranks.ts): only passed on in the roster (`rx`), cosmetic. */
+  rankPoints?: number;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -1871,7 +1875,7 @@ export class Match {
   spectate(slot: number): boolean {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
-    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}) };
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}) };
     // Their client stays loaded: a spectator counts for the start gate as a player does.
     const loaded = this.readySlots.has(slot);
     this.remove(slot);
@@ -1896,6 +1900,7 @@ export class Match {
     c.objective = s.objective;
     if (s.account) c.account = true;
     if (s.party) c.party = s.party;
+    if (s.rankPoints !== undefined) c.rankPoints = s.rankPoints;
     // Their client has the match loaded already (the start gate needn't wait for them).
     this.readySlots.add(slot);
     this.resetIdle(slot);
@@ -7494,10 +7499,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}) }));
     // Spectators by choice, last: on no team, marked `sp`.
     if (!this.spectators.size) return players;
-    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}) }))];
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}) }))];
   }
 
   destroy(): void {

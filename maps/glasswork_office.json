@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 48,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_cgipjztyy46xrhdq",
-      "revision": 9,
-      "contentHash": "sha256:ed92fb1b3de3bdb3582c8040874b1633084309558a2d99a3f70ec925870c8b3f",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:38:01.278Z"
+      "versionId": "v_pnjeraxxx7fnwb75",
+      "revision": 10,
+      "contentHash": "sha256:c92430bcb558685ab2497670c04494d8c8ccdb8d6678d9d62ef2e42e2e16a307",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:02:25.538Z"
     }
   },
   "classicStructure": {
@@ -5298,11 +5298,12 @@
         74
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": -1,
-      "scale": 0.8,
+      "scale": 0.656,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_241",
@@ -5312,11 +5313,12 @@
         82
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 0,
-      "scale": 0.8,
+      "scale": 0.656,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_242",
@@ -5326,11 +5328,12 @@
         82
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2,
-      "scale": 0.8,
+      "scale": 0.656,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_243",
@@ -5340,11 +5343,12 @@
         50
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": -1,
-      "scale": 0.8,
+      "scale": 0.656,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_244",
@@ -5354,11 +5358,12 @@
         46
       ],
       "kind": "prop",
-      "model": "prop.nt_pine_snow_tall",
+      "model": "env.conifer.pine_tall",
       "yaw": 2,
-      "scale": 0.8,
+      "scale": 0.656,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_245",
@@ -5368,7 +5373,7 @@
         74
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 2,
       "scale": 1.2,
       "solid": false,
@@ -5382,7 +5387,7 @@
         74
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 0,
       "scale": 1.2,
       "solid": false,
@@ -5396,7 +5401,7 @@
         64
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 4,
       "scale": 1.2,
       "solid": false,
@@ -5410,7 +5415,7 @@
         30
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 0,
       "scale": 1.2,
       "solid": false,
@@ -5424,7 +5429,7 @@
         66
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 0,
       "scale": 1.2,
       "solid": false,
@@ -5438,7 +5443,7 @@
         70
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_snow",
+      "model": "env.shrub.sagebrush",
       "yaw": 0,
       "scale": 1.2,
       "solid": false,
@@ -5452,9 +5457,9 @@
         58
       ],
       "kind": "prop",
-      "model": "prop.nt_rock_snow",
+      "model": "env.rock.boulder_angular",
       "yaw": 0.5,
-      "scale": 1,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },
@@ -5466,9 +5471,9 @@
         70
       ],
       "kind": "prop",
-      "model": "prop.nt_rock_snow",
+      "model": "env.rock.boulder_angular",
       "yaw": 2,
-      "scale": 1,
+      "scale": 0.81,
       "solid": true,
       "tint": null
     },

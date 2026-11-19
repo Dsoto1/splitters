@@ -96,6 +96,7 @@ import {
   isTeamMode,
   MODE_LABELS,
   NPC_ID_BASE,
+  matchRankPoints,
   type NpcSnapshot,
   type PlayerSnapshot,
   buildMapGeometry,
@@ -159,6 +160,7 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
 import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
@@ -305,7 +307,7 @@ export interface SessionOptions {
    * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
    * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
    */
-  career?: { record(m: MatchSummary): void; card(): ProfileCardData; /** Your favourite class (a ClassId): picked for you as you join a match with classes. */ favClass(): string | null };
+  career?: { record(m: MatchSummary): void; card(): ProfileCardData; /** Your career's rank points (careerStats.ts myRankPoints; Ranks & badges). */ points?(): number; /** Your favourite class (a ClassId): picked for you as you join a match with classes. */ favClass(): string | null };
 }
 
 /** How a match stood when it ended for this player: the last standings, and enough to host the same match again. */
@@ -791,7 +793,10 @@ export class GameSession {
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
     // A soldier's marker is their rank badge (insignia.ts), players only (the roster has their look and name).
+    // With Ranks & badges on, a player's marker is their rank badge (hud.rank; the roster has their look and name).
     this.view.insigniaOf = (slot) => (slot < NPC_ID_BASE ? this.hud.insignia(slot) : null);
+    this.hud.onRankUp = (slot) => this.view.rankUp(slot);
+    this.hud.rankPoints = () => opts.career?.points?.() ?? 0;
     // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
     if (botDebugWanted() && opts.transport instanceof LocalTransport) {
       const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
@@ -1064,6 +1069,14 @@ export class GameSession {
       { signal },
     );
     this.sfx.bloodOn = (victim) => this.view.blood.wet(this.view.bloodKind(victim));
+    // Ranks & badges (also Options; ranksSetting.ts): off unless switched on, applied at once (names, badges, markers).
+    const ranksBox = $('ranks-toggle') as HTMLInputElement;
+    ranksBox.checked = ranksOn();
+    ranksBox.addEventListener('change', () => {
+      saveRanksOn(ranksBox.checked);
+      this.hud.updateRanks(this.scores, this.slot);
+    }, { signal });
+    window.addEventListener(RANKS_EVENT, () => (ranksBox.checked = ranksOn()), { signal });
     // Reduce flashing (also Options → Accessibility): on unless switched off, applied at once (reduceFlashing.ts).
     const flashBox = $('reduce-flashing') as HTMLInputElement;
     flashBox.checked = reduceFlashing();
@@ -1899,7 +1912,7 @@ export class GameSession {
       status.textContent = 'Listing as the match starts…';
       return;
     }
-    const me = this.hud.name(this.slot);
+    const me = this.hud.rosterName(this.slot);
     const show = () => (status.textContent = this.advertiser?.error ? `Not listed: ${this.advertiser.error}` : 'Listed: anyone can join from Online → Game browser.');
     this.advertiser = new LobbyAdvertiser(
       () => ({
@@ -2199,6 +2212,8 @@ export class GameSession {
         if ((phaseWas === 'countdown') !== (msg.phase === 'countdown')) this.updatePause();
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
+        // Ranks & badges (rankBook.ts): everyone's rank from the new lines; a rank-up glows in the feed and over the head.
+        this.hud.updateRanks(msg.score, this.slot);
         if (msg.phase === 'playing' && !this.spectator && !document.hidden) this.announceSnapshot(msg.timeLeft, msg.players);
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
@@ -2503,7 +2518,12 @@ export class GameSession {
             this.outcome = ev.outcome ?? null;
             // Your career: this match, summed in (not while spectating; a match you were in under half a minute doesn't count).
             const summary = this.careerTally?.finish(ev, this.rules?.mode ?? 'core.deathmatch', this.hud.team(this.slot)?.id ?? null, performance.now());
-            if (summary && !this.spectator) this.opts.career?.record(summary);
+            if (summary && !this.spectator) {
+              // Your rank points this match (content/ranks.ts), carried with your career.
+              const mine = this.scores.find((x) => x.s === this.slot);
+              const points = mine ? matchRankPoints(mine) : 0;
+              this.opts.career?.record(points ? { ...summary, points } : summary);
+            }
           } else if (ev.e === 'round_start') {
             this.careerTally?.reset(performance.now());
             this.outcome = null;

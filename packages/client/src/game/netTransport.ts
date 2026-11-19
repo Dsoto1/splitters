@@ -3,6 +3,7 @@ import type { Transport } from './transport.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { playerKey } from './playerKey.ts';
 import { myParty } from './party.ts';
+import { myRankPoints } from '../careerStats.ts';
 
 const ADMIN_KEY = 'tiletrigger.admin.';
 
@@ -53,7 +54,7 @@ export class NetTransport implements Transport {
     const players = new SnapshotDecoder();
     ws.addEventListener('open', () => {
       const admin = adminToken(this.url);
-      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), ...(admin ? { admin } : {}) });
+      this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), rx: myRankPoints(), ...(admin ? { admin } : {}) });
       this.pingTimer = window.setInterval(() => this.send({ t: 'ping', id: ++this.pingId, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) }), 1000);
     });
     ws.addEventListener('message', (e) => {

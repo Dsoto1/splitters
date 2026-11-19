@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 48,
   "metadata": {
     "id": "maple_court",
     "name": "Maple Court",
@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_tqonszbqjn5i6g6u",
-      "versionId": "v_xmvndqwvofv7x2vm",
-      "revision": 8,
-      "contentHash": "sha256:fd5b5b9bd2c0503d48f17dca5b11ce4b63d46f2080446803035385f463815fd7",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:54:50.999Z"
+      "versionId": "v_j7xtzann342e2qkq",
+      "revision": 9,
+      "contentHash": "sha256:d06d394cc3312761bb1d9b950db0447fa203dc1570ce70551542d299bb4cf7e3",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-18T23:54:38.411Z"
     }
   },
   "classicStructure": {
@@ -7399,7 +7399,7 @@
         108
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.maple",
       "yaw": 0.6,
       "scale": 1.6,
       "solid": true,
@@ -10609,9 +10609,9 @@
         46
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 4.459999999999999,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10623,9 +10623,9 @@
         70
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 4.459999999999999,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10637,9 +10637,9 @@
         52
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 5.579999999999997,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10651,9 +10651,9 @@
         76
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 5.579999999999997,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10665,9 +10665,9 @@
         98
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 2.24,
-      "scale": 0.9,
+      "scale": 0.666,
       "solid": true,
       "tint": null
     },
@@ -10679,9 +10679,9 @@
         98
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 1.5199999999999996,
-      "scale": 0.9,
+      "scale": 0.666,
       "solid": true,
       "tint": null
     },
@@ -10693,9 +10693,9 @@
         38.5
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 3.7,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10707,9 +10707,9 @@
         38.5
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": 0.0600000000000005,
-      "scale": 0.9,
+      "scale": 0.72,
       "solid": true,
       "tint": null
     },
@@ -10721,9 +10721,9 @@
         18
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 5.56,
-      "scale": 0.9,
+      "scale": 0.666,
       "solid": true,
       "tint": null
     },
@@ -10735,9 +10735,9 @@
         62
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 0,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10749,9 +10749,9 @@
         62
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 2,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10763,9 +10763,9 @@
         82
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 2,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10777,9 +10777,9 @@
         82
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10791,9 +10791,9 @@
         88
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10805,9 +10805,9 @@
         88
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 2,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10819,9 +10819,9 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10833,9 +10833,9 @@
         56
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.broadleaf",
       "yaw": 4,
-      "scale": 1.1,
+      "scale": 0.902,
       "solid": false,
       "tint": null
     },
@@ -10847,9 +10847,9 @@
         112
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 2,
-      "scale": 1.1,
+      "scale": 0.66,
       "solid": false,
       "tint": null
     },
@@ -10861,9 +10861,9 @@
         108
       ],
       "kind": "prop",
-      "model": "prop.nt_bush_leafy",
+      "model": "env.shrub.laurel",
       "yaw": 0,
-      "scale": 1.1,
+      "scale": 0.66,
       "solid": false,
       "tint": null
     },
@@ -10875,9 +10875,9 @@
         116
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree_2",
+      "model": "env.broadleaf.maple",
       "yaw": 0.4,
-      "scale": 1.3,
+      "scale": 1.209,
       "solid": true,
       "tint": null
     },
@@ -10889,7 +10889,7 @@
         92
       ],
       "kind": "prop",
-      "model": "prop.nt_common_tree",
+      "model": "env.broadleaf.maple",
       "yaw": 1.2,
       "scale": 1.1,
       "solid": true,

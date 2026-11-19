@@ -208,6 +208,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/squadHud\.ts$/, ['fireteams', 'ctf'], ['client']],
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(rankBook|rankGlow|ranksSetting|insigniaSvg|insigniaMesh)\.ts$/, ['teams', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],

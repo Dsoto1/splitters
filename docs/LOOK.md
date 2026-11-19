@@ -139,6 +139,7 @@ What flickered, and what the setting does to each:
 | The low-health warning (`lowHealth.ts`, below 35 % health) | the screen's edges darken toward near-black and the world loses colour, eased in over 0.6 s and out over 1 s; a heartbeat every 1.35 s at 35 % to every 1 s near death; the health bar brightens 25 % with each beat (a soft sin² bump over 0.4 s) | the same darkening and grey, eased in over 1.2 s; the bar's bump at 0.6 of that. Never a red, never brighter than the scene, never more than once a second. Its moment in the flicker check: `lowhealth` |
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
 | Blood by character's sparks and wisps (`bloodVisuals.ts`; Binbun's Electric FX off a robot, Hit FX tinted white-grey off a ghost) | at the pack's size and strength (the wisp 0.45 of it, eased in), at most one of each every 60 ms | 0.8 of the size, 0.55 of the strength, eased in over 0.12 s, at most one of each a second (a machine gun on a robot no longer crackles ten times a second); the `flashing` flow's `blood` moment |
+| A rank-up's badge (`rankGlow.ts`; Options → Ranks & badges, the kill feed and over the head) | swells to 1.45 × and a soft halo in its colour rises and fades over a second | swells to 1.2 ×, the halo at most 0.3, eased in and out over the second |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
 storm lightning exists; a storm flash would have to be capped and eased the same way).
@@ -155,6 +156,7 @@ with the HUD's hurt tint drawn over it, at 160 × 90:
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
+- a rank-up twice, a second apart: a bot's badge 3 m in front swelling and glowing over its head and in the kill feed (`rankup`);
 - by day, the low-health warning coming up over white tiles as your health drops to 10 % (`lowhealth`);
 - the alarm light in its dark room;
 - by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles

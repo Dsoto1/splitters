@@ -26,6 +26,8 @@ export interface MatchSummary {
   seconds: number;
   /** Kills by weapon id (core.rifle …), at most MATCH_WEAPONS of them. */
   weaponKills: Record<string, number>;
+  /** Rank points earned (content/ranks.ts: kills and objective plays). Optional: an older hub drops it, an older browser sends none. */
+  points?: number;
 }
 
 /** The totals. */
@@ -41,19 +43,21 @@ export interface Career {
   seconds: number;
   /** Kills by weapon id, the CAREER_WEAPONS most used kept. */
   weaponKills: Record<string, number>;
+  /** Rank points (content/ranks.ts), summed from matches that sent them; 0 in a career from before them (its kills stand in). */
+  points: number;
 }
 
 /** A match counts once you've been in it this long (a join at the very end, or a quit at once, isn't a match). */
 export const MATCH_MIN_SECONDS = 30;
 /** The bounds a summary must keep (one match, one player: generous, just past anything a real match makes). */
-export const MATCH_LIMITS = { kills: 500, deaths: 500, shots: 50_000, seconds: 4 * 3600 } as const;
+export const MATCH_LIMITS = { kills: 500, deaths: 500, shots: 50_000, seconds: 4 * 3600, points: 50_000 } as const;
 export const MATCH_WEAPONS = 16;
 export const CAREER_WEAPONS = 40;
 const RESULTS = ['win', 'loss', 'draw', 'none'] as const;
 const WEAPON_ID = /^[a-z][a-z0-9_]*\.[a-z0-9_.-]{1,40}$/;
 const MODE_ID = /^[a-z][a-z0-9_]*\.[a-z0-9_.-]{1,40}$/;
 
-export const emptyCareer = (): Career => ({ matches: 0, wins: 0, kills: 0, deaths: 0, shots: 0, hits: 0, headshots: 0, bestStreak: 0, seconds: 0, weaponKills: {} });
+export const emptyCareer = (): Career => ({ matches: 0, wins: 0, kills: 0, deaths: 0, shots: 0, hits: 0, headshots: 0, bestStreak: 0, seconds: 0, weaponKills: {}, points: 0 });
 
 const count = (v: unknown, max: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max;
 
@@ -68,6 +72,7 @@ export function matchProblem(m: unknown): string | null {
   if (!count(s.headshots, MATCH_LIMITS.kills) || s.headshots > s.kills) return 'headshots out of range';
   if (!count(s.bestStreak, MATCH_LIMITS.kills) || s.bestStreak > s.kills) return 'streak out of range';
   if (!count(s.seconds, MATCH_LIMITS.seconds) || s.seconds < MATCH_MIN_SECONDS) return 'too short to count';
+  if (s.points !== undefined && !count(s.points, MATCH_LIMITS.points)) return 'points out of range';
   if (typeof s.weaponKills !== 'object' || s.weaponKills === null || Array.isArray(s.weaponKills)) return 'weapon kills must be an object';
   const w = Object.entries(s.weaponKills as Record<string, unknown>);
   if (w.length > MATCH_WEAPONS) return 'too many weapons';
@@ -93,6 +98,7 @@ export function cleanSummary(m: MatchSummary): MatchSummary {
     bestStreak: m.bestStreak,
     seconds: m.seconds,
     weaponKills: Object.fromEntries(Object.entries(m.weaponKills).filter(([, n]) => n > 0)),
+    ...(m.points ? { points: m.points } : {}),
   };
 }
 
@@ -121,6 +127,7 @@ export function addMatch(c: Career, m: MatchSummary): Career {
     bestStreak: Math.max(c.bestStreak, m.bestStreak),
     seconds: c.seconds + m.seconds,
     weaponKills: topWeapons(weaponKills, CAREER_WEAPONS),
+    points: c.points + (m.points ?? 0),
   };
 }
 
@@ -133,7 +140,7 @@ export function readCareer(v: unknown): Career | null {
   if (typeof o.weaponKills === 'object' && o.weaponKills !== null) {
     for (const [id, n] of Object.entries(o.weaponKills as Record<string, unknown>)) if (WEAPON_ID.test(id) && typeof n === 'number' && n > 0) w[id] = Math.floor(n);
   }
-  const c: Career = { matches: num('matches'), wins: num('wins'), kills: num('kills'), deaths: num('deaths'), shots: num('shots'), hits: num('hits'), headshots: num('headshots'), bestStreak: num('bestStreak'), seconds: num('seconds'), weaponKills: topWeapons(w, CAREER_WEAPONS) };
+  const c: Career = { matches: num('matches'), wins: num('wins'), kills: num('kills'), deaths: num('deaths'), shots: num('shots'), hits: num('hits'), headshots: num('headshots'), bestStreak: num('bestStreak'), seconds: num('seconds'), weaponKills: topWeapons(w, CAREER_WEAPONS), points: num('points') };
   c.wins = Math.min(c.wins, c.matches);
   c.hits = Math.min(c.hits, c.shots);
   return c;
@@ -149,12 +156,23 @@ export function careerProblem(v: unknown): string | null {
   if (c.matches < 1) return 'no matches';
   if (c.matches > 100_000) return 'too many matches';
   const per = (n: number, max: number) => n <= c.matches * max;
+  if (!per(c.points, MATCH_LIMITS.points)) return 'totals out of range';
   if (!per(c.kills, MATCH_LIMITS.kills) || !per(c.deaths, MATCH_LIMITS.deaths) || !per(c.shots, MATCH_LIMITS.shots) || !per(c.seconds, MATCH_LIMITS.seconds)) return 'totals out of range';
   if (c.seconds < c.matches * MATCH_MIN_SECONDS) return 'totals out of range';
   if (c.headshots > c.kills || c.bestStreak > c.kills || c.bestStreak > MATCH_LIMITS.kills) return 'totals out of range';
   if (Object.values(c.weaponKills).reduce((a, b) => a + b, 0) > c.kills) return 'weapon kills add up to more than kills';
   return null;
 }
+
+/** Rank points a kill is worth (content/ranks.ts RANK_POINTS.kill; here so the menu needn't load the ranks). */
+export const RANK_KILL_POINTS = 10;
+/** A career's rank points (content/ranks.ts): its own, or its kills' worth for a career from before them. */
+export const careerRankPoints = (c: { kills: number; points?: number }): number => Math.max(c.points ?? 0, c.kills * RANK_KILL_POINTS);
+
+/** The most rank points a joiner's career may bring (a sanity cap on what the roster carries). */
+export const RANK_POINTS_MAX = 10_000_000;
+/** A rank-points count from the wire (the roster, a hello): a whole number in range, else null. */
+export const readRankPoints = (v: unknown): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= RANK_POINTS_MAX ? v : null);
 
 /** Hits over rounds fired, in percent (null before any rounds). */
 export const careerAccuracy = (c: Pick<Career, 'shots' | 'hits'>): number | null => (c.shots > 0 ? Math.round((c.hits / c.shots) * 1000) / 10 : null);

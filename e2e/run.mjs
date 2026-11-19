@@ -4135,6 +4135,13 @@ async function editorEnvironmentChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   const unseasoned = await plants();
   check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
+  // The nature swap (shared/editor/natureSwap.ts): a Quaternius pine, bush and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.nt_pine_tall', -40], ['qb', 'prop.nt_bush_leafy', -42], ['qc', 'prop.nt_boulder', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  await page.click('#ed-env-swap');
+  const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && /^env\.shrub\.(broadleaf|laurel)@-42\/0\.5$/.test(swapped.qs[1]) && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, a bush and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);
@@ -8154,10 +8161,18 @@ async function botCastFlow(browser) {
   await page.keyboard.down('Tab');
   await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
-  // Rank insignia (soldiers only): every Army bot's row wears its rank badge before the name.
-  const badges = await page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent, ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
-  const bare = badges.filter((b) => bots.bots.some((x) => x.name === b.name) && !b.ins);
-  check(badges.length >= 16 && !bare.length, `the Tab board shows each Army bot's rank badge (${badges.filter((b) => b.ins).slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
+  // Ranks & badges (off by default): plain names (an Army bot's rank left off) and no badges.
+  const rows = () => page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent ?? '', ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
+  const plain = await rows();
+  check(plain.length >= 16 && plain.every((b) => !b.ins && !/^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. /.test(b.name)), `with Ranks & badges off, the Tab board shows plain names and no badges (${plain.slice(0, 4).map((b) => `${b.ins ?? '-'}: ${b.name}`).join(', ')}…)`);
+  // Switched on (the pause menu's switch): every row wears a rank title and its badge; Army bots start as privates.
+  await page.evaluate(() => document.getElementById('ranks-toggle').click());
+  await page.waitForFunction(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].every((r) => r.querySelector('.sb-ins:not([hidden]) svg')), null, { timeout: T(5000) }).catch(() => {});
+  const badges = await rows();
+  const bare = badges.filter((b) => !b.ins);
+  const armyTitle = badges.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
+  check(badges.length >= 16 && !bare.length && armyTitle.length >= 15, `with Ranks & badges on, the Tab board shows each player's rank badge and title (${badges.slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard-ranks.png` }).catch(() => {});
   await page.keyboard.up('Tab');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -12376,6 +12391,45 @@ async function flashingScene(browser, scene) {
         30: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 11 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 11 }) })),
         44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
+    },
+    // A rank-up (Options → Ranks & badges; game/rankGlow.ts): a bot 3 m in front, marked as your ally, ranks up twice
+    // a second apart: its badge over the head swells and glows in the marker's colour, and so does its badge in the kill
+    // feed. With the setting on, smaller and dimmer, eased in and out.
+    {
+      name: 'rankup',
+      label: "a rank-up twice, a second apart (a bot's badge over its head 3 m in front, and in the kill feed, swelling and glowing)",
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1.6, 11]),
+      bots: [[0, 0, 11]],
+      before: () =>
+        page.evaluate(() => {
+          const cs = window.__cs;
+          if (!document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
+          // (Free-for-all marks only your party: the bot is shown as one, so it wears its badge over its head.)
+          cs.hud.partyMate = () => true;
+        }),
+      at: Object.fromEntries(
+        [2, 32].map((f) => [
+          f,
+          () =>
+            page.evaluate(() => {
+              const cs = window.__cs;
+              const bot = [...cs.hud.roster.values()].find((p) => p.bot);
+              if (!bot) return;
+              cs.hud.kill(bot.slot, cs.slot === 0 ? 1 : 0, 'core.rifle', cs.slot);
+              cs.hud.feedRankUp(bot.slot);
+              cs.view.rankUp(bot.slot);
+            }),
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ badge: [...window.__cs.view.avatars.values()].some((a) => a.tag?.ins), feed: !!document.querySelector('#feed svg.ins.rank-up') })),
+      sees: (_on, s) => s.badge && s.feed,
+      after: () =>
+        page.evaluate(() => {
+          delete window.__cs.hud.partyMate;
+          if (document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
+        }),
     },
     // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
     // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;

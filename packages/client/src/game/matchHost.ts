@@ -76,6 +76,8 @@ export interface LocalMatchOptions {
   spectate?: boolean;
   /** The party this browser's player is in (shared net/party.ts): friends whose invite link carries it join their team. */
   party?: string;
+  /** This browser's player's career rank points (careerStats.ts myRankPoints): on the roster for the others' badges. */
+  rankPoints?: number;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
   /**
@@ -300,6 +302,7 @@ export class MatchHost {
     } else {
       me = match.addHuman(this.opts.name, this.opts.look)!;
       if (this.opts.party) me.party = this.opts.party;
+      if (this.opts.rankPoints !== undefined) me.rankPoints = this.opts.rankPoints;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
       const at = this.opts.startAt;
       if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
@@ -751,6 +754,8 @@ export class MatchHost {
         return this.drop(id);
       }
       r.slot = player.slot;
+      // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
+      if (msg.rx !== undefined) player.rankPoints = msg.rx;
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1 } satisfies ServerMessage));
