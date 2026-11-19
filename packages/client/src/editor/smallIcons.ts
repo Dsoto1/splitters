@@ -127,7 +127,8 @@ export class SmallIcons {
     mat.disableLighting = true;
     mat.backFaceCulling = false;
     // Drawn only where something is nearer than the icon: through walls, never over the thing in the open.
-    mat.depthFunction = Constants.GREATER;
+    // (With the engine's reversed depth buffer, nearer is greater: the test flips.)
+    mat.depthFunction = this.scene.getEngine().useReverseDepthBuffer ? Constants.LESS : Constants.GREATER;
     mat.disableDepthWrite = true;
     mat.alpha = 0.95;
     this.mats.set(key, mat);
@@ -177,7 +178,7 @@ export class SmallIcons {
       const d = Math.hypot(dx, dy, dz) || 1;
       const off = Math.min(icon.off, d * 0.5);
       icon.mesh.position.set(icon.at.x + (dx / d) * off, icon.at.y + (dy / d) * off, icon.at.z + (dz / d) * off);
-      icon.mesh.scaling.setAll(Math.max(0.7, Math.min(3, d * 0.04)));
+      icon.mesh.scaling.setAll(Math.max(1, Math.min(4, d * 0.075)));
     }
   }
 

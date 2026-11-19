@@ -7,6 +7,11 @@ import type { UniformBuffer } from '@babylonjs/core/Materials/uniformBuffer';
 import { ShaderLanguage } from '@babylonjs/core/Materials/shaderLanguage';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { Nullable } from '@babylonjs/core/types';
+import { Plane } from '@babylonjs/core/Maths/math.plane';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import type { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 
 /**
  * MapMaker: building below ground (QUEUE Features; owner, 2026-11-19: "unable to see the actual tunnel layout under
@@ -22,6 +27,11 @@ export const GLASS_ALPHA = 0.22;
 /** The cut-away circle's radius, metres, and the soft rim drawn round it. */
 export const CUT_RADIUS = 7;
 const RIM = 0.6;
+
+/** Where the level below ground is cut for a view from above, over its floor (an architect's section: the roofs of tunnels off). */
+export const SECTION_ABOVE_FLOOR = 2.6;
+/** Never clipped: the glass ground stays whole over the section. */
+const NO_CLIP = new Plane(0, 0, 0, -1);
 
 /** Where the cut is: [x, z, radius, rim]; radius 0 for none. Shared by every glass material (one ground, one pointer). */
 const cut = { x: 0, z: 0, r: 0 };
@@ -92,6 +102,12 @@ const isGround = (m: AbstractMesh): boolean => m.name.startsWith('edmap_terrain'
 /** The ground as glass while a level below it is edited: its meshes swapped onto see-through twins of their materials. */
 export class GroundGlass {
   private on = false;
+  /** The dark earth the level's pieces are seen on, just under its floors. */
+  private base: Mesh | null = null;
+  /** The section cut while the camera is above the level (null: none of ours in place). */
+  private section: Plane | null = null;
+  private floorY = 0;
+  private levelHeight = 4;
   /** Each ground material's glass twin. */
   private readonly twins = new Map<Material, StandardMaterial>();
   /** The material each glassed mesh had. */
@@ -103,15 +119,23 @@ export class GroundGlass {
     return this.on;
   }
 
-  /** On below ground, off at Ground and above. Call again after the ground's meshes are rebuilt. */
-  set(on: boolean): void {
-    if (!on) {
+  /**
+   * On below ground (`below`: the level's floor height and the level height, and the ground's extent), off at Ground
+   * and above. Call again after the ground's meshes are rebuilt.
+   */
+  set(below: { floorY: number; levelHeight: number; min: [number, number]; max: [number, number] } | null): void {
+    if (!below) {
       if (this.on) this.restore();
       this.on = false;
       cut.r = 0;
+      this.base?.setEnabled(false);
+      this.unsection();
       return;
     }
     this.on = true;
+    this.floorY = below.floorY;
+    this.levelHeight = below.levelHeight;
+    this.showBase(below.min, below.max);
     for (const [m] of this.was) if (m.isDisposed()) this.was.delete(m);
     for (const m of this.scene.meshes) {
       if (!isGround(m) || !m.material || this.was.has(m)) continue;
@@ -120,6 +144,51 @@ export class GroundGlass {
       this.was.set(m, m.material);
       m.material = twin;
     }
+  }
+
+  /** A dark earth under the level's floors, over the ground's extent, so the pieces read against it (not the sky). */
+  private showBase(min: [number, number], max: [number, number]): void {
+    const w = Math.max(1, max[0] - min[0]);
+    const d = Math.max(1, max[1] - min[1]);
+    if (!this.base || this.base.metadata?.w !== w || this.base.metadata?.d !== d) {
+      this.base?.dispose();
+      this.base = CreateGround('edGlassBase', { width: w, height: d }, this.scene);
+      const mat = new StandardMaterial('edGlassBaseMat', this.scene);
+      mat.diffuseColor = new Color3(0.16, 0.13, 0.1);
+      mat.emissiveColor = new Color3(0.09, 0.075, 0.06);
+      mat.specularColor = Color3.Black();
+      mat.alpha = 0.9;
+      mat.clipPlane = NO_CLIP;
+      this.base.material = mat;
+      this.base.isPickable = false;
+      this.base.metadata = { w, d };
+    }
+    this.base.position.set((min[0] + max[0]) / 2, this.floorY - 0.6, (min[1] + max[1]) / 2);
+    this.base.setEnabled(true);
+  }
+
+  /**
+   * Each frame: seen from above the level (the camera over its ceiling), the view is cut a little over its floor, so
+   * the tunnels' roofs come off and their insides show; flown down into a tunnel, it is drawn whole. Another cut (the
+   * plan view's) is left alone.
+   */
+  update(camera: Vector3): void {
+    if (!this.on) return;
+    const want = camera.y > this.floorY + this.levelHeight;
+    const scene = this.scene;
+    if (!want) {
+      this.unsection();
+      return;
+    }
+    if (scene.clipPlane && scene.clipPlane !== this.section) return;
+    const d = -(this.floorY + SECTION_ABOVE_FLOOR);
+    if (!this.section || this.section.d !== d) this.section = new Plane(0, 1, 0, d);
+    scene.clipPlane = this.section;
+  }
+
+  private unsection(): void {
+    if (this.section && this.scene.clipPlane === this.section) this.scene.clipPlane = null;
+    this.section = null;
   }
 
   /** The cut-away circle round where the pointer's ray meets the ground; null takes it away. */
@@ -141,8 +210,8 @@ export class GroundGlass {
     twin.alpha = mat.alpha * GLASS_ALPHA;
     twin.backFaceCulling = false;
     twin.disableDepthWrite = true;
-    // (The plan view keeps the terrain's own materials whole; the glass twin is cut with everything else.)
-    twin.clipPlane = null;
+    // Never cut: the glass ground stays whole over the section (and the plan view's cut).
+    twin.clipPlane = NO_CLIP;
     new GroundGlassPlugin(twin);
     this.twins.set(mat, twin);
     return twin;
@@ -155,6 +224,8 @@ export class GroundGlass {
 
   dispose(): void {
     this.restore();
+    this.unsection();
+    this.base?.dispose();
     for (const t of this.twins.values()) t.dispose();
     this.twins.clear();
   }

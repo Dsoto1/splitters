@@ -98,6 +98,7 @@ export class EditorView {
   private readonly icons: SmallIcons;
   /** The level last drawn (setMap). */
   private shownLevel = 0;
+  private shownLevelHeight = 4;
   private foliageTerrain: MapDocument['terrain'] = null;
   private foliageKey = '';
   private faceHighlight?: Mesh;
@@ -183,7 +184,10 @@ export class EditorView {
       if (id) this.nodeEntity.set(mesh, id);
       else this.nodeEntity.delete(mesh);
     });
-    this.scene.onBeforeRenderObservable.add(() => this.icons.update(this.camera.position));
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.icons.update(this.camera.position);
+      this.glass.update(this.camera.position);
+    });
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.area = new BuildAreaVisuals(this.scene);
     this.scene.onBeforeRenderObservable.add(() => this.area.update(this.camera.position, viewDirection(this.yaw, this.pitch)));
@@ -419,6 +423,7 @@ export class EditorView {
       this.drawnPaths = null;
     }
     this.shownLevel = level;
+    this.shownLevelHeight = doc.classicStructure.levelHeight;
     this.showBuried(shown, level);
     if (doc.paths !== this.drawnPaths) {
       this.drawnPaths = doc.paths;
@@ -442,7 +447,7 @@ export class EditorView {
       void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
     // Below ground the ground turns to glass, so the tunnels under it show (and back at Ground it returns).
-    this.glass.set(level < 0 && !!this.shownTerrain);
+    this.glassBelow(level);
     this.area.setMap(doc, level, this.shownTerrain);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
@@ -1326,9 +1331,17 @@ export class EditorView {
   /** Redraw only the terrain (live preview while a brush is dragged). */
   previewTerrain(doc: MapDocument): void {
     this.styler.buildTerrain(doc, 'edmap');
-    this.glass.set(this.shownLevel < 0);
+    this.glassBelow(this.shownLevel);
     // Built from a preview: the next setMap rebuilds it from the document.
     this.drawnTerrain = undefined;
+  }
+
+  /** The ground as glass on a level below it (with the earth under the level's floors), else as it is. */
+  private glassBelow(level: number): void {
+    const t = this.shownTerrain;
+    if (level >= 0 || !t) return this.glass.set(null);
+    const lh = this.shownLevelHeight;
+    this.glass.set({ floorY: level * lh, levelHeight: lh, min: [t.origin[0], t.origin[1]], max: [t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing] });
   }
 
   /** Below ground: the clear circle cut in the glass ground where the pointer's ray meets it (null: none). */

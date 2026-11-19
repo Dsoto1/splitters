@@ -3150,6 +3150,7 @@ async function editortoolsFlow(browser) {
   await editorBotHintChecks(browser);
   await editorTileOptionChecks(browser);
   await editorBuriedPickChecks(browser);
+  await editorBelowGroundChecks(browser);
 }
 
 /**
@@ -3522,6 +3523,162 @@ async function editorBuriedPickChecks(browser) {
   await frames(page, 2);
   const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
   check(added.portals.join('; ') === '2,-2,-1 turn 0; 2,2,-1 turn 2' && added.undo === 'Add portals' && added.left === null, `the two portals go on the run's ends, facing out, in one undo step (${JSON.stringify(added)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker: building below ground and picking things inside others (QUEUE Features; owner, 2026-11-18/19). Below
+ * ground the ground turns to glass (back to itself at Ground), the passages of the level are drawn on their floor with
+ * their open ends and joints marked, and a lone tunnel's ends are closed with faces of its lining. A spawn inside a set
+ * piece's stair shows through it as an icon and a click picks it; a click again at the same spot steps on to the set
+ * piece (a list says what is there); the move gizmo's handle drags the spawn though it is inside. E2E_SHOTS: pictures.
+ */
+async function editorBelowGroundChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorbelow-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A mine tunnel a level under the field: a straight, a bend and a straight, both ends joining nothing.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'addTiles',
+      tiles: [
+        { id: 'tile_b0', tile: 'core.tunnel_concrete_straight', x: 0, y: 0, z: -1, rotation: 0, family: 'mine' },
+        { id: 'tile_b1', tile: 'core.tunnel_concrete_straight', x: 0, y: 1, z: -1, rotation: 0, family: 'mine' },
+        { id: 'tile_b2', tile: 'core.tunnel_concrete_curve', x: 0, y: 2, z: -1, rotation: 0, family: 'mine' },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 8 });
+  });
+  await frames(page, 6);
+  const glassAt = () => page.evaluate(() => {
+    const ground = window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_terrain') && m.isEnabled());
+    return { ground: ground.length, glass: ground.filter((m) => m.material?.name.endsWith('_glass')).length, flag: window.__editor.view.groundGlass };
+  });
+  const atGround = await glassAt();
+  check(atGround.ground > 0 && atGround.glass === 0 && !atGround.flag, `at Ground the ground is drawn as it is (${JSON.stringify(atGround)})`);
+  await shot('ground-level');
+  await page.evaluate(() => window.__editor.setLevel(-1));
+  await frames(page, 6);
+  const below = await glassAt();
+  check(below.ground > 0 && below.glass === below.ground && below.flag, `on Basement the ground turns to glass (${JSON.stringify(below)})`);
+  // The pointer over the tunnel: the cut-away circle round where it meets the ground.
+  const over = await page.evaluate(() => window.__editor.view.project({ x: 0, y: -4, z: 8 }));
+  await page.mouse.move(over.x, over.y);
+  await frames(page, 4);
+  const marks = await page.evaluate(() => {
+    const m = window.__editor.view.scene.getMeshByName('buried');
+    return { lines: !!m, points: m?.getTotalVertices() ?? 0, ends: window.__editor.checks.allIssues().filter((i) => i.code === 'tunnel.mouth_buried').length };
+  });
+  check(marks.lines && marks.ends === 2, `the basement's passages are outlined on their floor, and validation names its 2 open ends (${JSON.stringify(marks)})`);
+  await shot('basement-glass');
+  // Straight down: the layout from above.
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.pitch = -1.45;
+    v.yaw = 0;
+    v.applyCamera();
+    v.camera.position.set(0, 30, 6);
+  });
+  await frames(page, 4);
+  const top = await page.evaluate(() => window.__editor.view.project({ x: 0, y: -4, z: 4 }));
+  await page.mouse.move(top.x, top.y);
+  await frames(page, 4);
+  await shot('basement-top-down');
+  // From inside the tunnel, looking south at its closed end (a face of the mine's rock, not the sky).
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.camera.position.set(0, -2.3, 6);
+    v.yaw = Math.PI;
+    v.pitch = 0;
+    v.applyCamera();
+  });
+  await page.mouse.move(5, 5);
+  await frames(page, 6);
+  await shot('inside-closed-end');
+  const cap = await page.evaluate(() => window.__editor.visibleBoxes.filter((b) => b.endCap).map((b) => b.surface?.material ?? null));
+  check(cap.length === 2 && cap.every((m) => m === 'core.pbr_rock'), `the run's two open ends are closed with the mine's rock (${JSON.stringify(cap)})`);
+  // Back at Ground: the ground is itself again.
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await frames(page, 4);
+  const back = await glassAt();
+  check(back.glass === 0 && !back.flag, `back at Ground the ground returns (${JSON.stringify(back)})`);
+
+  // A spawn dragged inside the Grand Cliff Stair: its icon shows through, a click picks it, a click again steps on.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addSetPieces', setPieces: [{ id: 'piece_stair', piece: 'setpiece.cliff_stair_grand', x: 6, y: -6, z: 0, rotation: 0, mirror: false }] },
+      ],
+    });
+  });
+  await frames(page, 4);
+  // Inside the stair's flight on the ground level: a step at least 3 m tall, its middle (the owner's case).
+  const solid = await page.evaluate(() => {
+    const ed = window.__editor;
+    const b = ed.visibleBoxes.find((b) => ed.expansion.partOf.get(b.sourceId) === 'piece_stair' && !b.yaw && b.kind === 'solid' && b.max[1] - b.min[1] >= 3 && b.max[1] < 3.9 && b.max[0] - b.min[0] >= 2 && b.min[1] <= 0.5);
+    return b ? [(b.min[0] + b.max[0]) / 2, Math.max(0, b.min[1]) + 0.2, (b.min[2] + b.max[2]) / 2] : null;
+  });
+  check(!!solid, `the Grand Cliff Stair has a solid flight to hide a spawn in (${JSON.stringify(solid)})`);
+  await page.evaluate((at) => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addEntities', entities: [{ id: 'spawn_inside', kind: 'spawn', position: at, yaw: 0, team: null }] });
+    ed.setSelection({ tiles: [], entities: [] });
+  }, solid ?? [48, 0.5, -44]);
+  await frames(page, 4);
+  const spawn = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'spawn_inside').position);
+  // From in front of the flight (south of it), looking up the steps: the spawn is hidden inside them.
+  await page.evaluate((p) => {
+    const v = window.__editor.view;
+    v.yaw = 0;
+    v.pitch = -0.35;
+    v.applyCamera();
+    v.camera.position.set(p[0] - 3, 7, p[2] - 16);
+  }, spawn);
+  await frames(page, 6);
+  const sp = await page.evaluate((p) => window.__editor.view.project({ x: p[0], y: p[1] + 0.9, z: p[2] }), spawn);
+  await page.mouse.move(sp.x, sp.y);
+  await frames(page, 3);
+  const inside = await page.evaluate(() => ({ pick: window.__editor.pick(), icon: window.__editor.view.scene.getMeshByName('edicon_spawn_inside')?.isEnabled() ?? false }));
+  await shot('spawn-inside-setpiece');
+  check(inside.icon && inside.pick?.kind === 'entity' && inside.pick.id === 'spawn_inside', `a spawn inside a set piece has its icon and is what a click there picks (${JSON.stringify(inside)})`);
+  await page.mouse.click(sp.x, sp.y);
+  await frames(page, 2);
+  const first = await page.evaluate(() => [...window.__editor.selection.entities]);
+  await page.mouse.click(sp.x, sp.y);
+  await frames(page, 2);
+  const second = await page.evaluate(() => ({ entities: [...window.__editor.selection.entities], pieces: [...(window.__editor.selection.setPieces ?? [])], list: document.getElementById('ed-cycle')?.hidden === false ? document.getElementById('ed-cycle').textContent : null }));
+  await shot('click-again-cycles');
+  check(first.join() === 'spawn_inside' && second.entities.length === 0 && second.pieces.join() === 'piece_stair' && /Player Spawn/.test(second.list ?? ''), `a click again at the same spot steps from the spawn to the set piece, with a list of what is there (${JSON.stringify({ first, second })})`);
+  // Back to the spawn (clicks step round), then its gizmo's handle drags it out of the stair, one undo step.
+  for (let i = 0; i < 6; i++) {
+    const now = await page.evaluate(() => [...window.__editor.selection.entities].join());
+    if (now === 'spawn_inside') break;
+    await page.mouse.click(sp.x, sp.y);
+    await frames(page, 2);
+  }
+  await page.mouse.move(5, 5);
+  await frames(page, 3);
+  const handle = await page.evaluate(() => (window.__editor.view.gizmoAt ? window.__editor.view.project(window.__editor.view.gizmoAt) : null));
+  await shot('gizmo-on-top');
+  if (handle) {
+    await page.mouse.move(handle.x, handle.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) await page.mouse.move(handle.x - i * 25, handle.y + i * 10);
+    await page.mouse.up();
+    await frames(page, 3);
+  }
+  const moved = await page.evaluate(() => ({ at: window.__editor.doc.entities.find((e) => e.id === 'spawn_inside').position, undo: window.__editor.history.undoLabel }));
+  check(!!handle && Math.hypot(moved.at[0] - spawn[0], moved.at[2] - spawn[2]) > 2 && moved.undo === 'Move', `the move gizmo's handle drags the spawn out though it is inside the stair (${JSON.stringify({ handle, spawn, moved })})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

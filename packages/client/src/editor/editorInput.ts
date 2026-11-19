@@ -233,14 +233,17 @@ export class EditorInput {
    */
   cycle: { x: number; y: number; list: Hit[]; index: number; again: boolean } | null = null;
 
-  private noteClick(e: PointerEvent, hit: Hit | null): void {
+  /** A press at the spot last clicked, on what that click picked: true, and the click (if no drag follows) steps on. */
+  private markAgain(e: PointerEvent): boolean {
     const c = this.cycle;
-    const same = !!c && !e.shiftKey && !e.altKey && Math.hypot(c.x - e.clientX, c.y - e.clientY) <= CYCLE_SAME_PX;
     const current = c?.list[c.index];
-    if (same && c && current && this.isSelected(current)) {
-      c.again = true;
-      return;
-    }
+    if (!c || !current || e.shiftKey || e.altKey || Math.hypot(c.x - e.clientX, c.y - e.clientY) > CYCLE_SAME_PX || !this.isSelected(current)) return false;
+    c.again = true;
+    return true;
+  }
+
+  private noteClick(e: PointerEvent, hit: Hit | null): void {
+    if (this.markAgain(e)) return;
     hideCycleList();
     if (!hit || e.shiftKey || e.altKey) {
       this.cycle = null;
@@ -425,6 +428,8 @@ export class EditorInput {
       if (this.app.tool.kind !== 'select') return this.app.placing.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.app.ring.begin({ x: e.clientX, y: e.clientY })) {
+        // (A click on it, not a turn, at the spot last clicked still steps through what is there.)
+        this.markAgain(e);
         canvas().setPointerCapture(e.pointerId);
         return this.app.hover.updateHover();
       }
@@ -432,7 +437,8 @@ export class EditorInput {
       // a set piece, where a click would pick what stands in front of it.
       const handle = !e.shiftKey && !e.altKey && this.app.view.gizmoAt ? this.app.view.projectInView(this.app.view.gizmoAt) : null;
       if (handle && Math.hypot(handle.x - e.clientX, handle.y - e.clientY) < GIZMO_GRAB_PX && this.app.hoverPoint && this.app.hoverCell) {
-        this.cycle = null;
+        // (A click on it, not a drag, at the spot last clicked still steps through what is there.)
+        this.markAgain(e);
         this.drag = { startCell: [this.app.hoverCell[0], this.app.hoverCell[1]], startPoint: { ...this.app.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
         return;
       }
@@ -488,7 +494,10 @@ export class EditorInput {
       }
       if (e.button === 0) {
         if (this.app.ring.drag) {
+          const turned = !!this.app.ring.drag.turn;
           this.app.ring.end();
+          if (!turned) this.stepCycle();
+          else if (this.cycle) this.cycle.again = false;
           return this.app.hover.updateHover();
         }
         if (this.brush) {
@@ -501,6 +510,7 @@ export class EditorInput {
         const clicked = !this.drag?.moved;
         this.endDrag();
         if (clicked) this.stepCycle();
+        else if (this.cycle) this.cycle.again = false;
         this.app.paths.pointerUp();
         this.app.routes.pointerUp();
       }
