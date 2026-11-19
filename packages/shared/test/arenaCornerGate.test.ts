@@ -10,6 +10,7 @@
 import { createHash } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  BODY_SIZES,
   CORE_BOT_PROFILES,
   PhysicsWorld,
   TICK_RATE,
@@ -20,6 +21,7 @@ import {
   buildMapGeometry,
   coplanarOverlaps,
   coreCatalog,
+  emptyInput,
   explodeSetPieceCommand,
   initPhysics,
   loadMap,
@@ -29,11 +31,13 @@ import {
   segmentHitsAabb,
   serializeMap,
   setTileOptionCommand,
+  stepMovement,
   tileDiagonalMirror,
   tileOptionsOf,
   visibleFaces,
   type MapDocument,
   type MapEntity,
+  type MoveState,
   type Rotation,
   type SetPiecePlacement,
   type TilePlacement,
@@ -284,6 +288,46 @@ describe('the stair wells on terrain', () => {
     const nav = navOf(map);
     expect(route(nav, onDiagonal(0, 0, 26, 0), at(0, 32, -4, 32))).not.toBeNull();
     nav.destroy();
+  });
+});
+
+describe("the stair wells have a room's height over every step (owner, 2026-11-19: a stair going down needed a crouch)", () => {
+  it('3.7 m clear over each step of both wells, as the clock tower; the head landing too', () => {
+    const map = played(gateMap(0));
+    const physics = physicsOf(map);
+    for (const s of [-1, 1]) {
+      // The flight: 16 steps of 0.25 by 0.5 m up the diagonal's depth from v 21 (level -1) to its head at 29 (the
+      // passage's floor, 0); u 2.1 to 4.5 from the centre line.
+      for (let i = 0; i < 16; i++) {
+        const top = -4 + 0.25 * (i + 1);
+        for (const u of [2.3, 3.3, 4.3]) {
+          for (const v of [21.1 + 0.5 * i, 21.4 + 0.5 * i]) {
+            const up = physics.raycastWorld(onDiagonal(0, u * s, v, top + 0.05), { x: 0, y: 1, z: 0 }, 10);
+            expect((up ?? 10) + 0.05, `${s < 0 ? 'west' : 'east'} well, step ${i} at u ${u}, v ${v}`).toBeGreaterThanOrEqual(3.7 - 1e-3);
+          }
+        }
+      }
+      const head = physics.raycastWorld(onDiagonal(0, 3.3 * s, 30.2, 0.05), { x: 0, y: 1, z: 0 }, 10);
+      expect((head ?? 10) + 0.05).toBeGreaterThanOrEqual(3.7 - 1e-3);
+    }
+  });
+
+  it('a large body (the tallest) walks down each well standing, from the head landing to the foot', () => {
+    const map = played(gateMap(0));
+    const physics = physicsOf(map);
+    const scale = BODY_SIZES.large.scale;
+    for (const s of [-1, 1]) {
+      const collider = physics.createPlayerCollider();
+      const from = onDiagonal(0, 3.3 * s, 30.4, 0);
+      const to = onDiagonal(0, 3.3 * s, 20.6, -4);
+      let st: MoveState = { pos: { ...from, y: 0.02 }, velY: 0, grounded: true };
+      for (let t = 0; t < TICK_RATE * 6 && Math.hypot(st.pos.x - to.x, st.pos.z - to.z) > 0.3; t++) {
+        st = stepMovement(physics, collider, st, { ...emptyInput(t), forward: 1, yaw: Math.atan2(to.x - st.pos.x, to.z - st.pos.z) }, 1, undefined, 1, { scale });
+      }
+      expect(Math.hypot(st.pos.x - to.x, st.pos.z - to.z), `${s < 0 ? 'west' : 'east'} well: reached the foot (at ${st.pos.x.toFixed(2)}, ${st.pos.y.toFixed(2)}, ${st.pos.z.toFixed(2)})`).toBeLessThan(0.5);
+      expect(st.pos.y).toBeLessThan(-3.5);
+      physics.removeCollider(collider);
+    }
   });
 });
 

@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Flavius Rule: walk down the gate stairs standing.** The two stair wells beside each corner's Gladiator Gate, down to the hypogeum, have a room's height (3.7 m) over every step; the ground over their lower half came down to 2.5 m, so a large character had to crouch on the way down.
 - **Building trim you can stand against.** Buttresses, pilasters, plinths and other facade pieces that stand out at least 10 cm from a wall (St. John's halls, Flavius Rule, Step Temple and every map with a stone, Roman, temple or brick facade) are solid now: no walking through them, and they stop rounds as cover. Thin trim and the roofline stay as they were.
 - **Open doors are cover.** An open room door (St. John's dorms and halls, any map's Oak or Painted Door standing open) is solid now: you can't walk through its leaf and it stops you like cover (wood, so heavy rounds still go through); the doorway beside it stays open, and bots still walk into the rooms.
 - **Simpler Match Setup pickers.** Bots & AI: a tick-box for each of the eight bot types (the long "Named as" list folded into them), then Ranks & badges and Themed names as plain switches. Teams & players: Teams and Per team steppers over one row of layouts (1v1 to 32v32, FFA) in place of the More layouts list. Saved setups keep loading.

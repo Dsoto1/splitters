@@ -297,10 +297,16 @@ const PODIUM_STAIR = { foot: 3.0, top: 7.0, end: 8.0, gap: 6.0, out: 2.4 };
  * tile's own frame, square to the grid) leads into the cell side of the hypogeum's corner cell (tile cell 2, 2, -1).
  */
 const WELL = { a: 2.1, b: 4.5, wall: 0.5, foot: 21, top: 29, land: 31.4 };
-/** Holes in the fill: the passage, each well's headroom over its upper flight, and the well's door onto the passage. */
+/**
+ * The clear height over the well's head landing (the passage's floor, 0) and so over its every step: a room's (a 4 m
+ * level under a 0.3 m floor), as the clock tower's. (The fill over the flight's lower half once stood at 0, 2.5 m over
+ * its middle steps, and its edge met a large body's head going down: owner, 2026-11-19, a stair that needed a crouch.)
+ */
+const WELL_H = 3.7;
+/** Holes in the fill: the passage, each well's headroom over its whole flight, and the well's door onto the passage. */
 const GATE_HOLES = [
   { u0: -PASS, u1: 0, v0: 16, v1: FACADE[0], y0: 0, y1: PASS_H },
-  { u0: -WELL.b, u1: -WELL.a, v0: WELL.foot + 3, v1: WELL.land, y0: 0, y1: PASS_H },
+  { u0: -WELL.b, u1: -WELL.a, v0: WELL.foot, v1: WELL.land, y0: 0, y1: WELL_H },
   { u0: -WELL.a, u1: -PASS, v0: WELL.top, v1: WELL.land, y0: 0, y1: PASS_H },
 ];
 /**
