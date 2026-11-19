@@ -112,6 +112,12 @@ export interface MatchRules {
    */
   dropWeapons?: boolean;
   /**
+   * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): picking up a second of the same small gun puts one
+   * in each hand (the weapons gunplay.ts akimboOf resolves). Default true; false: one gun at a time. Step 1: the rule
+   * travels with a match but nothing in play reads it yet (AKIMBO_READY).
+   */
+  akimbo?: boolean;
+  /**
    * Weapon set (sim/weaponSets.ts, content/weapon-sets.json: standard, military, scifi, medieval, chaos, mixed): what
    * everyone spawns with, what weapon and grenade pickups hold and what drops. Absent: the map's default
    * (MapDocument.weaponSet), else Standard. Spears or discs only (and Disc Arena) play none.
@@ -210,6 +216,15 @@ export const SCORE_LIMIT_MAX = 5000;
 
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
+
+/**
+ * Dual wielding is built in steps: until play reads the rule (step 2), Match Setup, the dedicated server's rules
+ * and every rules summary leave it out, so nobody is shown a switch that does nothing. Step 2 sets this true.
+ */
+export const AKIMBO_READY: boolean = false;
+
+/** Whether a match allows dual wielding: the rule (default on, so a setup or server from before it reads as on). */
+export const akimboAllowed = (rules: Pick<MatchRules, 'akimbo'>): boolean => rules.akimbo !== false;
 
 /** Whether weapons drop on death in this match: the rule (default on), and never where it makes no sense. */
 export const dropsInPlay = (rules: MatchRules): boolean => rules.dropWeapons !== false && !restrictedWeapons(rules) && rules.mode !== 'core.discs';
