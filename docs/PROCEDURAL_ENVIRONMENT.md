@@ -253,13 +253,13 @@ new at its factor, from a standing eye and from the side; `?mode=lineup`).
 | Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4, turned a quarter (it lay along x, ours along z) / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
 | Kenney Log Stack | not swapped: cut firewood, no generated woodpile yet |
 
-**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick): a desert formation of five
-tall, sharp spires in a row, 4.6 to 8 m, on two broad, low blocks that join their feet, and a fallen block in front;
-13.6 × 7.9 × 4.8 m like the Meshy spires it replaces. It is the outcrop generator with nine masses (the spires are tall,
-narrow masses, so they taper to points), the bedding and noise running through the whole formation; collision is one
-hull per mass, so the gaps between the spires stay open. A formation has its own triangle budget (`budget` on the
-species: 1,700 / 560 / 170 triangles), above one boulder's; the Meshy spires were 3,000 at their nearest. Side by side
-with the Meshy spires (`?mode=lineup`), the generated one is a little more open between its spires.
+**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick, made denser and more fused
+the same day, owner's 3b): one desert formation, 13.6 × 7.9 × 4.8 m like the Meshy spires it replaces. Three broad
+masses sunk into the ground make a single body up to about 5-6 m, and seven narrow spires (4.6 to 8 m) rise out of it in
+two staggered rows, all merged where they overlap. It is the outcrop generator with ten masses (fuller fractures than a
+boulder's, `cutDepth` 0.68-0.92, so the masses stay broad), the bedding and noise running through the whole formation;
+collision is one hull per mass (ten). A formation has its own triangle budget (`budget` on the species: 1,700 / 560 / 170
+triangles; it uses 1,397 / 503 / 160), above one boulder's; the Meshy spires were 3,000 at their nearest.
 
 **Run on 42 maps through MapMaker** (2026-11-18/19; Playwright on the real editor: Import, Environment → Nature, Swap
 natural props for ours with rocks by the ground, Export): 2,844 Quaternius placements and about 600 kit and Meshy rocks.
