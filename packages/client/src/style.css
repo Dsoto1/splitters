@@ -521,7 +521,7 @@ html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
 .team-steppers .team-count-slot { margin-left: 0; }
 .team-steppers .team-count .row-label { display: inline; }
 .layout-chips .size-chip { flex-direction: row; align-items: baseline; gap: 6px; }
-.layout-chips .size-chip b { color: var(--text); font-size: 13px; letter-spacing: 0.04em; }
+.layout-chips .size-chip b { color: var(--text); font-size: 13px; letter-spacing: 0.04em; text-transform: none; }
 .layout-chips .size-chip small { font-size: 13px; }
 .layout-chips .size-chip.pick b::after { content: ' ★'; color: var(--cyan); }
 .layout-chips .size-chip.off { opacity: 0.45; cursor: not-allowed; }

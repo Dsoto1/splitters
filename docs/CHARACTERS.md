@@ -109,11 +109,21 @@ look they play.
 **Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
 **Army** (the uniformed soldiers; the old Soldiers) or **Agency** (agents and spies; the old Agents & Spies: Customs
 Agent Zhao, Kenji, Santa, Stealth Operative and the Dummy). A map's Bot characters (MapMaker's Map properties), Match
-Setup, the pause menu and the server's `cast` rule offer "Soldiers & Spies: Army" and "...: Agency" (`army`,
-`agency`), so a map that recreates a real battle (Shingle Point) can field Army only. `lookBranch(id)` reads it; the
+Setup, the pause menu and the server's `cast` rule offer them as two bot types, Soldiers and Spies (`army`,
+`agency`; both ticked is `soldiers`), so a map that recreates a real battle (Shingle Point) can field Army only. `lookBranch(id)` reads it; the
 manifest checker wants one on every `soldiers` character and none elsewhere. Character Select shows it as a tag.
 Santa stays Agency (owner, 2026-11-17); the Operatives (the retired Operative preset and Crimson Operative, held back)
-are Agency too. Shingle Point's Bot characters are "Soldiers & Spies: Army" (set in MapMaker).
+are Agency too. Shingle Point's Bot characters are Soldiers only (set in MapMaker).
+
+**Bot types (owner, 2026-11-19).** Match Setup's Bots & AI tab, the pause menu's Host tab and MapMaker's map
+settings pick random bots' characters with one tick-box per bot type (`BOT_TYPES`: Soldiers, Spies, Everyday Folk,
+Outer Space, Legends, Animalia, Machines, Horrors; every one ticked: all; All and None to start over). The old
+"Named as" sets fold into a type (`THEME_BOT_TYPES`: pirate, knight, ninja, wizard, barbarian, myth → Legends; the
+animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer Space; cowboy, gangster,
+townsfolk → Everyday Folk; soldier → Soldiers), so saved setups, links, server rules and maps that named one load
+as that type (`validBotCast`, `normalizeSetup`). Under the types, plain switches: **Ranks & badges** (the Options
+setting, `game/ranksSetting.ts`) and **Themed names** (`MatchSetup.themedNames`, `MatchRules.themedNames`; off:
+random bots take the general names, `BOT_NAMES`).
 
 **Ranks & badges (owner, 2026-11-18; Options → Ranks & badges and the pause menu, off by default).** Off, names are
 plain and the marker over a head is the arrow (the ally diamond, the enemy's downward triangle), as before 11-18: an

@@ -659,7 +659,7 @@ mode playing.
 | Bot skill | Players → Bot skill | `skill hard` | `BOT_DIFFICULTY` | live |
 | Bot style | Players → Bot style | `style arena` | `RULES.style` | live |
 | Your bots (bot set) | Bot set card | `botset …` | `BOTSET` | live (swapped in one at a time) |
-| Bot characters (which looks random bots wear, and their names) | Match rules → Bot characters | `rules cast soldiers` (`map`, `all`, a group or a name theme) | `RULES.cast` | live (bots out of it change) |
+| Bot characters (which looks random bots wear, and their names) | Match rules → Bot characters | `rules cast soldiers` (`map`, `all`, `soldiers` or a bot type: `army`, `agency`, `folk`, `space`, `legends`, `animals`, `machines`, `horror`; an old name theme reads as its type) | `RULES.cast` | live (bots out of it change) |
 | Score limit | Match rules → Score limit | `rules score 60` | `RULES.modes.<mode>.score` | restart |
 | Time limit | Match rules → Time limit | `rules time 15` | `RULES.modes.<mode>.time` | restart |
 | Respawn delay | Match rules → Respawn delay | `rules respawn 3` | `RULES.modes.<mode>.respawn` | restart |
@@ -1182,18 +1182,20 @@ suggestion.
   name in use in the match (players, bots, spectators, the host's set); the
   general list (`BOT_NAMES`) is the fallback (designs of yours, a list run
   out). Lists are append-only.
-  - **Bot characters** keep random bots to some character groups and/or name
-    themes ("soldiers" for a D-Day map; a new soldier skin joins by its group
-    and theme). The map's maker sets the default (`MapDocument.botCast`,
-    MapMaker → map properties → Bots → Bot characters; none ticked: everyone);
-    the host overrides it: Play → Match setup → Bots → Bot characters (Map
-    default / All / a group / a theme), pause menu → Match → Bot characters
+  - **Bot characters** keep random bots to some bot types (Soldiers, Spies,
+    Everyday Folk, Outer Space, Legends, Animalia, Machines, Horrors; "army"
+    for a D-Day map; a new soldier skin joins by its group). An old name theme
+    (pirate) reads as its type. The map's maker sets the default
+    (`MapDocument.botCast`, MapMaker → map properties → Bots → Bot characters;
+    every type ticked: everyone); the host overrides it: Play → Match setup →
+    Bots & AI → Bot types (a tick-box each; Map's own puts the map's back),
+    pause menu → Host → Bot types
     (live: random bots out of it change look and name where they stand), a
     dedicated host's `RULES.cast`, console `rules cast …`. A host's choice
     carries over a map change; "Map default" follows each map. Bot sets keep
     their own names and looks.
-  - **Protocol:** `{ c: 'bots', cast }` (a list of group / theme ids, kept to
-    known ones; `[]` all; `null` the map's own); HostState carries `cast` (null:
+  - **Protocol:** `{ c: 'bots', cast }` (a list of bot type ids, kept to
+    known ones, an old theme id read as its type; `[]` all; `null` the map's own); HostState carries `cast` (null:
     the map's) and `mapCast`. Older hosts ignore it and send no `cast`, so the
     pause menu shows no Bot characters row.
 
