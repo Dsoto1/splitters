@@ -56,7 +56,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -7609,8 +7609,29 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+}
+
+/**
+ * Beams and tracers from the muzzle, flows of their own (split from physicsfx, 2026-11-20). Stepped frame by frame on
+ * the frame clock they are long: on CI physicsfx had grown from about 330 s to 800-1,650 s since the tracer checks
+ * joined it (grips auto-fit, 2026-11-18): physicsfx's own checks about 5 minutes, the beams about 5, the tracers about
+ * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
+ * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
+ */
+async function beamsFlow(browser) {
   await beamMuzzleChecks(browser);
-  await tracerMuzzleChecks(browser);
+}
+
+async function tracersFlow(browser) {
+  await tracerMuzzleChecks(browser, ['core.ranger']);
+}
+
+async function tracers2Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.otter']);
+}
+
+async function tracers3Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.knight']);
 }
 
 /**
@@ -7623,9 +7644,9 @@ async function physicsfxFlow(browser) {
  * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person
  * started under your eyes (no viewmodel muzzle) and no flash showed on your character's gun.
  */
-async function tracerMuzzleChecks(browser) {
+async function tracerMuzzleChecks(browser, looks) {
   const out = [];
-  for (const look of ['core.ranger', 'core.otter', 'core.knight']) {
+  for (const look of looks) {
     const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await ctx.addInitScript(installFrameClock);
     const page = await ctx.newPage();
@@ -7727,7 +7748,8 @@ async function tracerMuzzleChecks(browser) {
     if (process.env.E2E_VERBOSE) console.log(JSON.stringify(cases.map((c) => ({ look: c.look, w: c.weapon, third: c.third, ...c.r }))));
     await ctx.close();
   }
-  check(out.length === 0, `tracers leave the gun's muzzle as drawn, third and first person, the rifle and the pistol, three builds, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+  const who = looks.map((l) => l.replace('core.', '')).join(', ');
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
 }
 
 /**
@@ -15058,7 +15080,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

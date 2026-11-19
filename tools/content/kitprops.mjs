@@ -196,7 +196,16 @@ export async function build(content, families) {
       if (f.bounds === 'within' && !own && f.collide !== 'none') throw new Error(`${f.id}#${v.name}: bounds "within" needs its own collision boxes (it does not fill its size), or collide: "none"`);
       if (v === f.variants[0]) boxes = own;
       else if (JSON.stringify(own) !== JSON.stringify(boxes)) throw new Error(`${f.id}#${v.name}: its collision boxes differ from the first variant's (a family has one collision: structure that changes it belongs in another family)`);
-      for (const b of own ?? []) if (b.some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
+      // (A seventh number turns a box about its centre: an ajar door's leaf. Its turned corners are what must fit.)
+      const corners = (b) => {
+        if (b.length < 7) return b.slice(0, 6);
+        const [x0, y0, z0, x1, y1, z1, a] = b;
+        const [cx, cz, hx, hz] = [(x0 + x1) / 2, (z0 + z1) / 2, (x1 - x0) / 2, (z1 - z0) / 2];
+        const [c, s] = [Math.cos(a), Math.sin(a)];
+        const pts = [[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]].map(([u, w]) => [cx + u * c + w * s, cz - u * s + w * c]);
+        return [Math.min(...pts.map((p) => p[0])), y0, Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), y1, Math.max(...pts.map((p) => p[1]))];
+      };
+      for (const b of own ?? []) if (corners(b).some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
       tris ??= t.map(() => 0);
       t.forEach((n, i) => (tris[i] = Math.max(tris[i], n)));
       const file = `kit/${type}.${name}.${v.name}.glb`;

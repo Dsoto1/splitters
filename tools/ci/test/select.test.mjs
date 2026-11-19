@@ -79,7 +79,7 @@ describe('change-based selection', () => {
     ['content/props/kenney-survival-kit.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props.lock.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/guns.json', ['arsenal', 'vehicles', ...CHARACTER_FLOWS], ['shared']],
-    ['content/vfx.json', ['physicsfx', 'arsenal', 'flashing'], ['client']],
+    ['content/vfx.json', ['physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'flashing'], ['client']],
     ['content/gear.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['shared']],
     ['content/sounds.json', ['offline'], ['client']],
   ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
@@ -144,7 +144,7 @@ describe('change-based selection', () => {
       expect(s.flows, p).toContain('flashing');
     }
     const own = sel('packages/client/src/game/reduceFlashing.ts', 'packages/client/src/game/steadyArcs.ts', 'packages/client/src/game/hurtVignette.ts');
-    expect(own).toMatchObject({ full: false, flows: ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], unit: ['client'] });
+    expect(own).toMatchObject({ full: false, flows: ['offline', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'visual', 'flashing'], unit: ['client'] });
   });
 
   it('MapMaker code runs the editor flows and client unit tests only', () => {
@@ -295,9 +295,12 @@ describe('shards', () => {
     expect(shards.length).toBeLessThanOrEqual(MAX_SHARDS);
     expect(shards.flatMap((s) => s.flows).sort()).toEqual([...NO_TOUR].sort());
     const longest = Math.max(...NO_TOUR.map((f) => durationOf(timings, f))) + timings.startup;
+    // When the whole run is more than 16 shards of the goal (physicsfx's true time, 2026-11-20), no packing beats the
+    // mean shard: that is the floor then.
+    const mean = (NO_TOUR.reduce((t, f) => t + durationOf(timings, f), 0) + MAX_SHARDS * timings.startup) / MAX_SHARDS;
     // Longest-first packing lands within a few per cent of the goal when all 16 runners are near it (the seed timings
     // are: editorux split in four, 2026-11-09, moved the packing 6 s over with the same total).
-    expect(Math.max(...shards.map((s) => s.seconds))).toBeLessThanOrEqual(Math.max(TARGET_SHARD_S, longest) * 1.05);
+    expect(Math.max(...shards.map((s) => s.seconds))).toBeLessThanOrEqual(Math.max(TARGET_SHARD_S, longest, mean) * 1.05);
     const nightly = planShards(FLOWS, timings, { order: FLOWS });
     expect(nightly).toHaveLength(MAX_SHARDS);
     expect(nightly.flatMap((s) => s.flows).sort()).toEqual([...FLOWS].sort());

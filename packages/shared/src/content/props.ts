@@ -23,9 +23,11 @@ export interface PropDefinition {
    * Finer collision for set pieces (stairs and ramps as walkable steps,
    * doorways open in the middle, corners and curved railings): boxes
    * [minX, minY, minZ, maxX, maxY, maxZ] in the prop's own space, used instead
-   * of the `collision` box for the level's static collision.
+   * of the `collision` box for the level's static collision. A seventh number turns that box about its own centre's
+   * vertical (radians, as a yaw): a part standing at an angle in the prop (an ajar door's leaf). A turned part is
+   * walked past, not kept off: the bots' navmesh leaves it out (WorldBox.navThrough).
    */
-  boxes?: readonly (readonly [number, number, number, number, number, number])[];
+  boxes?: readonly (readonly [number, number, number, number, number, number] | readonly [number, number, number, number, number, number, number])[];
   /** Can be shot apart: health at scale 1, an explosion when it goes, and the colour of its debris. */
   breakable?: { health: number; blast?: { radius: number; damage: number; edge: number }; debris: string };
   /** Foliage you can hide in (bushes, ferns, tall crops): bots only spot someone inside it up close or when they fire. */
