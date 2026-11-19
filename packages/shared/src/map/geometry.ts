@@ -666,6 +666,10 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   }
   boxes.push(...propBoxes(map));
   boxes.push(...blockBoxes(map));
+  // Facade pieces deep enough to stand against collide (their boxes drawn as decor above).
+  const cover: WorldBox[] = [];
+  packFacadeBoxes(map, cells, cover);
+  boxes.push(...cover);
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
   if (map.bounds) {
     let floorY = Infinity;
@@ -1328,8 +1332,22 @@ function floorRuns(segs: readonly [number, number, number, number, number][]): [
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
 const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
 
-/** The boxes of every Style Pack facade (visual only: trim with its own material). */
-function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
+/**
+ * How far a Style Pack facade's piece must stand proud of the cladding, and how tall it must be, to collide
+ * (FACADE_COVER_*): a buttress, pilaster, plinth, talud, cornice or pinnacle you can stand against or hide behind
+ * (owner, 2026-11-19: "same with some of the building trim"); thin dressing (courses, hood moulds, sills, corner boards,
+ * the cladding itself) stays drawn only, and so does what stands over the roofline (parapets, cornices over the eaves,
+ * pinnacles, merlons): the roofs bots and players reach stay as they were.
+ */
+export const FACADE_COVER_PROUD = 0.1;
+export const FACADE_COVER_HEIGHT = 0.25;
+
+/**
+ * The boxes of every Style Pack facade (trim with its own material, drawn with the level's decor). With `cover`, the
+ * pieces deep and tall enough to collide (FACADE_COVER_PROUD) are also put there as collision only (kind `prop`: never
+ * drawn, as a prop's own box; the piece's material for the rounds that strike it).
+ */
+function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>, cover?: WorldBox[]): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
   const half = cellSize / 2;
   const out: WorldBox[] = [];
@@ -1344,8 +1362,13 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
     const ground = !cells.has(`${gx},${gy},${gz - 1}`);
     const roofed = cells.has(`${gx},${gy},${gz + 1}`);
     const id = occ.placement.id;
+    // (`proud`: how far the piece stands out past the cladding's face, set once the cladding's depth is known.)
+    let face = 0;
+    let skin = false;
     const add = (side: Side, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, material: string, tint: string | null = null) => {
-      out.push({ ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } });
+      const b: WorldBox = { ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } };
+      out.push(b);
+      if (cover && !skin && face - v0 >= FACADE_COVER_PROUD - 1e-6 && y1 - y0 >= FACADE_COVER_HEIGHT - 1e-6 && y1 <= levelHeight + 1e-6) cover.push({ ...b, kind: 'prop' });
     };
     const dressed = new Set<Side>();
     for (const side of SIDES) {
@@ -1358,7 +1381,10 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
       const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
       const out0 = -base - look.depth;
       const segs = edgeSegments(style, half, levelHeight).filter((g) => g[4] >= 0.3);
+      face = out0;
+      skin = true;
       for (const [u0, u1, y0, y1] of segs) add(side, u0, u1, y0, y1, out0, -base, look.skin, look.tint);
+      skin = false;
       const top = Math.max(0, ...segs.map((g) => g[3]));
       const full = top >= levelHeight - 1e-6;
       switch (facade) {

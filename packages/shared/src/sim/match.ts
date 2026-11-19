@@ -4385,8 +4385,9 @@ export class Match {
     const box = this.physics.boxAt(handle);
     if (!box) return 'concrete';
     if (box.kind === 'prop') {
+      // A prop's box, or a facade piece's collision (map/geometry.ts packFacadeBoxes: its own material).
       const e = this.entityById(box.sourceId);
-      return e ? entityMaterial(e) : 'wood';
+      return e ? entityMaterial(e) : box.surface ? surfaceMaterial(box.surface.material) : 'wood';
     }
     // Free blocks and Style Pack pieces carry their own material; tile structure is structural.
     return box.surface ? surfaceMaterial(box.surface.material) : 'concrete';
