@@ -37,8 +37,6 @@ import {
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
-  TEAM_PRESETS,
-  SETUP_PRESETS,
   BIG_MATCH,
   PARTY_PRESETS,
   applyParty,
@@ -57,7 +55,6 @@ import {
   peopleAndBots,
   playerCap,
   presetPatch,
-  presetPlayers,
   rulesFromSetup,
   setVariant,
   DEFAULT_FIRETEAM_SIZE,
@@ -70,6 +67,8 @@ import {
   setupPlayers,
   setupSummary,
   setupTeams,
+  setTeamSize,
+  MAX_TEAM_SIZE,
   setupYourTeam,
   sizePresets,
   variantStates,
@@ -81,7 +80,6 @@ import {
   type TeamAssign,
   getLook,
   mapTeams,
-  teamLayoutLabel,
   getWeapon,
   partInfo,
   type GameMode,
@@ -127,7 +125,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { GLYPHS, botCastSelect, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
+import { GLYPHS, botTypePicker, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, optionSwitch, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -1576,7 +1574,9 @@ export class FrontEnd {
     const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });
     const onPreset = matchingPreset(s, map, presets, cap.max);
     const unit = coop ? 'in the squad' : 'players';
-    const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
+    // Teams and free-for-all: one row of layout chips (1v1 … 32v32, FFA; the map's pick first when it's another
+    // shape); odd layouts from the steppers. Squads keep their sizes worked out for the map.
+    const sizeRow = family === 'squad' ? sizeChips(presets, onPreset, `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes') : this.layoutChips(current, team ? presets.find((p) => p.id === 'pick')?.teams : undefined, team ? sizes : null, cap.max);
     // The party cards are drawn twice: in the Match Setup tab's row (with their ids) and in the Presets tab.
     const partyOnNow: { name: string | null } = { name: null };
     const partyCards = () => el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
@@ -1612,11 +1612,29 @@ export class FrontEnd {
     // ---- Players & teams: who plays (people apart from bots), the teams or the count
     const assign = s.assign ?? 'balanced';
     const playerRows: HTMLElement[] = [];
-    // How many teams: on the section's title line (the team editor puts its stepper here).
+    // How many teams: beside Per team over the chips (the team editor puts its stepper here).
     const teamCountSlot = el('span', { class: 'team-count-slot' });
+    let perTeamBox: HTMLElement | null = null;
     if (team) {
       const sides = mapTeams(map, sizes.length);
       const you = setupYourTeam(s, sizes.length);
+      // Per team: every team that many players (even teams), the cap saying whose limit it is.
+      const people = sizes.map((_, i) => (you === i ? 1 : 0));
+      const perStep = stepper({
+        value: Math.max(...sizes),
+        min: 1,
+        max: MAX_TEAM_SIZE,
+        id: 'arcade-per-team',
+        label: 'players per team',
+        onChange: (v) => {
+          const r = setTeamSize(sizes, 0, v, { people, cap, even: true, device: dev.name });
+          this.evenTeams = true;
+          this.change((x) => {
+            x.teams = r.sizes;
+          }, r.stopped);
+        },
+      });
+      perTeamBox = el('span', { class: 'team-count per-team' }, el('span', { class: 'row-label', textContent: 'Per team' }), perStep);
       const even = this.evenTeams && sizes.every((n) => n === sizes[0]);
       // Your team: a short list on the total's line (it was a row of three tabs in the old Players & teams section).
       const assignPick = el('select', { id: 'arcade-assign' }, ...([['balanced', 'Balanced'], ['random', 'Random'], ['fixed', 'Fixed']] as const).map(([v, t]) => el('option', { value: v, textContent: t, selected: v === assign })));
@@ -1686,8 +1704,11 @@ export class FrontEnd {
       playerRows.push(settingRow('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, choice([['', 'Just this map'], ...PLAYLISTS.map((p): ChoiceOption<string> => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => this.change((x) => (x.playlist = v || undefined)))));
     }
     // Section 3: the size presets in a compact row (More layouts… on the title's line), then the teams or the count.
+    // Teams: two steppers (how many teams, players on each) over the layout chips (owner, 2026-11-19).
+    const stepRow = team ? [el('div', { class: 'team-steppers', id: 'setup-team-steppers' }, teamCountSlot, perTeamBox!)] : [];
     const teamsSec = numbered(
-      { n: 3, id: 'setup-teams', title: team ? 'Teams & players' : coop ? 'Squad' : 'Players', icon: GLYPHS.people, extra: [...(team ? [infoTip("Bots fill every place. Hosting online, friends who join take bots' places."), teamCountSlot] : []), this.moreLayouts(current)] },
+      { n: 3, id: 'setup-teams', title: team ? 'Teams & players' : coop ? 'Squad' : 'Players', icon: GLYPHS.people, extra: team ? [infoTip("Bots fill every place. Hosting online, friends who join take bots' places.")] : [] },
+      ...stepRow,
       sizeRow,
       ...playerRows,
     );
@@ -1729,7 +1750,8 @@ export class FrontEnd {
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || (raceTrack(map)?.ambient ?? 0) > 0 ? null : 'This map has no vehicles.' },
     ];
     const botRules: typeof extras = [
-      { id: 'cast', label: 'Bot characters', tip: "Which characters random bots play, and so their names: a soldier is \"Sgt. Dunmore\", a monkey \"Coco Bean\" (the first bot in a character is named after it: Scamp). Map default: what the map's maker chose (most maps: all). Your own bots (Edit bots…) keep their names and looks.", changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botCastSelect(s.botCast, map.botCast, (v) => this.change((x) => (x.botCast = v)), 'arcade-cast') },
+      { id: 'cast', label: 'Bot types', tip: '', changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botTypePicker({ value: s.botCast, mapCast: map.botCast ?? [], id: 'arcade-cast', onChange: (v) => this.change((x) => (x.botCast = v)) }) },
+      { id: 'names', label: 'Themed names', tip: '', changed: s.themedNames === false, value: 'General bot names', control: el('span') },
       { id: 'style', label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: choice([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => this.change((x) => (x.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))), 'arcade-style') },
     ];
     const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
@@ -1738,7 +1760,7 @@ export class FrontEnd {
     const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
@@ -1764,7 +1786,7 @@ export class FrontEnd {
 
     // ---- Bots: skill, style, characters, your own bots
     const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
-    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.themedNames === false ? ' · General names' : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
     const perTeam = team
       ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Each team's size is in Match setup, Teams & players.` })]
       : [];
@@ -1775,7 +1797,26 @@ export class FrontEnd {
       bots: [
         el('p', { class: 'pane-sum', id: 'setup-bots-sum', textContent: botsSummary }),
         settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
-        ...botRules.map(rowOf),
+        rowOf(botRules.find((x) => x.id === 'style')!),
+        // Bot types, then the options as plain switches (owner, 2026-11-19: "isolate the selection of the bot types,
+        // then give user options to add the rank idea…").
+        el(
+          'div',
+          { class: 'bot-block', id: 'setup-bot-types' },
+          el('h4', { class: 'pane-title' }, 'Bot types ', infoTip("Which characters random bots play: tick the types you want (every one: all). Map's own: what the map's maker chose (most maps: all). Your own bots (Your bots, below) keep their names and looks.")),
+          botRules.find((x) => x.id === 'cast')!.control,
+        ),
+        el(
+          'div',
+          { class: 'bot-block', id: 'setup-bot-options' },
+          el('h4', { class: 'pane-title', textContent: 'Bot options' }),
+          el(
+            'div',
+            { class: 'opt-switches' },
+            optionSwitch('arcade-ranks', 'Ranks & badges', "Every player and bot wears a rank: its title before the name and a badge in their group's style, in the kill feed, on the scoreboards and over heads. Just for show. The same switch as Options → Ranks & badges, for every match.", ranksOn(), (on) => saveRanksOn(on)),
+            optionSwitch('arcade-names', 'Themed names', 'On: random bots are named to fit their character ("Coco Bean" the monkey, "Sgt. Dunmore" the soldier; the first of a character takes its own name). Off: general names ("Brassneck", "Mildred") for every random bot.', s.themedNames !== false, (on) => this.change((x) => (on ? delete x.themedNames : (x.themedNames = false)))),
+          ),
+        ),
         this.botSetRow(map, sizes, players),
         ...perTeam,
       ],
@@ -1964,72 +2005,75 @@ export class FrontEnd {
   }
 
   /**
-   * More layouts…: every fixed shape (1v1 … 48v48, 2v2v2v2, 4×4, FFA 8/16) and MapMaker's other layouts, beside
-   * the presets worked out for the map. Each starts an editable setup; a team layout moves a free-for-all to
-   * Team Deathmatch (and an FFA one back) when the map has it. Options that can't work here say why.
+   * The layout chips (owner, 2026-11-19, in place of the More layouts list): the map's pick when it's another shape,
+   * 1v1, 2v2, 4v4, 8v8, 16v16, 32v32 (as far as this device and mode run) and FFA. A team layout moves a
+   * free-for-all to Team Deathmatch (FFA moves teams to Deathmatch) when the map has it; a chip that can't work here
+   * is greyed with the reason. `pick`: the map's own team layout (team modes); `sizes`: the teams now (null: FFA).
    */
-  private moreLayouts(current: ArcadeMap): HTMLElement {
+  private layoutChips(current: ArcadeMap, pick: readonly number[] | undefined, sizes: readonly number[] | null, cap: number): HTMLElement {
     const s = this.setup;
-    const max = deviceMaxPlayers();
     const teamModes = current.modes.filter((m) => isTeamMode(m));
-    const anyTeams = teamModes.filter((m) => !isTwoTeamMode(m));
     const ffaModes = current.modes.filter((m) => !isTeamMode(m) && !isCoopMode(m));
-    const select = el('select', { id: 'arcade-teams', class: 'more-layouts', title: 'More layouts: a starting point you can then change' }) as HTMLSelectElement;
-    select.setAttribute('aria-label', 'More layouts');
-    select.append(new Option('More layouts…', ''));
-    const teamWhy = (sizes: readonly number[]): string | null => {
-      if (isTeamMode(s.mode)) return isTwoTeamMode(s.mode) && sizes.length > 2 ? `${MODE_LABEL[s.mode]} is two teams` : null;
-      if (sizes.length > 2 ? !anyTeams.length : !teamModes.length) return 'no team mode on this map';
-      return null;
-    };
-    const add = (group: HTMLOptGroupElement, value: string, label: string, players: number, off: string | null) => {
-      const o = new Option(`${label} · ${players} players${off ? ` (${off})` : ''}`, value);
-      o.disabled = !!off;
-      group.append(o);
-    };
-    const shown = new Set<string>();
-    const teams = el('optgroup', { label: 'Teams' });
-    const ffa = el('optgroup', { label: 'Free-for-all' });
-    // Past this device's cap (32 v 32 in a browser, 8 v 8 on a phone): a dedicated host's sizes.
-    for (const p of SETUP_PRESETS) {
-      if (presetPlayers(p) > max) continue;
-      if (p.sizes) {
-        shown.add(p.sizes.join(','));
-        add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
-      } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
-    }
-    const more = el('optgroup', { label: 'More layouts' });
-    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= max) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
-    select.append(teams, ffa, more);
-    select.addEventListener('change', () => {
-      const v = select.value;
-      if (!v) return;
-      if (!v.startsWith('ffa:')) {
-        const sizes = v.split(',').map(Number);
-        this.evenTeams = sizes.every((n) => n === sizes[0]);
-      }
-      this.change((x) => {
-        if (v.startsWith('ffa:')) {
-          if (isTeamMode(x.mode) || isCoopMode(x.mode)) {
-            x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
-            x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
-            x.scoreAuto = true;
-          }
-          x.bots = Number(v.slice(4)) - 1;
-          return;
-        }
-        const sizes = v.split(',').map(Number);
-        if (!isTeamMode(x.mode)) {
-          const pool = sizes.length > 2 ? anyTeams : teamModes;
-          x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
-          x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
-          x.scoreAuto = true;
-        }
-        x.teams = sizes;
-        if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
+    const most = Math.max(cap, sizes ? 0 : deviceMaxPlayers());
+    const now = sizes?.join(',') ?? 'ffa';
+    const box = el('div', { class: 'size-chips layout-chips', id: 'setup-sizes', role: 'group' });
+    box.setAttribute('aria-label', 'Team layouts');
+    const chip = (id: string, label: string, value: string, tip: string, off: string | null, small?: string) => {
+      const on = value === now;
+      const b = el('button', { type: 'button', class: `size-chip${on ? ' on' : ''}` }, el('b', { textContent: label }), ...(small ? [el('small', { textContent: small })] : []));
+      b.dataset.preset = id;
+      b.dataset.tip = tip;
+      b.setAttribute('aria-pressed', String(on));
+      inert(b, off);
+      b.addEventListener('click', () => {
+        if (off || on) return;
+        this.pickLayout(value, teamModes, ffaModes);
       });
+      box.append(b);
+      return b;
+    };
+    const teamOff = isTeamMode(s.mode) ? null : teamModes.length ? null : 'No team mode on this map.';
+    const fixed = [1, 2, 4, 8, 16, 32].filter((n) => n * 2 <= most);
+    const pickKey = pick?.join(',');
+    const pickFixed = pick && pick.length === 2 && pick[0] === pick[1] && fixed.includes(pick[0]!);
+    if (pick && !pickFixed) chip('pick', "Map's pick", pick.join(','), "The map's own team layout: what its maker set it up for.", teamOff, pick.join('v')).dataset.pick = '1';
+    for (const n of fixed) {
+      const b = chip(`${n}v${n}`, `${n}v${n}`, `${n},${n}`, `Two teams of ${n}: ${n * 2} players.`, teamOff);
+      if (pickKey === `${n},${n}`) {
+        b.dataset.pick = '1';
+        b.classList.add('pick');
+        b.dataset.tip = `Two teams of ${n}: the map's pick.`;
+      }
+    }
+    const players = sizes ? sizes.reduce((a, b) => a + b, 0) : 0;
+    chip('ffa', 'FFA', 'ffa', sizes ? `Free-for-all: everyone for themselves, ${Math.min(players, deviceMaxPlayers())} players.` : 'Free-for-all: everyone for themselves. How many: Bots, below.', isTeamMode(s.mode) && !ffaModes.length ? 'No free-for-all on this map.' : null);
+    return box;
+  }
+
+  /** A layout chip picked: `value` team sizes ("4,4") or "ffa"; the mode moves between teams and free-for-all where it must. */
+  private pickLayout(value: string, teamModes: readonly GameMode[], ffaModes: readonly GameMode[]): void {
+    if (value === 'ffa') {
+      const players = isTeamMode(this.setup.mode) ? setupTeams(this.setup, this.currentMap().map!, deviceMaxPlayers()).reduce((a, b) => a + b, 0) : null;
+      return this.change((x) => {
+        if (!isTeamMode(x.mode)) return;
+        x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
+        x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+        x.scoreAuto = true;
+        if (players) x.bots = Math.max(1, Math.min(deviceMaxPlayers(), players) - 1);
+      });
+    }
+    const sizes = value.split(',').map(Number);
+    this.evenTeams = sizes.every((n) => n === sizes[0]);
+    this.change((x) => {
+      if (!isTeamMode(x.mode)) {
+        const pool = sizes.length > 2 ? teamModes.filter((m) => !isTwoTeamMode(m)) : teamModes;
+        x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
+        x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+        x.scoreAuto = true;
+      }
+      x.teams = sizes;
+      if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
     });
-    return select;
   }
 
   /** Load a saved setup by name (its map must still exist). */

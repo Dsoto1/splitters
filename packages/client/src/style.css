@@ -329,7 +329,6 @@ html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
 /* Presets: sizes worked out for the map (the one the setup is on lit, else Custom), then the party bundles. */
 .preset-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .preset-note { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font: 500 12px var(--font-body); }
-.more-layouts { flex: 0 1 auto; margin-left: auto; padding: 4px 6px; font-size: 12px; max-width: 48%; }
 .size-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .size-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 5px 10px; min-width: 0; background: var(--surface-1); text-align: left; text-transform: none; letter-spacing: 0; }
 .size-chip b { color: var(--muted); font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
@@ -516,10 +515,37 @@ html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
 .num-head .glyph { color: var(--cyan); }
 .setup-body .num-head h4 { flex: none; font-size: 14px; letter-spacing: 0.08em; }
 .setup-body .num-head h4::before, .setup-body .pane-title::before { content: none; }
-.num-head .more-layouts { flex: 0 1 150px; margin-left: auto; max-width: 150px; min-width: 90px; }
 .team-count-slot { display: inline-flex; margin-left: auto; }
+/* Teams & players (2026-11-19): how many teams and players on each, two steppers over the layout chips. */
+.team-steppers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; }
+.team-steppers .team-count-slot { margin-left: 0; }
+.team-steppers .team-count .row-label { display: inline; }
+.layout-chips .size-chip { flex-direction: row; align-items: baseline; gap: 6px; }
+.layout-chips .size-chip b { color: var(--text); font-size: 13px; letter-spacing: 0.04em; }
+.layout-chips .size-chip small { font-size: 13px; }
+.layout-chips .size-chip.pick b::after { content: ' ★'; color: var(--cyan); }
+.layout-chips .size-chip.off { opacity: 0.45; cursor: not-allowed; }
+/* Bots & AI (2026-11-19): bot types as tick-boxes, then the options as switches. */
+.bot-block { display: grid; gap: 6px; padding-top: 6px; }
+.bot-block .pane-title { display: flex; align-items: center; gap: 6px; margin: 0; }
+.type-picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.type-pick { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-1); color: var(--text); font: 600 13px var(--font-body); cursor: pointer; }
+.type-pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.type-pick input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--cyan); cursor: pointer; }
+.type-pick:has(input:checked) { border-color: rgba(0, 209, 255, 0.6); background: rgba(0, 209, 255, 0.12); }
+.type-pick:has(input:focus-visible) { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.type-pick:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.type-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-height: 20px; }
+.type-hint { color: var(--muted); font: 500 12px var(--font-body); }
+.type-foot button.link { padding: 2px 4px; background: none; border: 0; color: var(--cyan); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+.type-foot button.link:hover:not(:disabled) { text-decoration: underline; }
+.type-foot button.link:disabled { color: var(--muted); opacity: 0.5; cursor: default; }
+.opt-switches { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.opt-switch { padding: 4px 0; }
+@media (max-width: 720px) {
+  .type-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .team-count-slot:empty { display: none; }
-.team-count-slot:not(:empty) + .more-layouts { margin-left: 0; }
 /* The mode in a line, at the end of the title's line. */
 .num-head .mode-line { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; }
 /* Variants and Party presets: one row saying what's on, until opened. */
@@ -628,7 +654,6 @@ html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
   .map-bar { flex-wrap: wrap; }
   .setup-tab .glyph { display: none; }
   .team-count .row-label { display: none; }
-  .num-head .more-layouts { flex-basis: 96px; }
   .foot-bar .saved-menu > summary > span { display: none; }
   .setup .foot-bar .go.spectate { padding: 0 11px; }
   .setup .foot-bar .go.primary { flex-basis: 150px; font-size: 18px; }

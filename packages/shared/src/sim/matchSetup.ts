@@ -54,8 +54,10 @@ export interface MatchSetup {
   randomChars?: boolean;
   emotes?: boolean;
   botStyle?: 'arena' | 'tactical';
-  /** Which looks random bots wear (content/botNames.ts): absent, the map's own; empty, every look; else groups and/or name themes. */
+  /** Which looks random bots wear (content/botNames.ts): absent, the map's own; empty, every look; else bot types (BOT_TYPES; an old name theme reads as its type). */
   botCast?: string[];
+  /** Themed names (absent: on): false, random bots take general names ("Brassneck") instead of their character's ("Coco Bean"). */
+  themedNames?: false;
   killstreaks?: boolean;
   /** Mix up weapon pickups (absent: off). */
   mixPickups?: boolean;
@@ -847,6 +849,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.emotes === false) rules.emotes = false;
   if (s.botStyle) rules.botStyle = s.botStyle;
   if (Array.isArray(s.botCast)) rules.botCast = validBotCast(s.botCast);
+  if (s.themedNames === false) rules.themedNames = false;
   if (s.killstreaks === false) rules.killstreaks = false;
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;
@@ -957,6 +960,12 @@ export function normalizeSetup(raw: unknown, modes?: readonly GameMode[]): Match
   // A weapon set this build doesn't have (a setup saved by another version): the map's default instead.
   if (out.weaponSet !== undefined && !isWeaponSetId(out.weaponSet)) delete out.weaponSet;
   if (out.weather !== undefined && !isWeatherChoice(out.weather)) delete out.weather;
+  // Bot characters as bot types: an old "Named as" set (pirate) or a retired group reads as its type (2026-11-19).
+  if (out.botCast !== undefined) {
+    if (Array.isArray(out.botCast)) out.botCast = validBotCast(out.botCast);
+    else delete out.botCast;
+  }
+  if (out.themedNames !== undefined && out.themedNames !== false) delete out.themedNames;
   if (o.botSet !== undefined) {
     const v = validateBotSet(o.botSet)?.set;
     if (v && botSetInUse(v)) out.botSet = v;

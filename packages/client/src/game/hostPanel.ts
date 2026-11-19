@@ -1,5 +1,5 @@
 import { WEATHER_PRESETS, isWeatherChoice, BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
-import { botCastSelect, choice, el, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, weatherSelect } from '../frontend/setupControls.ts';
+import { botTypePicker, choice, el, infoTip, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, weatherSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 
@@ -474,7 +474,7 @@ export class HostPanel {
     }
     // Bot characters: random bots out of it change look and name; hosts that know it send HostState.cast.
     if (d.cast !== undefined) {
-      botRows.push(settingRow('Bot characters', "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"; the first bot in a character takes its name). Map default: the map maker's choice. Random bots out of it change when you Apply. Your bot set keeps its own.", botCastSelect(d.cast ?? undefined, s.mapCast, (v) => ((d.cast = v ?? null), redraw()), 'hc-cast')));
+      botRows.push(el('div', { class: 'bot-block', id: 'hc-bot-types' }, el('h4', { class: 'pane-title' }, 'Bot types ', infoTip("Which characters random bots play (every one ticked: all; Map's own: the map maker's choice). Random bots out of it change look and name when you Apply. Your bot set keeps its own.")), botTypePicker({ value: d.cast ?? undefined, mapCast: s.mapCast ?? [], id: 'hc-cast', onChange: (v) => ((d.cast = v ?? null), redraw()) })));
     }
 
     // ---- rules: respawn and friendly fire wait for the restart; mixed pickups and weapon drops apply at once
