@@ -146,6 +146,8 @@ const RULES = [
   [/^content\/(props\/|props(\.lock)?\.json$)/, ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
   // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
   [/^content\/guns(\.lock)?\.json$/, ['arsenal', ...CHARACTER_FLOWS, 'vehicles'], ['shared']],
+  // The sight fit's corrections and exclusions (tools/content/sight-fit.mjs): where each gun sits aimed.
+  [/^content\/sight-fit\.json$/, ['arsenal', 'offline', 'weaponsets'], ['client', 'content']],
   // Effects: the flows that play them, and the flicker check (Reduce flashing: no new effect may flash).
   [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal', 'flashing'], ['client']],
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
@@ -211,6 +213,8 @@ const RULES = [
   [/^packages\/client\/src\/game\/(rankBook|rankGlow|ranksSetting|insigniaSvg|insigniaMesh)\.ts$/, ['teams', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
+  // Where the first-person gun sits aiming down its sights (the sight fit).
+  [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'visual'], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.

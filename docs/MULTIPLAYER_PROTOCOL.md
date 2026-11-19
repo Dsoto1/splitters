@@ -631,3 +631,107 @@ docs/GAME_MODES.md, "Between matches". No hub change: everything rides on the ho
 - The match holds its intermission while the vote runs (`Match.holdIntermission`), so it never restarts itself
   under the vote.
 
+
+## 22. Binary snapshots (November 2026)
+
+`shared/net/snapshotBinary.ts`. One snapshot message in an `ArrayBuffer`, for a channel that can hand a buffer over
+without copying it. Measured first (docs/PERF_FLAVIUS_MEMORY_2026-11-16.md, "Snapshot format"):
+
+- **The local match** (offline play, MapMaker TEST, the host's own page in Host game) is where snapshots cost: the
+  sim worker's `postMessage` structured-cloned every snapshot into new objects on the page, 1.2 MB of garbage a
+  second at 64 players. **This is the only place the binary message is used.**
+- **Networked play is unchanged**, byte for byte: `PROTOCOL_VERSION` stays 5, `hello` and `welcome` gain nothing,
+  hosts (a browser's Host game, the Host Service, a dedicated server) send friends the delta JSON of
+  `net/interest.ts`, deflated (`net/peerZip.ts`, or the WebSocket's own compression). That is 580 B a snapshot at 64
+  players; the binary message, which has no deltas, would deflate to 1,077 B on the same link. So an old client on a
+  new host, a new client on an old host and any hub between them (the hub never sees gameplay messages: section 1)
+  speak exactly what they spoke before.
+
+**Negotiation (page ⇄ its match worker).** The page's `start` message says `snap: <version>` when it reads binary
+snapshots of that version (`ToSimHost`, `game/matchHost.ts`). The match host sends this player's snapshots as
+`{ k: "snap", b: ArrayBuffer }` (the buffer in the transfer list) only when `snap` is the version it writes;
+otherwise as `{ k: "local", msg }` objects, as always. Every pairing works:
+
+| Page | Match worker | Snapshots |
+|---|---|---|
+| says `snap: 1` | writes 1 | binary |
+| says nothing (older, or `?perfoff=snapbin`) | writes 1 | objects |
+| says `snap: 1` | older (doesn't know `snap`) | objects |
+| says `snap: N` | writes another version | objects |
+| a match on the page's own thread (`?sim=main`, no workers) | | objects, by reference (no message at all) |
+
+Two more fallbacks, both to objects and both for the rest of the match: the encoder meets a snapshot it can't carry
+exactly (below) and the host stops writing binary; or the page can't read a buffer (another version, damaged), drops
+it and says `{ k: "snapobjects" }`. Read buffers go back four at a time (`{ k: "snapbufs", bufs }`, transferred) and
+are written again; the page keeps no view of a buffer it has handed back.
+
+**Layout** (little-endian; version 1). Every message is whole in itself: nothing depends on an earlier one.
+
+| Bytes | |
+|---|---|
+| 0-3 | magic `54 54 53 4E` ("TTSN") |
+| 4-5 | version (u16): 1. A reader takes only versions it knows; anything else is refused before another byte is read |
+| 6-7 | flags (u16): bit 0, the snapshot has `hold` |
+| 8-11 | the message's length in bytes (u32; the buffer may be longer: buffers are pooled). At most 4 MiB |
+| 12-15, 16-19 | `tick`, `ack` (u32) |
+| 20-27 | `timeLeft` (f64) |
+| 28-31 | `phase` (u32: 0 waiting, 1 countdown, 2 playing, 3 intermission) |
+| then | the bot states' strings: count (u16), each a length (u8) and UTF-8 |
+| then | players: count (u16), then a record each (below) |
+| then | eight lists of number rows, in this order: `pr`, `np`, `mt`, `ms`, `zn`, `cv`, `ab`, `fs`. Each: row count (u16; `FFFF` = the field is absent), each row its length (u8) and that many f64 |
+| then | JSON fields: count (u8), each an id (u8), a length (u32) and UTF-8 JSON text. Ids in rising order: 0 `score`, 1 `ev`, 2 `pk`, 3 `pw`, 4 `dw`, 5 `me`, 6 `sc`, 7 `md`, 8 `hold`, 9 `ld`, 10 `rl`; last, 255: an object of any fields this version has no place for |
+
+A player's record (60 bytes, then its optional fields):
+
+| Field | Type | |
+|---|---|---|
+| `s` | u8 | slot |
+| bits | u8 | 1 `g`, 2 `alive`, 4 `em`, 8 `sr`, 16 `dr` |
+| mask | u16 | which optional fields follow: 1 `vx`, 2 `vz`, 4 `fx`, 8 `st`, 16 `sn`, 32 `cl`, 64 `ch`, 128 `zl` |
+| `p` (x, y, z), `vy`, `yaw`, `pitch` | 6 × f64 | exactly the sim's values |
+| `hp`, `ar` | i16 | |
+| `w` | u16 | weapon code |
+| `pu` | u8, and a zero byte | |
+| `vx`, `vz` | f64 each | |
+| `fx` | u32 | |
+| `st` | u16 | index into the message's strings |
+| `sn`, `cl`, `ch` | u8 each | `sn` and `ch` are 1 or 2 |
+| `zl` | 3 × f64 | |
+
+**Precision: nothing is quantised.** Positions, speeds, angles, timers and every row's numbers travel as the sim's
+own 64-bit floats (a `-0` stays a `-0`); integers go in integer fields only after the encoder has checked they fit.
+A transferred buffer costs no bandwidth, so rounding would buy nothing and would have to be argued for against
+prediction (which reconciles against the player's own entry, exactly), interpolation and hit feedback: with
+bit-identical values they behave as before by construction. The fields that travel as JSON text (`score`, `ev`,
+`pk`, `pw`, `dw`, `me`, `sc`, `md`, `hold`, `ld`, `rl`) read back as JSON reads them (a `-0` becomes `0`), which is
+how every networked player has always received them. (The network's own rounding, players to the centimetre in
+delta snapshots, is unchanged and is not this format's.)
+
+**The encoder refuses rather than approximates.** A player entry with a field the record doesn't have, an integer
+out of its field's range, a row of a length the list doesn't allow, a row holding something that isn't a number: the
+snapshot is not encoded and goes as objects, and so do all after it. A new *top-level* field needs no fallback: it
+travels in the extras object (id 255) until it is given a place. Adding a field to the snapshot message or to
+`PlayerSnapshot` without listing it in `snapshotBinary.ts` fails the type check (`SNAPSHOT_KEYS_COVERED`,
+`SNAPSHOT_PLAYER_KEYS_COVERED`), and `shared/test/snapshotBinary.test.ts` round-trips every snapshot of bot matches
+on five maps in seven modes and checks every listed field was exercised.
+
+**The decoder trusts nothing** (docs/MULTIPLAYER_SECURITY.md): the length field is checked against the buffer and
+the 4 MiB cap; every count is checked against the bytes left before a loop runs or anything is made, so nothing is
+allocated beyond a small multiple of the message's own size; string indices, bit and mask values, `sn`/`ch`, row
+lengths, field order, the required lists and trailing bytes are checked; bad UTF-8 or JSON is caught. Anything wrong
+gives `null` and a reason; `decode` never throws (fuzzed in the test: noise, every truncation, every byte changed).
+The JSON fields' contents are trusted as far as the JSON a host sends over the network is: their shapes are the
+session's to live with, as before.
+
+**What the page gets.** The same snapshot message as before, in objects it partly reuses: players (and the
+projectile and NPC rows) come from a ring of 72 snapshots' worth, longer than the two seconds the interpolation
+buffer keeps (61), and a snapshot merged away before delivery (`SnapshotCoalescer`) takes no place in it; a player
+entry has every field as an own property (absent ones `undefined`), so entries can be refilled. Rows of vehicles,
+zones, cover, ammo boxes and squads, and the `score`, `pk`, `pw`, `dw`, `hold` and `ld` lists, are the *same
+arrays* as in the previous snapshot while they haven't changed. Readers must not write into a snapshot (none does).
+Events, private state (`me`), scenario and mode state are new objects every time.
+
+**A later version** changes the version number; a reader of version 1 refuses it and the page falls back to objects
+as above. If the binary message is ever put on a network link, it must be offered the same way (the receiver says
+which version it reads, in `hello`; the sender uses it only then) and would need deltas of its own to beat the
+JSON deltas.
