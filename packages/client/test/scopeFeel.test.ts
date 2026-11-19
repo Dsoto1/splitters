@@ -134,27 +134,22 @@ describe('scope feel (docs/GUNPLAY_SPEC.md §15, "Scope feel")', () => {
     expect(eyeBoxShade((EYE_BOX.clear + EYE_BOX.full) / 2)).toBeCloseTo(0.5, 6);
   });
 
-  it("the scope's surround fades in and out, slower with Reduce flashing on", () => {
+  it("the scope's surround comes in at once and fades out, slower with Reduce flashing on", () => {
     for (const calm of [false, true]) {
       const k = calm ? SCOPE_FADE.calm : SCOPE_FADE.normal;
-      let level = 0;
+      // In with the zoom: the magnified picture never shows round the glass.
+      expect(stepScopeFade(0, true, 1 / 60, calm)).toBe(1);
+      let level = 1;
       let frames = 0;
-      while (level < 1 && frames < 100) {
-        level = stepScopeFade(level, true, 1 / 60, calm);
-        frames++;
-      }
-      expect(frames / 60).toBeCloseTo(k.in, 1);
-      frames = 0;
       while (level > 0 && frames < 100) {
         level = stepScopeFade(level, false, 1 / 60, calm);
         frames++;
       }
       expect(frames / 60).toBeCloseTo(k.out, 1);
-      // Never a cut: at least three frames each way at 30 frames a second.
-      expect(Math.min(k.in, k.out) * 30).toBeGreaterThanOrEqual(3);
+      // Never a cut to the bright scene: at least three frames at 30 frames a second.
+      expect(k.out * 30).toBeGreaterThanOrEqual(3);
     }
-    // Aiming and letting go as fast as the fades allow with Reduce flashing on: at most 3 full swings a second.
-    expect(1 / (SCOPE_FADE.calm.in + SCOPE_FADE.calm.out)).toBeLessThanOrEqual(3);
+    expect(SCOPE_FADE.calm.out).toBeGreaterThanOrEqual(0.2);
   });
 
   it('the glint: inside the cone, beyond the least distance, fading with angle and distance', () => {

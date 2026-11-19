@@ -1072,9 +1072,10 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pickup-msg { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); padding: 6px 14px 6px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.92), rgba(18, 24, 39, 0.7)); border-left: 3px solid var(--success); font: 600 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.3s; }
 #pickup-msg::before { content: '+ '; color: var(--success); }
 #pickup-msg.on { opacity: 1; transition: none; }
-/* The scope's surround, reticle and shadow come in and go out with --so (hud.ts setScope, scopeFeel.ts SCOPE_FADE):
-   a fade both ways, never a cut (leaving a scope by day would turn most of the screen from black to daylight at once). */
-#scope { position: absolute; inset: 0; --so: 1; opacity: var(--so); transform: scale(calc(1.15 - 0.15 * var(--so))); }
+/* The scope's surround, reticle and shadow come in at once with the zoom and go out with --so (hud.ts setScope,
+   scopeFeel.ts SCOPE_FADE): a fade, never a cut (leaving a scope by day would turn most of the screen from black to
+   daylight at once). */
+#scope { position: absolute; inset: 0; --so: 1; opacity: var(--so); }
 /* The eye box (scopeFeel.ts EYE_BOX): the scope's shadow, a dark sheet with a clear round hole the size of the glass,
    clipped to the glass and slid by hud.ts setEyeBox (a transform: no repaint). The hole's edge is soft (0.8 to 1.08
    glass radii), so the picture darkens toward the edge of the glass and a crescent comes in from the side. */

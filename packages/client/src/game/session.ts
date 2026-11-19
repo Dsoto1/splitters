@@ -213,7 +213,7 @@ import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
 import { holdoverFor } from './holdover.ts';
-import { EYE_BOX, SCOPE_FEEL, freshBreath, freshEyeBox, seemsScoped, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
+import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, seemsScoped, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
 import type { GlintSource } from './scopeGlint.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator, type RemotePose } from './interpolation.ts';
@@ -1239,7 +1239,7 @@ export class GameSession {
   }
 
   /** The scope's shadow (scopeFeel.ts EYE_BOX): where its clear picture sits on the glass, and the view it last saw. */
-  private eyeBox = freshEyeBox();
+  private eyeBox: EyeBox = { rx: 0, ry: 0, x: 0, y: 0 };
   private eyeBoxLast: { yaw: number; pitch: number; ry: number; rp: number } | null = null;
 
   /**

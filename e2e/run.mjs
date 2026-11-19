@@ -12265,8 +12265,9 @@ const FLASHING_DAY = {
       // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
       // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
       // and goes three times in the two seconds, as fast as a hand can, then you turn hard left and right through it
-      // (the scope's shadow sliding across the glass). The surround fades both ways, slower with the setting on, and the
-      // shadow moves through a slow filter: no cut from black to daylight, no dark crescent jumping from side to side.
+      // (the scope's shadow sliding across the glass). The surround comes in with the zoom and fades out, slower with the
+      // setting on, and the shadow moves through a slow filter: the magnified tiles never show bright round the glass, no
+      // cut from black to daylight, no dark crescent jumping from side to side.
       {
         name: 'scope',
         label: 'a sniper scope coming up and going away three times in two seconds, then hard turns through it, by day over white tiles',
@@ -12293,8 +12294,8 @@ const FLASHING_DAY = {
           ]),
         ),
         seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
-        // The surround was seen part-way in or out on several frames (a fade, not a cut), and the shadow moved.
-        sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 8 : 4) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
+        // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
+        sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
         after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
@@ -12659,7 +12660,7 @@ async function flashingScene(browser, scene) {
       look: aim([-10, 0, -4], [-10, 1.6, 28]),
       bots: [[-10, 0, 28]],
       before: () =>
-        page.evaluate(() => (window.__glintSeen = { most: 0, count: 0 })).then(() => sim(page, (m, me) => {
+        page.evaluate(() => ((window.__glintSeen = { most: 0, count: 0 }), (window.__autoInput = { buttons: 0 }))).then(() => sim(page, (m, me) => {
           // The bots take a copy of your Sniper Rifle and stand as a bot does when it fights (the state the snapshot carries).
           for (const b of m.combatants().filter((c) => c.bot)) {
             b.weapons.set(me.current, { ...me.weapons.get(me.current) });

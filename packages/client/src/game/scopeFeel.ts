@@ -135,16 +135,18 @@ export function eyeBoxShade(r: number): number {
 }
 
 /**
- * The scope's surround coming in and going out (the black round the glass, the reticle, the shadow): seconds to fade
- * in and out. Never a cut: leaving a scope by day would otherwise turn most of the screen from black to daylight in
- * one frame. Slower with Reduce flashing on, so aiming and letting go in quick turns cannot flash.
+ * The scope's surround (the black round the glass, the reticle, the shadow). It comes in at once, with the zoom: the
+ * zoom snaps (responsiveness), and a surround still fading in let the magnified picture show bright all over the
+ * screen for a few frames before the dark arrived: over pale ground, a flash. Coming up to the eye is shown by the
+ * eye box opening instead. It goes out over `out` seconds, never a cut: leaving a scope by day would otherwise turn
+ * most of the screen from black to daylight in one frame. Slower with Reduce flashing on, so aiming and letting go in
+ * quick turns cannot flash.
  */
-export const SCOPE_FADE = { normal: { in: 0.16, out: 0.1 }, calm: { in: 0.22, out: 0.22 } } as const;
+export const SCOPE_FADE = { normal: { out: 0.1 }, calm: { out: 0.22 } } as const;
 
 /** The surround's opacity a frame on. */
 export function stepScopeFade(level: number, on: boolean, dt: number, calm: boolean): number {
-  const k = calm ? SCOPE_FADE.calm : SCOPE_FADE.normal;
-  return on ? Math.min(1, level + dt / k.in) : Math.max(0, level - dt / k.out);
+  return on ? 1 : Math.max(0, level - dt / (calm ? SCOPE_FADE.calm : SCOPE_FADE.normal).out);
 }
 
 /**
@@ -162,7 +164,7 @@ export const GLINT = {
   far: [120, 320],
   farLevel: 0.55,
   /** Its radius on screen at the hip's field of view, as the tangent of the angle it spans. */
-  radius: 0.0075,
+  radius: 0.02,
   /** How far ahead of their eye, along their aim, it sits (m): at the scope's front glass. */
   ahead: 0.55,
   normal: { level: 0.85, rise: 0.15 },

@@ -755,7 +755,8 @@ export class Hud {
 
   /**
    * The full-screen scope with its optic kind's reticle (`fine`: a sniper scope's crosshair; `chevron`: a 2-3x optic's)
-   * and holdover marks. It fades in and out (scopeFeel.ts SCOPE_FADE; slower with Reduce flashing on): never a cut.
+   * and holdover marks. It comes in at once with the zoom and fades out (scopeFeel.ts SCOPE_FADE; slower with Reduce
+   * flashing on): never a cut to the bright scene.
    */
   setScope(on: boolean, marks: readonly HoldoverMark[] = [], reticle = 'fine'): void {
     const now = performance.now();

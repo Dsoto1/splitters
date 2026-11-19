@@ -967,15 +967,17 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
   1.08 glass radii), clipped to the glass and slid by a CSS transform: no render pass, no repaint, as sharp as the
   screen. The hole never moves further than 0.5 radii, so the reticle's centre is always at least 0.3 radii clear.
   Coming up to the eye the shadow starts off the middle and opens.
-- **The surround** (the black round the glass) fades in over 0.16 s and now out over 0.1 s, where leaving a scope
-  used to cut from black to the scene in one frame.
+- **The surround** (the black round the glass) now comes in at once with the zoom and goes out over 0.1 s. It used
+  to fade in over 0.16 s and cut out: since the zoom snaps, the magnified picture showed all over the screen for a
+  few frames before the dark arrived (over pale ground, a bright flash), and leaving a scope cut from black to the
+  scene in one frame. Coming up to the eye is shown by the eye box opening instead.
 - **The glint.** Other players see a small, soft, steady point of light at the scope of a player who aims a
   sniper-kind optic (Sniper Rifle, Railgun) their way: within 14° between that player's aim and the line to your eye
   (full within 4°), from 18 m (full from 30 m; nearer you see the gun), down to 0.55 of its level by 320 m. It is one
   square of four vertices facing the camera, its soft round worked out in its shader, drawn in the scene with the
   scene's own depth, so walls, hills and crates hide it for nothing; no fog, no depth written. It spans the same angle
-  at any distance (the tangent 0.0075 at the hip, about 5 px across on a 720-line screen; through your own scope the
-  square root of the zoom larger). Steady: its level only eases (0.15 s up, 0.25 s down), its colour stays under
+  at any distance (its square the tangent 0.02 at the hip: 18 px across on a 720-line screen, the light its middle third;
+  through your own scope the square root of the zoom larger). Steady: its level only eases (0.15 s up, 0.25 s down), its colour stays under
   High's bloom threshold, a thin dark ring keeps it readable against a bright sky. `game/scopeGlint.ts`.
 - **Who is scoped: the snapshot does not say.** `PlayerSnapshot` carries no bit for aiming (the host knows it:
   `BUTTON_ZOOM` in the player's input). So the glint reads what the snapshot does carry (`seemsScoped`): the held
@@ -987,7 +989,7 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
   client then shows the glint only with it. Not done here: it is a protocol change.
 - **Reduce flashing** (docs/LOOK.md): the shadow moves less far (0.3 radii), less dark (0.6 against 0.94) and through
   a quarter-second filter, so turning hard left and right cannot swing a dark area from side to side; the surround
-  fades over 0.22 s both ways; the glint is dimmer (0.5 against 0.85) and comes up over half a second. The `flashing`
+  goes out over 0.22 s; the glint is dimmer (0.5 against 0.85) and comes up over half a second. The `flashing`
   flow's `scope` (by day) and `glint` (at night) moments record them.
 
 | Number (`content/optics.json` unless noted) | Before | Now |
@@ -997,7 +999,8 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
 | `feel.settle` (the drift's size easing) | 0 (a jump) | 0.15 s |
 | `steps`: sniper kind, and the Marksman Rifle | `[1, 0.45]` (in code, every scope overlay) | the same, as data |
 | `steps`: 2-3× kind (the Battle Rifle) | one zoom | `[1]` |
-| Surround fade out (`scopeFeel.ts` `SCOPE_FADE`) | 0 (a cut) | 0.1 s (0.22 s calm); in 0.16 s as before (0.22 s calm) |
+| Surround fade in (`style.css`, then `scopeFeel.ts`) | 0.16 s, growing from 1.15 × | 0 (with the zoom) |
+| Surround fade out (`SCOPE_FADE`) | 0 (a cut) | 0.1 s (0.22 s calm) |
 | Eye box (`EYE_BOX`): turn 1.5, kick 2.2, sway 0.1, decay 0.12 s, most 0.5 radii, dark 0.94 | none | new (calm: 1, 1.2, 0.06, filter 0.25 s, 0.3, 0.6) |
 | Glint (`GLINT`): cone 14° (full 4°), 18-30 m in, 0.55 by 320 m, level 0.85, rise 0.15 s, fall 0.25 s | none | new (calm: level 0.5, rise 0.5 s) |
 

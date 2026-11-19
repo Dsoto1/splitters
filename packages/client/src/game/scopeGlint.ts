@@ -44,9 +44,8 @@ uniform float level;
 uniform vec3 colour;
 void main() {
   float r = length(vUv);
-  float core = 1.0 - smoothstep(0.0, 0.6, r);
-  core *= core;
-  float ring = smoothstep(0.3, 0.6, r) * (1.0 - smoothstep(0.7, 1.0, r)) * 0.3;
+  float core = 1.0 - smoothstep(0.08, 0.62, r);
+  float ring = smoothstep(0.35, 0.65, r) * (1.0 - smoothstep(0.72, 1.0, r)) * 0.35;
   float a = level * (core + ring * (1.0 - core));
   if (a < 0.004) discard;
   gl_FragColor = vec4(colour * core * level, a);
