@@ -17,7 +17,7 @@ import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import type { FaceCache, MapDocument, MapEntity, MapWeather, PropEntity, RenderFace, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { buriedPassageLines, groundCutAt, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, updateVisibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import { buildOccupancy, buriedOpenEnds, isOpenEdge, buriedPassageLines, groundCutAt, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, updateVisibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -39,6 +39,9 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { BuildAreaVisuals } from './buildAreaVisuals.ts';
+import { GroundGlass } from './groundGlass.ts';
+import { SmallIcons } from './smallIcons.ts';
+import { isSmallThing } from './editorParts.ts';
 
 /** A picture laid over the ground while editing (MapMaker → Terrain, owner): never part of the map. */
 export interface TraceImage {
@@ -89,6 +92,13 @@ export class EditorView {
   /** The border along the boundary (live preview of the Border setting). */
   readonly border: BorderVisuals;
   private readonly foliage: FoliageVisuals;
+  /** The ground as glass while a level below it is edited (groundGlass.ts). */
+  private readonly glass: GroundGlass;
+  /** Small things' icons, drawn through what hides them (smallIcons.ts). */
+  private readonly icons: SmallIcons;
+  /** The level last drawn (setMap). */
+  private shownLevel = 0;
+  private shownLevelHeight = 4;
   private foliageTerrain: MapDocument['terrain'] = null;
   private foliageKey = '';
   private faceHighlight?: Mesh;
@@ -169,6 +179,15 @@ export class EditorView {
     this.city = new CityVisuals(this.models, 'edcity');
     this.border = new BorderVisuals(this.scene, this.styler, this.models);
     this.foliage = new FoliageVisuals(this.scene, this.models);
+    this.glass = new GroundGlass(this.scene);
+    this.icons = new SmallIcons(this.scene, (mesh, id) => {
+      if (id) this.nodeEntity.set(mesh, id);
+      else this.nodeEntity.delete(mesh);
+    });
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.icons.update(this.camera.position);
+      this.glass.update(this.camera.position);
+    });
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.area = new BuildAreaVisuals(this.scene);
     this.scene.onBeforeRenderObservable.add(() => this.area.update(this.camera.position, viewDirection(this.yaw, this.pitch)));
@@ -403,7 +422,9 @@ export class EditorView {
       this.styler.buildTerrain(shown, 'edmap');
       this.drawnPaths = null;
     }
-    this.showBuried(shown);
+    this.shownLevel = level;
+    this.shownLevelHeight = doc.classicStructure.levelHeight;
+    this.showBuried(shown, level);
     if (doc.paths !== this.drawnPaths) {
       this.drawnPaths = doc.paths;
       disposeRoadMeshes(this.roadMeshes);
@@ -425,6 +446,8 @@ export class EditorView {
       this.foliageKey = foliageKey;
       void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
+    // Below ground the ground turns to glass, so the tunnels under it show (and back at Ground it returns).
+    this.glassBelow(level);
     this.area.setMap(doc, level, this.shownTerrain);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
@@ -509,7 +532,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.gizmoHandle, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, ...this.icons.meshes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -633,6 +656,7 @@ export class EditorView {
     const teams = mapTeams(doc, MAX_TEAMS);
     const dynamic = dynamicBlockIds(doc);
     this.scenario.dynamicBlocks = dynamic;
+    const small = new Set<string>();
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       if (this.outlinerHidden(e.id)) continue;
@@ -654,6 +678,10 @@ export class EditorView {
       }
       const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : e.kind === 'mount' ? 'prop' : 'logic';
       m.node.setEnabled(!this.hiddenLayers.has(layer) && !this.hiddenKinds.has(e.kind));
+      if (isSmallThing(e)) {
+        this.icons.set(e, m.node.isEnabled(), selected.has(e.id));
+        small.add(e.id);
+      }
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;
@@ -679,6 +707,7 @@ export class EditorView {
         m.ring?.position.set(e.position[0], e.position[1] + 0.6, e.position[2]);
       }
     }
+    this.icons.keepOnly(small);
     for (const [id, m] of this.markers) {
       if (!seen.has(id)) {
         this.nodeEntity.delete(m.node);
@@ -775,8 +804,24 @@ export class EditorView {
   setGizmo(at: Vec3 | null): void {
     this.gizmo?.dispose();
     this.gizmo = undefined;
+    this.gizmoHandle?.setEnabled(false);
+    this.gizmoAt = at ? { x: at.x, y: at.y + 0.05, z: at.z } : null;
     if (!at) return;
     const o = new Vector3(at.x, at.y + 0.05, at.z);
+    // The handle at its middle, drawn over everything too: a drag on it moves the selection even when it is inside
+    // a wall or a set piece (editorInput.ts), where a click would pick what is in front.
+    if (!this.gizmoHandle) {
+      this.gizmoHandle = CreateBox('gizmoHandle', { size: 0.4 }, this.scene);
+      const mat = new StandardMaterial('gizmoHandleMat', this.scene);
+      mat.emissiveColor = new Color3(1, 1, 1);
+      mat.diffuseColor = new Color3(0, 0, 0);
+      mat.disableLighting = true;
+      this.gizmoHandle.material = mat;
+      this.gizmoHandle.isPickable = false;
+      this.gizmoHandle.renderingGroupId = 1;
+    }
+    this.gizmoHandle.position.copyFrom(o);
+    this.gizmoHandle.setEnabled(true);
     const arm = (d: Vector3) => {
       const tip = o.add(d.scale(3));
       const side = Math.abs(d.y) > 0.5 ? new Vector3(0.25, 0, 0) : new Vector3(0, 0.25, 0);
@@ -799,6 +844,9 @@ export class EditorView {
   }
 
   private ring?: LinesMesh;
+  private gizmoHandle?: Mesh;
+  /** The move gizmo's middle (its handle), or null with none shown. */
+  gizmoAt: Vec3 | null = null;
 
   /**
    * The rotate ring round the selection gizmo (rotateRing.ts): a circle on the ground plane at the gizmo, brighter when
@@ -1195,9 +1243,14 @@ export class EditorView {
    * piece's cap where there is no terrain over it), drawn over everything, so a run under a hill can be followed and
    * clicked from above. Rebuilt when the pieces or the ground change.
    */
-  private showBuried(doc: MapDocument): void {
+  private showBuried(doc: MapDocument, level = 0): void {
     const lines = buriedPassageLines(doc);
-    const key = lines.length ? `${lines.map((l) => `${l.a},${l.b},${l.y}`).join(';')}|${doc.terrain ? doc.terrain.heights.length : 0}|${this.drawnCuts}|${doc.terrain === this.drawnTerrain}` : '';
+    const { cellSize, levelHeight } = doc.classicStructure;
+    // Below ground (the ground drawn as glass): the passages of the level being edited are drawn on their own floor,
+    // with their open ends (amber, closed with a plain face until a portal or a Dead End goes there) and their joints
+    // (green) marked; the other levels' stay on the ground over them.
+    const below = level < 0 && lines.some((l) => Math.round(l.y / levelHeight) === level);
+    const key = lines.length ? `${lines.map((l) => `${l.a},${l.b},${l.y}`).join(';')}|${doc.terrain ? doc.terrain.heights.length : 0}|${this.drawnCuts}|${doc.terrain === this.drawnTerrain}|${below ? level : ''}` : '';
     if (key === this.buriedKey && (!lines.length || doc.terrain === this.buriedOn)) return;
     this.buriedKey = key;
     this.buriedOn = doc.terrain;
@@ -1207,22 +1260,69 @@ export class EditorView {
     const t = doc.terrain;
     const cuts = mapGroundBores(doc).cuts;
     const dashes: Vector3[][] = [];
+    const colors: Color4[][] = [];
     const [on, off] = [0.6, 0.4];
+    const sky = new Color4(0.75, 0.9, 1, 1);
     for (const l of lines) {
+      const own = below && Math.round(l.y / levelHeight) === level;
       const len = Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]);
       const at = (d: number) => {
         const u = len ? d / len : 0;
         const x = l.a[0] + (l.b[0] - l.a[0]) * u;
         const z = l.a[1] + (l.b[1] - l.a[1]) * u;
+        if (own) return new Vector3(x, l.y + 0.08, z);
         const ground = t ? terrainHeightAt(t, x, z) : null;
         // On the ground over the piece; on its floor where the ground is cut away (a portal's apron) or there is none.
         const over = ground !== null && !groundCutAt(cuts, x, ground, z) ? ground : -Infinity;
         return new Vector3(x, Math.max(over, l.y + 0.05) + 0.12, z);
       };
-      for (let d = 0; d < len - 1e-6; d += on + off) dashes.push([at(d), at(Math.min(len, d + on))]);
+      // The level being edited: its passages' sides drawn whole; the others dashed.
+      if (own) {
+        dashes.push([at(0), at(len)]);
+        colors.push([sky, sky]);
+      } else {
+        for (let d = 0; d < len - 1e-6; d += on + off) {
+          dashes.push([at(d), at(Math.min(len, d + on))]);
+          colors.push([sky, sky]);
+        }
+      }
     }
-    const color = new Color4(0.75, 0.9, 1, 1);
-    this.buriedLines = CreateLineSystem('buried', { lines: dashes, colors: dashes.map((d) => d.map(() => color)) }, this.scene);
+    if (below) {
+      const { cells } = buildOccupancy(doc);
+      const half = cellSize / 2;
+      const amber = new Color4(1, 0.72, 0.2, 1);
+      const green = new Color4(0.45, 1, 0.55, 1);
+      const across = (x: number, y: number, z: number, side: Side, h: number, w: number): [Vector3, Vector3] => {
+        const [sx, sz] = side === 'N' ? [0, 1] : side === 'S' ? [0, -1] : side === 'E' ? [1, 0] : [-1, 0];
+        const cx = x * cellSize + sx * half;
+        const cz = y * cellSize + sz * half;
+        return [new Vector3(cx - sz * w, z * levelHeight + h, cz + sx * w), new Vector3(cx + sz * w, z * levelHeight + h, cz - sx * w)];
+      };
+      for (const e of buriedOpenEnds(cells, cellSize, levelHeight)) {
+        if (e.z !== level) continue;
+        // A frame across the closed end and a cross in it.
+        const [a0, b0] = across(e.x, e.y, e.z, e.side, 0.1, 1.8);
+        const [a1, b1] = across(e.x, e.y, e.z, e.side, 3, 1.8);
+        for (const seg of [[a0, b0], [a1, b1], [a0, a1], [b0, b1], [a0, b1], [b0, a1]] as [Vector3, Vector3][]) {
+          dashes.push(seg);
+          colors.push([amber, amber]);
+        }
+      }
+      for (const [k, occ] of cells) {
+        if (!occ.def.bore) continue;
+        const [x, y, z] = k.split(',').map(Number) as [number, number, number];
+        if (z !== level) continue;
+        // Each joint once, from its south or west piece: a short bar across the passage on the floor.
+        for (const side of ['N', 'E'] as const) {
+          const [dx, dy] = side === 'N' ? [0, 1] : [1, 0];
+          const next = cells.get(`${x + dx},${y + dy},${z}`);
+          if (!next?.def.bore || next.placement === occ.placement || !isOpenEdge(cells, x, y, z, side)) continue;
+          dashes.push(across(x, y, z, side, 0.1, 1.2));
+          colors.push([green, green]);
+        }
+      }
+    }
+    this.buriedLines = CreateLineSystem('buried', { lines: dashes, colors }, this.scene);
     this.buriedLines.isPickable = false;
     this.buriedLines.renderingGroupId = 1;
   }
@@ -1231,8 +1331,27 @@ export class EditorView {
   /** Redraw only the terrain (live preview while a brush is dragged). */
   previewTerrain(doc: MapDocument): void {
     this.styler.buildTerrain(doc, 'edmap');
+    this.glassBelow(this.shownLevel);
     // Built from a preview: the next setMap rebuilds it from the document.
     this.drawnTerrain = undefined;
+  }
+
+  /** The ground as glass on a level below it (with the earth under the level's floors), else as it is. */
+  private glassBelow(level: number): void {
+    const t = this.shownTerrain;
+    if (level >= 0 || !t) return this.glass.set(null);
+    const lh = this.shownLevelHeight;
+    this.glass.set({ floorY: level * lh, levelHeight: lh, min: [t.origin[0], t.origin[1]], max: [t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing] });
+  }
+
+  /** Below ground: the clear circle cut in the glass ground where the pointer's ray meets it (null: none). */
+  setGroundCut(at: { x: number; z: number } | null): void {
+    this.glass.setCut(at);
+  }
+
+  /** Whether the ground is drawn as glass (a level below ground is edited). */
+  get groundGlass(): boolean {
+    return this.glass.active;
   }
 
   /** Terrain brush outline draped over the ground; null hides it. */

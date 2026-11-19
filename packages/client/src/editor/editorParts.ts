@@ -72,6 +72,19 @@ export type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 export type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
 
+/**
+ * Small things (MapMaker: picking things inside others): spawns, pickups, lights and the logic and scenario markers
+ * a map maker places by the dozen. Each is drawn through walls and set pieces as an icon with a halo where it is
+ * hidden, and picked through them.
+ */
+const SMALL_KINDS: ReadonlySet<string> = new Set(['spawn', 'pickup', 'light', 'button', 'flag', 'objective', 'hostage', 'trap', 'pad']);
+export const isSmallThing = (e: Pick<MapEntity, 'kind'>): boolean => SMALL_KINDS.has(e.kind);
+
+/** How a small thing's icon looks: its colour and shape. */
+export function smallIconKind(e: Pick<MapEntity, 'kind'>): 'spawn' | 'pickup' | 'light' | 'logic' {
+  return e.kind === 'spawn' || e.kind === 'pickup' || e.kind === 'light' ? e.kind : 'logic';
+}
+
 /** The kinds of entity a set piece is made of (setPieceFromSelection takes these). */
 export const PIECE_PART_KINDS: ReadonlySet<string> = new Set(['block', 'prop', 'door', 'ladder', 'light']);
 

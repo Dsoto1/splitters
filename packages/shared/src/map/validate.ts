@@ -7,7 +7,7 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
+import { buildOccupancy, isBuriedPassage, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
@@ -170,11 +170,13 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
       const floor = gz * levelHeight;
       let over = -Infinity;
       for (const out of [0.4, 1.2, 2]) over = Math.max(over, (terrainHeightAt(ground, (gx + dx * 0.5) * cellSize + dx * out, (gy + dy * 0.5) * cellSize + dy * out) ?? -Infinity) - floor);
-      if (over > PLAYER.maxStepHeight + 0.1) {
+      if (over > PLAYER.maxStepHeight + 0.1 || isBuriedPassage(occ.def)) {
         issues.push({
           severity: 'warning',
           code: 'tunnel.mouth_buried',
-          message: `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
+          message: isBuriedPassage(occ.def)
+            ? `the ${occ.def.displayName} at (${gx}, ${gy}, ${levelWord(gz)}) has an open end on its ${side} side: it is closed with a plain face for now; put a Tunnel Portal or a Dead End on it (Tunnel: Add portals, Close open ends)`
+            : `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
           targetId: occ.placement.id,
         });
       }
