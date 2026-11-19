@@ -133,7 +133,6 @@ goes back to owned). Name as on the download, the date recorded for it:
 - "Tribal Warrior Charac" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_thornweaver (look Thornweaver)
 - "Arms Outstretched for" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_uncle_bao (look Uncle Bao)
 - "dapper man rigged" (2026-11-01)  -> character meshy_dapper (look The Dapper); the model it replaced (generated through our Meshy API on 2026-10-25) is no longer shipped
-- "freaky frida lowpoly" (2026-11-01)  -> character meshy_frida (look Freaky Frida)
 - "scary larry rigged" (2026-11-01)  -> character meshy_larry (look Scary Larry)
 - "white rusty mech rigg" (2026-11-01)  -> character meshy_rustymech (look Rusty Mech); probably a rig of the community "White Rusty Mech" (https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab, the model of Ivory Rustwalker): the owner to confirm
 - "rigged cheetah sloth" (2026-11-01)  -> character meshy_seetah (look Seetah J. Chloth)

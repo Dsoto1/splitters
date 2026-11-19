@@ -2236,53 +2236,53 @@
    }
   },
   "meshy_frida": {
-   "hash": null,
+   "hash": "9390c1a0765d3465",
    "arms": {
-    "skin": "#251e16",
-    "cloth": "#817e6d",
-    "trim": "#aa8d7b"
+    "skin": "#2d271d",
+    "cloth": "#a88977",
+    "trim": "#68554a"
    },
    "grip": {
     "gripLong": [
-     -0.006,
-     -0.003,
-     -0.009
+     -0.005,
+     0,
+     -0.019
     ],
     "supportLong": [
-     -0.01,
-     -0.015,
+     0.002,
+     -0.004,
      0
     ],
     "gripPistol": [
-     -0.002,
-     0.005,
-     0.004
+     -0.003,
+     0.014,
+     -0.003
     ],
     "supportPistol": [
-     -0.015,
-     -0.009,
-     -0.024
+     -0.004,
+     0.004,
+     -0.039
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.25,
-     "eL": 0.2,
+     "eR": 0.55,
+     "eL": 0.1,
      "flags": [],
      "outlier": false,
-     "auto": 0.37,
-     "none": 2.153
+     "auto": 0.61,
+     "none": 2.372
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.95,
-     "eL": 0.9,
+     "eR": 1.85,
+     "eL": 1.8,
      "flags": [],
      "outlier": false,
-     "auto": 2.49,
-     "none": 4.811
+     "auto": 2.93,
+     "none": 6.606
     }
    }
   },
