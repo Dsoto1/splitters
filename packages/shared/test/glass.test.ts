@@ -8,6 +8,7 @@ import {
   PhysicsWorld,
   ScenarioBodies,
   TICK_RATE,
+  buildMapDecor,
   buildMapGeometry,
   edgeGlassAt,
   getWeapon,
@@ -116,6 +117,34 @@ describe('glass panes', () => {
     wall.classicStructure.tiles[0]!.edges = { '0,0,0:E': 'wall' };
     expect(windowPanes(wall)).toHaveLength(0);
     expect(glassIssues(wall).map((i) => i.code)).toContain('glass.edge');
+  });
+
+  it("a sash window's inner frame and centre bars belong to its pane: the level leaves them out, the pane carries them (owner, 2026-11-18, 2a)", () => {
+    const sash = (glass: GlassKind | null) => {
+      const m = windowed(glass);
+      m.classicStructure.tiles[0]!.edges = { '0,0,0:E': 'window_sash' };
+      return m;
+    };
+    const trim = (m: MapDocument) => buildMapDecor(m).filter((b) => b.sourceId === 'west' && b.kind === 'trim');
+    const bare = trim(sash(null));
+    const glazed = trim(sash('breakable'));
+    // Seven pieces set in the wall by the glass (two stiles, the bottom and top rails, the meeting rail, two bars).
+    expect(bare.length - glazed.length).toBe(7);
+    // The outer frame (sill, head, side casings) stays in the level.
+    expect(glazed.filter((b) => b.min[1] >= 0.7 && b.max[1] <= 3.2 && b.min[2] >= -1 && b.max[2] <= 1).length).toBeGreaterThanOrEqual(4);
+    const [pane] = windowPanes(sash('breakable'));
+    expect(pane!.bars).toHaveLength(7);
+    for (const bar of pane!.bars!) {
+      // Inside the opening (z -0.6..0.6, y 0.9..3) and in the wall by the glass (x 3.5..4).
+      expect(Math.abs(bar.box.center.z) + bar.box.half.z).toBeLessThanOrEqual(0.6 + 1e-6);
+      expect(bar.box.center.y - bar.box.half.y).toBeGreaterThanOrEqual(0.9 - 1e-6);
+      expect(bar.box.center.y + bar.box.half.y).toBeLessThanOrEqual(3 + 1e-6);
+      expect(bar.box.center.x).toBeGreaterThan(3.5);
+      expect(bar.box.center.x).toBeLessThan(4);
+      expect(bar.tint).toBe('#e6e1d3');
+    }
+    // A plain window has no bars; without glass the level keeps them all.
+    expect(windowPanes(windowed('breakable'))[0]!.bars).toBeUndefined();
   });
 
   it('blocks movement but not sight', () => {

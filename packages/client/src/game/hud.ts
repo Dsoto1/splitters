@@ -16,6 +16,7 @@ import { reduceFlashing } from './reduceFlashing.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
 import { isTouchDevice } from '../touchDevice.ts';
+import { setLoadingCard, setLoadingProgress, showLoadingScreen, type LoadingCard } from '../loadingScreen.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -50,6 +51,7 @@ export class Hud {
   private readonly timer = $('timer');
   private readonly countdown = $('countdown');
   private readonly loading = $('loading-screen');
+  private readonly countdownInfo = $('countdown-info');
   private goUntil = 0;
   private readonly modeLabel = $('mode-label');
   private readonly sbLeft = $('sb-left');
@@ -118,11 +120,22 @@ export class Hud {
   show(): void {
     applyCrosshair();
     applyHitmarker();
+    this.root.classList.remove('only-loading');
     this.root.hidden = false;
   }
 
   hide(): void {
+    this.root.classList.remove('only-loading', 'ls-staged');
     this.root.hidden = true;
+    this.countdownInfo.hidden = true;
+  }
+
+  /**
+   * Before the match has let us in: the loading screen alone (show() brings the rest of the HUD), with the map's card
+   * when it is known (Start match already showed it from the click: loadingScreen.ts).
+   */
+  showLoading(card: LoadingCard | null, progress = 0): void {
+    showLoadingScreen(card, progress);
   }
 
   /** Clear per-match state left over from a previous session. */
@@ -765,7 +778,10 @@ export class Hud {
       this.countdown.hidden = false;
       this.countdown.classList.remove('go');
       this.countdown.textContent = String(Math.max(1, timeLeft));
-    } else if (performance.now() > this.goUntil) this.countdown.hidden = true;
+      // Under the number: the map and mode, and the goal (it fades out with "Go!").
+      this.countdownInfo.hidden = !this.countdownInfo.querySelector('b')!.textContent;
+      this.countdownInfo.classList.remove('go');
+    } else if (performance.now() > this.goUntil) this.countdown.hidden = this.countdownInfo.hidden = true;
     if (phase === 'waiting') this.banner.textContent = 'Waiting for players…';
     else if (phase === 'countdown') this.banner.textContent = '';
     else if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
@@ -777,18 +793,45 @@ export class Hud {
     this.countdown.hidden = false;
     this.countdown.textContent = 'Go!';
     this.countdown.classList.add('go');
+    this.countdownInfo.classList.add('go');
     this.goUntil = performance.now() + 900;
     setTimeout(() => {
-      if (performance.now() >= this.goUntil) this.countdown.hidden = true;
+      if (performance.now() >= this.goUntil) this.countdown.hidden = this.countdownInfo.hidden = true;
     }, 950);
   }
 
-  /** The loading screen over the match while its files arrive (null hides it). */
-  setLoading(text: string | null, progress = 0): void {
-    this.loading.hidden = text === null;
-    if (text === null) return;
-    this.loading.querySelector('b')!.textContent = text;
-    (this.loading.querySelector('.bar i') as HTMLElement).style.width = `${Math.round(Math.min(1, progress) * 100)}%`;
+  /** The loading screen's card (the map, its mode, the match's goal) and bar. */
+  setLoadingCard(card: Parameters<typeof setLoadingCard>[0]): void {
+    setLoadingCard(card);
+  }
+
+  setLoadingProgress(progress: number): void {
+    setLoadingProgress(progress);
+  }
+
+  /**
+   * Partway through loading the match's info and the Tab board join the loading screen (style.css `#hud.ls-staged`):
+   * the board sits under the card, over the screen.
+   */
+  stageLoading(on: boolean): void {
+    this.root.classList.toggle('ls-staged', on);
+  }
+
+  /** The loading screen fades out (into the countdown); the board goes with it. */
+  endLoading(): void {
+    if (this.loading.hidden) return;
+    this.loading.classList.add('ls-out');
+    window.setTimeout(() => {
+      this.loading.hidden = true;
+      this.loading.classList.remove('ls-out');
+      this.root.classList.remove('ls-staged');
+    }, 350);
+  }
+
+  /** The line under the countdown's big number: the map and mode, and the goal in a few words. */
+  setCountdownInfo(head: string, goal: string): void {
+    this.countdownInfo.querySelector('b')!.textContent = head;
+    this.countdownInfo.querySelector('span')!.textContent = goal;
   }
 
   /** Shown while you are dead ("Respawning…", or "Next round" in Elimination). */

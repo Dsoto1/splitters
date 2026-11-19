@@ -156,3 +156,22 @@ portrait, the shipped portraits and the first map pictures, each capped) and
 fades out when they're done, after 12 s at the most, or as soon as a match,
 MapMaker or the Character Designer takes over (they have their own). The
 /host page, the team tools and test mode (`?test=1`) skip it.
+
+## Starting a match
+
+What a player sees from Start match (or MapMaker's Test) to the fight (owner, 2026-11-18: "stage the loading process
+so it looks and feels right"; the fix batch of 2026-11-18):
+
+1. **From the click**, the loading screen (`src/loadingScreen.ts`, a few hundred bytes in the menu's chunk): the map's
+   card (its picture, name and mode) and the bar, over everything, while the match code and the map come in. No grey
+   frame: the session draws nothing until the welcome brings the map (`GameSession.drawFrame`), and the loading
+   screen stays up alone until then (`Hud.showLoading`, `#hud.only-loading`).
+2. **The welcome** names the map on the card; the bar moves with the files `prepareMatch` loads.
+3. **Partway** (half the files, or 4 s into a slow load), the match's goal in a few words (`game/matchGoal.ts`:
+   "First team to 50 kills") and the Tab board (teams, players and bots) join the loading screen (`#hud.ls-staged`):
+   the look at the teams happens during the load instead of after it. The pause menu stays away meanwhile.
+4. **Loaded**: a board that has only just appeared stays 1.6 s so it can be read (not in MapMaker's Test or a browser
+   test), then the screen fades into the countdown. If the match's start gate stops waiting (a very slow load) and
+   the countdown begins, the screen goes at once.
+5. **The countdown** shows one line under the big number: map · mode, and the goal (`#countdown-info`); it fades
+   with "Go!". The pause menu waits until the countdown is over.

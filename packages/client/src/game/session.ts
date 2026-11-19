@@ -227,6 +227,7 @@ import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
+import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
@@ -234,6 +235,10 @@ import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule
 const ADS_FOV = 0.72;
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
+/** How long a board that has just joined the loading screen stays before the countdown (ms). */
+const LOADING_BOARD_HOLD_MS = 1600;
+/** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
+const LOADING_STAGE_AFTER_MS = 4000;
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -846,6 +851,11 @@ export class GameSession {
       };
     }
     this.hud.reset();
+    // The loading screen from the start: nothing is drawn until the map is in (drawFrame). Start match showed the map's
+    // card from its click (main.ts); otherwise it says Loading until the welcome names the map.
+    const fresh = $('loading-screen').hidden;
+    this.hud.showLoading(fresh ? { name: 'Loading', mode: '', picture: null } : null, 0.1);
+    this.hud.setLoadingCard({ goal: '' });
     this.setUpCoach();
 
     const signal = this.abort.signal;
@@ -1121,6 +1131,12 @@ export class GameSession {
     window.addEventListener(
       'keydown',
       (e) => {
+        // While loading or counting down the menu waits (updatePause); Esc there acts as it would with the menu up
+        // (in MapMaker's Test, back to MapMaker), and the menu stays up from then on.
+        if (e.code === 'Escape' && !this.input.locked && $('pause').hidden && !this.pauseAsked && (this.loadingUp || this.phase === 'countdown')) {
+          this.pauseAsked = true;
+          this.updatePause();
+        }
         const paused = !$('pause').hidden;
         if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
           e.preventDefault();
@@ -1231,7 +1247,8 @@ export class GameSession {
   private updatePause(): void {
     const was = $('pause').hidden;
     // The vote between matches holds the screen (the mouse is free to pick a map) until Esc asks for the menu.
-    $('pause').hidden = this.input.locked || !this.local || this.closed || (!!this.voteHud?.open && !this.votePause);
+    // Not over the loading screen or the countdown (a click takes the mouse; the menu shows if it hasn't by the start).
+    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown') && !this.pauseAsked) || (!!this.voteHud?.open && !this.votePause);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -2068,6 +2085,11 @@ export class GameSession {
           this.input.classMenu = true;
         }
         this.hud.setMapName(loaded.map.metadata.name);
+        // The loading screen's card, and the line the countdown will show under its number.
+        const modeName = msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch');
+        this.hud.setLoadingCard({ name: loaded.map.metadata.name, mode: modeName, picture: this.opts.mapPicture?.(loaded.map.metadata.id) ?? loaded.map.metadata.thumbnail ?? null });
+        this.hud.setLoadingProgress(0.25);
+        this.hud.setCountdownInfo(`${loaded.map.metadata.name} · ${modeName}`, matchGoal(msg.rules));
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
         // The announcer: a new match's counts, and what it asks of the match.
         this.sfx.announcer.reset();
@@ -2168,7 +2190,13 @@ export class GameSession {
         if (this.phase === 'countdown' && msg.phase === 'playing') this.hud.flashGo();
         if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false, msg.timeLeft);
         if (this.phase === 'countdown' && msg.phase === 'playing') this.sfx.countdownBeep(true);
+        const phaseWas = this.phase;
         this.phase = msg.phase;
+        // The match starts without us (its start gate stopped waiting on a slow load): the countdown is shown, not hidden
+        // under the loading screen; what is still loading comes in during play.
+        if (msg.phase === 'countdown' && phaseWas === 'waiting' && this.loadingUp && this.map) this.endLoading();
+        // The pause menu waits out the countdown (updatePause).
+        if ((phaseWas === 'countdown') !== (msg.phase === 'countdown')) this.updatePause();
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
         if (msg.phase === 'playing' && !this.spectator && !document.hidden) this.announceSnapshot(msg.timeLeft, msg.players);
@@ -2603,6 +2631,31 @@ export class GameSession {
     }
   }
 
+  /** The loading screen is up (from the session's start until the match is loaded): no pause menu over it. */
+  private loadingUp = true;
+  /** The board on the loading screen: since when (performance.now), 0 while it isn't. */
+  private stagedAt = 0;
+  /** Esc was pressed while the pause menu waited (loading, the countdown): it shows from then on. */
+  private pauseAsked = false;
+  private boardUntil = 0;
+
+  /** The match's goal and the Tab board join the loading screen (once). */
+  private stageLoading(rules: MatchRules): void {
+    if (this.stagedAt || !this.loadingUp) return;
+    this.stagedAt = performance.now();
+    this.hud.setLoadingCard({ goal: matchGoal(rules) });
+    this.hud.stageLoading(true);
+  }
+
+  /** Loaded: the loading screen fades into the countdown, and the pause menu may show again. */
+  private endLoading(): void {
+    this.loadingUp = false;
+    // The board fades with the loading screen (hud.endLoading).
+    this.boardUntil = performance.now() + 350;
+    this.hud.endLoading();
+    this.updatePause();
+  }
+
   /**
    * Load what the match needs before saying we're ready: everyone's characters
    * (players and bots, from the roster), the weapon models we start with and
@@ -2644,11 +2697,16 @@ export class GameSession {
     }
     // Throwables' models (content/throwables.json `view`, as the weapon set shows them: its `looks`): the grenade
     // everyone may start with (the set's first, else the frag) and what grenade pickups may hold, loaded and warmed like
-    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight. Every life is dealt one
+    // of the set's grenades (weaponSets.ts throwableFor), so any of them may be the first in a hand.
     const thrown = new Set<string>();
     const look = set?.id;
-    const first = rules.startingGrenades > 0 ? throwableModel((set && setThrowables(set)?.[0]) || 'frag', look) : null;
-    if (first) thrown.add(first);
+    if (rules.startingGrenades > 0) {
+      for (const kind of (set && setThrowables(set)) || ['frag' as const]) {
+        const model = throwableModel(kind, look);
+        if (model) thrown.add(model);
+      }
+    }
     for (const e of map.entities) {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
@@ -2697,13 +2755,29 @@ export class GameSession {
     let done = 0;
     const total = jobs.length + 2;
     // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
-    const tick = () => void (started || this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total));
-    this.hud.setLoading(`Loading ${map.metadata.name}`, 0);
+    // Halfway through, the match's goal and the Tab board join the loading screen (the look at the teams blends into
+    // the load instead of adding a wait: owner, 2026-11-18).
+    const tick = () => {
+      if (started) return;
+      done++;
+      this.hud.setLoadingProgress(0.25 + (0.75 * done) / total);
+      if (done / total >= 0.5) this.stageLoading(rules);
+    };
+    // (A slow load stages it after a few seconds whatever the bar says, so the board is there to look at.)
+    window.setTimeout(() => started || this.closed || this.stageLoading(rules), LOADING_STAGE_AFTER_MS);
     const all = Promise.all([...jobs.map((j) => j.then(tick, tick)), this.view.scene.whenReadyAsync().then(tick, tick), this.view.city.ready.then(tick, tick)]);
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
     if (this.closed) return;
+    // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
+    // MapMaker's Test or a browser test: nothing to wait for there).
+    if (!this.opts.exitOnF5 && !testMode()) {
+      this.stageLoading(rules);
+      const hold = this.stagedAt + LOADING_BOARD_HOLD_MS - performance.now();
+      if (hold > 0) await new Promise((r) => setTimeout(r, hold));
+      if (this.closed) return;
+    }
     // Roulette: the cards further ahead, now the match has its files.
     for (const look of this.rlLater ?? []) {
       if (this.rlLoaded.has(look)) continue;
@@ -2711,7 +2785,7 @@ export class GameSession {
       void this.view.characters.preload({ look });
     }
     this.rlLater = null;
-    this.hud.setLoading(null);
+    this.endLoading();
     this.opts.transport.sendReady();
   }
 
@@ -3767,7 +3841,7 @@ export class GameSession {
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
     }
     const tHud = perfProbe.on ? performance.now() : 0;
-    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');
+    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission' || (this.stagedAt > 0 && (this.loadingUp || performance.now() < this.boardUntil)), this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
       // Teammates on the minimap (co-op: every player is one).
@@ -3835,6 +3909,10 @@ export class GameSession {
     );
     this.perf.visible = this.showStats;
     if (tHud && perfProbe.on) perfProbe.add(SYS.hud, tHud);
+    // Nothing to draw before the welcome (no map yet: the loading screen is up). Drawing the empty scene compiled its
+    // sky and effect shaders in one long frame (over a second in software on a busy machine), and the welcome waited
+    // behind it: the editor flow's TEST-start flake (2026-11-18). Those shaders build after the map, under the loading screen.
+    if (!this.map) return;
     if (!perfProbe.on) return this.view.render();
     this.view.countDraws();
     const r0 = performance.now();

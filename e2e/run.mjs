@@ -7881,7 +7881,7 @@ async function teamsFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
   const board = await page.evaluate(() => ({
     many: document.getElementById('scoreboard').classList.contains('sb-tn'),
     tables: [...document.querySelectorAll('#scoreboard .sb-group')].map((t) => t.querySelectorAll('.sb-row[data-slot]').length),
@@ -8159,7 +8159,7 @@ async function botCastFlow(browser) {
   check(bots.bots.length === 15 && !wrong.length, `an Army-only match: every bot an Army soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
   check(new Set(bots.names).size === bots.names.length && ranked.length >= 1, `soldier bots have names of their own, ranks among them (${bots.bots.map((b) => b.name).join(', ')})`);
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
   // Rank insignia (soldiers only): every Army bot's row wears its rank badge before the name.
   const badges = await page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent, ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
@@ -8434,7 +8434,7 @@ async function customSetupFlow(browser) {
  * Match setup names it ("Map default (Military)") and its facts show it; the match spawns you with a knife, a pistol
  * and an assault rifle (the bots too) and its weapon pickups hold Military weapons; the pause menu's Host tab switches
  * the set at once (the pickups now, your next life's loadout). Match setup's own choice, Chaos, saved with the setup,
- * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and a sheep. MapMaker's Map properties
+ * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and the life's grenade (dealt the same way). MapMaker's Map properties
  * field sets a map's default, and its TEST plays it. E2E_SHOTS: the Weapons choice, a Chaos spawn, the field.
  */
 async function weaponsetsFlow(browser) {
@@ -8509,7 +8509,7 @@ async function weaponsetsFlow(browser) {
     pickups: m.pickups.filter((p) => p.item.effect.kind === 'weapon').map((p) => p.item.effect.weapon),
     off: m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !ids.includes(p.item.effect.weapon)).map((p) => p.item.id),
   }), MILITARY);
-  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && kit.grenade === 'frag', `Sandgate's Military match spawns you with a knife, a pistol and an assault rifle in hand, and a frag (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
+  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && ['frag', 'mine', 'smoke'].includes(kit.grenade), `Sandgate's Military match spawns you with a knife, a pistol and an assault rifle in hand, and one of the set's grenades (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
   check(kit.bots.length === 3 && kit.bots.every((b) => /core\.pistol/.test(b) && /core\.(rifle|marksman)/.test(b)), `the bots spawn with a pistol and an assault rifle too (${kit.bots.join(' | ')})`);
   check(kit.pickups.length > 0 && kit.off.length === 0, `its weapon pickups hold Military weapons (${kit.pickups.join(', ')}; not: ${kit.off.join(', ') || 'none'})`);
   const hud = await page.evaluate(() => ({ n: window.__cs.local.inventory.size, held: window.__cs.local.held }));
@@ -8530,7 +8530,7 @@ async function weaponsetsFlow(browser) {
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
   check(swapped, 'the Host tab switches to Sci-fi at once: every weapon pickup holds a Sci-fi weapon');
   const sci = await respawn(page);
-  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && sci.grenade === 'sticky', `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and a sticky grenade (${JSON.stringify(sci)})`);
+  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && ['sticky', 'vortex', 'smoke'].includes(sci.grenade), `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and one of its grenades (${JSON.stringify(sci)})`);
   await page.close();
 
   // Match setup's own choice, Chaos (the setup saved in this browser; a new page).
@@ -8566,7 +8566,7 @@ async function weaponsetsFlow(browser) {
   const lives = [await myKit(page2)];
   for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
   const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.grenade === 'sheep' ? '' : ` [${l.weapons.join(' ')}; ${l.grenade}]`}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && ['sheep', 'holy', 'cluster'].includes(l.grenade)) && ['sheep', 'holy', 'cluster'].every((k) => lives.slice(0, 3).some((l) => l.grenade === k)), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and the life's grenade (every kind in three lives) (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' ? '' : ` [${l.weapons.join(' ')}]`}; ${l.grenade}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
     // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
@@ -8688,7 +8688,7 @@ async function ctfFlow(browser) {
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
   // Tab: the two teams side by side, each its own column, your capture on your row.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
   const cols = await scoreboardColumns(page);
   const meSeen = await scoreboardMeVisible(page);
   const caps = await page.evaluate(() => {
@@ -9627,7 +9627,7 @@ async function zombiesFlow(browser) {
   check(worn.looks.length > 0 && worn.looks.every((l) => ZOMBIE.test(l)) && worn.creatures === 0, `zombies wear the zombie characters (${[...new Set(worn.looks)].join(', ')}; ${worn.creatures} creature bodies)`);
   // Co-op: the scoreboard is one list of the squad.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
   const coop = await page.evaluate(() => ({ coop: document.getElementById('scoreboard').classList.contains('sb-coop'), lists: document.querySelectorAll('#scoreboard .sb-group').length, rows: document.querySelectorAll('#scoreboard .sb-row[data-slot]').length }));
   const meSeen = await scoreboardMeVisible(page);
   await page.keyboard.up('Tab');

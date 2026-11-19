@@ -5,6 +5,7 @@
 // piece shares (turns, packs, ids, the z-fight audit) is setPieceExpand.test.ts and setPiecePlay.test.ts.
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
+  PLAYER,
   PhysicsWorld,
   buildMapDecor,
   buildMapGeometry,
@@ -393,6 +394,33 @@ describe("a three-floor mess hall with its clock tower (Welles Hall's shape)", (
   });
 });
 
+describe('the clock tower has room to stand in (owner, 2026-11-19: the first build was too low to use)', () => {
+  it("a room's height (3.7 m, a 4 m level under its 0.3 m floor) over the door and every step and landing, the belfry 4 m under its roof", () => {
+    const map = mapOf([{ id: 'tower', piece: 'setpiece.clock_tower', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const boxes = buildMapGeometry(map).filter((b) => b.sourceId?.startsWith('sp_tower'));
+    /** The clear height over (x, z) from y up: to the underside of the lowest box over that point. */
+    const over = (x: number, y: number, z: number) => Math.min(...boxes.filter((b) => b.min[0] < x && b.max[0] > x && b.min[2] < z && b.max[2] > z && b.min[1] >= y - 1e-6).map((b) => b.min[1])) - y;
+    // Inside the door (the ground floor between the door and the stair's foot).
+    for (const x of [-1, 0, 1, 2.6]) expect(over(x, 0, -2.6), `ground at x ${x}`).toBeGreaterThanOrEqual(3.7 - 1e-6);
+    // Every step and landing (the stair's slabs: 0.3 m thick inside the walls, off the core): over its middle and corners.
+    const treads = boxes.filter((b) => Math.abs(b.max[1] - b.min[1] - 0.3) < 1e-6 && b.max[0] <= 3.41 && b.min[0] >= -3.41 && b.max[2] <= 3.41 && b.min[2] >= -3.41);
+    expect(treads.length).toBe(70);
+    for (const t of treads) {
+      if (t.max[1] >= 17.5 - 1e-6) continue; // the belfry's floor: below
+      for (const [fx, fz] of [[0.5, 0.5], [0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]]) {
+        const x = t.min[0] + (t.max[0] - t.min[0]) * fx!;
+        const z = t.min[2] + (t.max[2] - t.min[2]) * fz!;
+        expect(over(x, t.max[1], z), `over the step at ${t.max[1]} m (${x.toFixed(2)}, ${z.toFixed(2)})`).toBeGreaterThanOrEqual(3.7 - 1e-6);
+      }
+    }
+    // The belfry's gallery, under its roof.
+    expect(over(-1.2, 17.5, -2.6)).toBeGreaterThanOrEqual(4 - 1e-6);
+    // A player stands up all the way round: from the door, every tread's middle has standing room for the capsule.
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    for (const t of treads) expect(physics.headroom({ x: (t.min[0] + t.max[0]) / 2, y: t.max[1] + 0.3, z: (t.min[2] + t.max[2]) / 2 }, PLAYER.height), `standing on the step at ${t.max[1]} m`).toBe(true);
+  });
+});
+
 describe('the wall styles the bays are built with', () => {
   it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
     expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);
@@ -440,11 +468,13 @@ describe('the wall styles the bays are built with', () => {
     // The stone sill stands into the room; where nothing is built beyond, the surround is on the outer face too.
     expect(trim.some((p) => p.depth === 0.14 && p.y1 === 0.9)).toBe(true);
     expect(edgeTrimBoxes('window_sash', 4, 4, true).filter((p) => p.v1 === 0).length).toBe(4);
-    // Drawn as trim with that surface in a map; no collision box of the map comes from the sash.
+    // The bay's windows are glazed: each pane carries its sash in that paint (drawn with the glass, gone when it is
+    // shot out: owner, 2026-11-18, 2a), so the level's trim leaves it out; no collision box of the map comes from it.
     const map = mapOf([{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
-    const painted = buildMapDecor(map).filter((b) => b.surface?.material === 'core.paint_matte');
-    expect(painted).toHaveLength(28);
-    expect(painted.every((b) => b.kind === 'trim')).toBe(true);
+    expect(buildMapDecor(map).filter((b) => b.surface?.material === 'core.paint_matte')).toHaveLength(0);
+    const bars = windowPanes(map).flatMap((p) => p.bars ?? []);
+    expect(bars).toHaveLength(28);
+    expect(bars.every((b) => b.tint === '#e6e1d3')).toBe(true);
     expect(buildMapGeometry(map).some((b) => b.surface?.material === 'core.paint_matte')).toBe(false);
   });
 

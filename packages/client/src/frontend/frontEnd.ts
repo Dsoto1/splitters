@@ -2475,7 +2475,9 @@ export class FrontEnd {
     const outfits = [...new Set(l.parts.map((p) => partInfo(p)?.outfit).filter((x): x is 'ranger' | 'peasant' | 'athlete' => !!x))].map((o) => FAMILY_LABEL[o]).join(' / ');
     // What you spawn with in the match setup's weapon set (the setup's own, else its map's default; Standard: the mode's).
     const kitSet = getWeaponSet(matchWeaponSet({ weaponSet: this.setup.weaponSet }, this.currentMap().map ?? null));
-    const grenade = setThrowables(kitSet)?.[0] ?? 'frag';
+    // A set's grenades are dealt one a life (weaponSets.ts throwableFor): all of them named, or frags.
+    const grenades = (setThrowables(kitSet) ?? ['frag' as const]).map((k) => THROWABLE_DEFS[k].displayName);
+    const grenade = grenades.length > 1 ? `${grenades.join(' / ')}, one each life` : grenades[0]!;
     const loadout = el(
       'div',
       { class: 'loadout' },
@@ -2485,7 +2487,7 @@ export class FrontEnd {
         return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
       }),
       ...(kitSet.randomGun ? [el('span', { title: `A random main gun of the ${kitSet.name} set, a new one each life` }, '＋ A random gun each life')] : []),
-      el('span', { title: `${THROWABLE_DEFS[grenade].displayName} (G)` }, `● ${THROWABLE_DEFS[grenade].displayName}`),
+      el('span', { title: `${grenade} (G)` }, `● ${grenades.length > 3 ? 'A grenade of the set each life' : grenade}`),
     );
     // Character stats (shown while the match setup plays with them): each against everyone's range.
     const stats = this.setup.stats === false ? null : statBars(id, this.setup.sizes !== false);

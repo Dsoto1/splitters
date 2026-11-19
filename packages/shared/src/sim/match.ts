@@ -59,7 +59,7 @@ import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
-import { rollPickup } from './pickupRoll.ts';
+import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
@@ -93,7 +93,7 @@ import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { MatchAwards } from './awards.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
-import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnTaken, SPAWN_TAKEN, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
@@ -4959,9 +4959,9 @@ export class Match {
     return true;
   }
 
-  /** The throwable a resupply hands out when none is carried (the weapon set's first kind), or null. */
+  /** The throwable a resupply hands out when none is carried (this life's kind of the weapon set's), or null. */
   private resupplySpawnThrowable(c: Combatant): ThrowableKind | null {
-    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: 0, sniper: false }).throwable?.kind ?? null) : null;
+    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: c.spawns ?? 0, sniper: false }).throwable?.kind ?? null) : null;
   }
 
   /** A resupply would give `c` something now (worked out on copies: nothing is changed). */
@@ -6504,9 +6504,21 @@ export class Match {
     else p.item = p.placed;
   }
 
-  /** The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). */
+  /**
+   * The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). A grenade pickup in a
+   * set with grenades of its own is dealt from a deck of them (every kind before a repeat), and never the one that lay there.
+   */
   private reroll(p: PickupState): void {
-    if (p.pool) p.item = rollPickup(this.seed, p.id, p.rolls++, p.pool, p.item);
+    const pool = p.pool;
+    if (!pool) return;
+    if (pool[0]?.effect.kind !== 'throwable') {
+      p.item = rollPickup(this.seed, p.id, p.rolls++, pool, p.item);
+      return;
+    }
+    let item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    // (A deck never deals the same twice running; only the first deal can meet what was placed there.)
+    if (item === p.item && pool.length > 1) item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    p.item = item;
   }
 
   /** What random pickups hold now, where it isn't what was placed: [pickup ID, item ID] (the snapshot's `pw`). */
@@ -6622,7 +6634,10 @@ export class Match {
     const own = forMode?.length ? forMode : this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
-    const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
+    // Free-for-all: the shared points, or every point on the map (team bases too) when there are fewer shared points
+    // than players, so everyone gets a point of their own (owner, 2026-11-18: "not all clumped on one another").
+    const ffaAll = !this.teams && shared.length < this.combatants().length;
+    const candidates = own.length ? own : shared.length && !ffaAll ? shared : this.spawnPoints;
     // Team modes on shared spawns: the sides rotate. Spawns near teammates out of a fight win, and each side keeps its
     // own end of the map (SpawnSides) wherever the fight has moved: no spawn flips. (On a side's own spawns, the
     // squad spawn below puts them beside a teammate.)
@@ -6634,12 +6649,20 @@ export class Match {
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
     const partyAt = party?.size ? [...party].filter((o) => (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : [];
     const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), ...(partyAt.length ? { party: partyAt } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
-    const best = candidates[pick];
+    let best: SpawnSpot | undefined = candidates[pick];
+    // Every spawn point taken (more players than points): beside the chosen one, clear of whoever is on it.
+    if (best && spawnTaken(best, { occupants, lastUsed: this.spawnUsed, tick: this.tick })) {
+      const near = this.besideSpot(best.pos, best.yaw, occupants);
+      if (near) {
+        this.spawnUsed.set(best, this.tick);
+        best = { ...best, pos: near };
+      }
+    }
     // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
     // Fireteams: a squadmate beside its leader when that's safe, else at the team's spawn.
     const leader = this.fireteamSpawn(c);
     const squad = leader !== undefined ? leader : this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
-    if (!squad && best) this.spawnUsed.set(best, this.tick);
+    if (!squad && best && candidates.includes(best)) this.spawnUsed.set(best, this.tick);
     // Play from here: until play begins, this player's lives start where MapMaker's camera was (startHere).
     const at = c.startAt;
     const sp = at ? { pos: at.pos, yaw: at.yaw } : (squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 });
@@ -6735,7 +6758,7 @@ export class Match {
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
-    // A grenade or two of the set's first kind (frags, TimeSplitters-style; the rest are pickups after that).
+    // A grenade or two of the life's kind, dealt from the set's (frags without a set's own; the rest are pickups after that).
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
   }
 
@@ -7327,6 +7350,30 @@ export class Match {
   }
 
   /** A clear spot on walkable ground a step from `mate` (behind or beside them), facing their way; null: none. */
+  /**
+   * A place beside a spawn point everyone's on (more players than points): on a ring 3, 1.6 or 4.5 m out in sight of the point
+   * (then up to 6 m, anywhere), on walkable floor (the navmesh), clear of walls, and at least SPAWN_TAKEN from everyone. Null when none.
+   */
+  private besideSpot(at: Vec3, yaw: number, occupants: readonly Vec3[]): Vec3 | null {
+    // In sight of the point first; past that, anywhere walkable on the rings (a point in a tight corner).
+    for (const [r, sight] of [[3, true], [1.6, true], [4.5, true], [3, false], [4.5, false], [6, false]] as const) {
+      for (let k = 0; k < 8; k++) {
+        const a = yaw + Math.PI + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 4);
+        const pos = { x: at.x + Math.sin(a) * r, y: at.y, z: at.z + Math.cos(a) * r };
+        if (!this.physics.headroom({ x: pos.x, y: pos.y + 0.05, z: pos.z }, PLAYER.height)) continue;
+        const floor = this.physics.raycastWorld({ x: pos.x, y: pos.y + 0.5, z: pos.z }, { x: 0, y: -1, z: 0 }, 1.5);
+        if (floor === null) continue;
+        if (sight && !this.physics.lineOfSight({ x: at.x, y: at.y + 1, z: at.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
+        const spot = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
+        const q = this.nav.closestPoint({ x: spot.x, y: spot.y + 0.5, z: spot.z }, { x: 0.6, y: 1.2, z: 0.6 });
+        if (!q || Math.abs(q.y - spot.y) >= 1) continue;
+        if (occupants.some((o) => Math.abs(o.y - spot.y) <= 2 && horizontalDistance(o, spot) < SPAWN_TAKEN)) continue;
+        return spot;
+      }
+    }
+    return null;
+  }
+
   private besideMate(mate: Combatant): { pos: Vec3; yaw: number } | null {
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
     // squadmate spawning after it in with it (a rider thrown under a street's floor: four bots a round).
