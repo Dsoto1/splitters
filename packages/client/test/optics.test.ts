@@ -125,7 +125,9 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
           expect(onMark(kind, [t[0], -t[1]]), `${id} ${k}`).toBe(onMark(kind, [-t[0], t[1]]));
         }
         expect(onMark(kind, [reach * 1.2, 0]), `${id} ${k}: nothing past the mark's reach`).toBe(false);
-        expect(deg(kind.mark!.dot), `${id} ${k}: a dot under a fifth of a degree`).toBeLessThan(0.2);
+        expect(deg(kind.mark!.dot), `${id} ${k}: a dot under a quarter of a degree`).toBeLessThan(0.25);
+        // A red dot reads at 720p: five to six pixels across at the sights' field of view, the same share of any screen.
+        if (kind.reticle === 'dot') expect((2 * kind.mark!.dot) / ((2 * Math.tan((HIP_FOV * ADS_FOV) / 2)) / 720), `${id} ${k}: the dot's width in pixels at 720p`).toBeGreaterThan(5);
         // The whole mark shows inside the window at full aim, as large as the sight picture draws it.
         const picture = pictureScale(o, c[2], HIP_FOV * ADS_FOV);
         expect(picture, `${id} ${k}`).toBeGreaterThanOrEqual(1);

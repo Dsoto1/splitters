@@ -25,7 +25,7 @@ import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
 import { glassCentre, glassHalf, hasGlass, opticNone, opticOf, type CarriedOptic } from '../game/optics.ts';
-import { attachOptic, markAudit } from '../game/opticHousing.ts';
+import { CLIP_NAME, attachOptic, markAudit } from '../game/opticHousing.ts';
 import { opticFrame } from '../game/opticView.ts';
 import { holdoverFor } from '../game/holdover.ts';
 import { drawHoldover } from '../game/hud.ts';
@@ -121,8 +121,8 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
 
   // A model optic's depth-only disc goes first in the gun's rendering group (view.ts).
   scene.setRenderingOrder(1, (a, b) => {
-    const ma = a.getMesh().name === 'sight_mask';
-    const mb = b.getMesh().name === 'sight_mask';
+    const ma = a.getMesh().name === 'sight_mask' || a.getMesh().name === CLIP_NAME;
+    const mb = b.getMesh().name === 'sight_mask' || b.getMesh().name === CLIP_NAME;
     return ma === mb ? RenderingGroup.PainterSortCompare(a, b) : ma ? -1 : 1;
   });
   const characters = new CharacterLibrary(scene, { atlas: true });
@@ -191,6 +191,8 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     shown.viewRoot.setEnabled(true);
     shown.mask?.setEnabled(false);
     shown.arms?.setEnabled(true);
+    // A sight window's clip is on once the gun is most of the way up, as in view.ts.
+    shown.node.getChildMeshes().find((m) => m.name === CLIP_NAME)?.setEnabled(state.fitted && state.ads > 0.7);
     const aimed = state.ads >= 1 && state.fitted;
     if (aimed && def.view.zoomFov) {
       // A scope: its own view, the gun hidden behind the overlay (session.ts).
@@ -305,7 +307,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
   }
 
   /** The gun's meshes as drawn, for the audit's rays (not its glass: the eye looks through it). */
-  const gunMeshes = (): AbstractMesh[] => (shown ? shown.node.getChildMeshes(false).filter((m) => m.isEnabled() && m.getTotalVertices() > 0 && m.name !== 'opticGlass') : []);
+  const gunMeshes = (): AbstractMesh[] => (shown ? shown.node.getChildMeshes(false).filter((m) => m.isEnabled() && m.getTotalVertices() > 0 && m.name !== 'opticGlass' && m.name !== CLIP_NAME) : []);
 
   /** The distance at which a ray from the eye, `up` and `right` degrees off the aim, first meets the gun (null: it misses). */
   function castAt(meshes: AbstractMesh[], up: number, right: number): number | null {

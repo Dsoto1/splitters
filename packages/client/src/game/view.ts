@@ -175,7 +175,7 @@ import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
-import { attachOptic } from './opticHousing.ts';
+import { CLIP_NAME, attachOptic } from './opticHousing.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -649,8 +649,8 @@ export class GameView {
     this.viewRoot.parent = this.opticRoot;
     // The optic's depth-only disc goes first in the gun's rendering group, so the tube behind the glass never draws.
     this.scene.setRenderingOrder(1, (a, b) => {
-      const ma = a.getMesh() === this.opticMask;
-      const mb = b.getMesh() === this.opticMask;
+      const ma = a.getMesh() === this.opticMask || a.getMesh().name === CLIP_NAME;
+      const mb = b.getMesh() === this.opticMask || b.getMesh().name === CLIP_NAME;
       return ma === mb ? RenderingGroup.PainterSortCompare(a, b) : ma ? -1 : 1;
     });
     this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
@@ -1799,6 +1799,8 @@ export class GameView {
   private aimAt: GunPlacement | null = null;
   /** How much larger the shown gun is drawn at full aim (sightPose.ts sightPicture: a glass, a long gun's iron sights), worked out with `aimAt`. */
   private aimPicture = 1;
+  /** The shown gun's sight-window clip (opticHousing.ts CLIP_NAME), found with `aimAt`. */
+  private aimClip: AbstractMesh | null = null;
 
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
@@ -1953,6 +1955,8 @@ export class GameView {
         this.viewmodelPaths.set(def.id, path);
         if (this.viewmodel === old) {
           this.viewmodel = node;
+          // Its optic's parts are the new copy's: found again with the aim's placement.
+          this.aimAt = null;
           this.fpArms?.anim?.gripExternal(node, def.view.hold);
           if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold);
         }
@@ -2171,7 +2175,10 @@ export class GameView {
     if (!this.aimAt) {
       this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ });
       this.aimPicture = sightPicture(def, this.aimAt);
+      this.aimClip = this.viewmodel?.getChildMeshes().find((m) => m.name === CLIP_NAME) ?? null;
     }
+    // A sight window's clip (opticHousing.ts) is on once the gun is most of the way up.
+    if (this.aimClip && !this.aimClip.isDisposed()) this.aimClip.setEnabled(ads > 0.7);
     const aim = blendPlacement(def, this.aimAt, ads);
     const { x, y, z } = aim;
     // The sight picture: a gun with a glass, and a long gun's iron sights, are drawn larger about the view axis as the gun

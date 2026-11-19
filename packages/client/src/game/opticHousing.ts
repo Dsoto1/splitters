@@ -83,6 +83,20 @@ function bodyMaterial(scene: Scene): StandardMaterial {
   return m;
 }
 
+/** A window's clip sheet (attachOptic): its mesh name, by which the view finds it, switches it on while aimed and draws it first. */
+export const CLIP_NAME = 'opticClip';
+const clips = new WeakMap<Scene, StandardMaterial>();
+function clipMaterial(scene: Scene): StandardMaterial {
+  let m = clips.get(scene);
+  if (!m) {
+    m = new StandardMaterial('opticClipMat', scene);
+    m.disableColorWrite = true;
+    m.disableLighting = true;
+    clips.set(scene, m);
+  }
+  return m;
+}
+
 /** The glass with its mark: one material per optic kind in a scene (the mark's sizes are the kind's). */
 const glasses = new WeakMap<Scene, Map<string, ShaderMaterial>>();
 function glassMaterial(scene: Scene, o: CarriedOptic): ShaderMaterial {
@@ -209,6 +223,20 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
     glass.renderingGroupId = 1;
     glass.isPickable = false;
     glass.metadata = { effect: true };
+    if (optic.window) {
+      // The window's clip (content/optics.json `window`): a depth-only sheet over the opening, just behind the glass,
+      // drawn first in the gun's rendering group while aimed (CLIP_NAME: view.ts, the sight sheet), so nothing of the
+      // gun behind the opening is drawn there: loose scraps of a model inside its own sight box stay out of the
+      // sight picture, and the world shows through as it should.
+      const clip = CreatePlane(CLIP_NAME, { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
+      clip.material = clipMaterial(scene);
+      clip.parent = gun;
+      clip.position.set(c[0], c[1], c[2] + 0.0015);
+      clip.renderingGroupId = 1;
+      clip.isPickable = false;
+      clip.metadata = { effect: true };
+      clip.setEnabled(false);
+    }
   }
   return root;
 }

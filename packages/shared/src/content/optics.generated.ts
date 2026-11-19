@@ -25,7 +25,7 @@ export interface OpticKind {
 
 export const OPTIC_KINDS: Readonly<Record<OpticKindId, OpticKind>> = {
   irons: { name: 'Iron sights', reticle: 'none', housing: 'none', adsFov: 0.72 },
-  reddot: { name: 'Red dot', reticle: 'dot', housing: 'tube', adsFov: 0.72, glass: { rise: 0.034, half: [0.017, 0.017], length: 0.058 }, mark: { dot: 0.003 } },
+  reddot: { name: 'Red dot', reticle: 'dot', housing: 'tube', adsFov: 0.72, glass: { rise: 0.034, half: [0.017, 0.017], length: 0.058 }, mark: { dot: 0.004 } },
   holo: { name: 'Holographic sight', reticle: 'ring', housing: 'frame', adsFov: 0.72, glass: { rise: 0.036, half: [0.021, 0.016], length: 0.07 }, mark: { dot: 0.0016, ring: 0.022 } },
   scope: { name: '2-3x optic', reticle: 'chevron', housing: 'model', mag: [2, 3.6] },
   sniper: { name: 'Sniper scope', reticle: 'fine', housing: 'overlay', mag: [3, 10] },
@@ -63,7 +63,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19 },
   'core.nailgun': { default: 'irons', allowed: ['irons'] },
   'core.pistol': { default: 'irons', allowed: ['irons'] },
-  'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, 0.024], half: [0.022, 0.014] } },
+  'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, -0.058], half: [0.0222, 0.0138] } },
   'core.pulse_pistol': { default: 'irons', allowed: ['irons'] },
   'core.railgun': { default: 'sniper', allowed: ['sniper'], mag: 3.13 },
   'core.revolver': { default: 'irons', allowed: ['irons'] },

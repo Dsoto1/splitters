@@ -909,7 +909,9 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
   (`game/opticHousing.ts`: a few boxes and a tube in one mesh, no outside models) and stand on the gun's top at the
   **mount** the tool measures from the model: the rearmost flat stretch of the top from the hand forward that the rest of
   the gun does not stand in front of, sized to the gun's length (0.85-1.2); a `mount` or, for a model with an open sight
-  of its own (the Plasma Rifle), a `window` can be set by hand with its reason. They are on your own gun, in third person
+  of its own (the Plasma Rifle), a `window` can be set by hand with its reason. A `window` is also a clip while aimed: a
+  depth-only sheet over the opening, drawn first, so nothing of the gun behind it shows (the Plasma Rifle's box holds
+  loose scraps of its model). They are on your own gun, in third person
   and on other players' guns; crowds (GPU-instanced guns), pickups and icons show the plain model.
 - **Reticles on the glass, not the HUD.** The glass's material works out for each of its pixels where that pixel is in
   the view (the tangents of its angles from the view's axis, from its clip position and the projection) and lights the
