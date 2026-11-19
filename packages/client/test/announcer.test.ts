@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Announcer, COOLDOWN, HYPE_LINES, VOICE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
+import { Announcer, COOLDOWN, HYPE_LINES, STREAK_LINES, VOICE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
 import type { SoundId, VoiceLine } from '../src/audio/audio.ts';
 
 const ME = 1;
+/** The spree's own lines (STREAK_LINES), left out where a test is about something else. */
+const STREAK_LINES_SAID: string[] = ['give_me_more', 'killing_spree', 'this_is_wild', 'eviscerator', 'can_you_believe_it', 'never_stop'];
 
 /** An announcer whose lines all last `secs` (null: none loaded) and whose dice roll `roll`. */
 function make(secs: number | null = 1, roll = 0.99) {
@@ -48,12 +50,14 @@ describe('announcer', () => {
     a.kill(kill({ victim: 5 }), 3);
     a.kill(kill({ victim: 6 }), 3);
     run(a, 3, 6);
-    expect(heard).toEqual(['double_kill', 'multi_kill']);
-    // Past the window: a new chain.
+    // (The spree's own lines at 3 and 5 kills come after the chain's.)
+    expect(heard.filter((l) => !STREAK_LINES_SAID.includes(l))).toEqual(['double_kill', 'multi_kill']);
+    // Past the window: a new chain, and a double that doesn't beat the life's best says nothing.
     a.kill(kill({ victim: 7 }), 10);
     a.kill(kill({ victim: 8 }), 15);
-    run(a, 10, 16);
-    expect(heard).toEqual(['double_kill', 'multi_kill']);
+    a.kill(kill({ victim: 9 }), 16);
+    run(a, 10, 20);
+    expect(heard.filter((l) => !STREAK_LINES_SAID.includes(l))).toEqual(['double_kill', 'multi_kill']);
   });
 
   it('chains of 6-7 are Mega, 8 or 4 from one blast Server overload', () => {
@@ -67,27 +71,58 @@ describe('announcer', () => {
     expect(b.heard).toEqual(['server_overload']);
   });
 
-  it('Mr Boombastic for a blast double, once a chain', () => {
+  it('Mr Boombastic for a blast double, once a life', () => {
     const { a, heard } = make();
     a.kill(kill({ victim: 2, explosive: true, blast: 'b1' }), 0);
     a.kill(kill({ victim: 3, explosive: true, blast: 'b2' }), 2);
     run(a, 2, 5);
     a.kill(kill({ victim: 4, explosive: true, blast: 'b3' }), 5);
-    run(a, 5, 8);
-    expect(heard).toEqual(['mr_boombastic', 'triple_kill']);
+    run(a, 5, 12);
+    expect(heard).toEqual(['mr_boombastic', 'triple_kill', 'give_me_more']);
   });
 
-  it('streaks at 5, 10 and 15 kills in a life; a death resets them', () => {
+  it('one spree a life: streak lines at 3, 5, 7, 10, 12, 15, 20 and 25 kills, each once; a death starts it again', () => {
+    expect([...STREAK_LINES.keys()]).toEqual([3, 5, 7, 10, 12, 15, 20, 25]);
+    expect(STREAK_LINES.get(20)).toBe('server_overload');
+    expect(STREAK_LINES.get(25)).toBe('mega_kill');
+    // Kills 10 s apart (no chains), the dice never hype.
     const { a, heard } = make(0.5);
-    for (let i = 1; i <= 15; i++) {
+    for (let i = 1; i <= 26; i++) {
       a.kill(kill({ victim: 100 + i }), i * 10);
       run(a, i * 10, i * 10 + 3);
     }
-    expect(heard).toEqual(['killing_spree', 'eviscerator', 'never_stop']);
-    a.kill({ killer: 7, victim: ME }, 200);
-    for (let i = 1; i <= 4; i++) a.kill(kill({ victim: 300 + i }), 200 + i * 10);
-    run(a, 200, 260);
-    expect(heard).toEqual(['killing_spree', 'eviscerator', 'never_stop']);
+    expect(heard).toEqual(['give_me_more', 'killing_spree', 'this_is_wild', 'eviscerator', 'can_you_believe_it', 'never_stop', 'server_overload', 'mega_kill']);
+    // Dead: the next life's spree starts from the beginning.
+    a.kill({ killer: 7, victim: ME }, 300);
+    for (let i = 1; i <= 5; i++) {
+      a.kill(kill({ victim: 300 + i }), 300 + i * 10);
+      run(a, 300 + i * 10, 300 + i * 10 + 3);
+    }
+    expect(heard.slice(8)).toEqual(['give_me_more', 'killing_spree']);
+  });
+
+  it('Double and Triple at most once a life; after that a chain is called only when it beats the life\'s best', () => {
+    const { a, heard } = make(0.5);
+    let t = 0;
+    const chain = (n: number) => {
+      for (let i = 0; i < n; i++) a.kill(kill({ victim: 500 + t * 10 + i }), t + i);
+      run(a, t, t + n + 6);
+      t += n + 20;
+    };
+    chain(2);
+    chain(2);
+    chain(3);
+    chain(2);
+    chain(3);
+    chain(4);
+    const calls = heard.filter((l) => !STREAK_LINES_SAID.includes(l));
+    expect(calls).toEqual(['double_kill', 'triple_kill', 'quadra_kill']);
+    // No line twice in a life.
+    expect(new Set(heard).size).toBe(heard.length);
+    // A death: Double again.
+    a.kill({ killer: 7, victim: ME }, t);
+    chain(2);
+    expect(heard.at(-1)).toBe('double_kill');
   });
 
   it('special kills: headshots rotate, far ones are Dome shots; melee; a blown-up animal; Later gator', () => {
@@ -101,7 +136,7 @@ describe('announcer', () => {
     at(3, { headshot: true, distance: 60 });
     at(4, { melee: true });
     at(5, { explosive: true, blast: 'x', victimAnimal: true });
-    expect(heard.filter((l) => l !== 'killing_spree')).toEqual(['headshot', 'brain_cave', 'dome_shot', 'twist_his_eggplant', 'blew_up_a_dog']);
+    expect(heard.filter((l) => !STREAK_LINES_SAID.includes(l))).toEqual(['headshot', 'brain_cave', 'dome_shot', 'twist_his_eggplant', 'blew_up_a_dog']);
     // Someone on a streak of 5, ended by you.
     for (let i = 0; i < 5; i++) a.kill({ killer: 9, victim: 200 + i }, 100 + i * 10);
     a.kill(kill({ victim: 9 }), 160);
@@ -139,16 +174,45 @@ describe('announcer', () => {
     expect(heard.length).toBe(2);
   });
 
-  it('hype: about one in three after a triple or a streak, into a quiet moment', () => {
+  it('hype fills the quiet kills of a spree, about one in two, never the same twice running or a line the spree says', () => {
+    // Lucky dice: kills 10 s apart, each without a line of its own, are filled with hype (at most once in 8 s).
     const lucky = make(0.5, 0);
-    for (let i = 0; i < 3; i++) lucky.a.kill(kill({ victim: 10 + i }), 0);
-    run(lucky.a, 0, 5);
-    expect(lucky.heard[0]).toBe('triple_kill');
-    expect(HYPE_LINES).toContain(lucky.heard[1]);
+    for (let i = 1; i <= 9; i++) {
+      lucky.a.kill(kill({ victim: 10 + i }), i * 10);
+      run(lucky.a, i * 10, i * 10 + 3);
+    }
+    // Kills 2, 4, 5 (after the spree's own at 3), 6… : the quiet ones get hype, the spree's own lines stay theirs.
+    const hype = lucky.heard.filter((l) => HYPE_LINES.includes(l as VoiceLine) && !STREAK_LINES_SAID.includes(l));
+    expect(hype.length).toBeGreaterThanOrEqual(3);
+    expect(lucky.heard).toContain('killing_spree');
+    // The spree's own lines are never used as filler, and a filler never follows itself.
+    expect(lucky.heard.filter((l) => l === 'give_me_more' || l === 'this_is_wild')).toEqual(['give_me_more', 'this_is_wild']);
+    const fills = lucky.heard.filter((l) => HYPE_LINES.includes(l as VoiceLine) && !STREAK_LINES_SAID.includes(l));
+    expect(fills.filter((l, i) => i > 0 && l === fills[i - 1])).toEqual([]);
+    // The first kill of a life is never hyped; unlucky dice, none.
     const unlucky = make(0.5, 0.9);
-    for (let i = 0; i < 3; i++) unlucky.a.kill(kill({ victim: 10 + i }), 0);
-    run(unlucky.a, 0, 5);
-    expect(unlucky.heard).toEqual(['triple_kill']);
+    for (let i = 1; i <= 4; i++) {
+      unlucky.a.kill(kill({ victim: 10 + i }), i * 10);
+      run(unlucky.a, i * 10, i * 10 + 3);
+    }
+    expect(unlucky.heard).toEqual(['give_me_more']);
+    const first = make(0.5, 0);
+    first.a.kill(kill(), 0);
+    run(first.a, 0, 3);
+    expect(first.heard).toEqual([]);
+  });
+
+  it('two hype lines never come back to back', () => {
+    const { a, heard } = make(0.5, 0);
+    a.line('incredible', 'hype', 0);
+    run(a, 0, 4);
+    a.line('did_you_see_that', 'hype', 4);
+    run(a, 4, 8);
+    expect(heard).toEqual(['incredible']);
+    a.flag('take', 8);
+    a.line('did_you_see_that', 'hype', 8);
+    run(a, 8, 14);
+    expect(heard).toEqual(['incredible', 'flag_taken', 'did_you_see_that']);
   });
 
   it('match flow: 3-2-1 on the countdown (not again at the start), one minute once, ten left once, the lead at most once a minute', () => {
