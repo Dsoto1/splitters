@@ -982,3 +982,14 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-dialog-check[hidden] { display: none; }
 #ed-sp-save-look { margin: 4px 0 6px; }
 #ed-inspector select.layer-paint { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* Click again to cycle: what is under the pointer, the one picked marked (editorInput.ts showCycleList). */
+#ed-cycle {
+  position: fixed; z-index: 40; pointer-events: none; min-width: 140px; max-width: 280px; padding: 6px 9px;
+  background: rgba(11, 15, 26, 0.94); border: 1px solid rgba(0, 209, 255, 0.35); border-left: 3px solid var(--cyan); border-radius: 4px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); font-size: 12px; color: var(--muted);
+}
+#ed-cycle[hidden] { display: none; }
+#ed-cycle .ed-cycle-head { font-size: 11px; margin-bottom: 3px; }
+#ed-cycle .ed-cycle-row { padding: 1px 4px; border-radius: 3px; }
+#ed-cycle .ed-cycle-row.on { color: var(--text); background: rgba(0, 209, 255, 0.18); font-weight: 700; }

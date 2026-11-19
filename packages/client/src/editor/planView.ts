@@ -45,6 +45,7 @@ export class PlanView {
   private drawnKey = '';
   private clipped = new Map<Material, Plane | null | undefined>();
   private clippedFor: unknown = null;
+  private clippedLevel = 0;
 
   constructor(private readonly host: PlanHost) {}
 
@@ -124,7 +125,7 @@ export class PlanView {
     cam.orthoBottom = -f.halfH;
     if (view.scene.clipPlane?.d !== -cut) view.scene.clipPlane = new Plane(0, 1, 0, -cut);
     const doc = this.host.doc();
-    if (this.clippedFor !== doc) this.keepTerrainWhole(doc);
+    if (this.clippedFor !== doc || this.clippedLevel !== this.host.level()) this.keepTerrainWhole(doc);
     const key = `${f.cx},${f.cz},${f.halfH},${w},${h},${this.host.level()},${this.host.selectionRev()}`;
     if (key === this.drawnKey && this.drawnDoc === doc) return;
     this.drawnKey = key;
@@ -137,6 +138,15 @@ export class PlanView {
   /** The terrain's materials aren't cut (hills above the cut are still the ground). Once per document version. */
   private keepTerrainWhole(doc: MapDocument): void {
     this.clippedFor = doc;
+    this.clippedLevel = this.host.level();
+    // Below ground the ground is cut with everything else: the basement's plan shows its tunnels and rooms, not the
+    // grass over them (MapMaker: building below ground).
+    if (this.clippedLevel < 0) {
+      this.unclip();
+      this.clippedFor = doc;
+      this.clippedLevel = this.host.level();
+      return;
+    }
     for (const m of this.host.view.scene.meshes) {
       if (!m.name.includes('_terrain_') || !m.material || this.clipped.has(m.material)) continue;
       this.clipped.set(m.material, m.material.clipPlane);

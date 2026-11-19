@@ -398,7 +398,7 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   stepped wing walls, an apron. It opens the ground by itself: the hill is cut back to the headwall, the approach is
   dug out along the way it faces until the ground as made is down to its floor (at most 48 m), and banks no steeper
   than 1.5 in 1 lie either side. Nothing is stored: move or delete the portal and the hill is back. A buried end with
-  no portal on it is the validator's warning "ends in the ground" (wall the end up in the inspector for a dead end).
+  no portal on it is closed with a plain face and is the validator's warning (below: no open ends).
   A mouth in flat ground (no hill to come out of): a portal a level down digs its own earth ramp, or use the kit's
   Surface Stairs (below).
 - **Earth comes to a buried piece.** Every buried tunnel keeps at least 0.2 m of earth over its cap, and the earth
@@ -410,6 +410,19 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   with *Whole run* ticked, every buried piece joined to them. *Add a portal at the open end*: a portal on each end
   that leads to nothing built, facing out. Buried passages show as dashes on the ground over them, and on the plan
   and the minimap.
+- **Building below ground (owner, 2026-11-19; `editor/groundGlass.ts`).** On Basement and below the ground turns to a
+  faint glass (its paint still reads), a dark earth lies just under the level's floors, and a clear circle is cut in
+  the glass where the pointer meets it. Seen from above the level, the view is cut 2.6 m over its floor (the tunnels'
+  roofs come off, as in an architect's section); flown down into a tunnel it is drawn whole. The level's passages
+  are outlined on their own floor, its joints marked green and its open ends amber (a frame with a cross). The plan
+  view (K) of a basement cuts the ground away too. Back at Ground the ground is itself again. Below ground a spawn,
+  pickup or prop goes on the level being edited, never onto the glass ground.
+- **No open ends into the ground (`map/geometry.ts` `buriedOpenEnds`).** A buried passage's end (a piece with a bore
+  the hill stays on, not a mouth or surface stairs) that joins nothing and isn't walled up is closed with a face of
+  the piece's own lining (rock, brick or concrete) across the whole side, solid in play and drawn in MapMaker, until
+  a portal, a Dead End or another piece goes there. Validation names each such end (`tunnel.mouth_buried`: "closed
+  with a plain face for now"). No shipped map has one; open ground pieces with a bore (the Arena Corner's gate) are
+  never capped.
 - **A tunnel under flat ground:** place the run a level down (Page Down). The surface stays as it is, and each
   portal digs its own ramp down from the field (2 m level at the mouth, then about 11 m of ramp for 4 m of depth).
   On level 0 of flat ground a buried run is an earth mound instead.
@@ -1729,6 +1742,20 @@ that an edit made in MapMaker is never overwritten (git history has them).
 A new piece a map needs goes into MapMaker's palette or inspector, not into
 a script. Every map in `maps/` shows up in the Arcade and as a MapMaker
 template automatically.
+
+## Picking things inside others (MapMaker; owner, 2026-11-18)
+
+- **Small things show through walls.** Spawns, pickups, lights and logic markers (buttons, flags, objectives,
+  hostages, traps, pads; `editor/editorParts.ts` `isSmallThing`) each have an icon with a halo in its kind's colour,
+  drawn only where something stands in front of it (`editor/smallIcons.ts`: a reversed depth test), so a spawn inside
+  a set piece's stair shows through the steps and one in the open looks as before. A click on it picks it through
+  whatever is in front. Steady, no blinking.
+- **Click again to cycle.** A click again at the same spot (within 5 px) on what the last click picked steps to the
+  next thing under the pointer (the small thing, then what the ray passes through, nearest first, then the cell's
+  tile and set piece), with a small list by the pointer of what is there. A press that drags still moves the
+  selection.
+- **The move gizmo on top.** The gizmo's arrows and its white handle are drawn over everything; a drag on the handle
+  moves the selection even when it is inside something (one undo step, as any move).
 
 ## Measuring and placing props (MapMaker)
 
