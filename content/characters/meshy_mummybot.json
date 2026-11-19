@@ -6,6 +6,7 @@
   "name": "Mummy Bot",
   "look": "core.mummybot",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "undead",
   "bio": "Wrapped for eternity, rebooted for Tuesday. Bandages are load-bearing.",
   "body": "male",

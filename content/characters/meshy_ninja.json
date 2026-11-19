@@ -6,6 +6,7 @@
   "name": "Shade",
   "look": "core.shade",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "ninja",
   "bio": "You will hear about him afterwards. Never before.",
   "body": "male",

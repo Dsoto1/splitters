@@ -6,6 +6,7 @@
   "name": "Rusty Mech",
   "look": "core.rustymech",
   "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "A white war machine gone to rust. Still runs. Still angry about it.",
   "body": "male",

@@ -6,6 +6,7 @@
   "name": "Frost Viking",
   "look": "core.frostviking",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "barbarian",
   "bio": "Sailed south for the weather. Stayed for the fighting.",
   "body": "male",

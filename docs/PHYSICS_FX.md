@@ -88,6 +88,12 @@ and light).
 **Per player**: Pause menu → **Blood** switch, remembered in the browser.
 Off hides all blood and the splat sound, whatever the map says.
 
+**Per character** (owner, 2026-11-17): each character names what it bleeds (`blood` in its manifest: red, green,
+blue, black oil with Electric FX sparks, bone dust, stone dust, or a white-grey spectral wisp with no decals), and that wins over the
+map's colour; anyone without one (part-built presets, designs, the soldier mannequins) bleeds the map's. The map's
+amount and the player's switch still rule every kind. Bone and stone dust and wisps make no wet splat on a kill. Who gets what,
+and how each is drawn: [`CHARACTERS.md`](CHARACTERS.md#blood).
+
 ## Hit sounds
 
 Every hit on a player or bot plays a fleshy impact at the victim:
@@ -95,7 +101,7 @@ Every hit on a player or bot plays a fleshy impact at the victim:
 - `impact.body`: three CC0 recordings (Pound of Flesh, Meat Slap by magnuswaker; Meaty Damage Impact by modusmogulus), layered with
 - `impact.thud`: a low Kenney punch for weight;
 - `impact.heavy` for big hits (45+ damage per shot: shotgun blasts, rifles, rockets): Gore Impact (magnuswaker) and Headshot (Pablobd);
-- `blood.splat` on a kill (gprosser), unless blood is off;
+- `blood.splat` on a kill (gprosser), unless blood is off or the victim bleeds bone dust or a wisp;
 - `ui.hit`: your own hit-confirm tick, synthesised in code (four variants).
 
 One body hit per victim per shot, so a shotgun blast is one meaty thump, not

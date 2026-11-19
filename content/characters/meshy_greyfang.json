@@ -6,6 +6,7 @@
   "name": "Greyfang",
   "look": "core.greyfang",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "wolf",
   "bio": "Hunts in packs. Today the pack is you lot, and he is keeping score.",
   "body": "male",

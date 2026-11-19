@@ -6,6 +6,7 @@
   "name": "Honest Abe",
   "look": "core.abe",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "Four score and seven rounds ago. Has never told a lie about a headshot.",
   "body": "male",

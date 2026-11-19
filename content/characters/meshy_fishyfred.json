@@ -6,6 +6,7 @@
   "name": "Fishy Fred",
   "look": "core.fishyfred",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "critter",
   "bio": "Walked out of the river in his best red sneakers. Nobody has told him about the smell.",
   "body": "male",

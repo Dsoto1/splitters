@@ -7,6 +7,7 @@
   "look": "core.greensentinel",
   "group": "soldiers",
   "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Holds the line and blends into the hedge behind it.",
   "body": "male",

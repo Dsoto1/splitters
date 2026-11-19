@@ -6,6 +6,7 @@
   "name": "Star Voyager",
   "look": "core.starvoyager",
   "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Crossed three star systems to get here. Still forgot the snacks.",
   "body": "male",

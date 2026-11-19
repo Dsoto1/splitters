@@ -6,6 +6,7 @@
   "name": "Rosa Rivets",
   "look": "core.steamrider",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Fixes engines by day, wins arguments by night. Usually with a wrench.",
   "body": "female",

@@ -6,6 +6,7 @@
   "name": "Goblin Gunslinger",
   "look": "core.goblingunslinger",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "Fastest draw under four feet tall.",
   "body": "male",

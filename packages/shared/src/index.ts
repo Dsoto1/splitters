@@ -91,6 +91,7 @@ export * from './sim/road.ts';
 export * from './sim/trackDriver.ts';
 export * from './sim/creatures.ts';
 export * from './content/looks.ts';
+export * from './content/blood.ts';
 export * from './content/characterGates.ts';
 export * from './content/botThemes.ts';
 export * from './content/insignia.ts';
