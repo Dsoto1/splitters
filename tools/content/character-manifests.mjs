@@ -92,7 +92,7 @@ export function hitboxOverrideProblems(o) {
   return out;
 }
 
-const rejointShare = (v) => typeof v === 'number' && v >= 0.3 && v <= 1;
+const rejointShare = (v) => typeof v === 'number' && v >= 0.3 && v <= 1.6;
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
@@ -216,7 +216,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
   need(x.fingers === undefined || x.fingers === 'own' || x.fingers === 'fit', "fixes.fingers: 'own' (a rigged download's own finger joints and weights, where its finger chains are whole; the default) or 'fit' (re-fitted from the mesh, hands.mjs)");
   // `rejoint`: rig joints moved along their bone toward their parent (skinfix.mjs moveJoints): { <rig joint>: share }.
-  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && (rejointShare(v) || (v && typeof v === 'object' && Object.keys(v).every((q) => q === 'share' || q === 'radius') && rejointShare(v.share) && (v.radius === undefined || (typeof v.radius === 'number' && v.radius >= 0.03 && v.radius <= 0.3)))))), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share (0.3–1) of the way from its parent it sits at, or { share, radius } with the limb\'s radius (0.03–0.3 m at 1.8 m) set }');
+  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && (rejointShare(v) || (v && typeof v === 'object' && Object.keys(v).every((q) => q === 'share' || q === 'radius') && rejointShare(v.share) && (v.radius === undefined || (typeof v.radius === 'number' && v.radius >= 0.03 && v.radius <= 0.3)))))), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share of the way from its parent it sits at (0.3–1, or 1–1.6 out past its place), or { share, radius } with the limb\'s radius (0.03–0.3 m at 1.8 m) set }');
   if (x.hold !== undefined) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');

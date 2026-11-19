@@ -53,7 +53,7 @@ import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
 import { buildSpec, jointsFromLandmarks, readManifests } from './character-manifests.mjs';
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
-import { addPlugs } from './plugs.mjs';
+import { addPlugs, plugGeometry } from './plugs.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
 import { bindRigid, bodySkin, fingerSkin, fixBodySkin, moveJoints } from './skinfix.mjs';
@@ -326,9 +326,63 @@ async function readMeshy(file, ual, c) {
     };
     const done = moveJoints({ count: verts.count, at: restAt, J, W, rest, parent, rigOf: skel.rig ?? names.map((n) => JOINT_MAP[n]), moves: c.rejoint });
     const cm = (a, b) => (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 100).toFixed(1);
-    for (const r of done) console.log(`  rejoint: ${r.joint} moved ${cm(r.from, r.to)} cm toward its parent, ${r.moved} vertices handed to it (limb radius ${(r.radius * 100).toFixed(1)} cm)`);
+    for (const [name, move] of Object.entries(c.rejoint)) {
+      const out = (typeof move === 'number' ? move : move.share) > 1;
+      for (const r of done.filter((d) => d.joint === name || d.joint.startsWith(`${name}_`)))
+        console.log(`  rejoint: ${r.joint} moved ${cm(r.from, r.to)} cm ${out ? 'out past its place' : 'toward its parent'}, ${r.moved} vertices handed ${out ? 'back to the parent' : 'to it'} (limb radius ${(r.radius * 100).toFixed(1)} cm)`);
+    }
   }
+  // `fixes.plugs` (plugs.mjs) on a rigged download: the closed shapes go in in the download's own pose (after any
+  // rejoint), each new vertex skinned as the download's vertex nearest it, so a plug moves with the skin round it.
+  if (c.plugs) plugRigged(verts, c);
   return pose(skel, verts, ual, c);
+}
+
+/** `fixes.plugs` added to a rigged download's mesh (`verts` of readMeshy, changed in place). */
+function plugRigged(verts, c) {
+  const n = verts.count;
+  const { joints: J, weights: W } = verts;
+  const world = new Float32Array(n * 3);
+  for (let v = 0; v < n; v++) {
+    let p = [0, 0, 0];
+    for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
+    world.set(p, v * 3);
+  }
+  const g = plugGeometry(world, verts.uv, c.plugs.at, c.plugs.shrink);
+  for (const line of g.log) console.log(`  ${c.id} ${line}`);
+  const m = g.pos.length;
+  if (!m) return;
+  const J2 = new J.constructor((n + m) * 4);
+  const W2 = new W.constructor((n + m) * 4);
+  J2.set(J);
+  W2.set(W);
+  const UV2 = new Float32Array((n + m) * 2);
+  UV2.set(verts.uv);
+  g.pos.forEach((q, i) => {
+    let best = 0;
+    let bd = Infinity;
+    for (let v = 0; v < n; v++) {
+      const d = (world[v * 3] - q[0]) ** 2 + (world[v * 3 + 1] - q[1]) ** 2 + (world[v * 3 + 2] - q[2]) ** 2;
+      if (d < bd) [bd, best] = [d, v];
+    }
+    J2.set(J.subarray(best * 4, best * 4 + 4), (n + i) * 4);
+    W2.set(W.subarray(best * 4, best * 4 + 4), (n + i) * 4);
+    UV2.set(g.uv[i], (n + i) * 2);
+  });
+  const I2 = new Uint32Array(verts.indices.length + g.idx.length);
+  I2.set(verts.indices);
+  g.idx.forEach((x, i) => (I2[verts.indices.length + i] = n + x));
+  const at = verts.at;
+  Object.assign(verts, {
+    count: n + m,
+    joints: J2,
+    weights: W2,
+    uv: UV2,
+    indices: I2,
+    // The new vertices sit where they were made, whichever of their joints is asked.
+    at: (v, j) => (v < n ? at(v, j) : [g.pos[v - n], g.nrm[v - n]]),
+  });
+  console.log(`  ${c.id} plugs: ${g.idx.length / 3} triangles`);
 }
 
 /**

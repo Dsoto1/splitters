@@ -10,60 +10,64 @@
   "nameTheme": "spooky",
   "bio": "Smiles at everyone. Nobody has seen her blink.",
   "body": "female",
-  "notes": "The owner's own Meshy model (Drive folder, 2026-11-01: \"freaky frida lowpoly\"). The download is textured but not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts. Landmarks: found on the mesh, then the shoulders moved out to the arms' roots (found at the base of the neck, 6% of her height from the middle: the upper arms ran through the chest and took the vest with them, which tore at the shoulder in the hold) and the elbows a little out; `armCloth` keeps the vest's armholes on the body. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 0 before, 3 after (no finger chains: re-fitted)); this build kept. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
+  "notes": "The owner's own Meshy model: the owner made her in Meshy (owner, 2026-11-18: \"i created her with meshy\") and rigged her there (the download \"freaky frida rigged\", 2026-11-01, Meshy's \"All Animations\" export: 10,760 triangles, a 24-joint Mixamo skeleton with its own skin weights, Running and Walking clips not used). A wide-eyed girl in pigtails, a tactical vest and camouflage shorts. Re-imported 2026-11-19 from that rigged download with its own weights (owner, 2026-11-18: her back shoulders still tore in the hold): until then she was built from the unrigged \"freaky frida lowpoly\" download, rigged here from hand-set T-pose landmarks, with `armCloth` and six `plugs` closing the see-through armholes; the shoulders still stretched and opened from behind in the hold. No finger chains in the rig, so hands.mjs re-fits the fingers.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "freaky frida lowpoly"
-    },
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-01",
     "url": null,
-    "file": "^Meshy_AI_freaky_frida_lowpoly_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_freaky_frida_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0,
     "roughness": 0.8
   },
   "fixes": {
-    "triangles": 12100,
+    "triangles": 12700,
     "feet": true,
-    "armCloth": true,
-    "plugs": { "at": [[0.085, 0.76, -0.015, 0.06], [-0.085, 0.76, -0.015, 0.06], [0.105, 0.73, -0.01, 0.07], [-0.105, 0.73, -0.01, 0.07], [0.065, 0.785, 0.01, 0.04], [-0.065, 0.785, 0.01, 0.04]], "shrink": 0.8 }
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.487, -0.002],
-      [0, 0.546, 0.002],
-      [0, 0.606, 0.007],
-      [0, 0.673, -0.005],
-      [0, 0.807, -0.016],
-      [0, 0.847, -0.003],
-      [0, 1, -0.005]
-    ],
-    "L": [
-      [0.025, 0.762, -0.023],
-      [0.095, 0.752, -0.022],
-      [0.26, 0.741, -0.029],
-      [0.385, 0.729, -0.017],
-      [0.492, 0.723, -0.018],
-      [0.046, 0.457, 0.006],
-      [0.047, 0.262, -0.007],
-      [0.058, 0.065, 0.018],
-      [0.064, 0.02, 0.078],
-      [0.064, 0.015, 0.122]
-    ],
-    "R": [
-      [-0.025, 0.762, -0.023],
-      [-0.095, 0.752, -0.025],
-      [-0.26, 0.74, -0.028],
-      [-0.386, 0.733, -0.018],
-      [-0.491, 0.72, -0.024],
-      [-0.056, 0.457, 0.006],
-      [-0.048, 0.262, -0.008],
-      [-0.058, 0.065, 0.014],
-      [-0.062, 0.02, 0.077],
-      [-0.062, 0.015, 0.121]
-    ]
+    "rejoint": {
+      "upperarm": 1.3
+    },
+    "plugs": {
+      "at": [
+        [
+          0.085,
+          0.76,
+          -0.015,
+          0.06
+        ],
+        [
+          -0.085,
+          0.76,
+          -0.015,
+          0.06
+        ],
+        [
+          0.105,
+          0.73,
+          -0.01,
+          0.07
+        ],
+        [
+          -0.105,
+          0.73,
+          -0.01,
+          0.07
+        ],
+        [
+          0.065,
+          0.785,
+          0.01,
+          0.04
+        ],
+        [
+          -0.065,
+          0.785,
+          0.01,
+          0.04
+        ]
+      ],
+      "shrink": 0.8
+    }
   }
 }
