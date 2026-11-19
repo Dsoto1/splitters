@@ -979,14 +979,16 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
   at any distance (its square the tangent 0.02 at the hip: 18 px across on a 720-line screen, the light its middle third;
   through your own scope the square root of the zoom larger). Steady: its level only eases (0.15 s up, 0.25 s down), its colour stays under
   High's bloom threshold, a thin dark ring keeps it readable against a bright sky. `game/scopeGlint.ts`.
-- **Who is scoped: the snapshot does not say.** `PlayerSnapshot` carries no bit for aiming (the host knows it:
-  `BUTTON_ZOOM` in the player's input). So the glint reads what the snapshot does carry (`seemsScoped`): the held
-  weapon's optic is sniper-kind, the player is alive and not sprinting, dancing, under a canopy, on a zipline or in a
-  seat; for a bot also that its state is `engage` or `cover` (bots scope when they fire or wait on a shot beyond 7 m).
-  A person holding a sniper rifle and facing you therefore glints whether or not the scope is up. **One bit would make
-  it exact**: `PlayerSnapshot.zm?: 1` ("zoom held this tick with a `view.zoomFov` weapon, ready"), binary snapshot
-  `BIT_ZOOM = 32` in the player record's bits byte (`BITS_KNOWN` 63), behind the format's version negotiation; the
-  client then shows the glint only with it. Not done here: it is a protocol change.
+- **Who is scoped: the host says.** `PlayerSnapshot.zm` (docs/MULTIPLAYER_PROTOCOL.md section 23) is set by the
+  match while a player's scope picture is up: a magnified optic in hand, the aim button held, the gun ready and its
+  aim at least half way up (`GunState.ads` ≥ 0.5, the line between a no-scope shot and a scoped one: 0.1 s after the
+  button), and it goes the tick the aim is let go. The glint is drawn only with it and a sniper-kind optic (Sniper
+  Rifle, Railgun), so a player who merely holds the rifle, reloads it or runs with it does not glint. Bots are no
+  different: a bot holds the aim button when it fires a scoped weapon, or waits on a shot with one, at something more
+  than 7 m off (`bots/brain.ts`), and its `zm` comes from the same state; the glint no longer reads a bot's AI state.
+  **Older hosts** (from before the field) never send it, and nothing in the protocol tells such a host from one where
+  nobody is scoped: there nobody glints. The earlier guess (`seemsScoped`: a sniper-kind weapon held, alive, not
+  sprinting; for a bot, fighting) is gone: a missing glint is better than a wrong one.
 - **Reduce flashing** (docs/LOOK.md): the shadow moves less far (0.3 radii), less dark (0.6 against 0.94) and through
   a quarter-second filter, so turning hard left and right cannot swing a dark area from side to side; the surround
   goes out over 0.22 s; the glint is dimmer (0.5 against 0.85) and comes up over half a second. The `flashing`

@@ -52,6 +52,7 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
+import { OPTIC_KINDS, WEAPON_OPTICS } from '../content/optics.generated.ts';
 import { lastHit, type LookHitbox } from './hitbox.ts';
 import { lookHitbox, npcHitbox } from './lookHitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
@@ -3555,7 +3556,7 @@ export class Match {
       spread = shotCone(def, gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
       // A scoped rifle fired from the hip is a gamble: fine across a room, a guess further out (not a lottery: ADS is never mandatory).
       const zoom = getWeapon(def.id).view.zoomFov;
-      if (zoom && !shooter.npc && shooter.gun.ads < 0.5) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
+      if (zoom && !shooter.npc && shooter.gun.ads < SCOPE_UP_ADS) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
     } else {
       // Bloom from sustained fire widens the spread; each shot adds more. So does
       // shooting on the run or in the air; aiming down a scope tightens it, and a
@@ -7212,6 +7213,23 @@ export class Match {
 
   // ---------------------------------------------------------------- snapshots
 
+  /**
+   * PlayerSnapshot.zm: the scope picture is up. The held gun carries a magnified optic (content/optics.json: a kind
+   * with `mag`, the 2-3x optic and the sniper scope), the aim button is held in the last input taken, the gun is
+   * ready (raised, not reloading: the client shows no scope otherwise) and its aim (GunState.ads, which the match
+   * already steps) is at least SCOPE_UP_ADS: the line a shot's no-scope penalty is drawn at. Not from a seat whose
+   * rider's hands are busy (a driver, a seat with a gun, the plane). Read only: nothing in the match depends on it.
+   */
+  private scopeUp(c: Combatant): boolean {
+    if (!c.alive || !(c.prevButtons & BUTTON_ZOOM) || c.gun.ads < SCOPE_UP_ADS || c.raiseTicks > 0 || c.reload) return false;
+    if (c.mount) {
+      const seat = this.seatOf(c);
+      if (!seat || seat.role === 'driver' || seat.weapon || this.mounts[c.mount.index]?.def.airplane) return false;
+    }
+    const optics = WEAPON_OPTICS[heldWeapon(c).def.id];
+    return !!optics && OPTIC_KINDS[optics.default].mag !== undefined;
+  }
+
   playerSnapshots(): PlayerSnapshot[] {
     return this.combatants().map((c) => {
       const s: PlayerSnapshot = {
@@ -7240,6 +7258,7 @@ export class Match {
       if (c.move.sprint) s.sr = 1;
       if (c.move.chute) s.ch = c.move.chute;
       if (c.move.drop) s.dr = 1;
+      if (this.scopeUp(c)) s.zm = 1;
       if (c.move.zip !== undefined) s.zl = [c.move.zip, c.move.zs ?? 0, c.move.zv ?? 0];
       return s;
     });
@@ -8207,6 +8226,8 @@ const SEARCH_BUDGET = 24;
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;
 /** Extra cone (radians) of a scoped rifle fired before the scope is half up: 30 cm at 10 m. */
 export const NO_SCOPE_SPREAD = 0.03;
+/** GunState.ads from which a scoped weapon's shot counts as scoped (below it: the no-scope penalty), and PlayerSnapshot.zm is set. */
+export const SCOPE_UP_ADS = 0.5;
 
 /** Extra spread from moving and jumping (radians); multi-pellet guns already spray, so they care less. */
 function movementSpread(c: Combatant, def: Trigger): number {

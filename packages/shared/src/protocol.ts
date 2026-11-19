@@ -198,6 +198,14 @@ export interface PlayerSnapshot {
   dr?: 1;
   /** Riding a zipline: [line (index in mapZiplines), metres along it from its start, signed speed along it (m/s, + toward its end)]. */
   zl?: [number, number, number];
+  /**
+   * Aiming through a magnified optic (a 2-3x optic or a sniper scope: content/optics.json kinds with `mag`): the
+   * scope picture is up (sim/match.ts `scopeUp`). Absent otherwise, and from hosts older than the field. Others see
+   * a sniper scope's glint by it (GUNPLAY_SPEC section 15).
+   */
+  zm?: 1;
+  /** Reserved for dual wielding: holds a pair. Nothing writes it yet; the binary snapshot carries it if present. */
+  dw?: 1;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */

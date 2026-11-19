@@ -213,7 +213,7 @@ import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
 import { holdoverFor } from './holdover.ts';
-import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, seemsScoped, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
+import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
 import type { GlintSource } from './scopeGlint.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator, type RemotePose } from './interpolation.ts';
@@ -1238,15 +1238,16 @@ export class GameSession {
   }
 
   /**
-   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who hold a sniper scope and seem to be
-   * aiming through it (seemsScoped: the snapshot has no bit for aiming), seen from the camera. Riders are left out
-   * (their hands are on the vehicle).
+   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who aim through a sniper scope, as the host
+   * says (PlayerSnapshot.zm, people and bots alike), seen from the camera. A host older than the field never says it:
+   * nobody glints there (nothing tells such a host from one where nobody is scoped, and no glint is better than a
+   * wrong one). Riders are left out (their hands are on the vehicle).
    */
   private updateGlints(dt: number, poses: readonly RemotePose[]): void {
     const riders = this.mounts?.riders();
     const sources: GlintSource[] = [];
     for (const p of poses) {
-      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !seemsScoped(p) || riders?.has(p.slot)) continue;
+      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !p.scoped || !p.alive || riders?.has(p.slot)) continue;
       const def = weaponByCode(p.weapon);
       if (!def || opticOf(def)?.id !== 'sniper') continue;
       sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });

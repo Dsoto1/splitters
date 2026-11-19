@@ -109,7 +109,7 @@ const read = measure((i) => {
 });
 const plain = new SnapshotBinaryDecoder();
 const readFresh = measure((i) => plain.decode(bufs[i]!));
-console.log(`binary v1: ${(binBytes / n).toFixed(0)} B a snapshot`);
+console.log(`binary v2: ${(binBytes / n).toFixed(0)} B a snapshot`);
 console.log(`  write: ${ms(write.times)}; heap ${rate(write.heap)}`);
 console.log(`  read into the ring: ${ms(read.times)}; heap ${rate(read.heap)}`);
 console.log(`  read into new objects: ${ms(readFresh.times)}; heap ${rate(readFresh.heap)}`);

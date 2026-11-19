@@ -12670,14 +12670,13 @@ async function flashingScene(browser, scene) {
       bots: [[-10, 0, 28]],
       before: () =>
         page.evaluate(() => ((window.__glintSeen = { most: 0, count: 0 }), (window.__autoInput = { buttons: 0 }))).then(() => sim(page, (m, me) => {
-          // The bots take a copy of your Sniper Rifle and stand as a bot does when it fights (the state the snapshot carries).
+          // The bots take a copy of your Sniper Rifle and hold their scope up (the aim button, 8: the snapshot's `zm`).
           for (const b of m.combatants().filter((c) => c.bot)) {
             b.weapons.set(me.current, { ...me.weapons.get(me.current) });
             b.current = me.current;
             b.raiseTicks = 0;
-            Object.defineProperty(b.bot, 'state', { get: () => 'engage', set() {}, configurable: true });
             self.__glintAim = Math.PI / 2;
-            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0, yaw: self.__glintAim, pitch: 0 })));
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 8, yaw: self.__glintAim, pitch: 0 })));
           }
         })),
       at: Object.fromEntries(
@@ -12701,7 +12700,6 @@ async function flashingScene(browser, scene) {
       after: () =>
         page.evaluate(() => (window.__autoInput = { buttons: 0 })).then(() => sim(page, (m) => {
           for (const b of m.combatants().filter((c) => c.bot)) {
-            Object.defineProperty(b.bot, 'state', { value: 'roam', writable: true, enumerable: true, configurable: true });
             b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
           }
         })),
