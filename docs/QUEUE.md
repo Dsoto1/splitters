@@ -41,6 +41,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/nature-swap-4` · 4b585aaa · run 44563372716 (the nature swap's last batch: Sandstone Spires, sandstone shards, Kenney Nature Kit trees and logs, St. John's and the coverage map, the Quaternius nature pack retired; green on attempt 1) **Owner, 2026-11-19: "1a 2a 3b"**: the Log Stack stays until a generated woodpile exists; generated Stone Campfire, Stone Pillar, Hanging Moss and Log Stack come later, then the Kenney kit retires with aliases; the Sandstone Spires get denser and more fused, like the Meshy one (`wip/nature-swap-5`, after this lands; recipe and content only).
 - `wip/nature-swap-5` · ddea1ed1 · run 44586438591 (denser, fused Sandstone Spires, owner 3b; contains `wip/nature-swap-4`, lands after it, re-checked after swap-4's re-merge)
+- `wip/fable-sights-2` · 8e36d6da · 44584521043 (lane F: real optics by gun, sights pass step 2; green on attempt 2, `perf (mass)` over budget on a slow runner in attempt 1)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
