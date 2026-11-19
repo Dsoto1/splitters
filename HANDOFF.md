@@ -138,6 +138,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 - **Claimed (a helper of lane B's splitters22, 2026-11-19): St. John's clock tower headroom** (`wip/stjohns-clocktower`; owner, 2026-11-19: "the new clocktower also is not usable since its ceilings are too low"). The fault is in the tile, not the map: `gothic.clock_tower`'s switchback climbed 2.5 m a turn (2.2 m over every step and the door). Files: shared `map/packTiles2.ts` (the Clock Tower tile: a stair winding round the core on all four sides, door 2.4 m), `test/setPiecesAcademy.test.ts` (a headroom test), palette pictures from content:rebuild, CHANGELOG. No map file changes (St. John's and the coverage map use the tile); no format change. **Status (2026-11-19): green on `check/stjohns-clocktower` at eaa242ba, run 44452280300; on QUEUE's Ready to land.** Found, not fixed (a map edit for later): the next Stair End Bay's north window trim and buttresses (`setpiece_g830vbnlk5`, St. John's (2, -11)) poke up to 0.6 m through the tower's south wall into the stair.
 
 **Checking** (branch · run; remove the line when it turns green or red):
+- `check/nature-swap-3` · 64c05608 (the nature swap, 42 maps, re-checked after merging main: paintLooks regenerated with paint-looks.ts --write; off Ready until green)
 - `check/ranks-for-all` at 1824b77d · run 44469561973 (Ranks & badges for everyone; a helper of lane B's splitters22)
 - `check/urgent-gunshots` · 1e58687a (URGENT: shots out of a held sprint; the trigger latch; lands alone when green; a helper of lane B's splitters22)
 
