@@ -1,6 +1,6 @@
 // Everything MapMaker's test worker runs (mapTestWorker.ts loads it with a dynamic import, for the reason
 // game/simWorkerCore.ts gives: Safari gives a chunk imported from a module worker's entry file a second Rapier).
-import { coplanarIssues, coplanarSpots, initPhysics, mapAsPlayed, validateMap, type CoplanarSpot, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
+import { initPhysics, mapAsPlayed, shapeChecks, validateMap, type CoplanarSpot, type MapDocument, type ValidationIssue } from '@tiletrigger/shared';
 import type { BotTestOptions, BotTestResult, ExposureResult, PrebuiltNav, validateMapNavigation } from '@tiletrigger/shared/match';
 
 /** The navigation check's answer (MapChecks: the issues, and the bots' own spots when asked for). */
@@ -51,15 +51,9 @@ export async function runMapTest(m: ToMapTest, post: (m: FromMapTest, transfer?:
     // Nothing here needs the match (physics, navigation): the checks MapMaker ran on the page after every edit.
     try {
       const issues = validateMap(m.doc);
-      let spots: CoplanarSpot[] = [];
-      if (!issues.some((i) => i.severity === 'error')) {
-        try {
-          spots = coplanarSpots(m.view, undefined, m.partOf);
-        } catch {
-          spots = [];
-        }
-      }
-      post({ k: 'check', token: m.token, issues, spots, zIssues: coplanarIssues(m.view, spots) });
+      // The overlaps and the stairs' headroom (map/headroom.ts shapeChecks), once the map itself is sound.
+      const shape = issues.some((i) => i.severity === 'error') ? { spots: [], issues: [] } : shapeChecks(m.view, m.partOf);
+      post({ k: 'check', token: m.token, issues, spots: shape.spots, zIssues: shape.issues });
     } catch (e) {
       post({ k: 'checkFailed', token: m.token, error: (e as Error).message });
     }

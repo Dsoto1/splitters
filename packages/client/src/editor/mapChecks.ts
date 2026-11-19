@@ -1,9 +1,8 @@
 import {
-  coplanarIssues,
-  coplanarSpots,
   initPhysics,
   mapAsPlayed,
   setPiecePortStates,
+  shapeChecks,
   validateMap,
   type CoplanarSpot,
   type MapDocument,
@@ -140,16 +139,9 @@ export class MapChecks {
   private checkHere(token: number): void {
     if (token !== this.navToken) return;
     const { map: view, partOf } = this.app.expansion;
-    let spots: CoplanarSpot[] = [];
     const issues = validateMap(this.app.doc);
-    if (!issues.some((i) => i.severity === 'error')) {
-      try {
-        spots = coplanarSpots(view, undefined, partOf);
-      } catch {
-        spots = [];
-      }
-    }
-    this.checked(token, issues, spots, coplanarIssues(view, spots));
+    const shape = issues.some((i) => i.severity === 'error') ? { spots: [], issues: [] } : shapeChecks(view, partOf);
+    this.checked(token, issues, shape.spots, shape.issues);
   }
 
   /** The checks of the document as it is now came back: the issues list, the overlaps, and navigation next. */

@@ -119,6 +119,11 @@ export class PauseMenu {
     if (next) this.show(next.dataset.tab as PauseTab);
   }
 
+  /** A window is open over the menu (the Bots window, a map picker, a confirm): Esc closes it first. */
+  get dialogOpen(): boolean {
+    return !!this.hooks.overlay();
+  }
+
   /** On the Match tab with no dialog open: one more Esc would leave the menu. */
   get atTop(): boolean {
     return !this.hooks.overlay() && this.tab === 'match';

@@ -70,10 +70,12 @@ export function doorMesh(seed, size, g, look, level) {
   const r = rng(seed);
   const m = new Mesh();
   const tone = (c, k) => woodTone(c, r, look, seed + k);
-  // Shut and ajar collide as the frame's slab; open (collide: "none") gives no box.
+  // Shut and ajar collide as the frame's slab (a closed room). Open collides as its leaf, standing square into the
+  // room on its hinges: cover to hide behind, wood that rounds go through (owner, 2026-11-19: "i would like to hide
+  // behind doors for cover"); the doorway beside it stays clear for players and bots.
+  const back = g.back ?? 0;
   if (level === 0 && (g.swing ?? 0) < 60) m.boxes = [[-X, 0, -FRAME_Z, X, h, FRAME_Z]];
   // The frame: two posts and a head, the full depth.
-  const back = g.back ?? 0;
   const fc = tone(frameC, 1);
   box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
   box(m, [X - FRAME, 0, -FRAME_Z - back], [X, h, FRAME_Z - back], fc, ['ny']);
@@ -87,6 +89,13 @@ export function doorMesh(seed, size, g, look, level) {
   const zf = LEAF_T / 2;
   const [c, s] = [Math.cos(swing), Math.sin(swing)];
   const T = ([x, y, z]) => [hx + (x - hx) * c + (z - zf) * s, y, zf - (x - hx) * s + (z - zf) * c - back];
+  if (level === 0 && (g.swing ?? 0) >= 60) {
+    // The leaf's bounds as it stands open (square at 90°: its own box), floor to its top edge.
+    const pts = [[lx, 0, -zf], [hx, 0, -zf], [lx, 0, zf], [hx, 0, zf]].map(T);
+    const xs = pts.map((p) => p[0]);
+    const zs = pts.map((p) => p[2]);
+    m.boxes = [[Math.min(...xs), 0, Math.min(...zs), Math.max(...xs), y1, Math.max(...zs)]];
+  }
   const iron = (p, n) => scale3(ironC, n[1] > 0.5 ? 1.5 : 1);
   if (level >= 2) {
     tbox(m, T, [lx, y0, -zf], [hx, y1, zf], scale3(wood, 0.9), ['ny']);

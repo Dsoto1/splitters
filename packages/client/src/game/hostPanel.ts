@@ -2,6 +2,7 @@ import { WEATHER_PRESETS, isWeatherChoice, BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS,
 import { botTypePicker, choice, el, infoTip, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, weatherSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
+import { releasePointer } from '../fullscreen.ts';
 
 const SKILL_LABELS: Record<HostState['skill'], string> = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
 const STYLE_LABELS: Record<HostState['style'], string> = { mixed: 'Mixed', arena: 'Arena', tactical: 'Tactical' };
@@ -249,6 +250,8 @@ export class HostPanel {
   /** The Bots window over the pause menu: Apply sends the whole set (the match swaps bots in one at a time). */
   private openBots(s: HostState): void {
     if (document.getElementById('bot-manager')) return;
+    // The window needs the mouse and the menu under it: a lock held (or asked for by Resume and granted late) is let go.
+    releasePointer();
     const teams = s.teams ? Array.from({ length: s.teams }, (_, i) => ({ name: s.teamNames?.[i] ?? DEFAULT_TEAMS[i]?.name ?? `Team ${i + 1}`, color: s.teamColors?.[i] ?? DEFAULT_TEAMS[i]?.color ?? '#00d1ff' })) : [];
     const players = s.teams ? this.sizesOf(s).reduce((a, b) => a + b, 0) : s.fill;
     const opener = document.getElementById('hc-bots');
