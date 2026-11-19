@@ -378,6 +378,8 @@ export interface Combatant {
   padFlight?: boolean;
   /** Tick it last took damage (squad spawns avoid teammates in a fight). */
   hurtAt?: number;
+  /** Ticks spent standing outside the play area (stepOutOfBounds): warned, then returned. */
+  outsideTicks?: number;
   /** Takes no damage (the browser's test mode, offline only); falling out of the map still kills. */
   invulnerable?: boolean;
   /** Kills since this one last died (kill-streak rewards). */
@@ -2078,6 +2080,7 @@ export class Match {
       if (this.phase === 'playing' && this.roulette) this.phys.gravity = this.roulette.step();
       if (this.phase === 'playing') this.zombies?.step();
       if (this.phase === 'playing') this.classes?.step();
+      this.stepOutOfBounds();
       this.spawnDue();
       for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
@@ -7345,6 +7348,8 @@ export class Match {
     let mate: Combatant | null = null;
     let mateScore = -Infinity;
     for (const o of mates.slice(0, 4)) {
+      // Never beside a teammate outside the play area (behind a fence, cut off): the squad would be stranded with them.
+      if (!this.inPlay(o.move.pos)) continue;
       const near = enemies.map((e) => ({ e, d: distance(e.move.pos, o.move.pos) })).filter((x) => x.d < 50).sort((a, b) => a.d - b.d);
       const head = { x: o.move.pos.x, y: o.move.pos.y + 1.6, z: o.move.pos.z };
       if (near.slice(0, 3).some((x) => this.sees({ x: x.e.move.pos.x, y: x.e.move.pos.y + 1.6, z: x.e.move.pos.z }, head))) continue;
@@ -7373,9 +7378,99 @@ export class Match {
         const spot = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
         const q = this.nav.closestPoint({ x: spot.x, y: spot.y + 0.5, z: spot.z }, { x: 0.6, y: 1.2, z: 0.6 });
         if (!q || Math.abs(q.y - spot.y) >= 1) continue;
+        // In the play area: a ring can reach past a see-through fence (sight lines pass between its slats).
+        if (!this.inPlay(spot)) continue;
         if (occupants.some((o) => Math.abs(o.y - spot.y) <= 2 && horizontalDistance(o, spot) < SPAWN_TAKEN)) continue;
         return spot;
       }
+    }
+    return null;
+  }
+
+  /** A place in the spawns' area that inPlay's hops head for (the navmesh's first main place), found once. */
+  private homeGoal: Vec3 | null | undefined;
+
+  /** Inside the map's boundary rectangle (when it has one), with a little give for a body against its wall. */
+  private insideBounds(p: Vec3): boolean {
+    const b = this.map.bounds;
+    if (!b) return true;
+    const give = PLAYER.radius + 0.25;
+    return p.x >= b.min[0] - give && p.x <= b.max[0] + give && p.z >= b.min[1] - give && p.z <= b.max[1] + give;
+  }
+
+  /**
+   * In the play area: inside the boundary, and not on ground that can't get back to the spawns' area: none that routes
+   * back (NavWorld.stranded), nor the step or hop bots take off a cut-off patch (NavWorld.escapes: a sunken court, a
+   * pool) with nothing a body bumps into in the way (a fence's posts and its body-only box count; sight lines don't).
+   * Where a squad may spawn beside a teammate, and where nobody is moved from.
+   */
+  inPlay(p: Vec3): boolean {
+    if (!this.insideBounds(p)) return false;
+    if (!this.nav.stranded(p)) return true;
+    const goal = (this.homeGoal ??= this.nav.mainPlaces()[0] ?? null);
+    if (!goal) return true;
+    const moveRay = (a: Vec3, b: Vec3, h: number): boolean => {
+      const d = { x: b.x - a.x, y: 0, z: b.z - a.z };
+      const len = Math.hypot(d.x, d.z);
+      return len < 1e-3 || this.physics.moveRay({ x: a.x, y: a.y + h, z: a.z }, { x: d.x / len, y: 0, z: d.z / len }, len) === null;
+    };
+    const clear = (a: Vec3, b: Vec3) => {
+      const y = Math.max(a.y, b.y);
+      return moveRay({ ...a, y }, { ...b, y }, 0.5) && moveRay({ ...a, y }, { ...b, y }, 1.6);
+    };
+    return this.nav.escapes(p, goal, clear, 'body').length > 0;
+  }
+
+  /**
+   * Nobody stays outside the play area (crawled out through a gap, thrown over a fence, landed there): standing outside
+   * it for OUT_OF_BOUNDS.warn they're told, calmly (a message, no flash: Reduce flashing), and after OUT_OF_BOUNDS.back
+   * they're put back on the nearest clear ground inside it, as they are (no death, nothing taken). Checked every
+   * OUT_OF_BOUNDS.every ticks, players and bots on foot; draws no random numbers.
+   */
+  private stepOutOfBounds(): void {
+    if (this.tick % OUT_OF_BOUNDS.every !== 0) return;
+    for (const c of this.combatants()) {
+      if (!c.alive || c.mount || c.move.zip !== undefined || c.move.chute) {
+        c.outsideTicks = 0;
+        continue;
+      }
+      // In the air: neither in nor out (a jump, a fall); the count waits for the ground.
+      if (!c.move.grounded) continue;
+      if (this.inPlay(c.move.pos)) {
+        c.outsideTicks = 0;
+        continue;
+      }
+      const was = c.outsideTicks ?? 0;
+      const now = was + OUT_OF_BOUNDS.every;
+      c.outsideTicks = now;
+      const warnAt = OUT_OF_BOUNDS.warn * TICK_RATE;
+      const backAt = OUT_OF_BOUNDS.back * TICK_RATE;
+      if (was < warnAt && now >= warnAt && c.kind === 'human') {
+        this.pendingEvents.push({ e: 'msg', text: `Outside the play area: back in ${Math.round(OUT_OF_BOUNDS.back - OUT_OF_BOUNDS.warn)} s, or you'll be returned`, secs: 3, s: c.slot });
+      }
+      if (now < backAt) continue;
+      c.outsideTicks = 0;
+      const spot = this.returnSpot(c);
+      if (spot) {
+        c.move = { pos: spot, velY: 0, grounded: false };
+        if (c.kind === 'human') this.pendingEvents.push({ e: 'msg', text: 'Returned to the play area', secs: 2, s: c.slot });
+      } else this.spawn(c);
+    }
+  }
+
+  /** The nearest clear place in the play area to `c` (the navmesh's main places), or null. */
+  private returnSpot(c: Combatant): Vec3 | null {
+    const at = c.move.pos;
+    const occupants = this.actors().filter((o) => o.alive && o !== c).map((o) => o.move.pos);
+    const near = this.nav
+      .mainPlaces()
+      .map((p) => ({ p, d: Math.hypot(p.x - at.x, p.z - at.z) + Math.abs(p.y - at.y) * 2 }))
+      .sort((a, b) => a.d - b.d);
+    for (const { p } of near.slice(0, 24)) {
+      if (!this.insideBounds(p)) continue;
+      if (!this.physics.headroom({ x: p.x, y: p.y + 0.05, z: p.z }, PLAYER.height)) continue;
+      if (occupants.some((o) => Math.abs(o.y - p.y) <= 2 && horizontalDistance(o, p) < SPAWN_TAKEN)) continue;
+      return { x: p.x, y: p.y + 0.05, z: p.z };
     }
     return null;
   }
@@ -7388,6 +7483,9 @@ export class Match {
       return !!q && Math.abs(q.y - p.y) < 1;
     };
     if (!walkable(mate.move.pos)) return null;
+    // Nor beside one outside the play area (Atomic Court, 2026-11-19: one player crawled out under the fence and half
+    // the team spawned out there with him): the map's boundary, or ground that doesn't route back to the spawns.
+    if (!this.inPlay(mate.move.pos)) return null;
     for (const a of [Math.PI, Math.PI / 2, -Math.PI / 2, 0, (3 * Math.PI) / 4, (-3 * Math.PI) / 4]) {
       const yaw = mate.yaw + a;
       const pos = { x: mate.move.pos.x + Math.sin(yaw) * 1.4, y: mate.move.pos.y, z: mate.move.pos.z + Math.cos(yaw) * 1.4 };
@@ -7397,7 +7495,7 @@ export class Match {
       if (floor === null) continue;
       if (!this.physics.lineOfSight({ x: mate.move.pos.x, y: mate.move.pos.y + 1, z: mate.move.pos.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
       const at = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
-      if (!walkable(at)) continue;
+      if (!walkable(at) || !this.inPlay(at)) continue;
       return { pos: at, yaw: mate.yaw };
     }
     return null;
@@ -8088,6 +8186,12 @@ export const RELAXED_RANGE = 45;
 /** Bots this close (m) to a buried tunnel's footprint always make the exact move (Match.relaxedMove). */
 const RELAXED_BORE = 2;
 const NO_BORES: readonly GroundCut[] = [];
+/**
+ * Out of the play area (Match.stepOutOfBounds): checked every `every` ticks; a player standing outside is told after
+ * `warn` seconds and put back inside after `back` seconds.
+ */
+export const OUT_OF_BOUNDS = { every: 30, warn: 1, back: 6 } as const;
+
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */
 const RELAXED_PORTAL = 6;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */

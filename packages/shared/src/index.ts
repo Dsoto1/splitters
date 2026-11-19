@@ -112,6 +112,7 @@ export * from './net/party.ts';
 export * from './net/profile.ts';
 export * from './net/career.ts';
 export * from './net/interest.ts';
+export * from './net/snapshotBinary.ts';
 export * from './net/lan.ts';
 export * from './net/rateLimit.ts';
 export * from './bots/profile.ts';

@@ -1136,6 +1136,37 @@ export class NavWorld {
     return r.fromMain[s.index] === 1 && this.toMainNow()[s.index] === 1;
   }
 
+  /**
+   * Whether `p` stands on navmesh that doesn't route back to the main area (the spawns' area): ground behind a map's
+   * fence, a pit. Only a patch smaller than the main area counts: the main area is the bulk of a map's play, and when
+   * the navmesh leaves the spawns on a little island of their own (MapMaker's blank starter: one tile on open terrain
+   * the navmesh doesn't join it to), the rest is where play is, not a place nobody should be. False off the navmesh
+   * (on a prop, in the air) and when the navmesh has no main area to speak of.
+   */
+  stranded(p: Vec3): boolean {
+    const r = this.routesNow();
+    if (r.main < 0) return false;
+    // The polygon under the feet, as a squad spawn's walkable test finds it.
+    const s = this.nearestPoly({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
+    if (!s || this.toMainNow()[s.index] === 1) return false;
+    const size = this.compSizesNow();
+    return size[r.comp[s.index]!]! < size[r.main]!;
+  }
+
+  private compSizes: Float64Array | null = null;
+
+  /** Each component of routes' walkable area (m², its polygons' areas). Worked out once. */
+  private compSizesNow(): Float64Array {
+    if (this.compSizes) return this.compSizes;
+    const r = this.routesNow();
+    const { area } = polyShapes(this.graph());
+    let n = 0;
+    for (let i = 0; i < r.comp.length; i++) n = Math.max(n, r.comp[i]! + 1);
+    const size = new Float64Array(n);
+    for (let i = 0; i < r.comp.length && i < area.length; i++) size[r.comp[i]!]! += area[i]!;
+    return (this.compSizes = size);
+  }
+
   /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
   private reachOf(i: number): Uint8Array {
     const r = this.routesNow();
@@ -1310,9 +1341,10 @@ export class NavWorld {
    * navmesh) and the place across. From ground that routes to the main area, only onto ground that routes back to
    * it too (onto a dais the navmesh doesn't climb, never down into a pit). `clear`: a body gets straight across
    * from one to the other (nothing in the way). Empty when nothing is near enough, or a route reaches the goal.
-   * Cached per polygon and the goal's component of routes.
+   * Cached per polygon and the goal's component of routes, and per `kind` of `clear` (a caller with its own test
+   * names it, so its answers and the bots' never mix: Match.inPlay's 'body').
    */
-  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean): readonly NavEscape[] {
+  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean, kind = ''): readonly NavEscape[] {
     const ext = { x: 2, y: 3, z: 2 };
     const e = this.query.findNearestPoly(goal, { halfExtents: ext });
     if (!e.success || !e.nearestRef) return NO_ESCAPE;
@@ -1338,7 +1370,7 @@ export class NavWorld {
     }
     const landing = (poly: number) => poly >= 0 && toGoal[poly] === 1 && (!safe || toMain[poly] === 1);
     const goalComp = this.routesNow().comp[goalIdx]!;
-    const key = on ? `${s.nearestRef}>${goalComp}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${goalComp}`;
+    const key = `${on ? s.nearestRef : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}`}>${goalComp}${kind ? `:${kind}` : ''}`;
     const known = this.escapeCache.get(key);
     if (known) return known;
     const places = this.places();

@@ -57,6 +57,11 @@ export interface WorldBox {
   navThrough?: true;
   /** A step of a stair flight (LocalBox.step): MapMaker's headroom check walks these (map/headroom.ts). */
   step?: true;
+  /**
+   * Stops bodies only (players, bots, vehicles), like a force field: shots, thrown things and sight lines pass. Behind a
+   * see-through edge with nothing built beyond it (boundaryLatticeBox), so nobody crawls out between its posts and rails.
+   */
+  bodyOnly?: true;
   /** The face closing a buried passage's open end (buriedOpenEnds): gone once a portal, a Dead End or another piece is put there. */
   endCap?: true;
 }
@@ -706,10 +711,16 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         }
       } else {
         const metal = edgePaint(style);
-        for (const seg of edgeSegments(style, half, levelHeight)) {
+        const segs = edgeSegments(style, half, levelHeight);
+        for (const seg of segs) {
           const [u0, u1, y0, y1, t] = seg;
           const b = sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall');
           boxes.push({ ...b, ...(metal ? { paint: metal } : {}), ...(edgeLattice(style, seg) ? { lattice: true as const } : {}) });
+        }
+        const [dx, dy] = SIDE_DIRS[side];
+        if (!cells.has(cellKey(gx + dx, gy + dy, gz))) {
+          const shut = boundaryLatticeBox(style, segs, side, cx, cz, half, baseY, id);
+          if (shut) boxes.push(shut);
         }
       }
     }
@@ -1121,6 +1132,26 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
     case 'W':
       return { min: [cx - half + v0, y0, cz + u0], max: [cx - half + v1, y1, cz + u1], kind, sourceId };
   }
+}
+
+/**
+ * A see-through edge (a fence, bars) with nothing built beyond it is where the map's built area ends: its gaps let a
+ * crouched or prone body (a small character most of all) out between the posts and under the rails, onto ground nothing
+ * routes back from (Atomic Court, 2026-11-19: a team spawning on a player who had crawled out). One body-only box
+ * (WorldBox.bodyOnly) closes it from the floor to its top: shots, thrown things and sight still pass between the slats.
+ * Not for an edge with a doorway in it (a gate is a way through). Null for any other edge.
+ */
+export function boundaryLatticeBox(style: ResolvedEdge, segs: readonly (readonly [number, number, number, number, number])[], side: Side, cx: number, cz: number, half: number, baseY: number, sourceId: string): WorldBox | null {
+  const shape = shapeOf(style);
+  if (!shape || shape.openings?.length || !segs.some((seg) => edgeLattice(style, seg))) return null;
+  let top = 0;
+  let t = 0;
+  for (const seg of segs) {
+    top = Math.max(top, seg[3]);
+    t = Math.max(t, seg[4]);
+  }
+  if (top <= 0) return null;
+  return { ...sideBox(side, cx, cz, half, -half, half, baseY, baseY + top, 0, t || 0.1, sourceId, 'barrier'), bodyOnly: true };
 }
 
 /** A trim box on one side of a cell (edgeTrimBoxes): tilted in the wall's plane, it is rolled on a north or south side (u runs along x) and pitched on an east or west one (u along z). */

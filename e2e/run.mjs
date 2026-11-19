@@ -6053,6 +6053,9 @@ async function offlineFlow(browser) {
   await page.waitForTimeout(1000); // wait-ok: measures the tick rate over one second
   const t1 = await sim(page, (m) => m.tick);
   check(where.mode === 'worker' && !where.match && t1 - t0 > 20, `the offline match runs in a Web Worker (${where.mode}, ${t1 - t0} ticks in 1 s)`);
+  // Its snapshots come as binary messages (shared net/snapshotBinary.ts), not structured-cloned objects.
+  const binary = await page.evaluate(() => window.__sim?.binary ?? 0);
+  check(binary > 20, `the worker's snapshots reach the page as binary messages (${binary} so far)`);
   // Wait for the ammo readout (it blanks while you're down after an early death).
   await page.waitForFunction(() => /^\d+$/.test(document.getElementById('ammo-count').textContent ?? '') && /^\d+$/.test(document.getElementById('ammo-reserve').textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
   const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);

@@ -174,7 +174,7 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
-import { DEFAULT_RELIEF } from './opticView.ts';
+import { aimPlacement, blendPlacement, type GunPlacement } from './sightPose.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -1794,6 +1794,8 @@ export class GameView {
   /** Viewmodel's top (where a sight sits) and rear, in its own space: placing it for aiming down the sights. */
   private sightTop = 0.1;
   private stockZ = -0.3;
+  /** Where the shown viewmodel sits at full aim (sightPose.ts), worked out when first needed after it is shown. */
+  private aimAt: GunPlacement | null = null;
 
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
@@ -1806,6 +1808,7 @@ export class GameView {
     if (!def) return;
     const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
       ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+      this.aimAt = null;
       v.node.setEnabled(true);
       this.viewmodel = v.node;
       this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
@@ -2154,18 +2157,12 @@ export class GameView {
     // Through an optic the gun holds still on the eye: no bob or kick (the camera's recoil still moves the view).
     const still = 1 - this.opticBlend;
     const bob = this.bobAmount * (1 - ads * 0.8) * still;
-    const [vx, vy, vz] = def.view.viewOffset;
-    // Aiming down the sights: the gun comes to the centre with the top of the receiver (where
-    // the sight sits) just under the eye line, and far enough forward that the stock stays
-    // out of view, so you look along the gun at the target (see the red dot on the HUD).
-    // A gun with an optic brings its eyepiece onto the eye instead, its relief in front of it (opticView.ts).
-    const optic = def.view.optic;
-    const adsX = optic ? -optic.eye[0] : 0;
-    const adsY = optic ? -optic.eye[1] : -(this.sightTop + 0.006);
-    const adsZ = optic ? (optic.relief ?? DEFAULT_RELIEF) - optic.eye[2] : Math.max(vz, 0.2 - this.stockZ);
-    const x = vx + (adsX - vx) * ads;
-    const y = vy + (adsY - vy) * ads;
-    const z = vz + (adsZ - vz) * ads;
+    // Aiming down the sights (sightPose.ts): a gun with a sight fit is turned and moved so the eye sits behind its own
+    // drawn sights with the front sight on the aim; a gun with an optic brings its eyepiece onto the eye, its relief
+    // in front of it (opticView.ts); a gun without usable sights comes to the centre with its top just under the eye
+    // line. Each far enough forward that the stock stays out of view.
+    const aim = blendPlacement(def, (this.aimAt ??= aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ })), ads);
+    const { x, y, z } = aim;
     // A melee weapon's barrel kicks like a heavy gun (back and up), not a swing.
     const melee = def.kind === 'melee' && !this.kickShot;
     const heavy = this.kickShot ? 2.6 : 1;
@@ -2175,7 +2172,7 @@ export class GameView {
       y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
       z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
-    this.viewRoot.rotation.set(-kick * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, melee ? kick * 0.5 : 0, o.reload * 0.4);
+    this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, aim.yaw + (melee ? kick * 0.5 : 0), o.reload * 0.4);
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';

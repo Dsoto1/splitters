@@ -1,0 +1,26 @@
+{
+  "$comment": "Sight fit (tools/content/sight-fit.mjs; docs/GUNPLAY_SPEC.md §15, \"Sights that line up\"). The tool measures each gun's sights from its model; this file holds only what a person decided after looking at the sight sheet (?mode=sights). `corrections`: a weapon whose automatic fit is wrong: `rear` and/or `front` (model space as `view.muzzleAt`: +Z the barrel, +Y up, metres), optional `kind`, and the `reason`. `excluded`: a weapon that aims with the placement it had before (the top of the gun under the eye) because its model has no usable sights, with the reason. Mounted guns, melee weapons and tools, scopes (`view.zoomFov`) and guns with an optic (`view.optic`) need no entry. Run `node tools/content/sight-fit.mjs` after a change.",
+  "corrections": {},
+  "excluded": {
+    "core.arc_caster": "no sights on the model: a flat-topped kit gun",
+    "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
+    "core.blast_rockets": "a tube launcher: no sights, its top line starts on the stock",
+    "core.bubble_blaster": "no sights on the model: a flat-topped kit gun",
+    "core.disc_launcher": "no sights on the model: a flat-topped disc launcher",
+    "core.flak": "no sights on the model: a flat-topped kit gun",
+    "core.flamethrower": "no sights on the model: its top line starts on the stock",
+    "core.flare_gun": "the model is drawn broken open, its barrel tipped up: no line along it",
+    "core.gilded_pistol": "a flintlock: the cock stands on the centre plane over the barrel, blocking the line to the bead",
+    "core.guided": "a tube launcher: no sights, its top line starts on the stock",
+    "core.laser_rifle": "no sights on the model: a flat-topped kit gun",
+    "core.launcher": "a tube launcher: no rear sight, its top line starts on the stock",
+    "core.lmg": "a rotary gun held at the hip: its top is a housing and a crank, not a sight line",
+    "core.oil_slicker": "no sights on the model: its top line starts on the stock",
+    "core.plasma": "no iron sights: the model carries a scope-like tube on a mount (an optic for the next step of the sights pass)",
+    "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
+    "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
+    "core.singularity": "no sights on the model: an organic shell with a sloping top",
+    "core.spear": "a thrown spear: no sights",
+    "core.swarm": "no sights on the model: a flat-topped kit launcher"
+  }
+}
