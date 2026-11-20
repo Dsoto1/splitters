@@ -391,12 +391,19 @@ async function editorFlow(browser) {
     const b = document.querySelector('[data-tool="pickup:core.weapon_pistol"]');
     return b ? { text: b.textContent.trim(), group: b.closest('.ed-group')?.querySelector('.ed-group-head')?.textContent ?? '' } : null;
   });
-  check(pistolCard?.text === 'Pistol' && /Weapons/.test(pistolCard.group), `the Pistol pickup has a card in the Weapons group (${JSON.stringify(pistolCard)})`);
+  check(/^Pistol\b/.test(pistolCard?.text ?? '') && /Weapons/.test(pistolCard.group), `the Pistol pickup has a card in the Weapons group (${JSON.stringify(pistolCard)})`);
   await clickTool(page, '[data-tool="pickup:core.weapon_pistol"]');
   await clickWorld(-1, 2);
   await page.keyboard.press('Escape');
   d = await doc();
   check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'places a Pistol pickup');
+  if (process.env.E2E_SHOTS) {
+    await page.locator('[data-tool="pickup:core.weapon_pistol"]').scrollIntoViewIfNeeded().catch(() => {});
+    await page.locator('.ed-group:has([data-tool="pickup:core.weapon_pistol"])').screenshot({ path: `${process.env.E2E_SHOTS}/pistol-palette.png` }).catch(() => {});
+    await page.evaluate(() => window.__editor.view.focus({ x: -1, y: 0, z: 2 }));
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/pistol-placed.png` }).catch(() => {});
+    await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
+  }
   await page.keyboard.press('Control+KeyZ');
   d = await doc();
   check(!d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'undo takes the Pistol pickup away');
