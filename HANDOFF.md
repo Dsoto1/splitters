@@ -72,6 +72,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Train check/train-20261120-081340 (wip/beams-leak alone) dropped** (lane B's splitters22, 2026-11-20; lock still held): e2e shard 6/10 (roulette, vehicles, zombies, characters, party) died with no log at the job limit on both attempts. `vehicles`' passenger and troop-truck checks press H on a frozen clock, the same pointer-lock flood; 7c24f804 calls `playWithoutMouse` there too (vehicles passes locally on the headless shell). Re-checking `wip/beams-leak` at 0dcaf588 on `check/beams-leak`; the train runs again when it's green.
+
 **Landed: dual wielding steps 2 and 3 in a train** (`check/train-20261120-070215` at 7ecb896d, run 44692023178, green on attempt 1; `wip/fable-dual-2` then `wip/fable-dual-3`; main fast-forwarded to it; lane B's splitters22, 2026-11-20; lock released). Still hidden. Open owner questions from step 3: same-tick double kick (Sawed-Off pair 9.6° vs 3.4°; ★ ease it now) and the pair pose (2 cm wider and higher; ★ keep). Next: the Pistol pickup in MapMaker, then step 4 (third person).
 
 **Landed: Freaky Frida's re-import, alone** (`check/frida-reimport` at a7f704ab, run 44655102201, green on attempt 2 after one re-run of e2e shard 6/14, cancelled at the 45-minute limit with no log; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-20; lock released).
