@@ -73,8 +73,9 @@ describe('props whose collision filled their openings (fixture)', () => {
     expect(voxel.filter((id) => !fixture.changed[id]), 'voxel props missing from fixtures/prop-openings.json').toEqual([]);
     // The owner's screenshots: the ruins' arches, windows and holes, and the giant root on Fernwood Moon.
     for (const id of ['prop.rn_arch_round', 'prop.rn_arch_gothic', 'prop.rn_wall_hole', 'prop.rn_wall_broken', 'prop.rn_wall_arch_ivy', 'prop.dg_arch', 'prop.jg_giant_root']) expect(fixture.changed[id]?.to, id).toBe('voxel');
-    // Trees whose column stood beside the trunk (Fernwood Moon's broadleaf trees and pines).
-    for (const id of ['prop.nt_common_tree', 'prop.nt_birch', 'prop.nt_pine_tall', 'prop.nt_willow', 'prop.nc_streetlight', 'prop.flag']) expect(fixture.changed[id]?.to, id).toBe('trunk');
+    // Props whose column stood beside the pole (Fernwood Moon's broadleaf trees and pines were the first; their pack
+    // has left the build since).
+    for (const id of ['prop.nc_streetlight', 'prop.flag']) expect(fixture.changed[id]?.to, id).toBe('trunk');
   });
 
   it("lets straight lines through what each one's old collision filled", () => {
@@ -220,14 +221,14 @@ describe('openings in play', () => {
     nav.destroy();
   });
 
-  it('trunk columns stand on the trunk: a shot beside a broadleaf tree passes, one at its trunk stops', () => {
+  it('trunk columns stand on the trunk: a shot beside a street light passes, one at its pole stops', () => {
     const map = makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
-    map.entities.push({ id: 'tree', kind: 'prop', model: 'prop.nt_common_tree', position: [0, 0, 0], yaw: 0, scale: 1, solid: true, tint: null });
+    map.entities.push({ id: 'tree', kind: 'prop', model: 'prop.nc_streetlight', position: [0, 0, 0], yaw: 0, scale: 1, solid: true, tint: null });
     const physics = new PhysicsWorld(buildMapGeometry(map));
-    const def = getProp('prop.nt_common_tree')!;
+    const def = getProp('prop.nc_streetlight')!;
     const trunk = def.boxes![0]!;
     const tz = (trunk[2] + trunk[5]) / 2;
-    // The old column stood in the footprint's middle (z = 0), half a metre off the trunk: rounds there pass now.
+    // The old column stood in the footprint's middle (z = 0), most of a metre off the pole: rounds there pass now.
     expect(Math.abs(tz)).toBeGreaterThan(0.4);
     expect(physics.raycastHit({ x: -3, y: 1, z: 0.1 }, { x: 1, y: 0, z: 0 }, 6)?.dist ?? 99).toBeGreaterThan(5);
     const hit = physics.raycastHit({ x: -3, y: 1, z: tz }, { x: 1, y: 0, z: 0 }, 6)!;

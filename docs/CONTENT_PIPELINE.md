@@ -902,7 +902,7 @@ A door that never opens is a prop, not a door entity: no logic, nothing each tic
 | Family | Collision | Where its centre goes |
 |---|---|---|
 | `kit.door.oak` Oak Door (shut) | its box, 2 × 2.6 × 0.16 m: a closed room | the middle of the wall, in the doorway |
-| `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway (`bounds: "within"`: the leaf reaches 0.8 m into the room and does not collide) | the same |
+| `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway, and its leaf at its angle (asset version 2; owner, 2026-11-19, "2b"): a box with a seventh number, its own turn (`PropDefinition.boxes`), reaching 0.8 m into the room; the turned leaf is left out of the bots' navmesh (`WorldBox.navThrough`), the slab keeps the room closed (`bounds: "within"`) | the same |
 | `kit.door.oak_open` (open, 90°) | its leaf (asset version 2; owner, 2026-11-19: open doors are cover): a 7 cm box from the floor to the leaf's top, square into the room on the hinge side; the doorway beside it stays clear. A `passage` (sim/passages.ts) takes bots through, and the leaf is left out of the navmesh (`WorldBox.navThrough`), whose 0.8 m keep-off would otherwise close the room | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
 
 The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. Variants are leaves: `oak`

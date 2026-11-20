@@ -541,10 +541,12 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
       e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw, ...lattice } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, ...lattice };
     if (def.boxes) {
-      for (const [x0, y0, z0, x1, y1, z1] of def.boxes) {
+      for (const [x0, y0, z0, x1, y1, z1, own] of def.boxes) {
         const cx = ((x0 + x1) / 2) * e.scale;
         const cz = ((z0 + z1) / 2) * e.scale;
-        out.push(turned(x + cx * c + cz * s, z - cx * s + cz * c, ((x1 - x0) / 2) * e.scale, ((z1 - z0) / 2) * e.scale, y + y0 * e.scale, y + y1 * e.scale));
+        const b = turned(x + cx * c + cz * s, z - cx * s + cz * c, ((x1 - x0) / 2) * e.scale, ((z1 - z0) / 2) * e.scale, y + y0 * e.scale, y + y1 * e.scale);
+        // A part turned in the prop (an ajar door's leaf): its own turn on the prop's, and left out of the navmesh.
+        out.push(own ? { ...b, yaw: (e.yaw ?? 0) + own, navThrough: true } : b);
       }
       continue;
     }

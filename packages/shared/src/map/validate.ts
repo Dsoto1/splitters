@@ -30,6 +30,7 @@ import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
 import { withTileAliases } from './setPieceAliases.ts';
 import { withPropAliases } from './propAliases.ts';
+import { withNatureAliases } from './natureAliases.ts';
 import { retiredMountIssues, withMountAliases } from './mountAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
@@ -100,6 +101,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
     const r = carried.metadata.release;
     if (carried !== asOld && r) parsed.data = { ...parsed.data, metadata: { ...parsed.data.metadata, release: { ...r, contentHash: mapContentHash(parsed.data) } } };
   }
+  // A natural prop whose pack left the build (natureAliases.ts) is its generated species from here on, in MapMaker too.
+  parsed.data = withNatureAliases(parsed.data);
   const library = opts.library ?? builtInSetPieces();
   // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
