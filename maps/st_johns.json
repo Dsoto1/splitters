@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_3kkxnqmjfszlisjj",
-      "revision": 32,
-      "contentHash": "sha256:49a2d183d041166760658a66c4f1f70e3a292614e9efc808e3b6e3bbf772c14b",
+      "versionId": "v_agvxb4bjyqyrnk2t",
+      "revision": 34,
+      "contentHash": "sha256:1c7aaa1f2b60ac346094ae87af1fdd370fe7dcdd2b0fadbe6d8ac1ee4c9aa0a6",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:30:04.371Z"
+      "releasedAt": "2026-11-20T23:25:43.047Z"
     }
   },
   "classicStructure": {
@@ -38081,14 +38081,14 @@
       "position": [
         12.25,
         4,
-        -79.05
+        -78.975
       ],
       "name": "Upper door wall",
       "kind": "block",
       "size": [
         0.5,
         3.5,
-        6.1
+        5.95
       ],
       "yaw": 0,
       "material": "core.pbr_collegiate_rubble",
@@ -38104,14 +38104,14 @@
       "position": [
         12.25,
         4,
-        -83.65
+        -83.725
       ],
       "name": "Upper door wall",
       "kind": "block",
       "size": [
         0.5,
         3.5,
-        0.7
+        0.55
       ],
       "yaw": 0,
       "material": "core.pbr_collegiate_rubble",
@@ -38134,7 +38134,7 @@
       "size": [
         0.5,
         0.9,
-        1.2
+        1.5
       ],
       "yaw": 0,
       "material": "core.pbr_collegiate_rubble",
@@ -38148,7 +38148,7 @@
     {
       "id": "sp_setpiece_g830vbnlk5_27",
       "position": [
-        12.6,
+        12.75,
         4,
         -82.7
       ],
