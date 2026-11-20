@@ -1005,10 +1005,12 @@ under the gun, the gun out in front of the chest, the hands janky; it had been s
   times an open hand's). A handguard's support hand closes to 0.6 of the full curl (`LONG_SUPPORT_CURL`): fingers
   up round its side from a palm on its underside. The shooting thumb lies over the grip along its far side
   (`LONG_THUMB`), not stood up beside the gun. A pistol held round its grip in first person keeps its own close.
-- **Checked:** the e2e flow `characters4` poses every character in Character Select's pose with the rifle and the
-  shotgun (every fourth the SMG and the sniper rifle too) and checks the drawn support hand lies where the animator
+- **Checked:** the e2e flow `characters4` poses every character in Character Select's pose with the rifle (the
+  shotgun on every second, the SMG and the sniper rifle on every eighth) and checks the drawn support hand lies where the animator
   put it on the handguard, within reach and not off the guard's end (`__grips.support()`); the unit test
-  `guardUnderside.test.ts` finds a guard under every long gun's support point. A long gun's barrel line keeps
+  `guardUnderside.test.ts` finds a guard under every long gun's support point.
+
+A long gun's barrel line keeps
 `HEAD_CLEAR` (0.15 m) from the head's joint: the stock drops (up to 5 cm) where
 a big helmet or a short neck put the head by the gun (Capt. Nova).
 

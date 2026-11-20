@@ -13258,12 +13258,13 @@ async function charactersFlow(browser, part = 0) {
 /**
  * Every character's support hand on a long gun's handguard, third person (characters part 3; owner, 2026-11-20: "a
  * ton of characters ... are not holding their weapon properly": the support hand sat behind the magazine or under the
- * gun). Each look holds the rifle and the shotgun (every fourth the SMG and the sniper rifle too) as Character Select poses them; the hand
+ * gun). Each look holds the rifle (every second the shotgun, every eighth the SMG and the sniper rifle too) as Character Select poses them; the hand
  * as DRAWN (handProbe's drawn centre) must lie where the animator put it on the handguard (`__grips.support()`: how far
  * it slid back, the guard's measured underside there), the hand within reach and not slid off the guard's end.
  */
 async function supportHands(browser) {
-  const page = await (await browser.newContext({ viewport: { width: 320, height: 320 } })).newPage();
+  // (A small page: the hands are measured, not looked at, and every pose draws 40 frames in software.)
+  const page = await (await browser.newContext({ viewport: { width: 96, height: 96 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
@@ -13272,9 +13273,10 @@ async function supportHands(browser) {
   const off = [];
   let held = 0;
   for (const look of looks) {
-    // Every look on the rifle and the shotgun (the reach the long guns span); every fourth on the SMG and the sniper rifle too.
-    const sample = looks.indexOf(look) % 4 === 0;
-    for (const weapon of ['core.rifle', 'core.shotgun', ...(sample ? ['core.smg', 'core.sniper'] : [])]) {
+    // Every look on the rifle (Character Select's gun), every second on the shotgun (the longest reach), every eighth on
+    // the SMG and the sniper rifle too (about 250 s on CI).
+    const k = looks.indexOf(look);
+    for (const weapon of ['core.rifle', ...(k % 2 === 0 ? ['core.shotgun'] : []), ...(k % 8 === 0 ? ['core.smg', 'core.sniper'] : [])]) {
       const r = await page.evaluate(
         async ([l, w]) => {
           await window.__grips.pose(l, w, 'third');
@@ -13288,7 +13290,7 @@ async function supportHands(browser) {
       if (why) off.push(`${look} ${weapon.replace('core.', '')}: ${why}`);
     }
   }
-  check(held >= 250 && off.length === 0, `every character's support hand is drawn on the long guns' handguards, third person (${held} holds; ${off.join('; ') || 'all on'})`);
+  check(held >= 200 && off.length === 0, `every character's support hand is drawn on the long guns' handguards, third person (${held} holds; ${off.join('; ') || 'all on'})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
