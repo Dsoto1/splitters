@@ -159,8 +159,8 @@ the scenes its moments need:
 | `flashing` | arc, fence, blast, cookoff | |
 | `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
 | `flashing3` | rain, snow, loot, fixtures, status | |
-| `flashing4` | blood, alarm | lowhealth, scope, hitkick |
-| `flashing5` | | shelves, tunnel, lootlight |
+| `flashing4` | blood, alarm | lowhealth, scope |
+| `flashing5` | | shelves, tunnel, lootlight, hitkick |
 
 **A new moment goes in the shortest flow** (`e2e/timings.json`): add it to the scene, then its name to that flow's
 list in `FLASHING_PARTS` (a moment in no flow fails the check). All five are mapped wherever the check is

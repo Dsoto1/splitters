@@ -12191,14 +12191,15 @@ const flashingFlow = (part) => async (browser) => {
 
 /**
  * The flicker check's flows and their moments, by scene (each part's played in the scene's order). From the moments'
- * times on CI run 44700870108 (seconds): about 290 s each with a scene's start (some 20 s).
+ * times on CI run 44700870108 (seconds), a scene's start (some 20 s) and its first moment's warm-up (some 40 s): about
+ * 310-340 s each.
  */
 const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
-  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'hitkick'] },
-  flashing5: { day: ['shelves', 'tunnel', 'lootlight'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick'] },
 };
 
 /**
