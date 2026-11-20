@@ -1,8 +1,9 @@
 // Slim room doors (owner, 2026-11-15: "the doors to each room … are a bit wide, we should move the frame in"): the dorm
 // pieces' Room doors option (map format v42, set piece options) and the passage bots walk through (sim/passages.ts).
-// Each room's 2 m doorway is brought in to 1.2 m (the piers either side 0.4 m wider, or a jamb in a thin wall), with a 1.2 m Oak Door in it. 1.2 m is narrower
+// Each room's 2 m doorway is brought in to 1.5 m (the piers either side 0.25 m wider, or a jamb in a thin wall), with a 1.5 m Oak Door in it (1.2 m until
+// 2026-11-20: "the dorm doors should be slightly wider, they now look too slim"). 1.5 m is still narrower
 // than the navmesh keeps open (it stays 0.8 m off walls), so the open slim door is a passage: a walking link through
-// its frame. Here: the option swaps exactly the door parts; the doorway is 1.2 m; without the links the rooms are cut
+// its frame. Here: the option swaps exactly the door parts; the doorway is 1.5 m; without the links the rooms are cut
 // off and with them every open room is reached in every turn; a body that follows the route's corners walks in and
 // out; and bots in a match, ordered to hold in a room, get there.
 import { readFileSync } from 'node:fs';
@@ -70,8 +71,8 @@ const miss = (nav: NavWorld, a: Vec3, b: Vec3): number => {
 const room = (cx: number, north: boolean): [number, number, number] => [cx, 0, north ? 8.3 : -0.3];
 
 describe('the slim door props', () => {
-  it('are the Oak Door 1.2 m wide: shut and ajar collide as the frame, open collides as its leaf and is a passage', () => {
-    expect(getKitFamily('kit.door.oak_slim_open')?.passage).toEqual({ frame: -0.52 });
+  it('are the Oak Door 1.5 m wide: shut and ajar collide as the frame, open collides as its leaf and is a passage', () => {
+    expect(getKitFamily('kit.door.oak_slim_open')?.passage).toEqual({ frame: -0.67 });
     expect(getKitFamily('kit.door.oak_slim')?.passage).toBeUndefined();
     expect(getKitFamily('kit.door.oak_slim_ajar')?.passage).toBeUndefined();
     // The wide open door is a passage too since its leaf collides (doorLeaves.test.ts).
@@ -80,9 +81,9 @@ describe('the slim door props', () => {
   it('a passage is a link each way through the frame, PASSAGE_REACH either side, turned with the prop', () => {
     const links = passageLinks([{ kind: 'prop', model: 'kit.door.oak_slim_open', position: [10, 4, 20], yaw: Math.PI / 2, scale: 1 }]);
     expect(links).toHaveLength(2);
-    // Yaw a quarter: the prop's z is the map's x; the frame 0.52 m behind its centre.
-    expect(links[0]!.start.x).toBeCloseTo(10 - 0.52 - PASSAGE_REACH, 5);
-    expect(links[0]!.end.x).toBeCloseTo(10 - 0.52 + PASSAGE_REACH, 5);
+    // Yaw a quarter: the prop's z is the map's x; the frame 0.67 m behind its centre.
+    expect(links[0]!.start.x).toBeCloseTo(10 - 0.67 - PASSAGE_REACH, 5);
+    expect(links[0]!.end.x).toBeCloseTo(10 - 0.67 + PASSAGE_REACH, 5);
     expect(links[0]!.start.z).toBeCloseTo(20, 5);
     expect(links[0]!.start.y).toBe(4);
     expect(links[1]).toEqual({ start: links[0]!.end, end: links[0]!.start });
@@ -107,7 +108,7 @@ describe('the Room doors option', () => {
       expect(n, id).toBeGreaterThan(0);
       expect(doors(slim.entities, false), id).toHaveLength(0);
       expect(doors(slim.entities, true), id).toHaveLength(n);
-      // The closet-deep walls' piers each side of a doorway are swapped for ones 0.4 m wider (as many blocks); the
+      // The closet-deep walls' piers each side of a doorway are swapped for ones 0.25 m wider (as many blocks); the
       // office bay's thin walls get a jamb either side of each door instead.
       expect(slim.entities.filter((e) => e.kind === 'block').length - wide.entities.filter((e) => e.kind === 'block').length, id).toBe(id === 'setpiece.dorm_office_bay' ? 2 * n : 0);
       // The tiles and everything else stay as they are.
@@ -123,15 +124,15 @@ describe('the Room doors option', () => {
 });
 
 describe('slim doorways', () => {
-  it('are 1.2 m between the jambs, and the closed rooms stay shut', () => {
+  it('are 1.5 m between the jambs, and the closed rooms stay shut', () => {
     const map = mapOf([bay(0, SLIM)]);
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
-    // Across the doorway in the wall's depth (z 5.5), 1 m up: from its middle, the jamb 0.6 m on the latch side; on the
-    // hinge side the open leaf, which collides (doorLeaves.test.ts), 0.454 m (a 1.05 m way through for a 0.8 m body).
+    // Across the doorway in the wall's depth (z 5.5), 1 m up: from its middle, the jamb 0.75 m on the latch side; on the
+    // hinge side the open leaf, which collides (doorLeaves.test.ts), 0.604 m (a 1.35 m way through for a 0.8 m body).
     for (const cx of [-2, 2]) {
       const mid = { x: cx, y: 1, z: 5.5 };
-      expect(physics.raycastWorld(mid, { x: 1, y: 0, z: 0 }, 2)).toBeCloseTo(0.454, 2);
-      expect(physics.raycastWorld(mid, { x: -1, y: 0, z: 0 }, 2)).toBeCloseTo(0.6, 2);
+      expect(physics.raycastWorld(mid, { x: 1, y: 0, z: 0 }, 2)).toBeCloseTo(0.604, 2);
+      expect(physics.raycastWorld(mid, { x: -1, y: 0, z: 0 }, 2)).toBeCloseTo(0.75, 2);
     }
   });
 

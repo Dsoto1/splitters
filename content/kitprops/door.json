@@ -1,5 +1,5 @@
 {
-  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut collides as the frame's slab (a closed room), ajar as that slab and its leaf at its angle (owner, 2026-11-19, \"2b\"), open as its leaf standing square into the room (cover to hide behind; the doorway beside it stays clear: owner, 2026-11-19). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.2 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.2 m doorway is narrower than the navmesh keeps open.",
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut collides as the frame's slab (a closed room), ajar as that slab and its leaf at its angle (owner, 2026-11-19, \"2b\"), open as its leaf standing square into the room (cover to hide behind; the doorway beside it stays clear: owner, 2026-11-19). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.5 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide; 2026-11-20: 1.2 m looked too slim); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.5 m doorway is still narrower than the navmesh keeps open (1.6 m).",
   "type": "door",
   "props": [
     {
@@ -281,12 +281,13 @@
       "id": "kit.door.oak_slim",
       "displayName": "Slim Oak Door (shut)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version: the Oak Door made to a room door's width, 1.2 × 2.6 × 0.16 m, for a doorway brought in by jambs (a set piece's slim room doors): the same boards, strap hinges, ring handles and four leaves. Collides as its box: a closed room."
+        "1": "First version: the Oak Door made to a room door's width, 1.2 × 2.6 × 0.16 m, for a doorway brought in by jambs (a set piece's slim room doors): the same boards, strap hinges, ring handles and four leaves. Collides as its box: a closed room.",
+        "2": "Wider: 1.5 × 2.6 × 0.16 m (was 1.2 m; owner, 2026-11-20: \"the dorm doors should be slightly wider, they now look too slim\"), for the doorway brought in to 1.5 m."
       },
       "size": [
-        1.2,
+        1.5,
         2.6,
         0.16
       ],
@@ -370,15 +371,16 @@
       "id": "kit.door.oak_slim_ajar",
       "displayName": "Slim Oak Door (ajar)",
       "category": "Furniture",
-      "assetVersion": 2,
+      "assetVersion": 3,
       "notes": {
         "1": "First version: the Slim Oak Door standing 25° open into the room (+z). Collides as the frame's slab in the doorway, as the shut door does (a closed room); the leaf reaches 0.44 m into the room and does not collide.",
-        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players."
+        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players.",
+        "3": "Wider: 1.5 m (was 1.2 m; owner, 2026-11-20: \"slightly wider\"); the leaf reaches 0.6 m into the room at its 25°, its box 1.3 m deep. Collides as the slab and the leaf at its angle, as before."
       },
       "size": [
-        1.2,
+        1.5,
         2.6,
-        1.0
+        1.3
       ],
       "bounds": "within",
       "surface": "wood",
@@ -461,19 +463,20 @@
       "id": "kit.door.oak_slim_open",
       "displayName": "Slim Oak Door (open)",
       "category": "Furniture",
-      "assetVersion": 2,
+      "assetVersion": 3,
       "notes": {
         "1": "First version: the Slim Oak Door standing open against its hinge jamb, its frame 0.52 m behind the prop's centre (−z). No collision, and a passage (frame at z −0.52): 1.2 m is narrower than the navmesh keeps open (it stays 0.8 m off walls), so bots walk through it on a link from 1.6 m before the frame to 1.6 m beyond (sim/passages.ts).",
-        "2": "Collides as its open leaf (a box from the floor to the leaf's top, square into the room on the hinge side): cover to hide behind, wood that rounds go through; the doorway stays clear (owner, 2026-11-19: walked through the dorm doors)."
+        "2": "Collides as its open leaf (a box from the floor to the leaf's top, square into the room on the hinge side): cover to hide behind, wood that rounds go through; the doorway stays clear (owner, 2026-11-19: walked through the dorm doors).",
+        "3": "Wider: 1.5 m (was 1.2 m; owner, 2026-11-20: \"slightly wider\"); its frame 0.67 m behind the prop's centre (was 0.52), so the pieces stand it 0.15 m further into the room and the frame stays in the wall. Still a passage: 1.5 m is narrower than the navmesh keeps open (1.6 m)."
       },
       "size": [
-        1.2,
+        1.5,
         2.6,
-        1.2
+        1.5
       ],
       "bounds": "within",
       "passage": {
-        "frame": -0.52
+        "frame": -0.67
       },
       "surface": "wood",
       "detail": "wood",
@@ -481,7 +484,7 @@
         "kind": "door",
         "swing": 90,
         "leaf": "plank",
-        "back": 0.52
+        "back": 0.67
       },
       "lods": [
         {

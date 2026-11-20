@@ -920,11 +920,12 @@ one tall pane, an upright pull bar). Generator settings `leaf: 'framed' | 'shop'
 A door that opens by itself is still the Door entity; a new door style there would be a schema change.
 
 **Slim Oak Doors** (St. John's step 3; owner, 2026-11-15: the room doors were a bit wide): `kit.door.oak_slim`
-(shut), `kit.door.oak_slim_ajar` and `kit.door.oak_slim_open`, the same door and leaves 1.2 m wide (sizes 1.2 × 2.6 ×
-0.16, × 1.0 and × 1.2 m; the open one's frame 0.52 m behind its centre). They stand in a doorway brought in to 1.2 m
-(the dorm pieces' Room doors option, Slim: the piers either side 0.4 m wider). 1.2 m is narrower than the bots'
+(shut), `kit.door.oak_slim_ajar` and `kit.door.oak_slim_open`, the same door and leaves 1.5 m wide (sizes 1.5 × 2.6 ×
+0.16, × 1.3 and × 1.5 m; the open one's frame 0.67 m behind its centre). They stand in a doorway brought in to 1.5 m
+(the dorm pieces' Room doors option, Slim: the piers either side 0.25 m wider). They were 1.2 m until 2026-11-20 (owner:
+"the dorm doors should be slightly wider, they now look too slim"). 1.5 m is still narrower than the bots'
 navmesh keeps open (it stays 0.8 m off walls, so it closes any gap under about 1.8 m), so the open slim door is a
-**passage**: its family says `"passage": { "frame": -0.52 }` (the frame's z in the prop's own frame), and
+**passage**: its family says `"passage": { "frame": -0.67 }` (the frame's z in the prop's own frame), and
 `sim/passages.ts` gives a straight walking link each way through it, from 1.6 m before the frame to 1.6 m beyond
 (`navLinks`). A body (0.4 m round) walks through on it; a shut or ajar door says nothing (no way in). Any kit family
 can say `passage` for a doorway of its own narrower than the navmesh.
