@@ -1,7 +1,7 @@
 // Change-based selection (e2e/flowMap.mjs) and shard balancing (e2e/shards.mjs).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS, MAX_NAMED_MAPS, mapPartOf, selectForPaths, unitJobs, unitTestPaths } from '../../../e2e/flowMap.mjs';
+import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLASHING_FLOWS, FLOWS, MAP_FLOWS, MAP_PARTS, MAX_NAMED_MAPS, mapPartOf, selectForPaths, unitJobs, unitTestPaths } from '../../../e2e/flowMap.mjs';
 import { assignShards, durationOf, loadTimings, planShards, shardCount, withNamedMaps, MAX_SHARDS, PER_MAP_S, TARGET_SHARD_S, UNKNOWN_FLOW_S } from '../../../e2e/shards.mjs';
 import { mergeTimings } from '../timings.mjs';
 
@@ -222,7 +222,10 @@ describe('change-based selection', () => {
     const src = readFileSync(new URL('../../../e2e/flowMap.mjs', import.meta.url), 'utf8');
     const named = [...src.matchAll(/'([a-z0-9]+)'/g)].map((m) => m[1]);
     const runner = readFileSync(new URL('../../../e2e/run.mjs', import.meta.url), 'utf8');
-    for (const f of FLOWS.filter((f) => !MAP_FLOWS.includes(f) && !CHARACTER_FLOWS.includes(f))) expect(runner).toMatch(new RegExp(`\\b${f}: \\w+Flow\\b`));
+    for (const f of FLOWS.filter((f) => !MAP_FLOWS.includes(f) && !CHARACTER_FLOWS.includes(f) && !FLASHING_FLOWS.includes(f))) expect(runner).toMatch(new RegExp(`\\b${f}: \\w+Flow\\b`));
+    // (The flicker check's flows: one entry each in FLASHING_PARTS, their moments by scene.)
+    expect(runner).toMatch(/FLASHING_FLOWS\.map\(\(name\) => \[name, flashingFlow\(name\)\]\)/);
+    for (const f of FLASHING_FLOWS) expect(runner).toMatch(new RegExp(`\\n  ${f}: \\{ (night|day): \\[`));
     expect(runner).toMatch(/CHARACTER_FLOWS\.map\(\(name, part\) => \[name, \(b\) => charactersFlow\(b, part\)\]\)/);
     expect(new Set(FLOWS).size).toBe(FLOWS.length);
     expect(named.filter((n) => FLOWS.includes(n)).length).toBeGreaterThan(20);
