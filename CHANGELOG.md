@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **A Pistol pickup in MapMaker.** Maps can place a Pistol (palette, Weapons); it lies only where it is placed (random pickups never roll it), and for now walking over it with your own Pistol gives Pistol ammunition.
 - **Grenades going off right in front of you no longer flicker with Reduce flashing on.** A blast close to the camera is drawn smaller as well as dimmer, so you see the fireball in front of you instead of standing inside it.
 - **Freaky Frida's shoulders hold together.** She is rebuilt from the owner's own rigged Meshy model, and her vest no longer lifts or opens at the back of her shoulders when she holds a gun.
 - **The sniper glint is exact.** A scope glints only while its owner is really looking through it (aim held, gun ready), not on a guess from how they stand.

@@ -2191,9 +2191,12 @@ come from `akimboOf` through five small helpers in `gunplay.ts` (`akimboCone`, `
 - **Making a pair.** A person (never a bot) who walks over a pickup of an eligible gun they hold, or takes a drop of
   one, holds a pair. A pickup's second gun has a full magazine and the pickup still gives its ammunition (a pair is
   made even with a full reserve); a drop's second gun has the drop's magazine, its reserve tops yours up and the
-  drop is gone. A third gun is ammunition. A loadout never grants a pair. **The Pistol has no pickup and never
-  drops** (it is what everyone starts with), so today only the Machine Pistol, the Pulse Pistol and the Sawed-Off
-  can be paired in play; a Pistol pair waits for a way to find a second Pistol (an owner's decision).
+  drop is gone. A third gun is ammunition. A loadout never grants a pair. **The Pistol's pickup** (`core.weapon_pistol`, owner, 2026-11-20) lies only where
+  a map maker places one in MapMaker (Weapons group): random pickups, the host's mix-up and weapon sets never roll it
+  (`rolls: false` in content/pickups.json), so no seeded match rolls differently (placed, it is mixed up like any weapon pickup unless kept
+  fixed). Walking over it with the Pistol
+  everyone starts with makes the Pistol pair; while dual wielding is off it is the Pistol's ammunition, as any
+  same-gun pickup. The Pistol still never drops from a body that started with it.
 - **State.** `WeaponState.off` is the second gun: its magazine (and `unchambered`, and `away` when put away) over
   the weapon's one reserve. The second gun has its own cooldown, semi-automatic latch and reload on the player
   (`fireCooldown2`, `semiLatch2`, `reload2`, `reloadTicks2`). **One `GunState` for both**: every round of either gun
