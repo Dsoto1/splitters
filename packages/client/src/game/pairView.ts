@@ -131,7 +131,7 @@ export class PairFlashGate {
  * and out to the gun's own side (negative: in toward the middle). Each gun is held in one hand at a little under
  * arm's length, the two about shoulder width apart and level with the aim, under the line of the eyes.
  */
-export const PAIR_HOLD_3P = { ahead: 0.74, down: 0.24, out: -0.06 } as const;
+export const PAIR_HOLD_3P = { ahead: 0.86, down: 0.2, out: -0.06 } as const;
 
 /**
  * A gun of a pair held in third person, `dip` (0..1) of the way into its lowered place (the second gun before it is
@@ -141,4 +141,23 @@ export const PAIR_HOLD_3P = { ahead: 0.74, down: 0.24, out: -0.06 } as const;
 export function pairHold3p(dip: number): { ahead: number; down: number; out: number; pitch: number; roll: number } {
   const a = easeUp(Math.max(0, Math.min(1, dip)));
   return { ahead: PAIR_HOLD_3P.ahead - a * 0.3, down: PAIR_HOLD_3P.down + a * 0.32, out: PAIR_HOLD_3P.out + a * 0.04, pitch: a * 0.7, roll: a * 0.35 };
+}
+
+/**
+ * The shooters in a message's events whose pair's two guns both fired in it (a `shot` with `off` and one without):
+ * other players' rounds come a snapshot at a time, so their two guns' rounds of a tick (or two) arrive together, and
+ * their shared flash under Reduce flashing must take turns between the guns, as yours does (PairFlashGate `together`),
+ * or the gun listed first would take every flash.
+ */
+export function bothGunsFired(events: readonly { e: string }[]): Set<number> {
+  const first = new Set<number>();
+  const second = new Set<number>();
+  for (const ev of events) {
+    if (ev.e !== 'shot') continue;
+    const shot = ev as { e: 'shot'; s: number; off?: 1 };
+    (shot.off ? second : first).add(shot.s);
+  }
+  const both = new Set<number>();
+  for (const s of second) if (first.has(s)) both.add(s);
+  return both;
 }

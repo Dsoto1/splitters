@@ -1572,13 +1572,15 @@ export class GameView {
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
-  remoteFlash(slot: number, def?: WeaponDefinition, alt = false, off = false, gated = false): void {
+  remoteFlash(slot: number, def?: WeaponDefinition, alt = false, off = false, gated = false, together = false): void {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
     // A pair's second gun flashes at its own muzzle; with Reduce flashing on the pair shares one flash (PairFlashGate:
     // never both at once, never more often than one gun's rounds). `gated`: the caller's gate already chose (yours).
     const pair = a.pair?.muzzle && a.pair.up > 0 ? a.pair : null;
-    if (pair && def && !gated && !pair.gate.allow({ tick: Math.round(performance.now() / (1000 / TICK_RATE)), gun: off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: true, calm: reduceFlashing() })) {
+    // (Their rounds come a snapshot at a time: the tick is this page's clock's, and both guns' rounds in one message
+    // are `together`, so the flash takes turns between the guns.)
+    if (pair && def && !gated && !pair.gate.allow({ tick: Math.round(performance.now() / (1000 / TICK_RATE)), gun: off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: true, calm: reduceFlashing(), together })) {
       this.remotePairFlashes.skipped++;
       return;
     }

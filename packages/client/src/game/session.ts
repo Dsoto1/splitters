@@ -234,7 +234,7 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
 import { opticOf } from './optics.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
-import { gunPan, reloadDipAmount, shotGun } from './pairView.ts';
+import { bothGunsFired, gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
@@ -2390,6 +2390,8 @@ export class GameSession {
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;
         const posesNow = () => (poses ??= this.interp.sample());
+        // Dual wielding: the shooters whose two guns both fired in this message (their flashes take turns: remoteFlash).
+        const pairedShots = bothGunsFired(msg.ev);
         for (const ev of msg.ev) {
           // Random characters: this life's look (the roster has the one they had when it was sent).
           if (ev.e === 'spawn' && this.rouletteHud) {
@@ -2485,7 +2487,7 @@ export class GameSession {
               this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
-              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt, !!ev.off);
+              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt, !!ev.off, false, pairedShots.has(ev.s));
             }
           } else if (ev.e === 'impact') {
             // A bullet that was in flight landed.

@@ -106,7 +106,8 @@ async function holdBots(page) {
   await sim(page, (m) => {
     for (const c of m.combatants()) {
       if (!c.bot || c.queue.held) continue;
-      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      // (A flow may make a held bot fire, `queue.fire` its buttons, facing `queue.yaw`: the flicker check's `pairtp`.)
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: c.queue.fire ?? 0, ...(c.queue.yaw !== undefined ? { yaw: c.queue.yaw } : {}) })));
       c.queue.held = true;
     }
   });
@@ -12217,7 +12218,7 @@ const flashingFlow = (part) => async (browser) => {
  * 310-340 s each.
  */
 const FLASHING_PARTS = {
-  flashing: { night: ['arc', 'fence', 'blast', 'cookoff'] },
+  flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
@@ -12560,6 +12561,36 @@ async function flashingScene(browser, scene, names) {
       self.__pairPin = setInterval(() => w.off && (w.off.mag = w.def.magazine), 1000 / 60);
       return true;
     }, on);
+  /**
+   * The first bot's pair of machine pistols (kept full each tick), both triggers held, side on to you (facing +x); or
+   * its second gun taken away and its triggers let go. Give yourself the machine pistol first (its weapon code).
+   */
+  const botPairOf = (on) =>
+    sim(page, (m, me, on) => {
+      clearInterval(self.__botPairPin);
+      const b = m.combatants().find((c) => c.bot);
+      const code = [...me.weapons.entries()].find(([, w]) => w.def.id === 'core.machine_pistol')?.[0];
+      if (!b || code === undefined) return false;
+      if (!on) {
+        b.queue.fire = 0;
+        const w = b.weapons.get(code);
+        return w ? delete w.off : true;
+      }
+      const def = me.weapons.get(code).def;
+      if (!b.weapons.has(code)) b.weapons.set(code, { def, mag: def.magazine, reserve: def.reserveMax, alt: 0 });
+      b.current = code;
+      b.raiseTicks = 0;
+      const w = b.weapons.get(code);
+      if (!w.off) m.makePair(b, w, def.magazine);
+      self.__botPairPin = setInterval(() => {
+        w.mag = def.magazine;
+        if (w.off) w.off.mag = def.magazine;
+        w.reserve = def.reserveMax;
+      }, 1000 / 60);
+      b.queue.fire = 2 | 32;
+      b.queue.yaw = Math.PI / 2;
+      return true;
+    }, on);
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -12692,6 +12723,30 @@ async function flashingScene(browser, scene, names) {
       // Off: every round of both guns flashes. On: both hands still flash, in turn, about half the rounds left out
       // (one gun's worth drawn: 20 a second over the 2.3 s the triggers are held).
       sees: (on, s) => s.shown && s.right > 5 && s.left > 5 && (on ? s.skipped > 10 && s.right + s.left <= 50 && Math.abs(s.right + s.left - s.skipped) <= 6 : s.skipped === 0),
+    },
+    {
+      // Dual wielding seen by everyone else (step 4): another player's pair, a flash at each gun's muzzle. With the
+      // setting on their pair shares one flash too (view.ts remoteFlash, PairFlashGate), as yours does in `pair`.
+      name: 'pairtp',
+      label: "another player's pair of machine pistols 3 m in front, side on, both triggers held, in the dark room",
+      weapon: 'core.machine_pistol',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -28.5]),
+      bots: [[0, 0, -28.5]],
+      before: async () => {
+        await botPairOf(true);
+        for (let i = 0; i < 12 && !(await page.evaluate(() => [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) >= 1))); i++) await step(5);
+        await page.evaluate(() => (window.__pairTpFlashes = { ...window.__cs.view.remotePairFlashes }));
+      },
+      after: () => botPairOf(false),
+      seen: () =>
+        page.evaluate(() => {
+          const f = window.__cs.view.remotePairFlashes;
+          const b = window.__pairTpFlashes;
+          return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, shown: [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) > 0) };
+        }),
+      // Off: both guns flash. On: both still flash, in turn, and rounds are left out.
+      sees: (on, s) => s.shown && s.right > 3 && s.left > 3 && (on ? s.skipped > 3 : s.skipped === 0),
     },
     {
       name: 'jackpot',
