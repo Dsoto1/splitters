@@ -248,12 +248,13 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
    * Select shows it (the audit's views: the side is where a gun at the face shows; the front foreshortens a gun
    * pointed at the camera).
    */
-  async function upper(from: 'side' | 'front'): Promise<void> {
+  async function upper(from: 'side' | 'front' | 'support'): Promise<void> {
     const j = joints?.get('upperarm_r');
     j?.computeWorldMatrix(true);
     const side = Math.sign(j?.getAbsolutePosition().x ?? 1) || 1;
     orbit.target.set(0, PLAYER.height * 0.66, 0.12);
-    orbit.alpha = from === 'side' ? (side > 0 ? 0 : Math.PI) : Math.PI / 2;
+    // (`support`: from the other side, where a long gun's support hand on its handguard shows.)
+    orbit.alpha = from === 'side' ? (side > 0 ? 0 : Math.PI) : from === 'support' ? (side > 0 ? Math.PI : 0) : Math.PI / 2;
     orbit.beta = Math.PI / 2 - 0.08;
     orbit.radius = 2.3;
     await settle(4);

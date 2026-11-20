@@ -14,6 +14,7 @@ import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
+import { guardOf } from './guardUnderside.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
@@ -166,8 +167,26 @@ const FLINCH_BUCKLE = 0.3;
 const KICK_SECONDS = 0.5;
 const KICK_THIGH = 1.35;
 const KICK_LEAN = 0.22;
-/** Upper-body turn (radians) that brings the left shoulder forward onto a long gun (0.45 until 2026-11-03: see POCKET_IN). */
-const LONG_GUN_BLADE = 0.22;
+/**
+ * Upper-body turn (radians) that brings the left shoulder forward onto a long gun (0.45 until 2026-11-03: see POCKET_IN;
+ * 0.22 until 2026-11-20, when the support hand came up short of the handguard on most bodies).
+ */
+const LONG_GUN_BLADE = 0.3;
+/**
+ * A long gun whose support point is further than LONG_BLADE_FROM (model m) ahead of its grip (a shotgun's pump, a
+ * sniper's forend) turns the body further, by LONG_BLADE_PER radians a metre, up to LONG_BLADE_MOST more: the support
+ * shoulder comes forward and the shooting one back, so the support hand reaches the handguard instead of sliding back
+ * off it.
+ */
+const LONG_BLADE_FROM = 0.32;
+const LONG_BLADE_PER = 2.5;
+const LONG_BLADE_MOST = 0.3;
+
+/** How far (radians) the upper body turns into a long gun's stock (LONG_GUN_BLADE and the long-reach turn). */
+export function longGunBlade(grip: WeaponHold): number {
+  const span = grip.support ? grip.support[2] - grip.grip[2] : 0;
+  return LONG_GUN_BLADE + Math.min(LONG_BLADE_MOST, Math.max(0, (span - LONG_BLADE_FROM) * LONG_BLADE_PER));
+}
 /**
  * Long gun: how far (model m) the stock's pocket sits inside the shooting shoulder's joint, and where that arm's
  * elbow bends toward (out from the shoulder and down, m). With the body bladed 0.45 rad, a stock 7 cm in and the
@@ -181,6 +200,22 @@ const ELBOW_POLE_DOWN = 0.18;
 const STOCK_RADIUS = 0.035;
 /** Short arms slide the support hand back along the handguard, but keep it this far ahead of the grip (model m). */
 const SUPPORT_MIN_AHEAD = 0.12;
+/**
+ * Third-person long gun (owner, 2026-11-20, "ok fix them all": the support hand sat behind the magazine, the gun out
+ * in front of the chest): how far (model m) the stock's butt may sink into the body's surface in front of the shooting
+ * shoulder (clothes and flesh give, a chest plate's edge passes beside it), measured as the torso's clearance less this.
+ */
+const STOCK_SINK = 0.06;
+/**
+ * Third-person long gun: how far (model m) the support shoulder comes forward toward the handguard (its collarbone
+ * rolled, as a shooter's shoulder does) before the hand slides back along the handguard, the furthest that roll goes
+ * (radians), and the share of the arm's full reach the hand is held at (a little bend left in the elbow).
+ */
+const SUPPORT_SHOULDER_REACH = 0.1;
+const SUPPORT_CLAVICLE_MAX = 0.6;
+const SUPPORT_BEND = 0.96;
+/** Third-person long gun: the furthest (model m) the stock comes back into the shoulder for a support hand still short of the handguard. */
+const STOCK_PULL_MOST = 0.08;
 /**
  * First person: where each shoulder sits in the view's space (m: beside, below and a little behind the eye; x is
  * the right shoulder's, the left mirrors it), how far it may come forward toward a point on the gun the arm can't
@@ -805,7 +840,7 @@ export class CharacterAnimator {
     // Hands on the weapon unless an action needs them; long guns turn the shoulders into the stock.
     const ikTarget = this.handsOff || (this.grip?.style === 'melee' && !this.external) ? 0 : 1;
     this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
-    const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
+    const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? longGunBlade(this.grip) * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
     if (this.dormant) {
@@ -1637,6 +1672,50 @@ export class CharacterAnimator {
     }
   }
 
+  /** A collarbone's roll this animator last wrote (reachShoulder), and the joint's turn before it. */
+  private readonly clavicleRoll = new Map<TransformNode, { wrote: Quaternion; before: Quaternion }>();
+
+  /**
+   * Third person: bring a shoulder forward toward `target` (world) by rolling its collarbone, as far as the arm needs
+   * to hold it at `reach` and no further than `most` (world m) or SUPPORT_CLAVICLE_MAX, blended by `weight`. A
+   * collarbone no clip drives is put back first (the roll would otherwise build up frame on frame).
+   */
+  private reachShoulder(arm: Arm, target: Vector3, reach: number, most: number, weight: number): void {
+    const clav = arm.upper.parent as TransformNode | null;
+    const q = clav?.rotationQuaternion;
+    if (!clav || !q) return;
+    const last = this.clavicleRoll.get(clav);
+    if (last && q.equalsWithEpsilon(last.wrote, 1e-6)) q.copyFrom(last.before);
+    const before = q.clone();
+    const pos = (n: TransformNode) => {
+      n.computeWorldMatrix(true);
+      return n.getAbsolutePosition().clone();
+    };
+    const s0 = pos(arm.upper);
+    const d = Vector3.Distance(s0, target);
+    if (d <= reach || weight <= 0) {
+      this.clavicleRoll.delete(clav);
+      return;
+    }
+    const desired = s0.add(target.subtract(s0).normalize().scale(Math.min(d - reach, most)));
+    const c = pos(clav);
+    const v0 = s0.subtract(c);
+    const v1 = desired.subtract(c);
+    const axis = Vector3.Cross(v0, v1);
+    if (axis.lengthSquared() < 1e-12) return;
+    axis.normalize();
+    const angle = weight * Math.min(SUPPORT_CLAVICLE_MAX, Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(v0.normalizeToNew(), v1.normalizeToNew())))));
+    const turn = (a: number) => {
+      this.turnJoint(clav, axis, a);
+      clav.computeWorldMatrix(true);
+      refreshArm(arm);
+    };
+    turn(angle);
+    // (Joint space is mirrored from the world: when the turn went the wrong way, turn back past the start.)
+    if (Vector3.Distance(pos(arm.upper), desired) > Vector3.Distance(s0, desired)) turn(-2 * angle);
+    this.clavicleRoll.set(clav, { wrote: q.clone(), before });
+  }
+
   /**
    * Aim the weapon and close the hands on it: the gun points along the aim
    * (from the right palm for pistols, from the shoulder pocket for long guns),
@@ -1701,6 +1780,8 @@ export class CharacterAnimator {
     // Where the weapon goes when gripped (world space).
     let gripped: { pos: Vector3; rot: Quaternion } | null = null;
     let support = grip.support;
+    // A long gun's handguard underside under the support hand (model y), when the gun's model was measured.
+    let guardY: number | null = null;
     if (grip.style === 'pistol') {
       // The grip point goes to the middle of the hand's width, as in first person (gripPlaced).
       // (This look's own `gripPistol`, GripTune: the gun moved in the shooting hand by this much, third person only.)
@@ -1717,7 +1798,7 @@ export class CharacterAnimator {
       // Measured once the body is fully in its aim (the chest turned across the gun), so the surface ahead of the shoulder is the one the barrel crosses.
       // One character's measurement a frame (animLod.ts torsoMeasures): a crowd settles into its aim together at a match's
       // start, and each measurement skins the torso on the CPU; the others wait a frame or two with the stock unfitted.
-      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - LONG_GUN_BLADE) < 0.01 && torsoMeasures.take(this.scene.getFrameId())) this.torso = TorsoSurface.measure(this.ch, this.torsoLook);
+      if (this.torso === undefined && this.ik >= 0.999 && Math.abs(this.blade - longGunBlade(grip)) < 0.01 && torsoMeasures.take(this.scene.getFrameId())) this.torso = TorsoSurface.measure(this.ch, this.torsoLook);
       const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
       const on = (p: ModelPoint) => point(pocket, aim, [p[0] - grip.shoulder![0], p[1] - grip.shoulder![1], p[2] - grip.shoulder![2]]);
       // Short arms (an otter's) hold the handguard nearer the grip rather than pull the gun back into the body.
@@ -1726,7 +1807,7 @@ export class CharacterAnimator {
       const reach = (arm: Arm, p: ModelPoint) => reachAlong(pos(arm.upper), on(p), barrel, armReach(arm.upper, arm.lower, arm.hand, arm.palm));
       // ...but no further than the hands still reach their points on the gun (the support hand slid back as far as it goes).
       const clearOut = () => {
-        const clear = this.torso?.clearance(pocket, barrel, STOCK_RADIUS * scale, 0.01 * scale) ?? 0;
+        const clear = Math.max(0, (this.torso?.clearance(pocket, barrel, STOCK_RADIUS * scale, 0.01 * scale) ?? 0) - STOCK_SINK * scale);
         const push = clear > 0 ? Math.min(clear, reach(arms.r, grip.grip), grip.support ? reach(arms.l, slid(room)) : clear) : 0;
         pocket.addInPlace(barrel.scale(push));
         return clear - push;
@@ -1740,14 +1821,6 @@ export class CharacterAnimator {
         const tuck = Math.min(buried - TUCK_FROM * scale, TUCK_MAX * scale);
         pocket.addInPlace(out.normalize().scale(tuck)).addInPlace(new Vector3(0, -0.4 * tuck, 0));
         clearOut();
-      }
-      if (grip.support && room > 0) {
-        // The least slide that brings the support point within the left arm's reach.
-        const shoulderL = pos(arms.l.upper);
-        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm);
-        let shift = 0;
-        while (shift < room && Vector3.Distance(shoulderL, on(slid(shift))) > reachL) shift = Math.min(room, shift + 0.01);
-        support = slid(shift);
       }
       // The barrel's line clears the head: a big helmet or a short neck (Capt. Nova's) put the head's joint within a
       // few centimetres of it, the gun at the face from the side. The stock drops (away from the head, square to the
@@ -1772,6 +1845,23 @@ export class CharacterAnimator {
           .addInPlace(new Vector3(0, -1, 0).applyRotationQuaternion(aim).scale((own.down ?? 0) * scale))
           .addInPlace(side.scale((own.out ?? 0) * scale));
       }
+      if (grip.support) {
+        // The support shoulder comes forward toward the handguard first (its collarbone rolled), then the hand slides
+        // back along the handguard only as far as the arm still needs (short arms), never behind SUPPORT_MIN_AHEAD.
+        // The slide stays on the handguard (as far back as its underside runs on at its height, measured off the gun);
+        // a gun still out of reach there comes back into the shoulder, the stock deeper, by up to STOCK_PULL_MOST.
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * SUPPORT_BEND;
+        this.reachShoulder(arms.l, on(grip.support), reachL, SUPPORT_SHOULDER_REACH * scale, this.ik);
+        const guard = guardOf(weapon, grip, grip.grip[2] + SUPPORT_MIN_AHEAD);
+        const most = guard ? Math.min(room, guard.back) : room;
+        const shoulderL = pos(arms.l.upper);
+        let shift = Math.min(most, guard?.from ?? 0);
+        while (shift < most && Vector3.Distance(shoulderL, on(slid(shift))) > reachL) shift = Math.min(most, shift + 0.01);
+        const short = Vector3.Distance(shoulderL, on(slid(shift))) - reachL;
+        if (short > 0) pocket.subtractInPlace(barrel.scale(Math.min(short, STOCK_PULL_MOST * scale)));
+        support = slid(shift);
+        if (guard) guardY = guard.at(shift);
+      }
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }
 
@@ -1792,7 +1882,14 @@ export class CharacterAnimator {
       }
       this.curl(space, arms.r, w * (tune?.curlR ?? 1), () => point(gripped!.pos, gripped!.rot, gripAt));
       if (support) {
-        solveArm(space, arms.l, palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long'), pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
+        // A long gun's support palm lies on the handguard's underside (measured off the gun below its support point),
+        // the hand half its thickness below it, fingers up round the guard.
+        // (This look's own `supportLong` still moves it: its height corrects how the hand's model was measured.)
+        const supportPalm =
+          guardY === null
+            ? palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long')
+            : palmUnder(arms.l, point(gripped.pos, gripped.rot, [support[0], guardY + (tune?.supportLong?.[1] ?? 0), support[2]]), scale);
+        solveArm(space, arms.l, supportPalm, pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
         const at = support;
         this.curl(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), () => point(gripped!.pos, gripped!.rot, at));
       }
@@ -1815,7 +1912,8 @@ export class CharacterAnimator {
     if (!gripped) this.curl(space, arms.r, 1);
     // The arms' pose of this full grip, for the coarse detail far off (never a pose that isn't numbers: it is put back
     // on every coarse evaluation after).
-    const armJoints = [arms.r.upper, arms.r.lower, arms.r.hand, ...(support ? [arms.l.upper, arms.l.lower, arms.l.hand] : [])];
+    const clavL = support && grip.style === 'long' ? (arms.l.upper.parent as TransformNode | null) : null;
+    const armJoints = [arms.r.upper, arms.r.lower, arms.r.hand, ...(support ? [arms.l.upper, arms.l.lower, arms.l.hand] : []), ...(clavL?.rotationQuaternion ? [clavL] : [])];
     if (gripped && w >= 0.999 && armJoints.every((j) => finiteQuat(j.rotationQuaternion))) {
       const joints = armJoints;
       const kept = this.armPose?.joints.length === joints.length ? this.armPose : { grip, joints, rots: joints.map(() => new Quaternion()) };
@@ -2316,6 +2414,15 @@ function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): V
   return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at;
 }
 
+/**
+ * Where to put a support palm cupping a handguard from below with the guard's underside at `under` (world): half the
+ * hand's thickness below it, and back along the fingers as palmOnGrip's cup (so the fingers reach round the guard).
+ */
+function palmUnder(arm: Arm, under: Vector3, scale: number): Vector3 {
+  const rest = Math.max(MIN_GRIP_OFFSET, arm.gripOffset - (GRIP_RADIUS_MEASURED - REF_HAND_THICKNESS / 2));
+  return under.subtract(palmSideWorld(arm).scale(rest * scale)).subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale));
+}
+
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
 function palmSideWorld(arm: Arm): Vector3 {
   if (arm.frame) return handAxes(arm).palm;
@@ -2516,10 +2623,13 @@ function solveArm(space: SkeletonSpace, arm: Arm, palmTarget: Vector3, pole: Vec
 /**
  * How far a support hand closes: round a long gun's handguard all the way (closed part way, the fingers stood out
  * from under the handguard, open: King Aldric's, Dusty Colt's, the Dapper's); under a pistol's grip, part way
- * (its fingers wrap the shooting hand).
+ * (its fingers wrap the shooting hand). Since 2026-11-20 a hand closes TO its curl rather than by it (closeHand): a
+ * handguard's share is LONG_SUPPORT_CURL, the fingers up round its side from a palm on its underside (the full close,
+ * counted from straight, made a fist under it).
  */
+const LONG_SUPPORT_CURL = 0.6;
 function supportCurl(grip: WeaponHold): number {
-  return grip.style === 'long' ? 1 : 0.7;
+  return grip.style === 'long' ? LONG_SUPPORT_CURL : 0.7;
 }
 
 /** How far every hand closes, as a share of its own curl (1; the grip audit's curl test sets 0 to compare). */
@@ -2596,10 +2706,43 @@ function closeHand(space: SkeletonSpace, arm: Arm, weight: number, onto?: Vector
     const swung = (s: number) => Vector3.Distance(knuckle.add(tip.applyRotationQuaternion(Quaternion.RotationAxis(across, s * 1.2))), target);
     sign = swung(1) <= swung(-1) ? 1 : -1;
   }
+  if (wrap) {
+    for (const chain of arm.fingers) {
+      chain.forEach((joint, i) => {
+        const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);
+        space.setRot(joint, q.multiply(space.rot(joint)), 1);
+      });
+    }
+    return;
+  }
+  // Round a handguard or a long gun's grip: each joint closes TO its share of the curl, counted from straight, not by
+  // it on top of the clip's own bend. Closed by it, a finger the hold clip had already bent folded past a fist into
+  // the palm, its skin turned through itself at the knuckles (the grip audit's flipped triangles, three to five times
+  // an open hand's), while one the clip left straight stayed loose (owner, 2026-11-20).
+  const bendOf = (from: Vector3, to: Vector3) => {
+    const a = from.subtract(across.scale(Vector3.Dot(from, across)));
+    const b = to.subtract(across.scale(Vector3.Dot(to, across)));
+    if (a.lengthSquared() < 1e-12 || b.lengthSquared() < 1e-12) return 0;
+    return Math.atan2(Vector3.Dot(Vector3.Cross(a, b), across), Vector3.Dot(a, b)) * bendSign;
+  };
+  // Which way a turn about `across` counts in bendOf (the cross product's handedness), toward the palm positive.
+  const bendSign = (() => {
+    const t = forward.applyRotationQuaternion(Quaternion.RotationAxis(across, 0.3));
+    return (Math.atan2(Vector3.Dot(Vector3.Cross(forward, t), across), Vector3.Dot(forward, t)) > 0 ? 1 : -1) * sign;
+  })();
   for (const chain of arm.fingers) {
+    const p = chain.map((j) => space.pos(j));
+    let had = 0;
     chain.forEach((joint, i) => {
-      const q = Quaternion.RotationAxis(across, sign * curl[i]! * weight);
-      space.setRot(joint, q.multiply(space.rot(joint)), 1);
+      const want = curl[i]! * weight;
+      const from = i === 0 ? forward : p[i]!.subtract(p[i - 1]!);
+      const to = i + 1 < p.length ? p[i + 1]!.subtract(p[i]!) : null;
+      // (The last joint has no segment past it to measure: it takes the share of its curl the joint before it had.)
+      const have = to ? bendOf(from, to) : had * want;
+      had = want > 0 ? Math.max(0, Math.min(1, have / want)) : 1;
+      const by = Math.max(0, Math.min(want, want - have));
+      if (by <= 0) return;
+      space.setRot(joint, Quaternion.RotationAxis(across, sign * by).multiply(space.rot(joint)), 1);
     });
   }
 }
