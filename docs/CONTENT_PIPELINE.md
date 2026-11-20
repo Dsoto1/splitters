@@ -523,6 +523,9 @@ groups in the client).
    (`sim/discs.ts`) when `displayName` is left out; a weapon pickup without `botValue` gets
    0.55 + `respawnSeconds` / 120, at most 0.9 (power weapons respawn slower and are worth more). Every other pickup
    writes both.
+   `rolls: false` (weapon pickups only) keeps a pickup out of every roll: random pickups, the host's mix-up and
+   weapon sets never hold it, and it lies only where a map maker placed it (the Pistol, which everyone starts with:
+   its pickup is the second gun of a dual-wield pair). A pickup added with it changes no roll.
 4. **Generate and check:** `pnpm content:pickups` (`node tools/content/pickups.mjs`) checks the schema (an unknown
    field is an error), the weapons, ammo types, throwables, powerups and disc powers, the numbers (amounts, seconds
    and respawn above 0, bot value 0-1, throwable count within the carry limit), that every pickup `maps/*.json` and

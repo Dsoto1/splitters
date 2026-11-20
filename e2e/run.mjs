@@ -385,6 +385,21 @@ async function editorFlow(browser) {
   d = await doc();
   const randomPickup = d.entities.find((e) => e.kind === 'pickup' && e.random);
   check(randomPickup?.random === 'sniper' && SNIPERS.includes(randomPickup.item), `the inspector makes a weapon pickup random from a category (${JSON.stringify(randomPickup && { random: randomPickup.random, item: randomPickup.item })})`);
+  // The Pistol's pickup (the second Pistol of a dual-wield pair): a card in the Weapons group, placed like any pickup.
+  // Undone again, so the rest of the flow sees the map it always did.
+  const pistolCard = await page.evaluate(() => {
+    const b = document.querySelector('[data-tool="pickup:core.weapon_pistol"]');
+    return b ? { text: b.textContent.trim(), group: b.closest('.ed-group')?.querySelector('.ed-group-head')?.textContent ?? '' } : null;
+  });
+  check(pistolCard?.text === 'Pistol' && /Weapons/.test(pistolCard.group), `the Pistol pickup has a card in the Weapons group (${JSON.stringify(pistolCard)})`);
+  await clickTool(page, '[data-tool="pickup:core.weapon_pistol"]');
+  await clickWorld(-1, 2);
+  await page.keyboard.press('Escape');
+  d = await doc();
+  check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'places a Pistol pickup');
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(!d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'undo takes the Pistol pickup away');
 
   // Scenario: a locked door snapped into the doorway, a button and a spike trap, wired with a logic template.
   await clickTool(page, '[data-tool="scenario:door_locked"]');

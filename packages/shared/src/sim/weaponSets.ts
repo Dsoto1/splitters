@@ -163,7 +163,7 @@ export function setCategoryPool(set: WeaponSetDef, category: WeaponCategory): re
   let pool = pools.get(key);
   if (!pool) {
     const ids = setWeaponIds(set);
-    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && (!ids || ids.has(i.effect.weapon));
+    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && i.rolls !== false && (!ids || ids.has(i.effect.weapon));
     const has = (c: WeaponCategory) => categoryItems(c).some(inSet);
     const cats = new Set(nearCategories(category, has));
     pools.set(key, (pool = CORE_ITEMS.filter((i) => inSet(i) && cats.has(itemCategory(i)!))));

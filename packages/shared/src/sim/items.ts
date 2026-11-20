@@ -39,6 +39,11 @@ export interface ItemDefinition {
   respawnSeconds: number;
   /** AI value 0..1 before situational scaling. */
   botValue: number;
+  /**
+   * False: a weapon pickup that lies only where a map maker placed it. Random pickups, the host's mix-up and weapon
+   * sets never roll it (sim/pickupRoll.ts, sim/weaponSets.ts): the Pistol, which everyone starts with.
+   */
+  rolls?: false;
 }
 
 const byId = new Map(CORE_ITEMS.map((i) => [i.id, i]));

@@ -197,14 +197,45 @@ describe('dual wielding in play', () => {
       match.destroy();
     });
 
-    it('every eligible gun with a pickup pairs by it; the Pistol has none today (it is what everyone starts with), so its pair waits for one', () => {
-      for (const id of [MP, SAWED, PULSE]) {
+    it('every eligible gun pairs by its pickup, the Pistol too (its pickup lies only where a map maker placed one)', () => {
+      for (const id of [PISTOL, MP, SAWED, PULSE]) {
         const { match, a, w } = solo(id, { pair: false });
         expect(inner(match).applyItem(a, getItem(`core.weapon_${id.replace('core.', '')}`)!), id).toBe(true);
         expect(w().off, id).toEqual({ mag: getWeapon(id).magazine });
         match.destroy();
       }
-      expect(getItem('core.weapon_pistol')).toBeUndefined();
+    });
+
+    it('the Pistol pickup: walking over it with the Pistol everyone starts with makes the pair; with dual wielding off it is ammunition, as any same-gun pickup', () => {
+      const item = 'core.weapon_pistol';
+      const map = () => deck([{ item, at: [0, 0, 0] }]);
+      // On: the pair, a full second magazine, and the pickup's ammo.
+      let s = solo(PISTOL, { pair: false, map: map() });
+      s.w().reserve = 0;
+      let ev = s.tick();
+      expect(ev.some((e) => e.e === 'pickup' && e.s === s.a.slot && e.item === item)).toBe(true);
+      expect(s.w().off).toEqual({ mag: getWeapon(PISTOL).magazine });
+      expect(s.w().reserve).toBe(Math.min(getWeapon(PISTOL).reserveMax, getWeapon(PISTOL).pickupAmmo));
+      expect(s.pub().dw).toBe(1);
+      s.match.destroy();
+      // Off (AKIMBO_READY's false, what players have until step 4): ammunition only, no second gun, nothing new sent.
+      setAkimboReady(false);
+      s = solo(PISTOL, { pair: false, map: map() });
+      s.w().reserve = 0;
+      ev = s.tick();
+      expect(ev.some((e) => e.e === 'pickup' && e.s === s.a.slot && e.item === item)).toBe(true);
+      expect(s.w().off).toBeUndefined();
+      expect(s.w().reserve).toBe(Math.min(getWeapon(PISTOL).reserveMax, getWeapon(PISTOL).pickupAmmo));
+      expect(s.pub().dw).toBeUndefined();
+      expect(s.me().ow).toBeUndefined();
+      s.match.destroy();
+      // Off, with a full reserve: nothing to take, so it stays for someone else.
+      s = solo(PISTOL, { pair: false, map: map() });
+      ev = s.tick();
+      expect(ev.some((e) => e.e === 'pickup' && e.item === item)).toBe(false);
+      expect(s.w().off).toBeUndefined();
+      s.match.destroy();
+      setAkimboReady(true);
     });
 
     it('not with the rule off, not while dual wielding is off, not for a bot, not with a gun that can\'t be paired', () => {
