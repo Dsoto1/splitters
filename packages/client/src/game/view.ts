@@ -1345,6 +1345,11 @@ export class GameView {
     return { x: p.x, y: p.y, z: p.z };
   }
 
+  /** Whether the left arm of a pair has loaded (tests). */
+  hasPairArm(): boolean {
+    return !!this.fpArms2?.anim;
+  }
+
   /** Whether the second gun of a pair is drawn in your left hand now. */
   pairShown(): boolean {
     return !!this.viewRoot2 && this.pairUp > 0 && !!this.viewmodel2 && this.viewmodel2.isEnabled(false) && this.viewRoot2.isEnabled(false);

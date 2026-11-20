@@ -609,6 +609,7 @@ export class CharacterAnimator {
     this.weapon = weapon;
     this.grip = weapon ? grip : null;
     this.external = null;
+    this.stowFreeArm(false);
     this.inHand.valid = false;
     this.armPose = null;
     this.unplaced = false;
@@ -633,7 +634,21 @@ export class CharacterAnimator {
     // `solo` (one gun of a pair, dual wielding): the shooting hand alone, as it holds the gun two-handed; the other
     // hand has its own gun.
     this.external = weapon && grip ? { node: weapon, grip: solo && grip.support ? { ...grip, support: undefined } : grip, from: grip, solo } : null;
+    if (!this.external?.solo) this.stowFreeArm(false);
   }
+
+  /**
+   * Full body first person with one gun of a pair in the shooting hand: this body's own left arm is shrunk away at
+   * the shoulder (as the head is), because the second gun's arm is drawn by the view (a mirrored arm, view.ts
+   * `fpArms2`) and two left arms would show when you look down. Put back when the pair ends.
+   */
+  private stowFreeArm(on: boolean): void {
+    if (!on && !this.freeArmStowed) return;
+    this.freeArmStowed = on;
+    this.arms?.l.upper.scaling.setAll(on ? 0.001 : 1);
+  }
+
+  private freeArmStowed = false;
 
   private external: { node: TransformNode; grip: WeaponHold; from: WeaponHold; solo: boolean } | null = null;
   private fp: FirstPersonBody | null = null;
@@ -652,6 +667,7 @@ export class CharacterAnimator {
         this.restoreShoulder(arm);
         arm.hand.scaling.setAll(1);
       }
+      this.stowFreeArm(false);
     }
   }
 
@@ -1610,7 +1626,7 @@ export class CharacterAnimator {
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
-    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), Math.abs(root.absoluteScaling.x), this.external.solo);
+    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x, this.external.solo);
   }
 
   /**
@@ -2010,12 +2026,12 @@ export class CharacterAnimator {
       const vm = view.getWorldMatrix();
       // A free left hand (a knife) hangs out of view.
       const anchor = (side: 1 | -1) => Vector3.TransformCoordinates(new Vector3(side * FP_SHOULDER[0], side < 0 && !grip.support ? FP_SHOULDER_IDLE : FP_SHOULDER[1], FP_SHOULDER[2]), vm);
-      const shift = FP_SHOULDER_REACH * Math.abs(view.absoluteScaling.x);
+      const shift = FP_SHOULDER_REACH * view.absoluteScaling.x;
       if (grip.support && supportAt) {
         // Out of the arm's reach: the support hand slides back along the handguard toward the grip first (the
         // shoulder only comes forward a little, so the upper arm stays out of view), then the shoulder comes further.
         const s = anchor(-1);
-        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * Math.abs(view.absoluteScaling.x);
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * view.absoluteScaling.x;
         const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
         let back = 0;
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {
@@ -2041,6 +2057,9 @@ export class CharacterAnimator {
       const cupAt = pistol ? { at: off(grip.support, PISTOL.supportWrap), out: gun.right } : undefined;
       closeHand(space, arms.l, cupAt ? w : w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)), cupAt);
       if (pistol) pointThumb(space, arms.l, gunDir(gun, PISTOL.thumbL), w);
+    } else if (this.fp && solo) {
+      // Full body, one gun of a pair: the other hand's gun and arm are the view's.
+      this.stowFreeArm(true);
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
