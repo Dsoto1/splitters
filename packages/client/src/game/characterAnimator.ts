@@ -626,13 +626,16 @@ export class CharacterAnimator {
    * Put the hands on a weapon that is positioned by someone else (the
    * first-person viewmodel): the weapon is not moved or owned, only gripped.
    */
-  gripExternal(weapon: TransformNode | null, grip: WeaponHold | null): void {
+  gripExternal(weapon: TransformNode | null, grip: WeaponHold | null, solo = false): void {
     this.weapon?.dispose();
     this.weapon = null;
-    this.external = weapon && grip ? { node: weapon, grip } : null;
+    if (weapon && grip && this.external?.node === weapon && this.external.from === grip && this.external.solo === solo) return;
+    // `solo` (one gun of a pair, dual wielding): the shooting hand alone, as it holds the gun two-handed; the other
+    // hand has its own gun.
+    this.external = weapon && grip ? { node: weapon, grip: solo && grip.support ? { ...grip, support: undefined } : grip, from: grip, solo } : null;
   }
 
-  private external: { node: TransformNode; grip: WeaponHold } | null = null;
+  private external: { node: TransformNode; grip: WeaponHold; from: WeaponHold; solo: boolean } | null = null;
   private fp: FirstPersonBody | null = null;
 
   /**
@@ -1607,7 +1610,7 @@ export class CharacterAnimator {
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
-    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
+    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), Math.abs(root.absoluteScaling.x), this.external.solo);
   }
 
   /**
@@ -1900,7 +1903,7 @@ export class CharacterAnimator {
    * as the arm needs to keep a natural bend (only the shoulder region, off screen, stretches). A support point
    * still out of reach then slides back along the handguard toward the grip.
    */
-  private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number): void {
+  private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number, solo = false): void {
     this.settleHand(arms.r);
     this.settleHand(arms.l);
     weapon.computeWorldMatrix(true);
@@ -1920,8 +1923,9 @@ export class CharacterAnimator {
     // two-handed one, for a gun's pistol grip: a one-handed hold, the Spear's shaft or the Medkit's handle, keeps the
     // close it had before it; turned and closed as a raked grip, their fingers stood straight off the shaft and the
     // handle, 2026-11-06.)
-    const pistol = grip.style === 'pistol' && !!grip.support;
-    if (pistol) gripHand(space, arms.l, world, 'cup', w, true);
+    // (One gun of a pair, `solo`: the shooting hand holds a pistol's grip as it does two-handed, without the other.)
+    const pistol = grip.style === 'pistol' && (!!grip.support || solo);
+    if (pistol && grip.support) gripHand(space, arms.l, world, 'cup', w, true);
     const gun = gunAxes(world);
     // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
     // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
@@ -2006,12 +2010,12 @@ export class CharacterAnimator {
       const vm = view.getWorldMatrix();
       // A free left hand (a knife) hangs out of view.
       const anchor = (side: 1 | -1) => Vector3.TransformCoordinates(new Vector3(side * FP_SHOULDER[0], side < 0 && !grip.support ? FP_SHOULDER_IDLE : FP_SHOULDER[1], FP_SHOULDER[2]), vm);
-      const shift = FP_SHOULDER_REACH * view.absoluteScaling.x;
+      const shift = FP_SHOULDER_REACH * Math.abs(view.absoluteScaling.x);
       if (grip.support && supportAt) {
         // Out of the arm's reach: the support hand slides back along the handguard toward the grip first (the
         // shoulder only comes forward a little, so the upper arm stays out of view), then the shoulder comes further.
         const s = anchor(-1);
-        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * view.absoluteScaling.x;
+        const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * Math.abs(view.absoluteScaling.x);
         const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
         let back = 0;
         while (back < room && Vector3.Distance(s, supportAt) > reachL) {

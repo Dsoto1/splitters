@@ -69,6 +69,8 @@ import {
   rigidOf,
   tippedOver,
   TICK_RATE,
+  akimboOf,
+  akimboRaise,
   HOLD_KINDS,
   HOLD_LABEL,
   HOLD_CANCEL_TEXT,
@@ -232,6 +234,7 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
 import { opticOf } from './optics.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
+import { gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
@@ -3646,7 +3649,9 @@ export class GameSession {
           if (!shot) continue;
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
-          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma));
+          // (A pair's shots sound from the hand that fired: the second gun's a little left, the first's a little right.)
+          const hand = shotGun(shot, true);
+          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma), gunPan(local.paired || !!shot.off, hand));
           // The spray pattern (an option): single-round hitscan guns, round by round.
           if (!shot.alt && shot.def.kind === 'hitscan' && shot.def.pellets === 1 && shot.ends[0]) {
             const e = local.eye;
@@ -3654,12 +3659,13 @@ export class GameSession {
             const len = Math.hypot(d.x, d.y, d.z);
             if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
           }
-          this.view.kick(shot.def, shot.alt, this.slot);
-          // Your gun's muzzle as drawn: the viewmodel's in first person, your character's in third (view.shotVisual).
-          const muzzle = this.view.localMuzzle();
+          this.view.kick(shot.def, shot.alt, this.slot, { off: !!shot.off, tick: cmd.seq, paired: local.paired || !!shot.off, together: !!shot1 && !!shot2 });
+          // Your gun's muzzle as drawn: the viewmodel's in first person (the second gun's for its own rounds), your
+          // character's in third (view.shotVisual).
+          const muzzle = this.view.localMuzzle(!!shot.off);
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
-          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.off ? { off: true } : {}), ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
@@ -3811,8 +3817,13 @@ export class GameSession {
           this.view.trimViewmodels(new Set([...local.inventory.keys()].map((code) => weaponByCode(code)?.id).filter((id): id is string => !!id)));
         }
       }
-      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
+      // A pair in hand (dual wielding): one hand reloads at a time, so only the gun whose turn it is dips; the second
+      // gun comes up over the pair's raise.
+      const pairSpec = weapon && local.paired ? akimboOf(weapon) : null;
+      const [turn1, turn2] = pairSpec ? local.pairReloading() : [true, false];
+      const reloadFrac = weapon && local.reloadTicks > 0 && turn1 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
+      const pairView = weapon && pairSpec ? { raise: akimboRaise(weapon, pairSpec) / TICK_RATE, reload: turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0 } : null;
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
       this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
