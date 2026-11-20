@@ -13194,6 +13194,7 @@ async function webgpuFlow() {
  * drawn; part 2 grips in a real match (gripsInPlay).
  */
 async function charactersFlow(browser, part = 0) {
+  if (part === 3) return supportHands(browser);
   if (part === 2) {
     await gripsInPlay(browser);
     return farBodies(browser);
@@ -13308,6 +13309,72 @@ async function charactersFlow(browser, part = 0) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
+
+/**
+ * Every character's support hand on a long gun's handguard, third person (characters part 3; owner, 2026-11-20: "a
+ * ton of characters ... are not holding their weapon properly": the support hand sat behind the magazine or under the
+ * gun). Each look holds the rifle (every second the shotgun, every eighth the SMG and the sniper rifle too) as Character Select poses them; the hand
+ * as DRAWN (handProbe's drawn centre) must lie where the animator put it on the handguard (`__grips.support()`: how far
+ * it slid back, the guard's measured underside there), the hand within reach and not slid off the guard's end.
+ */
+async function supportHands(browser) {
+  // (A small page: the hands are measured, not looked at, and every pose draws 40 frames in software.)
+  const page = await (await browser.newContext({ viewport: { width: 96, height: 96 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=grips&test=1`);
+  await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
+  const looks = await page.evaluate(() => window.__grips.looks().map((l) => l.id));
+  const off = [];
+  let held = 0;
+  for (const look of looks) {
+    // Every look on the rifle (Character Select's gun), every second on the shotgun (the longest reach), every eighth on
+    // the SMG and the sniper rifle too (about 250 s on CI).
+    const k = looks.indexOf(look);
+    for (const weapon of ['core.rifle', ...(k % 2 === 0 ? ['core.shotgun'] : []), ...(k % 8 === 0 ? ['core.smg', 'core.sniper'] : [])]) {
+      const r = await page.evaluate(
+        async ([l, w]) => {
+          await window.__grips.pose(l, w, 'third');
+          const d = window.__grips.drawn();
+          return { at: d?.atL ?? null, s: window.__grips.support(), y: window.__grips.hold()?.support?.[1] ?? null };
+        },
+        [look, weapon],
+      );
+      held++;
+      const why = supportHandOff(r);
+      if (why) off.push(`${look} ${weapon.replace('core.', '')}: ${why}`);
+    }
+  }
+  check(held >= 200 && off.length === 0, `every character's support hand is drawn on the long guns' handguards, third person (${held} holds; ${off.join('; ') || 'all on'})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Why a drawn support hand is off its handguard (null: on it). `at`: the drawn hand's centre from the gun's support
+ * point (the gun's right, up, ahead; model m); `s`: where the animator put it (slid back, the guard's length and
+ * underside, how far still out of reach); `y`: the support point's height.
+ */
+function supportHandOff({ at, s, y }) {
+  if (!at || !s) return 'no support hand';
+  if (s.short > SUPPORT.short) return `${(s.short * 100).toFixed(0)} cm out of reach`;
+  if (s.back !== null && s.slid > s.back + 1e-6) return `slid ${(s.slid * 100).toFixed(0)} cm, off the guard's end (${(s.back * 100).toFixed(0)} cm)`;
+  const along = at[2] + s.slid;
+  if (along < SUPPORT.along[0] || along > SUPPORT.along[1]) return `${(along * 100).toFixed(1)} cm along the guard from its place`;
+  if (s.under !== null && y !== null) {
+    const below = s.under - y - at[1];
+    if (below < SUPPORT.below[0] || below > SUPPORT.below[1]) return `centre ${(below * 100).toFixed(1)} cm under the guard`;
+  }
+  if (Math.abs(at[0]) > SUPPORT.across) return `${(at[0] * 100).toFixed(1)} cm across the guard`;
+  return null;
+}
+
+/**
+ * The drawn support hand's tolerances (m): along the guard from its place, its centre under the guard's underside, across,
+ * and still out of reach. Most hands are within 2 cm; the wide ends are paws and mittens whose drawn centre isn't the
+ * palm's (Teddy, Bandit, Croakley, Boglurker; 2026-11-20).
+ */
+const SUPPORT = { along: [-0.08, 0.07], below: [-0.02, 0.07], across: 0.1, short: 0.02 };
 
 /** Where the hands are DRAWN, on the grip page (`?mode=grips`): characters part 1. */
 async function drawnHands(page) {

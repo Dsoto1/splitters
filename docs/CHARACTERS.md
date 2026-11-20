@@ -763,7 +763,7 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
 - **Long guns on deep or short-armed bodies:** the stock's clearance also counts
   the chest straight ahead of the shoulder (a deep chest turned across the
   aim), the support hand slides back along the handguard when the arms can't
-  reach, and a stock the arms still can't hold clear tucks out past the
+  reach (never off its end; see "Third-person long guns since 2026-11-20"), and a stock the arms still can't hold clear tucks out past the
   shoulder (the otter, the warlord) instead of into the chest.
 - In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
   them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
@@ -980,8 +980,37 @@ The steps on their own:
 
 In the game a long gun's support hand cups the handguard over the base of its
 fingers (its palm centre sits back from the handguard by 0.22 of the hand's
-length, `CUP_BACK`) and closes all the way round it; a pistol's support hand
-closes part way round the shooting hand. A long gun's barrel line keeps
+length, `CUP_BACK`) and closes round it; a pistol's support hand
+closes part way round the shooting hand.
+
+**Third-person long guns since 2026-11-20** (owner, "ok fix them all": the support hand sat behind the magazine or
+under the gun, the gun out in front of the chest, the hands janky; it had been so since at least v0.9.0):
+- **Stock nearer the chest:** the stock's butt may sink `STOCK_SINK` (6 cm) into the body's surface in front of the
+  shooting shoulder (the torso's clearance less that); it sat 13-18 cm out along the barrel on the WWII Infantry and
+  Big Bogdan.
+- **Support shoulder forward:** the body turns `longGunBlade` into the stock (0.3 rad; a gun whose support point is
+  more than 32 cm ahead of its grip further, up to 0.6: the shotgun, the sniper rifle), and the support shoulder
+  comes up to 10 cm toward the handguard by rolling its collarbone (`reachShoulder`, `SUPPORT_CLAVICLE_MAX`), held
+  at 0.96 of the arm's reach (a little bend left in the elbow).
+- **On the handguard:** the handguard is measured off the gun's own model under its support point
+  (`game/guardUnderside.ts`: a vertical line through the gun's faces, solid by solid; a vertical grip or a bipod
+  clamp at the point moves the guard's start just behind it) and followed back while its underside stays within
+  3 cm of that height. The support hand slides back along it only as far as the arm still needs and never past
+  its end (a magazine, a receiver); a gun still out of reach then comes back into the shoulder (the stock deeper,
+  up to 8 cm). The palm lies on the guard's measured underside, half the hand's thickness below it (the support
+  point is a point to hold, not on the surface: on the Assault Rifle it is 1.5 cm up inside the wood).
+- **Fingers close to their curl, not by it:** each finger joint closes to its share of the curl counted from
+  straight (`closeHand`), not that much more on top of the hold clip's bend: fingers already bent folded into the
+  palm and turned their skin through itself at the knuckles (the grip audit's flipped triangles, three to five
+  times an open hand's). A handguard's support hand closes to 0.6 of the full curl (`LONG_SUPPORT_CURL`): fingers
+  up round its side from a palm on its underside. The shooting thumb lies over the grip along its far side
+  (`LONG_THUMB`), not stood up beside the gun. A pistol held round its grip in first person keeps its own close.
+- **Checked:** the e2e flow `characters4` poses every character in Character Select's pose with the rifle (the
+  shotgun on every second, the SMG and the sniper rifle on every eighth) and checks the drawn support hand lies where the animator
+  put it on the handguard, within reach and not off the guard's end (`__grips.support()`); the unit test
+  `guardUnderside.test.ts` finds a guard under every long gun's support point.
+
+A long gun's barrel line keeps
 `HEAD_CLEAR` (0.15 m) from the head's joint: the stock drops (up to 5 cm) where
 a big helmet or a short neck put the head by the gun (Capt. Nova).
 

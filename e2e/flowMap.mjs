@@ -13,7 +13,7 @@ import { readFileSync } from 'node:fs';
 export const MAP_PARTS = 14;
 export const MAP_FLOWS = Array.from({ length: MAP_PARTS }, (_, i) => (i ? `maps${i + 1}` : 'maps'));
 /** The character checks, in three parts (viewer and palms; drawn hands; grips in a match): ~11 min in one. */
-export const CHARACTER_FLOWS = ['characters', 'characters2', 'characters3'];
+export const CHARACTER_FLOWS = ['characters', 'characters2', 'characters3', 'characters4'];
 /** The flicker check (docs/LOOK.md, "The flicker check"), in five flows of its moments (e2e/run.mjs FLASHING_PARTS). */
 export const FLASHING_FLOWS = ['flashing', 'flashing2', 'flashing3', 'flashing4', 'flashing5'];
 /** A change to at most this many maps tours just those maps (E2E_MAPS) on a check branch; more run their tour parts. */
