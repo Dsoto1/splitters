@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
-import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
+import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLASHING_FLOWS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 import { installFrameClock } from './frameClock.mjs';
 import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
@@ -56,7 +56,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', ...FLASHING_FLOWS, ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -12174,15 +12174,32 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * night, pickups' floor glows coming up, a portal's swirl and a jump pad's lift coming up, status auras coming up on three bots, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
- * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
+ * flashing-night-<first moment>.json). E2E_FLASH_MOMENTS=arc,blast records just those (in their flows).
  *
- * Then a second scene by day (FLASHING_DAY: flashing-day.json), for the bright moments daylight makes: sprinting out
+ * Then a second scene by day (FLASHING_DAY: flashing-day-<first moment>.json), for the bright moments daylight makes: sprinting out
  * of a lit tunnel into the day, turning round and sprinting back in; the hit camera kick on the tunnel's daylight edge.
+ *
+ * Five flows (FLASHING_PARTS), each under 5 min on CI (a moment is 35-100 s drawn in software), so a retry fits a
+ * shard: each makes the scenes its moments need and plays just those. A new moment goes in the shortest part
+ * (e2e/timings.json).
  */
-async function flashingFlow(browser) {
-  await flashingScene(browser);
-  await flashingScene(browser, FLASHING_DAY);
-}
+const flashingFlow = (part) => async (browser) => {
+  const { night, day } = FLASHING_PARTS[part];
+  if (night) await flashingScene(browser, null, night);
+  if (day) await flashingScene(browser, FLASHING_DAY, day);
+};
+
+/**
+ * The flicker check's flows and their moments, by scene (each part's played in the scene's order). From the moments'
+ * times on CI run 44700870108 (seconds): about 290 s each with a scene's start (some 20 s).
+ */
+const FLASHING_PARTS = {
+  flashing: { night: ['arc', 'fence', 'blast', 'cookoff'] },
+  flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
+  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'hitkick'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight'] },
+};
 
 /**
  * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit tunnel (a portal, three modules with a light
@@ -12454,14 +12471,14 @@ async function lootRingContrast(page, step, ids) {
   return { rings };
 }
 
-async function flashingScene(browser, scene) {
+/** A scene (the night scene, or `scene`) made and the moments of it `names` lists played. */
+async function flashingScene(browser, scene, names) {
   const FPS = 30;
   const [W, H] = [160, 90];
   const RECORD = 2 * FPS;
   const only = process.env.E2E_FLASH_MOMENTS?.split(',').filter(Boolean);
   // (A scene none of whose moments are asked for is not made.)
-  if (only && scene && !scene.moments({}).some((mo) => only.includes(mo.name))) return;
-  if (only && !scene && only.every((name) => FLASHING_DAY.moments({}).some((mo) => mo.name === name))) return;
+  if (only && !names.some((name) => only.includes(name))) return;
   const ctx = await browser.newContext({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
   await ctx.addInitScript(installFrameClock);
   const page = await ctx.newPage();
@@ -12570,7 +12587,7 @@ async function flashingScene(browser, scene) {
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
   // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
   // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
-  const moments = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
+  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -12891,7 +12908,13 @@ async function flashingScene(browser, scene) {
       look: aim([24, 0, -20.5], [24, 1.4, -28]),
       bots: [],
     },
-  ]).filter((mo) => !only || only.includes(mo.name));
+  ]);
+  // (Every moment the scene has is played in one of the flows: a new moment needs its place in FLASHING_PARTS.)
+  const kind = scene ? 'day' : 'night';
+  const unplaced = all.filter((mo) => !Object.values(FLASHING_PARTS).some((p) => p[kind]?.includes(mo.name)));
+  check(unplaced.length === 0, `every moment of the ${kind} scene is in a flow of FLASHING_PARTS (not: ${unplaced.map((mo) => mo.name).join(', ')})`);
+  const moments = all.filter((mo) => names.includes(mo.name) && (!only || only.includes(mo.name)));
+  check(moments.length === names.filter((name) => !only || only.includes(name)).length, `the scene has every moment asked of it (${names.join(', ')})`);
   // The guns these moments hold, in hand once each, so their models are in before the page's clock stops (models load
   // in real time): only theirs (the day scene has no machine gun).
   for (const id of new Set(moments.map((mo) => mo.weapon))) {
@@ -12969,7 +12992,7 @@ async function flashingScene(browser, scene) {
     check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames with the setting off, ${(on.activity * 100).toFixed(1)} % on)`);
     check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
   }
-  writeFileSync(`${ARTIFACTS}/flashing${scene ? `-${scene.name}` : ''}.json`, JSON.stringify(report));
+  writeFileSync(`${ARTIFACTS}/flashing-${scene ? scene.name : 'night'}-${names[0]}.json`, JSON.stringify(report));
   check(clockErrors.length === 0 && errors.length === 0, `no page errors while recording (${[...clockErrors, ...errors].slice(0, 4).join(' | ')})`);
   await ctx.close();
 }
@@ -15231,7 +15254,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

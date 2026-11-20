@@ -1,4 +1,4 @@
-// The flicker check's measure (e2e flow `flashing`; docs/LOOK.md, "Reduce flashing"): WCAG 2.3.1, "Three Flashes or
+// The flicker check's measure (e2e flows `flashing` to `flashing5`; docs/LOOK.md, "Reduce flashing"): WCAG 2.3.1, "Three Flashes or
 // Below Threshold", with the general flash and red flash thresholds, measured the way photosensitivity analysers
 // (EA's IRIS, PEAT) do it, on recorded frames at a fixed frame rate.
 //

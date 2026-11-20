@@ -147,10 +147,27 @@ What flickered, and what the setting does to each:
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
 storm lightning exists; a storm flash would have to be capped and eased the same way).
 
-### The flicker check (e2e flow `flashing`, `e2e/flicker.mjs`)
+### The flicker check (e2e flows `flashing` to `flashing5`, `e2e/flicker.mjs`)
 
-`E2E_ONLY=flashing node e2e/run.mjs`. MapMaker makes a night scene with its own edits (two dark rooms, one lit by a
-red alarm light blinking four times a second, an Arc Turret, an electric fence); in play the brightest moments are
+`E2E_ONLY=flashing,flashing2,flashing3,flashing4,flashing5 node e2e/run.mjs` (`E2E_FLASH_MOMENTS=arc,blast` records just
+those moments, in their flows). The check is five flows, each some 5 min on CI (a moment is 35-100 s drawn in software),
+so a retry fits in a shard; `FLASHING_PARTS` in `e2e/run.mjs` lists each flow's moments by scene, and each flow makes
+the scenes its moments need:
+
+| Flow | Night scene | Day scene |
+|---|---|---|
+| `flashing` | arc, fence, blast, cookoff | |
+| `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
+| `flashing3` | rain, snow, loot, fixtures, status | |
+| `flashing4` | blood, alarm | lowhealth, scope, hitkick |
+| `flashing5` | | shelves, tunnel, lootlight |
+
+**A new moment goes in the shortest flow** (`e2e/timings.json`): add it to the scene, then its name to that flow's
+list in `FLASHING_PARTS` (a moment in no flow fails the check). All five are mapped wherever the check is
+(`e2e/flowMap.mjs`, `FLASHING_FLOWS`).
+
+MapMaker makes a night scene with its own edits (two dark rooms, one lit by a red alarm light blinking four times a
+second, an Arc Turret, an electric fence); in play the brightest moments are
 recorded frame by frame at 30 frames a second of the page's own time (`e2e/frameClock.mjs` freezes the page's clock
 and steps it a frame at a time, so a recorded second is a second of play however slowly CI draws), each canvas frame
 with the HUD's hurt tint (and a scope's surround and shadow) drawn over it, at 160 × 90:
@@ -178,4 +195,4 @@ The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosen
 
 With the setting on every moment must pass; the same moments with it off are measured and reported as numbers only.
 The flow writes frame strips (every 4th frame) and the numbers to `e2e-artifacts/` (`flashing-<moment>-<on|off>.png`,
-`flashing.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").
+`flashing-<night|day>-<the flow's first moment>.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").

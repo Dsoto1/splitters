@@ -169,8 +169,8 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   (`pickupVisuals.ts createLootOutline`), as dark as the glow is up as a share of its full level, so it comes and
   goes with the glow and holds still; Reduce flashing leaves it as it is (it adds no light). Cost: four draws a glow
   (three held still) and one for its outline, so at most 10 / 25 / 40 draws on low / medium / high. `pnpm
-  perf:budget`'s `fixtures` view (Pantry Raid) has pickups in view. The e2e flow `flashing` records six of them
-  coming up at night (moment `loot`) and four on white tiles by day (moment `lootlight`, which fails a ring under 1.3
+  perf:budget`'s `fixtures` view (Pantry Raid) has pickups in view. The flicker check records six of them
+  coming up at night (moment `loot`, flow `flashing3`) and four on white tiles by day (moment `lootlight`, flow `flashing5`, which fails a ring under 1.3
   contrast on average with the setting on). Low graphics draws them too (at most 2): only prop flames are off on Low.
 - **Pickup guns are drawn 1.4x** (`pickupVisuals.ts PICKUP_GUN_SCALE`, owner 2026-11-14; the MapMaker lane agreed),
   so they read at a distance: never longer than 1.3 m (the weapon glow's ring is 1.375 m across), and short of the
@@ -215,7 +215,7 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   `magic_areas/transparent`: the Vol. 1 family's shader drawn additive, unlit and lifted three times, since the
   Magic Area pack too leans on Godot's glow pass (its masks multiply down to a few per cent of alpha; unlifted the
   column could not be seen even at night). Cost: a portal two draws (the swirl's fragment shader reads 24 texels a
-  pixel), a pad four; not measured with `pnpm perf:budget`. The e2e flow `flashing` records a portal and a pad
+  pixel), a pad four; not measured with `pnpm perf:budget`. The e2e flow `flashing3` records a portal and a pad
   coming up at night (moment `fixtures`).
 - **Status auras** (`game/statusFx.ts`, map.lasting `status.<kind>`; Binbun's **Stylized Status FX**, asked for by
   `view.ts` for every other character in view with a status). Burning: `vfx_status_flame` (a tall shell of orange
@@ -250,7 +250,7 @@ new machine, never committed); `node tools/content/vfx-map.mjs` after editing th
   nature, dark, shard, green, water, divine, glow, purple, shatter, gem, magic, void: the game has no state for
   them; `streaks`, `heal_particle`, `sleep_particle` and `texture_particle` have no port). Spawn protection and
   the powerups keep their Electric and Flame FX looks. Cost: two draws an aura (three for the flame), 64 particles;
-  at most 3 at once; not measured with `pnpm perf:budget`. The e2e flow `flashing` records three bots' auras
+  at most 3 at once; not measured with `pnpm perf:budget`. The e2e flow `flashing3` records three bots' auras
   (burning, poisoned, slowed) coming up at night (moment `status`).
 - Map entries may `skip` parts of an effect (node names) and lasting effects may be held `steady`
   (`VfxOptions.steady`, `LastingPlace.steady`; changing it starts the effect again).
