@@ -7,13 +7,12 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Dual wielding.** Pick up a second Machine Pistol, Pulse Pistol, Sawed-Off or Pistol to hold one in each hand: each gun fires and reloads on its own trigger, and everyone sees both guns, their flashes and tracers; a host can turn it off in Match Setup.
 - **Characters hold long guns properly in third person and Character Select.** The support hand sits on the handguard instead of behind the magazine or under the gun, the stock comes in to the shoulder, and fingers close round the gun without folding into the palm.
-- **A Pistol pickup in MapMaker.** Maps can place a Pistol (palette, Weapons); it lies only where it is placed (random pickups never roll it), and for now walking over it with your own Pistol gives Pistol ammunition.
+- **A Pistol pickup in MapMaker.** Maps can place a Pistol (palette, Weapons); it lies only where it is placed (random pickups never roll it); walking over it with your own Pistol makes a pair.
 - **Grenades going off right in front of you no longer flicker with Reduce flashing on.** A blast close to the camera is drawn smaller as well as dimmer, so you see the fireball in front of you instead of standing inside it.
 - **Freaky Frida's shoulders hold together.** She is rebuilt from the owner's own rigged Meshy model, and her vest no longer lifts or opens at the back of her shoulders when she holds a gun.
 - **The sniper glint is exact.** A scope glints only while its owner is really looking through it (aim held, gun ready), not on a guess from how they stand.
-- **Dual wielding, under the hood (not in play yet).** The match, the HUD's two magazine counts and the rule a host can turn off are built for pairs of Machine Pistols, Pulse Pistols and Sawed-Offs; it stays hidden until the second gun is drawn in first and third person.
-- **Dual wielding, under the hood (not in play yet).** The match, the HUD's two magazine counts and the rule a host can turn off are built for pairs of Machine Pistols, Pulse Pistols and Sawed-Offs; the second gun is drawn in first person with its own sounds; it stays hidden until it is drawn in third person too.
 - **Freaky Frida's shoulders hold together.** She is rebuilt from the owner's own rigged Meshy model, and her vest no longer lifts or opens at the back of her shoulders when she holds a gun.
 - **A door standing ajar is cover too.** Its leaf is solid at its angle, beside the doorway it still closes.
 - **Scope feel.** Inside a scope the picture darkens toward the edge and a shadow slides in as you turn, sway or take a kick, settling when you hold your breath (Shift; the controller's sprint button too) with an "Out of breath" cue when it's spent. A sniper looking your way shows a small, soft glint on the scope (steady, dimmer and slower under Reduce flashing). Entering a scope no longer flashes bright for a frame. Sway, breath and zoom steps are unchanged in size and are now data.

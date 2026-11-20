@@ -667,7 +667,7 @@ mode playing.
 | Weapon set (Standard, Military, Sci-fi, Medieval, Chaos, Mixed bag; docs/WEAPON_SETS_PLAN.md) | Match rules → Weapon set | `rules set military` (`map`: the map's default) | `RULES.set` | live (pickups at once, loadouts at each spawn) |
 | Mix up weapon pickups | Match rules → Mix up weapon pickups | `rules mix on` | `RULES.mix` | live |
 | Drop weapon on death | Match rules → Drop weapon on death | `rules drops off` | `RULES.drops` | live |
-| Dual wielding (pick up a second of the same small gun: one in each hand; docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield") | Match rules → Dual wielding | `rules akimbo off` | `RULES.akimbo` | next match |
+| Dual wielding (on by default: pick up a second Pistol, Machine Pistol, Pulse Pistol or Sawed-Off to hold one in each hand; bots never pair; not in Disc Arena or weapons-only rules; docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield") | Match rules → Dual wielding | `rules akimbo off` (`on`) | `RULES.akimbo` | next match |
 | Team leaders, Leader hunt | Match rules → Team leaders | `rules leaders vip` | `RULES.leaders` (or `LEADERS`) | next match |
 | Fireteams (squad size 4/5/6; docs/FIRETEAMS_PLAN.md) | Match rules → Fireteams | `rules fireteams 5` (`off`) | `RULES.fireteams` | next match |
 | Spawn on teammates | Match rules | `rules squadspawn off` | `RULES.squadspawn` | next match |

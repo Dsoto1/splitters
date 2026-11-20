@@ -117,13 +117,10 @@ describe('server match rules (RULES): parity with the browser host', () => {
     expect(text).not.toMatch(/laps/);
   });
 
-  // Dual wielding, step 1: the rule exists but isn't on offer until play reads it (akimboRule.test.ts turns it on).
-  it('leaves dual wielding out while it does nothing in play', () => {
-    expect(AKIMBO_READY).toBe(false);
-    expect(ruleSpec('akimbo')).toBeUndefined();
-    expect(validateServerRules({ akimbo: false }).error).toMatch(/unknown rule "akimbo"/);
-    expect(serverRulesText({}, rulesForMode(map, 'core.tdm'), 'test_yard')).not.toMatch(/akimbo/);
-    // A match whose rules carry it keeps it through the server's own rules.
-    expect(applyServerRules({ ...rulesForMode(map, 'core.tdm'), akimbo: false }, {}, map, 8).rules.akimbo).toBe(false);
+  // Dual wielding: on offer since step 4 (akimboRule.test.ts has the rule's details; akimboHidden.test.ts the switch off).
+  it('offers dual wielding now that everyone sees the pair', () => {
+    expect(AKIMBO_READY).toBe(true);
+    expect(ruleSpec('akimbo')).toBeDefined();
+    expect(validateServerRules({ akimbo: false }).error).toBeUndefined();
   });
 });

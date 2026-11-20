@@ -155,12 +155,13 @@ describe('dual wielding in play', () => {
   afterAll(() => setAkimboReady());
 
   describe('making a pair', () => {
-    it('the constant is still off (nothing is on offer in a normal match), and tests turn play on through the one function', () => {
-      expect(AKIMBO_READY).toBe(false);
+    it('the constant is on since step 4 (pairs in normal matches), and tests can turn play off through the one function', () => {
+      expect(AKIMBO_READY).toBe(true);
       expect(akimboReady()).toBe(true);
-      setAkimboReady();
+      setAkimboReady(false);
       expect(akimboReady()).toBe(false);
-      setAkimboReady(true);
+      setAkimboReady();
+      expect(akimboReady()).toBe(true);
     });
 
     it('walking over a second of a gun you hold makes a pair: its own full magazine, and the pickup\'s ammo as before', () => {
@@ -218,7 +219,7 @@ describe('dual wielding in play', () => {
       expect(s.w().reserve).toBe(Math.min(getWeapon(PISTOL).reserveMax, getWeapon(PISTOL).pickupAmmo));
       expect(s.pub().dw).toBe(1);
       s.match.destroy();
-      // Off (AKIMBO_READY's false, what players have until step 4): ammunition only, no second gun, nothing new sent.
+      // Off (AKIMBO_READY false, as players had it until step 4): ammunition only, no second gun, nothing new sent.
       setAkimboReady(false);
       s = solo(PISTOL, { pair: false, map: map() });
       s.w().reserve = 0;

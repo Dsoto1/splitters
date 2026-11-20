@@ -2106,10 +2106,11 @@ For bows/energy weapons.
 
 ## Akimbo / Dual Wield
 
-**Status: steps 1 to 3 landed: the data and the rule, then play (the match, prediction, the HUD's two counts, the
-snapshot's fields), then the pair in first person with its sounds. It is still off in normal play:** `AKIMBO_READY`
-stays false until everyone else sees the second gun too (step 4), so no pair is ever made, nothing new is sent and a
-match plays bit for bit as before; the Match Setup switch stays hidden with it. To try it: `?akimbo=1` (below).
+**Status: steps 1 to 4 built: the data and the rule, play (the match, prediction, the HUD's two counts, the
+snapshot's fields), the pair in first person with its sounds, and the pair in third person for everyone else. On in
+normal play since step 4:** `AKIMBO_READY` is true, so a person who picks up a second of an eligible gun they hold
+makes a pair in any match whose rule allows it (on by default), and Match Setup, a dedicated server's rules and
+docs/HOSTING.md offer the switch. Tuning (step 5) waits for the owner to play it.
 
 Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
 shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
@@ -2187,13 +2188,13 @@ come from `akimboOf` through five small helpers in `gunplay.ts` (`akimboCone`, `
 `akimboRaise`, `akimboMove`).
 
 - **On or off.** A match makes pairs only when dual wielding is in play (`akimboReady()` in `rules.ts`: the
-  constant `AKIMBO_READY`, false; tests turn it on with `setAkimboReady`; a match can be told either way with
+  constant `AKIMBO_READY`, true since step 4; tests turn it on with `setAkimboReady`; a match can be told either way with
   `MatchOptions.akimbo`) and its rule allows (`MatchRules.akimbo`). Off, nothing below exists: a second gun is
   ammunition, the second trigger and the fire-mode key do what they did, and no new field is sent.
 - **`?akimbo=1`** turns it on for this browser's own matches (Play offline, MapMaker Test, the host's page of Host
   game), where test mode is honoured: a dev server, a test-hooks build, or a page served from this machine
-  (`testMode.ts` `allowedHere`). In first person the pair is drawn and heard; in third person, and to everyone
-  else, it is still one gun.
+  (`testMode.ts` `allowedHere`). Since step 4 it is on in every match whose rule allows it, so the switch is no longer
+  needed to try it.
 - **Making a pair.** A person (never a bot) who walks over a pickup of an eligible gun they hold, or takes a drop of
   one, holds a pair. A pickup's second gun has a full magazine and the pickup still gives its ammunition (a pair is
   made even with a full reserve); a drop's second gun has the drop's magazine, its reserve tops yours up and the
@@ -2330,8 +2331,13 @@ The client only (`game/characterAnimator.ts` `holdPair`, `pairPose`, `placePair`
   pair: never two at once, never more often than one gun's rounds. Others' rounds come a snapshot at a time, so
   both guns' rounds in one message are `together` (`bothGunsFired`) and the flash takes turns between the hands.
   Your own pair asks the gate once a round for first and third person alike. Its moment: `pairtp` (e2e `flashing`).
-- **Not done.** Others' reload, raise timing and putting away are not on the wire (step 2 sent only `dw`); no
-  third-person sprint pose for a pair (none for one gun either).
+- **Over the network.** e2e `hostgame` gives the host a pair of machine pistols 3 m in front of the friend (who
+  plays over the host's compressed stream) and holds both triggers: the friend sees the second gun up, a flash at
+  each gun's own muzzle, the two muzzles apart with the first gun on the host's right, and the second gun gone when
+  it is put away.
+- **Not done.** Others' reload, raise timing and putting away are not on the wire (step 2 sent only `dw`): their
+  reload is not drawn (as for one gun: no one's reload is sent); no third-person sprint pose for a pair (none for one
+  gun either).
 
 ## Underbarrel Attachments
 

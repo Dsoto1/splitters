@@ -586,7 +586,6 @@ export class GameSession {
     this.sfx.localStrike();
   }
 
-  /** A remote player's next punch: jab and cross in turn. */
   /**
    * Your own pair in third person (dual wielding): how far into its reload dip each gun is (the gun you held, the
    * second), as first person dips them: one hand reloads at a time, so only the gun whose turn it is goes down.
@@ -600,6 +599,7 @@ export class GameSession {
     return first || second ? [first, second] : undefined;
   }
 
+  /** A remote player's next punch: jab and cross in turn. */
   private nextPunch(slot: number): 'jab' | 'melee' {
     const jab = this.punches.get(slot) ?? true;
     this.punches.set(slot, !jab);

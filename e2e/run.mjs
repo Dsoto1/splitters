@@ -14543,6 +14543,86 @@ async function hostpageFlow(browser) {
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
+/**
+ * Dual wielding over the network (step 4): the host takes a pair of machine pistols, stands 3 m in front of the
+ * friend facing them and holds both triggers; the friend, whose match comes over the host's compressed stream, must
+ * see the host's character with the second gun up (the snapshot's `dw`), a flash at each gun's own muzzle (the
+ * shots' `off`), the two muzzles a hand's width apart, the right gun's on the host's right; then the second gun put
+ * away (the fire-mode key's toggle) goes from the host's left hand.
+ */
+async function hostPairSeen(host, friend) {
+  const fslot = await friend.evaluate(() => window.__cs.slot);
+  const hslot = await host.evaluate(() => window.__cs.slot);
+  await host.evaluate(() => window.__give('core.machine_pistol'));
+  const yaw = await friend.evaluate(() => window.__cs.input.yaw);
+  const placed = await sim(
+    host,
+    (m, me, { fslot, yaw }) => {
+      const f = m.combatants().find((c) => c.slot === fslot) ?? m.slots[fslot];
+      const w = me.weapons.get(me.current);
+      if (!f || !w || w.def.id !== 'core.machine_pistol') return false;
+      if (!w.off) m.makePair(me, w, w.def.magazine);
+      me.move.pos.x = f.move.pos.x + Math.sin(yaw) * 3;
+      me.move.pos.z = f.move.pos.z + Math.cos(yaw) * 3;
+      me.move.pos.y = f.move.pos.y;
+      clearInterval(self.__hostPairPin);
+      self.__hostPairPin = setInterval(() => {
+        me.health = me.maxHealth;
+        w.mag = w.def.magazine;
+        if (w.off) w.off.mag = w.def.magazine;
+        w.reserve = w.def.reserveMax;
+      }, 1000 / 60);
+      return !!w.off;
+    },
+    { fslot, yaw },
+  ).catch(() => false);
+  await host.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw + Math.PI;
+    window.__cs.input.pitch = 0;
+  }, yaw);
+  const up = placed && (await friend.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.pair?.up ?? 0) >= 1, hslot, { timeout: T(15000) }).then(() => true, () => false));
+  check(up, `the friend sees the host's pair: the second gun up in the host's left hand (snapshot dw${placed ? '' : '; the host got no pair'})`);
+  if (!up) {
+    await sim(host, () => clearInterval(self.__hostPairPin));
+    return;
+  }
+  const before = await friend.evaluate(() => ({ ...window.__cs.view.remotePairFlashes }));
+  await host.evaluate(() => (window.__autoInput = { buttons: 2 | 32 }));
+  await friend
+    .waitForFunction((b) => {
+      const f = window.__cs.view.remotePairFlashes;
+      return f.right - b.right > 3 && f.left - b.left > 3;
+    }, before, { timeout: T(15000) })
+    .catch(() => {});
+  const seen = await friend.evaluate(
+    ({ s, b }) => {
+      const v = window.__cs.view;
+      const f = v.remotePairFlashes;
+      const r = v.muzzleOf(s, false);
+      const l = v.muzzleOf(s, true);
+      const a = v.avatars.get(s);
+      // The host's right, as the friend sees it: the host faces the friend, so it is the friend's left.
+      const yaw = a.root.rotation?.y ?? 0;
+      const right = { x: Math.cos(yaw), z: -Math.sin(yaw) };
+      const side = r && l ? (r.x - l.x) * right.x + (r.z - l.z) * right.z : null;
+      return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, apart: r && l ? Math.hypot(r.x - l.x, r.y - l.y, r.z - l.z) : 0, side };
+    },
+    { s: hslot, b: before },
+  );
+  await host.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(seen.right > 3 && seen.left > 3, `each of the host's guns flashes at its own muzzle for the friend (shot.off; right ${seen.right}, left ${seen.left}, left out ${seen.skipped})`);
+  check(seen.apart > 0.15 && seen.apart < 1.2 && seen.side > 0.1, `the host's two muzzles are a pair's width apart, the first gun's on their right (${seen.apart.toFixed(2)} m, ${seen.side?.toFixed(2)} m to the right)`);
+  // The second gun put away (the fire-mode key: one gun in hand): it goes from the host's left hand for the friend.
+  await sim(host, (m, me) => {
+    clearInterval(self.__hostPairPin);
+    const w = me.weapons.get(me.current);
+    if (w?.off) w.off.away = true;
+  });
+  const gone = await friend.waitForFunction((s) => !window.__cs.view.avatars.get(s)?.pair, hslot, { timeout: T(10000) }).then(() => true, () => false);
+  check(gone, "the host's second gun put away goes from their hand for the friend");
+  await host.evaluate(() => delete window.__autoInput);
+}
+
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
   const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
@@ -14607,6 +14687,7 @@ async function hostgameFlow(browser) {
     });
     const alive = await friend.evaluate(() => window.__cs.local.alive);
     check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m${alive ? '' : ', friend down'})`);
+    await hostPairSeen(host, friend);
     // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
     const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
     const b0 = await bytes();
