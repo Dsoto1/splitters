@@ -74,6 +74,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Landed: the Pistol pickup in a train** (`check/train-20261120-140256` at 07516dbc, run 44749760283, green on attempt 1; `wip/pistol-pickup` alone; main fast-forwarded to it; lane B's splitters22, 2026-11-20; lock released). Next for dual wielding: step 4 (third person).
+
 **Landed: the flicker check split into five flows, alone** (`check/flashing-split` at 3f7a76a5, run 44739082577, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-20; lock released).
 
 **Landed: the beams/vehicles pointer-lock fix and the flashing blast fix in a train** (`check/train-20261120-105513` at fc2278da, run 44723278619, green on attempt 1; `wip/beams-leak` (0dcaf588) then `wip/flashing-blast` (bbce41e2); main fast-forwarded to it; lane B's splitters22, 2026-11-20; lock released). The earlier train check/train-20261120-081340 was dropped: its shard 6 (vehicles) died twice with no log, the same flood, fixed by 7c24f804.
