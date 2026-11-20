@@ -63,6 +63,8 @@ export interface MatchSetup {
   mixPickups?: boolean;
   /** Drop weapon on death (absent: on). */
   dropWeapons?: boolean;
+  /** Dual wielding (absent: on). */
+  akimbo?: boolean;
   /** Weapon set (sim/weaponSets.ts: standard, military, scifi, medieval, chaos, mixed). Absent: the map's default. */
   weaponSet?: string;
   /** Weather (map/weather.ts WEATHER_CHOICES). Absent: the map's own. */
@@ -853,6 +855,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.killstreaks === false) rules.killstreaks = false;
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;
+  if (s.akimbo === false) rules.akimbo = false;
   if (isWeaponSetId(s.weaponSet)) rules.weaponSet = s.weaponSet;
   if (isWeatherChoice(s.weather)) rules.weather = s.weather;
   if (s.squadSpawn === false) rules.squadSpawn = false;

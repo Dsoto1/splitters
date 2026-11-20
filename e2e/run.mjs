@@ -12194,7 +12194,7 @@ const FLASHING_DAY = {
       return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
   made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
-  moments: ({ page, stage, step }) => {
+  moments: ({ page, stage, step, frameMs }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -12307,23 +12307,20 @@ const FLASHING_DAY = {
         look: { yaw: Math.PI, pitch: -0.3 },
         bots: [],
         before: () => page.evaluate(() => ((window.__scopeSeen = { fade: new Set(), box: 0 }), Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.3 }))),
-        at: Object.fromEntries(
-          Array.from({ length: 60 }, (_, f) => [
-            f,
-            () =>
-              page.evaluate((f) => {
-                const cs = window.__cs;
-                const seen = window.__scopeSeen;
-                const o = cs.hud.scopeOverlay();
-                if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
-                seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
-                const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
-                window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
-                // Hard turns: 1.8 rad/s, the other way every sixth of a second.
-                if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
-              }, f),
-          ]),
-        ),
+        // (Every frame has something to do: done in the page with the frame's step, one trip to the page a frame.)
+        stepAt: (f) =>
+          page.evaluate(([f, ms]) => {
+            const cs = window.__cs;
+            const seen = window.__scopeSeen;
+            const o = cs.hud.scopeOverlay();
+            if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
+            seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
+            const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
+            window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
+            // Hard turns: 1.8 rad/s, the other way every sixth of a second.
+            if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
+            return window.__frameClock.step(ms);
+          }, [f, frameMs]),
         seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
         // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
         sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
@@ -12492,11 +12489,6 @@ async function flashingScene(browser, scene) {
   check(playing, 'the scene plays (MapMaker TEST)');
   if (!playing) return void (await ctx.close());
   await holdBots(page);
-  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
-  for (const id of ['core.lmg', 'core.sniper', 'core.arc_caster']) {
-    await page.evaluate((w) => window.__give(w), id);
-    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
-  }
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -12508,17 +12500,15 @@ async function flashingScene(browser, scene) {
   const defaultOn = await page.evaluate(() => document.getElementById('reduce-flashing')?.checked);
   check(defaultOn === true, `Reduce flashing is on by default (the pause menu's switch: ${defaultOn})`);
   await page.evaluate(installFrameGrab, [W, H]);
-  await page.evaluate(() => window.__frameClock.freeze());
+  const frameMs = 1000 / FPS;
+  /** The page's clock (frozen below, once the guns are in) moved on `n` frames; the errors its timers and frames threw. */
   const step = (n) =>
     page.evaluate(([n, ms]) => {
       const thrown = [];
       for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(ms));
       return thrown;
-    }, [n, 1000 / FPS]);
+    }, [n, frameMs]);
   const clockErrors = [];
-  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
-  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
-  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
   const stage = (mo) =>
     sim(page, (m, me, mo) => {
@@ -12547,8 +12537,9 @@ async function flashingScene(browser, scene) {
     return { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) };
   };
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
-  // The moments (a few metres apart in the scene; 2 s each, setting on then off).
-  const moments = scene ? scene.moments({ page, stage, aim, step }) : [
+  // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
+  // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
+  const moments = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -12692,38 +12683,32 @@ async function flashingScene(browser, scene) {
       bots: [[-10, 0, 28]],
       before: () =>
         page.evaluate(() => ((window.__glintSeen = { most: 0, count: 0 }), (window.__autoInput = { buttons: 0 }))).then(() => sim(page, (m, me) => {
-          // The bots take a copy of your Sniper Rifle and stand as a bot does when it fights (the state the snapshot carries).
+          // The bots take a copy of your Sniper Rifle and hold their scope up (the aim button, 8: the snapshot's `zm`).
           for (const b of m.combatants().filter((c) => c.bot)) {
             b.weapons.set(me.current, { ...me.weapons.get(me.current) });
             b.current = me.current;
             b.raiseTicks = 0;
-            Object.defineProperty(b.bot, 'state', { get: () => 'engage', set() {}, configurable: true });
             self.__glintAim = Math.PI / 2;
-            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0, yaw: self.__glintAim, pitch: 0 })));
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 8, yaw: self.__glintAim, pitch: 0 })));
           }
         })),
-      at: Object.fromEntries(
-        Array.from({ length: 60 }, (_, f) => [
-          f,
-          async () => {
-            // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
-            if (f === 2 || f === 24 || f === 34) await sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), f === 24 ? Math.PI / 2 : Math.PI);
-            await page.evaluate((f) => {
-              const g = window.__cs.scope().glints;
-              window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
-              window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
-              if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
-            }, f);
-          },
-        ]),
-      ),
+      // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
+      at: Object.fromEntries([[2, Math.PI], [24, Math.PI / 2], [34, Math.PI]].map(([f, yaw]) => [f, () => sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), yaw)])),
+      // (The glint is read every frame: in the page with the frame's step, one trip to the page a frame.)
+      stepAt: (f) =>
+        page.evaluate(([f, ms]) => {
+          const g = window.__cs.scope().glints;
+          window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
+          window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
+          if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
+          return window.__frameClock.step(ms);
+        }, [f, frameMs]),
       seen: () => page.evaluate(() => ({ ...window.__glintSeen, most: +window.__glintSeen.most.toFixed(2), now: +window.__cs.scope().glints.level.toFixed(2), scoped: window.__cs.scope().scoped })),
       // One glint, never brighter than its level (0.5 with the setting on, 0.85 off), and up by the end.
       sees: (on, s) => s.count === 1 && s.scoped && s.now > 0.3 && s.most <= (on ? 0.5 : 0.85) + 0.001 && (on || s.most > 0.6),
       after: () =>
         page.evaluate(() => (window.__autoInput = { buttons: 0 })).then(() => sim(page, (m) => {
           for (const b of m.combatants().filter((c) => c.bot)) {
-            Object.defineProperty(b.bot, 'state', { value: 'roam', writable: true, enumerable: true, configurable: true });
             b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
           }
         })),
@@ -12854,10 +12839,20 @@ async function flashingScene(browser, scene) {
       look: aim([24, 0, -20.5], [24, 1.4, -28]),
       bots: [],
     },
-  ];
+  ]).filter((mo) => !only || only.includes(mo.name));
+  // The guns these moments hold, in hand once each, so their models are in before the page's clock stops (models load
+  // in real time): only theirs (the day scene has no machine gun).
+  for (const id of new Set(moments.map((mo) => mo.weapon))) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  await page.evaluate(() => window.__frameClock.freeze());
+  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
+  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
+  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   const report = { fps: FPS, frame: [W, H], viewport: [480, 270], limits: FLICKER_LIMITS, moments: {} };
   for (const mo of moments) {
-    if (only && !only.includes(mo.name)) continue;
+    const began = Date.now();
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
     await page.evaluate((w) => window.__give(w), mo.weapon);
     await stage(mo);
@@ -12876,7 +12871,7 @@ async function flashingScene(browser, scene) {
       });
       for (let f = 0; f < RECORD; f++) {
         await mo.at?.[f]?.();
-        clockErrors.push(...(await step(1)));
+        clockErrors.push(...(await (mo.stepAt ? mo.stepAt(f) : step(1))));
       }
       await page.evaluate(() => (window.__flick.on = false));
       if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
@@ -12902,6 +12897,8 @@ async function flashingScene(browser, scene) {
       console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
     }
     await mo.after?.();
+    // (Where the flow's time goes: a moment is some 155 frames drawn in software, 120 of them read back.)
+    console.log(`flashing ${mo.name}: took ${((Date.now() - began) / 1000).toFixed(0)} s`);
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),

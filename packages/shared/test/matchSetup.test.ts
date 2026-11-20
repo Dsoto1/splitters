@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, MAX_PLAYER_SLOTS, SETUP_PRESETS, initPhysics, modeOptions, normalizeSetup, parseClientMessage, playableModes, presetPlayers, rulesFromSetup, setupFit, setupPlayers, setupTeams, validateTeamSizes, type MapDocument, type MatchSetup } from '../src/index.ts';
+import { DEFAULT_RULES, MAX_PLAYER_SLOTS, SETUP_PRESETS, akimboAllowed, effectiveSetting, initPhysics, modeOptions, normalizeSetup, parseClientMessage, playableModes, presetPlayers, rulesFromSetup, setupFit, setupPlayers, setupTeams, validateTeamSizes, type MapDocument, type MatchSetup } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -51,6 +51,21 @@ describe('team configuration', () => {
 });
 
 describe('rules from a setup', () => {
+  // Dual wielding, step 1: default on, stored like the other default-on rules (only "off" is written).
+  it('dual wielding: on unless the setup turns it off; a setup saved before the rule reads as on', () => {
+    expect('akimbo' in rulesFromSetup(base(), yard()).rules).toBe(false);
+    expect('akimbo' in rulesFromSetup(base({ akimbo: true }), yard()).rules).toBe(false);
+    expect(rulesFromSetup(base({ akimbo: false }), yard()).rules.akimbo).toBe(false);
+    const old = normalizeSetup({ map: 'test_map', mode: 'core.tdm', bots: 3, skill: 'hard', scoreLimit: 40, minutes: 10, dropWeapons: false })!;
+    expect('akimbo' in old).toBe(false);
+    expect(akimboAllowed(rulesFromSetup(old, yard()).rules)).toBe(true);
+    expect(normalizeSetup({ ...old, akimbo: false })!.akimbo).toBe(false);
+    expect(akimboAllowed(rulesFromSetup(normalizeSetup({ ...old, akimbo: false })!, yard()).rules)).toBe(false);
+    // Rules from before it, and the modes' own: on.
+    expect(akimboAllowed(DEFAULT_RULES['core.tdm'])).toBe(true);
+    expect(effectiveSetting(base(), yard(), 'akimbo')).toBe(true);
+  });
+
   it('an uneven three-team setup with names, colours and a fixed team', () => {
     const { rules, fill } = rulesFromSetup(base({ teams: [2, 3, 5], teamNames: ['Reds', '', ' Blues '], teamColors: ['#ff0000', 'bad', ''], assign: 'fixed', playerTeam: 2, friendlyFire: 'half', respawn: 4 }), yard());
     expect(fill).toBe(10);

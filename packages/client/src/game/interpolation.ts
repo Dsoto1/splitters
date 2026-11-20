@@ -63,6 +63,8 @@ export interface RemotePose {
   /** Dancing (emote). */
   emote?: boolean;
   sprinting?: boolean;
+  /** Aiming through a magnified optic, as the host says (PlayerSnapshot.zm; hosts older than the field never say it). */
+  scoped?: boolean;
   /** Under a parachute (1) or glider (2). */
   chute?: number;
   /** Riding a zipline: the line (index in mapZiplines) and the speed along it (m/s). */
@@ -239,6 +241,7 @@ export class Interpolator {
         grounded: pb.g === 1,
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
+        ...(pb.zm ? { scoped: true } : {}),
         ...(pb.em ? { emote: true } : {}),
         ...(pb.ch ? { chute: pb.ch } : {}),
         ...(pb.zl ? { zip: pb.zl[0], zipSpeed: Math.abs(pb.zl[2]) } : {}),

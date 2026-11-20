@@ -18,6 +18,7 @@
   "botRange": [0, 14],
   "ammo": "light",
   "recoil": { "bloom": 0.006, "maxBloom": 0.07, "recover": 0.002 },
+  "akimbo": true,
   "view": {
     "model": "guns/grease_gun.glb",
     "held": { "medium": "guns/grease_gun.medium.glb", "high": "guns/grease_gun.high.glb" },

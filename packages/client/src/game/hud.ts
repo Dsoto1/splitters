@@ -675,7 +675,12 @@ export class Hud {
     }
   }
 
-  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false): void {
+  /**
+   * `pair`: dual wielding, a pair in hand: the second gun's magazine and whether it is reloading. The count then
+   * reads "L | R" (the second gun is the left hand's, the one you already held the right's) over the one reserve,
+   * and each side shows its own reload.
+   */
+  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false, pair: { mag: number; reloading: boolean } | null = null): void {
     if (driving) {
       this.weaponName.textContent = 'Driving';
       this.ammoCount.textContent = '';
@@ -696,9 +701,17 @@ export class Hud {
     else if (barrel) this.ammoCount.textContent = reloading ? 'Loading…' : String(ammo[2]);
     else if (def.heat) this.ammoCount.textContent = ammo[3] >= 100 ? 'OVERHEAT' : `${Math.round(ammo[3])}°`;
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
-    else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
-    this.ammoCount.classList.toggle('reloading', reloading || (!!def?.heat && !!ammo && ammo[3] >= 100));
-    this.ammoCount.classList.toggle('low', !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
+    else if (pair) {
+      // Two magazines over the one reserve; a gun that is reloading shows the cue in its place (the reserve stays up).
+      this.ammoReserve.textContent = String(ammo[1]);
+      const low = Math.ceil(def.magazine / 4);
+      const side = (mag: number, busy: boolean, hand: string) => `<span class="pair-${hand}${busy ? ' reloading' : mag <= low ? ' low' : ''}">${busy ? '↻' : mag}</span>`;
+      const html = `${side(pair.mag, pair.reloading, 'l')}<i class="pair-bar">|</i>${side(ammo[0], reloading, 'r')}`;
+      if (this.ammoCount.innerHTML !== html) this.ammoCount.innerHTML = html;
+    } else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
+    this.ammoCount.classList.toggle('pair', !!pair && alive && !!def && !!ammo);
+    this.ammoCount.classList.toggle('reloading', !pair && (reloading || (!!def?.heat && !!ammo && ammo[3] >= 100)));
+    this.ammoCount.classList.toggle('low', !pair && !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;

@@ -1,7 +1,7 @@
 import { add, dot, scale, type Vec3, hypot } from '../math.ts';
 import { PLAYER, type Stance } from './constants.ts';
 import { lastHit, rayBody, type HitBody, type LookHitbox } from './hitbox.ts';
-import type { AccuracySpec, BallisticSpec, FalloffSpec, HandlingSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
+import type { AccuracySpec, AkimboSpec, BallisticSpec, FalloffSpec, HandlingSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CODES } from '../content/weapons.generated.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
@@ -472,6 +472,11 @@ export interface WeaponDefinition {
   // ---- Gunplay (docs/GUNPLAY_SPEC.md §35; see sim/gunplay.ts). Each field overrides the family's default.
   /** Weapon family: velocity, spread, recoil, falloff and body-zone defaults. */
   family?: WeaponFamily;
+  /**
+   * Dual wielding: `true` makes the weapon eligible with its family's trade; an object overrides numbers, and `as`
+   * names the family to take them from (a weapon without one). See gunplay.ts akimboOf.
+   */
+  akimbo?: true | (Partial<AkimboSpec> & { as?: WeaponFamily });
   /** Ballistic bullets (hitscan weapons with a bullet family fly by default); null forces hitscan. */
   ballistic?: Partial<BallisticSpec> | null;
   /** Spread model: base / movement / air / sustained growth / max / recovery / ADS. */

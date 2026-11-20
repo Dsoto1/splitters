@@ -73,7 +73,7 @@ const snapshot = (more: Partial<SnapshotMessage> = {}): SnapshotMessage => ({ t:
 const everything = (): SnapshotMessage =>
   snapshot({
     players: [
-      player(0, { vx: 1.5, vz: -2.25, fx: 1024 + 128, st: 'patrol', sn: 2, em: 1, sr: 1, cl: 3, ch: 2, dr: 1, zl: [2, 14.5, -6] }),
+      player(0, { vx: 1.5, vz: -2.25, fx: 1024 + 128, st: 'patrol', sn: 2, em: 1, sr: 1, cl: 3, ch: 2, dr: 1, zl: [2, 14.5, -6], zm: 1, dw: 1 }),
       player(1, { g: 0, alive: 0, hp: -12, ar: 0, st: 'attack', sn: 1, ch: 1 }),
       player(127, { st: 'patrol', p: [-0, 1e-9, 123456.789] }),
     ],
@@ -165,6 +165,56 @@ describe('the binary snapshot message', () => {
     for (const k of ['mt', 'ms', 'np', 'ab', 'fs', 'ld', 'md', 'pr', 'pw', 'dw', 'zn', 'me', 'sc', 'pk']) expect(seenTop.has(k), k).toBe(true);
   });
 
+  it('version 2: the scoped bit (zm, 32) and the reserved pair bit (dw, 64), each alone, both and neither', () => {
+    expect(SNAPSHOT_BINARY_VERSION).toBe(2);
+    const bitsOf = (more: Partial<PlayerSnapshot>) => {
+      const buf = new SnapshotBinaryEncoder().encode(snapshot({ players: [player(0, more)] }))!;
+      // The players start after the header (32 bytes), the strings' count (no bot state here: 2 bytes) and their own count (2).
+      return new Uint8Array(buf)[32 + 2 + 2 + 1]!;
+    };
+    const base = bitsOf({});
+    expect(base & (32 | 64)).toBe(0);
+    expect(bitsOf({ zm: 1 })).toBe(base | 32);
+    expect(bitsOf({ dw: 1 })).toBe(base | 64);
+    expect(bitsOf({ zm: 1, dw: 1 })).toBe(base | 96);
+    const pooled = new SnapshotBinaryDecoder({ ring: 2 });
+    for (const more of [{ zm: 1 }, { dw: 1 }, { zm: 1, dw: 1 }, {}, { zm: 1 }, {}] as Partial<PlayerSnapshot>[]) {
+      const msg = snapshot({ players: [player(0, more), player(1, { st: 'attack', sr: 1 })] });
+      const got = roundTrip(msg)!;
+      expect(got).toEqual(msg);
+      expect(got.players[0]!.zm).toBe(more.zm);
+      expect(got.players[0]!.dw).toBe(more.dw);
+      expect(got.players[1]!.zm).toBeUndefined();
+      // Reused player objects are refilled: a bit set in the last snapshot does not linger.
+      const again = pooled.decode(new SnapshotBinaryEncoder().encode(msg)!)!;
+      expect(again.players[0]!.zm).toBe(more.zm);
+      expect(again.players[0]!.dw).toBe(more.dw);
+      expect(JSON.parse(JSON.stringify(again.players[0]))).toEqual(player(0, more));
+      pooled.commit();
+    }
+    // The bits cost no bytes: a scoped player's record is as long as an unscoped one's.
+    const len = (m: SnapshotMessage) => new DataView(new SnapshotBinaryEncoder().encode(m)!).getUint32(8, true);
+    expect(len(snapshot({ players: [player(0, { zm: 1, dw: 1 })] }))).toBe(len(snapshot({ players: [player(0)] })));
+    // Out of range: refused, not approximated.
+    for (const bad of [{ zm: 0 }, { zm: 2 }, { dw: true }]) {
+      const enc = new SnapshotBinaryEncoder();
+      expect(enc.encode(snapshot({ players: [{ ...player(0), ...bad } as unknown as PlayerSnapshot] }))).toBeNull();
+    }
+  });
+
+  it('an old-shape snapshot (no zm, no dw) round-trips, and decodes to entries without them', () => {
+    const old = snapshot({ players: [player(0, { vx: 1.5, vz: -2.25, fx: 4, sn: 2, em: 1, sr: 1, cl: 3, ch: 2, dr: 1, zl: [2, 14.5, -6] }), player(1, { st: 'attack' })] });
+    const got = roundTrip(old)!;
+    expect(got).toEqual(old);
+    for (const p of got.players) {
+      expect(p.zm).toBeUndefined();
+      expect(p.dw).toBeUndefined();
+      // (Decoded entries hold every field as an own property, absent ones undefined: as JSON they have no such key.)
+      const json = JSON.parse(JSON.stringify(p)) as Record<string, unknown>;
+      expect('zm' in json || 'dw' in json).toBe(false);
+    }
+  });
+
   it('keeps numbers exactly: positions, speeds and angles are the sim\'s own 64-bit values', () => {
     const p = player(5, { p: [1 / 3, -0, 1e-300], vy: Math.PI, yaw: -1e15 / 7, pitch: Number.MIN_VALUE, vx: 0.1 + 0.2, vz: -1 / 3 });
     const got = roundTrip(snapshot({ players: [p], pr: [[1, 0.1, 0.2, 0.3, 2]], timeLeft: 1 / 7 }))!;
@@ -227,6 +277,26 @@ describe('reading binary snapshots', () => {
     const padded = new Uint8Array(exact.length + 64);
     padded.set(exact, 32);
     expect(new SnapshotBinaryDecoder().decode(padded.subarray(32, 32 + exact.length))).toEqual(expected(everything()));
+  });
+
+  it('takes only its own version (2), and no player bit it does not know', () => {
+    const dec = new SnapshotBinaryDecoder();
+    // Version 1 (before zm and dw) and a later one: refused before another byte is read.
+    for (const v of [1, 3]) {
+      const other = valid();
+      new DataView(other.buffer).setUint16(4, v, true);
+      expect(dec.decode(other)).toBeNull();
+      expect(dec.error).toBe(`binary snapshot version ${v} (this reads 2)`);
+    }
+    // The one bit left (128) on a player's record: unknown, refused.
+    const u8 = new Uint8Array(new SnapshotBinaryEncoder().encode(snapshot({ players: [player(0)] }))!);
+    const bitsAt = 32 + 2 + 2 + 1;
+    expect(dec.decode(u8)).not.toBeNull();
+    u8[bitsAt] = u8[bitsAt]! | 32 | 64;
+    expect(dec.decode(u8)!.players[0]).toMatchObject({ zm: 1, dw: 1 });
+    u8[bitsAt] = u8[bitsAt]! | 128;
+    expect(dec.decode(u8)).toBeNull();
+    expect(dec.error).toBe('unknown player fields');
   });
 
   it('fails cleanly on another version or another kind of message, never misreads it', () => {

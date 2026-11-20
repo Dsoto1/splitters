@@ -66,6 +66,8 @@ export interface PlayerInput {
   /**
    * The fire mode wanted for the held weapon (index into its `fireModes`, sim/fireModes.ts), sent with every input
    * while a weapon with modes is held; absent: keep the mode it has. Older hosts ignore it (the first mode).
+   * Dual wielding: with a pair of the held weapon, 1 puts the second gun away (one gun, with its sights) and
+   * anything else brings it back; sent while you hold a pair.
    */
   fireMode?: number;
   /** A quick message (1-QUICK_MESSAGES.length) or emote (EMOTE_DANCE) sent with this input. */

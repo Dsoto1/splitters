@@ -60,6 +60,8 @@ const paths: [string, string, number, number][] = [
   // [what, weapon, distance (m), ticks to watch]
   ['bullets (ballistic rounds)', 'core.rifle', 5, 20],
   ['pellets', 'core.shotgun', 3, 10],
+  // (A weapon that can be one of a pair, fired alone: its definition's `akimbo` flag is not a pair's trade.)
+  ['a pistol (it can be one of a pair)', 'core.pistol', 4, 20],
   ['a rocket (its hit and its blast)', 'core.rockets', 5, 30],
   ['a blade', 'core.knife', 1.2, 2],
   ['fire and its burn (damage over time)', 'core.flamethrower', 2.5, 150],

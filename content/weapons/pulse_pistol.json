@@ -21,6 +21,7 @@
   "ammo": "cells",
   "recoil": { "bloom": 0.004, "maxBloom": 0.02, "recover": 0.0015 },
   "kick": { "pitch": [0.012], "yaw": [0.003, -0.003], "variance": 0.0024000000000000002, "delay": 4, "settle": 8, "rate": 0.1, "visual": 0.18 },
+  "akimbo": { "as": "pistol" },
   "view": {
     "model": "guns/plasma_defender.glb",
     "held": { "medium": "guns/plasma_defender.medium.glb", "high": "guns/plasma_defender.high.glb" },

@@ -17,7 +17,7 @@ import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
 import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
-import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
+import { AKIMBO_BASE, FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
 import { SURFACE_TYPES, materialBallisticOf, propSurfaceOf } from './surfaceTypes.ts';
 
 // ---------------------------------------------------------------- families
@@ -139,6 +139,20 @@ export interface HandlingSpec {
   sprintExit: number;
 }
 
+/**
+ * Dual wielding ("akimbo"; docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): what holding a pair of the same gun costs.
+ * `cone` multiplies the aim cone, `pattern` a shotgun's pellet spread, `kick` the recoil, `reload` and `raise` those
+ * times; `move` is added to handling.move.
+ */
+export interface AkimboSpec {
+  cone: number;
+  pattern: number;
+  kick: number;
+  reload: number;
+  raise: number;
+  move: number;
+}
+
 /** A family's defaults (content/weapons/families.json `families`). */
 export interface FamilyDefaults {
   ballistic: BallisticSpec | null;
@@ -146,6 +160,8 @@ export interface FamilyDefaults {
   kick: KickSpec;
   falloff: FalloffSpec;
   handling: HandlingSpec;
+  /** The family's dual-wielding trade, over AKIMBO_BASE; a weapon is eligible only by its own `akimbo`. */
+  akimbo?: Partial<AkimboSpec>;
   head: number;
   legs: number;
   arms: number;
@@ -155,7 +171,7 @@ const acc = (base: number, move: number, air: number, perShot: number, tight: nu
 const kick = (pitch: number[], yaw: number[], variance: number, delay: number, settle: number, rate: number, visual: number): KickSpec => ({ pitch, yaw, variance, delay, settle, rate, visual });
 
 /** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff): content/weapons/families.json, with named fields. */
-export { FAMILY_DEFAULTS };
+export { AKIMBO_BASE, FAMILY_DEFAULTS };
 
 /** Everything gunplay needs to know about one weapon, defaults filled in. */
 export interface Gunplay {
@@ -206,6 +222,88 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
   };
   cache.set(def, g);
   return g;
+}
+
+const akimboCache = new WeakMap<WeaponDefinition, AkimboSpec | null>();
+
+/**
+ * A weapon's dual-wielding numbers, or null when it can't be paired: the base block (families.json `akimbo`), then
+ * its family's (or the family its `akimbo.as` names), then its own (cached). The match and client prediction apply it
+ * while a pair is in hand (akimboKick, akimboLoader, akimboCone, akimboMove, akimboRaise below).
+ */
+export function akimboOf(def: WeaponDefinition): AkimboSpec | null {
+  let a = akimboCache.get(def);
+  if (a !== undefined) return a;
+  if (!def.akimbo) a = null;
+  else {
+    const { as, ...own } = def.akimbo === true ? ({} as Exclude<WeaponDefinition['akimbo'], true | undefined>) : def.akimbo;
+    const from = as ?? def.family;
+    a = { ...AKIMBO_BASE, ...(from ? FAMILY_DEFAULTS[from].akimbo : undefined), ...own };
+  }
+  akimboCache.set(def, a);
+  return a;
+}
+
+const pairKicks = new WeakMap<KickSpec, Map<number, KickSpec>>();
+
+/** A gun's recoil while it is one of a pair: every round's kick and its variance × `mult`; the settling is the gun's own (cached). */
+export function akimboKick(k: KickSpec | null, mult: number): KickSpec | null {
+  if (!k || mult === 1) return k;
+  let by = pairKicks.get(k);
+  if (!by) pairKicks.set(k, (by = new Map()));
+  let scaled = by.get(mult);
+  if (!scaled) by.set(mult, (scaled = { ...k, pitch: k.pitch.map((v) => v * mult), yaw: k.yaw.map((v) => v * mult), variance: k.variance * mult }));
+  return scaled;
+}
+
+const pairLoaders = new WeakMap<WeaponDefinition, WeaponDefinition>();
+
+/**
+ * The weapon as its reloads run while it is one of a pair: every reload time × the pair's `reload` (one hand does the
+ * work), the stages at the same shares. A definition to hand to beginReload / stepReload in place of the weapon's
+ * own (cached, like barrelLoader); the weapon's own when it can't be paired.
+ */
+export function akimboLoader(def: WeaponDefinition): WeaponDefinition {
+  const a = akimboOf(def);
+  if (!a || a.reload === 1) return def;
+  let l = pairLoaders.get(def);
+  if (!l) {
+    const r = gunplayOf(def).reload;
+    const t = (ticks: number) => Math.max(1, Math.round(ticks * a.reload));
+    l = { ...def, reload: r.type === 'shell' ? { type: 'shell', start: t(r.start), each: t(r.each), end: t(r.end) } : { ...r, tactical: t(r.tactical), empty: t(r.empty) } };
+    pairLoaders.set(def, l);
+  }
+  return l;
+}
+
+/**
+ * A round's cone while paired: the aim cone (`aim`: everything but a shotgun's pellet pattern) × the pair's `cone`,
+ * the pellet pattern (`pattern`: the weapon's own `spread` for a multi-pellet gun, else 0) × its `pattern`.
+ */
+export const akimboCone = (a: AkimboSpec, aim: number, pattern: number): number => aim * a.cone + pattern * a.pattern;
+
+/** Ticks a pair takes to come up (the weapon's raise × the pair's `raise`). */
+export const akimboRaise = (def: WeaponDefinition, a: AkimboSpec): number => Math.round(def.raiseTicks * a.raise);
+
+/** Running speed holding a pair: the weapon's `handling.move` and the pair's `move`, never under the content check's floor. */
+export const akimboMove = (move: number, a: AkimboSpec): number => Math.max(0.85, move + a.move);
+
+/**
+ * Whose reload acts this input when the second gun of a pair has one (1 the first gun's, 2 the second's): one hand
+ * reloads at a time, so the one under way goes on and the other waits at its start; when both wait, the emptier gun
+ * goes first. The match and client prediction both ask this.
+ */
+export const pairReloadTurn = (main: ReloadRun | null, off: ReloadRun, mainMag: number, offMag: number): 1 | 2 => (!main || (main.t === 0 && (off.t > 0 || offMag < mainMag)) ? 2 : 1);
+
+/** The second gun of a pair as the reload code sees it: its own magazine over the pair's one reserve (write back with storeOff). */
+export const offBox = (w: { reserve: number; off?: { mag: number; unchambered?: boolean } }): AmmoBox => ({ mag: w.off?.mag ?? 0, reserve: w.reserve, ...(w.off?.unchambered ? { unchambered: true } : {}) });
+
+export function storeOff(w: { reserve: number; off?: { mag: number; unchambered?: boolean } }, b: AmmoBox): void {
+  if (!w.off) return;
+  w.off.mag = b.mag;
+  w.reserve = b.reserve;
+  if (b.unchambered) w.off.unchambered = true;
+  else delete w.off.unchambered;
 }
 
 // ---------------------------------------------------------------- creator rules (spec §10, §5, §43)
