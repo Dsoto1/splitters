@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
+import { AKIMBO_READY, DEFAULT_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 const map = (() => {
@@ -115,5 +115,15 @@ describe('server match rules (RULES): parity with the browser host', () => {
     const text = serverRulesText({ modes: { tdm: { score: 60 } } }, now, 'test_yard');
     expect(text).toMatch(/score\s+40\s+→ 60 at the restart/);
     expect(text).not.toMatch(/laps/);
+  });
+
+  // Dual wielding, step 1: the rule exists but isn't on offer until play reads it (akimboRule.test.ts turns it on).
+  it('leaves dual wielding out while it does nothing in play', () => {
+    expect(AKIMBO_READY).toBe(false);
+    expect(ruleSpec('akimbo')).toBeUndefined();
+    expect(validateServerRules({ akimbo: false }).error).toMatch(/unknown rule "akimbo"/);
+    expect(serverRulesText({}, rulesForMode(map, 'core.tdm'), 'test_yard')).not.toMatch(/akimbo/);
+    // A match whose rules carry it keeps it through the server's own rules.
+    expect(applyServerRules({ ...rulesForMode(map, 'core.tdm'), akimbo: false }, {}, map, 8).rules.akimbo).toBe(false);
   });
 });

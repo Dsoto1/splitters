@@ -1,4 +1,5 @@
 import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
+import { gunPan } from './pairView.ts';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
 import type { LocalPlayer } from './prediction.ts';
@@ -48,6 +49,8 @@ export class SessionAudio {
   private wasGrounded = true;
   private fallSpeed = 0;
   private prevReload = 0;
+  /** The second gun's reload (a pair), as `prevReload`. */
+  private prevReload2 = 0;
   private prevHeld = 0;
   private dryFireAt = 0;
   private recentKills: number[] = [];
@@ -177,10 +180,11 @@ export class SessionAudio {
   }
 
   /** A shot the local player just fired (predicted); `delay`: seconds to wait, its tick's place in a slow frame (shotDelay). */
-  localShot(def: WeaponDefinition, alt = false, delay = 0): void {
+  localShot(def: WeaponDefinition, alt = false, delay = 0, pan = 0): void {
     const own = alt ? def.view.altShot : undefined;
     if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15, delay });
-    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), { delay });
+    // (`pan`: a pair's guns sound a little to their own side, pairView.ts gunPan; one gun's stays in the middle.)
+    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), pan ? { delay, pan } : { delay });
   }
 
   /** Your own punch or kick: a swish as you throw it. */
@@ -267,11 +271,17 @@ export class SessionAudio {
   localWeapon(local: LocalPlayer): void {
     if (local.alive) {
       if (local.held !== this.prevHeld && this.prevHeld !== 0) this.audio.play('weapon.raise');
-      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start');
-      if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end');
+      // A pair's reloads sound from their own hands (the second gun's a little left, the first's a little right).
+      const pan = local.paired ? { pan: gunPan(true, 'right') } : {};
+      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start', pan);
+      if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end', pan);
+      const second = local.paired ? local.reloadTicks2 : 0;
+      if (second > 0 && this.prevReload2 === 0) this.audio.play('reload.start', { pan: gunPan(true, 'left') });
+      if (second === 0 && this.prevReload2 > 0 && local.paired && local.held === this.prevHeld) this.audio.play('reload.end', { pan: gunPan(true, 'left') });
     }
     this.prevHeld = local.alive ? local.held : 0;
     this.prevReload = local.alive ? local.reloadTicks : 0;
+    this.prevReload2 = local.alive && local.paired ? local.reloadTicks2 : 0;
   }
 
   /** When each rider's (slot; -1 you) zipline whirr last started. */

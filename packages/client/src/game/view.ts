@@ -175,6 +175,7 @@ import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
+import { MIRROR_X, PAIR_AWAY_DROP, PairFlashGate, casingSide, easeUp, pairPlace, pairReloadDip, stepPairUp } from './pairView.ts';
 import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
 import { CLIP_NAME, attachOptic } from './opticHousing.ts';
 import { levelMipBias } from '../levelMerge.ts';
@@ -499,6 +500,33 @@ export class GameView {
   private viewWeapon?: string;
   /** Your own character's arms in first person, gripping the viewmodel. */
   private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
+  /**
+   * Dual wielding (pairView.ts; docs/GUNPLAY_SPEC.md "Akimbo / Dual Wield"): the second gun, in the left hand. It
+   * and its arm hang under `pairRoot`, the camera's space seen in a mirror, so the gun is the first one mirrored and
+   * the arm is the same character's right arm made a left one, holding it by the ordinary grip code. All made on
+   * the first pair, never before.
+   */
+  private pairRoot?: TransformNode;
+  private viewRoot2?: TransformNode;
+  /** Second copies of the first-person guns you have paired, by weapon id (null while one loads), and the model each was made from. */
+  private readonly viewmodels2 = new Map<string, { node: TransformNode | null; path: string }>();
+  private viewmodel2?: TransformNode;
+  /** The weapon the second gun shown is a copy of. */
+  private pairWeapon?: string;
+  /** The second gun's rise: 0 away, 1 up beside the first (pairView.ts stepPairUp). */
+  private pairUp = 0;
+  /** The first gun is held in one hand now (the other has the second gun). */
+  private pairSolo = false;
+  private fpArms2?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
+  private flashRig2?: MuzzleFlashRig;
+  private flash2?: Mesh;
+  private kickAmount2 = 0;
+  private flashUntil2 = 0;
+  private starFlash2 = false;
+  /** Reduce flashing: a pair's two guns share one flash (pairView.ts). */
+  private readonly flashGate = new PairFlashGate();
+  /** Your own flashes drawn and left out so far, by gun (tests). */
+  readonly ownFlashes = { right: 0, left: 0, skipped: 0 };
   /** Your own look (setLocalLook): its arms are built when first person needs them. */
   private localLook?: string;
   /** First person: your whole character from its eyes, or arms only (Options → Display). */
@@ -1308,11 +1336,23 @@ export class GameView {
   // ---------------------------------------------------------------- shots
 
   /** World position of your own gun's muzzle (the viewmodel), or null while it isn't shown. */
-  localMuzzle(): Vec3 | null {
+  localMuzzle(off = false): Vec3 | null {
     if (!this.viewmodel || !this.viewRoot.isEnabled(false)) return null;
-    this.viewRoot.computeWorldMatrix(true);
-    const p = Vector3.TransformCoordinates(new Vector3(this.muzzleX, this.muzzleY, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
+    // (`off`: the second gun of a pair, when it is up; the same point on the mirrored gun.)
+    const root = off && this.pairShown() ? this.viewRoot2! : this.viewRoot;
+    root.computeWorldMatrix(true);
+    const p = Vector3.TransformCoordinates(new Vector3(this.muzzleX, this.muzzleY, this.muzzleZ + 0.02), root.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /** Whether the left arm of a pair has loaded (tests). */
+  hasPairArm(): boolean {
+    return !!this.fpArms2?.anim;
+  }
+
+  /** Whether the second gun of a pair is drawn in your left hand now. */
+  pairShown(): boolean {
+    return !!this.viewRoot2 && this.pairUp > 0 && !!this.viewmodel2 && this.viewmodel2.isEnabled(false) && this.viewRoot2.isEnabled(false);
   }
 
   /** World position of a remote player's muzzle, or null when their gun isn't drawn (or not yet in their hands). */
@@ -1329,10 +1369,10 @@ export class GameView {
    * gun's, else your character's held gun in third person (`slot`, yours); anyone else's is their character's held
    * gun. Null when there's no gun to follow (a turret, a fence).
    */
-  muzzleAnchor(o: { local?: boolean; slot?: number }): MuzzleAnchor | null {
+  muzzleAnchor(o: { local?: boolean; slot?: number; off?: boolean }): MuzzleAnchor | null {
     const slot = o.slot !== undefined && o.slot >= 0 ? o.slot : null;
     // Yours in third person: your drawn character's gun (not while it's hidden for first person, or scoped in).
-    if (o.local) return () => this.localMuzzle() ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot));
+    if (o.local) return () => this.localMuzzle(o.off) ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot));
     return slot === null ? null : () => this.muzzleOf(slot);
   }
 
@@ -1342,14 +1382,14 @@ export class GameView {
    * damage, more on a head), or a hole, sparks and dust on a wall. Bodies
    * lying in the way take the hit too and are knocked about.
    */
-  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
+  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean; off?: boolean }): void {
     if (o.def?.view.beam) {
       // A beam stays on the gun's muzzle while it shows, however you move (muzzleAnchor.ts); with no gun drawn it
       // starts just under the eye. Its far end stays where the shot landed.
       const anchor = this.muzzleAnchor(o);
       const from = anchor?.() ?? o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.08, z: o.eye.z };
       // Reduce flashing: a fast-firing beam (the Arc Caster, lasers) holds one steady beam instead of one per shot.
-      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? 'me' : (o.slot ?? 'other')}`, [from, o.to], o.def.view.tracer, undefined, anchor);
+      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? (o.off ? 'me2' : 'me') : (o.slot ?? 'other')}`, [from, o.to], o.def.view.tracer, undefined, anchor);
       else this.addShot(o.def, from, o.to, o.color, undefined, anchor);
       this.landRound(o);
       return;
@@ -1820,8 +1860,8 @@ export class GameView {
       this.aimAt = null;
       v.node.setEnabled(true);
       this.viewmodel = v.node;
-      this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
-      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold);
+      this.fpArms?.anim?.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
     };
     const kept = this.viewmodels.get(def.id);
     if (kept) return show(kept);
@@ -1858,6 +1898,7 @@ export class GameView {
     for (const [id, v] of this.viewmodels) {
       if (carried.has(id) || id === this.viewWeapon) continue;
       if (this.viewmodel === v.node) this.viewmodel = undefined;
+      this.dropSecond(id);
       v.node.dispose();
       this.viewmodels.delete(id);
       const path = this.viewmodelPaths.get(id);
@@ -1937,8 +1978,8 @@ export class GameView {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     const node = def ? (this.viewmodel ?? null) : null;
     node?.setEnabled(true);
-    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null);
-    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null);
+    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
   }
 
   /**
@@ -1961,9 +2002,11 @@ export class GameView {
           this.viewmodel = node;
           // Its optic's parts are the new copy's: found again with the aim's placement.
           this.aimAt = null;
-          this.fpArms?.anim?.gripExternal(node, def.view.hold);
-          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold);
+          this.fpArms?.anim?.gripExternal(node, def.view.hold, this.soloFor(def.id));
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold, this.soloFor(def.id));
         }
+        // (A second gun made from the old copy is made again from this one, so the two look alike.)
+        this.dropSecond(def.id);
         old.dispose();
       },
       () => undefined,
@@ -2024,7 +2067,7 @@ export class GameView {
         m.receiveShadows = false;
       }
       arms.anim = new CharacterAnimator(this.scene, ch);
-      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
     });
   }
 
@@ -2068,8 +2111,12 @@ export class GameView {
     return t < 0.3 ? Math.sin((t / 0.3) * (Math.PI / 2)) : Math.cos(((t - 0.3) / 0.7) * (Math.PI / 2));
   }
 
-  /** Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). */
-  kick(def: WeaponDefinition, alt = false, slot?: number): void {
+  /**
+   * Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). `gun`: which gun fired it and
+   * when (dual wielding: `off` the second gun, `paired` a pair is in hand, `together` both fired on this `tick`),
+   * so each gun of a pair kicks, flashes and throws its case by itself.
+   */
+  kick(def: WeaponDefinition, alt = false, slot?: number, gun?: { off: boolean; tick: number; paired: boolean; together?: boolean }): void {
     const barrel = alt ? def.view.altShot : undefined;
     // Third person: the flash is on your character's gun as drawn (followMuzzles keeps it there), as everyone sees it.
     if (slot !== undefined && !this.viewRoot.isEnabled(false) && (def.kind !== 'melee' || alt) && !def.view.beam) {
@@ -2099,7 +2146,10 @@ export class GameView {
     const rail = def.id === 'core.railgun';
     // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
     const visual = gunplayOf(def).kick?.visual;
-    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45));
+    const left = !!gun?.off && this.pairShown();
+    const amount = def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45;
+    if (left) this.kickAmount2 = Math.min(1, this.kickAmount2 + amount);
+    else this.kickAmount = Math.min(1, this.kickAmount + amount);
     if (rail) {
       // The rail slams back with a big blue-white flash.
       this.flashUntil = performance.now() + 80;
@@ -2108,11 +2158,24 @@ export class GameView {
       return;
     }
     if (def.kind === 'melee' || def.view.beam) return;
-    this.flashUntil = performance.now() + 45;
-    const fx = muzzleEffectFor(def);
-    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
-    if (this.starFlash) kickFlash(this.flash, (def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1) * size, opacity);
-    if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
+    // Reduce flashing with a pair: the two guns share one flash, no brighter and no more often than one gun's
+    // (pairView.ts PairFlashGate); the round whose flash is left out still kicks, sounds and throws its case.
+    if (gun && !this.flashGate.allow({ tick: gun.tick, gun: gun.off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: gun.paired, calm, together: !!gun.together })) this.ownFlashes.skipped++;
+    else {
+      this.ownFlashes[left ? 'left' : 'right']++;
+      const fx = muzzleEffectFor(def);
+      const star = (def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1) * size;
+      if (left) {
+        this.flashUntil2 = performance.now() + 45;
+        this.starFlash2 = !(fx && this.flashRig2!.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
+        if (this.starFlash2) kickFlash(this.flash2!, star, opacity);
+      } else {
+        this.flashUntil = performance.now() + 45;
+        this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
+        if (this.starFlash) kickFlash(this.flash, star, opacity);
+      }
+    }
+    if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1, left);
   }
 
   /**
@@ -2130,11 +2193,16 @@ export class GameView {
     }
   }
 
-  /** A spent case flips out of the right side of your gun and rattles on the floor. */
-  private ejectCasing(size: number): void {
+  /**
+   * A spent case flips out of the right side of your gun and rattles on the floor (`left`: out of the second gun
+   * of a pair, to the left: its frame is the first gun's in a mirror, so each gun throws away from the other).
+   */
+  private ejectCasing(size: number, left = false): void {
     if (!this.physics || !this.viewmodel) return;
-    this.viewRoot.computeWorldMatrix(true);
-    const m = this.viewRoot.getWorldMatrix();
+    const root = left && this.viewRoot2 ? this.viewRoot2 : this.viewRoot;
+    this.ownCasings[casingSide(left ? 'left' : 'right') < 0 ? 'left' : 'right']++;
+    root.computeWorldMatrix(true);
+    const m = root.getWorldMatrix();
     const at = Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m);
     const right = Vector3.TransformNormal(new Vector3(1, 0, 0), m).normalize();
     const up = Vector3.TransformNormal(new Vector3(0, 1, 0), m).normalize();
@@ -2154,11 +2222,143 @@ export class GameView {
     }
   }
 
-  /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
-  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number }): void {
+  /** Whether the first gun `id` is held in one hand now (its pair's second gun is up). */
+  private soloFor(id: string | undefined): boolean {
+    return this.pairSolo && !!id && id === this.pairWeapon;
+  }
+
+  /** The second copy of a first-person gun goes (no longer carried, or its first copy changed). */
+  private dropSecond(id: string): void {
+    const second = this.viewmodels2.get(id);
+    if (!second) return;
+    this.viewmodels2.delete(id);
+    if (second.node && this.viewmodel2 === second.node) this.viewmodel2 = undefined;
+    second.node?.dispose();
+  }
+
+  /**
+   * The second gun of a pair, each frame (before the first gun is placed): made on the first pair (the mirror, the
+   * copy of the gun, the left arm, its flash), brought up over the pair's raise and put away when the pair ends
+   * (the fire-mode key: one gun; a switch to another weapon; at once when the guns are hidden or you die). Returns
+   * how far up it is, eased (0: no pair to draw).
+   */
+  private stepPair(dt: number, def: WeaponDefinition | undefined, pair: { raise: number; reload: number } | null, hidden: boolean): number {
+    if (!this.viewRoot2 && !pair) return 0;
+    if (!def || !this.viewmodel) {
+      // Nothing in hand (dead, a seat's gun): the second gun is gone with the first.
+      this.pairUp = 0;
+      this.kickAmount2 = 0;
+      this.flashGate.reset();
+    }
+    if (pair && def && this.viewmodel) {
+      if (!this.viewRoot2) {
+        this.pairRoot = new TransformNode('pairRoot', this.scene);
+        this.pairRoot.parent = this.camera;
+        this.pairRoot.scaling.x = MIRROR_X;
+        this.viewRoot2 = new TransformNode('viewRoot2', this.scene);
+        this.viewRoot2.parent = this.pairRoot;
+        this.flashRig2 = new MuzzleFlashRig(this.scene, 'muzzleFlashRig2', { renderingGroupId: 1 });
+        this.flashRig2.root.parent = this.viewRoot2;
+        this.flash2 = createStarFlash(this.scene, 'muzzleFlash2', 0.32);
+        this.flash2.renderingGroupId = 1;
+        this.flash2.billboardMode = MeshClass.BILLBOARDMODE_NONE;
+        this.flash2.parent = this.viewRoot2;
+        this.flash2.setEnabled(false);
+      }
+      // The copy of the gun in hand, from the model the first is drawn with now (its sharper copy once that is in).
+      const path = this.viewmodelPaths.get(def.id) ?? def.view.model;
+      let second = this.viewmodels2.get(def.id);
+      if (!second) {
+        const made = { node: null as TransformNode | null, path };
+        second = made;
+        this.viewmodels2.set(def.id, made);
+        const root = this.viewRoot2;
+        void this.models.instantiate(path, `view2_${def.id}`).then(
+          (node) => {
+            if (this.viewmodels2.get(def.id) !== made || this.scene.isDisposed) return node.dispose();
+            node.parent = root;
+            for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+            attachOptic(this.scene, node, def, true);
+            node.setEnabled(false);
+            made.node = node;
+          },
+          () => void this.viewmodels2.delete(def.id),
+        );
+      }
+      if (second.node && this.viewmodel2 !== second.node) {
+        this.viewmodel2?.setEnabled(false);
+        this.viewmodel2 = second.node;
+        second.node.setEnabled(true);
+        this.pairWeapon = def.id;
+        this.fpArms2?.anim?.gripExternal(second.node, def.view.hold, true);
+      }
+      this.buildFpArms2();
+    }
+    // It comes up once its copy is in (models load in real time), over the pair's raise; it goes down quicker.
+    const on = !!pair && !!def && !!this.viewmodel2 && this.pairWeapon === def.id;
+    this.pairUp = stepPairUp(this.pairUp, on, dt, pair?.raise ?? 0);
+    const shown = this.pairUp > 0 && !hidden && !!def && !!this.viewmodel2;
+    this.viewRoot2?.setEnabled(shown);
+    if (this.pairUp === 0 && this.viewmodel2 && !on) {
+      this.viewmodel2.setEnabled(false);
+      this.viewmodel2 = undefined;
+      this.pairWeapon = undefined;
+      this.flashRig2?.hide();
+      this.flash2?.setEnabled(false);
+    }
+    // The first gun in one hand while the second is up; both hands back on it after.
+    const solo = this.pairUp > 0;
+    if (solo !== this.pairSolo) {
+      this.pairSolo = solo;
+      if (def && this.viewmodel && !this.throwHold?.node) {
+        this.fpArms?.anim?.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+      }
+    }
+    const arms2 = this.fpArms2;
+    const armsOn = shown && this.opticBlend === 0;
+    arms2?.root.setEnabled(armsOn);
+    if (armsOn && arms2?.anim) arms2.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
+    return shown ? easeUp(this.pairUp) : 0;
+  }
+
+  /** The left arm of a pair: your look's first-person arms again, under the mirror, its right arm on the second gun. */
+  private buildFpArms2(): void {
+    const look = this.localLook;
+    if (!look || !this.pairRoot || this.fpArms2?.look === look) return;
+    this.fpArms2?.anim?.dispose();
+    this.fpArms2?.root.dispose();
+    const root = new TransformNode('fpArms2', this.scene);
+    root.parent = this.pairRoot;
+    const arms = { look, anim: null as CharacterAnimator | null, root };
+    this.fpArms2 = arms;
+    void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArms2Char').then((ch) => {
+      if (this.fpArms2 !== arms) return ch.dispose();
+      fitFirstPersonArms(ch, root);
+      for (const m of ch.meshes) {
+        m.renderingGroupId = 1;
+        m.receiveShadows = false;
+      }
+      arms.anim = new CharacterAnimator(this.scene, ch);
+      if (this.viewmodel2 && this.pairWeapon) arms.anim.gripExternal(this.viewmodel2, getWeapon(this.pairWeapon).view.hold, true);
+    });
+  }
+
+  /** Spent cases thrown from your own guns so far, by the side they went (tests). */
+  readonly ownCasings = { right: 0, left: 0 };
+
+  /**
+   * Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. `pair`: a pair is in
+   * hand (dual wielding): the second gun's raise time (s) and how far into its own reload dip it is (0..1; `reload`
+   * is then the first gun's own, each gun dipping out of view by itself).
+   */
+  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number; pair?: { raise: number; reload: number } | null }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.viewHidden = o.hidden || !def;
+    // The second gun of a pair: up while the pair is in hand (not while a throwable is), away otherwise.
+    const pair = def && o.pair && !this.throwHold?.node ? o.pair : null;
+    const up = this.stepPair(dt, def, pair, o.hidden);
     // Full body: your own character's hands hold the gun instead of the arms.
     const arms = !o.hidden && !!def && !this.fpBody && this.opticBlend === 0;
     this.fpArms?.root.setEnabled(arms);
@@ -2169,7 +2369,8 @@ export class GameView {
     const pace = o.moving ? (o.speed === undefined ? 1 : Math.min(1.5, o.speed / PLAYER.runSpeed)) : 0;
     this.bobPhase += dt * 9 * pace;
     this.bobAmount += (Math.min(1, pace) - this.bobAmount) * Math.min(1, dt * 8);
-    const ads = o.ads ?? 0;
+    // (A pair has no sights.)
+    const ads = up > 0 ? 0 : (o.ads ?? 0);
     // Through an optic the gun holds still on the eye: no bob or kick (the camera's recoil still moves the view).
     const still = 1 - this.opticBlend;
     // Aiming down the sights (sightPose.ts): a gun with a sight fit is turned and moved so the eye sits behind its own
@@ -2184,7 +2385,14 @@ export class GameView {
     // A sight window's clip (opticHousing.ts) is on once the gun is most of the way up.
     if (this.aimClip && !this.aimClip.isDisposed()) this.aimClip.setEnabled(ads > 0.7);
     const aim = blendPlacement(def, this.aimAt, ads);
-    const { x, y, z } = aim;
+    // A pair's guns sit wider and a little higher than the one gun's hip place: the middle of the screen stays clear and
+    // the hands stay above the HUD's corner panels.
+    const { x, y, z } = up > 0 ? pairPlace(def.view.viewOffset, up) : aim;
+    // One hand reloads a pair's gun: it dips out of view and comes back (pairView.ts), by itself.
+    const dip = pairReloadDip(o.reload);
+    const drop = o.reload * 0.08 * (1 - up) + dip.drop * up;
+    const tip = o.reload * 0.6 * (1 - up) + dip.pitch * up;
+    const roll = o.reload * 0.4 * (1 - up) + dip.roll * up;
     // The sight picture: a gun with a glass, and a long gun's iron sights, are drawn larger about the view axis as the gun
     // comes up (optics.ts), and its bob
     // and kick are drawn that much smaller, so they move the window on screen as far as they did.
@@ -2197,10 +2405,10 @@ export class GameView {
     const kick = (this.kickAmount * still) / picture;
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
-      y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
+      y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - drop,
       z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
-    this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, aim.yaw + (melee ? kick * 0.5 : 0), o.reload * 0.4);
+    this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + tip, aim.yaw + (melee ? kick * 0.5 : 0), roll);
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -2217,6 +2425,31 @@ export class GameView {
         this.boot.position.set(0.12, -0.95 + strike * 0.55, 0.35 + strike * 0.6);
         this.boot.rotation.set(-0.5 + strike * 0.4, 0, 0);
       }
+    }
+    if (this.viewRoot2 && this.pairUp > 0) {
+      // The second gun, worked out as a right-hand gun and drawn in the mirror: its own kick and reload dip, the
+      // first gun's raise (a switch to the pair brings both up) and its own rise; the walk's sway goes the same way
+      // on screen as the first gun's (so flipped here), its lift half a step later (the hands swing in turn).
+      this.kickAmount2 = Math.max(0, this.kickAmount2 - dt * 6);
+      const place = pairPlace(def.view.viewOffset, 1);
+      const dip2 = pairReloadDip(pair?.reload ?? 0);
+      const away = (1 - up) * PAIR_AWAY_DROP;
+      this.viewRoot2.position.set(
+        place.x - Math.sin(this.bobPhase) * 0.012 * bob,
+        place.y + Math.abs(Math.sin(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - dip2.drop - away,
+        place.z - this.kickAmount2 * 0.06,
+      );
+      this.viewRoot2.rotation.set(-this.kickAmount2 * 0.12 + dip2.pitch + (1 - up) * 0.5, 0, dip2.roll);
+      if (strike > 0) {
+        this.viewRoot2.position.y -= strike * (kicking ? 0.1 : 0.14);
+        this.viewRoot2.position.x += strike * (kicking ? 0 : 0.06);
+        this.viewRoot2.rotation.z += strike * (kicking ? 0.1 : 0.45);
+      }
+      const flashing2 = now < this.flashUntil2;
+      this.flash2!.setEnabled(flashing2 && this.starFlash2);
+      this.flashRig2!.root.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
+      this.flashRig2!.update();
+      if (flashing2) this.flash2!.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + 0.08);
     }
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing && this.starFlash);
@@ -2770,7 +3003,7 @@ export class GameView {
       a.weaponNode = undefined;
       fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
       this.fpBody = fp;
-      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
       // Your own arms aren't needed while the body holds the gun.
       this.fpArms?.root.setEnabled(false);
     }

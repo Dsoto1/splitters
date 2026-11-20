@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon } from '@tiletrigger/shared';
 import { OPTIC_KINDS, SCOPE_FEEL, WEAPON_OPTICS } from '@tiletrigger/shared/optics';
-import { EYE_BOX, GLINT, SCOPE_FADE, eyeBoxShade, freshBreath, freshEyeBox, glintStrength, seemsScoped, stepBreath, stepEyeBox, stepGlint, stepScopeFade, stepZoom, swayAt, zoomSteps } from '../src/game/scopeFeel.ts';
+import { EYE_BOX, GLINT, SCOPE_FADE, eyeBoxShade, freshBreath, freshEyeBox, glintStrength, stepBreath, stepEyeBox, stepGlint, stepScopeFade, stepZoom, swayAt, zoomSteps } from '../src/game/scopeFeel.ts';
 import { HIP_FOV } from '../src/game/optics.ts';
 
 const mag = (fov: number) => Math.tan(HIP_FOV / 2) / Math.tan(fov / 2);
@@ -177,19 +177,5 @@ describe('scope feel (docs/GUNPLAY_SPEC.md §15, "Scope feel")', () => {
     expect(stepGlint(0.5, 0.5, 1, false)).toBe(0.5);
     expect(GLINT.calm.level).toBeLessThan(GLINT.normal.level);
     expect(GLINT.calm.rise).toBeGreaterThanOrEqual(0.5);
-  });
-
-  it('who seems scoped, from what the snapshot carries (it has no bit for aiming)', () => {
-    expect(seemsScoped({ alive: true })).toBe(true);
-    expect(seemsScoped({ alive: false })).toBe(false);
-    expect(seemsScoped({ alive: true, sprinting: true })).toBe(false);
-    expect(seemsScoped({ alive: true, emote: true })).toBe(false);
-    expect(seemsScoped({ alive: true, chute: 1 })).toBe(false);
-    expect(seemsScoped({ alive: true, zip: 0 })).toBe(false);
-    // Bots: only while they fight (they scope when they fire or wait on a shot).
-    expect(seemsScoped({ alive: true, state: 'engage' })).toBe(true);
-    expect(seemsScoped({ alive: true, state: 'cover' })).toBe(true);
-    expect(seemsScoped({ alive: true, state: 'roam' })).toBe(false);
-    expect(seemsScoped({ alive: true, state: 'retreat' })).toBe(false);
   });
 });

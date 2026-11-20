@@ -173,6 +173,7 @@ const STANDARD: Partial<Record<keyof VariantSettings, unknown>> = {
   squadSpawn: true,
   emotes: true,
   dropWeapons: true,
+  akimbo: true,
   mixPickups: false,
   rlSignature: true,
   rlJackpots: true,

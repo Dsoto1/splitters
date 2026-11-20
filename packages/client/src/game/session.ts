@@ -69,6 +69,8 @@ import {
   rigidOf,
   tippedOver,
   TICK_RATE,
+  akimboOf,
+  akimboRaise,
   HOLD_KINDS,
   HOLD_LABEL,
   HOLD_CANCEL_TEXT,
@@ -213,7 +215,7 @@ import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
 import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
 import { holdoverFor } from './holdover.ts';
-import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, seemsScoped, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
+import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
 import type { GlintSource } from './scopeGlint.ts';
 import { markerSetting } from './crosshair.ts';
 import { Interpolator, type RemotePose } from './interpolation.ts';
@@ -232,6 +234,7 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
 import { opticOf } from './optics.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
+import { gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
@@ -1238,15 +1241,16 @@ export class GameSession {
   }
 
   /**
-   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who hold a sniper scope and seem to be
-   * aiming through it (seemsScoped: the snapshot has no bit for aiming), seen from the camera. Riders are left out
-   * (their hands are on the vehicle).
+   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who aim through a sniper scope, as the host
+   * says (PlayerSnapshot.zm, people and bots alike), seen from the camera. A host older than the field never says it:
+   * nobody glints there (nothing tells such a host from one where nobody is scoped, and no glint is better than a
+   * wrong one). Riders are left out (their hands are on the vehicle).
    */
   private updateGlints(dt: number, poses: readonly RemotePose[]): void {
     const riders = this.mounts?.riders();
     const sources: GlintSource[] = [];
     for (const p of poses) {
-      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !seemsScoped(p) || riders?.has(p.slot)) continue;
+      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !p.scoped || !p.alive || riders?.has(p.slot)) continue;
       const def = weaponByCode(p.weapon);
       if (!def || opticOf(def)?.id !== 'sniper') continue;
       sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });
@@ -3610,7 +3614,7 @@ export class GameSession {
         // Auto-reload (Options → Controls, on by default): the host starts an empty magazine's reload by itself.
         if (local.alive && autoReloadOn()) sample.buttons |= BUTTON_AUTO_RELOAD;
         // Taps fire at once with sprint held, and a pull while the gun comes up out of a sprint is kept (triggerLatch.ts).
-        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0);
+        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0, local.paired);
         else this.triggerLatch.reset();
         moving ||= sample.forward !== 0 || sample.right !== 0;
         this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
@@ -3618,7 +3622,7 @@ export class GameSession {
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
         if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
         this.meleeHeld = meleeNow;
-        const { input: cmd, shot, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        const { input: cmd, shot: shot1, shot2, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.
           this.input.yaw += local.portalTurn;
@@ -3640,10 +3644,14 @@ export class GameSession {
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1, !!this.seat);
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
-        if (shot) {
+        // (Dual wielding: the second gun's round the same tick is a shot like the first's.)
+        for (const shot of shot2 ? [shot1, shot2] : [shot1]) {
+          if (!shot) continue;
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
-          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma));
+          // (A pair's shots sound from the hand that fired: the second gun's a little left, the first's a little right.)
+          const hand = shotGun(shot, true);
+          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma), gunPan(local.paired || !!shot.off, hand));
           // The spray pattern (an option): single-round hitscan guns, round by round.
           if (!shot.alt && shot.def.kind === 'hitscan' && shot.def.pellets === 1 && shot.ends[0]) {
             const e = local.eye;
@@ -3651,12 +3659,13 @@ export class GameSession {
             const len = Math.hypot(d.x, d.y, d.z);
             if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
           }
-          this.view.kick(shot.def, shot.alt, this.slot);
-          // Your gun's muzzle as drawn: the viewmodel's in first person, your character's in third (view.shotVisual).
-          const muzzle = this.view.localMuzzle();
+          this.view.kick(shot.def, shot.alt, this.slot, { off: !!shot.off, tick: cmd.seq, paired: local.paired || !!shot.off, together: !!shot1 && !!shot2 });
+          // Your gun's muzzle as drawn: the viewmodel's in first person (the second gun's for its own rounds), your
+          // character's in third (view.shotVisual).
+          const muzzle = this.view.localMuzzle(!!shot.off);
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
-          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.off ? { off: true } : {}), ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
@@ -3808,8 +3817,13 @@ export class GameSession {
           this.view.trimViewmodels(new Set([...local.inventory.keys()].map((code) => weaponByCode(code)?.id).filter((id): id is string => !!id)));
         }
       }
-      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
+      // A pair in hand (dual wielding): one hand reloads at a time, so only the gun whose turn it is dips; the second
+      // gun comes up over the pair's raise.
+      const pairSpec = weapon && local.paired ? akimboOf(weapon) : null;
+      const [turn1, turn2] = pairSpec ? local.pairReloading() : [true, false];
+      const reloadFrac = weapon && local.reloadTicks > 0 && turn1 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
+      const pairView = weapon && pairSpec ? { raise: akimboRaise(weapon, pairSpec) / TICK_RATE, reload: turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0 } : null;
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
       this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
@@ -3832,8 +3846,15 @@ export class GameSession {
       // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
-      else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
-      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? local.fireMode() : null, local.weapon ? fireModeCount(local.weapon) : 1);
+      else {
+        const second = local.paired ? local.offs.get(local.held) : undefined;
+        const [busy, busy2] = second ? local.pairReloading() : [local.reloadTicks > 0, false];
+        this.hud.setWeapons(local.inventory, local.held, busy, local.alive, handsBusy, second ? { mag: second.mag, reloading: busy2 } : null);
+      }
+      // (With a second gun of the held weapon, the fire-mode key is "both guns" or "one gun".)
+      const pairMode = local.pairMode();
+      const modeShown = pairMode ? { label: pairMode === 'pair' ? 'Pair' : 'One gun', mode: 'semi', burst: pairMode === 'pair' ? { count: 2 } : null } : local.fireMode();
+      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? modeShown : null, pairMode ? 2 : local.weapon ? fireModeCount(local.weapon) : 1);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
       const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
@@ -3845,7 +3866,10 @@ export class GameSession {
       } else this.view.throwArc.hide();
       // The throwable in your hands while you line it up (first person; your own model in third person throws as before).
       this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
-      this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
+      // A pair in hand (dual wielding): right mouse, LT and touch's Aim are the second gun's trigger, always held (no
+      // aiming, so no toggled aim), and touch's Fire pulls both.
+      this.input.pairTrigger = local.alive && !handsBusy && local.paired;
+      this.input.altTrigger = this.input.pairTrigger || (!!local.weapon?.alt && local.weapon.kind === 'melee');
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());

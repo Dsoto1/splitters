@@ -654,9 +654,10 @@ otherwise as `{ k: "local", msg }` objects, as always. Every pairing works:
 
 | Page | Match worker | Snapshots |
 |---|---|---|
-| says `snap: 1` | writes 1 | binary |
-| says nothing (older, or `?perfoff=snapbin`) | writes 1 | objects |
-| says `snap: 1` | older (doesn't know `snap`) | objects |
+| says `snap: 2` | writes 2 | binary |
+| says nothing (older, or `?perfoff=snapbin`) | writes 2 | objects |
+| says `snap: 2` | older (doesn't know `snap`) | objects |
+| says `snap: 1` (a page from before version 2) | writes 2 | objects |
 | says `snap: N` | writes another version | objects |
 | a match on the page's own thread (`?sim=main`, no workers) | | objects, by reference (no message at all) |
 
@@ -665,12 +666,20 @@ exactly (below) and the host stops writing binary; or the page can't read a buff
 it and says `{ k: "snapobjects" }`. Read buffers go back four at a time (`{ k: "snapbufs", bufs }`, transferred) and
 are written again; the page keeps no view of a buffer it has handed back.
 
-**Layout** (little-endian; version 1). Every message is whole in itself: nothing depends on an earlier one.
+**Versions.** The version is raised once per change of layout; page and worker are built together, so a reader
+takes its own version only and refuses the rest, and a writer writes only when the page asked for its version.
+
+| Version | |
+|---|---|
+| 1 | the first layout (November 2026) |
+| 2 | two more player bits: 32 `zm` (aiming through a magnified optic, section 23) and 64 `dw` (dual wielding, a pair is drawn: section 24; reserved with this version, written since dual wielding step 2 with no change of version). No byte added: both go in the record's bits byte. A version 1 record is a valid version 2 record with neither bit |
+
+**Layout** (little-endian; version 2). Every message is whole in itself: nothing depends on an earlier one.
 
 | Bytes | |
 |---|---|
 | 0-3 | magic `54 54 53 4E` ("TTSN") |
-| 4-5 | version (u16): 1. A reader takes only versions it knows; anything else is refused before another byte is read |
+| 4-5 | version (u16): 2. A reader takes only versions it knows; anything else is refused before another byte is read |
 | 6-7 | flags (u16): bit 0, the snapshot has `hold` |
 | 8-11 | the message's length in bytes (u32; the buffer may be longer: buffers are pooled). At most 4 MiB |
 | 12-15, 16-19 | `tick`, `ack` (u32) |
@@ -686,7 +695,7 @@ A player's record (60 bytes, then its optional fields):
 | Field | Type | |
 |---|---|---|
 | `s` | u8 | slot |
-| bits | u8 | 1 `g`, 2 `alive`, 4 `em`, 8 `sr`, 16 `dr` |
+| bits | u8 | 1 `g`, 2 `alive`, 4 `em`, 8 `sr`, 16 `dr`, 32 `zm`, 64 `dw`. 128 is not used: a reader refuses it |
 | mask | u16 | which optional fields follow: 1 `vx`, 2 `vz`, 4 `fx`, 8 `st`, 16 `sn`, 32 `cl`, 64 `ch`, 128 `zl` |
 | `p` (x, y, z), `vy`, `yaw`, `pitch` | 6 × f64 | exactly the sim's values |
 | `hp`, `ar` | i16 | |
@@ -731,7 +740,64 @@ zones, cover, ammo boxes and squads, and the `score`, `pk`, `pw`, `dw`, `hold` a
 arrays* as in the previous snapshot while they haven't changed. Readers must not write into a snapshot (none does).
 Events, private state (`me`), scenario and mode state are new objects every time.
 
-**A later version** changes the version number; a reader of version 1 refuses it and the page falls back to objects
+**A later version** changes the version number; a reader of an earlier version refuses it and the page falls back to objects
 as above. If the binary message is ever put on a network link, it must be offered the same way (the receiver says
 which version it reads, in `hello`; the sender uses it only then) and would need deltas of its own to beat the
 JSON deltas.
+
+
+## 23. Scoped players (November 2026)
+
+Two optional public fields on `PlayerSnapshot`, beside `sr`, `em`, `dr` and the rest; `PROTOCOL_VERSION` stays 5
+(an older client ignores a field it does not know; an older host never sends them).
+
+- **`PlayerSnapshot.zm: 1`**: the player is aiming through a magnified optic and the scope picture is up. Written by
+  the match (`sim/match.ts` `scopeUp`) from state it already keeps, for people and bots alike; nothing in the match
+  reads it. Set when all of these hold, absent otherwise:
+  - the held gun's optic is a magnified kind (`content/optics.json`: a kind with `mag`, so the 2-3x optic and the
+    sniper scope: Battle Rifle, Marksman Rifle, Sniper Rifle, Railgun); not iron sights, a red dot or a holographic
+    sight;
+  - the aim button (`BUTTON_ZOOM`) is held in the last input the host took from the player;
+  - the gun's aim (`GunState.ads`, 0 at the hip to 1 fully up) is at least 0.5 (`SCOPE_UP_ADS`): the line the match
+    already draws between a no-scope shot and a scoped one, 6 ticks (0.1 s) after the button with the usual 12-tick
+    aim. It falls with the button, at once (the scope picture cuts out when the aim is let go);
+  - the gun is ready (raised, not reloading: the client shows no scope picture otherwise) and the player is alive
+    and not in a seat that takes their hands (a driver, a seat with a gun, the plane).
+- **`PlayerSnapshot.dw: 1`**: dual wielding, a pair is drawn (section 24).
+
+Both are in the delta snapshots' optional keys (`net/interest.ts` `OPTIONAL_KEYS`): a delta names the field when it
+is set (`"zm":1`) and when it goes away (`"zm":null`), and not in between, so a player who stops aiming is cleared
+on every receiver and a match where nobody is scoped sends not one byte more than before
+(`shared/test/scopedBit.test.ts`). In the binary snapshot of the local match they are bits 32 and 64 of the player
+record (section 22, version 2).
+
+**What reads it.** The sniper glint (docs/GUNPLAY_SPEC.md section 15): a client draws a glint at a player only with
+`zm` and a sniper-kind optic in their hands. **An older host** sends no `zm`, and nothing it does send (`welcome`
+has no build or capability list; `protocol` is 5 on both sides of this change) tells it from a host on which nobody
+is scoped, so on such a host nobody glints: the earlier guess from the held weapon and the bot's state was dropped
+rather than kept for hosts that cannot be recognised (a missing glint is better than a wrong one).
+
+## 24. Dual wielding (November 2026)
+
+docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield". **Optional fields only; `PROTOCOL_VERSION` stays 5 and
+`SNAPSHOT_BINARY_VERSION` stays 2.** An older client ignores them (it sees every player with one gun; holding a pair itself it cannot
+aim, and its second gun fires only from its second-trigger key, which sends `BUTTON_ALT`); an older host never sends
+them and never makes a pair. A
+match sends none of them unless dual wielding is in play in it and someone holds a second gun
+(`packages/shared/test/akimbo.test.ts`: with it off, the same inputs leave no trace of any of these).
+
+| Field | Where | |
+|---|---|---|
+| `dw: 1` | `PlayerSnapshot` (public) | A pair is drawn: the player is alive, the weapon in hand (`w`) has its second gun and it is out (not put away with the fire-mode key), and they are not in a seat that takes the hands. Absent otherwise. In the delta snapshots' optional keys (`net/interest.ts`: named when set, `null` when it goes, not in between); bit 64 of the player record in the binary snapshot (section 22) |
+| `ow: [code, magazine, flags?][]` | `PrivateState` (`me`) | The second guns the player holds, in weapon-code order: the second gun's magazine (the reserve is the weapon's one, in `inv`). `flags` is left out when 0: 1 = a magazine is in but no round chambered (as `uc` for the first gun), 2 = put away (one gun in hand). Absent without a second gun |
+| `rl2`, `rd2: [kind, inputs, total, stage]` | `PrivateState` | The second gun's reload, as `rl` and `rd` are the first's; both absent when it has none. One hand reloads at a time: a run at 0 inputs beside a first-gun reload under way (or the other way round) is waiting its turn (`gunplay.ts` `pairReloadTurn`) |
+| `off: 1` | the `shot` event | The second gun of a pair fired it (absent: the gun the player held). Not `alt`: it is the weapon's own trigger |
+
+No new input bit. The second gun's trigger is the existing `BUTTON_ALT` (a pair-eligible weapon has no second trigger
+of its own: the content check refuses it), and `PlayerInput.fireMode` (the fire mode wanted, an index: `sim/inputs.ts`)
+is 1 for "one gun" and anything else for "the pair" while the held weapon has a second gun (such a weapon has no fire
+modes: also refused by the content check). A host with dual wielding in play drops `BUTTON_ZOOM` from the input of a
+player with a pair in hand, and `BUTTON_SPRINT` with `BUTTON_ALT`, before it moves them; prediction does the same.
+
+`me` goes whole with every snapshot, so `ow`, `rl2` and `rd2` are gone the snapshot after their cause. Host handoff's
+checkpoint does not carry second guns: after a handoff a pair is one gun again.

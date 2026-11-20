@@ -322,7 +322,7 @@ there are.
 
 | File | Holds |
 |---|---|
-| `content/weapons/families.json` | `defaults` (what every weapon file starts from) and the ten gunplay `families` (velocity, spread, recoil, falloff, head and leg multipliers) |
+| `content/weapons/families.json` | `defaults` (what every weapon file starts from), the ten gunplay `families` (velocity, spread, recoil, falloff, head and leg multipliers) and the dual-wielding trade (`akimbo`: the base block and one per family) |
 | `content/weapons/<name>.json` | one weapon: id `core.<name>`, its network `code`, and only the values that differ from `defaults` |
 | `content/throwables.json`, `content/classes.json`, `content/abilities.json` | thrown equipment, classes (loadout, health, speed, ability) and each ability's numbers |
 | `content/codes.lock.json` | every network code ever given (written by the generator; never edit by hand) |
@@ -361,6 +361,25 @@ gaps (clients read them by position). A class ability is code first (`sim/classe
 
 The Workbench (`.control-center/workbench.json`) shows weapons, weapon families, classes, class abilities and
 throwables from these files; id, code, kind and holds are read-only there.
+
+#### Making a weapon eligible for dual wielding
+
+Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"; in the match since step 2, off in normal play until the second gun is drawn) is one
+line in the weapon's file:
+
+- `"akimbo": true` for a weapon whose `family` has an `akimbo` block in `families.json` (pistol, machine_pistol,
+  smg, shotgun): it takes that family's trade.
+- `"akimbo": { "as": "pistol" }` for a weapon without a family (the Pulse Pistol): `as` names the family whose
+  trade it takes.
+- Its own numbers go in the same object and win over the family's: `"akimbo": { "kick": 1.5, "reload": 1.6 }`.
+  The fields: `cone`, `pattern` (a shotgun's pellet spread), `kick`, `reload`, `raise` (multipliers, 1 to 3) and
+  `move` (added to `handling.move`, −0.1 to 0).
+
+A family that has no trade yet gets an `akimbo` block in `families.json` first (only what differs from the
+top-level `akimbo` base block). The generator refuses the flag on a weapon with an alt-fire (`alt`), a zoom scope
+(`view.zoomFov` or `view.optic`) or fire modes (`fireModes`), and on melee: a pair needs right mouse and the
+fire-mode key, and can't aim. Then `pnpm content:weapons`, rewrite the fixture (step 9) and add the weapon to the
+eligible list in `tools/content/test/weapons.test.mjs` and `packages/shared/test/akimbo.test.ts`.
 
 ### Vehicles, turrets and NPC roles
 

@@ -1258,6 +1258,10 @@ img:not([src]) { visibility: hidden; }
 #ammo-reserve { font-size: 18px; color: var(--muted); }
 #ammo-reserve:not(:empty)::before { content: '/ '; }
 #ammo-count.reloading { color: var(--orange); font-size: 20px; }
+/* Dual wielding: two magazine counts, "L | R", each with its own low and reload states. */
+#ammo-count.pair .pair-bar { font-style: normal; font-weight: 400; color: var(--muted); margin: 0 0.22em; }
+#ammo-count.pair .low { color: var(--error); }
+#ammo-count.pair .reloading { color: var(--orange); }
 
 #target { position: absolute; left: 50%; top: calc(50% - 76px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font: 600 13px var(--font-display); text-shadow: 0 1px 3px #000; }
 #target .bar { width: 140px; height: 5px; }

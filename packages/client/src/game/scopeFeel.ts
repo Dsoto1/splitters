@@ -207,14 +207,3 @@ export function stepGlint(level: number, want: number, dt: number, calm: boolean
   const rise = calm ? GLINT.calm.rise : GLINT.normal.rise;
   return want > level ? Math.min(want, level + dt / rise) : Math.max(want, level - dt / GLINT.fall);
 }
-
-/**
- * Whether another player is aiming through a scope, as far as this client can tell. The snapshot does not say who is
- * aiming (PlayerSnapshot has no bit for it), so this reads what it does carry: alive, on their feet (not sprinting,
- * dancing, under a canopy or on a zipline), and for a bot its state (bots scope when they fight: `engage`, `cover`).
- * One bit in the snapshot ("aiming down a scope this tick") would replace this guess: see GUNPLAY_SPEC §15.
- */
-export function seemsScoped(p: { alive: boolean; sprinting?: boolean; emote?: boolean; chute?: number; zip?: number; state?: string }): boolean {
-  if (!p.alive || p.sprinting || p.emote || p.chute || p.zip !== undefined) return false;
-  return p.state === undefined || p.state === 'engage' || p.state === 'cover';
-}

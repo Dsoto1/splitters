@@ -1,6 +1,7 @@
 import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, SNAPSHOT_BINARY_VERSION, SnapshotBinaryDecoder, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage, type VoteOption } from '@tiletrigger/shared';
 import { deviceMaxPlayers } from '../touchDevice.ts';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { allowedHere } from '../testMode.ts';
 import { playerKey } from './playerKey.ts';
 import { perfProbe } from './perfProbe.ts';
 import { perfOn } from './perfSwitches.ts';
@@ -267,7 +268,10 @@ export class LocalTransport implements Transport {
     // rigid even where it is off, or rigid with driving physics 3's own hull contacts and sweep in place of the Rapier
     // body (docs/DRIVING_PHYSICS_PLAN.md), for comparing.
     const drive = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('drive');
-    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...this.opts }, hidden: document.hidden };
+    // `?akimbo=1` (a dev server, a test-hooks build or this machine only, as test mode): dual wielding in play in
+    // this browser's own matches while it is being built (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield").
+    const akimbo = typeof location !== 'undefined' && new URLSearchParams(location.search).get('akimbo') === '1' && allowedHere();
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...(akimbo ? { akimbo: true } : {}), ...this.opts }, hidden: document.hidden };
     if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
     if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }
