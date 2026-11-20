@@ -1672,6 +1672,13 @@ export class CharacterAnimator {
     }
   }
 
+  /**
+   * Third-person long gun: where the support hand went on the last full grip (model m): how far it slid back from the
+   * support point, how far back the handguard runs (null: the gun's model wasn't measured), the handguard's underside
+   * there (model y) and how far it was still out of the arm's reach (the grip page's `__grips.support()`; e2e).
+   */
+  supportHold: { slid: number; back: number | null; under: number | null; short: number } | null = null;
+
   /** A collarbone's roll this animator last wrote (reachShoulder), and the joint's turn before it. */
   private readonly clavicleRoll = new Map<TransformNode, { wrote: Quaternion; before: Quaternion }>();
 
@@ -1861,6 +1868,7 @@ export class CharacterAnimator {
         if (short > 0) pocket.subtractInPlace(barrel.scale(Math.min(short, STOCK_PULL_MOST * scale)));
         support = slid(shift);
         if (guard) guardY = guard.at(shift);
+        this.supportHold = { slid: shift, back: guard?.back ?? null, under: guardY, short: Math.max(0, short - STOCK_PULL_MOST * scale) / scale };
       }
       gripped = { rot: aim, pos: pocket.subtract(new Vector3(...grip.shoulder).scale(scale).applyRotationQuaternion(aim)) };
     }

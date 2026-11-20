@@ -322,6 +322,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     /** The posed character's animator (tests: where its hands are drawn, gripCheck). */
     anim: () => current?.anim ?? null,
     /** Where the posed hands are drawn on the gun (model m from each hand's skin centre to its point; handProbe.ts). */
+    /** Third person, a long gun: where the support hand went on the handguard (characterAnimator `supportHold`). */
+    support: () => current?.anim.supportHold ?? null,
     drawn: () => current?.anim.drawnGrip([...(rig?.drawnMeshes ?? []), ...(current?.anim.ch.meshes ?? [])]) ?? null,
     body,
     upper,

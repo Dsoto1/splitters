@@ -14,16 +14,19 @@ import type { WeaponHold } from '@tiletrigger/shared';
 /** How far (model m) below the support point the underside is looked for, and above it (a point under the gun). */
 export const GUARD_DOWN = 0.05;
 export const GUARD_UP = 0.06;
+/** Open surfaces: empty space this deep (model m) under a surface makes it the underside. */
+const GUARD_GAP = 0.015;
 
 /**
  * The underside's height (model y) straight below or above (`x`, `z`) from `y`, in triangles given in model space:
- * the lowest surface within GUARD_DOWN below `y` that the gun is solid down to (a point inside the handguard), else
- * the nearest surface within GUARD_UP above it (a point under the handguard), else null (nothing there).
- * Surfaces are found by a vertical line through each triangle; a gap of more than `gap` (m) of empty space ends
- * the guard (a magazine or a bipod hanging below it is not the guard).
+ * the vertical line through (`x`, `z`) crosses the gun's surfaces, entering a solid part through a face turned up and
+ * leaving it through one turned down (a model of open shells: see GUARD_GAP). From a point inside the gun (a barrel inside a handguard included) the underside
+ * is where the line, going down, leaves the last solid, within GUARD_DOWN; from a point under the gun it is the nearest
+ * one above, within GUARD_UP; null when there is none. Which way a face is turned is read from the highest one, the
+ * gun's top (models come mirrored or with either winding).
  */
-export function undersideAt(positions: ArrayLike<number>, indices: ArrayLike<number>, x: number, y: number, z: number, gap = 0.015): number | null {
-  const hits: number[] = [];
+export function undersideAt(positions: ArrayLike<number>, indices: ArrayLike<number>, x: number, y: number, z: number): number | null {
+  const hits: { h: number; f: number }[] = [];
   const p = (i: number) => [positions[i * 3]!, positions[i * 3 + 1]!, positions[i * 3 + 2]!] as const;
   for (let t = 0; t + 2 < indices.length; t += 3) {
     const a = p(indices[t]!);
@@ -35,24 +38,57 @@ export function undersideAt(positions: ArrayLike<number>, indices: ArrayLike<num
     const u = ((x - a[0]) * (c[2] - a[2]) - (c[0] - a[0]) * (z - a[2])) / d;
     const v = ((b[0] - a[0]) * (z - a[2]) - (x - a[0]) * (b[2] - a[2])) / d;
     if (u < 0 || v < 0 || u + v > 1) continue;
-    const h = a[1] + u * (b[1] - a[1]) + v * (c[1] - a[1]);
-    if (h >= y - GUARD_DOWN && h <= y + GUARD_UP) hits.push(h);
+    // (The sign of `d` is the sign of the face normal's y for these corners' winding.)
+    hits.push({ h: a[1] + u * (b[1] - a[1]) + v * (c[1] - a[1]), f: Math.sign(d) });
   }
   if (!hits.length) return null;
-  const below = hits.filter((h) => h <= y).sort((m, n) => n - m);
-  if (below.length) {
-    // Down from the point through the guard's surfaces (its inside, a barrel within it) to its underside: the last
-    // surface before a gap.
+  hits.sort((m, n) => n.h - m.h);
+  const up = hits[0]!.f;
+  // Closed surfaces: every face down the line enters a solid or leaves one, and the line ends outside them all.
+  let depth = 0;
+  let closed = true;
+  for (const { f } of hits) {
+    if (f === up) depth++;
+    else if (depth > 0) depth--;
+    else closed = false;
+  }
+  const solid = closed && depth === 0 ? throughSolids(hits, up, y) : null;
+  if (solid !== null) return solid;
+  // Open surfaces (a model of loose shells, or nested ones the count above doesn't find a way out of within reach):
+  // down from the point to the last surface before a gap of GUARD_GAP, or the nearest one above a point under the gun.
+  const near = hits.filter((x) => x.h >= y - GUARD_DOWN && x.h <= y + GUARD_UP).map((x) => x.h);
+  const below = near.filter((h) => h <= y);
+  if (below.length && near.some((h) => h > y)) {
     let under = below[0]!;
     for (const h of below) {
-      if (under - h > gap) break;
+      if (under - h > GUARD_GAP) break;
       under = h;
     }
-    // A point inside the guard has a surface above it too; one under the gun has only the guard above.
-    if (hits.some((h) => h > y)) return under;
+    return under;
   }
-  const above = hits.filter((h) => h > y).sort((m, n) => m - n);
-  return above.length ? above[0]! : below.length ? below[0]! : null;
+  const above = near.filter((h) => h > y);
+  return above.length ? above[above.length - 1]! : below.length ? below[0]! : null;
+}
+
+/** undersideAt on closed surfaces (`hits` highest first; `up`: the facing of a face turned up). */
+function throughSolids(hits: { h: number; f: number }[], up: number, y: number): number | null {
+  // Down the line from above the gun: how many solids it is inside, and where it comes out of the last.
+  let depth = 0;
+  let outAbove: number | null = null;
+  let i = 0;
+  for (; i < hits.length && hits[i]!.h > y; i++) {
+    depth += hits[i]!.f === up ? 1 : -1;
+    if (depth === 0) outAbove = hits[i]!.h;
+  }
+  if (depth > 0) {
+    for (; i < hits.length && hits[i]!.h >= y - GUARD_DOWN; i++) {
+      depth += hits[i]!.f === up ? 1 : -1;
+      if (depth === 0) return hits[i]!.h;
+    }
+    return null;
+  }
+  // A point under the gun: the nearest underside above it.
+  return outAbove !== null && outAbove <= y + GUARD_UP ? outAbove : null;
 }
 
 /** A long gun's handguard under its support point, measured off its model (guardOf). */
@@ -74,6 +110,8 @@ const GUARD_EVEN = 0.03;
 const GUARD_DEEP = 0.035;
 /** The furthest (model m) behind the support point a guard behind a vertical grip is looked for. */
 const GUARD_SKIP = 0.08;
+/** Steps of guard at the support point itself that make it the guard (fewer: a longer run just behind is looked for). */
+const GUARD_RUN = 3;
 
 /**
  * The handguard round a long gun's support point, from triangles in model space: its underside there, and how far
@@ -100,11 +138,13 @@ export function guardFrom(positions: ArrayLike<number>, indices: ArrayLike<numbe
   // or a bipod's clamp at the point itself: the Sniper Rifle's).
   let from = 0;
   let best = run(0);
-  for (let k = 1; k * GUARD_STEP <= GUARD_SKIP + 1e-9 && k <= steps; k++) {
-    const r = run(k);
-    if (r.length > best.length + GUARD_SKIP / GUARD_STEP) {
-      best = r;
-      from = k * GUARD_STEP;
+  if (best.length < GUARD_RUN) {
+    for (let k = 1; k * GUARD_STEP <= GUARD_SKIP + 1e-9 && k <= steps; k++) {
+      const r = run(k);
+      if (r.length > best.length) {
+        best = r;
+        from = k * GUARD_STEP;
+      }
     }
   }
   if (!best.length) return null;
