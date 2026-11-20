@@ -15,14 +15,15 @@ export const MIRROR_X = -1;
 export const mirrored = <T extends { x: number }>(p: T): T => ({ ...p, x: p.x * MIRROR_X });
 
 /**
- * Where a pair's guns sit from the single gun's hip place (m, camera space): further out and lower, and a little
- * nearer, so the middle of the screen (the crosshair and what you shoot at) stays clear between them.
+ * Where a pair's guns sit from the single gun's hip place (m, camera space): a little further out, so the middle of
+ * the screen (the crosshair and what you shoot at) stays clear between them, and a little higher, so the hands on the
+ * grips stay in view above the HUD's corner panels (lower, they sat behind the health and ammunition panels).
  */
-export const PAIR_POSE = { wider: 0.045, lower: 0.02, nearer: 0 } as const;
+export const PAIR_POSE = { wider: 0.02, higher: 0.02, nearer: 0 } as const;
 
 /** The right gun's hip place in a pair, `amount` (0..1) of the way from the single gun's `offset` (view.viewOffset). */
 export function pairPlace(offset: readonly [number, number, number], amount: number): { x: number; y: number; z: number } {
-  return { x: offset[0] + PAIR_POSE.wider * amount, y: offset[1] - PAIR_POSE.lower * amount, z: offset[2] - PAIR_POSE.nearer * amount };
+  return { x: offset[0] + PAIR_POSE.wider * amount, y: offset[1] + PAIR_POSE.higher * amount, z: offset[2] - PAIR_POSE.nearer * amount };
 }
 
 /** How far (m) a gun of a pair drops below its place while it is away (not yet raised, or put away), out of view. */

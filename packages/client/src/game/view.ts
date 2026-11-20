@@ -2385,7 +2385,8 @@ export class GameView {
     // A sight window's clip (opticHousing.ts) is on once the gun is most of the way up.
     if (this.aimClip && !this.aimClip.isDisposed()) this.aimClip.setEnabled(ads > 0.7);
     const aim = blendPlacement(def, this.aimAt, ads);
-    // A pair's guns sit lower and wider than the one gun's hip place, so the middle of the screen stays clear.
+    // A pair's guns sit wider and a little higher than the one gun's hip place: the middle of the screen stays clear and
+    // the hands stay above the HUD's corner panels.
     const { x, y, z } = up > 0 ? pairPlace(def.view.viewOffset, up) : aim;
     // One hand reloads a pair's gun: it dips out of view and comes back (pairView.ts), by itself.
     const dip = pairReloadDip(o.reload);

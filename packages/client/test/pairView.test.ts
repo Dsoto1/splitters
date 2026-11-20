@@ -33,14 +33,14 @@ describe('the mirror', () => {
 });
 
 describe("the pair's place", () => {
-  it('is lower and wider than the one gun, never nearer the middle, and the one gun at amount 0', () => {
+  it('is higher and wider than the one gun, never nearer the middle, and the one gun at amount 0', () => {
     const off = MP.view.viewOffset;
     expect(pairPlace(off, 0)).toEqual({ x: off[0], y: off[1], z: off[2] });
     const at = pairPlace(off, 1);
     expect(at.x).toBeGreaterThan(off[0]);
-    expect(at.y).toBeLessThan(off[1]);
+    expect(at.y).toBeGreaterThan(off[1]);
     expect(at.x - off[0]).toBeCloseTo(PAIR_POSE.wider, 9);
-    expect(off[1] - at.y).toBeCloseTo(PAIR_POSE.lower, 9);
+    expect(at.y - off[1]).toBeCloseTo(PAIR_POSE.higher, 9);
     const half = pairPlace(off, 0.5);
     expect(half.x).toBeCloseTo((off[0] + at.x) / 2, 9);
   });

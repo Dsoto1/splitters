@@ -2257,8 +2257,9 @@ the view does exactly what it did (the second gun's nodes are not even made unti
   (`CharacterAnimator.gripExternal`, now with `solo`: the shooting hand alone, the support point dropped). No
   per-gun hand numbers. The first gun's own left hand lets go while the second gun is up. **Markings on the left
   gun read mirrored** (so does an ejection port: it faces left, which is where its cases go).
-- **Where they sit.** `PAIR_POSE`: each gun a little wider and lower than the one gun's hip place
-  (`view.viewOffset`), the left the mirror of the right, so the crosshair and the middle of the screen stay clear.
+- **Where they sit.** `PAIR_POSE`: each gun a little wider and higher than the one gun's hip place
+  (`view.viewOffset`), the left the mirror of the right, so the crosshair and the middle of the screen stay clear and
+  the hands on the grips stay above the HUD's corner panels.
 - **Each gun by itself.** Its own kick (`kickAmount2`), its own muzzle flash (a second `MuzzleFlashRig`), its own
   spent case (thrown outward: left from the left gun), its own muzzle for tracers and beams
   (`view.localMuzzle(off)`: the session passes `shot.off`; a Pulse Pistol pair's steady beams under Reduce flashing
