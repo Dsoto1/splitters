@@ -131,7 +131,7 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
-import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
 import { SteadyArcs } from './steadyArcs.ts';
@@ -3762,15 +3762,25 @@ export class GameView {
     return blastStrength(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z), radius);
   }
 
+  /**
+   * How big a blast at `at` is drawn (times its usual): 1, or with flashing reduced smaller the nearer it is to the
+   * camera, so the camera never sits inside its fireball (reduceFlashing.ts blastSize).
+   */
+  private blastSize(at: Vec3, radius: number): number {
+    if (!reduceFlashing()) return 1;
+    const cam = this.camera.globalPosition;
+    return blastSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z), radius);
+  }
+
   /** The Binbun explosion for a blast (content/vfx.json map.explosions: by weapon, its projectile, the kind), sized to its radius. */
   private blastFx(at: Vec3, radius: number, weapon: string | undefined, kind: string | null, minScale: number): boolean {
     // Nothing under it within a couple of metres: an air burst.
     const airborne = kind !== 'vehicle' && !this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 2.2);
     const fx = explosionFor(weapon, airborne ? 'air' : kind, (id) => CORE_WEAPONS[id]);
     const y = airborne ? at.y : at.y - 0.3;
-    // Reduce flashing: dimmed near the camera, and brought up over a few frames instead of popping in white.
+    // Reduce flashing: dimmed and drawn smaller near the camera, and brought up over a few frames instead of popping in white.
     const calm = reduceFlashing() ? { gain: this.blastStrength(at, radius), fadeIn: BLAST_FADE_IN } : {};
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale), ...calm });
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale) * this.blastSize(at, radius), ...calm });
   }
 
   explosion(at: Vec3, radius: number, weapon?: string): void {
@@ -3782,6 +3792,7 @@ export class GameView {
     ball.position.set(at.x, at.y, at.z);
     ball.isPickable = false;
     const strength = this.blastStrength(at, radius);
+    const size = this.blastSize(at, radius);
     // Reduce flashing: it fades in over the first third of its life instead of starting at full.
     const rise = strength < 1 || reduceFlashing() ? 0.3 : 0;
     this.effects.push({
@@ -3789,7 +3800,7 @@ export class GameView {
       born: performance.now(),
       ttl: 380,
       update: (f) => {
-        ball.scaling.setAll(radius * 2 * (0.3 + 0.7 * Math.sqrt(f)));
+        ball.scaling.setAll(radius * 2 * size * (0.3 + 0.7 * Math.sqrt(f)));
         mat.alpha = 0.85 * strength * (1 - f) * (rise ? Math.min(1, f / rise) : 1);
       },
     });
