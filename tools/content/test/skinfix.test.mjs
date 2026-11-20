@@ -228,6 +228,31 @@ describe('fixes.rejoint (moveJoints)', () => {
     expect(wide.r.radius).toBeCloseTo(0.2, 6);
     expect(wide.s).toBeGreaterThan(0.99);
   });
+  it('moves a joint out past its place (share over 1) and hands the skin inside it back to the parent', () => {
+    // The rig's shoulder at 0.2, the upper arm's skin from 0.12 out (a vest's back under its straps, held by the arm).
+    const { rest, pts, J, W } = make();
+    pts.forEach((p, v) => {
+      if (p[0] >= 0.12 && p[0] < 0.2) J[v * 4] = 2;
+    });
+    const [r] = moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm_l: 1.3 } });
+    expect(rest[2][0]).toBeCloseTo(0.02 + 0.18 * 1.3, 6);
+    expect(r.moved).toBeGreaterThan(0);
+    const share = (x, dy, j) => {
+      const v = pts.findIndex((p) => Math.abs(p[0] - x) < 1e-6 && Math.abs(p[1] - 1.4 - dy) < 1e-6);
+      let s = 0;
+      for (let k = 0; k < 4; k++) if (J[v * 4 + k] === j) s += W[v * 4 + k];
+      return s;
+    };
+    // Well inside the new place, at any distance from the line, the clavicle holds it again; well past it the arm.
+    expect(share(0.13, 0, 1)).toBeGreaterThan(0.99);
+    expect(share(0.13, -0.3, 1)).toBeGreaterThan(0.99);
+    expect(share(0.29, 0, 2)).toBeGreaterThan(0.99);
+    // Eased across the new place.
+    const mid = share(0.25, 0, 2);
+    expect(mid).toBeGreaterThan(0.2);
+    expect(mid).toBeLessThan(0.8);
+    for (let v = 0; v < pts.length; v++) expect(W[v * 4] + W[v * 4 + 1] + W[v * 4 + 2] + W[v * 4 + 3]).toBeCloseTo(1, 5);
+  });
   it('moves both sides for a joint named without its side, and refuses a joint the rig lacks', () => {
     const { rest, pts, J, W } = make();
     expect(() => moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm: 0.6 } })).toThrow(/upperarm_r/);
