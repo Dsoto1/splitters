@@ -1881,6 +1881,9 @@ export class CharacterAnimator {
         solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, gripAt), scale), pole, w);
       }
       this.curl(space, arms.r, w * (tune?.curlR ?? 1), () => point(gripped!.pos, gripped!.rot, gripAt));
+      // A long gun's shooting thumb over the grip and along its far side (the clips stood it up off the hand: a
+      // thumbs-up beside the gun).
+      if (grip.style === 'long') pointThumb(space, arms.r, gunDir(gunAxes(Matrix.FromQuaternionToRef(gripped.rot, new Matrix())), LONG_THUMB), w);
       if (support) {
         // A long gun's support palm lies on the handguard's underside (measured off the gun below its support point),
         // the hand half its thickness below it, fingers up round the guard.
@@ -2337,6 +2340,9 @@ function pointThumb(space: SkeletonSpace, arm: Arm, dir: Vector3, weight: number
   if (now.lengthSquared() < 1e-12 || want.lengthSquared() < 1e-12) return;
   space.setRot(base, turn(now, want).multiply(space.rot(base)), weight);
 }
+
+/** Third-person long gun: the way the shooting thumb lies (the gun's right, up, ahead): over the grip, forward along its far side. */
+const LONG_THUMB = [-0.6, -0.1, 0.8] as const;
 
 /** The grip page's live tune of the first-person pistol hold (`__grips.pistol`). */
 export function setPistolTune(tune: Partial<typeof PISTOL>): typeof PISTOL {
