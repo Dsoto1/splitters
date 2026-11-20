@@ -180,6 +180,20 @@ function check(cond, message) {
  * Into play: Resume if the pause menu is up, else the click (a tap on a phone) that "Click to fight" asks for: a match
  * opens straight into play, not paused (owner, 2026-11-19; session.ts showFightHint).
  */
+/**
+ * Into play without the mouse: touch play (it stands in for pointer lock) before any key, so a key doesn't take the
+ * mouse at "Click to fight". CI's headless Chromium, holding a pointer lock, sends the page thousands of mouse moves a
+ * second (none moving), and a page whose frame clock is frozen draws no frames to hand them over in: its memory grew
+ * about 50 MB a second, gigabytes over a flow's frozen frames, and the runner went down (beams, 2026-11-20). Releasing
+ * the lock gives the memory back.
+ */
+async function playWithoutMouse(page) {
+  await page.evaluate(() => {
+    if (document.pointerLockElement) document.exitPointerLock();
+    window.__cs.input.setTouchEngaged(true);
+  });
+}
+
 async function fight(page, tap = false) {
   const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
   if (paused) return tap ? page.tap('#resume') : page.click('#resume');
@@ -7658,6 +7672,7 @@ async function tracerMuzzleChecks(browser, looks) {
       await page.evaluate((w) => window.__give(w), id);
       await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
     }
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
     await page.evaluate(() => window.__frameClock.freeze());
@@ -7773,6 +7788,7 @@ async function beamMuzzleChecks(browser) {
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
   // Third person first: your character's gun in its hands loads in real time too.
+  await playWithoutMouse(page);
   await page.keyboard.press('KeyH');
   const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
   await page.evaluate(() => window.__frameClock.freeze());
