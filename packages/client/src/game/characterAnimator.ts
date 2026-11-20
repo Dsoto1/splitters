@@ -1626,7 +1626,15 @@ export class CharacterAnimator {
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
-    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x, this.external.solo);
+    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) {
+      // (The left arm of a pair is this body in a mirror, view.ts `pairRoot`: the gun's right side is then the world's left.)
+      viewMirrored = this.external.solo && ((root.parent as TransformNode | null)?.getWorldMatrix().determinant() ?? 1) < 0;
+      try {
+        this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x, this.external.solo);
+      } finally {
+        viewMirrored = false;
+      }
+    }
   }
 
   /**
@@ -2353,11 +2361,18 @@ function handAxes(arm: Arm): { along: Vector3; palm: Vector3 } {
   return { along, palm: side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero() };
 }
 
+/**
+ * The hands being placed belong to a body drawn in a mirror (the left arm of a pair, gripPlaced's caller): a gun's
+ * right side, worked out as a cross product, is then the other way in the world.
+ */
+let viewMirrored = false;
+
 /** A gun's axes in the world (left-handed): up, ahead along the barrel, and its right, whether or not its node is mirrored. */
 function gunAxes(weapon: Matrix): { up: Vector3; ahead: Vector3; right: Vector3 } {
   const up = Vector3.TransformNormal(new Vector3(0, 1, 0), weapon).normalize();
   const ahead = Vector3.TransformNormal(new Vector3(0, 0, 1), weapon).normalize();
-  return { up, ahead, right: Vector3.Cross(up, ahead).normalize() };
+  const right = Vector3.Cross(up, ahead).normalize();
+  return { up, ahead, right: viewMirrored ? right.scaleInPlace(-1) : right };
 }
 
 /** Turn a hand (in the skeleton's space, blended by `weight`) so its fingers run along `fingers` and its palm faces `palm` (world). */
