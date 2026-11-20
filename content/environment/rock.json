@@ -108,7 +108,7 @@
       "displayName": "Shard Boulder",
       "category": "boulder",
       "assetVersion": 1,
-      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a tall, sharp-edged block split off a mountain face (1.3 x 2.4 x 1.4 m), many fresh fractures, little wear; alpine scree and ridges. Collision: its hull before surface detail (<= 32 points, stone)."},
+      "notes": {"1": "First version (Environment Phase 4, more variety, 2026-11-17): a tall, sharp-edged block split off a mountain face (1.3 x 2.4 x 1.4 m), many fresh fractures, little wear; alpine scree and ridges. Collision: its hull before surface detail (<= 32 points, stone). The sandstone look (2026-11-19, the nature swap on sandy ground) is a colour only: the same shape and collision."},
       "nominalHeight": 2.4,
       "nav": "obstacle",
       "role": "cover",
@@ -122,7 +122,8 @@
       "variants": [
         {"index": 0, "name": "bare", "look": {"rock": "#77746f", "band": "#8f8b84", "strataFreq": 9, "hue": 0.06}},
         {"index": 1, "name": "lichen", "look": {"rock": "#78756f", "band": "#8f8b84", "strataFreq": 9, "hue": 0.06, "cover": "#9a9a62", "coverFrom": 0.25}},
-        {"index": 2, "name": "snow", "look": {"rock": "#74716c", "band": "#8a8680", "strataFreq": 9, "hue": 0.05, "cover": "#e6eaf0", "coverFrom": 0.15}}
+        {"index": 2, "name": "snow", "look": {"rock": "#74716c", "band": "#8a8680", "strataFreq": 9, "hue": 0.05, "cover": "#e6eaf0", "coverFrom": 0.15}},
+        {"index": 3, "name": "sandstone", "look": {"rock": "#a88a66", "band": "#c2a47c", "strataFreq": 9, "hue": 0.1}}
       ]
     },
     {
@@ -144,6 +145,39 @@
       "variants": [
         {"index": 0, "name": "tan", "look": {"rock": "#a88a66", "band": "#c2a47c", "strataFreq": 16, "hue": 0.1}},
         {"index": 1, "name": "red", "look": {"rock": "#a46a4a", "band": "#c08660", "strataFreq": 16, "hue": 0.1}}
+      ]
+    },
+    {
+      "id": "env.rock.sandstone_spires",
+      "displayName": "Sandstone Spires",
+      "category": "boulder",
+      "assetVersion": 2,
+      "notes": {"1": "First version (2026-11-19, the nature swap; owner's pick): five tall spires in a row on two fallen blocks, the size of the Meshy Red Rock Spires it replaces (about 13.6 x 8 x 4.8 m); nine hulls.", "2": "Denser and more fused, like the Meshy one (owner, 2026-11-19, 3b), the same footprint: three broad masses sunk into the ground make one body to about 5-6 m, and seven narrow spires rise out of it in two staggered rows (4.6 to 8 m), all merged where they overlap; flat-bedded with horizontal grooves. A landmark and hard cover. Collision: one hull per mass (ten, <= 20 points each, stone). Its own triangle budget (a formation, not one boulder)."},
+      "nominalHeight": 8,
+      "nav": "obstacle",
+      "role": "blocking",
+      "placement": {"maxSlopeDegrees": 25, "minSpacing": 14, "scale": [0.6, 2]},
+      "budget": [1700, 560, 170],
+      "generator": {"kind": "outcrop", "seed": 81, "fit": [13.6, 8.0, 4.8], "masses": [
+        {"size": [6.4, 6.0, 5.0], "at": [-4.0, 0.0], "yaw": 8, "sink": 1.2},
+        {"size": [6.6, 6.6, 5.0], "at": [0.3, 0.1], "yaw": -6, "sink": 1.2},
+        {"size": [6.2, 5.6, 5.0], "at": [4.4, -0.1], "yaw": 12, "sink": 1.0},
+        {"size": [2.4, 6.4, 2.6], "at": [-5.3, -0.4], "yaw": 10, "sink": 0.7},
+        {"size": [2.5, 7.6, 2.7], "at": [-3.6, 0.4], "yaw": 40, "sink": 0.7},
+        {"size": [2.6, 8.6, 2.8], "at": [-1.6, -0.4], "yaw": 75, "sink": 0.7},
+        {"size": [2.4, 7.2, 2.6], "at": [0.5, 0.4], "yaw": 20, "sink": 0.7},
+        {"size": [2.5, 8.0, 2.7], "at": [2.5, -0.4], "yaw": 55, "sink": 0.7},
+        {"size": [2.3, 6.2, 2.5], "at": [4.3, 0.4], "yaw": 30, "sink": 0.7},
+        {"size": [2.2, 5.2, 2.4], "at": [6.0, -0.3], "yaw": 65, "sink": 0.7}
+      ], "points": 16, "cuts": [6, 9], "cutDepth": [0.68, 0.92], "maxPoints": 20, "subdivide": 3, "crease": 30, "displace": 0.012, "freq": 1.2, "wear": 1, "wearAmount": 0.25, "strata": {"spacing": 0.3, "depth": 0.06, "tilt": 0.04}, "chips": [3, 6], "chipDepth": [0.05, 0.12], "buried": 0.12, "uvScale": 2.5},
+      "lods": [
+        {"distance": 0, "triangles": 1700},
+        {"distance": 50, "triangles": 560},
+        {"distance": 130, "triangles": 170}
+      ],
+      "variants": [
+        {"index": 0, "name": "red", "look": {"rock": "#a46a4a", "band": "#c08660", "strataFreq": 6, "hue": 0.1}},
+        {"index": 1, "name": "tan", "look": {"rock": "#a88a66", "band": "#c2a47c", "strataFreq": 6, "hue": 0.1}}
       ]
     }
   ]

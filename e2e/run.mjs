@@ -56,7 +56,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -4303,11 +4303,11 @@ async function editorEnvironmentChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   const unseasoned = await plants();
   check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
-  // The nature swap (shared/editor/natureSwap.ts): a Quaternius pine, bush and boulder become ours in their spots, one undo step.
-  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.nt_pine_tall', -40], ['qb', 'prop.nt_bush_leafy', -42], ['qc', 'prop.nt_boulder', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  // The nature swap (shared/editor/natureSwap.ts): a Kenney Nature Kit pine, oak and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.pine_tall', -40], ['qb', 'prop.oak', -42], ['qc', 'prop.rock_large', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
   await page.click('#ed-env-swap');
   const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
-  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && /^env\.shrub\.(broadleaf|laurel)@-42\/0\.5$/.test(swapped.qs[1]) && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, a bush and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && swapped.qs[1] === 'env.broadleaf.oak@-42/0.5' && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, an oak and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
 
@@ -7609,8 +7609,29 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+}
+
+/**
+ * Beams and tracers from the muzzle, flows of their own (split from physicsfx, 2026-11-20). Stepped frame by frame on
+ * the frame clock they are long: on CI physicsfx had grown from about 330 s to 800-1,650 s since the tracer checks
+ * joined it (grips auto-fit, 2026-11-18): physicsfx's own checks about 5 minutes, the beams about 5, the tracers about
+ * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
+ * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
+ */
+async function beamsFlow(browser) {
   await beamMuzzleChecks(browser);
-  await tracerMuzzleChecks(browser);
+}
+
+async function tracersFlow(browser) {
+  await tracerMuzzleChecks(browser, ['core.ranger']);
+}
+
+async function tracers2Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.otter']);
+}
+
+async function tracers3Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.knight']);
 }
 
 /**
@@ -7623,9 +7644,9 @@ async function physicsfxFlow(browser) {
  * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person
  * started under your eyes (no viewmodel muzzle) and no flash showed on your character's gun.
  */
-async function tracerMuzzleChecks(browser) {
+async function tracerMuzzleChecks(browser, looks) {
   const out = [];
-  for (const look of ['core.ranger', 'core.otter', 'core.knight']) {
+  for (const look of looks) {
     const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await ctx.addInitScript(installFrameClock);
     const page = await ctx.newPage();
@@ -7727,7 +7748,8 @@ async function tracerMuzzleChecks(browser) {
     if (process.env.E2E_VERBOSE) console.log(JSON.stringify(cases.map((c) => ({ look: c.look, w: c.weapon, third: c.third, ...c.r }))));
     await ctx.close();
   }
-  check(out.length === 0, `tracers leave the gun's muzzle as drawn, third and first person, the rifle and the pistol, three builds, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+  const who = looks.map((l) => l.replace('core.', '')).join(', ');
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
 }
 
 /**
@@ -12062,6 +12084,13 @@ function installFrameGrab(size) {
         ctx.drawImage(low.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // A scope's surround and shadow (HTML too: hud.ts scopeOverlay).
+      const scope = window.__cs.hud.scopeOverlay?.();
+      if (scope && scope.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, scope.opacity);
+        ctx.drawImage(scope.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -12264,6 +12293,42 @@ const FLASHING_DAY = {
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
       },
+      // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
+      // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
+      // and goes three times in the two seconds, as fast as a hand can, then you turn hard left and right through it
+      // (the scope's shadow sliding across the glass). The surround comes in with the zoom and fades out, slower with the
+      // setting on, and the shadow moves through a slow filter: the magnified tiles never show bright round the glass, no
+      // cut from black to daylight, no dark crescent jumping from side to side.
+      {
+        name: 'scope',
+        label: 'a sniper scope coming up and going away three times in two seconds, then hard turns through it, by day over white tiles',
+        weapon: 'core.sniper',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => page.evaluate(() => ((window.__scopeSeen = { fade: new Set(), box: 0 }), Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.3 }))),
+        at: Object.fromEntries(
+          Array.from({ length: 60 }, (_, f) => [
+            f,
+            () =>
+              page.evaluate((f) => {
+                const cs = window.__cs;
+                const seen = window.__scopeSeen;
+                const o = cs.hud.scopeOverlay();
+                if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
+                seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
+                const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
+                window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
+                // Hard turns: 1.8 rad/s, the other way every sixth of a second.
+                if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
+              }, f),
+          ]),
+        ),
+        seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
+        // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
+        sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
+        after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
+      },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
       // where a jolt of the view swings most pixels across it), kicked as by a full-power hit (a shotgun blast or a
@@ -12428,7 +12493,7 @@ async function flashingScene(browser, scene) {
   if (!playing) return void (await ctx.close());
   await holdBots(page);
   // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
-  for (const id of ['core.lmg', 'core.arc_caster']) {
+  for (const id of ['core.lmg', 'core.sniper', 'core.arc_caster']) {
     await page.evaluate((w) => window.__give(w), id);
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
@@ -12613,6 +12678,55 @@ async function flashingScene(browser, scene) {
           delete window.__cs.hud.partyMate;
           if (document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
         }),
+    },
+    // The sniper glint (game/scopeFeel.ts GLINT, scopeGlint.ts): a bot 32 m off in the dark holds a Sniper Rifle; it
+    // turns its aim onto you as the recording starts, away after a second and back again, so the recording holds the
+    // glint coming up twice (with the setting on dimmer, over half a second), and through the second half you bring
+    // your own scope up onto it (the glint seen through a scope, and the scope coming up at night).
+    {
+      name: 'glint',
+      label: "a sniper's glint coming up twice 32 m off at night (a bot's scope turning onto you), the second time through your own scope",
+      weapon: 'core.sniper',
+      me: [-10, 0, -4],
+      look: aim([-10, 0, -4], [-10, 1.6, 28]),
+      bots: [[-10, 0, 28]],
+      before: () =>
+        page.evaluate(() => ((window.__glintSeen = { most: 0, count: 0 }), (window.__autoInput = { buttons: 0 }))).then(() => sim(page, (m, me) => {
+          // The bots take a copy of your Sniper Rifle and stand as a bot does when it fights (the state the snapshot carries).
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            b.weapons.set(me.current, { ...me.weapons.get(me.current) });
+            b.current = me.current;
+            b.raiseTicks = 0;
+            Object.defineProperty(b.bot, 'state', { get: () => 'engage', set() {}, configurable: true });
+            self.__glintAim = Math.PI / 2;
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0, yaw: self.__glintAim, pitch: 0 })));
+          }
+        })),
+      at: Object.fromEntries(
+        Array.from({ length: 60 }, (_, f) => [
+          f,
+          async () => {
+            // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
+            if (f === 2 || f === 24 || f === 34) await sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), f === 24 ? Math.PI / 2 : Math.PI);
+            await page.evaluate((f) => {
+              const g = window.__cs.scope().glints;
+              window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
+              window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
+              if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
+            }, f);
+          },
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ ...window.__glintSeen, most: +window.__glintSeen.most.toFixed(2), now: +window.__cs.scope().glints.level.toFixed(2), scoped: window.__cs.scope().scoped })),
+      // One glint, never brighter than its level (0.5 with the setting on, 0.85 off), and up by the end.
+      sees: (on, s) => s.count === 1 && s.scoped && s.now > 0.3 && s.most <= (on ? 0.5 : 0.85) + 0.001 && (on || s.most > 0.6),
+      after: () =>
+        page.evaluate(() => (window.__autoInput = { buttons: 0 })).then(() => sim(page, (m) => {
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            Object.defineProperty(b.bot, 'state', { value: 'roam', writable: true, enumerable: true, configurable: true });
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+          }
+        })),
     },
     // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
     // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;
@@ -13494,6 +13608,43 @@ async function gripsInPlay(browser) {
   check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
+  // Optics by gun (GUNPLAY_SPEC §15): a red dot's mark is on its own glass, on the aim, with no HUD dot; iron sights
+  // show no dot either; a gun with neither keeps the HUD's aim dot.
+  const aimWith = async (id) => {
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    const up = (w) => window.__cs.local.weapon?.id === w && window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+    for (let i = 0; i < 6 && !(await page.evaluate(up, id)); i++) {
+      if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== id) await page.evaluate((w) => window.__give(w), id);
+      await page.waitForFunction(up, id, { timeout: T(10000) }).catch(() => {});
+    }
+    await page.evaluate(() => (window.__autoInput = { zoom: true }));
+    // Aimed: the crosshair has faded out and the gun's frame has stopped growing.
+    await page.waitForFunction(() => document.getElementById('crosshair')?.style.opacity === '0' && Math.abs(window.__cs.view.camera.fov - 1.35 * 0.72) < 0.004, null, { timeout: T(20000) }).catch(() => {});
+    const seen = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const glass = v.viewmodel?.getChildMeshes().find((m) => m.name === 'opticGlass' && m.isEnabled());
+      let off = null;
+      if (glass) {
+        // The glass's middle against the view's axis, as drawn (degrees), and whether the axis passes inside its window.
+        glass.computeWorldMatrix(true);
+        const c = glass.getBoundingInfo().boundingSphere;
+        const p = c.centerWorld.subtract(v.camera.globalPosition);
+        const f = v.camera.getForwardRay(1).direction;
+        const along = p.x * f.x + p.y * f.y + p.z * f.z;
+        const across = Math.sqrt(Math.max(0, p.lengthSquared() - along * along));
+        off = { deg: +((Math.atan2(across, along) * 180) / Math.PI).toFixed(3), inside: across < c.radiusWorld * 0.5 };
+      }
+      return { held: v.viewWeapon, glass: !!glass, off, housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), picture: +v.opticRoot.scaling.x.toFixed(2), dot: document.getElementById('reddot')?.style.opacity ?? '' };
+    });
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    return seen;
+  };
+  const dotGun = await aimWith('core.laser_rifle');
+  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.6 && dotGun.picture > 1.5 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim, the gun drawn larger, no HUD dot (${JSON.stringify(dotGun)})`);
+  const ironsGun = await aimWith('core.pistol');
+  check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
+  const plainGun = await aimWith('core.rockets');
+  check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.
@@ -15021,7 +15172,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

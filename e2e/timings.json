@@ -1,5 +1,5 @@
 {
-  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171); editorux split in four (2026-11-09) in the shares its parts took of it on run 42671626152 (394, 325, 340 and 290 of 1,337 s); editorenv +10 for Phase 5's sky and weather checks (a TEST start), an estimate until CI measures it; community (2026-11-10) estimated at 110 s, like lobby. CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest.",
+  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171); editorux split in four (2026-11-09) in the shares its parts took of it on run 42671626152 (394, 325, 340 and 290 of 1,337 s); editorenv +10 for Phase 5's sky and weather checks (a TEST start), an estimate until CI measures it; community (2026-11-10) estimated at 110 s, like lobby. CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest. physicsfx split 2026-11-20: physicsfx 300 (its own checks, about 5 min on CI since grips auto-fit), beams 330, tracers 400 (the Ranger, first person too), tracers2 and tracers3 320 (the Otter, the Knight), from the CI runs of 2026-11-19 (the tracers about 1,030 s for all three builds).",
   "startup": 40,
   "perMap": 60,
   "flows": {
@@ -17,7 +17,11 @@
     "canyon": 30,
     "scenery": 114,
     "setpieces": 26,
-    "physicsfx": 128,
+    "physicsfx": 300,
+    "beams": 330,
+    "tracers": 400,
+    "tracers2": 320,
+    "tracers3": 320,
     "teams": 132,
     "weaponsets": 150,
     "ctf": 65,

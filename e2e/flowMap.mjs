@@ -24,7 +24,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
-  'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx',
+  'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
   'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', 'flashing', 'newplayer', 'fireteams',
 ];
@@ -48,7 +48,7 @@ const MAP_USERS = {
   canyon: ['canyon', 'scenery', 'physicsfx', 'arsenal', 'vehicles'],
   skyward: ['scenery'],
   sky_islands: ['setpieces'],
-  training_range: ['physicsfx', 'newplayer'],
+  training_range: ['physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'newplayer'],
   breakyard: ['physicsfx'],
   bunker_cross: ['ctf'],
   fort_meadow: ['forts'],
@@ -148,8 +148,10 @@ const RULES = [
   [/^content\/guns(\.lock)?\.json$/, ['arsenal', ...CHARACTER_FLOWS, 'vehicles'], ['shared']],
   // The sight fit's corrections and exclusions (tools/content/sight-fit.mjs): where each gun sits aimed.
   [/^content\/sight-fit\.json$/, ['arsenal', 'offline', 'weaponsets'], ['client', 'content']],
+  // Optics by gun (tools/content/optics.mjs): the housings on the guns and their reticles (characters3 aims with them; steady: the flicker check).
+  [/^content\/optics\.json$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'flashing'], ['client', 'content']],
   // Effects: the flows that play them, and the flicker check (Reduce flashing: no new effect may flash).
-  [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'arsenal', 'flashing'], ['client']],
+  [/^content\/vfx(\.lock)?\.json$/, ['physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'flashing'], ['client']],
   [/^content\/skies(\.lock)?\.json$/, [...MAP_FLOWS, 'scenery', 'setpieces', 'canyon', 'visual'], ['shared']],
   [/^content\/city(\.lock)?\.json$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces'], ['client', 'shared']],
   [/^content\/sounds\.json$/, ['offline'], ['client']],
@@ -214,20 +216,22 @@ const RULES = [
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'flashing'], ['client']],
   // Where the first-person gun sits aiming down its sights (the sight fit).
-  [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'visual'], ['client']],
-  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual'], ['client']],
+  // The optics on the guns: their housings and glass, the reticles (steady: the flicker check).
+  [/^packages\/client\/src\/game\/(optics|opticHousing)\.ts$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'flashing'], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.
   [/^packages\/client\/src\/(weatherVisuals|game\/weatherAudio)\.ts$/, ['editorenv', 'flashing'], ['client']],
   // Hold to use (the ring) and the low-health warning: its check in `arsenal` (holdUseChecks), and its moment in the flicker check.
   [/^packages\/client\/src\/game\/lowHealth\.ts$/, ['arsenal', 'flashing'], ['client']],
-  [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'visual', 'flashing'], ['client']],
   // Pickups' floor glows (Binbun's Loot VFX): the flicker check records them; the flows that walk over pickups.
   [/^packages\/client\/src\/game\/lootGlow\.ts$/, ['offline', 'physicsfx', 'visual', 'flashing'], ['client']],
   // Portals' swirls and jump pads' lifts (Binbun's Portal and Magic Area VFX): the flicker check records them; the
   // flows that walk through portals and over pads (the coverage map has both), and the pictures.
   // Status auras (Binbun's Stylized Status FX on burning, poisoned, slowed and chilled characters).
-  [/^packages\/client\/src\/game\/statusFx\.ts$/, ['arsenal', 'physicsfx', 'flashing'], ['client']],
+  [/^packages\/client\/src\/game\/statusFx\.ts$/, ['arsenal', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/fixtureFx\.ts$/, ['offline', 'coverage', 'visual', 'flashing'], ['client']],
   [/^packages\/client\/src\/game\/(scenarioVisuals|scenarioState|pickupVisuals|propVisuals|canopyVisuals|cityVisuals|creatureAnimator|gait|torsoSurface|minimap|perfProbe|sessionAudio)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'zombies', ...CHARACTER_FLOWS, 'flashing'], ['client']],
   [/^packages\/client\/src\/(backdrop|borderVisuals|foliage|mapMeshes|playlists)\.ts$/, [...MAP_FLOWS, 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'visual', 'flashing'], ['client']],

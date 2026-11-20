@@ -505,6 +505,11 @@ export class InputState {
     return this.keys.has(code);
   }
 
+  /** Shift, or a controller's sprint button: through a scope it holds your breath (it sprints otherwise). */
+  get holdingBreath(): boolean {
+    return this.keys.has('ShiftLeft') || this.pad.sprint;
+  }
+
   /**
    * Once per rendered frame: arrow keys and a controller's right stick turn the
    * view; the controller's buttons are read here too (Gamepad API is polled).

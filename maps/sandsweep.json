@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_o42gqpw3ur6gmf5v",
-      "versionId": "v_2gj374e6ojae5agd",
+      "versionId": "v_5ky7pg6qwjpolgnc",
       "revision": 4,
-      "contentHash": "sha256:b3ef8e93f52cd43f3f9f60852e8cfd0e5f5526b26a8680a3dc087a5eee4595d0",
+      "contentHash": "sha256:62156bebf9795c6b12185f3725ea5fc8a311e472b12cad340f918ee18e165072",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:39:47.894Z"
+      "releasedAt": "2026-11-19T10:23:43.391Z"
     }
   },
   "classicStructure": {
@@ -524,7 +524,8 @@
       "yaw": 5.96,
       "scale": 2.992,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_039",
@@ -538,7 +539,8 @@
       "yaw": 1.72,
       "scale": 2.464,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_040",
@@ -552,7 +554,8 @@
       "yaw": 4.41,
       "scale": 4,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_041",
@@ -566,7 +569,8 @@
       "yaw": 1.72,
       "scale": 4,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_042",
@@ -580,7 +584,8 @@
       "yaw": 0.27,
       "scale": 3.41,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_043",
@@ -594,7 +599,8 @@
       "yaw": 3.9,
       "scale": 3.454,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_044",
@@ -608,7 +614,8 @@
       "yaw": 4.06,
       "scale": 4,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_045",
@@ -622,7 +629,8 @@
       "yaw": 0.92,
       "scale": 2.552,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_046",
@@ -636,7 +644,8 @@
       "yaw": 1.15,
       "scale": 2.266,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_047",
@@ -650,7 +659,8 @@
       "yaw": 4.11,
       "scale": 4,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_048",

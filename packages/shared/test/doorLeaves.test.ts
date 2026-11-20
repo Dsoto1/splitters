@@ -2,7 +2,7 @@
 // through … i would like to hide behind doors for cover if possible"). The open Oak Doors (wide and slim) and the
 // Painted Door collided as nothing; now each collides as its leaf, standing square into the room on its hinges, while
 // the doorway beside it stays clear, and the doorway is a passage (sim/passages.ts) so bots still walk into the room
-// the leaf narrows. Shut and ajar doors keep the frame's slab. Here: the catalogue boxes, a ray and a body stopped by
+// the leaf narrows. Shut doors keep the frame's slab; ajar ones the slab and their leaf at its angle (owner, 2026-11-19). Here: the catalogue boxes, a ray and a body stopped by
 // the leaf, the doorway still open, and every open room of a Dorm Bay reached on the navmesh in every turn.
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -61,9 +61,39 @@ describe('open doors collide as their leaf', () => {
       // From the wall's plane a leaf's length into the room.
       expect(z1 - z0, id).toBeGreaterThan(w - 0.2);
     }
-    // Shut and ajar: still the frame's slab.
+    // Shut: the frame's slab. Ajar (owner, 2026-11-19, "2b"): the slab, and its leaf at 25° (a seventh number, the box's
+    // own turn), from the hinge 0.8 m into the room.
     expect(getProp('kit.door.oak')!.collision).toEqual([2, 2.6, 0.16]);
-    expect(getProp('kit.door.oak_ajar')!.boxes).toEqual([[-1, 0, -0.08, 1, 2.6, 0.08]]);
+    for (const [id, w] of [['kit.door.oak_ajar', 2], ['kit.door.oak_slim_ajar', 1.2]] as const) {
+      const boxes = getProp(id)!.boxes!;
+      expect(boxes[0], id).toEqual([-w / 2, 0, -0.08, w / 2, 2.6, 0.08]);
+      expect(boxes, id).toHaveLength(2);
+      const [x0, , z0, x1, y1, z1, turn] = boxes[1]!;
+      expect(turn, id).toBeCloseTo((25 * Math.PI) / 180, 3);
+      expect(z1 - z0, id).toBeCloseTo(0.07, 3);
+      expect(x1 - x0, id).toBeGreaterThan(w - 0.2);
+      expect(y1, id).toBeGreaterThan(2.4);
+    }
+  });
+
+  it('an ajar door: rounds stop at its leaf in the room; the doorway stays shut by the slab; the leaf is off the navmesh', () => {
+    for (const roomDoors of ['wide', 'slim'] as const) {
+      const map = mapOf([{ ...bay(0, roomDoors), piece: 'setpiece.dorm_bay_closed' }]);
+      const geo = buildMapGeometry(map);
+      const physics = new PhysicsWorld(geo, mapTerrainMesh(map));
+      // The door at x 2 (its frame at z 5.26), the room north of it. From inside the room looking south, beside the
+      // latch end: the leaf (0.8 m in at its far end), not the slab 2.2 m off.
+      const x = roomDoors === 'wide' ? 1.6 : 1.85;
+      const d = physics.raycastWorld({ x, y: 1.2, z: 7.5 }, { x: 0, y: 0, z: -1 }, 4)!;
+      expect(d, `${roomDoors}: the leaf`).toBeLessThan(1.95);
+      expect(d, `${roomDoors}: the leaf`).toBeGreaterThan(1.3);
+      // From the hall, through the doorway's middle: the slab, as before.
+      expect(physics.raycastWorld({ x: 2, y: 1.2, z: 4 }, { x: 0, y: 0, z: 1 }, 4), `${roomDoors}: the slab`).toBeCloseTo(1.18, 2);
+      const door = map.entities.find((e) => e.kind === 'prop' && e.model.includes('_ajar'))!;
+      const mine = geo.filter((b) => b.sourceId === door.id);
+      expect(mine.map((b) => !!b.navThrough), roomDoors).toEqual([false, true]);
+      expect(mine[1]!.yaw, roomDoors).toBeCloseTo((25 * Math.PI) / 180, 3);
+    }
   });
 
   it('a Dorm Bay: rounds and bodies stop at the open leaf; the doorway beside it is clear (every turn, wide and slim)', { timeout: 60_000 }, () => {

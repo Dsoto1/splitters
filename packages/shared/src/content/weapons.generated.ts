@@ -1918,7 +1918,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffe2a0',
       hold: { style: 'long', grip: [0, -0.075, -0.225], support: [0, -0.07, 0.105], shoulder: [0, 0.01, -0.47] },
       muzzleAt: [0, 0.033, 0.48],
-      optic: { mag: 3.5, eye: [0, 0.133, -0.262], radius: 0.014, relief: 0.12, reticle: 'duplex' },
+      optic: { mag: 3.5, eye: [0, 0.133, -0.262], radius: 0.014, relief: 0.12, reticle: 'chevron' },
       sound: 'fire.heavy',
     },
   },

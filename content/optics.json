@@ -1,0 +1,70 @@
+{
+  "$comment": "Optics by gun (tools/content/optics.mjs; docs/GUNPLAY_SPEC.md §15, \"Optics by gun\"; owner, 2026-11-18: red dot or holographic for close range, 2-3x for rifles and carbines, a full scope for snipers, each with its own reticle). `kinds`: what an optic is: its reticle, its housing (`none`: the gun's own iron sights; `tube` and `frame`: built in code on the gun's top, client game/opticHousing.ts; `model`: the model's own scope tube, the weapon's `view.optic`; `overlay`: the full-screen scope, the weapon's `view.zoomFov`), and its aimed field of view: `adsFov` (a share of the hip's, the 1x sights) or `mag` (the range of magnification over the hip view the kind covers; each weapon's own zoom stays in its weapon file and must lie inside it). `glass` (metres at scale 1): how high the window's middle stands over the mount, its half width and height, and the housing's length. `reticle` sizes are tangents of the angle at the eye. `weapons`: per hand-held gun the optic it carries (`default`) and those it may carry (`allowed`; the loadout's choice comes later), with an optional `mount` ({ at: [x, y, z], scale, reason }) where the measured mount point is wrong, or a `window` ({ at, half: [w, h], reason }) where the model has an open sight of its own to look through (no housing is built: the glass and its mark go in the model's window, at `at`, the middle of the opening on the eye's side of everything in it; while aimed the window is a clip: nothing of the gun behind the opening is drawn, so scraps of a model inside its sight box never show in the sight picture). `none`: hand-held guns that keep the aim they had (the gun's top under the eye, the HUD's aim dot), each with its reason. Mounted guns, melee weapons and tools need no entry. `steps` (a magnified kind, or one weapon): the zoom steps the mouse wheel moves through while scoped, each a share of the weapon's own aimed field of view; the first is always 1 (the zoom the gun comes up at), the rest get smaller (0.45: the field of view at 45 %, about 2.2 times closer). `feel`: scope feel for every magnified optic (docs/GUNPLAY_SPEC.md §15, \"Scope feel\"; the client's game/scopeFeel.ts): `sway` the drift's size (radians of real aim), `swayHeld` and `swaySpent` its multiples while holding breath (Shift) and while out of breath, `settle` the seconds its size takes to ease between them, `breathSeconds` how long a full breath holds, `recoverSeconds` how long an empty one takes to refill, `readyAt` how full it must be after running out before it can be held again. Run `node tools/content/optics.mjs` after a change.",
+  "feel": { "sway": 0.0035, "swayHeld": 0.12, "swaySpent": 2.2, "settle": 0.15, "breathSeconds": 3.5, "recoverSeconds": 4, "readyAt": 0.5 },
+  "kinds": {
+    "irons": { "name": "Iron sights", "reticle": "none", "housing": "none", "adsFov": 0.72 },
+    "reddot": {
+      "name": "Red dot",
+      "reticle": "dot",
+      "housing": "tube",
+      "adsFov": 0.72,
+      "glass": { "rise": 0.034, "half": [0.017, 0.017], "length": 0.058 },
+      "mark": { "dot": 0.004 }
+    },
+    "holo": {
+      "name": "Holographic sight",
+      "reticle": "ring",
+      "housing": "frame",
+      "adsFov": 0.72,
+      "glass": { "rise": 0.036, "half": [0.021, 0.016], "length": 0.07 },
+      "mark": { "dot": 0.0016, "ring": 0.022 }
+    },
+    "scope": { "name": "2-3x optic", "reticle": "chevron", "housing": "model", "mag": [2, 3.6], "steps": [1] },
+    "sniper": { "name": "Sniper scope", "reticle": "fine", "housing": "overlay", "mag": [3, 10], "steps": [1, 0.45] }
+  },
+  "weapons": {
+    "core.pistol": { "default": "irons", "allowed": ["irons"] },
+    "core.revolver": { "default": "irons", "allowed": ["irons"] },
+    "core.hand_cannon": { "default": "irons", "allowed": ["irons"] },
+    "core.pulse_pistol": { "default": "irons", "allowed": ["irons"] },
+    "core.machine_pistol": { "default": "irons", "allowed": ["irons"] },
+    "core.smg": { "default": "irons", "allowed": ["irons"] },
+    "core.nailgun": { "default": "irons", "allowed": ["irons"] },
+    "core.shotgun": { "default": "irons", "allowed": ["irons"] },
+    "core.auto_shotgun": { "default": "irons", "allowed": ["irons"] },
+    "core.freeze_ray": { "default": "irons", "allowed": ["irons"] },
+    "core.goo_gun": { "default": "irons", "allowed": ["irons"] },
+    "core.rifle": { "default": "irons", "allowed": ["irons"] },
+    "core.burst_rifle": { "default": "irons", "allowed": ["irons"] },
+    "core.laser_rifle": { "default": "reddot", "allowed": ["reddot", "holo"] },
+    "core.bubble_blaster": { "default": "reddot", "allowed": ["reddot", "holo"] },
+    "core.sawed_off": { "default": "reddot", "allowed": ["reddot"] },
+    "core.arc_caster": { "default": "holo", "allowed": ["holo", "reddot"] },
+    "core.flak": { "default": "holo", "allowed": ["holo", "reddot"] },
+    "core.disc_launcher": { "default": "holo", "allowed": ["holo", "reddot"] },
+    "core.arena_disc": { "default": "holo", "allowed": ["holo", "reddot"] },
+    "core.plasma": {
+      "default": "holo",
+      "allowed": ["holo"],
+      "window": { "at": [0, 0.157, -0.058], "half": [0.0222, 0.0138], "reason": "the model's own sight box on its riser is open: the hole measured along the barrel (y 0.142-0.172, x within 0.024; the box runs z -0.037 to 0.085). 31 loose scraps of the model float in the opening from z -0.05 to -0.01, so `at` is 2 cm behind the box, on the eye's side of every scrap, and `half` the hole as seen from the eye there: the window's clip keeps them out of the aimed view" }
+    },
+    "core.battle_rifle": { "default": "scope", "allowed": ["scope"] },
+    "core.marksman": { "default": "scope", "allowed": ["scope"], "steps": [1, 0.45] },
+    "core.sniper": { "default": "sniper", "allowed": ["sniper"] },
+    "core.railgun": { "default": "sniper", "allowed": ["sniper"] }
+  },
+  "none": {
+    "core.rockets": "a tube launcher: aimed over the tube, as launchers are",
+    "core.guided": "a tube launcher: the rocket is steered after the shot, not aimed through a sight",
+    "core.blast_rockets": "a tube launcher: aimed over the tube",
+    "core.launcher": "a grenade launcher: its rounds are lobbed, a sight on the bore would point over the target",
+    "core.swarm": "a launcher whose rockets home: no sight to line up",
+    "core.oil_slicker": "sprays a lobbed stream: a sight on the bore would point over where it lands",
+    "core.flamethrower": "a stream weapon, aimed by its flame",
+    "core.lmg": "a rotary gun fired from the hip: its top is a housing and a crank",
+    "core.singularity": "an oddity with an organic shell: nowhere flat to stand a sight, and the shot is slow",
+    "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
+    "core.gilded_pistol": "a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it",
+    "core.spear": "a thrown spear: no sights"
+  }
+}

@@ -74,7 +74,7 @@ describe('fx map (content/vfx.json map)', () => {
   });
 
   it('picks wood effects and sound for a tree trunk, the same surface the server shoots (not stone dust)', () => {
-    const doc = { entities: [{ id: 't1', kind: 'prop', model: 'prop.oak', position: [0, 0, 0], yaw: 0 }, { id: 'b1', kind: 'prop', model: 'prop.bush_large', position: [0, 0, 0], yaw: 0 }, { id: 'r1', kind: 'prop', model: 'prop.nt_boulder', position: [0, 0, 0], yaw: 0 }, { id: 'c1', kind: 'prop', model: 'prop.shipping_container_red', position: [0, 0, 0], yaw: 0 }], classicStructure: { theme: 'core.prototype', tiles: [] } } as unknown as Pick<MapDocument, 'entities' | 'classicStructure'>;
+    const doc = { entities: [{ id: 't1', kind: 'prop', model: 'prop.oak', position: [0, 0, 0], yaw: 0 }, { id: 'b1', kind: 'prop', model: 'prop.bush_large', position: [0, 0, 0], yaw: 0 }, { id: 'r1', kind: 'prop', model: 'prop.boulder_jagged', position: [0, 0, 0], yaw: 0 }, { id: 'c1', kind: 'prop', model: 'prop.shipping_container_red', position: [0, 0, 0], yaw: 0 }], classicStructure: { theme: 'core.prototype', tiles: [] } } as unknown as Pick<MapDocument, 'entities' | 'classicStructure'>;
     const index = surfaceIndex(doc);
     const box = (sourceId: string): WorldBox => ({ min: [0, 0, 0], max: [1, 1, 1], kind: 'prop', sourceId });
     const trunk = surfaceOfBox(box('t1'), index);
