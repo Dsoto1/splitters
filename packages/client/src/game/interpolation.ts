@@ -75,6 +75,10 @@ export interface RemotePose {
    * what the crosshair is on (shared/sim/thirdPerson.ts thirdPersonAim; `pitch` is that aim's pitch then).
    */
   aimYaw?: number;
+  /** Holding a pair (dual wielding: PlayerSnapshot.dw; your own from prediction): a gun in each hand. */
+  pair?: boolean;
+  /** Your own pair in third person: how far into its reload dip each gun is (right, left; 0..1; pairView.ts reloadDipAmount). */
+  pairDip?: readonly [number, number];
 }
 
 /** Snapshot interpolation for remote players, driven by an estimate of the server clock. */
@@ -242,6 +246,7 @@ export class Interpolator {
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
         ...(pb.zm ? { scoped: true } : {}),
+        ...(pb.dw ? { pair: true } : {}),
         ...(pb.em ? { emote: true } : {}),
         ...(pb.ch ? { chute: pb.ch } : {}),
         ...(pb.zl ? { zip: pb.zl[0], zipSpeed: Math.abs(pb.zl[2]) } : {}),

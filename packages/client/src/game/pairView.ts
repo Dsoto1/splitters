@@ -124,3 +124,21 @@ export class PairFlashGate {
     this.pick = null;
   }
 }
+
+/**
+ * Third person (step 4): where each gun of a pair is held, from its own shoulder in the aim's frame, as shares of the
+ * arm's reach (so a long-armed body holds them as far out as a short one, for its size): ahead along the aim, down,
+ * and out to the gun's own side (negative: in toward the middle). Each gun is held in one hand at a little under
+ * arm's length, the two about shoulder width apart and level with the aim, under the line of the eyes.
+ */
+export const PAIR_HOLD_3P = { ahead: 0.74, down: 0.24, out: -0.06 } as const;
+
+/**
+ * A gun of a pair held in third person, `dip` (0..1) of the way into its lowered place (the second gun before it is
+ * up, or a gun being reloaded): drawn back toward the chest and lower, its muzzle tipped up (`pitch`, radians) and
+ * rolled outward (`roll`), as the first-person dip does (pairReloadDip).
+ */
+export function pairHold3p(dip: number): { ahead: number; down: number; out: number; pitch: number; roll: number } {
+  const a = easeUp(Math.max(0, Math.min(1, dip)));
+  return { ahead: PAIR_HOLD_3P.ahead - a * 0.3, down: PAIR_HOLD_3P.down + a * 0.32, out: PAIR_HOLD_3P.out + a * 0.04, pitch: a * 0.7, roll: a * 0.35 };
+}
