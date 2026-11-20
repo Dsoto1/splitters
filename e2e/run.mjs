@@ -10539,6 +10539,7 @@ async function passengerChecks(browser) {
   if (ride) {
     // Seated and drawn sitting, then the chase camera (both of you in view) and the throttle down.
     await page.waitForFunction((r) => window.__cs.mounts.mounts.get(r.index)?.seats[1] === r.bot && (window.__cs.view.avatars.get(r.bot)?.anim?.sit ?? 0) > 0.95, ride, { timeout: T(10000) }).catch(() => {});
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
     // Off at full speed, on the page's frame clock from here: 60 frames a game second however slowly this machine
@@ -10628,6 +10629,7 @@ async function passengerChecks(browser) {
         window.__frameClock.step(1000 / 60);
         return ok();
       }, [want, max]);
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     const cockpit = await untilFrames('cockpit', 60);
     const inCockpit = await page.evaluate(ownShown);
@@ -10802,6 +10804,7 @@ async function troopTruckChecks(browser) {
   const moved = await sim(page, (m, me, s) => +Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z).toFixed(1), start).catch(() => 0);
   check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.tires === 6 && wheels.own === 0 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await playWithoutMouse(page);
   await page.keyboard.press('KeyH');
   await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
   await frames(page, 10);
