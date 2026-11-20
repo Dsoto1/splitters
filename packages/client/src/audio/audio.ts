@@ -97,6 +97,11 @@ export interface PlayOptions {
   announcer?: boolean;
   /** Seconds from now to start it (your own shots keep their ticks' spacing when a frame runs several: SessionAudio.localShot). */
   delay?: number;
+  /**
+   * Stereo place of a non-positional sound, -1 (left) to 1 (right): your own pair's guns each a little to their
+   * side (game/pairView.ts gunPan). Ignored with `at` (the world places it).
+   */
+  pan?: number;
 }
 
 /**
@@ -348,6 +353,12 @@ export class AudioSystem {
       tail.connect(lp);
       lp.connect(panner);
       tail = panner;
+    }
+    else if (opts.pan && typeof ctx.createStereoPanner === 'function') {
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = Math.max(-1, Math.min(1, opts.pan));
+      tail.connect(pan);
+      tail = pan;
     }
     tail.connect(opts.announcer && this.announcerBus ? this.announcerBus : master);
 

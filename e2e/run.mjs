@@ -12448,7 +12448,8 @@ async function flashingScene(browser, scene) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  // (&akimbo=1: dual wielding in play, for the `pair` moment; nothing else here makes a pair.)
+  await page.goto(`${CLIENT}/?mode=editor&test=1&akimbo=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
@@ -12489,6 +12490,17 @@ async function flashingScene(browser, scene) {
   check(playing, 'the scene plays (MapMaker TEST)');
   if (!playing) return void (await ctx.close());
   await holdBots(page);
+  /** Your machine pistol's second gun: made (kept full each tick) or taken away, as the match holds it. */
+  const pairOf = (on) =>
+    sim(page, (m, me, on) => {
+      clearInterval(self.__pairPin);
+      const w = [...me.weapons.values()].find((x) => x.def.id === 'core.machine_pistol');
+      if (!w) return false;
+      if (!on) return delete w.off;
+      if (!w.off) m.makePair(me, w, w.def.magazine);
+      self.__pairPin = setInterval(() => w.off && (w.off.mag = w.def.magazine), 1000 / 60);
+      return true;
+    }, on);
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -12600,6 +12612,27 @@ async function flashingScene(browser, scene) {
       look: aim([0, 0, -25.5], [0, 1.2, -29]),
       bots: [],
       fire: true,
+    },
+    {
+      // Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): two guns' flashes. With the setting on the pair
+      // shares one flash (pairView.ts PairFlashGate): no brighter and no more often than the one gun of `muzzle`.
+      name: 'pair',
+      label: 'a pair of machine pistols, both triggers held, at a wall 3.5 m off in the dark room',
+      weapon: 'core.machine_pistol',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: 2 | 32,
+      before: async () => {
+        await pairOf(true);
+        for (let i = 0; i < 12 && !(await page.evaluate(() => window.__cs.local.paired && window.__cs.view.pairUp === 1)); i++) await step(5);
+        await page.evaluate(() => (window.__pairFlashes = { ...window.__cs.view.ownFlashes }));
+      },
+      after: () => pairOf(false),
+      seen: () => page.evaluate(() => { const f = window.__cs.view.ownFlashes; const b = window.__pairFlashes; return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, shown: window.__cs.view.pairShown() }; }),
+      // Off: every round of both guns flashes. On: both hands still flash, in turn, about half the rounds left out
+      // (one gun's worth drawn: 20 a second over the 2.3 s the triggers are held).
+      sees: (on, s) => s.shown && s.right > 5 && s.left > 5 && (on ? s.skipped > 10 && s.right + s.left <= 50 && Math.abs(s.right + s.left - s.skipped) <= 6 : s.skipped === 0),
     },
     {
       name: 'jackpot',
@@ -12846,6 +12879,15 @@ async function flashingScene(browser, scene) {
     await page.evaluate((w) => window.__give(w), id);
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
+  // The `pair` moment's second gun and its arm too: a pair of machine pistols made and unmade.
+  if (moments.some((mo) => mo.name === 'pair')) {
+    await page.evaluate(() => window.__give('core.machine_pistol'));
+    await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.machine_pistol' && !!window.__cs.view.viewmodel, null, { timeout: T(30000) }).catch(() => {});
+    await pairOf(true);
+    const pairIn = await page.waitForFunction(() => window.__cs.view.pairShown() && window.__cs.view.hasPairArm(), null, { timeout: T(30000) }).then(() => true, () => false);
+    check(pairIn, 'a pair of machine pistols is drawn in first person: the second gun and its arm are in');
+    await pairOf(false);
+  }
   await page.evaluate(() => window.__frameClock.freeze());
   // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
   for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
@@ -12862,7 +12904,8 @@ async function flashingScene(browser, scene) {
     for (const on of [true, false]) {
       await setFlashing(on);
       await mo.before?.();
-      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+      // (`fire`: the trigger held; a number names the buttons, both triggers of a pair.)
+      if (mo.fire) await page.evaluate((b) => (window.__autoInput = { buttons: b }), mo.fire === true ? 2 : mo.fire);
       // The switch (and the trigger) settle in: a third of a second before the recording.
       clockErrors.push(...(await step(10)));
       await page.evaluate(() => {

@@ -609,6 +609,7 @@ export class CharacterAnimator {
     this.weapon = weapon;
     this.grip = weapon ? grip : null;
     this.external = null;
+    this.stowFreeArm(false);
     this.inHand.valid = false;
     this.armPose = null;
     this.unplaced = false;
@@ -626,13 +627,30 @@ export class CharacterAnimator {
    * Put the hands on a weapon that is positioned by someone else (the
    * first-person viewmodel): the weapon is not moved or owned, only gripped.
    */
-  gripExternal(weapon: TransformNode | null, grip: WeaponHold | null): void {
+  gripExternal(weapon: TransformNode | null, grip: WeaponHold | null, solo = false): void {
     this.weapon?.dispose();
     this.weapon = null;
-    this.external = weapon && grip ? { node: weapon, grip } : null;
+    if (weapon && grip && this.external?.node === weapon && this.external.from === grip && this.external.solo === solo) return;
+    // `solo` (one gun of a pair, dual wielding): the shooting hand alone, as it holds the gun two-handed; the other
+    // hand has its own gun.
+    this.external = weapon && grip ? { node: weapon, grip: solo && grip.support ? { ...grip, support: undefined } : grip, from: grip, solo } : null;
+    if (!this.external?.solo) this.stowFreeArm(false);
   }
 
-  private external: { node: TransformNode; grip: WeaponHold } | null = null;
+  /**
+   * Full body first person with one gun of a pair in the shooting hand: this body's own left arm is shrunk away at
+   * the shoulder (as the head is), because the second gun's arm is drawn by the view (a mirrored arm, view.ts
+   * `fpArms2`) and two left arms would show when you look down. Put back when the pair ends.
+   */
+  private stowFreeArm(on: boolean): void {
+    if (!on && !this.freeArmStowed) return;
+    this.freeArmStowed = on;
+    this.arms?.l.upper.scaling.setAll(on ? 0.001 : 1);
+  }
+
+  private freeArmStowed = false;
+
+  private external: { node: TransformNode; grip: WeaponHold; from: WeaponHold; solo: boolean } | null = null;
   private fp: FirstPersonBody | null = null;
 
   /**
@@ -649,6 +667,7 @@ export class CharacterAnimator {
         this.restoreShoulder(arm);
         arm.hand.scaling.setAll(1);
       }
+      this.stowFreeArm(false);
     }
   }
 
@@ -1607,7 +1626,15 @@ export class CharacterAnimator {
       this.fp.place?.();
     }
     if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
-    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x);
+    else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) {
+      // (The left arm of a pair is this body in a mirror, view.ts `pairRoot`: the gun's right side is then the world's left.)
+      viewMirrored = this.external.solo && ((root.parent as TransformNode | null)?.getWorldMatrix().determinant() ?? 1) < 0;
+      try {
+        this.gripPlaced(this.external.node, this.external.grip, this.arms, new SkeletonSpace(this.skelRoot), root.absoluteScaling.x, this.external.solo);
+      } finally {
+        viewMirrored = false;
+      }
+    }
   }
 
   /**
@@ -1900,7 +1927,7 @@ export class CharacterAnimator {
    * as the arm needs to keep a natural bend (only the shoulder region, off screen, stretches). A support point
    * still out of reach then slides back along the handguard toward the grip.
    */
-  private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number): void {
+  private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number, solo = false): void {
     this.settleHand(arms.r);
     this.settleHand(arms.l);
     weapon.computeWorldMatrix(true);
@@ -1920,8 +1947,9 @@ export class CharacterAnimator {
     // two-handed one, for a gun's pistol grip: a one-handed hold, the Spear's shaft or the Medkit's handle, keeps the
     // close it had before it; turned and closed as a raked grip, their fingers stood straight off the shaft and the
     // handle, 2026-11-06.)
-    const pistol = grip.style === 'pistol' && !!grip.support;
-    if (pistol) gripHand(space, arms.l, world, 'cup', w, true);
+    // (One gun of a pair, `solo`: the shooting hand holds a pistol's grip as it does two-handed, without the other.)
+    const pistol = grip.style === 'pistol' && (!!grip.support || solo);
+    if (pistol && grip.support) gripHand(space, arms.l, world, 'cup', w, true);
     const gun = gunAxes(world);
     // A pistol's hands are turned about their palms so their knuckle lines run down the grip, raked as it is (the
     // fingers close square to it, round the grip instead of up across it); the support hand's a little more, canted
@@ -2037,6 +2065,9 @@ export class CharacterAnimator {
       const cupAt = pistol ? { at: off(grip.support, PISTOL.supportWrap), out: gun.right } : undefined;
       closeHand(space, arms.l, cupAt ? w : w * supportCurl(grip), supportAt.add(palmSideWorld(arms.l).scale(arms.l.gripOffset * scale)), cupAt);
       if (pistol) pointThumb(space, arms.l, gunDir(gun, PISTOL.thumbL), w);
+    } else if (this.fp && solo) {
+      // Full body, one gun of a pair: the other hand's gun and arm are the view's.
+      this.stowFreeArm(true);
     } else if (this.fp) {
       // Full body, one-handed (a knife, an axe): the free arm hangs at your side instead of holding the aim pose up in view.
       const s = pos(arms.l.upper);
@@ -2330,11 +2361,18 @@ function handAxes(arm: Arm): { along: Vector3; palm: Vector3 } {
   return { along, palm: side.lengthSquared() > 1e-10 ? side.normalize() : Vector3.Zero() };
 }
 
+/**
+ * The hands being placed belong to a body drawn in a mirror (the left arm of a pair, gripPlaced's caller): a gun's
+ * right side, worked out as a cross product, is then the other way in the world.
+ */
+let viewMirrored = false;
+
 /** A gun's axes in the world (left-handed): up, ahead along the barrel, and its right, whether or not its node is mirrored. */
 function gunAxes(weapon: Matrix): { up: Vector3; ahead: Vector3; right: Vector3 } {
   const up = Vector3.TransformNormal(new Vector3(0, 1, 0), weapon).normalize();
   const ahead = Vector3.TransformNormal(new Vector3(0, 0, 1), weapon).normalize();
-  return { up, ahead, right: Vector3.Cross(up, ahead).normalize() };
+  const right = Vector3.Cross(up, ahead).normalize();
+  return { up, ahead, right: viewMirrored ? right.scaleInPlace(-1) : right };
 }
 
 /** Turn a hand (in the skeleton's space, blended by `weight`) so its fingers run along `fingers` and its palm faces `palm` (world). */
