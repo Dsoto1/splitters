@@ -180,6 +180,20 @@ function check(cond, message) {
  * Into play: Resume if the pause menu is up, else the click (a tap on a phone) that "Click to fight" asks for: a match
  * opens straight into play, not paused (owner, 2026-11-19; session.ts showFightHint).
  */
+/**
+ * Into play without the mouse: touch play (it stands in for pointer lock) before any key, so a key doesn't take the
+ * mouse at "Click to fight". CI's headless Chromium, holding a pointer lock, sends the page thousands of mouse moves a
+ * second (none moving), and a page whose frame clock is frozen draws no frames to hand them over in: its memory grew
+ * about 50 MB a second, gigabytes over a flow's frozen frames, and the runner went down (beams, 2026-11-20). Releasing
+ * the lock gives the memory back.
+ */
+async function playWithoutMouse(page) {
+  await page.evaluate(() => {
+    if (document.pointerLockElement) document.exitPointerLock();
+    window.__cs.input.setTouchEngaged(true);
+  });
+}
+
 async function fight(page, tap = false) {
   const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
   if (paused) return tap ? page.tap('#resume') : page.click('#resume');
@@ -7658,6 +7672,7 @@ async function tracerMuzzleChecks(browser, looks) {
       await page.evaluate((w) => window.__give(w), id);
       await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
     }
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
     await page.evaluate(() => window.__frameClock.freeze());
@@ -7773,6 +7788,7 @@ async function beamMuzzleChecks(browser) {
     await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
   }
   // Third person first: your character's gun in its hands loads in real time too.
+  await playWithoutMouse(page);
   await page.keyboard.press('KeyH');
   const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
   await page.evaluate(() => window.__frameClock.freeze());
@@ -10523,6 +10539,7 @@ async function passengerChecks(browser) {
   if (ride) {
     // Seated and drawn sitting, then the chase camera (both of you in view) and the throttle down.
     await page.waitForFunction((r) => window.__cs.mounts.mounts.get(r.index)?.seats[1] === r.bot && (window.__cs.view.avatars.get(r.bot)?.anim?.sit ?? 0) > 0.95, ride, { timeout: T(10000) }).catch(() => {});
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
     // Off at full speed, on the page's frame clock from here: 60 frames a game second however slowly this machine
@@ -10612,6 +10629,7 @@ async function passengerChecks(browser) {
         window.__frameClock.step(1000 / 60);
         return ok();
       }, [want, max]);
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     const cockpit = await untilFrames('cockpit', 60);
     const inCockpit = await page.evaluate(ownShown);
@@ -10786,6 +10804,7 @@ async function troopTruckChecks(browser) {
   const moved = await sim(page, (m, me, s) => +Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z).toFixed(1), start).catch(() => 0);
   check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.tires === 6 && wheels.own === 0 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await playWithoutMouse(page);
   await page.keyboard.press('KeyH');
   await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
   await frames(page, 10);
