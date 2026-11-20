@@ -74,6 +74,8 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Landed: version 0.10.0 with the Dropship's deck and half-strength team colours** (`check/release-0.10.0` at fee86ac3, run 44182239032, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-17; the first landing under the `landing-lock` branch, freed after the push). CI publishes v0.10.0 from this main.
 
+**Owner, 2026-11-20, on dual wielding step 3's questions: "1a (let me test first?) 2a".** (1) A pair's same-tick double kick stays as built (Sawed-Off pair about 9.6° against 3.4°); the owner plays it once pairs are on, then decides; tuning is step 5. (2) The pair pose, 2 cm wider and higher than one gun, stays.
+
 **Landed: the Pistol pickup in a train** (`check/train-20261120-140256` at 07516dbc, run 44749760283, green on attempt 1; `wip/pistol-pickup` alone; main fast-forwarded to it; lane B's splitters22, 2026-11-20; lock released). Next for dual wielding: step 4 (third person).
 
 **Landed: the flicker check split into five flows, alone** (`check/flashing-split` at 3f7a76a5, run 44739082577, green on attempt 1; main = that commit plus a docs-only merge; lane B's splitters22, 2026-11-20; lock released).
