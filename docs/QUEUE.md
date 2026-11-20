@@ -224,6 +224,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-20 · B · Third-person long-gun grips for every character (support hand on the handguard measured from each gun, support shoulder forward, stock nearer the chest, fingers closed to their curl without tearing; new e2e flow characters4 checks 237 holds) (`check/grips-fix` at b86e380d, run 44816073539).
 - 2026-11-20: the Pistol pickup in MapMaker (Weapons group; never rolled by random pickups; a second Pistol gives ammo until dual wielding is on, then makes the pair) (`check/train-20261120-140256` at 07516dbc, run 44749760283).
 - 2026-11-20: the flicker check split into five flows, `flashing` to `flashing5` (each under 6 min on CI, so a retry fits a shard; `FLASHING_PARTS` in e2e/run.mjs; docs/LOOK.md "The flicker check") (`check/flashing-split` at 3f7a76a5, run 44739082577).
 - 2026-11-20: CI runner deaths and the grenade-blast flicker flake fixed, in one train (`check/train-20261120-105513` at fc2278da, run 44723278619): `beams`, `tracers` and `vehicles` play without a pointer lock on frozen clocks (CI's headless shell flooded memory); under Reduce flashing a close blast is drawn smaller (`blastSize`). Next: split `flashing` (~23 min on CI) so a retry fits the shard limit.
