@@ -2173,9 +2173,10 @@ In code: `akimboOf(def)` beside `gunplayOf` (`packages/shared/src/sim/gunplay.ts
 3. **The pair in first person (landed, off by default).** The second gun in your left hand with its arm, each
    gun's own kick, flash, case, muzzle and reload dip, the raise and the putting away, the sounds, Reduce flashing.
    "As built: the pair in first person" below.
-4. **Third person, then on.** Everyone else (and you in third person) sees the second gun: the public `dw` on a
-   character, its left hand's gun, flash and tracers. Then `AKIMBO_READY` true, which makes pairs in normal matches
-   and shows the switch and the server rule (and their row in docs/HOSTING.md).
+4. **Third person, then on (landed).** Everyone else (and you in third person) sees the second gun: the public `dw`
+   on a character, its left hand's gun, flash and tracers. Then `AKIMBO_READY` true, which makes pairs in normal
+   matches and shows the switch and the server rule (and their row in docs/HOSTING.md). "As built: the pair in third
+   person" below.
 5. **Tuning and more pairs.** The numbers above played and adjusted; small SMGs and whatever else the owner adds;
    melee pairs.
 
@@ -2293,8 +2294,44 @@ the view does exactly what it did (the second gun's nodes are not even made unti
   `flashing`).
 - **Full body first person.** Your own character still holds the first gun (its left arm hangs at its side, as with
   a one-handed weapon); the left gun's arm is the mirrored one from the arms-only view.
-- **Not yet (step 4).** Third person and everyone else: one gun, one flash at the right hand, the second gun's
-  tracers from the same muzzle.
+- **Third person and everyone else:** step 4, below.
+
+### As built: the pair in third person (step 4, 2026-11-20)
+
+The client only (`game/characterAnimator.ts` `holdPair`, `pairPose`, `placePair`; `game/view.ts` `setAvatarPair`,
+`remoteFlash`; the numbers in `game/pairView.ts`, tested in `pairView.test.ts`); the wire is step 2's (`dw`,
+`shot.off`).
+
+- **Who.** A character whose snapshot says `dw` (another player, or a bot a test pairs), and your own character in
+  third person while a pair is in hand (from prediction), holding the first gun already; a capsule stand-in or a
+  creature draws one gun. An older host sends no `dw`: one gun, as before.
+- **Two real guns, not a mirror.** The second gun is a second copy of the same model in the left hand (in a crowd a
+  GPU instance like the first), not mirrored as first person's is: a pair of guns in someone's hands reads as two of
+  the same gun, so both throw their cases to the right.
+- **The hold.** Each gun in one hand out in front at the aim, at a little under arm's length (`PAIR_HOLD_3P`, shares
+  of the arm's reach from each shoulder: 0.86 ahead, 0.2 down, 0.06 in), level with the aim and turned with it
+  (pitch and the third-person aim's turn). Both arms are solved onto their grips and the hands closed on them by
+  first person's one-gun-a-hand hold (`gripOne`: the hand turned onto the grip, a pistol's knuckles down its raked
+  grip, the fingers round it, the thumb along the frame), the left hand worked out in a mirror. Same for every
+  family: the Machine Pistol and the Sawed-Off are held by their pistol grip and wrist, stocks free in front.
+- **Up, down, reload.** The second gun comes up over 0.3 s once its model is in (others' raise is theirs: the snapshot
+  says only that the pair is out) and goes down as fast as first person's when the pair ends, then is gone; a switch
+  takes it at once with the first. Your own reload in third person dips the gun whose turn it is (drawn back, lower,
+  tipped up and rolled out: `pairHold3p`); others' reloads aren't sent, so theirs aren't drawn (as for one gun).
+- **While an action has the hands** (a punch, a throw, a flinch) each gun rides in its hand, as one gun does.
+- **Far off.** The same hold at every distance (the near and the low-detail meshes share the skeleton); the coarse
+  animation detail's cached arms are not used for a pair (a pair's grip is worked out each evaluation), and both guns
+  are drawn between evaluations with the skin (`blendGun`).
+- **Flashes, tracers, cases.** Each gun has its own muzzle (`muzzleOf(slot, off)`): a round's tracer, a beam and its
+  flash leave the gun that fired it (`shot.off`); a Pulse Pistol pair's steady beams under Reduce flashing are one
+  per gun. Your own cases in third person leave the drawn gun that fired (before, they left the hidden first-person
+  gun, near the camera). Others' guns throw no cases, as with one gun.
+- **Reduce flashing** (docs/LOOK.md): one shared flash per character (`PairFlashGate`), as your own first-person
+  pair: never two at once, never more often than one gun's rounds. Others' rounds come a snapshot at a time, so
+  both guns' rounds in one message are `together` (`bothGunsFired`) and the flash takes turns between the hands.
+  Your own pair asks the gate once a round for first and third person alike. Its moment: `pairtp` (e2e `flashing`).
+- **Not done.** Others' reload, raise timing and putting away are not on the wire (step 2 sent only `dw`); no
+  third-person sprint pose for a pair (none for one gun either).
 
 ## Underbarrel Attachments
 

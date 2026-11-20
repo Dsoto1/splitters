@@ -858,7 +858,8 @@ export class CharacterAnimator {
     // Hands on the weapon unless an action needs them; long guns turn the shoulders into the stock.
     const ikTarget = this.handsOff || (this.grip?.style === 'melee' && !this.external) ? 0 : 1;
     this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
-    const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
+    // (A pair, a gun in each hand, is held square to the aim: no stock to turn into.)
+    const bladeTarget = this.grip?.style === 'long' && !this.weapon2 && !s.celebrate ? LONG_GUN_BLADE * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
     if (this.dormant) {
@@ -1918,6 +1919,9 @@ export class CharacterAnimator {
     const ahead = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
     const upA = new Vector3(0, 1, 0).applyRotationQuaternion(aim);
     const rightA = new Vector3(1, 0, 0).applyRotationQuaternion(aim);
+    // Square the shoulders to the aim: the aim clip (a long gun's pose) holds the chest turned, the left shoulder
+    // forward; with a gun in each hand that put the left gun ahead of the right and both off to one side.
+    this.squareShoulders(arms, rightA);
     const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
     const w = this.ik;
     const sides = [
@@ -1965,6 +1969,43 @@ export class CharacterAnimator {
     if (this.unplaced2) {
       this.unplaced2 = false;
       weapon2.setEnabled(true);
+    }
+  }
+
+  /**
+   * Turn the chest (the top of the spine, about the up axis) until the shoulder line runs square to the aim (`right`:
+   * the aim's right in the world), for a pair. The turn's sense is checked against the result (the joints' frames are
+   * mirrored by the import), as the first-person collarbones are.
+   */
+  private squareShoulders(arms: { r: Arm; l: Arm }, right: Vector3): void {
+    const top = this.spine[this.spine.length - 1];
+    const parent = top?.parent as TransformNode | null | undefined;
+    if (!top?.rotationQuaternion || !parent) return;
+    const flatRight = new Vector3(right.x, 0, right.z);
+    if (flatRight.lengthSquared() < 1e-8) return;
+    flatRight.normalize();
+    const refresh = () => {
+      top.computeWorldMatrix(true);
+      for (const arm of [arms.r, arms.l]) {
+        (arm.upper.parent as TransformNode | null)?.computeWorldMatrix(true);
+        refreshArm(arm);
+      }
+    };
+    const off = () => {
+      const line = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition());
+      line.y = 0;
+      if (line.lengthSquared() < 1e-8) return 0;
+      line.normalize();
+      return Math.atan2(Vector3.Cross(line, flatRight).y, Vector3.Dot(line, flatRight));
+    };
+    refresh();
+    const before = off();
+    if (Math.abs(before) < 0.01) return;
+    worldTurn(parent, Vector3.Up(), before).multiplyToRef(top.rotationQuaternion, top.rotationQuaternion);
+    refresh();
+    if (Math.abs(off()) > Math.abs(before)) {
+      worldTurn(parent, Vector3.Up(), -2 * before).multiplyToRef(top.rotationQuaternion, top.rotationQuaternion);
+      refresh();
     }
   }
 
