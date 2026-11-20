@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Grenades going off right in front of you no longer flicker with Reduce flashing on.** A blast close to the camera is drawn smaller as well as dimmer, so you see the fireball in front of you instead of standing inside it.
 - **Freaky Frida's shoulders hold together.** She is rebuilt from the owner's own rigged Meshy model, and her vest no longer lifts or opens at the back of her shoulders when she holds a gun.
 - **The sniper glint is exact.** A scope glints only while its owner is really looking through it (aim held, gun ready), not on a guess from how they stand.
 - **Dual wielding, under the hood (not in play yet).** The match, the HUD's two magazine counts and the rule a host can turn off are built for pairs of Machine Pistols, Pulse Pistols and Sawed-Offs; it stays hidden until the second gun is drawn in first and third person.
