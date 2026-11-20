@@ -2114,6 +2114,11 @@ match plays bit for bit as before; the Match Setup switch stays hidden with it. 
 Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
 shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
 
+Owner's answers on step 3's two questions (2026-11-20): **the same-tick double kick stays as it is** ("1a, let me test
+first": both triggers on one tick take both rounds' kick on the one aim, the Sawed-Off pair about 9.6° against 3.4°
+for one gun; the owner plays it before anything changes), and **the pair's first-person pose stays** 2 cm wider and
+2 cm higher than the one gun ("2a", `PAIR_POSE`).
+
 ### The design in brief
 
 - **Making a pair.** Pick up a second of the same gun while you carry one and you hold one in each hand. Only the
