@@ -40,8 +40,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fable-dual-2` · ca8dd012 · run 44667423913 (dual wielding step 2, hidden: pairs fire and reload independently; friendly-fire Pistol fix a624c315; green on attempt 2: attempt 1 lost e2e 13/13's runner in `beams`' laser part, the second such loss there; `wip/beams-leak` is root-causing it. 55b6d8fa stays out of trains.)
-- `wip/fable-dual-3` · 090b215c · run 44681820649 (dual wielding step 3, hidden: the pair in first person; contains `wip/fable-dual-2`, so it lands after it or in its place; green on attempt 2: attempt 1 lost two runners, e2e 7/13 to a shutdown signal mid-`tracers` and 5/13 (`beams`) cut off at the time limit with no log)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -225,6 +223,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-20: dual wielding steps 2 and 3 landed in one train (hidden; `AKIMBO_READY` false): pairs fire and reload independently, the pair drawn in first person with its own sounds (`check/train-20261120-070215` at 7ecb896d, run 44692023178).
 - 2026-11-20 · B · Freaky Frida re-imported from the owner's rigged Meshy download (its own skin weights; Meshy, owned): shoulder joints moved out to the arms' roots (`fixes.rejoint` above 1) so her vest no longer lifts off her back in either hold; `fixes.plugs` works on rigged downloads; grip auto-fitted. Owner's "1a 2a": hands and torn-shirt edges stay.
 - 2026-11-20 · B/F · Fix batch 2026-11-20 and lane F's sights step 3 (scope feel) in a train: a door standing ajar blocks movement and bullets along its leaf; the e2e flow physicsfx (27 min since grips auto-fit's tracer checks) split into physicsfx, beams, tracers, tracers2 and tracers3, the cause of the shards cut off at the 45-minute limit. Next risk: editorux (1,251 s against a planned 55).
 - 2026-11-19 · B/F · Nature swap finished: generated Sandstone Spires (dense and fused, owner's 3b) for the Red Rock Spires, a sandstone Shard Boulder, Kenney trees and logs swapped, St. John's and the coverage map swapped, the Quaternius nature pack and the Mossy Rock Spire retired with load aliases; and lane F's real optics by gun (sights pass step 2). One train.
