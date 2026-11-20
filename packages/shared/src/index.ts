@@ -100,6 +100,7 @@ export * from './content/ranks.ts';
 export * from './content/props.ts';
 export * from './content/kitProps.ts';
 export * from './map/propAliases.ts';
+export * from './map/natureAliases.ts';
 export * from './map/mountAliases.ts';
 export * from './content/environment.ts';
 export * from './map/environment.ts';

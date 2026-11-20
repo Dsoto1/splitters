@@ -56,7 +56,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -4303,11 +4303,11 @@ async function editorEnvironmentChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   const unseasoned = await plants();
   check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
-  // The nature swap (shared/editor/natureSwap.ts): a Quaternius pine, bush and boulder become ours in their spots, one undo step.
-  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.nt_pine_tall', -40], ['qb', 'prop.nt_bush_leafy', -42], ['qc', 'prop.nt_boulder', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  // The nature swap (shared/editor/natureSwap.ts): a Kenney Nature Kit pine, oak and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.pine_tall', -40], ['qb', 'prop.oak', -42], ['qc', 'prop.rock_large', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
   await page.click('#ed-env-swap');
   const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
-  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && /^env\.shrub\.(broadleaf|laurel)@-42\/0\.5$/.test(swapped.qs[1]) && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, a bush and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && swapped.qs[1] === 'env.broadleaf.oak@-42/0.5' && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, an oak and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
 
@@ -7609,8 +7609,29 @@ async function physicsfxFlow(browser) {
   await page.context().close();
   await glassChecks(browser);
   await destructionChecks(browser);
+}
+
+/**
+ * Beams and tracers from the muzzle, flows of their own (split from physicsfx, 2026-11-20). Stepped frame by frame on
+ * the frame clock they are long: on CI physicsfx had grown from about 330 s to 800-1,650 s since the tracer checks
+ * joined it (grips auto-fit, 2026-11-18): physicsfx's own checks about 5 minutes, the beams about 5, the tracers about
+ * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
+ * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
+ */
+async function beamsFlow(browser) {
   await beamMuzzleChecks(browser);
-  await tracerMuzzleChecks(browser);
+}
+
+async function tracersFlow(browser) {
+  await tracerMuzzleChecks(browser, ['core.ranger']);
+}
+
+async function tracers2Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.otter']);
+}
+
+async function tracers3Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.knight']);
 }
 
 /**
@@ -7623,9 +7644,9 @@ async function physicsfxFlow(browser) {
  * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person
  * started under your eyes (no viewmodel muzzle) and no flash showed on your character's gun.
  */
-async function tracerMuzzleChecks(browser) {
+async function tracerMuzzleChecks(browser, looks) {
   const out = [];
-  for (const look of ['core.ranger', 'core.otter', 'core.knight']) {
+  for (const look of looks) {
     const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await ctx.addInitScript(installFrameClock);
     const page = await ctx.newPage();
@@ -7727,7 +7748,8 @@ async function tracerMuzzleChecks(browser) {
     if (process.env.E2E_VERBOSE) console.log(JSON.stringify(cases.map((c) => ({ look: c.look, w: c.weapon, third: c.third, ...c.r }))));
     await ctx.close();
   }
-  check(out.length === 0, `tracers leave the gun's muzzle as drawn, third and first person, the rifle and the pistol, three builds, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+  const who = looks.map((l) => l.replace('core.', '')).join(', ');
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
 }
 
 /**
@@ -12172,7 +12194,7 @@ const FLASHING_DAY = {
       return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
   made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
-  moments: ({ page, stage, step }) => {
+  moments: ({ page, stage, step, frameMs }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -12285,23 +12307,20 @@ const FLASHING_DAY = {
         look: { yaw: Math.PI, pitch: -0.3 },
         bots: [],
         before: () => page.evaluate(() => ((window.__scopeSeen = { fade: new Set(), box: 0 }), Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.3 }))),
-        at: Object.fromEntries(
-          Array.from({ length: 60 }, (_, f) => [
-            f,
-            () =>
-              page.evaluate((f) => {
-                const cs = window.__cs;
-                const seen = window.__scopeSeen;
-                const o = cs.hud.scopeOverlay();
-                if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
-                seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
-                const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
-                window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
-                // Hard turns: 1.8 rad/s, the other way every sixth of a second.
-                if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
-              }, f),
-          ]),
-        ),
+        // (Every frame has something to do: done in the page with the frame's step, one trip to the page a frame.)
+        stepAt: (f) =>
+          page.evaluate(([f, ms]) => {
+            const cs = window.__cs;
+            const seen = window.__scopeSeen;
+            const o = cs.hud.scopeOverlay();
+            if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
+            seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
+            const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
+            window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
+            // Hard turns: 1.8 rad/s, the other way every sixth of a second.
+            if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
+            return window.__frameClock.step(ms);
+          }, [f, frameMs]),
         seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
         // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
         sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
@@ -12471,12 +12490,6 @@ async function flashingScene(browser, scene) {
   check(playing, 'the scene plays (MapMaker TEST)');
   if (!playing) return void (await ctx.close());
   await holdBots(page);
-  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
-  for (const id of ['core.lmg', 'core.sniper', 'core.arc_caster']) {
-    await page.evaluate((w) => window.__give(w), id);
-    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
-  }
-  // The `pair` moment's second gun and its arm too (night scene only): a pair of machine pistols made and unmade.
   /** Your machine pistol's second gun: made (kept full each tick) or taken away, as the match holds it. */
   const pairOf = (on) =>
     sim(page, (m, me, on) => {
@@ -12488,14 +12501,6 @@ async function flashingScene(browser, scene) {
       self.__pairPin = setInterval(() => w.off && (w.off.mag = w.def.magazine), 1000 / 60);
       return true;
     }, on);
-  if (!scene && (!only || only.includes('pair'))) {
-    await page.evaluate(() => window.__give('core.machine_pistol'));
-    await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.machine_pistol' && !!window.__cs.view.viewmodel, null, { timeout: T(30000) }).catch(() => {});
-    await pairOf(true);
-    const pairIn = await page.waitForFunction(() => window.__cs.view.pairShown() && window.__cs.view.hasPairArm(), null, { timeout: T(30000) }).then(() => true, () => false);
-    check(pairIn, 'a pair of machine pistols is drawn in first person: the second gun and its arm are in');
-    await pairOf(false);
-  }
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -12507,17 +12512,15 @@ async function flashingScene(browser, scene) {
   const defaultOn = await page.evaluate(() => document.getElementById('reduce-flashing')?.checked);
   check(defaultOn === true, `Reduce flashing is on by default (the pause menu's switch: ${defaultOn})`);
   await page.evaluate(installFrameGrab, [W, H]);
-  await page.evaluate(() => window.__frameClock.freeze());
+  const frameMs = 1000 / FPS;
+  /** The page's clock (frozen below, once the guns are in) moved on `n` frames; the errors its timers and frames threw. */
   const step = (n) =>
     page.evaluate(([n, ms]) => {
       const thrown = [];
       for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(ms));
       return thrown;
-    }, [n, 1000 / FPS]);
+    }, [n, frameMs]);
   const clockErrors = [];
-  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
-  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
-  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
   const stage = (mo) =>
     sim(page, (m, me, mo) => {
@@ -12546,8 +12549,9 @@ async function flashingScene(browser, scene) {
     return { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) };
   };
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
-  // The moments (a few metres apart in the scene; 2 s each, setting on then off).
-  const moments = scene ? scene.moments({ page, stage, aim, step }) : [
+  // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
+  // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
+  const moments = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -12721,21 +12725,17 @@ async function flashingScene(browser, scene) {
             b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 8, yaw: self.__glintAim, pitch: 0 })));
           }
         })),
-      at: Object.fromEntries(
-        Array.from({ length: 60 }, (_, f) => [
-          f,
-          async () => {
-            // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
-            if (f === 2 || f === 24 || f === 34) await sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), f === 24 ? Math.PI / 2 : Math.PI);
-            await page.evaluate((f) => {
-              const g = window.__cs.scope().glints;
-              window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
-              window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
-              if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
-            }, f);
-          },
-        ]),
-      ),
+      // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
+      at: Object.fromEntries([[2, Math.PI], [24, Math.PI / 2], [34, Math.PI]].map(([f, yaw]) => [f, () => sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), yaw)])),
+      // (The glint is read every frame: in the page with the frame's step, one trip to the page a frame.)
+      stepAt: (f) =>
+        page.evaluate(([f, ms]) => {
+          const g = window.__cs.scope().glints;
+          window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
+          window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
+          if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
+          return window.__frameClock.step(ms);
+        }, [f, frameMs]),
       seen: () => page.evaluate(() => ({ ...window.__glintSeen, most: +window.__glintSeen.most.toFixed(2), now: +window.__cs.scope().glints.level.toFixed(2), scoped: window.__cs.scope().scoped })),
       // One glint, never brighter than its level (0.5 with the setting on, 0.85 off), and up by the end.
       sees: (on, s) => s.count === 1 && s.scoped && s.now > 0.3 && s.most <= (on ? 0.5 : 0.85) + 0.001 && (on || s.most > 0.6),
@@ -12872,10 +12872,29 @@ async function flashingScene(browser, scene) {
       look: aim([24, 0, -20.5], [24, 1.4, -28]),
       bots: [],
     },
-  ];
+  ]).filter((mo) => !only || only.includes(mo.name));
+  // The guns these moments hold, in hand once each, so their models are in before the page's clock stops (models load
+  // in real time): only theirs (the day scene has no machine gun).
+  for (const id of new Set(moments.map((mo) => mo.weapon))) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // The `pair` moment's second gun and its arm too: a pair of machine pistols made and unmade.
+  if (moments.some((mo) => mo.name === 'pair')) {
+    await page.evaluate(() => window.__give('core.machine_pistol'));
+    await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.machine_pistol' && !!window.__cs.view.viewmodel, null, { timeout: T(30000) }).catch(() => {});
+    await pairOf(true);
+    const pairIn = await page.waitForFunction(() => window.__cs.view.pairShown() && window.__cs.view.hasPairArm(), null, { timeout: T(30000) }).then(() => true, () => false);
+    check(pairIn, 'a pair of machine pistols is drawn in first person: the second gun and its arm are in');
+    await pairOf(false);
+  }
+  await page.evaluate(() => window.__frameClock.freeze());
+  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
+  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
+  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   const report = { fps: FPS, frame: [W, H], viewport: [480, 270], limits: FLICKER_LIMITS, moments: {} };
   for (const mo of moments) {
-    if (only && !only.includes(mo.name)) continue;
+    const began = Date.now();
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
     await page.evaluate((w) => window.__give(w), mo.weapon);
     await stage(mo);
@@ -12895,7 +12914,7 @@ async function flashingScene(browser, scene) {
       });
       for (let f = 0; f < RECORD; f++) {
         await mo.at?.[f]?.();
-        clockErrors.push(...(await step(1)));
+        clockErrors.push(...(await (mo.stepAt ? mo.stepAt(f) : step(1))));
       }
       await page.evaluate(() => (window.__flick.on = false));
       if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
@@ -12921,6 +12940,8 @@ async function flashingScene(browser, scene) {
       console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
     }
     await mo.after?.();
+    // (Where the flow's time goes: a moment is some 155 frames drawn in software, 120 of them read back.)
+    console.log(`flashing ${mo.name}: took ${((Date.now() - began) / 1000).toFixed(0)} s`);
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
@@ -15191,7 +15212,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -1,5 +1,5 @@
 {
-  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open as its leaf standing square into the room (cover to hide behind; the doorway beside it stays clear: owner, 2026-11-19). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.2 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.2 m doorway is narrower than the navmesh keeps open.",
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut collides as the frame's slab (a closed room), ajar as that slab and its leaf at its angle (owner, 2026-11-19, \"2b\"), open as its leaf standing square into the room (cover to hide behind; the doorway beside it stays clear: owner, 2026-11-19). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.2 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.2 m doorway is narrower than the navmesh keeps open.",
   "type": "door",
   "props": [
     {
@@ -95,9 +95,10 @@
       "id": "kit.door.oak_ajar",
       "displayName": "Oak Door (ajar)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version: the Oak Door standing 25° open into the room (+z), the same four leaves. Collides as the frame's slab in the doorway, as the shut door does (still a closed room: nobody squeezes through the gap); the leaf itself reaches 0.8 m into the room and does not collide."
+        "1": "First version: the Oak Door standing 25° open into the room (+z), the same four leaves. Collides as the frame's slab in the doorway, as the shut door does (still a closed room: nobody squeezes through the gap); the leaf itself reaches 0.8 m into the room and does not collide.",
+        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players."
       },
       "size": [
         2,
@@ -369,9 +370,10 @@
       "id": "kit.door.oak_slim_ajar",
       "displayName": "Slim Oak Door (ajar)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version: the Slim Oak Door standing 25° open into the room (+z). Collides as the frame's slab in the doorway, as the shut door does (a closed room); the leaf reaches 0.44 m into the room and does not collide."
+        "1": "First version: the Slim Oak Door standing 25° open into the room (+z). Collides as the frame's slab in the doorway, as the shut door does (a closed room); the leaf reaches 0.44 m into the room and does not collide.",
+        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players."
       },
       "size": [
         1.2,

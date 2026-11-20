@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_324klxyhao5aov6f",
-      "versionId": "v_mp4qydkhj5zndnyb",
-      "revision": 1,
-      "contentHash": "sha256:446f90e7dce09a3dcae4a1e417bd5c9b441cc27574c5a0b47080ec330c919d5e",
+      "versionId": "v_frit2axocim775ri",
+      "revision": 2,
+      "contentHash": "sha256:7b8711eb37cf1bba050e507c6dcaa4dd781ecacf778f8741b3de5b7ef653b76a",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:09:47.921Z"
+      "releasedAt": "2026-11-19T13:29:44.994Z"
     }
   },
   "classicStructure": {
@@ -2999,8 +2999,8 @@
       "yaw": 0.4,
       "scale": 1.296,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "fence_11",
@@ -6091,9 +6091,9 @@
         58
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 0.6,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 2.171,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },

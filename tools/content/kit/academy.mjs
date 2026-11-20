@@ -89,6 +89,13 @@ export function doorMesh(seed, size, g, look, level) {
   const zf = LEAF_T / 2;
   const [c, s] = [Math.cos(swing), Math.sin(swing)];
   const T = ([x, y, z]) => [hx + (x - hx) * c + (z - zf) * s, y, zf - (x - hx) * s + (z - zf) * c - back];
+  if (level === 0 && (g.swing ?? 0) > 0 && (g.swing ?? 0) < 60) {
+    // Ajar: the leaf too, at its angle (owner, 2026-11-19, "2b": cover as the open leaf is), beside the frame's slab:
+    // the leaf's box built shut, its middle turned on the hinges, and the turn as the box's own (a seventh number).
+    const [mx, , mz] = T([(lx + hx) / 2, 0, 0]);
+    const hw = (hx - lx) / 2;
+    m.boxes.push([mx - hw, 0, mz - zf, mx + hw, y1, mz + zf, swing]);
+  }
   if (level === 0 && (g.swing ?? 0) >= 60) {
     // The leaf's bounds as it stands open (square at 90°: its own box), floor to its top edge.
     const pts = [[lx, 0, -zf], [hx, 0, -zf], [lx, 0, zf], [hx, 0, zf]].map(T);

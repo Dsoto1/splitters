@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_e53hofcotjne4zfg",
-      "versionId": "v_iilalxj2a3qrwoex",
-      "revision": 4,
-      "contentHash": "sha256:e415e3d7abbe5dc54193a20650f912fdb6be511147c4fcc24e94a7e57d8c3c9f",
+      "versionId": "v_sjtilqn3vzs2stxy",
+      "revision": 5,
+      "contentHash": "sha256:e5445f5bc3b7c2f2cd62c9d3f398b8a9e3c5aaba86455732b8421ea850995d72",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:45:33.312Z"
+      "releasedAt": "2026-11-19T10:19:39.479Z"
     }
   },
   "classicStructure": {
@@ -4626,9 +4626,9 @@
         -88
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": 2.2071946921641143,
-      "scale": 1.305029313173145,
+      "scale": 1.305,
       "solid": true,
       "tint": null
     },
@@ -4682,9 +4682,9 @@
         -90
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": -2.0744849799519165,
-      "scale": 1.0604833274614065,
+      "scale": 1.06,
       "solid": true,
       "tint": null
     },
@@ -4738,9 +4738,9 @@
         -60
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": 0.6753657251104481,
-      "scale": 1.1926482568727805,
+      "scale": 1.193,
       "solid": true,
       "tint": null
     },
@@ -4794,9 +4794,9 @@
         82
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": -2.662418485879491,
-      "scale": 1.1384039292810484,
+      "scale": 1.138,
       "solid": true,
       "tint": null
     },
@@ -4850,9 +4850,9 @@
         83
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": -1.7991387478875658,
-      "scale": 1.3935943697346374,
+      "scale": 1.394,
       "solid": true,
       "tint": null
     },
@@ -4906,9 +4906,9 @@
         -20
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": -2.291620335276741,
-      "scale": 1.055020898906514,
+      "scale": 1.055,
       "solid": true,
       "tint": null
     },

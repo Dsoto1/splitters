@@ -205,7 +205,8 @@ its scale is the old scale times the table's factor, so it stands about as tall 
 rocks keep blocking shots and movement, logs keep a health of their own. A mix (two species for one old prop) is picked
 by the placement's id, so a rerun gives the same map. **Rocks** follow the menu beside the button: *by the ground*
 (sandstone where at least 40 % of the terrain is sand, else as listed), *grey (as listed)*, *mossy* (boulders moss,
-shards lichen) or *sandstone* (boulders become the Sandstone Boulder, sized between their height and width). A new
+shards lichen) or *sandstone* (boulders become the Sandstone Boulder, sized between their height and width; shards keep
+their shape in the Shard Boulder's own **sandstone** look, owner 2026-11-19). A new
 species came with it: **Dead Tree** (`env.broadleaf.dead`, bare and pale looks; the broadleaf generator with no leaf
 cards), since nothing else stood for the dead trees. Picked by eye on a side-by-side sheet (old at scale 1 beside the
 new at its factor, from a standing eye and from the side; `?mode=lineup`).
@@ -242,13 +243,48 @@ new at its factor, from a standing eye and from the side; `?mode=lineup`).
 | Kenney Tall Rock | Shard Boulder ×2.2 |
 | Meshy Rock Pile / Mossy Rock Spire | Angular Boulder ×0.9 / moss ×1.25 |
 | Loafbrr Cave Rocks B / D | Shard Boulder ×1.29 / Angular Boulder ×1.05 |
-| Meshy Red Rock Spires | not swapped: a formation, built by hand as Sandstone Cliff panels and boulders |
+| Meshy Red Rock Spires | **Sandstone Spires** red ×1.0 (owner, 2026-11-19) |
+| Kenney Oak / Dark Oak / Autumn Oak | Oak summer / summer / autumn ×0.8 |
+| Kenney Round Tree (and dark, autumn) / Bushy Tree / Blocky Tree | Field Maple ×0.79 / ×0.72 / ×0.72 |
+| Kenney Leafy Tree / Cone Tree / Flat-top Tree | Oak ×0.69 / Spruce ×0.67 / Umbrella Acacia ×0.81 |
+| Kenney Thin Tree / Sapling | Silver Birch ×0.55 / ×0.28 |
+| Kenney Tall Pine / Tall Pine B / Round Pine / Small Pine / Low Pine | Tall Pine ×1.0 / ×0.91 / Mountain Pine ×1.4 / Spruce ×0.39 / Mountain Pine ×0.44 |
+| Kenney Tall Palm / Short Palm | Coconut Palm ×0.83 / ×0.46 |
+| Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4, turned a quarter (it lay along x, ours along z) / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
+| Kenney Log Stack | not swapped: cut firewood, no generated woodpile yet |
+
+**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick, made denser and more fused
+the same day, owner's 3b): one desert formation, 13.6 × 7.9 × 4.8 m like the Meshy spires it replaces. Three broad
+masses sunk into the ground make a single body up to about 5-6 m, and seven narrow spires (4.6 to 8 m) rise out of it in
+two staggered rows, all merged where they overlap. It is the outcrop generator with ten masses (fuller fractures than a
+boulder's, `cutDepth` 0.68-0.92, so the masses stay broad), the bedding and noise running through the whole formation;
+collision is one hull per mass (ten). A formation has its own triangle budget (`budget` on the species: 1,700 / 560 / 170
+triangles; it uses 1,397 / 503 / 160), above one boulder's; the Meshy spires were 3,000 at their nearest.
 
 **Run on 42 maps through MapMaker** (2026-11-18/19; Playwright on the real editor: Import, Environment → Nature, Swap
 natural props for ours with rocks by the ground, Export): 2,844 Quaternius placements and about 600 kit and Meshy rocks.
-Rocks came out sandstone on Sunstone Crag, Iron Maw, Sandsweep, Dustwater and Sunken Kingdom. Not swapped yet: the Red
-Rock Spires (Dustwater 12, Sunken Kingdom 6, Iron Maw 1), St. John's and the coverage map (last), and the Kenney Nature
-Kit's own trees and logs (not in this swap). **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
+Rocks came out sandstone on Sunstone Crag, Iron Maw, Sandsweep, Dustwater and Sunken Kingdom. **The last batch**
+(2026-11-19, the same way): the 19 Red Rock Spires as Sandstone Spires (Dustwater 12, Sunken Kingdom 6, Iron Maw 1);
+the shards on sandy ground in their sandstone look (Sandsweep 10, Dustwater 1, Iron Maw 1; those three maps swapped
+again from their files before the first swap, so nothing else on them changed); the Kenney Big Logs (Backwoods 9,
+Primeval Park 1, Serpent Gorge 1); St. John's (95: oaks, maples, birches, jungle trees, shrubs and laurels) and the
+coverage map (its wheat and its two Meshy rocks).
+
+**The Quaternius nature pack has left the build** (2026-11-19), with the one-prop Meshy pack of the Mossy Rock Spire,
+once no shipped map placed them (`content/props/` no longer lists them; about 2.6 MB of models and their palette
+pictures). An older map that still places one loads all the same (`map/natureAliases.ts`, in loadMap before it is
+checked): each placement becomes the species the table names, by the same pick and the map's ground, keeping its id,
+spot, turn, name and flags; a map's own set pieces' props too. Their files are gone, so this happens in MapMaker as well
+(the kit aliases keep a map as made there): its next Export names the species. A prop counts as retired when the swap
+table lists it and the catalogue no longer has it, so the Kenney Nature Kit can leave the same way later.
+
+**The last batch, measured** (`PERF_STILL=1`, Medium, mean of the four standard views, same machine; draws ·
+triangles · shadow casters): Dustwater 226 · 0.358 M · 179 → 226 · 0.350 M · 181; Sunken Kingdom 242 · 0.589 M · 90 →
+244 · 0.586 M · 91; Iron Maw 319 · 1.417 M · 99 → 316 · 1.417 M · 94; Sandsweep 94 · 0.215 M · 143 → 94 · 0.218 M · 146;
+Backwoods 440 · 0.842 M · 269 → 442 · 0.843 M · 272; Primeval Park 439 · 1.188 M · 134 → 441 · 1.183 M · 134; Serpent
+Gorge 380 · 0.651 M · 265 → 386 · 0.652 M · 276; **St. John's 478 · 1.363 M · 82 → 438 · 1.209 M · 81**. The rest is
+within the noise of a busy machine (the coverage map's views did not settle). The download: the client build
+503.8 → 501.0 MB (the 40 retired models 2.67 MB, their palette atlases; the spires and the sandstone shard add 0.4 MB). **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
 before and after; draws, triangles, shadow casters):
 
 | Map | Before | After |

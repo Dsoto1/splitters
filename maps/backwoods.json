@@ -19,11 +19,11 @@
     ],
     "release": {
       "mapId": "m_k2k7gn3lnebdowxu",
-      "versionId": "v_jbsrw3hmd7d6slxd",
-      "revision": 1,
-      "contentHash": "sha256:1f63751dcdacc85febfc7c4712e0570a9b36ac95be4550991d51cdd52f2c712d",
+      "versionId": "v_5h7wzwhrxc5xikae",
+      "revision": 2,
+      "contentHash": "sha256:80c06b49b8e485408d19d1f702b4b71587e339c7fc2a44a44bc0f35170447764",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:17:05.517Z"
+      "releasedAt": "2026-11-19T13:26:40.718Z"
     }
   },
   "classicStructure": {
@@ -4418,9 +4418,9 @@
         3
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 0.7,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 2.271,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -4432,9 +4432,9 @@
         9.5
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": -0.4,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 1.171,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -11950,9 +11950,9 @@
         -31.56
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 4.62,
-      "scale": 0.95,
+      "model": "env.deadwood.log",
+      "yaw": -0.092,
+      "scale": 1.33,
       "solid": true,
       "tint": null
     },
@@ -11982,8 +11982,8 @@
       "yaw": 1.49,
       "scale": 1.004,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_815",
@@ -12081,8 +12081,8 @@
       "yaw": 2.08,
       "scale": 1.285,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_822",
@@ -12092,9 +12092,9 @@
         -68.13
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 2.51,
-      "scale": 1.36,
+      "model": "env.deadwood.log",
+      "yaw": -2.202,
+      "scale": 1.904,
       "solid": true,
       "tint": null
     },
@@ -12124,8 +12124,8 @@
       "yaw": 2.81,
       "scale": 1.166,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_825",
@@ -12153,8 +12153,8 @@
       "yaw": 1.63,
       "scale": 1.469,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_827",
@@ -12192,9 +12192,9 @@
         8.89
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 3.95,
-      "scale": 1.29,
+      "model": "env.deadwood.log",
+      "yaw": -0.762,
+      "scale": 1.806,
       "solid": true,
       "tint": null
     },
@@ -12210,8 +12210,8 @@
       "yaw": 4.17,
       "scale": 0.983,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_831",
@@ -12239,8 +12239,8 @@
       "yaw": 0.84,
       "scale": 1.458,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_833",
@@ -12268,8 +12268,8 @@
       "yaw": 1.19,
       "scale": 1.415,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_835",
@@ -12283,8 +12283,8 @@
       "yaw": 5.36,
       "scale": 1.242,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_836",
@@ -12298,8 +12298,8 @@
       "yaw": 0.76,
       "scale": 1.177,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_837",
@@ -12468,8 +12468,8 @@
       "yaw": 5.38,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_849",
@@ -12511,8 +12511,8 @@
       "yaw": 0.65,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_852",
@@ -12568,8 +12568,8 @@
       "yaw": 3.37,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_856",
@@ -12583,8 +12583,8 @@
       "yaw": 2.95,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_857",
@@ -12598,8 +12598,8 @@
       "yaw": 5.37,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_858",
@@ -12830,8 +12830,8 @@
       "yaw": 3.37,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_874",
@@ -12860,8 +12860,8 @@
       "yaw": 4.27,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_876",
@@ -12919,8 +12919,8 @@
       "yaw": 5.77,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_880",
@@ -12934,8 +12934,8 @@
       "yaw": 1.14,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_881",
@@ -12977,8 +12977,8 @@
       "yaw": 2.41,
       "scale": 1,
       "solid": false,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_884",
@@ -14056,8 +14056,8 @@
       "yaw": 0.349,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_w0q0faxfqh",
@@ -14071,8 +14071,8 @@
       "yaw": 2.793,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_nfd62qcatg",
@@ -14086,8 +14086,8 @@
       "yaw": 1.309,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_72j09x93e6",
@@ -14097,9 +14097,9 @@
         -52
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 1.396,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 2.967,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -14111,9 +14111,9 @@
         -52
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 1.745,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": -2.967,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -14153,9 +14153,9 @@
         -18
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 0,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 1.571,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     },
@@ -14167,9 +14167,9 @@
         -16.9
       ],
       "kind": "prop",
-      "model": "prop.log_big",
-      "yaw": 0.175,
-      "scale": 1,
+      "model": "env.deadwood.log",
+      "yaw": 1.746,
+      "scale": 1.4,
       "solid": true,
       "tint": null
     }

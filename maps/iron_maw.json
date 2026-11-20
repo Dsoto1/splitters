@@ -23,11 +23,11 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_ywzbpdhtkyho4xbj",
+      "versionId": "v_atvoicm3qmc6usuj",
       "revision": 16,
-      "contentHash": "sha256:d3e5f68b47567dfba597163b5552cc74eff42b045eb05a87fcbfb99e441b17ce",
+      "contentHash": "sha256:4a249211fb021b8c2e961ed774daaa9b58482973278d62a606967b5714b25ea0",
       "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:32:19.630Z"
+      "releasedAt": "2026-11-19T10:22:52.434Z"
     },
     "tier": "experimental"
   },
@@ -13187,7 +13187,7 @@
         -150
       ],
       "kind": "prop",
-      "model": "prop.mn_rock_spires",
+      "model": "env.rock.sandstone_spires",
       "yaw": 0,
       "scale": 1.2,
       "solid": true,
@@ -13233,7 +13233,8 @@
       "yaw": -4,
       "scale": 4,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 3
     },
     {
       "id": "prop_343",

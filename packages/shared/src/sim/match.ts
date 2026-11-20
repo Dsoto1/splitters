@@ -3702,7 +3702,7 @@ export class Match {
       // plus the pellet pattern of a shotgun.
       const ctx = { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] };
       // (One of a pair: a wider aim cone, a wider pellet pattern.)
-      spread = def.akimbo ? akimboCone(def.akimbo, spreadOf(gp.accuracy, shooter.gun, ctx), def.pellets > 1 ? def.spread : 0) : shotCone(def, gp.accuracy, shooter.gun, ctx);
+      spread = def.pair ? akimboCone(def.pair, spreadOf(gp.accuracy, shooter.gun, ctx), def.pellets > 1 ? def.spread : 0) : shotCone(def, gp.accuracy, shooter.gun, ctx);
       // A scoped rifle fired from the hip is a gamble: fine across a room, a guess further out (not a lottery: ADS is never mandatory).
       const zoom = getWeapon(def.id).view.zoomFov;
       if (zoom && !shooter.npc && shooter.gun.ads < SCOPE_UP_ADS) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
@@ -3711,11 +3711,11 @@ export class Match {
       // shooting on the run or in the air; aiming down a scope tightens it, and a
       // scoped rifle fired from the hip is a guess.
       spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
-      if (def.akimbo) spread *= def.pellets > 1 ? def.akimbo.pattern : def.akimbo.cone;
+      if (def.pair) spread *= def.pellets > 1 ? def.pair.pattern : def.pair.cone;
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
     // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
-    if (def.akimbo) recoilShot(shooter.gun, akimboKick(gp.kick, def.akimbo.kick));
+    if (def.pair) recoilShot(shooter.gun, akimboKick(gp.kick, def.pair.kick));
     else if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
     else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
@@ -8389,8 +8389,8 @@ interface Trigger {
   kick?: KickSpec;
   /** The primary trigger's recoil in the fire mode it was pulled in (sim/fireModes.ts). */
   modeKick?: KickSpec | null;
-  /** Dual wielding: the round is one of a pair's (its trade applies), and `off` when the second gun fired it. */
-  akimbo?: AkimboSpec;
+  /** Dual wielding: the round is one of a pair's (its trade applies), and `off` when the second gun fired it. (Not named `akimbo`: a WeaponDefinition has a field of that name, and tests fire a definition as a trigger.) */
+  pair?: AkimboSpec;
   off?: true;
   falloff?: FalloffSpec;
 }
@@ -8476,7 +8476,7 @@ function primaryTrigger(def: WeaponDefinition, firing?: Firing): Trigger {
 /** A round from one gun of a pair: the weapon's own trigger with the pair's trade; `off`: the second gun's. */
 function pairTrigger(def: WeaponDefinition, firing: Firing, akimbo: AkimboSpec, off: boolean): Trigger {
   const t = primaryTrigger(def, firing);
-  t.akimbo = akimbo;
+  t.pair = akimbo;
   if (off) t.off = true;
   return t;
 }
