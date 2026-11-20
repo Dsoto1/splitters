@@ -40,7 +40,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/flashing-blast` · bbce41e2 · run 44717698663 (the `flashing` flow's `blast` flake: a near blast drawn smaller with Reduce flashing on; CI blast on 0 transitions/s, was up to 7; a helper of lane B's splitters22)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -224,6 +223,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-20: CI runner deaths and the grenade-blast flicker flake fixed, in one train (`check/train-20261120-105513` at fc2278da, run 44723278619): `beams`, `tracers` and `vehicles` play without a pointer lock on frozen clocks (CI's headless shell flooded memory); under Reduce flashing a close blast is drawn smaller (`blastSize`). Next: split `flashing` (~23 min on CI) so a retry fits the shard limit.
 - 2026-11-20: dual wielding steps 2 and 3 landed in one train (hidden; `AKIMBO_READY` false): pairs fire and reload independently, the pair drawn in first person with its own sounds (`check/train-20261120-070215` at 7ecb896d, run 44692023178).
 - 2026-11-20 · B · Freaky Frida re-imported from the owner's rigged Meshy download (its own skin weights; Meshy, owned): shoulder joints moved out to the arms' roots (`fixes.rejoint` above 1) so her vest no longer lifts off her back in either hold; `fixes.plugs` works on rigged downloads; grip auto-fitted. Owner's "1a 2a": hands and torn-shirt edges stay.
 - 2026-11-20 · B/F · Fix batch 2026-11-20 and lane F's sights step 3 (scope feel) in a train: a door standing ajar blocks movement and bullets along its leaf; the e2e flow physicsfx (27 min since grips auto-fit's tracer checks) split into physicsfx, beams, tracers, tracers2 and tracers3, the cause of the shards cut off at the 45-minute limit. Next risk: editorux (1,251 s against a planned 55).
