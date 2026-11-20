@@ -207,6 +207,7 @@ The owner asked to switch both teams to this; CLAUDE.md, "Landing", has the full
 
 **Checking** (branch · run; remove the line when it turns green or red):
 - `check/fable-dual-3` · 090b215c (dual wielding step 3, the pair in first person, hidden; merged with `wip/fable-dual-2` and main; a helper of lane B's splitters22)
+- `check/beams-leak` · e69cd73b, run 44691446675 (e2e beams/tracers go into play by touch, not a pointer lock: CI's headless Chromium floods a locked page with mouse moves and a frozen page's memory grew ~50 MB/s; full suite, e2e/run.mjs; a helper of lane B's splitters22)
 
 **Landed: the Dropship's seats** (`check/train-20261117-102339` at b151c383, run 44064422698, green on attempt 1; main = that commit plus a docs-only merge; lane A's lead, 2026-11-17; lock released).
 
