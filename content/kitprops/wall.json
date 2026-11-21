@@ -338,11 +338,11 @@
       "category": "Gothic",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's step 8b; the owner's photo: the library's big pale smooth stone arch, about as high as it is wide, springing almost from the ground): a parabola-shaped arch of pale stone 4.9 m wide and 4.15 m high, its band 0.55 m wide and 0.7 m deep (it stands 0.1 m proud of both faces of a 0.5 m wall), the opening 3.8 m wide at the ground and 3.6 m high at the crown. Collides as nothing: the wall it stands in gives the piers (stepped inside the band)."
+        "1": "First version (St. John's step 8b; the owner's photo: the library's big pale smooth stone arch, about as high as it is wide, springing almost from the ground): a low parabola-shaped arch of pale stone 5.6 m wide and 3.7 m high, its band 0.55 m wide and 0.7 m deep (it stands 0.1 m proud of both faces of a 0.5 m wall), the opening 4.5 m wide at the ground and 3.15 m high at the crown. Collides as nothing: the wall it stands in gives the piers (stepped inside the band)."
       },
       "size": [
-        4.9,
-        4.15,
+        5.6,
+        3.7,
         0.7
       ],
       "collide": "none",

@@ -1031,6 +1031,34 @@ gallery), Gym Bay, Gym Entrance, Pool Hall (its water is a set piece part: `wate
 MapMaker's Make set piece leaves water out, so maps carry none). Walks in every turn: `setPiecesCampus.test.ts`. No map
 format change.
 
+**The library kit** (`tools/content/kit/library.mjs`; St. John's step 8b, Memorial Hall to the owner's direction: two
+storeys, a faceted end under a spire, alcoves below and rows of bookcases above under an open timber roof). All
+generated in code, no downloads, no real school's or college's mark; nothing glows, flickers or moves (a lantern's
+panes and a window's lights are plain vertex colour). Props: `kit.roof.spire_faceted` (a steep eight-sided shingle
+pyramid 17.4 m across its flared eave and 15 m high with a small copper cap, drawn inside too; variant `hall` is cut
+away on −z where a Ridge Roof Bay runs in under it, so the two roofs are one room inside), `kit.roof.ridge_bay` (an
+8 m bay of a ridge roof over a hall 16 m across: shingle slopes with a flared eave, pale panels, rafters, purlins and
+two arch-braced trusses on stone corbels underneath; its eaves 1.8 m over its foot; variant `end` closes the gable on
+−z), `kit.roof.gable_swept` (a steep 8 m roof with swept eaves and a half-timbered gable at each end),
+`kit.bookcase.press` (a double-sided case 3 m long and high standing out from a wall, a sloped reading ledge and a
+bench with a high panelled end beside it: collides as the case and the bench), `kit.bookcase.double` (a freestanding
+double-sided case 3.2 × 2.2 × 0.8 m), `kit.window.leaded` and `kit.window.leaded_band` (small leaded lights in a pale
+surround, 1.1 × 1.5 m, and a wide low one, 1.7 × 0.9 m, drawn on both faces of the 0.5 m wall they are set in: windows
+to look at, not through, as the stained glass), `kit.wall.arch_parabola` (a pale smooth stone arch of a parabola's
+shape, 5.6 × 3.7 m, its opening 4.5 m wide at the ground; collides as nothing: the wall it stands in is stepped
+inside its band), `kit.lamp.lantern_hanging`, `kit.library.globe`, `kit.library.rug`, `kit.library.runner`,
+`kit.monument.bird` (a bronze bird on a stone pedestal). Tiles (`content/tiles/core.json`): `core.hall_end_faceted`
+and `core.hall_end_faceted_stair` (half an octagon 16 m across, two storeys, the hall on its south side; the ground
+storey's walls are `wall` and the upper storey's `solid`, so a set piece gives the two storeys two materials; the
+stair one has the Spiral Stair's drum, treads and landing in its middle, turned to face the hall, and the upper
+floor cut round it; no roof of its own). Set pieces (`content/setpieces/campus.json`): **Library Bay (two storeys)**,
+**Library End Bay (two storeys, spiral stair)**, **Library Faceted End (spire, spiral stair)** (the octagon's whole
+square: the hall's last bay and the faceted end), **Parabolic Arch Porch**, **Gable Wing (stucco)**. A roof prop's
+eaves may overhang a set piece's footprint: a prop that collides as nothing and stands a storey or more over the
+piece's lowest floor may reach 0.75 m past it (`map/setPieceCheck.ts`, `EAVE`). The roofs collide as nothing (nobody
+reaches them; a grenade thrown high leaves through them). Walked: `setPiecesAcademy.test.ts`, "Memorial Hall's shape"
+(on a 2 m and a 2.5 m ground grid). No map format change.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one

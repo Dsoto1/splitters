@@ -134,11 +134,11 @@
       "category": "Gothic",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's step 8b, the library's roof as the owner's photo shows it): a steep eight-sided pyramid of weathered brown-red shingles 17.4 m across the flats of its flared eave and 11 m to the point of its small copper cap, for a faceted (octagonal) hall end or tower 16 m across with a 0.7 m overhang. Drawn inside too (pale panels, dark rafters). Variant `hall` is cut away on −z where it would hang inside a Ridge Roof Bay running off that way (ridge 5.6 m over the eaves): place both at the walls' top and the two roofs are one room inside. Collides as nothing."
+        "1": "First version (St. John's step 8b, the library's roof as the owner's photo shows it): a steep eight-sided pyramid of weathered brown-red shingles 17.4 m across the flats of its flared eave and 15 m to the point of its small copper cap, for a faceted (octagonal) hall end or tower 16 m across with a 0.7 m overhang. Drawn inside too (pale panels, dark rafters). Variant `hall` is cut away on −z where it would hang inside a Ridge Roof Bay running off that way (ridge 5.6 m over the eaves): place both at the walls' top and the two roofs are one room inside. Collides as nothing."
       },
       "size": [
         17.4,
-        11,
+        15,
         17.4
       ],
       "collide": "none",
@@ -182,7 +182,7 @@
         {
           "index": 1,
           "name": "hall",
-          "seed": 41001,
+          "seed": 41002,
           "set": {
             "under": {
               "rise": 5.6,
@@ -263,7 +263,7 @@
         {
           "index": 1,
           "name": "end",
-          "seed": 41011,
+          "seed": 41012,
           "set": {
             "gable": "back"
           },
@@ -343,7 +343,7 @@
         {
           "index": 1,
           "name": "plain",
-          "seed": 41021,
+          "seed": 41022,
           "set": {
             "timber": false
           },

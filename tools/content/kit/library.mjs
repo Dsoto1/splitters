@@ -1,7 +1,8 @@
 // Library pieces (docs/map-briefs/st_johns, step 8b: Memorial Hall as the owner described it): kit-prop families
 // `roof` (a faceted spire with a flared eave, a ridge roof's bay on arch-braced trusses, a swept gable roof),
 // `bookcase` (a bookcase press with its bench and reading ledge, a double-sided bookcase), `window` (leaded lights),
-// `wall` (a parabolic stone arch), `lamp` (a hanging lantern) and `library` (a globe on its stand, rugs). All
+// `wall` (a parabolic stone arch), `lamp` (a hanging lantern), `library` (a globe on its stand, rugs) and `monument`
+// (a bronze bird on a pedestal). All
 // generated here from seeds: nothing downloaded, nothing drawn from a photograph, no writing, no real school's mark.
 // Nothing glows, flickers or moves: a lantern's panes and a window's lights are plain vertex colour.
 //
@@ -100,7 +101,8 @@ export function facetRoofMesh(seed, size, g, look, level) {
     for (let c = 0; c < courses; c++) {
       const y0 = fup + ((top - fup) * c) / courses;
       const y1 = fup + ((top - fup) * (c + 1)) / courses;
-      const lip = level === 0 ? 0.035 : 0;
+      // (No step between courses: a gap there would show the room's panels through the roof. The lower edge of each is shaded.)
+      const lip = 0;
       const tone = tones[c + 1] * (1 - grime * 0.3 * (1 - y0 / h));
       emit([at(k, apoAt(y0) + lip, y0, -1), at(k, apoAt(y0) + lip, y0, 1), at(k, apoAt(y1), y1, 1), at(k, apoAt(y1), y1, -1)], out, (p) => scale3(roof, tone * (p[1] < y0 + 0.01 ? 0.86 : 1)));
     }
@@ -122,8 +124,12 @@ export function facetRoofMesh(seed, size, g, look, level) {
     // A roll along each hip.
     if (level === 0) {
       const p = at(k, A - 0.02, 0.09, 1);
+      const mid = at(k, kick + 0.01, fup + 0.03, 1);
       const q = at(k, apoAt(top) + 0.02, top, 1);
-      if (!under || p[2] >= -0.01) bar(m, p, q, 0.12, scale3(roof, 0.7));
+      if (!under || p[2] >= -0.01) {
+        bar(m, p, mid, 0.12, scale3(roof, 0.7));
+        bar(m, mid, q, 0.12, scale3(roof, 0.7));
+      }
     }
   }
   // The cap.
@@ -174,7 +180,8 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     for (let c = 0; c < courses; c++) {
       const [x0, y0] = along(s, c / courses);
       const [x1, y1] = along(s, (c + 1) / courses);
-      const lip = level === 0 ? 0.035 : 0;
+      // (No step between courses: a gap there would show the room's panels through the roof. The lower edge of each is shaded.)
+      const lip = 0;
       const tone = tones[c + 1];
       quadN(m, [x0, y0 + lip, -Z], [x0, y0 + lip, Z], [x1, y1, Z], [x1, y1, -Z], out, (p) => scale3(roof, tone * (p[1] < y0 + lip + 0.01 ? 0.86 : 1)));
     }
@@ -240,7 +247,7 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
   }
   // A gable wall.
   for (const dir of g.gable === 'both' ? [-1, 1] : g.gable === 'back' ? [-1] : g.gable === 'front' ? [1] : []) {
-    const zo = dir * (Z - 0.01);
+    const zo = dir * (Z - 0.03);
     const zi = dir * (Z - 0.5);
     const outer = hex(look.gable ?? '#5a3d32');
     const inner = hex(look.gableIn ?? '#d8d0bc');
@@ -423,7 +430,7 @@ export function globeMesh(seed, size, g, look, level) {
     const a = Math.PI / 4 + (k * Math.PI) / 2;
     const c = Math.cos(a);
     const s = Math.sin(a);
-    bar(m, [c * (rr - 0.04), 0, s * (rr - 0.04)], [c * (rr - 0.08), ring - 0.03, s * (rr - 0.08)], 0.07, wood);
+    bar(m, [c * (rr - 0.06), 0.012, s * (rr - 0.06)], [c * (rr - 0.09), ring - 0.03, s * (rr - 0.09)], 0.07, wood);
     if (level === 0 && k < 2) bar(m, [c * (rr - 0.06), 0.22, s * (rr - 0.06)], [-c * (rr - 0.06), 0.22, -s * (rr - 0.06)], 0.05, scale3(wood, 0.9));
   }
   if (level === 2) box(m, [-rr * 0.6, 0, -rr * 0.6], [rr * 0.6, ring, rr * 0.6], wood, ['ny', 'py']);
@@ -459,6 +466,11 @@ export function rugMesh(seed, size, g, look, level) {
   if (g.plain) {
     rect(-X, -Z, X, Z, y, worn(field));
     if (level < 2) for (const s of [-1, 1]) rect(s * (X - 0.22) - 0.05, -Z, s * (X - 0.22) + 0.05, Z, y + 0.002, motif);
+    // A thin inner line beside each stripe, and the worn middle a shade paler.
+    if (level === 0) {
+      for (const s of [-1, 1]) rect(s * (X - 0.36) - 0.015, -Z, s * (X - 0.36) + 0.015, Z, y + 0.002, scale3(motif, 0.8));
+      rect(-X * 0.42, -Z, X * 0.42, Z, y + 0.002, (p) => mix3(worn(field)(p), [0.4, 0.33, 0.28], 0.12 + 0.08 * Math.sin(p[2] * 0.9)));
+    }
     return m;
   }
   rect(-X, -Z, X, Z, y, fringe);
@@ -609,5 +621,73 @@ export function parabolaArchMesh(seed, size, g, look, level) {
     quadN(m, [ix0, iy0, -Z], [ix1, iy1, -Z], [ix1, iy1, Z], [ix0, iy0, Z], [-mx, H1 * 0.45 - my, 0], scale3(c, 0.82));
     if (level < 2) quadN(m, [ox0, oy0, -Z], [ox1, oy1, -Z], [ox1, oy1, Z], [ox0, oy0, Z], [mx, my - H1 * 0.3, 0], scale3(c, 0.95));
   }
+  return m;
+}
+
+// ---------------------------------------------------------------- a bronze bird on a pedestal
+
+/**
+ * A small bronze sculpture of a bird alighting, wings raised, on a stone pedestal (`pedestal`: [width, height] m) with
+ * a plain bronze plate on its front (+z). Our own shape: a faceted body, two swept wings, a fanned tail, no writing.
+ * `look`: `bronze`, `stone`. Collides as the pedestal's box and one over the bird.
+ */
+export function birdMesh(seed, size, g, look, level) {
+  const [w, h] = size;
+  const m = new Mesh();
+  const bronze = hex(look.bronze ?? '#4a4a38');
+  const stone = hex(look.stone ?? '#8d8a80');
+  const [pw, ph] = g.pedestal ?? [0.7, 0.95];
+  const P = pw / 2;
+  // The pedestal: a plinth, a shaft, a cap.
+  box(m, [-P, 0, -P], [P, 0.12, P], scale3(stone, 0.9), ['ny']);
+  box(m, [-P * 0.86, 0.12, -P * 0.86], [P * 0.86, ph - 0.08, P * 0.86], stone, ['ny', 'py']);
+  box(m, [-P * 0.96, ph - 0.08, -P * 0.96], [P * 0.96, ph, P * 0.96], scale3(stone, 1.06), []);
+  if (level < 2) quadN(m, [-P * 0.5, ph * 0.45, P * 0.86 + 0.006], [P * 0.5, ph * 0.45, P * 0.86 + 0.006], [P * 0.5, ph * 0.72, P * 0.86 + 0.006], [-P * 0.5, ph * 0.72, P * 0.86 + 0.006], [0, 0, 1], scale3(bronze, 1.2));
+  // The bird: the body an oval leaning forward (+z), a head, a fanned tail, two wings swept up and back.
+  const by = ph + (h - ph) * 0.34;
+  const s = (h - ph) / 1.0;
+  const seg = level === 0 ? 8 : 5;
+  const body = new Mesh();
+  const rows = level === 0 ? 6 : 3;
+  lathe(body, Array.from({ length: rows + 1 }, (_, i) => {
+    const a = -Math.PI / 2 + (i / rows) * Math.PI;
+    return [Math.max(0.004, 0.13 * s * Math.cos(a)), 0.3 * s * Math.sin(a)];
+  }), seg, () => bronze);
+  // (The lathe's axis is y: laid forward by swapping y and z, leaning up at the head.)
+  const o = m.vertexCount;
+  for (let i = 0; i < body.P.length; i += 3) {
+    const [x, y, z] = [body.P[i], body.P[i + 1], body.P[i + 2]];
+    m.P.push(x, by + z + y * 0.45, y * 0.9);
+    const [nx, ny, nz] = [body.N[i], body.N[i + 1], body.N[i + 2]];
+    m.N.push(nx, nz, ny);
+  }
+  m.UV.push(...body.UV);
+  m.C.push(...body.C);
+  m.W.push(...body.W);
+  // (Swapping two axes turns the faces inside out: their winding is turned back.)
+  for (let i = 0; i < body.I.length; i += 3) m.I.push(body.I[i] + o, body.I[i + 2] + o, body.I[i + 1] + o);
+  const head = [0, by + 0.2 * s, 0.3 * s];
+  box(m, [head[0] - 0.05 * s, head[1] - 0.05 * s, head[2] - 0.05 * s], [head[0] + 0.05 * s, head[1] + 0.06 * s, head[2] + 0.07 * s], scale3(bronze, 1.1), []);
+  triN(m, [-0.025 * s, head[1], head[2] + 0.07 * s], [0.025 * s, head[1], head[2] + 0.07 * s], [0, head[1] - 0.03 * s, head[2] + 0.16 * s], [0, 1, 0], scale3(bronze, 1.3));
+  triN(m, [-0.025 * s, head[1], head[2] + 0.07 * s], [0.025 * s, head[1], head[2] + 0.07 * s], [0, head[1] - 0.03 * s, head[2] + 0.16 * s], [0, -1, 0], scale3(bronze, 0.8));
+  // Tail.
+  for (const dir of [1, -1]) quadN(m, [-0.05 * s, by - 0.1 * s, -0.22 * s], [0.05 * s, by - 0.1 * s, -0.22 * s], [0.13 * s, by - 0.2 * s, -0.46 * s], [-0.13 * s, by - 0.2 * s, -0.46 * s], [0, dir, 0], scale3(bronze, dir > 0 ? 1.05 : 0.75));
+  // Wings: three feathers' worth of planes each, both faces.
+  const tip = Math.min(w / 2 - 0.01, 0.42 * s);
+  for (const sx of [-1, 1]) {
+    const root0 = [sx * 0.09 * s, by + 0.05 * s, 0.12 * s];
+    const root1 = [sx * 0.09 * s, by + 0.02 * s, -0.16 * s];
+    const mid0 = [sx * tip * 0.7, by + 0.36 * s, 0.02 * s];
+    const mid1 = [sx * tip * 0.75, by + 0.2 * s, -0.24 * s];
+    const end = [sx * tip, by + 0.62 * s, -0.16 * s];
+    for (const dir of [1, -1]) {
+      const c = scale3(bronze, dir > 0 ? 1.08 : 0.78);
+      quadN(m, root0, root1, mid1, mid0, [-sx * 0.2 * dir, dir, 0.3 * dir], c);
+      triN(m, mid0, mid1, end, [-sx * 0.2 * dir, dir, 0.3 * dir], c);
+    }
+  }
+  // Legs.
+  if (level === 0) for (const sx of [-1, 1]) bar(m, [sx * 0.05 * s, ph, 0.02 * s], [sx * 0.05 * s, by - 0.1 * s, 0.02 * s], 0.025 * s, scale3(bronze, 0.9));
+  if (level === 0) m.boxes = [[-P, 0, -P, P, ph, P], [-0.2 * s, ph, -0.3 * s, 0.2 * s, Math.min(h, by + 0.3 * s), 0.3 * s]];
   return m;
 }
