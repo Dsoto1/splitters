@@ -226,3 +226,12 @@ old gym is one shell with the court and the pool, and the plan's step 10 has the
 a balcony, and the pool wing (PLAN §3.2 `setpiece.gym_bay` / `gym_entrance`, §3.3 "Gym and pool"); no weight room
 and no office. Whether the real hall has them was not determined. Proposed for step 10: a weight room and a
 coach's office in the entrance end, under the balcony, one each side of the lobby.
+
+**Photo 14 (Memorial Hall, the library, outside, from the court; small copy).** At the end of a straight herringbone
+brick walk with a border course, a low building whose main feature is a tall, steep pyramid or cone roof of
+weathered brown-red shingles, about as tall again as the wall under it, over a round or many-sided body of
+fieldstone with dark timber framing; a lower wing with a steep gable roof joins it on the right, and a broad
+entrance sits under the tall roof facing the walk. A black lamp post with a single lantern stands beside the walk;
+on the left, on the lawn, a small bronze sculpture on a low stone plinth in a mulched bed; mature trees shade the
+court; the grey stone halls show behind on the left. (This matches the plan's "tall red cone over an arched
+entrance on the side facing the grounds" and the brick path from the court to the library's door, PLAN §3.3.)
