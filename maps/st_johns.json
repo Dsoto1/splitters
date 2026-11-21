@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 49,
   "metadata": {
     "id": "st_johns",
     "name": "St. John's",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_agvxb4bjyqyrnk2t",
-      "revision": 34,
-      "contentHash": "sha256:1c7aaa1f2b60ac346094ae87af1fdd370fe7dcdd2b0fadbe6d8ac1ee4c9aa0a6",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-20T23:25:43.047Z"
+      "versionId": "v_jthk5srvvms4gylg",
+      "revision": 35,
+      "contentHash": "sha256:4cd2c083f4eaaf6fe8e6620c2ea0ca73ed3b5a70ee8218e3762b87eedda49162",
+      "schemaVersion": 49,
+      "releasedAt": "2026-11-21T02:54:02.090Z"
     }
   },
   "classicStructure": {
@@ -41098,7 +41098,12 @@
       "y": -11,
       "z": 0,
       "rotation": 0,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_north"
+        }
+      }
     },
     {
       "id": "setpiece_7j8uomeg8s",

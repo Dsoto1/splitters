@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 49,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_yqx6b2w2c56oufrm",
-      "revision": 46,
-      "contentHash": "sha256:7728289d722e522fdff792ab9d9234737190008153a0acf74514976869f577f6",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:32:18.427Z"
+      "versionId": "v_6ngpviznc24alpiy",
+      "revision": 47,
+      "contentHash": "sha256:4c0bec67372830e33411f172c434c1c07ff0575f5a4e3e36c9c67451f96cb969",
+      "schemaVersion": 49,
+      "releasedAt": "2026-11-21T02:57:14.624Z"
     },
     "testOnly": true
   },
@@ -720,7 +720,8 @@
         "edges": {
           "0,0,0:N": "arch_round",
           "0,0,0:E": "embrasure",
-          "0,0,0:S": "bars_gate"
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "arch_twin"
         }
       },
       {
@@ -4853,8 +4854,8 @@
       "yaw": 0,
       "scale": 1.25,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_6onx9n0c2x",
@@ -5078,8 +5079,8 @@
       "yaw": 0,
       "scale": 1.16,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_pktb3a2fay",
@@ -6110,6 +6111,45 @@
   "blood": null,
   "teamSetup": null,
   "dependencies": [],
+  "lookDefs": [
+    {
+      "id": "my_coverage_rust",
+      "displayName": "Coverage rust",
+      "roles": {
+        "stone": {
+          "material": "core.pbr_brick_old",
+          "tint": null
+        },
+        "trim": {
+          "material": "core.pbr_concrete",
+          "tint": "#d6d2c8"
+        },
+        "floor": {
+          "material": "core.pbr_terrazzo",
+          "tint": null
+        },
+        "paving": {
+          "material": "core.pbr_hex_paving",
+          "tint": "#c4c0b8"
+        },
+        "roof": {
+          "material": "core.pbr_concrete_dark",
+          "tint": null
+        },
+        "wood": {
+          "material": "core.pbr_planks",
+          "tint": null
+        },
+        "metal": {
+          "material": "core.pbr_rusted_plate",
+          "tint": null
+        },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    }
+  ],
   "setPieces": [
     {
       "id": "setpiece_10e8y0g228",
@@ -7093,44 +7133,33 @@
       "rotation": 0,
       "mirror": false,
       "pack": "collegiate"
-    }
-  ],
-  "lookDefs": [
+    },
     {
-      "id": "my_coverage_rust",
-      "displayName": "Coverage rust",
-      "roles": {
-        "stone": {
-          "material": "core.pbr_brick_old",
-          "tint": null
-        },
-        "trim": {
-          "material": "core.pbr_concrete",
-          "tint": "#d6d2c8"
-        },
-        "floor": {
-          "material": "core.pbr_terrazzo",
-          "tint": null
-        },
-        "paving": {
-          "material": "core.pbr_hex_paving",
-          "tint": "#c4c0b8"
-        },
-        "roof": {
-          "material": "core.pbr_concrete_dark",
-          "tint": null
-        },
-        "wood": {
-          "material": "core.pbr_planks",
-          "tint": null
-        },
-        "metal": {
-          "material": "core.pbr_rusted_plate",
-          "tint": null
-        },
-        "facade": "brick",
-        "door": "oak",
-        "glass": "breakable"
+      "id": "setpiece_zdr8alnlxi",
+      "piece": "setpiece.refectory_bay",
+      "x": -6,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9ck4mu05wg",
+      "piece": "setpiece.refectory_bay",
+      "x": -8,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_south"
+        }
       }
     }
   ]
