@@ -40,7 +40,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fable-dual-4` · 7ecc1f83 · run 44858042875 (dual wielding step 4: the pair in third person for everyone, `AKIMBO_READY` true; full suite green)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -225,6 +224,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-21 · B · Dual wielding on (AKIMBO_READY true): the third-person pair square to the aim, other players' pairs over the network (hostgame check), pair flashes taking turns under Reduce flashing; double kick and first-person pair pose unchanged for the owner to test (`check/fable-dual-4` at 7ecc1f83, run 44858042875).
 - 2026-11-21 · B · Slim dorm doors 1.2 m → 1.5 m wide (owner: "slightly wider"), at the source: kit.door.oak_slim/_ajar/_open and every academy doorway, plus St. John's copied Welles stair door through MapMaker (`check/fixes-20261120b` at bf830d99, run 44848023139).
 - 2026-11-20 · B · Third-person long-gun grips for every character (support hand on the handguard measured from each gun, support shoulder forward, stock nearer the chest, fingers closed to their curl without tearing; new e2e flow characters4 checks 237 holds) (`check/grips-fix` at b86e380d, run 44816073539).
 - 2026-11-20: the Pistol pickup in MapMaker (Weapons group; never rolled by random pickups; a second Pistol gives ammo until dual wielding is on, then makes the pair) (`check/train-20261120-140256` at 07516dbc, run 44749760283).
