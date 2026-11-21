@@ -9709,9 +9709,11 @@ async function arsenalFlow(browser) {
   await meWait(page, (m, me) => me.fireCooldown === 0, null, 3);
   await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
   const spearOut = await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear'), null, T(10000));
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/spear-thrown.png` }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
   const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/spear-stuck.png` }).catch(() => {});
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
   // A thrown sheep is drawn as its skinned model at its size (content/throwables.json, fit 0.7 m in its bind pose; its
   // walk clip crouches it to about 0.42), not 7 mm tall (a 0.01 armature, once sized as if its scale were not drawn).
