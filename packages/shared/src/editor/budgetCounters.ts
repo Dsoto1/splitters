@@ -31,10 +31,13 @@ export interface BudgetRow {
 
 /**
  * The draw estimate (owner's call: see HANDOFF, "MapMaker Phase 1A"): a draw call per different untinted prop model
- * (instanced), per tinted prop (each its own), per environment species variant and per body of liquid. Its budget is
- * the sum of the budgets behind those rows (80 prop models, 24 species variants, 32 liquids).
+ * (instanced), per tinted prop (each its own), per environment species variant and per body of liquid. It is a
+ * performance bar with a scale of its own: 136, which was the sum of the budgets behind those rows when it was set
+ * (80 prop models, 24 species variants, 32 liquids). It did not move when the prop model budget went to 120
+ * (2026-11-21): every model still costs its draws (docs/MAP_BUDGETS.md, "120 different prop models"), so a map may
+ * use 120 models and stay under this bar only while its tints, species variants and liquids leave the room.
  */
-export const DRAW_ESTIMATE_BUDGET = MAP_BUDGETS.propModels + MAP_BUDGETS.env.variants + MAP_BUDGETS.liquids;
+export const DRAW_ESTIMATE_BUDGET = 136;
 
 export const BUDGET_ROWS: readonly BudgetRow[] = [
   { id: 'entities', label: 'Entities', what: 'everything placed but tiles (the file holds at most this many)', max: RESOURCE_BUDGETS.entities, hard: true },

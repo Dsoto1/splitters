@@ -591,8 +591,8 @@ export const MAP_BUDGETS = {
   footprint: 400,
   tiles: 1500,
   props: 1500,
-  /** Different prop models (each is a download and a set of draw calls). */
-  propModels: 80,
+  /** Different prop models (each is a download and a set of draw calls). 120 since 2026-11-21 (80 before). */
+  propModels: 120,
   /** Solid free blocks: merged into the level's meshes like tiles, so mostly a navmesh build-time cost. */
   blocks: 3000,
   /** Breakable, crumbling and trapdoor blocks, and solid blocks logic drives or movers carry (each is simulated and sent to players). */
