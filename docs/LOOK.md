@@ -127,34 +127,64 @@ What flickered, and what the setting does to each:
 | Fast beam weapons (Arc Caster, lasers) | a beam flash per shot | the same steady beam |
 | An arc turret's charge | its glow and ball flicker 7 times a second; the pack's crackling ball of lightning | steady glow, the plain ball |
 | Electric fence wires (border and placed) | hum at 2 and 7.5 Hz plus random crackles | a steady glow breathing slowly |
-| Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials; additive pieces are scaled down, pieces drawn over the scene (smoke, debris, cut-out fireballs) only have their bright parts capped, at 0.3 + 0.7 × gain, so smoke keeps its grey), no white flash ball |
+| Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii) and drawn smaller there (`blastSize`: half size within 0.6 radii, full beyond 3.6 radii, so the camera is never inside a fireball whose sheets sweep across the whole view: four grenades 3-5 m off read up to 7 transitions a second at full size, none at half), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials; additive pieces are scaled down, pieces drawn over the scene (smoke, debris, cut-out fireballs) only have their bright parts capped, at 0.3 + 0.7 × gain, so smoke keeps its grey), no white flash ball |
 | Muzzle flashes (yours and others') | as the pack draws them | 75 % size, 45 % opacity (`SAFE_MUZZLE`) |
+| A pair's muzzle flashes (dual wielding, your own two guns in first person; `pairView.ts` `PairFlashGate`) | every round of both guns flashes | the two guns share one flash, each at `SAFE_MUZZLE`: never two at once, never more often than one gun's rounds come (a round's flash is left out when either gun flashed within the gun's firing interval; both triggers on one tick take turns). Its moment: `pair` |
+| Someone else's pair's muzzle flashes (dual wielding in third person: another player's two guns, or yours in third person; `view.ts` `remoteFlash`) | every round of both guns flashes at its own gun's muzzle | the same shared flash per character (`PairFlashGate`, one per character): both guns' rounds arriving in one snapshot take turns, never two at once, never more often than one gun's rounds. Its moment: `pairtp` |
 | Map lights logic drives (`blink`, `light_blink`, `light_flash`, colour changes) | hard on/off up to 10 times a second; "Flash" flares to 2.5 × | a smooth pulse at most once a second between 55 % and full (`blinkLevel`); "Flash" flares to 1.35 ×; level and colour ease (off to full in about 0.4 s) |
 | Candles that gutter | random drops near dark | a slow, slight sway |
 | Small blinking indicators (a mine's light, a thrown mine, a sticky grenade, the bomb, a laser trap's warning) | blink 1-12 times a second | a gentle pulse at most once a second; the laser warning shows its beams faint and steady |
 | The hurt vignette (HUD) | saturated red edge, snapping on with each hit | a duller red (not a saturated red by WCAG's test), reaching less far in, eased in over 0.15 s, held steady under fire, gone over 0.8 s (`hurtVignette.ts`) |
 | Diving into water or another liquid | the haze snaps on and off at the surface | eased over a third of a second |
-| Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds |
+| Pickups' floor glows (`lootGlow.ts`, Binbun's Loot VFX) | streaks turning slowly, a slow bob, sparkles drifting up; eased in over a second | held still, no sparkles, 0.5 of its strength instead of 0.8, eased in over two seconds; its dark outline as dark as with the setting off (it adds no light) |
 | Status auras on other characters (`statusFx.ts`, Binbun's Stylized Status FX: burning, poisoned, slowed by goo, chilled or frozen) and the plain shell | flames, bubbles and ice crystals drifting at the pack's speed, eased in over a quarter second; the plain shell pulses about twice a second | half speed, 0.65 of its strength instead of 0.8, eased in over about 0.8 s; the plain shell holds still |
+| The low-health warning (`lowHealth.ts`, below 35 % health) | the screen's edges darken toward near-black and the world loses colour, eased in over 0.6 s and out over 1 s; a heartbeat every 1.35 s at 35 % to every 1 s near death; the health bar brightens 25 % with each beat (a soft sin² bump over 0.4 s) | the same darkening and grey, eased in over 1.2 s; the bar's bump at 0.6 of that. Never a red, never brighter than the scene, never more than once a second. Its moment in the flicker check: `lowhealth` |
 | A portal's swirl and a jump pad's lift (`fixtureFx.ts`, Binbun's Portal VFX and Magic Area VFX) | the swirl turns slowly and draws inward, the lift's streaks rise slowly; eased in over about a second | held still, dimmer (portal 0.7 of its strength, pad 0.6), eased in over about two seconds |
+| Blood by character's sparks and wisps (`bloodVisuals.ts`; Binbun's Electric FX off a robot, Hit FX tinted white-grey off a ghost) | at the pack's size and strength (the wisp 0.45 of it, eased in), at most one of each every 60 ms | 0.8 of the size, 0.55 of the strength, eased in over 0.12 s, at most one of each a second (a machine gun on a robot no longer crackles ten times a second); the `flashing` flow's `blood` moment |
+| A rank-up's badge (`rankGlow.ts`; Options → Ranks & badges, the kill feed and over the head) | swells to 1.45 × and a soft halo in its colour rises and fades over a second | swells to 1.2 ×, the halo at most 0.3, eased in and out over the second |
+| A scope's surround and shadow (`scopeFeel.ts`; the Sniper Rifle, Railgun, Marksman and Battle Rifle) | the black round the glass comes in at once with the zoom and fades out over 0.1 s; the shadow at the glass's edge slides up to half the glass's radius with a turn or a kick, at 0.94 darkness | it fades out over 0.22 s; the shadow moves at most 0.3 of the radius, at 0.6 darkness, through a quarter-second filter (hard turns left and right barely move it). Its moment: `scope` |
+| The sniper glint (`scopeGlint.ts`: a sniper scope aimed your way, seen from 18 m) | a small soft point at 0.85, up over 0.15 s; steady, under the bloom threshold | 0.5, up over half a second. Its moment: `glint` |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
-storm lightning exists; a storm flash would have to be capped and eased the same way), the health bar (no low-health
-pulse exists).
+storm lightning exists; a storm flash would have to be capped and eased the same way).
 
-### The flicker check (e2e flow `flashing`, `e2e/flicker.mjs`)
+### The flicker check (e2e flows `flashing` to `flashing5`, `e2e/flicker.mjs`)
 
-`E2E_ONLY=flashing node e2e/run.mjs`. MapMaker makes a night scene with its own edits (two dark rooms, one lit by a
-red alarm light blinking four times a second, an Arc Turret, an electric fence); in play the brightest moments are
+`E2E_ONLY=flashing,flashing2,flashing3,flashing4,flashing5 node e2e/run.mjs` (`E2E_FLASH_MOMENTS=arc,blast` records just
+those moments, in their flows). The check is five flows, each some 5 min on CI (a moment is 35-100 s drawn in software),
+so a retry fits in a shard; `FLASHING_PARTS` in `e2e/run.mjs` lists each flow's moments by scene, and each flow makes
+the scenes its moments need:
+
+| Flow | Night scene | Day scene |
+|---|---|---|
+| `flashing` | arc, fence, blast, cookoff, pairtp | |
+| `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
+| `flashing3` | rain, snow, loot, fixtures, status | |
+| `flashing4` | blood, alarm | lowhealth, scope |
+| `flashing5` | | shelves, tunnel, lootlight, hitkick |
+
+**A new moment goes in the shortest flow** (`e2e/timings.json`): add it to the scene, then its name to that flow's
+list in `FLASHING_PARTS` (a moment in no flow fails the check). All five are mapped wherever the check is
+(`e2e/flowMap.mjs`, `FLASHING_FLOWS`).
+
+MapMaker makes a night scene with its own edits (two dark rooms, one lit by a red alarm light blinking four times a
+second, an Arc Turret, an electric fence); in play the brightest moments are
 recorded frame by frame at 30 frames a second of the page's own time (`e2e/frameClock.mjs` freezes the page's clock
 and steps it a frame at a time, so a recorded second is a second of play however slowly CI draws), each canvas frame
-with the HUD's hurt tint drawn over it, at 160 × 90:
+with the HUD's hurt tint (and a scope's surround and shadow) drawn over it, at 160 × 90:
 - an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you);
 - the electric fence (three bots against it 2-4 m in front of you, zapped twice a second each);
 - four grenade blasts 3-5 m in front of the camera in 0.8 s;
 - a machine gun firing at a wall 3.5 m off in the dark room;
 - six pickups' floor glows coming up 2-4 m in front of you at night, as High graphics draws them;
-- the alarm light in its dark room.
+- a rank-up twice, a second apart: a bot's badge 3 m in front swelling and glowing over its head and in the kill feed (`rankup`);
+- by day, the low-health warning coming up over white tiles as your health drops to 10 % (`lowhealth`);
+- a sniper's glint coming up twice 32 m off at night, the second time through your own scope coming up (`glint`);
+- the alarm light in its dark room;
+- by day, a sniper scope coming up and going away three times in two seconds over white tiles, then hard turns through it (`scope`);
+- by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
+  (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting
+  on (`lootRingContrast`: the pickups' models hidden, the frame with the glows against the frame without).
 
 The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosensitivity analysers apply it:
 - relative luminance per pixel; a frame's change is the largest change at least **a quarter of the screen** made
@@ -166,4 +196,4 @@ The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosen
 
 With the setting on every moment must pass; the same moments with it off are measured and reported as numbers only.
 The flow writes frame strips (every 4th frame) and the numbers to `e2e-artifacts/` (`flashing-<moment>-<on|off>.png`,
-`flashing.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").
+`flashing-<night|day>-<the flow's first moment>.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").

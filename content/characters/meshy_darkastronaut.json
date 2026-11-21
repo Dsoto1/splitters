@@ -5,7 +5,8 @@
   "order": 115,
   "name": "Starfarer",
   "look": "core.darkastronaut",
-  "group": "soldiers",
+  "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Came back from the far side of the Moon with a new suit, a purple glow and no explanation.",
   "body": "male",
@@ -24,9 +25,6 @@
     "metallic": 0.15,
     "roughness": 0.55
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
@@ -44,11 +42,6 @@
           "except": "^Head$"
         }
       ]
-    },
-    "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
     }
   }
 }

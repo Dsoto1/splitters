@@ -225,6 +225,14 @@ Scopes may provide optional markings that correspond to useful holdover distance
 
 Do not automatically compensate for drop unless a weapon specifically has that characteristic.
 
+**Implementation note (2026-11-18): holdover marks.** A scope (`view.zoomFov`) and a real optic (`view.optic`) on a
+bullet weapon carry short marks down the crosshair at 200, 300, 400, 500, 600 and 800 m (within its reach), labelled
+in hundreds of metres, longer every 200 m. Each sits the drop at that distance below the centre (`holdoverMarks` in
+`sim/gunplay.ts`, from `flightTo` under the match's ballistics rule; rounds leave from the eye along the aim, so there
+is no zero distance and nothing compensates by itself), placed for the view's own zoom (client `game/holdover.ts`; the
+second zoom spreads them). Marks closer than about 1 % of the reticle's radius to the centre are left off, so a gun
+whose drop never matters inside its reach (the Marksman Rifle) shows none.
+
 ### Creator Control
 
 Scenario rules may expose:
@@ -542,6 +550,42 @@ Possible behavior:
 **Custom**
 - Creator-controlled health/damage multipliers.
 
+As built (`gunplay.ts` `LETHALITY_HEALTH`): Arcade 1.4× effective health, Standard 1×, Tactical 0.72×, applied as one
+damage multiple so every gun keeps its shape. Re-read 2026-11-16 with the clearer ranges: unchanged.
+
+**Body TTK at Standard, ideal aim** (seconds, body shots to kill in brackets; `pnpm gun-report`, docs/gunplay-audit.json;
+before → after the clearer ranges and damage by impact speed of 2026-11-16). Arcade multiplies the shots by about 1.4,
+Tactical by about 0.72.
+
+| Gun | 10 m | 25 m | 50 m | 100 m |
+|---|---|---|---|---|
+| Pistol | .67 (5) | .70 (5) | 1.10 (7) → **1.78 (11)** | 1.23 (7) → **1.97 (11)** |
+| Heavy Revolver | .67 (2) | .72 (2) | .80 (2) | .97 (2) → **1.67 (3)** |
+| Hand Cannon | .50 (2) | .55 (2) | 1.13 (3) → **1.63 (4)** | 1.30 (3) → **2.33 (5)** |
+| Machine Pistol | .75 (16) | 2.43 (29) → **3.03 (41)** | 2.50 (29) → **3.12 (41)** | – (reach 60 m) |
+| Pulse Pistol | .60 (5) | .75 (6) | 1.35 (10) → **1.95 (14)** | 1.35 (10) → **– (reach 90 m)** |
+| SMG | .40 (7) | .63 (10) → **.83 (13)** | .90 (13) → **1.37 (20)** | 1.02 (13) → **1.53 (20)** → **1.67 (22)** |
+| Assault Rifle | .50 (6) | .52 (6) | .75 (8) | 1.00 (10) |
+| Burst Rifle | .53 (6) | .55 (6) | .92 (8) | 1.30 (11) |
+| Battle Rifle | .60 (4) | .62 (4) | .83 (5) | 1.10 (6) |
+| Spin Gun (LMG) | .55 (12) | .57 (12) | .65 (13) | .87 (16) |
+| Marksman Rifle | .60 (3) | .62 (3) | .63 (3) | 1.00 (4) |
+| Precision Rifle | .83 (2) | .85 (2) | .87 (2) | .92 (2) |
+| Shotgun | .75 (2) | – | – | – |
+
+The long guns did not move: at Standard damage by impact speed gives exactly the old distances (§37).
+
+Arms as their own zone (2026-11-17, §11) moved one cell: the SMG at 100 m, 20 → 22 rounds (1.53 → 1.67 s), its spread
+there putting some rounds on an arm. Every other ideal body cell is unchanged (the report aims at the chest's middle);
+hip-fire, ADS and tracking cells, which spray, take about one round more in places. Arcade and Tactical scale as before.
+
+**Arm shots to kill at Standard, 10 m** (unarmoured, every round on an arm; body in brackets): Pistol 5 (5), Heavy
+Revolver 2 (2), Hand Cannon 2 (2), Pulse Pistol 5 (5), Machine Pistol 18 (16), SMG 8 (7), Assault Rifle 7 (6), Burst Rifle 7 (6),
+Battle Rifle 5 (4), Spin Gun 13 (12), Marksman Rifle 4 (3), Precision Rifle 2 (2). The one-shot and two-shot guns keep
+their counts on an arm, as do the Pistol and Pulse Pistol (24 a round: 21.6 still kills in five); the rest take one
+round more, the Machine Pistol two. From the report's first-hit damage (docs/gunplay-audit.json `firstHit`). Ranges
+(falloff) are unchanged.
+
 Important:
 
 **Do not rebalance every gun separately for these modes.** Apply systemic modifiers so relative weapon identity remains intact.
@@ -569,7 +613,15 @@ Explosives should not use conventional headshot logic.
 Every look has its own head sphere, torso, thigh, shin and (where they stick out) arm shapes measured from its model
 standing, crouching and prone; the zone is the shape a round meets (head sphere: head, legs: legs, torso and arms:
 upper body at 1.0×; the zone is the shape whose own core the round passes nearest). Lag compensation rewinds the
-same shapes. Every shape carries a margin (`HITBOX_MARGIN`: 0.18 m body, 0.12 m head at a 1.8 m body) so hit rates
+same shapes.
+
+**Arms (2026-11-17):** the arm shapes are their own zone now, at **0.9×** for every bullet family (`arms` in
+content/weapons/families.json; a weapon may set `armshot`; weapons without a family 0.9): between the body and the
+legs (0.8-0.9), inside the spec's 0.8-1.0. Server-authoritative (sim/hitbox.ts, sim/match.ts `zoneScale`), from the
+same measured rows. The rule is unchanged: the shape whose core the round passes deepest into wins, so a round through
+a forearm into the chest is a body shot, and one that clips a forearm held out and misses the chest is an arm shot
+(about 2 % of rounds aimed at the chest's middle from any side, about a third of upper-body hits sprayed near a body).
+Arm hits show the body marker; the target flinches as for a body hit. Every shape carries a margin (`HITBOX_MARGIN`: 0.18 m body, 0.12 m head at a 1.8 m body) so hit rates
 and TTK stay where the 0.8 m capsule had them: a standard chest is 0.68 × 0.62 m with it, the head 0.50 m across.
 Melee keeps its forgiving reach and thrown projectiles are 0.12 m thick. docs/CHARACTERS.md, "Hitboxes".
 
@@ -787,6 +839,179 @@ as far as it does in hip fire, for sights and every scope level alike. The playe
 (0.2–3×, default 1×) multiplies on top, easing in as the sights come up so nothing jumps
 (`zoomLookScale` in `packages/client/src/game/lookFilter.ts`).
 
+### Sights that line up
+
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 1).** Aiming down the sights
+puts the camera behind each gun's own drawn sights, with the front sight's top on the point of aim: the crosshair's
+centre, where the round goes (rounds leave from the eye along the aim, §5). The gun is turned and moved to the eye;
+nothing about the shot changes, and the blend, the field of view (0.72 of the hip's), the bob, the kick and the sway
+are as they were. At the hip nothing changes.
+
+- **The fit** (`tools/content/sight-fit.mjs`, run by `pnpm content:rebuild`, checked by `pnpm content:check`) reads each
+  gun's model. On the plane of the barrel it takes the gun's top profile and the line that rests on it across the
+  middle between the grip and the muzzle: its front end is the **front sight**'s top, its rear end the **rear sight**.
+  A slice across the rear sight then says what the eye does there: through the middle of an **aperture**'s hole, over
+  the ears of a **notch** (through the notch's own middle), or 1.5 mm over a plain **post** or, with a front sight
+  only, the receiver (**bead**), so the front sight shows above it. The **eye point** is on the line through the two,
+  as far behind the gun as it aimed before (the stock's end 0.2 m ahead of the eye, a handgun at its hip distance):
+  any nearer and the camera's near plane (0.1 m) cuts the stock open inside the view. The line from the eye to the
+  front sight is tested against the model's triangles and must be clear.
+- **The table** is `packages/shared/src/content/sightFit.generated.ts` (eye, rear and front points per weapon, in the
+  model's space like `view.muzzleAt`), loaded with the match's view, not with the menu. `game/sightPose.ts` turns it
+  into the gun's placement (`sightPlacement`); `view.ts` blends to it from the hip.
+- **Tolerance: 0.1°** (`SIGHT_TOLERANCE_DEG`) between the sights and the aim. Before the fit the 13 fitted guns were
+  0.6° to 4.1° off (the gun's highest point sat 6 mm under the eye line, centred on its bounds); as drawn (the sheet's rays)
+  the front sight's top is now within 0.03° of the aim's height and its middle within 0.09° across. `packages/client/test/sightPose.test.ts` holds every fitted gun to it and names the fitted, the
+  hand-corrected and the excluded weapons, so a new gun cannot slip in unfitted.
+- **No fit** (`SIGHT_EXCLUDED`, each with its reason): guns whose models have no usable sights keep the placement they
+  had: the flat-topped kit guns (Arc Caster, Bubble Blaster, Flak Cannon, Laser Rifle, Oil Slicker, Flamethrower,
+  Swarm Launcher, Disc Launcher, Arena Disc), the tube launchers (Rocket Launcher, Guided Rocket, Blast Rockets,
+  Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (an open
+  sight box, no irons), the Flare Gun (drawn broken open), the Gilded Pistol (its cock stands in the line) and the Spear.
+  Eight of them carry an optic since step 2 (below); the rest keep that placement.
+  Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun) hide the gun behind the scope overlay, the Battle
+  Rifle brings its optic's eyepiece to the eye (`view.optic`), and melee weapons, tools and mounted guns do not aim.
+- **The audit** is the sight sheet, `?mode=sights` (client `tools/sightSheet.ts`): each weapon from the eye as the game
+  places it, the crosshair's centre marked, a target 15 m off; ←/→ step through the weapons, A toggles the aim, B the
+  placement from before the fit. `window.__sights.audit()` casts rays at the gun as drawn and reports how far its
+  top edge on the centre column (the front sight's top) is from the aim, the blade's middle across, and the nearest
+  drawn point to the eye.
+
+**Adding a gun.** Run `node tools/content/sight-fit.mjs --report`. A gun whose sights it finds joins the table; look at
+it on the sight sheet, then add it to `FITTED` in `sightPose.test.ts`. When the tool reports `no-sights`, `off-bore`
+(the line is over 4° off the barrel), `rear-on-stock` or `blocked`, decide in `content/sight-fit.json`: a
+**correction** (`rear` and/or `front` points read off the model, with the reason) when the gun has sights the tool
+misread, or an **exclusion** (with the reason) when it has none. No corrections were needed for the first 13.
+
+### Optics by gun
+
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 2: "real optics by gun: red dot
+or holographic for close range, 2-3x for rifles and carbines, a full scope for snipers, each with its own reticle,
+keeping the holdover marks").** Every hand-held gun carries one optic, or none with its reason. **No gun's zoom
+changed**: each got the optic that matches the zoom it had (the sights' 0.72 of the hip field of view is 1.52×).
+
+| Optic (kind) | Reticle | Guns | Zoom |
+|---|---|---|---|
+| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle | 1.52× |
+| Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off | 1.52× |
+| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Arc Caster, Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box) | 1.52× |
+| 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
+| Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
+| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Singularity Cannon, Flare Gun, Gilded Pistol, Spear | 1.52× |
+
+- **The table** is `content/optics.json`: `kinds` (reticle, housing, aimed field of view: `adsFov` for 1× sights, a
+  `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: the loadout's
+  choice comes later; today every gun shows its default), `none` with reasons. `tools/content/optics.mjs` (run by
+  `pnpm content:rebuild`, checked by `pnpm content:check`) checks it and writes
+  `packages/shared/src/content/optics.generated.ts`, loaded with the match's view, not the menu. A zoom stays in the
+  weapon file (`view.zoomFov`, `view.optic.mag`); the tool only checks it lies inside its kind's range.
+- **Housings** for the red dot (a tube) and the holographic sight (a hooded frame) are built in code
+  (`game/opticHousing.ts`: a few boxes and a tube in one mesh, no outside models) and stand on the gun's top at the
+  **mount** the tool measures from the model: the rearmost flat stretch of the top from the hand forward that the rest of
+  the gun does not stand in front of, sized to the gun's length (0.85-1.2); a `mount` or, for a model with an open sight
+  of its own (the Plasma Rifle), a `window` can be set by hand with its reason. A `window` is also a clip while aimed: a
+  depth-only sheet over the opening, drawn first, so nothing of the gun behind it shows (the Plasma Rifle's box holds
+  loose scraps of its model). They are on your own gun, in third person
+  and on other players' guns; crowds (GPU-instanced guns), pickups and icons show the plain model.
+- **Reticles on the glass, not the HUD.** The glass's material works out for each of its pixels where that pixel is in
+  the view (the tangents of its angles from the view's axis, from its clip position and the projection) and lights the
+  mark's pixels. So the mark is on the point of aim itself (the middle of the view: rounds leave the eye along the aim,
+  §5), stays there while the gun bobs and kicks, is hidden outside the window, and is one screen pixel sharp at any
+  resolution. Steady, brightness capped (0.92; 0.8 with Reduce flashing), a red under High's bloom threshold: no
+  flicker, no bloom, no halo. Iron sights show no HUD dot; `#reddot` remains only for the guns with no optic.
+- **Magnified reticles** are the HUD's (`#optic`, `#scope`, `data-reticle`): `chevron` (its tip the aim) for the 2-3×
+  optics, `fine` for the sniper scopes, with the holdover marks of §5 placed for each view's own half-angle
+  (`game/holdover.ts`, unchanged).
+- **The sight picture.** A glass 0.4-0.7 m from the eye is a few dozen pixels across, so an aimed gun with a glass is
+  drawn larger about the view axis as it comes up (`optics.ts` `pictureScale`: its window's half-height brought to 0.2
+  of the screen's, at most 3×), the frame the Battle Rifle's optic uses: only x and y scale, every depth stays, nothing
+  nears the near plane. Long guns' iron sights get it gently (`ironsPicture`: the rear sight as large as at 0.36 m, at
+  most 1.6×: the Assault Rifle, SMG and shotguns 1.6×, the Burst Rifle 1.26×; handguns unchanged). Points on the axis
+  stay on it, so the sights stay on the aim. The gun's bob and kick are drawn that much smaller, so they move the
+  picture as far as before; the hands keep their own size.
+- **The audit**: the sight sheet shows every weapon that aims with its optic (scopes with their own view and marks) and
+  `__sights.audit()` adds the reticle's distance from the aim: a glass's mark found on the drawn frame (the pixels it
+  changes when switched off), a HUD reticle's origin as laid out. All measured 0.00° (glass marks at most 0.01°).
+  `packages/client/test/optics.test.ts` names every gun's optic and zoom and holds the rest (a weapon without an entry
+  fails with what to do); `tools/content/test/optics.test.mjs` covers the tool.
+
+**Adding a gun or changing its optic.** Give it an entry in `content/optics.json` (`weapons`, or `none` with a reason),
+run `node tools/content/optics.mjs` (`--report` prints the table and mounts), look at it on the sight sheet, then name
+it in `optics.test.ts`. A new kind: add it to `kinds`; a new housing shape or mark needs its builder or shader branch
+in `opticHousing.ts`.
+
+### Scope feel
+
+**Implementation note (2026-11-19; owner, 2026-11-18, the sights and scopes pass, step 3: "scope feel: sway with
+breath-hold on Shift/stamina, scope edge darkening, zoom steps, a soft sniper glint (calm under Reduce flashing)").**
+For the magnified optics: the Battle Rifle, the Marksman Rifle, the Sniper Rifle and the Railgun. Nothing about a shot
+changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/scopeFeel.ts` holds the rules,
+`content/optics.json` the feel numbers (`feel`, and `steps` per kind or gun).
+
+- **Sway and breath** (as before, now data). Through a magnified optic the aim drifts in a slow figure of eight, and
+  the drift moves the real aim: `sway` 0.0035 rad (0.2°), the same angle at every zoom. **Shift** (which sprints
+  otherwise; never while aiming) or a controller's sprint button holds your breath on a meter of its own, not on sprint
+  stamina: the drift shrinks to `swayHeld` 0.12 of its size for `breathSeconds` 3.5 s; run out and it grows to
+  `swaySpent` 2.2 × until the meter is back to `readyAt` 0.5 (2 s; a full refill takes `recoverSeconds` 4 s, scoped
+  or not). New: the drift's size **eases** between the three (`settle` 0.15 s) where it used to jump, which moved the
+  aim by up to a quarter degree in one frame when the breath was taken and far more when it ran out; the meter's label
+  reads "Out of breath" in red while spent (steady, no blinking); a controller can hold breath.
+- **Zoom steps** on the mouse wheel while scoped (`steps`: shares of the gun's own aimed field of view; the first is
+  always 1, the zoom the gun comes up at; unchanged from before, now data): Sniper Rifle 3.95× → 8.87×, Railgun
+  3.13× → 7.08×, Marksman Rifle 2.19× → 5.04× (`[1, 0.45]`). The Battle Rifle's tube has one zoom (3.5×). The
+  holdover marks are placed for the field of view of the step you are on, so they spread out at the second zoom.
+- **The eye box (scope shadow).** Inside the glass the picture darkens softly toward the edge, and a darker crescent
+  slides in from the side: with your own turning (the clear picture leads the turn), against a kick (the gun rises,
+  the shadow comes in from the top) and a little with the sway; it eases back when the view is steady, and holding
+  breath stills it with the sway. It is a dark sheet with a clear round hole the size of the glass (soft from 0.8 to
+  1.08 glass radii), clipped to the glass and slid by a CSS transform: no render pass, no repaint, as sharp as the
+  screen. The hole never moves further than 0.5 radii, so the reticle's centre is always at least 0.3 radii clear.
+  Coming up to the eye the shadow starts off the middle and opens.
+- **The surround** (the black round the glass) now comes in at once with the zoom and goes out over 0.1 s. It used
+  to fade in over 0.16 s and cut out: since the zoom snaps, the magnified picture showed all over the screen for a
+  few frames before the dark arrived (over pale ground, a bright flash), and leaving a scope cut from black to the
+  scene in one frame. Coming up to the eye is shown by the eye box opening instead.
+- **The glint.** Other players see a small, soft, steady point of light at the scope of a player who aims a
+  sniper-kind optic (Sniper Rifle, Railgun) their way: within 14° between that player's aim and the line to your eye
+  (full within 4°), from 18 m (full from 30 m; nearer you see the gun), down to 0.55 of its level by 320 m. It is one
+  square of four vertices facing the camera, its soft round worked out in its shader, drawn in the scene with the
+  scene's own depth, so walls, hills and crates hide it for nothing; no fog, no depth written. It spans the same angle
+  at any distance (its square the tangent 0.02 at the hip: 18 px across on a 720-line screen, the light its middle third;
+  through your own scope the square root of the zoom larger). Steady: its level only eases (0.15 s up, 0.25 s down), its colour stays under
+  High's bloom threshold, a thin dark ring keeps it readable against a bright sky. `game/scopeGlint.ts`.
+- **Who is scoped: the host says.** `PlayerSnapshot.zm` (docs/MULTIPLAYER_PROTOCOL.md section 23) is set by the
+  match while a player's scope picture is up: a magnified optic in hand, the aim button held, the gun ready and its
+  aim at least half way up (`GunState.ads` ≥ 0.5, the line between a no-scope shot and a scoped one: 0.1 s after the
+  button), and it goes the tick the aim is let go. The glint is drawn only with it and a sniper-kind optic (Sniper
+  Rifle, Railgun), so a player who merely holds the rifle, reloads it or runs with it does not glint. Bots are no
+  different: a bot holds the aim button when it fires a scoped weapon, or waits on a shot with one, at something more
+  than 7 m off (`bots/brain.ts`), and its `zm` comes from the same state; the glint no longer reads a bot's AI state.
+  **Older hosts** (from before the field) never send it, and nothing in the protocol tells such a host from one where
+  nobody is scoped: there nobody glints. The earlier guess (`seemsScoped`: a sniper-kind weapon held, alive, not
+  sprinting; for a bot, fighting) is gone: a missing glint is better than a wrong one.
+- **Reduce flashing** (docs/LOOK.md): the shadow moves less far (0.3 radii), less dark (0.6 against 0.94) and through
+  a quarter-second filter, so turning hard left and right cannot swing a dark area from side to side; the surround
+  goes out over 0.22 s; the glint is dimmer (0.5 against 0.85) and comes up over half a second. The `flashing`
+  flow's `scope` (by day) and `glint` (at night) moments record them.
+
+| Number (`content/optics.json` unless noted) | Before | Now |
+|---|---|---|
+| `feel.sway`, `swayHeld`, `swaySpent` | 0.0035 rad, × 0.12, × 2.2 (in code) | the same, as data |
+| `feel.breathSeconds`, `recoverSeconds`, `readyAt` | 3.5 s, 4 s, 0.5 (in code) | the same, as data |
+| `feel.settle` (the drift's size easing) | 0 (a jump) | 0.15 s |
+| `steps`: sniper kind, and the Marksman Rifle | `[1, 0.45]` (in code, every scope overlay) | the same, as data |
+| `steps`: 2-3× kind (the Battle Rifle) | one zoom | `[1]` |
+| Surround fade in (`style.css`, then `scopeFeel.ts`) | 0.16 s, growing from 1.15 × | 0 (with the zoom) |
+| Surround fade out (`SCOPE_FADE`) | 0 (a cut) | 0.1 s (0.22 s calm) |
+| Eye box (`EYE_BOX`): turn 1.5, kick 2.2, sway 0.1, decay 0.12 s, most 0.5 radii, dark 0.94 | none | new (calm: 1, 1.2, 0.06, filter 0.25 s, 0.3, 0.6) |
+| Glint (`GLINT`): cone 14° (full 4°), 18-30 m in, 0.55 by 320 m, level 0.85, rise 0.15 s, fall 0.25 s | none | new (calm: level 0.5, rise 0.5 s) |
+
+Tests: `packages/client/test/scopeFeel.test.ts` (the numbers above, the breath's times, the easing, the shadow's
+limits, the glint's cone); `tools/content/test/optics.test.mjs` (the table's checks).
+
+**Left for later:** the Marksman and Sniper scopes are still the full-screen overlay with the gun hidden; their models
+carry scope tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead. The snapshot bit above.
+
 ---
 
 # 16. Animation Priority & Interrupt Rules
@@ -971,6 +1196,11 @@ Kill
 
 Players should recognize these largely by **sound and shape**, not by reading text.
 
+As built (2026-11-17): **shield hit** is a hit on a player under spawn protection (its shield takes the round, no
+damage): a pale gold ring, round where every other marker is angular, and a high thin ping (the armour clank pitched
+up and softer). The client knows from the snapshot's `FX_PROTECTED` bit; no new event. **Critical / weak point**: the
+game has no weak points yet (no shielded enemies or vehicles with a weak spot), so there is no marker for it.
+
 ---
 
 # 22. Crunchy Kill Confirmation
@@ -1032,6 +1262,22 @@ Arcade-light, server-authoritative (`packages/shared/src/sim/impact.ts`):
   the same movement, so suppressing fire slows a push.
 - `knockback` stays for weapons that deliberately shove hard (the Battle Axe,
   the railgun), on top.
+
+**Punchier (owner, 2026-11-16: "punchier please").** Measured in the sim (one full hit at 5 m on a standing
+target; `impact.test.ts`). Shove 4.4 m/s at power 1 (was 3.6); powers shotgun and sniper 1.0 (0.8, 0.9), revolvers
+0.75 (0.45), the Battle Rifle 0.6 (a rifle's 0.3), rifle 0.3, pistol 0.12 (0.15), SMG 0.1 (0.12): the heavy hitters
+most, rifles a little more, SMGs and pistols as light as before. Ground travel of one hit, before → after: SMG
+5 → 5 cm, pistol 6 → 6 cm, rifle 12 → 16 cm, Battle Rifle 12 → 31 cm, shotgun 33 → 52 cm, Precision Rifle 38 → 52 cm,
+Marksman 37 → 52 cm, Hand Cannon 62 → 82 cm and Heavy Revolver 90 → 131 cm (their own `knockback` on top). **In the
+air** a body takes 1.5× the shove (`IMPACT.airShove`) and, with no ground grip, carries it until it lands: a shotgun
+blast on a jumping player 1.5 → 3.4 m. Stagger: slow 48 % at power 1 (42 %), 0.12–0.5 s (0.12–0.42). **The no-stun-lock
+caps are unchanged** (slow 50 %, window 0.6 s, immunity 0.5 s); the shove's own cap grew with the shove (5.5 m/s, was
+4.5) so one blast is never cut. The **drawn flinch** is bigger (head 0.7 rad, twist 0.5, buckle 0.3) and lasts 0.5 s,
+and heavy hits (power 0.6 and up: the Battle Rifle, revolvers, shotguns, snipers) play the hit clip. The **player who
+is hit** gets a small camera kick (`client/src/game/hitKick.ts`): presentation only (split recoil, §29: the aim does
+not move), up about 1.3° for a full power-1 hit and a little away from the round, capped at 1.8° however many rounds
+land, gone in 0.6 s. Reduce flashing: both the kick (0.55×, eased in over 90 ms, slower to settle) and the flinch
+(eased in over 100 ms) lose their snap. Damage by impact speed (§37) scales the shove with the damage.
 - The **flinch** is drawn only (`characterAnimator.flinch`): head hits snap
   the head back, torso hits twist the shoulders away from the round, leg hits
   buckle the body; a heavy hit (stopping power × 2.2 or damage/25 of 1.6+) plays
@@ -1131,6 +1377,38 @@ General philosophy:
 - Airborne: substantial accuracy penalty for conventional precision weapons.
 
 Arcade weapons may intentionally violate these rules.
+
+**Implementation note (2026-11-18): handling per weapon (G2).** Every family carries `handling` (content/weapons/
+families.json; a weapon's own overrides it; `gunplayOf(def).handling`): `move`, the running speed holding it (a share
+of everyone's: walking and running, never sprinting, which is the same with every weapon so getting about a map does
+not depend on what you hold), and `sprintExit`, the ticks from leaving a sprint to the first round. The sim holds the
+trigger on the raise timer for that long (Match.applyInputs; client prediction replays it, a correction's replay
+included), so a trigger held as you stop fires the moment the gun is up, and the scope waits for it. Values, mild on
+purpose (GUNPLAY_DIRECTION: no severe movement penalties, no slow sprint-to-fire):
+
+| Family | move | sprint exit |
+|---|---|---|
+| pistol | 100 % | 3 ticks (50 ms) |
+| machine pistol | 100 % | 4 (67 ms) |
+| SMG | 100 % | 5 (83 ms) |
+| revolver | 100 % | 6 (100 ms) |
+| shotgun | 97 % | 7 (117 ms) |
+| rifle | 97 % | 8 (133 ms) |
+| battle rifle | 95 % | 9 (150 ms) |
+| marksman | 95 % | 10 (167 ms) |
+| precision | 93 % | 12 (200 ms) |
+| LMG | 90 % | 13 (217 ms; its spin-up follows) |
+
+Weapons without a family: 100 % and 6 ticks (melee at once); rocket launchers (Rocket Launcher, Guided Rocket, Blast
+Rockets, Swarm Launcher, Singularity Cannon) 92 % and 12, the Grenade Launcher 95 % and 10, the Railgun 93 % and 12,
+the Flamethrower 95 % and 8. The content check holds `move` to 0.85-1.1 and `sprintExit` to 18 ticks at most.
+
+**The trigger and a held sprint (2026-11-18, owner: "gunshots are lagging now… chugging").** The sprint stops while
+the trigger is held, so with sprint held every gap between taps sprinted again and every tap waited the exit time (a
+rifle's 6-tick click fired nothing). The client's trigger latch (`packages/client/src/game/triggerLatch.ts`) sends the
+sprint button only once the trigger has been let go for 0.5 s (a slow gun: its fire interval and 0.25 s), and holds
+a pull made while the gun comes up (out of a sprint, or any raise) until it is up. Only the buttons sent change, so the
+host and prediction rules above are untouched and it works on every host. `packages/client/test/triggerLatch.test.ts`.
 
 ---
 
@@ -1386,6 +1664,9 @@ feedback
 
 Do not bury fundamental behavior in weapon-specific code.
 
+As built, `handling.equipTime` is `raiseTicks`, `adsTime` is `accuracy.adsTicks`, and `sprintExitTime` /
+`movementModifier` are `handling.sprintExit` / `handling.move` (§27's note).
+
 ---
 
 # 36. Fire Modes
@@ -1414,6 +1695,14 @@ Or:
 > Energy weapon primary = rapid plasma.  
 > Alternate = charged slow projectile.
 
+**Implementation note (2026-11-16): switchable modes.** A weapon lists its modes in `fireModes` (content/weapons; shared
+`sim/fireModes.ts` `firingOf`): the first is the weapon's own trigger, a later one overrides the fire interval, the
+burst (count, ticks between rounds) and the kick. The player switches with a key (U; B is the quick-message key) and
+the mode wanted travels in every input (`PlayerInput.fireMode`), so the host applies it and client prediction replays
+it like the rest of the input; bots choose by range (`bots/fireModePick.ts`). Every trigger reads through the same
+code, so weapons without a list keep theirs exactly. First user: the Battle Rifle's Single and 3-round Burst
+(docs/ARSENAL.md, "The Battle Rifle: fire modes").
+
 ---
 
 # 37. Damage Falloff
@@ -1438,6 +1727,57 @@ Minimal falloff within intended map ranges.
 Effective damage loss emerges through both pellet dispersion and per-pellet range tuning.
 
 Players should be able to learn effective ranges visually and experientially.
+
+### Implementation: damage by impact speed and clearer ranges (owner, 2026-11-16)
+
+**Damage by impact speed** (`gunplay.ts` `impactFalloff`, `Match.bulletFalloff`). Bullets fly with drag by family
+(share of speed lost a second: pistol 1.5, machine pistol 1.8, SMG 1.5, revolver 0.6, rifle 0.6, LMG 0.6, Battle
+Rifle 0.5, marksman 0.45, precision 0.3). Under **Standard and Advanced** ballistics a round's damage (and so its
+shove) follows its speed when it strikes over its muzzle speed, on each gun's own curve: the speed its round has at
+Standard at the falloff's start is full damage, the speed at its end is the floor, in between the falloff's own shape.
+Under the sim's drag, speed falls linearly with distance (v/v0 = 1 − drag (x − 8) / (v0 q), q = 1 − drag/120), so at
+Standard **every gun keeps its tuned kill distances exactly**. **Advanced** (0.8× velocity, 1.5× drag) loses speed
+and so damage about 1.9 times as fast; **Arcade** keeps the distance falloff. Penetration, water and ricochets take
+their own damage share (`scale`) and lower the speed reference with it, so nothing counts twice. Drawn rounds (yours
+and others') fly with the same drag.
+
+| Gun | Muzzle (m/s) | Drag | Full damage at or above | Floor at or below | Floor | Advanced: full → floor | Speed at its reach |
+|---|---|---|---|---|---|---|---|
+| Pistol | 375 | 1.5 | 96 % (18 m) | 85 % (45 m) | 40 % | 13–28 m | 59 % at 110 m |
+| Machine Pistol | 360 | 1.8 | 100 % (8 m) | 91 % (25 m) | 35 % | 8–17 m | 74 % at 60 m |
+| SMG | 400 | 1.5 | 97 % (15 m) | 90 % (35 m) | 35 % | 12–22 m | 65 % at 100 m |
+| Hand Cannon | 300 | 0.6 | 98 % (20 m) | 91 % (55 m) | 40 % | 14–33 m | 79 % at 110 m |
+| Heavy Revolver | 300 | 0.6 | 97 % (25 m) | 89 % (65 m) | 40 % | 17–38 m | 79 % at 110 m |
+| Assault / Burst Rifle | 820 | 0.6 | 99 % (25 m) | 95 % (70 m) | 60 % | 17–41 m | 64 % at 500 m |
+| Battle Rifle | 880 | 0.5 | 98 % (40 m) | 95 % (100 m) | 75 % | 25–57 m | 66 % at 600 m |
+| Spin Gun (LMG) | 760 | 0.6 | 98 % (30 m) | 94 % (80 m) | 70 % | 20–46 m | 77 % at 300 m |
+| Marksman Rifle | 900 | 0.45 | 97 % (60 m) | 93 % (150 m) | 85 % | 36–84 m | 89 % at 220 m |
+| Precision Rifle | 950 | 0.3 | 96 % (150 m) | 91 % (300 m) | 90 % | 84–164 m | 69 % at 1000 m |
+
+Shotguns (hitscan pellets), the Pulse Pistol and other hitscan guns keep the distance falloff under every rule.
+
+**Clearer ranges.** Close-range guns reach less far and fade to a low floor; rifles, the LMG, the Battle Rifle and
+the snipers stay long. Each gun's best range is in its weapon file (`notes.range`) and `impactSpeed.test.ts` checks it
+against the data and the sim (the stated body shots at the best range, at Standard).
+
+| Gun | Best range (full damage) | Body shots there | Floor (by) | Reach (before) |
+|---|---|---|---|---|
+| Pistol | 18 m | 5 | 40 % (45 m), was 65 % | 110 m (250) |
+| SMG | 15 m | 7 | 35 % (35 m), was 55 % | 100 m (200) |
+| Machine Pistol | 8 m | 15 | 35 % (25 m), was 50 % | 60 m (60: already short) |
+| Pulse Pistol | 15 m | 5 | 30 % (45 m), was 45 % | 90 m (110) |
+| Hand Cannon | 20 m | 2 | 40 % (55 m), was 70 % from 60 m | 110 m (140) |
+| Heavy Revolver | 25 m | 2 (to about 50 m; a head shot kills to about 45 m) | 40 % (65 m), was 70 % from 60 m | 110 m (300; owner, 2026-11-16: "short range yes") |
+| Assault Rifle | 25 m | 6 | 60 % (70 m) | 500 m |
+| Burst Rifle | 25 m | 6 | 60 % (70 m) | 160 m |
+| Battle Rifle | 40 m | 4 | 75 % (100 m) | 600 m |
+| Spin Gun (LMG) | 30 m | 12 | 70 % (80 m) | 300 m |
+| Marksman Rifle | 60 m | 3 | 85 % (150 m) | 220 m |
+| Precision Rifle | 150 m | 2 | 90 % (300 m) | 1000 m |
+| Shotgun / Sawed-Off / Auto | 8 m | 1 / 1 / 2 blasts | 25 % (28 m) | 40 / 25 / 40 m |
+
+Bots' weapon bands were re-measured (`pnpm gun-report --bands`): the Pistol and Pulse Pistol 45 → 37.5 m, the SMG
+27.5 → 22.5 m; the long guns' bands did not move. The Hand Cannon's and the Heavy Revolver's hand-set stand-off is 3–30 m (was 35 and 40); the revolver's measured band stays 0–27.5 m (its two-shot kill holds to about 50 m).
 
 ---
 
@@ -1546,6 +1886,15 @@ Support:
 - Screen-flash reduction.
 - Controller vibration strength.
 - Color-independent armor/shield indicators.
+
+As built (2026-11-17, Options → Accessibility and the pause menu; client `game/combatPrefs.ts`, `game/rumble.ts`):
+**Aim** Hold / Toggle (a toggled aim lets go on a weapon change, death, a vehicle or leaving play; works with every
+scope and the Battle Rifle's optic; touch's Aim button always toggles); **Camera shake** Off / Reduced (0.35) / Full
+for the view's own movement: heavy-shot shake, the hit kick (§23), blasts and crashes (mechanical recoil stays: it is
+where the rounds go, §29; Reduce flashing keeps its calmer kick on top); **Controller vibration** on/off and strength
+(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` for firing (a buzz a round for automatics, a
+thump for heavy shots), hits taken and blasts and crashes near you; hidden where the browser can't rumble a
+controller. Saved in this browser (`tiletrigger.combat`).
 
 Competitive playlists may standardize mechanics while preserving presentation/accessibility settings.
 
@@ -1663,6 +2012,16 @@ Spread       ██           ███████
 
 Extreme profiles should be visible immediately.
 
+**Implementation note (2026-11-18): the weapon tuning page.** An internal tool, as above, so a team tool page rather
+than an Options screen (players feel weapons in the Training Range, §44): `?mode=weapons` (client
+`tools/weaponTuning.ts`, its numbers in `tools/weaponTuningData.ts` from the sim's own functions). Up to three weapons
+side by side, with their fire modes: stat bars on one scale across the whole arsenal (damage, fire rate, recoil,
+capacity, velocity, spread, move speed, sprint to fire, sights up, draw, reload), the recoil path over up to 30 rounds
+with the recovery between them, spread cones at 25 m against a body (hip, sights, running, airborne, after a spray),
+damage and time to kill over distance (a crosshair and values on hover), and drop with the holdover angles, all under a
+chosen ballistics rule and health. Deep link: `?mode=weapons&w=core.smg,core.revolver&ballistics=advanced&hp=100`.
+Not yet shown: penetration energy, the reload timeline, velocity over distance.
+
 ---
 
 # 46. Feel Validation
@@ -1747,13 +2106,238 @@ For bows/energy weapons.
 
 ## Akimbo / Dual Wield
 
-Worth supporting architecturally even if not initial-slice functionality.
+**Status: steps 1 to 4 built: the data and the rule, play (the match, prediction, the HUD's two counts, the
+snapshot's fields), the pair in first person with its sounds, and the pair in third person for everyone else. On in
+normal play since step 4:** `AKIMBO_READY` is true, so a person who picks up a second of an eligible gun they hold
+makes a pair in any match whose rule allows it (on by default), and Match Setup, a dedicated server's rules and
+docs/HOSTING.md offer the switch. Tuning (step 5) waits for the owner to play it.
 
-Dual weapons may:
+Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
+shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
 
-- Fire independently.
-- Reload independently.
-- Trade ADS precision for volume.
+Owner's answers on step 3's two questions (2026-11-20): **the same-tick double kick stays as it is** ("1a, let me test
+first": both triggers on one tick take both rounds' kick on the one aim, the Sawed-Off pair about 9.6° against 3.4°
+for one gun; the owner plays it before anything changes), and **the pair's first-person pose stays** 2 cm wider and
+2 cm higher than the one gun ("2a", `PAIR_POSE`).
+
+### The design in brief
+
+- **Making a pair.** Pick up a second of the same gun while you carry one and you hold one in each hand. Only the
+  same weapon pairs with itself, and only a weapon marked eligible.
+- **Ammunition.** The two guns share the reserve; each has its own magazine.
+- **Triggers.** Left mouse fires the gun you already held, as now; right mouse is the second gun's trigger. There
+  is no aiming down sights while paired. The fire-mode key puts the second gun away: back to one gun, with its
+  sights.
+- **Reload.** R reloads the emptier gun first, then the other; the gun that isn't being reloaded still fires.
+  (Responsiveness over realism: a reload never takes both triggers away.)
+- **The trade.** A pair is volume for precision, never a better gun: a wider cone (a wider pellet pattern for a
+  shotgun), more kick, slower reloads and a slower raise, as data per family (below). Weapons keep their identity:
+  the numbers multiply what the one gun has.
+- **The rule.** `MatchRules.akimbo`, default on ("Dual wielding" in Match Setup, with the weapon rules: "Pick up a
+  second of the same small gun to hold one in each hand."; `akimbo` in a dedicated server's RULES, taking effect at
+  the next match). Off: a second gun of the same kind is ammunition, as today.
+
+### The trade as data
+
+`content/weapons/families.json`: the top-level `akimbo` block is where every pair starts (everything × 1, the raise
+× 1.25), and a family's `akimbo` block is its trade. `cone`, `pattern`, `kick`, `reload` and `raise` multiply the one
+gun's aim cone, pellet pattern, recoil, reload time and raise time (each 1 to 3: never better than one gun); `move`
+is added to `handling.move` (−0.1 to 0, and the result stays at 0.85 or more: no severe movement penalties).
+
+| Family | Cone × | Pattern × | Kick × | Reload × | Raise × | Move |
+|---|---|---|---|---|---|---|
+| pistol | 1.5 | 1 | 1.2 | 1.35 | 1.25 | 0 |
+| machine_pistol | 1.6 | 1 | 1.25 | 1.35 | 1.25 | 0 |
+| smg | 1.7 | 1 | 1.3 | 1.4 | 1.25 | −0.03 |
+| shotgun (for the sawed-off) | 1 | 1.15 | 1.4 | 1.5 | 1.25 | 0 |
+
+A weapon is eligible only by its own flag, `"akimbo": true` in `content/weapons/<name>.json` (or an object that
+overrides numbers; `"as": "<family>"` names the family to take them from for a weapon that has none). Today:
+`core.pistol`, `core.machine_pistol`, `core.sawed_off` and `core.pulse_pistol` (as a pistol). Not the revolver, the
+hand cannon, the full-stock SMG, the gilded pistol, the flare gun, the goo gun, the freeze ray, the nailgun, the
+LMG, the shotgun or the auto shotgun; adding one is that one line (docs/CONTENT_PIPELINE.md, "Making a weapon
+eligible for dual wielding"). The generator refuses the flag on a weapon with an alt-fire, a zoom scope or fire
+modes (the pair needs right mouse and the fire-mode key, and can't aim), and on melee until melee pairs exist.
+
+In code: `akimboOf(def)` beside `gunplayOf` (`packages/shared/src/sim/gunplay.ts`) returns the resolved numbers
+(base, then family, then the weapon's own) or null for a weapon that can't be paired.
+
+### The steps
+
+1. **Data and the rule (landed).** The trade and the eligible weapons as data, `akimboOf`, `MatchRules.akimbo` from
+   Match Setup and a dedicated server's rules to the match and the client. Hidden behind `AKIMBO_READY` (false, in
+   `packages/shared/src/sim/rules.ts`): no switch in Match Setup, no `akimbo` rule on a server, nothing in a rules
+   summary.
+2. **Play (landed, off by default).** The sim and prediction: making a pair on pickup, the second trigger, two
+   magazines over one reserve, the staggered reload, the trade applied, the fire-mode key back to one gun, drops and
+   bots; the wire for it; the HUD's two magazine counts. "As built" below.
+3. **The pair in first person (landed, off by default).** The second gun in your left hand with its arm, each
+   gun's own kick, flash, case, muzzle and reload dip, the raise and the putting away, the sounds, Reduce flashing.
+   "As built: the pair in first person" below.
+4. **Third person, then on (landed).** Everyone else (and you in third person) sees the second gun: the public `dw`
+   on a character, its left hand's gun, flash and tracers. Then `AKIMBO_READY` true, which makes pairs in normal
+   matches and shows the switch and the server rule (and their row in docs/HOSTING.md). "As built: the pair in third
+   person" below.
+5. **Tuning and more pairs.** The numbers above played and adjusted; small SMGs and whatever else the owner adds;
+   melee pairs.
+
+### As built: play (step 2, 2026-11-19)
+
+In the match (`packages/shared/src/sim/match.ts`), mirrored by client prediction (`game/prediction.ts`); the numbers
+come from `akimboOf` through five small helpers in `gunplay.ts` (`akimboCone`, `akimboKick`, `akimboLoader`,
+`akimboRaise`, `akimboMove`).
+
+- **On or off.** A match makes pairs only when dual wielding is in play (`akimboReady()` in `rules.ts`: the
+  constant `AKIMBO_READY`, true since step 4; tests turn it on with `setAkimboReady`; a match can be told either way with
+  `MatchOptions.akimbo`) and its rule allows (`MatchRules.akimbo`). Off, nothing below exists: a second gun is
+  ammunition, the second trigger and the fire-mode key do what they did, and no new field is sent.
+- **`?akimbo=1`** turns it on for this browser's own matches (Play offline, MapMaker Test, the host's page of Host
+  game), where test mode is honoured: a dev server, a test-hooks build, or a page served from this machine
+  (`testMode.ts` `allowedHere`). Since step 4 it is on in every match whose rule allows it, so the switch is no longer
+  needed to try it.
+- **Making a pair.** A person (never a bot) who walks over a pickup of an eligible gun they hold, or takes a drop of
+  one, holds a pair. A pickup's second gun has a full magazine and the pickup still gives its ammunition (a pair is
+  made even with a full reserve); a drop's second gun has the drop's magazine, its reserve tops yours up and the
+  drop is gone. A third gun is ammunition. A loadout never grants a pair. **The Pistol's pickup** (`core.weapon_pistol`, owner, 2026-11-20) lies only where
+  a map maker places one in MapMaker (Weapons group): random pickups, the host's mix-up and weapon sets never roll it
+  (`rolls: false` in content/pickups.json), so no seeded match rolls differently (placed, it is mixed up like any weapon pickup unless kept
+  fixed). Walking over it with the Pistol
+  everyone starts with makes the Pistol pair; while dual wielding is off it is the Pistol's ammunition, as any
+  same-gun pickup. The Pistol still never drops from a body that started with it.
+- **State.** `WeaponState.off` is the second gun: its magazine (and `unchambered`, and `away` when put away) over
+  the weapon's one reserve. The second gun has its own cooldown, semi-automatic latch and reload on the player
+  (`fireCooldown2`, `semiLatch2`, `reload2`, `reloadTicks2`). **One `GunState` for both**: every round of either gun
+  kicks the one aim and grows the one spray, so firing both doubles the climb and the bloom by itself.
+- **Triggers.** `BUTTON_FIRE` is the gun you held, `BUTTON_ALT` the second gun, by the same rules (an empty pull
+  starts that gun's reload; firing interrupts that gun's reload when a round is ready). Both can fire on one tick.
+  The second trigger ends a sprint as the first does (the sprint-exit time on the raise timer). On a zipline one
+  hand holds the trolley: the first gun only. The second gun comes out in the pair's raise (the weapon's × `raise`)
+  when the pair is made or brought back, without holding up the first gun; switching to a pair takes that raise.
+- **No aiming.** With the pair in hand the match drops the aim button: no sights, no aimed walk, no `zm`.
+- **One gun again.** The fire-mode key sends `PlayerInput.fireMode` 1 (one gun; the second is put away with its
+  magazine) or 0 (the pair); it beats a reload, like a swap. With one gun everything is today's weapon, sights
+  included.
+- **Reloads.** R asks for both; one hand reloads at a time (`pairReloadTurn`): the one under way goes on, the other
+  waits at its start, and of two waiting the emptier gun goes first (the gun you held on a tie). Each is the gun's
+  ordinary reload at the pair's pace (`akimboLoader`: every time × `reload`, the stages at the same shares; the
+  Sawed-Off shell by shell). A gun that waits or isn't reloading fires, which gives up its turn. Auto-reload is per
+  gun. A swap, a sprint, a use or a quick melee stops both.
+- **The trade.** Aim cone × `cone` and pellet pattern × `pattern` for every round of a pair; every kick × `kick`
+  (the settling is the gun's own); reloads × `reload`; the raise × `raise`; `move` added to the running speed.
+- **Switch, drop, death.** Switching away keeps the pair. A death drop is one gun with the first gun's magazine and
+  the reserve; a new life has no pair. There is no manual drop in the game.
+- **Controls.** While a pair is in hand the client sends the aim button (right mouse, X, a controller's LT, touch's
+  Aim) as `BUTTON_ALT`, always held (Aim: Toggle does not latch a trigger), a click of it between two ticks still
+  goes out, and touch's Fire pulls both. The trigger latch keeps a pull of either trigger made while the pair comes
+  up. The fire-mode key (U) shows "Pair" or "One gun".
+- **HUD.** Two magazine counts, "L | R" (the second gun left, the gun you held right), over the one reserve; a gun
+  that is reloading shows ↻ in its place; each count turns red when low by itself.
+- **Prediction.** The second gun's shots, cooldown, latch and reloads are predicted with the first's. A pair's
+  rounds fired in inputs the host has not acknowledged come off the host's magazines on each snapshot, so neither
+  count runs back up under latency.
+- **The wire.** docs/MULTIPLAYER_PROTOCOL.md section 24: public `dw`, private `ow`, `rl2`, `rd2`, `shot.off`.
+
+**Time to kill, one gun against a pair** (`packages/shared/test/akimbo.test.ts` prints it: a standing target, aimed
+at the chest, both triggers pulled whenever their gun is ready, recoil fully pulled back; seconds, 12 runs; in
+brackets the share that killed inside 6 s):
+
+| Gun | 5 m one | 5 m pair | 15 m one | 15 m pair | 30 m one | 30 m pair |
+|---|---|---|---|---|---|---|
+| Pistol | 0.73 | 0.37 | 0.75 | 0.35 | 0.97 | 0.34 |
+| Pulse Pistol | 0.67 | 0.33 | 0.67 | 0.29 | 1.00 | 0.49 |
+| Machine Pistol | 0.71 | 0.38 | 4.41 (75 %) | none | none | none |
+| Sawed-Off | 0.00 | 0.00 | 4.19 (92 %) | 5.73 (67 %) | none | none |
+
+Read with care: both triggers on the same tick put the second round one kick above the first, which at 15 and 30 m
+lifts it from the chest to the head, so the semi-automatic pairs look better at range than they are in a hand that
+has to aim; the Machine Pistol pair's wider cone and doubled spray take away what little range it had (and with no
+recoil control it is slower than one gun even at 5 m: 0.97 against 0.69 s). Up close a pair of pistols is two guns'
+worth. Tuning is step 5.
+
+### As built: the pair in first person (step 3, 2026-11-20)
+
+The client only (`game/view.ts`, the numbers and small decisions in `game/pairView.ts`, tested in
+`packages/client/test/pairView.test.ts`); nothing in the match, prediction or the wire changed. With no pair in hand
+the view does exactly what it did (the second gun's nodes are not even made until the first pair).
+
+- **A mirror, not a second rig.** The second gun hangs under a node on the camera whose X is flipped (`pairRoot`):
+  a second copy of the gun's model (the sharper held copy when the first has one), drawn mirrored, so it is the
+  first gun's place, kick and reload seen in a mirror. Its arm is your look's first-person arms a second time under
+  the same mirror: the character's right arm becomes a left one and holds the gun by the ordinary grip code
+  (`CharacterAnimator.gripExternal`, now with `solo`: the shooting hand alone, the support point dropped). No
+  per-gun hand numbers. The first gun's own left hand lets go while the second gun is up. **Markings on the left
+  gun read mirrored** (so does an ejection port: it faces left, which is where its cases go).
+- **Where they sit.** `PAIR_POSE`: each gun a little wider and higher than the one gun's hip place
+  (`view.viewOffset`), the left the mirror of the right, so the crosshair and the middle of the screen stay clear and
+  the hands on the grips stay above the HUD's corner panels.
+- **Each gun by itself.** Its own kick (`kickAmount2`), its own muzzle flash (a second `MuzzleFlashRig`), its own
+  spent case (thrown outward: left from the left gun), its own muzzle for tracers and beams
+  (`view.localMuzzle(off)`: the session passes `shot.off`; a Pulse Pistol pair's steady beams under Reduce flashing
+  are one per gun). The camera's recoil is the one aim's, as in the match.
+- **Reloads.** One hand: the gun whose turn it is (`local.pairReloading()`) dips out of view, tipped and rolled
+  outward, and comes back (`pairReloadDip`, in and out over ten ticks: the reload itself is the match's). The
+  other gun stays up and fires. No magazine hand.
+- **Raise and lower.** The second gun comes up from below over the pair's raise (the weapon's raise × the trade's
+  `raise`, `stepPairUp`) once its model is in, while the first slides out to the pair's place; a switch to a pair
+  brings both up with the weapon's own raise. The fire-mode key (one gun) puts it away in 0.18 s and both hands
+  come back onto the first gun; switching to another weapon, a throwable in hand, a seat, death: gone with the gun.
+- **Walk, sprint, strikes.** The walk's sideways sway moves both guns the same way on screen (the body's), the
+  lift comes half a step apart (the hands in turn); a punch or a kick dips both, each to its own side. There is no
+  separate sprint or landing pose for one gun today, so none for a pair.
+- **Sound.** No new files: the gun's fire sound and the reload cues, panned by a stereo panner
+  (`PlayOptions.pan`, `gunPan`): the second gun 0.35 left, the first 0.35 right while a pair is in hand; one gun
+  stays in the middle.
+- **Reduce flashing** (docs/LOOK.md): with the setting on a pair shares one flash (`PairFlashGate`): a round's
+  flash is drawn only when no flash of either gun was drawn within the gun's own firing interval, so two guns are
+  never brighter than one (never two flashes at once, each at `SAFE_MUZZLE`) and never flicker faster than one
+  gun's rounds come; both triggers on one tick take turns. The round whose flash is left out still kicks, sounds
+  and throws its case. Off, every round of both guns flashes. Its moment in the flicker check: `pair` (e2e
+  `flashing`).
+- **Full body first person.** Your own character still holds the first gun (its left arm hangs at its side, as with
+  a one-handed weapon); the left gun's arm is the mirrored one from the arms-only view.
+- **Third person and everyone else:** step 4, below.
+
+### As built: the pair in third person (step 4, 2026-11-20)
+
+The client only (`game/characterAnimator.ts` `holdPair`, `pairPose`, `placePair`; `game/view.ts` `setAvatarPair`,
+`remoteFlash`; the numbers in `game/pairView.ts`, tested in `pairView.test.ts`); the wire is step 2's (`dw`,
+`shot.off`).
+
+- **Who.** A character whose snapshot says `dw` (another player, or a bot a test pairs), and your own character in
+  third person while a pair is in hand (from prediction), holding the first gun already; a capsule stand-in or a
+  creature draws one gun. An older host sends no `dw`: one gun, as before.
+- **Two real guns, not a mirror.** The second gun is a second copy of the same model in the left hand (in a crowd a
+  GPU instance like the first), not mirrored as first person's is: a pair of guns in someone's hands reads as two of
+  the same gun, so both throw their cases to the right.
+- **The hold.** Each gun in one hand out in front at the aim, at a little under arm's length (`PAIR_HOLD_3P`, shares
+  of the arm's reach from each shoulder: 0.86 ahead, 0.2 down, 0.06 in), level with the aim and turned with it
+  (pitch and the third-person aim's turn). Both arms are solved onto their grips and the hands closed on them by
+  first person's one-gun-a-hand hold (`gripOne`: the hand turned onto the grip, a pistol's knuckles down its raked
+  grip, the fingers round it, the thumb along the frame), the left hand worked out in a mirror. Same for every
+  family: the Machine Pistol and the Sawed-Off are held by their pistol grip and wrist, stocks free in front.
+- **Up, down, reload.** The second gun comes up over 0.3 s once its model is in (others' raise is theirs: the snapshot
+  says only that the pair is out) and goes down as fast as first person's when the pair ends, then is gone; a switch
+  takes it at once with the first. Your own reload in third person dips the gun whose turn it is (drawn back, lower,
+  tipped up and rolled out: `pairHold3p`); others' reloads aren't sent, so theirs aren't drawn (as for one gun).
+- **While an action has the hands** (a punch, a throw, a flinch) each gun rides in its hand, as one gun does.
+- **Far off.** The same hold at every distance (the near and the low-detail meshes share the skeleton); the coarse
+  animation detail's cached arms are not used for a pair (a pair's grip is worked out each evaluation), and both guns
+  are drawn between evaluations with the skin (`blendGun`).
+- **Flashes, tracers, cases.** Each gun has its own muzzle (`muzzleOf(slot, off)`): a round's tracer, a beam and its
+  flash leave the gun that fired it (`shot.off`); a Pulse Pistol pair's steady beams under Reduce flashing are one
+  per gun. Your own cases in third person leave the drawn gun that fired (before, they left the hidden first-person
+  gun, near the camera). Others' guns throw no cases, as with one gun.
+- **Reduce flashing** (docs/LOOK.md): one shared flash per character (`PairFlashGate`), as your own first-person
+  pair: never two at once, never more often than one gun's rounds. Others' rounds come a snapshot at a time, so
+  both guns' rounds in one message are `together` (`bothGunsFired`) and the flash takes turns between the hands.
+  Your own pair asks the gate once a round for first and third person alike. Its moment: `pairtp` (e2e `flashing`).
+- **Over the network.** e2e `hostgame` gives the host a pair of machine pistols 3 m in front of the friend (who
+  plays over the host's compressed stream) and holds both triggers: the friend sees the second gun up, a flash at
+  each gun's own muzzle, the two muzzles apart with the first gun on the host's right, and the second gun gone when
+  it is put away.
+- **Not done.** Others' reload, raise timing and putting away are not on the wire (step 2 sent only `dw`): their
+  reload is not drawn (as for one gun: no one's reload is sent); no third-person sprint pose for a pair (none for one
+  gun either).
 
 ## Underbarrel Attachments
 
@@ -1789,7 +2373,8 @@ weapons (Rocket Launcher, Guided Rocket, Swarm Launcher, Blast Rockets, Mounted 
 hit on a tank's side is 400 of its 1200 (3 kill it, 4 at an angle; 6 before), its armour (blasts 1.25) unchanged. A
 heavy launcher is the tank's counter (§32: power weapons balanced by placement, ammunition and their counters): bots
 without one fetch one when a tank is about, draw one they carry and aim it at the hull. The cannon refills only from
-the general Ammo Box (seat `ammo.pickups`), and the driver keeps firing it while its seat is empty (owner kept it).
+the general Ammo Box (seat `ammo.pickups`; since 2026-11-13 a solid crate, so the tank refills pulled up beside it, a
+use of its ten: sim/resupply.ts), and the driver keeps firing it while its seat is empty (owner kept it).
 
 ---
 

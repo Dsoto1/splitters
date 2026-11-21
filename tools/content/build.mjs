@@ -20,9 +20,10 @@ import { PNG } from 'pngjs';
 import { objToDocument } from './obj.mjs';
 import { CLIP_SETS_LOCK, buildSpec, isQueued, looksProblems, readClipSets, readManifests } from './character-manifests.mjs';
 import { checkFxMap } from './vfx-map.mjs';
-import { lockProblems } from './lockfile.mjs';
+import { lockProblems, readLock } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { loadSurfaces } from './surfaces.mjs';
+import { ownerAudioEntries } from './owner-audio.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -275,6 +276,55 @@ for (const f of existsSync(SOUND_DIR) ? readdirSync(SOUND_DIR) : []) {
 }
 console.log(`${check ? 'checked' : 'built  '} ${soundFiles.size} sound files`);
 
+// ---------------------------------------------------------------- the owner's music and announcer
+// Encoded by tools/content/owner-audio.mjs from the owner's own files (kept outside the repo); its lock records
+// each file, and this holds the shipped files to it. They ship only inside the game (owner, 2026-11-17).
+{
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'content/owner-audio.json'), 'utf8'));
+  const lockPath = join(ROOT, 'content/owner-audio.lock.json');
+  const lock = existsSync(lockPath) ? readLock(lockPath) : { files: [] };
+  const entries = ownerAudioEntries(manifest);
+  const b = manifest.budgets;
+  let musicBytes = 0;
+  for (const e of entries) {
+    const f = lock.files.find((x) => x.id === e.id && x.file === e.file);
+    if (!f) {
+      problems.push(`${e.file}: not built (run node tools/content/owner-audio.mjs <the owner's files> with ONLY=${e.id})`);
+      continue;
+    }
+    const path = join(ROOT, 'packages/client/public', f.file);
+    if (!existsSync(path)) {
+      problems.push(`${f.file}: missing (run node tools/content/owner-audio.mjs <the owner's files>)`);
+      continue;
+    }
+    const data = readFileSync(path);
+    if (createHash('sha256').update(data).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${f.file}: differs from content/owner-audio.lock.json`);
+    if (e.kind === 'music') {
+      musicBytes += data.byteLength;
+      if (data.byteLength > b.musicTrackBytes) problems.push(`${f.file}: ${data.byteLength} bytes exceeds budget ${b.musicTrackBytes}`);
+    } else if (data.byteLength > b.voiceBytes) problems.push(`${f.file}: ${data.byteLength} bytes exceeds budget ${b.voiceBytes}`);
+    const enc = manifest.encode[e.kind];
+    ledger.assets.push({
+      file: f.file,
+      sha256: f.sha256,
+      bytes: data.byteLength,
+      source: `owner-audio/${f.source}`,
+      title: manifest.origin.title,
+      creator: manifest.origin.creator,
+      url: manifest.origin.url,
+      license: manifest.origin.license,
+      modifications: ['silence trimmed at both ends', `loudness evened out to ${enc.lufs} LUFS`, `encoded to Ogg Opus, ${enc.kbps} kbps ${enc.channels === 1 ? 'mono' : 'stereo'}`],
+    });
+  }
+  if (musicBytes > b.musicTotalBytes) problems.push(`music: ${musicBytes} bytes in all exceeds budget ${b.musicTotalBytes}`);
+  for (const f of lock.files) if (!entries.some((e) => e.id === f.id && e.file === f.file)) problems.push(`${f.file}: in content/owner-audio.lock.json but not content/owner-audio.json`);
+  for (const dir of ['music', 'voice']) {
+    const d = join(ROOT, 'packages/client/public', dir);
+    for (const f of existsSync(d) ? readdirSync(d) : []) if (!entries.some((e) => e.file === `${dir}/${f}`)) problems.push(`${dir}/${f}: not in content/owner-audio.json`);
+  }
+  console.log(`${check ? 'checked' : 'built  '} ${entries.length} owner audio files (music ${(musicBytes / 1e6).toFixed(2)} MB)`);
+}
+
 // ---------------------------------------------------------------- characters
 // Characters are prepared from the full pack downloads by
 // tools/content/prepare-characters.mjs (too large to keep in assets-src); its
@@ -319,6 +369,16 @@ try {
     const pack = buildSpec(m).pack;
     for (const f of meshyLock.files) if ((f.id === m.id || f.id === `${m.id}_fparms` || f.id === `${m.id}_clips`) && f.source !== pack) problems.push(`${f.file}: content/meshy.lock.json records pack ${f.source}, its manifest's licence is ${pack}'s (run node tools/content/prepare-meshy-characters.mjs <downloads, or any empty dir>)`);
   }
+  // The grip fit (tools/content/grip-fit.mjs; docs/CHARACTERS.md, "Grips auto-fit"): every player character fitted; a fit
+  // measured on an older build of its model is noted (its offsets still apply until the fit is run again).
+  const fits = existsSync(join(ROOT, 'content/grip-fit.json')) ? JSON.parse(readFileSync(join(ROOT, 'content/grip-fit.json'), 'utf8')).characters : {};
+  const stale = [];
+  for (const m of characters.filter((x) => /player/.test(x.use ?? ''))) {
+    const fit = fits[m.id];
+    if (!fit) problems.push(`content/characters/${m.id}.json: no grip fit (run ONLY=${m.id} WRITE=1 STRIP=1 node tools/content/grip-fit.mjs <preview url> <work dir>)`);
+    else if (fit.hash !== meshyLock.files.find((f) => f.id === m.id)?.sha256) stale.push(m.id);
+  }
+  if (stale.length) console.log(`grip fit measured on an older model (run tools/content/grip-fit.mjs with ONLY=${stale.join(',')}): ${stale.length}`);
   const sets = readClipSets();
   for (const c of sets) if (!clipSetLock.files.some((f) => f.id === `${c.id}_clips`)) problems.push(`content/clip-sets/${c.id}.json: not built (run node tools/content/clip-set.mjs --build <downloads> ${c.id})`);
   for (const f of clipSetLock.files) if (!sets.some((c) => f.id === `${c.id}_clips`)) problems.push(`${f.file}: no definition in content/clip-sets`);
@@ -355,7 +415,7 @@ for (const f of charEntries) {
     creator: [...new Set(packs.map((p) => p.creator))].join(', '),
     url: packs.map((p) => p.url).join(' '),
     license: [...new Set(packs.map((p) => p.license))].join(', '),
-    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
+    modifications: [...(CHAR_MODS[f.role] ?? []).map((m) => (f.landmarks === 'found' ? m.replace('joints placed by hand', "joints found from the mesh's silhouette (tools/content/landmarks.mjs)") : m)).map((m) => (f.surface === 'rebake' ? REBAKED_MODS[m] ?? m : m)), ...(f.lodTriangles ? ['low-detail copy of each mesh added'] : []), ...(f.hands ? ['hands measured and the fingers weighted to the rig\'s finger joints (tools/content/hands.mjs)'] : []), ...(f.graft ? [`new hand geometry: the hands replaced by the rig's own (Quaternius Universal Base Characters, CC0, the athlete body part), fitted to them (tools/content/handgraft.mjs)`] : []), ...(f.rig === 'owner' ? ['the models rigged and animated by the owner on their Meshy account; the clips are that work'] : [])],
   });
 }
 const CHAR_DIR = join(ROOT, 'packages/client/public/characters');
@@ -457,7 +517,7 @@ function checkLocked(lockPath, dir, packFor, budgets, modifications, prepare) {
   return lockFile.files.length;
 }
 const textureManifest = JSON.parse(readFileSync(join(ROOT, 'content/textures.json'), 'utf8'));
-const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, ['downscaled to 512 px', 'colour, normal and emission maps only'], 'node tools/content/prepare-textures.mjs');
+const textureCount = checkLocked('content/textures.lock.json', 'textures', () => textureManifest.pack, textureManifest.budgets, (f) => ['downscaled to 512 px', 'colour, normal and emission maps only', ...(f.map === 'color' && textureManifest.adjust?.[f.asset]?.contrast ? [`contrast lowered to ${textureManifest.adjust[f.asset].contrast}`] : [])], 'node tools/content/prepare-textures.mjs');
 // The prop surfaces (tools/content/surfaces.mjs): their mapping files checked, their shared pictures locked.
 try {
   loadSurfaces();
@@ -472,7 +532,7 @@ const propCount = checkLocked(
   'props',
   (f) => propManifest.packs[f.source],
   propManifest.budgets,
-  (f, pack) => (pack.nature ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned, centred, stood on the ground and scaled to metres', 'decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance', "colour map baked into one colour per face (no image shipped but the card's)", 'emissive and metal/roughness/normal maps dropped']  : pack.meshy ? [/\.glb$/i.test(f.src) ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(propById.get(f.file)?.stone ? ['colour map turned to stone'] : []), ...(propById.get(f.file)?.paintOut ? ['markings painted out of the colour map (a logo)'] : []), ...(propById.get(f.file)?.dropHidden ? ['triangles nothing outside can see dropped'] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), 'turned to face +Z, centred, stood on the ground and scaled to metres', ...(propById.get(f.file)?.cut ? ['openings cut through the model (doors)'] : []), `maps re-encoded as JPEGs (${propById.get(f.file)?.textureSize ?? pack.textureSize} px colour)`] : pack.convert ? [/\.fbx(#|$)/i.test(f.src) ? 'converted to glTF (FBX via three.js FBXLoader)' : 'read from the glTF in the download', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten || propById.get(f.file)?.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : pack.colors ? 'untextured materials given flat colours (per material, some pieces banded by height)' : pack.textureSize ? `embedded maps re-encoded as ${pack.textureSize} px JPEGs` : pack.untextured ? "untextured: each material keeps the pack's own colour" : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']).concat(f.surfaces ? [`colours mapped to shared surfaces (${f.surfaces.join(', ')}): roughness, metalness and box-projected detail coordinates (tools/content/surfaces.mjs)`] : []),
+  (f, pack) => (pack.nature ? ['converted to glTF (FBX via three.js FBXLoader)', 'turned, centred, stood on the ground and scaled to metres', 'decimated with meshoptimizer (leaf masses rebuilt on a voxel grid first), with lower levels of detail and, for trees, a camera-facing picture card for the distance', "colour map baked into one colour per face (no image shipped but the card's)", 'emissive and metal/roughness/normal maps dropped']  : pack.meshy ? [/\.glb$/i.test(f.src) ? "read from Meshy's textured GLB download (base colour map only)" : 'converted to glTF (FBX via three.js FBXLoader)', propById.get(f.file)?.meshSurface === 'texture' ? "simplified keeping the download's own texture charts (seam-aware; tools/content/meshy-mesh.mjs)" : 'simplified with the texture seams closed, the colour map painted afresh onto new flat charts from the full download (tools/content/meshy-mesh.mjs)', ...(propById.get(f.file)?.stone ? ['colour map turned to stone'] : []), ...(propById.get(f.file)?.paintOut ? ['markings painted out of the colour map (a logo)'] : []), ...(propById.get(f.file)?.dropHidden ? ['triangles nothing outside can see dropped'] : []), ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []), ...(f.lodTriangles ? ['lower level of detail added'] : []), 'turned to face +Z, centred, stood on the ground and scaled to metres', ...(propById.get(f.file)?.cut ? ['openings cut through the model (doors)'] : []), `maps re-encoded as JPEGs (${propById.get(f.file)?.textureSize ?? pack.textureSize} px colour)`] : pack.convert ? [/\.fbx(#|$)/i.test(f.src) ? 'converted to glTF (FBX via three.js FBXLoader)' : 'read from the glTF in the download', 'turned to face +Z, centred, stood on the ground and scaled to metres', pack.flatten || propById.get(f.file)?.flatten ? 'photo textures replaced by one flat colour per face (no image shipped)' : pack.colors ? 'untextured materials given flat colours (per material, some pieces banded by height)' : pack.textureSize ? `embedded maps re-encoded as ${pack.textureSize} px JPEGs` : pack.untextured ? "untextured: each material keeps the pack's own colour" : 'palette texture embedded'] : pack.download && pack.images ? ['turned to face +Z, centred and stood on the ground', 'textures downscaled and embedded, metal/roughness maps dropped', ...(f.src.includes(' + ') ? ['kit pieces combined'] : [])] : pack.license === 'Owned' ? [`built in code by ${pack.url}`, 'centred, stood on the ground and scaled to metres'] : ['centred, stood on the ground and scaled to metres', 'texture embedded']).concat(f.surfaces ? [`colours mapped to shared surfaces (${f.surfaces.join(', ')}): roughness, metalness and box-projected detail coordinates (tools/content/surfaces.mjs)`] : []),
   'node tools/content/prepare-props.mjs',
 );
 const skyManifest = JSON.parse(readFileSync(join(ROOT, 'content/skies.json'), 'utf8'));
@@ -514,6 +574,7 @@ const gunCount = checkLocked(
         ...(entry?.glow ? [`glowing parts recoloured to ${entry.glow.color}, with an emissive map of them`] : []),
         ...(f.normalMap ? ['normal map baked from the full download onto the cut mesh (its own normal map included; tangents added)'] : []),
         ...(f.lodTriangles ? ['lower level of detail added'] : []),
+        ...(entry?.plate ? ['a flat deck plate added under the floor where the cut left holes in it, coloured like the floor (tools/content/deck-plate.mjs)'] : []),
         ...(f.interiorOf ? [`the cockpit of ${f.interiorOf}: cropped to a box in its frame from the same download, cut far less, with colour and normal maps of its own; placed exactly as the body`] : []),
         /^models\/vehicles\//.test(f.file) ? 'turned so its front faces +Z, centred and scaled' : 'turned so the barrel runs along +Z, centred and scaled',
         // (Entries from before the texture tiers keep their one line.)
@@ -676,7 +737,7 @@ else {
 // The data tables (weapons, vehicles, NPC roles, pickups, weapon sets, materials, surface types, tiles, set pieces) and the measured
 // hit shapes (hitboxes): their content checks, and the generated files and codes lock up to date. prop-openings: no
 // prop's collision fills an opening it doesn't say why it fills (docs/CONTENT_PIPELINE.md, "Prop collision").
-for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'weapon-sets', 'roulette', 'match-play', 'materials', 'surface-types', 'tiles', 'setpieces', 'hitboxes', 'environment', 'kitprops', 'prop-contacts', 'prop-openings']) {
+for (const gen of ['weapons', 'vehicles', 'npcs', 'pickups', 'weapon-sets', 'roulette', 'match-play', 'materials', 'surface-types', 'tiles', 'setpieces', 'hitboxes', 'environment', 'kitprops', 'prop-contacts', 'sight-fit', 'optics', 'prop-openings']) {
   if (!check) break;
   try {
     execFileSync(process.execPath, [join(ROOT, `tools/content/${gen}.mjs`), '--check'], { cwd: ROOT, stdio: 'inherit' });

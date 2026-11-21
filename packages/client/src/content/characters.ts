@@ -11,16 +11,22 @@ import { Animation } from '@babylonjs/core/Animations/animation';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
+import type { GRIP_FITS } from '@tiletrigger/shared/gripFit';
 import { dyeTexture } from './dye.ts';
 import { mergeSkinnedParts, skinGear } from './mergeParts.ts';
 import { BEARD, GEAR_MODEL_BASE, gearModels } from './gearModels.ts';
 import { CharacterAtlas } from './characterAtlas.ts';
 import { asNode } from './models.ts';
+import { dropPointCaches, withoutPointCaches } from './pointCache.ts';
+import { OwnedAssets } from './ownedAssets.ts';
+import { perfOn } from '../game/perfSwitches.ts';
 import type { ClipLoop } from '../game/gait.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes (further through a scope: setCharacterLodZoom). */
@@ -179,6 +185,9 @@ export interface CharacterSpec {
  */
 export const gone = <T>(): Promise<T> => new Promise<T>(() => {});
 
+/** A file's meshes cloned for a body: without Babylon's per-vertex picking points (pointCache.ts; `?perfoff=bodypoints` makes them). */
+const instance = <T>(fn: () => T): T => (perfOn('bodypoints') ? withoutPointCaches(fn) : fn());
+
 export class CharacterLibrary {
   private readonly files = new Map<string, Promise<AssetContainer>>();
   private readonly textures = new Map<string, Texture>();
@@ -206,7 +215,7 @@ export class CharacterLibrary {
     const key = `gear:${name}`;
     let p = this.files.get(key) as Promise<AssetContainer | null> | undefined;
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).catch(() => null);
+      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).then(freeIfSceneGone(this.scene), () => null);
       this.files.set(key, p as Promise<AssetContainer>);
     }
     return p;
@@ -215,7 +224,9 @@ export class CharacterLibrary {
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB);
+      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
+      // The file's own meshes (kept for the match, every body is cloned from them) need no picking points either.
+      if (perfOn('bodypoints')) p = p.then((c) => (dropPointCaches(c.meshes), c));
       this.files.set(file, p);
     }
     return p;
@@ -255,6 +266,8 @@ export class CharacterLibrary {
     /** Which file each mesh came from (0 = the carrier), for pairing low-detail copies. */
     const partOf = new Map<AbstractMesh, number>();
     const owned: { dispose(): void }[] = [];
+    /** The materials and textures this body cloned for itself (its parts' instancing, the atlas): freed with it, nothing shared. */
+    const own = new OwnedAssets(this.scene, perfOn('bodyclones'));
     let joints: Map<string, TransformNode>;
     let clips: Map<Clip, AnimationGroup>;
     let body: CharacterInstance['body'];
@@ -266,7 +279,7 @@ export class CharacterLibrary {
 
     if (spec.npc) {
       // The rig's own mannequin: skeleton and clips come along with the instance.
-      const inst = rig.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
+      const inst = own.track(() => instance(() => rig.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
       for (const n of inst.rootNodes) n.parent = holder;
       joints = jointMap(inst.rootNodes);
       clips = new Map(inst.animationGroups.map((g) => [g.name as Clip, g]));
@@ -280,7 +293,7 @@ export class CharacterLibrary {
         const male = meshes.filter((m) => m.getTotalVertices() > 0);
         const anchor = male[0]!.parent!;
         for (const m of male) m.dispose(true);
-        meshes.splice(0, meshes.length, ...meshes.filter((m) => !male.includes(m)), ...this.attach(female, inst.skeletons[0]!, anchor, true));
+        meshes.splice(0, meshes.length, ...meshes.filter((m) => !male.includes(m)), ...this.attach(female, inst.skeletons[0]!, anchor, own));
       }
       for (const m of meshes) {
         const mat = m.material as PBRMaterial | null;
@@ -311,9 +324,16 @@ export class CharacterLibrary {
       body = 'mannequin';
     } else {
       const look = getLook(spec.look);
+      // A whole-body look's fitted grip and arms' colours (grips auto-fit; loaded with the first character, not the menu).
+      const fit = look.whole ? (await gripFits())[look.id] : undefined;
+      if (this.scene.isDisposed) {
+        holder.dispose();
+        return gone();
+      }
       if (!spec.armsOnly) {
         hold = look.whole?.hold;
-        grip = look.whole?.grip;
+        // The fitted offsets under the manifest's own (hand-set ones the audit kept, curls, rolls).
+        grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
@@ -324,7 +344,7 @@ export class CharacterLibrary {
         return gone();
       }
       // The first part carries the skeleton; every part shares it (all are bound to this body's pose).
-      const carrier = carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true });
+      const carrier = own.track(() => instance(() => carrierC!.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
       hands = handsOf(carrierC!);
       for (const n of carrier.rootNodes) n.parent = holder;
       const skeleton = carrier.skeletons[0]!;
@@ -332,12 +352,12 @@ export class CharacterLibrary {
       const anchor = carrier.rootNodes[0]!;
       meshes.push(...holder.getChildMeshes());
       rest.forEach((part, i) => {
-        const attached = this.attach(part, skeleton, anchor, true);
+        const attached = this.attach(part, skeleton, anchor, own);
         for (const m of attached) partOf.set(m, i + 1);
         meshes.push(...attached);
       });
       // A whole-body character's first-person arms are its own (nothing to dye) or the universal ones, dyed to match it.
-      this.dress(meshes, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? null, cloth: look.whole.cloth ?? null, trim: look.whole.trim ?? null } : look);
+      this.dress(meshes, own, spec.armsOnly && look.whole ? { ...look, skin: look.whole.skin ?? fit?.arms?.skin ?? null, cloth: look.whole.cloth ?? fit?.arms?.cloth ?? null, trim: look.whole.trim ?? fit?.arms?.trim ?? null } : look);
       if (!spec.armsOnly && !look.whole && (look.gear?.length || look.hair.includes(BEARD))) {
         const of = (i: number) => meshes.filter((m) => (partOf.get(m) ?? 0) === i);
         const names = gearModels(look);
@@ -408,9 +428,8 @@ export class CharacterLibrary {
     if (!spec.armsOnly && this.atlas) {
       // Only the shared skin and hair textures and the eyes: outfits (athlete bodies are tinted like skin) are dyed per look.
       const shared = new Set([...this.textures].filter(([id]) => /^(skin|hair)_/.test(id)).map(([, t]) => t));
-      const mat = await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || (!!m.albedoTexture && shared.has(m.albedoTexture as Texture)));
+      await this.atlas.apply(meshes, name, (m) => m.name === 'MI_Eyes' || (!!m.albedoTexture && shared.has(m.albedoTexture as Texture)), own);
       if (this.scene.isDisposed) return gone();
-      if (mat) owned.push(mat);
     }
     // One draw per material instead of one per part (a look is 8–12 skinned parts, most sharing the outfit's or the skin's material).
     if (!spec.armsOnly) meshes.splice(0, meshes.length, ...mergeSkinnedParts(meshes, `${name}_body`));
@@ -424,6 +443,10 @@ export class CharacterLibrary {
       // Eyes sit inside the head: their shadow would land on the inside of the skull.
       if (m.material?.name === 'MI_Eyes') m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
     }
+    // The per-vertex picking points Babylon made for each skinned clone (pointCache.ts): a body is never picked.
+    if (perfOn('bodypoints')) dropPointCaches(holder.getChildMeshes(false));
+    // Our materials left on no mesh (parts merged into one, low-detail copies, the female mannequin's swap) go now.
+    own.keepOnly(new Set(holder.getChildMeshes(false).flatMap((m) => (m.material instanceof MultiMaterial ? [m.material, ...m.material.subMaterials] : [m.material]))));
     return {
       root: holder,
       joints,
@@ -439,13 +462,15 @@ export class CharacterLibrary {
         for (const g of new Set(clips.values())) g.dispose();
         for (const o of owned) o.dispose();
         disposeTree(holder);
+        // The cloned materials and texture wrappers (the pictures stay on the card while anything else uses them).
+        own.dispose();
       },
     };
   }
 
   /** Instance a part's meshes onto an existing skeleton and return them. */
-  private attach(part: AssetContainer, skeleton: Skeleton, anchor: Node, cloneMaterials: boolean): AbstractMesh[] {
-    const inst = part.instantiateModelsToScene((n) => n, cloneMaterials, { doNotInstantiate: true });
+  private attach(part: AssetContainer, skeleton: Skeleton, anchor: Node, own: OwnedAssets): AbstractMesh[] {
+    const inst = own.track(() => instance(() => part.instantiateModelsToScene((n) => n, true, { doNotInstantiate: true })));
     const out: AbstractMesh[] = [];
     for (const root of inst.rootNodes) {
       for (const m of root.getChildMeshes()) {
@@ -460,7 +485,7 @@ export class CharacterLibrary {
   }
 
   /** Shared textures, colourways and skin/hair tints for a look's (cloned) materials. */
-  private dress(meshes: AbstractMesh[], look: CharacterLook): void {
+  private dress(meshes: AbstractMesh[], own: OwnedAssets, look: CharacterLook): void {
     const done = new Set<PBRMaterial>();
     for (const m of meshes) {
       const mat = m.material as PBRMaterial | null;
@@ -468,7 +493,10 @@ export class CharacterLibrary {
       done.add(mat);
       const tex = textureFor(mat.name, look);
       if (tex) {
+        const was = mat.albedoTexture;
         mat.albedoTexture = this.texture(tex);
+        // The clone's own copy of the file's picture, now unused.
+        own.release(was);
         // Dyed outfits: the plain texture shows until the recoloured one is ready.
         const family = tex.split('_')[0]!;
         if ((look.cloth || look.trim) && (family === 'ranger' || family === 'peasant' || family === 'athlete')) {
@@ -564,6 +592,13 @@ function clipLoopsOf(set: AssetContainer): CharacterInstance['clipLoops'] {
     }
   }
   return out;
+}
+
+let fits: Promise<typeof GRIP_FITS> | null = null;
+/** The grip fit's table (shared gripFit.generated.ts), loaded once, on the first character. */
+function gripFits(): Promise<typeof GRIP_FITS> {
+  fits ??= import('@tiletrigger/shared/gripFit').then((m) => m.GRIP_FITS);
+  return fits;
 }
 
 /** The measured hands a character file carries on its hand joints (glTF extras, read as metadata). */

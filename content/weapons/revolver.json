@@ -10,14 +10,15 @@
   "damage": 90,
   "spread": 0.0005,
   "fireIntervalTicks": 40,
-  "range": 300,
+  "range": 110,
+  "falloff": { "start": 25, "end": 65, "min": 0.4, "curve": "smooth" },
   "magazine": 5,
   "reserveMax": 30,
   "pickupAmmo": 10,
   "reloadTicks": 118,
   "raiseTicks": 16,
   "botDesirability": 0.6,
-  "botRange": [3, 40],
+  "botRange": [3, 30],
   "reload": { "type": "shell", "start": 18, "each": 18, "end": 10 },
   "ammo": "light",
   "knockback": 4,
@@ -32,7 +33,8 @@
     "sound": "fire.revolver"
   },
   "notes": {
-    "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills at any range, a body shot takes nine tenths of a life), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
+    "range": "Best within 25 m: full damage, 2 body shots. Down to 40 % (3 shots) by 65 m; reaches 110 m. A head shot kills to about 45 m, a body pair to about 50 m. Standard ballistics: by impact speed, the same distances.",
+    "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills within its range, about 45 m; a body shot takes nine tenths of a life; owner, 2026-11-16: short range like the Hand Cannon, 110 m and a 40 % floor), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
     "model": "The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback."
   }
 }

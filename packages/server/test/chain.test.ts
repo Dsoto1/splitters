@@ -1,7 +1,7 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import { DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PROTOCOL_VERSION, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
 import { startServer, type RunningServer } from '../src/server.ts';
@@ -61,6 +61,9 @@ const connect = (port: number, name: string) => {
   return { ws, waitFor };
 };
 
+/** Waits for a condition the server reaches on its own time (a busy machine runs its ticks and sockets late). */
+const until = (ok: () => unknown, timeout = 20_000) => vi.waitFor(() => expect(ok(), ok.toString()).toBeTruthy(), { timeout, interval: 20 });
+
 describe('scenario chains on a dedicated server', () => {
   it('a "Next map" to a map of our suite moves everyone on (travel, reconnect, score carried); one outside the suite does not', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'tt-suite-'));
@@ -71,8 +74,7 @@ describe('scenario chains on a dedicated server', () => {
     expect((await a.waitFor('welcome')).map.metadata.id).toBe('room_a');
     server.match.slots[0]!.kills = 4;
     expect(await a.waitFor('travel')).toEqual({ t: 'travel', map: 'room b' });
-    await new Promise((r) => setTimeout(r, 100));
-    expect(server.match.map.metadata.id).toBe('room_b');
+    await until(() => server!.match.map.metadata.id === 'room_b');
     // The player reconnects (the game does it by itself) and gets their score back.
     const again = connect(server.port, 'Alice');
     const w = await again.waitFor('welcome');
@@ -116,8 +118,7 @@ describe('between matches on a dedicated server: the vote on the next map', () =
     await new Promise((r) => setTimeout(r, 2000));
     expect(server.match.phase).toBe('intermission');
     expect(await a.waitFor('travel', 25_000)).toEqual({ t: 'travel', map: 'room c' });
-    await new Promise((r) => setTimeout(r, 100));
-    expect(server.match.map.metadata.id).toBe('room_c');
+    await until(() => server!.match.map.metadata.id === 'room_c');
     expect(server.rotation().vote).toBe(true);
     a.ws.close();
   }, 40_000);

@@ -380,7 +380,143 @@ function gothicTiles(): TileDefinition[] {
         iron(trim(-1.5, 3.3, 3.57, 1.5, 3.36, 3.63)),
       ],
     },
+    clockTower(),
   ];
+}
+
+/** Half the width of the Clock Tower's stone core (the stair's inner edge); the stair runs 2.2 m wide round it. */
+export const CLOCK_TOWER_CORE = 1.2;
+/** Steps in each of the Clock Tower's flights, one a side (east, north, west, south, …), each but the last ending on a corner landing. */
+export const CLOCK_TOWER_FLIGHTS = [4, 4, 4, 3, 4, 3, 3, 4, 3, 4, 4, 3, 4, 4, 4] as const;
+
+/**
+ * The Clock Tower's stair (owner, 2026-11-19: the first build's switchback climbed 2.5 m a turn, leaving 2.2 m over
+ * every step and the door: too low to use). It winds round the core on all four sides: a flight along each wall (0.6
+ * or 0.8 m treads, 0.25 m risers, 2.2 m wide: the bots' navmesh keeps 0.8 m clear of walls, so narrower runs lose the
+ * stair in some turns of the tower) and a landing in each corner, so a turn climbs 4.25 m or more and every step, and
+ * the floor inside the door, has 3.7 m or more over it (a room's height). The last flight (west) ends on a landing
+ * along the south wall to the core's east face (the south-east corner below keeps its headroom): the belfry's
+ * gallery, 17.5 m up. Steps are 0.3 m slabs, as `switchback`'s.
+ */
+function clockTowerStair(): Box[] {
+  const H = 3.4;
+  const C = CLOCK_TOWER_CORE;
+  const out: Box[] = [];
+  let k = 0;
+  const slab = (x0: number, z0: number, x1: number, z1: number) => {
+    const top = ++k * 0.25;
+    out.push(b(x0, top - 0.3, z0, x1, top, z1));
+  };
+  CLOCK_TOWER_FLIGHTS.forEach((n, q) => {
+    const run = (2 * C) / n;
+    for (let j = 0; j < n; j++) {
+      const a = -C + j * run;
+      // East: north along x C..H; north: west along z C..H; west: south; south: east.
+      if (q % 4 === 0) slab(C, a, H, a + run);
+      else if (q % 4 === 1) slab(-a - run, C, -a, H);
+      else if (q % 4 === 2) slab(-H, -a - run, -C, -a);
+      else slab(a, -H, a + run, -C);
+    }
+    if (q === CLOCK_TOWER_FLIGHTS.length - 1) slab(-H, -H, C, -C);
+    else if (q % 4 === 0) slab(C, C, H, H);
+    else if (q % 4 === 1) slab(-H, C, -C, H);
+    else if (q % 4 === 2) slab(-H, -H, -C, -C);
+    else slab(C, -H, H, -C);
+  });
+  return out;
+}
+
+/**
+ * Clock Tower (St. John's step 6, docs/map-briefs/st_johns/PLAN_2026-11-12.md: "a climbable square tower with a belfry,
+ * four clock faces, crenellated top"): 1 cell, 6 levels. A door 2.4 m wide in the south wall; a stair winding round a solid
+ * stone core (clockTowerStair: a flight along each wall, a landing in each corner, 4 m or more over every step) up to
+ * the belfry's floor 17.5 m up, the stair's last landing along the south wall (a perch behind the belfry's paired openings, its
+ * sills a metre up, on all four sides). A plain stone stage under the belfry for the clock faces (props: the Clock
+ * Tower set piece hangs four Clock Faces there, centred 15.3 m up), string courses, a roof at 21.8 m with a
+ * crenellated parapet and corner pinnacles to 24 m. Lancet slits light the stair. Walls, trim, stair and floors
+ * take the placement's surfaces (a set piece's stone, trim and paving), so it dresses as the hall it stands by.
+ */
+function clockTower(): TileDefinition {
+  const TOP = 17.5;
+  const SILL = TOP + 1.0;
+  const HEAD = 20.9;
+  const ROOF = 21.5;
+  const steps = clockTowerStair();
+  // Paired arched openings in each belfry wall (with the mullion between them), lancets lighting the stair.
+  const belfry: Opening[] = [
+    [-1.9, -0.45, SILL, HEAD],
+    [0.45, 1.9, SILL, HEAD],
+  ];
+  const lancet = (y: number): Opening => win(0, 0.45, y, y + 1.4);
+  const shaft = (axis: 'x' | 'z', at: number, a0: number, a1: number, open: Opening[]) => wall(axis, at, a0, a1, open, 0, ROOF, 0.5);
+  const out: Box[] = [
+    ...shaft('x', -3.65, -3.9, 3.9, [[-1.2, 1.2, 0, 2.9], lancet(6.0), lancet(11.0), ...belfry]),
+    ...shaft('x', 3.65, -3.9, 3.9, [lancet(7.25), lancet(12.25), ...belfry]),
+    ...shaft('z', -3.65, -3.4, 3.4, [lancet(9.0), ...belfry]),
+    ...shaft('z', 3.65, -3.4, 3.4, [lancet(4.0), lancet(10.5), ...belfry]),
+    // The stair round its core; the core's top is part of the belfry floor.
+    ...steps,
+    b(-CLOCK_TOWER_CORE, 0, -CLOCK_TOWER_CORE, CLOCK_TOWER_CORE, TOP, CLOCK_TOWER_CORE),
+    // The roof over the belfry, and its parapet: a low wall all round with three merlons a side, coped.
+    b(-3.9, ROOF, -3.9, 3.9, ROOF + 0.3, 3.9, 'floor'),
+  ];
+  const R = ROOF + 0.3;
+  for (const [axis, at] of [['x', -3.75], ['x', 3.75], ['z', -3.75], ['z', 3.75]] as const) {
+    const run = (u0: number, u1: number, y0: number, y1: number) => out.push(axis === 'x' ? b(u0, y0, at - 0.15, u1, y1, at + 0.15, 'wall') : b(at - 0.15, y0, u0, at + 0.15, y1, u1, 'wall'));
+    run(-3.9, 3.9, R, R + 0.6);
+    for (const u of [-2.3, 0, 2.3]) run(u - 0.55, u + 0.55, R + 0.6, R + 1.3);
+    const cope = (u0: number, u1: number, y: number) => out.push(axis === 'x' ? trim(u0, y, at - 0.2, u1, y + 0.08, at + 0.2) : trim(at - 0.2, y, u0, at + 0.2, y + 0.08, u1));
+    cope(-3.9, 3.9, R + 0.6);
+    for (const u of [-2.3, 0, 2.3]) cope(u - 0.6, u + 0.6, R + 1.3);
+  }
+  // Corner pinnacles, stepped to a point.
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const [cx, cz] = [sx * 3.62, sz * 3.62];
+      out.push(b(cx - 0.3, R, cz - 0.3, cx + 0.3, R + 1.7, cz + 0.3, 'wall'));
+      out.push(trim(cx - 0.34, R + 1.7, cz - 0.34, cx + 0.34, R + 1.82, cz + 0.34));
+      out.push(trim(cx - 0.18, R + 1.82, cz - 0.18, cx + 0.18, R + 2.12, cz + 0.18));
+      out.push(trim(cx - 0.07, R + 2.12, cz - 0.07, cx + 0.07, 24.0, cz + 0.07));
+    }
+  }
+  // Dressing (no collision): a plinth, string courses under and over the clock stage and at the roof, a hood over
+  // each belfry opening and its head stepped in towards an arch.
+  const band = (y0: number, y1: number, out0: number) => {
+    out.push(trim(-out0, y0, -out0, out0, y1, -3.9), trim(-out0, y0, 3.9, out0, y1, out0));
+    out.push(trim(-out0, y0, -3.9, -3.9, y1, 3.9), trim(3.9, y0, -3.9, out0, y1, 3.9));
+  };
+  // The plinth, left open at the door.
+  out.push(trim(-4.0, 0, -4.0, -1.2, 0.6, -3.9), trim(1.2, 0, -4.0, 4.0, 0.6, -3.9), trim(-4.0, 0, 3.9, 4.0, 0.6, 4.0));
+  out.push(trim(-4.0, 0, -3.9, -3.9, 0.6, 3.9), trim(3.9, 0, -3.9, 4.0, 0.6, 3.9));
+  band(13.6, 13.8, 4.0);
+  band(16.8, 17.0, 4.0);
+  band(ROOF - 0.2, ROOF + 0.1, 4.0);
+  for (const [axis, at, s] of [['x', -3.65, -1], ['x', 3.65, 1], ['z', -3.65, -1], ['z', 3.65, 1]] as const) {
+    for (const [u0, u1] of belfry.map((o) => [o[0], o[1]] as const)) {
+      const piece = (a0: number, a1: number, y0: number, y1: number, t0: number, t1: number) =>
+        out.push(axis === 'x' ? trim(a0, y0, at + t0, a1, y1, at + t1) : trim(at + t0, y0, a0, at + t1, y1, a1));
+      // The head: two steps in from each side, the full thickness of the wall.
+      piece(u0, u0 + 0.22, HEAD - 0.55, HEAD, -0.25, 0.25);
+      piece(u1 - 0.22, u1, HEAD - 0.55, HEAD, -0.25, 0.25);
+      piece(u0, u0 + 0.45, HEAD - 0.25, HEAD, -0.25, 0.25);
+      piece(u1 - 0.45, u1, HEAD - 0.25, HEAD, -0.25, 0.25);
+      // The hood mould outside, and the sill.
+      piece(u0 - 0.12, u1 + 0.12, HEAD, HEAD + 0.12, s > 0 ? 0.25 : -0.35, s > 0 ? 0.35 : -0.25);
+      piece(u0 - 0.06, u1 + 0.06, SILL - 0.1, SILL, s > 0 ? 0.25 : -0.33, s > 0 ? 0.33 : -0.25);
+    }
+  }
+  return {
+    id: 'gothic.clock_tower',
+    category: 'Vertical',
+    displayName: 'Clock Tower',
+    blurb: 'A square stone tower 24 m high: a door south, a stair round a stone core to a belfry 17.5 m up behind paired openings on all four sides (a perch), a stage for clock faces under it, a crenellated top',
+    cells: footprint(1, 1, 6),
+    floors: [0],
+    ports: [{ side: 'S', level: 0 }],
+    open: true,
+    edgeDefault: 'open',
+    solids: out,
+  };
 }
 
 // ---------------------------------------------------------------- 06 Jungle Ruins

@@ -5,7 +5,9 @@
   "order": 17,
   "name": "Santa",
   "look": "core.saintnick",
-  "group": "legends",
+  "group": "soldiers",
+  "branch": "agency",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "Has a list. You are on the other one.",
   "body": "male",
@@ -53,10 +55,7 @@
     "normalSize": 1024,
     "grip": {
       "elbowOut": 0.1,
-      "elbowDown": 0.3,
-      "gripLong": [-0.015, 0.015, 0],
-      "supportLong": [0, 0.02, 0.06],
-      "supportPistol": [-0.02, 0.04, 0]
+      "elbowDown": 0.3
     },
     "hold": {
       "out": 0.12,

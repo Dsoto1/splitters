@@ -6,6 +6,8 @@
   "name": "WWII Infantry",
   "look": "core.wwiisoldier",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Dug in since '44. Nobody told him the war ended, and he is not taking chances.",
   "body": "male",
@@ -24,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.75
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -35,9 +34,6 @@
     "lod": 0.25,
     "feet": true,
     "grip": {
-      "gripLong": [-0.03, 0, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03],
       "curlR": 0.4
     }
   }

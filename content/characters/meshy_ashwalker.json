@@ -5,7 +5,8 @@
   "order": 56,
   "name": "Shaka Mpande",
   "look": "core.ashwalker",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "barbarian",
   "bio": "Paints himself in the ash of the last arena he won.",
   "body": "male",
@@ -27,9 +28,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

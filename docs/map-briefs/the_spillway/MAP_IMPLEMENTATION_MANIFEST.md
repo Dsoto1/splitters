@@ -41,5 +41,12 @@ the rocket launcher on the crest (west and east); large armour on the west abutm
 a shotgun and a rifle on the toe terrace; ammunition down the river.
 
 ## Left for later
-Railings along the crest and legs under the hillside stair and the towers' top decks; gatehouses on the abutments;
-the spillway chute; a second way to the east bench; 16 more spawns for 32 v 32.
+Gatehouses on the abutments (proposed to the owner with pictures, 2026-11-13: a building from the Wide Carriageway set
+piece, or a gate from two Compound Gate tiles; not built); the crest's east end (the ground beside it is 1.4 to 8 m
+below the crest, so the east abutment is not walked onto from the dam: raise the ground or close the end, with the
+gatehouse decision); the spillway chute; a second way to the east bench.
+
+Done since: 16 more spawns (64); 1 m parapets along both edges of the crest; legs under the long stair; and, on
+2026-11-13, the parapet returns at the three openings with rails on the slabs' sides, a wing wall from the north
+parapet into the west hillside, and eight legs under the hillside stair. The towers' top decks sit on the towers
+themselves and the east bench's platform on the hill: neither needs legs.

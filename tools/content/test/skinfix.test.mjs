@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 import { describe, expect, it } from 'vitest';
 import { fitHands, rigHand } from '../hands.mjs';
-import { bindRigid, bodySkin, fingerSkin, fixBodySkin } from '../skinfix.mjs';
+import { bindRigid, bodySkin, fingerSkin, fixBodySkin, moveJoints } from '../skinfix.mjs';
 
 // The real rig: its joints at rest, world space.
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -171,5 +171,90 @@ describe('a look\'s own skin weights (fixes.skin)', () => {
     expect(() => bindRigid({ count: 1, at: () => [0, 0, 0], J: new Uint16Array(4), W: new Float32Array([1, 0, 0, 0]), rigOf, regions: [{ joint: 'thigh_l', box: [0, 0, 0, 1, 1, 1] }] })).toThrow(/no joint for thigh_l/);
     expect(bodySkin({ rigid: [{ joint: 'spine_03', box: [0, 0, 0, 1, 1, 1] }] })).toBeNull();
     expect(fingerSkin({ rigid: [{ joint: 'spine_03', box: [0, 0, 0, 1, 1, 1] }] })).toEqual({});
+  });
+});
+
+describe('fixes.rejoint (moveJoints)', () => {
+  // A level arm along +x: chest at 0, clavicle out to the shoulder at 0.2, elbow at 0.3, wrist at 0.5 (a robe's
+  // dropped shoulder seam, as Meshy rigged The Hollow Pilgrim). Skin every 1 cm along it, held by the joint whose
+  // stretch of the arm it is on: the arm 0-5 cm round its line, the body inside the shoulder down to 0.3 below it.
+  const names = ['spine_03', 'clavicle_l', 'upperarm_l', 'lowerarm_l', 'hand_l'];
+  const parent = [-1, 0, 1, 2, 3];
+  const make = () => {
+    const rest = [[0, 1.4, 0], [0.02, 1.4, 0], [0.2, 1.4, 0], [0.3, 1.4, 0], [0.5, 1.4, 0]];
+    const pts = [];
+    for (let x = 0.03; x < 0.5; x += 0.01) for (const dy of x < 0.2 ? [0, -0.1, -0.3] : [0, -0.05]) pts.push([x, 1.4 + dy, 0]);
+    const J = new Uint8Array(pts.length * 4);
+    const W = new Float32Array(pts.length * 4);
+    pts.forEach((p, v) => {
+      J[v * 4] = p[0] < 0.2 ? 1 : p[0] < 0.3 ? 2 : 3;
+      W[v * 4] = 1;
+    });
+    return { rest, pts, J, W };
+  };
+  it('moves the joint along its bone and hands the skin past it from the parent', () => {
+    const { rest, pts, J, W } = make();
+    const [r] = moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm_l: 0.6 } });
+    expect(r.joint).toBe('upperarm_l');
+    expect(rest[2][0]).toBeCloseTo(0.02 + 0.18 * 0.6, 6);
+    const share = (x, dy) => {
+      const v = pts.findIndex((p) => Math.abs(p[0] - x) < 1e-6 && Math.abs(p[1] - 1.4 - dy) < 1e-6);
+      let s = 0;
+      for (let k = 0; k < 4; k++) if (J[v * 4 + k] === 2) s += W[v * 4 + k];
+      return s;
+    };
+    // On the arm's line: past the new shoulder the upper arm holds it, well inside it the clavicle still does.
+    expect(share(0.17, 0)).toBeGreaterThan(0.99);
+    expect(share(0.06, 0)).toBe(0);
+    // Far below the arm's line (a robe's side under the arm) stays with the body.
+    expect(share(0.17, -0.3)).toBe(0);
+    // Weights still sum to one; the forearm's skin is not touched.
+    for (let v = 0; v < pts.length; v++) expect(W[v * 4] + W[v * 4 + 1] + W[v * 4 + 2] + W[v * 4 + 3]).toBeCloseTo(1, 5);
+    expect(share(0.4, 0)).toBe(0);
+  });
+  it('takes a set limb radius (metres at a 1.8 m body) instead of the measured one', () => {
+    const run = (move) => {
+      const { rest, pts, J, W } = make();
+      const [r] = moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm_l: move } });
+      const v = pts.findIndex((p) => Math.abs(p[0] - 0.17) < 1e-6 && Math.abs(p[1] - 1.3) < 1e-6);
+      let s = 0;
+      for (let k = 0; k < 4; k++) if (J[v * 4 + k] === 2) s += W[v * 4 + k];
+      return { r, s };
+    };
+    // Measured: about the arm's 5 cm, so 10 cm below its line stays with the body.
+    expect(run(0.6).s).toBe(0);
+    // The model is 0.3 tall: 1.2 m at 1.8 m is 0.2 here, so that skin goes to the upper arm.
+    const wide = run({ share: 0.6, radius: 1.2 });
+    expect(wide.r.radius).toBeCloseTo(0.2, 6);
+    expect(wide.s).toBeGreaterThan(0.99);
+  });
+  it('moves a joint out past its place (share over 1) and hands the skin inside it back to the parent', () => {
+    // The rig's shoulder at 0.2, the upper arm's skin from 0.12 out (a vest's back under its straps, held by the arm).
+    const { rest, pts, J, W } = make();
+    pts.forEach((p, v) => {
+      if (p[0] >= 0.12 && p[0] < 0.2) J[v * 4] = 2;
+    });
+    const [r] = moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm_l: 1.3 } });
+    expect(rest[2][0]).toBeCloseTo(0.02 + 0.18 * 1.3, 6);
+    expect(r.moved).toBeGreaterThan(0);
+    const share = (x, dy, j) => {
+      const v = pts.findIndex((p) => Math.abs(p[0] - x) < 1e-6 && Math.abs(p[1] - 1.4 - dy) < 1e-6);
+      let s = 0;
+      for (let k = 0; k < 4; k++) if (J[v * 4 + k] === j) s += W[v * 4 + k];
+      return s;
+    };
+    // Well inside the new place, at any distance from the line, the clavicle holds it again; well past it the arm.
+    expect(share(0.13, 0, 1)).toBeGreaterThan(0.99);
+    expect(share(0.13, -0.3, 1)).toBeGreaterThan(0.99);
+    expect(share(0.29, 0, 2)).toBeGreaterThan(0.99);
+    // Eased across the new place.
+    const mid = share(0.25, 0, 2);
+    expect(mid).toBeGreaterThan(0.2);
+    expect(mid).toBeLessThan(0.8);
+    for (let v = 0; v < pts.length; v++) expect(W[v * 4] + W[v * 4 + 1] + W[v * 4 + 2] + W[v * 4 + 3]).toBeCloseTo(1, 5);
+  });
+  it('moves both sides for a joint named without its side, and refuses a joint the rig lacks', () => {
+    const { rest, pts, J, W } = make();
+    expect(() => moveJoints({ count: pts.length, at: (v) => pts[v], J, W, rest, parent, rigOf: names, moves: { upperarm: 0.6 } })).toThrow(/upperarm_r/);
   });
 });

@@ -1,0 +1,24 @@
+/* MapMaker's live minimap (UI spec Phase 3; minimapPanel.ts): in the expanded dock's Minimap tab and the compact card. */
+.ed-minimap { position: relative; width: 100%; height: 100%; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: #0a0f1c; }
+.ed-minimap canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+.ed-minimap-level { position: absolute; left: 5px; top: 4px; padding: 1px 6px; border-radius: 4px; background: rgba(8, 12, 22, 0.75); font: 600 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); pointer-events: none; }
+.ed-minimap-tools { position: absolute; right: 4px; bottom: 4px; display: flex; gap: 2px; }
+.ed-minimap-tools button { width: 22px; height: 20px; padding: 0; display: grid; place-items: center; font: 700 13px/1 var(--font-display); color: var(--text); background: rgba(8, 12, 22, 0.8); border: 1px solid rgba(142, 162, 192, 0.35); border-radius: 4px; }
+.ed-minimap-tools button:hover { color: var(--cyan); border-color: rgba(0, 209, 255, 0.5); }
+@media (pointer: coarse) { .ed-minimap-tools button { width: 32px; height: 30px; } }
+.ed-minimap-slot[hidden] { display: none; }
+#ed-minimap-mini { height: 132px; }
+/* UI Phase 5: the minimap and Tile View's plan follow the window's height (a 720 px laptop keeps Properties in view; a tall screen gets a bigger map). */
+#ed-minimap-host { height: clamp(170px, 28vh, 340px); margin-top: 2px; }
+#ed-outliner[hidden] { display: none; }
+
+/* The expanded dock's Minimap | Outliner tabs: the fold first (as every panel's), then the tabs. */
+#ed-right .ed-nav-head > button.ed-nav-fold { flex: 0 0 auto; width: 14px; }
+.ed-nav-tabs { flex: 1; display: flex; gap: 2px; }
+.ed-nav-tabs [role='tab'] { flex: 0 0 auto; padding: 2px 8px; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 5px 5px 0 0; cursor: pointer; }
+.ed-nav-tabs [role='tab']:hover { color: var(--text); }
+.ed-nav-tabs [role='tab'][aria-selected='true'] { color: var(--cyan); border-color: rgba(0, 209, 255, 0.4); border-bottom-color: transparent; background: rgba(0, 209, 255, 0.08); }
+.ed-nav-tabs [role='tab']:focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+#ed-outliner-panel[data-tab='minimap'] #ed-ol-count { display: none; }
+/* UI Phase 5: the minimap takes the keyboard (planKeys.ts); its focus ring sits inside the card. */
+#ed-minimap-canvas:focus-visible { outline: 2px solid var(--cyan); outline-offset: -2px; }

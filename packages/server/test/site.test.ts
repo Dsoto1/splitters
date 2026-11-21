@@ -62,7 +62,56 @@ function get(at: { host: string; port: number }, path: string, gzip = false): Pr
   });
 }
 
+/** A raw GET with headers, answering the status and the response headers. */
+function head(at: { host: string; port: number }, path: string, headers: Record<string, string> = {}): Promise<{ status: number; headers: Record<string, string | string[] | undefined>; length: number }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ ...at, path, headers }, (res) => {
+      let length = 0;
+      res.on('data', (c: Buffer) => (length += c.length));
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, headers: res.headers, length }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
 describe('site', () => {
+  it('sends cache headers for a CDN and the browser, and a 304 for a file that has not changed', async () => {
+    const root = tempRoot();
+    const dir = build(root, 'aaa', '<p>build aaa</p>');
+    mkdirSync(join(dir, 'models'));
+    writeFileSync(join(dir, 'models', 'crate.glb'), 'glb-1');
+    point(root, 'aaa');
+    const at = await serve(join(root, 'current'));
+
+    const page = await head(at, '/');
+    expect(page.headers['cache-control']).toBe('no-cache');
+    const asset = await head(at, '/assets/app-aaa.js');
+    expect(asset.headers['cache-control']).toBe('public, max-age=31536000, immutable');
+    expect(asset.headers.vary).toBe('Accept-Encoding');
+    const model = await head(at, '/models/crate.glb');
+    expect(model.headers['cache-control']).toBe('public, max-age=3600');
+    const tag = String(model.headers.etag);
+    expect(tag).toMatch(/^W\/"[\w-]{22}"$/);
+
+    // Revalidation: unchanged → 304 without a body; the gzipped form has the same tag.
+    expect(await head(at, '/models/crate.glb', { 'if-none-match': tag })).toMatchObject({ status: 304, length: 0 });
+    expect(await head(at, '/models/crate.glb', { 'if-none-match': `"other", ${tag.slice(2)}` })).toMatchObject({ status: 304 });
+    const zipped = await head(at, '/', { 'accept-encoding': 'gzip' });
+    expect(zipped.headers.etag).toBe(page.headers.etag);
+    expect(await head(at, '/', { 'accept-encoding': 'gzip', 'if-none-match': String(page.headers.etag) })).toMatchObject({ status: 304, length: 0 });
+
+    // A new build with a changed model: a new tag, so the old one gets the file again.
+    const next = build(root, 'bbb', '<p>build bbb</p>');
+    mkdirSync(join(next, 'models'));
+    writeFileSync(join(next, 'models', 'crate.glb'), 'glb-2');
+    point(root, 'bbb');
+    const changed = await head(at, '/models/crate.glb', { 'if-none-match': tag });
+    expect(changed.status).toBe(200);
+    expect(changed.headers.etag).not.toBe(tag);
+    expect(changed.length).toBe(5);
+  });
+
   it('follows the current-build link when an update switches it, without a hub restart', async () => {
     const root = tempRoot();
     build(root, 'aaa', '<p>build aaa</p>');

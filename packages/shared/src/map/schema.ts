@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
+import { MAP_FORMAT, MAP_FORMAT_VERSION, MAP_MAX_ENTITIES, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
-import { MAX_TERRAIN_VERTS, TERRAIN_MATERIALS } from './terrain.ts';
+import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
 import { PRECIPITATION } from './weather.ts';
@@ -23,7 +23,7 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
  * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`, v37 a placed tile's
- * material `family`: the tunnel kit).
+ * material `family`: the tunnel kit, v39 race mode's dead track settings dropped, v44 a placed set piece's `family`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -155,6 +155,8 @@ export const TileSurfaces = z.object({
   trim: SurfaceStyle.optional(),
   /** The top of a room's roof (absent: as the floor). */
   roof: SurfaceStyle.optional(),
+  /** Bars and barred gates (format v41; absent: the theme's metal, else iron). */
+  metal: SurfaceStyle.optional(),
 });
 
 /** One side of one tile cell, in the tile's own frame: "dx,dy,dz:N". */
@@ -796,6 +798,12 @@ export const PortalEntity = EntityBase.extend({
     .string()
     .regex(/^#[0-9a-f]{6}$/)
     .optional(),
+  /**
+   * How its swirl is drawn: `pack` (absent: the pack's gate effect in the pair's colour, where it has a place) or
+   * `painted` (always the game's own painted spiral, in the pair's colour: a dark hole for a dark colour, such as
+   * Pantry Raid's mouse holes). Looks only; optional, so no format bump (an older client drops it and draws `pack`).
+   */
+  swirl: z.enum(['pack', 'painted']).optional(),
 });
 
 /**
@@ -840,14 +848,24 @@ export const Terrain = z
     rows: z.number().int().min(2).max(MAX_TERRAIN_VERTS),
     baseY: z.number().finite().default(0),
     heights: z.array(z.number().int().min(-5000).max(20000)),
-    materials: z.array(z.number().int().min(0).max(TERRAIN_MATERIALS.length - 1)),
+    /** 0: the base (the Ground theme's); k: painted with grounds[k − 1] (map format v45). */
+    materials: z.array(z.number().int().min(0).max(MAX_GROUNDS)),
+    /** The Ground theme (content/materials.json groundThemes); absent: terrain.ts DEFAULT_GROUND_THEME. */
+    groundTheme: z.string().min(1).max(64).optional(),
+    /** The map's own grounds (ground material ids) that painted cells name. */
+    grounds: z.array(z.string().min(1).max(64)).max(MAX_GROUNDS).optional(),
     boundary: z.boolean().default(true),
     /** Plant cover per cell, 0 (bare) to 4 (lush, with bushes); empty = chosen from each cell's material. */
     foliage: z.array(z.number().int().min(0).max(4)).default([]),
   })
   .refine((t) => t.heights.length === t.cols * t.rows, 'terrain needs cols × rows heights')
   .refine((t) => t.foliage.length === 0 || t.foliage.length === (t.cols - 1) * (t.rows - 1), 'terrain foliage needs a value for every cell')
-  .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell');
+  .refine((t) => t.materials.length === (t.cols - 1) * (t.rows - 1), 'terrain needs a material for every cell')
+  .refine((t) => {
+    const n = t.grounds?.length ?? 0;
+    for (const m of t.materials) if (m > n) return false;
+    return true;
+  }, "a terrain cell names a ground the terrain's grounds list doesn't have");
 
 /**
  * The play area's edge: walls round a rectangle (world X/Z), so creators can
@@ -872,8 +890,9 @@ export const TRACK_SURFACES = ['asphalt', 'dirt'] as const;
  * first and the default until it was retired (2026-11-12): a track may still name `kart`, and its cars are then
  * Hover Bikes (mountAliases.ts); a track that doesn't say gets Hover Bikes.
  */
-export const RACE_VEHICLES = ['hover_bike', 'speeder', 'buggy'] as const;
-const RaceVehicleId = z.enum(['kart', ...RACE_VEHICLES]).default('hover_bike');
+export const RACE_VEHICLES = ['hover_bike', 'speeder', 'troop_buggy'] as const;
+/** Retired ids a track may still name (sim/mounts.ts RETIRED_MOUNTS): `kart`, and `buggy` (the Troop Buggy now). */
+const RaceVehicleId = z.enum(['kart', 'buggy', ...RACE_VEHICLES]).default('hover_bike');
 
 /**
  * A race track as the curve code reads it (track.ts): ordered control points
@@ -887,14 +906,6 @@ export const Track = z.object({
   points: z.array(Vec3Tuple).min(2).max(200),
   width: z.number().min(5).max(30).default(12),
   loop: z.boolean().default(true),
-  /** Laps of a circuit (point to point is always one run). */
-  laps: z.number().int().min(1).max(20).default(3),
-  /** Places on the start grid (two abreast behind the start line). */
-  grid: z.number().int().min(2).max(16).default(8),
-  /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: RaceVehicleId,
-  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
-  combat: z.boolean().default(false),
   surface: z.enum(TRACK_SURFACES).default('asphalt'),
   /** Red-and-white curbs along both edges. */
   curbs: z.boolean().default(true),
@@ -913,7 +924,7 @@ export type TrackSurface = (typeof TRACK_SURFACES)[number];
 export type RaceVehicle = (typeof RACE_VEHICLES)[number];
 
 /** How a path (paths.ts) looks: its surface, and what the ground under it is painted. */
-export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'gravel', 'dirt', 'sand', 'planks'] as const;
+export const PATH_STYLES = ['asphalt', 'concrete', 'cobble', 'flagstone', 'gravel', 'dirt', 'sand', 'planks', 'brick'] as const;
 export type PathStyle = (typeof PATH_STYLES)[number];
 
 /**
@@ -938,16 +949,11 @@ export type PatrolStyle = (typeof PATROL_STYLES)[number];
  */
 export const PATH_CURVES = ['smooth', 'classic'] as const;
 
-/** A race path's settings (absent: these defaults). */
+/**
+ * A track path's settings (absent: these defaults). Race mode's own (laps, start grid, race vehicle, combat) went
+ * with it: format v39 drops them (migrate.ts dropRaceSettingsV39), and the schema strips them from anything else.
+ */
 export const RaceSettings = z.object({
-  /** Laps of a circuit (point to point is always one run). */
-  laps: z.number().int().min(1).max(20).default(3),
-  /** Places on the start grid (two abreast behind the start line). */
-  grid: z.number().int().min(2).max(16).default(8),
-  /** Vehicle everyone races in (Arcade can change it). */
-  vehicle: RaceVehicleId,
-  /** Weapons, vehicle guns and the sideline sentries on (Arcade can change it). */
-  combat: z.boolean().default(false),
   /** Red-and-white curbs along both edges. */
   curbs: z.boolean().default(true),
   /**
@@ -1104,6 +1110,44 @@ export const SetPieceRoleValues = z.object({
 export type SetPieceRoleValues = z.infer<typeof SetPieceRoleValues>;
 export type SetPieceRoleValuesInput = z.input<typeof SetPieceRoleValues>;
 
+/**
+ * A look of the player's own (format v47, painting Phase 5): a named set of role values, saved in MapMaker ("Save as
+ * my look…") from a set piece's look as it shows. It lives in the player's browser library and, once a placement uses
+ * it, in the map's `lookDefs`, so the map plays anywhere. A placement names it in `pack` as it names a shipped role
+ * pack. Roles only, so it fits any set piece (painting plan, question 7a); paint on single parts stays with its
+ * placement. Its id is `my_<name>` (shipped role packs never start with `my_`).
+ */
+export const SetPieceLookId = z.string().regex(/^my_[a-z0-9_]{1,29}$/, 'your own looks are named my_<name> (lower case letters, digits and _, up to 32 characters)');
+export const SetPieceLookDef = z.object({
+  id: SetPieceLookId,
+  displayName: z.string().min(1).max(48),
+  roles: SetPieceRoleValues,
+});
+export type SetPieceLookDef = z.infer<typeof SetPieceLookDef>;
+/** How many looks of its own a map may carry. */
+export const MAX_MAP_LOOK_DEFS = 32;
+
+/**
+ * A set piece's options (format v42): named choices a placement makes in MapMaker's inspector (`overrides.options`),
+ * such as a dorm bay's room doors, wide or slim. A part with `when` is in the piece only while every option it names
+ * has that value (an option a placement leaves unset is its first choice), so a choice swaps parts in and out. Parts
+ * that differ by a choice are added at the end of the list (indices never change: placements hide and paint by index).
+ */
+export const SetPieceOptionName = z.string().regex(/^[a-z][a-zA-Z0-9]{0,31}$/, 'option names are camelCase, up to 32 characters');
+export const SetPieceOptionValue = z.string().regex(/^[a-z0-9_]{1,32}$/, 'option values are 1-32 lower case letters, digits and _');
+export const SetPieceOption = z.object({
+  name: SetPieceOptionName,
+  label: z.string().min(1).max(40),
+  /** The first is the default (what a placement that says nothing gets, and every placement made before the option). */
+  choices: z.array(z.object({ value: SetPieceOptionValue, label: z.string().min(1).max(60), blurb: z.string().max(240).optional() })).min(2).max(8),
+});
+export type SetPieceOption = z.infer<typeof SetPieceOption>;
+/**
+ * Which options a part is in for: `{ "doors": "slim" }` (absent: always). A list names every choice the part is in for
+ * (`{ "walls": ["windows", "door_north"] }`: a banner on a wall that some choices open), map format v49.
+ */
+const PartWhen = z.record(SetPieceOptionName, z.union([SetPieceOptionValue, z.array(SetPieceOptionValue).min(1).max(8)])).optional();
+
 /** A part's value taken from a role: `{ "role": "stone" }`. */
 const MaterialRef = z.object({ role: z.enum(SET_PIECE_MATERIAL_ROLES) });
 const PartSurface = z.union([SurfaceStyle, MaterialRef]);
@@ -1115,7 +1159,7 @@ export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
   y: z.number().int().min(-64).max(64),
   z: z.number().int().min(-16).max(16),
   surfaces: z
-    .object({ floor: PartSurface.optional(), walls: PartSurface.optional(), solids: PartSurface.optional(), underside: PartSurface.optional(), trim: PartSurface.optional(), roof: PartSurface.optional() })
+    .object({ floor: PartSurface.optional(), walls: PartSurface.optional(), solids: PartSurface.optional(), underside: PartSurface.optional(), trim: PartSurface.optional(), roof: PartSurface.optional(), metal: PartSurface.optional() })
     .optional(),
   glass: z.record(EdgeKey, z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })])).optional(),
   options: z
@@ -1127,17 +1171,30 @@ export const SetPieceTilePart = TilePlacement.omit({ id: true }).extend({
       facade: z.union([z.enum(FACADES), z.object({ role: z.literal('facade') })]).optional(),
     })
     .optional(),
+  when: PartWhen,
 });
-/** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder or a light, at a position in the piece's frame. */
+/** Entity parts: a block (its material fixed, from a role, or the theme's), a prop, a door (its style fixed or from a role), a ladder, a light or water, at a position in the piece's frame. */
 export const SetPieceBlockPart = BlockEntity.omit({ id: true }).extend({
   material: z.union([ContentId, MaterialRef]).nullable().default(null),
   glass: z.union([z.enum(GLASS_KINDS), z.object({ role: z.literal('glass') })]).optional(),
+  when: PartWhen,
 });
-export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.union([z.enum(DOOR_STYLES), z.object({ role: z.literal('door') })]).optional() });
-export const SetPiecePart = z.discriminatedUnion('kind', [SetPieceTilePart, SetPieceBlockPart, PropEntity.omit({ id: true }), SetPieceDoorPart, LadderEntity.omit({ id: true }), LightEntity.omit({ id: true })]);
+export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.union([z.enum(DOOR_STYLES), z.object({ role: z.literal('door') })]).optional(), when: PartWhen });
+export const SetPiecePart = z.discriminatedUnion('kind', [
+  SetPieceTilePart,
+  SetPieceBlockPart,
+  PropEntity.omit({ id: true }).extend({ when: PartWhen }),
+  SetPieceDoorPart,
+  LadderEntity.omit({ id: true }).extend({ when: PartWhen }),
+  LightEntity.omit({ id: true }).extend({ when: PartWhen }),
+  // A body of water (St. John's pool, docs/map-briefs/st_johns): only shipped pieces have one. MapMaker's "Make set
+  // piece" leaves water out (editor/setPieceEdit.ts PART_KINDS), so no map's own piece carries it and maps stay as
+  // readable as they were (no format change).
+  WaterEntity.omit({ id: true }).extend({ when: PartWhen }),
+]);
 export type SetPiecePart = z.infer<typeof SetPiecePart>;
 /** The kinds of map piece a set piece is made of. */
-export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light'] as const;
+export const SET_PIECE_PART_KINDS = ['tile', 'block', 'prop', 'door', 'ladder', 'light', 'water'] as const;
 
 /** Where a piece meets what is built round it: a side of one of its cells, on one of its levels, facing out of its footprint. */
 export const SetPiecePort = z.object({
@@ -1182,6 +1239,8 @@ export const SetPieceDefinition = z.object({
   ports: z.array(SetPiecePort).max(256).default([]),
   parts: z.array(SetPiecePart).min(1).max(1024),
   markers: z.array(SetPieceMarker).max(64).optional(),
+  /** Choices a placement makes (format v42; parts name them in `when`). */
+  options: z.array(SetPieceOption).max(8).optional(),
 });
 export type SetPieceDefinition = z.infer<typeof SetPieceDefinition>;
 export type SetPieceDefinitionInput = z.input<typeof SetPieceDefinition>;
@@ -1204,8 +1263,27 @@ export const SetPiecePlacement = z.object({
   mirror: z.boolean().default(false),
   /** The role pack that themes it (content/setpieces/roles.json); absent: the one for the map's theme, if any. */
   pack: z.string().regex(/^[a-z0-9_]{2,32}$/).optional(),
-  /** Small per-placement tweaks: a role's value, or parts left out (by index). */
-  overrides: z.object({ roles: SetPieceRoleValues.optional(), hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional() }).optional(),
+  /**
+   * (Format v44) the material family its tunnel parts are drawn in (the tunnel kit: `brick`, `mine`…), as a placed
+   * tile's `family`: the same shapes and collision, the family's materials and trim. Absent: each part's own. Parts
+   * that don't come in it are left as they are.
+   */
+  family: z.string().regex(/^[a-z][a-z0-9_]*$/).max(32).optional(),
+  /**
+   * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
+   * index: a tile part's surfaces (`{ "walls": … }`) or a block part's material (`{ "material": …, "tint": … }`). Paint
+   * wins over the role and the look (MapMaker's Structure paint, "This surface only"). And (format v42) the piece's
+   * options it sets (`{ "doors": "slim" }`).
+   */
+  overrides: z
+    .object({
+      roles: SetPieceRoleValues.optional(),
+      hide: z.array(z.number().int().min(0).max(1023)).max(1024).optional(),
+      paint: z.record(z.string().regex(/^(0|[1-9]\d{0,3})$/, 'part indices: "0" to "1023"'), z.union([SurfaceStyle, TileSurfaces])).optional(),
+      /** (Format v42) the piece's options this placement sets (its `options`; one left out is its first choice). */
+      options: z.record(SetPieceOptionName, SetPieceOptionValue).optional(),
+    })
+    .optional(),
 });
 export type SetPiecePlacement = z.infer<typeof SetPiecePlacement>;
 
@@ -1269,7 +1347,7 @@ export const MapDocument = z.object({
   formatVersion: z.literal(MAP_FORMAT_VERSION),
   metadata: MapMetadata,
   classicStructure: ClassicStructure,
-  entities: z.array(MapEntity).max(4096),
+  entities: z.array(MapEntity).max(MAP_MAX_ENTITIES),
   /** NPC factions. Empty means the default enemy faction ("Syndicate"). */
   factions: z.array(Faction).max(16).default([]),
   /** Scenario logic: variables, timers, objectives and WHEN -> IF -> DO rules. */
@@ -1315,6 +1393,8 @@ export const MapDocument = z.object({
   setPieces: z.array(SetPiecePlacement).max(1024).optional(),
   /** Set pieces this map defines itself (v27, `local.*`: saved from a selection in MapMaker), so it plays anywhere. Absent: none. */
   setPieceDefs: z.array(SetPieceDefinition).max(64).optional(),
+  /** Looks of the player's own its set pieces use (v47, `my_*`: saved in MapMaker), so it plays anywhere. Absent: none. */
+  lookDefs: z.array(SetPieceLookDef).max(MAX_MAP_LOOK_DEFS).optional(),
   /** MapMaker's groups (v31): things kept together while editing. Absent: none. Play ignores them. */
   groups: z.array(MapGroup).max(256).optional(),
   /** Notes for the map's makers, pinned on the map (v31): shown in MapMaker, never in play. Absent: none. */

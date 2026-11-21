@@ -3,10 +3,10 @@ import { MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { teamCount } from './hostRules.ts';
 import { isCoopMode, isTwoTeamMode } from './matchSetup.ts';
 import { MAX_TEAMS } from './npc.ts';
-import { BOT_CAST_CHOICES } from '../content/botThemes.ts';
+import { BOT_CAST_CHOICES, CAST_ID_ALIASES, THEME_BOT_TYPES, validBotCast } from '../content/botThemes.ts';
 import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
-import { GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
+import { AKIMBO_READY, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**
  * A dedicated server's match rules (the Host Service's RULES setting, its
@@ -39,7 +39,7 @@ export type RuleApply = 'live' | 'restart' | 'next';
 
 export type RuleType =
   | { kind: 'int'; min: number; max: number; step?: number; unit?: string; zero?: string }
-  | { kind: 'choice'; values: readonly (readonly [string, string])[] }
+  | { kind: 'choice'; values: readonly (readonly [string, string])[]; aliases?: Readonly<Record<string, string>> }
   | { kind: 'bool'; on: string; off: string }
   | { kind: 'list'; max: number; pattern?: RegExp };
 
@@ -70,8 +70,8 @@ export const castRuleValue = (cast: readonly string[] | undefined): string => (c
 /** A rule's word back as a bot-characters setting (undefined: the map's own). */
 export const castFromRuleValue = (v: string | undefined): string[] | undefined => (v === undefined || v === 'map' ? undefined : v === 'all' ? [] : [v]);
 
-/** Every rule, in the order the console and the launcher list them. */
-export const SERVER_RULES: readonly RuleSpec[] = [
+/** Every rule there is, in the order the console and the launcher list them (SERVER_RULES: the ones on offer). */
+const ALL_RULES: readonly RuleSpec[] = [
   {
     key: 'score', label: 'Score limit', help: 'The score that wins (0: none). Per mode: kills in Deathmatch and Team Deathmatch, captures in CTF, rounds in Elimination…', type: { kind: 'int', min: 0, max: SCORE_LIMIT_MAX, zero: 'none' }, apply: 'restart', perMode: true,
     modes: (m) => notCoop(m), read: (r) => r.scoreLimit, write: (r, v) => (r.scoreLimit = v as number),
@@ -97,6 +97,10 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     modes: (m) => m !== 'core.discs', read: (r) => r.dropWeapons !== false, write: (r, v) => (v ? delete r.dropWeapons : (r.dropWeapons = false)),
   },
   {
+    key: 'akimbo', label: 'Dual wielding', help: 'Pick up a second of the same small gun to hold one in each hand.', type: onOff, apply: 'next',
+    modes: (m) => m !== 'core.discs', read: (r) => r.akimbo !== false, write: (r, v) => (v ? delete r.akimbo : (r.akimbo = false)),
+  },
+  {
     key: 'set', label: 'Weapon set', help: "What everyone spawns with and what weapon and grenade pickups hold: map (the map's own default; most maps: standard), standard (knife, pistol, the map's pickups as placed), military, scifi, medieval, chaos or mixed (a random gun each life).", type: choice(['map', 'Map default'], ...WEAPON_SET_IDS.map((id): [string, string] => [id, WEAPON_SET_DEFS[id].name])), apply: 'live',
     modes: (m) => m !== 'core.discs', read: (r) => (isWeaponSetId(r.weaponSet) ? r.weaponSet : 'map'), write: (r, v) => (v === 'map' || !isWeaponSetId(v) ? delete r.weaponSet : (r.weaponSet = v)),
   },
@@ -105,8 +109,8 @@ export const SERVER_RULES: readonly RuleSpec[] = [
     read: (r) => r.botStyle ?? 'mixed', write: (r, v) => (v === 'mixed' ? delete r.botStyle : (r.botStyle = v as 'arena' | 'tactical')),
   },
   {
-    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, a group (soldiers, legends, folk, horror, animals, creatures) or a name theme (pirate, monkey, knight…).", type: choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), apply: 'live',
-    read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = castFromRuleValue(v as string) ?? [])),
+    key: 'cast', label: 'Bot characters', help: "Which characters random bots play, and so their names (a soldier is \"Sgt. Dunmore\"): map (the map's own; most maps: all), all, soldiers (Soldiers & Spies), army (soldiers), agency (spies), folk, space, legends, animals, machines or horror. An old name set (pirate, monkey, knight…) reads as its type.", type: { ...choice(['map', 'Map default'], ['all', 'All'], ...BOT_CAST_CHOICES.map((c): [string, string] => [c.id, c.label])), aliases: { ...CAST_ID_ALIASES, ...THEME_BOT_TYPES } } as RuleType, apply: 'live',
+    read: (r) => castRuleValue(r.botCast), write: (r, v) => (v === 'map' ? delete r.botCast : (r.botCast = validBotCast(castFromRuleValue(v as string) ?? []))),
   },
   {
     key: 'teams', label: 'Teams', help: 'How many teams (2 to 8) in Team Deathmatch, King of the Hill and Elimination; CTF, Fort Wars, Bomb and Hostage are always two.', type: { kind: 'int', min: 2, max: MAX_TEAMS }, apply: 'next',
@@ -216,6 +220,12 @@ export const SERVER_RULES: readonly RuleSpec[] = [
   },
 ];
 
+/** Rules that aren't on offer yet: dual wielding until play reads it (rules.ts AKIMBO_READY). */
+const NOT_READY: ReadonlySet<string> = new Set(AKIMBO_READY ? [] : ['akimbo']);
+
+/** Every rule on offer, in the order the console and the launcher list them. */
+export const SERVER_RULES: readonly RuleSpec[] = ALL_RULES.filter((s) => !NOT_READY.has(s.key));
+
 // Built on first use, so a bundle that never reads the rules can drop this module (the menu's first JS).
 let byKey: Map<string, RuleSpec> | undefined;
 export const ruleSpec = (key: string): RuleSpec | undefined => (byKey ??= new Map(SERVER_RULES.map((s) => [s.key, s]))).get(key.toLowerCase());
@@ -247,7 +257,8 @@ export function parseRuleValue(spec: RuleSpec, raw: unknown): { ok: true; value:
     return { ok: false, error: `${spec.key} is on or off` };
   }
   if (t.kind === 'choice') {
-    const w = String(text).replace(/\s+/g, '');
+    const typed = String(text).replace(/\s+/g, '');
+    const w = t.aliases?.[typed] ?? typed;
     const hit = t.values.find(([v, label]) => v === w || label.toLowerCase().replace(/\s+/g, '') === w);
     if (!hit) return { ok: false, error: `${spec.key} is one of ${t.values.map(([v]) => v).join(', ')}` };
     return { ok: true, value: hit[0] };
@@ -380,7 +391,7 @@ export function applyServerRules(rules: MatchRules, sr: ServerRules, map: MapDoc
 
 /** The MatchRules fields each "next match" rule writes, put back to the base's. */
 const FIELDS: Record<string, (keyof MatchRules)[]> = {
-  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
+  assign: ['teamAssign'], teamnames: ['teamNames'], teamcolors: ['teamColors'], leaders: ['leaders'], fireteams: ['fireteams'], squadspawn: ['squadSpawn'], streaks: ['killstreaks'], akimbo: ['akimbo'], sizes: ['bodySizes'], stats: ['characterStats'], randomchars: ['randomCharacters'], gravity: ['gravity'], fall: ['fallDamage'],
   lethality: ['lethality'], ballistics: ['ballistics'], emotes: ['emotes'], weapons: ['weapons'], classes: ['classes', 'classLimit'], vehicles: ['vehicleDamage'], flagreturn: ['flagReturnSeconds'], hill: ['hillSeconds'],
   fortbuild: ['fortBuildSeconds'], fortcombat: ['fortCombatSeconds'], fortcycles: ['fortCycles'], fortbudget: ['fortBudget'],
 };

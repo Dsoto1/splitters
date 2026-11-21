@@ -1,5 +1,6 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
-import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { AimLatch, combatPrefs } from './combatPrefs.ts';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -44,9 +45,11 @@ export function saveMousePrefs(p: MousePrefs): void {
  */
 const WHEEL_KEY_PREF = 'tiletrigger.wheelKey';
 export const DEFAULT_WHEEL_KEY = 'KeyQ';
+/** Switches the held weapon's fire mode (spec §36). B is taken (quick messages, the order wheel), so U. */
+export const FIRE_MODE_KEY = 'KeyU';
 /** Keys the game already uses for something else (a wheel there would fight them). Q isn't here: a tap keeps its quick switch. */
 export const RESERVED_KEYS: ReadonlySet<string> = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma',
+  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma', 'KeyU',
   'Tab', 'Escape', 'Enter', 'F3', 'F5', 'F11', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'MetaLeft', 'MetaRight',
   ...Array.from({ length: 10 }, (_, i) => `Digit${i}`),
 ]);
@@ -99,6 +102,8 @@ export class InputState {
   /** The player's own look settings (Options / pause menu). */
   mouse: MousePrefs = loadMousePrefs();
   private keys = new Set<string>();
+  /** Aim down the sights: held or toggled (Options → Accessibility, combatPrefs.ts). */
+  private readonly aimLatch = new AimLatch();
   private fireDown = false;
   private keyFire = false;
   private zoomDown = false;
@@ -136,12 +141,21 @@ export class InputState {
   proneOn = false;
   /** Set by the session: right mouse fires the held weapon's second trigger instead of aiming (melee heavy swings). */
   altTrigger = false;
+  /**
+   * Set by the session while you hold a pair (dual wielding; with `altTrigger`): the aim button is the second gun's
+   * trigger, a press and release of it between two ticks still fires, and on touch the Fire button pulls both.
+   */
+  pairTrigger = false;
+  /** The aim button went down since the last tick sampled (pairTrigger). */
+  private altTap = false;
   /** Middle mouse (or V): the held weapon's second trigger. */
   private altDown = false;
   /** A side mouse button (or Y): quick melee. */
   private meleeDown = false;
   /** Weapon slot requested with number keys (0 = none pending). */
   private slotRequest = 0;
+  /** The fire mode key was pressed (sim/fireModes.ts). */
+  private fireModeQueued = false;
   /** Mouse wheel steps since last read (+ = next weapon). */
   private wheelSteps = 0;
   readonly onToggle = new Map<string, () => void>();
@@ -157,7 +171,7 @@ export class InputState {
   /** A spectator control was used (a pick, the camera toggle, Y): the session sends it as activity. */
   private specUsed = false;
   /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
-  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, prev: [] as boolean[] };
+  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, prev: [] as boolean[] };
   /** A controller has been used since the page loaded (its sticks and triggers count). */
   padActive = false;
   /** Weapon wheel: its key, whether it's open, and where it points (x right, y down; length up to 1). */
@@ -202,6 +216,7 @@ export class InputState {
       () => {
         this.keys.clear();
         this.fireDown = this.zoomDown = this.altDown = this.meleeDown = this.throwAiming = this.keyFire = false;
+        this.aimLatch.cancel();
         this.wheelKeyAt = this.padWheelAt = 0;
         this.closeWheel(false);
       },
@@ -219,10 +234,15 @@ export class InputState {
         this.specUsed = true;
       }
       const wasFire = this.fireDown;
+      const wasZoom = this.zoomDown;
       this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
       this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
       this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
       this.meleeDown = (e.buttons & 24) !== 0 && (press || this.meleeDown);
+      if (this.zoomDown && !wasZoom) {
+        this.aimLatch.press();
+        this.altTap = true;
+      }
       // A click with the wheel open picks the weapon it points at (and doesn't fire).
       if (this.wheelOpen && this.fireDown && !wasFire) {
         this.closeWheel(true);
@@ -292,6 +312,10 @@ export class InputState {
     if (e.code === 'KeyR') this.reloadQueued = true;
     // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
     if (e.code === 'KeyF') this.keyFire = true;
+    if (e.code === 'KeyX' && !e.repeat) {
+      this.aimLatch.press();
+      this.altTap = true;
+    }
     if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
     if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
     // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
@@ -314,6 +338,8 @@ export class InputState {
         this.msgWheeled = false;
       } else this.msgMenu = !this.msgMenu;
     }
+    // U switches the held weapon's fire mode (B, the usual key, is the quick-message and order key here).
+    if (e.code === FIRE_MODE_KEY && !e.repeat) this.fireModeQueued = true;
     if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
     if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
     if ((e.code === 'KeyL' || e.code === 'Comma') && !e.repeat && this.classCount) {
@@ -465,12 +491,38 @@ export class InputState {
   }
 
   get zooming(): boolean {
+    // (A pair in hand has no aim: the button is the second gun's trigger.)
+    if (this.pairTrigger) return false;
     // Tests can hold the aim with window.__autoInput = { zoom: true }.
-    return (this.locked && !this.wheelOpen && (this.zoomDown || this.keys.has('KeyX') || this.pad.zoom)) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
+    return (this.locked && !this.wheelOpen && this.aiming()) || !!(window as unknown as { __autoInput?: { zoom?: boolean } }).__autoInput?.zoom;
+  }
+
+  /**
+   * Whether you aim down the sights now: the aim button (right mouse, X, a controller's LT) held, or with Aim set to
+   * Toggle, pressed once to aim and again to stop (touch's Aim button too: it holds X while pressed). A melee
+   * weapon's heavy swing (`altTrigger`) is always held.
+   */
+  private aiming(): boolean {
+    const down = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    const mode = this.altTrigger ? 'hold' : combatPrefs().aim;
+    return (this.aimShown = this.aimLatch.update(down, mode));
+  }
+
+  /** Whether you aimed at the last read (touch's Aim button lights with it). */
+  aimShown = false;
+
+  /** Let a toggled aim go: a weapon change, death, a vehicle (the session calls it). */
+  cancelAim(): void {
+    this.aimLatch.cancel();
   }
 
   held(code: string): boolean {
     return this.keys.has(code);
+  }
+
+  /** Shift, or a controller's sprint button: through a scope it holds your breath (it sprints otherwise). */
+  get holdingBreath(): boolean {
+    return this.keys.has('ShiftLeft') || this.pad.sprint;
   }
 
   /**
@@ -483,6 +535,7 @@ export class InputState {
     this.touchLook.dx = this.touchLook.dy = 0;
     if (!this.locked) {
       this.closeWheel(false);
+      this.aimLatch.cancel();
       return;
     }
     // The wheel key held past a tap opens the wheel; so does B (Fireteams), the order wheel.
@@ -513,7 +566,7 @@ export class InputState {
     const p = this.pad;
     if (!pad) {
       p.move = { x: 0, y: 0 };
-      p.fire = p.zoom = p.sprint = p.jump = false;
+      p.fire = p.zoom = p.sprint = p.jump = p.use = false;
       return;
     }
     const down = pad.buttons.map((b) => b.pressed || b.value > 0.4);
@@ -530,7 +583,9 @@ export class InputState {
     }
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
+    if (pressed(PAD.lt) && !this.spectating) this.aimLatch.press();
     p.jump = !!down[PAD.a];
+    p.use = !!down[PAD.rb];
     if (this.spectating) {
       // Watching: the shoulder buttons pick the next or previous player, Y switches the camera (follow / free).
       if (pressed(PAD.rb)) this.specStep++;
@@ -605,6 +660,13 @@ export class InputState {
     const auto = (window as unknown as { __autoInput?: { up?: number } }).__autoInput;
     if (auto?.up) return auto.up;
     return (this.keys.has('KeyE') || this.pad.fire ? 1 : 0) - (this.keys.has('KeyQ') || this.keys.has('ControlLeft') || this.pad.zoom ? 1 : 0);
+  }
+
+  /** Consume a pending fire mode switch (U). */
+  takeFireModeSwitch(): boolean {
+    const s = this.fireModeQueued;
+    this.fireModeQueued = false;
+    return s;
   }
 
   /** Consume a pending number-key weapon request. */
@@ -683,8 +745,12 @@ export class InputState {
     if (this.fireDown || this.keyFire || this.pad.fire) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
     // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
-    const aim = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    const aim = this.aiming();
     if (aim) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
+    // A pair in hand (dual wielding): a tap of the second trigger between two ticks is not lost, and touch's Fire
+    // button (it holds F) pulls both triggers.
+    if (this.pairTrigger && (this.altTap || (this.touchEngaged && this.keyFire))) buttons |= BUTTON_ALT;
+    this.altTap = false;
     // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
     if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
@@ -698,6 +764,8 @@ export class InputState {
     if (this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
+    // E (or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
+    if (this.keys.has('KeyE') || this.pad.use) buttons |= BUTTON_USE_HOLD;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
     this.jumpQueued = this.jumpNext;

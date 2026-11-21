@@ -14,6 +14,8 @@
 //              tools/content/npcs.mjs                npcRoles.generated.ts and codes.lock.json (npcRoles) from content/npcs.json
 //              tools/content/hitboxes.mjs            hitboxes.generated.ts: hit shapes measured from the character and creature models
 //              tools/content/prop-contacts.mjs       propContacts.generated.ts: props' flat faces in their bounding-box planes (z-fighting)
+//              tools/content/sight-fit.mjs           sightFit.generated.ts: each gun's sights measured from its model (content/sight-fit.json)
+//              tools/content/optics.mjs              optics.generated.ts: the optic each gun carries and its mount (content/optics.json)
 //              tools/content/pickups.mjs             pickups.generated.ts from content/pickups.json
 //              tools/content/weapon-sets.mjs         weaponSets.generated.ts from content/weapon-sets.json (after the
 //                                                     weapons and pickups it names)
@@ -94,6 +96,10 @@ node('tools/content/kitprops.mjs');
 node('tools/content/hitboxes.mjs');
 // Props' contact faces, measured from the built prop models (after prepare-props).
 node('tools/content/prop-contacts.mjs');
+// The guns' sights, measured from the built gun models (after the weapons: it reads their files).
+node('tools/content/sight-fit.mjs');
+// Which optic each gun carries, and where a housing built in code stands on it (after the sight fit: iron sights need one).
+node('tools/content/optics.mjs');
 
 step('palette atlas');
 let pending = all;

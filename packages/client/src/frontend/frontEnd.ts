@@ -2,6 +2,7 @@ import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import {
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
+  CHARACTER_BRANCHES,
   CHARACTER_GROUP_LABELS,
   CHARACTER_PROFILES,
   CORE_LOOKS,
@@ -26,6 +27,7 @@ import {
   PLAYER_NPC_LOOKS,
   NPC_ROLE_SPECS,
   npcLookRole,
+  lookBranch,
   lookGroup,
   validLookId,
   DEFAULT_LOOK,
@@ -35,8 +37,7 @@ import {
   MODE_LABELS,
   isTeamMode,
   LOOK_BIOS,
-  TEAM_PRESETS,
-  SETUP_PRESETS,
+  AKIMBO_READY,
   BIG_MATCH,
   PARTY_PRESETS,
   applyParty,
@@ -55,7 +56,6 @@ import {
   peopleAndBots,
   playerCap,
   presetPatch,
-  presetPlayers,
   rulesFromSetup,
   setVariant,
   DEFAULT_FIRETEAM_SIZE,
@@ -68,6 +68,8 @@ import {
   setupPlayers,
   setupSummary,
   setupTeams,
+  setTeamSize,
+  MAX_TEAM_SIZE,
   setupYourTeam,
   sizePresets,
   variantStates,
@@ -79,7 +81,6 @@ import {
   type TeamAssign,
   getLook,
   mapTeams,
-  teamLayoutLabel,
   getWeapon,
   partInfo,
   type GameMode,
@@ -95,7 +96,15 @@ import {
   classStats,
   lookStats,
   type StatKey,
+  CLASS_DEFS,
+  CLASS_IDS,
+  careerAccuracy,
+  careerKd,
+  careerWinRate,
+  favouriteWeapon,
 } from '@tiletrigger/shared';
+import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
+import { weaponName } from '../game/profileCard.ts';
 import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
@@ -106,6 +115,10 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
+import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
+import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
+import { vibrationSupported } from '../game/rumble.ts';
 import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../game/hitboxPrefs.ts';
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import { communityMapRow, communityPanel, reportButton } from './communityUi.ts';
@@ -113,7 +126,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
-import { GLYPHS, botCastSelect, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
+import { GLYPHS, botTypePicker, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, optionSwitch, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
 import { weaponIcon } from './weaponIcons.ts';
@@ -237,6 +250,8 @@ const SETUP_ROWS = ['setup-variants-row'] as const;
  * Small screens and phones open one of the setup's rows at a time (the stylesheet's narrow and short layouts start
  * at the same sizes); a desktop opens as many as you like.
  */
+/** Narrow windows (a phone upright, most phones sideways): Match Setup takes the whole width and the map list opens as a picker over it (style.css, the 900 px rule). */
+const narrowSetup = (): boolean => typeof matchMedia === 'function' && matchMedia('(max-width: 900px)').matches;
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
@@ -384,6 +399,24 @@ function statBars(look: string, sizes: boolean): HTMLElement {
   );
 }
 
+/** Character Select's favourites (kept in this browser). */
+const CHAR_FAVS_KEY = 'tiletrigger.charFavs';
+function loadCharFavs(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(CHAR_FAVS_KEY) ?? '[]') as unknown;
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string').slice(0, 300) : [];
+  } catch {
+    return [];
+  }
+}
+/** Keep or drop a favourite; whether it's kept now. */
+function toggleCharFav(id: string): boolean {
+  const favs = loadCharFavs();
+  const now = !favs.includes(id);
+  storage(CHAR_FAVS_KEY, JSON.stringify(now ? [...favs, id] : favs.filter((x) => x !== id)));
+  return now;
+}
+
 function storage(key: string, value?: string): string | null {
   try {
     if (value !== undefined) localStorage.setItem(key, value);
@@ -457,7 +490,15 @@ export class FrontEnd {
   private charFrom: ScreenId = 'home';
   /** The character shown on Character Select (clicked, not yet chosen): `look` changes only when it's confirmed. */
   private previewed: string | null = null;
+  /** Character Select's search (this visit) and Favourites-only filter. */
+  private charQuery = '';
+  private charFavsOnly = false;
+  /** A phone's Character Select: the details sheet is pulled up (style.css; docs/MOBILE_AUDIT.md, proposal 4). */
+  private charSheet = false;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
+  /** The footer's fullscreen hint label shown now, and whether the page listener for it is on. */
+  private fsLabel: HTMLElement | null = null;
+  private fsWatched = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -497,7 +538,11 @@ export class FrontEnd {
     onPadPress((b) => this.onPad(b));
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
-    void loadProfile().then((p) => this.applyProfile(p?.username ?? null));
+    void loadProfile().then((p) => {
+      this.applyProfile(p?.username ?? null);
+      // Signed in: a guest career here moves onto the account once, and matches the hub missed go now (careerStats.ts).
+      if (p) void syncCareer().then(() => !this.root.hidden && this.screen === 'profile' && this.go('profile'));
+    });
     // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
     setTimeout(() => void this.warmPortraits(), 1500);
   }
@@ -544,6 +589,12 @@ export class FrontEnd {
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
     // Back (and Choose) on Character Select return to the screen that opened it.
     if (screen === 'characters' && this.screen !== 'characters') this.charFrom = this.screen;
+    // The map picker (a phone's Match Setup) is open only on Match Setup.
+    if (screen !== 'play') this.mapPicking = false;
+    if (screen !== 'characters') {
+      this.charSheet = false;
+      this.charQuery = '';
+    }
     this.screen = screen;
     this.footer.dataset.screen = screen;
     this.scene.setLook(this.previewed ?? this.look);
@@ -600,9 +651,14 @@ export class FrontEnd {
     const groups = [group('moves', moves), ...(acts.length ? [group('acts', acts)] : [])];
     if (fullscreenSupported()) {
       const fs = hintButton('hint-fullscreen', glyphs('F11'), isFullscreen() ? 'Exit fullscreen' : 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
-      const label = fs.lastElementChild as HTMLElement;
-      const update = () => (fs.isConnected ? (label.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen') : document.removeEventListener('fullscreenchange', update));
-      document.addEventListener('fullscreenchange', update);
+      // One page listener names the current button (one per screen shown kept every old footer alive until fullscreen changed).
+      this.fsLabel = fs.lastElementChild as HTMLElement;
+      if (!this.fsWatched) {
+        this.fsWatched = true;
+        document.addEventListener('fullscreenchange', () => {
+          if (this.fsLabel?.isConnected) this.fsLabel.textContent = isFullscreen() ? 'Exit fullscreen' : 'Fullscreen';
+        });
+      }
       groups.push(group('util', [fs]));
     }
     return groups;
@@ -648,7 +704,7 @@ export class FrontEnd {
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play');
+    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.mapPicking ? document.getElementById('map-browse') : null);
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -820,6 +876,14 @@ export class FrontEnd {
       b.addEventListener('click', () => void this.quickPlay(mode));
       modes.append(b);
     }
+    // Pick a map: Match Setup with the map cards open (on a phone, the full-screen picker; docs/MOBILE_AUDIT.md, proposal 2).
+    const pick = el('button', { type: 'button', class: 'qp-mode qp-pick', id: 'qp-pick' }, el('span', { class: 'qp-pick-icon', textContent: '▦' }), el('b', { textContent: 'Pick a map' }), el('small', { textContent: 'Choose the map, then play' }));
+    pick.addEventListener('click', () => {
+      this.quickOpen = false;
+      this.mapPicking = narrowSetup();
+      this.go('play');
+    });
+    modes.append(pick);
     const close = el('button', { type: 'button', class: 'qp-close', title: 'Close (Esc)', textContent: '✕' });
     close.dataset.cancel = '';
     close.setAttribute('aria-label', 'Close');
@@ -918,7 +982,7 @@ export class FrontEnd {
     return box;
   }
 
-  private lookName(id: string): string {
+  lookName(id: string): string {
     const npc = NPC_LOOKS.find((l) => l.id === id);
     if (npc) return npc.name;
     return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
@@ -1080,6 +1144,27 @@ export class FrontEnd {
       s.scoreLimit = BASE_RULES[m].scoreLimit;
       s.scoreAuto = true;
     });
+  }
+
+  /** A phone's (narrow window's) Match Setup: the map cards open full screen over the setup. */
+  private mapPicking = false;
+
+  private openMapPicker(): void {
+    this.mapPicking = true;
+    const screen = this.body.querySelector<HTMLElement>('.screen.play');
+    if (!screen) return;
+    screen.classList.add('picking');
+    // The map played now, in view.
+    const cards = screen.querySelector<HTMLElement>('#map-cards');
+    const on = cards?.querySelector<HTMLElement>('.map-card.on');
+    if (cards && on) cards.scrollTop = this.mapScroll = Math.max(0, on.offsetTop - cards.offsetTop - 8);
+    screen.querySelector<HTMLElement>('#map-pick-close')?.focus({ preventScroll: true });
+  }
+
+  private closeMapPicker(): void {
+    this.mapPicking = false;
+    this.body.querySelector('.screen.play')?.classList.remove('picking');
+    document.getElementById('arcade-map-pick')?.focus({ preventScroll: true });
   }
 
   private arcade(): HTMLElement {
@@ -1249,6 +1334,7 @@ export class FrontEnd {
           const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
           if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
           this.refreshSetup();
+          if (this.mapPicking) this.closeMapPicker();
         });
         cards.append(card);
         lazy(card, draw);
@@ -1272,12 +1358,19 @@ export class FrontEnd {
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
     this.fillSetup(panel);
+    // A phone's picker: its own head with Close (hidden where the list sits beside the setup).
+    const closePick = el('button', { type: 'button', class: 'qp-close', id: 'map-pick-close', title: 'Close (Esc)', textContent: '✕' });
+    closePick.setAttribute('aria-label', 'Close');
+    closePick.dataset.cancel = '';
+    closePick.addEventListener('click', () => this.closeMapPicker());
+    const pickHead = el('div', { class: 'map-pick-head' }, el('h3', { textContent: 'Pick a map' }), closePick);
+    if (this.mapPicking) requestAnimationFrame(() => this.openMapPicker());
     // (The stylesheet lays these out as the mock-up does: the title over the map list, the setup panel the screen's whole height beside them.)
     return el(
       'div',
-      { class: 'screen play' },
+      { class: `screen play${this.mapPicking ? ' picking' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse' }, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, pickHead, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
     );
   }
 
@@ -1322,7 +1415,10 @@ export class FrontEnd {
     // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
     const thumbs = mapThumbs(map, isBuiltInEntry(current));
     requestAnimationFrame(thumbs.draw);
-    // The list is hidden on small screens: there, this picks the map.
+    // The list is hidden on narrow screens: there, this button opens it full screen (docs/MOBILE_AUDIT.md, proposal
+    // 2). The plain list stays in the page, hidden (tests and anything that reads it).
+    const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
+    mapPick.addEventListener('click', () => this.openMapPicker());
     const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
@@ -1352,6 +1448,9 @@ export class FrontEnd {
       { class: 'setup-facts', id: 'setup-summary' },
       el('span', { class: 'fact-players', title: `Made for ${rec.min}–${rec.max} players. Bots fill every place you don't.` }, setupSummary(s, map, 1, cap.max)),
       el('span', { class: 'fact-time', title: coop ? 'Ends through the mission' : 'How long it runs' }, length),
+      // The mode, in the header that stays while the setup scrolls: a phone only (style.css; docs/MOBILE_AUDIT.md,
+      // proposal 11), where the mode tiles scroll out of sight.
+      el('span', { class: 'fact-mode', id: 'setup-mode-fact', title: MODE_LABEL[s.mode] }, MODE_SHORT[s.mode]),
       // The mode's player caps on this map (MapMaker's, else from its size and spawn points).
       ...(coop ? [] : [((c) => el('span', { class: 'fact-caps', id: 'setup-caps', title: `${MODE_LABELS[s.mode]} on this map: ${c.recommended} players recommended, ${c.max} at most${c.auto ? ' (worked out from its size and spawn points)' : " (set in the map's properties)"}.` }, capsLine(c)))(mapPlayerCaps(map, s.mode))]),
       ...(factSet && factSet.id !== 'standard' ? [el('span', { class: 'fact-weapons', id: 'setup-weapons-fact', title: `${factSet.blurb} (${s.weaponSet === undefined ? "the map's default" : 'your choice'}; Advanced rules → Weapons)` }, `${factSet.name} weapons`)] : []),
@@ -1371,6 +1470,7 @@ export class FrontEnd {
         ...(current.contentHash ? [el('p', { class: 'setup-community hint' }, `A player's map${current.metadata.author ? ` by ${current.metadata.author}` : ''}. `, reportButton(current.contentHash, map.metadata.name))] : []),
         facts,
         mapSelect,
+        mapPick,
       ),
       fitChip(fit, this.fitOpen, toggleFit, 'setup-fit'),
     );
@@ -1475,7 +1575,9 @@ export class FrontEnd {
     const presets = sizePresets(s.mode, map, { teams: team ? sizes.length : undefined, deviceMax: dev.max, device: dev.name, pickPlayers });
     const onPreset = matchingPreset(s, map, presets, cap.max);
     const unit = coop ? 'in the squad' : 'players';
-    const sizeRow = sizeChips(presets, onPreset, team ? sizes.join('v') : `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes');
+    // Teams and free-for-all: one row of layout chips (1v1 … 32v32, FFA; the map's pick first when it's another
+    // shape); odd layouts from the steppers. Squads keep their sizes worked out for the map.
+    const sizeRow = family === 'squad' ? sizeChips(presets, onPreset, `${players} ${unit}`, (p) => this.applyLayout(presetPatch(p)), 'setup-sizes') : this.layoutChips(current, team ? presets.find((p) => p.id === 'pick')?.teams : undefined, team ? sizes : null, cap.max);
     // The party cards are drawn twice: in the Match Setup tab's row (with their ids) and in the Presets tab.
     const partyOnNow: { name: string | null } = { name: null };
     const partyCards = () => el('div', { class: 'party-chips', id: 'setup-party', role: 'group' }, ...PARTY_PRESETS.map((p) => {
@@ -1511,11 +1613,29 @@ export class FrontEnd {
     // ---- Players & teams: who plays (people apart from bots), the teams or the count
     const assign = s.assign ?? 'balanced';
     const playerRows: HTMLElement[] = [];
-    // How many teams: on the section's title line (the team editor puts its stepper here).
+    // How many teams: beside Per team over the chips (the team editor puts its stepper here).
     const teamCountSlot = el('span', { class: 'team-count-slot' });
+    let perTeamBox: HTMLElement | null = null;
     if (team) {
       const sides = mapTeams(map, sizes.length);
       const you = setupYourTeam(s, sizes.length);
+      // Per team: every team that many players (even teams), the cap saying whose limit it is.
+      const people = sizes.map((_, i) => (you === i ? 1 : 0));
+      const perStep = stepper({
+        value: Math.max(...sizes),
+        min: 1,
+        max: MAX_TEAM_SIZE,
+        id: 'arcade-per-team',
+        label: 'players per team',
+        onChange: (v) => {
+          const r = setTeamSize(sizes, 0, v, { people, cap, even: true, device: dev.name });
+          this.evenTeams = true;
+          this.change((x) => {
+            x.teams = r.sizes;
+          }, r.stopped);
+        },
+      });
+      perTeamBox = el('span', { class: 'team-count per-team' }, el('span', { class: 'row-label', textContent: 'Per team' }), perStep);
       const even = this.evenTeams && sizes.every((n) => n === sizes[0]);
       // Your team: a short list on the total's line (it was a row of three tabs in the old Players & teams section).
       const assignPick = el('select', { id: 'arcade-assign' }, ...([['balanced', 'Balanced'], ['random', 'Random'], ['fixed', 'Fixed']] as const).map(([v, t]) => el('option', { value: v, textContent: t, selected: v === assign })));
@@ -1585,8 +1705,11 @@ export class FrontEnd {
       playerRows.push(settingRow('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, choice([['', 'Just this map'], ...PLAYLISTS.map((p): ChoiceOption<string> => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => this.change((x) => (x.playlist = v || undefined)))));
     }
     // Section 3: the size presets in a compact row (More layouts… on the title's line), then the teams or the count.
+    // Teams: two steppers (how many teams, players on each) over the layout chips (owner, 2026-11-19).
+    const stepRow = team ? [el('div', { class: 'team-steppers', id: 'setup-team-steppers' }, teamCountSlot, perTeamBox!)] : [];
     const teamsSec = numbered(
-      { n: 3, id: 'setup-teams', title: team ? 'Teams & players' : coop ? 'Squad' : 'Players', icon: GLYPHS.people, extra: [...(team ? [infoTip("Bots fill every place. Hosting online, friends who join take bots' places."), teamCountSlot] : []), this.moreLayouts(current)] },
+      { n: 3, id: 'setup-teams', title: team ? 'Teams & players' : coop ? 'Squad' : 'Players', icon: GLYPHS.people, extra: team ? [infoTip("Bots fill every place. Hosting online, friends who join take bots' places.")] : [] },
+      ...stepRow,
       sizeRow,
       ...playerRows,
     );
@@ -1624,11 +1747,14 @@ export class FrontEnd {
       { id: 'weapons', label: 'Weapons & pickups', tip: 'Normal: the map\'s weapons, ammo and grenades lie about. Spears only: everyone holds one throwing spear (one hit kills; go and fetch it back). Discs only: everyone throws bouncing arena discs that knock players about without hurting (Disc Arena rules). No weapon, ammo or grenade pickups either way.', changed: !!s.spears || !!s.discs, value: s.discs ? 'Discs only' : 'Spears only', control: choice([['normal', 'Normal'], ['spears', 'Spears only'], ['discs', 'Discs only']], s.spears ? 'spears' : s.discs ? 'discs' : 'normal', (v) => this.change((x) => ((x.spears = v === 'spears' || undefined), (x.discs = v === 'discs' || undefined)))) },
       { id: 'mix', label: 'Mix up weapon pickups', tip: "Every weapon pickup the map's maker didn't mark \"keep fixed\" holds a random weapon of the same kind as the one placed there (a pistol stays a pistol, a rifle a rifle), and a new one each time it comes back.", changed: !!s.mixPickups && !restricted && !playSet.weapons, value: 'Mixed-up pickups', control: choice([['off', 'Off'], ['on', 'On']], s.mixPickups ? 'on' : 'off', (v) => this.change((x) => (x.mixPickups = v === 'on' || undefined)), 'arcade-mix'), disabled: restricted ? `${restricted}: no weapon pickups.` : playSet.weapons ? `${playSet.name} weapons: every weapon pickup already holds one of the set's, a new one each time it comes back.` : null },
       { id: 'drops', label: 'Drop weapon on death', tip: "A fallen player's or bot's primary (the gun in hand, else their best one; never the starting pistol or knife) lies at the body for 30 s with the ammo it had left. Walk over it to take it, or its ammo if you have one. The rest of what they carried is recycled.", changed: s.dropWeapons === false && !restricted && s.mode !== 'core.discs', value: 'No weapon drops', control: choice([['on', 'On'], ['off', 'Off']], s.dropWeapons === false ? 'off' : 'on', (v) => this.change((x) => (x.dropWeapons = v === 'off' ? false : undefined)), 'arcade-drops'), disabled: restricted ? `${restricted}: no weapon drops.` : s.mode === 'core.discs' ? `Nothing drops in ${MODE_LABEL[s.mode]}.` : null },
+      // Dual wielding: hidden until play reads the rule (shared AKIMBO_READY; step 2 of docs/GUNPLAY_SPEC.md "Akimbo / Dual Wield").
+      ...(AKIMBO_READY ? [{ id: 'akimbo', label: 'Dual wielding', tip: 'Pick up a second of the same small gun to hold one in each hand.', changed: s.akimbo === false && !restricted && s.mode !== 'core.discs', value: 'No dual wielding', control: choice([['on', 'On'], ['off', 'Off']], s.akimbo === false ? 'off' : 'on', (v) => this.change((x) => (x.akimbo = v === 'off' ? false : undefined)), 'arcade-akimbo'), disabled: restricted ? `${restricted}: one weapon each.` : s.mode === 'core.discs' ? `No guns in ${MODE_LABEL[s.mode]}.` : null }] : []),
       { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || (raceTrack(map)?.ambient ?? 0) > 0 ? null : 'This map has no vehicles.' },
     ];
     const botRules: typeof extras = [
-      { id: 'cast', label: 'Bot characters', tip: "Which characters random bots play, and so their names: a soldier is \"Sgt. Dunmore\", a monkey \"Coco Bean\" (the first bot in a character is named after it: Scamp). Map default: what the map's maker chose (most maps: all). Your own bots (Edit bots…) keep their names and looks.", changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botCastSelect(s.botCast, map.botCast, (v) => this.change((x) => (x.botCast = v)), 'arcade-cast') },
+      { id: 'cast', label: 'Bot types', tip: '', changed: s.botCast !== undefined, value: `${botCastLabel(s.botCast)} bots`, control: botTypePicker({ value: s.botCast, mapCast: map.botCast ?? [], id: 'arcade-cast', onChange: (v) => this.change((x) => (x.botCast = v)) }) },
+      { id: 'names', label: 'Themed names', tip: '', changed: s.themedNames === false, value: 'General bot names', control: el('span') },
       { id: 'style', label: 'Bot style', tip: 'Mixed: every character plays its own way. Arena: strafe-jumping, item timing, always moving (Quake). Tactical: careful, cover, held angles (Counter-Strike).', changed: !!s.botStyle, value: `${s.botStyle === 'arena' ? 'Arena' : 'Tactical'} bots`, control: choice([['mixed', 'Mixed'], ['arena', 'Arena'], ['tactical', 'Tactical']], s.botStyle ?? 'mixed', (v) => this.change((x) => (x.botStyle = v === 'mixed' ? undefined : (v as 'arena' | 'tactical'))), 'arcade-style') },
     ];
     const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
@@ -1637,7 +1763,7 @@ export class FrontEnd {
     const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'mixPickups', 'dropWeapons', 'akimbo', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
@@ -1663,7 +1789,7 @@ export class FrontEnd {
 
     // ---- Bots: skill, style, characters, your own bots
     const skillLabel = { easy: 'Easy', normal: 'Normal', hard: 'Hard' }[s.skill] ?? s.skill;
-    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
+    const botsSummary = `${skillLabel} bots${s.botStyle ? ` · ${s.botStyle === 'arena' ? 'Arena' : 'Tactical'}` : ''}${s.botCast !== undefined ? ` · ${botCastLabel(s.botCast)}` : map.botCast?.length ? ` · ${botCastLabel(map.botCast)}` : ''}${s.themedNames === false ? ' · General names' : ''}${s.botSet ? ` · ${s.botSet.name} (${s.botSet.entries.length})` : ''}`;
     const perTeam = team
       ? [el('p', { class: 'setup-hint', textContent: `Bots per team: ${mapTeams(map, sizes.length).map((t, i) => `${s.teamNames?.[i] || t.name} ${sizes[i]! - ((s.assign === 'fixed' ? Math.min(sizes.length - 1, s.playerTeam ?? 0) : 0) === i && s.assign !== 'random' ? 1 : 0)}`).join(' · ')}${s.assign === 'random' ? ' (one less wherever you land)' : ''}. Each team's size is in Match setup, Teams & players.` })]
       : [];
@@ -1674,7 +1800,26 @@ export class FrontEnd {
       bots: [
         el('p', { class: 'pane-sum', id: 'setup-bots-sum', textContent: botsSummary }),
         settingRow('Bot skill', 'Easy bots aim slowly and miss often; hard ones react fast, use cover and lead their shots.', choice([['easy', 'Easy'], ['normal', 'Normal'], ['hard', 'Hard']], s.skill, (v) => this.change((x) => (x.skill = v as ArcadeSetup['skill'])), 'arcade-skill')),
-        ...botRules.map(rowOf),
+        rowOf(botRules.find((x) => x.id === 'style')!),
+        // Bot types, then the options as plain switches (owner, 2026-11-19: "isolate the selection of the bot types,
+        // then give user options to add the rank idea…").
+        el(
+          'div',
+          { class: 'bot-block', id: 'setup-bot-types' },
+          el('h4', { class: 'pane-title' }, 'Bot types ', infoTip("Which characters random bots play: tick the types you want (every one: all). Map's own: what the map's maker chose (most maps: all). Your own bots (Your bots, below) keep their names and looks.")),
+          botRules.find((x) => x.id === 'cast')!.control,
+        ),
+        el(
+          'div',
+          { class: 'bot-block', id: 'setup-bot-options' },
+          el('h4', { class: 'pane-title', textContent: 'Bot options' }),
+          el(
+            'div',
+            { class: 'opt-switches' },
+            optionSwitch('arcade-ranks', 'Ranks & badges', "Every player and bot wears a rank: its title before the name and a badge in their group's style, in the kill feed, on the scoreboards and over heads. Just for show. The same switch as Options → Ranks & badges, for every match.", ranksOn(), (on) => saveRanksOn(on)),
+            optionSwitch('arcade-names', 'Themed names', 'On: random bots are named to fit their character ("Coco Bean" the monkey, "Sgt. Dunmore" the soldier; the first of a character takes its own name). Off: general names ("Brassneck", "Mildred") for every random bot.', s.themedNames !== false, (on) => this.change((x) => (on ? delete x.themedNames : (x.themedNames = false)))),
+          ),
+        ),
         this.botSetRow(map, sizes, players),
         ...perTeam,
       ],
@@ -1863,72 +2008,75 @@ export class FrontEnd {
   }
 
   /**
-   * More layouts…: every fixed shape (1v1 … 48v48, 2v2v2v2, 4×4, FFA 8/16) and MapMaker's other layouts, beside
-   * the presets worked out for the map. Each starts an editable setup; a team layout moves a free-for-all to
-   * Team Deathmatch (and an FFA one back) when the map has it. Options that can't work here say why.
+   * The layout chips (owner, 2026-11-19, in place of the More layouts list): the map's pick when it's another shape,
+   * 1v1, 2v2, 4v4, 8v8, 16v16, 32v32 (as far as this device and mode run) and FFA. A team layout moves a
+   * free-for-all to Team Deathmatch (FFA moves teams to Deathmatch) when the map has it; a chip that can't work here
+   * is greyed with the reason. `pick`: the map's own team layout (team modes); `sizes`: the teams now (null: FFA).
    */
-  private moreLayouts(current: ArcadeMap): HTMLElement {
+  private layoutChips(current: ArcadeMap, pick: readonly number[] | undefined, sizes: readonly number[] | null, cap: number): HTMLElement {
     const s = this.setup;
-    const max = deviceMaxPlayers();
     const teamModes = current.modes.filter((m) => isTeamMode(m));
-    const anyTeams = teamModes.filter((m) => !isTwoTeamMode(m));
     const ffaModes = current.modes.filter((m) => !isTeamMode(m) && !isCoopMode(m));
-    const select = el('select', { id: 'arcade-teams', class: 'more-layouts', title: 'More layouts: a starting point you can then change' }) as HTMLSelectElement;
-    select.setAttribute('aria-label', 'More layouts');
-    select.append(new Option('More layouts…', ''));
-    const teamWhy = (sizes: readonly number[]): string | null => {
-      if (isTeamMode(s.mode)) return isTwoTeamMode(s.mode) && sizes.length > 2 ? `${MODE_LABEL[s.mode]} is two teams` : null;
-      if (sizes.length > 2 ? !anyTeams.length : !teamModes.length) return 'no team mode on this map';
-      return null;
-    };
-    const add = (group: HTMLOptGroupElement, value: string, label: string, players: number, off: string | null) => {
-      const o = new Option(`${label} · ${players} players${off ? ` (${off})` : ''}`, value);
-      o.disabled = !!off;
-      group.append(o);
-    };
-    const shown = new Set<string>();
-    const teams = el('optgroup', { label: 'Teams' });
-    const ffa = el('optgroup', { label: 'Free-for-all' });
-    // Past this device's cap (32 v 32 in a browser, 8 v 8 on a phone): a dedicated host's sizes.
-    for (const p of SETUP_PRESETS) {
-      if (presetPlayers(p) > max) continue;
-      if (p.sizes) {
-        shown.add(p.sizes.join(','));
-        add(teams, p.sizes.join(','), p.label, presetPlayers(p), teamWhy(p.sizes));
-      } else add(ffa, `ffa:${p.ffa}`, p.label, presetPlayers(p), isTeamMode(s.mode) || isCoopMode(s.mode) ? (ffaModes.length ? null : 'no free-for-all on this map') : null);
-    }
-    const more = el('optgroup', { label: 'More layouts' });
-    for (const p of TEAM_PRESETS) if (!shown.has(p.join(',')) && p.reduce((a, b) => a + b, 0) <= max) add(more, p.join(','), teamLayoutLabel(p), p.reduce((a, b) => a + b, 0), teamWhy(p));
-    select.append(teams, ffa, more);
-    select.addEventListener('change', () => {
-      const v = select.value;
-      if (!v) return;
-      if (!v.startsWith('ffa:')) {
-        const sizes = v.split(',').map(Number);
-        this.evenTeams = sizes.every((n) => n === sizes[0]);
-      }
-      this.change((x) => {
-        if (v.startsWith('ffa:')) {
-          if (isTeamMode(x.mode) || isCoopMode(x.mode)) {
-            x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
-            x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
-            x.scoreAuto = true;
-          }
-          x.bots = Number(v.slice(4)) - 1;
-          return;
-        }
-        const sizes = v.split(',').map(Number);
-        if (!isTeamMode(x.mode)) {
-          const pool = sizes.length > 2 ? anyTeams : teamModes;
-          x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
-          x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
-          x.scoreAuto = true;
-        }
-        x.teams = sizes;
-        if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
+    const most = Math.max(cap, sizes ? 0 : deviceMaxPlayers());
+    const now = sizes?.join(',') ?? 'ffa';
+    const box = el('div', { class: 'size-chips layout-chips', id: 'setup-sizes', role: 'group' });
+    box.setAttribute('aria-label', 'Team layouts');
+    const chip = (id: string, label: string, value: string, tip: string, off: string | null, small?: string) => {
+      const on = value === now;
+      const b = el('button', { type: 'button', class: `size-chip${on ? ' on' : ''}` }, el('b', { textContent: label }), ...(small ? [el('small', { textContent: small })] : []));
+      b.dataset.preset = id;
+      b.dataset.tip = tip;
+      b.setAttribute('aria-pressed', String(on));
+      inert(b, off);
+      b.addEventListener('click', () => {
+        if (off || on) return;
+        this.pickLayout(value, teamModes, ffaModes);
       });
+      box.append(b);
+      return b;
+    };
+    const teamOff = isTeamMode(s.mode) ? null : teamModes.length ? null : 'No team mode on this map.';
+    const fixed = [1, 2, 4, 8, 16, 32].filter((n) => n * 2 <= most);
+    const pickKey = pick?.join(',');
+    const pickFixed = pick && pick.length === 2 && pick[0] === pick[1] && fixed.includes(pick[0]!);
+    if (pick && !pickFixed) chip('pick', "Map's pick", pick.join(','), "The map's own team layout: what its maker set it up for.", teamOff, pick.join('v')).dataset.pick = '1';
+    for (const n of fixed) {
+      const b = chip(`${n}v${n}`, `${n}v${n}`, `${n},${n}`, `Two teams of ${n}: ${n * 2} players.`, teamOff);
+      if (pickKey === `${n},${n}`) {
+        b.dataset.pick = '1';
+        b.classList.add('pick');
+        b.dataset.tip = `Two teams of ${n}: the map's pick.`;
+      }
+    }
+    const players = sizes ? sizes.reduce((a, b) => a + b, 0) : 0;
+    chip('ffa', 'FFA', 'ffa', sizes ? `Free-for-all: everyone for themselves, ${Math.min(players, deviceMaxPlayers())} players.` : 'Free-for-all: everyone for themselves. How many: Bots, below.', isTeamMode(s.mode) && !ffaModes.length ? 'No free-for-all on this map.' : null);
+    return box;
+  }
+
+  /** A layout chip picked: `value` team sizes ("4,4") or "ffa"; the mode moves between teams and free-for-all where it must. */
+  private pickLayout(value: string, teamModes: readonly GameMode[], ffaModes: readonly GameMode[]): void {
+    if (value === 'ffa') {
+      const players = isTeamMode(this.setup.mode) ? setupTeams(this.setup, this.currentMap().map!, deviceMaxPlayers()).reduce((a, b) => a + b, 0) : null;
+      return this.change((x) => {
+        if (!isTeamMode(x.mode)) return;
+        x.mode = ffaModes.includes('core.deathmatch') ? 'core.deathmatch' : ffaModes[0]!;
+        x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+        x.scoreAuto = true;
+        if (players) x.bots = Math.max(1, Math.min(deviceMaxPlayers(), players) - 1);
+      });
+    }
+    const sizes = value.split(',').map(Number);
+    this.evenTeams = sizes.every((n) => n === sizes[0]);
+    this.change((x) => {
+      if (!isTeamMode(x.mode)) {
+        const pool = sizes.length > 2 ? teamModes.filter((m) => !isTwoTeamMode(m)) : teamModes;
+        x.mode = pool.includes('core.tdm') ? 'core.tdm' : pool[0]!;
+        x.scoreLimit = BASE_RULES[x.mode].scoreLimit;
+        x.scoreAuto = true;
+      }
+      x.teams = sizes;
+      if (x.playerTeam !== undefined && x.playerTeam >= sizes.length) x.playerTeam = sizes.length - 1;
     });
-    return select;
   }
 
   /** Load a saved setup by name (its map must still exist). */
@@ -2044,10 +2192,10 @@ export class FrontEnd {
   // ---------------------------------------------------------------- character select
 
   /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
-  private roster(): { id: string; name: string; group: string }[] {
+  private roster(): { id: string; name: string; group: string; sortAs?: string }[] {
     return [
       // An experimental character sits under Experimental, not with its group (the same rule as an experimental map).
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine') })),
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine'), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
       ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
@@ -2068,7 +2216,9 @@ export class FrontEnd {
 
     // Q / E (LB / RB) at the ends of the strip: buttons too.
     const bumper = (dir: 1 | -1) => {
-      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} section (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'));
+      // On a touch screen an arrow instead of the key caps (style.css).
+      const b = el('button', { type: 'button', class: 'bumper-btn', title: `${dir > 0 ? 'Next' : 'Previous'} section (${dir > 0 ? 'E' : 'Q'})` }, ...glyphs(dir > 0 ? 'E' : 'Q', dir > 0 ? 'RB' : 'LB'), el('span', { class: 'bumper-arrow', textContent: dir > 0 ? '▶' : '◀' }));
+      b.setAttribute('aria-label', `${dir > 0 ? 'Next' : 'Previous'} section`);
       b.addEventListener('click', () => this.cycle(dir));
       return b;
     };
@@ -2081,10 +2231,17 @@ export class FrontEnd {
       chip.addEventListener('click', () => this.jumpToSection(s.id));
       chips.append(chip);
     }
-    const jump = el('nav', { class: 'char-jump' }, bumper(-1), chips, bumper(1));
+    // Search by name, and Favourites only (the star on a portrait keeps one; docs/MOBILE_AUDIT.md, proposal 4).
+    const search = el('input', { type: 'search', id: 'char-search', class: 'char-search', placeholder: 'Search…', value: this.charQuery, maxLength: 30, autocomplete: 'off' });
+    search.setAttribute('aria-label', 'Search characters');
+    const favsOnly = el('button', { type: 'button', id: 'char-favs-only', class: `char-favs-only${this.charFavsOnly ? ' on' : ''}`, title: 'Favourites only', textContent: '★' });
+    favsOnly.setAttribute('aria-pressed', String(this.charFavsOnly));
+    favsOnly.setAttribute('aria-label', 'Favourites only');
+    const jump = el('nav', { class: 'char-jump' }, bumper(-1), chips, bumper(1), el('div', { class: 'char-find' }, search, favsOnly));
     jump.setAttribute('aria-label', 'Character sections');
 
     const grid = el('div', { class: 'char-grid loading' });
+    const favs = new Set(loadCharFavs());
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
     // here (a design of yours, a look new since the last capture) shimmers in its own tile until it's ready,
     // instead of holding back the whole grid.
@@ -2097,6 +2254,27 @@ export class FrontEnd {
       const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}${c.id === selected ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
       // Your current character wears a badge; the one shown (previewed) is outlined.
       if (c.id === this.look) tile.append(el('em', { class: 'chosen-badge', textContent: 'Chosen' }));
+      // A favourite's star (a span: buttons can't hold buttons), shown on hover, focus, a touch screen, or when kept.
+      const fav = favs.has(c.id);
+      const star = el('span', { class: `char-fav${fav ? ' on' : ''}`, role: 'button', tabIndex: -1, title: fav ? 'Favourite: tap to drop' : 'Keep as a favourite', textContent: fav ? '★' : '☆' });
+      star.setAttribute('aria-pressed', String(fav));
+      star.setAttribute('aria-label', `Favourite: ${c.name}`);
+      const flip = (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const now = toggleCharFav(c.id);
+        if (now) favs.add(c.id);
+        else favs.delete(c.id);
+        for (const s of grid.querySelectorAll<HTMLElement>(`.char-tile[data-look="${CSS.escape(c.id)}"] .char-fav`)) {
+          s.classList.toggle('on', now);
+          s.textContent = now ? '★' : '☆';
+          s.setAttribute('aria-pressed', String(now));
+        }
+        if (this.charFavsOnly) filter();
+      };
+      star.addEventListener('click', flip);
+      star.addEventListener('pointerdown', (e) => e.stopPropagation());
+      tile.append(star);
       const load = () =>
         this.portraits.get(c.id).then(
           async (src) => {
@@ -2129,6 +2307,42 @@ export class FrontEnd {
       sec.setAttribute('aria-label', s.label);
       grid.append(sec);
     }
+    // The search and Favourites only: tiles that don't match hide, and so do sections (and their chips) left empty.
+    const empty = el('p', { class: 'char-empty', hidden: true });
+    grid.append(empty);
+    const filter = () => {
+      const q = this.charQuery.trim().toLowerCase();
+      let shown = 0;
+      for (const sec of grid.querySelectorAll<HTMLElement>('.char-sec')) {
+        let n = 0;
+        for (const t of sec.querySelectorAll<HTMLElement>('.char-tile[data-look]')) {
+          const name = (t.title || '').toLowerCase();
+          const ok = (!q || name.includes(q)) && (!this.charFavsOnly || favs.has(t.dataset.look!));
+          t.hidden = !ok;
+          if (ok) n++;
+        }
+        const design = sec.querySelector<HTMLElement>('.char-tile.new');
+        if (design) design.hidden = !!q || this.charFavsOnly;
+        sec.hidden = n === 0 && (!!q || this.charFavsOnly);
+        chips.querySelector<HTMLElement>(`.char-chip[data-section="${CSS.escape(sec.dataset.section!)}"]`)?.toggleAttribute('hidden', sec.hidden);
+        shown += n;
+      }
+      empty.hidden = shown > 0;
+      empty.textContent = this.charFavsOnly && !favs.size ? 'No favourites yet: the star on a portrait keeps one here.' : `No characters match${q ? ` "${this.charQuery.trim()}"` : ''}${this.charFavsOnly ? ' among your favourites' : ''}.`;
+      onScroll();
+    };
+    search.addEventListener('input', () => {
+      this.charQuery = search.value;
+      grid.scrollTop = 0;
+      filter();
+    });
+    favsOnly.addEventListener('click', () => {
+      this.charFavsOnly = !this.charFavsOnly;
+      favsOnly.classList.toggle('on', this.charFavsOnly);
+      favsOnly.setAttribute('aria-pressed', String(this.charFavsOnly));
+      grid.scrollTop = 0;
+      filter();
+    });
     void Promise.all(pending).then(() => {
       grid.classList.remove('loading');
       for (const start of live) start();
@@ -2146,6 +2360,7 @@ export class FrontEnd {
     };
     for (const ev of ['wheel', 'touchstart', 'pointerdown'] as const) grid.addEventListener(ev, takeOver, { passive: true });
     new ResizeObserver(onScroll).observe(grid);
+    if (this.charQuery || this.charFavsOnly) requestAnimationFrame(filter);
     // Open on your character (or the one shown): their section scrolled to, unless they're in the first view.
     this.charSection = null;
     requestAnimationFrame(() => {
@@ -2154,14 +2369,14 @@ export class FrontEnd {
       this.markSection(this.sectionInView(grid));
     });
 
-    const info = el('div', { class: 'char-info panel' });
+    const info = el('div', { class: `char-info panel${this.charSheet ? ' sheet-open' : ''}`, id: 'char-info' });
     this.fillInfo(info, selected);
     return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>'), jump, grid, info, this.spinZone());
   }
 
   /** The section at the top of the grid's view (the last one once the grid is scrolled to its end). */
   private sectionInView(grid: HTMLElement): string | null {
-    const secs = [...grid.querySelectorAll<HTMLElement>('.char-sec')];
+    const secs = [...grid.querySelectorAll<HTMLElement>('.char-sec:not([hidden])')];
     if (!secs.length) return null;
     if (grid.scrollTop > 0 && grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 2) return secs[secs.length - 1]!.dataset.section!;
     let at = secs[0]!;
@@ -2218,7 +2433,7 @@ export class FrontEnd {
 
   /** Q / E (LB / RB) on Character Select: the previous or next section (round from the last to the first). */
   private stepSection(dir: 1 | -1): void {
-    const ids = [...this.body.querySelectorAll<HTMLElement>('.char-sec')].map((s) => s.dataset.section!);
+    const ids = [...this.body.querySelectorAll<HTMLElement>('.char-sec:not([hidden])')].map((s) => s.dataset.section!);
     if (!ids.length) return;
     const i = Math.max(0, ids.indexOf(this.charSection ?? ids[0]!));
     this.jumpToSection(ids[(i + dir + ids.length) % ids.length]!, true);
@@ -2234,7 +2449,7 @@ export class FrontEnd {
     const grid = this.body.querySelector<HTMLElement>('.char-grid');
     const f = document.activeElement as HTMLElement | null;
     if (!grid || (f && f !== document.body && !grid.contains(f))) return false;
-    const tiles = [...grid.querySelectorAll<HTMLElement>('.char-tile')];
+    const tiles = [...grid.querySelectorAll<HTMLElement>('.char-tile')].filter((t) => !t.hidden && !t.closest('[hidden]'));
     const from = f && grid.contains(f) ? f : (grid.querySelector<HTMLElement>('.char-tile.previewing') ?? tiles[0]);
     if (!from) return false;
     let to: HTMLElement | undefined;
@@ -2308,7 +2523,9 @@ export class FrontEnd {
     const outfits = [...new Set(l.parts.map((p) => partInfo(p)?.outfit).filter((x): x is 'ranger' | 'peasant' | 'athlete' => !!x))].map((o) => FAMILY_LABEL[o]).join(' / ');
     // What you spawn with in the match setup's weapon set (the setup's own, else its map's default; Standard: the mode's).
     const kitSet = getWeaponSet(matchWeaponSet({ weaponSet: this.setup.weaponSet }, this.currentMap().map ?? null));
-    const grenade = setThrowables(kitSet)?.[0] ?? 'frag';
+    // A set's grenades are dealt one a life (weaponSets.ts throwableFor): all of them named, or frags.
+    const grenades = (setThrowables(kitSet) ?? ['frag' as const]).map((k) => THROWABLE_DEFS[k].displayName);
+    const grenade = grenades.length > 1 ? `${grenades.join(' / ')}, one each life` : grenades[0]!;
     const loadout = el(
       'div',
       { class: 'loadout' },
@@ -2318,7 +2535,7 @@ export class FrontEnd {
         return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
       }),
       ...(kitSet.randomGun ? [el('span', { title: `A random main gun of the ${kitSet.name} set, a new one each life` }, '＋ A random gun each life')] : []),
-      el('span', { title: `${THROWABLE_DEFS[grenade].displayName} (G)` }, `● ${THROWABLE_DEFS[grenade].displayName}`),
+      el('span', { title: `${grenade} (G)` }, `● ${grenades.length > 3 ? 'A grenade of the set each life' : grenade}`),
     );
     // Character stats (shown while the match setup plays with them): each against everyone's range.
     const stats = this.setup.stats === false ? null : statBars(id, this.setup.sizes !== false);
@@ -2334,22 +2551,46 @@ export class FrontEnd {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
       const group = lookGroup(id);
       const kind = group ? CHARACTER_GROUP_LABELS[group] : NPC_ROLE_SPECS[role].creature ? 'Creature' : 'Soldier';
-      info.replaceChildren(img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout, el('div', { class: 'char-actions' }, choose));
+      info.replaceChildren(this.sheetToggle(), img, el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: `Play as the ${name}. Looks only: same hitbox, health and loadout as everyone else.` }), el('div', { class: 'tags' }, el('span', { textContent: 'NPC' }), el('span', { textContent: kind }))), loadout, el('div', { class: 'char-actions' }, choose));
       return;
     }
     const bot = CHARACTER_PROFILES[id];
     const style = bot ? botStyleLine(bot) : '';
     info.replaceChildren(
+      this.sheetToggle(),
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(lookBranch(id) ? [el('span', { textContent: CHARACTER_BRANCHES.find((b) => b.id === lookBranch(id))!.label })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       ...(stats ? [stats] : []),
       loadout,
       el('div', { class: 'char-actions' }, choose, customise),
     );
   }
 
+  /**
+   * A phone's details sheet (style.css: Character Select on a phone): its handle pulls it up or lets it down. Down, the
+   * sheet is a strip with the name and Choose; up, everything (stats, loadout, Customise).
+   */
+  private sheetToggle(): HTMLElement {
+    const b = el('button', { type: 'button', class: 'char-sheet-toggle', id: 'char-sheet-toggle', title: this.charSheet ? 'Hide the details' : 'Show the details' }, el('span', { textContent: this.charSheet ? '▾' : '▴' }));
+    b.setAttribute('aria-expanded', String(this.charSheet));
+    b.setAttribute('aria-label', this.charSheet ? 'Hide the details' : 'Show the details');
+    b.addEventListener('click', () => this.setCharSheet(!this.charSheet));
+    return b;
+  }
+
+  private setCharSheet(open: boolean): void {
+    this.charSheet = open;
+    const info = this.body.querySelector<HTMLElement>('.char-info');
+    if (!info) return;
+    info.classList.toggle('sheet-open', open);
+    info.querySelector('.char-sheet-toggle')?.replaceWith(this.sheetToggle());
+  }
+
   private preview(id: string): void {
     this.previewed = id;
+    // A phone: the details come up with the character shown (a tap on the one already up lets the sheet stay).
+    this.charSheet = true;
+    this.body.querySelector('.char-info')?.classList.add('sheet-open');
     this.scene.setLook(id);
     for (const t of this.body.querySelectorAll<HTMLElement>('.char-tile[data-look]')) t.classList.toggle('previewing', t.dataset.look === id);
     const info = this.body.querySelector('.char-info');
@@ -2589,7 +2830,17 @@ export class FrontEnd {
     const privacyLink = el('a', { href: '/privacy/', target: '_blank', rel: 'noopener', id: 'privacy-link', textContent: 'Privacy' });
     const foot = el('div', { class: 'prof-foot hint' }, el('span', { textContent: 'Your Google name and email are never shown to anyone: players see your username.' }), privacyLink);
     const head = this.head('Your <em>Profile</em>');
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, region, foot));
+    // Your favourite class (the loadout you play in matches with classes; docs/PLAYER_PROFILES_PLAN.md).
+    const favNote = el('small', { class: 'hint', textContent: 'Picked for you when a match plays with classes; change it any time on the class screen.' });
+    const favPick = el('select', { id: 'profile-fav-class' }, el('option', { value: '', textContent: 'None (choose each match)' }), ...CLASS_IDS.map((id) => el('option', { value: id, textContent: `${CLASS_DEFS[id].name} · ${CLASS_DEFS[id].role}`, selected: id === myFavClass() })));
+    favPick.addEventListener('change', () => {
+      setFavClass(favPick.value || null).then(
+        () => (favNote.textContent = 'Saved.'),
+        (e: Error) => (favNote.textContent = `Saved in this browser; not on your account: ${e.message}`),
+      );
+    });
+    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote);
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.
@@ -2656,6 +2907,46 @@ export class FrontEnd {
     return hubSetting() ? panel(form, communityPanel(kicker)) : panel(form);
   }
 
+  /** Profile's career stats (careerStats.ts): matches, wins, kills, deaths, K/D, accuracy, headshots, best streak, time, favourite weapon. */
+  private careerSection(kicker: (text: string) => HTMLElement, signedIn: boolean): HTMLElement {
+    const { career: c, where } = myCareer();
+    const pct = (v: number | null) => (v === null ? '–' : `${Math.round(v)}%`);
+    const hours = c.seconds >= 3600 ? `${(c.seconds / 3600).toFixed(1)} h` : `${Math.round(c.seconds / 60)} min`;
+    const fav = favouriteWeapon(c);
+    const tile = (id: string, label: string, value: string, ...extra: Node[]) => {
+      const t = el('div', { class: 'prof-stat' }, el('b', { textContent: value }), el('small', { textContent: label }), ...extra);
+      t.dataset.stat = id;
+      return t;
+    };
+    const icon = fav ? weaponIcon(fav, 'wicon') : null;
+    const grid = el(
+      'div',
+      { class: 'prof-stats', id: 'profile-career' },
+      tile('matches', 'Matches', String(c.matches)),
+      tile('wins', `Wins · ${pct(careerWinRate(c))}`, String(c.wins)),
+      tile('kd', 'K / D', c.kills + c.deaths ? careerKd(c).toFixed(2) : '–'),
+      tile('kills', 'Kills', String(c.kills)),
+      tile('deaths', 'Deaths', String(c.deaths)),
+      tile('accuracy', 'Accuracy', pct(careerAccuracy(c))),
+      tile('headshots', 'Headshot kills', String(c.headshots)),
+      tile('streak', 'Best streak', String(c.bestStreak)),
+      tile('time', 'Played', hours),
+    );
+    const favRow = el('div', { class: 'prof-fav-weapon', id: 'profile-fav-weapon' }, ...(icon ? [icon] : []), el('span', {}, 'Favourite weapon: ', el('b', { textContent: weaponName(fav) })));
+    const note = el('small', {
+      class: 'hint',
+      textContent:
+        where === 'account'
+          ? 'Kept on your ToshiroPlay account.'
+          : signedIn
+            ? 'Kept in this browser until your account can be reached.'
+            : c.matches
+              ? 'Kept in this browser. Sign in and it moves onto your account (once).'
+              : 'Play a match to the end and it counts here. Kept in this browser; sign in to keep it on your account.',
+    });
+    return el('section', { class: 'prof-sec prof-career' }, kicker('Career'), grid, favRow, note);
+  }
+
   private options(): HTMLElement {
     const name = el('input', { value: this.name, maxLength: 24, disabled: this.verified, title: this.verified ? 'Your username: change it in Profile' : '' });
     const clan = el('input', { value: this.clan, maxLength: 5, placeholder: 'none' });
@@ -2674,6 +2965,17 @@ export class FrontEnd {
       this.audio.setVolume(Number(volume.value) / 100);
       storage('cs.volume', String(this.audio.getVolume()));
     });
+    // The owner's music (main menu and MapMaker) and announcer, each on its own slider under Volume; 0 is off.
+    const level = (get: () => number, set: (v: number) => void, key: string) => {
+      const input = el('input', { type: 'range', min: '0', max: '100', step: '5', value: String(Math.round(get() * 100)) });
+      const out = el('output');
+      const show = () => (out.textContent = input.value === '0' ? 'Off' : `${input.value}%`);
+      show();
+      input.addEventListener('input', () => (set(Number(input.value) / 100), storage(key, String(get())), show()));
+      return el('span', { class: 'opt-range' }, input, out);
+    };
+    const musicVol = level(() => this.audio.getMusicVolume(), (v) => this.audio.setMusicVolume(v), 'cs.music');
+    const announcerVol = level(() => this.audio.getAnnouncerVolume(), (v) => this.audio.setAnnouncerVolume(v), 'cs.announcer');
     const graphics = el('select', {}, ...GRAPHICS_QUALITIES.map((q) => el('option', { value: q, textContent: { low: 'Low — fastest', medium: 'Medium — sun shadows', high: 'High — far shadows, ambient occlusion, bloom' }[q], selected: q === loadGraphicsQuality() })));
     graphics.addEventListener('change', () => saveGraphicsQuality(graphics.value as GraphicsQuality));
     const renderScale = el('select', {}, ...RENDER_SCALES.map((r) => el('option', { value: r, textContent: RENDER_SCALE_LABELS[r], selected: r === loadRenderScale() })));
@@ -2686,10 +2988,52 @@ export class FrontEnd {
     perfOverlay.addEventListener('change', () => savePerfOverlay(perfOverlay.checked));
     const hitboxes = el('input', { type: 'checkbox', checked: loadHitboxOverlay() });
     hitboxes.addEventListener('change', () => saveHitboxOverlay(hitboxes.checked));
+    // Ranks & badges (game/ranksSetting.ts): off by default; the pause menu has it too.
+    const ranksBox = el('input', { type: 'checkbox', checked: ranksOn() });
+    ranksBox.id = 'opt-ranks';
+    ranksBox.addEventListener('change', () => saveRanksOn(ranksBox.checked));
     // Reduce flashing (game/reduceFlashing.ts): on by default; the pause menu has it too.
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
+    // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
+    const combat = combatPrefs();
+    const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
+    aimMode.id = 'opt-aim-mode';
+    // The same setting in Controls → Touch (a phone or tablet): the two stay in step.
+    const touchAim = el('select', { id: 'opt-touch-aim' }, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
+    aimMode.addEventListener('change', () => {
+      saveCombatPrefs({ aim: aimMode.value as AimMode });
+      touchAim.value = aimMode.value;
+    });
+    touchAim.addEventListener('change', () => {
+      saveCombatPrefs({ aim: touchAim.value as AimMode });
+      aimMode.value = touchAim.value;
+    });
+    // The touch controls' layout (game/touchLayout.ts; docs/MOBILE_AUDIT.md, proposal 3).
+    const tl = touchLayout();
+    const touchSize = el('select', { id: 'opt-touch-size' }, ...TOUCH_SIZES.map((z) => el('option', { value: z, textContent: TOUCH_SIZE_LABELS[z], selected: z === tl.size })));
+    touchSize.addEventListener('change', () => saveTouchLayout({ size: touchSize.value as TouchSize }));
+    const touchOpacity = el('input', { id: 'opt-touch-opacity', type: 'range', min: String(MIN_TOUCH_OPACITY), max: '1', step: '0.05', value: String(tl.opacity) });
+    const touchOpacityVal = el('output', { textContent: `${Math.round(tl.opacity * 100)}%` });
+    touchOpacity.addEventListener('input', () => (touchOpacityVal.textContent = `${Math.round(Number(touchOpacity.value) * 100)}%`));
+    touchOpacity.addEventListener('change', () => saveTouchLayout({ opacity: Number(touchOpacity.value) }));
+    const leftHanded = el('input', { id: 'opt-touch-left', type: 'checkbox', checked: tl.leftHanded });
+    leftHanded.addEventListener('change', () => saveTouchLayout({ leftHanded: leftHanded.checked }));
+    const shake = el('select', {}, ...SHAKE_LEVELS.map((l) => el('option', { value: l, textContent: SHAKE_LABELS[l], selected: l === combat.shake })));
+    shake.id = 'opt-camera-shake';
+    shake.addEventListener('change', () => saveCombatPrefs({ shake: shake.value as ShakeLevel }));
+    const vibration = el('input', { type: 'checkbox', checked: combat.vibration });
+    vibration.id = 'opt-vibration';
+    const vibStrength = el('input', { type: 'range', min: '0.1', max: '1', step: '0.1', value: String(combat.vibrationStrength), disabled: !combat.vibration });
+    vibStrength.id = 'opt-vibration-strength';
+    const vibVal = el('output', { textContent: `${Math.round(combat.vibrationStrength * 100)}%` });
+    vibration.addEventListener('change', () => {
+      saveCombatPrefs({ vibration: vibration.checked });
+      vibStrength.disabled = !vibration.checked;
+    });
+    vibStrength.addEventListener('input', () => (vibVal.textContent = `${Math.round(Number(vibStrength.value) * 100)}%`));
+    vibStrength.addEventListener('change', () => saveCombatPrefs({ vibrationStrength: Number(vibStrength.value) }));
     // Room lights (game/roomLights.ts): on by default; the pause menu has it too.
     const roomLights = el('input', { type: 'checkbox', checked: roomLightsOn() });
     roomLights.id = 'opt-room-lights';
@@ -2755,6 +3099,7 @@ export class FrontEnd {
       ['Quick melee (punch; kick on the move or after a punch)', 'Side mouse button · Y'],
       ['Hold breath (scoped)', 'Shift'],
       ['Reload', 'R'],
+      ['Fire mode (Battle Rifle: single or 3-round burst)', 'U'],
       ['Use · get in or out of a vehicle', 'E'],
       ['Third person · in a vehicle: cockpit or chase camera', 'H'],
       ['Weapons (Q tap: your last weapon)', '1–9 · Wheel · Q'],
@@ -2773,11 +3118,11 @@ export class FrontEnd {
     const pad = 'Controller: ';
     // Phones and tablets (game/touchControls.ts).
     const touchList = bindingList([
-      ['Move (push past the rim to sprint)', 'Left pad'],
+      ['Move (push past the rim to sprint)', touchLayout().leftHanded ? 'Right pad' : 'Left pad'],
       ['Jump · crouch', "Tap · hold the pad's middle"],
-      ['Look', 'Drag on the right half'],
+      ['Look', touchLayout().leftHanded ? 'Drag on the left half' : 'Drag on the right half'],
       ['Fire (drag it to aim while firing)', 'Fire'],
-      ['Aim down sights (toggle)', 'Aim'],
+      ['Aim down sights (hold or toggle: Aim above)', 'Aim'],
       ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
@@ -2842,9 +3187,13 @@ export class FrontEnd {
     allySel.addEventListener('change', saveMarks);
     enemySel.addEventListener('change', saveMarks);
     // One section at a time beside a list of sections; every setting a row: what it is (and what it does) on
-    // the left, its control on the right.
-    const row = (label: string, control: HTMLElement, help?: string) =>
-      el('div', { class: 'opt-row' }, el('div', { class: 'opt-label' }, el('span', { textContent: label }), ...(help ? [el('small', { textContent: help })] : [])), el('div', { class: 'opt-control' }, control));
+    // the left, its control on the right. On a phone (style.css) the sections are chips over one column, and
+    // the description hides behind an (i) beside the name (docs/MOBILE_AUDIT.md, proposal 7).
+    const row = (label: string, control: HTMLElement, help?: string) => {
+      const info = help ? infoTip(help) : null;
+      info?.classList.add('opt-info');
+      return el('div', { class: 'opt-row' }, el('div', { class: 'opt-label' }, el('span', { textContent: label }, ...(info ? [info] : [])), ...(help ? [el('small', { textContent: help })] : [])), el('div', { class: 'opt-control' }, control));
+    };
     const toggle = (input: HTMLInputElement) => el('label', { class: 'switch' }, input, el('span', { class: 'switch-track' }));
     const volumeVal = el('output', { textContent: `${volume.value}%` });
     volume.addEventListener('input', () => (volumeVal.textContent = `${volume.value}%`));
@@ -2855,6 +3204,8 @@ export class FrontEnd {
         row('Player name', name, this.verified ? 'Your username: change it in Profile.' : 'What other players see.'),
         row('Clan tag', clan, 'Up to five letters, shown before your name.'),
         row('Volume', el('span', { class: 'opt-range' }, volume, volumeVal)),
+        row('Music', musicVol, 'On the main menu, Match Setup and in MapMaker; never in a match. Under Volume.'),
+        row('Announcer', announcerVol, 'The voice calling the match: the start, objectives, your multi-kills and streaks. Under Volume. Also in the pause menu.'),
       ]],
       ['display', 'Display', [
         row('Fullscreen', fullscreen, 'F11 or Alt+Enter also switch it.'),
@@ -2875,7 +3226,16 @@ export class FrontEnd {
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
-        ...(isTouchDevice() ? [el('h3', { class: 'opt-sub', textContent: 'Touch' }), touchList] : []),
+        ...(isTouchDevice()
+          ? [
+              el('h3', { class: 'opt-sub', textContent: 'Touch' }),
+              row('Button size', touchSize, 'The movement pad and the buttons. Large is kept a little smaller on short screens, so the buttons stay clear of the kill feed.'),
+              row('Button opacity', el('span', { class: 'opt-range' }, touchOpacity, touchOpacityVal), 'How solid the pad and buttons are drawn: lower to see more of the game behind them. A pressed button always shows in full.'),
+              row('Left-handed', toggle(leftHanded), 'The pad on the right and the buttons on the left; drag on the left half to look.'),
+              row('Aim', touchAim, 'Hold: aim while the Aim button is held. Toggle (the default on a phone): tap to aim, tap again to stop; changing weapons, getting in a vehicle or dying lets go. The same setting as Accessibility → Aim.'),
+              touchList,
+            ]
+          : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
         keyboard,
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
@@ -2886,6 +3246,7 @@ export class FrontEnd {
         row('Hit marker', hitStyle, 'What flashes on the crosshair when you hit someone.'),
         row('Teammate marker', allySel),
         row('Enemy marker', enemySel, 'Off: only teammates are marked.'),
+        row('Ranks & badges', toggle(ranksBox), 'Off by default: plain names and the arrows over heads. On: every player and bot wears a rank, its title before their name and a badge in their group\'s style (Army ranks, the Agency ring, a skull, a star, a gear, a crown, a paw, a chevron), in the kill feed, on the scoreboards and over heads. Ranks rise quietly with points and kills and carry from match to match; yours is kept with your career. Just for show. Also in the pause menu.'),
         row('Damage numbers', toggle(dmgNumbers), 'What each of your hits did, floating up from the target for a moment: gold for a head hit, cyan where armour took part, bolder for the kill. On the Training Range\'s boards it shows what that round would do to a body there.'),
         row('Spray pattern', toggle(sprayOn), 'A small panel plots where your last burst went, round by round, against a ring the width of a body at 25 m, and how long your aim took to settle. Handy on the Training Range\'s recoil wall.'),
         row('First-time tips', toggle(tipsOn), 'A short hint the first time something happens in a match: low ammo, a vehicle in reach, a pickup, armour, spawn protection, your first death. Each shows once.'),
@@ -2893,6 +3254,14 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
+        row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
+        ...(vibrationSupported()
+          ? [
+              row('Controller vibration', toggle(vibration), 'A controller rumbles when you fire, take a hit or a blast goes off near you. Also in the pause menu.'),
+              row('Vibration strength', el('span', { class: 'opt-range' }, vibStrength, vibVal)),
+            ]
+          : []),
       ]],
       ['online', 'Online', [
         el('p', { class: 'opt-note', textContent: "If a friend finds your game but can't connect, your networks block direct connections. A TURN relay passes the game through a server instead: make a free account (e.g. metered.ca → TURN server), paste its address and login here, and invite your friend again. The invite link carries these settings." }),
@@ -2945,6 +3314,7 @@ export class FrontEnd {
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
       // Match setup's saved setups menu, open: Esc closes it (one level per press).
       if (this.screen === 'home' && this.quickOpen) return this.closeQuickPlay();
+      if (this.screen === 'play' && this.mapPicking) return this.closeMapPicker();
       const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open], #arcade-where-menu[open]') : null;
       if (menu) {
         menu.open = false;

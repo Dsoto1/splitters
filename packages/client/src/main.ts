@@ -1,4 +1,6 @@
 import './renamedStorage.ts';
+import { countWorkers, noteMemory } from './memoryReadout.ts';
+import { editorResumeOnReload, forgetEditorMap, type EditorResume } from './editorResume.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import '@fontsource/chakra-petch/500.css';
 import '@fontsource/chakra-petch/600.css';
@@ -7,8 +9,9 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
+import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
@@ -31,15 +34,19 @@ import { installFullscreenKeys } from './fullscreen.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
+import { myCareer, myFavClass, myRankPoints, recordMatch } from './careerStats.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
+import { hideLoadingScreen, showLoadingScreen } from './loadingScreen.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
 import { shippedPicture } from './frontend/mapThumbs.ts';
 import { joinParty, myParty, rememberJoin } from './game/party.ts';
 import { FOLLOW_TRAVEL_MS, RECONNECT_FOR_MS, afterLinkEnds } from './game/rejoinPolicy.ts';
 
+// The memory readout counts our workers (made, less terminated) from the first one on.
+countWorkers();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 // Browser tests' deterministic mode (?test=1): offline only, see testMode.ts.
@@ -282,13 +289,46 @@ for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(
 installFullscreenKeys();
 installInputMode();
 (window as unknown as { __audio: AudioSystem }).__audio = audio;
+// The owner's music and announcer have their own volumes (Options); music plays on the menu and in MapMaker only
+// (audio/music.ts). Browser tests leave it off (nothing to fetch), unless a test asks with ?music=1.
+audio.setMusicVolume(Number(storage('cs.music') ?? 0.5));
+audio.setAnnouncerVolume(Number(storage('cs.announcer') ?? 1));
+const announcerInput = $<HTMLInputElement>('announcer-volume');
+announcerInput.value = String(Math.round(audio.getAnnouncerVolume() * 100));
+announcerInput.addEventListener('input', () => {
+  audio.setAnnouncerVolume(Number(announcerInput.value) / 100);
+  storage('cs.announcer', String(audio.getAnnouncerVolume()));
+});
+// The music's code loads after the first click or key (audio unlocked), never in the menu's first JS.
+let music: MusicPlayer | null = null;
+let musicScene: MusicScene | null = null;
+if (params.get('music') === '1' || (params.get('music') !== '0' && !navigator.webdriver)) {
+  audio.onUnlock(
+    () =>
+      void import('./audio/music.ts').then(({ MusicPlayer }) => {
+        music = new MusicPlayer(audio);
+        (window as unknown as { __music: MusicPlayer }).__music = music;
+        music.setScene(musicScene);
+      }),
+  );
+}
+const MUSIC_SCENES: Record<Mode, MusicScene | null> = { menu: 'menu', designer: 'menu', editor: 'mapmaker', game: null };
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
 class App {
   private engine!: AbstractEngine;
   private kind!: RendererKind;
   private canvas!: HTMLCanvasElement;
-  private mode: Mode = 'menu';
+  private modeNow: Mode = 'menu';
+  /** Where the app is; the music follows (the menu's, MapMaker's, none in a match). */
+  private get mode(): Mode {
+    return this.modeNow;
+  }
+  private set mode(m: Mode) {
+    this.modeNow = m;
+    musicScene = MUSIC_SCENES[m];
+    music?.setScene(musicScene);
+  }
   private editor?: EditorApp;
   private session?: GameSession;
   private designer?: CharacterDesigner;
@@ -384,8 +424,18 @@ class App {
     }
     await this.init();
     this.mode = 'menu';
+    // Out of MapMaker: a reload from here is the menu's.
+    forgetEditorMap();
     this.editor?.hide();
     this.front!.show(status);
+  }
+
+  /** The match's loading screen over everything, with the map's card (loadingScreen.ts; session.ts stages the rest). */
+  private showMatchLoading(map: Parameters<typeof rulesForMap>[0], mode: string): void {
+    const id = map.metadata.id;
+    const picture = map.metadata.thumbnail ?? (inSuite(id) ? shippedPicture(id) : null);
+    showLoadingScreen({ name: map.metadata.name, mode: (isGameMode(mode) ? MODE_LABELS[mode] : null) ?? '', picture }, 0.05);
+    $('menu').hidden = true;
   }
 
   /** Polite prefetch (idle, after the menu is shown): the match code and the map Play opens on, so Start doesn't wait. */
@@ -407,6 +457,10 @@ class App {
       m = await loadMatchCode();
     } catch (e) {
       console.error('match code failed to load', e);
+      // Start match's loading screen comes down; back to where we were.
+      hideLoadingScreen();
+      if (this.mode === 'menu') $('menu').hidden = false;
+      else if (this.mode === 'editor') this.editor?.show();
       this.front?.setStatus('The game failed to load: check your connection and try again.');
       return;
     }
@@ -426,7 +480,8 @@ class App {
     }, this.portraits);
   }
 
-  async openEditor(): Promise<void> {
+  /** MapMaker; `resume` after a reload of the tab while it was open: the map that was being made (editorResume.ts). */
+  async openEditor(resume?: EditorResume | null): Promise<void> {
     const [{ EditorApp }] = await Promise.all([import('./editor/editorApp.ts'), this.init(), initLocalMaps()]);
     finishBoot();
     const first = !this.editor;
@@ -438,8 +493,9 @@ class App {
     });
     $('menu').hidden = true;
     this.mode = 'editor';
-    // Always a blank starter map; the user opens what they want from Open….
-    this.editor.startFresh();
+    // A blank starter map (the user opens what they want from Open…), or after a reload the map that was being made.
+    if (resume) void this.editor.resume(resume);
+    else this.editor.startFresh();
     this.editor.show();
     // The first time, its sky, ground and shaders are still on their way: fade the view in when they are.
     if (first) revealWhenReady(capped(this.editor.view.scene.whenReadyAsync(), 2000));
@@ -451,12 +507,14 @@ class App {
 
   private startTest(req: TestRequest): void {
     const t0 = performance.now();
+    this.showMatchLoading(req.map, req.map.metadata.supportedModes[0] ?? 'core.deathmatch');
     void this.withMatch((m) => this.startTestWith(m, req, t0));
   }
 
   private startTestWith(m: MatchCode, req: TestRequest, t0: number): void {
+    noteMemory('test start');
     this.editor!.hide();
-    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(req.startAt ? { startAt: req.startAt } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(req.map, { name: this.front!.name || 'Tester', look: this.front!.look, botFill: req.botFill, difficulty: req.difficulty, ...(req.startAt ? { startAt: req.startAt } : {}), ...(req.nav ? { nav: req.nav } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Back to MapMaker',
       exitOnF5: true,
       onReady: () => {
@@ -467,6 +525,7 @@ class App {
       onExit: (reason) => {
         this.mode = 'editor';
         this.editor!.show();
+        noteMemory('back to MapMaker');
         m.prewarmSimWorker();
         if (reason) this.editor!.toast(`Test ended: ${reason}`, true);
       },
@@ -569,11 +628,13 @@ class App {
    */
   /** `extra`: a match handed on from a host that left (its checkpoint), a line to greet with, or `spectate`: you join it watching (Match setup → Spectate). */
   playLocal(map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry?: CarryOver, hosting?: Travel['hosting'], autoHost = false, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean } = {}): void {
+    // The loading screen from the click (no grey frame while the match code and the map come in): the map's card.
+    this.showMatchLoading(map, rules.mode);
     void this.withMatch((m) => this.playLocalWith(m, map, rules, botFill, difficulty, carry, hosting, autoHost, extra));
   }
 
   private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
-    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
+    this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), rankPoints: myRankPoints(), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
       hostable: true,
@@ -900,6 +961,21 @@ class App {
         return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
       },
       ...(o.tutorial ? { tutorial: true } : {}),
+      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial.
+      ...(o.exitOnF5 || o.tutorial
+        ? {}
+        : {
+            career: {
+              record: recordMatch,
+              favClass: myFavClass,
+              points: myRankPoints,
+              card: () => {
+                const f = this.front!;
+                const { career, where } = myCareer();
+                return { name: f.displayName, verified: f.verified, character: f.lookName(f.look), favClass: myFavClass(), career, where };
+              },
+            },
+          }),
       // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
       tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
       onExit: (reason, travel, how, end) => {
@@ -954,7 +1030,7 @@ function onceBack(f: () => void): void {
 
 const app = new App();
 // The start-up loading screen is the game's: the /host page and the team tools show straight away.
-if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters') finishBoot();
+if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || params.get('mode') === 'characters' || params.get('mode') === 'weapons' || params.get('mode') === 'sights') finishBoot();
 // trigger.toshiroplay.com/host: hosting, in the browser or with the optional Host Service (hostPage.ts).
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
@@ -995,6 +1071,10 @@ else if (params.get('mode') === 'assets') {
     const { engine } = await createEngine($<HTMLCanvasElement>('view'));
     await openPropLineup(engine);
   })();
+} else if (params.get('mode') === 'weapons') {
+  // Team tool: weapons side by side (recoil path, spread cones, damage and time to kill over distance, holdover).
+  $('menu').hidden = true;
+  void import('./tools/weaponTuning.ts').then((m) => m.openWeaponTuning());
 } else if (params.get('mode') === 'grips') {
   // Team tool: one character holding one weapon at a time, for tools/content/grip-sheet.mjs.
   void (async () => {
@@ -1003,6 +1083,15 @@ else if (params.get('mode') === 'assets') {
     const { openGripSheet } = await import('./tools/gripSheet.ts');
     const { engine } = await createEngine($<HTMLCanvasElement>('view'));
     await openGripSheet(engine);
+  })();
+} else if (params.get('mode') === 'sights') {
+  // Team tool: every weapon aiming down its sights from the eye, with the audit of the sight fit (docs/GUNPLAY_SPEC.md §15).
+  void (async () => {
+    $('menu').hidden = true;
+    const { createEngine } = await import('./engine.ts');
+    const { openSightSheet } = await import('./tools/sightSheet.ts');
+    const { engine } = await createEngine($<HTMLCanvasElement>('view'));
+    await openSightSheet(engine);
   })();
 } else if (params.has('envlab')) {
   // Team tool: the environment species at eye height, with level of detail, wireframe, collider, wind and tier toggles.
@@ -1014,7 +1103,7 @@ else if (params.get('mode') === 'assets') {
     const { engine, canvas, kind } = await createEngine($<HTMLCanvasElement>('view'));
     await openEnvLab(engine, canvas, kind);
   })();
-} else if (params.get('mode') === 'editor') void app.openEditor();
+} else if (params.get('mode') === 'editor') void app.openEditor(editorResumeOnReload());
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('tutorial')) void app.playTutorial();
 else if (params.has('offline')) {
@@ -1030,4 +1119,9 @@ else if (params.has('offline')) {
   void app.init().then(() => app.joinCode(params.get('join') ?? '', app.front!.displayName || 'Player'));
 }
 else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.front!.server, app.front!.name));
-else void app.showMenu();
+else {
+  // A reload of the tab while MapMaker (or its Test) was open goes back to MapMaker on that map, not to the menu.
+  const resume = editorResumeOnReload();
+  if (resume) void app.openEditor(resume);
+  else void app.showMenu();
+}

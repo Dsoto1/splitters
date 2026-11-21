@@ -96,6 +96,8 @@ folder can sit directly in it or one level down), and run:
 | The owner's Meshy landmark uploads of 2026-10-31 (Meshy Community CC0 per the owner's rule of 2026-11-06; textured GLBs, named in each entry's `src`; the monk statue is the `_stylize.glb` from its zip), all in one folder named `owned_landmarks` | `node tools/content/prepare-props.mjs --downloads <dir>` (`ONLY=<id>,…` for some) | pack `meshy-community-landmarks`: market stalls (`dc_market_stall`, `mv_market_stall`, `rustic_market_stall`), the wishing well (`dc_well` and `mv_well`, one download), the crawler crane `dc_crane`, statues (`jt_statue_large`, `temple_fire_statue`, `temple_spear_statue`, `temple_monk_statue`) and fountains (`town_fountain`, `lion_head_fountain`, `eagle_fountain`); all hero tier |
 | The Meshy airliner of 2026-11-04 (Meshy Community CC0 per the owner, 2026-11-06; the refined GLB in a folder `airliner-2026-11-04/refined/airliner.glb`; preview task 01a1a451-1dda-77ed-82ec-810c24ac1e9a, refine 01a1a451-ee8d-72d3-99ea-48063cd52abe) | `node tools/content/fuselage-profile.mjs <dir>` (its cross-section for the cabin kit, `assets-src/tiletrigger-cabin/fuselage.json`, and its collision and openings, written into its pack file), then `ONLY=airliner_shell node tools/content/prepare-props.mjs --downloads <dir>` | `props/airliner_shell.glb` (pack `meshy-community-airliner`, hero tier: 19.7k triangles, a 6.1k one from 120 m, 1.38 MB) |
 | "Snowmobile" by roygbpjyt (Meshy Community, CC0: Meshy Terms of Use §3.3 "Community License"; the textured GLB `snowmobile.glb` in a folder `snowmobile-cc0-2026-11-04`) | `ONLY=vehicles/snowmobile.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/snowmobile.glb` (pack `meshy-community-snowmobile`, vehicle tier: 20k triangles plus a 5k one from 40 m, 2048 px colour and 1024 px normal map, 1.42 MB), the Snow Sled's model |
+| The owner's own Meshy hover carrier of 2026-11-16 (Meshy, owned: "I made it on Meshy"; the textured GLB `Meshy_AI_hover_carrier_topdown_1116164125_texture.glb`, in any folder) | `ONLY=vehicles/hover_carrier.glb node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/vehicles/hover_carrier.glb` (pack `meshy-owned-drive-1116`, vehicle tier: 10k triangles plus a 2.5k one from 40 m, 1024 px colour map, 0.83 MB, 9.6 m long), the Dropship's model and the drop route's dropship |
+| The owner's own Meshy excavator of 2026-11-17 (Meshy, owned; the textured GLB `Meshy_AI_CelShadedExcavator_1117150026_texture.glb` in a folder `owned-drive-1117`) | `ONLY=mining_excavator_deck node tools/content/prepare-props.mjs --downloads <dir>` (then `pnpm content:rebuild`) | `props/mining_excavator_deck.glb` (pack `meshy-owned-drive-1117`, hero tier: 13.7k → 9.0k triangles keeping the download's own texture charts (`meshSurface: texture`: a clean low cel-shaded download looks better kept than rebaked), a 4.0k one from 60 m (`lod: [0.45, 60]`: the default quarter shredded its tracks), 1024 px colour and normal maps, 0.73 MB; collides as `boxes`, the house roof a flat walkable deck at 9.2 m), Iron Maw's new excavator |
 | The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder; unpack it with `unar`: three of its files don't unpack, none used) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 | The weapons and grenades of 2026-11-06 (Meshy Community CC0: the 11 `Meshy_AI_<name>_1106…_texture.glb` in a folder `intake-2026-11-06c`) and the Guns & Explosives pack's guns and grenades, side by side in one downloads dir | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` (a `held` gun writes three files: everyone's, `.medium.glb` and `.high.glb`) | pack `meshy-community-drive-1106c` and `3dmodelscc0-guns-explosives` entries in `content/guns.json`; ARSENAL.md, "Weapons intake of 2026-11-06" |
@@ -133,7 +135,7 @@ reach (a wreck's engine bay and seat stuffing: 25% of it). `paintOut` (guns)
 paints lettering and logos out of the colour map before anything else, from
 colour rules (near-white, orange); `stone` (props) turns the map to stone of
 one colour; `centre: base` (guns) centres a turret on its pedestal.
-`surface: vertex` keeps the colours in the vertices instead (no image).
+`surface: vertex` keeps the colours in the vertices instead (no image). `surface: texture` keeps the download's own charts (seam-aware simplifier, its map shrunk): for a download already low and clean, such as a cel-shaded one, where a rebake only blurs it. A prop whose `surface` names its surface type (`metal`) gives the mode as `meshSurface`.
 Props take `paintOut` too (the guns' colour rules); a rule with `within` (boxes in
 the built prop's frame) only touches the texels of the download's triangles
 inside them (the airliner's nacelle lettering, not its windows of the same
@@ -320,7 +322,7 @@ there are.
 
 | File | Holds |
 |---|---|
-| `content/weapons/families.json` | `defaults` (what every weapon file starts from) and the ten gunplay `families` (velocity, spread, recoil, falloff, head and leg multipliers) |
+| `content/weapons/families.json` | `defaults` (what every weapon file starts from), the ten gunplay `families` (velocity, spread, recoil, falloff, head and leg multipliers) and the dual-wielding trade (`akimbo`: the base block and one per family) |
 | `content/weapons/<name>.json` | one weapon: id `core.<name>`, its network `code`, and only the values that differ from `defaults` |
 | `content/throwables.json`, `content/classes.json`, `content/abilities.json` | thrown equipment, classes (loadout, health, speed, ability) and each ability's numbers |
 | `content/codes.lock.json` | every network code ever given (written by the generator; never edit by hand) |
@@ -359,6 +361,25 @@ gaps (clients read them by position). A class ability is code first (`sim/classe
 
 The Workbench (`.control-center/workbench.json`) shows weapons, weapon families, classes, class abilities and
 throwables from these files; id, code, kind and holds are read-only there.
+
+#### Making a weapon eligible for dual wielding
+
+Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"; in the match since step 2, off in normal play until the second gun is drawn) is one
+line in the weapon's file:
+
+- `"akimbo": true` for a weapon whose `family` has an `akimbo` block in `families.json` (pistol, machine_pistol,
+  smg, shotgun): it takes that family's trade.
+- `"akimbo": { "as": "pistol" }` for a weapon without a family (the Pulse Pistol): `as` names the family whose
+  trade it takes.
+- Its own numbers go in the same object and win over the family's: `"akimbo": { "kick": 1.5, "reload": 1.6 }`.
+  The fields: `cone`, `pattern` (a shotgun's pellet spread), `kick`, `reload`, `raise` (multipliers, 1 to 3) and
+  `move` (added to `handling.move`, −0.1 to 0).
+
+A family that has no trade yet gets an `akimbo` block in `families.json` first (only what differs from the
+top-level `akimbo` base block). The generator refuses the flag on a weapon with an alt-fire (`alt`), a zoom scope
+(`view.zoomFov` or `view.optic`) or fire modes (`fireModes`), and on melee: a pair needs right mouse and the
+fire-mode key, and can't aim. Then `pnpm content:weapons`, rewrite the fixture (step 9) and add the weapon to the
+eligible list in `tools/content/test/weapons.test.mjs` and `packages/shared/test/akimbo.test.ts`.
 
 ### Vehicles, turrets and NPC roles
 
@@ -502,6 +523,9 @@ groups in the client).
    (`sim/discs.ts`) when `displayName` is left out; a weapon pickup without `botValue` gets
    0.55 + `respawnSeconds` / 120, at most 0.9 (power weapons respawn slower and are worth more). Every other pickup
    writes both.
+   `rolls: false` (weapon pickups only) keeps a pickup out of every roll: random pickups, the host's mix-up and
+   weapon sets never hold it, and it lies only where a map maker placed it (the Pistol, which everyone starts with:
+   its pickup is the second gun of a dual-wield pair). A pickup added with it changes no roll.
 4. **Generate and check:** `pnpm content:pickups` (`node tools/content/pickups.mjs`) checks the schema (an unknown
    field is an error), the weapons, ammo types, throwables, powerups and disc powers, the numbers (amounts, seconds
    and respawn above 0, bot value 0-1, throwable count within the carry limit), that every pickup `maps/*.json` and
@@ -531,7 +555,7 @@ maps and stay in code.
 
 | File | Holds |
 |---|---|
-| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), optional `surface` (a type in `content/surface-types.json`) and `ballistic` (a class in `BALLISTIC_MATERIALS`), `notes` |
+| `content/materials.json` `materials` | every material, in MapMaker's palette order: `id`, `displayName`, `category` (palette group: `MATERIAL_CATEGORIES`), either a procedural `pattern` (`PATTERN_IDS`) with `base` and `accent` colours, or a scanned `texture` set with `base` (its average colour, for minimaps and icons); `scale` (metres one repeat covers), `shine` (0 matte to 1 glossy), `emissive` (glows whatever the light), optional `surface` (a type in `content/surface-types.json`) and `ballistic` (a class in `BALLISTIC_MATERIALS`), optional `wrap` (upright faces lay the texture along x + z, unbroken round corners and buttresses; for irregular textures that hide the mirroring) and `shadeLift` (0-0.5: that share of its colour added to the light, so its shaded faces still read), `notes` |
 | `content/materials.json` `themes` | every theme: `id`, `displayName`, `sky` colour and `slots` (`floor`, `walls`, `solids`, `underside`, `trim`: each a `material` and optional `tint`) |
 | `content/materials.json` `tintSwatches` | the tints MapMaker offers first (any #rrggbb is allowed) |
 
@@ -712,6 +736,76 @@ shrubs, grass, boulders and cliff faces generated in code from seeds, owned, not
     breakable (species carry no breakable data; `prop.log` has 60 health).
   They are in MapMaker's Environment group (Boulders, Deadwood) but not in the brush presets (a new species in a
   preset's mix changes what a seed paints). Their palette pictures come with the next `pnpm content:rebuild`.
+- **Environment Phase 4, more variety (2026-11-17, owner: "yes"):** seventeen species, every one through a generator
+  that was already there (one new kind, `rosette`), from the shared pictures (no new atlas cell, so no existing model
+  changes):
+  - trees: `env.broadleaf.birch` (Silver Birch: tall and slender, pale bark, a narrow open crown; summer, autumn),
+    `env.broadleaf.olive` (short, gnarled and leaning under a low, wide grey-green crown; green, dry),
+    `env.conifer.mountain_pine` (short and stocky, a lean, the tree line's pine; summer, snow), `env.conifer.larch`
+    (tall and open, light upturned branches; summer, autumn gold), `env.conifer.cypress` (Italian Cypress: a narrow dark
+    column; green, dry);
+  - bushes: `env.shrub.juniper` (Creeping Juniper: a low wide mat of needle sprays, 0.7 m; decoration, no
+    concealment; green, blue; the shrub generator's new `cards` names the atlas pictures it uses, the broadleaf ones by
+    default) and `env.shrub.sagebrush` (a rounded silver-grey desert bush, 0.95 m, conceals like the other bushes; grey,
+    dry);
+  - grasses: `env.grass.tall` (0.9 m, arching; summer, dry) and `env.grass.tussock` (a dense upright bunch, 0.5 m;
+    green, straw), 60 triangles each;
+  - flowers: `env.flower.alpine` (a low cushion of small heads, 0.18 m; blue, pink, white) and `env.flower.desert`
+    (Desert Marigold: wiry grey stems, a daisy head each; yellow, orange);
+  - desert: `env.cactus.barrel` (a squat ribbed barrel, no arms, one capsule; green, dry) and `env.succulent.agave`
+    (family `succulent`, generator `rosette` in `env/plants.mjs`: twelve stiff sword leaves in two rings, vertex colour
+    only, 60 triangles, decoration; blue, green);
+  - rocks: `env.rock.boulder_shard` (a tall sharp-edged block, 1.3 × 2.4 × 1.4 m; bare, lichen, snow) and
+    `env.rock.sandstone` (Sandstone Boulder, wide, low and flat-bedded; tan, red), one hull each (a species name never
+    holds `_l`: the renderer names its meshes `env_<file>_l<level>`, and the lab and the e2e `environment` flow split on it);
+  - cliffs: `env.cliff.sandstone` (8 × 7 m, thin beds and deep ledges; tan, red) and `env.cliff.crag` (Mountain Crag,
+    8 × 10 m, vertical ribs and tall joints, a ragged top; bare, snow), each its own family (`familySeed`), so its
+    panels butt seamlessly with each other (the seam test checks every family).
+  Each has the levels of detail and far stand-in of its kind (trees three levels and the crossed cards at 140 m, the
+  barrel cactus at 100 m, bushes two and the cards at 60 m, boulders and cliffs three, ground cover one), so the static
+  shadow sets (game/shadowCasters.ts) and the level hysteresis take them as they take the others. MapMaker lists them
+  in the Environment group by category; the presets append them (Temperate: birch, tall grass; Jungle: tall grass, green
+  agave; Alpine: mountain pine, larch, juniper, tussock, alpine flowers, shard boulder; Arid: barrel cactus, agave,
+  sagebrush, straw tussock, desert marigold, sandstone boulder, olive, cypress), the earlier entries unchanged
+  (`envBrush.test.ts`); a preset's mix is a new one, so a brush seed paints a different set than before (placed plants
+  are stored in the map: no map changes). `?envlab` has them in a lineup of their own (views `variety`,
+  `variety-small`, `variety-cliffs`). The table's rounding now writes `0` for `-0` (a shape must read back from the
+  fixture's JSON); no earlier entry had one.
+- **Environment Phase 5, polish (2026-11-18, owner: "yes"):**
+  - **Shared looks (draw calls).** A species' looks of one shape at a level (summer and autumn, green and dry: the
+    same model painted differently) draw as one batch per square: the batch's mesh carries each look's vertex colours
+    past the first as `envLook1`… and each copy names its look (`envLook`, a per-copy value; `EnvLooksPlugin` in
+    `environment/envMaterials.ts` picks the colour in the vertex shader, GLSL and WGSL). Which looks share is worked
+    out at load from the models themselves (`environment/envLooks.ts`: same positions, indices, normals, uvs, wind
+    and material; at most four looks a mesh), so nothing in the content says it and the looks look exactly as before.
+    Looks of another shape (the snow-laden conifers, the meadow flowers' heads) and the crossed-card stand-ins (each
+    look its own picture) keep their own batches. The static shadow sets cast shared looks as one batch too. Measured
+    (`PERF_STILL=1`, Medium, mean of the 4 views): docs/PROCEDURAL_ENVIRONMENT.md §11, "Phase 5 status".
+  - **The jungle set:** `env.broadleaf.jungle` (Jungle Tree: 13 m, a buttressed trunk under a high, wide crown of big
+    leaves, a dozen lianas hanging from its outer limbs; green, dry; the broadleaf generator's new `vines` =
+    { count, reach, leaves, cardSize }: three-sided ropes, flat ribbons past the first level, `lod.vines` of them kept,
+    small leaf cards along each, their own random stream so a tree without `vines` is drawn byte for byte as before),
+    `env.fern.tree_fern` (Tree Fern: 3.6 m, a fibrous trunk under arching fern fronds and a skirt of dead ones; green,
+    dry; the palm generator with `frondCards: ["fern.0"]`, a tree: the trunk stops everything) and
+    `env.shrub.elephant_ear` (Elephant Ear: 1.2 m of long stalks holding big heart-shaped blades that hang out and down,
+    folded on a pale midrib; green, dark; a new kind `leafplant` in `env/plants.mjs`, vertex colour only, two levels
+    and the stand-in at 60 m (an `env.grass` part is pictured untextured for it), conceals like the bushes). Jungle's
+    preset gains all three.
+  - **Alpine reads lighter.** The Mountain Pine (on no map) is assetVersion 2: a brighter, warmer green, a bare trunk
+    under its lowest live whorl, more open whorls, smaller far sprays and leader. The Spruce gains a third look,
+    `alpine` (a lighter green; the same model, so it shares the summer spruce's batches); its summer and snow models are
+    unchanged (St. John's and the other maps look as before). The Alpine preset paints fewer spruces, in that look, fewer
+    tall pines, more mountain pines and larches, a little less densely: the dark spruces were the "solid cones with no
+    trunk" in the painted preset.
+  - **A season across the whole map:** the Environment pane's **Season (whole map)**, Summer / Autumn / Snow-dusted /
+    Dry season and **Apply to map** (`shared/editor/envSeason.ts`): every placed species takes its look for the season
+    in one undo step (oak and maple autumn, pines snow, grass dry; ground cover with no autumn look dries in autumn; a
+    species with no look for the season goes back to its first). Looks picked on purpose (moss, the flowers' colours,
+    red sandstone, the alpine spruce) stay. Only `variant` changes, which the looks share collision, size and
+    concealment for: play and the map format are unchanged.
+  - **Small species' shadows:** plants, ground cover and pebbles cast only in the near cascades (High's far cascade
+    drops them: a bush's shadow there is a speck of a quarter-metre texel); trees, rocks and cliffs as before. Medium's
+    one map is a near cascade, so Medium is unchanged.
 - **Rock:** boulders are a convex hull cut by 8–12 fracture planes (the collision hull), then, on the visual surface
   only and only inward of the hull: bedding grooves, corner chips (never at the six corners that set the bounds) and a
   little edge wear; vertex colour from strata, curvature (cavities dark, worn edges pale), patchy moss and hue patches.
@@ -763,7 +857,12 @@ barrels and boxes first; fences and walls, then containers, come next.
   `dome.mjs` (the Desert City dome kit: "The dome kit" below), `academy.mjs` (the dormitory pieces: the Oak Door
   in its frame, shut, ajar and open as three families, since a family has one collision; the desk with a hutch; the
   slim closet, and the front of a closet built into a wall, 12 mm thick, no collision: the wall is the closet:
-  "Doors as props" below), `glb.mjs` (the writer).
+  "Doors as props" below; the Painted Door's leaves), `street.mjs` (Tileset 11, Urban & Civilian: the striped Shop
+  Awning, no collision; the Street Bollard, the Street Mailbox, the Newspaper Box and the Cable Spool, each colliding as
+  its box; the Bike Rack, colliding as its hoops only), `fence.mjs` `chainlinkMesh` (the Chain-link Fence, the
+  Chain-link Gate and the Site Fence Panel on feet: each collides as its posts, rails, frames and feet and an upright
+  bar every 0.25 m across the mesh, as the Iron Fence does, so nobody walks through and most rounds pass), `glb.mjs`
+  (the writer).
   `geom.mjs` also has square bars between any two points, wire panels (flat strips seen from both sides), and
   cylinders and rings along any axis.
   Randomness only from `env/rng.mjs` streams.
@@ -806,13 +905,176 @@ A door that never opens is a prop, not a door entity: no logic, nothing each tic
 | Family | Collision | Where its centre goes |
 |---|---|---|
 | `kit.door.oak` Oak Door (shut) | its box, 2 × 2.6 × 0.16 m: a closed room | the middle of the wall, in the doorway |
-| `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway (`bounds: "within"`: the leaf reaches 0.8 m into the room and does not collide) | the same |
-| `kit.door.oak_open` (open, 90°) | none (`collide: "none"`): the doorway stays clear for players, bots (who need its full 2 m) and shots | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
+| `kit.door.oak_ajar` (ajar, 25°) | the same slab in the doorway, and its leaf at its angle (asset version 2; owner, 2026-11-19, "2b"): a box with a seventh number, its own turn (`PropDefinition.boxes`), reaching 0.8 m into the room; the turned leaf is left out of the bots' navmesh (`WorldBox.navThrough`), the slab keeps the room closed (`bounds: "within"`) | the same |
+| `kit.door.oak_open` (open, 90°) | its leaf (asset version 2; owner, 2026-11-19: open doors are cover): a 7 cm box from the floor to the leaf's top, square into the room on the hinge side; the doorway beside it stays clear. A `passage` (sim/passages.ts) takes bots through, and the leaf is left out of the navmesh (`WorldBox.navThrough`), whose 0.8 m keep-off would otherwise close the room | 0.92 m inside the room from the wall's middle: its box is the frame and the leaf, no more, so a set piece can stand one in a wall at its footprint's edge |
 
 The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. Variants are leaves: `oak`
 (boards under three iron strap hinges, a ring handle each side), `glazed` (a half-glazed office door), `diamond` (a
 diamond of mouldings on each panel), `dark`. They fit the wall style `door_room` (Room doorway, 2 × 2.6 m, an oak
 frame of its own) and a 2 m gap in a partition of blocks (0.12 m: the frame stands 2 cm proud each side).
+
+**Painted doors** (Tileset 11, Urban & Civilian): `kit.door.painted` (shut) and `kit.door.painted_open` are the same
+frame, size and collision (the open one: its leaf, and a passage) as the Oak Door's shut and open families, with painted leaves as variants: `red` and
+`blue` (a two-panel house door, a brass knob, a letter plate), `white` (half-glazed) and `shop` (a kick plate under
+one tall pane, an upright pull bar). Generator settings `leaf: 'framed' | 'shop'` and `handle: 'knob' | 'pull'`.
+A door that opens by itself is still the Door entity; a new door style there would be a schema change.
+
+**Slim Oak Doors** (St. John's step 3; owner, 2026-11-15: the room doors were a bit wide): `kit.door.oak_slim`
+(shut), `kit.door.oak_slim_ajar` and `kit.door.oak_slim_open`, the same door and leaves 1.5 m wide (sizes 1.5 × 2.6 ×
+0.16, × 1.3 and × 1.5 m; the open one's frame 0.67 m behind its centre). They stand in a doorway brought in to 1.5 m
+(the dorm pieces' Room doors option, Slim: the piers either side 0.25 m wider). They were 1.2 m until 2026-11-20 (owner:
+"the dorm doors should be slightly wider, they now look too slim"). 1.5 m is still narrower than the bots'
+navmesh keeps open (it stays 0.8 m off walls, so it closes any gap under about 1.8 m), so the open slim door is a
+**passage**: its family says `"passage": { "frame": -0.67 }` (the frame's z in the prop's own frame), and
+`sim/passages.ts` gives a straight walking link each way through it, from 1.6 m before the frame to 1.6 m beyond
+(`navLinks`). A body (0.4 m round) walks through on it; a shut or ajar door says nothing (no way in). Any kit family
+can say `passage` for a doorway of its own narrower than the navmesh.
+
+**Conical Turret Roof** (`kit.roof.cone`, `content/kitprops/roof.json`, generator kind `spire` in `kit/academy.mjs`):
+a shingled cone 3.4 m across and 4.6 m to its finial's tip over a short eaves skirt, nine courses; variants `slate`
+and `red`; collides as three stacked boxes. It caps the Round Corner Turret (`setpiece.corner_turret_round`) or any
+round tower.
+
+**Paired dorm furniture** (St. John's step 4: a map as played holds at most 4,096 entities, and a dorm room was 9
+props): `kit.table.desk_hutch_pair` (generator kind `deskpair`: two Desks with Hutches side by side 0.15 m apart, a
+Chair pushed in at each, built from the desk's and the chair's own generators and seeds so it looks as the separate
+pieces did; it collides as the two desks' four boxes, `bounds: "within"`, the chairs not at all, as the separate
+chairs placed not solid; variant `empty` has no chairs) and `kit.cabinet.closet_front_pair` (`closetpair`: the two
+Built-in Closet Fronts either side of a doorway, centres 2.94 m apart, no collision). Every dorm piece and the Hall
+Centre has a set piece option **Room furniture**: Paired (the default) or Separate pieces (the old parts, kept at their
+part indices, so `overrides.hide` on them still works with Separate). A room is then 5 props: door, desk pair, closet
+pair, sink, bunk. `setPiecesAcademy.test.ts` checks that Paired collides exactly as Separate in every piece and turn.
+
+**The grounds** (`tools/content/kit/grounds.mjs`; St. John's step 4). Fieldstone is laid by `fieldFace`: rows of
+rounded stones of mixed colour, each a pillow (its foot on a dark mortar ground, its face smaller and a few centimetres
+proud, the sides sloping between on shared corners so it shades round); lighter levels lay the stones flat, the
+farthest only the ground. Flat-shaded triangles cost about 90 bytes each in a GLB, so the 140 kB a file allows is about
+1,500 triangles: the stones are kept large. Families: `kit.monument.cairn` (a 5.5 m cairn on a dressed plinth with a
+pointed-arched niche on its +z face; collides as the plinth and three steps), `kit.monument.island_bed` (an oval kerbed
+bed 6 × 9 m with a fieldstone wall 0.4 m high, mulch and flower clumps; three stepped boxes, a step up),
+`kit.monument.marker` (a dark marker stone, a border and a plain star cut in it), `kit.wall.fieldstone` (4 m) and
+`kit.wall.fieldstone_short` (2 m; variants fieldstone and limestone), `kit.wall.pier` and `kit.wall.pier_lamp` (a
+gate pier with a blank bronze plaque; the lamp's globe in an iron cage is paint: stand a light by it),
+`kit.lamp.post_banner` (a black lamp post with a lantern and a banner of plain colours and a chevron on an arm reaching
++x; collides as the post), `kit.seat.bench_stone`. Nothing in them glows or blinks. Step 4b added
+`kit.booth.guard_post` (Guard Post, Military: a stone guard post 3.4 × 3.0 m, 3.45 m tall, for a gate: layered stone
+walls by `fieldFace` with the openings left out, a wide front window (+z), a window on −x and a door on +x, dark glass
+in white frames, a dressed lintel band, a white fascia and a low hipped slate roof; collides as its box: cover, not a
+room; variants lannon and grey), `kit.sport.volleyball_net` (two steel posts 10.6 m apart over all and a 9.5 m net
+with its top at 2.43 m; collides as its posts and the net's band, a lattice to sight as the chain-link fence is:
+`LATTICE_KIT_KINDS` in `map/geometry.ts`, and fabric, so rounds pass) and `kit.sport.court_sand` (Sand Court: a sand
+bed 15 × 24 m and 4 cm deep with the lines of a 9 × 18 m court and a centre line across; no collision, so lay it on
+ground made flat with the Terrain tab's Flatten and stand the net across its middle, turned as the court is).
+
+**The classroom** (`tools/content/kit/school.mjs`; St. John's step 5). Family type `board`: `kit.board.chalk` (a
+3 × 1.25 m wall chalkboard in a wooden frame with a chalk ledge, chalk and a duster, a few pale strokes and no words;
+variants green, black, and a white board), `kit.board.screen` (a pull-down projector screen, its case under the
+ceiling and the sheet 0.8 m down); both hang on a wall (back on −z; place them at the height they hang) and collide as
+nothing. `kit.board.notice` (an outdoor notice board on two posts under a small shingle roof, blank sheets pinned on both
+faces; collides as its box). `kit.table.school_desks`: four single desks in a row, two each side of a 0.7 m aisle, a
+chair pushed in at each on +z (one prop where there would be eight); collides as the four desks, the chairs do not;
+variant empty without chairs. The wall style Classroom windows (`windows_school`) and the set piece Classroom Bay
+(`setpiece.classroom_bay`, option East end) use them; the facade Collegiate fieldstone (`collegiate_fieldstone`)
+is St. John's Stangeland / Cord's. Map format v46 names the style and the facade. Nothing glows or blinks.
+Step 5b: `kit.board.pennants` (Pennant String: a 7 m string of triangular pennants sagging a little, both faces drawn, plain colours: school or bright; collides as nothing), hung by the Classroom Bay's Pennants option (off by default); the Classroom Entry Bay (`setpiece.classroom_entry_bay`); the 3-floor Stair End Bay's First-floor door option (a slim oak door over the lobby's, for a bridge).
+
+**The mess hall and the clock tower** (St. John's step 6). `kit.sign.clock_face` (Clock Face, `tools/content/kit/school.mjs` `clockface`; family type `sign`): a 2.6 m tower clock face, a round dial in a moulded ring, twelve hour marks (the quarters longer), the hour and minute hands fixed at ten past ten and a boss; its back on −z, hung with its foot at the height given; collides as nothing; variants cream (black hands, stone ring) and black (gilt marks and hands). No numerals or maker's name; nothing moves, glows or blinks. The tile **Clock Tower** (`gothic.clock_tower`, `map/packTiles2.ts`, in the Gothic Estate pack): a square stone tower, 1 cell and 6 levels (24 m): a door south, a stair of 0.25 m steps switching back round a solid stone core (2.4 m flights east and west, full-width landings north and south) to a belfry gallery 17.5 m up along the south wall, paired openings on all four sides with sills a metre up (a perch), a plain stage under the belfry for clock faces, string courses, a roof at 21.8 m with a crenellated parapet and pinnacles; tile boxes only, painted by the placement's surfaces. The set pieces **Clock Tower** (`setpiece.clock_tower`: the tile in its pack's stone and trim, four Clock Faces centred 15.3 m up, a light on the stair; option Clock faces: cream, black, none) and **Refectory Bay** (`setpiece.refectory_bay`: 8 m of a mess hall 16 m across, 1 × 2 cells with no wall between them, dressed stone walls, a beamed timber ceiling, a stone pier at the bay's west end against each long wall, two Long Tables with Benches either side, a Chandelier with one light, a Banner; option Long walls: Arched windows (default), a round-arched door south, north or both, or a solid wall with a fireplace of blocks (a cold hearth) north or south).
+
+**The mess hall's main entrance** (St. John's step 7a). The wall style **Twin arches** (`arch_twin`,
+`content/tiles/edges.json`; map format v49 names it): two round arches side by side in one side of a cell, each 2.8 m
+wide, a semicircle springing at 1.8 m to its crown at 3.2 m, on a middle pier 0.6 m wide, the end piers 0.9 m; one
+storey, so it goes under any floor (not a tall style). Collision steps over each curve as the Round arch's; nine
+voussoirs and a keystone a ring, the two rings meeting over the middle pier, impost blocks on the three piers; no facade
+(the arches dress themselves, as the Round arch). Bots have a 1.2 m lane through each arch. The Refectory Bay's Long
+walls gained **Main entrance north** and **Main entrance south** (the Twin arches in that wall, an arched window
+opposite). The bay's banner hangs on the south wall for every choice but Main entrance south: its `when` lists the
+choices it is in for (below, "Options"). Data only: no entities, no new models.
+
+**DeKoven's pieces** (St. John's step 7b; data only, no map format change). Tiles (`content/tiles/core.json`):
+**Basement Stairwell** (`core.stairwell_basement`) and **Basement Room** (`core.room_basement`): the Stairwell and the
+Room with the ground's surface cut out of their own cell (`bore.cut`, as a tunnel piece's; `sky`, so no portal is
+offered), for rooms under a building. Why: under a building the ground as played lies 2 cm under the ground floor's
+slab, within reach (`settle.ts` `FLOOR_REACH`, 3 m) of anything with a top in the room below; where a point of the
+ground's grid falls on a partition or a wainscot the ground steps down it and lies across the basement (St. John's 2.5 m
+grid does, on the Admin Bay's corridor wall), and across a stair's flights in any case (a basement floor is 4 m down).
+Cut ground to floors would dig the whole basement out and leave a ditch along the outside walls. Close a basement's
+outside walls: a Basement Room's side left open into the ground is reported like a tunnel's (`tunnel.mouth_buried`).
+Set pieces: **Stair End Bay (3 floors, roof stair)** (`setpiece.stair_end_bay_roof`, academy: a third Stairwell over the
+first, out north at 12 m onto the roof over the lobby's side under a stair head with its own ceiling and roof; four
+levels); **Basement Stair Bay** (`setpiece.stair_down_bay`, academy: placed at the ground floor, it claims the level
+below; the hall runs through on the ground floor past the Basement Stairwell's landing, a waiting room north, a lobby
+below with the basement hall's mouth east; option Over the stair: a roof, or left for the floor above); **Admin Entry
+Bay (Reception)** (`setpiece.admin_entry_bay`, campus: the Admin Bay's south half a reception hall under a Round arch,
+stone walls, our Crest Roundel in the corridor floor, the Crest Shield opposite the way in, a Trophy Case, an Honours
+Board, a Desk and Office Chair; option Offices). The **Admin Bay** gained Outer walls (Twin sash windows, or Solid: no
+windows, no facade, Basement Rooms) and East end (Open, Closed: a hall's last bay). Walks in every turn:
+`setPiecesAcademy.test.ts` (and "DeKoven Hall's shape", on a 2 m and a 2.5 m ground grid), `setPiecesCampus.test.ts`.
+
+**The campus kit** (`tools/content/kit/campus.mjs`, set pieces `content/setpieces/campus.json`; St. John's steps 7-10,
+built ahead of the halls: DeKoven, Memorial Hall, the chapel, the gym and pool). All generated in code, no downloads,
+no real school's crest or flag; nothing glows, flickers or moves (the stained glass is plain vertex colour).
+Props: `kit.seat.pew` and `kit.seat.pew_rows` (seven pews as one prop, collides as the seven boxes),
+`kit.seat.bleacher` (four tiers of 0.28 m, walked up as stairs), `kit.window.stained` (a pointed two-light window
+2.2 × 6.1 m) and `kit.window.rose` (a 3.2 m wheel), both drawn on both faces of the 0.5 m wall they are set in (the wall
+stays solid: a window to look at, not through; a prop that collides as nothing may stand 5 cm past a set piece's
+footprint, `map/setPieceCheck.ts`), `kit.table.altar` (altar and reredos), `kit.cabinet.organ`, `kit.cabinet.trophy`,
+`kit.sign.crest_floor` / `kit.sign.crest_wall` (the game's own crest: a shield, two gold stars on royal purple over a
+gold chevron, an open book on silver; Q12), `kit.sign.honours` (a faceless portrait between two bronze plaques),
+`kit.roof.vault_bay` (an 8 m bay of a barrel vault 24 m across on a steel bowstring truss, a sheet roof over its
+boards, four pendant lamp shades; variant end closes its gable), `kit.sport.court_lines`, `kit.sport.hoop_wall`,
+`kit.sport.pool_lanes`. Tiles (`content/tiles/core.json`): `core.stair_spiral` (Spiral Stair: 16 treads in one full
+turn round a newel in a round stone shaft against the cell's south wall, doors north on both floors; the kit's new
+`spiral` builder in `map/catalog.ts`; no tread over another, which kept the navmesh whole), `core.hall_tall` (Tall
+Hall: the Tall Room without its column), `core.porch_round` (a round room with doorways north and south). Set pieces:
+Admin Bay, Library Bay, Library Porch, Chapel Nave Bay, Chapel Chancel, Chapel Narthex (both spiral stairs and the
+gallery), Gym Bay, Gym Entrance, Pool Hall (its water is a set piece part: `water` parts, shipped pieces only;
+MapMaker's Make set piece leaves water out, so maps carry none). Walks in every turn: `setPiecesCampus.test.ts`. No map
+format change.
+
+#### Far looks baked from the real model
+
+(Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
+was usually a flat block of two colours (`geom.mjs` `standIn`): a shop shelf of goods turned into a grey box, a chair
+into a cube. For the families of the types `content/kitprops.json` lists in `farLooks` (every kit type since
+2026-11-17, "1a"), every lighter level is now chosen from candidates
+made from that variant's own level 0 (`tools/content/kit/farLook.mjs`):
+
+- **Recoloured**: the generator's own level (its outline), its faces divided where level 0's picture varies across
+  them, each part taking the colour level 0 shows there (rays from just in front of the face onto level 0): a tier of
+  goods as one block keeps its goods' colours.
+- **Cells**: level 0 sampled into a coarse grid (4-10 cells along its longest side, once or twice as many rows), solid
+  where its surface covers a cell or closes it in, the outward faces coloured by rays from outside onto level 0,
+  reduced to a palette of 4-10 colours and merged into rectangles. Gaps of a cell or more (under a table, between a
+  chair's legs) stay open. A bake that breaks the model into more pieces than it has is not used.
+- **Picture box**: the same with every cell solid: the bounds, each face a grid of the model's colours.
+- **Own**: the generator's level as it was.
+
+Each candidate is drawn in five views (four sides and one from above, software rasterised, `raster.mjs`) at about its
+size on screen where it starts (64 px across for level 1, from 20 m; 32 px for level 2, from 45 m) and compared with
+level 0 drawn the same way; the closest within the level's cap wins (`farCap`: level 1 up to 60 % of level 0's
+triangles, later levels a quarter of it, 48-120, always fewer than the level before and never under the generator's
+own; an alias's level 1 stays within the retired prop's triangles). The choice is kept in `content/kitprops.lock.json`
+(`far`, with a key of the inputs), so a build only makes the chosen one again; a change to a model, a generator or the
+bake (`FAR_VERSION`) searches again (about 3 minutes for the 186 variants). The kind budgets
+(`budgets.triangles`) were raised to the baked levels. Tested in `tools/content/test/farLook.test.mjs`.
+
+As built (2026-11-17), shop shelves and furniture first (186 variants): level 1 recoloured in 84, unchanged in 102;
+level 2 cells in 67, a picture box in 14, recoloured in 83, unchanged in 22. Then every other kit type (`wip/farlooks-kit2`,
+612 variants in all): level 1 recoloured in 211, unchanged in 401; level 2 cells in 122, a picture box in 29, recoloured
+in 319, unchanged in 142. Thin lattices (chain-link, iron railings) mostly keep the generator's levels: a coarse bake
+fills their gaps, and the picture says so.
+
+**The byte budget.** A variant whose file would pass `budgets.maxBytes` with its baked levels is baked again with every
+lighter level held to the generator's own triangles (`tight` in its plan: recoloured at most), and if it is still over,
+keeps the generator's levels (`key: "own"`): ten files went tight (whole and hall domes, a shipping container), and
+the five 12-panel hall domes keep the generator's levels.
+
+**Making it again.** A plan keeps what the search found down to the recolouring's steps (`tries`) and the palette's
+size (`k`), so a build makes each level once: the whole kit builds in about 13 s, the kit test builds it twice.
+
+The catalogue packs have no flat blocks: 35 of 1,378 props (hero pieces) have a lighter level, and it is their own
+model simplified (`prepare-props.mjs` `HERO_LOD`); the rest are drawn whole. The environment's trees end on a picture
+card already rendered from the tree.
 
 #### The dome kit
 
@@ -887,7 +1149,7 @@ stay there and follow the kit in the catalog.
 |---|---|
 | `content/tiles/core.json` `tiles` | every kit tile in palette order: `id`, `displayName`, `category` (palette group: `TILE_CATEGORIES`), `blurb`, `cells` or `footprint` ([w, d] or [w, d, levels]), `floors` (levels with a slab), `ports` (`{side, level, cell}`, or `{allSides: level}`, or `{perimeter: [w, d], levels}`), `open`, `edgeDefault`, `edgeDefaults` (`"dx,dy,dz:S"`: style), `configurable` (room options), `model` (`file`, `lift`), `solids` and `extraFloors` (parts), `notes` |
 | `content/tiles/tunnels.json` | the tunnel kit (Tileset 04; docs/map-briefs/tunnels/PLAN_2026-11-13.md): `profiles` (a bore's half width, clear height and cap), `families` (a family's `materials`, `lining` and `trim`) and `shapes` (`arms`: the sides the passage runs to; a portal's `mouth`, `headwall` and `wings`). `tools/content/kit/tunnel.mjs` makes a tile `core.tunnel_<family>_<shape>` for each pair, in the `Tunnels` group, and tiles.mjs checks and writes them after core.json's. One shell a shape (what collides, the ports, the `bore`); a family only changes materials and drawn trim. A new family is a new entry under `families` |
-| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`), a box with `depth`, or a box set in the wall itself with `v` ([from, to] in from the cell's boundary: a sash's bars by the glass, which sits at 0.25); `outside`: on the wall's outer face too where nothing is built beyond the side; `surface` on a frame or a box: a library material of its own (`material`, `tint`) instead of the tile's trim surface: an oak door frame, painted sash bars), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
+| `content/tiles/edges.json` `edges` | every edge style in MapMaker's order: `id`, `label`; `auto` and `open` are `rule`s in code; the rest give `segments` (collide: `u` along the side, `y` up, `t` thick, or a `repeat`), `trim` (`base`, `cornice`, `frame`, `window`, `arch` (a segmental arch's voussoirs, keystone and soffit: `u`, `y` springing and crown, `count`, `band`, `key`, and optionally `depth`, `keyDepth` (how much prouder the keystone stands) and, beside `arch`, a `surface` of its own), a box with `depth`, or a box set in the wall itself with `v` ([from, to] in from the cell's boundary: a sash's bars by the glass, which sits at 0.25); `outside`: on the wall's outer face too where nothing is built beyond the side; `surface` on a frame or a box: a library material of its own (`material`, `tint`) instead of the tile's trim surface: an oak door frame, painted sash bars), `trimFrom`, `openings` ([u0, u1, y0, y1]: framed under a facade, glazed when `glass`), `corner`, `facade`, `street`, `openDefault`, `dressing` (`door` / `window` with `span`, or `see-through`), `notes` |
 
 A part names one builder and its numbers (local metres: x east, y up, z north from the first cell's centre and
 floor): `box` [x0, y0, z0, x1, y1, z1] (with `yaw`), `flight` (steps of 0.25 m: `axis`, `dir`, `from`,
@@ -911,7 +1173,10 @@ a part builds (a box, a flight's steps) a library material of its own. Edge valu
 2. **An edge style:** add it to `content/tiles/edges.json` (between `auto` and `open`, which stay first and last);
    maps store a side's style by id, so never rename or remove one a map uses. Give `segments` and `trim` (an empty
    list for none), and the flags that apply. MapMaker offers it at once (Walls & Openings, the inspector; its icon is
-   drawn from the segments) and maps accept it.
+   drawn from the segments) and maps accept it. Bars and barred gates take `"paint": "metal"` (railings and fences don't: the walls' surface, owner 2026-11-15): their segments and
+   trim are drawn in the tile's Metal surface (format v41: the theme's optional `metal` in `content/materials.json`,
+   which must be a Metal, else iron), never the walls' stone (`shared/test/metalBars.test.ts` checks every theme and
+   look).
 3. **Generate and check:** `pnpm content:tiles` (`node tools/content/tiles.mjs`) checks the schema (an unknown field is
    an error), palette groups and sides (`map/tileOptions.ts`), cells and footprints, that ports and default edges
    sit on the tile's own cells, default edges are edge styles, one builder per part, boxes with min ≤ max, models
@@ -959,8 +1224,18 @@ takes each role from its overrides, else its pack (its own `pack`, else the pack
 piece's `roles`; a material role nothing gives leaves the part's surface to the theme (stone: walls, trim: trim, floor
 and paving: floor, roof: roof, wood and metal: solids).
 
+**Options** (map format v42): a piece may list `options`, each a `name` (camelCase), a `label` and two to eight
+`choices` (`value`, `label`, `blurb`); the first choice is the default. A part with `when` (`{ "roomDoors": "slim" }`)
+is in the piece only while every option it names has that value, so a choice swaps parts in and out (`map/setPieces.ts`
+`placementOptions`, `partInPlay`); a `when` value may be a list (`{ "walls": ["windows", "door_north"] }`, map format v49): the part is in for
+any of those choices (what stays for most choices and goes for one: the Refectory Bay's banner); a placement sets one in `overrides.options` (MapMaker's set piece inspector,
+Options). Parts that differ by a choice go at the end of the list like any new part, and a part's first-choice twin
+gets `when` for the first choice. The content check expands each choice of each option in every turn and pack; a
+placement naming a choice the piece doesn't offer is a warning and plays as the first. The academy's dorm pieces offer
+Room doors (Wide, Slim) and the Round Corner Turret Top (merlons, slate cone, red shingle cone).
+
 **Placements** (map format v27, `setPieces` on the map: `id`, `piece`, `x`, `y`, `z`, `rotation`, `mirror`, `pack`,
-`overrides` with `roles` and `hide` by part index) expand at load into ordinary tiles and entities
+`overrides` with `roles`, `hide` by part index, `paint` (v41) and `options` (v42)) expand at load into ordinary tiles and entities
 (`map/setPieces.ts` `expandSetPieces`), with ids `sp_<placement id>_<part index>`: a placement's id is at most 48
 characters, so with at most 1024 parts every part's id stays a StableId (64). The mirror swaps east and west in place
 over the footprint (dx → W − dx, W the footprint's least plus greatest dx), then the turn goes clockwise about the

@@ -6,6 +6,8 @@
   "name": "Kenji",
   "look": "core.resolvesoldier",
   "group": "soldiers",
+  "branch": "agency",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Fresh out of basic with hair no regulation can tame. Swears this is his serious face.",
   "body": "male",
@@ -24,19 +26,15 @@
     "metallic": 0,
     "roughness": 0.8
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
+    "surface": "rebake",
     "feet": true,
     "armCloth": true,
     "hands": {
       "scale": 0.85
     },
     "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
       "rollL": -0.3
     }
   },

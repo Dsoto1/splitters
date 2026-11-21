@@ -6,6 +6,7 @@
   "name": "Bandit",
   "look": "core.bandit",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "raccoon",
   "bio": "Steals your ammo, your cover and, if you blink, your lunch.",
   "body": "male",
@@ -28,9 +29,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 15000,

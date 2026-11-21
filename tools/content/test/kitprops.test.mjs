@@ -21,9 +21,11 @@ describe('kit-prop generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.box.carton', 'kit.cabinet.closet', 'kit.cabinet.closet_front', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.closed_12', 'kit.dome.closed_8', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.seat.bench', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.produce_stand', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.stall.counter', 'kit.stall.market', 'kit.table.console', 'kit.table.desk', 'kit.table.desk_hutch', 'kit.table.dining', 'kit.table.round', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.stone', 'kit.wall.stone_broken']);
+    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.bollard', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.board.chalk', 'kit.board.notice', 'kit.board.pennants', 'kit.board.screen', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.booth.guard_post', 'kit.box.carton', 'kit.cabinet.closet', 'kit.cabinet.closet_front', 'kit.cabinet.closet_front_pair', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.cabinet.organ', 'kit.cabinet.trophy', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.closed_12', 'kit.dome.closed_8', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open', 'kit.door.oak_slim', 'kit.door.oak_slim_ajar', 'kit.door.oak_slim_open', 'kit.door.painted', 'kit.door.painted_open', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.site_panel', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.lamp.post_banner', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.monument.cairn', 'kit.monument.island_bed', 'kit.monument.marker', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.roof.cone', 'kit.roof.vault_bay', 'kit.seat.bench', 'kit.seat.bench_stone', 'kit.seat.bleacher', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.seat.pew', 'kit.seat.pew_rows', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shelf.wall', 'kit.shop.awning', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.produce_stand', 'kit.sign.clock_face', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.crest_floor', 'kit.sign.crest_wall', 'kit.sign.honours', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.spool.cable', 'kit.sport.court_lines', 'kit.sport.court_sand', 'kit.sport.hoop_wall', 'kit.sport.pool_lanes', 'kit.sport.volleyball_net', 'kit.stall.counter', 'kit.stall.market', 'kit.street.bike_rack', 'kit.street.bus_stop', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.table.altar', 'kit.table.console', 'kit.table.desk', 'kit.table.desk_hutch', 'kit.table.desk_hutch_pair', 'kit.table.dining', 'kit.table.round', 'kit.table.school_desks', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.fieldstone', 'kit.wall.fieldstone_short', 'kit.wall.pier', 'kit.wall.pier_lamp', 'kit.wall.stone', 'kit.wall.stone_broken', 'kit.window.rose', 'kit.window.stained']);
   });
 
+  // Two whole builds: about 13 s each alone (the far looks remake each baked level from its kept plan), several times
+  // that with the whole suite running beside it.
   it('builds byte-identical output twice, the same as is shipped and locked', async () => {
     first = await build(content, families);
     const second = await build(content, families);
@@ -34,7 +36,7 @@ describe('kit-prop generator', () => {
     for (const [file, buf] of first.files) expect(sha(readFileSync(join(ROOT, 'packages/client/public', file))), `${file} is out of date (run node tools/content/kitprops.mjs)`).toBe(sha(buf));
     expect(readFileSync(join(ROOT, 'content/kitprops.lock.json'), 'utf8')).toBe(first.lock);
     expect(readFileSync(join(ROOT, 'packages/shared/src/content/kitProps.generated.ts'), 'utf8')).toBe(first.shared);
-  }, 60000);
+  }, 180000);
 
   it('keeps every budget: per level, per file, against the props it replaces, and the aliases keep their sizes', async () => {
     first ??= await build(content, families);
@@ -208,8 +210,25 @@ describe('kit-prop generator', () => {
     const sizes = sizesOf();
     for (const [from, a] of Object.entries(content.manifest.aliases)) {
       const f = families.find((x) => x.id === a.model);
-      expect(f.size.map((s) => Math.round(s * a.scale * 1000) / 1000), from).toEqual(sizes.get(from));
+      // (ownSize: a family of its own size for a prop nothing collided with: the Wall Shelf; validate checks both collide as nothing.)
+      if (a.ownSize) expect(f.collide, from).toBe('none');
+      else expect(f.size.map((s) => Math.round(s * a.scale * 1000) / 1000), from).toEqual(sizes.get(from));
     }
+  });
+
+  it('the banner lamp post\'s trim is drawn only for a variant that has one (St. John\'s royal purple); the others are unchanged', () => {
+    const fam = families.find((f) => f.id === 'kit.lamp.post_banner');
+    expect(fam.variants.map((v) => v.name)).toEqual(['crimson', 'navy', 'slate', 'royal_purple']);
+    const purple = fam.variants[3].look;
+    expect(purple).toMatchObject({ banner: '#4b2a84', band: '#f2f0ea', trim: '#b3202a' });
+    const { trim, ...plain } = purple;
+    const tris = (look, level) => KINDS.bannerpost(1, fam.size, fam.generator, look, level).I.length / 3;
+    // Three thin strips (both sides and the foot) on each face of the cloth: 12 triangles at the near levels, none far.
+    for (const level of [0, 1]) expect(tris(purple, level) - tris(plain, level)).toBe(12);
+    expect(tris(purple, 2)).toBe(tris(plain, 2));
+    // Crimson has no trim: the same triangles as before the trim slot existed (the shipped files did not change).
+    expect(tris(fam.variants[0].look, 0)).toBe(tris(plain, 0));
+    void trim;
   });
 
   it('never uses Math.random (seeded streams only)', () => {

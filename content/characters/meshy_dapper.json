@@ -6,6 +6,7 @@
   "name": "The Dapper",
   "look": "core.dapper",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "gangster",
   "bio": "Chicago, 1927. Runs the numbers, the speakeasy and, lately, the leaderboard.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

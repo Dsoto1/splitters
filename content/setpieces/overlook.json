@@ -7,7 +7,7 @@
       "displayName": "Twin-Stair Overlook",
       "category": "Stairs & Overlooks",
       "blurb": "A lookout platform 4 m up between two open stairs, a half wall to the north to fight over, a railing to the south, and an arched passage under it: 3 × 1 cells.",
-      "packs": ["military", "imperial", "medieval", "desert", "jungle", "harbor", "collegiate", "gothic", "suburban", "neon"],
+      "packs": ["military", "imperial", "medieval", "desert", "jungle", "harbor", "collegiate", "gothic", "suburban", "neon", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[2,0]], "levels": [0,1] },
       "mirror": "none",
       "ports": [

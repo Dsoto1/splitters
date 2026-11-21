@@ -1,5 +1,5 @@
 import type { MapDocument, MapEntity } from '../map/schema.ts';
-import { MAX_TERRAIN_VERTS, terrainHeightAt, type TerrainData } from '../map/terrain.ts';
+import { MAX_GROUNDS, MAX_TERRAIN_VERTS, terrainHeightAt, type TerrainData } from '../map/terrain.ts';
 import type { EditCommand } from './commands.ts';
 
 /**
@@ -75,7 +75,7 @@ export function resampleTerrain(t: TerrainData, spacing: number, mode: GridInter
     }
   }
   const cells = (cols - 1) * (rows - 1);
-  const materials = resampleCells(t, t.materials, cols, rows, spacing, 8);
+  const materials = resampleCells(t, t.materials, cols, rows, spacing, MAX_GROUNDS + 1);
   const foliage = t.foliage.length === (t.cols - 1) * (t.rows - 1) ? resampleCells(t, t.foliage, cols, rows, spacing, 5) : [];
   return { ...t, spacing, cols, rows, heights, materials: materials.length === cells ? materials : new Array(cells).fill(0), foliage };
 }
@@ -156,7 +156,7 @@ function smoothAt(t: TerrainData, fx: number, fz: number, steep: Float32Array): 
   return cubic * (1 - k) + lin * k;
 }
 
-/** A per-cell layer (paint or plants, values 0..kinds-1) on the new grid. */
+/** A per-cell layer (ground or plants, values 0..kinds-1) on the new grid. */
 function resampleCells(t: TerrainData, values: readonly number[], cols: number, rows: number, spacing: number, kinds: number): number[] {
   const w = t.cols - 1;
   const h = t.rows - 1;

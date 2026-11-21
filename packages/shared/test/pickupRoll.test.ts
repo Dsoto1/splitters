@@ -6,12 +6,17 @@ import {
   WEAPON_CATEGORIES,
   categoryItems,
   getItem,
+  getWeapon,
+  weaponCode,
   initPhysics,
   itemCategory,
   loadMap,
   parseClientMessage,
   pickupPool,
   rollPickup,
+  setCategoryPool,
+  setPickupPool,
+  weaponSetList,
   serializeMap,
   validateMap,
   type MapDocument,
@@ -78,6 +83,53 @@ describe('weapon categories', () => {
     // Health, ammo and tools never mix.
     expect(pickupPool({ item: 'core.health_small' }, true)).toBeNull();
     expect(pickupPool({ item: 'core.weapon_medkit' }, true)).toBeNull();
+  });
+});
+
+describe('a pickup random pickups never roll (`rolls: false`: the Pistol)', () => {
+  it('the Pistol has a pickup, last in the table (so no earlier roll moved), its weapon\'s name and category', () => {
+    const pistol = getItem('core.weapon_pistol')!;
+    expect(pistol.effect).toEqual({ kind: 'weapon', weapon: 'core.pistol' });
+    expect(pistol.displayName).toBe('Pistol');
+    expect(pistol.rolls).toBe(false);
+    expect(CORE_ITEMS.indexOf(pistol)).toBe(CORE_ITEMS.length - 1);
+    expect(itemCategory(pistol)).toBe('pistol');
+    // Only the Pistol is marked: every other weapon pickup rolls as before.
+    expect(CORE_ITEMS.filter((i) => i.rolls === false).map((i) => i.id)).toEqual(['core.weapon_pistol']);
+  });
+
+  it('is in no random pool, no mix-up pool and no weapon set\'s pool', () => {
+    for (const c of WEAPON_CATEGORIES) expect(categoryItems(c).some((i) => i.rolls === false), c).toBe(false);
+    for (const set of weaponSetList()) {
+      for (const c of WEAPON_CATEGORIES) expect(setCategoryPool(set, c).some((i) => i.rolls === false), `${set.id} ${c}`).toBe(false);
+    }
+  });
+
+  it('placed, it lies as placed; mixed up (not kept fixed) or random, it rolls another sidearm, like any placed weapon', () => {
+    expect(pickupPool({ item: 'core.weapon_pistol' }, false)).toBeNull();
+    expect(pickupPool({ item: 'core.weapon_pistol', keepFixed: true }, true)).toBeNull();
+    expect(pickupPool({ item: 'core.weapon_pistol' }, true)).toBe(categoryItems('pistol'));
+    expect(pickupPool({ item: 'core.weapon_pistol', random: 'pistol' }, false)).toBe(categoryItems('pistol'));
+    // A set that leaves weapons as placed (Standard) keeps it; Military (its weapons include the Pistol) keeps it when kept fixed.
+    const standard = weaponSetList().find((s) => s.weapons === undefined)!;
+    expect(setPickupPool(standard, { item: 'core.weapon_pistol' }, false)).toBeNull();
+    const military = weaponSetList().find((s) => Array.isArray(s.weapons) && s.weapons.includes('core.pistol'))!;
+    expect(setPickupPool(military, { item: 'core.weapon_pistol', keepFixed: true }, false)).toBeNull();
+  });
+
+  it('a placed Pistol pickup in a match lies there and gives the Pistol to someone without one', () => {
+    const match = new Match(room([{ item: 'core.weapon_pistol' }]), { ...rules, startingWeapons: ['core.knife'] }, 7);
+    const a = match.addHuman('A')!;
+    expect(a.weapons.has(weaponCode(getWeapon('core.pistol')))).toBe(false);
+    let got = false;
+    for (let i = 0; i < 10 && !got; i++) {
+      match.queueInputs(a.slot, [{ seq: i + 1, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 }]);
+      got = match.step().some((e) => e.e === 'pickup' && e.item === 'core.weapon_pistol');
+    }
+    expect(match.pickups[0]!.item.id).toBe('core.weapon_pistol');
+    expect(got).toBe(true);
+    expect(a.weapons.has(weaponCode(getWeapon('core.pistol')))).toBe(true);
+    match.destroy();
   });
 });
 

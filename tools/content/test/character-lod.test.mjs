@@ -67,6 +67,7 @@ describe('manifest fixes for quality', () => {
     look: 'core.example',
     bio: 'An example.',
     group: 'folk',
+    blood: 'red',
     body: 'male',
     source: { license: 'owned', author: 'example', date: '2026-11-01', url: null, meshy: { rig: '01a189fb-dbb4-7149-bf61-3776817a0c05' } },
     finish: { metallic: 0, roughness: 0.75 },

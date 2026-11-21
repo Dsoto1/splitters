@@ -1,6 +1,6 @@
 import { coreCatalog, type LocalBox, type Side, type TileCatalog, type TileDefinition } from '../map/catalog.ts';
 import { rotateSide, rotateXZ } from '../map/geometry.ts';
-import { SET_PIECE_GRID, mirrorWidth, piecesFor, setPieceFootprint, setPieceMirrorProblem, tileMirrorAxis, type SetPieceLibrary } from '../map/setPieces.ts';
+import { SET_PIECE_GRID, mirrorWidth, piecesFor, setPieceFootprint, setPieceMirrorProblem, tileDiagonalMirror, tileMirrorAxis, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import type { BotHint, MapDocument, MapEntity, MapPath, Rotation, SetPieceDefinition, SetPiecePlacement, TilePlacement } from '../map/schema.ts';
 import type { TerrainData } from '../map/terrain.ts';
@@ -16,8 +16,10 @@ import { checkLayout, normalizeYaw, placementCells, type Selection } from './ope
  *
  * - **Across a line** (`eastWest`: a north–south line at x = `at[0]`, east and west swap; `northSouth`: an east–west
  *   line at z = `at[1]`): tiles stay the same tile when they are their own mirror image (tileMirrorAxis, as for set
- *   pieces), turned the other way with their walls, glass and upper floors mirrored; a tile that isn't (stairs drawn
- *   from a model, …) is refused, saying which. Set pieces flip their `mirror` (refused for one that can't be).
+ *   pieces) or its mirror image is itself turned (tileMirrorTwin: a corner, an Arena Corner storey across its diagonal,
+ *   so an exploded corner mirrors as the set piece does), turned the other way with their walls, glass and upper
+ *   floors mirrored; a tile that isn't (stairs drawn from a model, …) is refused, saying which. Set pieces flip
+ *   their `mirror` (refused for one that can't be).
  * - **Through a point** (`point`, at [x, z]): a half turn about it. Anything goes, nothing is refused for its shape.
  * - Things: positions mirrored, facings turned to match (yaw −yaw across a north–south line, π − yaw across an
  *   east–west one, yaw + π through a point), offsets (mover points, plane routes, a zipline's far end) mirrored, a
@@ -69,7 +71,8 @@ const MIRROR_SIDE: Record<Side, Side> = { N: 'N', E: 'W', S: 'S', W: 'E' };
  * How a tile looks in a mirror: as itself turned `k` quarter turns and moved `o` cells (its own frame), or null when no
  * turn of it matches (a tile drawn from a model, a room with cover on one side only…). A corridor with cover on its
  * west side is itself turned half round; a corner is itself turned a quarter; a room is itself (k 0, as
- * tileMirrorAxis). Cells, ports, default walls and its solid and floor boxes must all match.
+ * tileMirrorAxis); a tile that is its own mirror across its diagonal is itself turned three quarters (k 3, o 0, as
+ * tileDiagonalMirror). Cells, ports, default walls and its solid and floor boxes must all match.
  */
 export interface MirrorTwin {
   k: number;
@@ -122,6 +125,10 @@ export function tileMirrorTwin(def: TileDefinition): MirrorTwin | null {
     if (def.model) return null;
     const a2 = tileMirrorAxis(def);
     if (a2 !== null) return { k: 0, o: [-a2, 0] };
+    // Its own mirror across its diagonal (the Arena Corner's storeys, octagon phase 2): east and west swapped is that
+    // mirror and three quarter turns about its anchor cell, as a mirrored set piece places it (tileDiagonalMirror,
+    // which compares boxes by their corners, so its turned and tilted boxes match where the keys below can miss).
+    if (tileDiagonalMirror(def)) return { k: 3, o: [0, 0] };
     const cs = SET_PIECE_GRID.cellSize;
     const cell = (x: number, y: number, z: number) => `${x + 0},${y + 0},${z}`;
     for (let k = 1; k < 4; k++) {

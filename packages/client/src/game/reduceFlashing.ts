@@ -4,7 +4,7 @@
  * "Reduce flashing"):
  * - lightning (the Arc Caster, arc turrets, electric fences) holds a steady glow instead of crackling bolts
  *   (steadyArcs.ts), and the fence wires and an arc turret's charge stop flickering;
- * - big brightness jumps are capped and eased in: a blast near the camera, your own muzzle flash, a map light
+ * - big brightness jumps are capped and eased in: a blast near the camera (drawn smaller too), your own muzzle flash, a map light
  *   flaring (logic's "Flash"), the haze of water you dive into;
  * - blinking lights and blinking indicators pulse gently, at most once a second and at low contrast;
  * - nothing flashes saturated red over a large area (the hurt vignette is a darker, duller red that eases in and holds).
@@ -97,6 +97,19 @@ export function blastStrength(dist: number, radius: number): number {
   const r = Math.max(0.5, radius);
   const k = (dist - 0.6 * r) / (3 * r);
   return Math.max(0.3, Math.min(1, 0.3 + 0.7 * k));
+}
+
+/**
+ * A blast's size (times its usual) seen from `dist` metres, for a blast of radius `radius`, with flashing reduced: half
+ * size near the camera, full a few radii off (the same ramp as blastStrength). A grenade's fireball is bigger than the
+ * few metres it went off from: at full size the camera sat inside it, and its fireball and smoke sheets sweeping
+ * across the whole view flickered past WCAG's limit when a few went off together (the `flashing` flow's `blast`: up to
+ * 7 transitions a second; half size, none). Drawn smaller it stays a fireball in front of you instead of the view.
+ */
+export function blastSize(dist: number, radius: number): number {
+  const r = Math.max(0.5, radius);
+  const k = (dist - 0.6 * r) / (3 * r);
+  return Math.max(0.5, Math.min(1, 0.5 + 0.5 * k));
 }
 
 /** A blast's effect, with flashing reduced, takes this long (s) to come up to its strength instead of popping in. */

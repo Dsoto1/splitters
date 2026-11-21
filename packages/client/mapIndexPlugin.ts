@@ -21,6 +21,10 @@ const RESOLVED = `\0${ID}`;
  * themselves load on demand (mapIndex.ts), so the first visit doesn't
  * download and parse every map to draw the menu. A map that fails to load is
  * left out, as the menu did before, and so is a test map (metadata.testOnly).
+ *
+ * A map with a release block (metadata.release) also carries its `builtIn` record (shared publishedChoice.ts: its
+ * content hash as the hub hashes it, and the version it records), so the site can tell whether a version the owner
+ * published is newer than the built-in map or older (publishedMaps.ts) without hashing maps in the browser.
  */
 export function mapIndexPlugin(mapsDir: string): Plugin {
   return {
@@ -33,12 +37,13 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
     resolveId: (id) => (id === ID ? RESOLVED : undefined),
     async load(id) {
       if (id !== RESOLVED) return undefined;
-      const { loadMap, playableModes, mapPlayerCaps } = await loadShared();
+      const { loadMap, playableModes, mapPlayerCaps, builtInRecord } = await loadShared();
       const entries = [];
       for (const file of readdirSync(mapsDir).filter((f) => f.endsWith('.json')).sort()) {
         const path = join(mapsDir, file);
         this.addWatchFile(path);
-        const r = loadMap(JSON.parse(readFileSync(path, 'utf8')));
+        const text = readFileSync(path, 'utf8');
+        const r = loadMap(JSON.parse(text));
         // Test maps (testOnly, MapMaker's Map properties) are left out of every list the menu draws.
         if (!r.ok || r.map.metadata.testOnly) continue;
         const md = r.map.metadata;
@@ -49,9 +54,15 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
           modes,
           // The most players each mode takes (the next-map vote leaves out maps too small for the people in a match).
           caps: modes.map((mode) => mapPlayerCaps(r.map, mode).max),
+          ...(md.release ? { builtIn: editingRecord(text) } : {}),
         });
       }
       return `export default ${JSON.stringify(entries)};`;
+      /** The record as the hub would hash this map: loaded for editing (paths not laid into the ground). */
+      function editingRecord(text: string) {
+        const e = loadMap(text, undefined, { forEditing: true });
+        return e.ok ? builtInRecord(e.map) : undefined;
+      }
     },
   };
 }

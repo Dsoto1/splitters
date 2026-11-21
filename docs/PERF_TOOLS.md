@@ -75,6 +75,43 @@ What to look for: if `render` is large but `shadows` and `post` are small, the c
 **Copy performance report** (same menu) gives the last minute as text, now with the same split (avg,
 slowest 5 %, worst per system) and the counts.
 
+Two more lines (fix 3a and 3d of `docs/PERF_MAPMAKER_TRACE_2026-11-15.md`, the worn-down tab):
+
+```
+tab        outside our script 0.4 ms a frame (late frames)
+memory     script 642 MB · 3,730 meshes, 891 materials, 2,835 geometries, 433 textures (792 MB, 7 targets) in 6 scenes · 28.3k DOM nodes · 3 workers
+```
+
+- **tab**: the time between frames less our own frame callback, counted only on a frame later than the
+  screen's refresh and our own work explain (`game/tabToll.ts`). A fresh tab reads about 0 to 1 ms; the
+  owner's worn-down tab read 11 to 12.5 ms. Over 8 ms for 30 s in a row, in a tab that earlier ran clean,
+  the match says once that the tab is slowing and a reload helps (a plain message line, nothing flashes;
+  never in a browser test's match). A reload in MapMaker or its Test reopens MapMaker on the map.
+- **memory** (`memoryReadout.ts`, read once a second while shown): Chrome's script memory
+  (`performance.memory`; other browsers have none), the engine's live meshes, materials, geometries and
+  textures summed over its scenes (the menu, MapMaker, the match, the portraits and thumbnails), the
+  textures on the graphics card with their size (estimated: four bytes a texel, a third more for mips) and
+  render targets, the page's elements and our workers. A snapshot is also taken at every MapMaker Test start
+  and every Back to MapMaker (`window.__memory.snapshots`). MapMaker's status bar shows it with `?memory=1`
+  or `localStorage['tiletrigger.memoryReadout'] = '1'`.
+- **The repeat probe**: `node tools/perf/memory-probe.mjs` (after `pnpm build`) opens a big map in MapMaker,
+  runs rounds of a small edit, a Test with bots and Back to MapMaker, then plain matches from the menu, and
+  after each collects garbage and prints what the page holds, including objects still in the heap that were
+  disposed (a disposed scene there is a leak). Its options are at the top of the file.
+- **A match's heap and garbage**: `node tools/perf/match-profile.mjs` (after `pnpm build`) plays an offline bot match
+  (default Flavius Rule, 64 bots, Medium) and reports, in one page:
+  - what the live heap holds by the code that allocated it;
+  - an animation census: character evaluations a second at 39 and 60 fps, with and without the crowd rule
+    (`tools/perf/anim-census.mjs`);
+  - the frame split;
+  - a CPU profile with the garbage collector's share;
+  - an allocation profile: MB a second and the top allocators;
+  - the heap after a full collection, with the CPU-side geometry the engine keeps.
+
+  `PROF_QUERY=perfoff=…` measures against old code. `PROF_DIST=dist-prof` serves an unminified build
+  (`vite build --minify false --outDir dist-prof`), so its profiles name functions. Its first use, and its options:
+  `docs/PERF_FLAVIUS_MEMORY_2026-11-16.md`.
+
 ## The recording file
 
 `format: "tiletrigger-perf-recording"`, version 1:
@@ -86,7 +123,11 @@ slowest 5 %, worst per system) and the counts.
   `flames`, `hud`, `net`, `game`, `renderScene`, `renderCull`, `renderShadow`, `renderPost`), draws,
   meshes, shadow casters, characters drawn, effects drawn, the counts (`animated`, `skinned`, `ragdolls`,
   `lasting`, `effects`, `built`: characters let through to be built), shaders built that second, the
-  server's tick average and max (-1 when not on a server).
+  server's tick average and max (-1 when not on a server); from 2026-11-15 also `outsideMs` (the tab line
+  above) and the memory readout's figures (`heapMB`, `heapTotalMB`, `scenes`, `meshes`, `materials`,
+  `geometries`, `textures`, `gpuTextures`, `gpuTextureMB`, `renderTargets`, `skeletons`, `domNodes`,
+  `workers`; -1 where the browser has none). `memory` holds the heap limit, the Test start and Back to
+  MapMaker snapshots made during the recording, and whether the match said the tab was slowing.
 - `histograms`: per system, frames per bucket (`buckets`, ms edges), for whole-match p95s.
 - `hitches`: every frame over 50 ms (up to 2,000): when, how long, how much of it the frame's own work
   covered (`busy`) and how much happened outside it (`outside`: building a character, a garbage collection,
@@ -133,3 +174,76 @@ tick, against a 16.7 ms tick):
 posed and characters animated a frame (counted from Babylon's own state, so they compare against builds
 without these tools), characters in view by distance band, active meshes by kind, and the shader programs
 built after the loading gate.
+
+## A map's render counts, repeatably (still cameras)
+
+`tools/perf/client-perf.mjs` plays a map offline in headless Chromium and prints a table row for it. It has two ways
+of measuring:
+
+- **Live (the default):** a bot match (`PERF_BOTS`, `PERF_MODE`, `PERF_SECONDS`), sampled from wherever the player
+  happens to be while the view turns. It gives a frame rate and shows a busy match's order of magnitude, but its
+  counts swing by half from run to run on an unchanged map (docs/map-briefs/urban/PERF_BASELINE.md has two such runs),
+  so it cannot show what a change to a map cost.
+- **Still (`PERF_STILL=1`):** fixed cameras and nobody else in the map. Use this to compare a map before and after a
+  change, or one map against another.
+
+```
+pnpm build
+PERF_STILL=1 node tools/perf/client-perf.mjs riot_junction neon_spire          # medium graphics
+PERF_STILL=1 PERF_GRAPHICS=low node tools/perf/client-perf.mjs riot_junction
+PERF_STILL=1 PERF_SHOTS=/tmp/views node tools/perf/client-perf.mjs ironworks   # also a picture of each view
+```
+
+What still mode does, per map:
+
+1. Starts the deterministic match (`?test=1`: seed 1, the map's own mode) on the page's own thread and takes every
+   other player out before each frame, so no bot, body or gunfire is drawn. The local player stays where it spawned
+   (its body is not drawn in first person; its weapon is, the same one every run).
+2. Holds the game's own camera at four viewpoints in turn. They come from the map file alone, so there is no per-map
+   table and a new map needs nothing: **overview SW** and **overview NE** look at the middle of the play area (the
+   map's boundary, else what its tiles and spawns cover) from a tenth of the way in from two opposite corners, a
+   quarter of the diagonal up (12 to 60 m above the highest spawn); **eye, middle spawn** stands at the spawn nearest
+   the middle, at eye height (1.7 m), looking at the spawn farthest from it; **eye, far spawn** stands at that farthest
+   spawn looking at the middle. The camera is placed through the game's own `setCamera`, so plants, the environment
+   renderer, shadows and prop flames follow it as they do in play.
+3. Effects are left out (`PERF_STILL_FX=1` keeps them): a fire prop's flame sprites and particle bursts animate, so
+   their draws never stop changing. At each view it first gives the models and textures the view asks for up to 20 s
+   to arrive (a prop's full detail comes in after its stand-in), then waits until the counts have stopped changing: the middle
+   reading of the last `PERF_STILL_FRAMES` frames (default 8) agrees within 1% with that of the frames before them,
+   on every count. It gives up after `PERF_STILL_WAIT` seconds (default 90) and says so in the row's last column.
+4. Prints one row a view (the middle reading of those frames; the range too when the frames differed) and the
+   map's mean: draw calls, meshes drawn / all meshes, triangles drawn, shadow casters, materials.
+
+Two options for finding where a view's draws come from:
+
+- `PERF_BREAKDOWN=1` prints, under each row, the view's draws by pass (`main`, the shadow map (`sun_CSMShadowMap` on
+  High), the sun's shafts `volumetricLightScatteringMap`, the water's reflection `waterMirror`, the scene's
+  `DepthRenderer`) and, in each pass, by the mesh that drew them (names with digits stripped, biggest first;
+  `PERF_BREAKDOWN_TOP`, default 40). A mesh's draws are counted through `Mesh._processRendering`, which every pass uses.
+- `PERF_STILL_EXTRA` adds views of your own for one map (JSON): `[{"name": "eye, sun", "spawn": 2645, "look": [58, 40, -44]}]`
+  stands at entity 2645 (a spawn) at eye height and looks along `look`; `"eye": [x, y, z]` and `"target": [x, y, z]`
+  (or `"toSpawn"`) work too. Their rows count in the map's mean.
+- With `PERF_BREAKDOWN=1` a `casters:` line also lists what the Shadow casters column counted, by mesh name. That column
+  is the length of the shadow map's list of casters this frame, not the shadow pass's draws: it counts each GPU instance
+  of a prop on its own (one draw for all of them), leaves out static casters the static shadow cache holds, and
+  includes disabled templates near the camera (the environment's `env_tpl_*` and the effects' `gvBase_*`, never drawn:
+  the ~400-caster readings of views near a map's middle). For the shadow pass's real cost, see the next item.
+- `PERF_SPLIT=1` prints under each row the page's own time a frame at the view (render, and in it the shadow pass,
+  the mesh evaluation and post-processing; the game frame's JS), the shadow pass's draws a frame (all cascades: the
+  real count; the most in one frame, a static-cache redraw, in brackets) and the casters column, over 40 frames.
+  `PERF_WALK=<metres>` then walks the camera that far ahead at 0.1 m a frame and prints the same over the walk: a
+  still view never moves a cascade, so it hides the static shadow cache's redraws (docs/PERF_SHADOW_CASTERS_2026-11-17.md).
+  On SwiftShader the milliseconds are for comparing two runs on the same machine, not real hardware.
+
+```
+PERF_STILL=1 PERF_GRAPHICS=high PERF_BREAKDOWN=1 node tools/perf/client-perf.mjs st_johns
+```
+
+What it does not give: a frame rate (nothing is timed; the software renderer's is meaningless anyway), the cost of
+players, effects and gunfire (use the live mode or `pnpm perf:budget` for those), memory, or load time.
+
+How repeatable it is, and what still varies: the urban baseline (docs/map-briefs/urban/PERF_BASELINE.md, "Still-camera
+baseline") ran four maps twice at medium and low. Draw calls agreed within about 3% on every row (1% on each map's mean),
+meshes drawn and triangles within 1%; at low graphics almost every count repeated exactly. Shadow casters are a rough
+count (the shadow cache draws its static casters only on some frames). `PERF_DEBUG=1` prints each view's camera, and
+names the meshes that came and went under a row whose frames differed.

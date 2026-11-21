@@ -7,9 +7,13 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import type { WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import { LOOT_OUTLINE } from './lootGlow.ts';
+import type { PickupBatch } from './pickupBatch.ts';
 
 /** The small health pickup's model: the medkit (it falls back to the boxes-in-code case when it can't load). */
 const HEALTH_MODEL = 'guns/medkit.glb';
@@ -17,6 +21,60 @@ const HEALTH_MODEL = 'guns/medkit.glb';
 const HEALTH_LARGE_MODEL = 'pickups/health_large.glb';
 /** The rifle rounds pickup's model: an ammo box (Meshy community, content/guns.json), built to its size (0.5 m long). */
 const AMMO_RIFLE_MODEL = 'pickups/ammo_rifle.glb';
+
+/**
+ * Guns waiting on the map are drawn this much bigger than in the hand, so they read at a distance (owner, 2026-11-14;
+ * the MapMaker lane agreed 2026-11-13), but never longer than PICKUP_GUN_MAX_LENGTH: the weapon glow's ring is 1.375 m
+ * across (lootGlow.ts LOOT_RING times its scale 1.25), and a long gun turning on the spot stays inside it. Looks only:
+ * a pickup's reach is unchanged.
+ */
+export const PICKUP_GUN_SCALE = 1.4;
+export const PICKUP_GUN_MAX_LENGTH = 1.3;
+
+/** Room kept between a turning pickup gun's tip and a wall (metres). */
+const PICKUP_GUN_WALL_GAP = 0.04;
+
+/**
+ * How much bigger a gun `length` metres long (its longest side) is drawn on the map: PICKUP_GUN_SCALE, less for long
+ * guns, and less where a wall stands within `room` metres of the pickup's middle (pickupRoom), so turning it never
+ * passes into the wall where its own size didn't; never smaller than in the hand.
+ */
+export function pickupGunScale(length: number, room = Infinity): number {
+  if (!(length > 0)) return PICKUP_GUN_SCALE;
+  const most = Math.min(PICKUP_GUN_MAX_LENGTH, 2 * (room - PICKUP_GUN_WALL_GAP));
+  return Math.max(1, Math.min(PICKUP_GUN_SCALE, most / length));
+}
+
+/**
+ * How far a pickup standing at `at` (its floor point) is from the nearest solid box across, at the height its gun
+ * turns at (0.35-0.8 m over the floor; PICKUP_HOVER and the bob): the room a bigger gun may take (pickupGunScale).
+ */
+export function pickupRoom(at: readonly [number, number, number], boxes: Iterable<WorldBox>): number {
+  const [x, y, z] = at;
+  let room = Infinity;
+  for (const b of boxes) {
+    if (b.max[1] < y + 0.35 || b.min[1] > y + 0.8) continue;
+    const hx = (b.max[0] - b.min[0]) / 2;
+    const hz = (b.max[2] - b.min[2]) / 2;
+    let dx = x - (b.min[0] + b.max[0]) / 2;
+    let dz = z - (b.min[2] + b.max[2]) / 2;
+    // (An unturned box further off along either axis than the room found so far can't be nearer.)
+    if (!b.yaw && (Math.abs(dx) - hx > room || Math.abs(dz) - hz > room)) continue;
+    if (b.yaw) {
+      const c = Math.cos(b.yaw);
+      const s = Math.sin(b.yaw);
+      [dx, dz] = [dx * c - dz * s, dx * s + dz * c];
+    }
+    room = Math.min(room, Math.hypot(Math.max(0, Math.abs(dx) - hx), Math.max(0, Math.abs(dz) - hz)));
+  }
+  return room;
+}
+
+/** A loaded model's longest side (metres; read before it is parented, while it stands unturned at its own scale). */
+function modelLength(model: TransformNode): number {
+  const { min, max } = model.getHierarchyBoundingVectors(true);
+  return Math.max(max.x - min.x, max.y - min.y, max.z - min.z);
+}
 
 /** Height of a pickup's centre above the floor. */
 export const PICKUP_HOVER = 0.55;
@@ -50,8 +108,10 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
  * `look`: the match's weapon set, whose looks grenades wear (the Military frag, the Sci-fi smoke canister).
+ * `room`: how far the nearest wall is (pickupRoom), which a bigger gun keeps clear of.
+ * `batch`: the game's pickups drawn as thin instances (pickupBatch.ts; with `instanced`): its parts become slots there.
  */
-export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string): TransformNode {
+export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: string, name: string, instanced = false, lying = false, look?: string, room = Infinity, batch?: PickupBatch): TransformNode {
   const root = new TransformNode(name, scene);
   // Small and floating: its shadow is cast only near the camera (Atmosphere).
   castSmall(root);
@@ -63,17 +123,27 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     return m;
   };
   // In the game, a model's copies are GPU instances of it merged into one mesh (ModelLibrary.instantiateWhole).
-  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`));
+  const copy = (path: string, part: string) => (instanced ? models.instantiateWhole(path, `${name}_${part}`) : models.instantiate(path, `${name}_${part}`))
+    .then((m) => {
+      // (In a batch: its instance becomes a slot under the same node at the batch's next update, after the code below
+      // has measured and placed the node.)
+      if (batch && instanced && !root.isDisposed()) batch.adopt(m);
+      return m;
+    });
   const fx = item?.effect;
   if (!fx) {
     part(CreateBox(`${name}_unknown`, { size: 0.4 }, scene), mat(scene, '#ff00ff', 0.5));
   } else if (fx.kind === 'weapon') {
     void copy(getWeapon(fx.weapon).view.model, 'gun').then((model) => {
       if (root.isDisposed()) return model.dispose();
+      // (Measured before it is placed: the root turns, and a turned box reads longer.)
+      const length = lying ? 0 : modelLength(model);
       model.parent = root;
       model.rotation.y = Math.PI / 2;
       // Rolled onto its side about the barrel.
       if (lying) model.rotation.z = Math.PI / 2;
+      // Waiting on the map, drawn bigger so it reads at a distance (dropped ones lie at their own size).
+      else model.scaling.setAll(pickupGunScale(length, room));
     });
     if (lying) part(CreateCylinder(`${name}_ring`, { diameter: 0.6, height: 0.02, tessellation: 20 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -DROP_LIE_HEIGHT + 0.01;
     else part(CreateCylinder(`${name}_ring`, { diameter: 0.9, height: 0.03, tessellation: 24 }, scene), mat(scene, '#ffb03b', 0.5)).position.y = -0.5;
@@ -117,8 +187,10 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       }
     };
     if (model) {
-      const scale = fx.throwable === 'mine' ? 0.7 : 1.5;
-      for (const [i, [x, z, yaw]] of ([[-0.09, 0, 0.5], [0.09, 0.03, -0.7]] as const).entries()) {
+      // (The Ammo Box Kit: one small crate, its model being the full-size one.)
+      const kit = fx.throwable === 'ammo_box';
+      const scale = kit ? AMMO_BOX_KIT_SCALE : fx.throwable === 'mine' ? 0.7 : 1.5;
+      for (const [i, [x, z, yaw]] of ((kit ? [[0, 0, 0.3]] : [[-0.09, 0, 0.5], [0.09, 0.03, -0.7]]) as readonly (readonly [number, number, number])[]).entries()) {
         void copy(model, `nade${i}`).then(
           (m) => {
             if (root.isDisposed()) return m.dispose();
@@ -180,6 +252,7 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
   }
   if (instanced) instanceParts(scene, root);
+  if (instanced && batch) batch.adopt(root);
   return root;
 }
 
@@ -195,6 +268,75 @@ function ammoBoxes(scene: Scene, root: TransformNode, name: string, ammo: AmmoTy
     });
   add(CreateBox(`${name}_ammo`, { width: 0.5, height: 0.3, depth: 0.32 }, scene), mat(scene, '#6b7048'));
   add(CreateBox(`${name}_stripe`, { width: 0.51, height: 0.06, depth: 0.33 }, scene), mat(scene, ammo ? AMMO_COLORS[ammo] : '#f2c14e', 0.4)).position.y = 0.05;
+}
+
+const outlineSources = new WeakMap<Scene, Map<string, Mesh>>();
+
+/**
+ * The dark outline round a pickup's floor glow (game/lootGlow.ts LOOT_OUTLINE): two thin flat black lines lying 1.5 cm
+ * over the floor, one just inside the ring's `inner` edge and one just past its `outer` edge (metres), soft at their
+ * edges. Its darkness is the mesh's `visibility` (set each frame from the glow's level); unlit, casts no shadow, not
+ * pickable. One geometry per size, shared by its copies.
+ */
+export function createLootOutline(scene: Scene, inner: number, outer: number, name: string): Mesh {
+  let cache = outlineSources.get(scene);
+  if (!cache) outlineSources.set(scene, (cache = new Map()));
+  const key = `${inner.toFixed(3)}|${outer.toFixed(3)}`;
+  let src = cache.get(key);
+  if (!src || src.isDisposed()) {
+    const { width: w, feather: f } = LOOT_OUTLINE;
+    // Each line as four rings (clear, dark, dark, clear) across its width.
+    const lines = [
+      [Math.max(0.01, inner - w), Math.max(0.01, inner - w) + f, inner - f, inner],
+      [outer, outer + f, outer + w - f, outer + w],
+    ];
+    const alpha = [0, 1, 1, 0];
+    const SEG = 48;
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const indices: number[] = [];
+    for (const radii of lines) {
+      const first = positions.length / 3;
+      for (let i = 0; i <= SEG; i++) {
+        const a = (i / SEG) * Math.PI * 2;
+        for (let k = 0; k < 4; k++) {
+          positions.push(Math.cos(a) * radii[k]!, 0, Math.sin(a) * radii[k]!);
+          colors.push(0, 0, 0, alpha[k]!);
+        }
+        if (i < SEG) for (let k = 0; k < 3; k++) {
+          const v = first + i * 4 + k;
+          indices.push(v, v + 1, v + 5, v, v + 5, v + 4);
+        }
+      }
+    }
+    const vd = new VertexData();
+    vd.positions = positions;
+    vd.colors = colors;
+    vd.indices = indices;
+    const normals: number[] = [];
+    VertexData.ComputeNormals(positions, indices, normals);
+    vd.normals = normals;
+    src = new MeshClass(`lootOutline_${key}`, scene);
+    vd.applyToMesh(src);
+    src.hasVertexAlpha = true;
+    const m = new StandardMaterial(`lootOutline_${key}`, scene);
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.emissiveColor = Color3.Black();
+    m.disableLighting = true;
+    m.backFaceCulling = false;
+    m.zOffset = -2;
+    src.material = m;
+    src.isPickable = false;
+    src.setEnabled(false);
+    cache.set(key, src);
+  }
+  const mesh = src.clone(name, null, true, false)!;
+  mesh.setEnabled(true);
+  mesh.isPickable = false;
+  mesh.receiveShadows = false;
+  mesh.hasVertexAlpha = true;
+  return mesh;
 }
 
 const sources = new WeakMap<Scene, Map<string, Mesh>>();

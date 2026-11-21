@@ -6,6 +6,7 @@
   "name": "Vampire",
   "look": "core.vampire",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "spooky",
   "bio": "Five hundred years old, never once sunburnt. Bring your own garlic.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

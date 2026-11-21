@@ -1,0 +1,73 @@
+<!doctype html>
+<!-- Mock-up for docs/MAPMAKER_PAINTING_PLAN.md: the layers, Map settings' two base themes and the warning before a change.
+     Rendered to mockup-theme-warning.png with Playwright (chromium, 1200 x 760, deviceScaleFactor 2). A sketch, not the real UI. -->
+<html><head><meta charset="utf-8"><style>
+  * { box-sizing: border-box; }
+  body { margin: 0; width: 1200px; height: 760px; background: #15181d; color: #e6e8eb; font: 14px/1.4 system-ui, sans-serif; position: relative; }
+  .layers { position: absolute; left: 24px; top: 24px; width: 330px; z-index: 2; }
+  .layers h3, .dock h3 { margin: 0 0 10px; font-size: 15px; }
+  .lay { border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .lay b { display: block; font-size: 14px; }
+  .lay small { color: rgba(255,255,255,.75); font-size: 12px; }
+  .l3 { background: #2f6b3a; } .l2 { background: #5a4a8a; } .l1 { background: #3a4656; }
+  .up { text-align: center; color: #9aa3ae; font-size: 12px; margin: -2px 0 6px; }
+  .rule { font-size: 12px; color: #aab2bd; margin-top: 10px; background: #1f242b; border-radius: 6px; padding: 8px 10px; }
+  .dock { position: absolute; right: 0; top: 0; bottom: 0; width: 330px; background: #1c2026; border-left: 1px solid #333a44; padding: 16px; }
+  .grp { font-size: 12px; color: #9aa3ae; text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 8px; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 13px; }
+  .field { background: #2a3039; border: 1px solid #3a424d; border-radius: 5px; padding: 4px 8px; min-width: 170px; }
+  .field.hot { outline: 2px solid #ffb03b; }
+  .sub { font-size: 12px; color: #9aa3ae; margin: -4px 0 8px; text-align: right; }
+  .shade { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background: rgba(0,0,0,.45); }
+  .dlg { position: absolute; left: 380px; top: 150px; width: 470px; background: #20252c; border: 1px solid #4a5360; border-radius: 12px; padding: 18px 20px; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+  .dlg h2 { margin: 0 0 12px; font-size: 18px; }
+  .dlg ul { margin: 0 0 12px; padding-left: 0; list-style: none; }
+  .dlg li { margin: 6px 0; padding-left: 26px; position: relative; }
+  .dlg li::before { position: absolute; left: 0; top: 0; width: 18px; text-align: center; }
+  .chg::before { content: '↻'; color: #ffcf70; }
+  .stay::before { content: '✓'; color: #8fd18f; }
+  .info::before { content: 'i'; color: #9ab8e8; font-weight: 700; }
+  .opt { font-size: 13px; background: #262c34; border-radius: 6px; padding: 8px 10px; margin-bottom: 14px; }
+  .btns { display: flex; gap: 8px; }
+  .btn { padding: 8px 12px; border-radius: 6px; background: #2a3039; border: 1px solid #3a424d; font-size: 13px; }
+  .btn.go { background: #3b6fd6; border-color: #3b6fd6; color: #fff; font-weight: 600; }
+  .btn.keep { background: #2f4f2f; border-color: #5f9e5f; }
+  .foot { font-size: 12px; color: #9aa3ae; margin-top: 12px; }
+</style></head><body>
+<div class="layers">
+  <h3>The layers (top wins)</h3>
+  <div class="lay l3"><b>3 · Your paint</b><small>Structure paint, Ground paint, a set piece's own materials. Never undone by a theme change.</small></div>
+  <div class="up">overrides ↑</div>
+  <div class="lay l2"><b>2 · Set piece look</b><small>Urban &amp; Civilian, Industrial Factory… or one of your saved looks.</small></div>
+  <div class="up">overrides ↑</div>
+  <div class="lay l1"><b>1 · Base themes</b><small>Structure theme: walls, floors, trim, roofs.<br>Ground theme: the base ground and its list.</small></div>
+  <div class="rule">Changing a base theme changes only layer 1, and only after you say yes.</div>
+</div>
+<div class="dock">
+  <h3>Map settings</h3>
+  <div class="grp">General</div>
+  <div class="row">Name <span class="field">Rust Yard</span></div>
+  <div class="row">Structure theme <span class="field hot">Desert City ▾</span></div>
+  <div class="sub">was Industrial Factory</div>
+  <div class="row">Ground theme <span class="field">Quarry ▾</span></div>
+  <div class="sub">base Gravel · 7 grounds</div>
+</div>
+<div class="shade"></div>
+<div class="dlg">
+  <h2>Change the Structure theme to Desert City?</h2>
+  <ul>
+    <li class="chg"><b>312 surfaces</b> follow the theme and will change.</li>
+    <li class="chg"><b>4 set pieces</b> use the theme's look and will change.</li>
+    <li class="stay"><b>48 surfaces you painted</b> stay as they are.</li>
+    <li class="stay"><b>2 set pieces</b> with a look of their own stay.</li>
+    <li class="info">The sky and backdrop follow the theme too.</li>
+  </ul>
+  <div class="opt">☐ Also change the Ground theme to <b>Desert</b> (Desert City's match): 9,120 m² of ground follows it.</div>
+  <div class="btns">
+    <span class="btn go">Change 316 things</span>
+    <span class="btn keep">Keep current look</span>
+    <span class="btn">Cancel</span>
+  </div>
+  <div class="foot">Keep current look: the theme changes for new pieces and the palette; what is built now keeps today's look (it becomes your paint). Either way it is one undo step.</div>
+</div>
+</body></html>

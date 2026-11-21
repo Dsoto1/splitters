@@ -55,8 +55,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -72,7 +77,7 @@
     "fireMode": "semi",
     "damage": 24,
     "spread": 0.002,
-    "range": 250,
+    "range": 110,
     "magazine": 12,
     "reserveMax": 96,
     "pickupAmmo": 24,
@@ -91,6 +96,7 @@
      2,
      25
     ],
+    "akimbo": true,
     "pellets": 1,
     "fireIntervalTicks": 10,
     "view": {
@@ -131,6 +137,7 @@
     "family": "pistol",
     "ballistic": {
      "velocity": 375,
+     "drag": 1.5,
      "gravityScale": 1,
      "energy": 450,
      "tracerEvery": 0,
@@ -171,11 +178,16 @@
     "falloff": {
      "start": 18,
      "end": 45,
-     "min": 0.65,
+     "min": 0.4,
      "curve": "linear"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 3
+    },
     "head": 2,
-    "legs": 0.8
+    "legs": 0.8,
+    "arms": 0.9
    }
   },
   {
@@ -272,6 +284,7 @@
     "family": "rifle",
     "ballistic": {
      "velocity": 820,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1200,
      "tracerEvery": 3,
@@ -324,8 +337,13 @@
      "min": 0.6,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 0.97,
+     "sprintExit": 8
+    },
     "head": 2,
-    "legs": 0.8
+    "legs": 0.8,
+    "arms": 0.9
    }
   },
   {
@@ -448,8 +466,13 @@
      "min": 0.25,
      "curve": "steep"
     },
+    "handling": {
+     "move": 0.97,
+     "sprintExit": 7
+    },
     "head": 1.25,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -520,6 +543,7 @@
     "family": "precision",
     "ballistic": {
      "velocity": 950,
+     "drag": 0.3,
      "gravityScale": 2.5,
      "energy": 3000,
      "tracerEvery": 1
@@ -562,8 +586,13 @@
      "min": 0.9,
      "curve": "linear"
     },
+    "handling": {
+     "move": 0.93,
+     "sprintExit": 12
+    },
     "head": 3,
-    "legs": 0.9
+    "legs": 0.9,
+    "arms": 0.9
    }
   },
   {
@@ -593,6 +622,10 @@
      "visual": "grenade"
     },
     "ammo": "explosive",
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 10
+    },
     "botDesirability": 0.75,
     "botRange": [
      6,
@@ -642,8 +675,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 10
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -659,7 +697,7 @@
     "damage": 15,
     "spread": 0.006,
     "fireIntervalTicks": 4,
-    "range": 200,
+    "range": 100,
     "magazine": 32,
     "reserveMax": 192,
     "pickupAmmo": 64,
@@ -721,6 +759,7 @@
     "family": "smg",
     "ballistic": {
      "velocity": 400,
+     "drag": 1.5,
      "gravityScale": 1,
      "energy": 400,
      "tracerEvery": 3,
@@ -777,11 +816,16 @@
     "falloff": {
      "start": 15,
      "end": 35,
-     "min": 0.55,
+     "min": 0.35,
      "curve": "steep"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 5
+    },
     "head": 1.5,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -812,6 +856,10 @@
      "impactDamage": 40
     },
     "ammo": "explosive",
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "botDesirability": 0.8,
     "botRange": [
      7,
@@ -863,8 +911,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -963,8 +1016,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -980,11 +1038,11 @@
     "damage": 24,
     "spread": 0.004,
     "fireIntervalTicks": 9,
-    "range": 110,
+    "range": 90,
     "falloff": {
      "start": 15,
      "end": 45,
-     "min": 0.45,
+     "min": 0.3,
      "curve": "linear"
     },
     "magazine": 15,
@@ -1016,6 +1074,9 @@
      "settle": 8,
      "rate": 0.1,
      "visual": 0.18
+    },
+    "akimbo": {
+     "as": "pistol"
     },
     "pellets": 1,
     "view": {
@@ -1082,11 +1143,16 @@
     "falloff": {
      "start": 15,
      "end": 45,
-     "min": 0.45,
+     "min": 0.3,
      "curve": "linear"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -1103,7 +1169,13 @@
     "damage": 58,
     "spread": 0.002,
     "fireIntervalTicks": 30,
-    "range": 140,
+    "range": 110,
+    "falloff": {
+     "start": 20,
+     "end": 55,
+     "min": 0.4,
+     "curve": "smooth"
+    },
     "magazine": 6,
     "reserveMax": 36,
     "pickupAmmo": 12,
@@ -1112,7 +1184,7 @@
     "botDesirability": 0.55,
     "botRange": [
      3,
-     35
+     30
     ],
     "ammo": "light",
     "knockback": 3,
@@ -1161,6 +1233,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1
@@ -1198,13 +1271,18 @@
      "in": 1
     },
     "falloff": {
-     "start": 25,
-     "end": 60,
-     "min": 0.7,
+     "start": 20,
+     "end": 55,
+     "min": 0.4,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 1.75,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -1313,8 +1391,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -1413,8 +1496,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -1446,6 +1534,7 @@
      "maxBloom": 0.07,
      "recover": 0.002
     },
+    "akimbo": true,
     "pellets": 1,
     "botDesirability": 0.5,
     "view": {
@@ -1491,6 +1580,7 @@
     "family": "machine_pistol",
     "ballistic": {
      "velocity": 360,
+     "drag": 1.8,
      "gravityScale": 1,
      "energy": 350,
      "tracerEvery": 4
@@ -1532,11 +1622,16 @@
     "falloff": {
      "start": 8,
      "end": 25,
-     "min": 0.5,
+     "min": 0.35,
      "curve": "steep"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 4
+    },
     "head": 1.5,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -1618,6 +1713,7 @@
     "family": "rifle",
     "ballistic": {
      "velocity": 820,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1200,
      "tracerEvery": 3,
@@ -1670,8 +1766,13 @@
      "min": 0.6,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 0.97,
+     "sprintExit": 8
+    },
     "head": 2,
-    "legs": 0.8
+    "legs": 0.8,
+    "arms": 0.9
    }
   },
   {
@@ -1745,8 +1846,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -1825,6 +1931,7 @@
     "family": "marksman",
     "ballistic": {
      "velocity": 900,
+     "drag": 0.45,
      "gravityScale": 1,
      "energy": 2000,
      "tracerEvery": 1
@@ -1867,8 +1974,13 @@
      "min": 0.85,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 10
+    },
     "head": 2,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -1904,6 +2016,7 @@
      "maxBloom": 0,
      "recover": 0
     },
+    "akimbo": true,
     "view": {
      "model": "weapons/sawed_off.glb",
      "viewOffset": [
@@ -1974,8 +2087,13 @@
      "min": 0.25,
      "curve": "steep"
     },
+    "handling": {
+     "move": 0.97,
+     "sprintExit": 7
+    },
     "head": 1.25,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -2085,8 +2203,13 @@
      "min": 0.25,
      "curve": "steep"
     },
+    "handling": {
+     "move": 0.97,
+     "sprintExit": 7
+    },
     "head": 1.25,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -2169,8 +2292,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2190,6 +2318,10 @@
     "pickupAmmo": 8,
     "reloadTicks": 110,
     "raiseTicks": 28,
+    "handling": {
+     "move": 0.93,
+     "sprintExit": 12
+    },
     "botDesirability": 0.7,
     "botRange": [
      15,
@@ -2278,8 +2410,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.93,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2361,8 +2498,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2454,8 +2596,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2541,8 +2688,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2654,8 +2806,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2724,6 +2881,7 @@
     "family": "lmg",
     "ballistic": {
      "velocity": 760,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1500,
      "tracerEvery": 4
@@ -2768,8 +2926,13 @@
      "min": 0.7,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 0.9,
+     "sprintExit": 13
+    },
     "head": 1.5,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -2862,8 +3025,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2883,6 +3051,10 @@
     "pickupAmmo": 4,
     "reloadTicks": 100,
     "raiseTicks": 30,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "botDesirability": 0.78,
     "botRange": [
      8,
@@ -2949,8 +3121,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -2969,6 +3146,10 @@
     "pickupAmmo": 3,
     "reloadTicks": 90,
     "raiseTicks": 32,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "botDesirability": 0.7,
     "botRange": [
      10,
@@ -3036,8 +3217,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3056,6 +3242,10 @@
     "pickupAmmo": 2,
     "reloadTicks": 110,
     "raiseTicks": 34,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "botDesirability": 0.65,
     "botRange": [
      8,
@@ -3129,8 +3319,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3209,8 +3404,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3229,6 +3429,10 @@
     "pickupAmmo": 100,
     "reloadTicks": 110,
     "raiseTicks": 24,
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 8
+    },
     "botDesirability": 0.58,
     "botRange": [
      0,
@@ -3297,8 +3501,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 8
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3374,8 +3583,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3438,8 +3652,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3514,8 +3733,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3588,8 +3812,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3662,8 +3891,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3722,8 +3956,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3788,8 +4027,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3849,8 +4093,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3918,8 +4167,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -3993,8 +4247,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4053,8 +4312,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4139,8 +4403,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4159,6 +4428,10 @@
     "pickupAmmo": 8,
     "reloadTicks": 110,
     "raiseTicks": 28,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "botDesirability": 0.78,
     "botRange": [
      6,
@@ -4223,8 +4496,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 12
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4284,8 +4562,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4302,7 +4585,13 @@
     "damage": 90,
     "spread": 0.0005,
     "fireIntervalTicks": 40,
-    "range": 300,
+    "range": 110,
+    "falloff": {
+     "start": 25,
+     "end": 65,
+     "min": 0.4,
+     "curve": "smooth"
+    },
     "magazine": 5,
     "reserveMax": 30,
     "pickupAmmo": 10,
@@ -4311,7 +4600,7 @@
     "botDesirability": 0.6,
     "botRange": [
      3,
-     40
+     30
     ],
     "reload": {
      "type": "shell",
@@ -4361,6 +4650,7 @@
     "family": "revolver",
     "ballistic": {
      "velocity": 300,
+     "drag": 0.6,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 1
@@ -4398,12 +4688,17 @@
     },
     "falloff": {
      "start": 25,
-     "end": 60,
-     "min": 0.7,
+     "end": 65,
+     "min": 0.4,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
     "head": 1.75,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   },
   {
@@ -4532,8 +4827,13 @@
      "in": 1
     },
     "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
     "head": 2,
-    "legs": 0.75
+    "legs": 0.75,
+    "arms": 0.9
    }
   },
   {
@@ -4546,9 +4846,38 @@
     "kind": "hitscan",
     "slot": 3,
     "family": "battle_rifle",
+    "fireMode": "semi",
     "damage": 25,
     "spread": 0.001,
     "fireIntervalTicks": 12,
+    "fireModes": [
+     {
+      "mode": "semi",
+      "label": "Single"
+     },
+     {
+      "mode": "burst",
+      "label": "Burst",
+      "fireIntervalTicks": 33,
+      "burst": {
+       "count": 3,
+       "intervalTicks": 5
+      },
+      "kick": {
+       "pitch": [
+        0.007,
+        0.006,
+        0.034
+       ],
+       "yaw": [
+        0.015,
+        -0.02,
+        0.002
+       ],
+       "variance": 0.002
+      }
+     }
+    ],
     "range": 600,
     "magazine": 20,
     "reserveMax": 100,
@@ -4596,6 +4925,10 @@
     "view": {
      "model": "guns/frontier_rifle.glb",
      "fallback": "weapons/rifle.glb",
+     "held": {
+      "medium": "guns/frontier_rifle.medium.glb",
+      "high": "guns/frontier_rifle.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.215,
@@ -4625,6 +4958,17 @@
       0.033,
       0.48
      ],
+     "optic": {
+      "mag": 3.5,
+      "eye": [
+       0,
+       0.133,
+       -0.262
+      ],
+      "radius": 0.014,
+      "relief": 0.12,
+      "reticle": "chevron"
+     },
      "sound": "fire.heavy"
     }
    },
@@ -4632,6 +4976,7 @@
     "family": "battle_rifle",
     "ballistic": {
      "velocity": 880,
+     "drag": 0.5,
      "gravityScale": 1,
      "energy": 1800,
      "tracerEvery": 2
@@ -4678,8 +5023,13 @@
      "min": 0.75,
      "curve": "smooth"
     },
+    "handling": {
+     "move": 0.95,
+     "sprintExit": 9
+    },
     "head": 2,
-    "legs": 0.85
+    "legs": 0.85,
+    "arms": 0.9
    }
   }
  ],
@@ -4881,7 +5231,7 @@
    "weaponId": "core.vortex",
    "def": {
     "kind": "vortex",
-    "displayName": "Vortex Grenade",
+    "displayName": "Gravity Grenade",
     "max": 2,
     "throwIntervalTicks": 60,
     "projectile": {
@@ -5131,6 +5481,31 @@
      "looks": {
       "scifi": "guns/smoke_scifi.glb"
      }
+    }
+   }
+  },
+  {
+   "code": 13,
+   "kind": "ammo_box",
+   "weaponId": "core.ammo_box",
+   "def": {
+    "kind": "ammo_box",
+    "displayName": "Ammo Box Kit",
+    "max": 1,
+    "throwIntervalTicks": 40,
+    "projectile": {
+     "speed": 6,
+     "gravity": 16,
+     "fuseSeconds": 1.2,
+     "splashRadius": 0,
+     "splashDamage": 0,
+     "splashEdgeDamage": 0,
+     "selfDamageScale": 0,
+     "visual": "ammoBox",
+     "ammoBox": true
+    },
+    "view": {
+     "model": "props/ww2_ammo_crate.glb"
     }
    }
   }

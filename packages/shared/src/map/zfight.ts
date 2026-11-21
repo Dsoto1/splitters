@@ -67,7 +67,7 @@ export function coplanarIssues(map: MapDocument, spots: readonly CoplanarSpot[] 
     {
       severity: 'warning',
       code: 'geometry.coplanar',
-      message: `${n} place${n > 1 ? 's' : ''} where a block's face lies in the same plane as another piece's, in a different look: only one look shows there (most: ${name(top.ids[0])} and ${name(top.ids[1])}, ${top.area.toFixed(2)} m²). Move one a little or match their materials; Overlaps in the top bar shows where.`,
+      message: `${n} place${n > 1 ? 's' : ''} where a block's face lies in the same plane as another piece's, in a different look: only one look shows there (most: ${name(top.ids[0])} and ${name(top.ids[1])}, ${top.area.toFixed(2)} m²). Move one a little or match their materials; View → Overlaps shows where.`,
       targetId: entities.has(top.ids[1]) ? top.ids[1] : top.ids[0],
     },
   ];

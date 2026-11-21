@@ -45,7 +45,8 @@ describe('net lab link (net-report, G3)', () => {
 
 describe('net lab smoke (a real host, players over a 100 ms, 2 % loss link)', () => {
   it('fires and judges rounds, and the host confirms what the screens hit', async () => {
-    const r = await runNetLab({ condition: { rttMs: 100, jitterMs: 20, loss: 0.02 }, clients: 4, seconds: 6, warmupSeconds: 2 });
+    // At least 30 rounds fired: in 6 s a busy machine ran too few frames to fire the 20 the checks need (20 fired).
+    const r = await runNetLab({ condition: { rttMs: 100, jitterMs: 20, loss: 0.02 }, clients: 4, seconds: 6, warmupSeconds: 2, minShots: 30 });
     expect(r.rtt.p50).toBeGreaterThan(90);
     expect(r.shots).toBeGreaterThan(20);
     expect(r.screenHits).toBeGreaterThan(10);

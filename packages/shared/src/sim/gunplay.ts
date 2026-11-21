@@ -17,7 +17,7 @@ import type { MatchRules } from './rules.ts';
 import type { WeaponDefinition } from './weapons.ts';
 import { hypot } from '../math.ts';
 import { WEAPON_FAMILIES } from '../content/weapons.generated.ts';
-import { FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
+import { AKIMBO_BASE, FAMILY_DEFAULTS } from '../content/weaponFamilies.generated.ts';
 import { SURFACE_TYPES, materialBallisticOf, propSurfaceOf } from './surfaceTypes.ts';
 
 // ---------------------------------------------------------------- families
@@ -128,21 +128,50 @@ export interface FalloffSpec {
   curve: 'linear' | 'smooth' | 'steep';
 }
 
+/**
+ * Handling (spec §27, §35; GAPS G2): how a weapon carries. `move`: running speed holding it, a share of everyone's
+ * (sprinting is the same with every weapon, so getting about a map never depends on what you hold); `sprintExit`:
+ * ticks from leaving a sprint to the first round (Match and client prediction hold the trigger with the raise timer).
+ * Mild on purpose (GUNPLAY_DIRECTION.md: no severe movement penalties, no slow sprint-to-fire).
+ */
+export interface HandlingSpec {
+  move: number;
+  sprintExit: number;
+}
+
+/**
+ * Dual wielding ("akimbo"; docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): what holding a pair of the same gun costs.
+ * `cone` multiplies the aim cone, `pattern` a shotgun's pellet spread, `kick` the recoil, `reload` and `raise` those
+ * times; `move` is added to handling.move.
+ */
+export interface AkimboSpec {
+  cone: number;
+  pattern: number;
+  kick: number;
+  reload: number;
+  raise: number;
+  move: number;
+}
+
 /** A family's defaults (content/weapons/families.json `families`). */
 export interface FamilyDefaults {
   ballistic: BallisticSpec | null;
   accuracy: AccuracySpec;
   kick: KickSpec;
   falloff: FalloffSpec;
+  handling: HandlingSpec;
+  /** The family's dual-wielding trade, over AKIMBO_BASE; a weapon is eligible only by its own `akimbo`. */
+  akimbo?: Partial<AkimboSpec>;
   head: number;
   legs: number;
+  arms: number;
 }
 
 const acc = (base: number, move: number, air: number, perShot: number, tight: number, max: number, recovery: number, ads: number, adsTicks = 12): AccuracySpec => ({ base, move, air, perShot, tight, max, recovery, ads, adsTicks });
 const kick = (pitch: number[], yaw: number[], variance: number, delay: number, settle: number, rate: number, visual: number): KickSpec => ({ pitch, yaw, variance, delay, settle, rate, visual });
 
 /** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff): content/weapons/families.json, with named fields. */
-export { FAMILY_DEFAULTS };
+export { AKIMBO_BASE, FAMILY_DEFAULTS };
 
 /** Everything gunplay needs to know about one weapon, defaults filled in. */
 export interface Gunplay {
@@ -152,13 +181,21 @@ export interface Gunplay {
   kick: KickSpec | null;
   reload: ReloadSpec;
   falloff: FalloffSpec | null;
+  handling: HandlingSpec;
   head: number;
   legs: number;
+  arms: number;
 }
+
+/** Handling of a weapon without a family: full speed; melee straight out of a sprint, anything else after 0.1 s. */
+const DEFAULT_MOVE = 1;
+const DEFAULT_SPRINT_EXIT = 6;
 
 /** Head / leg multipliers for weapons without a family (unchanged from before the gunplay pass; weapons.ts exports them). */
 const DEFAULT_HEAD = 2;
 const DEFAULT_LEGS = 0.75;
+/** Arms (GUNPLAY_SPEC §11, 0.8-1.0): weapons.ts ARM_MULTIPLIER. */
+const DEFAULT_ARMS = 0.9;
 
 const cache = new WeakMap<WeaponDefinition, Gunplay>();
 
@@ -178,11 +215,95 @@ export function gunplayOf(def: WeaponDefinition): Gunplay {
     kick: def.kick ? { ...(fam?.kick ?? kick([0], [0], 0, 4, 8, 0.1, 0.5)), ...def.kick } : (fam?.kick ?? (def.kind === 'melee' ? (def.alt?.kick ?? null) : null)),
     reload: def.reload ?? { type: 'magazine', tactical: def.reloadTicks, empty: def.reloadTicks, out: 0.35, in: 1 },
     falloff: def.falloff ?? fam?.falloff ?? null,
+    handling: { move: def.handling?.move ?? fam?.handling.move ?? DEFAULT_MOVE, sprintExit: def.handling?.sprintExit ?? fam?.handling.sprintExit ?? (def.kind === 'melee' ? 0 : DEFAULT_SPRINT_EXIT) },
     head: def.headshot ?? fam?.head ?? DEFAULT_HEAD,
     legs: def.legshot ?? fam?.legs ?? DEFAULT_LEGS,
+    arms: def.armshot ?? fam?.arms ?? DEFAULT_ARMS,
   };
   cache.set(def, g);
   return g;
+}
+
+const akimboCache = new WeakMap<WeaponDefinition, AkimboSpec | null>();
+
+/**
+ * A weapon's dual-wielding numbers, or null when it can't be paired: the base block (families.json `akimbo`), then
+ * its family's (or the family its `akimbo.as` names), then its own (cached). The match and client prediction apply it
+ * while a pair is in hand (akimboKick, akimboLoader, akimboCone, akimboMove, akimboRaise below).
+ */
+export function akimboOf(def: WeaponDefinition): AkimboSpec | null {
+  let a = akimboCache.get(def);
+  if (a !== undefined) return a;
+  if (!def.akimbo) a = null;
+  else {
+    const { as, ...own } = def.akimbo === true ? ({} as Exclude<WeaponDefinition['akimbo'], true | undefined>) : def.akimbo;
+    const from = as ?? def.family;
+    a = { ...AKIMBO_BASE, ...(from ? FAMILY_DEFAULTS[from].akimbo : undefined), ...own };
+  }
+  akimboCache.set(def, a);
+  return a;
+}
+
+const pairKicks = new WeakMap<KickSpec, Map<number, KickSpec>>();
+
+/** A gun's recoil while it is one of a pair: every round's kick and its variance × `mult`; the settling is the gun's own (cached). */
+export function akimboKick(k: KickSpec | null, mult: number): KickSpec | null {
+  if (!k || mult === 1) return k;
+  let by = pairKicks.get(k);
+  if (!by) pairKicks.set(k, (by = new Map()));
+  let scaled = by.get(mult);
+  if (!scaled) by.set(mult, (scaled = { ...k, pitch: k.pitch.map((v) => v * mult), yaw: k.yaw.map((v) => v * mult), variance: k.variance * mult }));
+  return scaled;
+}
+
+const pairLoaders = new WeakMap<WeaponDefinition, WeaponDefinition>();
+
+/**
+ * The weapon as its reloads run while it is one of a pair: every reload time × the pair's `reload` (one hand does the
+ * work), the stages at the same shares. A definition to hand to beginReload / stepReload in place of the weapon's
+ * own (cached, like barrelLoader); the weapon's own when it can't be paired.
+ */
+export function akimboLoader(def: WeaponDefinition): WeaponDefinition {
+  const a = akimboOf(def);
+  if (!a || a.reload === 1) return def;
+  let l = pairLoaders.get(def);
+  if (!l) {
+    const r = gunplayOf(def).reload;
+    const t = (ticks: number) => Math.max(1, Math.round(ticks * a.reload));
+    l = { ...def, reload: r.type === 'shell' ? { type: 'shell', start: t(r.start), each: t(r.each), end: t(r.end) } : { ...r, tactical: t(r.tactical), empty: t(r.empty) } };
+    pairLoaders.set(def, l);
+  }
+  return l;
+}
+
+/**
+ * A round's cone while paired: the aim cone (`aim`: everything but a shotgun's pellet pattern) × the pair's `cone`,
+ * the pellet pattern (`pattern`: the weapon's own `spread` for a multi-pellet gun, else 0) × its `pattern`.
+ */
+export const akimboCone = (a: AkimboSpec, aim: number, pattern: number): number => aim * a.cone + pattern * a.pattern;
+
+/** Ticks a pair takes to come up (the weapon's raise × the pair's `raise`). */
+export const akimboRaise = (def: WeaponDefinition, a: AkimboSpec): number => Math.round(def.raiseTicks * a.raise);
+
+/** Running speed holding a pair: the weapon's `handling.move` and the pair's `move`, never under the content check's floor. */
+export const akimboMove = (move: number, a: AkimboSpec): number => Math.max(0.85, move + a.move);
+
+/**
+ * Whose reload acts this input when the second gun of a pair has one (1 the first gun's, 2 the second's): one hand
+ * reloads at a time, so the one under way goes on and the other waits at its start; when both wait, the emptier gun
+ * goes first. The match and client prediction both ask this.
+ */
+export const pairReloadTurn = (main: ReloadRun | null, off: ReloadRun, mainMag: number, offMag: number): 1 | 2 => (!main || (main.t === 0 && (off.t > 0 || offMag < mainMag)) ? 2 : 1);
+
+/** The second gun of a pair as the reload code sees it: its own magazine over the pair's one reserve (write back with storeOff). */
+export const offBox = (w: { reserve: number; off?: { mag: number; unchambered?: boolean } }): AmmoBox => ({ mag: w.off?.mag ?? 0, reserve: w.reserve, ...(w.off?.unchambered ? { unchambered: true } : {}) });
+
+export function storeOff(w: { reserve: number; off?: { mag: number; unchambered?: boolean } }, b: AmmoBox): void {
+  if (!w.off) return;
+  w.off.mag = b.mag;
+  w.reserve = b.reserve;
+  if (b.unchambered) w.off.unchambered = true;
+  else delete w.off.unchambered;
 }
 
 // ---------------------------------------------------------------- creator rules (spec §10, §5, §43)
@@ -224,6 +345,54 @@ export function falloffAt(f: FalloffSpec | null, dist: number): number {
   const u = (dist - f.start) / (f.end - f.start);
   const k = f.curve === 'smooth' ? u * u * (3 - 2 * u) : f.curve === 'steep' ? 1 - (1 - u) * (1 - u) : u;
   return 1 - (1 - f.min) * k;
+}
+
+// ---------------------------------------------------------------- damage by impact speed (owner, 2026-11-16)
+
+/**
+ * Damage by impact speed (spec §37, "Damage by impact speed"). Under Standard and Advanced ballistics a bullet's
+ * damage (and so its shove) follows its speed when it strikes over its muzzle speed, not the distance it flew. Each
+ * gun's curve comes from its own falloff and drag: the speed ratio its round has at Standard at the falloff's start
+ * is full damage, the ratio at the end is the floor. So at Standard every gun keeps its tuned kill distances exactly,
+ * while Advanced (slower, draggier rounds) loses damage sooner, and a round slowed by anything else on the way
+ * (drag only: penetration and water take their own share already) hits softer. Arcade keeps the distance falloff.
+ *
+ * Speed falls linearly with distance under the sim's drag (semi-implicit Euler, BULLET_SUBSTEPS a tick, the first
+ * NEAR_INSTANT_M metres a ray): at distance x a round has v/v0 = 1 - drag (x - NEAR_INSTANT_M) / (v0 q), q = 1 - drag dt.
+ * `speedDistance` turns a ratio back into the Standard distance it means.
+ */
+export function speedDistance(b: Pick<BallisticSpec, 'velocity' | 'drag'>, ratio: number): number | null {
+  const drag = b.drag ?? 0;
+  if (drag <= 0 || b.velocity <= 0) return null;
+  const q = Math.max(0, 1 - (drag * TICK_DT) / BULLET_SUBSTEPS);
+  return NEAR_INSTANT_M + (b.velocity * q * (1 - Math.min(1, Math.max(0, ratio)))) / drag;
+}
+
+/** The speed ratio (impact / muzzle) a weapon's round has at Standard after `dist` metres (1 without drag). */
+export function speedRatioAt(b: Pick<BallisticSpec, 'velocity' | 'drag'>, dist: number): number {
+  const drag = b.drag ?? 0;
+  if (drag <= 0 || b.velocity <= 0 || dist <= NEAR_INSTANT_M) return 1;
+  const q = Math.max(0, 1 - (drag * TICK_DT) / BULLET_SUBSTEPS);
+  return Math.max(0, 1 - (drag * (dist - NEAR_INSTANT_M)) / (b.velocity * q));
+}
+
+/** A gun's damage-by-speed curve: full damage at or above `full` (impact / muzzle speed), `min` at or below `floor`. Null: no drag or no falloff (distance falloff, or none, stays). */
+export function speedCurve(gp: Pick<Gunplay, 'ballistic' | 'falloff'>): { full: number; floor: number; min: number; curve: FalloffSpec['curve'] } | null {
+  const b = gp.ballistic;
+  const f = gp.falloff;
+  if (!b || !f || !(b.drag && b.drag > 0)) return null;
+  return { full: speedRatioAt(b, f.start), floor: speedRatioAt(b, f.end), min: f.min, curve: f.curve };
+}
+
+/**
+ * Damage multiple of a bullet that strikes after `dist` metres at `ratio` of its muzzle speed (both under the
+ * match's ballistics rule). Arcade, and guns without a speed curve: the distance falloff.
+ */
+export function impactFalloff(gp: Pick<Gunplay, 'ballistic' | 'falloff'>, rules: Pick<MatchRules, 'ballistics'>, dist: number, ratio: number): number {
+  const b = gp.ballistic;
+  if (!b || (rules.ballistics ?? 'standard') === 'arcade') return falloffAt(gp.falloff, dist);
+  const d = speedDistance(b, ratio);
+  return falloffAt(gp.falloff, d ?? dist);
 }
 
 // ---------------------------------------------------------------- recoil & spread state
@@ -570,11 +739,28 @@ export function traceBullet(
   return { end: b.pos, time, hit: false };
 }
 
-/** Flight time (s) and drop (m) of a weapon's bullet to `dist` metres on a flat shot (no drag), under a ballistics rule. */
+/** Flight time (s) and drop (m) of a weapon's bullet to `dist` metres on a flat shot, under a ballistics rule (drag slows it: the time grows, drop with it). */
 export function flightTo(b: BallisticSpec, dist: number, rules: Pick<MatchRules, 'ballistics'> = {}): { time: number; drop: number } {
   const p = bulletPhysics(b, rules);
-  const time = Math.max(0, dist - NEAR_INSTANT_M) / p.speed;
-  return { time, drop: 0.5 * p.gravity * time * time };
+  const x = Math.max(0, dist - NEAR_INSTANT_M);
+  const slow = p.drag > 0 ? (p.drag * x) / p.speed : 0;
+  if (!(p.drag > 0) || slow >= 0.999) {
+    const time = x / p.speed;
+    return { time, drop: 0.5 * p.gravity * time * time };
+  }
+  // Drag slows the fall too: v_y = g (1 - e^(-kt)) / k.
+  const time = -Math.log(1 - slow) / p.drag;
+  return { time, drop: (p.gravity / p.drag) * (time - (1 - Math.exp(-p.drag * time)) / p.drag) };
+}
+
+/**
+ * Scope holdover marks (spec §5: "Scopes may provide optional markings that correspond to useful holdover
+ * distances"): for each distance, the angle (radians) below the aim a target there has to sit for a level shot to
+ * land on it, under the match's ballistics rule. Rounds leave from the eye along the aim (Match.fire), so the marks
+ * are the drop itself: no zero distance, nothing to compensate automatically.
+ */
+export function holdoverMarks(b: BallisticSpec, rules: Pick<MatchRules, 'ballistics'>, distances: readonly number[]): { dist: number; angle: number }[] {
+  return distances.map((dist) => ({ dist, angle: Math.atan2(flightTo(b, dist, rules).drop, Math.max(1, dist)) }));
 }
 
 /** Whether round number `n` (0-based, of the trigger pulls since the weapon was drawn) is drawn as a tracer, with `left` rounds remaining in the magazine after it. */

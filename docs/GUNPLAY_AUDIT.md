@@ -326,6 +326,8 @@ power weapons.
 
 ## The benchmark seven
 
+(2026-11-16: the clearer ranges changed the Pistol's and SMG's far columns; the current figures are in GUNPLAY_SPEC.md §10's TTK table and §37, and `docs/gunplay-audit.json`.)
+
 | | Service Pistol | Heavy Revolver | SMG | Assault Rifle | Shotgun | Precision Rifle | Rocket Launcher |
 |---|---|---|---|---|---|---|---|
 | Weapon | `core.pistol` | `core.revolver` | `core.smg` | `core.rifle` | `core.shotgun` | `core.sniper` | `core.rockets` |
@@ -427,7 +429,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G0 leading | ✅ | `ballistics.test.ts:172` (runner hit only with travel-time lead) |
 | G0 recoil and recovery | ✅ | `gunplay.ts:268` `recoilShot`, `:284` counter, `:309` `recoilIdle`; `shared/test/recoil.test.ts:87,110,141` |
 | G0 reload interruption | ✅ | fire `match.ts:2905-2910`, sprint/use `:2900`, swap `:3003`; stages `gunplay.ts:444`; `shared/test/reload.test.ts:127,142,170,215` |
-| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; damage numbers as an option (pass 2: `client/src/game/combatReadouts.ts`, privateState `dd`); no shield or weak-point marker |
+| G0 hit feedback | 🟡 | body / head / armour markers `client/src/game/hud.ts:805`; damage numbers as an option (pass 2: `client/src/game/combatReadouts.ts`, privateState `dd`); a shield marker for spawn protection (2026-11-17); no weak points in the game yet |
 | G0 kill confirmation | ✅ | X marker growing per kill in a row `hud.ts:819`; climbing crunch `client/src/game/sessionAudio.ts:357` |
 | **G1** glass | ✅ | breakable panes `shared/src/sim/scenario.ts:497` `shootGlass`; `shared/test/glass.test.ts` |
 | G1 wood, concrete, metal (+ 13 classes) | ✅ | `gunplay.ts:584` `MATERIAL_BALLISTICS`; surface types `content/surface-types.json` |
@@ -441,7 +443,7 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 | G2 burst rifle | ✅ | `match.ts:2937` burst trigger; `content/weapons/burst_rifle.json` |
 | G2 lever action | ❌ | no weapon, no family, no model (pass 2: the Frontier Rifle is not a lever gun; HANDOFF has the proposal) |
 | G2 battle rifle | ✅ | pass 2: `content/weapons/battle_rifle.json` (the `battle_rifle` family's first weapon) |
-| G2 handling extras | ❌ | no sprint-exit time, per-weapon movement speed or scope holdover marks (spec §35, §5) |
+| G2 handling extras | ✅ | `handling` per family (`gunplayOf(def).handling`: move 90-100 %, sprint exit 3-13 ticks; `match.ts` movement step and raise timer, `prediction.ts`), holdover marks (`holdoverMarks`, client `game/holdover.ts`); `shared/test/gunHandling.test.ts`, `benchmarks.test.ts` (no slow sprint-to-fire), 2026-11-18 |
 | **G3** server authority, kill validation | ✅ | hits and damage only on the host: `match.ts:5305` `damage`, `kill` after it |
 | G3 latency simulation | ✅ | `pnpm net-report` (G3 above): 8 players over 0-250 ms, jitter, 1-5 % loss; prediction exact (corrections only from being hit); rewind bounded at 18 ticks `match.ts` MAX_REWIND_TICKS (too short past ~120 ms: for the owner) |
 | G3 projectile reconciliation | ✅ | bullets catch up the shooter's latency then fly live (`ballistics.test.ts:197`); net-report: the host's rewound bodies within 6-11 cm (p95) of the screen's |
@@ -460,6 +462,9 @@ the Pistol needs 13-14 rounds through armour at 50-100 m (more than a magazine).
 Body STK and ideal body TTK at 10 / 25 / 50 / 100 m (unarmoured), head and armoured body ideal TTK, hip and ADS body
 TTK, first shot, draw, reload (tactical / empty, or heat cool-down), one round's settle time, cone hip / ADS / running
 (mrad). Full data, including every armoured and head cell: [gunplay-audit.json](gunplay-audit.json).
+The JSON was re-run on 2026-11-17 with arms as their own zone (0.9×): of the ideal cells only the SMG at 100 m
+(20 → 22) and the Auto Shotgun's armoured head at 10 m moved; the table below predates the clearer ranges of 2026-11-16
+(GUNPLAY_SPEC §10 has the current body TTK).
 
 | Gun | Class | Trigger · mag | Body STK | Body TTK | Head TTK | Armoured body | Hip body | ADS body | 1st shot ms | Draw ms | Reload ms | Settle ms | Cone |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|

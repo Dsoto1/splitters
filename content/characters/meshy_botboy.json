@@ -5,7 +5,8 @@
   "order": 33,
   "name": "Botboy",
   "look": "core.botboy",
-  "group": "creatures",
+  "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",
@@ -25,16 +26,10 @@
     "metallic": 0.3,
     "roughness": 0.55
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
     "grip": {
-      "gripLong": [-0.045, 0, -0.03],
-      "supportLong": [0, -0.02, 0],
-      "supportPistol": [0, 0.02, -0.06],
       "curlL": 1.2,
       "rollR": 0.25
     }

@@ -23,7 +23,7 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const rules: MatchRules = { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 100_000 };
 type MountEntity = Omit<Extract<MapEntity, { kind: 'mount' }>, 'id' | 'kind'>;
-const mount = (model: string, x: number, z: number, yaw = 0, respawnSeconds: number | null = null): MountEntity => ({ position: [x, 0, z], model: model as 'buggy', yaw, faction: null, respawnSeconds });
+const mount = (model: string, x: number, z: number, yaw = 0, respawnSeconds: number | null = null): MountEntity => ({ position: [x, 0, z], model: model as 'troop_buggy', yaw, faction: null, respawnSeconds });
 
 /** An open yard 40 × 32 m (x -4..36, z -4..28), with mounts and anything else. */
 function yard(mounts: MountEntity[], extra: MapEntity[] = []): MapDocument {
@@ -77,7 +77,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
     expect(mountDamageState(0.34)).toBe('heavy');
     expect(mountDamageState(0.14)).toBe('burning');
     expect(mountDamageState(0.9, true)).toBe('burning');
-    const match = new Match(yard([mount('buggy', 10, 10)]), rules);
+    const match = new Match(yard([mount('troop_buggy', 10, 10)]), rules);
     new Driver(match).run(2);
     const m = internals(match).mounts[0]!;
     internals(match).damageMount(m, m.def.health * 0.5, null);
@@ -88,7 +88,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
   });
 
   it('a burning vehicle burns down and blows up on its own; the kill goes to whoever set it alight', () => {
-    const match = new Match(yard([mount('buggy', 10, 10)]), rules);
+    const match = new Match(yard([mount('troop_buggy', 10, 10)]), rules);
     const d = new Driver(match);
     const shooter = match.addHuman('shooter')!;
     const driver = match.addHuman('driver')!;
@@ -118,7 +118,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
   });
 
   it('the wreck stays as solid cover you cannot board, then fades and the vehicle respawns at home', () => {
-    const match = new Match(yard([mount('buggy', 10, 10, 0, 30)]), rules);
+    const match = new Match(yard([mount('troop_buggy', 10, 10, 0, 30)]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     d.run(2);
@@ -166,7 +166,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
 
   it('the blast sets off a chain: it damages a vehicle parked nearby and blows up a barrel beside it', () => {
     const barrel: MapEntity = { id: 'barrel_1', kind: 'destructible', model: 'barrel', position: [10, 0, 14], yaw: 0, health: null, explosiveOnly: false } as MapEntity;
-    const match = new Match(yard([mount('buggy', 10, 10), mount('buggy', 14, 10)], [barrel]), rules);
+    const match = new Match(yard([mount('troop_buggy', 10, 10), mount('troop_buggy', 14, 10)], [barrel]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     d.run(2);
@@ -199,7 +199,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
   });
 
   it('ramming: a hover bike driven into a parked buggy hurts both, the light bike far worse, credited to the drivers, with a crash', () => {
-    const match = new Match(yard([mount('hover_bike', 4, 10, Math.PI / 2), mount('buggy', 20, 10, 0)]), rules);
+    const match = new Match(yard([mount('hover_bike', 4, 10, Math.PI / 2), mount('troop_buggy', 20, 10, 0)]), rules);
     const d = new Driver(match);
     const a = match.addHuman('a')!;
     d.run(2);
@@ -229,7 +229,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
 
   it('lava sets a vehicle on fire at once and destroys it; deep water floods a ground vehicle but not a hovercraft', () => {
     const pool = (liquid: 'water' | 'lava', x: number): MapEntity => ({ id: `pool_${liquid}`, kind: 'water', position: [x, 0, 12], size: [10, 3, 10], liquid }) as MapEntity;
-    const match = new Match(yard([mount('buggy', 6, 12), mount('buggy', 24, 12), mount('speeder', 26, 14)], [pool('lava', 6), pool('water', 24)]), rules);
+    const match = new Match(yard([mount('troop_buggy', 6, 12), mount('troop_buggy', 24, 12), mount('speeder', 26, 14)], [pool('lava', 6), pool('water', 24)]), rules);
     const d = new Driver(match);
     d.run(2);
     const [inLava, inWater, hover] = internals(match).mounts;
@@ -243,7 +243,7 @@ describe('vehicle damage states, fire, wrecks and crashes', () => {
 
   it('match setting: tough vehicles take half damage, off makes them indestructible', () => {
     const hit = (vehicleDamage: 'normal' | 'tough' | 'off') => {
-      const match = new Match(yard([mount('buggy', 10, 10), mount('turret_mg', 20, 10)]), { ...rules, vehicleDamage });
+      const match = new Match(yard([mount('troop_buggy', 10, 10), mount('turret_mg', 20, 10)]), { ...rules, vehicleDamage });
       new Driver(match).run(2);
       const [m, turret] = internals(match).mounts;
       internals(match).damageMount(m!, 100, null);

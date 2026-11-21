@@ -1,4 +1,5 @@
 import type { InputState } from './input.ts';
+import { TOUCH_LAYOUT_EVENT, applyTouchLayout, touchLayout } from './touchLayout.ts';
 
 /** The pad's middle (this share of its radius) is the jump button; holding it this long crouches instead. */
 const PAD_CENTRE = 0.32;
@@ -20,11 +21,15 @@ const DEADZONE = 0.12;
  *               pushed past its rim forward, you sprint
  *   right half  drag to look
  *   Fire        hold to fire; drag it to aim while firing
- *   Aim         tap to aim down the sights, tap again to stop
+ *   Aim         aim down the sights: held, or a tap to aim and another to stop (Aim: Hold / Toggle,
+ *               combatPrefs.ts; Toggle by default on touch)
  *   Melee       a punch, kick or swing (Y)
  *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), Orders
  *   (Fireteams' order wheel, while you lead a squad), pause
  *   scorebar    tap to show the scoreboard, tap again to hide it
+ *
+ * The layout (Options → Controls → Touch; touchLayout.ts): button size, opacity and a left-handed swap (the pad on
+ * the right, the buttons on the left). The buttons sit in one cluster scaled from its corner.
  */
 export class TouchControls {
   readonly el: HTMLDivElement;
@@ -75,7 +80,10 @@ export class TouchControls {
     const pause = btn('tc-pause', 'II', 'Pause');
     // Over the scorebar (top middle): a tap shows the scoreboard, another hides it (Tab on a keyboard, held).
     this.scoresBtn = btn('tc-scores', '', 'Scores: tap to show or hide the scoreboard');
-    this.el.append(look, pad, fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn, pause, this.scoresBtn);
+    // The action buttons in one cluster (scaled together from its bottom corner; left-handed puts it on the left).
+    const cluster = div('tc-cluster');
+    cluster.append(fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn);
+    this.el.append(look, pad, cluster, pause, this.scoresBtn);
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
     this.watchBar.hidden = true;
@@ -184,9 +192,10 @@ export class TouchControls {
     holdKey(reload, 'KeyR');
     holdKey(use, 'KeyE');
     holdKey(thrw, 'KeyG');
+    // Aim holds X while pressed: the input's own latch makes it a toggle when Aim is set to Toggle (combatPrefs.ts).
     track(this.aimBtn, {
-      down: () => this.input.virtualKey('KeyX', !this.input.held('KeyX')),
-      up: () => undefined,
+      down: () => this.input.virtualKey('KeyX', true),
+      up: () => this.input.virtualKey('KeyX', false),
     });
     track(this.wheelBtn, {
       down: () => {
@@ -292,6 +301,11 @@ export class TouchControls {
     });
     // No long-press menus, text selection or page zoom over the controls.
     this.el.addEventListener('contextmenu', (e) => e.preventDefault(), opts);
+    // The layout (size, opacity, left-handed): now, when it changes, and when the window does (Large is held back on short screens).
+    const layout = () => applyTouchLayout(document.documentElement, touchLayout(), window.innerHeight);
+    layout();
+    window.addEventListener(TOUCH_LAYOUT_EVENT, layout, opts);
+    window.addEventListener('resize', layout, opts);
   }
 
   /** Shown while you play; hidden in the pause menu. Keeps the Aim and Weapons buttons' state in step. */
@@ -310,7 +324,7 @@ export class TouchControls {
 
   /** Once a frame: the toggle buttons show their state. */
   update(): void {
-    this.aimBtn.classList.toggle('on', this.input.held('KeyX'));
+    this.aimBtn.classList.toggle('on', this.input.aimShown && this.input.locked);
     this.scoresBtn.classList.toggle('on', this.input.held('Tab'));
     this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');
     if (this.ordersBtn.hidden === this.input.ordersOn) this.ordersBtn.hidden = !this.input.ordersOn;

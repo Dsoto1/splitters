@@ -127,19 +127,45 @@ Desktop is unchanged: every rule is under `html.touch`, and the lamps change onl
    stays with Room lights off, it isn't the lamps: send a screenshot and Pause → Settings → Copy performance report.
 5. To see the old behaviour for comparison: `?lampbatch=8` (Babylon's 8 a layer, also on Low).
 
+## Proposals 7, 9 and 11: done (`wip/mobile-bugs-1114`, 2026-11-14)
+
+| # | What changed | Check |
+|---|---|---|
+| 7 | **Options in one column on a phone** (`html.touch`, at most 600 px tall or 760 px wide; style.css, `frontEnd.ts` `row`): the sections are chips along the top, the panel takes the whole height, a setting is one line (name left, control right), and its description sits behind an (i) beside the name (the menus' tooltip card, shown on a tap). Desktop unchanged: the (i) is hidden there. | Phone pictures (Pixel 7 839 × 412, S9+ 658 × 320); e2e `mobile` opens Options and its tabs. |
+| 9 | **Terrazzo:** `core.pbr_terrazzo` scale 2 → 1.25 m (finer specks), and its colour map's contrast lowered to 0.55 (`adjust` in `content/textures.json`, applied by `prepare-textures.mjs`, recorded in provenance as a modification): the luminance spread 56 → 31 of 255. Gravel and carpet not changed. | Flatpack Depot's showroom on the phone, before and after. |
+| 11 | **Match Setup:** the header (it stays while the setup body scrolls) names the mode (`.fact-mode`, phones only); every stepper's − and + are 40 × 40 px on touch (were 30 × 40). "Not on this map" was already gone (only the modes a map plays are shown, owner 2026-11-11). | Phone pictures; steppers measured 40 × 40. |
+
+## Proposals 2, 3 and 4: done (`wip/mobile-2`, 2026-11-17)
+
+Checked at 360 × 780, 412 × 915 and an S25+-like 384 × 832, each upright and sideways (pictures at device scale 2 in the
+helper's scratchpad `mobile2/`, before and after, not kept).
+
+| # | What changed | Check |
+|---|---|---|
+| 2 | (done) **Map cards on phones.** Under 900 px wide, Match Setup's header has a map button (`#arcade-map-pick`: the name, "Change map ▸") instead of the plain `<select>` (still in the page, hidden). It opens the desktop map list full screen (`.screen.play.picking`: tabs, Filter maps, search, sort, favourites, small cards without the plan tile, names on two lines); a card picks and closes it, ✕ or Esc (controller B) closes it. Sideways the title gives way and the bar is one row, so two rows of cards show. **Quick Play** has a third card, **Pick a map** (`#qp-pick`): Match Setup with the picker open (on a wide screen the list is already beside the setup). Upright under 520 px the main menu drops the featured map card (it covered Quick Play). | e2e `mobile` → `mobileMenus` (each size both ways): Quick Play's three cards inside the screen, the picker full screen with ≥ 2 cards a row, a pick closes it and names the map, reopen and Close; no sideways spill. |
+| 3 | **Touch layout** (`game/touchLayout.ts`, Options → Controls → Touch on a touch device): **Button size** Small 0.85 / Medium 1 / Large 1.2 (the pad and a new `.tc-cluster` of the buttons, scaled from their corner; Large held back so the cluster leaves 90 px above it: 1.0 at 320 px tall), **Button opacity** 30-100 % (a pressed button at full), **Left-handed** (`html.tc-left`: pad right, buttons and look left; minimap and vitals top right, kill feed and ammo panel left). The ammo panel's height follows the size (`--tc-scale`). **Aim**: the touch Aim button now holds X while pressed and the input's `AimLatch` makes it a toggle when Aim is Toggle, so it follows Accessibility → Aim (also offered in the Touch rows, kept in step); a touch device defaults to Toggle (`TOUCH_COMBAT_DEFAULTS`), and a toggled aim now lets go on a weapon change, vehicle or death on touch too. | `client/test/touchLayout.test.ts` (saving, damaged values, Large held back by height, the root's properties, the touch Aim default); `combatPrefs.test.ts` (touch Aim follows Hold and Toggle); e2e `mobile`: the Touch rows (Toggle on a phone), Aim tap on / tap off, and `mobileTouchLayout` (Large, 50 %, left-handed at 915 × 412, 832 × 384 and 658 × 320: sides, size, opacity, the ammo panel over no button, no two buttons touching; Aim set to Hold). |
+| 4 | **Character Select on a phone** (`html.touch`, at most 600 px tall or 760 px wide): the grid takes the height; the details panel is a sheet fixed along the bottom, down a strip (handle, name, Choose), up on a tap on a portrait or the handle (bio, tags, stats with bars, loadout, Choose and Customise; scrolls inside itself). Upright the grid and sheet take the width, the sheet shows the portrait, and the turning model's drag area is off (it isn't in view); sideways the portraits are smaller (two rows and more) and the drag area starts right of the grid (it covered the strip's end). **Every screen:** a search box and a ★ Favourites-only switch in the jump strip (sections and chips with no match hide; "No characters match" when none), a star on each portrait (`tiletrigger.charFavs`); on touch the strip's ends are ◀ ▶ instead of Q / E key caps. | e2e `mobileMenus`: the strip ≤ 66 px under a grid of more than a row and a half, arrows shown and caps hidden, a tap shows the character and pulls the sheet up inside the screen, the handle lets it down, a star and Favourites only list just that one, a search with no match says so and clearing it brings everyone back; the existing `mobileCharacterSelect` and the desktop character checks. |
+
+Also fixed on the way: at 832 × 384 (S25+ sideways) the main menu's Options button sat under the news bar (now every
+button clears it under 420 px tall; e2e checks each button is clear to tap at every phone size), and Quick Play's panel
+is solid on a touch screen (the featured map's words showed through).
+
+Not changed: the pause menu (Aim is already there), drag-to-place for the touch buttons (later, as the proposal said),
+desktop layouts (the search, favourites and stars apart).
+
 ## Proposals, ranked (impact / size)
 
 | # | Proposal | Impact | Size |
 |---|---|---|---|
 | 1 | (done) **Find the dark-block cause on the owner's phone.** Ask which Graphics setting and phone. Ship a Display option "Room lights" (on/off), or a `?roomlights=0` test switch, so the owner can see whether the block goes with the lamps. If it does: (a) pick the lamps-per-layer from the map's lamp count and the device's texture limit (1 for ≤ 64 lamps, more only where the mask must fit); or (b) on Low, drop the clustered lamps and raise the sky light indoors to compensate. Either also cuts a phone's per-pixel light work (Flatpack's 138 lamps are 18 layers). | High | S-M |
 | 2 | **Map cards on phones.** The map name in Match Setup opens a full-screen picker reusing the desktop grid (pictures, mode tags, search, favourites), not a `<select>`. Also a "Pick a map" card in Quick Play. | High | M |
-| 3 | **Touch layout options.** Options → Controls: button size (S/M/L), opacity, left-handed swap, and Aim as hold or toggle. Later, drag-to-place. | High | M |
-| 4 | **Character Select as a phone layout.** A full-height grid with the details as a slide-up sheet on tap. Add search and favourites, and arrows instead of Q/E caps on touch. | High | M |
+| 3 | (done) **Touch layout options.** Options → Controls: button size (S/M/L), opacity, left-handed swap, and Aim as hold or toggle. Later, drag-to-place. | High | M |
+| 4 | (done) **Character Select as a phone layout.** A full-height grid with the details as a slide-up sheet on tap. Add search and favourites, and arrows instead of Q/E caps on touch. | High | M |
 | 5 | (done) **Ammo by the fire cluster on touch** (above Reload, smaller), clearing the lower centre; the weapon name as an icon. | Med | S |
 | 6 | (done) **Scores on touch:** tap the scorebar to show the scoreboard (hold or toggle). | Med | S |
-| 7 | **Phone Options in one column:** setting name and control on one line, the description behind an (i). Tabs as chips at the top. The panel uses the full height. | Med | S-M |
+| 7 | (done) **Phone Options in one column:** setting name and control on one line, the description behind an (i). Tabs as chips at the top. The panel uses the full height. | Med | S-M |
 | 8 | **Textured sci-fi guns.** A material pass for the Quaternius sci-fi pack (metal and paint maps through the existing held-copy tiers), or swap the bulkiest (Flak, Swarm, Laser Rifle) for textured models. | Med | M (content) |
-| 9 | **Speckled floors:** Terrazzo013 finer (scale 1-1.25 m) and lower contrast, or another terrazzo; check gravel and carpet the same way. | Low-Med | S |
+| 9 | (done) **Speckled floors:** Terrazzo013 finer (scale 1-1.25 m) and lower contrast, or another terrazzo; check gravel and carpet the same way. | Low-Med | S |
 | 10 | (done) **Text floor on touch:** HUD and menu text at least 12 px on phones (button labels, mode label, Match Setup's chips), and the pad's "hold: crouch" readable or dropped after the tutorial. | Med | S |
-| 11 | **Match Setup on phones:** a sticky header (map, mode), "Not on this map" folded away, 40 px steppers. | Med | S-M |
+| 11 | (done) **Match Setup on phones:** a sticky header (map, mode), "Not on this map" folded away, 40 px steppers. | Med | S-M |
 | 12 | (done) **Kill feed lines on short phones:** at most 3, so it never reaches the Weapons button (4-5 lines can). | Low | XS |

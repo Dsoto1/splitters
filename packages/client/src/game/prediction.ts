@@ -11,12 +11,26 @@ import {
   BUTTON_USE,
   BUTTON_ZOOM,
   RELOAD_KINDS,
+  akimboCone,
+  akimboKick,
+  akimboLoader,
+  akimboMove,
+  akimboOf,
+  akimboRaise,
+  pairReloadTurn,
+  spreadOf,
+  type AkimboSpec,
   angleDelta,
   beginReload,
   bulletPhysics,
   counterFrom,
   counterRecoil,
   gunplayOf,
+  clampFireMode,
+  fireModeCount,
+  firingOf,
+  nextFireMode,
+  type Firing,
   isTracer,
   newGunState,
   recoilIdle,
@@ -67,6 +81,7 @@ import {
   oneHanded,
   thirdPersonAim,
 } from '@tiletrigger/shared';
+import type { VehiclePrediction } from './vehiclePrediction.ts';
 
 const MAX_PENDING = 120;
 const ORDER = new Map(WEAPONS_BY_SLOT.map((w) => [w.id, weaponCode(w)]));
@@ -77,6 +92,8 @@ export interface PredictedShot {
   ends: Vec3[];
   /** The second trigger. */
   alt?: boolean;
+  /** Dual wielding: the second gun of a pair fired it. */
+  off?: boolean;
   /** Ballistic bullets: muzzle speed (m/s) for the drawn round, flight time to each end (s), and whether this round shows a tracer. */
   speed?: number;
   times?: number[];
@@ -120,6 +137,8 @@ export class LocalPlayer {
   glider = false;
   /** Seated in a turret or vehicle: the server moves you, so movement isn't predicted. */
   mounted = false;
+  /** Driving a rigid vehicle: it is predicted (vehiclePrediction.ts; the session sets it up from PrivateState.vp). */
+  vehicle: VehiclePrediction | null = null;
   /** The seat's gun (set by the session while seated), its heat, and whether the seat can't shoot at all (driving). */
   seatGun: WeaponDefinition | null = null;
   private seatAmmo: [number, number, number, number] = [0, 0, 0, 0];
@@ -170,12 +189,87 @@ export class LocalPlayer {
   private windup = 0;
   private burstLeft = 0;
   private burstTimer = 0;
+  private burstEvery = 0;
+  /** The fire mode you want for each weapon you hold (by code; sim/fireModes.ts), sent with every input. */
+  private readonly wantedModes = new Map<number, number>();
+  /** Fire modes as the host applies them (WeaponState.mode): the inputs' values, step for step. */
+  private readonly appliedModes = new Map<number, number>();
+
+  /** Switch the held weapon to its next fire mode; returns the new mode, or null when it has only one. */
+  cycleFireMode(): Firing | null {
+    const def = this.weapon;
+    // A pair: the key puts the second gun away and brings it back (a pair has no fire modes).
+    if (def && !this.seatGun && this.offs.has(this.held)) {
+      this.wantedModes.set(this.held, this.wantedModes.get(this.held) === 1 ? 0 : 1);
+      return firingOf(def);
+    }
+    if (!def || fireModeCount(def) < 2 || this.seatGun) return null;
+    const next = nextFireMode(def, this.wantedModes.get(this.held) ?? 0);
+    this.wantedModes.set(this.held, next);
+    return firingOf(def, next);
+  }
+
+  /** The held weapon's fire mode (as wanted: the host takes it with the next input), or null when it has one. */
+  fireMode(): Firing | null {
+    const def = this.weapon;
+    if (!def || fireModeCount(def) < 2) return null;
+    return firingOf(def, this.wantedModes.get(this.held) ?? 0);
+  }
+  /**
+   * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): the second guns you hold, by weapon code
+   * (PrivateState.ow: magazine, no round chambered, put away), predicted like the inventory; and the second gun's own
+   * trigger and reload, mirrored from the match (Combatant.fireCooldown2 and the rest).
+   */
+  offs = new Map<number, { mag: number; unchambered: boolean; away: boolean }>();
+  reload2: ReloadRun | null = null;
+  reloadTicks2 = 0;
+  private fireCooldown2 = 0;
+  private semiLatch2 = false;
+  /**
+   * Rounds a pair fired in inputs the host may not have seen yet ([input seq, weapon code, first gun's, second
+   * gun's]): taken off the host's magazines on each snapshot, so the two counts don't jump back up between a shot
+   * and its acknowledgement and neither gun fires rounds it doesn't have.
+   */
+  private pairShots: [number, number, number, number][] = [];
+
+  /** The pair in hand's trade, or null: the weapon `code` has its second gun and it is out. */
+  pairOf(code: number = this.held): AkimboSpec | null {
+    const o = this.offs.get(code);
+    const def = o && !o.away ? weaponByCode(code) : undefined;
+    return def ? akimboOf(def) : null;
+  }
+
+  /** Whether a pair is in your hands now (not from a seat's gun): the second trigger is the second gun's, and nothing aims. */
+  get paired(): boolean {
+    return !this.seatGun && this.pairOf() !== null;
+  }
+
+  /**
+   * Which of a pair's guns a hand is on now, [the gun you held, the second gun]: one reloads at a time, and the other's
+   * reload, when asked for, waits its turn (that gun still fires, so it shows its rounds).
+   */
+  pairReloading(): [boolean, boolean] {
+    const first = this.reload && this.reloadTicks > 0 ? this.reload : null;
+    const second = this.reload2 && this.reloadTicks2 > 0 ? this.reload2 : null;
+    if (!second) return [!!first, false];
+    const turn = pairReloadTurn(first, second, this.inventory.get(this.held)?.[0] ?? 0, this.offs.get(this.held)?.mag ?? 0);
+    return [turn === 1, turn === 2];
+  }
+
+  /** With a second gun of the held weapon: 'pair' (both out, as wanted: the host takes it with the next input) or 'single'; null without one. */
+  pairMode(): 'pair' | 'single' | null {
+    if (!this.offs.has(this.held) || this.seatGun) return null;
+    return this.wantedModes.get(this.held) === 1 ? 'single' : 'pair';
+  }
+
   /** Carried grenades or mines. */
   throwable: { kind: (typeof THROWABLES)[number]; count: number } | null = null;
   reloadTicks = 0;
   raiseTicks = 0;
   speedTicks = 0;
   damageTicks = 0;
+  /** Whether each input's predicted move ended sprinting (by seq): where a replay starts, for the sprint exit. */
+  private readonly sprintAfter = new Map<number, boolean>();
   private readonly collider;
   private pending: PlayerInput[] = [];
   private seq = 0;
@@ -248,7 +342,7 @@ export class LocalPlayer {
    * (`absorbed`, pitch and yaw): the caller adds it back to its view angles,
    * because that movement brought the recoil down instead of turning the view.
    */
-  tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null; absorbed: [number, number] | null } {
+  tick(sample: { forward: number; right: number; buttons: number; say?: number }, yaw: number, pitch: number, weapon: number, viewTick: number): { input: PlayerInput; shot: PredictedShot | null; shot2: PredictedShot | null; absorbed: [number, number] | null } {
     let absorbed: [number, number] | null = null;
     if (this.alive) {
       // Pulling against the recoil (the server applies the same counter from `rc`).
@@ -263,14 +357,21 @@ export class LocalPlayer {
     this.lastYaw = yaw;
     this.lastPitch = pitch;
     const input: PlayerInput = { seq: ++this.seq, ...sample, yaw, pitch, weapon, viewTick, ...(absorbed ? { rc: absorbed } : {}) };
+    // The fire mode wanted for the gun that will be in hand (the host sets it after any switch, as here).
+    const modeCode = weapon && this.inventory.has(weapon) ? weapon : this.held;
+    const modeDef = weaponByCode(modeCode);
+    if (modeDef?.fireModes) input.fireMode = clampFireMode(modeDef, this.wantedModes.get(modeCode));
+    // A pair: 1 puts the second gun away, 0 keeps it out.
+    else if (this.offs.has(modeCode)) input.fireMode = this.wantedModes.get(modeCode) === 1 ? 1 : 0;
     this.prevPos = { ...this.state.pos };
     let shot: PredictedShot | null = null;
+    let shot2: PredictedShot | null = null;
     if (this.alive) {
       if (weapon && weapon !== this.held && this.inventory.has(weapon)) {
         this.held = weapon;
-        this.raiseTicks = this.weapon?.raiseTicks ?? 0;
-        this.reloadTicks = 0;
-        this.reload = null;
+        const pair = this.pairOf();
+        this.raiseTicks = pair && this.weapon ? akimboRaise(this.weapon, pair) : (this.weapon?.raiseTicks ?? 0);
+        this.cancelReload();
         this.windup = 0;
         this.burstLeft = 0;
         this.gun.shots = 0;
@@ -278,16 +379,67 @@ export class LocalPlayer {
         this.gun.ads = 0;
         this.rounds = 0;
       }
-      if (!this.mounted) this.state = this.move(this.state, input, this.predTick + 1, true);
+      // As the host (Match.applyInputs): the input's fire mode puts a pair's second gun away or brings it back; with
+      // the pair in hand nothing aims and the second trigger ends a sprint. The input goes out as it was sampled.
+      const applied = this.pairInput(input, this.held, this.offs.get(this.held), true);
+      const sprinted = !!this.state.sprint;
+      if (!this.mounted) this.state = this.move(this.state, applied, this.predTick + 1, true);
+      else this.vehicle?.step(input);
       if (this.fireCooldown > 0) this.fireCooldown--;
+      if (this.fireCooldown2 > 0) this.fireCooldown2--;
       if (this.raiseTicks > 0) this.raiseTicks--;
+      // As the server: out of a sprint the weapon comes up before it fires (its sprint-exit time, on the raise timer).
+      if (!this.mounted && sprinted && !this.state.sprint) this.raiseTicks = Math.max(this.raiseTicks, this.handling(this.held).sprintExit);
+      this.sprintAfter.set(input.seq, !!this.state.sprint);
+      this.sprintAfter.delete(input.seq - 600);
       this.advanceReload();
-      shot = this.predictFire(input);
+      [shot, shot2] = this.predictFire(applied);
+      if ((shot || shot2) && this.paired) this.pairShots.push([input.seq, this.held, shot && !shot.alt ? 1 : 0, shot2 ? 1 : 0]);
     }
     this.predTick++;
     this.pending.push(input);
     if (this.pending.length > MAX_PENDING) this.pending.shift();
-    return { input, shot, absorbed };
+    return { input, shot, shot2, absorbed };
+  }
+
+  /**
+   * One input as the host applies it to someone with a second gun `o` of the held weapon `code` (Match.applyInputs):
+   * its fire mode sets the second gun away or out (`live`: with the host's side effects, a toggle beating a reload),
+   * and with the pair out the aim button is dropped and the second trigger takes the sprint button with it.
+   */
+  private pairInput(input: PlayerInput, code: number, o: { away: boolean } | undefined, live: boolean): PlayerInput {
+    if (!o || this.seatGun) return input;
+    if (input.fireMode !== undefined && o.away !== (input.fireMode === 1)) {
+      o.away = input.fireMode === 1;
+      if (live) {
+        this.cancelReload();
+        this.semiLatch2 = false;
+        if (!o.away) this.pairOut(code);
+      }
+    }
+    if (o.away) return input;
+    const buttons = input.buttons & ~BUTTON_ZOOM & (input.buttons & BUTTON_ALT ? ~BUTTON_SPRINT : ~0);
+    return buttons === input.buttons ? input : { ...input, buttons };
+  }
+
+  /** The second gun comes out (Match.pairOut): its raise before its first round, and no sights. */
+  private pairOut(code: number, since = 0): void {
+    const def = weaponByCode(code);
+    const pair = def && akimboOf(def);
+    if (!def || !pair) return;
+    this.fireCooldown2 = Math.max(this.fireCooldown2, akimboRaise(def, pair) - since);
+    this.gun.ads = 0;
+  }
+
+  /** The second gun's ammunition as the reload code sees it: its magazine over the weapon's one reserve (`storeOff` writes back). */
+  private offBox(o: { mag: number; unchambered: boolean }, ammo: [number, number, number, number]): AmmoBox {
+    return { mag: o.mag, reserve: ammo[1], unchambered: o.unchambered };
+  }
+
+  private storeOff(o: { mag: number; unchambered: boolean }, ammo: [number, number, number, number], b: AmmoBox): void {
+    o.mag = b.mag;
+    ammo[1] = b.reserve;
+    o.unchambered = !!b.unchambered;
   }
 
   /** The held weapon's ammunition as the reload code sees it (written back with `storeBox`). */
@@ -307,13 +459,33 @@ export class LocalPlayer {
   private advanceReload(): void {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
-    if (!this.reload || this.reloadTicks === 0 || !def || !ammo) {
-      this.reload = null;
-      this.reloadTicks = 0;
+    const o = this.offs.get(this.held);
+    const pair = this.pairOf();
+    if (!this.reload2 || this.reloadTicks2 === 0 || !def || !ammo || !o || !pair) {
+      this.reload2 = null;
+      this.reloadTicks2 = 0;
+    }
+    if (this.reload && (this.reloadTicks === 0 || !def || !ammo)) this.reload = null;
+    if (!this.reload) this.reloadTicks = 0;
+    if (!def || !ammo || (!this.reload && !this.reload2)) return;
+    // A pair's reloads take its `reload` times as long, one gun at a time (Match.advancePairReload).
+    const loader = pair ? akimboLoader(def) : def;
+    if (this.reload2 && o && pairReloadTurn(this.reload, this.reload2, ammo[0], o.mag) === 2) {
+      const b = this.offBox(o, ammo);
+      let run: ReloadRun | null = this.reload2;
+      if (run.t === 0) run = beginReload(loader, b);
+      if (run) run = stepReload(loader, b, run);
+      this.storeOff(o, ammo, b);
+      this.reload2 = run;
+      this.reloadTicks2 = run ? Math.max(1, run.total - run.t) : 0;
       return;
     }
     const b = this.box(this.held, ammo);
-    this.reload = stepReload(def, b, this.reload);
+    let run: ReloadRun | null = this.reload!;
+    // (A pair's reload that waited for the other gun's starts from the ammunition as it is now.)
+    if (pair && run.t === 0) run = beginReload(loader, b);
+    if (run) run = stepReload(loader, b, run);
+    this.reload = run;
     this.storeBox(this.held, ammo, b);
     this.reloadTicks = this.reload ? Math.max(1, this.reload.total - this.reload.t) : 0;
   }
@@ -322,20 +494,47 @@ export class LocalPlayer {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
     if (this.reloadTicks > 0 || !def || !ammo) return;
-    const run = beginReload(def, this.box(this.held, ammo));
+    const run = beginReload(this.pairOf() ? akimboLoader(def) : def, this.box(this.held, ammo));
     if (!run) return;
     this.reload = run;
     this.reloadTicks = run.total;
     this.burstLeft = 0;
   }
 
-  private cancelReload(): void {
-    this.reload = null;
-    this.reloadTicks = 0;
+  /** The second gun's reload (Match.startReloadOff). */
+  private startReloadOff(): void {
+    const def = this.weapon;
+    const ammo = this.inventory.get(this.held);
+    const o = this.offs.get(this.held);
+    if (this.reloadTicks2 > 0 || !def || !ammo || !o || !this.pairOf()) return;
+    const run = beginReload(akimboLoader(def), this.offBox(o, ammo));
+    if (!run) return;
+    this.reload2 = run;
+    this.reloadTicks2 = run.total;
   }
 
-  /** Same order as the server: move with the current boost, then count the boost down. */
-  private move(state: MoveState, input: PlayerInput, tick: number, live = false): MoveState {
+  /** `which`: 1 the gun's, 2 the second gun's of a pair, 0 both (Match.cancelReload). */
+  private cancelReload(which: 0 | 1 | 2 = 0): void {
+    if (which !== 2) {
+      this.reload = null;
+      this.reloadTicks = 0;
+    }
+    if (which !== 1) {
+      this.reload2 = null;
+      this.reloadTicks2 = 0;
+    }
+  }
+
+  /** A weapon's handling (spec §27): its running speed and sprint-exit time; full speed with nothing in hand. */
+  private handling(code: number, pair: AkimboSpec | null = this.pairOf(code)): { move: number; sprintExit: number } {
+    const def = weaponByCode(code);
+    if (!def) return { move: 1, sprintExit: 0 };
+    const h = gunplayOf(def).handling;
+    return pair && pair.move !== 0 ? { move: akimboMove(h.move, pair), sprintExit: h.sprintExit } : h;
+  }
+
+  /** Same order as the server: move with the current boost, then count the boost down. `held`: the weapon in hand for it. */
+  private move(state: MoveState, input: PlayerInput, tick: number, live = false, held = this.held, pair: AkimboSpec | null = this.pairOf(held)): MoveState {
     if (this.platforms) {
       // The server moves platforms, then riders, then everyone's own movement (Match.step).
       this.platforms.poseAt(tick);
@@ -344,7 +543,7 @@ export class LocalPlayer {
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
-    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, weaponMove: this.handling(held, pair).move, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
     // Portals, exactly as the server takes them (Match.step).
     const through = this.portals.length && next.zip === undefined ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
     if (through) {
@@ -368,40 +567,70 @@ export class LocalPlayer {
    * reload interrupts, recoil and spray) so tracers, the HUD and the camera
    * match what will happen. Same order as Match.applyInputs.
    */
-  private predictFire(input: PlayerInput): PredictedShot | null {
+  private predictFire(input: PlayerInput): [PredictedShot | null, PredictedShot | null] {
     const def = this.seatGun ?? this.weapon;
     const ammo = this.seatGun ? this.seatAmmo : this.inventory.get(this.held);
     const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
     const pressed = input.buttons & ~this.prevButtons;
     this.prevButtons = input.buttons;
     if (!fireDown) this.semiLatch = false;
-    if (!def || !ammo) return null;
-    if (this.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload();
-    if (input.buttons & BUTTON_RELOAD) this.startReload();
+    if (!(input.buttons & BUTTON_ALT)) this.semiLatch2 = false;
+    if (!def || !ammo) return [null, null];
+    const paired = this.seatGun ? null : this.pairOf();
+    const off = paired ? this.offs.get(this.held) : undefined;
+    if ((this.reload || this.reload2) && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload();
+    if (input.buttons & BUTTON_RELOAD) {
+      this.startReload();
+      if (paired) this.startReloadOff();
+    }
     const gp = gunplayOf(def);
-    stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun);
+    // As the host: the input's fire mode for the gun in hand (absent: the one it has).
+    if (!this.seatGun && input.fireMode !== undefined && def.fireModes) this.appliedModes.set(this.held, clampFireMode(def, input.fireMode));
+    const firing = firingOf(def, this.seatGun ? 0 : this.appliedModes.get(this.held));
+    stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun && !paired);
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
     // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
     if (this.reload && !this.seatGun && this.fireCooldown === 0 && this.raiseTicks === 0) {
       const swing = def.kind === 'melee' && ((fireDown && !this.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
       const shoot = (fireDown && !this.semiLatch && ready(ammo) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && ammo[2] >= def.alt.cost);
-      if (swing || shoot) this.cancelReload();
+      if (swing || shoot) this.cancelReload(paired ? 1 : 0);
     }
-    const { shot, fired } = this.trigger(def, ammo, input, fireDown, ready);
+    const first = this.trigger(def, ammo, input, fireDown, ready, firing, paired);
+    const shot = first.shot;
+    let fired = first.fired;
+    // As the server: the second gun of a pair on the second trigger, with its own latch, cooldown, magazine and reload.
+    let shot2: PredictedShot | null = null;
+    if (paired && off) {
+      const rounds = off.unchambered ? 0 : off.mag;
+      const up = this.fireCooldown2 === 0 && this.raiseTicks === 0 && (input.buttons & BUTTON_ALT) !== 0 && !this.semiLatch2;
+      if (this.reload2 && up && rounds > 0) this.cancelReload(2);
+      if (up && this.reloadTicks2 === 0 && this.statusSpeed !== 0 && !this.unarmed && this.state.zip === undefined) {
+        if (rounds === 0) this.startReloadOff();
+        else {
+          off.mag--;
+          this.fireCooldown2 = firing.interval;
+          this.semiLatch2 = firing.mode !== 'auto';
+          shot2 = this.primaryShot(def, input, [off.mag, ammo[1], 0, 0], firing, paired);
+          shot2.off = true;
+          fired = true;
+        }
+      }
+    }
     if (!this.seatGun && this.statusSpeed !== 0 && !fired) {
       // As the server: a quick-melee press with a gun in hand breaks a reload (spec §16), struck or not.
-      if (pressed & BUTTON_MELEE && !this.mounted && def.kind !== 'melee' && this.reload) this.cancelReload();
+      if (pressed & BUTTON_MELEE && !this.mounted && def.kind !== 'melee' && (this.reload || this.reload2)) this.cancelReload();
       // Auto-reload (the option): an empty magazine starts reloading by itself once the gun is ready.
       const armed = !this.unarmed && !(this.state.zip !== undefined && !oneHanded(def));
       const timers = { reloadTicks: this.reloadTicks, fireCooldown: this.fireCooldown, raiseTicks: this.raiseTicks, burstLeft: this.burstLeft };
       if (armed && input.buttons & BUTTON_AUTO_RELOAD && autoReloadDue(def, this.box(this.held, ammo), timers, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload();
+      if (armed && paired && off && input.buttons & BUTTON_AUTO_RELOAD && autoReloadDue(def, this.offBox(off, ammo), { reloadTicks: this.reloadTicks2, fireCooldown: this.fireCooldown2, raiseTicks: this.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff();
     }
-    if (!fired) recoilIdle(this.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
-    return shot;
+    if (!fired) recoilIdle(this.gun, firing.kick, gp.accuracy, firing.interval);
+    return [shot, shot2];
   }
 
   /** The trigger itself. `fired`: a primary round (or swing) went off, as the server counts it. */
-  private trigger(def: WeaponDefinition, ammo: [number, number, number, number], input: PlayerInput, fireDown: boolean, ready: (a: [number, number, number, number]) => number): { shot: PredictedShot | null; fired: boolean } {
+  private trigger(def: WeaponDefinition, ammo: [number, number, number, number], input: PlayerInput, fireDown: boolean, ready: (a: [number, number, number, number]) => number, firing: Firing = firingOf(def), paired: AkimboSpec | null = null): { shot: PredictedShot | null; fired: boolean } {
     const none = { shot: null, fired: false };
     if (def.windupTicks) {
       const able = fireDown && this.raiseTicks === 0 && this.reloadTicks === 0 && ammo[3] < 100 && (def.magazine === 0 || ready(ammo) > 0);
@@ -417,8 +646,8 @@ export class LocalPlayer {
       }
       ammo[0]--;
       this.burstLeft--;
-      this.burstTimer = def.burst?.intervalTicks ?? 1;
-      return { shot: this.primaryShot(def, input, ammo), fired: true };
+      this.burstTimer = this.burstEvery || (def.burst?.intervalTicks ?? 1);
+      return { shot: this.primaryShot(def, input, ammo, firing), fired: true };
     }
     if (this.fireCooldown > 0 || (this.raiseTicks > 0 && !this.seatGun) || this.reloadTicks > 0 || this.statusSpeed === 0) return none;
     if (fireDown) {
@@ -437,14 +666,14 @@ export class LocalPlayer {
         ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
       }
       if (def.magazine > 0) ammo[0]--;
-      this.fireCooldown = def.fireIntervalTicks;
-      this.semiLatch = (def.fireMode ?? 'auto') !== 'auto';
-      if (def.fireMode === 'burst' && def.burst) {
-        this.burstLeft = def.burst.count - 1;
-        this.burstTimer = def.burst.intervalTicks;
+      this.fireCooldown = firing.interval;
+      this.semiLatch = firing.mode !== 'auto';
+      if (firing.burst) {
+        this.burstLeft = firing.burst.count - 1;
+        this.burstTimer = this.burstEvery = firing.burst.intervalTicks;
       }
       if (def.windupResets) this.windup = 0;
-      return { shot: this.primaryShot(def, input, ammo), fired: true };
+      return { shot: this.primaryShot(def, input, ammo, firing, paired), fired: true };
     }
     if (input.buttons & BUTTON_ALT && def.alt) {
       // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
@@ -466,12 +695,19 @@ export class LocalPlayer {
   }
 
   /** A primary round: spread from the gunplay model, then the recoil kick (as the server does in Match.fire). */
-  private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number]): PredictedShot {
+  private primaryShot(def: WeaponDefinition, input: PlayerInput, ammo: [number, number, number, number], firing?: Firing, paired: AkimboSpec | null = null): PredictedShot {
     const gp = gunplayOf(def);
     const aim = this.shotAim(input);
     const run = this.prevPos ? Math.hypot(this.state.pos.x - this.prevPos.x, this.state.pos.z - this.prevPos.z) / TICK_DT / PLAYER.runSpeed : 0;
-    const spread = gp.accuracy ? shotCone(def, gp.accuracy, this.gun, { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 }) : def.spread;
-    if (def.kind !== 'melee') recoilShot(this.gun, gp.kick);
+    const ctx = { run, airborne: !this.state.grounded, stance: STANCE_SPREAD[this.state.stance ?? 0] ?? 1 };
+    // One of a pair (Match.fireNow): a wider aim cone and pellet pattern, a harder kick.
+    const spread = !gp.accuracy
+      ? def.spread * (paired ? (def.pellets > 1 ? paired.pattern : paired.cone) : 1)
+      : paired
+        ? akimboCone(paired, spreadOf(gp.accuracy, this.gun, ctx), def.pellets > 1 ? def.spread : 0)
+        : shotCone(def, gp.accuracy, this.gun, ctx);
+    if (paired) recoilShot(this.gun, akimboKick(gp.kick, paired.kick));
+    else if (def.kind !== 'melee') recoilShot(this.gun, firing && firing.index > 0 ? firing.kick : gp.kick);
     if (def.kind !== 'hitscan') return { def, ends: [] };
     const shot = this.hitscanShot(def, aim, def.pellets, spread, false);
     if (gp.ballistic) shot.tracer = isTracer(gp.ballistic, this.rounds, ammo[0]);
@@ -511,6 +747,7 @@ export class LocalPlayer {
     this.health = server.hp;
     this.armor = server.ar;
     this.pending = this.pending.filter((i) => i.seq > ack);
+    if (this.vehicle && me?.vp && me.vp[0] === this.vehicle.mount) this.vehicle.reconcile(me.vp, this.pending);
     if (me) {
       this.inventory = new Map(me.inv.map(([code, mag, reserve, alt, heat]) => [code, [mag, reserve, alt ?? 0, heat ?? 0]]));
       this.statusSpeed = (me.ms ?? 1000) / 1000;
@@ -529,11 +766,14 @@ export class LocalPlayer {
       this.unchambered = new Set(me.uc ?? []);
       // The reload as the server has it, moved on by the inputs it hasn't seen yet (their stages land on the next tick).
       this.reload = me.rd && this.reloadTicks > 0 ? { kind: RELOAD_KINDS[me.rd[0]] ?? 'tactical', t: me.rd[1] + this.pending.length, total: me.rd[2], stage: me.rd[3] } : null;
+      this.reconcilePair(me, server.w, ack);
     }
     // A fresh life: no recoil left over.
     if (!wasAlive && this.alive) {
       this.gun = newGunState();
       this.rounds = 0;
+      this.fireCooldown2 = 0;
+      this.semiLatch2 = false;
     }
     // Keep a pending weapon switch the server hasn't seen yet.
     const pendingSwitch = [...this.pending].reverse().find((i) => i.weapon && this.inventory.has(i.weapon))?.weapon;
@@ -557,13 +797,107 @@ export class LocalPlayer {
     };
     let t = serverTick ?? this.predTick - this.pending.length;
     if (this.alive && !this.mounted) {
-      for (const input of this.pending) this.state = this.move(this.state, input, ++t);
+      // Replayed as the server will apply them: each input's weapon switch first (its raise), then the move with
+      // the weapon then in hand, then the raise timer, then a sprint's exit time (Match.applyInputs).
+      let held = server.w;
+      let raise = me ? me.rs : this.raiseTicks;
+      let sprinted = this.sprintAfter.get(ack) ?? false;
+      for (const input of this.pending) {
+        if (input.weapon && input.weapon !== held && this.inventory.has(input.weapon)) {
+          held = input.weapon;
+          const def = weaponByCode(held);
+          const pair = this.serverPair(held);
+          raise = def && pair ? akimboRaise(def, pair) : (def?.raiseTicks ?? 0);
+        }
+        // (A pair, as the host takes each input: put away or out by its fire mode, no aim, no sprint on the second trigger.)
+        const o = this.replayOffs.get(held);
+        const applied = o ? this.pairInput(input, held, o, false) : input;
+        this.state = this.move(this.state, applied, ++t, false, held, this.serverPair(held));
+        if (raise > 0) raise--;
+        if (sprinted && !this.state.sprint) raise = Math.max(raise, this.handling(held).sprintExit);
+        sprinted = !!this.state.sprint;
+        this.sprintAfter.set(input.seq, sprinted);
+      }
+      if (me) this.raiseTicks = raise;
     } else t += this.pending.length;
+    for (const seq of this.sprintAfter.keys()) if (seq < ack) this.sprintAfter.delete(seq);
     this.predTick = t;
     const err = distance(before, this.state.pos);
     if (wasAlive && this.alive && err > 0.01) {
       this.corrections++;
       this.lastCorrection = err;
+    }
+  }
+
+  /** Second guns as the host has them at the acknowledged input (put away or out), stepped through the pending inputs in a replay. */
+  private replayOffs = new Map<number, { away: boolean }>();
+
+  private serverPair(code: number): AkimboSpec | null {
+    const o = this.replayOffs.get(code);
+    const def = o && !o.away ? weaponByCode(code) : undefined;
+    return def ? akimboOf(def) : null;
+  }
+
+  /**
+   * The second guns and the second gun's reload from the host (PrivateState.ow, rl2, rd2). Magazines are the host's,
+   * as the inventory's are; a second gun put away or brought out by inputs the host hasn't seen stays as predicted.
+   */
+  private reconcilePair(me: PrivateState, serverHeld: number, ack: number): void {
+    const before = this.offs;
+    if (this.pairShots.length) this.pairShots = this.pairShots.filter((p) => p[0] > ack);
+    this.offs = new Map();
+    this.replayOffs = new Map();
+    for (const [code, mag, flags] of me.ow ?? []) {
+      const away = ((flags ?? 0) & 2) !== 0;
+      this.replayOffs.set(code, { away });
+      // The host's, then every pending input's fire mode for the weapon it was held with (the held one's is enough).
+      let now = away;
+      let held = serverHeld;
+      for (const i of this.pending) {
+        if (i.weapon && i.weapon !== held && this.inventory.has(i.weapon)) held = i.weapon;
+        if (held === code && i.fireMode !== undefined) now = i.fireMode === 1;
+      }
+      this.offs.set(code, { mag, unchambered: ((flags ?? 0) & 1) !== 0, away: now });
+      // A pair just made with the gun in hand: its second gun is coming up (Match.makePair).
+      if (!before.has(code) && code === this.held && !now) this.pairOut(code, this.pending.length);
+    }
+    if (!this.offs.size) {
+      this.pairShots.length = 0;
+      this.reload2 = null;
+      this.reloadTicks2 = 0;
+      return;
+    }
+    // Rounds fired since the acknowledged input come off the host's magazines (not off a gun the host is reloading:
+    // its magazine is changing hands there).
+    for (const [, code, first, second] of this.pairShots) {
+      const ammo = this.inventory.get(code);
+      const o = this.offs.get(code);
+      if (!ammo || !o || code !== serverHeld) continue;
+      if (first && me.rl === 0) ammo[0] = Math.max(0, ammo[0] - first);
+      if (second && !me.rl2) o.mag = Math.max(0, o.mag - second);
+    }
+    // The reloads as the host has them; the inputs it hasn't seen move on the one whose turn it is (pairReloadTurn).
+    const rd2 = me.rd2 && (me.rl2 ?? 0) > 0 ? me.rd2 : null;
+    const second: ReloadRun | null = rd2 ? { kind: RELOAD_KINDS[rd2[0]] ?? 'tactical', t: rd2[1], total: rd2[2], stage: rd2[3] } : null;
+    if (!second) {
+      this.reload2 = null;
+      this.reloadTicks2 = 0;
+      return;
+    }
+    const first: ReloadRun | null = me.rd && me.rl > 0 ? { kind: RELOAD_KINDS[me.rd[0]] ?? 'tactical', t: me.rd[1], total: me.rd[2], stage: me.rd[3] } : null;
+    const main = this.inventory.get(serverHeld)?.[0] ?? 0;
+    const turn = pairReloadTurn(first, second, main, this.offs.get(serverHeld)?.mag ?? 0);
+    const n = this.pending.length;
+    if (turn === 2) {
+      second.t += n;
+      this.reloadTicks2 = Math.max(0, me.rl2! - n);
+      this.reload2 = this.reloadTicks2 > 0 ? second : null;
+      // The first gun's waits where it is.
+      this.reload = first;
+      this.reloadTicks = first ? me.rl : 0;
+    } else {
+      this.reload2 = second;
+      this.reloadTicks2 = me.rl2!;
     }
   }
 

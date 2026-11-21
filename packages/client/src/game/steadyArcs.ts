@@ -8,6 +8,7 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Vec3 } from '@tiletrigger/shared';
 import { ease } from './reduceFlashing.ts';
+import type { MuzzleAnchor } from './muzzleAnchor.ts';
 
 /** Seconds a beam takes to come up, how long it holds after the last arc, and how long it takes to fade. */
 export const STEADY_ARC = { attack: 0.1, hold: 0.3, release: 0.35 } as const;
@@ -35,6 +36,8 @@ interface Beam {
   last: number;
   coreMat: StandardMaterial;
   glowMat: StandardMaterial;
+  /** Its start on a gun's muzzle (muzzleAnchor.ts): the first segment's start sits there every frame, no glide. */
+  anchor: MuzzleAnchor | null;
 }
 
 /**
@@ -42,7 +45,8 @@ interface Beam {
  * arcs about 7 times a second, an arc turret 10, a fence 2 a person), each source holds one steady beam of light
  * along its newest jumps: a thin bright core in a soft glow, and a glow where it lands. Its ends glide after the
  * targets as they move; it comes up over a tenth of a second, holds while the arcs keep coming and fades over a
- * third of a second after the last one. Nothing strobes and nothing jumps from one frame to the next.
+ * third of a second after the last one. Nothing strobes and nothing jumps from one frame to the next. A beam fired
+ * from a gun (`anchor`) starts on its muzzle every frame instead: only the far end glides.
  */
 export class SteadyArcs {
   private readonly beams = new Map<string, Beam>();
@@ -50,8 +54,8 @@ export class SteadyArcs {
 
   constructor(private readonly scene: Scene) {}
 
-  /** An arc from `key` (a shooter, a turret, a stretch of fence) through `pts`, in `color`. */
-  hit(key: string, pts: readonly Vec3[], color: string, now = performance.now()): void {
+  /** An arc from `key` (a shooter, a turret, a stretch of fence) through `pts`, in `color`; `anchor`: it leaves this gun's muzzle. */
+  hit(key: string, pts: readonly Vec3[], color: string, now = performance.now(), anchor: MuzzleAnchor | null = null): void {
     if (pts.length < 2) return;
     let beam = this.beams.get(key);
     if (!beam) {
@@ -62,10 +66,11 @@ export class SteadyArcs {
       end.material = glowMat;
       this.prepare(end);
       const last = pts[pts.length - 1]!;
-      beam = { segments: [], end, endAt: new Vector3(last.x, last.y, last.z), endTo: new Vector3(last.x, last.y, last.z), last: now, coreMat, glowMat };
+      beam = { segments: [], end, endAt: new Vector3(last.x, last.y, last.z), endTo: new Vector3(last.x, last.y, last.z), last: now, coreMat, glowMat, anchor };
       this.beams.set(key, beam);
     }
     beam.last = now;
+    beam.anchor = anchor;
     for (let i = 0; i + 1 < pts.length; i++) {
       const a = pts[i]!;
       const b = pts[i + 1]!;
@@ -97,6 +102,13 @@ export class SteadyArcs {
     for (const [key, beam] of this.beams) {
       const held = now - beam.last < STEADY_ARC.hold * 1000;
       let shown = 0;
+      // From a gun: the start is on its muzzle as drawn this frame (no glide after it).
+      const first = beam.segments[0];
+      const muzzle = beam.anchor?.();
+      if (first && muzzle) {
+        first.a.set(muzzle.x, muzzle.y, muzzle.z);
+        first.ta.copyFrom(first.a);
+      }
       for (const s of beam.segments) {
         s.level = ease(s.level, held && s.live ? 1 : 0, dt, 1 / STEADY_ARC.attack, 1 / STEADY_ARC.release);
         s.a.addInPlace(s.ta.subtract(s.a).scaleInPlace(k));
@@ -127,6 +139,12 @@ export class SteadyArcs {
         this.beams.delete(key);
       }
     }
+  }
+
+  /** Where `key`'s beam starts as drawn now, or null (none, or faded out: tests). */
+  start(key: string): Vec3 | null {
+    const s = this.beams.get(key)?.segments[0];
+    return s && s.level > 0.001 ? { x: s.a.x, y: s.a.y, z: s.a.z } : null;
   }
 
   /** Beams drawn now (tests). */

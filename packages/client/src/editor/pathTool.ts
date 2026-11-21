@@ -1,12 +1,18 @@
 import type { Scene } from '@babylonjs/core/scene';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateDashedLines, CreateLineSystem, CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import {
   DEFAULT_RACE,
+  GROUND_FIT_BLEND,
+  GROUND_FIT_BLEND_RANGE,
+  fitGroundToPathCommand,
+  settlePathOnGroundCommand,
   MapPath as PathSchema,
   PATH_LOOKS,
   PATH_STYLES,
@@ -18,6 +24,7 @@ import {
   newId,
   pathGeometry,
   pathUses,
+  pathWithLength,
   racePath,
   trackPointAt,
   type EditCommand,
@@ -30,6 +37,7 @@ import {
   type Vec3,
 } from '@tiletrigger/shared';
 import { pathArrows, pathLift, pathLine, pathSurfaceY } from '../pathMeshes.ts';
+import { groundFitRebedNote } from './groundFitPanel.ts';
 
 /** What the path tool needs from MapMaker. */
 export interface PathToolHost {
@@ -42,6 +50,9 @@ export interface PathToolHost {
   /** Screen position of a world point (null behind the camera) and of the pointer: handles are grabbed by how near they look. */
   screen(p: Vec3): { x: number; y: number } | null;
   pointer(): { x: number; y: number } | null;
+  /** Fit ground to this: how far the ground is eased (the inspector's Blend; absent: the default), and setting it. */
+  blend?(): number;
+  setBlend?(v: number): void;
 }
 
 /** A handle is grabbed within this many pixels of where it is drawn, or this many metres of its point (close up). */
@@ -50,6 +61,14 @@ const GRAB_M = 1;
 /** Handle sizes (m): the edited path's, other paths'. */
 const HANDLE = 1;
 const HANDLE_OTHER = 0.7;
+
+/** One path's markers (its line, arrows and balls) as drawn, and what they were drawn for: the path, the ground under it, and how it is lit. */
+interface DrawnPath {
+  as: string;
+  path: MapPath | null;
+  ground: TerrainData | null;
+  meshes: Mesh[];
+}
 
 /** What a new path is drawn as (the pane's choice, or the palette card / Shift+G that opened the tool). */
 export type PathKind = 'road' | 'race' | 'route';
@@ -65,7 +84,7 @@ const USE_LABELS: Record<PathUse, [string, string]> = {
   race: ['Track (NPC traffic)', 'NPC cars lap it in every mode (set how many below), and wrecked ones come back from its pit lane. One track per map'],
   route: ['Route (AI guide)', 'An invisible line for the AI: bots driving vehicles follow it, and NPC squads told to patrol it walk it. Shown dashed here, never drawn in the game'],
 };
-const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { hover_bike: 'Hover Bike', speeder: 'Speeder', buggy: 'Buggy' };
+const VEHICLE_LABELS: Record<(typeof RACE_VEHICLES)[number], string> = { hover_bike: 'Hover Bike', speeder: 'Speeder', troop_buggy: 'Troop Buggy' };
 /** A track made when the Go-Kart was a track vehicle still names it (it laps Hover Bikes: map/mountAliases.ts). */
 const RETIRED_LABEL = (v: string): string | null => (isRetiredMount(v) ? `${RETIRED_MOUNT_NAMES[v]} (retired: drives as ${VEHICLE_LABELS[liveMount(v) as (typeof RACE_VEHICLES)[number]] ?? liveMount(v)})` : null);
 
@@ -102,9 +121,11 @@ export class PathTool {
   private drag: { id: string; index: number; moved: boolean; at: [number, number, number]; join: boolean } | null = null;
   /** The handle, or else the path, under the pointer (index -1: the path's ribbon; null: neither). */
   private hovered: { id: string; index: number } | null = null;
-  private markers: Mesh[] = [];
-  private lines: LinesMesh[] = [];
   private active = false;
+  /** New points go in before the first one (the pane's "Add points at the start"), until a point is picked. */
+  private prepend = false;
+  /** With another tool (Select): the path under the pointer, drawn lit so a click on it is known to open it. */
+  private previewId: string | null = null;
   /** The pane last rendered, redrawn when a click picks another path. */
   private pane: HTMLElement | null = null;
   private readonly mats: Record<'point' | 'other' | 'sel' | 'hover' | 'start', StandardMaterial>;
@@ -262,6 +283,7 @@ export class PathTool {
     this.current = id;
     this.selected = index;
     this.pending = null;
+    this.prepend = false;
     if (changed && this.pane) this.renderPane(this.pane);
   }
 
@@ -270,6 +292,7 @@ export class PathTool {
     this.current = null;
     this.selected = -1;
     this.pending = null;
+    this.prepend = false;
     this.drawMarkers();
   }
 
@@ -281,10 +304,32 @@ export class PathTool {
     this.drawMarkers();
   }
 
+  /** The path whose ribbon (or a route's line) is at this point of the ground, for the Select tool: a click there opens it. */
+  pathUnder(p: Vec3 | null): string | null {
+    return p ? this.pathAt(p) : null;
+  }
+
+  /** A path by name, for the hover card and the toast: what it is, and how long. */
+  describe(id: string): { title: string; lines: string[] } | null {
+    const i = this.paths.findIndex((q) => q.id === id);
+    const p = this.paths[i];
+    if (!p) return null;
+    const what = p.uses.map((u) => (u === 'road' ? PATH_LOOKS[p.style].label : u === 'race' ? 'Track' : 'Route')).join(' + ');
+    return { title: `Path ${i + 1}: ${what}`, lines: [`${Math.round(pathGeometry(p).length)} m · ${p.points.length} points · ${p.closed ? 'a loop' : 'open'}${pathUses(p, 'road') ? ` · ${p.width} m wide` : ''}`] };
+  }
+
+  /** Light this path while another tool is in hand (null: none). */
+  preview(id: string | null): void {
+    if (id === this.previewId) return;
+    this.previewId = id;
+    if (!this.active) this.drawMarkers();
+  }
+
   pointerDown(p: Vec3 | null, shift: boolean): void {
     if (!p) return;
     const doc = this.host.doc();
-    const at = trackPointAt(doc.terrain, p.x, p.y, p.z);
+    // (On the ground as shown: a tunnel mouth's cutting is dug there, and a point on a buried tunnel's floor stays on it.)
+    const at = trackPointAt(this.host.ground() ?? doc.terrain, p.x, p.y, p.z);
     const hit = this.pointAt(p);
     if (hit) {
       // Its first point with the last selected (or the reverse): a click (no drag) joins the ends.
@@ -321,7 +366,7 @@ export class PathTool {
       }
       return;
     }
-    let index = this.selected >= 0 && this.selected < path.points.length ? this.selected + 1 : path.points.length;
+    let index = this.prepend ? 0 : this.selected >= 0 && this.selected < path.points.length ? this.selected + 1 : path.points.length;
     // Shift-click on the path: a point in the stretch under the pointer.
     if (shift) {
       const g = pathGeometry(path);
@@ -333,7 +378,10 @@ export class PathTool {
       }
     }
     const points = [...path.points.slice(0, index), at, ...path.points.slice(index)];
+    const before = this.prepend;
     if (this.commit('Add path point', this.replace({ ...path, points }))) this.selected = index;
+    // (Still adding at the start: the next click goes in before this one.)
+    this.prepend = before && !shift;
   }
 
   /** A new path of the pane's kind through these points. */
@@ -346,7 +394,7 @@ export class PathTool {
   pointerMove(p: Vec3 | null): void {
     const d = this.drag;
     if (!d || !p) return;
-    const at = trackPointAt(this.host.doc().terrain, p.x, p.y, p.z);
+    const at = trackPointAt(this.host.ground() ?? this.host.doc().terrain, p.x, p.y, p.z);
     if (Math.hypot(at[0] - d.at[0], at[2] - d.at[2]) > 0.1) d.moved = true;
     d.at = at;
     this.drawMarkers();
@@ -436,54 +484,123 @@ export class PathTool {
    * of the ribbon), the edited path's bright, a hovered one lighter, dashed
    * for a path that isn't drawn in the game (a route), with arrows the way
    * the path runs. While a point is dragged the line shows where it will go.
+   *
+   * Only what changed is drawn again: each path's line, arrows and balls are kept with what they were drawn for
+   * (`shownAs`), so a pointer step redraws the one path it lights or drags, not all of them (on a big map every
+   * redraw of every path took over a tenth of a second).
    */
   private drawMarkers(): void {
-    for (const m of this.markers) m.dispose();
-    for (const l of this.lines) l.dispose();
-    this.markers = [];
-    this.lines = [];
-    if (!this.active) return;
     const ground = this.host.ground();
-    const ball = (name: string, at: Vec3, size: number, mat: StandardMaterial) => {
-      const s = CreateSphere(name, { diameter: size, segments: 8 }, this.host.scene);
+    const scene = this.host.scene;
+    const kept = this.drawn;
+    const next = new Map<string, DrawnPath>();
+    /** The meshes in the order they were always made in (path by path: line, arrows, balls; then the pending point). */
+    const order: Mesh[][] = [];
+    /** The first set drawn again: every set after it goes back behind it in the scene's list (see below). */
+    let redrawnFrom = -1;
+    const show = (id: string, as: string, path: MapPath | null, build: (meshes: Mesh[]) => void) => {
+      const had = kept.get(id);
+      let meshes: Mesh[];
+      if (had && had.as === as && had.path === path && had.ground === ground) {
+        meshes = had.meshes;
+        kept.delete(id);
+      } else {
+        meshes = [];
+        build(meshes);
+        if (redrawnFrom < 0) redrawnFrom = order.length;
+      }
+      next.set(id, { as, path, ground, meshes });
+      order.push(meshes);
+    };
+    const ball = (into: Mesh[], name: string, at: Vec3, size: number, mat: StandardMaterial) => {
+      const s = CreateSphere(name, { diameter: size, segments: 8 }, scene);
       s.position.set(at.x, at.y, at.z);
       s.material = mat;
       s.isPickable = false;
       s.renderingGroupId = 1;
-      this.markers.push(s);
+      into.push(s);
     };
-    for (const path of this.paths) {
-      const mine = path.id === this.current;
-      const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
-      // The path as it will be once the drag ends.
-      const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
-      const line = pathLine(shown, ground, 0.05);
-      const hoverPath = this.hovered?.id === path.id && this.hovered.index < 0;
-      const color = Color3.FromHexString(mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2');
-      const l = pathUses(path, 'road')
-        ? CreateLines(`pathPoly_${path.id}`, { points: line }, this.host.scene)
-        : CreateDashedLines(`pathPoly_${path.id}`, { points: line, dashSize: 3, gapSize: 2, dashNb: Math.max(8, Math.round(pathGeometry(shown).length / 2)) }, this.host.scene);
-      const arrows = CreateLineSystem(`pathArrows_${path.id}`, { lines: pathArrows(shown, ground, 0.06, mine ? 1.4 : 1) }, this.host.scene);
-      for (const m of [l, arrows]) {
-        m.color = color;
-        m.isPickable = false;
-        m.renderingGroupId = 1;
-        this.lines.push(m);
+    if (this.active || this.previewId) {
+      for (const path of this.paths) {
+        // With another tool in hand, only the path under the pointer shows, as one about to be picked.
+        if (!this.active && path.id !== this.previewId) continue;
+        const mine = this.active && path.id === this.current;
+        const dragged = this.drag && this.drag.id === path.id && this.drag.moved ? this.drag : null;
+        const hoverPath = !this.active || (this.hovered?.id === path.id && this.hovered.index < 0);
+        const hotIndex = this.hovered?.id === path.id ? this.hovered.index : -1;
+        const as = `${mine ? `mine:${this.selected}` : ''}|${hoverPath ? 'lit' : ''}|${hotIndex}|${dragged ? `${dragged.index}:${dragged.at.join(',')}` : ''}`;
+        // (Two paths with one id, should a map ever hold them: each its own set.)
+        show(next.has(`path:${path.id}`) ? `path:${path.id}#${order.length}` : `path:${path.id}`, as, path, (meshes) => {
+          // The path as it will be once the drag ends.
+          const shown = dragged ? { ...path, points: path.points.map((q, i) => (i === dragged.index ? dragged.at : q)) } : path;
+          const line = pathLine(shown, ground, 0.05);
+          const hex = mine ? '#5fd0ff' : hoverPath ? '#d6f4ff' : '#8aa2b2';
+          const color = Color3.FromHexString(hex);
+          const material = this.lineMaterial(hex);
+          const l = pathUses(path, 'road')
+            ? CreateLines(`pathPoly_${path.id}`, { points: line, material }, scene)
+            : CreateDashedLines(`pathPoly_${path.id}`, { points: line, dashSize: 3, gapSize: 2, dashNb: Math.max(8, Math.round(pathGeometry(shown).length / 2)), material }, scene);
+          const arrows = CreateLineSystem(`pathArrows_${path.id}`, { lines: pathArrows(shown, ground, 0.06, mine ? 1.4 : 1), material }, scene);
+          for (const m of [l, arrows]) {
+            m.color = color;
+            m.isPickable = false;
+            m.renderingGroupId = 1;
+            meshes.push(m);
+          }
+          const size = mine ? HANDLE : HANDLE_OTHER;
+          shown.points.forEach((q, i) => {
+            const hot = hotIndex === i;
+            const sel = mine && i === this.selected;
+            const mat = hot ? this.mats.hover : sel ? this.mats.sel : mine && i === 0 ? this.mats.start : mine ? this.mats.point : this.mats.other;
+            const d = hot || sel ? size * 1.25 : size;
+            ball(meshes, `pathPt${i}`, this.handleAt(shown, q, d), d, mat);
+          });
+        });
       }
-      const size = mine ? HANDLE : HANDLE_OTHER;
-      shown.points.forEach((q, i) => {
-        const hot = this.hovered?.id === path.id && this.hovered.index === i;
-        const sel = mine && i === this.selected;
-        const mat = hot ? this.mats.hover : sel ? this.mats.sel : mine && i === 0 ? this.mats.start : mine ? this.mats.point : this.mats.other;
-        const d = hot || sel ? size * 1.25 : size;
-        ball(`pathPt${i}`, this.handleAt(shown, q, d), d, mat);
-      });
+      if (this.active && this.pending) {
+        const q = this.pending;
+        show('pending', q.join(','), null, (meshes) => {
+          const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
+          ball(meshes, 'pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
+        });
+      }
     }
-    if (this.pending) {
-      const q = this.pending;
-      const y = pathSurfaceY(ground, q[1], q[0], q[2]) + 0.05 + HANDLE * 0.3;
-      ball('pathPending', { x: q[0], y, z: q[2] }, HANDLE * 1.25, this.mats.sel);
+    for (const gone of kept.values()) for (const m of gone.meshes) m.dispose();
+    this.drawn = next;
+    // The scene lists the markers as it always did, path by path in the map's order (what is found by name, and
+    // drawn first, is the first path's): the sets kept from before that come after one drawn again go back behind it.
+    if (redrawnFrom >= 0 && redrawnFrom < order.length - 1) {
+      const tail = order.slice(redrawnFrom).flat();
+      const moved = new Set<unknown>(tail);
+      const all = scene.meshes;
+      let n = 0;
+      for (const m of all) if (!moved.has(m)) all[n++] = m;
+      all.length = n;
+      for (const m of tail) all.push(m);
     }
+  }
+
+  /** What is drawn now, by path (and the pending point), with what each was drawn for. */
+  private drawn = new Map<string, DrawnPath>();
+
+  /**
+   * One line material per colour, shared by every line and arrow drawn in it. A line mesh left to itself makes a
+   * material of its own, and every new material has Babylon look through every mesh in the scene (`markAsDirty`):
+   * three quarters of a redraw on a big map. Each is the material of a line mesh kept (unseen) for it, so it is the
+   * very material Babylon gives a line; the colour is still each mesh's own `color`.
+   */
+  private readonly lineMats = new Map<string, LinesMesh>();
+
+  private lineMaterial(hex: string): Material {
+    let holder = this.lineMats.get(hex);
+    if (!holder) {
+      holder = CreateLines(`pathLineMat_${hex}`, { points: [Vector3.Zero(), Vector3.Zero()] }, this.host.scene);
+      holder.color = Color3.FromHexString(hex);
+      holder.isPickable = false;
+      holder.setEnabled(false);
+      this.lineMats.set(hex, holder);
+    }
+    return holder.material!;
   }
 
   /** The Paths pane: the list, a new path, and the selected one's uses and settings. */
@@ -592,6 +709,33 @@ export class PathTool {
     info.id = 'ed-path-info';
     info.textContent = `${path.points.length} points · ${Math.round(g.length)} m · ${path.closed ? 'a loop' : 'open (two ends)'}${path.oneWay ? ' · one-way' : ''}`;
     el.append(info);
+    // Its length by number, and which end the next clicks add to.
+    if (!path.closed) {
+      const length = num('ed-path-length', Math.round(g.length * 10) / 10, 2, 5000, 0.1, (v) => {
+        if (v === undefined) return;
+        const next = pathWithLength(path, v, this.host.doc().terrain ?? null);
+        if ('error' in next) {
+          this.host.toast(`Can't set the length: ${next.error}`, true);
+          return this.renderPane(el);
+        }
+        if (next !== path && this.commit('Path length', this.replace(next))) this.selected = next.points.length - 1;
+      });
+      row('Length (m)', length).title = 'Type a length: longer runs straight on from the last point, shorter ends where the path was that far along (Reverse direction works on the other end)';
+      buttons([
+        ['ed-path-extend-end', 'Add points at the end', 'The next clicks carry the path on from its last point', () => {
+          this.prepend = false;
+          this.selected = path.points.length - 1;
+          this.drawMarkers();
+          this.host.toast('Click the ground to carry the path on from its end');
+        }],
+        ['ed-path-extend-start', 'Add points at the start', 'The next clicks carry the path on backwards from its first point (green)', () => {
+          this.selected = 0;
+          this.prepend = true;
+          this.drawMarkers();
+          this.host.toast('Click the ground to carry the path on from its start');
+        }],
+      ]);
+    }
     // Uses: one path can be several things at once.
     heading('Used as');
     for (const use of ['road', 'race', 'route'] as const) {
@@ -627,6 +771,24 @@ export class PathTool {
         if (this.commit('Remove path', this.paths.filter((q) => q.id !== path.id))) this.startNew();
       }],
     ]);
+    // The ground and the path (groundFit.ts): the ground brought to the path, or the path's points onto the ground.
+    if (this.host.doc().terrain) {
+      heading('Ground');
+      const blend = () => this.host.blend?.() ?? GROUND_FIT_BLEND;
+      buttons([
+        ['ed-path-fit-ground', 'Fit ground to this path', 'Raise or lower the ground under and beside the path to meet its line, eased into the ground about (the ground changes; the path stays; props on the moved ground are re-bedded). One undo step', () => {
+          const r = fitGroundToPathCommand(this.host.doc(), path.id, blend());
+          if ('error' in r) return this.host.toast(`Can't fit the ground: ${r.error}`, true);
+          if (this.host.run('Fit ground to path', r.command)) this.host.toast(`The ground fitted to the path: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m${groundFitRebedNote(r.rebedded)} · Ctrl+Z to undo`);
+        }],
+        ['ed-path-on-ground', 'Settle onto the ground', 'Put each of the path\'s points at the height of the ground there (the path moves; the ground stays). One undo step', () => {
+          const r = settlePathOnGroundCommand(this.host.doc(), path.id);
+          if ('error' in r) return this.host.toast(`Can't settle the path: ${r.error}`, true);
+          if (this.host.run('Settle path onto the ground', r.command)) this.host.toast(`${r.moved} point${r.moved === 1 ? '' : 's'} put on the ground, up to ${r.most} m · Ctrl+Z to undo`);
+        }],
+      ]);
+      row('Blend (m)', num('ed-path-fit-blend', blend(), GROUND_FIT_BLEND_RANGE.min, GROUND_FIT_BLEND_RANGE.max, 1, (v) => v !== undefined && this.host.setBlend?.(v))).title = 'How far from the path the ground is eased back into the ground about (0: only under it)';
+    }
     row('Width (m)', num('ed-path-width', path.width, 0.5, 30, 0.5, (v) => v !== undefined && ((this.width = v), set('Path width', { width: v }))));
     check('ed-path-oneway', 'One-way (in the arrows’ direction)', 'Traffic only the way the arrows point: driving bots never take it the other way, and patrols never turn back on it', !!path.oneWay, (v) => set(v ? 'Make path one-way' : 'Make path two-way', { oneWay: v || undefined }));
     row('Speed limit (m/s, for driving bots)', num('ed-path-speed', path.speed, 2, 80, 1, (v) => set('Path speed limit', { speed: v }), true));
@@ -652,8 +814,8 @@ export class PathTool {
 
   /**
    * The track's settings (the path's `race`): its NPC cars, their vehicle, the curbs, where the cars start and the
-   * pit lane. Race mode is gone (2026-11-09), so its laps, start grid, race vehicle and combat switch are not shown
-   * (they stay in the data, read by nothing).
+   * pit lane. Race mode is gone (2026-11-09): its laps, start grid, race vehicle and combat switch went from the
+   * format too (v39).
    */
   private racePane(
     el: HTMLElement,
@@ -676,10 +838,10 @@ export class PathTool {
     const vehicles = [...(kept ? [[r.ambientVehicle, kept] as const] : []), ...RACE_VEHICLES.map((v) => [v, VEHICLE_LABELS[v]] as const)];
     check('ed-path-curbs', 'Red and white curbs', 'Curbs along both edges of the track', r.curbs, (v) => setRace('Curbs', { curbs: v }));
     row('NPC cars (lap the track in every mode)', num('ed-path-ambient', r.ambient, 0, 12, 1, (v) => v !== undefined && setRace('NPC cars', { ambient: v })));
-    if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['vehicle'] })));
-    // The track still names a retired vehicle (its cars, or the race vehicle it had when Race was a mode): one
-    // button puts the vehicle it drives as in the map, with every one of them placed on it.
-    const old = ([r.ambientVehicle, r.vehicle] as string[]).find(isRetiredMount);
+    if (r.ambient) row('NPC car', select('ed-path-ambient-vehicle', vehicles, r.ambientVehicle, (v) => setRace('NPC car', { ambientVehicle: v as RaceSettings['ambientVehicle'] })));
+    // The track's cars are a retired vehicle: one button puts the vehicle they drive as in the map, with every one
+    // of them placed on it.
+    const old = isRetiredMount(r.ambientVehicle) ? r.ambientVehicle : undefined;
     if (old) {
       const to = VEHICLE_LABELS[liveMount(old) as (typeof RACE_VEHICLES)[number]] ?? liveMount(old);
       buttons([

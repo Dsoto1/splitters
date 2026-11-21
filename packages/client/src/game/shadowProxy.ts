@@ -6,6 +6,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Shadow proxies (docs/PERF_96.md, "Market Town on an M1 Pro"): the shadow map's stand-ins for static geometry.
@@ -14,7 +15,9 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
  * frame's 600 shadow draws, for triangles that never move. Here their triangles are merged, in world space, into one
  * mesh per PROXY_CELL square (and face-culling mode), drawn only into the shadow map; the originals still draw and
  * catch shadows as before. Anything that moves, is see-through or alpha-tested, skinned, or has levels of detail
- * casts on its own as before.
+ * casts on its own as before, except GPU instances of a prop with levels of detail (cheaper small casters,
+ * docs/PERF_SHADOW_CASTERS_2026-11-17.md; `?perfoff=smallcasters`: on its own as before): they cast through the proxies
+ * at full detail, whatever level the camera draws them at.
  */
 
 /** Static casters are merged per square of this many metres (so each cascade draws only the squares it covers). */
@@ -40,13 +43,19 @@ const geometryOf = (m: AbstractMesh): Mesh | null => (m.isAnInstance ? (m as Ins
 
 /**
  * Whether a mesh can cast through a proxy: placed for good (its world matrix frozen), drawn, opaque without an alpha
- * test, not skinned or morphed, no levels of detail, not a parked instance source (its copies are merged instead),
- * not hidden away out of the world (sources sit at y -10000).
+ * test, not skinned or morphed, no levels of detail (but a GPU instance of a model with levels casts its full detail,
+ * `lodInstances`, unless a level is a turning picture card or nothing at all), not a prop that can break, not a parked
+ * instance source (its copies are merged instead), not hidden away out of the world (sources sit at y -10000).
  */
-export function proxyable(m: AbstractMesh): boolean {
+export function proxyable(m: AbstractMesh, lodInstances = perfOn('smallcasters')): boolean {
   if (m.isDisposed() || !m.isEnabled() || !m.isVisible || !m.isWorldMatrixFrozen || m.renderingGroupId !== 0) return false;
+  // A prop that can break (propVisuals.ts marks its meshes) casts on its own: a proxy would keep its shadow once it is
+  // broken (its node switched off), until the proxies were rebuilt. On its own its shadow goes with it.
+  if ((m.metadata as { breakable?: boolean } | null)?.breakable === true) return false;
   const g = geometryOf(m);
-  if (!g || g.getTotalVertices() === 0 || g.skeleton || g.morphTargetManager || g.getLODLevels().length) return false;
+  if (!g || g.getTotalVertices() === 0 || g.skeleton || g.morphTargetManager) return false;
+  const lods = g.getLODLevels();
+  if (lods.length && !(lodInstances && m.isAnInstance && lods.every((l) => !!l.mesh && l.mesh.billboardMode === Mesh.BILLBOARDMODE_NONE))) return false;
   // Thin instances only when they never change (the border's trees, rocks and facades say so); destructibles' do.
   if (g.hasThinInstances && (!(m.metadata as { staticThin?: boolean } | null)?.staticThin || g.thinInstanceCount * g.getTotalVertices() > THIN_VERTEX_CAP)) return false;
   if (!m.isAnInstance && g.hasInstances) return false;
@@ -122,7 +131,7 @@ export function sortIntoCells(meshes: readonly AbstractMesh[]): ProxyCells {
  * check). `tag` keeps batches' names apart.
  */
 export function buildShadowProxies(scene: Scene, meshes: readonly AbstractMesh[], tag = '0'): { proxies: Mesh[]; sources: AbstractMesh[] } {
-  const sources = meshes.filter(proxyable);
+  const sources = meshes.filter((m) => proxyable(m));
   if (!sources.length) return { proxies: [], sources: [] };
   const { cells } = sortIntoCells(sources);
   const proxies: Mesh[] = [];
@@ -143,6 +152,10 @@ export function buildShadowProxies(scene: Scene, meshes: readonly AbstractMesh[]
     vd.normals = cell.normals;
     vd.indices = cell.positions.length / 3 > 65535 ? new Uint32Array(cell.indices) : cell.indices;
     vd.applyToMesh(mesh);
+    // Its triangles are on the graphics card now, and nothing reads them back (a rebuild starts again from the
+    // sources): no copy kept in the page. Kept, they were plain number arrays, eight bytes a coordinate: 220 MB of
+    // Flavius Rule's 1 GB script heap (docs/PERF_FLAVIUS_MEMORY_2026-11-16.md; `?perfoff=proxydata` keeps them).
+    if (perfOn('proxydata')) mesh.geometry?.clearCachedData();
     mesh.material = mat;
     mesh.isPickable = false;
     mesh.layerMask = 0;

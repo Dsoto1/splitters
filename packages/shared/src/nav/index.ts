@@ -1,4 +1,4 @@
-import { createNavMeshData, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
+import { createNavMeshData, exportNavMesh, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, importNavMesh, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
 import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
@@ -134,6 +134,9 @@ const FOUR = [
   { x: 0, y: 0, z: -1 },
 ];
 
+/** What the navmesh is built with (Recast's settings, the clearance, low headroom), as text: part of a cached navmesh's key (sim/mapNav.ts navInputKey). */
+export const navSettingsKey = (): string => JSON.stringify([RECAST_CONFIG, LOW_HEADROOM, MAX_NODES, PLACE_CELL]);
+
 /** Recast's settings for the bots' navmesh (NavWorld.build). */
 const RECAST_CONFIG = {
   cs: CELL,
@@ -198,6 +201,23 @@ export interface NavEscape {
 const NO_ESCAPE: readonly NavEscape[] = [];
 
 /**
+ * A built navmesh as data (NavWorld.export): Detour's tile with the build's polygon flags and areas in it, and what the
+ * build worked out beside it. NavWorld.import makes the same NavWorld again without building: MapMaker's navigation
+ * check hands its navmesh to the Test's match this way (sim/mapNav.ts navInputKey).
+ */
+export interface NavExport {
+  mesh: Uint8Array;
+  spawnSeeds: Vec3[];
+  lowSpans: number;
+  drops: number;
+  insideSolid: number;
+  exposed: number;
+  exposedArea: number;
+  parkour: ParkourLink[];
+  walkReach: Uint8Array | null;
+}
+
+/**
  * Navigation mesh generated from map geometry, so bots work on any Classic
  * Grid layout without authored waypoints (MASTER_SPEC_V2 §7, MULTIPLAYER_AI_SCALE).
  */
@@ -214,8 +234,9 @@ export class NavWorld {
    * and its navmesh is the same as without).
    */
   static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false, drops: DropOptions | null = null): NavWorld {
-    // The ground round a built map is for players to stand on, not somewhere bots go.
-    const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground'));
+    // The ground round a built map is for players to stand on, not somewhere bots go; an open door's leaf is walked
+    // past, not kept off (WorldBox.navThrough).
+    const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground' && !b.navThrough));
     let positions = box.positions;
     let indices = box.indices;
     if (extra) {
@@ -275,6 +296,41 @@ export class NavWorld {
     } finally {
       if (relink) freeIntermediates(inter);
     }
+  }
+
+  /**
+   * The navmesh as it came out of build, as data (NavExport): call it before anything changes it in a match
+   * (markOpenings, markLifts, setGone, linkFailed).
+   */
+  export(): NavExport {
+    return {
+      mesh: exportNavMesh(this.navMesh),
+      spawnSeeds: this.spawnSeeds.map((p) => ({ ...p })),
+      lowSpans: this.lowSpans,
+      drops: this.drops,
+      insideSolid: this.insideSolid,
+      exposed: this.exposed,
+      exposedArea: this.exposedArea,
+      parkour: this.parkour.map((l) => ({ ...l, start: { ...l.start }, end: { ...l.end } })),
+      walkReach: this.walkReach ? this.walkReach.slice() : null,
+    };
+  }
+
+  /** The NavWorld an export was made of, as build left it (initNavigation first). */
+  static import(data: NavExport): NavWorld {
+    const { navMesh } = importNavMesh(data.mesh);
+    const world = new NavWorld(navMesh, new NavMeshQuery(navMesh, { maxNodes: MAX_NODES }));
+    world.spawnSeeds = data.spawnSeeds.map((p) => ({ ...p }));
+    world.lowSpans = data.lowSpans;
+    world.drops = data.drops;
+    world.insideSolid = data.insideSolid;
+    world.exposed = data.exposed;
+    world.exposedArea = data.exposedArea;
+    world.setParkour(
+      data.parkour.map((l) => ({ ...l, start: { ...l.start }, end: { ...l.end } })),
+      data.walkReach ? data.walkReach.slice() : null,
+    );
+    return world;
   }
 
   /** Ledge-drop links the build added (NavWorld.build `drops`). */
@@ -828,28 +884,39 @@ export class NavWorld {
       // floor round a trapdoor that Recast merged it into); an opening: those its footprint stands over at its foot.
       const surface = k >= surfacesFrom;
       const y = surface ? b.max.y : b.min.y + 0.3;
-      for (let x = b.min.x; x <= b.max.x + 1e-6; x += 0.25) {
-        for (let z = b.min.z; z <= b.max.z + 1e-6; z += 0.25) {
-          const r = this.query.findNearestPoly({ x, y, z }, { halfExtents: surface ? { x: 0.15, y: 0.4, z: 0.15 } : half });
-          if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
-          marked.add(r.nearestRef);
-          if (surface) {
-            const i = r.nearestRef - g.base;
-            const cx = centre[i * 3]!;
-            const cz = centre[i * 3 + 2]!;
-            if (cx < b.min.x - 0.3 || cx > b.max.x + 0.3 || cz < b.min.z - 0.3 || cz > b.max.z + 0.3) continue;
-            // (And at its top: not the floor beside a low one, sandbags or a charge's target, which goes on being floor.)
-            if (Math.abs(centre[i * 3 + 1]! - b.max.y) > 0.25) continue;
-          }
-          const f = this.navMesh.getPolyFlags(r.nearestRef);
-          // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
-          if (this.insideSolid && f.flags === 0) continue;
-          this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
-          this.usedBits |= bit;
-          // (The graph's copy too: pathAlong reads a corridor's flags from it.)
-          const gi = r.nearestRef - g.base;
-          if (gi >= 0 && gi < g.count) g.flags[gi] = (f.flags || 1) | bit;
+      // The footprint's sample points: over its bounds, or for a door turned off the grid (Aabb.obox) over the turned
+      // slab itself, in its own frame (its bounds at 45° are a square 2.4 m across, the slab 0.4 m deep).
+      const points: [number, number][] = [];
+      const o = b.obox;
+      if (o) {
+        const c = Math.cos(o.yaw);
+        const s = Math.sin(o.yaw);
+        for (let lx = -o.half.x; lx <= o.half.x + 1e-6; lx += 0.25) {
+          for (let lz = -o.half.z; lz <= o.half.z + 1e-6; lz += 0.25) points.push([o.center.x + lx * c + lz * s, o.center.z - lx * s + lz * c]);
         }
+      } else {
+        for (let x = b.min.x; x <= b.max.x + 1e-6; x += 0.25) for (let z = b.min.z; z <= b.max.z + 1e-6; z += 0.25) points.push([x, z]);
+      }
+      for (const [x, z] of points) {
+        const r = this.query.findNearestPoly({ x, y, z }, { halfExtents: surface ? { x: 0.15, y: 0.4, z: 0.15 } : half });
+        if (!r.success || !r.nearestRef || !r.isOverPoly || marked.has(r.nearestRef)) continue;
+        marked.add(r.nearestRef);
+        if (surface) {
+          const i = r.nearestRef - g.base;
+          const cx = centre[i * 3]!;
+          const cz = centre[i * 3 + 2]!;
+          if (cx < b.min.x - 0.3 || cx > b.max.x + 0.3 || cz < b.min.z - 0.3 || cz > b.max.z + 0.3) continue;
+          // (And at its top: not the floor beside a low one, sandbags or a charge's target, which goes on being floor.)
+          if (Math.abs(centre[i * 3 + 1]! - b.max.y) > 0.25) continue;
+        }
+        const f = this.navMesh.getPolyFlags(r.nearestRef);
+        // (Never one left out as inside something solid: flags 0, disableInsideSolid.)
+        if (this.insideSolid && f.flags === 0) continue;
+        this.navMesh.setPolyFlags(r.nearestRef, (f.flags || 1) | bit);
+        this.usedBits |= bit;
+        // (The graph's copy too: pathAlong reads a corridor's flags from it.)
+        const gi = r.nearestRef - g.base;
+        if (gi >= 0 && gi < g.count) g.flags[gi] = (f.flags || 1) | bit;
       }
     });
     // Routes found before are still right for the routes that don't keep out of anything; failures with a mask are new.
@@ -1069,6 +1136,37 @@ export class NavWorld {
     return r.fromMain[s.index] === 1 && this.toMainNow()[s.index] === 1;
   }
 
+  /**
+   * Whether `p` stands on navmesh that doesn't route back to the main area (the spawns' area): ground behind a map's
+   * fence, a pit. Only a patch smaller than the main area counts: the main area is the bulk of a map's play, and when
+   * the navmesh leaves the spawns on a little island of their own (MapMaker's blank starter: one tile on open terrain
+   * the navmesh doesn't join it to), the rest is where play is, not a place nobody should be. False off the navmesh
+   * (on a prop, in the air) and when the navmesh has no main area to speak of.
+   */
+  stranded(p: Vec3): boolean {
+    const r = this.routesNow();
+    if (r.main < 0) return false;
+    // The polygon under the feet, as a squad spawn's walkable test finds it.
+    const s = this.nearestPoly({ x: p.x, y: p.y + 0.5, z: p.z }, { x: 0.6, y: 1.2, z: 0.6 });
+    if (!s || this.toMainNow()[s.index] === 1) return false;
+    const size = this.compSizesNow();
+    return size[r.comp[s.index]!]! < size[r.main]!;
+  }
+
+  private compSizes: Float64Array | null = null;
+
+  /** Each component of routes' walkable area (m², its polygons' areas). Worked out once. */
+  private compSizesNow(): Float64Array {
+    if (this.compSizes) return this.compSizes;
+    const r = this.routesNow();
+    const { area } = polyShapes(this.graph());
+    let n = 0;
+    for (let i = 0; i < r.comp.length; i++) n = Math.max(n, r.comp[i]! + 1);
+    const size = new Float64Array(n);
+    for (let i = 0; i < r.comp.length && i < area.length; i++) size[r.comp[i]!]! += area[i]!;
+    return (this.compSizes = size);
+  }
+
   /** What routes from polygon `i`'s component reach (cached per component; at most 256 kept). */
   private reachOf(i: number): Uint8Array {
     const r = this.routesNow();
@@ -1243,9 +1341,10 @@ export class NavWorld {
    * navmesh) and the place across. From ground that routes to the main area, only onto ground that routes back to
    * it too (onto a dais the navmesh doesn't climb, never down into a pit). `clear`: a body gets straight across
    * from one to the other (nothing in the way). Empty when nothing is near enough, or a route reaches the goal.
-   * Cached per polygon and the goal's component of routes.
+   * Cached per polygon and the goal's component of routes, and per `kind` of `clear` (a caller with its own test
+   * names it, so its answers and the bots' never mix: Match.inPlay's 'body').
    */
-  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean): readonly NavEscape[] {
+  escapes(from: Vec3, goal: Vec3, clear: (a: Vec3, b: Vec3) => boolean, kind = ''): readonly NavEscape[] {
     const ext = { x: 2, y: 3, z: 2 };
     const e = this.query.findNearestPoly(goal, { halfExtents: ext });
     if (!e.success || !e.nearestRef) return NO_ESCAPE;
@@ -1271,7 +1370,7 @@ export class NavWorld {
     }
     const landing = (poly: number) => poly >= 0 && toGoal[poly] === 1 && (!safe || toMain[poly] === 1);
     const goalComp = this.routesNow().comp[goalIdx]!;
-    const key = on ? `${s.nearestRef}>${goalComp}` : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}>${goalComp}`;
+    const key = `${on ? s.nearestRef : `${Math.round(from.x)},${Math.round(from.y)},${Math.round(from.z)}`}>${goalComp}${kind ? `:${kind}` : ''}`;
     const known = this.escapeCache.get(key);
     if (known) return known;
     const places = this.places();
@@ -1470,7 +1569,7 @@ export function validateNavigation(map: MapDocument, nav: NavWorld, physics?: Ph
 /**
  * Race tracks: every checkpoint must be on drivable ground and reachable from
  * the one before (vehicles and racing bots follow the same ground the navmesh
- * covers), and every start-grid place must be on it.
+ * covers). (Race mode's start grid went with it: nothing starts there now.)
  */
 export function validateTrackNavigation(map: MapDocument, nav: NavWorld): ValidationIssue[] {
   const g = trackGeometry(map);
@@ -1487,7 +1586,5 @@ export function validateTrackNavigation(map: MapDocument, nav: NavWorld): Valida
     const b = spots[(i + 1) % spots.length];
     if (a && b && !nav.findPath(a, b)) issues.push({ severity: 'warning', code: 'nav.checkpoint_unreachable', message: `checkpoint ${((i + 1) % spots.length) + 1} cannot be reached from checkpoint ${i + 1}` });
   }
-  const off = g.grid().filter((p) => !nav.closestPoint(p, { x: 2, y: 4, z: 2 })).length;
-  if (off) issues.push({ severity: 'warning', code: 'nav.grid_off_mesh', message: `${off} start-grid place${off > 1 ? 's are' : ' is'} not on drivable ground` });
   return issues;
 }

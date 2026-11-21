@@ -50,7 +50,6 @@ import {
   MOUNT_SKIN_LABELS,
   MOUNT_SKINS,
   MOVER_MODES,
-  normalizeYaw,
   NPC_ROLE_SPECS,
   NPC_ROLES,
   PLAYER,
@@ -80,7 +79,7 @@ import {
 import { envRendererOn } from '../environment/envFlag.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
 import type { EditorApp } from './editorApp.ts';
-import { button, h2, numberInput, row, small } from './editorDom.ts';
+import { button, fillWhenOpened, h2, numberInput, row, small, type ChoiceGroups } from './editorDom.ts';
 import { pathLabel } from './pathTool.ts';
 
 /** The inspector for one entity: spawns, pickups, props, doors, lights, movers, triggers, traps, NPC squads, vehicles, objectives and the rest (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -100,17 +99,20 @@ export class EntityInspector {
       name.addEventListener('change', () => update('Rename', { name: name.value.trim() || undefined }));
       el.append(row('Name', name));
     }
-    const setPos = (i: number, v: number) => {
-      const position = [...e.position] as [number, number, number];
-      position[i] = v;
-      update(`Move ${e.kind}`, { position });
+    // Position and facing go through the shared transform command (MapMaker UI spec Phase 2): the same rounding and
+    // bedding on the terrain as a drag, and a moving build selected whole moves and turns with its parts.
+    const axis = (i: 0 | 1 | 2, label: string, step: number) => {
+      const f = numberInput(e.position[i], step, (value) => this.app.transform(`Move ${e.kind}`, { set: { id: e.id, axis: i, value } }));
+      f.id = `ed-insp-${'xyz'[i]}`;
+      f.title = `${label} in metres (Enter: move · Esc: put back)`;
+      return row(label, f);
     };
-    el.append(
-      row('X', numberInput(e.position[0], 0.5, (v) => setPos(0, v))),
-      row('Height', numberInput(e.position[1], 0.25, (v) => setPos(1, v))),
-      row('Z', numberInput(e.position[2], 0.5, (v) => setPos(2, v))),
-    );
-    if ('yaw' in e) el.append(row('Facing °', numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => update('Turn', { yaw: normalizeYaw((deg * Math.PI) / 180) }))), this.app.inspector.quickFacings({ tiles: [], entities: [e.id] }, e.yaw));
+    el.append(axis(0, 'X', 0.5), axis(1, 'Height', 0.25), axis(2, 'Z', 0.5));
+    if ('yaw' in e) {
+      const facing = numberInput(Math.round((e.yaw * 180) / Math.PI), Math.round((yawStep(e.kind) * 180) / Math.PI), (deg) => this.app.transform('Turn', { face: { id: e.id, deg } }));
+      facing.id = 'ed-insp-facing';
+      el.append(row('Facing °', facing), this.app.inspector.quickFacings(e.id, e.yaw));
+    }
 
     const toggle = (label: string, value: boolean, patch: (v: boolean) => Partial<MapEntity>) => {
       const c = document.createElement('input');
@@ -137,20 +139,11 @@ export class EntityInspector {
     switch (e.kind) {
       case 'prop': {
         const model = document.createElement('select');
-        for (const category of PROP_CATEGORIES) {
-          const group = document.createElement('optgroup');
-          group.label = category;
-          for (const def of CORE_PROPS.filter((d) => d.category === category)) group.append(new Option(def.displayName, def.id, false, def.id === e.model));
-          model.append(group);
-        }
+        const models: ChoiceGroups = PROP_CATEGORIES.map((category) => [category, CORE_PROPS.filter((d) => d.category === category).map((def) => [def.displayName, def.id])]);
         // Environment species (the procedural environment's preview): listed when the map has one or with ?env=1.
         const species = getEnvSpecies(e.model);
-        if (species || envRendererOn()) {
-          const group = document.createElement('optgroup');
-          group.label = 'Environment (preview)';
-          for (const s of ENV_SPECIES) group.append(new Option(s.displayName, s.id, false, s.id === e.model));
-          model.append(group);
-        }
+        if (species || envRendererOn()) models.push(['Environment (preview)', ENV_SPECIES.map((s) => [s.displayName, s.id])]);
+        fillWhenOpened(model, models, e.model);
         // A species' variant is kept only while it stays an environment species (a kit family's starts at its first).
         model.addEventListener('change', () => update('Change prop', { model: model.value, variant: getEnvSpecies(model.value) ? e.variant : undefined }));
         el.append(row('Model', model));
@@ -523,6 +516,7 @@ export class EntityInspector {
           glow.addEventListener('change', () => update('Colour portal', { color: glow.value.toLowerCase() }));
           el.append(row('Colour', glow));
         }
+        choose('Swirl', [['pack', 'Pack effect'], ['painted', 'Painted']], e.swirl ?? 'pack', (v) => ({ swirl: v === 'painted' ? 'painted' : undefined }));
         toggle('Starts on', e.startEnabled, (v) => ({ startEnabled: v }));
         el.append(small(partner ? `Leads to ${entityLabel(doc, partner)}: walk (or shoot) into its front and you come out of the other, moving the same way relative to it. Turning one portal turns where you face coming out.` : crowd > 2 ? `Pair "${e.pair}" has ${crowd} portals: a pair links exactly two.` : `No other end yet: give a second portal the pair "${e.pair}" (the Portal Pair tool places both).`));
         el.append(small('Logic switches portals on and off (Enable / Disable): a pair works only while both are on. Bots take portals as shortcuts. Leave room to stand in front of both.'));

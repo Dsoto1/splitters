@@ -6,6 +6,8 @@
   "name": "Capt. Nova",
   "look": "core.nova",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "First person on the Moon in 1969, by her own account. Mission control lost the paperwork.",
   "body": "female",
@@ -24,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.55
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
@@ -36,9 +35,6 @@
     "feet": true,
     "fingers": "fit",
     "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03],
       "rollR": -0.3
     }
   }

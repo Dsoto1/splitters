@@ -8,21 +8,43 @@
 // invulnerable player): see packages/client/src/testMode.ts. Wait on conditions, not fixed sleeps
 // (tools/ci/lint-e2e-waits.mjs).
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { chromium, devices } from 'playwright';
-import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
+import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLASHING_FLOWS, FLOWS, MAP_FLOWS, MAP_PARTS } from './flowMap.mjs';
 import { assignShards, loadTimings } from './shards.mjs';
 import { installFrameClock } from './frameClock.mjs';
 import { FLICKER_LIMITS, analyseFrames, frameStats, summary as flickerSummary } from './flicker.mjs';
 
-// E2E_CLIENT_PORT / E2E_SERVER_PORT move the preview and game servers (e.g. when another checkout is testing).
-const CLIENT_PORT = process.env.E2E_CLIENT_PORT ?? '4173';
-const CLIENT = `http://localhost:${CLIENT_PORT}`;
-const SERVER_PORT = +(process.env.E2E_SERVER_PORT ?? 7787);
+/**
+ * A port for one of the run's servers: the E2E_*_PORT variable's when set; on CI the fixed one as ever; on a desk a
+ * free one, so runs in parallel worktrees don't reach each other's servers.
+ */
+async function pickPort(name, fixed) {
+  if (process.env[name]) return +process.env[name];
+  if (process.env.CI) return fixed;
+  return new Promise((resolve, reject) => {
+    const s = createServer();
+    s.unref();
+    s.on('error', reject);
+    s.listen(0, '127.0.0.1', () => {
+      const { port } = s.address();
+      s.close(() => resolve(port));
+    });
+  });
+}
+// Everything on 127.0.0.1 (never a name that may resolve to ::1 or another checkout's server). E2E_CLIENT_PORT /
+// E2E_SERVER_PORT (and the flows' E2E_*_HUB_PORT, E2E_*_CONTROL_PORT, E2E_PEER_PORT) pin a port.
+const CLIENT_PORT = String(await pickPort('E2E_CLIENT_PORT', 4173));
+const CLIENT = `http://127.0.0.1:${CLIENT_PORT}`;
+const SERVER_PORT = await pickPort('E2E_SERVER_PORT', 7787);
+/** CHROMIUM (or PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH): the browser binary to launch instead of Playwright's own. */
+const CHROMIUM = process.env.CHROMIUM || process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '';
+const launchOpts = (opts) => (CHROMIUM ? { ...opts, executablePath: CHROMIUM } : opts);
 const procs = [];
 /** CI renders in software on a shared runner, several times slower than a desk: every wait stretches there. */
 const SLOW = process.env.CI ? 3 : 1;
@@ -34,7 +56,7 @@ let failures = 0;
  * own thread instead (localStorage tiletrigger.sim = main), the fallback the game keeps for browsers
  * without workers. Every other flow plays the worker, and reaches the match through `sim()` / `simWait()`.
  */
-const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', 'flashing', ...MAP_FLOWS]);
+const MAIN_THREAD_FLOWS = new Set(['setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'ctf', 'forts', 'breakthrough', 'roulette', 'zombies', 'classes', 'vehicles', 'traffic', ...FLASHING_FLOWS, ...MAP_FLOWS]);
 
 /** Run `fn(match, me, arg)` where the page's match runs (its worker, or the page), and return what it returns. */
 async function sim(page, fn, arg) {
@@ -84,7 +106,8 @@ async function holdBots(page) {
   await sim(page, (m) => {
     for (const c of m.combatants()) {
       if (!c.bot || c.queue.held) continue;
-      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      // (A flow may make a held bot fire, `queue.fire` its buttons, facing `queue.yaw`: the flicker check's `pairtp`.)
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: c.queue.fire ?? 0, ...(c.queue.yaw !== undefined ? { yaw: c.queue.yaw } : {}) })));
       c.queue.held = true;
     }
   });
@@ -154,6 +177,30 @@ function check(cond, message) {
   }
 }
 
+/**
+ * Into play: Resume if the pause menu is up, else the click (a tap on a phone) that "Click to fight" asks for: a match
+ * opens straight into play, not paused (owner, 2026-11-19; session.ts showFightHint).
+ */
+/**
+ * Into play without the mouse: touch play (it stands in for pointer lock) before any key, so a key doesn't take the
+ * mouse at "Click to fight". CI's headless Chromium, holding a pointer lock, sends the page thousands of mouse moves a
+ * second (none moving), and a page whose frame clock is frozen draws no frames to hand them over in: its memory grew
+ * about 50 MB a second, gigabytes over a flow's frozen frames, and the runner went down (beams, 2026-11-20). Releasing
+ * the lock gives the memory back.
+ */
+async function playWithoutMouse(page) {
+  await page.evaluate(() => {
+    if (document.pointerLockElement) document.exitPointerLock();
+    window.__cs.input.setTouchEngaged(true);
+  });
+}
+
+async function fight(page, tap = false) {
+  const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
+  if (paused) return tap ? page.tap('#resume') : page.click('#resume');
+  return tap ? page.tap('#view', { force: true }) : page.click('#view', { force: true });
+}
+
 async function waitForHttp(url, ms = 20000) {
   const until = Date.now() + ms;
   while (Date.now() < until) {
@@ -163,6 +210,23 @@ async function waitForHttp(url, ms = 20000) {
     await sleep(200);
   }
   throw new Error(`timed out waiting for ${url}`);
+}
+
+/**
+ * Open MapMaker's Map settings (the map's name, theme, players, modes, picture, card shot, time and weather…) and wait
+ * for them. Every flow that reads or edits Map settings goes through here, so a change to where they live is one edit.
+ */
+async function openMapSettings(page) {
+  // The top bar's title opens them in the right dock (MapMaker UI spec Phase 1); a second click would close them.
+  if (await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden !== false)) await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(10000) });
+}
+
+/** Tick or untick an item of MapMaker's View menu (grid, full grid, overlaps, plan view, map layers): open, click, close. */
+async function viewItem(page, id) {
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) !== 'true') await page.click('#ed-view-btn');
+  await page.click(`#${id}`);
+  if ((await page.getAttribute('#ed-view-btn', 'aria-expanded')) === 'true') await page.click('#ed-view-btn');
 }
 
 /** Click a MapMaker palette tool, opening the palette tab that holds it first. */
@@ -277,8 +341,12 @@ async function editorFlow(browser) {
   check((await tileOf()).y === 1, 'redo reapplies the move');
   await page.keyboard.press('Control+KeyZ');
 
-  // Paint: brick walls on the start room, then checker floors on every room via scope.
-  await page.click('[data-tool="paint"]');
+  // Paint: brick walls on the start room, then checker floors on every room via scope. (Paint is on the Environment
+  // tab's tool bar, UI Phase 1.)
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-tb-paint');
+  // Structure paint's list opens on This map's themes (painting Phase 3); every material is under All, a click away.
+  await page.click('#ed-mat-view [data-mv="all"]');
   await page.click('[data-material="core.red_brick"]');
   const wall = await page.evaluate(() => window.__editor.view.project({ x: 0, y: 2, z: 3.5 }));
   await page.mouse.move(wall.x, wall.y);
@@ -318,6 +386,28 @@ async function editorFlow(browser) {
   d = await doc();
   const randomPickup = d.entities.find((e) => e.kind === 'pickup' && e.random);
   check(randomPickup?.random === 'sniper' && SNIPERS.includes(randomPickup.item), `the inspector makes a weapon pickup random from a category (${JSON.stringify(randomPickup && { random: randomPickup.random, item: randomPickup.item })})`);
+  // The Pistol's pickup (the second Pistol of a dual-wield pair): a card in the Weapons group, placed like any pickup.
+  // Undone again, so the rest of the flow sees the map it always did.
+  const pistolCard = await page.evaluate(() => {
+    const b = document.querySelector('[data-tool="pickup:core.weapon_pistol"]');
+    return b ? { text: b.textContent.trim(), group: b.closest('.ed-group')?.querySelector('.ed-group-head')?.textContent ?? '' } : null;
+  });
+  check(/^Pistol\b/.test(pistolCard?.text ?? '') && /Weapons/.test(pistolCard.group), `the Pistol pickup has a card in the Weapons group (${JSON.stringify(pistolCard)})`);
+  await clickTool(page, '[data-tool="pickup:core.weapon_pistol"]');
+  await clickWorld(-1, 2);
+  await page.keyboard.press('Escape');
+  d = await doc();
+  check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'places a Pistol pickup');
+  if (process.env.E2E_SHOTS) {
+    await page.locator('[data-tool="pickup:core.weapon_pistol"]').scrollIntoViewIfNeeded().catch(() => {});
+    await page.locator('.ed-group:has([data-tool="pickup:core.weapon_pistol"])').screenshot({ path: `${process.env.E2E_SHOTS}/pistol-palette.png` }).catch(() => {});
+    await page.evaluate(() => window.__editor.view.focus({ x: -1, y: 0, z: 2 }));
+    await page.screenshot({ path: `${process.env.E2E_SHOTS}/pistol-placed.png` }).catch(() => {});
+    await page.evaluate(() => window.__editor.view.focus({ x: 8, y: 0, z: 0 }));
+  }
+  await page.keyboard.press('Control+KeyZ');
+  d = await doc();
+  check(!d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.weapon_pistol'), 'undo takes the Pistol pickup away');
 
   // Scenario: a locked door snapped into the doorway, a button and a spike trap, wired with a logic template.
   await clickTool(page, '[data-tool="scenario:door_locked"]');
@@ -371,12 +461,47 @@ async function editorFlow(browser) {
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
+  // A navigation check still running when Test starts is stopped (it built a navmesh beside the Test's own: trace fix
+  // 2, docs/PERF_MAPMAKER_TRACE_2026-11-15.md), and runs again back in MapMaker. Test is pressed the moment the check
+  // goes to its worker (a worker can't answer within that task, so the check is caught running).
+  const nudge = (dx) =>
+    page.evaluate((dx) => {
+      const ed = window.__editor;
+      const e = ed.doc.entities.find((x) => x.kind === 'spawn');
+      ed.run('Move', { kind: 'updateEntities', before: [e], after: [{ ...e, position: [e.position[0] + dx, e.position[1], e.position[2]] }] });
+    }, dx);
+  await page.evaluate(() => {
+    const checks = window.__editor.checks;
+    const send = checks.checkNavigation;
+    checks.checkNavigation = function (...a) {
+      send.apply(this, a);
+      if (this.navRunning && !window.__navTestPressed) {
+        window.__navTestPressed = { stopsBefore: this.navStops };
+        window.__editor.test();
+        window.__navTestPressed.after = { stops: this.navStops, running: this.navRunning, worker: !!this.navWorker };
+      }
+    };
+  });
+  await nudge(0.25);
+  const stopped = await page.waitForFunction(() => window.__navTestPressed?.after && document.getElementById('editor').hidden && window.__cs?.local, null, { timeout: T(30000) }).then(() => page.evaluate(() => window.__navTestPressed), () => null);
+  check(stopped && stopped.after.stops === stopped.stopsBefore + 1 && !stopped.after.running && !stopped.after.worker, `Test stops the navigation check still running (${JSON.stringify(stopped)})`);
+  await frames(page, 10);
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
+  // Back in MapMaker the stopped check runs again, in a new worker, to its end.
+  const rechecked = await page.waitForFunction(() => !window.__editor.checks.navRunning && !!window.__editor.checks.navWorker, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(rechecked, 'back in MapMaker, the stopped navigation check runs again to its end');
+  await page.evaluate(() => {
+    delete window.__editor.checks.checkNavigation;
+  });
+  await nudge(-0.25);
 
   await page.keyboard.press('Control+KeyS');
   const id = (await doc()).metadata.id;
   // An edit after saving: Quit asks first (in-game dialog), and the change is kept as a draft.
-  await page.fill('#ed-name', 'Draft Edit');
-  await page.press('#ed-name', 'Enter');
+  await openMapSettings(page);
+  await page.fill('#ed-prop-name', 'Draft Edit');
+  await page.press('#ed-prop-name', 'Tab');
   await page.waitForFunction(() => window.__editor.doc.metadata.name === 'Draft Edit', null, { timeout: T(10000) });
   await page.click('#ed-home');
   const quitAsk = await page.evaluate(() => ({
@@ -388,10 +513,24 @@ async function editorFlow(browser) {
   await page.click('#ed-quit-cancel');
   check(!(await page.evaluate(() => document.getElementById('ed-quit-dialog').open || document.getElementById('editor').hidden)), 'Cancel stays in MapMaker');
   await page.waitForFunction((id) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(id), id, { timeout: T(10000) });
+  // A reload of the tab (or Chrome's "Aw, Snap!") comes back to the map being made, its unsaved changes included.
   await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  d = await doc();
+  const dirtyAfterReload = await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on') && !document.getElementById('editor').hidden && document.getElementById('menu').hidden);
+  check(d.metadata.id === id && d.metadata.name === 'Draft Edit' && d.classicStructure.tiles.length === 3 && dirtyAfterReload, `a reload in MapMaker reopens the map being made, its unsaved draft still unsaved (${d.metadata.name}, ${d.classicStructure.tiles.length} tiles, unsaved ${dirtyAfterReload})`);
+  // A reload during its Test comes back to MapMaker on the map too, not into the Test or the menu.
+  await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
+  await page.reload();
+  await page.waitForFunction((id) => window.__editor?.doc.metadata.id === id, id, { timeout: T(30000) }).catch(() => {});
+  const fromTest = await page.evaluate(() => ({ id: window.__editor?.doc.metadata.id, name: window.__editor?.doc.metadata.name, editor: !document.getElementById('editor').hidden, menu: !document.getElementById('menu').hidden, test: !!window.__cs?.local }));
+  check(fromTest.id === id && fromTest.name === 'Draft Edit' && fromTest.editor && !fromTest.menu && !fromTest.test, `a reload during MapMaker's Test comes back to MapMaker with the map open (${JSON.stringify(fromTest)})`);
+  // Coming in afresh (not a reload) still opens the blank starter map, the draft kept in Open….
+  await page.goto(page.url());
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   d = await doc();
-  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'reopening MapMaker shows the blank starter map');
+  check(d.metadata.id !== id && d.metadata.name === 'Untitled Map' && d.classicStructure.tiles.length === 1 && d.entities.length === 1, 'opening MapMaker afresh shows the blank starter map');
   await page.click('#ed-open');
   const lib = await page.$$eval('#ed-library li', (ls) => ls.map((l) => l.textContent));
   check(lib.some((t) => t.includes('Untitled Map') && t.includes('Saved')), 'saved map is listed in the library');
@@ -408,7 +547,7 @@ async function editorFlow(browser) {
   check(await page.evaluate(() => document.getElementById('ed-dirty').classList.contains('on')), 'an opened draft still counts as unsaved');
 
   // Set thumbnail: frame the editor camera's view and capture it as the map's own picture.
-  await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.waitForSelector('#ed-thumb-set', { timeout: T(5000) }).catch(() => {});
   check(await page.evaluate(() => document.querySelector('.ed-map-thumbs .pic')?.classList.contains('none')), 'Map properties: a new map has no picture yet');
   check(await planDrawn(page, '.ed-map-thumbs .plan canvas'), 'Map properties shows the plan, separate from the picture');
@@ -430,14 +569,15 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: tick Soldiers, the map keeps it (one undo step).
-  await page.keyboard.press('Escape');
+  // Map properties → Bots → Bot characters: the eight bot types, all ticked; None, then Soldiers: the map keeps it (one undo step).
+  await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
-  await page.evaluate(() => (document.getElementById('ed-cast').open = true));
-  await page.click('#ed-cast input[data-cast="soldiers"]');
+  const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
+  await page.evaluate(() => document.getElementById('ed-cast-none').click());
+  await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
-  const cast = { doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => document.querySelector('#ed-cast input[data-cast="soldiers"]')?.checked) };
-  check(JSON.stringify(cast.doc) === '["soldiers"]' && cast.sum === 'Soldiers' && cast.ticked, `map properties set the bot characters (${JSON.stringify(cast)})`);
+  const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
+  check(types.length === 8 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eight types, all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -638,7 +778,9 @@ async function editoruxFlow(browser) {
   check(await page.isVisible('#ed-toolbar #ed-tb-erase') && (await page.textContent('#ed-tb-erase')).includes('X'), 'tool bar shows Erase with its key');
   check((await page.getAttribute('#ed-tb-select', 'class')).includes('active') && (await page.textContent('#ed-toolhint')).includes('Select'), 'Select is the lit tool and the hint says what it does');
 
-  check(parseFloat(await page.evaluate(() => getComputedStyle(document.getElementById('ed-palette')).width)) >= 300, 'the palette is wide (300 px or more)');
+  // (The left rail, UI Phase 1, takes its 44 px from the palette, not from the view.)
+  const leftSide = await page.evaluate(() => ({ pal: document.getElementById('ed-palette').getBoundingClientRect().right, cols: getComputedStyle(document.querySelector('#ed-palette .tiles')).gridTemplateColumns.split(' ').length }));
+  check(leftSide.pal >= 300 && leftSide.cols === 3, `the rail and palette are wide (300 px or more), three cards a row (${JSON.stringify(leftSide)})`);
   // Palette pictures come from the prebuilt atlases, one image per content source (a Style Pack's tiles, a content
   // pack's props), loaded as their pieces are shown.
   await page.waitForFunction(() => document.querySelector('#ed-tiles .thumb.atlas .spr'), null, { timeout: T(30000) }).catch(() => {});
@@ -931,18 +1073,18 @@ async function editoruxFlow(browser) {
   const limitRefusal = (await page.textContent('#ed-toast')) ?? '';
   check((await doc()).classicStructure.tiles.length === areaTiles + 1 && /build limit/.test(limitRefusal), `a room past the build limit is refused, naming it (${limitRefusal})`);
   check(/Past the build limit/.test(beyondNote ?? ''), `hovering past it says so (${beyondNote})`);
-  await page.click('#ed-grid-full');
+  await viewItem(page, 'ed-grid-full');
   await settle();
   const a2 = await area();
-  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-pressed')) === 'true', `Full grid covers the whole build area (${JSON.stringify(a2)})`);
-  await page.click('#ed-grid-full');
+  check(a2.gridOn && a2.reach > 2000 && (await page.getAttribute('#ed-grid-full', 'aria-checked')) === 'true', `View → Full grid covers the whole build area (${JSON.stringify(a2)})`);
+  await viewItem(page, 'ed-grid-full');
   await settle();
   check((await area()).reach < 400, 'and off again it is local');
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   await settle();
   const a3 = await area();
-  check(!a3.gridOn && a3.limit && a3.bounds, `Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
-  await page.click('#ed-grid');
+  check(!a3.gridOn && a3.limit && a3.bounds && (await page.getAttribute('#ed-grid', 'aria-checked')) === 'false', `View → Grid off hides the grid, not the boundary or the build limit (${JSON.stringify(a3)})`);
+  await viewItem(page, 'ed-grid');
   await page.keyboard.press('Control+KeyZ');
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).classicStructure.tiles.length === areaTiles && JSON.stringify((await doc()).bounds) === JSON.stringify(boundsBefore), 'undo takes the room and the boundary back out');
@@ -1068,7 +1210,163 @@ async function editoruxFlow(browser) {
   check(JSON.stringify(reversed) === JSON.stringify([...unreversed].reverse()), 'Reverse direction runs the path the other way');
   await settle(); // the edit's new meshes draw from the next frame
   await shot('paths');
-  // Paint from far out: the ground under the pointer, not the invisible wall round the map.
+  // Select picks a path that is already there: over its ribbon the path lights up and the card names it, and a click
+  // opens it in the Paths tool.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'select' }));
+  const laid = (await doc()).paths.find((p) => p.id === road.id);
+  const onRoad = await at(laid.points[1][0], laid.points[1][1], laid.points[1][2]);
+  await page.mouse.move(onRoad.x, onRoad.y);
+  const lit = await page.waitForFunction((id) => /^Path \d+/.test(document.querySelector('#ed-tip b')?.textContent ?? '') && !!window.__editor.view.scene.getMeshByName(`pathPoly_${id}`), road.id, { timeout: T(5000) }).then(() => true, () => false);
+  check(lit && (await page.evaluate(() => /Click to edit/.test(document.getElementById('ed-tip').textContent) && window.__editor.tool.kind === 'select')), `with Select, a path under the pointer lights up and its card says a click edits it (${await page.evaluate(() => document.getElementById('ed-tip').textContent)})`);
+  await shot('path-select-hover');
+  await page.mouse.click(onRoad.x, onRoad.y);
+  const opened = await page.waitForFunction((id) => window.__editor.tool.kind === 'path' && window.__editor.paths.current === id && !!document.getElementById('ed-path-length'), road.id, { timeout: T(5000) }).then(() => true, () => false);
+  check(opened, 'a click on the path with Select opens it in the Paths tool, its length in the pane');
+  // Its length by number: longer runs on from the last point (one more point), shorter cuts it back; one undo step each.
+  const pathNow = () => page.evaluate((id) => {
+    const p = window.__editor.doc.paths?.find((q) => q.id === id);
+    return p && { points: p.points, length: Number(document.getElementById('ed-path-length')?.value) };
+  }, road.id);
+  const setLength = async (v) => {
+    const rev = await page.evaluate(() => window.__editor.history.revision);
+    await page.fill('#ed-path-length', String(v));
+    await page.dispatchEvent('#ed-path-length', 'change');
+    // (Until the pane is drawn again for the edit: the field typed in is gone then, and Ctrl+Z is MapMaker's.)
+    await page.waitForFunction(([r, want]) => window.__editor.history.revision !== r && window.__editor.renderedRevision === window.__editor.history.revision && Math.abs(Number(document.getElementById('ed-path-length')?.value) - want) < 0.6, [rev, v], { timeout: T(5000) }).catch(() => {});
+    return pathNow();
+  };
+  const was = await pathNow();
+  const longer = await setLength(Math.round(was.length) + 20);
+  check(longer.points.length === was.points.length + 1 && Math.abs(longer.length - (Math.round(was.length) + 20)) < 0.6 && JSON.stringify(longer.points.slice(0, was.points.length)) === JSON.stringify(was.points), `a longer length runs the path on from its end with one more point (${was.length} → ${longer.length} m, ${longer.points.length} points)`);
+  await settle();
+  await shot('path-length');
+  const shorter = await setLength(8);
+  check(Math.abs(shorter.length - 8) < 0.6 && shorter.points.length < longer.points.length && JSON.stringify(shorter.points[0]) === JSON.stringify(was.points[0]), `a shorter length cuts the path back from its end (${shorter.length} m, ${shorter.points.length} points)`);
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, longer.points.length, { timeout: T(5000) }).catch(() => {});
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, was.points.length, { timeout: T(5000) }).catch(() => {});
+  check(JSON.stringify((await pathNow()).points) === JSON.stringify(was.points), 'each length change is one undo step');
+  // Points at the start: the next click goes in before the first point.
+  await page.click('#ed-path-extend-start');
+  await clickAt(was.points[0][0] + 3, 0, was.points[0][2] + 6);
+  const led = await pathNow();
+  check(led.points.length === was.points.length + 1 && JSON.stringify(led.points.slice(1)) === JSON.stringify(was.points) && Math.hypot(led.points[0][0] - was.points[0][0] - 3, led.points[0][2] - was.points[0][2] - 6) < 1, `Add points at the start puts the next click before the first point (${JSON.stringify(led.points[0])})`);
+  await page.keyboard.press('Control+z');
+  await page.waitForFunction((n) => window.__editor.doc.paths?.at(-1)?.points.length === n, was.points.length, { timeout: T(5000) }).catch(() => {});
+  {
+    // Fit ground to a path, and the path onto the ground (the Paths pane's Ground buttons): one undo step each.
+    // The ground as made at a point (between the terrain's vertices), and the edit count.
+    const groundAt = (x, z) => page.evaluate(([x, z]) => {
+      const t = window.__editor.doc.terrain;
+      const fx = Math.max(0, Math.min(t.cols - 1.001, (x - t.origin[0]) / t.spacing));
+      const fz = Math.max(0, Math.min(t.rows - 1.001, (z - t.origin[1]) / t.spacing));
+      const c = Math.floor(fx);
+      const r = Math.floor(fz);
+      const h = (cc, rr) => t.heights[rr * t.cols + cc] / 100;
+      const u = fx - c;
+      const v = fz - r;
+      return t.baseY + (h(c, r) * (1 - u) + h(c + 1, r) * u) * (1 - v) + (h(c, r + 1) * (1 - u) + h(c + 1, r + 1) * u) * v;
+    }, [x, z]);
+    const revision = () => page.evaluate(() => window.__editor.history.revision);
+    const edited = (rev) => page.waitForFunction((r) => window.__editor.history.revision !== r && window.__editor.renderedRevision === window.__editor.history.revision, rev, { timeout: T(10000) }).then(() => true, () => false);
+    // The path lifted 2 m off the ground it was drawn on (as a road is after the ground under it was sculpted).
+    await page.evaluate((id) => {
+      const ed = window.__editor;
+      const before = ed.doc.paths;
+      ed.run('Lift path', { kind: 'setPaths', before, after: before.map((p) => (p.id === id ? { ...p, points: p.points.map((q) => [q[0], q[1] + 2, q[2]]) } : p)) });
+    }, road.id);
+    await page.waitForSelector('#ed-path-fit-ground', { timeout: T(5000) }).catch(() => {});
+    const lifted = (await doc()).paths.find((p) => p.id === road.id).points;
+    const mid = lifted[1];
+    const groundBefore = await groundAt(mid[0], mid[2]);
+    let rev = await revision();
+    await page.click('#ed-path-fit-ground');
+    await edited(rev);
+    const groundFitted = await groundAt(mid[0], mid[2]);
+    check(Math.abs(groundBefore - (mid[1] - 2)) < 0.6 && Math.abs(groundFitted - mid[1]) < 0.3 && JSON.stringify((await doc()).paths.find((p) => p.id === road.id).points) === JSON.stringify(lifted), `Fit ground to this path raises the ground to the path's line, the path where it was (ground ${groundBefore.toFixed(2)} → ${groundFitted.toFixed(2)} m, path at ${mid[1]})`);
+    await settle();
+    await shot('path-fit-ground');
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check(Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, 'one undo gives the ground back');
+    rev = await revision();
+    await page.click('#ed-path-on-ground');
+    await edited(rev);
+    const settledPath = (await doc()).paths.find((p) => p.id === road.id).points;
+    check(settledPath.every((q, i) => Math.abs(q[1] - (lifted[i][1] - 2)) < 0.05 && q[0] === lifted[i][0] && q[2] === lifted[i][2]) && Math.abs((await groundAt(mid[0], mid[2])) - groundBefore) < 1e-6, `Settle onto the ground puts the path's points back on the ground, the ground untouched (${settledPath.map((q) => q[1]).join(', ')})`);
+    // Fit ground to a build: a lone slab of a block (nothing built on it) hung 1.5 m over the ground, selected, and a
+    // crate standing on the ground 7 m east of it.
+    const padAt = [mid[0] + 30, 0, mid[2] - 30];
+    const padGround = await groundAt(padAt[0], padAt[2]);
+    const crateAt = [padAt[0] + 7, padAt[2]];
+    const crateY = Math.round(((await groundAt(crateAt[0], crateAt[1])) - 0.03) * 100) / 100;
+    await page.evaluate(([x, y, z, cx, cz, cy]) => {
+      const ed = window.__editor;
+      ed.setTool({ kind: 'select' });
+      ed.run('Add block', { kind: 'addEntities', entities: [{ id: 'fit_slab', kind: 'block', position: [x, y, z], size: [8, 0.5, 8], yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }, { id: 'fit_crate', kind: 'prop', model: 'kit.crate.wood', position: [cx, cy, cz], yaw: 0, scale: 1, solid: true, tint: null }] });
+      ed.setSelection({ tiles: [], entities: ['fit_slab'] }, true);
+      ed.view.focus({ x, y, z });
+    }, [padAt[0], Math.round((padGround + 1.5) * 100) / 100, padAt[2], crateAt[0], crateAt[1], crateY]);
+    await settle();
+    await page.waitForSelector('#ed-fit-ground', { timeout: T(5000) }).catch(() => {});
+    const slabTop = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    const crateNow = async () => (await doc()).entities.find((e) => e.id === 'fit_crate').position[1];
+    await shot('fit-ground-before');
+    rev = await revision();
+    await page.click('#ed-fit-ground');
+    await edited(rev);
+    const under = await Promise.all([[0, 0], [-4, -4], [4, 4], [5, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)));
+    const farOff = await groundAt(padAt[0] + 40, padAt[2]);
+    check(under.every((g) => Math.abs(g - (slabTop - 0.5)) < 0.02) && Math.abs(slabTop - padGround - 2) < 0.1, `Fit ground to this brings the ground up to a lone slab's underside under and just round it (${under.map((g) => g.toFixed(2)).join(', ')} under a top of ${slabTop})`);
+    const crateFitted = await crateNow();
+    const crateGround = await groundAt(crateAt[0], crateAt[1]);
+    check(crateFitted > crateY + 0.1 && Math.abs(crateFitted - crateGround) < 0.3, `the crate on the raised ground is re-bedded on it in the same step (${crateY} → ${crateFitted} m, ground ${crateGround.toFixed(2)})`);
+    const eased = await groundAt(padAt[0] + 9, padAt[2]);
+    check(eased < slabTop - 0.55 && eased > padGround - 0.5 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'fit_slab').position[1] + 0.5)) === slabTop, `the ground eases back into the ground about, and the slab has not moved (${eased.toFixed(2)} m, 5 m out)`);
+    await settle();
+    await shot('fit-ground-after');
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check(Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6 && Math.abs((await groundAt(padAt[0] + 40, padAt[2])) - farOff) < 1e-6 && (await crateNow()) === crateY, 'one undo gives the ground back and the crate with it');
+    // The reverse: the slab moved down onto the ground (the ground stays), from the selection menu.
+    const slabPx = await at(padAt[0], slabTop, padAt[2]);
+    await page.mouse.click(slabPx.x, slabPx.y, { button: 'right' });
+    const menu = await page.waitForSelector('#ed-ctx', { timeout: T(5000) }).then(() => page.$$eval('#ed-ctx button', (bs) => bs.map((b) => b.textContent)), () => []);
+    check(menu.some((t) => /Fit ground to this/.test(t)) && menu.some((t) => /Settle onto the ground/.test(t)), `the selection menu has Fit ground to this and Settle onto the ground (${menu.length} items)`);
+    const levelMeshes = () => page.evaluate(() => window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_') && !m.name.startsWith('edmap_terrain') && !m.isDisposed()).map((m) => m.uniqueId));
+    const meshesBefore = await levelMeshes();
+    rev = await revision();
+    await page.locator('#ed-ctx button', { hasText: 'Settle onto the ground' }).click();
+    await edited(rev);
+    // An edit to one block clips only the boxes near it again and rebuilds only the level meshes it touched; the
+    // map's own checks come back from their worker.
+    const faces = await page.evaluate(() => {
+      const c = window.__editor.view.faceCache;
+      return c && { full: c.full, redone: c.redone, boxes: c.boxes.length };
+    });
+    const meshesAfter = await levelMeshes();
+    const keptMeshes = meshesAfter.filter((id) => meshesBefore.includes(id)).length;
+    check(faces && !faces.full && faces.redone >= 1 && faces.redone < Math.max(12, faces.boxes / 4) && (meshesBefore.length < 2 || keptMeshes >= 1), `moving one block clips ${faces?.redone} of ${faces?.boxes} boxes again and keeps ${keptMeshes} of ${meshesBefore.length} level meshes`);
+    const checkedInWorker = await page.waitForFunction(() => window.__editor.checks.stale === false && (!!window.__editor.checks.checkWorker || window.__editor.checks.noCheckWorker), null, { timeout: T(20000) }).then(() => true, () => false);
+    check(checkedInWorker && (await page.evaluate(() => !!window.__editor.checks.checkWorker && Array.isArray(window.__editor.issues))), 'the map is checked after the edit in the checks worker, and the issues list is there');
+    const settledSlab = (await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5;
+    const lowest = Math.min(...(await Promise.all([[-4, -4], [4, -4], [4, 4], [-4, 4], [0, 0]].map(([dx, dz]) => groundAt(padAt[0] + dx, padAt[2] + dz)))));
+    check(Math.abs(settledSlab - lowest) < 0.06 && Math.abs((await groundAt(padAt[0], padAt[2])) - padGround) < 1e-6, `Settle onto the ground moves the slab down until its top is on the lowest ground under it, the ground untouched (${settledSlab} at ${lowest.toFixed(2)})`);
+    rev = await revision();
+    await page.keyboard.press('Control+z');
+    await edited(rev);
+    check((await doc()).entities.find((e) => e.id === 'fit_slab').position[1] + 0.5 === slabTop, 'one undo puts it back');
+    await page.evaluate(() => {
+      const ed = window.__editor;
+      ed.run('Remove block', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.id === 'fit_slab' || e.id === 'fit_crate') });
+      ed.setSelection({ tiles: [], entities: [] });
+    });
+  }
+  // Ground paint from far out (Shift+B; painting plan Phase 1): the ground under the pointer, not the invisible wall
+  // round the map. Structure paint there says it doesn't paint the ground.
   await page.evaluate(() => window.__editor.setTool({ kind: 'paint' }));
   await page.evaluate(() => {
     window.__editor.view.focus({ x: 30, y: 0, z: 30 });
@@ -1077,12 +1375,18 @@ async function editoruxFlow(browser) {
   await settle();
   const far = await at(30, 0, 30);
   await page.mouse.move(far.x, far.y);
-  await page.waitForFunction(() => !!window.__editor.paintGround, null, { timeout: T(5000) }).catch(() => {});
-  const farHover = await page.evaluate(() => ({ face: window.__editor.hoverFace?.box.kind ?? null, ground: !!window.__editor.paintGround, target: document.getElementById('ed-target').textContent }));
-  check(farHover.ground && farHover.face === null && /^Ground/.test(farHover.target), `zoomed far out, Paint points at the ground (${JSON.stringify(farHover)})`);
+  await settle();
+  const farStructure = await page.evaluate(() => ({ face: window.__editor.hoverFace?.box.kind ?? null, target: document.getElementById('ed-target').textContent }));
+  check(farStructure.face === null && /Structure paint doesn't paint the ground/.test(farStructure.target), `zoomed far out, Structure paint says it doesn't paint the ground (${JSON.stringify(farStructure)})`);
+  await page.keyboard.press('Shift+KeyB');
+  await page.mouse.move(far.x + 1, far.y);
+  await page.waitForFunction(() => !!window.__editor.terrain.terrainHover, null, { timeout: T(5000) }).catch(() => {});
+  const farHover = await page.evaluate(() => ({ tool: window.__editor.tool.kind, brush: window.__editor.terrain.terrainBrush, ground: !!window.__editor.terrain.terrainHover, target: document.getElementById('ed-target').textContent }));
+  check(farHover.tool === 'terrain' && farHover.brush === 'paint' && farHover.ground && /^Ground paint/.test(farHover.target), `zoomed far out, Ground paint points at the ground (${JSON.stringify(farHover)})`);
   const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
-  await page.mouse.click(far.x, far.y);
-  check(await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') !== g, ground0), 'a click with Paint from far out paints the ground');
+  await page.mouse.click(far.x + 1, far.y);
+  await settle();
+  check(await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') !== g, ground0), 'a click with Ground paint from far out paints the ground');
   // One rotation step per kind: R turns a spawn 45°, Shift+R a finer 15°.
   // Back from the rocks at (30, 30): (6, 0, 0) is behind the camera there.
   await page.evaluate(() => window.__editor.view.focus({ x: 6, y: 0, z: 0 }));
@@ -1124,14 +1428,14 @@ async function editoruxFlow(browser) {
   check((await doc()).entities.length === before, 'a stroke undoes in one step');
   await editorPhase1aChecks(page, { doc, at, clickAt, settle, shot });
   await editorInspectorKeepChecks(page, { doc, clickAt, settle });
-  // At 1400 px the top bar keeps Export and Import (and the owner's Publish) beside the Bot test button.
+  // At 1400 px the top bar keeps Export and Import (and the owner's Publish), the View menu and the bots' skill.
   await settle();
   const bar1400 = await page.evaluate(() => {
     const t = document.getElementById('ed-top');
     const shown = (id) => getComputedStyle(document.getElementById(id)).display !== 'none';
-    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-maptest', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
+    return { fits: t.scrollWidth <= t.clientWidth + 1, shown: ['ed-export', 'ed-import', 'ed-view-btn', 'ed-skill'].filter(shown), cls: t.className, width: innerWidth };
   });
-  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, Bot test and the bots' skill shown (${JSON.stringify(bar1400)})`);
+  check(bar1400.fits && bar1400.shown.length === 4, `at 1400 px the top bar fits with Export, Import, View and the bots' skill shown (${JSON.stringify(bar1400)})`);
   await shot('topbar-1400');
   // The same layout at 1280×720: panels narrow, the tool bar drops its labels, nothing overlaps.
   await page.setViewportSize({ width: 1280, height: 720 });
@@ -1143,6 +1447,12 @@ async function editoruxFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await editorInterfaceChecks(browser);
+  await editorLayoutChecks(browser);
+  await editorSelectionSyncChecks(browser);
+  await editorMinimapChecks(browser);
+  await editorThemeViewChecks(browser);
+  await editorAssetsFitChecks(browser);
+  await editorTallWallChecks(browser);
   await editorTourChecks(browser);
 }
 
@@ -1151,6 +1461,470 @@ async function editoruxFlow(browser) {
  * the whole tour with the real tools (a room, a spawn, a pickup, PLAY TEST), each step moving on when it's done; not
  * shown again once done; started again from the `?` key list; Skip and Esc end it; the card fits at 1280 and 1920 px.
  */
+/**
+ * MapMaker UI spec Phase 4a, Tile View (editor/tileViewPanel.ts): Enter on a selected tile opens it in the dock in the
+ * minimap's place (the dock expanded, the Minimap tab); breadcrumbs Map › tile › child; a click picks a thing standing
+ * in the tile (the view, inspector and outliner follow), a drag moves it on the fine snap in the tile's own turned
+ * frame as one undo step, the arrow keys nudge it a step along the tile's axes, R turns it; its Local and World fields
+ * agree with the map; a cell side's style is changed from Tile View; a set piece's parts are read-only (a drag moves
+ * nothing); Esc steps back to the tile and then to the minimap; a double-click in the minimap opens it; nothing of it
+ * is kept in the map. Screenshots (E2E_DSF=2 for device scale 2) go to E2E_SHOTS when set.
+ */
+async function editorTileViewChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-tileview-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A two-cell shop turned a quarter (its cells run south), a shelf and a lamp in it, a set piece beside it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position, yaw = 0) => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'tv_shop', tile: 'core.shop', x: 3, y: 0, z: 0, rotation: 1 }] },
+        { kind: 'addEntities', entities: [prop('tv_shelf', 'core.crate', [25.3, 0, -1.7]), prop('tv_drum', 'kit.drum.steel', [22, 0, -10])] },
+        { kind: 'addSetPieces', setPieces: [{ id: 'tv_piece', piece: 'setpiece.cage_block', x: -3, y: -3, z: 0, rotation: 0, mirror: false }] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['tv_shop'], entities: [] });
+    ed.view.focus({ x: 24, y: 0, z: -4 });
+  });
+  await frames(page, 3);
+  const tv = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.tileView.state();
+    return { ...st, frame: null, focus: st.focus && { kind: st.focus.kind, id: st.focus.id, rotation: st.focus.rotation, cells: st.focus.cells }, sel: [...ed.selection.entities, ...ed.selection.tiles, ...(ed.selection.setPieces ?? [])], mini: ed.minimap.shown, dock: document.getElementById('ed-right').dataset.state, tab: document.getElementById('ed-outliner-panel').dataset.tab, host: document.getElementById('ed-tileview')?.parentElement?.id ?? null, hostShown: !!document.getElementById('ed-tv-canvas')?.offsetParent };
+  });
+  const pos = (id) => page.evaluate((id) => window.__editor.doc.entities.find((e) => e.id === id)?.position ?? null, id);
+  const at = (x, z) => page.evaluate(([x, z]) => window.__editor.tileView.clientPoint(x, z), [x, z]);
+  const steps = () => page.evaluate(() => window.__editor.history.revision);
+
+  // Selecting never opens a hidden dock: hide it, select, and Tile View waits for Enter.
+  await page.click('#ed-dock-hide');
+  await frames(page, 2);
+  let s = await tv();
+  check(s.dock === 'hidden' && !s.open, `a selection leaves the hidden dock hidden (${s.dock})`);
+  // Enter (nothing focused): Tile View opens on the shop, in the expanded dock in the minimap's place.
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await tv();
+  check(s.open && s.dock === 'expanded' && s.tab === 'minimap' && s.host === 'ed-tileview-host' && s.hostShown && !s.mini, `Enter opens Tile View in the expanded dock, in the minimap's place (${JSON.stringify({ dock: s.dock, tab: s.tab, host: s.host, mini: s.mini })})`);
+  check(s.focus?.kind === 'tile' && s.focus.id === 'tv_shop' && s.focus.rotation === 1 && s.focus.cells.length === 2, `it focuses the selected tile, turned a quarter (${JSON.stringify(s.focus)})`);
+  check(s.crumbs.join(' › ') === 'Map › Shop' && s.children === 2 && s.edges === 6, `breadcrumbs, the two things in it and its six outer sides (${JSON.stringify({ crumbs: s.crumbs, children: s.children, edges: s.edges })})`);
+  check(s.w > 200 && s.h > 200, `the plan has room in the dock (${s.w}×${s.h})`);
+  await shot('open');
+
+  // Click the shelf: picked in Tile View and selected everywhere (the inspector's X).
+  let p = await at(25.3, -1.7);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 3);
+  s = await tv();
+  const inspX = await page.evaluate(() => document.getElementById('ed-insp-x')?.value ?? null);
+  const document_name = await page.evaluate(() => document.querySelector('#ed-inspector h2')?.textContent ?? '');
+  check(s.child === 'tv_shelf' && s.sel.join() === 'tv_shelf' && inspX === '25.3' && s.crumbs.length === 3 && s.crumbs[2] === document_name, `a click picks the shelf: selected in the view and inspector, named in the breadcrumbs (${JSON.stringify({ child: s.child, sel: s.sel, inspX, crumbs: s.crumbs })})`);
+  // Local fields: the shop's anchor is (24, 0), turned a quarter: local X = −(z), local Z = x − 24.
+  const fields = () => page.evaluate(() => ['ed-tv-x', 'ed-tv-z', 'ed-tv-y', 'ed-tv-facing'].map((id) => document.getElementById(id)?.value ?? null));
+  let f = await fields();
+  check(f[0] === '1.7' && f[1] === '1.3' && f[3] === '-90', `Local X / Z / Facing are tile-relative under the tile's turn (${JSON.stringify(f)})`);
+  await shot('child');
+
+  // A drag: snapped to 10 cm in the tile's own frame, one undo step.
+  await page.selectOption('#ed-tv-snap', '10');
+  const rev0 = await steps();
+  p = await at(25.3, -1.7);
+  const q = await at(26.07, -2.26);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.mouse.move((p.x + q.x) / 2, (p.y + q.y) / 2, { steps: 4 });
+  await page.mouse.move(q.x, q.y, { steps: 4 });
+  await page.mouse.up();
+  await frames(page, 3);
+  const moved = await pos('tv_shelf');
+  f = await fields();
+  const rev1 = await steps();
+  const onStep = (v) => Math.abs(Number(v) * 10 - Math.round(Number(v) * 10)) < 1e-6;
+  check(moved[0] !== 25.3 && onStep(f[0]) && onStep(f[1]) && rev1 === rev0 + 1, `a drag moves the shelf onto the 10 cm step of the tile's frame, as one undo step (${JSON.stringify({ moved, fields: f, steps: rev1 - rev0 })})`);
+  await page.evaluate(() => window.__editor.undo());
+  await frames(page, 3);
+  check(JSON.stringify(await pos('tv_shelf')) === JSON.stringify([25.3, 0, -1.7]), 'one undo puts the dragged shelf back');
+
+  // Arrow up nudges along the tile's own north: for a quarter turn that is world east (+X), one step.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('ArrowUp');
+  await frames(page, 2);
+  let n = await pos('tv_shelf');
+  check(Math.abs(n[0] - 25.4) < 1e-6 && Math.abs(n[2] + 1.7) < 1e-6, `↑ nudges a snap step along the tile's own axis (world east here) (${JSON.stringify(n)})`);
+  await page.keyboard.press('KeyR');
+  await frames(page, 2);
+  const yaw = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'tv_shelf').yaw);
+  check(Math.abs(yaw - Math.PI / 12) < 1e-3, `R turns it 15° (${yaw})`);
+
+  // Typed: Local X = 2.5 lands at world z = −2.5; World shows the map's own numbers.
+  await page.fill('#ed-tv-x', '2.5');
+  await page.press('#ed-tv-x', 'Enter');
+  await page.focus('#ed-tv-canvas');
+  await frames(page, 3);
+  n = await pos('tv_shelf');
+  check(Math.abs(n[2] + 2.5) < 1e-6 && Math.abs(n[0] - 25.4) < 1e-6, `typing Local X moves it along the tile's turned axis (${JSON.stringify(n)})`);
+  await page.click('#ed-tv-world');
+  await frames(page, 3);
+  f = await fields();
+  check(f[0] === '25.4' && f[1] === '-2.5' && (await page.getAttribute('#ed-tv-world', 'aria-pressed')) === 'true', `World shows the map's coordinates (${JSON.stringify(f)})`);
+  await shot('world');
+  await page.click('#ed-tv-local');
+
+  // A cell side: picked, its style changed from Tile View (a door), undone.
+  // The shop's west side of its north cell: x = 20, z = 0.
+  await page.mouse.click(...Object.values(await at(20.05, 1)));
+  await frames(page, 3);
+  s = await tv();
+  check(s.edge === 'West side of cell 3, 0' && s.sel.join() === 'tv_shop' && s.crumbs[2] === 'West side of cell 3, 0', `a click on a wall picks that cell side, its tile selected (${JSON.stringify({ edge: s.edge, sel: s.sel, crumbs: s.crumbs })})`);
+  await page.selectOption('#ed-tv-edge-style', 'door');
+  await frames(page, 3);
+  const edges = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.find((t) => t.id === 'tv_shop').edges ?? {});
+  check(Object.values(edges).includes('door'), `its style is changed from Tile View (${JSON.stringify(edges)})`);
+  await shot('edge');
+
+  // Esc: the side let go (the tile selected), then back to the minimap.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('Escape');
+  await frames(page, 2);
+  s = await tv();
+  check(s.open && !s.edge && s.sel.join() === 'tv_shop' && s.crumbs.length === 2, `Esc lets the side go, the tile selected (${JSON.stringify({ edge: s.edge, sel: s.sel })})`);
+  await page.keyboard.press('Escape');
+  await frames(page, 3);
+  s = await tv();
+  check(!s.open && s.mini, `Esc again goes back to the minimap (${JSON.stringify({ open: s.open, mini: s.mini })})`);
+
+  // A double-click on the set piece in the minimap: Tile View on it; its parts are read-only.
+  const mp = await page.evaluate(() => window.__editor.minimap.clientPoint(-24, -24));
+  await page.mouse.dblclick(mp.x, mp.y);
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 4);
+  s = await tv();
+  check(s.focus?.kind === 'setpiece' && s.focus.id === 'tv_piece' && s.parts > 0 && s.edges === 0, `a double-click in the minimap opens Tile View on the set piece there (${JSON.stringify(s.focus)})`);
+  const part = await page.evaluate(() => {
+    const ed = window.__editor;
+    const e = ed.viewDoc.entities.find((x) => ed.expansion.partOf.get(x.id) === 'tv_piece');
+    return e ? { id: e.id, x: e.position[0], z: e.position[2] } : null;
+  });
+  {
+    check(!!part, 'the set piece has parts standing in it');
+    const rev = await steps();
+    const pp = await at(part.x, part.z);
+    await page.mouse.move(pp.x, pp.y);
+    await page.mouse.down();
+    await page.mouse.move(pp.x + 30, pp.y + 10, { steps: 5 });
+    await page.mouse.up();
+    await frames(page, 3);
+    s = await tv();
+    const note = await page.textContent('#ed-tv-detail');
+    check(s.part === part.id && (await steps()) === rev && /can't be moved/.test(note), `a set piece's part is picked read-only: a drag moves nothing, and it says how to edit it (${JSON.stringify({ part: s.part, note })})`);
+  }
+  await shot('setpiece');
+
+  // Nothing of Tile View in the map; its snap and frame kept in this browser.
+  await page.selectOption('#ed-tv-snap', '5');
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}'));
+  check(!/tileSnap|tileFrame|tileview/i.test(json) && stored.tileSnap === 5, `Tile View's snap is kept in this browser, never in the map (${JSON.stringify(stored)})`);
+  // Compact: Tile View steps aside (the card is the minimap) and runs nothing.
+  await page.click('#ed-dock-compact');
+  await frames(page, 3);
+  s = await tv();
+  check(!s.visible && s.mini, `a compact dock shows the minimap, Tile View hidden (${JSON.stringify({ visible: s.visible, mini: s.mini })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 3, the live minimap (editor/minimapPanel.ts): the expanded dock's Minimap | Outliner tabs
+ * (kept in this browser, never in the map); a click on a thing in the minimap selects it in the view, the inspector and
+ * the outliner, and a selection made elsewhere shows on it without a new picture; open ground moves the camera; a
+ * level change shows that level (the selection dashed); an edit makes the picture again only after a pause; the
+ * compact card is the minimap too, and a hidden dock runs none of it. Screenshots go to E2E_SHOTS when set.
+ */
+async function editorMinimapChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-minimap-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const lh = await page.evaluate(() => window.__editor.doc.classicStructure.levelHeight);
+  await page.evaluate((lh) => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', { kind: 'addEntities', entities: [prop('mm_barrel', 'kit.drum.steel', [14, 0, 10]), prop('mm_crate', 'core.crate', [-14, 0, -10]), prop('mm_up', 'core.crate', [-14, lh, 14]), prop('mm_far', 'core.crate', [40, 0, -40])] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 0 });
+  }, lh);
+  const mm = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.minimap.state();
+    return { ...st, frame: null, sel: [...ed.selection.entities], tab: document.getElementById('ed-outliner-panel').dataset.tab, outliner: !!document.getElementById('ed-outliner').offsetParent, canvas: !!document.getElementById('ed-minimap-canvas')?.offsetParent, slot: document.getElementById('ed-minimap')?.parentElement?.id ?? null, stored: localStorage.getItem('tiletrigger.editor.dock') };
+  });
+  const clickAt = async (x, z, mods = {}) => {
+    const p = await page.evaluate(([x, z]) => window.__editor.minimap.clientPoint(x, z), [x, z]);
+    if (!p) return false;
+    if (mods.shift) await page.keyboard.down('Shift');
+    await page.mouse.click(p.x, p.y);
+    if (mods.shift) await page.keyboard.up('Shift');
+    await frames(page, 3);
+    return true;
+  };
+
+  // The expanded dock opens on the Outliner, as before; the Minimap tab shows the minimap in its place and is kept.
+  let s = await mm();
+  check(s.tab === 'outliner' && s.outliner && !s.canvas && !s.visible && s.bakes === 0, `the expanded dock opens on the Outliner and the minimap does nothing while unseen (${JSON.stringify(s)})`);
+  await page.click('#ed-tab-minimap');
+  await page.waitForFunction(() => window.__editor.minimap.state().bakes > 0, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.tab === 'minimap' && !s.outliner && s.canvas && s.visible && s.slot === 'ed-minimap-host' && s.level === 0 && JSON.parse(s.stored).tab === 'minimap' && (await page.getAttribute('#ed-tab-minimap', 'aria-selected')) === 'true', `the Minimap tab shows the live minimap above Properties, and is kept in this browser (${JSON.stringify(s)})`);
+  check(s.w > 150 && s.h > 150, `the minimap has room in the expanded dock (${s.w}×${s.h})`);
+  await shot('expanded');
+
+  // A click on a thing selects it everywhere: the view's gizmo, the inspector, the outliner's row; and frames it.
+  const cam0 = await page.evaluate(() => ({ x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z }));
+  check(await clickAt(14, 10), 'the barrel has a place on the minimap');
+  s = await mm();
+  const insp = await page.evaluate(() => ({ x: document.getElementById('ed-insp-x')?.value ?? null, gizmo: !!window.__editor.view.gizmo?.isEnabled(), cam: { x: window.__editor.view.camera.position.x, z: window.__editor.view.camera.position.z } }));
+  check(s.sel.join() === 'mm_barrel' && insp.x === '14' && s.marks.some((m) => m.id === 'mm_barrel' && m.current), `a click on the barrel in the minimap selects it (view, inspector X ${insp.x}) and marks it (${JSON.stringify({ sel: s.sel, marks: s.marks })})`);
+  check(Math.hypot(insp.cam.x - 14, insp.cam.z - 10) < Math.hypot(cam0.x - 14, cam0.z - 10), `and frames it, as a click in the outliner does (${JSON.stringify([cam0, insp.cam])})`);
+  await shot('selected');
+  // Shift adds, as in the outliner.
+  await clickAt(-14, -10, { shift: true });
+  s = await mm();
+  check(s.sel.length === 2 && s.sel.includes('mm_crate') && s.marks.length === 2, `Shift-click in the minimap adds to the selection (${JSON.stringify(s.sel)})`);
+  // The outliner lights the same rows.
+  await page.click('#ed-tab-outliner');
+  await frames(page, 3);
+  const rows = await page.evaluate(() => [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => el.dataset.id).sort());
+  check(rows.join() === 'mm_barrel,mm_crate', `the outliner shows the minimap's selection (${rows.join()})`);
+  await page.click('#ed-tab-minimap');
+  await frames(page, 3);
+
+  // A selection made elsewhere shows on the minimap without making its picture again.
+  const bakes0 = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_crate'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].id === 'mm_crate' && s.bakes === bakes0, `a selection made in the view shows on the minimap at once, with no new picture (${JSON.stringify({ marks: s.marks, bakes: [bakes0, s.bakes] })})`);
+
+  // Open ground: the camera goes there and the selection stays.
+  await clickAt(30, -30);
+  const cam1 = await page.evaluate(() => {
+    const v = window.__editor.view;
+    const d = { x: Math.sin(v.yaw), z: Math.cos(v.yaw) };
+    // Where the camera looks at the ground (focus stands it 22 m back along the view).
+    return { x: v.camera.position.x + d.x * 22 * Math.cos(0.85), z: v.camera.position.z + d.z * 22 * Math.cos(0.85) };
+  });
+  s = await mm();
+  check(Math.hypot(cam1.x - 30, cam1.z + 30) < 3 && s.sel.join() === 'mm_crate', `a click on open ground moves the camera there and keeps the selection (${JSON.stringify(cam1)})`);
+
+  // An edit: the picture is made again only after the edits pause, not on the edit's own path.
+  const before = (await mm()).bakes;
+  const fresh = await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.transform('Move', { by: { metres: [2, 0, 0] } });
+    ed.frame(0.016);
+    return ed.minimap.state().bakes;
+  });
+  await page.waitForFunction((b) => window.__editor.minimap.state().bakes > b, before, { timeout: T(5000) });
+  check(fresh === before, `an edit doesn't make the minimap's picture on its own path (bakes ${before} → ${fresh} right after it)`);
+
+  // A level change: that level's picture at once. A thing selected up there is dashed on the ground level's minimap
+  // (things on the open ground count on every level), solid on its own, and a click there picks it.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['mm_up'] }));
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === false, `a thing selected on another level is marked dashed (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await page.waitForFunction(() => window.__editor.minimap.state().level === 1, null, { timeout: T(5000) });
+  await frames(page, 3);
+  s = await mm();
+  check(s.marks.length === 1 && s.marks[0].current === true && (await page.textContent('#ed-minimap .ed-minimap-level')) === 'Level 1', `on its own level the minimap shows that level and the selection solid (${JSON.stringify(s.marks)})`);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await clickAt(-14, 14);
+  s = await mm();
+  check(s.sel.join() === 'mm_up' && s.marks[0]?.current, `a click on the minimap picks a thing on the level shown (${JSON.stringify(s.sel)})`);
+  await shot('level1');
+  await page.evaluate(() => window.__editor.setLevel(0));
+
+  // Zoom: kept in this browser, never in the map.
+  await page.click('#ed-minimap-in');
+  await page.waitForFunction(() => (JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').minimapZoom ?? 1) > 1, null, { timeout: T(3000) });
+  const json = await page.evaluate(() => JSON.stringify(window.__editor.doc));
+  check(!/minimap/i.test(json), "the minimap's zoom and tab stay out of the map");
+  await page.click('#ed-minimap-fit');
+
+  // Compact: the card is the minimap; a click there selects too. Hidden: none of it runs.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await page.click('#ed-dock-compact');
+  await frames(page, 4);
+  s = await mm();
+  check(s.visible && s.slot === 'ed-minimap-mini' && s.canvas && s.w > 120, `the compact card shows the minimap (${JSON.stringify({ slot: s.slot, w: s.w, h: s.h })})`);
+  await frames(page, 4);
+  await clickAt(14, 10);
+  s = await mm();
+  check(s.sel.join() === 'mm_barrel', `a click in the compact card's minimap selects (${JSON.stringify(s.sel)})`);
+  await shot('compact');
+  await page.click('#ed-dock-hide');
+  await frames(page, 3);
+  const hiddenBakes = (await mm()).bakes;
+  await page.evaluate(() => window.__editor.transform('Move', { by: { metres: [1, 0, 0] } }));
+  await sleep(1200);
+  s = await mm();
+  check(!s.visible && !s.canvas && s.bakes === hiddenBakes, `a hidden dock runs no minimap (${JSON.stringify({ visible: s.visible, bakes: [hiddenBakes, s.bakes] })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 2, the one selection (shared editor/selectionState.ts): a pick in the outliner selects in the
+ * view (outline and gizmo) and the inspector, and a pick in the view lights the outliner's row and scrolls it into view;
+ * a moving build is picked whole from the outliner as from the view (Alt: one part); a level change keeps the selection.
+ * Screenshots go to E2E_SHOTS when set.
+ */
+async function editorSelectionSyncChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  // 300 crates in rows to the north (a long outliner list), one barrel by the camera, and a moving build.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    const crates = Array.from({ length: 300 }, (_, i) => prop(`e2e_c${String(i).padStart(3, '0')}`, 'core.crate', [-30 + (i % 30) * 2, 0, 20 + Math.floor(i / 30) * 2]));
+    ed.run('Setup', { kind: 'addEntities', entities: [
+      ...crates,
+      prop('e2e_barrel', 'kit.drum.steel', [4, 0, 2]),
+      { id: 'e2e_lift', kind: 'block', position: [-6, 0, 4], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+      { id: 'e2e_mover', kind: 'mover', position: [-6, 0, 4], yaw: 0, blocks: ['e2e_lift'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+    ] });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 2 });
+  });
+  await frames(page, 5);
+  const state = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const g = ed.view.gizmo?.getBoundingInfo().boundingBox.minimumWorld;
+    const list = document.getElementById('ed-ol-list');
+    const on = [...document.querySelectorAll('#ed-ol-list .ed-ol-item.on')].map((el) => ({ id: el.dataset.id, top: el.offsetTop }));
+    return {
+      sel: [...ed.selection.entities],
+      gizmo: g ? [Math.round(g.x * 10) / 10, Math.round(g.z * 10) / 10] : null,
+      head: document.querySelector('#ed-inspector h2')?.textContent ?? '',
+      x: document.getElementById('ed-insp-x')?.value ?? null,
+      on,
+      view: list ? [list.scrollTop, list.scrollTop + list.clientHeight] : null,
+      status: document.getElementById('ed-sel')?.textContent ?? '',
+    };
+  });
+  const shown = (s, id) => s.on.some((r) => r.id === id && r.top >= s.view[0] - 1 && r.top + 22 <= s.view[1] + 1);
+
+  // Outliner → view and inspector: a row clicked selects the thing, its gizmo stands on it, the inspector shows it.
+  const row = '#ed-ol-list .ed-ol-item[data-id="e2e_barrel"]';
+  await page.fill('#ed-ol-search', 'drum');
+  await page.waitForSelector(row, { timeout: T(5000) });
+  await page.click(`${row} .nm`);
+  await frames(page, 3);
+  let s = await state();
+  check(s.sel.join() === 'e2e_barrel' && s.gizmo && Math.abs(s.gizmo[0] - 4) < 0.5 && Math.abs(s.gizmo[1] - 2) < 0.5 && s.x === '4' && s.on.some((r) => r.id === 'e2e_barrel'), `a row clicked in the outliner selects in the view (gizmo) and the inspector, and stays lit (${JSON.stringify(s)})`);
+  await page.fill('#ed-ol-search', '');
+  await frames(page, 5);
+  s = await state();
+  check(shown(s, 'e2e_barrel'), `the search cleared, the list comes back to the selected row (${JSON.stringify({ on: s.on, view: s.view })})`);
+  await shot('selection-synced');
+
+  // View → outliner: a click on a crate far down the list lights its row and scrolls it into view.
+  const far = 'e2e_c287';
+  await page.evaluate((id) => window.__editor.view.focus({ x: [...window.__editor.doc.entities].find((e) => e.id === id).position[0], y: 0, z: 40 }), far);
+  await frames(page, 5);
+  const p = await page.evaluate((id) => {
+    const e = window.__editor.doc.entities.find((x) => x.id === id);
+    return window.__editor.view.project({ x: e.position[0], y: 0.4, z: e.position[2] });
+  }, far);
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === far && shown(s, far), `a thing clicked in the view lights its outliner row and scrolls it into view (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  // The same from a programmatic pick (a problem's "select", the budget pill): through the one setter.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  await frames(page, 5);
+  s = await state();
+  check(s.sel.join() === 'e2e_c003' && shown(s, 'e2e_c003') && s.head.length > 0, `any pick lights and shows its row (${JSON.stringify({ sel: s.sel, on: s.on, view: s.view })})`);
+  const rev0 = await page.evaluate(() => window.__editor.selectionRev);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_c003'] }));
+  check((await page.evaluate(() => window.__editor.selectionRev)) === rev0, 'the same selection again is no change (its revision stands)');
+
+  // A moving build from the outliner: whole, as a click in the view picks it; Alt-click: the part alone.
+  await page.fill('#ed-ol-search', 'block');
+  const lift = '#ed-ol-list .ed-ol-item[data-id="e2e_lift"] .nm';
+  await page.waitForSelector(lift, { timeout: T(5000) });
+  await page.click(lift);
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 2 && s.sel.includes('e2e_mover') && /moving build/i.test(await page.textContent('#ed-inspector')), `a moving build's part clicked in the outliner selects the whole build (${JSON.stringify(s.sel)})`);
+  await page.click(lift, { modifiers: ['Alt'] });
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_lift', `Alt-click in the outliner picks the part alone (${JSON.stringify(s.sel)})`);
+  await page.fill('#ed-ol-search', '');
+
+  // A level change keeps the selection and says where it is; deleting it clears it everywhere.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await page.evaluate(() => window.__editor.setLevel(1));
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.join() === 'e2e_barrel' && /another level/.test(s.status), `a level change keeps the selection and the status bar says so (${s.status})`);
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await page.evaluate(() => window.__editor.edits.deleteSelection());
+  await frames(page, 3);
+  s = await state();
+  check(s.sel.length === 0 && !s.gizmo && s.on.length === 0 && !!(await page.$('#ed-insp-empty')), `deleting the selection clears it in the view, the outliner and the inspector (${JSON.stringify(s)})`);
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  check((await state()).sel.length === 0 && (await doc()).entities.some((e) => e.id === 'e2e_barrel'), 'undoing the delete brings the barrel back, unselected (the selection is not part of undo)');
+  // A stale pick (an id the map no longer has) selects only what is there.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel', 'e2e_gone'] }));
+  check((await state()).sel.join() === 'e2e_barrel', 'a pick naming something the map no longer has selects only what is there');
+
+  // The numeric fields, for the record: a thing's X / Height / Z and Facing.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: ['e2e_barrel'] }));
+  await frames(page, 3);
+  const fields = await page.evaluate(() => ['ed-insp-x', 'ed-insp-y', 'ed-insp-z', 'ed-insp-facing'].map((id) => document.getElementById(id)?.value ?? null));
+  check(fields.every((v) => v !== null), `a thing's inspector has X, Height, Z and Facing fields (${fields.join(', ')})`);
+  await page.evaluate(() => document.getElementById('ed-insp-x')?.scrollIntoView({ block: 'center' }));
+  await shot('numeric-fields');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTourChecks(browser) {
   const shots = process.env.E2E_SHOTS;
   const ctx = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
@@ -1313,7 +2087,7 @@ async function editorInterfaceChecks(browser) {
   await shot('mode-paths');
   await page.click('#ed-modes [data-ws="props"]');
   await frames(page, 2);
-  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')), 'the Props mode has props and lights; its inspector is Map properties');
+  check(await page.isVisible('#ed-pal-tabs [data-pane="lights"]') && !(await page.$('#ed-mode-section')) && (await page.isVisible('#ed-insp-empty')) && !(await page.$('#ed-inspector #ed-prop-name')), 'the Props mode has props and lights; its inspector is the one empty line (Map settings are in their own view)');
   // A tool picked from another mode's card (here by key) moves the tabs to its mode.
   await page.evaluate(() => window.__editor.setTool({ kind: 'spawn' }));
   await frames(page, 2);
@@ -1328,7 +2102,8 @@ async function editorInterfaceChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   check(!(await page.isVisible('#ed-issues')) && (await page.isVisible('#ed-inspector')), 'after a reload the folded panel stays folded, the others open');
   await page.click('.ed-panel[data-panel="issues"] .ed-panel-head button');
-  check(await page.isVisible('#ed-issues'), 'and opens again from its heading');
+  // (Waited for: right after a reload the click can land before the panel's fold is wired.)
+  check(await page.waitForSelector('#ed-issues', { state: 'visible', timeout: T(3000) }).then(() => true, () => false), 'and opens again from its heading');
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
 
@@ -1408,6 +2183,428 @@ async function editorInterfaceChecks(browser) {
 }
 
 /**
+ * MapMaker UI spec Phase 1 (docs/MAPMAKER_UI_SPEC.md, the owner's answers to the Phase 0 audit): the top bar at
+ * 1440 px with nothing cut off; the inspector's one empty line; Map settings in the right dock from the title, the
+ * rail's Map entry and the empty line (one view, the 3D view live beside it, a field of each group edited and undone,
+ * the card shot framed from it); the dock's three states on Shift+\ and its buttons, each kept across a reload, a
+ * hidden dock left hidden by a selection, compact under 900 px; the View menu (and its keys); each tab's tool bar and
+ * the ⋯ menu reaching every tool in every tab; the short status bar; and the old controls' actions from their places.
+ */
+async function editorLayoutChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-layout-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel ?? null);
+
+  // ---- The top bar at 1440 px: it fits, and the map name, Snap, the theme and the bots' skill show whole.
+  await page.evaluate(() => window.__editor.run('Rename map', { kind: 'setMetadata', before: { name: window.__editor.doc.metadata.name }, after: { name: 'Flatpack Depot Nights' } }));
+  await frames(page, 3);
+  const bar = await page.evaluate(() => {
+    const t = document.getElementById('ed-top');
+    const name = document.getElementById('ed-title-name');
+    const probe = document.createElement('span');
+    document.body.append(probe);
+    // A select shows its option whole when the option's text, in the select's font, fits inside it with the arrow.
+    const whole = (id) => {
+      const el = document.getElementById(id);
+      probe.style.font = getComputedStyle(el).font;
+      probe.textContent = el.selectedOptions[0]?.textContent ?? '';
+      return getComputedStyle(el).display !== 'none' && probe.getBoundingClientRect().width + 18 <= el.clientWidth;
+    };
+    const r = { fits: t.scrollWidth <= t.clientWidth + 1, cls: t.className, name: name.scrollWidth <= name.clientWidth + 1 && name.textContent === 'Flatpack Depot Nights', snap: whole('ed-snap'), theme: (() => {
+        // The Structure theme's chip (painting Phase 3) shows the theme's name whole.
+        const chip = document.getElementById('ed-theme-chip-name');
+        return getComputedStyle(document.getElementById('ed-theme-chip')).display !== 'none' && chip.scrollWidth <= chip.clientWidth + 1 && chip.textContent.length > 0;
+      })(), skill: whole('ed-skill'), bots: whole('ed-bots') };
+    probe.remove();
+    return r;
+  });
+  // (fit-3 only draws gaps and paddings closer; from fit-4 things go.)
+  check(bar.fits && bar.name && bar.snap && bar.theme && bar.skill && bar.bots && !/fit-[4-7]/.test(bar.cls), `at 1440 px the top bar fits with the map name, Snap, theme, bots and skill whole (${JSON.stringify(bar)})`);
+  await shot('1440');
+
+  // ---- The inspector shows only the selection: nothing selected is one line.
+  const empty = await page.evaluate(() => ({ text: document.getElementById('ed-insp-empty')?.textContent, fields: document.querySelectorAll('#ed-inspector input, #ed-inspector select, #ed-inspector textarea').length, settings: !!document.querySelector('#ed-inspector #ed-prop-name') }));
+  check(empty.text === 'Nothing selected · Map settings…' && !empty.settings && empty.fields === 0, `with nothing selected the inspector is one line, "Nothing selected · Map settings…" (${JSON.stringify(empty)})`);
+
+  // ---- Map settings: in the right dock, from the title; the view beside it stays live.
+  await page.click('#ed-title');
+  await page.waitForSelector('#ed-prop-name', { state: 'visible', timeout: T(5000) });
+  const ms = await page.evaluate(() => {
+    const dock = document.getElementById('ed-right').getBoundingClientRect();
+    const at = document.elementFromPoint(dock.left - 200, innerHeight / 2);
+    return {
+      inDock: document.getElementById('ed-right').contains(document.getElementById('ed-map-settings')) && !document.getElementById('ed-map-settings').hidden,
+      panels: document.getElementById('ed-dock-panels').hidden,
+      expanded: document.getElementById('ed-title').getAttribute('aria-expanded'),
+      rail: document.getElementById('ed-rail-map').getAttribute('aria-pressed'),
+      groups: [...document.querySelectorAll('#ed-ms-body h3.ed-ms-group')].map((h) => h.textContent),
+      modal: !!document.querySelector('dialog[open]'),
+      view: at?.tagName,
+    };
+  });
+  check(ms.inDock && ms.panels && ms.expanded === 'true' && ms.rail === 'true' && JSON.stringify(ms.groups) === '["General","Gameplay","Presentation","Advanced"]' && !ms.modal && ms.view === 'CANVAS', `the title opens Map settings in the right dock (General, Gameplay, Presentation, Advanced), not a modal: the view beside it takes the pointer (${JSON.stringify(ms)})`);
+  await shot('map-settings');
+  // One field of each group, each one undo step.
+  const theme0 = (await doc()).classicStructure.theme;
+  const otherTheme = await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].map((o) => o.value).find((v) => v !== t), theme0);
+  await page.selectOption('#ed-prop-theme', otherTheme);
+  // The warning before a theme change (painting Phase 2): Change.
+  if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
+  await page.waitForFunction((t) => window.__editor.doc.classicStructure.theme === t, otherTheme, { timeout: T(5000) }).catch(() => {});
+  const general = { theme: (await doc()).classicStructure.theme, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-gravity', '0.5');
+  const gameplay = { gravity: (await doc()).physics?.gravity, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-blood-amount', 'heavy');
+  const presentation = { blood: (await doc()).blood?.amount, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  await page.click('#ed-prop-testonly');
+  const advanced = { testOnly: (await doc()).metadata.testOnly, undo: await undoLabel() };
+  await page.click('#ed-undo');
+  const back = await doc();
+  check(general.theme === otherTheme && general.undo === 'Change theme' && gameplay.gravity === 0.5 && presentation.blood === 'heavy' && advanced.testOnly === true && back.classicStructure.theme === theme0 && !back.physics && !back.blood && !back.metadata.testOnly, `a field of each group edits the map in one undo step, and undo takes it back (${JSON.stringify({ general, gameplay, presentation, advanced })})`);
+  check(await page.isVisible('#ed-map-settings'), 'Map settings stay open through edits and undo');
+  // The card shot is framed from inside Map settings (the frame keeps clear of the dock); they are still there after.
+  await page.click('#ed-card-set');
+  await page.waitForSelector('.ed-card-frame', { timeout: T(5000) });
+  const frame = await page.evaluate(() => ({ crop: document.querySelector('.ed-card-crop').getBoundingClientRect().right, dock: document.getElementById('ed-right').getBoundingClientRect().left }));
+  await page.click('#ed-card-save');
+  await page.waitForFunction(() => !!window.__editor.doc.metadata.cardCamera, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForSelector('#ed-card-preview:not([disabled])', { timeout: T(5000) }).catch(() => {});
+  check(frame.crop <= frame.dock + 1 && !!(await doc()).metadata.cardCamera && (await page.isVisible('#ed-map-settings')) && !(await page.isDisabled('#ed-card-preview')), `Set card shot… frames the view beside the dock and saves; Map settings are still open with Preview live (${JSON.stringify(frame)})`);
+  await page.click('#ed-undo');
+  // Close, then the rail's Map entry and the empty line's link open the same view.
+  await page.click('#ed-ms-close');
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && (await page.getAttribute('#ed-title', 'aria-expanded')) === 'false', 'its close button gives the dock back to the Outliner and Properties');
+  await page.click('#ed-rail-map');
+  const fromRail = await page.isVisible('#ed-map-settings #ed-prop-name');
+  await page.click('#ed-rail-map');
+  const railCloses = !(await page.isVisible('#ed-map-settings'));
+  await page.click('#ed-insp-map-settings');
+  const fromLine = await page.isVisible('#ed-map-settings #ed-prop-name');
+  check(fromRail && railCloses && fromLine, `the rail's Map entry and the inspector's "Map settings…" open the same view (rail ${fromRail}, again closes ${railCloses}, line ${fromLine})`);
+  // Selecting something shows it: Map settings step aside.
+  const spawn = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check(!(await page.isVisible('#ed-map-settings')) && (await page.isVisible('#ed-inspector')) && !(await page.$('#ed-insp-empty')) && (await page.textContent('#ed-sel')) === '1 selected', `selecting a spawn closes Map settings and the inspector shows it; the status bar says 1 selected (${await page.textContent('#ed-sel')})`);
+
+  // ---- The status bar: the selection on other levels; the problems pill opens the list.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Spawn up', { kind: 'addEntities', entities: [{ id: 'lay_up', kind: 'spawn', position: [4, 4.2, 4], yaw: 0, team: null }] });
+  });
+  await frames(page, 2);
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id, 'lay_up'] }), spawn);
+  await frames(page, 2);
+  const sel2 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageUp');
+  await frames(page, 2);
+  const sel3 = await page.textContent('#ed-sel');
+  await page.keyboard.press('PageDown');
+  check(sel2 === '2 selected · 1 on another level' && sel3 === '2 selected · 1 on another level' && (await page.evaluate(() => window.__editor.selection.entities.length)) === 2, `a level change keeps the selection and the status bar says how much is on other levels (${sel2} / ${sel3})`);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+
+  // ---- The right dock's three states: Shift+\ cycles them, each kept across a reload; the view gains the width.
+  const viewRight = () => page.evaluate(() => Math.round(document.getElementById('ed-overlay').getBoundingClientRect().right));
+  const dockState = () => page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, right: !!document.getElementById('ed-right').offsetParent, panels: !!document.getElementById('ed-dock-panels').offsetParent, mini: !!document.getElementById('ed-dock-mini').offsetParent, toggle: document.getElementById('ed-right-toggle').getAttribute('aria-expanded'), stored: localStorage.getItem('tiletrigger.editor.dock') }));
+  const r0 = await viewRight();
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const compact = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-compact');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  const hidden = { ...(await dockState()), view: await viewRight() };
+  await shot('dock-hidden');
+  check(compact.state === 'compact' && compact.right && compact.mini && !compact.panels && compact.view > r0, `Shift+\\ makes the dock compact: the minimap's card only, the view wider (${JSON.stringify(compact)}, view ${r0} → ${compact.view})`);
+  check(hidden.state === 'hidden' && !hidden.right && hidden.toggle === 'false' && hidden.view > compact.view && JSON.parse(hidden.stored).right === 'hidden', `again hides it, an edge tab left to bring it back, the view wider still (${JSON.stringify(hidden)})`);
+  // Selecting never opens a hidden dock.
+  await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), spawn);
+  await frames(page, 2);
+  check((await dockState()).state === 'hidden' && (await page.textContent('#ed-sel')) === '1 selected', 'selecting with the dock hidden leaves it hidden; the status bar shows the selection');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const afterReload = await dockState();
+  await page.click('#ed-right-toggle');
+  const shown = await dockState();
+  await page.click('#ed-dock-compact');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const compactKept = await dockState();
+  await page.click('#ed-dock-expand');
+  await page.reload();
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const expandedKept = await dockState();
+  check(afterReload.state === 'hidden' && shown.state === 'expanded' && shown.panels && compactKept.state === 'compact' && expandedKept.state === 'expanded' && expandedKept.panels, `each state is kept across a reload, and the edge tab, Compact and Expand buttons switch them (${[afterReload, shown, compactKept, expandedKept].map((d) => d.state).join(' → ')})`);
+  // Shift+\ while Map settings are open: they come back with the dock.
+  await page.click('#ed-title');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await frames(page, 2);
+  check((await dockState()).state === 'expanded' && (await page.isVisible('#ed-map-settings #ed-prop-name')), 'three presses of Shift+\\ come back round to the expanded dock, Map settings still open');
+  await page.click('#ed-ms-close');
+
+  // ---- The View menu: grid, full grid, overlaps, plan view, map layers; a menu button with its keys.
+  await page.focus('#ed-view-btn');
+  await page.keyboard.press('ArrowDown');
+  const firstFocus = await page.evaluate(() => document.activeElement?.id);
+  await page.keyboard.press('ArrowDown');
+  const secondFocus = await page.evaluate(() => document.activeElement?.id);
+  const menuShown = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, expanded: document.getElementById('ed-view-btn').getAttribute('aria-expanded'), items: [...document.querySelectorAll('#ed-view-menu [role="menuitemcheckbox"]')].map((b) => `${b.id}:${b.getAttribute('aria-checked')}`) }));
+  await shot('view-menu');
+  await page.keyboard.press('Escape');
+  const closed = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, focus: document.activeElement?.id, tool: window.__editor.tool.kind }));
+  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
+  await viewItem(page, 'ed-overlaps');
+  const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
+  await viewItem(page, 'ed-overlaps');
+  // (The reloads above started a fresh map: its own spawn.)
+  const spawnNow = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
+  await viewItem(page, 'ed-layer-spawn');
+  await frames(page, 1);
+  const spawnHidden = await page.evaluate((id) => window.__editor.view.hiddenLayers.has('spawn') && !window.__editor.view.entityShown(id), spawnNow);
+  await viewItem(page, 'ed-layer-spawn');
+  await frames(page, 1);
+  const spawnBack = await page.evaluate((id) => !window.__editor.view.hiddenLayers.has('spawn') && window.__editor.view.entityShown(id) && JSON.stringify(window.__editor.doc).indexOf('hiddenLayers') < 0, spawnNow);
+  await viewItem(page, 'ed-plan');
+  const planOn = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(overlapsOn && spawnHidden && spawnBack && planOn && !(await page.evaluate(() => window.__editor.plan.on)), `View → Overlaps, a map layer (MapMaker only, not in the map) and Plan view do what their old places did (overlaps ${overlapsOn}, layer ${spawnHidden}/${spawnBack}, plan ${planOn})`);
+
+  // ---- The tool bar: each tab its own tools (Structure paint on Build's and Environment's, Ground paint, Terrain and the
+  // Environment brush on Environment's only); the
+  // ⋯ menu lists every tool and action in every tab.
+  const want = {
+    build: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-walls', 'ed-tb-paint', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    props: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    entities: ['ed-tb-select', 'ed-tb-place', 'ed-tb-erase', 'ed-tb-bothints', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    environment: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paint', 'ed-tb-groundpaint', 'ed-tb-terrain', 'ed-tb-envbrush', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    paths: ['ed-tb-select', 'ed-tb-erase', 'ed-tb-paths', 'ed-tb-rotate', 'ed-tb-delete', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+    test: ['ed-tb-select', 'ed-tb-bothints', 'ed-tb-measure', 'ed-tb-notes', 'ed-tb-plan', 'ed-maptest', 'ed-tb-keys', 'ed-tb-help', 'ed-tb-more'],
+  };
+  const everyTool = ['select', 'place', 'erase', 'walls', 'paint', 'groundpaint', 'terrain', 'envbrush', 'paths', 'bothints', 'measure', 'notes', 'rotate', 'delete', 'mirror', 'mirror-dialog', 'duplicate', 'group', 'ungroup', 'plan', 'dress-all', 'settle-all', 'keys', 'help'].map((t) => `ed-tb-${t}`).concat('ed-maptest');
+  const bars = {};
+  const menus = {};
+  await page.keyboard.press('KeyV');
+  for (const ws of Object.keys(want)) {
+    await page.click(`#ed-modes [data-ws="${ws}"]`);
+    await frames(page, 2);
+    bars[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-toolbar .tb-btn')].filter((b) => b.offsetParent).map((b) => b.id));
+    await page.click('#ed-tb-more');
+    menus[ws] = await page.evaluate(() => [...document.querySelectorAll('#ed-tb-menu [data-tool-item]')].filter((b) => b.offsetParent).map((b) => b.dataset.toolItem));
+    if (ws === 'build') await shot('overflow');
+    await page.click('#ed-tb-more');
+  }
+  const badBars = Object.keys(want).filter((ws) => JSON.stringify(bars[ws]) !== JSON.stringify(want[ws]));
+  const badMenus = Object.keys(want).filter((ws) => everyTool.some((id) => !menus[ws].includes(id)));
+  check(!badBars.length, `each tab's tool bar shows its own tools (wrong: ${badBars.map((ws) => `${ws} ${JSON.stringify(bars[ws])}`).join('; ') || 'none'})`);
+  check(!badMenus.length && Object.values(menus).every((m) => m.length === everyTool.length), `every tab's ⋯ menu lists all ${everyTool.length} tools and actions (short: ${badMenus.join(', ') || 'none'})`);
+  // From the Build tab, the menu reaches the Environment tools: each picks its tool (and its tab), lit on the bar.
+  await page.click('#ed-modes [data-ws="build"]');
+  const picked = {};
+  for (const [item, kind] of [['ed-tb-paint', 'paint'], ['ed-tb-terrain', 'terrain'], ['ed-tb-groundpaint', 'terrain'], ['ed-tb-envbrush', 'envbrush'], ['ed-tb-measure', 'measure'], ['ed-tb-notes', 'note'], ['ed-tb-paths', 'path'], ['ed-tb-walls', 'edge'], ['ed-tb-bothints', 'bothint'], ['ed-tb-erase', 'erase'], ['ed-tb-select', 'select']]) {
+    await page.click('#ed-tb-more');
+    await page.click(`#${item}-item`);
+    await frames(page, 1);
+    picked[item] = await page.evaluate(([id, k]) => window.__editor.tool.kind === k && !!document.getElementById(id)?.offsetParent && document.getElementById(id).classList.contains('active'), [item, kind]);
+  }
+  check(Object.values(picked).every(Boolean), `each tool picked from the ⋯ menu is the tool in hand, lit on the bar (${JSON.stringify(picked)})`);
+  // Its actions too: Keys opens the key list, Mirror… its dialog, Bot test its panel, Plan view the plan.
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-keys-item');
+  const keysOpen = await page.evaluate(() => document.getElementById('ed-keys')?.open);
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  await page.click('#ed-maptest-item');
+  const mtOpen = await page.evaluate(() => window.__editor.mapTest.isShown);
+  await page.evaluate(() => window.__editor.mapTest.show(false));
+  await page.click('#ed-tb-more');
+  await page.click('#ed-tb-plan-item');
+  const planFromMenu = await page.evaluate(() => window.__editor.plan.on);
+  await page.keyboard.press('KeyK');
+  check(keysOpen && mtOpen && planFromMenu, `the ⋯ menu's Keys, Bot test and Plan view work (${keysOpen}, ${mtOpen}, ${planFromMenu})`);
+  // Delete is off with nothing selected, on the bar and in the menu.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.click('#ed-tb-more');
+  const delOff = await page.evaluate(() => document.getElementById('ed-tb-delete').disabled && document.getElementById('ed-tb-delete-item').disabled);
+  await page.click('#ed-tb-more');
+  check(delOff, 'Delete waits for a selection, on the bar and in the menu');
+
+  // ---- The old controls from their places: the top bar's Structure theme chip (it opens Map settings at the theme:
+  // painting Phase 3) and Snap, the rail's collapse, the problems pill.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chipOpens = await page.evaluate(() => document.activeElement?.id === 'ed-prop-theme' && document.getElementById('ed-title').getAttribute('aria-expanded') === 'true');
+  await page.selectOption('#ed-prop-theme', otherTheme);
+  if (await page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(3000) }).then(() => true, () => false)) await page.click('#ed-theme-change');
+  await frames(page, 3);
+  const chipTheme = { opens: chipOpens, theme: (await doc()).classicStructure.theme === otherTheme, undo: await undoLabel(), name: await page.textContent('#ed-theme-chip-name'), want: await page.evaluate((t) => [...document.querySelectorAll('#ed-prop-theme option')].find((o) => o.value === t)?.textContent, otherTheme) };
+  const themeTop = chipTheme.opens && chipTheme.theme && chipTheme.undo === 'Change theme' && chipTheme.name === chipTheme.want;
+  await page.click('#ed-undo');
+  await page.selectOption('#ed-snap', 'coarse');
+  const snap = await page.evaluate(() => window.__editor.snapMode);
+  await page.selectOption('#ed-snap', 'normal');
+  await page.click('#ed-pal-toggle');
+  const folded = await page.evaluate(() => ({ cls: document.getElementById('editor').classList.contains('pal-collapsed'), pal: !!document.getElementById('ed-palette').offsetParent, rail: !!document.getElementById('ed-rail').offsetParent, stored: JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}').left }));
+  await page.click('#ed-rail-assets');
+  const reopened = await page.evaluate(() => !!document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  const byKey = await page.evaluate(() => !document.getElementById('ed-palette').offsetParent);
+  await page.keyboard.press('Backslash');
+  check(themeTop && snap === 'coarse' && folded.cls && !folded.pal && folded.rail && folded.stored === 'rail' && reopened && byKey, `the top bar's theme chip (it opens Map settings at the Structure theme, and names the theme) and Snap work; the rail folds the asset browser and Assets (and \\) brings it back (${JSON.stringify({ chipTheme, snap, folded, reopened, byKey })})`);
+  await page.keyboard.press('Shift+Backslash');
+  await page.keyboard.press('Shift+Backslash');
+  await page.click('#ed-status');
+  await frames(page, 3);
+  const problems = await page.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, list: !!document.getElementById('ed-issues').offsetParent, inBar: document.getElementById('ed-status').parentElement.id }));
+  check(problems.state === 'expanded' && problems.list && problems.inBar === 'ed-bottom', `the problems pill, now in the status bar, opens the dock on the problems list (${JSON.stringify(problems)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+
+  // ---- Under 900 px wide the dock starts compact (the expanded state is still the one kept).
+  const narrow = await browser.newContext({ viewport: { width: 860, height: 700 } });
+  const small = await narrow.newPage();
+  await small.goto(`${CLIENT}/?mode=editor&test=1`);
+  await small.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  const n = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, card: !!document.getElementById('ed-dock-mini').offsetParent, fits: document.getElementById('ed-top').scrollWidth <= document.getElementById('ed-top').clientWidth + 1 }));
+  await small.click('#ed-title');
+  const nOpen = await small.evaluate(() => ({ state: document.getElementById('editor').dataset.dock, settings: !!document.getElementById('ed-prop-name')?.offsetParent }));
+  check(n.state === 'compact' && n.card && n.fits && nOpen.state === 'expanded' && nOpen.settings, `at 860 px the dock starts compact and the top bar fits; the title still opens Map settings, expanding it (${JSON.stringify({ n, nOpen })})`);
+  await narrow.close();
+}
+
+/**
+ * The palette follows the map's themes (docs/MAPMAKER_PAINTING_PLAN.md, Phase 3): the Style Pack picker opens on This
+ * map's themes, which puts the pieces of the packs that use the map's Structure theme first in each group (marked) and
+ * hides nothing; All, one click away, is the catalogue's order; it follows a theme change at once. Structure paint lists
+ * the theme's slot materials, its packs' materials and Recent, with All a tab away; Ground paint the map's grounds first.
+ */
+async function editorThemeViewChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-themes-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  // Each tile and prop grid's cards in order, which are marked, and how many cards show in the panes.
+  const palette = () =>
+    page.evaluate(() => {
+      const order = window.__editor.palette.keys();
+      const grids = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles, #ed-setpieces .ed-group .tiles')].map((g) => [...g.querySelectorAll(':scope > [data-key]')].map((c) => ({ key: c.dataset.key, first: c.classList.contains('theme-first') })));
+      const inOrder = grids.every((g) => g.every((c, i) => i === 0 || order.indexOf(g[i - 1].key) < order.indexOf(c.key)));
+      // Marked cards lead each run of a grid (a prop group's runs are its categories).
+      const runsLead = [...document.querySelectorAll('#ed-tiles .ed-group .tiles, #ed-props .ed-group .tiles')].every((g) => {
+        let seenPlain = false;
+        for (const c of g.children) {
+          if (!c.dataset.key) seenPlain = false;
+          else if (!c.classList.contains('theme-first')) seenPlain = true;
+          else if (seenPlain) return false;
+        }
+        return true;
+      });
+      const shown = [...document.querySelectorAll('#ed-palette .ed-pane [data-key]')].filter((c) => !c.hidden).length;
+      const marked = grids.flat().filter((c) => c.first).map((c) => c.key);
+      return { view: document.getElementById('ed-pack').value, note: document.getElementById('ed-pack-note').hidden ? '' : document.getElementById('ed-pack-note').textContent, inOrder, runsLead, shown, marked, mixed: grids.some((g) => g.some((c) => c.first) && g.some((c) => !c.first)) };
+    });
+
+  // A new map's Prototype theme: no pack uses it, so This map's themes (the default) is the catalogue's order.
+  const proto = await palette();
+  check(proto.view === '@themes' && /No Style Pack uses the Prototype theme/.test(proto.note) && proto.inOrder && proto.marked.length === 0, `the palette opens on This map's themes; with no pack for the theme, every piece in the catalogue's order (${JSON.stringify({ ...proto, marked: proto.marked.length })})`);
+
+  // Military: its pack's pieces first in each group, marked; nothing hidden.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.military' });
+  });
+  await settle();
+  const mil = await palette();
+  const order = await page.evaluate(() => {
+    const idx = (k) => [...document.querySelectorAll('#ed-tiles [data-key]')].findIndex((c) => c.dataset.key === k);
+    const sandbag = document.querySelector('[data-key="prop:prop.sandbag_wall"]');
+    return { barracks: idx('tile:military.barracks'), corridor: idx('tile:core.corridor'), sandbagFirst: !!sandbag?.classList.contains('theme-first') };
+  });
+  check(mil.view === '@themes' && /Military Compound/.test(mil.note) && mil.runsLead && mil.mixed && mil.marked.includes('tile:military.barracks') && !mil.marked.includes('tile:core.corridor') && order.sandbagFirst && order.barracks >= 0 && order.barracks < order.corridor && mil.shown === proto.shown, `This map's themes follows a theme change at once: Military Compound's pieces first in each group, marked, nothing hidden (${JSON.stringify({ ...mil, marked: mil.marked.length, order })})`);
+  await page.click('#ed-pal-tabs [data-pane="tiles"]');
+  await page.evaluate(() => (document.getElementById('ed-palette').scrollTop = 0));
+  await shot('default');
+
+  // All, one click away: the catalogue's order, nothing marked, the same pieces.
+  await page.selectOption('#ed-pack', '');
+  await settle();
+  const all = await palette();
+  check(all.view === '' && all.inOrder && all.marked.length === 0 && all.shown === mil.shown && all.note === '', `All shows everything in the catalogue's order, unmarked (${JSON.stringify({ ...all, marked: all.marked.length })})`);
+  await shot('all');
+  await page.selectOption('#ed-pack', '@themes');
+  await settle();
+  const back = await palette();
+  check(back.runsLead && back.marked.length === mil.marked.length, `back to This map's themes: the theme's pieces lead again (${back.marked.length} marked)`);
+  // The top bar's Structure theme chip names the theme.
+  await shot('chip');
+
+  // Structure paint: This map's themes (the theme's slot materials, its packs', Recent), All a tab away.
+  await page.click('#ed-modes [data-ws="environment"]');
+  await page.click('#ed-pal-tabs [data-pane="paint"]');
+  await settle();
+  const paint = () =>
+    page.evaluate(() => {
+      const box = document.getElementById('ed-materials');
+      const visible = [...box.children].filter((c) => getComputedStyle(c).display !== 'none');
+      return {
+        view: box.dataset.view,
+        heads: visible.filter((c) => c.classList.contains('mv-head')).map((c) => c.dataset.mv),
+        title: box.querySelector('.mv-head')?.textContent ?? '',
+        mats: visible.filter((c) => c.dataset.material).map((c) => c.dataset.material),
+        total: box.querySelectorAll('[data-material]').length,
+        tab: document.querySelector('#ed-mat-view [aria-pressed="true"]')?.dataset.mv,
+      };
+    });
+  const themed = await paint();
+  check(themed.view === 'theme' && themed.tab === 'theme' && themed.heads.join() === 'theme,packs' && /^Structure theme: /.test(themed.title) && themed.mats.includes('core.pbr_bunker_panels') && themed.mats.length < themed.total / 3 && new Set(themed.mats).size === themed.mats.length, `Structure paint opens on This map's themes: the theme's materials, then its pack's (${JSON.stringify({ ...themed, mats: themed.mats.length })})`);
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint');
+  await page.click('#ed-mat-view [data-mv="all"]');
+  const allMats = await paint();
+  await page.evaluate(() => document.getElementById('ed-mat-view').scrollIntoView({ block: 'start' }));
+  await shot('paint-all');
+  await page.click('[data-material="core.checker"]');
+  await page.click('#ed-mat-view [data-mv="theme"]');
+  const recent = await paint();
+  check(allMats.view === 'all' && allMats.heads.length === 0 && allMats.mats.length === allMats.total && recent.heads.join() === 'theme,packs,recent' && recent.mats.at(-1) === 'core.checker' && (await page.evaluate(() => window.__editor.paint.paintStyle.material)) === 'core.checker', `All lists every material; one picked there shows under Recent in This map's themes (${JSON.stringify({ all: allMats.mats.length, total: allMats.total, recent: recent.heads })})`);
+
+  // Ground paint: the Base chip, then the Ground theme's grounds (a new terrain is Meadow: Grass first), then the others.
+  await page.click('#ed-pal-tabs [data-pane="terrain"]');
+  await settle();
+  const ground = await page.evaluate(() => [...document.getElementById('ed-tr-materials').children].map((c) => c.dataset.ground ?? `# ${c.textContent}`));
+  check(ground[0] === 'base' && ground[1] === '# Ground theme: Meadow' && ground[2] === 'core.pbr_grass' && ground.includes('# Other grounds') && ground.filter((g) => !g.startsWith('#')).length === 22, `Ground paint lists the base, then the Ground theme's grounds first, then every other ground (${ground.join(', ')})`);
+  await page.evaluate(() => document.querySelector('#ed-tr-materials')?.scrollIntoView({ block: 'center' }));
+  await shot('ground');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
+/**
  * The inspector keeps the first edit after a placement (MapMaker fixes 2, item 7; editor/inspectorKeep.ts). A placement
  * builds the inspector for the new thing and the map change rebuilds it a frame later: a value typed in before that
  * frame went with the old field. Here the placement is made as the Place tool makes it (run, then select), a value is
@@ -1453,6 +2650,142 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
   check(moved?.position[2] === -7, `typed into the inspector straight after placing with the mouse, the edit lands (z ${moved?.position[2]})`);
   await page.evaluate(() => document.activeElement?.blur());
   await page.keyboard.press('Escape');
+  // A portal's Swirl row (pack effect / painted: Pantry Raid's mouse holes are painted), one undo step each way.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Place portals', { kind: 'addEntities', entities: [{ id: 'gate_keep_a', kind: 'portal', position: [-8, 0, 4], yaw: 0, size: [2.4, 3.2], pair: 'keep', startEnabled: true }, { id: 'gate_keep_b', kind: 'portal', position: [-14, 0, 4], yaw: 0, size: [2.4, 3.2], pair: 'keep', startEnabled: true }] });
+    ed.setSelection({ tiles: [], entities: ['gate_keep_a'] });
+  });
+  await settle();
+  const swirlRow = '#ed-inspector .row:has(> span:text-is("Swirl")) select';
+  const shown = await page.$eval(swirlRow, (s) => [s.value, [...s.options].map((o) => o.textContent)]).catch(() => null);
+  await page.selectOption(swirlRow, 'painted');
+  await settle();
+  const painted = (await doc()).entities.find((e) => e.id === 'gate_keep_a')?.swirl;
+  await page.evaluate(() => window.__editor.undo());
+  await settle();
+  const undone = (await doc()).entities.find((e) => e.id === 'gate_keep_a');
+  check(JSON.stringify(shown) === JSON.stringify(['pack', ['Pack effect', 'Painted']]) && painted === 'painted' && undone && !('swirl' in undone), `a portal's inspector picks its swirl (pack effect or painted), one undo step (${JSON.stringify({ shown, painted, undone: undone?.swirl ?? null })})`);
+  await page.keyboard.press('Escape');
+}
+
+/**
+ * The Assets panel fits its window (owner, 2026-11-16: Structure paint's third column was cut off at 1440-2000 px with
+ * no scrollbar): at a few window widths (the panel is 175-275 px inside), every piece, material, ground and swatch on
+ * every tab (Structure paint in both its views) lies wholly inside the panel's width.
+ */
+async function editorAssetsFitChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  for (const width of [1100, 1440, 2000]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, deviceScaleFactor: shots ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?mode=editor&test=1`);
+    await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+    page.once('dialog', (d) => d.accept());
+    await newMap(page, 96);
+    const outside = () =>
+      page.evaluate(() => {
+        const pal = document.getElementById('ed-palette');
+        const box = pal.getBoundingClientRect();
+        const right = box.left + pal.clientLeft + pal.clientWidth;
+        const out = [];
+        let n = 0;
+        for (const el of pal.querySelectorAll('.ed-pane:not([hidden]) :is(.mat-btn, .tile-btn, .swatch, [data-material], [data-ground])')) {
+          const b = el.getBoundingClientRect();
+          if (!b.width || !el.offsetParent) continue;
+          n++;
+          if (b.left < box.left - 0.5 || b.right > right + 0.5) out.push(`${el.dataset.material ?? el.dataset.ground ?? el.textContent.trim().slice(0, 24)} (${Math.round(b.left)}-${Math.round(b.right)} of ${Math.round(box.left)}-${Math.round(right)})`);
+        }
+        return { n, out };
+      });
+    const seen = [];
+    const bad = [];
+    for (const [ws, pane] of [['build', 'tiles'], ['build', 'setpieces'], ['build', 'advanced'], ['props', 'props'], ['props', 'lights'], ['entities', 'entities'], ['entities', 'npcs'], ['entities', 'vehicles'], ['entities', 'scenario'], ['environment', 'paint'], ['environment', 'paint:all'], ['environment', 'plants'], ['environment', 'terrain'], ['environment', 'sky']]) {
+      await page.click(`#ed-modes [data-ws="${ws}"]`);
+      if (pane === 'paint:all') await page.click('#ed-mat-view [data-mv="all"]');
+      else await page.click(`#ed-pal-tabs [data-pane="${pane}"]`);
+      await frames(page, 3);
+      const r = await outside();
+      seen.push(`${pane} ${r.n}`);
+      if (r.out.length) bad.push(`${pane}: ${r.out.slice(0, 4).join(', ')}${r.out.length > 4 ? ` +${r.out.length - 4}` : ''}`);
+      if (shots && pane === 'paint') await page.screenshot({ path: `${shots}/editorux-assets-fit-${width}.png` }).catch(() => {});
+    }
+    check(bad.length === 0, `at ${width} px every item in the Assets panel lies inside it (${bad.join('; ') || seen.join(', ')})`);
+    check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+    livePages.delete(page);
+    await context.close();
+  }
+}
+
+/**
+ * Tall wall styles (owner, 2026-11-16: a Grand arch on an inside edge on Level 2 rose through Level 3's floor and the
+ * roof): on an inside wall with rooms over both sides, the Walls tool's hover card says it can't go there before the
+ * click, a click is refused with the same words and changes nothing, and a one-storey arch goes in; validation warns
+ * on one already in a map.
+ */
+async function editorTallWallChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // Two rooms side by side on Level 1 (x 16 and 24 m), rooms over both on Level 2; the Walls tool with the Grand arch,
+  // looking from inside the west room at the wall between them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const tiles = [];
+    for (const z of [1, 2]) for (const x of [2, 3]) tiles.push({ id: `tw${x}_${z}`, tile: 'core.room', x, y: 0, z, rotation: 0 });
+    ed.history.execute('Place', { kind: 'addTiles', tiles });
+    ed.setLevel(1, true);
+    ed.setTool({ kind: 'edge', style: 'arch_grand' });
+    const v = ed.view;
+    // (Off the middle: an Auto side between two rooms is a doorway there.)
+    v.camera.position.set(13, 6, 1);
+    v.yaw = Math.atan2(19.4 - 13, -3 - 1);
+    v.pitch = Math.atan2(6.5 - 6, Math.hypot(19.4 - 13, 4));
+    v.applyCamera();
+  });
+  await frames(page, 4);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 19.4, y: 6.5, z: -3 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 3);
+  const card = await page.evaluate(() => ({ tip: document.getElementById('ed-tip')?.hidden ? '' : document.getElementById('ed-tip')?.textContent ?? '', status: document.getElementById('ed-target').textContent, edge: window.__editor.paint.hoverEdge }));
+  if (shots) await page.screenshot({ path: `${shots}/editorux-tall-wall-card.png` }).catch(() => {});
+  const before = await page.evaluate(() => JSON.stringify(window.__editor.doc.classicStructure.tiles));
+  await page.mouse.click(p.x, p.y);
+  await frames(page, 2);
+  const after = await page.evaluate(() => ({ tiles: JSON.stringify(window.__editor.doc.classicStructure.tiles), toast: document.getElementById('ed-toast')?.textContent ?? '' }));
+  check(card.edge?.cell?.join() === '2,0,1' && card.edge.side === 'E' && /Grand arch/.test(card.tip) && /would rise through Level 2's floor/.test(card.tip) && /can't build/.test(card.status), `the Walls tool's card says a Grand arch can't go under Level 2's rooms before the click (${JSON.stringify(card)})`);
+  check(after.tiles === before && /would rise through Level 2's floor/.test(after.toast), `a click there is refused with the same words and changes nothing (${after.toast})`);
+  // A one-storey arch goes in on the same side.
+  await page.evaluate(() => window.__editor.setTool({ kind: 'edge', style: 'arch_round' }));
+  await page.mouse.move(p.x + 1, p.y);
+  await frames(page, 3);
+  const roundTip = await page.evaluate(() => document.getElementById('ed-tip')?.textContent ?? '');
+  await page.mouse.click(p.x + 1, p.y);
+  await frames(page, 2);
+  const round = await page.evaluate(() => window.__editor.doc.classicStructure.tiles.flatMap((t) => Object.values(t.edges ?? {})));
+  check(/Click to build/.test(roundTip) && round.join() === 'arch_round', `a Round arch builds on that side (${roundTip}; ${round.join(', ')})`);
+  // One forced into the map: the validation list warns about it.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.classicStructure.tiles.find((x) => x.id === 'tw2_1');
+    ed.history.execute('Force', { kind: 'updateTiles', before: [t], after: [{ ...t, edges: { '0,0,0:E': 'arch_grand' } }] });
+  });
+  await page.waitForFunction(() => window.__editor.checks.allIssues().some((i) => i.code === 'edge.tall'), null, { timeout: T(10000) }).catch(() => {});
+  const warned = await page.evaluate(() => window.__editor.checks.allIssues().filter((i) => i.code === 'edge.tall').map((i) => `${i.severity}: ${i.message}`));
+  check(warned.length === 1 && /^warning: .*Grand arch.*rises through Level 2's floor/.test(warned[0]), `validation warns on a Grand arch already under Level 2's rooms (${warned.join('; ')})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await context.close();
 }
 
 /**
@@ -1465,19 +2798,718 @@ async function editorInspectorKeepChecks(page, { doc, clickAt, settle }) {
  */
 async function editorpiecesFlow(browser) {
   await editorSetPieceChecks(browser);
+  await editorPiecePaintChecks(browser);
+  await editorMyLooksChecks(browser);
   await editorSetPiecePart5Checks(browser);
   await editorGroundChecks(browser);
   await editorMeasureChecks(browser);
 }
 
+/**
+ * Set pieces with Structure paint (owner, 2026-11-15: 5a, and every part designable): a click paints that material
+ * across the piece (its role in this placement), "This surface only" paints one part (the Cage Block's bars too), no
+ * Explode; a theme change keeps both; each is one undo step.
+ */
+async function editorPiecePaintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/setpieces-paint-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page);
+  const settle = () => frames(page, 3);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  const piece = () => page.evaluate(() => window.__editor.doc.setPieces.find((p) => p.id === 'cage'));
+  // A Cage Block at cells (2..3, -3..-2) on the Imperial theme: its passage along z = -24, the pens' barred fronts on
+  // it at z = -20; the camera in the passage looking north at them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' });
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }] });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.setTool({ kind: 'paint' });
+    ed.paint.paintStyle = { material: 'core.pbr_brick_old', tint: null };
+    ed.view.yaw = 0;
+    ed.view.pitch = -0.15;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(16, 1.7, -26.5);
+  });
+  await settle();
+  // Default (across the piece): the passage floor is the piece's Paving, so all its Paving turns brick.
+  const scope = await page.evaluate(() => document.getElementById('ed-piece-scope')?.value);
+  let p = await hover(16, 0, -23);
+  const wallLabel = await page.evaluate(() => document.getElementById('ed-target').textContent);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  let c = await piece();
+  check(scope === 'piece' && c.overrides?.roles?.paving?.material === 'core.pbr_brick_old' && !c.overrides.paint && /Cage Block/.test(wallLabel), `a click on a set piece paints that material across the piece (its Paving), no Explode (${JSON.stringify({ scope, overrides: c.overrides, wallLabel })})`);
+  await shot('across');
+  // This surface only: one bar of one pen gold, the other pen's bars as they were.
+  await page.selectOption('#ed-piece-scope', 'part');
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.gold_leaf', tint: null }));
+  p = await hover(13, 0.06, -20.01);
+  const barLabel = await page.evaluate(() => document.getElementById('ed-target').textContent);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  c = await piece();
+  const paintKeys = Object.keys(c.overrides?.paint ?? {});
+  check(paintKeys.length === 1 && Object.values(c.overrides.paint)[0].metal?.material === 'core.gold_leaf' && /^Metal/.test(barLabel), `"This surface only" paints one part's bars (${JSON.stringify({ paint: c.overrides?.paint, barLabel })})`);
+  await shot('part');
+  // A theme change keeps both; undo takes each back.
+  await page.evaluate(() => window.__editor.history.execute('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.city' }));
+  c = await piece();
+  const drawn = await page.evaluate(() => window.__editor.viewDoc.classicStructure.tiles.filter((t) => t.id.startsWith('sp_cage_')).map((t) => t.surfaces?.metal?.material ?? null));
+  check(c.overrides?.roles?.paving && c.overrides?.paint && drawn.includes('core.gold_leaf'), `a theme change keeps the piece's paint (${JSON.stringify(drawn)})`);
+  // (The first undo takes the theme back.)
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
+  c = await piece();
+  check(!c.overrides?.paint && c.overrides?.roles?.paving, 'undo takes the part paint back, then...');
+  await page.keyboard.press('Control+KeyZ');
+  c = await piece();
+  check(!c.overrides, '...the piece paint, one step each');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker UI Phase 5 (docs/MAPMAKER_UI_SPEC.md, "Phase 5: as built"): keyboard use, resizing and kept preferences, on
+ * Tile View, the minimap and the dock. Tile View: `]` and `[` pick the things north to south and then the wall sides,
+ * Enter goes to the picked thing's fields, + / Home / Alt+arrows zoom, fit and pan, its breadcrumbs are buttons, and
+ * a pointer moving over the plan draws nothing. The minimap: focusable, + zooms, the arrows pan, Home fits, Enter
+ * opens Tile View. The dock: narrowed past 900 px it goes compact (not kept) and comes back when widened; the grip's
+ * End takes the widest, fitted again to a narrower window without forgetting the kept width. View → Grid and Snap are
+ * kept for the next visit (not in the map). The `?` list has the plans' keys. Screenshots (E2E_DSF=2) to E2E_SHOTS.
+ */
+async function editorPhase5Checks(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editortools-phase5-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const prop = (id, model, position, yaw = 0) => ({ id, kind: 'prop', model, position, yaw, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'p5_shop', tile: 'core.shop', x: 3, y: 0, z: 0, rotation: 1 }] },
+        { kind: 'addEntities', entities: [prop('p5_shelf', 'core.crate', [25.3, 0, -1.7]), prop('p5_drum', 'kit.drum.steel', [22, 0, -10])] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['p5_shop'], entities: [] });
+    ed.view.focus({ x: 24, y: 0, z: -4 });
+  });
+  await frames(page, 3);
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  const tv = () => page.evaluate(() => {
+    const ed = window.__editor;
+    const st = ed.tileView.state();
+    return { open: st.open, visible: st.visible, child: st.child, edge: st.edge, crumbs: st.crumbs, frame: st.frame, sel: [...ed.selection.entities, ...ed.selection.tiles], focus: document.activeElement?.id ?? '', links: document.querySelectorAll('#ed-tv-crumbs button').length, dock: document.getElementById('ed-right').dataset.state };
+  });
+
+  // Keyboard: into the plan, ] and [ pick, Enter goes to the fields.
+  await page.waitForFunction(() => !!window.__editor.tileView.state().frame, null, { timeout: T(5000) });
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  let s = await tv();
+  check(s.child === 'p5_shelf' && s.sel.join() === 'p5_shelf' && s.links === 1, `] picks the northernmost thing, selected everywhere; the breadcrumb that goes somewhere (the tile) is a button (${JSON.stringify({ child: s.child, sel: s.sel, links: s.links })})`);
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  const second = s.child;
+  await page.keyboard.press(']');
+  await frames(page, 2);
+  s = await tv();
+  check(second === 'p5_drum' && !s.child && !!s.edge && s.sel.join() === 'p5_shop', `] goes on to the next thing, then the wall sides (the tile selected) (${JSON.stringify({ second, edge: s.edge, sel: s.sel })})`);
+  await page.keyboard.press('[');
+  await frames(page, 2);
+  s = await tv();
+  check(s.child === 'p5_drum', `[ goes back (${s.child})`);
+  await page.keyboard.press('Enter');
+  s = await tv();
+  check(s.focus === 'ed-tv-x', `Enter goes to the picked thing's fields (${s.focus})`);
+  await shot('fields');
+  await page.focus('#ed-tv-canvas');
+  const f0 = (await tv()).frame;
+  await page.keyboard.press('+');
+  await frames(page, 2);
+  const f1 = (await tv()).frame;
+  await page.keyboard.press('Alt+ArrowUp');
+  await frames(page, 2);
+  const f2 = (await tv()).frame;
+  await page.keyboard.press('Home');
+  await frames(page, 2);
+  const f3 = (await tv()).frame;
+  check(f1.halfH < f0.halfH && f2.cz > f1.cz && Math.abs(f3.halfH - f0.halfH) < 1e-6 && (await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'p5_drum').position.join())) === '22,0,-10', `+ zooms, Alt+↑ pans north, Home fits again, and none of it moves the picked thing (${JSON.stringify({ f0, f1, f2, f3 })})`);
+  // A pointer moving over the plan only changes the readout (UI Phase 5, large maps): no draws.
+  const box = await page.locator('#ed-tv-canvas').boundingBox();
+  await page.evaluate(() => {
+    const tvp = window.__editor.tileView;
+    window.__tvDraws = 0;
+    const draw = tvp.draw;
+    tvp.draw = function (...a) {
+      window.__tvDraws++;
+      return draw.apply(this, a);
+    };
+  });
+  for (let i = 0; i < 8; i++) await page.mouse.move(box.x + 30 + i * 12, box.y + 40 + i * 6);
+  await frames(page, 3);
+  const hover = await page.evaluate(() => ({ draws: window.__tvDraws, readout: document.getElementById('ed-tv-readout').textContent }));
+  check(hover.draws === 0 && /^Local -?\d/.test(hover.readout), `a pointer over the plan updates the readout without drawing the plan again (${JSON.stringify(hover)})`);
+
+  // Resizing: under 900 px the dock goes compact (not kept), widened it comes back with Tile View.
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.editor.dock') ?? '{}'));
+  await page.setViewportSize({ width: 860, height: 700 });
+  await page.waitForFunction(() => document.getElementById('ed-right').dataset.state === 'compact', null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  const kept = await stored();
+  const clear = await page.evaluate(() => {
+    const card = document.getElementById('ed-right').getBoundingClientRect();
+    const bar = document.getElementById('ed-toolbar').getBoundingClientRect();
+    const hint = document.getElementById('ed-toolhint').getBoundingClientRect();
+    return { card: Math.round(card.left), bar: Math.round(bar.right), hint: Math.round(hint.right), rows: Math.round(bar.height) };
+  });
+  check(clear.bar <= clear.card && clear.hint <= clear.card && clear.rows < 120, `at 860 px the tool bar and its hint stay clear of the compact card, in at most two rows (${JSON.stringify(clear)})`);
+  await shot('narrow');
+  check(s.dock === 'compact' && !s.visible && s.open && kept.right === 'expanded', `narrowed to 860 px the dock goes compact, Tile View waits unseen, the kept state stays expanded (${JSON.stringify({ dock: s.dock, visible: s.visible, kept })})`);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  s = await tv();
+  check(s.dock === 'expanded' && s.visible, `widened again it comes back expanded with Tile View (${JSON.stringify({ dock: s.dock, visible: s.visible })})`);
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('End');
+  await frames(page, 2);
+  const grip = () => page.evaluate(() => ({ now: document.getElementById('ed-dock-grip').getAttribute('aria-valuenow'), max: document.getElementById('ed-dock-grip').getAttribute('aria-valuemax'), w: Math.round(document.getElementById('ed-right').getBoundingClientRect().width) }));
+  const wide = await grip();
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '450', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const narrow = await grip();
+  const keptW = (await stored()).width;
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForFunction(() => document.getElementById('ed-dock-grip').getAttribute('aria-valuemax') === '520', null, { timeout: T(5000) }).catch(() => {});
+  await frames(page, 2);
+  const back = await grip();
+  check(wide.now === '520' && wide.w === 520 && narrow.now === '450' && narrow.w === 450 && keptW === 520 && back.w === 520, `the grip's End takes the widest (520 px); a 1000 px window fits it to 45 % (450) and keeps 520 for when the window grows (${JSON.stringify({ wide, narrow, keptW, back })})`);
+  await shot('wide-dock');
+  await page.focus('#ed-dock-grip');
+  await page.keyboard.press('Home');
+
+  // Tile View closed: the minimap takes the keyboard.
+  await page.focus('#ed-tv-canvas');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__editor.minimap.shown, null, { timeout: T(5000) });
+  await page.evaluate(() => window.__editor.setSelection({ tiles: ['p5_shop'], entities: [] }));
+  await page.focus('#ed-minimap-canvas');
+  const mm = () => page.evaluate(() => ({ ...window.__editor.minimap.state(), marks: null }));
+  for (let i = 0; i < 3; i++) await page.keyboard.press('+');
+  await frames(page, 3);
+  const m1 = await mm();
+  // (West: the camera stands by the shop at the area's east edge, where the frame is held.)
+  await page.keyboard.press('ArrowLeft');
+  await frames(page, 3);
+  const m2 = await mm();
+  await page.keyboard.press('Home');
+  await frames(page, 3);
+  const m3 = await mm();
+  check(m1.zoom > 1 && m2.frame.cx < m1.frame.cx && m3.zoom === 1, `the minimap takes the keyboard: + zooms, ← pans west, Home fits (${JSON.stringify({ z1: m1.zoom, cx1: m1.frame?.cx, cx2: m2.frame?.cx, z3: m3.zoom })})`);
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) }).catch(() => {});
+  check((await tv()).open, 'Enter in the minimap opens Tile View on the selection');
+
+  // The ? list has the plans' keys.
+  await page.evaluate(() => document.activeElement?.blur?.());
+  await page.keyboard.press('Shift+Slash');
+  await page.waitForSelector('#ed-keys[open]', { timeout: T(3000) }).catch(() => {});
+  const keysText = await page.evaluate(() => document.getElementById('ed-keys')?.textContent ?? '');
+  await shot('keys');
+  check(keysText.includes('Tile View and minimap') && keysText.includes('pick the next or previous thing'), 'the ? list has a Tile View and minimap section');
+  await page.keyboard.press('Escape');
+
+  // View → Grid off and Snap 1 m are kept for the next visit (this browser, never the map).
+  await viewItem(page, 'ed-grid');
+  await page.selectOption('#ed-snap', 'coarse');
+  const inMap = await page.evaluate(() => JSON.stringify(window.__editor.doc).includes('coarse'));
+  const page2 = await context.newPage();
+  livePages.add(page2);
+  page2.on('pageerror', (e) => errors.push(e.message));
+  await page2.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page2.waitForFunction(() => window.__editor?.view, null, { timeout: T(60000) });
+  const again = await page2.evaluate(() => ({ grid: document.getElementById('ed-grid').getAttribute('aria-checked'), snap: document.getElementById('ed-snap').value, mode: window.__editor.snapMode, stored: localStorage.getItem('tiletrigger.editor.view') }));
+  check(again.grid === 'false' && again.snap === 'coarse' && again.mode === 'coarse' && !inMap, `View → Grid and Snap come back as left, kept in this browser only (${JSON.stringify(again)})`);
+  await viewItem(page2, 'ed-grid');
+  await page2.selectOption('#ed-snap', 'normal');
+  check((await page2.evaluate(() => localStorage.getItem('tiletrigger.editor.view'))) === null, 'back to the defaults, nothing is kept');
+  livePages.delete(page2);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
+/**
+ * Looks of your own (painting Phase 5, map format v47): Save as my look… names a set piece's look as it shows (its
+ * paint across the piece folded in: nothing changes on screen) and keeps it in this browser; My looks applies it to
+ * another piece, renames and deletes it; the map carries the looks its pieces wear (`lookDefs`); a theme change keeps
+ * it; a second map takes it from the library. Screenshots at device scale 2 with E2E_SHOTS (`editorpieces-looks-*`).
+ */
+async function editorMyLooksChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorpieces-looks-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  await page.evaluate(() => localStorage.removeItem('cs.looks'));
+  // Every confirm (a new map over unsaved changes, Delete) is accepted.
+  page.on('dialog', (d) => d.accept().catch(() => {}));
+  await newMap(page);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const piece = (id) => page.evaluate((id) => window.__editor.doc.setPieces.find((p) => p.id === id), id);
+  const drawnParts = (id) => page.evaluate((id) => JSON.stringify([window.__editor.viewDoc.classicStructure.tiles.filter((t) => t.id.startsWith(`sp_${id}_`)).map((t) => [t.id, t.surfaces ?? null]), window.__editor.viewDoc.entities.filter((e) => e.id.startsWith(`sp_${id}_`)).map((e) => [e.id, e.material ?? null])]), id);
+  const library = () => page.evaluate(() => JSON.parse(localStorage.getItem('cs.looks') ?? '[]').map((s) => s.look));
+  // A Cage Block and a Bus Shelter on the Imperial theme; the camera over them.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Theme', { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' });
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }, { id: 'shelter', piece: 'setpiece.bus_shelter', x: -2, y: -3, z: 0, rotation: 0, mirror: false }] });
+    ed.view.yaw = 0.35;
+    ed.view.pitch = -0.55;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(6, 22, -54);
+    ed.showPane('setpieces');
+    ed.setSelection({ tiles: [], entities: [], setPieces: ['cage'] });
+  });
+  await settle();
+  const groups = await page.evaluate(() => [...document.querySelectorAll('#ed-sp-insp-look optgroup')].map((g) => g.dataset.group));
+  check(groups.join() === 'themes,all', `the Look select is grouped: This map's themes, then All looks (no looks of yours yet) (${groups.join()})`);
+  const empty = await page.evaluate(() => document.getElementById('ed-my-looks')?.textContent ?? '');
+  check(/No looks yet/.test(empty), `My looks says how to make one (${empty})`);
+  // Paint its Paving brick across the piece (the inspector's Materials), then Save as my look.
+  await page.selectOption('#ed-inspector select[data-role="paving"]', 'core.pbr_brick_old');
+  await settle();
+  const layer = await page.evaluate(() => document.querySelector('#ed-inspector select[data-role="paving"]').dataset.layer);
+  check(layer === 'paint', `a role you picked shows as your paint (${layer})`);
+  const before = await drawnParts('cage');
+  await page.click('#ed-sp-save-look');
+  await page.waitForFunction(() => document.getElementById('ed-look-dialog').open, null, { timeout: T(5000) });
+  const chips = await page.evaluate(() => document.querySelectorAll('#ed-look-swatches i').length);
+  check(chips >= 5, `the dialog shows the look's materials (${chips} chips)`);
+  await page.fill('#ed-look-name', 'Brick yard');
+  await shot('save');
+  await page.click('#ed-look-ok');
+  await settle();
+  let d = await doc();
+  let cage = await piece('cage');
+  check(d.lookDefs?.length === 1 && d.lookDefs[0].id === 'my_brick_yard' && d.lookDefs[0].displayName === 'Brick yard' && d.lookDefs[0].roles.paving?.material === 'core.pbr_brick_old', `the map carries the look (${JSON.stringify(d.lookDefs)})`);
+  check(cage.pack === 'my_brick_yard' && !cage.overrides, `the piece wears it, its paint folded in (${JSON.stringify(cage)})`);
+  check((await drawnParts('cage')) === before, 'saving the look changes nothing on screen');
+  check((await library()).some((l) => l.id === 'my_brick_yard'), 'the look is in your library (this browser)');
+  check((await page.evaluate(() => window.__editor.history.undoLabel)) === 'Save look Brick yard', 'saving is one undo step');
+  const item = await page.evaluate(() => document.querySelector('#ed-my-looks [data-look="my_brick_yard"]')?.textContent ?? '');
+  check(/Brick yard/.test(item) && /1 here/.test(item), `My looks lists it, worn once here (${item})`);
+  // Put the Bus Shelter in it from My looks.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['shelter'] }));
+  await settle();
+  const applyText = await page.evaluate(() => document.querySelector('#ed-my-looks [data-look="my_brick_yard"] [data-act="apply"]').textContent);
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="apply"]');
+  await settle();
+  const shelter = await piece('shelter');
+  const mine = await page.evaluate(() => [...document.querySelectorAll('#ed-sp-insp-look optgroup[data-group="mine"] option')].map((o) => o.value));
+  check(applyText === 'Apply to selected piece' && shelter.pack === 'my_brick_yard' && mine.includes('my_brick_yard') && (await page.inputValue('#ed-sp-insp-look')) === 'my_brick_yard', `Apply puts the selected piece in it; the Look select has it under My looks (${JSON.stringify({ applyText, pack: shelter.pack, mine })})`);
+  await shot('applied');
+  // Rename it from My looks: the pieces keep wearing it.
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="rename"]');
+  await page.waitForFunction(() => document.getElementById('ed-look-dialog').open, null, { timeout: T(5000) });
+  await page.fill('#ed-look-name', 'Harbour brick');
+  await page.click('#ed-look-ok');
+  await settle();
+  d = await doc();
+  check(d.lookDefs?.[0]?.displayName === 'Harbour brick' && (await library()).find((l) => l.id === 'my_brick_yard')?.displayName === 'Harbour brick' && (await piece('shelter')).pack === 'my_brick_yard', `Rename changes its name in the map and the library, not who wears it (${JSON.stringify(d.lookDefs)})`);
+  // A theme change keeps it.
+  const shelterBefore = await drawnParts('shelter');
+  await page.evaluate(() => window.__editor.history.execute('Theme', { kind: 'setTheme', before: window.__editor.doc.classicStructure.theme, after: 'core.city' }));
+  await settle();
+  cage = await piece('cage');
+  check(cage.pack === 'my_brick_yard' && (await drawnParts('shelter')) === shelterBefore, 'a theme change keeps your look on both pieces');
+  // Several pieces selected: one Look row for all.
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['cage', 'shelter'] }));
+  await settle();
+  const multi = await page.inputValue('#ed-insp-pieces-look').catch(() => null);
+  check(multi === 'my_brick_yard', `several set pieces get one Look (${multi})`);
+  await shot('mylooks');
+  // Another map: the look comes from your library.
+  await newMap(page);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addSetPieces', setPieces: [{ id: 'shelter2', piece: 'setpiece.bus_shelter', x: 0, y: 0, z: 0, rotation: 0, mirror: false }] });
+    ed.setSelection({ tiles: [], entities: [], setPieces: ['shelter2'] });
+  });
+  await settle();
+  await page.selectOption('#ed-sp-insp-look', 'my_brick_yard');
+  await settle();
+  d = await doc();
+  check(d.lookDefs?.length === 1 && d.lookDefs[0].displayName === 'Harbour brick' && (await piece('shelter2')).pack === 'my_brick_yard', `another map takes the look from your library (${JSON.stringify(d.lookDefs)})`);
+  // Delete it from your library: the map keeps its copy, and offers to save it back.
+  await page.click('#ed-my-looks [data-look="my_brick_yard"] [data-act="delete"]');
+  await settle();
+  d = await doc();
+  const keep = await page.evaluate(() => !!document.querySelector('#ed-my-looks [data-look="my_brick_yard"] [data-act="keep"]'));
+  check(!(await library()).length && d.lookDefs?.length === 1 && keep, `Delete takes it out of your library; the map keeps its copy, with Save to my looks (${JSON.stringify({ lib: await library(), keep })})`);
+  // Back to the theme's look: the map drops the look nobody wears.
+  await page.selectOption('#ed-sp-insp-look', '');
+  await settle();
+  d = await doc();
+  check(!d.lookDefs && !(await piece('shelter2')).pack, 'with no piece wearing it, the map drops the look');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
 async function editortoolsFlow(browser) {
+  await editorPaintChecks(browser);
+  await editorThemeWarningChecks(browser);
   await editorTurnChecks(browser);
+  await editorTransformChecks(browser);
+  await editorTileViewChecks(browser);
+  await editorTileViewMoveChecks(browser);
+  await editorPhase5Checks(browser);
   await editorWorkflowChecks(browser);
   await editorPartBChecks(browser);
   await editorTerrainGridChecks(browser);
   await editorBotHintChecks(browser);
   await editorTileOptionChecks(browser);
   await editorBuriedPickChecks(browser);
+  await editorBelowGroundChecks(browser);
+}
+
+/**
+ * The two painters (docs/MAPMAKER_PAINTING_PLAN.md Phase 1; owner's answers 1a 2a): Structure paint (B) paints tiles,
+ * free blocks, thin walls and bars, never the ground (it says so); Ground paint (Shift+B, the Terrain tool's Paint
+ * brush) offers the ground layers only and passes under buildings; a ground material never goes on a wall; every
+ * paint is one undo step.
+ */
+async function editorPaintChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorux-paint-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const status = () => page.evaluate(() => document.getElementById('ed-target').textContent);
+  const toast = () => page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  // A block, a thin wall (a 10 cm block) and a room with bars on its south side, by the start room.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, position, size) => ({ id, kind: 'block', position, size, yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addEntities', entities: [block('paint_blk', [-8, 0, 0], [2, 2, 2]), block('paint_thin', [-8, 0, 6], [3, 3, 0.1])] },
+        { kind: 'addTiles', tiles: [{ id: 'paint_bars', tile: 'core.room', x: 1, y: 1, z: 0, rotation: 0, edges: { '0,0,0:S': 'bars' } }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 2 });
+  });
+  await settle();
+  // Structure paint (B), Old Brick.
+  await page.keyboard.press('KeyB');
+  await page.evaluate(() => {
+    window.__editor.paint.paintStyle = { material: 'core.red_brick', tint: null };
+    window.__editor.palettes.syncPaintUi();
+  });
+  const tool = await page.evaluate(() => window.__editor.tool.kind);
+  // Over bare ground: nothing happens, and it says so.
+  let p = await hover(10, 0, -4);
+  const groundLabel = await status();
+  const ground0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
+  const undo0 = await undoLabel();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const groundAfter = { same: await page.evaluate((g) => window.__editor.doc.terrain.materials.join('') === g, ground0), undo: await undoLabel(), toast: await toast() };
+  check(tool === 'paint' && /Structure paint doesn't paint the ground\. Use Ground paint \(Shift\+B\)/.test(groundLabel) && groundAfter.same && groundAfter.undo === undo0 && /Ground paint/.test(groundAfter.toast), `Structure paint over bare ground changes nothing and says so (${JSON.stringify({ tool, groundLabel, ...groundAfter })})`);
+  await shot('ground-refused');
+  // A free block, then a thin wall at its very edge.
+  p = await hover(-8, 2, 0);
+  const blockLabel = await status();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const blk = (await doc()).entities.find((e) => e.id === 'paint_blk');
+  check(blk.material === 'core.red_brick' && /Block/.test(blockLabel) && (await undoLabel()) === 'Paint block', `Structure paint paints a free block, one undo step (${JSON.stringify({ material: blk.material, blockLabel, undo: await undoLabel() })})`);
+  p = await hover(-6.52, 1.5, 5.95);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const thin = (await doc()).entities.find((e) => e.id === 'paint_thin');
+  check(thin.material === 'core.red_brick', `a thin wall (10 cm) paints, at its very edge (${thin.material})`);
+  // The bars: their own Metal surface (never the walls').
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.brass', tint: null }));
+  p = await hover(8, 0.06, 3.99);
+  const barLabel = await status();
+  await shot('cursor-label');
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  const bars = (await doc()).classicStructure.tiles.find((t) => t.id === 'paint_bars');
+  check(bars.surfaces?.metal?.material === 'core.brass' && !bars.surfaces.walls && /^Metal/.test(barLabel), `Structure paint reaches the bars: the room's Metal surface, its walls left (${JSON.stringify({ surfaces: bars.surfaces, barLabel })})`);
+  // A ground material never goes on a wall: refused, with the reason.
+  await page.evaluate(() => (window.__editor.paint.paintStyle = { material: 'core.pbr_gravel', tint: null }));
+  const before = JSON.stringify((await doc()).classicStructure.tiles);
+  p = await hover(3.99, 2, 8);
+  const wallLabel = await status();
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  check(JSON.stringify((await doc()).classicStructure.tiles) === before && /floors and roofs only/.test(wallLabel + (await toast())), `a ground material is refused on a wall, with the reason (${wallLabel})`);
+  // On a floor it goes (2a).
+  p = await hover(8, 0, 11);
+  await page.mouse.click(p.x, p.y);
+  await settle();
+  check((await doc()).classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces?.floor?.material === 'core.pbr_gravel', 'a ground material paints a floor');
+  // Undo takes each back, one at a time.
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Control+KeyZ');
+  await settle();
+  const undone = await doc();
+  check(!undone.classicStructure.tiles.find((t) => t.id === 'paint_bars').surfaces && undone.entities.find((e) => e.id === 'paint_blk').material === null, 'undo takes every paint back');
+
+  // Ground paint (Shift+B): the Terrain tool's Paint brush, the 21 grounds and the base only (no Marble Checker), and it passes
+  // under a building.
+  await page.keyboard.press('Shift+KeyB');
+  await settle();
+  const gp = await page.evaluate(() => ({
+    tool: window.__editor.tool.kind,
+    brush: window.__editor.terrain.terrainBrush,
+    grounds: [...document.querySelectorAll('#ed-tr-materials [data-ground]')].map((b) => b.dataset.ground),
+    checker: !!document.querySelector('#ed-tr-materials [data-material="core.pbr_checker"], #ed-tr-materials [data-ground="checker"]'),
+    lit: document.getElementById('ed-tb-groundpaint')?.classList.contains('active') ?? false,
+    hint: document.getElementById('ed-toolhint').textContent,
+  }));
+  check(gp.tool === 'terrain' && gp.brush === 'paint' && gp.grounds.length === 22 && !gp.checker && gp.lit && /^Ground paint/.test(gp.hint), `Shift+B is Ground paint: the grounds only, no Marble Checker (${JSON.stringify(gp)})`);
+  await shot('ground-paint');
+  await page.evaluate(() => (window.__editor.terrain.terrainMaterial = 'core.pbr_rock'));
+  const roomBefore = JSON.stringify((await doc()).classicStructure.tiles);
+  const cells0 = await page.evaluate(() => window.__editor.doc.terrain.materials.join(''));
+  p = await hover(0, 0, 0);
+  await page.mouse.down();
+  await page.mouse.up();
+  await settle();
+  const gAfter = await page.evaluate((c) => ({ changed: window.__editor.doc.terrain.materials.join('') !== c, undo: window.__editor.history.undoLabel }), cells0);
+  check(gAfter.changed && JSON.stringify((await doc()).classicStructure.tiles) === roomBefore, `Ground paint under a building paints the ground and leaves the building (${JSON.stringify(gAfter)})`);
+  await page.keyboard.press('Control+KeyZ');
+  check(await page.evaluate((c) => window.__editor.doc.terrain.materials.join('') === c, cells0), 'undo takes the ground paint back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * The layers on the cursor and the warning before a Structure theme change (docs/MAPMAKER_PAINTING_PLAN.md Phase 2):
+ * Map settings' Structure theme, the top bar's theme and the palette's "Use theme" all open one dialog, its counts
+ * those of themeChangeImpact; Cancel changes nothing, Change and Keep current look are one undo step each, and Keep
+ * leaves nothing that would still change. Structure paint's card names the surface and its three layers, the one
+ * shown marked; Ground paint names the ground layer under it. A dialog, not a bright moment: nothing for `flashing`.
+ */
+async function editorThemeWarningChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const context = await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editortools-paint2-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const settle = () => frames(page, 3);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const json = () => page.evaluate(() => JSON.stringify(window.__editor.doc));
+  const undoLabel = () => page.evaluate(() => window.__editor.history.undoLabel ?? null);
+  const status = () => page.evaluate(() => document.getElementById('ed-target').textContent);
+  const hover = async (x, y, z) => {
+    const p = await page.evaluate(([x, y, z]) => window.__editor.view.project({ x, y, z }), [x, y, z]);
+    await page.mouse.move(p.x, p.y);
+    await settle();
+    return p;
+  };
+  // Imperial: a plain room, a room with painted walls, a block, a Cage Block on the theme's look and one with its own (Military).
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, position, size) => ({ id, kind: 'block', position, size, yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'setTheme', before: ed.doc.classicStructure.theme, after: 'core.imperial' },
+        { kind: 'addTiles', tiles: [{ id: 'tw_plain', tile: 'core.room', x: -3, y: 2, z: 0, rotation: 0 }, { id: 'tw_painted', tile: 'core.room', x: -5, y: 2, z: 0, rotation: 0, surfaces: { walls: { material: 'core.pbr_brick_old', tint: null } } }] },
+        { kind: 'addEntities', entities: [block('tw_blk', [-20, 0, 0], [2, 2, 2])] },
+        { kind: 'addSetPieces', setPieces: [{ id: 'cage', piece: 'setpiece.cage_block', x: 2, y: -3, z: 0, rotation: 0, mirror: false }, { id: 'cage_own', piece: 'setpiece.cage_block', x: 6, y: -3, z: 0, rotation: 0, mirror: false, pack: 'military' }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await settle();
+  const dialogCounts = () =>
+    page.evaluate(() => {
+      const d = document.getElementById('ed-theme-dialog');
+      if (!d?.open) return null;
+      const n = (id) => {
+        const b = d.querySelector(`[data-count="${id}"] b`);
+        return b ? Number(b.textContent.match(/[\d,]+/)[0].replace(/,/g, '')) : 0;
+      };
+      return { surfaces: n('surfaces'), pieces: n('pieces'), painted: n('painted'), ownlook: n('ownlook'), sky: !!d.querySelector('[data-count="sky"]'), button: document.getElementById('ed-theme-change').textContent, title: document.getElementById('ed-theme-title').textContent };
+    });
+  const expected = (to) =>
+    page.evaluate((to) => {
+      const i = window.__editor.themeImpact(to);
+      return { surfaces: i.surfacesChange, pieces: i.piecesChange, painted: i.surfacesPainted, ownlook: i.piecesOwnLook, sky: i.skyFollows };
+    }, to);
+  const same = (c, e) => c && c.surfaces === e.surfaces && c.pieces === e.pieces && c.painted === e.painted && c.ownlook === e.ownlook && c.sky === e.sky && c.button === `Change ${e.surfaces + e.pieces} things`;
+  const waitDialog = () => page.waitForSelector('#ed-theme-dialog[open]', { timeout: T(5000) }).then(() => true, () => false);
+
+  // ---- Map settings' Structure theme: the dialog, its counts; Cancel changes nothing and puts the select back.
+  await openMapSettings(page);
+  const rowLabel = await page.evaluate(() => document.getElementById('ed-prop-theme').closest('label, .row, div')?.textContent ?? '');
+  const before = await json();
+  const undo0 = await undoLabel();
+  const want = await expected('core.industrial');
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  const opened = await waitDialog();
+  const c1 = await dialogCounts();
+  check(opened && same(c1, want) && want.surfaces > 0 && want.pieces === 1 && want.painted >= 1 && want.ownlook === 1 && /Structure theme/.test(rowLabel) && /Change the Structure theme to Industrial/.test(c1.title), `Map settings' Structure theme asks first, with the counts of themeChangeImpact (${JSON.stringify({ c1, want, rowLabel })})`);
+  await shot('warning');
+  await page.click('#ed-theme-cancel');
+  await settle();
+  const cancelled = { same: (await json()) === before, undo: await undoLabel(), select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.getElementById('ed-theme-dialog')) };
+  check(cancelled.same && cancelled.undo === undo0 && cancelled.select === 'core.imperial' && !cancelled.open, `Cancel changes nothing and puts the select back (${JSON.stringify(cancelled)})`);
+
+  // ---- Change: the theme and everything that follows it, one undo step.
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  await waitDialog();
+  await page.click('#ed-theme-change');
+  await settle();
+  const changed = { theme: (await doc()).classicStructure.theme, undo: await undoLabel(), painted: (await doc()).classicStructure.tiles.find((t) => t.id === 'tw_painted').surfaces?.walls?.material, plain: (await doc()).classicStructure.tiles.find((t) => t.id === 'tw_plain').surfaces ?? null };
+  await page.click('#ed-undo');
+  await settle();
+  check(changed.theme === 'core.industrial' && changed.undo === 'Change theme' && changed.painted === 'core.pbr_brick_old' && changed.plain === null && (await json()) === before, `Change changes the theme (your paint stays), one undo step (${JSON.stringify(changed)})`);
+
+  // ---- Keep current look: the theme changes, what is built is pinned as paint (nothing left to change back), one undo step.
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  await waitDialog();
+  await page.click('#ed-theme-keep');
+  await settle();
+  const kept = await page.evaluate(() => {
+    const ed = window.__editor;
+    const back = ed.themeImpact('core.imperial');
+    return { theme: ed.doc.classicStructure.theme, undo: ed.history.undoLabel, plain: !!ed.doc.classicStructure.tiles.find((t) => t.id === 'tw_plain').surfaces, block: ed.doc.entities.find((e) => e.id === 'tw_blk').material, cage: !!ed.doc.setPieces.find((p) => p.id === 'cage').overrides, back: back.surfacesChange + back.piecesChange };
+  });
+  await page.click('#ed-undo');
+  await settle();
+  check(kept.theme === 'core.industrial' && kept.undo === 'Change theme, keep the look' && kept.plain && kept.block && kept.cage && kept.back === 0 && (await json()) === before, `Keep current look changes the theme and pins today's look as paint (nothing would change going back), one undo step (${JSON.stringify(kept)})`);
+
+  // ---- The top bar's Structure theme chip (painting Phase 3: the select went) opens Map settings at the theme, so the
+  // same dialog; Esc is Cancel.
+  await page.click('#ed-theme-chip');
+  await page.waitForSelector('#ed-prop-theme', { state: 'visible', timeout: T(5000) });
+  const chip = await page.evaluate(() => ({ focus: document.activeElement?.id, name: document.getElementById('ed-theme-chip-name').textContent }));
+  await page.selectOption('#ed-prop-theme', 'core.industrial');
+  const top = { opened: await waitDialog(), counts: await dialogCounts() };
+  await page.keyboard.press('Escape');
+  await settle();
+  const topAfter = { same: (await json()) === before, select: await page.evaluate(() => document.getElementById('ed-prop-theme').value), open: await page.evaluate(() => !!document.querySelector('#ed-theme-dialog[open]')), noSelect: await page.evaluate(() => !document.getElementById('ed-theme')) };
+  check(chip.focus === 'ed-prop-theme' && chip.name === 'Imperial Arena' && top.opened && same(top.counts, want) && topAfter.same && topAfter.select === 'core.imperial' && !topAfter.open && topAfter.noSelect, `the top bar's theme chip opens Map settings at the Structure theme, which asks first; Esc cancels (${JSON.stringify({ chip, top, topAfter })})`);
+
+  // ---- The palette's "Use theme": the same dialog, then Change.
+  await page.selectOption('#ed-pack', 'military');
+  await settle();
+  const useTo = await page.evaluate(() => document.getElementById('ed-pack-theme').textContent);
+  await page.click('#ed-pack-theme');
+  const use = { opened: await waitDialog(), counts: await dialogCounts() };
+  await page.click('#ed-theme-change');
+  await settle();
+  const useTheme = (await doc()).classicStructure.theme;
+  const useWant = await page.evaluate((t) => {
+    // The counts it showed, as themeChangeImpact gives them from the map before the change.
+    window.__editor.undo();
+    const i = window.__editor.themeImpact(t);
+    return { surfaces: i.surfacesChange, pieces: i.piecesChange, painted: i.surfacesPainted, ownlook: i.piecesOwnLook, sky: i.skyFollows };
+  }, useTheme);
+  await page.selectOption('#ed-pack', '');
+  check(use.opened && same(use.counts, useWant) && useTheme !== 'core.imperial' && (await json()) === before && new RegExp(useTo.replace(/^Use theme \((.*)\)$/, '$1')).test(use.counts.title), `the palette's "Use theme" opens the same warning, and Change changes the theme (${JSON.stringify({ useTo, use, useTheme })})`);
+
+  // ---- Structure paint's card: the surface, base Structure theme → set piece look → your paint, the shown one marked.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setTool({ kind: 'paint' });
+    ed.paint.pieceScope = 'piece';
+    ed.paint.paintStyle = { material: 'core.pbr_checker', tint: null };
+    ed.view.yaw = 0;
+    ed.view.pitch = -0.15;
+    ed.view.applyCamera();
+    ed.view.camera.position.set(16, 1.7, -26.5);
+  });
+  await settle();
+  await hover(16, 0, -23);
+  const card = await page.evaluate(() => {
+    const tip = document.getElementById('ed-tip');
+    return { shown: !tip.hidden, cls: tip.className, head: tip.querySelector('b')?.textContent, layers: [...tip.querySelectorAll('.ed-layer')].map((l) => l.dataset.layer + (l.classList.contains('shown') ? '*' : '')), text: tip.textContent, status: document.getElementById('ed-target').textContent };
+  });
+  check(card.shown && /ed-paint-card/.test(card.cls) && /^Floor · .*Cage Block/.test(card.head) && JSON.stringify(card.layers) === '["base","look*","paint"]' && /Imperial Arena/.test(card.text) && /\(the theme's\)/.test(card.text) && /Click paints Marble Checker across this Cage Block/.test(card.text) && /Structure theme Imperial Arena: .* → Set piece look .*✓ → Your paint: none/.test(card.status), `Structure paint's card names the surface and its layers, the set piece look shown (${JSON.stringify(card)})`);
+  await shot('cursor-look');
+  // Painted across the piece: your paint shows.
+  const at = await hover(16, 0, -23);
+  await page.mouse.click(at.x, at.y);
+  await settle();
+  await hover(16, 0, -23.2);
+  const painted = await page.evaluate(() => [...document.querySelectorAll('#ed-tip .ed-layer')].map((l) => l.dataset.layer + (l.classList.contains('shown') ? '*' : '')));
+  check(JSON.stringify(painted) === '["base","look","paint*"]', `after a click, your paint is the layer shown (${JSON.stringify(painted)})`);
+  await shot('cursor-paint');
+  // Over bare ground: it names the ground and says a click does nothing.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.view.camera.position.set(-30, 6, -30);
+    ed.view.pitch = -0.6;
+    ed.view.applyCamera();
+  });
+  await settle();
+  await hover(-30, 0, -20);
+  const groundCard = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, text: document.getElementById('ed-tip').textContent, status: document.getElementById('ed-target').textContent }));
+  check(/^Ground · .*\(Ground theme: /.test(groundCard.head) && /A click does nothing/.test(groundCard.text) && /Ground paint \(Shift\+B\)/.test(groundCard.status), `over bare ground the card names the ground and says a click does nothing (${JSON.stringify(groundCard)})`);
+  await shot('cursor-ground');
+  // Ground paint names the ground: the Ground theme's base, or painted.
+  await page.keyboard.press('Shift+KeyB');
+  await settle();
+  await hover(-30, 0, -20);
+  const gp = await page.evaluate(() => ({ head: document.querySelector('#ed-tip b')?.textContent, status: document.getElementById('ed-target').textContent }));
+  check(/^Ground · .*\(Ground theme: [A-Z]\w+\)/.test(gp.head) && /Ground paint · Ground · .*Ground theme: [A-Z].* · click paints/.test(gp.status), `Ground paint names the ground and that it is the Ground theme's base (${JSON.stringify(gp)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
 }
 
 /**
@@ -1534,11 +3566,167 @@ async function editorBuriedPickChecks(browser) {
   await page.mouse.click(q.x, q.y);
   await frames(page, 2);
   const piece = await page.evaluate(() => ({ pieces: [...(window.__editor.selection.setPieces ?? [])], portal: document.getElementById('ed-tunnel-portal')?.textContent ?? null, family: !!document.getElementById('ed-tunnel-family') }));
-  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && !piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers portals on its open ends (${JSON.stringify(piece)})`);
+  check(piece.pieces.join() === 'piece_deep' && piece.portal === 'Add portals at the 2 open ends' && piece.family, `a click on the ground over a buried Lit Tunnel Run selects the piece; its inspector offers its Family (map format v44) and portals on its open ends (${JSON.stringify(piece)})`);
   if (piece.portal) await page.click('#ed-tunnel-portal');
   await frames(page, 2);
   const added = await page.evaluate(() => ({ portals: window.__editor.doc.classicStructure.tiles.filter((t) => t.tile === 'core.tunnel_concrete_portal').map((t) => `${t.x},${t.y},${t.z} turn ${t.rotation}`), undo: window.__editor.history.undoLabel, left: document.getElementById('ed-tunnel-portal')?.textContent ?? null }));
   check(added.portals.join('; ') === '2,-2,-1 turn 0; 2,2,-1 turn 2' && added.undo === 'Add portals' && added.left === null, `the two portals go on the run's ends, facing out, in one undo step (${JSON.stringify(added)})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker: building below ground and picking things inside others (QUEUE Features; owner, 2026-11-18/19). Below
+ * ground the ground turns to glass (back to itself at Ground), the passages of the level are drawn on their floor with
+ * their open ends and joints marked, and a lone tunnel's ends are closed with faces of its lining. A spawn inside a set
+ * piece's stair shows through it as an icon and a click picks it; a click again at the same spot steps on to the set
+ * piece (a list says what is there); the move gizmo's handle drags the spawn though it is inside. E2E_SHOTS: pictures.
+ */
+async function editorBelowGroundChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (process.env.E2E_SHOTS ? page.screenshot({ path: `${process.env.E2E_SHOTS}/editorbelow-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // A mine tunnel a level under the field: a straight, a bend and a straight, both ends joining nothing.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'addTiles',
+      tiles: [
+        { id: 'tile_b0', tile: 'core.tunnel_concrete_straight', x: 0, y: 0, z: -1, rotation: 0, family: 'mine' },
+        { id: 'tile_b1', tile: 'core.tunnel_concrete_straight', x: 0, y: 1, z: -1, rotation: 0, family: 'mine' },
+        { id: 'tile_b2', tile: 'core.tunnel_concrete_curve', x: 0, y: 2, z: -1, rotation: 0, family: 'mine' },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.view.focus({ x: 0, y: 0, z: 8 });
+  });
+  await frames(page, 6);
+  const glassAt = () => page.evaluate(() => {
+    const ground = window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_terrain') && m.isEnabled());
+    return { ground: ground.length, glass: ground.filter((m) => m.material?.name.endsWith('_glass')).length, flag: window.__editor.view.groundGlass };
+  });
+  const atGround = await glassAt();
+  check(atGround.ground > 0 && atGround.glass === 0 && !atGround.flag, `at Ground the ground is drawn as it is (${JSON.stringify(atGround)})`);
+  await shot('ground-level');
+  await page.evaluate(() => window.__editor.setLevel(-1));
+  await frames(page, 6);
+  const below = await glassAt();
+  check(below.ground > 0 && below.glass === below.ground && below.flag, `on Basement the ground turns to glass (${JSON.stringify(below)})`);
+  // The pointer over the tunnel: the cut-away circle round where it meets the ground.
+  const over = await page.evaluate(() => window.__editor.view.project({ x: 0, y: -4, z: 8 }));
+  await page.mouse.move(over.x, over.y);
+  await frames(page, 4);
+  const marks = await page.evaluate(() => {
+    const m = window.__editor.view.scene.getMeshByName('buried');
+    return { lines: !!m, points: m?.getTotalVertices() ?? 0, ends: window.__editor.checks.allIssues().filter((i) => i.code === 'tunnel.mouth_buried').length };
+  });
+  check(marks.lines && marks.ends === 2, `the basement's passages are outlined on their floor, and validation names its 2 open ends (${JSON.stringify(marks)})`);
+  await shot('basement-glass');
+  // Straight down: the layout from above.
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.pitch = -1.45;
+    v.yaw = 0;
+    v.applyCamera();
+    v.camera.position.set(0, 30, 6);
+  });
+  await frames(page, 4);
+  const top = await page.evaluate(() => window.__editor.view.project({ x: 0, y: -4, z: 4 }));
+  await page.mouse.move(top.x, top.y);
+  await frames(page, 4);
+  await shot('basement-top-down');
+  // From inside the tunnel, looking south at its closed end (a face of the mine's rock, not the sky).
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.camera.position.set(0, -2.3, 6);
+    v.yaw = Math.PI;
+    v.pitch = 0;
+    v.applyCamera();
+  });
+  await page.mouse.move(5, 5);
+  await frames(page, 6);
+  await shot('inside-closed-end');
+  const cap = await page.evaluate(() => window.__editor.visibleBoxes.filter((b) => b.endCap).map((b) => b.surface?.material ?? null));
+  check(cap.length === 2 && cap.every((m) => m === 'core.pbr_rock'), `the run's two open ends are closed with the mine's rock (${JSON.stringify(cap)})`);
+  // Back at Ground: the ground is itself again.
+  await page.evaluate(() => window.__editor.setLevel(0));
+  await frames(page, 4);
+  const back = await glassAt();
+  check(back.glass === 0 && !back.flag, `back at Ground the ground returns (${JSON.stringify(back)})`);
+
+  // A spawn dragged inside the Grand Cliff Stair: its icon shows through, a click picks it, a click again steps on.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addSetPieces', setPieces: [{ id: 'piece_stair', piece: 'setpiece.cliff_stair_grand', x: 6, y: -6, z: 0, rotation: 0, mirror: false }] },
+      ],
+    });
+  });
+  await frames(page, 4);
+  // Inside the stair's flight on the ground level: a step at least 3 m tall, its middle (the owner's case).
+  const solid = await page.evaluate(() => {
+    const ed = window.__editor;
+    const b = ed.visibleBoxes.find((b) => ed.expansion.partOf.get(b.sourceId) === 'piece_stair' && !b.yaw && b.kind === 'solid' && b.max[1] - b.min[1] >= 3 && b.max[1] < 3.9 && b.max[0] - b.min[0] >= 2 && b.min[1] <= 0.5);
+    return b ? [(b.min[0] + b.max[0]) / 2, Math.max(0, b.min[1]) + 0.2, (b.min[2] + b.max[2]) / 2] : null;
+  });
+  check(!!solid, `the Grand Cliff Stair has a solid flight to hide a spawn in (${JSON.stringify(solid)})`);
+  await page.evaluate((at) => {
+    const ed = window.__editor;
+    ed.history.execute('Place', { kind: 'addEntities', entities: [{ id: 'spawn_inside', kind: 'spawn', position: at, yaw: 0, team: null }] });
+    ed.setSelection({ tiles: [], entities: [] });
+  }, solid ?? [48, 0.5, -44]);
+  await frames(page, 4);
+  const spawn = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'spawn_inside').position);
+  // From in front of the flight (south of it), looking up the steps: the spawn is hidden inside them.
+  await page.evaluate((p) => {
+    const v = window.__editor.view;
+    v.yaw = 0;
+    v.pitch = -0.35;
+    v.applyCamera();
+    v.camera.position.set(p[0] - 3, 7, p[2] - 16);
+  }, spawn);
+  await frames(page, 6);
+  const sp = await page.evaluate((p) => window.__editor.view.project({ x: p[0], y: p[1] + 0.9, z: p[2] }), spawn);
+  await page.mouse.move(sp.x, sp.y);
+  await frames(page, 3);
+  const inside = await page.evaluate(() => ({ pick: window.__editor.pick(), icon: window.__editor.view.scene.getMeshByName('edicon_spawn_inside')?.isEnabled() ?? false }));
+  await shot('spawn-inside-setpiece');
+  check(inside.icon && inside.pick?.kind === 'entity' && inside.pick.id === 'spawn_inside', `a spawn inside a set piece has its icon and is what a click there picks (${JSON.stringify(inside)})`);
+  await page.mouse.click(sp.x, sp.y);
+  await frames(page, 2);
+  const first = await page.evaluate(() => [...window.__editor.selection.entities]);
+  await page.mouse.click(sp.x, sp.y);
+  await frames(page, 2);
+  const second = await page.evaluate(() => ({ entities: [...window.__editor.selection.entities], pieces: [...(window.__editor.selection.setPieces ?? [])], list: document.getElementById('ed-cycle')?.hidden === false ? document.getElementById('ed-cycle').textContent : null }));
+  await shot('click-again-cycles');
+  check(first.join() === 'spawn_inside' && second.entities.length === 0 && second.pieces.join() === 'piece_stair' && /Player Spawn/.test(second.list ?? ''), `a click again at the same spot steps from the spawn to the set piece, with a list of what is there (${JSON.stringify({ first, second })})`);
+  // Back to the spawn (clicks step round), then its gizmo's handle drags it out of the stair, one undo step.
+  for (let i = 0; i < 6; i++) {
+    const now = await page.evaluate(() => [...window.__editor.selection.entities].join());
+    if (now === 'spawn_inside') break;
+    await page.mouse.click(sp.x, sp.y);
+    await frames(page, 2);
+  }
+  await page.mouse.move(5, 5);
+  await frames(page, 3);
+  const handle = await page.evaluate(() => (window.__editor.view.gizmoAt ? window.__editor.view.project(window.__editor.view.gizmoAt) : null));
+  await shot('gizmo-on-top');
+  if (handle) {
+    await page.mouse.move(handle.x, handle.y);
+    await page.mouse.down();
+    for (let i = 1; i <= 6; i++) await page.mouse.move(handle.x - i * 25, handle.y + i * 10);
+    await page.mouse.up();
+    await frames(page, 3);
+  }
+  const moved = await page.evaluate(() => ({ at: window.__editor.doc.entities.find((e) => e.id === 'spawn_inside').position, undo: window.__editor.history.undoLabel }));
+  check(!!handle && Math.hypot(moved.at[0] - spawn[0], moved.at[2] - spawn[2]) > 2 && moved.undo === 'Move', `the move gizmo's handle drags the spawn out though it is inside the stair (${JSON.stringify({ handle, spawn, moved })})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -1595,7 +3783,107 @@ async function editorTileOptionChecks(browser) {
 async function editorenvFlow(browser) {
   await editorMapTestChecks(browser);
   await editorEnvironmentChecks(browser);
+  await editorGroundThemeChecks(browser);
   await editorSkyWeatherChecks(browser);
+}
+
+/**
+ * The Ground theme (painting Phase 4, map format v45): a new terrain is all base (Meadow, its chip in the top bar);
+ * Packed Snow paints as Packed Snow (its own mesh, no stand-in); Map settings' Ground theme asks first with the
+ * counts (m² that follow, m² painted), Cancel changes nothing, Change moves only the base cells (painted ones stay)
+ * in one undo step, Keep current look keeps every cell; a Structure theme change offers its match as a tick box.
+ */
+async function editorGroundThemeChecks(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const shot = (name) => (shots ? page.screenshot({ path: `${shots}/editorux-ground-${name}.png` }).catch(() => {}) : Promise.resolve());
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.on('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  await frames(page, 3);
+  const state = () =>
+    page.evaluate(() => {
+      const t = window.__editor.doc.terrain;
+      const meshes = window.__editor.view.scene.meshes.filter((m) => m.name.startsWith('edmap_terrain_') && !m.isDisposed()).map((m) => m.name.slice('edmap_terrain_'.length));
+      return { theme: t.groundTheme, grounds: t.grounds ?? [], base: t.materials.filter((m) => m === 0).length, cells: t.materials.length, painted: t.materials.filter((m) => m > 0).length, snow: t.materials.filter((m) => m > 0 && t.grounds[m - 1] === 'core.packed_snow').length, spacing: t.spacing, meshes, chip: document.getElementById('ed-ground-chip-name').textContent, undo: window.__editor.history.undoLabel };
+    });
+  const s0 = await state();
+  check(s0.theme === 'ground.meadow' && s0.base === s0.cells && s0.chip === 'Meadow' && s0.meshes.includes('grass'), `a new terrain is all the base of its Ground theme, Meadow, shown on the top bar's chip (${JSON.stringify({ ...s0, meshes: s0.meshes.join() })})`);
+  // Packed Snow with Ground paint: added to the map's grounds and drawn as itself.
+  await page.keyboard.press('Shift+KeyB');
+  await page.click('#ed-tr-materials [data-ground="core.packed_snow"]');
+  await page.evaluate(() => {
+    const v = window.__editor.view;
+    v.yaw = 0;
+    v.focus({ x: 10, y: 0, z: 10 });
+    v.dolly(-20);
+    window.__editor.setBrushRadius(6);
+  });
+  await frames(page, 3);
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 10, y: 0, z: 10 }));
+  await page.mouse.move(p.x, p.y);
+  await frames(page, 2);
+  await page.mouse.down();
+  await frames(page, 2);
+  await page.mouse.up();
+  await frames(page, 3);
+  const s1 = await state();
+  check(s1.grounds.includes('core.packed_snow') && s1.snow > 0 && s1.meshes.includes('core.packed_snow') && /Packed Snow/.test(s1.undo ?? ''), `Packed Snow paints as Packed Snow: in the map's grounds, its own terrain mesh, one undo step (${JSON.stringify({ ...s1, meshes: s1.meshes.join() })})`);
+  await shot('packed-snow');
+  // Map settings' Ground theme: the warning, with the counts.
+  await openMapSettings(page);
+  const note = await page.evaluate(() => document.getElementById('ed-prop-ground-note')?.textContent ?? '');
+  check(/^base Grass · 2 grounds$/.test(note), `Map settings names the base and how many grounds the map uses (${note})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  const dlg = await page.evaluate(() => Object.fromEntries([...document.querySelectorAll('#ed-ground-dialog [data-count]')].map((l) => [l.dataset.count, l.textContent])));
+  const m2 = (n) => Math.round(n).toLocaleString('en-GB');
+  const want = { follows: m2(s1.base * s1.spacing * s1.spacing), painted: m2(s1.painted * s1.spacing * s1.spacing) };
+  check(dlg.follows?.includes(`${want.follows} m² of ground`) && /from Grass to Desert Sand/.test(dlg.follows) && dlg.painted?.includes(`${want.painted} m² you painted`) && /border/.test(dlg.border ?? ''), `the Ground theme warning counts the ground that follows and the ground painted (${JSON.stringify({ dlg, want })})`);
+  await shot('warning');
+  await page.click('#ed-ground-cancel');
+  const s2 = await state();
+  check(s2.theme === 'ground.meadow' && s2.undo === s1.undo && (await page.inputValue('#ed-prop-ground-theme')) === 'ground.meadow', `Cancel changes nothing and puts the select back (${JSON.stringify({ theme: s2.theme, undo: s2.undo })})`);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.desert');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-change');
+  await frames(page, 3);
+  const s3 = await state();
+  check(s3.theme === 'ground.desert' && s3.snow === s1.snow && s3.base === s1.base && s3.meshes.includes('sand') && !s3.meshes.includes('grass') && s3.meshes.includes('core.packed_snow') && s3.chip === 'Desert' && s3.undo === 'Change Ground theme', `Change moves the base cells to Desert Sand and the painted Packed Snow stays (${JSON.stringify({ ...s3, meshes: s3.meshes.join() })})`);
+  await shot('changed');
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 3);
+  const s4 = await state();
+  check(s4.theme === 'ground.meadow' && s4.meshes.includes('grass') && s4.snow === s1.snow, `one undo puts the Ground theme back (${JSON.stringify({ theme: s4.theme, meshes: s4.meshes.join() })})`);
+  // Keep current look: the theme changes, every cell keeps its ground (the base cells become painted Grass).
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-ground-theme', 'ground.snowfield');
+  await page.waitForSelector('#ed-ground-dialog', { timeout: T(5000) });
+  await page.click('#ed-ground-keep');
+  await frames(page, 3);
+  const s5 = await state();
+  check(s5.theme === 'ground.snowfield' && s5.base === 0 && s5.grounds.includes('core.pbr_grass') && s5.meshes.includes('grass') && !s5.meshes.includes('snow') && s5.snow === s1.snow, `Keep current look changes the theme and keeps every cell's ground (${JSON.stringify({ ...s5, meshes: s5.meshes.join() })})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  // A Structure theme change offers its matching Ground theme as a tick box (off); ticked, both change in one step.
+  await openMapSettings(page);
+  await page.selectOption('#ed-prop-theme', 'core.desert_city');
+  await page.waitForSelector('#ed-theme-dialog', { timeout: T(5000) });
+  const tick = await page.evaluate(() => ({ text: document.getElementById('ed-theme-ground-row')?.textContent ?? '', on: document.getElementById('ed-theme-ground')?.checked }));
+  check(/Also change the Ground theme to Desert \(Desert City's match\): [\d,]+ m² of ground follows it/.test(tick.text) && tick.on === false, `the Structure theme warning offers the matching Ground theme, unticked (${JSON.stringify(tick)})`);
+  await shot('structure-tick');
+  await page.check('#ed-theme-ground');
+  await page.click('#ed-theme-change');
+  await frames(page, 3);
+  const both = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme, undo: window.__editor.history.undoLabel }));
+  await page.keyboard.press('Control+KeyZ');
+  const back = await page.evaluate(() => ({ theme: window.__editor.doc.classicStructure.theme, ground: window.__editor.doc.terrain.groundTheme }));
+  check(both.theme === 'core.desert_city' && both.ground === 'ground.desert' && back.theme !== 'core.desert_city' && back.ground === 'ground.meadow', `ticked, the Structure and Ground themes change in one undo step (${JSON.stringify({ both, back })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
 }
 
 /**
@@ -1615,6 +3903,7 @@ async function editorSkyWeatherChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
+  await openMapSettings(page);
   const sun = () =>
     page.evaluate(() => {
       const l = window.__editor.view.scene.getLightByName('sun');
@@ -1819,6 +4108,8 @@ async function editorMapTestChecks(browser) {
   await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
   await page.setInputFiles('#ed-import-file', fileURLToPath(new URL('../maps/skyward.json', import.meta.url)));
   await page.waitForFunction(() => window.__editor.doc.metadata.id === 'skyward', null, { timeout: T(30000) });
+  // Bot test is on the Test tab's tool bar (MapMaker UI spec Phase 1).
+  await page.click('#ed-modes [data-ws="test"]');
   await page.click('#ed-maptest');
   const opened = await page.evaluate(() => ({ shown: !document.getElementById('ed-maptest-panel').hidden, modes: [...document.querySelectorAll('#ed-mt-mode option')].map((o) => o.value), pressed: document.getElementById('ed-maptest').getAttribute('aria-pressed') }));
   check(opened.shown && opened.pressed === 'true' && opened.modes[0] === 'core.deathmatch' && opened.modes.includes('core.tdm'), `Bot test opens the Test panel with the modes the map plays, its main one first (${JSON.stringify(opened)})`);
@@ -1841,7 +4132,7 @@ async function editorMapTestChecks(browser) {
   const cancelled = await page.evaluate(() => ({ running: window.__editor.mapTest.running, progress: !document.getElementById('ed-mt-progress').hidden, result: !!window.__editor.mapTest.result, run: !document.getElementById('ed-mt-run').disabled, frames: window.__editor.mapTest.frames.count }));
   check(during.running && !during.grid && during.bar > 0, `the bot test run goes on in the background, its progress shown, while MapMaker draws and takes a click (${JSON.stringify(during)}, ${cancelled.frames} frames drawn meanwhile)`);
   check(!cancelled.running && !cancelled.progress && !cancelled.result && cancelled.run, `Cancel ends the run at once, with no result (${JSON.stringify(cancelled)})`);
-  await page.click('#ed-grid');
+  await viewItem(page, 'ed-grid');
   if (process.env.E2E_SHOTS) {
     // The picture of a run going: another, cancelled after the shot.
     await page.click('#ed-mt-run');
@@ -1885,13 +4176,13 @@ async function editorMapTestChecks(browser) {
   await page.click('#ed-mt-layers input[data-layer="went"]');
   const on = await page.evaluate(() => !!window.__editor.view.scene.getMeshByName('edMapTest_went'));
   check(off && on, `a heatmap layer turns off and on (${off}, ${on})`);
-  // The plan view shows them too, from above.
-  await page.click('#ed-plan');
+  // The plan view shows them too, from above (the Test tab's Plan button).
+  await page.click('#ed-tb-plan');
   await frames(page, 4);
   const plan = await page.evaluate(() => ({ plan: window.__editor.plan.on, went: !!window.__editor.view.scene.getMeshByName('edMapTest_went')?.isEnabled() }));
   check(plan.plan && plan.went, `the heatmaps show in the plan view (${JSON.stringify(plan)})`);
   await shot('bottest-plan');
-  await page.click('#ed-plan');
+  await page.click('#ed-tb-plan');
   // Spawn exposure: a label on every spawn, sightlines, warnings for the exposed ones.
   await page.click('#ed-mt-exposure');
   await page.waitForFunction(() => window.__editor.mapTest.exposure, null, { timeout: T(60000) }).catch(() => {});
@@ -1951,8 +4242,9 @@ async function editorEnvironmentChecks(browser) {
     const t = ed.doc.terrain;
     const xOf = (i) => t.origin[0] + (i % t.cols) * t.spacing;
     const heights = t.heights.map((h, i) => Math.round(Math.min(24, Math.max(0, xOf(i) * 0.6)) * 100));
-    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 2 : m));
-    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials } });
+    // Painted Mossy Rock (the stone kind) on the slope: the terrain's own ground 1.
+    const materials = t.materials.map((m, i) => (t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing > 0 && t.origin[0] + ((i % (t.cols - 1)) + 0.5) * t.spacing < 40 ? 1 : m));
+    ed.history.execute('Sculpt', { kind: 'setTerrain', before: t, after: { ...t, heights, materials, grounds: ['core.pbr_rock'] } });
     ed.history.execute('Spawn', { kind: 'addEntities', entities: [{ id: 'spawn_env', kind: 'spawn', position: [-20, 0, 0], yaw: 0, faction: null }] });
     ed.history.execute('Route', { kind: 'setPaths', before: ed.doc.paths ?? null, after: [{ id: 'route_env', points: [[-45, 0, 12], [-5, 0, 12]], uses: ['route'], style: 'dirt', width: 3, closed: false, lay: false }] });
   });
@@ -2037,6 +4329,24 @@ async function editorEnvironmentChecks(browser) {
   await stroke([-30, -8], [-10, 4]);
   const again = await plants();
   check(again.length === painted.length && again.every((p, i) => p === painted[i]), `the same seed and stroke paint the same plants (${again.length} of ${painted.length} the same)`);
+  // A season across the whole map (environment Phase 5): Autumn turns the oaks and maples to their autumn look in one
+  // undo step, nothing moves, and Summer takes them back.
+  await page.selectOption('#ed-env-season', 'autumn');
+  await page.click('#ed-env-season-apply');
+  const autumn = await plants();
+  const where = (list) => list.map((p) => p.replace(/#\d+@/, '@')).sort();
+  const leafy = autumn.filter((p) => /^env\.broadleaf\.(oak|maple)#/.test(p));
+  check(leafy.length > 0 && leafy.every((p) => /#1@/.test(p)) && where(autumn).join('|') === where(painted).join('|') && (await page.evaluate(() => window.__editor.history.undoLabel)) === 'Season: Autumn', `Season → Autumn: the ${leafy.length} oaks and maples wear autumn, nothing moved, one step ("${await page.evaluate(() => window.__editor.history.undoLabel)}")`);
+  await page.keyboard.press('Control+KeyZ');
+  const unseasoned = await plants();
+  check(unseasoned.length === painted.length && unseasoned.every((p, i) => p === painted[i]), 'undoing the season puts every look back');
+  // The nature swap (shared/editor/natureSwap.ts): a Kenney Nature Kit pine, oak and boulder become ours in their spots, one undo step.
+  await page.evaluate(() => window.__editor.run('Add', { kind: 'addEntities', entities: [['qa', 'prop.pine_tall', -40], ['qb', 'prop.oak', -42], ['qc', 'prop.rock_large', -44]].map(([id, model, x]) => ({ id, kind: 'prop', model, position: [x, 0, 20], yaw: 0.5, scale: 1.2, solid: true, tint: null })) }));
+  await page.click('#ed-env-swap');
+  const swapped = await page.evaluate(() => ({ label: window.__editor.history.undoLabel, qs: ['qa', 'qb', 'qc'].map((id) => window.__editor.doc.entities.find((e) => e.id === id)).map((e) => `${e.model}@${e.position[0]}/${e.yaw}`) }));
+  check(swapped.label === 'Swap natural props for ours' && swapped.qs[0] === 'env.conifer.pine_tall@-40/0.5' && swapped.qs[1] === 'env.broadleaf.oak@-42/0.5' && /^env\.rock\.boulder_(angular|round)@-44\/0\.5$/.test(swapped.qs[2]), `Swap natural props for ours: a pine, an oak and a boulder become ours in place, one step (${JSON.stringify(swapped)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await page.keyboard.press('Control+KeyZ');
 
   // ---- Filters: on the 31° slope, oaks and maples (30° at most) stay off; the slope filter at 10° keeps everything off.
   await look(20, 0, 12);
@@ -2056,6 +4366,27 @@ async function editorEnvironmentChecks(browser) {
   await stroke([12, -6], [28, 6]);
   const slope = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.') && e.position[0] > 2 && e.position[0] < 38).map((e) => e.model));
   check(s2?.filtered > 0 && slope.length > 0 && !slope.some((m) => m.startsWith('env.broadleaf.')), `on the stone slope: ${slope.length} plants, no broadleaf trees (their 30° limit) (${[...new Set(slope)].join(', ')}; the 10° stroke: ${JSON.stringify(s2)})`);
+  // Arid on grass (owner, 2026-11-16: "didn't seem to work"): its ground (sand, dirt, gravel, stone) is said on the
+  // brush card and under the pointer before the click, a stroke on grass says why it painted nothing, and "Paint on
+  // any ground" paints its dry acacias, laurels and grass there.
+  await page.selectOption('#ed-env-preset', 'arid');
+  await look(-25, -25);
+  const card = await page.evaluate(() => document.getElementById('ed-env-ground')?.textContent ?? '');
+  const onGrass = await at(-25, 0, -25);
+  await page.mouse.move(onGrass.x, onGrass.y);
+  await frames(page, 3);
+  const aridHover = await page.textContent('#ed-target');
+  const beforeArid = await envCount();
+  await stroke([-35, -28], [-15, -22]);
+  const sArid = await page.evaluate(() => window.__envStroke);
+  const aridToast = await page.evaluate(() => document.getElementById('ed-toast')?.textContent ?? '');
+  check(/sand, dirt, gravel or stone/.test(card) && /paints only on .*not on grass here/.test(aridHover) && (await envCount()) === beforeArid && sArid?.wrongGround > 0 && /Paint on any ground/.test(aridToast), `Arid on grass: the card and the pointer say its ground first, a stroke paints nothing and says why (${JSON.stringify({ card, aridHover, aridToast, wrongGround: sArid?.wrongGround })})`);
+  await page.click('#ed-env-any-ground');
+  await stroke([-35, -28], [-15, -22]);
+  const arid = await page.evaluate((n) => window.__editor.doc.entities.filter((e) => e.kind === 'prop' && e.model.startsWith('env.')).slice(n).map((e) => `${e.model}#${e.variant ?? 0}`), beforeArid);
+  const dry = arid.filter((m) => /env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#1$/.test(m));
+  check(arid.length > 5 && !(await page.isVisible('#ed-env-ground')) && dry.length > 0 && arid.every((m) => !/env\.(broadleaf\.acacia|shrub\.laurel|grass\.clump)#0$/.test(m)), `"Paint on any ground" paints Arid on grass, its acacias, laurels and grass dry (${arid.length} painted, ${dry.length} dry: ${[...new Set(arid)].join(', ')})`);
+  await shot('arid-grass');
   await page.selectOption('#ed-env-preset', 'alpine');
   await page.evaluate(() => { for (const m of ['grass', 'dirt', 'sand', 'gravel', 'snow', 'moss', 'mud']) { const i = document.getElementById(`ed-env-mat-${m}`); if (i && !i.checked) i.click(); } });
   await look(52, 0, 24);
@@ -2444,6 +4775,185 @@ async function measureRampCheck(page, { focus, clickAt, frames, shot }) {
  * drag is one undo step; the inspector's quick facings set the facing in one click (a tile's too). Screenshots go to
  * E2E_SHOTS when set.
  */
+/**
+ * MapMaker UI spec Phase 4a, Tile View's moves through the shared transform command (editor/tileViewPanel.ts): a moving
+ * build picked in Tile View is picked whole (its lift and barrel with it, as from the view), a drag moves all of it the
+ * same snapped distance as one undo step, and the Facing field turns it as the inspector's does.
+ */
+async function editorTileViewMoveChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 860 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'tvm_room', tile: 'core.room', x: 5, y: 5, z: 0, rotation: 2 }] },
+        { kind: 'addEntities', entities: [
+          { id: 'tvm_lift', kind: 'block', position: [41, 0.15, 41], yaw: 0, size: [2, 0.3, 2], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+          { id: 'tvm_barrel', kind: 'prop', model: 'kit.drum.steel', position: [41, 0.3, 41], yaw: 0, scale: 1, solid: true, tint: null },
+          { id: 'tvm_mover', kind: 'mover', position: [41, 0, 41], yaw: 0, blocks: ['tvm_lift'], props: ['tvm_barrel'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+        ] },
+      ],
+    });
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: ['tvm_room'], entities: [] });
+    ed.openTileView();
+  });
+  await page.waitForFunction(() => window.__editor.tileView.state().visible, null, { timeout: T(5000) });
+  await frames(page, 3);
+  const pos = () => page.evaluate(() => Object.fromEntries(window.__editor.doc.entities.filter((e) => e.id.startsWith('tvm_')).map((e) => [e.id, e.position])));
+  const at = (x, z) => page.evaluate(([x, z]) => window.__editor.tileView.clientPoint(x, z), [x, z]);
+  // Pick the mover (its marker) and drag it about 1.5 m: snapped to 50 cm in the turned room's frame.
+  await page.selectOption('#ed-tv-snap', '50');
+  await page.evaluate(() => window.__editor.tileView.pickChild('tvm_mover'));
+  await frames(page, 2);
+  const sel = await page.evaluate(() => [...window.__editor.selection.entities].sort().join());
+  check(sel === 'tvm_barrel,tvm_lift,tvm_mover', `a moving build picked in Tile View is picked whole (${sel})`);
+  const before = await pos();
+  const rev0 = await page.evaluate(() => window.__editor.history.revision);
+  const p = await at(41, 41);
+  const q = await at(42.6, 40.1);
+  await page.mouse.move(p.x, p.y);
+  await page.mouse.down();
+  await page.mouse.move(q.x, q.y, { steps: 6 });
+  await page.mouse.up();
+  await frames(page, 3);
+  const after = await pos();
+  const rev1 = await page.evaluate(() => window.__editor.history.revision);
+  const d = (id) => [after[id][0] - before[id][0], after[id][2] - before[id][2]].map((v) => Math.round(v * 1000) / 1000);
+  const same = JSON.stringify(d('tvm_mover')) === JSON.stringify(d('tvm_lift')) && JSON.stringify(d('tvm_mover')) === JSON.stringify(d('tvm_barrel'));
+  const half = d('tvm_mover').every((v) => Math.abs(v * 2 - Math.round(v * 2)) < 1e-6) && d('tvm_mover').some((v) => v !== 0);
+  check(same && half && rev1 === rev0 + 1, `a Tile View drag moves the whole build the same 50 cm-snapped distance, one undo step (${JSON.stringify({ mover: d('tvm_mover'), lift: d('tvm_lift'), barrel: d('tvm_barrel'), steps: rev1 - rev0 })})`);
+  await page.evaluate(() => window.__editor.undo());
+  await frames(page, 2);
+  check(JSON.stringify(await pos()) === JSON.stringify(before), 'one undo puts the whole build back');
+  // Facing (local) 90 in a room turned 180°: the world's -90 (270), the build turning with it.
+  await page.evaluate(() => window.__editor.tileView.pickChild('tvm_mover'));
+  await frames(page, 3);
+  await page.fill('#ed-tv-facing', '90');
+  await page.press('#ed-tv-facing', 'Enter');
+  await frames(page, 3);
+  const yaw = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.id === 'tvm_mover').yaw);
+  check(Math.abs(Math.sin(yaw) + 1) < 1e-3, `a local Facing of 90° in a room turned 180° faces the world's west (${yaw})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * MapMaker UI spec Phase 2, the shared transform command (shared editor/transform.ts): typing X, Height or Z in the
+ * inspector moves a thing exactly as a drag or a nudge does (rounded to the millimetre, a prop on the terrain bedded
+ * where it lands), a moving build selected whole moves with its blocks and props, and each typed value is one undo
+ * step; Esc in a field puts the value back without an edit.
+ */
+async function editorTransformChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const doc = () => page.evaluate(() => window.__editor.doc);
+  const pos = async (id) => (await doc()).entities.find((e) => e.id === id)?.position;
+  const rev = () => page.evaluate(() => window.__editor.history.revision);
+  // Ground rising 1 m in 10 to the east, a crate on it, and a moving build (a lift block and a barrel on a mover).
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    const t = ed.doc.terrain;
+    const after = { ...t, heights: t.heights.map((_, i) => Math.round(((i % t.cols) * t.spacing + t.origin[0] + 60) * 10)) };
+    const prop = (id, model, position) => ({ id, kind: 'prop', model, position, yaw: 0, scale: 1, solid: true, tint: null });
+    ed.run('Setup', {
+      kind: 'batch',
+      commands: [
+        { kind: 'setTerrain', before: t, after },
+        { kind: 'addEntities', entities: [
+          prop('e2e_crate', 'core.crate', [0, t.baseY + 6, 20]),
+          { id: 'e2e_lift', kind: 'block', position: [6, 8, 30], yaw: 0, size: [3, 0.3, 3], material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8 },
+          prop('e2e_barrel', 'kit.drum.steel', [6, 8.15, 30]),
+          { id: 'e2e_mover', kind: 'mover', position: [6, 8, 30], yaw: 0, blocks: ['e2e_lift'], props: ['e2e_barrel'], points: [[0, 0, 0], [0, 3, 0]], mode: 'pingpong', speed: 1, turnSpeed: 45, wait: 1, startActive: true },
+        ] },
+      ],
+    });
+    // Bedded on the slope, as Settle on ground does.
+    ed.setTool({ kind: 'select' });
+    ed.setSelection({ tiles: [], entities: ['e2e_crate'] });
+    ed.edits.settleProps(['e2e_crate']);
+  });
+  await frames(page, 3);
+  /** The inspector's number field in the row labelled `label`, filled with `value` and committed with Enter (or cancelled with Esc). */
+  const typeField = async (label, value, key = 'Enter') => {
+    const ok = await page.evaluate((label) => {
+      for (const r of document.querySelectorAll('#ed-inspector .row')) {
+        if (r.firstElementChild?.textContent?.trim() !== label) continue;
+        const input = r.querySelector('input[type=number]');
+        if (!input) continue;
+        document.querySelectorAll('[data-e2e-field]').forEach((x) => x.removeAttribute('data-e2e-field'));
+        input.setAttribute('data-e2e-field', '1');
+        return true;
+      }
+      return false;
+    }, label);
+    if (!ok) return false;
+    await page.fill('[data-e2e-field]', String(value));
+    await page.press('[data-e2e-field]', key);
+    await frames(page, 3);
+    await page.evaluate(() => document.activeElement?.blur?.());
+    return true;
+  };
+  const select = async (ids) => {
+    await page.evaluate((ids) => window.__editor.setSelection({ tiles: [], entities: ids }), ids);
+    await frames(page, 2);
+  };
+
+  // The crate on the slope: X typed 10 m east is rounded to the millimetre and bedded on the ground there.
+  const crate0 = await pos('e2e_crate');
+  await select(['e2e_crate']);
+  const r0 = await rev();
+  check(await typeField('X', 10.123456), 'the prop inspector has an X field');
+  const typed = await pos('e2e_crate');
+  check(typed?.[0] === 10.123 && (await rev()) === r0 + 1, `typing X rounds to the millimetre, as a drag does, in one undo step (${JSON.stringify(typed)}, ${(await rev()) - r0} steps)`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check(JSON.stringify(await pos('e2e_crate')) === JSON.stringify(crate0), 'one undo puts it back');
+  // The same 10 m by the arrow keys (a nudge is half a metre): where it lands, the typed X gives the same height.
+  await select(['e2e_crate']);
+  for (let i = 0; i < 20; i++) await page.keyboard.press('ArrowRight');
+  await frames(page, 2);
+  const nudged = await pos('e2e_crate');
+  for (let i = 0; i < 20; i++) await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await select(['e2e_crate']);
+  await typeField('X', crate0[0] + 10);
+  const typed10 = await pos('e2e_crate');
+  check(nudged && typed10 && nudged[0] === typed10[0] && Math.abs(nudged[1] - typed10[1]) < 1e-6 && typed10[1] > crate0[1] + 0.9, `typing X beds a prop on the terrain where it lands, as a nudge does (nudged ${JSON.stringify(nudged)}, typed ${JSON.stringify(typed10)}, from ${JSON.stringify(crate0)})`);
+  await page.keyboard.press('Control+KeyZ');
+  // Z too; and Esc in the field puts the value back with no edit.
+  await select(['e2e_crate']);
+  const r1 = await rev();
+  await typeField('Z', 25, 'Escape');
+  check((await rev()) === r1 && (await pos('e2e_crate'))?.[2] === crate0[2], `Esc in a field cancels: no edit (${(await rev()) - r1} steps)`);
+
+  // The moving build selected whole (as a click on any part selects it): X moves the mover, its block and its barrel.
+  await select(['e2e_mover', 'e2e_lift', 'e2e_barrel']);
+  const r2 = await rev();
+  await typeField('X', 2);
+  const build = await Promise.all(['e2e_mover', 'e2e_lift', 'e2e_barrel'].map(pos));
+  check(build.every((p) => p?.[0] === 2) && (await rev()) === r2 + 1, `typing X on a moving build moves the mover with its parts, one step (${JSON.stringify(build)})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await pos('e2e_lift'))?.[0] === 6 && (await pos('e2e_mover'))?.[0] === 6, 'one undo puts the whole build back');
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function editorTurnChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
   const errors = [];
@@ -2646,7 +5156,7 @@ async function editorWorkflowChecks(browser) {
   await page.mouse.move(700, 400);
   await page.keyboard.press('KeyK');
   await frames(page, 3);
-  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-pressed'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
+  const plan = await page.evaluate(() => ({ on: window.__editor.plan.on, mode: window.__editor.view.camera.mode, pressed: document.getElementById('ed-plan').getAttribute('aria-checked'), title: document.getElementById('ed-plan-title')?.textContent, overlay: !!document.getElementById('ed-plan-overlay'), clip: !!window.__editor.view.scene.clipPlane }));
   check(plan.on && plan.mode === 1 && plan.pressed === 'true' && plan.title === 'Plan · Ground' && plan.overlay && plan.clip, `K switches to the plan view: an orthographic camera from above, cut above the floor, its icons over it (${JSON.stringify(plan)})`);
   // North is up and east is right on screen.
   const n = await at(0, 0, 10);
@@ -2688,13 +5198,13 @@ async function editorWorkflowChecks(browser) {
   const png = file ? readFileSync(file) : null;
   if (png && process.env.E2E_SHOTS) writeFileSync(`${process.env.E2E_SHOTS}/editorux-plan-export.png`, png);
   check(download?.suggestedFilename() === 'untitled_map-ground-plan.png' && png && png.subarray(1, 4).toString() === 'PNG' && png.length > 20000, `Export PNG downloads the plan (${download?.suggestedFilename()}, ${png?.length ?? 0} bytes)`);
-  await page.click('#ed-plan');
+  await viewItem(page, 'ed-plan');
   await frames(page, 2);
   const after = await camera();
-  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `the Plan button goes back to the 3D view as it was (${JSON.stringify(after)})`);
+  check(!(await page.evaluate(() => window.__editor.plan.on || !!document.getElementById('ed-plan-overlay') || !!window.__editor.view.scene.clipPlane)) && JSON.stringify(after) === JSON.stringify(view3d), `View → Plan view goes back to the 3D view as it was (${JSON.stringify(after)})`);
 
   // ---- The card shot: Map properties → Set card shot…, eye level by default, Enter saves; Preview in the frame.
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await page.waitForSelector('#ed-card-set', { timeout: T(5000) });
   check(await page.isDisabled('#ed-card-preview'), 'no card camera yet: Preview is off');
   await setCamera(-10, 12, -18, 0.6, -0.15);
@@ -3090,6 +5600,8 @@ async function editorSetPieceChecks(browser) {
     window.__editor.setSelection({ tiles: [], entities: [], setPieces: [id] });
   }, gate.id);
   await settle();
+  // The issues list comes from the map check in its worker, after the edits above: wait for it (a busy check runs late).
+  await page.waitForFunction(() => [...document.querySelectorAll('#ed-issues li')].some((li) => /faces a wall/.test(li.textContent)), null, { timeout: T(20000) }).catch(() => {});
   const ports = await page.evaluate(() => ({
     warn: [...document.querySelectorAll('#ed-inspector .ed-sp-ports li.warning')].map((li) => li.textContent),
     issue: [...document.querySelectorAll('#ed-issues li')].map((li) => li.textContent).find((t) => /faces a wall/.test(t)) ?? null,
@@ -3299,6 +5811,15 @@ async function offlineFlow(browser) {
   await page.click('.opt-row:has-text("Reduce flashing") .switch');
   const calmOn = await page.evaluate(() => localStorage.getItem('tiletrigger.reduceFlashing'));
   check(calmDefault === true && calmOff === '0' && calmOn === '1', `Accessibility: Reduce flashing is on at first and its switch saves (${JSON.stringify({ calmDefault, calmOff, calmOn })})`);
+  // Combat accessibility (game/combatPrefs.ts): Aim hold/toggle and Camera shake, saved; vibration only where the browser can rumble a controller.
+  const combatDefault = await page.evaluate(() => ({ aim: document.getElementById('opt-aim-mode')?.value, shake: document.getElementById('opt-camera-shake')?.value }));
+  await page.selectOption('#opt-aim-mode', 'toggle');
+  await page.selectOption('#opt-camera-shake', 'reduced');
+  const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  await page.selectOption('#opt-aim-mode', 'hold');
+  await page.selectOption('#opt-camera-shake', 'full');
+  check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
   await page.keyboard.press('Escape');
   // The main menu: a Characters item (Character Select, and Back returns here: the owner wanted it kept) beside the
   // Profile entry (top right), which shows your character, name and account state and opens Profile (Change character
@@ -3320,6 +5841,15 @@ async function offlineFlow(browser) {
     await page.click('#profile-change-character');
     await page.waitForSelector('.char-grid .char-tile[data-look]');
   };
+  // Profile (docs/PLAYER_PROFILES_PLAN.md): your career (a guest's, in this browser: nothing yet) and your favourite
+  // class, saved when picked.
+  await page.click('#profile-badge');
+  await page.waitForSelector('#profile-career');
+  await page.selectOption('#profile-fav-class', 'medic');
+  const prof = await page.evaluate(() => ({ stats: [...document.querySelectorAll('#profile-career .prof-stat')].map((t) => t.dataset.stat), matches: document.querySelector('#profile-career [data-stat="matches"] b')?.textContent, fav: localStorage.getItem('tiletrigger.favClass'), weapon: document.getElementById('profile-fav-weapon')?.textContent }));
+  await page.selectOption('#profile-fav-class', '');
+  const favCleared = await page.evaluate(() => localStorage.getItem('tiletrigger.favClass'));
+  check(prof.stats.join() === 'matches,wins,kd,kills,deaths,accuracy,headshots,streak,time' && prof.matches === '0' && prof.fav === '"medic"' && favCleared === null && /Favourite weapon/.test(prof.weapon ?? ''), `Profile shows your career and saves a favourite class (${JSON.stringify({ prof, favCleared })})`);
   // Character Select: whole square tiles row under row, and the grid ends above the info panel (it scrolls).
   await openChars();
   const charFit = await page.evaluate(() => {
@@ -3356,7 +5886,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,legends,folk,horror,animals,creatures,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -3370,21 +5900,21 @@ async function offlineFlow(browser) {
   await settled('soldiers');
   await page.keyboard.press('e');
   await page.keyboard.press('e');
-  const twoOn = await settled('folk');
-  check(twoOn.on === 'folk' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
+  const twoOn = await settled('space');
+  check(twoOn.on === 'space' && twoOn.top > 0, `E E scrolls the grid two sections on and the strip lights it (${JSON.stringify(twoOn)})`);
   await page.keyboard.press('q');
-  const back1 = await settled('legends');
-  check(back1.on === 'legends', `Q scrolls back a section (${JSON.stringify(back1)})`);
-  await page.click('.char-chip[data-section="creatures"]');
-  const chipJump = await settled('creatures');
-  check(chipJump.on === 'creatures', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
+  const back1 = await settled('folk');
+  check(back1.on === 'folk', `Q scrolls back a section (${JSON.stringify(back1)})`);
+  await page.click('.char-chip[data-section="machines"]');
+  const chipJump = await settled('machines');
+  check(chipJump.on === 'machines', `a chip in the strip jumps to its section (${JSON.stringify(chipJump)})`);
   const g = await page.locator('.char-grid').boundingBox();
   await page.mouse.move(g.x + g.width / 2, g.y + g.height / 2);
   await page.mouse.wheel(0, -100000);
   await page.waitForFunction(() => document.querySelector('.char-grid').scrollTop === 0 && document.querySelector('.char-chip.on')?.dataset.section === 'soldiers', null, { timeout: T(5000) }).catch(() => {});
   const wheeled = await section();
   check(wheeled.on === 'soldiers' && wheeled.top === 0, `the mouse wheel scrolls across sections and the strip follows (${JSON.stringify(wheeled)})`);
-  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Knights & Legends.
+  // Arrows move over the portraits and on across a section's end: Down from the last row of Soldiers lands in Everyday Folk.
   const lastSoldier = await page.$eval('.char-sec[data-section="soldiers"] .char-tile:last-child', (t) => t.dataset.look);
   await page.focus(`.char-tile[data-look="${lastSoldier}"]`);
   await page.keyboard.press('ArrowDown');
@@ -3392,7 +5922,7 @@ async function offlineFlow(browser) {
   await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowRight');
   const after = await page.evaluate(() => document.activeElement?.closest('.char-sec')?.dataset.section);
-  check(below === 'legends' && after === 'legends', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
+  check(below === 'folk' && after === 'folk', `arrow keys cross section boundaries (down: ${below}, right from the last soldier: ${after})`);
   // Hovering only highlights, a click shows them, and only Choose (Enter / A again, a double-click) makes them
   // yours. Leaving without it keeps your character.
   const front = () => page.evaluate(() => ({ look: window.__front.look, shown: window.__front.scene.look, screen: window.__front.screen }));
@@ -3560,12 +6090,15 @@ async function offlineFlow(browser) {
   await page.waitForTimeout(1000); // wait-ok: measures the tick rate over one second
   const t1 = await sim(page, (m) => m.tick);
   check(where.mode === 'worker' && !where.match && t1 - t0 > 20, `the offline match runs in a Web Worker (${where.mode}, ${t1 - t0} ticks in 1 s)`);
+  // Its snapshots come as binary messages (shared net/snapshotBinary.ts), not structured-cloned objects.
+  const binary = await page.evaluate(() => window.__sim?.binary ?? 0);
+  check(binary > 20, `the worker's snapshots reach the page as binary messages (${binary} so far)`);
   // Wait for the ammo readout (it blanks while you're down after an early death).
   await page.waitForFunction(() => /^\d+$/.test(document.getElementById('ammo-count').textContent ?? '') && /^\d+$/.test(document.getElementById('ammo-reserve').textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
   const ammo = await page.evaluate(() => `${document.getElementById('ammo-count').textContent} / ${document.getElementById('ammo-reserve').textContent}`);
   check(/^\d+ \/ \d+$/.test(ammo), `HUD shows ammo (${ammo})`);
   // A click is the user gesture that starts audio; bots fighting then make sounds.
-  await page.click('#resume');
+  await fight(page);
   // (A loaded machine decodes them slowly: the check below says what it got, rather than the wait throwing.)
   await page.waitForFunction(() => window.__audio.stats.loaded + window.__audio.stats.failed === window.__audio.total, null, { timeout: T(60000) }).catch(() => {});
   const loaded = await page.evaluate(() => ({ ...window.__audio.stats, total: window.__audio.total }));
@@ -3573,8 +6106,15 @@ async function offlineFlow(browser) {
   await page.waitForFunction(() => window.__audio.stats.played > 0, null, { timeout: T(20000) }).catch(() => {});
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
+  // The owner's announcer lines load after the game's sounds, and decode (Ogg Opus).
+  await page.waitForFunction(() => window.__audio.stats.voice + window.__audio.stats.voiceFailed >= 39, null, { timeout: T(30000) }).catch(() => {});
+  const voice = await page.evaluate(() => ({ voice: window.__audio.stats.voice, failed: window.__audio.stats.voiceFailed }));
+  check(voice.voice === 39 && voice.failed === 0, `the announcer's 39 lines load and decode (${JSON.stringify(voice)})`);
+  // No music in a match (browser tests leave it off anyway; ?music=1 below turns it on).
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? 0)) === 0, 'no music plays in a match');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
+  await musicChecks(browser);
   await spectateChecks(browser);
 }
 
@@ -3583,6 +6123,29 @@ async function offlineFlow(browser) {
  * players (cycled with the arrow keys), Space flies the free camera, and you respawn as usual; then
  * spectating by choice from the pause menu (a bot fills the place) and joining again.
  */
+/** The menu's music (audio/music.ts): it waits for the first click, then streams a menu track; Music at 0 stops it. */
+async function musicChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?music=1`);
+  await page.waitForFunction(() => !!window.__audio && !!document.querySelector('#nav-play'), null, { timeout: T(60000) });
+  // The music's code isn't even loaded before a click or key (not in the menu's first JS).
+  const before = await page.evaluate(() => !!window.__music);
+  // A click unlocks audio (anywhere: the page's corner).
+  await page.mouse.click(4, 4);
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
+  const on = await page.evaluate(() => window.__music?.debug() ?? null);
+  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  await page.evaluate(() => window.__audio.setMusicVolume(0));
+  await page.waitForFunction(() => window.__music?.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
+  check((await page.evaluate(() => window.__music?.debug().tracks.length ?? -1)) === 0, 'Music at 0 stops it');
+  check(errors.length === 0, `no page errors on the menu with music (${errors.join('; ')})`);
+  await ctx.close();
+}
+
 async function spectateChecks(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   livePages.add(page);
@@ -3723,6 +6286,9 @@ async function mobileFlow(browser) {
   check(display.includes('low') && display.includes('performance'), `a phone starts on Low graphics and the Performance render scale (${display.join(', ')})`);
   await page.tap('.opt-nav button[data-tab="controls"]');
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
+  // The touch layout (docs/MOBILE_AUDIT.md, proposal 3): size, opacity, left-handed and Aim, which a phone toggles by default.
+  const touchOpts = await page.evaluate(() => ({ size: document.getElementById('opt-touch-size')?.value, opacity: document.getElementById('opt-touch-opacity')?.value, left: document.getElementById('opt-touch-left')?.checked, aim: document.getElementById('opt-touch-aim')?.value }));
+  check(touchOpts.size === 'medium' && touchOpts.opacity === '1' && touchOpts.left === false && touchOpts.aim === 'toggle', `Options → Controls → Touch: button size, opacity, left-handed and Aim (Toggle on a phone) (${JSON.stringify(touchOpts)})`);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
   await mobileCharacterSelect(page);
 
@@ -3731,8 +6297,9 @@ async function mobileFlow(browser) {
   // had you in the air (CI: grounded false, velY -1.0 / -2.5 at the tap), so the tap did nothing.
   await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
-  check(await page.evaluate(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden), 'the match opens paused; the controls wait for Resume');
-  await page.tap('#resume');
+  const opens = await page.evaluate(() => ({ pause: !document.getElementById('pause').hidden, hint: document.getElementById('fight-hint')?.hidden === false ? document.getElementById('fight-hint').textContent : null, touch: !document.getElementById('touch-ui').hidden }));
+  check(!opens.pause && opens.hint === 'Tap to fight' && !opens.touch, `the match opens without the pause menu: "Tap to fight", the controls wait for the tap (${JSON.stringify(opens)})`);
+  await fight(page, true);
   await page.waitForFunction(() => !document.getElementById('touch-ui').hidden && document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
   check(await page.isVisible('#touch-ui .tc-pad') && (await page.isVisible('#touch-ui .tc-fire')) && (await page.isVisible('#touch-ui .tc-wheel')), 'Resume starts touch play: pad, Fire and Weapons buttons show (no pointer lock)');
   await page.screenshot({ path: `${ARTIFACTS}/mobile-play.png` });
@@ -3763,6 +6330,17 @@ async function mobileFlow(browser) {
   const fire = await centre('#touch-ui .tc-fire');
   before = await state();
   check(await holdUntil(fire.x, fire.y, 3, (m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, 8000, before.mag), `holding Fire shoots (magazine ${before.mag} went down)`);
+  // Aim (Toggle, a phone's default): a tap aims and the next tap stops; the button lights while aiming.
+  const aim = await centre('#touch-ui .tc-aim');
+  const tapAt = async (p, id) => {
+    await touch('touchStart', [{ x: p.x, y: p.y, id }]);
+    await touch('touchEnd', []);
+  };
+  await tapAt(aim, 30);
+  const aimOn = await page.waitForFunction(() => window.__cs.input.zooming && document.querySelector('#touch-ui .tc-aim').classList.contains('on'), null, { timeout: T(5000) }).then(() => true, () => false);
+  await tapAt(aim, 31);
+  const aimOff = await page.waitForFunction(() => !window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(aimOn && aimOff, `Aim (Toggle): a tap aims (lit), another stops (on ${aimOn}, off ${aimOff})`);
   // Jump: a tap on the pad's middle. Tap or hold is read from the events' own times (a slow software-rendered
   // page handles the lift late), so the tap says when it happened: 80 ms apart. A jump is taken only on the ground:
   // tap once you stand on it (the walk above can still be carrying you).
@@ -3843,7 +6421,170 @@ async function mobileFlow(browser) {
   check(await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).then(() => true, () => false), 'the pause button opens the pause menu and hides the controls');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await ctx.close();
+  await mobileTouchLayout(browser);
+  await mobileMenus(browser);
   await mobileLamps(browser);
+}
+
+/** The phone sizes the menus are checked at (docs/MOBILE_AUDIT.md, proposals 2 and 4): upright and sideways. */
+const PHONE_SIZES = [[360, 780, 'small phone'], [412, 915, 'Pixel-like'], [384, 832, 'S25+-like']];
+
+/**
+ * The touch layout in a match (docs/MOBILE_AUDIT.md, proposal 3; game/touchLayout.ts): Large, half opacity,
+ * left-handed: the pad on the right, the buttons on the left and bigger, drawn at half strength; the ammo panel
+ * clear of every button; Aim set to Hold aims only while the finger is down.
+ */
+async function mobileTouchLayout(browser) {
+  const phone = devices['Pixel 7'];
+  const ctx = await browser.newContext({ ...phone, viewport: { width: phone.viewport.height, height: phone.viewport.width }, screen: { width: phone.screen.height, height: phone.screen.width } });
+  await ctx.addInitScript(() => {
+    localStorage.setItem('tiletrigger.touchLayout', JSON.stringify({ size: 'large', opacity: 0.5, leftHanded: true }));
+    localStorage.setItem('tiletrigger.combat', JSON.stringify({ aim: 'hold' }));
+  });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  const cdp = await ctx.newCDPSession(page);
+  const touch = (type, points) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points });
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  await fight(page, true);
+  await page.waitForFunction(() => !document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).catch(() => {});
+  const lay = await page.evaluate(() => {
+    const r = (sel) => document.querySelector(sel).getBoundingClientRect();
+    const pad = r('#touch-ui .tc-pad');
+    const fire = r('#touch-ui .tc-fire');
+    const look = r('#touch-ui .tc-look');
+    return { w: innerWidth, padL: pad.left, padW: pad.width, fireR: fire.right, fireW: fire.width, lookR: look.right, opacity: getComputedStyle(document.querySelector('#touch-ui .tc-fire')).opacity, left: document.documentElement.classList.contains('tc-left') };
+  });
+  check(lay.left && lay.padL > lay.w / 2 && lay.fireR < lay.w / 2 && lay.lookR <= lay.w / 2 + 1 && lay.fireW > 92 * 1.15 && Number(lay.opacity) === 0.5, `left-handed, Large, 50 %: the pad on the right, Fire on the left and bigger, look on the left half, drawn at half strength (${JSON.stringify(lay)})`);
+  for (const [w, h, label] of [[915, 412, 'Pixel 7'], [832, 384, 'S25+ 832x384'], [658, 320, 'S9+ 658x320']]) {
+    await page.setViewportSize({ width: w, height: h });
+    await page.waitForFunction(([w, h]) => innerWidth === w && innerHeight === h, [w, h], { timeout: T(5000) }).catch(() => {});
+    // (The layout follows the window on its resize event: two frames on.)
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    const box = await touchHudBoxes(page);
+    const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
+    // The round buttons as circles (their boxes' corners may cross).
+    const round = (b) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2, r: (b.r - b.l) / 2 });
+    const touching = (a, b) => Math.hypot(round(a).x - round(b).x, round(a).y - round(b).y) < round(a).r + round(b).r - 2;
+    const clash = box.buttons.filter((a, i) => box.buttons.some((b, j) => j > i && touching(a, b))).map((b) => b.name);
+    const top = Math.min(...box.buttons.filter((b) => b.name !== 'II').map((b) => b.t));
+    check(!!box.ammo && hit.length === 0 && clash.length === 0 && top >= 60, `${label} left-handed Large: the ammo panel over no button, no two buttons overlap, the cluster below the top bar (ammo hit ${hit.join(', ') || 'none'}, overlaps ${clash.join(', ') || 'none'}, cluster top ${Math.round(top)})`);
+    await page.screenshot({ path: `${ARTIFACTS}/mobile-left-large-${w}x${h}.png` });
+  }
+  // Aim set to Hold: aiming while the finger is down, not after.
+  const a = await page.locator('#touch-ui .tc-aim').boundingBox();
+  await touch('touchStart', [{ x: a.x + a.width / 2, y: a.y + a.height / 2, id: 50 }]);
+  const held = await page.waitForFunction(() => window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  await touch('touchEnd', []);
+  const released = await page.waitForFunction(() => !window.__cs.input.zooming, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(held && released, `Aim set to Hold: the Aim button aims while held and stops on release (held ${held}, released ${released})`);
+  check(errors.length === 0, `touch layout: no page errors (${errors.join('; ')})`);
+  await ctx.close();
+}
+
+/**
+ * The menus on phones upright and sideways (docs/MOBILE_AUDIT.md, proposals 2 and 4): Quick Play's Pick a map opens
+ * Match Setup's full-screen map picker (on a narrow screen), a card picks the map and closes it; Character Select keeps
+ * the grid tall with the details as a sheet a tap pulls up, a search and Favourites only; nothing spills sideways.
+ */
+async function mobileMenus(browser) {
+  const phone = devices['Pixel 7'];
+  for (const [pw, ph, name] of PHONE_SIZES) {
+    for (const [w, h] of [[pw, ph], [ph, pw]]) {
+      const label = `${name} ${w}x${h}`;
+      const ctx = await browser.newContext({ ...phone, viewport: { width: w, height: h }, screen: { width: w, height: h } });
+      const page = await ctx.newPage();
+      const errors = [];
+      page.on('pageerror', (e) => errors.push(e.message));
+      await page.goto(`${CLIENT}/?test=1`);
+      await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+      const wide = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1);
+      // Every main menu button can be tapped (none under the news bar or the featured map).
+      const covered = await page.evaluate(() => [...document.querySelectorAll('.nav button')].filter((b) => {
+        const r = b.getBoundingClientRect();
+        const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !top || !b.contains(top);
+      }).map((b) => b.textContent));
+      check(covered.length === 0, `${label}: every main menu button is clear to tap (${covered.join(', ') || 'all clear'})`);
+      // Quick Play → Pick a map.
+      await page.tap('#nav-quick');
+      await page.waitForSelector('#qp-pick', { timeout: T(5000) });
+      const qp = await page.evaluate(() => {
+        const p = document.getElementById('quick-play').getBoundingClientRect();
+        return { inside: p.left >= 0 && p.right <= innerWidth + 1 && p.top >= 0 && p.bottom <= innerHeight + 1, cards: document.querySelectorAll('#quick-play .qp-mode').length };
+      });
+      check(qp.inside && qp.cards === 3, `${label}: Quick Play shows TDM, DM and Pick a map, inside the screen (${JSON.stringify(qp)})`);
+      await page.tap('#qp-pick');
+      await page.waitForSelector('#match-setup', { timeout: T(10000) });
+      const narrow = w <= 900;
+      if (narrow) {
+        await page.waitForFunction(() => document.querySelector('.screen.play.picking') && document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
+        const pick = await page.evaluate(() => {
+          const b = document.getElementById('map-browse').getBoundingClientRect();
+          const cards = [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.getBoundingClientRect());
+          const cols = cards.filter((r) => Math.abs(r.top - cards[0].top) < 2).length;
+          return { full: b.left <= 1 && b.top <= 1 && b.right >= innerWidth - 1 && b.bottom >= innerHeight - 1, cols, cardW: Math.round(cards[0]?.width ?? 0), spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, rowsSeen: cards.filter((r) => r.top < innerHeight).length };
+        });
+        check(pick.full && pick.cols >= 2 && !pick.spill && pick.rowsSeen > pick.cols, `${label}: Pick a map opens the map picker full screen, two or more cards a row, more than a row in view, nothing spilling (${JSON.stringify(pick)})`);
+        const other = await page.$$eval('#map-cards .map-card:not(.on)', (cs) => cs[0]?.dataset.map);
+        await page.tap(`#map-cards .map-card[data-map="${other}"]`);
+        const picked = await page.waitForFunction((k) => !document.querySelector('.screen.play.picking') && document.getElementById('arcade-map')?.value === k, other, { timeout: T(10000) }).then(() => true, () => false);
+        const button = await page.evaluate(() => ({ shown: !!document.getElementById('arcade-map-pick')?.offsetParent, text: document.querySelector('#arcade-map-pick b')?.textContent }));
+        check(picked && button.shown && !!button.text, `${label}: a card picks the map and closes the picker; the setup's map button names it (${other}, ${JSON.stringify(button)})`);
+        await page.tap('#arcade-map-pick');
+        const reopened = await page.waitForFunction(() => !!document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
+        await page.tap('#map-pick-close');
+        const closed = await page.waitForFunction(() => !document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
+        check(reopened && closed, `${label}: the map button opens the picker again and Close shuts it (${reopened}, ${closed})`);
+      } else {
+        check(await page.isVisible('#map-cards .map-card'), `${label}: Pick a map opens Match Setup with the map cards beside it`);
+      }
+      check(await wide(), `${label}: Match Setup doesn't spill sideways`);
+      // Character Select.
+      await page.goto(`${CLIENT}/?test=1`);
+      await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+      await page.tap('#nav-characters');
+      await page.waitForFunction(() => document.querySelectorAll('.char-grid .char-tile[data-look]').length > 6, null, { timeout: T(15000) }).catch(() => {});
+      const down = await page.evaluate(() => {
+        const g = document.querySelector('.char-grid').getBoundingClientRect();
+        const i = document.querySelector('.char-info').getBoundingClientRect();
+        const t = document.querySelector('.char-grid .char-tile').getBoundingClientRect();
+        const arrow = document.querySelector('.bumper-btn .bumper-arrow');
+        const kbd = document.querySelector('.bumper-btn kbd');
+        return { grid: Math.round(g.height), tile: Math.round(t.height), info: Math.round(i.height), infoBottom: Math.round(i.bottom), gridBottom: Math.round(g.bottom), infoTop: Math.round(i.top), arrows: !!arrow?.offsetParent && (!kbd || !kbd.offsetParent), choose: !!document.getElementById('char-choose')?.offsetParent };
+      });
+      check(down.info <= 66 && down.infoBottom <= h && down.gridBottom <= down.infoTop + 1 && down.grid >= down.tile * 1.6 && down.arrows && down.choose, `${label}: Character Select's grid takes the height over a short strip (name, Choose), arrows instead of key caps (${JSON.stringify(down)})`);
+      const tiles = await page.$$eval('.char-grid .char-tile[data-look]', (ts) => ts.map((t) => t.dataset.look));
+      await page.tap(`.char-tile[data-look="${tiles[2]}"]`);
+      const up = await page.waitForFunction(() => document.querySelector('.char-info.sheet-open')?.getBoundingClientRect().height > 100, null, { timeout: T(5000) }).then(() => page.evaluate(() => {
+        const i = document.querySelector('.char-info').getBoundingClientRect();
+        const c = document.getElementById('char-choose').getBoundingClientRect();
+        return { top: Math.round(i.top), bottom: Math.round(i.bottom), stats: !!document.querySelector('.char-info .char-stats')?.offsetParent, choose: c.bottom <= innerHeight && c.top >= 0 || document.querySelector('.char-info').scrollHeight > document.querySelector('.char-info').clientHeight, shown: window.__front.scene.look };
+      }), () => null);
+      check(!!up && up.top >= 0 && up.bottom <= h && up.stats && up.choose && up.shown === tiles[2], `${label}: a tap on a portrait shows them and pulls the details sheet up (stats, Choose) inside the screen (${JSON.stringify(up)})`);
+      await page.tap('#char-sheet-toggle');
+      const lowered = await page.waitForFunction(() => !document.querySelector(".char-info.sheet-open"), null, { timeout: T(5000) }).then(() => true, () => false);
+      check(lowered, `${label}: the handle lets the sheet down`);
+      // Favourites: the star keeps one; Favourites only shows just it. Search: no match says so.
+      // (A click on the star itself: tapping scrolls it under the section's sticky header.)
+      await page.locator(`.char-tile[data-look="${tiles[4]}"] .char-fav`).dispatchEvent('click');
+      await page.tap('#char-favs-only');
+      const favs = await page.evaluate(() => [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => t.offsetParent).map((t) => t.dataset.look));
+      check(favs.length === 1 && favs[0] === tiles[4], `${label}: a portrait's star keeps a favourite, and Favourites only lists just it (${favs.join(', ')})`);
+      await page.tap('#char-favs-only');
+      await page.fill('#char-search', 'zzzz');
+      const none = await page.evaluate(() => ({ shown: [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => t.offsetParent).length, empty: document.querySelector('.char-empty')?.offsetParent ? document.querySelector('.char-empty').textContent : '' }));
+      await page.fill('#char-search', '');
+      const all = await page.evaluate(() => [...document.querySelectorAll('.char-grid .char-tile[data-look]')].filter((t) => !t.hidden).length);
+      check(none.shown === 0 && /No characters match/.test(none.empty) && all === tiles.length, `${label}: the search hides who doesn't match and says so, and clearing it brings everyone back (${JSON.stringify(none)}, ${all} of ${tiles.length})`);
+      check(await wide(), `${label}: Character Select doesn't spill sideways`);
+      await page.screenshot({ path: `${ARTIFACTS}/mobile-chars-${w}x${h}.png` });
+      check(errors.length === 0, `${label}: menus without page errors (${errors.join('; ')})`);
+      await ctx.close();
+    }
+  }
 }
 
 /** Boxes of the touch HUD's parts on the page (null: not shown). */
@@ -4086,8 +6827,9 @@ async function canyonFlow(browser) {
   await page.click('#ed-tr-new');
   check(await page.evaluate(() => !!window.__editor.doc.terrain), 'MapMaker creates terrain');
   await clickTool(page, '[data-tool="terrain:raise"]');
-  // Clear of the new map's starting room (ground under a floor stays below it).
-  const p = await page.evaluate(() => window.__editor.view.project({ x: 18, y: 0, z: 0 }));
+  // Clear of the new map's starting room (ground under a floor stays below it), and of the right dock (at 960 px it is
+  // expanded since UI Phase 1; it was hidden under 1,100 px before).
+  const p = await page.evaluate(() => window.__editor.view.project({ x: 9, y: 0, z: 0 }));
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // Hold until the hill has grown (headless frame rates vary), at most 6 s.
@@ -4139,9 +6881,10 @@ async function canyonFlow(browser) {
   const oblong = await page.evaluate(() => { const t = window.__editor.doc.terrain; return t && { cols: t.cols, rows: t.rows, spacing: t.spacing, label: document.getElementById('ed-tr-size').textContent }; });
   check(oblong?.cols === 153 && oblong.rows === 129 && oblong.spacing === 2.5, `Create terrain makes a 380 x 320 m terrain at 2.5 m (${JSON.stringify(oblong)})`);
   // Map properties: the modes a map also offers besides its main one. (Escape leaves the tool, again lets go of the
-  // spawn placed above: nothing selected shows the map's properties.)
+  // spawn placed above.)
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   // (At this width the inspector may be folded away: the box is clicked where it is.)
   await page.waitForSelector('#ed-prop-also input[data-mode="core.tdm"]', { state: 'attached', timeout: T(5000) });
   await page.evaluate(() => document.querySelector('#ed-prop-also input[data-mode="core.tdm"]').click());
@@ -4184,6 +6927,7 @@ async function sceneryFlow(browser) {
   await page.waitForFunction(() => window.__editor.doc.backdrop?.sky === 'sunset' && window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky'), null, { timeout: T(5000) }).catch(() => {});
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
+  await openMapSettings(page);
   await page.click('#ed-blood-amount');
   await page.selectOption('#ed-blood-amount', 'heavy');
   await page.click('.ed-row-buttons button:has-text("Alien")');
@@ -4905,6 +7649,231 @@ async function physicsfxFlow(browser) {
 }
 
 /**
+ * Beams and tracers from the muzzle, flows of their own (split from physicsfx, 2026-11-20). Stepped frame by frame on
+ * the frame clock they are long: on CI physicsfx had grown from about 330 s to 800-1,650 s since the tracer checks
+ * joined it (grips auto-fit, 2026-11-18): physicsfx's own checks about 5 minutes, the beams about 5, the tracers about
+ * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
+ * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
+ */
+async function beamsFlow(browser) {
+  await beamMuzzleChecks(browser);
+}
+
+async function tracersFlow(browser) {
+  await tracerMuzzleChecks(browser, ['core.ranger']);
+}
+
+async function tracers2Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.otter']);
+}
+
+async function tracers3Flow(browser) {
+  await tracerMuzzleChecks(browser, ['core.knight']);
+}
+
+/**
+ * Bullets come out of the gun (grips auto-fit, owner 2026-11-18: "ensure bullets come out of the gun properly
+ * (especially in 3rd person)"): every round you fire (a tracer or not: the pistol draws none) starts at your gun's muzzle as drawn the frame it first shows,
+ * in third person (your character's gun) and first person (the viewmodel), for a few builds of character (the
+ * Ranger, the small Wealthy Otter, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
+ * strafing and aiming. Two measures each tracer: the gap to the muzzle point the game keeps (view muzzleOf /
+ * localMuzzle, the drift), and the gap to the drawn gun itself (the nearest of its drawn vertices, and how far behind its
+ * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person
+ * started under your eyes (no viewmodel muzzle) and no flash showed on your character's gun.
+ */
+async function tracerMuzzleChecks(browser, looks) {
+  const out = [];
+  for (const look of looks) {
+    const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+    await ctx.addInitScript(installFrameClock);
+    const page = await ctx.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1&look=${look}`);
+    await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(120000) });
+    for (const id of ['core.pistol', 'core.rifle']) {
+      await page.evaluate((w) => window.__give(w), id);
+      await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+    }
+    await playWithoutMouse(page);
+    await page.keyboard.press('KeyH');
+    const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
+    await page.evaluate(() => window.__frameClock.freeze());
+    // One frame an evaluate: models load (network, promises) between them, not inside one synchronous loop.
+    const step = async (fn, arg) => {
+      for (let i = 0; i < 300; i++) {
+        if (await page.evaluate(([src, a]) => { const ok = eval(src); if (ok(a)) return true; window.__frameClock.step(1000 / 60); return false; }, [fn.toString(), arg])) return true;
+      }
+      return false;
+    };
+    /** `frames` frames in a stance and motion, firing: each new tracer's gaps (cm) to the muzzle point and to the drawn gun. */
+    const run = (o) =>
+      page.evaluate(({ third, frames, crouch, strafe, aim }) => {
+        const cs = window.__cs;
+        const v = cs.view;
+        const yaw0 = cs.input.yaw;
+        const settled = v.impacts.settled;
+        let seen = settled.length ? settled[settled.length - 1].n : 0;
+        const r = { rounds: 0, tracers: 0, drift: 0, toGun: 0, behind: 0, flash: 0, eye: 0 };
+        for (let f = 0; f < frames; f++) {
+          // The trigger held 8 frames and let go 8: an automatic fires through, a semi-automatic once a pull (a faster
+        // flutter never lets go for a whole tick, and a pistol fired nothing).
+        window.__autoInput = { right: strafe ? (Math.floor(f / 30) % 2 ? -1 : 1) : 0, forward: 0, buttons: (f % 16 < 8 ? 2 : 0) | (crouch ? 256 : 0), zoom: aim };
+          cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.4;
+          window.__frameClock.step(1000 / 60);
+          const fresh = settled.filter((t) => t.n > seen);
+          if (fresh.length) seen = fresh[fresh.length - 1].n;
+          if (!fresh.length || f < 10) continue;
+          const m = third ? v.muzzleOf(cs.slot) : v.localMuzzle();
+          const node = third ? v.avatars.get(cs.slot)?.muzzle?.node : v.viewmodel;
+          if (!m || !node) continue;
+          node.computeWorldMatrix(true);
+          const wm = node.getWorldMatrix();
+          const fwd = { x: wm.m[8], y: wm.m[9], z: wm.m[10] };
+          const fl = Math.hypot(fwd.x, fwd.y, fwd.z) || 1;
+          const pts = [];
+          for (const mesh of node.getChildMeshes(false)) {
+            const pos = mesh.getVerticesData('position');
+            if (!pos) continue;
+            mesh.computeWorldMatrix(true);
+            const w = mesh.getWorldMatrix().m;
+            for (let i = 0; i < pos.length; i += 9) {
+              const [x, y, z] = [pos[i], pos[i + 1], pos[i + 2]];
+              pts.push([w[0] * x + w[4] * y + w[8] * z + w[12], w[1] * x + w[5] * y + w[9] * z + w[13], w[2] * x + w[6] * y + w[10] * z + w[14]]);
+            }
+          }
+          const front = Math.max(...pts.map((p) => (p[0] * fwd.x + p[1] * fwd.y + p[2] * fwd.z) / fl));
+          const eye = cs.local.eye;
+          for (const t of fresh) {
+            const s = t.from;
+            r.rounds++;
+            if (t.tracer) r.tracers++;
+            r.drift = Math.max(r.drift, Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z) * 100);
+            r.toGun = Math.max(r.toGun, Math.min(...pts.map((p) => Math.hypot(p[0] - s.x, p[1] - s.y, p[2] - s.z))) * 100);
+            r.behind = Math.max(r.behind, (front - (s.x * fwd.x + s.y * fwd.y + s.z * fwd.z) / fl) * 100);
+            if (Math.hypot(s.x - eye.x, s.y - eye.y + 0.1, s.z - eye.z) < 0.02) r.eye++;
+          }
+          if (third) {
+            const a = v.avatars.get(cs.slot);
+            if (a?.flashRig || a?.flash) r.flash++;
+          }
+        }
+        window.__autoInput = { right: 0, forward: 0, buttons: 0 };
+        for (let f = 0; f < 20; f++) window.__frameClock.step(1000 / 60);
+        for (const k of ['drift', 'toGun', 'behind']) r[k] = +r[k].toFixed(1);
+        return r;
+      }, o);
+    const cases = [];
+    for (const weapon of ['core.rifle', 'core.pistol']) {
+      await page.evaluate((w) => window.__give(w), weapon);
+      await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.muzzleOf(window.__cs.slot), weapon);
+      for (const c of [{ strafe: false, crouch: false, aim: false }, { strafe: true, crouch: false, aim: false }, { strafe: true, crouch: true, aim: true }]) cases.push({ look, weapon, third: true, ...c, r: await run({ third: true, frames: 48, ...c }) });
+    }
+    await page.keyboard.press('KeyH');
+    const fpOn = await step(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+    if (look === 'core.ranger') for (const weapon of ['core.rifle', 'core.pistol']) {
+      await page.evaluate((w) => window.__give(w), weapon);
+      await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.localMuzzle(), weapon);
+      cases.push({ look, weapon, third: false, strafe: true, crouch: false, aim: false, r: await run({ third: false, frames: 48, strafe: true, crouch: false, aim: false }) });
+    }
+    for (const c of cases) {
+      // Third person: on the muzzle (within 1 cm), on the drawn gun (within 3 cm of it and no more than 3 cm behind its
+      // front), never from the eyes, the flash on your character's gun. First person: the same from the viewmodel.
+      const bad = !c.r.rounds || (c.weapon === 'core.rifle' && !c.r.tracers) || c.r.drift > 1 || c.r.toGun > 3 || c.r.behind > 3 || c.r.eye > 0 || (c.third && !c.r.flash);
+      if (bad || !tpOn || !fpOn) out.push(`${c.look} ${c.weapon} ${c.third ? 'third' : 'first'}${c.crouch ? ' crouched' : ''}${c.strafe ? ' strafing' : ''}${c.aim ? ' aiming' : ''}: ${JSON.stringify(c.r)}`);
+    }
+    if (errors.length) out.push(`${look}: page errors ${errors.join('; ')}`);
+    if (process.env.E2E_VERBOSE) console.log(JSON.stringify(cases.map((c) => ({ look: c.look, w: c.weapon, third: c.third, ...c.r }))));
+    await ctx.close();
+  }
+  const who = looks.map((l) => l.replace('core.', '')).join(', ');
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+}
+
+/**
+ * Beams stay on the muzzle (owner, 2026-11-16: the freeze gun's beam "glides around" while you move): frame by frame
+ * on the page's frame clock (60 a game second), strafing left and right, turning and jumping with the trigger held,
+ * how far each drawn beam's start is from the muzzle as drawn that frame. The freeze ray in first person and third
+ * person (Reduce flashing on, as by default: its steady beam), and the laser rifle with Reduce flashing off (a new
+ * beam every other tick). Before the fix they were 20-90 cm off (game/muzzleAnchor.ts).
+ */
+async function beamMuzzleChecks(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 480, height: 270 } });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__match, null, { timeout: T(120000) });
+  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
+  for (const id of ['core.laser_rifle', 'core.freeze_ray']) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // Third person first: your character's gun in its hands loads in real time too.
+  await playWithoutMouse(page);
+  await page.keyboard.press('KeyH');
+  const tpOn = await page.waitForFunction(() => window.__cs.thirdPerson() && !!window.__cs.view.muzzleOf(window.__cs.slot), null, { timeout: T(30000) }).then(() => true, () => false);
+  await page.evaluate(() => window.__frameClock.freeze());
+  /** `frames` frames of strafing, turning and jumping, firing: the worst and median start-to-muzzle distance (cm). */
+  const run = (o) =>
+    page.evaluate(({ third, frames }) => {
+      const cs = window.__cs;
+      const v = cs.view;
+      const yaw0 = cs.input.yaw;
+      const ds = [];
+      for (let f = 0; f < frames; f++) {
+        window.__autoInput = { right: Math.floor(f / 40) % 2 ? -1 : 1, forward: 0, buttons: 2 | (f % 50 === 5 ? 1 : 0) };
+        cs.input.yaw = yaw0 + Math.sin(f / 25) * 0.6;
+        window.__frameClock.step(1000 / 60);
+        const m = third ? v.muzzleOf(cs.slot) : v.localMuzzle();
+        if (!m || f < 15) continue;
+        const starts = [];
+        for (const key of ['beam:me', `s${cs.slot}`]) {
+          const s = v.steadyArcs.start(key);
+          if (s) starts.push(s);
+        }
+        for (const fx of v.effects) {
+          const mesh = fx.mesh;
+          if (mesh.name !== 'beam' || mesh.isDisposed() || !mesh.isEnabled()) continue;
+          mesh.computeWorldMatrix(true);
+          const e = mesh.getBoundingInfo().boundingBox.extendSize.y;
+          const w = mesh.getWorldMatrix().m;
+          starts.push({ x: -e * w[4] + w[12], y: -e * w[5] + w[13], z: -e * w[6] + w[14] });
+        }
+        if (starts.length) ds.push(Math.max(...starts.map((s) => Math.hypot(s.x - m.x, s.y - m.y, s.z - m.z))));
+      }
+      window.__autoInput = { right: 0, forward: 0, buttons: 0 };
+      for (let f = 0; f < 30; f++) window.__frameClock.step(1000 / 60);
+      ds.sort((a, b) => a - b);
+      return { frames: ds.length, worst: ds.length ? +(ds[ds.length - 1] * 100).toFixed(1) : null, median: ds.length ? +(ds[ds.length >> 1] * 100).toFixed(1) : null };
+    }, o);
+  const stepUntil = (fn, arg) => page.evaluate(([src, arg]) => { const ok = eval(src); for (let i = 0; i < 120 && !ok(arg); i++) window.__frameClock.step(1000 / 60); return ok(arg); }, [fn.toString(), arg]);
+  const ok = (r) => r.frames >= 60 && r.worst !== null && r.worst < 3;
+  const tp = await run({ third: true, frames: 150 });
+  check(tpOn && ok(tp), `the freeze ray's beam stays on your character's gun in third person while you strafe, turn and jump (${tpOn ? JSON.stringify(tp) : 'no third person'} cm)`);
+  await page.keyboard.press('KeyH');
+  const fpOn = await stepUntil(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
+  const fp = await run({ third: false, frames: 150 });
+  check(fpOn && ok(fp), `the freeze ray's beam stays on the muzzle in first person (Reduce flashing on: ${fpOn ? JSON.stringify(fp) : 'no first person'} cm)`);
+  await page.evaluate(() => window.__give('core.laser_rifle'));
+  const laserIn = await stepUntil((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, 'core.laser_rifle');
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  const laser = await run({ third: false, frames: 150 });
+  await setFlashing(true);
+  check(laserIn && ok(laser), `the laser rifle's beams (a new one every other tick, Reduce flashing off) start on the muzzle while you move (${laserIn ? JSON.stringify(laser) : 'no laser'} cm)`);
+  check(errors.length === 0, `no page errors in the beam checks (${errors.join('; ')})`);
+  await ctx.close();
+}
+
+/**
  * The destructible environment (map format v36; maps/breakyard.json, "Everything breaks" on): a prop the catalogue
  * calls solid for good (a shipping container) takes damage and breaks, its model gone and debris thrown; the one marked
  * Unbreakable in MapMaker isn't a breakable at all; a crate given 500 health in the inspector has it.
@@ -4938,6 +7907,37 @@ async function destructionChecks(browser) {
   await page.waitForFunction(() => window.__cs.view.props.get(window.__containerIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
   const broken = await page.evaluate(() => ({ alive: window.__container.alive, drawn: window.__cs.view.props.get(window.__containerIndex)?.isEnabled(), debris: window.__cs.view.debrisBodies.length - window.__debrisBefore }));
   check(!broken.alive && broken.drawn === false && broken.debris > 0, `broken, the container is gone from the yard and its debris flies (${JSON.stringify(broken)})`);
+  // Breakable props drawn in the prop batches while intact (propBatches.ts): the yard's eight framed crates are copies in
+  // a batch of breakables; one broken leaves that batch's buffer at once, the batch kept and its other copies drawn.
+  const batched = await page.evaluate(() => {
+    const m = window.__match, sc = m.scenario, ents = m.map.entities, view = window.__cs.view;
+    const crates = ents.map((e, i) => [e, i]).filter(([e]) => e.kind === 'prop' && e.model === 'kit.crate.framed').map(([, i]) => i);
+    const states = crates.map((i) => view.propBatches?.copyState(view.props.get(i)) ?? null);
+    const k = states.findIndex((st, j) => st?.drawnHere && st.drawn > 1 && states.some((o, n) => n !== j && o?.drawnHere && o.meshes[0] === st.meshes[0]));
+    window.__crateIndex = crates[k];
+    window.__crate = [...sc.destructibles.values()].find((d) => d.i === crates[k]);
+    window.__crateMate = crates.find((i, n) => n !== k && states[n]?.meshes[0] === states[k]?.meshes[0]);
+    window.__crateBatch = states[k];
+    return { crates: crates.length, batched: states.filter((st) => st?.breakable && st.drawnHere).length, at: states[k], breakable: !!window.__crate, stats: view.propBatches?.stats() };
+  });
+  check(batched.crates === 8 && batched.batched === 8 && batched.breakable && batched.at?.drawn > 1, `intact, the framed crates are breakables drawn in a prop batch (${JSON.stringify(batched)})`);
+  if (batched.breakable) {
+    await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
+    await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
+    const out = await page.evaluate(() => {
+      const view = window.__cs.view;
+      const st = view.propBatches.copyState(view.props.get(window.__crateIndex));
+      const mate = view.propBatches.copyState(view.props.get(window.__crateMate));
+      const meshes = st.meshes.map((n) => view.scene.getMeshByName(n));
+      return { st, mate, kept: meshes.every((x) => x && !x.isDisposed()), was: window.__crateBatch.drawn, alive: window.__crate.alive, hidden: view.propBatches.stats().hidden };
+    });
+    check(!out.alive && !out.st.drawnHere && out.st.drawn === out.was - 1 && out.mate.drawnHere && out.kept && out.st.meshes.join() === batched.at.meshes.join(), `broken, the crate is gone from its batch and the batch still draws the others (${JSON.stringify(out)})`);
+    // A new round (Scenario.reset, as the match runs it between rounds): back in its batch.
+    await page.evaluate(() => window.__match.scenario.reset());
+    await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === true, null, { timeout: T(10000) }).catch(() => {});
+    const back = await page.evaluate(() => ({ alive: window.__match.scenario.destructibles.get(window.__crateIndex)?.alive, st: window.__cs.view.propBatches.copyState(window.__cs.view.props.get(window.__crateIndex)) }));
+    check(back.alive && back.st.drawnHere && back.st.drawn === out.was, `a new round brings the crate back into its batch (${JSON.stringify(back)})`);
+  }
   // Fallen logs (owner: "not breakable unless toggled as such"): the one given Health in MapMaker breaks, its node gone
   // and wood debris thrown; the other is no breakable, even on this map where everything else is.
   const logs = await page.evaluate(() => {
@@ -5096,11 +8096,11 @@ async function teamsFlow(browser) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   // Arcade: Team Deathmatch on Sandgate as 2v2v2v2v2v2v12 (24 players, 7 teams).
-  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10 })));
+  // (An uneven layout like this one comes from the steppers and the team cards; the setup saves it as it is.)
+  await page.addInitScript(() => localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.tdm', bots: 3, skill: 'easy', scoreLimit: 40, minutes: 10, teams: [2, 2, 2, 2, 2, 2, 12] })));
   await page.goto(CLIENT);
   await page.click('#nav-play');
-  // More layouts (beside the size presets worked out for the map): any fixed shape.
-  await page.selectOption('#arcade-teams', '2,2,2,2,2,2,12');
+  await page.waitForFunction(() => document.getElementById('arcade-team-total')?.textContent.startsWith('2v2v2v2v2v2v12'), null, { timeout: T(30000) });
   // Bots & AI tab → your bots: a built-in set (Knights vs Space Crew: knights on the first team, the space crew on the second).
   await setupTab(page, 'bots');
   await page.click('#arcade-botset');
@@ -5114,7 +8114,7 @@ async function teamsFlow(browser) {
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
   const board = await page.evaluate(() => ({
     many: document.getElementById('scoreboard').classList.contains('sb-tn'),
     tables: [...document.querySelectorAll('#scoreboard .sb-group')].map((t) => t.querySelectorAll('.sb-row[data-slot]').length),
@@ -5308,7 +8308,7 @@ async function teamKillCheck(page) {
  * before suggestions, at the old 40 points and 10 minutes, follows the size.
  */
 async function setupLimitsFlow(browser) {
-  // The curve's values for St. John's presets (Small 4v4, Map's pick 12v12, Max 32v32 since performance round 4): points and minutes.
+  // The curve's values for St. John's layouts (the 4v4 chip, the Map's pick 12v12, the 32v32 chip): points and minutes.
   const EXPECT = { '4v4': [40, 10], '12v12': [180, 15], '32v32': [650, 20] };
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -5339,9 +8339,15 @@ async function setupLimitsFlow(browser) {
   };
   const four = await read();
   check(suggests(four, '4v4'), `a setup saved at the old 40 points and 10 minutes follows the size: 4v4 suggests ${EXPECT['4v4'].join(' points, ')} min (${JSON.stringify({ ...four, saved: undefined })})`);
+  // Per team (the stepper beside Teams): every team one more; Teams: one team more, at that size.
+  await page.evaluate(() => document.getElementById('arcade-per-team-plus').click());
+  const perTeam = await page.evaluate(() => ({ teams: JSON.parse(localStorage.getItem('cs.arcade')).teams?.join(), on: document.querySelector('#setup-sizes .size-chip.on')?.dataset.preset ?? null, per: document.getElementById('arcade-per-team')?.value }));
+  await page.evaluate(() => document.getElementById('arcade-team-count-plus').click());
+  const three = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade')).teams?.join());
+  check(perTeam.teams === '5,5' && perTeam.on === null && perTeam.per === '5' && three === '5,5,5', `the Per team stepper sets every team's size and Teams adds one at that size (${JSON.stringify({ perTeam, three })})`);
   await preset('pick');
   const twelve = await read();
-  await preset('max');
+  await preset('32v32');
   const big = await read();
   // Opening the setup doesn't write it; the first change saves it with the marks (score and time following the size).
   const marks = { scoreAuto: twelve.saved.scoreAuto, timeAuto: twelve.saved.timeAuto, score: big.saved.scoreLimit, minutes: big.saved.minutes };
@@ -5363,8 +8369,9 @@ async function setupLimitsFlow(browser) {
 }
 
 /**
- * Bot characters: match setup's Bots step offers them; a soldiers-only offline match fills with soldiers named
- * after their looks (the first in each look takes its name) or a rank and a surname, every name its own.
+ * Bot characters: match setup's Bots step offers them; an Army-only offline match (Soldiers & Spies' Army: no agents,
+ * spies or Santa) fills with soldiers named after their looks (the first in each look takes its name) or a rank and a
+ * surname, every name its own.
  */
 async function botCastFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
@@ -5375,24 +8382,43 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  const offered = await page.evaluate(() => [...document.querySelectorAll('#arcade-cast option')].map((o) => o.value));
-  check(offered[0] === 'map' && offered.includes('all') && offered.includes('soldiers') && offered.includes('pirate'), `the Bots & AI tab offers bot characters (${offered.length}: ${offered.slice(0, 4).join(', ')}…)`);
-  await page.selectOption('#arcade-cast', 'soldiers');
+  // The eight bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,animals:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eight bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
+  await page.evaluate(() => document.getElementById('arcade-cast-none').click());
+  await page.evaluate(() => document.getElementById('arcade-cast-army').click());
+  const picked = await page.evaluate(() => ({ saved: JSON.parse(localStorage.getItem('cs.arcade')).botCast, ticked: [...document.querySelectorAll('#arcade-cast input[data-type]:checked')].map((b) => b.dataset.type) }));
+  await page.evaluate(() => document.getElementById('arcade-cast-army').click());
+  const last = await page.evaluate(() => ({ ticked: [...document.querySelectorAll('#arcade-cast input[data-type]:checked')].map((b) => b.dataset.type), hint: document.getElementById('arcade-cast-hint')?.textContent }));
+  check(picked.saved?.join() === 'army' && picked.ticked.join() === 'army' && last.ticked.join() === 'army' && /At least one/.test(last.hint ?? ''), `None then Soldiers picks Army only, and the last type can't be unticked (${JSON.stringify({ picked, last })})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0, null, { timeout: T(60000) });
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot').length >= 15, null, T(30000));
   const bots = await sim(page, (m, me, a, mod) => ({
     cast: m.botCast,
-    bots: m.combatants().filter((c) => c.kind === 'bot').map((c) => ({ name: c.name, look: c.look, ok: mod.castAllows(['soldiers'], c.look), theme: mod.lookTheme(c.look) })),
+    bots: m.combatants().filter((c) => c.kind === 'bot').map((c) => ({ name: c.name, look: c.look, ok: mod.castAllows(['army'], c.look), theme: mod.lookTheme(c.look) })),
     names: m.combatants().map((c) => c.name),
   }));
   const wrong = bots.bots.filter((b) => !b.ok || b.theme !== 'soldier');
   const ranked = bots.bots.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
-  check(bots.bots.length === 15 && !wrong.length, `a soldiers-only match: every bot a soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
+  check(bots.bots.length === 15 && !wrong.length, `an Army-only match: every bot an Army soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
   check(new Set(bots.names).size === bots.names.length && ranked.length >= 1, `soldier bots have names of their own, ranks among them (${bots.bots.map((b) => b.name).join(', ')})`);
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
+  // Ranks & badges (off by default): plain names (an Army bot's rank left off) and no badges.
+  const rows = () => page.evaluate(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].map((r) => ({ name: r.querySelector('.sb-nm')?.textContent ?? '', ins: r.querySelector('.sb-ins:not([hidden]) svg')?.getAttribute('aria-label') ?? null })));
+  const plain = await rows();
+  check(plain.length >= 16 && plain.every((b) => !b.ins && !/^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. /.test(b.name)), `with Ranks & badges off, the Tab board shows plain names and no badges (${plain.slice(0, 4).map((b) => `${b.ins ?? '-'}: ${b.name}`).join(', ')}…)`);
+  // Switched on (the pause menu's switch): every row wears a rank title and its badge; Army bots start as privates.
+  await page.evaluate(() => document.getElementById('ranks-toggle').click());
+  await page.waitForFunction(() => [...document.querySelectorAll('#scoreboard .sb-row[data-slot]')].every((r) => r.querySelector('.sb-ins:not([hidden]) svg')), null, { timeout: T(5000) }).catch(() => {});
+  const badges = await rows();
+  const bare = badges.filter((b) => !b.ins);
+  const armyTitle = badges.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
+  check(badges.length >= 16 && !bare.length && armyTitle.length >= 15, `with Ranks & badges on, the Tab board shows each player's rank badge and title (${badges.slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard-ranks.png` }).catch(() => {});
   await page.keyboard.up('Tab');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -5504,7 +8530,7 @@ async function setupLayoutFlow(browser) {
   const fixed = { teams: (await setup()).teams, ...(await read()) };
   check(fixed.teams?.join() === '12,12' && fixed.fit === 'fits' && fixed.preset === 'pick' && fixed.who === 'You + 23 bots · 12v12', `"Use 12v12" sets the map's pick, and it fits (${JSON.stringify(fixed)})`);
   // Adding bots grows the teams (Even teams: both); past the limit it says whose limit it is.
-  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="max"]').click());
+  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="32v32"]').click());
   await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
   const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
@@ -5633,7 +8659,7 @@ async function customSetupFlow(browser) {
   await page.evaluate(() => (document.getElementById('setup-saved').open = true));
   await page.fill('#setup-save-name', 'Three way');
   await page.evaluate(() => document.getElementById('setup-save').click());
-  await page.selectOption('#arcade-teams', '1,1');
+  await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="1v1"]').click());
   const changed = await total();
   await page.reload();
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
@@ -5662,7 +8688,7 @@ async function customSetupFlow(browser) {
  * Match setup names it ("Map default (Military)") and its facts show it; the match spawns you with a knife, a pistol
  * and an assault rifle (the bots too) and its weapon pickups hold Military weapons; the pause menu's Host tab switches
  * the set at once (the pickups now, your next life's loadout). Match setup's own choice, Chaos, saved with the setup,
- * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and a sheep. MapMaker's Map properties
+ * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and the life's grenade (dealt the same way). MapMaker's Map properties
  * field sets a map's default, and its TEST plays it. E2E_SHOTS: the Weapons choice, a Chaos spawn, the field.
  */
 async function weaponsetsFlow(browser) {
@@ -5737,7 +8763,7 @@ async function weaponsetsFlow(browser) {
     pickups: m.pickups.filter((p) => p.item.effect.kind === 'weapon').map((p) => p.item.effect.weapon),
     off: m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !ids.includes(p.item.effect.weapon)).map((p) => p.item.id),
   }), MILITARY);
-  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && kit.grenade === 'frag', `Sandgate's Military match spawns you with a knife, a pistol and an assault rifle in hand, and a frag (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
+  check(kit.set === 'military' && kit.weapons.join() === 'core.knife,core.pistol,core.rifle' && kit.held === 'core.rifle' && ['frag', 'mine', 'smoke'].includes(kit.grenade), `Sandgate's Military match spawns you with a knife, a pistol and an assault rifle in hand, and one of the set's grenades (${JSON.stringify({ set: kit.set, weapons: kit.weapons, held: kit.held, grenade: kit.grenade })})`);
   check(kit.bots.length === 3 && kit.bots.every((b) => /core\.pistol/.test(b) && /core\.(rifle|marksman)/.test(b)), `the bots spawn with a pistol and an assault rifle too (${kit.bots.join(' | ')})`);
   check(kit.pickups.length > 0 && kit.off.length === 0, `its weapon pickups hold Military weapons (${kit.pickups.join(', ')}; not: ${kit.off.join(', ') || 'none'})`);
   const hud = await page.evaluate(() => ({ n: window.__cs.local.inventory.size, held: window.__cs.local.held }));
@@ -5758,7 +8784,7 @@ async function weaponsetsFlow(browser) {
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
   check(swapped, 'the Host tab switches to Sci-fi at once: every weapon pickup holds a Sci-fi weapon');
   const sci = await respawn(page);
-  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && sci.grenade === 'sticky', `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and a sticky grenade (${JSON.stringify(sci)})`);
+  check(sci.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma' && ['sticky', 'vortex', 'smoke'].includes(sci.grenade), `your next life spawns with Sci-fi's knife, pulse pistol and plasma rifle, and one of its grenades (${JSON.stringify(sci)})`);
   await page.close();
 
   // Match setup's own choice, Chaos (the setup saved in this browser; a new page).
@@ -5794,7 +8820,7 @@ async function weaponsetsFlow(browser) {
   const lives = [await myKit(page2)];
   for (let i = 0; i < 5; i++) lives.push(await respawn(page2));
   const mains = await sim(page2, (m, _me, _a, mod) => mod.setMainGuns(m.weaponSet).map((w) => w.id));
-  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && l.grenade === 'sheep'), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and a sheep (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.grenade === 'sheep' ? '' : ` [${l.weapons.join(' ')}; ${l.grenade}]`}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
+  check(lives[0].set === 'chaos' && lives.every((l) => l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' && l.weapons.length === 3 && mains.includes(l.held) && l.held === l.rolled && ['sheep', 'holy', 'cluster'].includes(l.grenade)) && ['sheep', 'holy', 'cluster'].every((k) => lives.slice(0, 3).some((l) => l.grenade === k)), `a Chaos match spawns you with a knife, a pistol and the life's oddball, and the life's grenade (every kind in three lives) (${lives.map((l) => `life ${l.life}: ${l.held}${mains.includes(l.held) ? '' : ' (not a main gun)'}${l.held === l.rolled ? '' : ` (rolled ${l.rolled})`}${l.weapons.length === 3 && l.weapons[0] === 'core.knife' && l.weapons[1] === 'core.pistol' ? '' : ` [${l.weapons.join(' ')}]`}; ${l.grenade}`).join(', ')}${lives[0].set === 'chaos' ? '' : `; set ${lives[0].set}`})`);
   check(new Set(lives.map((l) => l.held)).size >= 3, `the spawn gun changes from life to life (${lives.map((l) => l.held?.replace('core.', '')).join(', ')})`);
   if (shots) {
     // Your own oddball in the picture, with the pause menu (headless pages open it) out of the way: the page draws the
@@ -5815,6 +8841,7 @@ async function weaponsetsFlow(browser) {
   await ed.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   ed.once('dialog', (d) => d.accept());
   await newMap(ed, 96);
+  await openMapSettings(ed);
   await ed.waitForSelector('#ed-prop-weapons', { timeout: T(10000) });
   const field = await ed.evaluate(() => ({ value: document.getElementById('ed-prop-weapons').value, options: [...document.querySelectorAll('#ed-prop-weapons option')].map((o) => o.value), set: window.__editor.doc.weaponSet ?? null }));
   check(field.value === 'standard' && field.options.join() === 'standard,military,scifi,medieval,chaos,mixed' && field.set === null, `MapMaker's Map properties offer a weapon set, Standard by default (${JSON.stringify(field)})`);
@@ -5915,7 +8942,7 @@ async function ctfFlow(browser) {
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
   // Tab: the two teams side by side, each its own column, your capture on your row.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
   const cols = await scoreboardColumns(page);
   const meSeen = await scoreboardMeVisible(page);
   const caps = await page.evaluate(() => {
@@ -6302,6 +9329,21 @@ async function fortsFlow(browser) {
 }
 
 /**
+ * Hold `buttons` (window.__autoInput) until `fn(match, me, arg)` holds where the match runs, then let go; true if it
+ * held within `seconds` of your own inputs (meWait). For a press the check needs to land, instead of a one-tick
+ * `once`: that is a single input, and a check resting on it had nothing to fall back on when it didn't take (arsenal
+ * on CI: "a quick melee press breaks a reload where it is (reloading false, broken false)": the R never started a
+ * reload). Why it didn't take wasn't found (a loaded page sampled here sent its inputs and the host dropped none of
+ * them). Held, the press lasts until the host shows it. Semi-automatic guns fire once a hold.
+ */
+async function holdUntil(page, buttons, fn, arg, seconds) {
+  await page.evaluate((b) => (window.__autoInput = { buttons: b }), buttons);
+  const ok = await meWait(page, fn, arg, seconds);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  return ok;
+}
+
+/**
  * Gunplay pass 2 (docs/GUNPLAY_AUDIT.md): damage numbers (Options → HUD, off by default) float the hit's damage over
  * the bot and show nothing when off; auto-reload (on by default) starts an emptied pistol's reload without R; a
  * quick melee press breaks a reload. `target` is a held bot (holdBots) in front of you.
@@ -6324,30 +9366,48 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
   await stand(4);
   await aimAt(target.slot);
   const shown = () => page.evaluate(() => window.__cs.damageNumbers.shown());
+  // Every number as it comes and as it is first placed over its target, noted as it happens: a number lives 0.9 s and
+  // at least 3 drawn frames, 3.6 s at most, and at under a frame a second it can come and go between two looks (CI and
+  // a load of 20 locally: "shown [], health lost 19").
+  await page.evaluate(() => {
+    const root = document.getElementById('damage-numbers');
+    window.__dmg = { added: [], placed: [] };
+    const placed = (el) => {
+      if (!el.classList?.contains('dmg-num') || el.style.visibility === 'hidden' || el.dataset.noted) return;
+      el.dataset.noted = '1';
+      const r = el.getBoundingClientRect();
+      window.__dmg.placed.push({ text: el.textContent, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight });
+    };
+    window.__dmgWatch?.disconnect();
+    window.__dmgWatch = new MutationObserver((changes) => {
+      for (const c of changes) {
+        for (const n of c.addedNodes) if (n.classList?.contains('dmg-num')) window.__dmg.added.push(n.textContent);
+        placed(c.target);
+      }
+    });
+    window.__dmgWatch.observe(root, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  });
   // On: one shot, one number over the bot (the pistol's 24 at 4 m), on screen.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '1'));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  const hit = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
   // Shown, and placed over the bot by a frame (hidden until then).
-  await page.waitForFunction(() => [...document.querySelectorAll('#damage-numbers .dmg-num')].some((e) => e.style.visibility !== 'hidden'), null, { timeout: T(5000) }).catch(() => {});
-  const nums = await shown();
-  const placed = await page.evaluate(() => {
-    const el = document.querySelector('#damage-numbers .dmg-num');
-    const r = el?.getBoundingClientRect();
-    return r ? { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), hidden: el.style.visibility === 'hidden', onScreen: r.x > 0 && r.y > 0 && r.x < innerWidth && r.y < innerHeight } : null;
-  });
+  await page.waitForFunction(() => window.__dmg.placed.length > 0, null, { timeout: T(10000) }).catch(() => {});
+  const nums = await page.evaluate(() => window.__dmg.added);
+  const placed = await page.evaluate(() => window.__dmg.placed[0] ?? null);
   // (Character stats can soften a bot's hits: the number is what its health lost.)
   const lost = await sim(page, (m, _me, t) => String(Math.round(100 - m.actor(t.slot).health)), target);
-  check(hit && nums.includes(lost) && !!placed && !placed.hidden && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
+  check(hit && nums.includes(lost) && !!placed && placed.text === lost && placed.onScreen && placed.w > 0, `damage numbers (on): the pistol's hit floats its damage over the bot (shown ${JSON.stringify(nums)}, health lost ${lost}, ${JSON.stringify(placed)})`);
   // Off (the default): the next hit shows nothing once the last number has gone.
   await page.evaluate(() => localStorage.setItem('tiletrigger.damageNumbers', '0'));
   await page.waitForFunction(() => window.__cs.damageNumbers.shown().length === 0, null, { timeout: T(5000) }).catch(() => {});
   await stand(4);
   await meWait(page, (m, me) => me.fireCooldown === 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const hit2 = await meWait(page, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  await page.evaluate(() => (window.__dmg.added = []));
+  const hit2 = await holdUntil(page, 2, (m, _me, t) => m.actor(t.slot).health < 100, target, 3);
+  // A few snapshots later (any number would have come with the hit's).
   await meWait(page, () => false, null, 0.3);
-  const none = await shown();
+  const none = [...(await page.evaluate(() => window.__dmg.added)), ...(await shown())];
+  await page.evaluate(() => window.__dmgWatch?.disconnect());
   check(hit2 && none.length === 0, `damage numbers (off): a hit shows none (${JSON.stringify(none)})`);
   await page.evaluate(() => localStorage.removeItem('tiletrigger.damageNumbers'));
   // Auto-reload (on by default): the last round out, the reload starts without R.
@@ -6357,18 +9417,15 @@ async function gunplayReadoutChecks(page, target, { face, aimAt }) {
     w.reserve = 24;
   });
   await page.waitForFunction(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] === 1, null, { timeout: T(5000) }).catch(() => {});
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2 }));
-  const started = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
+  const started = await holdUntil(page, 2, (m, me) => me.reloadTicks > 0, null, 2);
   const full = started && await meWait(page, (m, me) => me.weapons.get(me.current).mag === me.weapons.get(me.current).def.magazine, null, 3);
   check(started && full, `auto-reload: the pistol emptied, its reload starts by itself and fills the magazine (started ${started}, full ${full})`);
   // A quick melee press breaks a reload: R with rounds left, then Y (auto-reload off here: past "magazine out" it
   // would start the reload again once Y is let go).
   await page.evaluate(() => localStorage.setItem('tiletrigger.autoReload', '0'));
   await sim(page, (m, me) => (me.weapons.get(me.current).mag = 4));
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 4 }));
-  const reloading = await meWait(page, (m, me) => me.reloadTicks > 0, null, 2);
-  await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 2048 }));
-  const broke = reloading && await meWait(page, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
+  const reloading = await holdUntil(page, 4, (m, me) => me.reloadTicks > 0, null, 2);
+  const broke = reloading && await holdUntil(page, 2048, (m, me) => me.reloadTicks === 0 && me.weapons.get(me.current).mag < me.weapons.get(me.current).def.magazine, null, 1);
   check(reloading && broke, `a quick melee press breaks a reload where it is (reloading ${reloading}, broken ${broke})`);
   await page.evaluate(() => {
     window.__autoInput = { buttons: 0 };
@@ -6423,7 +9480,7 @@ async function arsenalFlow(browser) {
   // its category (its roll pool is the category's pickups, holding both), at once, and the client draws it.
   const fixed = await sim(page, (m) => m.pickups.filter((p) => p.item.effect.kind === 'weapon' && !p.entity.keepFixed).map((p) => [p.id, p.item.id]));
   // Their guns loaded first (drawing one again must not take the shared gun materials with it).
-  await page.waitForFunction((ids) => ids.every(([id]) => window.__cs.view.scene.meshes.some((m) => m.name.startsWith(`pickup_${id}_gun`) && m.getTotalVertices() > 0)), fixed, { timeout: T(15000) }).catch(() => {});
+  await page.waitForFunction((ids) => ids.every(([id]) => window.__cs.view.pickupPartDrawn(id, '_gun')), fixed, { timeout: T(15000) }).catch(() => {});
   await page.evaluate(() => {
     document.getElementById('host-controls').open = true;
     document.querySelector('#hc-mix [data-value="on"]')?.click();
@@ -6449,7 +9506,8 @@ async function arsenalFlow(browser) {
     const v = window.__cs.view;
     // Every gun drawn (pickups and the kept first-person guns): a disposed material is taken off every mesh that
     // used it (Babylon then draws them in its plain default material, white).
-    const meshes = v.scene.meshes.filter((m) => /^(view_|pickup_.*_gun)/.test(m.name) && m.getTotalVertices() > 0);
+    // (The pickups' guns are drawn in the pickups' batch: pickupBatch_<n>_<model>.)
+    const meshes = v.scene.meshes.filter((m) => /^(view_|pickup_.*_gun|pickupBatch_)/.test(m.name) && m.getTotalVertices() > 0);
     const bare = meshes.filter((m) => !m.material || m.material.getActiveTextures().some((t) => !t.getInternalTexture()));
     return { meshes: meshes.length, bare: bare.map((m) => m.name).slice(0, 4) };
   });
@@ -6823,7 +9881,7 @@ async function zombiesFlow(browser) {
   check(worn.looks.length > 0 && worn.looks.every((l) => ZOMBIE.test(l)) && worn.creatures === 0, `zombies wear the zombie characters (${[...new Set(worn.looks)].join(', ')}; ${worn.creatures} creature bodies)`);
   // Co-op: the scoreboard is one list of the squad.
   await page.keyboard.down('Tab');
-  await page.waitForFunction(() => document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
   const coop = await page.evaluate(() => ({ coop: document.getElementById('scoreboard').classList.contains('sb-coop'), lists: document.querySelectorAll('#scoreboard .sb-group').length, rows: document.querySelectorAll('#scoreboard .sb-row[data-slot]').length }));
   const meSeen = await scoreboardMeVisible(page);
   await page.keyboard.up('Tab');
@@ -6895,6 +9953,129 @@ async function classesFlow(browser) {
   await frames(arena, 5);
   check(errs.length === 0, `no page errors (${errs.join('; ')})`);
   await arena.context().close();
+  await holdUseChecks(browser);
+}
+
+/**
+ * Hold to use (sim/holdUse.ts) and the low-health warning (game/lowHealth.ts), in MapMaker TEST on a map with an Ammo
+ * Box: beside it, short of ammo, the prompt says "Hold"; E pressed and held shows the ring round the crosshair
+ * ("Resupplying") and gives nothing until the hold has run, then fills you up; let go early and it stops and says
+ * so. At 10 % health the screen's edges darken and the HUD points at the nearest health pack. `HOLD_SHOTS=<dir>`:
+ * pictures (device scale 2) of the ring and of the warning at 30 % and 10 %, Reduce flashing on and off.
+ */
+async function holdUseChecks(browser) {
+  const shots = process.env.HOLD_SHOTS;
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 }, deviceScaleFactor: shots ? 2 : 1 })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  // An Ammo Box crate and a health pack 12 m off, as MapMaker places them (one undo step).
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const entities = [
+      { id: 'hold_box', kind: 'pickup', item: 'core.ammo', position: [6, 0, 10], respawnSeconds: 30 },
+      { id: 'hold_health', kind: 'pickup', item: 'core.health_large', position: [-8, 0, 16], respawnSeconds: 30 },
+    ];
+    return ed.run('Hold to use check', { kind: 'addEntities', entities });
+  });
+  check(!!made, 'MapMaker places an Ammo Box and a health pack');
+  await page.keyboard.press('F5');
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the map plays (MapMaker TEST)');
+  if (!playing) return void (await page.context().close());
+  await holdBots(page);
+  // Every note the HUD shows (a cancel says why), for the checks' messages.
+  await page.evaluate(() => {
+    const el = document.getElementById('pickup-msg');
+    window.__notes = [];
+    new MutationObserver(() => window.__notes.push(el.textContent)).observe(el, { childList: true, characterData: true, subtree: true });
+  });
+  // (Pictures: the pause menu a headless page shows without the pointer lock, out of the way.)
+  if (shots) await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' });
+  const stand = () =>
+    sim(page, (m, me) => {
+      me.move = { pos: { x: 7.2, y: 0, z: 10 }, velY: 0, grounded: true };
+      me.yaw = -Math.PI / 2;
+      for (const w of me.weapons.values()) w.reserve = 0;
+      me.resupplyAt = 0;
+    });
+  await stand();
+  // Facing the box (the view turns with the page's own input).
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: -Math.PI / 2, pitch: -0.3 }));
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const prompt = await page.waitForFunction(() => /Hold to resupply/.test(document.getElementById('prompt')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  check(prompt, `beside the box the prompt says to hold E (${await page.textContent('#prompt')})`);
+  // E pressed and held (BUTTON_USE once, BUTTON_USE_HOLD while down); pressed again if a slow frame swallowed the press.
+  const press = async () => {
+    for (let i = 0; i < 4; i++) {
+      if (i) await stand();
+      await page.evaluate(() => (window.__autoInput = { buttons: 32768, once: 16 }));
+      if (await simWait(page, (m, me) => me.hold?.kind === 'resupply', null, T(3000))) return true;
+    }
+    return false;
+  };
+  // (After the countdown: the match takes no Use before it plays.)
+  const live = await simWait(page, (m) => m.phase === 'playing', null, T(30000));
+  const pressed = await press();
+  const ring = await page.waitForFunction(() => {
+    const el = document.getElementById('hold-ring');
+    return !!el && !el.hidden && /Resupplying/.test(el.textContent ?? '') && Number(el.querySelector('circle.fill')?.getAttribute('stroke-dashoffset')) < 150;
+  }, null, { timeout: T(10000) }).then(() => true, () => false);
+  const midway = { live, pressed, ...(await sim(page, (m, me) => ({ phase: m.phase, tick: m.tick, at: [+me.move.pos.x.toFixed(2), +me.move.pos.y.toFixed(2), +me.move.pos.z.toFixed(2)], boxes: m.ammoBoxes().map((b) => [+b.pos.x.toFixed(2), +b.pos.y.toFixed(2), +b.pos.z.toFixed(2), b.uses]), seq: me.lastSeq, hold: me.hold?.kind ?? null, empty: [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0) }))), notes: await page.evaluate(() => window.__notes) };
+  check(ring && midway.hold === 'resupply' && midway.empty, `held, a ring round the crosshair fills ("Resupplying") and nothing is given yet (${JSON.stringify(midway)})`);
+  if (shots) {
+    // (The picture: the hold held at 60 % while the slow page takes it, then given back its own length.)
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 600, ticks: 1000 }));
+    await page.waitForFunction(() => window.__cs.lowHealth().hold?.total === 1000, null, { timeout: T(5000) }).catch(() => {});
+    await page.screenshot({ path: `${shots}/hold-ring.png` });
+    await sim(page, (m, me) => me.hold && Object.assign(me.hold, { start: m.tick - 30, ticks: 90 }));
+  }
+  const filled = await meWait(page, (m, me) => !me.hold && [...me.weapons.values()].filter((w) => w.def.reserveMax > 0).every((w) => w.reserve === w.def.reserveMax), null, 4, T(30000));
+  const gone = await page.waitForFunction(() => document.getElementById('hold-ring')?.hidden !== false, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(filled && gone, `once the hold has run you are resupplied and the ring goes (filled ${filled}, ring gone ${gone})`);
+  // Again, let go early: it stops and says why.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await stand();
+  await press();
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const stopped = await page.waitForFunction(() => /Resupply stopped: let go too soon/.test(document.getElementById('pickup-msg')?.textContent ?? document.body.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  const still = await sim(page, (m, me) => [...me.weapons.values()].some((w) => w.def.reserveMax > 0 && w.reserve === 0));
+  check(stopped && still, `let go early, it stops, says so and gives nothing (note ${stopped}, still empty ${still})`);
+
+  // The low-health warning: at 10 % the edges darken and the HUD points at the health pack; back to full, it goes.
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (!box || box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const health = (hp) => sim(page, (m, me, hp) => void (me.health = hp), hp);
+  const settle = (min) => page.waitForFunction((min) => window.__cs.lowHealth().level >= min, min, { timeout: T(15000) }).then(() => true, () => false);
+  await sim(page, (m, me) => void (me.move = { pos: { x: -3, y: 0, z: 32 }, velY: 0, grounded: true }));
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI * 1.1, pitch: -0.08 }));
+  for (const on of [true, false]) {
+    await setFlashing(on);
+    for (const hp of [30, 10]) {
+      await health(hp);
+      const up = await settle(hp === 10 ? 0.75 : 0.3);
+      const s = await page.evaluate(() => ({ ...window.__cs.lowHealth(), hint: document.querySelector('#hint-markers [data-id="health"]')?.textContent ?? null }));
+      if (hp === 10) check(up && s.edge > 0.5 && /Health \d+ m/.test(s.hint ?? ''), `at 10 % health (Reduce flashing ${on ? 'on' : 'off'}) the edges darken and the HUD points at the nearest health pack (${JSON.stringify(s)})`);
+      if (shots) await page.screenshot({ path: `${shots}/low-health-${hp}-flashing-${on ? 'reduced' : 'off'}.png` });
+    }
+    await health(100);
+    const calm = await page.waitForFunction(() => window.__cs.lowHealth().level === 0 && !document.querySelector('#hint-markers [data-id="health"]'), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(calm, `back to full health the warning eases away (Reduce flashing ${on ? 'on' : 'off'})`);
+  }
+  await setFlashing(true);
+  await page.evaluate(() => delete window.__autoInput);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 async function vehiclesFlow(browser) {
@@ -6908,9 +10089,15 @@ async function vehiclesFlow(browser) {
   // Walk up to a free buggy, press E once, and drive. Bots like the vehicles by the bases too:
   // keep them out of them for this test, and pick a buggy nobody is in.
   await page.evaluate(() => {
-    for (const c of window.__match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+    // (They hold their fire too: they hear a driven buggy now, and a loaded runner's long drive gave them time to wreck
+    // it before the checks below; god mode covers you, not the buggy.)
+    for (const c of window.__match.slots) if (c?.bot) {
+      c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
+      const think = c.bot.think.bind(c.bot);
+      c.bot.think = (v) => ({ ...think(v), buttons: 0 });
+    }
     const me = window.__match.slots[window.__cs.slot];
-    const free = window.__match.mounts.filter((m) => m.def.id === 'buggy' && m.alive && m.seats.every((s) => s === null));
+    const free = window.__match.mounts.filter((m) => m.def.id === 'troop_buggy' && m.alive && m.seats.every((s) => s === null));
     const home = me.faction === 'tide' ? 60 : -60;
     const m = free.sort((a, b) => Math.abs(a.pos.z - home) - Math.abs(b.pos.z - home))[0];
     me.move = { pos: { x: m.pos.x, y: m.pos.y + 0.3, z: m.pos.z + (m.pos.z > 0 ? 3 : -3) }, velY: 0, grounded: false };
@@ -6918,7 +10105,7 @@ async function vehiclesFlow(browser) {
   });
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
-  check(/Drive the Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  check(/Drive the Troop Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
   // It reads on sand, snow and sky (owner, 2026-11-07: "kinda dark, black font?"): white words, a light green key on
   // a dark cap, each with a dark outline; the key's letter stands out from its cap (its ink was the dark of every other kbd).
   const look = await page.evaluate(() => {
@@ -6980,6 +10167,18 @@ async function vehiclesFlow(browser) {
   const parts = await page.evaluate(() => window.__cs.view.cockpitInteriorState());
   check(interiorOn && bodyCut.some((share) => share < 0.9) && parts?.triangles > 5000, `in the cockpit the buggy's cockpit parts are drawn and its body's cockpit triangles are left out (${interiorOn}, ${parts?.triangles} triangles, body drawn ${bodyCut.map((v) => v.toFixed(2)).join(', ')})`);
   const start = await page.evaluate(() => ({ ...window.__match.slots[window.__cs.slot].move.pos }));
+  // Kept whole while it's driven about (a loaded runner drives it a long way, past the sentries); undone before the
+  // blast checks below.
+  await page.evaluate(() => {
+    const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index];
+    const step = window.__match.step;
+    window.__keepWhole = step;
+    window.__match.step = function () {
+      const out = step.call(this);
+      if (m.alive) m.health = m.def.health;
+      return out;
+    };
+  });
   await page.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
   // Headless frame rates vary: wait for the drive rather than a fixed time.
   await page
@@ -7007,6 +10206,93 @@ async function vehiclesFlow(browser) {
     return { susp: !!m?.susp, wheels: m?.susp?.wheel.length ?? 0, pivots: pivots.length, tires: pivots.filter((p) => p.getChildren().length).length, rolled: pivots.some((p) => Math.abs(p.rotation.x) > 1e-3) };
   });
   check(sprung.susp && sprung.wheels === 4 && sprung.pivots === 4 && sprung.tires === 4 && sprung.rolled, `the buggy rides the sim's suspension, its tires on hub pivots rolling (${JSON.stringify(sprung)})`);
+  // Rigid driving (docs/DRIVING_PHYSICS_PLAN.md): the Troop Buggy is a real body on its wheels, and the driver's
+  // own copy is predicted (vehiclePrediction.ts) and stays with the host's.
+  const rigid = await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+    const v = window.__cs.local.vehicle;
+    // The prediction runs ahead of the host by the inputs it hasn't seen yet (a slow page sends several a frame).
+    const ahead = Math.abs(m?.speed ?? 0) * ((window.__cs.local.pendingCount + 4) / 60) + 0.5;
+    return { rigid: !!m?.rigid, predicted: v?.mount === m?.index, off: v && m ? +Math.hypot(v.state.pos.x - m.pos.x, v.state.pos.z - m.pos.z).toFixed(2) : null, ahead: +ahead.toFixed(2), worst: v ? +v.worstCorrection.toFixed(2) : null };
+  });
+  check(rigid.rigid && rigid.predicted && rigid.off !== null && rigid.off < rigid.ahead && rigid.worst < 1.5, `the buggy drives as a rigid body and your own is predicted, with the host's (${JSON.stringify(rigid)})`);
+  // Dropped from 8 m leaning half a radian: it falls, lands (on its wheels, or tips and rights itself) and ends up
+  // on four wheels; the drawn body leans with the sim's roll (the snapshot's ms) on the way. Logged every tick.
+  // The throttle is let go first, and the drop waits until the match has driven the buggy on a released input: air
+  // control works on what changed since take-off (wheelPhysics.ts `airIn`), so a throttle input of the drive above
+  // still on its way when it left the ground made the fall "let go of W in the air", a 12 rad/s² nose-up for the whole
+  // second it falls (1 to 15 such inputs: roll 0.9-1.8 rad, as against 0.5), and on CI it came down on its side.
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.waitForFunction(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+    return !!m && m.drive.forward === 0 && m.drive.right === 0 && !m.driveQueue?.length;
+  }, null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => {
+    const match = window.__match;
+    const me = match.slots[window.__cs.slot];
+    const m = match.mounts[me.mount.index];
+    m.pos = { x: m.home.pos.x, y: m.home.pos.y + 8, z: m.home.pos.z };
+    m.yaw = m.home.yaw;
+    m.speed = 0;
+    const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    // A lean to the right about its own forward axis, turned from facing `yaw`.
+    const a = { x: f.x * Math.sin(-0.25), y: 0, z: f.z * Math.sin(-0.25), w: Math.cos(-0.25) };
+    const q0 = { x: 0, y: Math.sin(m.yaw / 2), z: 0, w: Math.cos(m.yaw / 2) };
+    const q = { w: a.w * q0.w - a.x * q0.x - a.y * q0.y - a.z * q0.z, x: a.w * q0.x + a.x * q0.w + a.y * q0.z - a.z * q0.y, y: a.w * q0.y - a.x * q0.z + a.y * q0.w + a.z * q0.x, z: a.w * q0.z + a.x * q0.y - a.y * q0.x + a.z * q0.w };
+    m.rigid = { ...m.rigid, pos: { ...m.pos }, q, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, air: 0, rest: 0, righting: 0, tipped: 0 };
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed: 0 };
+    const log = (window.__dropLog = { air: 0, roll: 0, drawnRoll: 0, ticks: 0 });
+    const step = match.step;
+    window.__dropStep = step;
+    match.step = function () {
+      const out = step.call(this);
+      log.ticks++;
+      if (m.airborne) log.air++;
+      log.roll = Math.max(log.roll, Math.abs(m.susp.r));
+      return out;
+    };
+  });
+  const landed = await page
+    .waitForFunction(() => {
+      const me = window.__match.slots[window.__cs.slot];
+      const m = me.mount ? window.__match.mounts[me.mount.index] : null;
+      if (!m?.rigid) return null;
+      const log = window.__dropLog;
+      const node = window.__cs.view.scene.transformNodes.find((n) => n.name === `mount_${m.index}`);
+      if (node) log.drawnRoll = Math.max(log.drawnRoll, Math.abs(node.rotation.z));
+      const up = 1 - 2 * (m.rigid.q.x * m.rigid.q.x + m.rigid.q.z * m.rigid.q.z);
+      return log.air > 20 && !m.airborne && m.rigid.contact === 4 && up > 0.95 && Math.abs(m.pos.y - m.home.pos.y) < 0.3 ? { ...log, up: +up.toFixed(3) } : null;
+    }, null, { timeout: T(20000), polling: 'raf' })
+    .then((h) => h.jsonValue(), () => page.evaluate(() => window.__dropLog));
+  await page.evaluate(() => (window.__match.step = window.__dropStep));
+  check(landed?.up > 0.95 && landed.air > 20 && landed.roll > 0.3 && landed.drawnRoll > 0.04, `dropped from 8 m leaning, it falls, lands and ends up on its wheels, drawn leaning as it fell (${JSON.stringify(landed)})`);
+  // On its roof it stays there (owner, 2026-11-15: "2b"): the prompt offers Space to flip back, and jump does.
+  await page.evaluate(() => {
+    const match = window.__match;
+    const m = match.mounts[match.slots[window.__cs.slot].mount.index];
+    m.pos = { x: m.home.pos.x, y: m.home.pos.y + 2.5, z: m.home.pos.z };
+    m.yaw = m.home.yaw;
+    m.speed = 0;
+    // Upside down: half a turn about its forward axis.
+    const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+    const q0 = { x: 0, y: Math.sin(m.yaw / 2), z: 0, w: Math.cos(m.yaw / 2) };
+    const q = { w: -f.x * q0.x - f.z * q0.z, x: f.x * q0.w - f.z * q0.y, y: f.z * q0.x - f.x * q0.z, z: f.x * q0.y + f.z * q0.w };
+    const l = Math.hypot(q.x, q.y, q.z, q.w);
+    m.rigid = { ...m.rigid, pos: { ...m.pos }, q: { x: q.x / l, y: q.y / l, z: q.z / l, w: q.w / l }, vel: { x: 0, y: 0, z: 0 }, spin: { x: 0, y: 0, z: 0 }, air: 0, rest: 0, righting: 0, tipped: 0 };
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed: 0 };
+    window.__autoInput = { buttons: 0 };
+  });
+  const offered = await page.waitForFunction(() => /Flip back/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(15000) }).then(() => true, () => false);
+  const onRoof = await page.evaluate(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return +(1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2)).toFixed(2); });
+  check(offered && onRoof < -0.5, `on its roof it stays there and the prompt offers Space to flip back (${JSON.stringify({ offered, up: onRoof, prompt: await page.evaluate(() => document.getElementById('prompt').textContent) })})`);
+  await page.evaluate(() => (window.__autoInput = { buttons: 1 }));
+  const flipped = await page
+    .waitForFunction(() => { const m = window.__match.mounts[window.__match.slots[window.__cs.slot].mount.index]; return m.rigid.contact === 4 && 1 - 2 * (m.rigid.q.x ** 2 + m.rigid.q.z ** 2) > 0.95; }, null, { timeout: T(15000) })
+    .then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(flipped, 'jump rolls it back onto its wheels');
   // The drive and the turn leave the buggy anywhere (against a rock, on a slope): back to its spawn on open ground,
   // stopped, before the camera and seat checks below.
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
@@ -7087,9 +10373,9 @@ async function vehiclesFlow(browser) {
   }
   await page.evaluate(() => (window.__cs.input.pitch = 0));
   check(roll < 1, `after leaving the buggy and a blast nearby, the view and gun stay level as you turn (${roll.toFixed(2)}° roll)`);
-  // Passengers: five bots take the driver's, the front passenger's and three deck places (E fills the next free seat),
-  // you take the last place on the deck; all sit (the deck riders on its edges, facing out), and you shoot your own gun out of
-  // the side without hitting the buggy. A seventh can't get in.
+  // Passengers: five bots take the driver's, the front passenger's, the two back seats and one standing place in the
+  // back row (E fills the next free seat), you take the last one, standing; four sit, the back row stands, and you shoot
+  // your own gun out of the side without hitting the buggy. A seventh can't get in.
   const ride = await page.evaluate(() => {
     const match = window.__match;
     const me = match.slots[window.__cs.slot];
@@ -7099,7 +10385,7 @@ async function vehiclesFlow(browser) {
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
     // The buggy we drove, back at its spawn on flat ground and stopped (the drive and the steering check leave it
     // anywhere, on a slope or against a rock, where getting in from beside it can fail).
-    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.seats.every((s) => s === null))[0];
+    const m = match.mounts[window.__drivenMount] ?? match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive && x.seats.every((s) => s === null))[0];
     m.pos = { ...m.home.pos };
     m.yaw = m.home.yaw;
     if ('speed' in m) m.speed = 0;
@@ -7113,7 +10399,7 @@ async function vehiclesFlow(browser) {
     }
     me.move = { pos: { x: m.pos.x + 2.4, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
     window.__autoInput = { buttons: 0 };
-    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 2).map((b) => b.slot), standing: bots.slice(2, 5).map((b) => b.slot) };
+    return { index: m.index, seats, fifth: bots[5]?.slot, riders: bots.slice(0, 4).map((b) => b.slot), standing: bots.slice(4, 5).map((b) => b.slot) };
   });
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !!window.__match.slots[window.__cs.slot].mount)) break;
@@ -7129,7 +10415,7 @@ async function vehiclesFlow(browser) {
       (ride) => {
         const match = window.__match;
         const m = match.mounts.find((x) => x.index === ride.index);
-        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) > 0.95)) return false;
+        if (!ride.standing.every((s) => (window.__cs.view.avatars.get(s)?.anim?.sit ?? 0) < 0.05)) return false;
         return ride.riders.every((s) => {
           const a = window.__cs.view.avatars.get(s);
           const thigh = a?.anim?.ch.joints.get('thigh_l');
@@ -7168,9 +10454,9 @@ async function vehiclesFlow(browser) {
       health: m.health,
     };
   }, ride);
-  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === 1 && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you sitting on the edge of its deck (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
+  check(ride.seats.join() === '0,1,2,3,4' && seated.mine === 5 && seated.role === 'passenger' && seated.stance === undefined && seated.view === 'seat', `five riders and you fill the buggy's six places in order, you standing in its back row (${JSON.stringify({ seats: ride.seats, mine: seated.mine, stance: seated.stance, view: seated.view })})`);
   check(seated.sit.every((v) => v > 0.95) && seated.hips.every((h) => h !== null && h > 0 && h < 0.3), `riders are drawn sitting on their seats (sit ${seated.sit.join(', ')}; hips ${seated.hips.join(', ')} m over the cushions)`);
-  check(seated.stand.length === 3 && seated.stand.every((v) => v > 0.95), `riders on the deck are drawn sitting on its edges (sit ${seated.stand.join(', ')})`);
+  check(seated.stand.length === 1 && seated.stand.every((v) => v < 0.05), `the back row's riders are drawn standing (sit ${seated.stand.join(', ')})`);
   check(seated.fifth === false, 'a seventh player can\'t get into a full buggy');
   // Fire out of the right side, aiming down a little: your own gun, and the rounds leave through the buggy.
   const shot = await page.evaluate((index) => {
@@ -7191,17 +10477,18 @@ async function vehiclesFlow(browser) {
     const m = window.__match.mounts.find((x) => x.index === index);
     return { mag: me.weapons.get(window.__shotStart.weapon)?.mag, health: m.health, seat: me.mount?.seat };
   }, ride.index);
-  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider on the deck fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
+  check(fired.mag < shot.mag && fired.health === shot.health && fired.seat === 5, `a rider standing in the back row fires their own gun out of the side and the rounds don't hit their own buggy (${JSON.stringify({ weapon: shot.weapon, mag: [shot.mag, fired.mag], health: [shot.health, fired.health] })})`);
   for (let i = 0; i < 4; i++) {
     if (await page.evaluate(() => !window.__match.slots[window.__cs.slot].mount)) break;
     await page.evaluate(() => (window.__autoInput = { buttons: 0, once: 16 }));
     await page.waitForFunction(() => !window.__match.slots[window.__cs.slot].mount, null, { timeout: T(5000) }).catch(() => {});
   }
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await page.evaluate(() => window.__keepWhole && (window.__match.step = window.__keepWhole));
   // Blow the buggy up: it goes up in a vehicle explosion and leaves a charred wreck the client keeps solid.
   const boom = await page.evaluate(() => {
     const me = window.__match.slots[window.__cs.slot];
-    const m = window.__match.mounts.filter((x) => x.def.id === 'buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    const m = window.__match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
     // Down to a tenth of its health (the drive may already have dented it): into the burning band, not past it.
     window.__match.damageMount(m, m.health - m.def.health * 0.1, null, true);
     return m.index;
@@ -7256,7 +10543,7 @@ async function passengerChecks(browser) {
     const me = match.slots[window.__cs.slot];
     for (const c of match.slots) if (c?.bot) c.bot.nextMountTick = Number.MAX_SAFE_INTEGER;
     for (const c of match.slots) if (c?.bot) { const think = c.bot.think.bind(c.bot); c.bot.think = (v) => ({ ...think(v), forward: 0, right: 0, buttons: 0 }); }
-    const m = match.mounts.filter((x) => x.def.id === 'buggy' && x.alive && x.home.pos.z < 0).sort((a, b) => a.home.pos.z - b.home.pos.z)[0];
+    const m = match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive && x.home.pos.z < 0).sort((a, b) => a.home.pos.z - b.home.pos.z)[0];
     if (!m) return null;
     for (const c of match.slots) if (c?.mount && match.mounts[c.mount.index] === m) match.leaveMount(c, true);
     m.pos = { ...m.home.pos };
@@ -7275,6 +10562,7 @@ async function passengerChecks(browser) {
   if (ride) {
     // Seated and drawn sitting, then the chase camera (both of you in view) and the throttle down.
     await page.waitForFunction((r) => window.__cs.mounts.mounts.get(r.index)?.seats[1] === r.bot && (window.__cs.view.avatars.get(r.bot)?.anim?.sit ?? 0) > 0.95, ride, { timeout: T(10000) }).catch(() => {});
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
     // Off at full speed, on the page's frame clock from here: 60 frames a game second however slowly this machine
@@ -7364,6 +10652,7 @@ async function passengerChecks(browser) {
         window.__frameClock.step(1000 / 60);
         return ok();
       }, [want, max]);
+    await playWithoutMouse(page);
     await page.keyboard.press('KeyH');
     const cockpit = await untilFrames('cockpit', 60);
     const inCockpit = await page.evaluate(ownShown);
@@ -7538,6 +10827,7 @@ async function troopTruckChecks(browser) {
   const moved = await sim(page, (m, me, s) => +Math.hypot(me.move.pos.x - s.x, me.move.pos.z - s.z).toFixed(1), start).catch(() => 0);
   check(moved > 6 && wheels.susp && wheels.wheels === 6 && wheels.pivots === 6 && wheels.tires === 6 && wheels.own === 0 && wheels.rolled, `it drives off (${moved} m) on six sprung tires, rolling (${JSON.stringify(wheels)})`);
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await playWithoutMouse(page);
   await page.keyboard.press('KeyH');
   await page.waitForFunction(() => window.__cs.rideView() === 'chase', null, { timeout: T(8000) }).catch(() => {});
   await frames(page, 10);
@@ -7602,16 +10892,50 @@ async function arcTurretChecks(browser) {
       draw(pts, color);
     };
   });
+  // The wind-up is judged in match ticks, where the match runs: every tick from the step in logs the turret's charge
+  // and your health. (Reading your health once this page draws it charging raced the match: a page drawing a frame
+  // every quarter second runs 15 ticks a frame and draws a snapshot behind, so the 45-tick wind-up could be over, and
+  // the first hit in, before the read. `seen`: match ticks into the wind-up by the time this page showed it.)
   const start = await sim(page, (m, me, a) => {
     me.move = { pos: { x: a[0] + 11, y: 0.5, z: a[2] }, velY: 0, grounded: false };
+    const turret = m.mounts.find((x) => x.def.id === 'sentry_arc');
+    const log = (m.__arcLog = { windUp: Math.round(turret.def.sentry.arc.windUpSeconds * 60), ticks: 0, first: -1, full: -1, hit: -1, hitCharge: -1, start: me.health });
+    const step = m.step;
+    m.__arcStep = step;
+    m.step = function () {
+      const out = step.call(this);
+      const st = turret.arc;
+      if (st?.target === me.slot) {
+        if (log.first < 0 && st.charge > 0) log.first = log.ticks;
+        if (log.full < 0 && st.charge >= log.windUp) log.full = log.ticks;
+      }
+      if (log.hit < 0 && me.health < log.start) {
+        log.hit = log.ticks;
+        log.hitCharge = st?.charge ?? -1;
+      }
+      log.ticks++;
+      return out;
+    };
     return me.health;
   }, at);
-  const charged = await page.waitForFunction(() => [...window.__cs.mounts.mounts.values()].some((x) => x.def.id === 'sentry_arc' && x.charging), null, { timeout: T(20000) }).then(() => true, () => false);
-  const during = await sim(page, (m, me) => me.health);
-  const orb = (await arcState())?.orb ?? 0;
-  check(charged && during === start, `it winds up on you first: charging, no damage yet (${JSON.stringify({ charged, health: [start, during] })})`);
-  check(orb > 0, `its charge orb is drawn while it winds up (${orb})`);
+  // Its charge orb is drawn while this page shows it winding up.
+  const orb = await page
+    .waitForFunction(() => {
+      const m = [...window.__cs.mounts.mounts.values()].find((x) => x.def.id === 'sentry_arc' && x.charging);
+      const orb = m ? window.__cs.view.chargeOrb(m.index) : 0;
+      return orb > 0 ? orb : null;
+    }, null, { timeout: T(20000) })
+    .then((h) => h.jsonValue(), () => 0);
+  // (How far the match was by the time this page showed it: the old check read your health here.)
+  const seen = await sim(page, (m) => m.__arcLog.ticks - m.__arcLog.first);
   const locked = await meWait(page, (m, me, s) => me.health < s, start, 4, T(60000));
+  const wind = await sim(page, (m) => {
+    m.step = m.__arcStep;
+    return m.__arcLog;
+  });
+  // Charging began on you, ran the whole wind-up, and the first hit came only after it.
+  check(wind.first >= 0 && wind.full >= wind.first + wind.windUp - 1 && (wind.hit < 0 || wind.hit >= wind.full), `it winds up on you first: charging, no damage yet (${JSON.stringify({ ...wind, seen })})`);
+  check(orb > 0, `its charge orb is drawn while it winds up (${orb})`);
   await page.waitForFunction(() => window.__arcs > 0, null, { timeout: T(10000) }).catch(() => {});
   const fired = { ...(await arcState()), arcs: await page.evaluate(() => window.__arcs), health: await sim(page, (m, me) => me.health) };
   check(locked && fired.arcs > 0, `then its arc locks on: you take hits, and the arc is drawn in its colour (${JSON.stringify(fired)})`);
@@ -7698,6 +11022,7 @@ async function trafficFlow(browser) {
   await page.keyboard.press('Escape');
   // Map properties: Race is no longer a mode. It isn't offered, and a map that still lists it can drop it (undo puts it back).
   await page.keyboard.press('Escape');
+  await openMapSettings(page);
   await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
   await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
   const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
@@ -7760,7 +11085,8 @@ async function coverageFlow(browser) {
     const floor = Math.min(-5, ...file.entities.filter((e) => e.kind === 'spawn').map((e) => e.position[1] - 2));
     const me = await page.evaluate(() => ({ alive: window.__cs.local.alive, y: window.__cs.local.state.pos.y }));
     check(ran && me.alive && me.y > floor, `90 ticks on it, and you stand on solid ground (y ${me.y.toFixed(1)}, floor ${floor.toFixed(1)})`);
-    const got = await sim(page, (m) => ({ pickups: m.pickups.length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
+    // (A placed Ammo Box is a crate in play, not a pickup: sim/resupply.ts. It counts as one of the map's pickups here.)
+    const got = await sim(page, (m) => ({ pickups: m.pickups.length + m.ammoBoxes().filter((b) => b.placed).length, mounts: m.mounts.length, ziplines: m.ziplines.length }));
     // The match also runs the transport plane and the dropship as mounts.
     const want = { pickups: count('pickup'), mounts: count('mount') + count('airplane'), ziplines: count('zipline') };
     check(got.pickups >= want.pickups && got.mounts === want.mounts && got.ziplines === want.ziplines, `every pickup, vehicle, turret and zipline is in the match (${JSON.stringify(got)} of ${JSON.stringify(want)})`);
@@ -7852,7 +11178,7 @@ async function coverageFlow(browser) {
   const r = opened ? await ed.evaluate(() => ({ errors: window.__editor.issues.filter((i) => i.severity === 'error').map((i) => i.message), entities: window.__editor.doc.entities.length, tiles: window.__editor.doc.classicStructure.tiles.length, setPieces: window.__editor.doc.setPieces?.length ?? 0, testOnly: !!window.__editor.doc.metadata.testOnly })) : null;
   check(!!r && !r.errors.length && r.entities === file.entities.length && r.tiles === file.classicStructure.tiles.length && r.setPieces === (file.setPieces?.length ?? 0) && r.testOnly, `the coverage map opens in MapMaker whole (its set pieces kept as placements), marked as a test map (${JSON.stringify(r)})`);
   // Map properties show it as a test map.
-  if (opened) await ed.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  if (opened) await openMapSettings(ed);
   const box = opened && (await ed.evaluate(() => document.getElementById('ed-prop-testonly')?.checked ?? null));
   check(box === true, `Map properties: "Test map" is ticked (${box})`);
   check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
@@ -7925,7 +11251,7 @@ async function mapsFlow(browser, part = 0) {
  * MapMaker overhaul Phase 3 part B (docs/MAPMAKER_OVERHAUL_PLAN.md, items 3-7): groups (Ctrl+G: a click picks the
  * whole group, Alt-click one; moved, flipped, duplicated as one; Ctrl+Shift+G), copy and paste between maps (Ctrl+C,
  * Ctrl+V at the pointer, new ids; another theme refused, saying why), templates (New map → Start from), Mirror…
- * (Shift+M: a mirrored copy swaps team things; half the map), and note pins (J: pin, edit, drag, list, delete; format
+ * (Shift+M: a mirrored copy swaps team things; half the map; an exploded Arena Corner as the set piece), and note pins (J: pin, edit, drag, list, delete; format
  * v31). Screenshots go to E2E_SHOTS when set.
  */
 async function editorPartBChecks(browser) {
@@ -8119,7 +11445,7 @@ async function editorPartBChecks(browser) {
   await frames(page, 2);
   check((await doc()).editorNotes[0].text === 'Sniper line: add a wall', 'clicking the pin opens it to edit');
   await page.keyboard.press('KeyV');
-  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [] }));
+  await openMapSettings(page);
   await frames(page, 2);
   check((await page.textContent('#ed-notes-list')).includes('Notes (1)') && (await page.textContent('#ed-notes-list')).includes('Sniper line: add a wall'), 'Map properties lists the notes');
   await shot('notes');
@@ -8189,6 +11515,60 @@ async function editorPartBChecks(browser) {
   await page.keyboard.press('Control+KeyZ');
   await frames(page, 2);
   check(await page.evaluate(() => !window.__editor.doc.botHints?.some((x) => x.team === 'tide') && window.__editor.doc.paths?.length === 1), 'one undo takes the whole mirror back');
+
+  // ---- Mirror… and diagonal symmetry: an exploded Arena Corner (its storey tiles and lights selected on their own)
+  // flipped east ↔ west (Shift+M, the original not kept) is the set piece flipped, each storey placed turned; one undo.
+  await newMap(page, 0);
+  await page.evaluate(() => {
+    window.__editor.run('Corner', { kind: 'addSetPieces', setPieces: [{ id: 'corner', piece: 'setpiece.arena_corner', x: 3, y: 2, z: 0, rotation: 1, mirror: false }] });
+    window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] });
+  });
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const cornerSel = await sel();
+  /** The corner's parts as the map holds them (ids are `sp_corner_<part>` either way). */
+  const cornerParts = () =>
+    page.evaluate(() => {
+      const d = window.__editor.doc;
+      const mine = (id) => id.startsWith('sp_corner_');
+      const r = (v) => Math.round(v * 1000) / 1000;
+      return JSON.stringify({
+        tiles: d.classicStructure.tiles.filter((t) => mine(t.id)).map((t) => [t.id, t.tile, t.x, t.y, t.z, t.rotation, t.edges ?? null, t.glass ?? null, t.upperFloors ?? null]).sort(),
+        things: d.entities.filter((e) => mine(e.id)).map((e) => [e.id, e.kind, ...e.position.map(r), r(e.yaw ?? 0)]).sort(),
+      });
+    });
+  const explodedParts = await cornerParts();
+  const flipCorner = async () => {
+    await page.keyboard.press('Shift+KeyM');
+    await page.waitForSelector('#ed-mirror-dialog[open]', { timeout: T(5000) });
+    await page.selectOption('#ed-mirror-across', 'eastWest');
+    await page.uncheck('#ed-mirror-keep');
+    await page.fill('#ed-mirror-x', '92');
+    await page.dispatchEvent('#ed-mirror-x', 'input');
+    const said = await page.textContent('#ed-mirror-why');
+    await page.click('#ed-mirror-go');
+    await frames(page, 3);
+    return said;
+  };
+  const cornerWhy = await flipCorner();
+  const flippedTiles = await cornerParts();
+  check(cornerSel.tiles.length === 4 && /Flips the 17 selected over \(x = 92 m\)/.test(cornerWhy) && flippedTiles !== explodedParts, `Shift+M flips an exploded Arena Corner, its four storeys and 13 lights (${cornerWhy})`);
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  check((await cornerParts()) === explodedParts, 'one undo puts the exploded corner back as it was');
+  // The set piece itself flipped across the same line, then exploded: the same tiles, turns, walls and lights.
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 2);
+  await flipCorner();
+  await page.evaluate(() => window.__editor.setSelection({ tiles: [], entities: [], setPieces: ['corner'] }));
+  await frames(page, 3);
+  await page.click('#ed-sp-explode');
+  await frames(page, 3);
+  const pieceFlipped = await cornerParts();
+  check(pieceFlipped === flippedTiles, `the flipped exploded corner is the flipped set piece, part for part (${pieceFlipped === flippedTiles ? 'same' : `${flippedTiles.slice(0, 300)} | ${pieceFlipped.slice(0, 300)}`})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -8242,7 +11622,11 @@ async function environmentFlow(browser) {
   const stats = () => page.evaluate(() => window.__envlab.stats().env);
   const s0 = await stats();
   check(s0.copies >= 90 && s0.drawnBatches > 0 && s0.perLevel[0] > 0, `it draws every species as thin-instance batches (${JSON.stringify(s0)})`);
-  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).map((m) => m.name.split('_l')[0]))].sort());
+  const species = await page.evaluate(() => [...new Set(window.__envlab.scene.meshes.filter((m) => /^env_[a-z]/.test(m.name) && !m.name.startsWith('env_tpl') && m.isEnabled() && m.thinInstanceCount > 0).flatMap((m) => {
+    // A batch of shared looks (environment Phase 5) names them all: env_broadleaf.oak.summer+autumn_l0_….
+    const [first, ...more] = m.name.split('_l')[0].split('+');
+    return [first, ...more.map((look) => `${first.slice(0, first.lastIndexOf('.'))}.${look}`)];
+  }))].sort());
   // Every variant of every species in content/environment/ (the lab's lineup has them all).
   const envDir = new URL('../content/environment/', import.meta.url);
   const variants = readdirSync(envDir).filter((f) => f.endsWith('.json')).reduce((n, f) => n + JSON.parse(readFileSync(new URL(f, envDir), 'utf8')).species.reduce((k, s) => k + s.variants.length, 0), 0);
@@ -8301,9 +11685,8 @@ async function fireteamsCtfChecks(browser) {
   check(setup.on === 'true' && setup.size === '4', `Match setup: CTF with Fireteams, squads of 4 (${JSON.stringify(setup)})`);
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
-  // (The match opens paused in a headless page: Resume, once it's there.)
-  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
-  await page.click('#resume').catch(() => {});
+  // (Into play: the click "Click to fight" asks for in a headless page.)
+  await fight(page).catch(() => {});
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   // (A headless page without pointer lock plays as touch does, so the pause menu stays down for the HUD's picture.)
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
@@ -8387,9 +11770,8 @@ async function fireteamsFlow(browser) {
   check(led && squad?.leader && squad.human && squad.members === 4, `you lead a fireteam of 4 (HUD "Follow me"; ${JSON.stringify(squad)})`);
   check(!!squad && squad.others.length > 0 && squad.others.every((n) => n >= 2 && n <= 4), `bot-led squads fill the rest of your team (${JSON.stringify(squad?.others)})`);
   // Play: the pointer is captured on a real desktop; a headless page without pointer lock plays as touch does.
-  // (The match opens paused: Resume, once it's there, and the pause menu gone before the keys.)
-  await page.waitForSelector('#resume', { state: 'visible', timeout: T(10000) }).catch(() => {});
-  await page.click('#resume').catch(() => {});
+  // (Into play: the click "Click to fight" asks for, and the pause menu gone before the keys.)
+  await fight(page).catch(() => {});
   await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement || window.__cs.input.setTouchEngaged(true));
   // A tap of B: the quick-message menu, as without Fireteams.
@@ -8485,6 +11867,13 @@ async function fireteamsFlow(browser) {
     return { squad: s.id, points: m.fireteams.scores.squad(s.id).points, me: m.fireteams.scores.points(me.slot), mate: m.fireteams.scores.player(mate.slot).assists - assists, squads: m.fireteams.squads.filter((q) => q.team === me.faction).length };
   });
   check(scored.points >= 15 && scored.me >= 10 && scored.mate >= 1, `your kill (10) and your squadmate's assist (5) go to your squad (${JSON.stringify(scored)})`);
+  // Player profiles (docs/PLAYER_PROFILES_PLAN.md): the match counts into your career at its end (a guest's, in this
+  // browser). A match counts after 30 s in it: the count's start moved back so this short one does.
+  const careerBefore = await page.evaluate(() => {
+    const t = window.__cs.career();
+    if (t) t.startedAt -= 60_000;
+    return { tally: !!t, matches: JSON.parse(localStorage.getItem('tiletrigger.career') ?? '{}').matches ?? 0 };
+  });
   // (The scoreboard held up for the checks and the pictures.)
   await sim(page, (m) => {
     m.endMatch();
@@ -8503,6 +11892,12 @@ async function fireteamsFlow(browser) {
     return { lines: lines.length, best: sb.querySelectorAll('.sb-squad.best').length, mine: { first: mine.previousElementSibling?.classList.contains('sb-hd'), name: mine.querySelector('.sb-sqname').textContent, points: Number(mine.querySelector('.sb-sqpts').textContent), mvp: mine.querySelector('.sb-sqmvp').textContent, best: mine.classList.contains('best'), rows: after.length, me: after.includes(window.__cs.slot) }, pts: [...sb.querySelectorAll('.sb-hd')].some((h) => /Pts/.test(h.textContent)), awards: [...awards.querySelectorAll('.award b')].map((b) => b.textContent), blink: [...sb.querySelectorAll('.sb-squad, .sb-squad *'), ...awards.querySelectorAll('*')].some((e) => getComputedStyle(e).animationName !== 'none') };
   }, scored.squad, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
   await page.screenshot({ path: `${ARTIFACTS}/fireteams-board-desktop.png` });
+  const career = await page.waitForFunction(() => {
+    const card = document.querySelector('#scoreboard #profile-card');
+    const c = JSON.parse(localStorage.getItem('tiletrigger.career') ?? 'null');
+    return card && c ? { card: card.textContent, matches: c.matches, kills: c.kills, rifle: c.weaponKills?.['core.rifle'] ?? 0 } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(careerBefore.tally && !!career && career.matches === careerBefore.matches + 1 && career.kills >= 1 && career.rifle >= 1 && /GUEST/.test(career.card) && /This match: [1-9]\d* K/.test(career.card) && /Career: \d+ match/.test(career.card), `the match ends into your career, and your profile card shows under the board (${JSON.stringify({ careerBefore, career })})`);
   check(!!board && board.lines >= scored.squads * 2 - 1 && board.mine.rows === 4 && board.mine.me && board.mine.points >= 15 && board.pts && board.mine.first, `the scoreboard groups each team by squad (${board?.lines} squad lines; yours: ${JSON.stringify(board?.mine)})`);
   check(!!board && /^MVP \S/.test(board.mine.mvp) && board.best === 1 && board.awards.includes('Best Squad') && board.awards.includes("Your Squad's MVP") && !board.blink, `the end of the match with the vote: every squad's MVP on its line, Best Squad and your squad's MVP among the awards, nothing animated (${JSON.stringify(board?.awards)})`);
   // A phone's size: the board keeps its squads (the awards make room for the vote there).
@@ -8573,14 +11968,15 @@ async function newplayerFlow(browser) {
   // Quick Play: two clicks into a Deathmatch against bots, on a map of its list, the map's recommended players.
   await page.click('#nav-quick');
   await page.waitForSelector('#quick-play');
-  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode));
+  // (The modes' cards, then Pick a map: docs/MOBILE_AUDIT.md, proposal 2.)
+  const choice = await page.$$eval('#quick-play .qp-mode', (bs) => bs.map((b) => b.dataset.mode ?? b.id));
   await page.click('#qp-dm');
   const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__quickPlay, null, { timeout: T(120000) }).then(() => true, () => false);
   const qp = playing ? await page.evaluate(() => ({ ...window.__quickPlay, mode: window.__cs.rules().mode, map: window.__cs.map, saved: JSON.parse(localStorage.getItem('tiletrigger.quickPlay')) })) : null;
   const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
   const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
   check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
-  check(choice.join() === 'core.tdm,core.deathmatch' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
+  check(choice.join() === 'core.tdm,core.deathmatch,qp-pick' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
   await page.click('#nav-quick');
@@ -8723,6 +12119,20 @@ function installFrameGrab(size) {
         ctx.drawImage(heavy.image, 0, 0, out.width, out.height);
         ctx.globalAlpha = 1;
       }
+      // The low-health warning's darkened edge (HTML too: hud.ts lowHealthOverlay).
+      const low = window.__cs.hud.lowHealthOverlay?.();
+      if (low && low.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, low.opacity);
+        ctx.drawImage(low.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
+      // A scope's surround and shadow (HTML too: hud.ts scopeOverlay).
+      const scope = window.__cs.hud.scopeOverlay?.();
+      if (scope && scope.opacity > 0.002) {
+        ctx.globalAlpha = Math.min(1, scope.opacity);
+        ctx.drawImage(scope.image, 0, 0, out.width, out.height);
+        ctx.globalAlpha = 1;
+      }
       // Roulette's jackpot glow (HTML too: rouletteHud.ts glowOverlay).
       const glow = window.__cs.rouletteGlow?.();
       if (glow && glow.opacity > 0.002) {
@@ -8787,37 +12197,64 @@ async function frameStrip(frames, every = 4, cols = 5) {
  * night, pickups' floor glows coming up, a portal's swirl and a jump pad's lift coming up, status auras coming up on three bots, the alarm light. With the setting
  * on each moment must stay under the thresholds; the same moments with it off are measured and reported as numbers
  * only. Frame strips (every 4th frame) and the numbers go to e2e-artifacts/ (flashing-<moment>-<on|off>.png,
- * flashing.json). E2E_FLASH_MOMENTS=arc,blast records just those.
+ * flashing-night-<first moment>.json). E2E_FLASH_MOMENTS=arc,blast records just those (in their flows).
  *
- * Then a second scene by day (FLASHING_DAY: flashing-day.json), for the bright moments daylight makes: sprinting out
- * of a lit tunnel into the day, turning round and sprinting back in.
+ * Then a second scene by day (FLASHING_DAY: flashing-day-<first moment>.json), for the bright moments daylight makes: sprinting out
+ * of a lit tunnel into the day, turning round and sprinting back in; the hit camera kick on the tunnel's daylight edge.
+ *
+ * Five flows (FLASHING_PARTS), each under 5 min on CI (a moment is 35-100 s drawn in software), so a retry fits a
+ * shard: each makes the scenes its moments need and plays just those. A new moment goes in the shortest part
+ * (e2e/timings.json).
  */
-async function flashingFlow(browser) {
-  await flashingScene(browser);
-  await flashingScene(browser, FLASHING_DAY);
-}
+const flashingFlow = (part) => async (browser) => {
+  const { night, day } = FLASHING_PARTS[part];
+  if (night) await flashingScene(browser, null, night);
+  if (day) await flashingScene(browser, FLASHING_DAY, day);
+};
 
 /**
- * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit concrete tunnel (a portal, three modules with a
- * light under each strip fixture, a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
+ * The flicker check's flows and their moments, by scene (each part's played in the scene's order). From the moments'
+ * times on CI run 44700870108 (seconds), a scene's start (some 20 s) and its first moment's warm-up (some 40 s): about
+ * 310-340 s each.
+ */
+const FLASHING_PARTS = {
+  flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
+  flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
+  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick'] },
+};
+
+/**
+ * The flicker check's scene by day (Tileset 04, Tunnel Systems): a lit tunnel (a portal, three modules with a light
+ * under each fixture, one in each family: concrete, brick sewer, mine; a portal), as MapMaker edits. The moment: from 3 m inside the south portal's
  * headwall you sprint out to 5 m beyond it looking out (the dim bore opening onto daylight: a brightness step over
  * much of the picture), turn round in one frame and sprint back in looking into the tunnel.
  */
 const FLASHING_DAY = {
   name: 'day',
-  what: "the check's day scene: a lit concrete tunnel 40 m long (two portals, three modules, three lights)",
+  what: "the check's day scene: a lit tunnel 40 m long (two concrete portals; a concrete, a brick sewer and a mine module; three lights)",
   make: (page) =>
     page.evaluate(() => {
       const ed = window.__editor;
       // (Three cells east of the new map's own starting room.)
       const tile = (id, tile, y, rotation) => ({ id, tile, x: 3, y, z: 0, rotation });
-      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0)), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
+      // (The run's three modules one in each family, concrete by the south portal, then brick sewer and mine: their
+      // lanterns and strip lights are steady glowing fixtures, seen when you turn back into the tunnel.)
+      const families = [undefined, 'brick', 'mine'];
+      const tiles = [tile('day_portal_s', 'core.tunnel_concrete_portal', -2, 0), ...[-1, 0, 1].map((y) => ({ ...tile(`day_run_${y + 1}`, 'core.tunnel_concrete_straight', y, 0), ...(families[y + 1] ? { family: families[y + 1] } : {}) })), tile('day_portal_n', 'core.tunnel_concrete_portal', 2, 2)];
       const entities = [-8, 0, 8].map((z, i) => ({ id: `day_light_${i}`, kind: 'light', position: [24, 3.1, z], yaw: 0, color: '#ffe6b8', intensity: 1, range: 9, fixture: 'none' }));
+      // A white-tiled floor out in the day with four pickups on it (the `lootlight` moment: their floor glows on the
+      // brightest floor, where the glow alone barely shows; docs/FX_CHECKS_2026-11-13.md, section 2).
+      entities.push({ id: 'day_tiles', kind: 'block', position: [-24.4, 0, -25], size: [6, 0.1, 6], yaw: 0, material: 'core.white_tiles', tint: '#ffffff', behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 });
+      for (const [i, [item, x, z]] of [['ammo_light', -25.2, -24.2], ['armor_small', -23.6, -24.2], ['health_small', -25.2, -25.8], ['weapon_rifle', -23.6, -25.8]].entries()) entities.push({ id: `day_pickup_${i}`, kind: 'pickup', item: `core.${item}`, position: [x, 0.1, z], respawnSeconds: null });
+      // A row of ten stocked shop shelves (the `shelves` moment: no pop between their near and far looks as you walk up).
+      for (let i = 0; i < 10; i++) entities.push({ id: `day_shelf_${i}`, kind: 'prop', model: 'kit.shelf.gondola', position: [-34 + 2 * i, 0, 38], yaw: 0, scale: 1, solid: true, tint: null });
       const ok = ed.run('Flicker check day scene', { kind: 'batch', commands: [{ kind: 'addTiles', tiles }, { kind: 'addEntities', entities }] });
-      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
+      return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
-  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.sky !== 'night',
-  moments: ({ page, stage }) => {
+  made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
+  moments: ({ page, stage, step, frameMs }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -8827,7 +12264,49 @@ const FLASHING_DAY = {
         await stage({ me: [24, 0, zAt(f)], bots: [] });
       };
     }
+    // Walking up to the shelves (owner, 2026-11-16: a shop shelf's goods popped between flat blocks and the real items a
+    // few metres away, flickering at the line; game/propLod.ts): from 26 m to 4 m of the row, at 11 m/s. Every frame,
+    // each shelf's level of detail (its prop batch's meshes) is read: none within 20 m may be on a lighter level, and
+    // none may change level during the walk.
+    const shelfAt = (f) => 12 + (22 * f) / 59;
+    const shelfLevels = () =>
+      page.evaluate(() => {
+        const v = window.__cs.view;
+        const eye = v.cameraPosition();
+        const log = (window.__shelfLog ??= { seen: 0, near: 0, changes: 0, last: {}, far: 0 });
+        for (const [i, n] of v.props) {
+          if (!n.name.startsWith('prop_day_shelf_')) continue;
+          const st = v.propBatches?.copyState(n);
+          if (!st?.meshes.length) continue;
+          const level = Number(/_l(\d+)_/.exec(st.meshes[0])?.[1] ?? 0);
+          log.seen++;
+          const d = Math.hypot(n.position.x - eye.x, n.position.y + 1 - eye.y, n.position.z - eye.z);
+          if (d < 20 && level > 0) log.near++;
+          log.far = Math.max(log.far, d);
+          if (log.last[i] !== undefined && log.last[i] !== level) log.changes++;
+          log.last[i] = level;
+        }
+      });
+    const shelfWalk = {};
+    for (let f = 0; f < 60; f++) {
+      shelfWalk[f] = async () => {
+        await shelfLevels();
+        await stage({ me: [-25, 0, shelfAt(f)], bots: [] });
+      };
+    }
     return [
+      {
+        name: 'shelves',
+        label: 'walking up to a row of stocked shop shelves, from 26 m to 4 m',
+        weapon: 'core.arc_caster',
+        me: [-25, 0, 12],
+        look: { yaw: 0, pitch: -0.05 },
+        bots: [],
+        before: () => page.evaluate(() => (window.__shelfLog = undefined)),
+        at: shelfWalk,
+        seen: () => shelfLevels().then(() => page.evaluate(() => ({ seen: window.__shelfLog.seen, near: window.__shelfLog.near, changes: window.__shelfLog.changes, far: +window.__shelfLog.far.toFixed(1) }))),
+        sees: (_on, s) => s.seen >= 300 && s.near === 0 && s.changes === 0,
+      },
       {
         name: 'tunnel',
         label: 'sprinting out of a lit tunnel into daylight, turning round and sprinting back in',
@@ -8841,24 +12320,196 @@ const FLASHING_DAY = {
         // Back inside at the end, on the tunnel's floor.
         sees: (_on, s) => s.z > -14.5 && s.z < -12.5 && Math.abs(s.y) < 0.3,
       },
+      // Pickups' floor glows on white tiles by day, as High graphics draws them, dropped as the recording starts (so it
+      // holds them coming up, as the night `loot` moment does). Then the rings must read: each ring's WCAG contrast
+      // against the floor without it (lootRingContrast) at least LOOT_RING_MIN on average with the setting on; the
+      // glow alone made 1.06-1.18 on pale floors, and its dark outline (game/lootGlow.ts LOOT_OUTLINE) is what lifts it.
+      {
+        name: 'lootlight',
+        label: "four pickups' floor glows coming up 3.5-5 m in front of you on white tiles by day (light ammo, armor, health, a rifle)",
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -20.7],
+        look: { yaw: Math.PI, pitch: -0.42 },
+        bots: [],
+        before: () => page.evaluate(() => (window.__cs.view.vfx.quality = 'high')),
+        at: { 2: () => page.evaluate(() => window.__cs.view.lasting.dispose()) },
+        seen: () => lootRingContrast(page, step, ['day_pickup_0', 'day_pickup_1', 'day_pickup_2', 'day_pickup_3']),
+        sees: (on, s) => s.rings.length === 4 && s.rings.every((r) => r.px >= 150 && (!on || r.mean >= LOOT_RING_MIN)),
+        after: () => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality)),
+      },
+      // The low-health warning (game/lowHealth.ts): your health drops to 10 % as the recording starts, so it holds the
+      // warning coming up (the edges darkening, the world greying) and its heartbeat pulse, by day over the white tiles
+      // (the brightest ground: where darkening shows most). Before each run it is let go back to nothing.
+      {
+        name: 'lowhealth',
+        label: 'the low-health warning coming up at 10 % health (edges darkening, the world greying, the heartbeat), by day over white tiles',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, () => void (self.__flashHp = undefined)).then(() => step(45)),
+        at: { 2: () => sim(page, () => void (self.__flashHp = 10)) },
+        seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
+        sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
+        after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
+      // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
+      // and goes three times in the two seconds, as fast as a hand can, then you turn hard left and right through it
+      // (the scope's shadow sliding across the glass). The surround comes in with the zoom and fades out, slower with the
+      // setting on, and the shadow moves through a slow filter: the magnified tiles never show bright round the glass, no
+      // cut from black to daylight, no dark crescent jumping from side to side.
+      {
+        name: 'scope',
+        label: 'a sniper scope coming up and going away three times in two seconds, then hard turns through it, by day over white tiles',
+        weapon: 'core.sniper',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => page.evaluate(() => ((window.__scopeSeen = { fade: new Set(), box: 0 }), Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.3 }))),
+        // (Every frame has something to do: done in the page with the frame's step, one trip to the page a frame.)
+        stepAt: (f) =>
+          page.evaluate(([f, ms]) => {
+            const cs = window.__cs;
+            const seen = window.__scopeSeen;
+            const o = cs.hud.scopeOverlay();
+            if (o && o.opacity > 0.01 && o.opacity < 0.99) seen.fade.add(o.opacity.toFixed(2));
+            seen.box = Math.max(seen.box, Math.hypot(cs.scope().eyeBox.x, cs.scope().eyeBox.y));
+            const up = (f >= 2 && f < 10) || (f >= 17 && f < 25) || f >= 32;
+            window.__autoInput = { buttons: up ? 8 : 0, zoom: up };
+            // Hard turns: 1.8 rad/s, the other way every sixth of a second.
+            if (f >= 40) cs.input.yaw += (Math.floor((f - 40) / 5) % 2 ? -1 : 1) * 0.06;
+            return window.__frameClock.step(ms);
+          }, [f, frameMs]),
+        seen: () => page.evaluate(() => ({ scoped: window.__cs.scope().scoped, fades: window.__scopeSeen.fade.size, box: +window.__scopeSeen.box.toFixed(2), up: !document.getElementById('scope').hidden })),
+        // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
+        sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
+        after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
+      },
+      // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
+      // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
+      // where a jolt of the view swings most pixels across it), kicked as by a full-power hit (a shotgun blast or a
+      // sniper round) five times a second for the whole recording, from either side in turn: sustained heavy fire.
+      {
+        name: 'hitkick',
+        label: 'the hit camera kick: full-power hits five times a second, by day, looking into the dark tunnel mouth',
+        weapon: 'core.arc_caster',
+        me: [24, 0, -24],
+        look: { yaw: 0, pitch: 0 },
+        bots: [],
+        at: Object.fromEntries(Array.from({ length: 10 }, (_, k) => [2 + k * 6, () => page.evaluate((side) => window.__cs.view.hitKick(1, side), k % 2 ? 1 : -1)])),
+        seen: () => page.evaluate(() => ({ kick: !!window.__cs.view.hitKickState })),
+        sees: (_on, s) => s.kick,
+      },
     ];
   },
 };
 
-async function flashingScene(browser, scene) {
+/** The `lootlight` moment's floor for a ring that reads: WCAG contrast on average over its pixels. */
+const LOOT_RING_MIN = 1.3;
+
+/**
+ * Pickups' floor rings against the floor (docs/FX_CHECKS_2026-11-13.md, section 2's method): the pickups' own models
+ * hidden, the glows held up for 1.5 s (full, either setting), a frame taken; then the glows held back (outlines with
+ * them) and the same frame again. Over a box round each pickup's base, a ring pixel is one the glow changes by 2 % or
+ * more either way; its contrast is WCAG's (lighter + 0.05) / (darker + 0.05) of the two frames. Per pickup: ring
+ * pixels, mean and 90th-percentile contrast, the floor's mean luminance. `step(n)` moves the page's frozen clock.
+ */
+async function lootRingContrast(page, step, ids) {
+  // The next drawn frame's relative luminance, kept in the page as `slot` (a frame read back as it ends).
+  const grab = (slot) =>
+    page.evaluate((slot) => {
+      const g = (window.__ringGrab ??= (() => {
+        const engine = window.__cs.view.scene.getEngine();
+        const c = engine.getRenderingCanvas();
+        const out = document.createElement('canvas');
+        const ctx = out.getContext('2d', { willReadFrequently: true });
+        const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        const me = { want: null, w: 0, h: 0 };
+        engine.onEndFrameObservable.add(() => {
+          if (!me.want) return;
+          const into = me.want;
+          me.want = null;
+          [out.width, out.height] = [c.width, c.height];
+          ctx.drawImage(c, 0, 0);
+          const d = ctx.getImageData(0, 0, c.width, c.height).data;
+          const L = new Float32Array(c.width * c.height);
+          for (let k = 0; k < L.length; k++) L[k] = 0.2126 * lin(d[k * 4]) + 0.7152 * lin(d[k * 4 + 1]) + 0.0722 * lin(d[k * 4 + 2]);
+          me[into] = L;
+          [me.w, me.h] = [c.width, c.height];
+        });
+        return me;
+      })());
+      g[slot] = null;
+      g.want = slot;
+    }, slot);
+  await page.evaluate(() => (window.__cs.view.hidePickupModels = true));
+  await step(45);
+  await grab('lit');
+  await step(1);
+  await page.evaluate(() => (window.__cs.view.holdLootGlows = true));
+  await step(30);
+  await grab('bare');
+  await step(1);
+  const rings = await page.evaluate((ids) => {
+    const v = window.__cs.view;
+    const g = window.__ringGrab;
+    Object.assign(v, { holdLootGlows: false, hidePickupModels: false });
+    if (!g?.lit || !g?.bare) return [];
+    const c = v.scene.getEngine().getRenderingCanvas();
+    const k = c.width / c.clientWidth;
+    const out = [];
+    for (const id of ids) {
+      const pk = v.pickups.get(id);
+      if (!pk) continue;
+      // Its base (the floor under it, PICKUP_HOVER below its centre) and a 1.1 m circle round it, projected.
+      const at = [pk.root.position.x, pk.baseY - 0.55, pk.root.position.z];
+      const pts = [];
+      for (let a = 0; a < 16; a++) {
+        const p = v.project({ x: at[0] + Math.cos((a / 16) * Math.PI * 2) * 1.1, y: at[1], z: at[2] + Math.sin((a / 16) * Math.PI * 2) * 1.1 });
+        if (p) pts.push([p.x * k, p.y * k]);
+      }
+      if (!pts.length) continue;
+      const x0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[0]))));
+      const y0 = Math.max(0, Math.floor(Math.min(...pts.map((p) => p[1]))));
+      const x1 = Math.min(g.w - 1, Math.ceil(Math.max(...pts.map((p) => p[0]))));
+      const y1 = Math.min(g.h - 1, Math.ceil(Math.max(...pts.map((p) => p[1]))));
+      const ratios = [];
+      let floor = 0;
+      let all = 0;
+      for (let y = y0; y <= y1; y++) {
+        for (let x = x0; x <= x1; x++) {
+          const a = g.lit[y * g.w + x];
+          const b = g.bare[y * g.w + x];
+          floor += b;
+          all++;
+          if (Math.abs(a - b) >= 0.02 * Math.max(b, 0.01)) ratios.push((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05));
+        }
+      }
+      ratios.sort((p, q) => p - q);
+      const mean = ratios.reduce((s, r) => s + r, 0) / Math.max(1, ratios.length);
+      out.push({ id, px: ratios.length, mean: +mean.toFixed(2), p90: +(ratios[Math.floor(ratios.length * 0.9)] ?? 1).toFixed(2), floorL: +(floor / Math.max(1, all)).toFixed(2) });
+    }
+    return out;
+  }, ids);
+  return { rings };
+}
+
+/** A scene (the night scene, or `scene`) made and the moments of it `names` lists played. */
+async function flashingScene(browser, scene, names) {
   const FPS = 30;
   const [W, H] = [160, 90];
   const RECORD = 2 * FPS;
   const only = process.env.E2E_FLASH_MOMENTS?.split(',').filter(Boolean);
   // (A scene none of whose moments are asked for is not made.)
-  if (only && scene && !scene.moments({}).some((mo) => only.includes(mo.name))) return;
-  if (only && !scene && only.every((name) => FLASHING_DAY.moments({}).some((mo) => mo.name === name))) return;
+  if (only && !names.some((name) => only.includes(name))) return;
   const ctx = await browser.newContext({ viewport: { width: 480, height: 270 }, deviceScaleFactor: 1 });
   await ctx.addInitScript(installFrameClock);
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  // (&akimbo=1: dual wielding in play, for the `pair` moment; nothing else here makes a pair.)
+  await page.goto(`${CLIENT}/?mode=editor&test=1&akimbo=1`);
   await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
   page.once('dialog', (d) => d.accept());
   await newMap(page, 96);
@@ -8899,11 +12550,50 @@ async function flashingScene(browser, scene) {
   check(playing, 'the scene plays (MapMaker TEST)');
   if (!playing) return void (await ctx.close());
   await holdBots(page);
-  // Both guns in hand once, so their models are in before the page's clock stops (models load in real time).
-  for (const id of ['core.lmg', 'core.arc_caster']) {
-    await page.evaluate((w) => window.__give(w), id);
-    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
-  }
+  /** Your machine pistol's second gun: made (kept full each tick) or taken away, as the match holds it. */
+  const pairOf = (on) =>
+    sim(page, (m, me, on) => {
+      clearInterval(self.__pairPin);
+      const w = [...me.weapons.values()].find((x) => x.def.id === 'core.machine_pistol');
+      if (!w) return false;
+      if (!on) return delete w.off;
+      if (!w.off) m.makePair(me, w, w.def.magazine);
+      self.__pairPin = setInterval(() => w.off && (w.off.mag = w.def.magazine), 1000 / 60);
+      return true;
+    }, on);
+  /**
+   * The first bot's pair of machine pistols (kept full each tick), both triggers held, half turned to you; or
+   * its second gun taken away and its triggers let go. Give yourself the machine pistol first (its weapon code).
+   */
+  const botPairOf = (on) =>
+    sim(page, (m, me, on) => {
+      clearInterval(self.__botPairPin);
+      const b = m.combatants().find((c) => c.bot);
+      const code = [...me.weapons.entries()].find(([, w]) => w.def.id === 'core.machine_pistol')?.[0];
+      if (!b || code === undefined) return false;
+      if (!on) {
+        b.queue.fire = 0;
+        const w = b.weapons.get(code);
+        return w ? delete w.off : true;
+      }
+      const def = me.weapons.get(code).def;
+      if (!b.weapons.has(code)) b.weapons.set(code, { def, mag: def.magazine, reserve: def.reserveMax, alt: 0 });
+      b.current = code;
+      b.raiseTicks = 0;
+      const w = b.weapons.get(code);
+      if (!w.off) m.makePair(b, w, def.magazine);
+      self.__botPairPin = setInterval(() => {
+        w.mag = def.magazine;
+        if (w.off) w.off.mag = def.magazine;
+        w.reserve = def.reserveMax;
+      }, 1000 / 60);
+      b.queue.fire = 2 | 32;
+      // (Turned a little toward you, close: both muzzles and their flashes large in view (side on at 3 m and half
+      // turned at 2.5 m, they changed only 0.2 % of the picture on CI, under the check's 0.3 %), the rounds going
+      // about a metre wide of you.)
+      b.queue.yaw = Math.PI / 4;
+      return true;
+    }, on);
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -8915,17 +12605,15 @@ async function flashingScene(browser, scene) {
   const defaultOn = await page.evaluate(() => document.getElementById('reduce-flashing')?.checked);
   check(defaultOn === true, `Reduce flashing is on by default (the pause menu's switch: ${defaultOn})`);
   await page.evaluate(installFrameGrab, [W, H]);
-  await page.evaluate(() => window.__frameClock.freeze());
+  const frameMs = 1000 / FPS;
+  /** The page's clock (frozen below, once the guns are in) moved on `n` frames; the errors its timers and frames threw. */
   const step = (n) =>
     page.evaluate(([n, ms]) => {
       const thrown = [];
       for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(ms));
       return thrown;
-    }, [n, 1000 / FPS]);
+    }, [n, frameMs]);
   const clockErrors = [];
-  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
-  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
-  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   /** You, the bots and your aim held where a moment wants them (each tick), never dying, magazines full. */
   const stage = (mo) =>
     sim(page, (m, me, mo) => {
@@ -8936,7 +12624,9 @@ async function flashingScene(browser, scene) {
       const bots = m.combatants().filter((c) => c.bot);
       const pin = () => {
         put(me, mo.me);
-        me.maxHealth = me.health = 100000;
+        // (A moment may hold your health low: `self.__flashHp`, out of a real 100.)
+        me.maxHealth = self.__flashHp ? 100 : 100000;
+        me.health = self.__flashHp ?? 100000;
         for (const w of me.weapons.values()) if (w.def.magazine) w.mag = w.def.magazine;
         bots.forEach((b, i) => {
           b.maxHealth = b.health = 100000;
@@ -8952,8 +12642,9 @@ async function flashingScene(browser, scene) {
     return { yaw: Math.atan2(d[0], d[2]), pitch: Math.atan2(d[1], Math.hypot(d[0], d[2])) };
   };
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
-  // The moments (a few metres apart in the scene; 2 s each, setting on then off).
-  const moments = scene ? scene.moments({ page, stage, aim }) : [
+  // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
+  // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
+  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -8987,6 +12678,26 @@ async function flashingScene(browser, scene) {
       at: { 6: () => blast([-1.2, 0.3, 11.5]), 14: () => blast([1, 0.3, 12.5]), 22: () => blast([0, 0.3, 11]), 30: () => blast([-0.4, 0.3, 13]) },
     },
     {
+      // An ammo box cooking off (sim/resupply.ts COOK_OFF): a full one destroyed 3.5 m in front, its round of small
+      // blasts and pops over the next 2.6 s.
+      name: 'cookoff',
+      label: 'a full ammo box destroyed 3.5 m in front of the camera, cooking off in small blasts for 2.6 s',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 0.5, 11.5]),
+      bots: [],
+      at: {
+        4: () =>
+          sim(page, (m, _me, at) => {
+            const b = m.addBox('deployed', { x: at[0], y: at[1], z: at[2] }, 0, null);
+            m.damageBox(b, 10000, null);
+          }, [0, 0, 11.5]),
+      },
+      seen: () => sim(page, (m) => m.cookOffs.length),
+      // Still going off at the end of the 2 s recording (it lasts 2.6 s).
+      sees: (_on, left) => left > 0,
+    },
+    {
       name: 'muzzle',
       label: 'a machine gun firing at a wall 3.5 m off in the dark room',
       weapon: 'core.lmg',
@@ -8994,6 +12705,51 @@ async function flashingScene(browser, scene) {
       look: aim([0, 0, -25.5], [0, 1.2, -29]),
       bots: [],
       fire: true,
+    },
+    {
+      // Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): two guns' flashes. With the setting on the pair
+      // shares one flash (pairView.ts PairFlashGate): no brighter and no more often than the one gun of `muzzle`.
+      name: 'pair',
+      label: 'a pair of machine pistols, both triggers held, at a wall 3.5 m off in the dark room',
+      weapon: 'core.machine_pistol',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: 2 | 32,
+      before: async () => {
+        await pairOf(true);
+        for (let i = 0; i < 12 && !(await page.evaluate(() => window.__cs.local.paired && window.__cs.view.pairUp === 1)); i++) await step(5);
+        await page.evaluate(() => (window.__pairFlashes = { ...window.__cs.view.ownFlashes }));
+      },
+      after: () => pairOf(false),
+      seen: () => page.evaluate(() => { const f = window.__cs.view.ownFlashes; const b = window.__pairFlashes; return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, shown: window.__cs.view.pairShown() }; }),
+      // Off: every round of both guns flashes. On: both hands still flash, in turn, about half the rounds left out
+      // (one gun's worth drawn: 20 a second over the 2.3 s the triggers are held).
+      sees: (on, s) => s.shown && s.right > 5 && s.left > 5 && (on ? s.skipped > 10 && s.right + s.left <= 50 && Math.abs(s.right + s.left - s.skipped) <= 6 : s.skipped === 0),
+    },
+    {
+      // Dual wielding seen by everyone else (step 4): another player's pair, a flash at each gun's muzzle. With the
+      // setting on their pair shares one flash too (view.ts remoteFlash, PairFlashGate), as yours does in `pair`.
+      name: 'pairtp',
+      label: "another player's pair of machine pistols 1.3 m in front, turned a little your way, both triggers held, in the dark room",
+      weapon: 'core.machine_pistol',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.35, -26.8]),
+      bots: [[0, 0, -26.8]],
+      before: async () => {
+        await botPairOf(true);
+        for (let i = 0; i < 12 && !(await page.evaluate(() => [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) >= 1))); i++) await step(5);
+        await page.evaluate(() => (window.__pairTpFlashes = { ...window.__cs.view.remotePairFlashes }));
+      },
+      after: () => botPairOf(false),
+      seen: () =>
+        page.evaluate(() => {
+          const f = window.__cs.view.remotePairFlashes;
+          const b = window.__pairTpFlashes;
+          return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, shown: [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) > 0) };
+        }),
+      // Off: both guns flash. On: both still flash, in turn, and rounds are left out.
+      sees: (on, s) => s.shown && s.right > 3 && s.left > 3 && (on ? s.skipped > 3 : s.skipped === 0),
     },
     {
       name: 'jackpot',
@@ -9024,6 +12780,88 @@ async function flashingScene(browser, scene) {
         30: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 11 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 11 }) })),
         44: () => page.evaluate(() => window.__cs.view.playGameplayFx('pickup.armor', { x: 0, y: 1.2, z: 8 }, { size: window.__cs.view.farSize({ x: 0, y: 1.2, z: 8 }) })),
       },
+    },
+    // A rank-up (Options → Ranks & badges; game/rankGlow.ts): a bot 3 m in front, marked as your ally, ranks up twice
+    // a second apart: its badge over the head swells and glows in the marker's colour, and so does its badge in the kill
+    // feed. With the setting on, smaller and dimmer, eased in and out.
+    {
+      name: 'rankup',
+      label: "a rank-up twice, a second apart (a bot's badge over its head 3 m in front, and in the kill feed, swelling and glowing)",
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1.6, 11]),
+      bots: [[0, 0, 11]],
+      before: () =>
+        page.evaluate(() => {
+          const cs = window.__cs;
+          if (!document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
+          // (Free-for-all marks only your party: the bot is shown as one, so it wears its badge over its head.)
+          cs.hud.partyMate = () => true;
+        }),
+      at: Object.fromEntries(
+        [2, 32].map((f) => [
+          f,
+          () =>
+            page.evaluate(() => {
+              const cs = window.__cs;
+              const bot = [...cs.hud.roster.values()].find((p) => p.bot);
+              if (!bot) return;
+              cs.hud.kill(bot.slot, cs.slot === 0 ? 1 : 0, 'core.rifle', cs.slot);
+              cs.hud.feedRankUp(bot.slot);
+              cs.view.rankUp(bot.slot);
+            }),
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ badge: [...window.__cs.view.avatars.values()].some((a) => a.tag?.ins), feed: !!document.querySelector('#feed svg.ins.rank-up') })),
+      sees: (_on, s) => s.badge && s.feed,
+      after: () =>
+        page.evaluate(() => {
+          delete window.__cs.hud.partyMate;
+          if (document.getElementById('ranks-toggle').checked) document.getElementById('ranks-toggle').click();
+        }),
+    },
+    // The sniper glint (game/scopeFeel.ts GLINT, scopeGlint.ts): a bot 32 m off in the dark holds a Sniper Rifle; it
+    // turns its aim onto you as the recording starts, away after a second and back again, so the recording holds the
+    // glint coming up twice (with the setting on dimmer, over half a second), and through the second half you bring
+    // your own scope up onto it (the glint seen through a scope, and the scope coming up at night).
+    {
+      name: 'glint',
+      label: "a sniper's glint coming up twice 32 m off at night (a bot's scope turning onto you), the second time through your own scope",
+      weapon: 'core.sniper',
+      me: [-10, 0, -4],
+      look: aim([-10, 0, -4], [-10, 1.6, 28]),
+      bots: [[-10, 0, 28]],
+      before: () =>
+        page.evaluate(() => ((window.__glintSeen = { most: 0, count: 0 }), (window.__autoInput = { buttons: 0 }))).then(() => sim(page, (m, me) => {
+          // The bots take a copy of your Sniper Rifle and hold their scope up (the aim button, 8: the snapshot's `zm`).
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            b.weapons.set(me.current, { ...me.weapons.get(me.current) });
+            b.current = me.current;
+            b.raiseTicks = 0;
+            self.__glintAim = Math.PI / 2;
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 8, yaw: self.__glintAim, pitch: 0 })));
+          }
+        })),
+      // (Aiming at you is yaw π from 32 m north of you; a quarter turn away is no glint.)
+      at: Object.fromEntries([[2, Math.PI], [24, Math.PI / 2], [34, Math.PI]].map(([f, yaw]) => [f, () => sim(page, (_m, _me, yaw) => void (self.__glintAim = yaw), yaw)])),
+      // (The glint is read every frame: in the page with the frame's step, one trip to the page a frame.)
+      stepAt: (f) =>
+        page.evaluate(([f, ms]) => {
+          const g = window.__cs.scope().glints;
+          window.__glintSeen.most = Math.max(window.__glintSeen.most, g.level);
+          window.__glintSeen.count = Math.max(window.__glintSeen.count, g.count);
+          if (f === 36) window.__autoInput = { buttons: 8, zoom: true };
+          return window.__frameClock.step(ms);
+        }, [f, frameMs]),
+      seen: () => page.evaluate(() => ({ ...window.__glintSeen, most: +window.__glintSeen.most.toFixed(2), now: +window.__cs.scope().glints.level.toFixed(2), scoped: window.__cs.scope().scoped })),
+      // One glint, never brighter than its level (0.5 with the setting on, 0.85 off), and up by the end.
+      sees: (on, s) => s.count === 1 && s.scoped && s.now > 0.3 && s.most <= (on ? 0.5 : 0.85) + 0.001 && (on || s.most > 0.6),
+      after: () =>
+        page.evaluate(() => (window.__autoInput = { buttons: 0 })).then(() => sim(page, (m) => {
+          for (const b of m.combatants().filter((c) => c.bot)) {
+            b.queue.push = (...inputs) => Array.prototype.push.apply(b.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+          }
+        })),
     },
     // Weather (map format v34; weatherVisuals.ts): a downpour and a blizzard with a gale at night, out in the open (the
     // brightest contrast: pale drops and flakes against the dark), drawn as High graphics draws them (the most drops;
@@ -9114,6 +12952,35 @@ async function flashingScene(browser, scene) {
           for (const c of m.combatants()) c.burnTicks = c.poisonTicks = c.slowTicks = 0;
         }).then(() => page.evaluate(() => (window.__cs.view.vfx.quality = window.__cs.view.atmosphere.quality))),
     },
+    // Blood by character (game/bloodVisuals.ts; docs/CHARACTERS.md, "Blood"): a robot, a skeleton and a ghost 3 m in
+    // front of you at night, each hit ten times a second (a machine gun's stream): black oil with Electric FX sparks,
+    // bone dust, a pale spectral wisp. With the setting on the sparks and the wisp play smaller, dimmer and at most once
+    // a second each.
+    {
+      name: 'blood',
+      label: 'a robot, a skeleton and a ghost 3 m in front of you at night, each hit ten times a second (oil and sparks, bone dust, a pale wisp)',
+      weapon: 'core.arc_caster',
+      me: [0, 0, 8],
+      look: aim([0, 0, 8], [0, 1.1, 11]),
+      bots: [],
+      before: () => page.evaluate(() => (window.__cs.view.bloodFxPlayed = 0)),
+      at: Object.fromEntries(
+        Array.from({ length: 20 }, (_, k) => [
+          1 + k * 3,
+          () =>
+            page.evaluate(() => {
+              const b = window.__cs.view.blood;
+              const d = { x: 0, y: 0.1, z: 1 };
+              b.hit({ x: -1.2, y: 1.2, z: 11 }, d, 1, 'oil');
+              b.hit({ x: 0, y: 1.2, z: 11 }, d, 1, 'bone');
+              b.hit({ x: 1.2, y: 1.2, z: 11 }, d, 1, 'spirit');
+            }),
+        ]),
+      ),
+      seen: () => page.evaluate(() => ({ played: window.__cs.view.bloodFxPlayed, on: window.__cs.view.blood.on })),
+      // Sparks and wisps both came: with the setting on at most one of each a second (2 s recorded), off one a hit.
+      sees: (on, s) => s.on && (on ? s.played >= 2 && s.played <= 4 : s.played >= 20),
+    },
     {
       name: 'alarm',
       label: 'the red alarm light blinking 4 times a second, in its dark room',
@@ -9122,10 +12989,35 @@ async function flashingScene(browser, scene) {
       look: aim([24, 0, -20.5], [24, 1.4, -28]),
       bots: [],
     },
-  ];
+  ]);
+  // (Every moment the scene has is played in one of the flows: a new moment needs its place in FLASHING_PARTS.)
+  const kind = scene ? 'day' : 'night';
+  const unplaced = all.filter((mo) => !Object.values(FLASHING_PARTS).some((p) => p[kind]?.includes(mo.name)));
+  check(unplaced.length === 0, `every moment of the ${kind} scene is in a flow of FLASHING_PARTS (not: ${unplaced.map((mo) => mo.name).join(', ')})`);
+  const moments = all.filter((mo) => names.includes(mo.name) && (!only || only.includes(mo.name)));
+  check(moments.length === names.filter((name) => !only || only.includes(name)).length, `the scene has every moment asked of it (${names.join(', ')})`);
+  // The guns these moments hold, in hand once each, so their models are in before the page's clock stops (models load
+  // in real time): only theirs (the day scene has no machine gun).
+  for (const id of new Set(moments.map((mo) => mo.weapon))) {
+    await page.evaluate((w) => window.__give(w), id);
+    await page.waitForFunction((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel, id, { timeout: T(30000) }).catch(() => {});
+  }
+  // The `pair` moment's second gun and its arm too: a pair of machine pistols made and unmade.
+  if (moments.some((mo) => mo.name === 'pair')) {
+    await page.evaluate(() => window.__give('core.machine_pistol'));
+    await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.machine_pistol' && !!window.__cs.view.viewmodel, null, { timeout: T(30000) }).catch(() => {});
+    await pairOf(true);
+    const pairIn = await page.waitForFunction(() => window.__cs.view.pairShown() && window.__cs.view.hasPairArm(), null, { timeout: T(30000) }).then(() => true, () => false);
+    check(pairIn, 'a pair of machine pistols is drawn in first person: the second gun and its arm are in');
+    await pairOf(false);
+  }
+  await page.evaluate(() => window.__frameClock.freeze());
+  // Through the wait for players and the start countdown (nobody fires before play), on the page's clock.
+  for (let i = 0; i < 40 && (await sim(page, (m) => m.phase)) !== 'playing'; i++) clockErrors.push(...(await step(15)));
+  check((await sim(page, (m) => m.phase)) === 'playing', 'the match is in play before the recording starts');
   const report = { fps: FPS, frame: [W, H], viewport: [480, 270], limits: FLICKER_LIMITS, moments: {} };
   for (const mo of moments) {
-    if (only && !only.includes(mo.name)) continue;
+    const began = Date.now();
     await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
     await page.evaluate((w) => window.__give(w), mo.weapon);
     await stage(mo);
@@ -9135,7 +13027,8 @@ async function flashingScene(browser, scene) {
     for (const on of [true, false]) {
       await setFlashing(on);
       await mo.before?.();
-      if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+      // (`fire`: the trigger held; a number names the buttons, both triggers of a pair.)
+      if (mo.fire) await page.evaluate((b) => (window.__autoInput = { buttons: b }), mo.fire === true ? 2 : mo.fire);
       // The switch (and the trigger) settle in: a third of a second before the recording.
       clockErrors.push(...(await step(10)));
       await page.evaluate(() => {
@@ -9144,7 +13037,7 @@ async function flashingScene(browser, scene) {
       });
       for (let f = 0; f < RECORD; f++) {
         await mo.at?.[f]?.();
-        clockErrors.push(...(await step(1)));
+        clockErrors.push(...(await (mo.stepAt ? mo.stepAt(f) : step(1))));
       }
       await page.evaluate(() => (window.__flick.on = false));
       if (mo.fire) await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
@@ -9170,6 +13063,8 @@ async function flashingScene(browser, scene) {
       console.log(`flashing ${mo.name} ${on ? 'on ' : 'off'}: ${flickerSummary(r)}; screen brightness ${Math.min(...r.meanL).toFixed(3)}-${Math.max(...r.meanL).toFixed(3)}`);
     }
     await mo.after?.();
+    // (Where the flow's time goes: a moment is some 155 frames drawn in software, 120 of them read back.)
+    console.log(`flashing ${mo.name}: took ${((Date.now() - began) / 1000).toFixed(0)} s`);
     const { on, off } = runs;
     report.moments[mo.name] = Object.fromEntries(
       Object.entries(runs).map(([k, r]) => [k, { pass: r.pass, reasons: r.reasons, transitionsPerSecond: r.perSecond, flashesPerSecond: r.flashesPerSecond, fieldTransitionsPerSecond: r.fieldPerSecond, transitions: r.transitions.length, maxStep: +r.maxStep.toFixed(4), redTransitionsPerSecond: r.red.perSecond, redFlashes: r.red.onsets.length, maxRedArea: +r.red.maxArea.toFixed(4), activity: +r.activity.toFixed(4), meanL: r.meanL.map((x) => +x.toFixed(4)), change: r.change.map((x) => +x.toFixed(4)) }]),
@@ -9178,7 +13073,7 @@ async function flashingScene(browser, scene) {
     check(on.frames === RECORD && off.frames === RECORD && off.activity > 0.003, `${mo.name}: the moment was recorded, every frame, and it happened (${on.frames} + ${off.frames} frames; up to ${(off.activity * 100).toFixed(1)} % of the picture changed between two frames with the setting off, ${(on.activity * 100).toFixed(1)} % on)`);
     check(on.pass, `${mo.label}, Reduce flashing on: ${flickerSummary(on)}${on.reasons.length ? ` (FAILS: ${on.reasons.join('; ')})` : ''}`);
   }
-  writeFileSync(`${ARTIFACTS}/flashing${scene ? `-${scene.name}` : ''}.json`, JSON.stringify(report));
+  writeFileSync(`${ARTIFACTS}/flashing-${scene ? scene.name : 'night'}-${names[0]}.json`, JSON.stringify(report));
   check(clockErrors.length === 0 && errors.length === 0, `no page errors while recording (${[...clockErrors, ...errors].slice(0, 4).join(' | ')})`);
   await ctx.close();
 }
@@ -9236,9 +13131,9 @@ async function designerFlow(browser) {
  * scene's pass-free BRDF table (content/brdf.ts).
  */
 async function webgpuFlow() {
-  const browser = await chromium.launch({
+  const browser = await chromium.launch(launchOpts({
     args: ['--enable-unsafe-webgpu', '--enable-features=Vulkan', '--use-vulkan=swiftshader', '--use-webgpu-adapter=swiftshader', '--disable-vulkan-surface', '--ignore-gpu-blocklist'],
-  });
+  }));
   try {
     const context = await browser.newContext({ viewport: { width: 480, height: 270 } });
     await context.addInitScript({ path: new URL('./webgpuShim.js', import.meta.url).pathname });
@@ -9302,6 +13197,7 @@ async function webgpuFlow() {
  * drawn; part 2 grips in a real match (gripsInPlay).
  */
 async function charactersFlow(browser, part = 0) {
+  if (part === 3) return supportHands(browser);
   if (part === 2) {
     await gripsInPlay(browser);
     return farBodies(browser);
@@ -9416,6 +13312,72 @@ async function charactersFlow(browser, part = 0) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
+
+/**
+ * Every character's support hand on a long gun's handguard, third person (characters part 3; owner, 2026-11-20: "a
+ * ton of characters ... are not holding their weapon properly": the support hand sat behind the magazine or under the
+ * gun). Each look holds the rifle (every second the shotgun, every eighth the SMG and the sniper rifle too) as Character Select poses them; the hand
+ * as DRAWN (handProbe's drawn centre) must lie where the animator put it on the handguard (`__grips.support()`: how far
+ * it slid back, the guard's measured underside there), the hand within reach and not slid off the guard's end.
+ */
+async function supportHands(browser) {
+  // (A small page: the hands are measured, not looked at, and every pose draws 40 frames in software.)
+  const page = await (await browser.newContext({ viewport: { width: 96, height: 96 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=grips&test=1`);
+  await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
+  const looks = await page.evaluate(() => window.__grips.looks().map((l) => l.id));
+  const off = [];
+  let held = 0;
+  for (const look of looks) {
+    // Every look on the rifle (Character Select's gun), every second on the shotgun (the longest reach), every eighth on
+    // the SMG and the sniper rifle too (about 250 s on CI).
+    const k = looks.indexOf(look);
+    for (const weapon of ['core.rifle', ...(k % 2 === 0 ? ['core.shotgun'] : []), ...(k % 8 === 0 ? ['core.smg', 'core.sniper'] : [])]) {
+      const r = await page.evaluate(
+        async ([l, w]) => {
+          await window.__grips.pose(l, w, 'third');
+          const d = window.__grips.drawn();
+          return { at: d?.atL ?? null, s: window.__grips.support(), y: window.__grips.hold()?.support?.[1] ?? null };
+        },
+        [look, weapon],
+      );
+      held++;
+      const why = supportHandOff(r);
+      if (why) off.push(`${look} ${weapon.replace('core.', '')}: ${why}`);
+    }
+  }
+  check(held >= 200 && off.length === 0, `every character's support hand is drawn on the long guns' handguards, third person (${held} holds; ${off.join('; ') || 'all on'})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
+ * Why a drawn support hand is off its handguard (null: on it). `at`: the drawn hand's centre from the gun's support
+ * point (the gun's right, up, ahead; model m); `s`: where the animator put it (slid back, the guard's length and
+ * underside, how far still out of reach); `y`: the support point's height.
+ */
+function supportHandOff({ at, s, y }) {
+  if (!at || !s) return 'no support hand';
+  if (s.short > SUPPORT.short) return `${(s.short * 100).toFixed(0)} cm out of reach`;
+  if (s.back !== null && s.slid > s.back + 1e-6) return `slid ${(s.slid * 100).toFixed(0)} cm, off the guard's end (${(s.back * 100).toFixed(0)} cm)`;
+  const along = at[2] + s.slid;
+  if (along < SUPPORT.along[0] || along > SUPPORT.along[1]) return `${(along * 100).toFixed(1)} cm along the guard from its place`;
+  if (s.under !== null && y !== null) {
+    const below = s.under - y - at[1];
+    if (below < SUPPORT.below[0] || below > SUPPORT.below[1]) return `centre ${(below * 100).toFixed(1)} cm under the guard`;
+  }
+  if (Math.abs(at[0]) > SUPPORT.across) return `${(at[0] * 100).toFixed(1)} cm across the guard`;
+  return null;
+}
+
+/**
+ * The drawn support hand's tolerances (m): along the guard from its place, its centre under the guard's underside, across,
+ * and still out of reach. Most hands are within 2 cm; the wide ends are paws and mittens whose drawn centre isn't the
+ * palm's (Teddy, Bandit, Croakley, Boglurker; 2026-11-20).
+ */
+const SUPPORT = { along: [-0.08, 0.07], below: [-0.02, 0.07], across: 0.1, short: 0.02 };
 
 /** Where the hands are DRAWN, on the grip page (`?mode=grips`): characters part 1. */
 async function drawnHands(page) {
@@ -9619,7 +13581,7 @@ async function farBodies(browser) {
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=26&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  await page.click('#resume').catch(() => {});
+  await fight(page).catch(() => {});
   await simWait(page, (m) => m.combatants().filter((c) => c.kind === 'bot' && c.alive).length >= 20, null, T(30000));
   await holdBots(page);
   // No end to the round: on a slow CI runner this flow passes Deathmatch's 10 minutes, and the round's end (the
@@ -9672,7 +13634,7 @@ async function farBodies(browser) {
     await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
     await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
     await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) }).catch(() => {});
-    await page.click('#resume').catch(() => {});
+    await fight(page).catch(() => {});
     setup = await sim(page, findGround);
   }
   if (!setup) {
@@ -9785,7 +13747,7 @@ async function gripsInPlay(browser) {
   };
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=12&look=core.dapper&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__cs.view.gripReport().local, null, { timeout: T(120000) });
-  await page.click('#resume').catch(() => {});
+  await fight(page).catch(() => {});
   const misses = [];
   const step = async (label, act) => {
     await act();
@@ -9813,7 +13775,7 @@ async function gripsInPlay(browser) {
     await sim(page, (m, me) => m.kill(me, null, 'core.respawn'));
     await page.waitForFunction(() => !window.__cs.local.alive, null, { timeout: T(10000) }).catch(() => {});
     await page.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(30000) });
-    await page.click('#resume').catch(() => {});
+    await fight(page).catch(() => {});
   });
   check(misses.length === 0, `in a match, your own hands are drawn on the gun through switches, looking up and down, third person and a respawn (${misses.join('; ') || 'all'})`);
   // Scoped when the gun's sharper held copy comes in (Medium and High fetch it once you hold the gun; on a big map that
@@ -9876,6 +13838,43 @@ async function gripsInPlay(browser) {
   check(scopedIn && swapped && back.on && back.drawn && !badHand(scopeHand), `the gun is back in your hands after the scope, its sharper copy having come in while scoped (scoped ${scopedIn}, copy in ${swapped}, ${JSON.stringify(back)}, ${fmt(scopeHand)}${back.weapon === 'core.marksman' ? '' : `; held/drawn: ${heldTrace}`})`);
   const body = await page.evaluate(() => window.__cs.view.gripReport().local?.mode);
   check(body === 'body', `the match draws your whole body in first person (${body})`);
+  // Optics by gun (GUNPLAY_SPEC §15): a red dot's mark is on its own glass, on the aim, with no HUD dot; iron sights
+  // show no dot either; a gun with neither keeps the HUD's aim dot.
+  const aimWith = async (id) => {
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    const up = (w) => window.__cs.local.weapon?.id === w && window.__cs.view.viewWeapon === w && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
+    for (let i = 0; i < 6 && !(await page.evaluate(up, id)); i++) {
+      if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== id) await page.evaluate((w) => window.__give(w), id);
+      await page.waitForFunction(up, id, { timeout: T(10000) }).catch(() => {});
+    }
+    await page.evaluate(() => (window.__autoInput = { zoom: true }));
+    // Aimed: the crosshair has faded out and the gun's frame has stopped growing.
+    await page.waitForFunction(() => document.getElementById('crosshair')?.style.opacity === '0' && Math.abs(window.__cs.view.camera.fov - 1.35 * 0.72) < 0.004, null, { timeout: T(20000) }).catch(() => {});
+    const seen = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const glass = v.viewmodel?.getChildMeshes().find((m) => m.name === 'opticGlass' && m.isEnabled());
+      let off = null;
+      if (glass) {
+        // The glass's middle against the view's axis, as drawn (degrees), and whether the axis passes inside its window.
+        glass.computeWorldMatrix(true);
+        const c = glass.getBoundingInfo().boundingSphere;
+        const p = c.centerWorld.subtract(v.camera.globalPosition);
+        const f = v.camera.getForwardRay(1).direction;
+        const along = p.x * f.x + p.y * f.y + p.z * f.z;
+        const across = Math.sqrt(Math.max(0, p.lengthSquared() - along * along));
+        off = { deg: +((Math.atan2(across, along) * 180) / Math.PI).toFixed(3), inside: across < c.radiusWorld * 0.5 };
+      }
+      return { held: v.viewWeapon, glass: !!glass, off, housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), picture: +v.opticRoot.scaling.x.toFixed(2), dot: document.getElementById('reddot')?.style.opacity ?? '' };
+    });
+    await page.evaluate(() => (window.__autoInput = { zoom: false }));
+    return seen;
+  };
+  const dotGun = await aimWith('core.laser_rifle');
+  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.6 && dotGun.picture > 1.5 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim, the gun drawn larger, no HUD dot (${JSON.stringify(dotGun)})`);
+  const ironsGun = await aimWith('core.pistol');
+  check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
+  const plainGun = await aimWith('core.rockets');
+  check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.
@@ -9908,40 +13907,75 @@ async function gripsInPlay(browser) {
   check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
   await page.context().close();
 
-  // A creature skin (the Imp) in third person: the gun forward along the aim at chest height, both hands on it.
+  await impGrips(browser);
+}
+
+/**
+ * A creature skin (the Imp) in third person: the gun forward along the aim at chest height, a hand on its grip. Each
+ * step waits for what it needs (third person, your body drawn by the camera, the gun in its hands, a settled grip)
+ * and says what was missing when it doesn't come: on a loaded runner the pistol and the rifle both read nothing
+ * (`r: null`) once, with no way to tell why.
+ */
+async function impGrips(browser) {
   const imp = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
-  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&look=npc:imp`);
+  // You alone on the range (&bots=1: one player in all). Its bots fought round the god-mode you: their knockback
+  // carried you about the range's weapon pickups (once 25 m from the spawns, drawn with the Singularity picked up
+  // there). Alone, the given guns are the only ones.
+  await imp.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1&look=npc:imp`);
   await imp.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
-  // Into play and third person, for sure: on a slow page the pause menu can come up after a first click on Resume
-  // (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn away.
-  for (let i = 0; i < 12; i++) {
-    if (await imp.isVisible('#resume')) await imp.click('#resume').catch(() => {});
-    const state = await imp.evaluate(() => {
-      const a = window.__cs.view.avatars.get(window.__cs.slot);
-      return { third: window.__cs.thirdPerson(), drawn: !!a && !a.hiddenSelf && a.root.isEnabled() };
-    });
-    if (state.third && state.drawn) break;
-    if (!state.third) await imp.keyboard.press('KeyH');
-    else await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
-    await sleep(1000);
+  // What the drawn creature has, for the checks and for the message.
+  const seen = async () => ({
+    ...(await imp.evaluate(() => {
+      const cs = window.__cs;
+      const a = cs.view.avatars.get(cs.slot);
+      const report = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot);
+      return { third: cs.thirdPerson(), paused: !document.getElementById('pause').hidden, avatar: !!a, hidden: !!a?.hiddenSelf, enabled: !!a?.root.isEnabled(), held: cs.local.held, inHands: a?.weaponSlot ?? null, listed: !!report, report: report?.report ?? null };
+    })),
+    host: await sim(imp, (m, me) => ({ current: me.current, at: [me.move.pos.x, me.move.pos.z].map((v) => +v.toFixed(1)), others: m.combatants().length - 1 })).catch(() => null),
+  });
+  // Into play and third person, your body drawn: on a slow page the pause menu can come up after a first click on
+  // Resume (and then H does nothing), and a third-person camera pulled in against a wall doesn't draw your body: turn
+  // away. Until the camera draws it holding its first gun (a grip report), however long a slow page takes.
+  let state = await seen();
+  const until = Date.now() + T(90000);
+  while (Date.now() < until) {
+    state = await seen();
+    if (state.third && !state.paused && state.report && !state.hidden && state.enabled) break;
+    if (state.paused) await imp.click('#resume').catch(() => {});
+    else if (!state.third) await imp.keyboard.press('KeyH');
+    else if (state.hidden || !state.enabled || (state.listed && !state.report)) await imp.evaluate(() => (window.__cs.input.yaw += 1.2));
+    await imp.waitForFunction((was) => window.__cs.thirdPerson() !== was || !document.getElementById('pause').hidden, state.third, { timeout: T(2000) }).catch(() => {});
   }
+  const ok = (r) => !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
   const held = [];
   for (const w of ['core.pistol', 'core.rifle']) {
     await imp.evaluate((id) => window.__give(id), w);
-    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered page).
+    // The given gun's code, from the host (the give reaches it first): your own `held` follows a snapshot later, so
+    // a wait on "the drawn gun is the one held" passed at once on the gun before (a slow page read the switch after).
+    const code = await sim(imp, (m, me) => me.current);
+    // Until the given gun is in the drawn creature's hands (a gun model loads first; slow on a software-rendered
+    // page) with the hand settled on its grip (the pose eases in), on a drawn frame each time it is read.
     await imp
-      .waitForFunction(() => {
-        const a = window.__cs.view.avatars.get(window.__cs.slot);
-        return a?.weaponSlot === window.__cs.local.held && !!window.__cs.view.gripReport().creatures.find((c) => c.slot === window.__cs.slot)?.report;
-      }, null, { timeout: T(30000), polling: 250 })
+      .waitForFunction(
+        (code) => {
+          try {
+            const cs = window.__cs;
+            const a = cs.view.avatars.get(cs.slot);
+            const r = cs.view.gripReport().creatures.find((c) => c.slot === cs.slot)?.report;
+            return cs.local.held === code && a?.weaponSlot === code && !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12;
+          } catch {
+            // (Mid-swap: the old gun disposed under the report.)
+            return false;
+          }
+        },
+        code,
+        { timeout: T(60000), polling: 250 },
+      )
       .catch(() => {});
-    let r = null;
-    for (let i = 0; i < 20; i++) {
-      await sleep(300);
-      r = await imp.evaluate((s) => window.__cs.view.gripReport().creatures.find((c) => c.slot === s)?.report ?? null, await imp.evaluate(() => window.__cs.slot));
-      if (r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12) break;
-    }
-    held.push({ w, ok: !!r && r.facing > 0.8 && r.height > 0.9 && r.r !== null && r.r < 0.12, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) } });
+    const s = await seen();
+    const r = s.report;
+    const fine = s.inHands === code && s.held === code && ok(r);
+    held.push({ w, ok: fine, r: r && { facing: +r.facing.toFixed(2), height: +r.height.toFixed(2), hand: r.r === null ? null : +r.r.toFixed(3) }, ...(fine ? {} : { seen: { ...s, report: undefined } }) });
   }
   check(held.every((h) => h.ok), `an Imp player holds the gun forward at the chest with a hand on its grip (${JSON.stringify(held)})`);
   // (An artifact for a look: a slow page's screenshot timing out isn't a failed check.)
@@ -9954,7 +13988,7 @@ async function onlineFlow(browser) {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://localhost:${SERVER_PORT}`);
+    await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${SERVER_PORT}`);
     await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     return { page, errors };
   };
@@ -9974,7 +14008,7 @@ async function onlineFlow(browser) {
 /** Community hub: a host lists its match in the game browser and a stranger joins from the list. */
 async function lobbyFlow(browser) {
   // A community hub: broker + game browser. A host lists its match; a player finds it and joins from the list.
-  const HUB_PORT = +(process.env.E2E_HUB_PORT ?? 9078);
+  const HUB_PORT = await pickPort('E2E_HUB_PORT', 9078);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478' });
   await sleep(5000);
   const hub = `hub=127.0.0.1:${HUB_PORT}`;
@@ -10108,7 +14142,7 @@ async function lobbyFlow(browser) {
  * blocked word, and its Community Picks show in their own tab of the map list.
  */
 async function communityFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_COMMUNITY_HUB_PORT ?? 9082);
+  const HUB_PORT = await pickPort('E2E_COMMUNITY_HUB_PORT', 9082);
   const dir = mkdtempSync(join(tmpdir(), 'tt-community-e2e-'));
   // A Community Pick the hub already keeps (its numbers and its file), for the Community Picks tab.
   const arena = JSON.parse(readFileSync(new URL('../maps/phase0_arena.json', import.meta.url), 'utf8'));
@@ -10239,8 +14273,8 @@ async function hubUntil(pred, ms) {
  * moves and gets snapshots; an admin joined by code kicks another player from the pause menu.
  */
 async function dedicatedhostFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_DEDICATED_HUB_PORT ?? 9079);
-  const CONTROL_PORT = +(process.env.E2E_DEDICATED_CONTROL_PORT ?? 7801);
+  const HUB_PORT = await pickPort('E2E_DEDICATED_HUB_PORT', 9079);
+  const CONTROL_PORT = await pickPort('E2E_DEDICATED_CONTROL_PORT', 7801);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', LAN_DISCOVERY: '0' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000));
   // AFK_SECONDS 0: no idle takeover. The test's players sit still for minutes on a slow runner (the visitor after
@@ -10412,8 +14446,8 @@ async function hostpageLiveChecks(page, controlPort, token) {
 
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
 async function hostpageFlow(browser) {
-  const HUB_PORT = +(process.env.E2E_HOSTPAGE_HUB_PORT ?? 9080);
-  const CONTROL_PORT = +(process.env.E2E_HOSTPAGE_CONTROL_PORT ?? 7802);
+  const HUB_PORT = await pickPort('E2E_HOSTPAGE_HUB_PORT', 9080);
+  const CONTROL_PORT = await pickPort('E2E_HOSTPAGE_CONTROL_PORT', 7802);
   const errors = [];
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 } })).newPage();
   page.on('pageerror', (e) => errors.push(e.message));
@@ -10512,9 +14546,131 @@ async function hostpageFlow(browser) {
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
+/**
+ * Dual wielding over the network (step 4): the host takes a pair of machine pistols, stands 3 m in front of the
+ * friend facing them and holds both triggers; the friend, whose match comes over the host's compressed stream, must
+ * see the host's character with the second gun up (the snapshot's `dw`), a flash at each gun's own muzzle (the
+ * shots' `off`), the two muzzles a hand's width apart, the right gun's on the host's right; then the second gun put
+ * away (the fire-mode key's toggle) goes from the host's left hand.
+ */
+async function hostPairSeen(host, friend) {
+  const fslot = await friend.evaluate(() => window.__cs.slot);
+  const hslot = await host.evaluate(() => window.__cs.slot);
+  // (Bots are about: held still, and the host kept alive from here, or a death takes the pair and gives a new loadout.)
+  await holdBots(host);
+  await sim(host, (m, me) => {
+    clearInterval(self.__hostAlive);
+    self.__hostAlive = setInterval(() => me.alive && (me.health = me.maxHealth), 20);
+  });
+  await host.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(15000) }).catch(() => {});
+  await host.evaluate(() => window.__give('core.machine_pistol'));
+  // (Until the host's own client holds it, its inputs still ask for the gun it had.)
+  await host.waitForFunction(() => window.__cs.local.weapon?.id === 'core.machine_pistol', null, { timeout: T(15000) }).catch(() => {});
+  const placed = await sim(host, (m, me, fslot) => {
+    const f = m.combatants().find((c) => c.slot === fslot);
+    const w = me.weapons.get(me.current);
+    if (!f || !w || w.def.id !== 'core.machine_pistol') return `no ${!f ? 'friend' : 'machine pistol'} (holding ${w?.def.id})`;
+    if (!w.off) m.makePair(me, w, w.def.magazine);
+    // 3 m from the friend, in the first of 16 directions with open floor and a clear line between them.
+    const p = f.move.pos;
+    let at = null;
+    for (let i = 0; i < 16 && !at; i++) {
+      const yaw = (i / 16) * Math.PI * 2;
+      const d = { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) };
+      // (From outside the friend's own body.)
+      const eye = { x: p.x + d.x * 0.6, y: p.y + 1.2, z: p.z + d.z * 0.6 };
+      if (m.physics.raycastHit(eye, d, 3)) continue;
+      const to = { x: p.x + d.x * 3, y: p.y + 1.2, z: p.z + d.z * 3 };
+      const floor = m.physics.raycastHit(to, { x: 0, y: -1, z: 0 }, 2);
+      if (floor && floor.dist > 0.9 && floor.dist < 1.6) at = { x: to.x, y: to.y - floor.dist, z: to.z, yaw };
+    }
+    if (!at) return 'no open floor 3 m from the friend';
+    Object.assign(me.move.pos, { x: at.x, y: at.y + 0.05, z: at.z });
+    clearInterval(self.__hostPairPin);
+    self.__hostPairPin = setInterval(() => {
+      w.mag = w.def.magazine;
+      if (w.off) w.off.mag = w.def.magazine;
+      w.reserve = w.def.reserveMax;
+    }, 1000 / 60);
+    return w.off ? at.yaw : 'makePair made none';
+  }, fslot).catch((e) => String(e));
+  const yaw = typeof placed === 'number' ? placed : 0;
+  // Each turned to face the other.
+  await friend.evaluate((yaw) => Object.assign(window.__cs.input, { yaw, pitch: -0.05 }), yaw);
+  await host.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw + Math.PI;
+    window.__cs.input.pitch = 0;
+  }, yaw);
+  // (Coming up: it rises over 0.3 s of frames, and two software-rendered pages draw only a few frames a second.)
+  const up = typeof placed === 'number' && (await friend.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.pair?.up ?? 0) > 0.3, hslot, { timeout: T(60000), polling: 250 }).then(() => true, () => false));
+  const why = up
+    ? ''
+    : JSON.stringify({
+        friend: await friend.evaluate((s) => {
+          const a = window.__cs.view.avatars.get(s);
+          return a ? { alive: window.__cs.local.alive, weapon: a.weaponSlot, muzzle: !!a.muzzle, pair: a.pair ? { up: a.pair.up, on: a.pair.on, muzzle: !!a.pair.muzzle } : null, culled: !!a.culled, anim: a.anim?.constructor?.name, at: [a.root.position.x, a.root.position.z].map((v) => +v.toFixed(1)), me: [window.__cs.local.state.pos.x, window.__cs.local.state.pos.z].map((v) => +v.toFixed(1)) } : { none: [...window.__cs.view.avatars.keys()] };
+        }, hslot),
+        fslot,
+        host: await sim(host, (m, me, fslot) => ({ pos: [me.move.pos.x, me.move.pos.z].map((v) => +v.toFixed(1)), friendPos: (({ x, z }) => [x, z].map((v) => +v.toFixed(1)))(m.combatants().find((c) => c.slot === fslot)?.move.pos ?? {}), slot: me.slot, current: me.current, off: !!me.weapons.get(me.current)?.off, away: !!me.weapons.get(me.current)?.off?.away }), fslot).catch((e) => String(e)),
+        fps: await Promise.all([friend, host].map((pg) => pg.evaluate(() => new Promise((r) => { let n = 0; const t0 = performance.now(); const f = () => (++n, performance.now() - t0 < 2000 ? requestAnimationFrame(f) : r(n / 2)); requestAnimationFrame(f); setTimeout(() => r(n / 2), 4000); })))),
+        hslot,
+      });
+  check(up, `the friend sees the host's pair: the second gun coming up in the host's left hand (snapshot dw${typeof placed === 'number' ? '' : `; the host got no pair: ${placed}`}${why ? `; ${why}` : ''})`);
+  if (!up) {
+    await sim(host, () => [self.__hostPairPin, self.__hostAlive].forEach(clearInterval));
+    return;
+  }
+  // Reduce flashing off on the friend's page for this (every round of both guns flashes; on, the shared flash takes
+  // turns: the flicker check's `pairtp`); the host playing (not paused in its menu), both triggers held.
+  const setFlashing = (on) =>
+    friend.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (!box || box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  await playWithoutMouse(host);
+  const before = await friend.evaluate(() => ({ ...window.__cs.view.remotePairFlashes }));
+  await host.evaluate(() => (window.__autoInput = { buttons: 2 | 32 }));
+  await friend
+    .waitForFunction((b) => {
+      const f = window.__cs.view.remotePairFlashes;
+      return f.right - b.right > 3 && f.left - b.left > 3;
+    }, before, { timeout: T(15000), polling: 250 })
+    .catch(() => {});
+  const seen = await friend.evaluate(
+    ({ s, b }) => {
+      const v = window.__cs.view;
+      const f = v.remotePairFlashes;
+      const r = v.muzzleOf(s, false);
+      const l = v.muzzleOf(s, true);
+      const a = v.avatars.get(s);
+      // The host's right, as the friend sees it: the host faces the friend, so it is the friend's left.
+      const yaw = a.root.rotation?.y ?? 0;
+      const right = { x: Math.cos(yaw), z: -Math.sin(yaw) };
+      const side = r && l ? (r.x - l.x) * right.x + (r.z - l.z) * right.z : null;
+      return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, apart: r && l ? Math.hypot(r.x - l.x, r.y - l.y, r.z - l.z) : 0, side };
+    },
+    { s: hslot, b: before },
+  );
+  await host.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await setFlashing(true);
+  check(seen.right > 3 && seen.left > 3, `each of the host's guns flashes at its own muzzle for the friend (shot.off; right ${seen.right}, left ${seen.left}, left out ${seen.skipped})`);
+  check(seen.apart > 0.15 && seen.apart < 1.2 && seen.side > 0.1, `the host's two muzzles are a pair's width apart, the first gun's on their right (${seen.apart.toFixed(2)} m, ${seen.side?.toFixed(2)} m to the right)`);
+  // The second gun put away (the fire-mode key on the host's page: one gun in hand): it goes from the host's left
+  // hand for the friend.
+  await sim(host, () => clearInterval(self.__hostPairPin));
+  await host.evaluate(() => (window.__cs.input.fireModeQueued = true));
+  const gone = await friend.waitForFunction((s) => !window.__cs.view.avatars.get(s)?.pair, hslot, { timeout: T(10000), polling: 250 }).then(() => true, () => false);
+  check(gone, "the host's second gun put away goes from their hand for the friend");
+  await host.evaluate(() => delete window.__autoInput);
+  await sim(host, () => clearInterval(self.__hostAlive));
+}
+
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -10523,6 +14679,14 @@ async function hostgameFlow(browser) {
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.goto(`${CLIENT}/?offline=arena${peer}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
   await host.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(90000) });
+  // No end to the round: its bots reach Deathmatch's score limit (15) in a few minutes, and a slow run gets there
+  // mid-flow; the host then travels to the next map, the friend follows it, and between the two sessions the
+  // friend's `__cs` is the ended-match stub (no `spectate`, "spectator false, following -1"), then another map
+  // (not `phase0_arena` for Host this map). On CI the flow takes up to 9 minutes: no time limit either.
+  await sim(host, (m) => {
+    m.rules.scoreLimit = 0;
+    m.phaseEndTick = Infinity;
+  });
   // CI renders in software, slowly: generous waits (readiness is checked by what follows each load),
   // and the Host button pressed again if the first press got no answer.
   const hasCode = () => /[A-Z0-9]{6}/.test(document.querySelector('#host-info .host-code b')?.textContent ?? '');
@@ -10568,6 +14732,7 @@ async function hostgameFlow(browser) {
     });
     const alive = await friend.evaluate(() => window.__cs.local.alive);
     check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m${alive ? '' : ', friend down'})`);
+    await hostPairSeen(host, friend);
     // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
     const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
     const b0 = await bytes();
@@ -10630,7 +14795,14 @@ async function hostgameFlow(browser) {
 async function hostcontrolsFlow(browser) {
   const errors = [];
   const playing = () => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown';
-  const openPanel = (page) => page.evaluate(() => (document.getElementById('host-controls').open = true));
+  /** The Host tab's controls, with the pause menu up (a match opens in play since 2026-11-19: Esc brings the menu). */
+  const openPanel = async (page) => {
+    if (await page.evaluate(() => document.getElementById('pause').hidden)) {
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
+    }
+    return page.evaluate(() => (document.getElementById('host-controls').open = true));
+  };
   const pickMap = async (page, id) => {
     await page.evaluate(() => document.getElementById('hc-map').click());
     // Under load the cards take a while: the picker has every map of our suite.
@@ -10670,6 +14842,14 @@ async function hostcontrolsFlow(browser) {
   await page.addInitScript(() => localStorage.setItem('cs.mapVote', '0'));
   await page.goto(`${CLIENT}/?offline=arena`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(playing, null, { timeout: T(60000) });
+  // After the countdown: straight to the fight (owner, 2026-11-19), no pause menu and no Tab board, only a calm
+  // "Click to fight" while the mouse isn't taken (a headless page); Esc still pauses.
+  const opening = await page.evaluate(() => ({ pause: !document.getElementById('pause').hidden, board: !document.getElementById('scoreboard').hidden, hint: document.getElementById('fight-hint')?.hidden === false ? document.getElementById('fight-hint').textContent : null }));
+  check(!opening.pause && !opening.board && opening.hint === 'Click to fight', `after the countdown the match is in play: no pause menu, no Tab board, "Click to fight" (${JSON.stringify(opening)})`);
+  await page.keyboard.press('Escape');
+  const escPaused = await page.waitForFunction(() => !document.getElementById('pause').hidden && document.getElementById('fight-hint')?.hidden !== false, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(escPaused, 'Esc still opens the pause menu (and the line goes)');
+  // (The Host tab's state comes with the pause menu.)
   const state = await page.waitForFunction(() => window.__cs.host(), null, { timeout: T(10000) }).then((h) => h.jsonValue());
   check(state?.fill === 4 && state.teams === 0, `the offline player runs the match (${JSON.stringify(state)})`);
   // The pause menu: Match first; Esc goes back from a tab to Match; the host gets a Host tab.
@@ -10741,6 +14921,26 @@ async function hostcontrolsFlow(browser) {
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
   check(opened && escClosed, `Bots… opens the Bots window and Esc closes it (${opened}, ${escClosed})`);
+  // The flake's cause (2026-11-19): a lock Resume asked for came late, so the mouse was held when the window opened and
+  // Esc only let it go. Opening the window lets the mouse go itself; the first Esc closes it. (Where this headless page
+  // gets the mouse: a key press gives it the user activation a lock needs.)
+  await page.keyboard.press('Shift');
+  const held = await page.evaluate(async () => {
+    try {
+      await document.getElementById('view').requestPointerLock();
+    } catch {
+      return false;
+    }
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    return !!document.pointerLockElement;
+  });
+  if (held) {
+    await page.evaluate(() => document.getElementById('hc-bots').click());
+    const openedHeld = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
+    await page.keyboard.press('Escape');
+    const closedHeld = await page.waitForFunction(() => !document.getElementById('bot-manager') && !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
+    check(openedHeld && closedHeld, `with the mouse held, Bots… lets it go and Esc closes the window over the pause menu (${openedHeld}, ${closedHeld})`);
+  } else console.log('NOTE the headless page did not get the mouse: the held-mouse case of the Bots window is not checked here');
   // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
   await page.evaluate(() => document.getElementById('hc-bots').click());
@@ -10850,7 +15050,7 @@ async function hostcontrolsFlow(browser) {
   await page.context().close();
 
   // Host game: the host changes map; the friend comes along without a new code.
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const peer = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -11017,7 +15217,7 @@ async function partyFlow(browser) {
   // Online: a hub, a host, a friend by the host's invite link.
   // Its own port: dedicatedhost's hub is on 9079, and when a shard ran party just before it, dedicatedhost's hub couldn't
   // bind and its host listed on party's hub, which has no relay ("relay": false, check/far-copies run 42729978260).
-  const HUB_PORT = +(process.env.E2E_PARTY_HUB_PORT ?? 9081);
+  const HUB_PORT = await pickPort('E2E_PARTY_HUB_PORT', 9081);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/health`, T(30000)).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
@@ -11127,7 +15327,7 @@ async function handoffFlow(browser) {
 }
 
 async function handoffPages(separate) {
-  const PEER_PORT = +(process.env.E2E_PEER_PORT ?? 9077);
+  const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(PEER_PORT), HOST: '127.0.0.1' });
   await sleep(5000);
   const hub = `&hub=127.0.0.1:${PEER_PORT}`;
@@ -11315,17 +15515,17 @@ function report() {
 }
 
 try {
-  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', CLIENT_PORT, '--strictPort']);
+  start('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--host', '127.0.0.1', '--port', CLIENT_PORT, '--strictPort']);
   // (The flows' server stays on its map: no vote between matches travelling it elsewhere mid-run.)
   start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(SERVER_PORT), BOT_FILL: '3', QUIET_STATS: '1', MAP_VOTE: '0' });
   await waitForHttp(CLIENT);
   await sleep(1500);
-  const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  const browser = await chromium.launch(launchOpts({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }));
   // The contexts it opened (the run closes those a flow left open).
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, flashing: flashingFlow, newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -6,6 +6,7 @@
   "name": "Orange Suit Engineer",
   "look": "core.orangeengineer",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Fixes the generator mid-firefight. Bills you for the overtime.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

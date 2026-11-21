@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "runway_nine",
     "name": "Runway Nine",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_5x4zlanrxgtdua3l",
-      "versionId": "v_tfvvjsrkn5z2qfi2",
-      "revision": 11,
-      "contentHash": "sha256:a6617fb58e467c39a45cc17a677d6063a6f3fadbf0bf99de7e6185b97a19e743",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:10:49.633Z"
+      "versionId": "v_yhjl4vxiqu326xtt",
+      "revision": 12,
+      "contentHash": "sha256:279a9c0e48371de836e4a655b88ec3f828d53fbd827d2951f16d7a8f5fc83a10",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:59:14.661Z"
     }
   },
   "classicStructure": {
@@ -5469,7 +5469,7 @@
         30.5
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null
@@ -5482,7 +5482,7 @@
         30.5
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null
@@ -5508,7 +5508,7 @@
         22
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 3.141592653589793,
       "faction": null,
       "respawnSeconds": null
@@ -7305,7 +7305,7 @@
         -12
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

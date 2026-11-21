@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const MANIFEST_DIR = join(ROOT, 'content/characters');
 export const LOOKS_FILE = join(ROOT, 'packages/shared/src/content/characters.generated.ts');
+/** What each character bleeds, apart from the looks (only the game reads it: it stays out of the menu's first JS). */
+export const BLOOD_FILE = join(ROOT, 'packages/shared/src/content/characterBlood.generated.ts');
 export const QUEUE_FILE = join(ROOT, 'content/intake/meshy-queue.json');
 /** Shared clip sets (tools/content/clip-set.mjs --build): content/clip-sets/<id>.json, and what was built from them. */
 export const CLIP_SETS_DIR = join(ROOT, 'content/clip-sets');
@@ -36,7 +38,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -50,7 +52,11 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 /** A character's tier (CHARACTER_TIERS in packages/shared/src/content/looks.ts; a test keeps them equal): left out, core. */
 export const TIERS = ['core', 'experimental'];
-export const GROUPS = ['soldiers', 'legends', 'folk', 'horror', 'animals', 'creatures'];
+export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
+/** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
+export const BRANCHES = { army: 'soldiers', agency: 'soldiers' };
+/** What a character bleeds (`blood`; BLOOD_KINDS in looks.ts, a test keeps them equal): every built manifest names one (docs/CHARACTERS.md, "Blood"). */
+export const BLOOD = ['red', 'green', 'blue', 'oil', 'bone', 'spirit', 'stone'];
 /** Bot name themes (what kind of creature: its bots' names); the same list as NAME_THEMES in packages/shared/src/content/botNames.ts (a test keeps them equal). */
 export const NAME_THEMES = ['soldier', 'monkey', 'bear', 'wolf', 'dog', 'cat', 'raccoon', 'critter', 'frog', 'pirate', 'knight', 'ninja', 'wizard', 'barbarian', 'undead', 'spooky', 'robot', 'alien', 'goblin', 'cowboy', 'gangster', 'townsfolk', 'myth'];
 /**
@@ -86,6 +92,7 @@ export function hitboxOverrideProblems(o) {
   return out;
 }
 
+const rejointShare = (v) => typeof v === 'number' && v >= 0.3 && v <= 1.6;
 const isPoint = (p) => Array.isArray(p) && p.length === 3 && p.every((x) => typeof x === 'number' && Number.isFinite(x));
 
 /** Whether a manifest is waiting for its download and landmarks (a stub from the queue): not built, no look. */
@@ -140,6 +147,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(typeof m.bio === 'string' && m.bio.length > 0, 'bio: one line for character select');
   need(GROUPS.includes(m.group) || (m.group === undefined && !isPlayable(m)), `group: what the character is, for Character Select's tabs (${GROUPS.join(', ')}); a player look needs one`);
   need(m.tier === undefined || TIERS.includes(m.tier), `tier: ${TIERS.join(' or ')} (experimental: under its own heading in Character Select, never a bot's or a random pick; docs/CHARACTERS.md, "Tier"), or left out (core)`);
+  if (GROUPS.includes(m.group)) {
+    const wants = Object.entries(BRANCHES).filter(([, g]) => g === m.group).map(([b]) => b);
+    need(wants.length ? wants.includes(m.branch) : m.branch === undefined, wants.length ? `branch: ${wants.join(' or ')} (${m.group} names one)` : `branch: only for ${[...new Set(Object.values(BRANCHES))].join(', ')}`);
+  }
+  need(BLOOD.includes(m.blood), `blood: what it bleeds when hit (${BLOOD.join(', ')}): red for people, green or blue for aliens, oil for robots and machines, bone for skeletons, stone for statues, spirit for ghosts`);
+  need(m.sortAs === undefined || (typeof m.sortAs === 'string' && m.sortAs.length > 0 && m.sortAs.length <= 24), 'sortAs: the name Character Select lists it as (1–24 characters), or left out');
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
@@ -159,10 +172,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need([f.metallic, f.roughness].every((x) => typeof x === 'number' && x >= 0 && x <= 1), 'finish: metallic and roughness, 0–1');
   need(f.maps === undefined || typeof f.maps === 'boolean', 'finish.maps: true to keep the download\'s metal-roughness map');
   const fp = m.firstPerson ?? {};
-  if (fp.arms === 'own' || fp.arms === undefined) need(fp.skin === undefined && fp.cloth === undefined && fp.trim === undefined, 'firstPerson: dyes only go with universal arms');
+  // Grips auto-fit (owner, 2026-11-18): universal arms unless a manifest says `own`; their colours are read off the
+  // model (content/grip-fit.json), and a manifest may set any of them itself.
+  if (fp.arms === 'own') need(fp.skin === undefined && fp.cloth === undefined && fp.trim === undefined, 'firstPerson: dyes only go with universal arms');
   else {
-    need(typeof fp.arms === 'string' && /^(ranger|peasant)_arms_[mf]$/.test(fp.arms), 'firstPerson.arms: own (the character\'s own forearms and hands) or a universal arms part (ranger_arms_m, peasant_arms_f, …)');
-    need([fp.skin, fp.cloth, fp.trim].every((c) => typeof c === 'string' && HEX.test(c)), 'firstPerson: universal arms take skin, cloth and trim as #rrggbb');
+    need(fp.arms === undefined || (typeof fp.arms === 'string' && /^(ranger|peasant)_arms_[mf]$/.test(fp.arms)), 'firstPerson.arms: left out (universal arms tinted from the model), own (the character\'s own forearms and hands) or a universal arms part (ranger_arms_m, peasant_arms_f, …)');
+    need([fp.skin, fp.cloth, fp.trim].every((c) => c === undefined || (typeof c === 'string' && HEX.test(c))), 'firstPerson: skin, cloth and trim are #rrggbb (each left out: read off the model)');
   }
   need(fp.body === undefined || fp.body === false, 'firstPerson.body: false (arms only in first person: the model fills the view from its own eyes) or left out');
   const x = m.fixes ?? {};
@@ -175,6 +190,24 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   const scrubBox = (b) => Array.isArray(b) && b.length === 4 && b.every((v) => typeof v === 'number' && v >= 0 && v <= 1) && b[0] < b[2] && b[1] < b[3];
   const sb = x.scrubBlue;
   need(sb === undefined || (typeof sb === 'string' && HEX.test(sb)) || (sb && typeof sb === 'object' && Object.keys(sb).every((k) => k === 'color' || k === 'within') && HEX.test(sb.color ?? '') && Array.isArray(sb.within) && sb.within.length > 0 && sb.within.every(scrubBox) && x.surface !== 'rebake'), 'fixes.scrubBlue: #rrggbb, or { color: #rrggbb, within: [[u0, v0, u1, v1], …] } (boxes in the download\'s colour map, 0–1; not with surface rebake)');
+  // `recolor`: colour shifts on the colour map by rule (prepare-meshy-characters.mjs recolorPixels).
+  const range = (r, hi) => Array.isArray(r) && r.length === 2 && r.every((v) => typeof v === 'number' && v >= 0 && v <= hi);
+  const RECOLOR = new Set(['hue', 'sat', 'light', 'feather', 'toHue', 'toSat', 'satScale', 'lightScale', 'amount']);
+  const rule = (q) => q && typeof q === 'object' && Object.keys(q).every((k) => RECOLOR.has(k)) && (q.hue === undefined || range(q.hue, 360)) && (q.sat === undefined || (range(q.sat, 1) && q.sat[0] <= q.sat[1])) && (q.light === undefined || (range(q.light, 1) && q.light[0] <= q.light[1])) && ['feather', 'toSat', 'amount'].every((k) => q[k] === undefined || (typeof q[k] === 'number' && q[k] >= 0 && q[k] <= 1)) && (q.toHue === undefined || (typeof q.toHue === 'number' && q.toHue >= 0 && q.toHue < 360)) && ['satScale', 'lightScale'].every((k) => q[k] === undefined || (typeof q[k] === 'number' && q[k] > 0 && q[k] <= 3));
+  need(x.recolor === undefined || (Array.isArray(x.recolor) && x.recolor.length > 0 && x.recolor.every(rule)), 'fixes.recolor: [{ hue: [deg, deg], sat: [0–1, 0–1], light: [0–1, 0–1], feather, toHue: deg, toSat, satScale, lightScale, amount }, …]');
+  // The face's own share of a rebaked cut (prepare-meshy-characters.mjs: a box in the download's frame, its eyes kept).
+  if (x.face !== undefined) {
+    const f = x.face;
+    need(typeof f === 'object' && f !== null && Array.isArray(f.box) && f.box.length === 6 && f.box.every((v) => typeof v === 'number' && Math.abs(v) <= 1.2) && f.box[0] < f.box[3] && f.box[1] < f.box[4] && f.box[2] < f.box[5], 'fixes.face.box: [x0, y0, z0, x1, y1, z1] in shares of the download\'s height (feet at 0, +z its front)');
+    need(typeof f?.share === 'number' && f.share > 0 && f.share <= 0.2, 'fixes.face.share: 0–0.2 (the share of the triangle budget the face keeps, out of the head\'s)');
+    need(x.surface === 'rebake', "fixes.face: with surface 'rebake' only");
+  }
+  // Closed shapes inside an unrigged download where its surface is open (plugs.mjs).
+  if (x.plugs !== undefined) {
+    const p = x.plugs;
+    need(p && typeof p === 'object' && Array.isArray(p.at) && p.at.length > 0 && p.at.length <= 8 && p.at.every((q) => Array.isArray(q) && q.length === 4 && q.every((v) => typeof v === 'number' && Math.abs(v) <= 1.2) && q[3] > 0 && q[3] <= 0.2), 'fixes.plugs.at: [[x, y, z, reach], …] (1–8; shares of the download\'s height in its own pose, the landmarks frame; reach 0–0.2)');
+    need(p?.shrink === undefined || (typeof p.shrink === 'number' && p.shrink > 0.3 && p.shrink <= 1), 'fixes.plugs.shrink: 0.3–1 (each radius against the points\' spread; 0.85 unless set)');
+  }
   need(x.headShare === undefined || (typeof x.headShare === 'number' && x.headShare > 0 && x.headShare <= 0.3), 'fixes.headShare: 0–0.3 (the share of the triangle budget the head keeps; 0.12 unless set)');
   need(x.handsShare === undefined || (typeof x.handsShare === 'number' && x.handsShare > 0 && x.handsShare <= 0.2), 'fixes.handsShare: 0–0.2 (the share of the triangle budget the hands keep)');
   need(x.surface === undefined || x.surface === 'rebake', 'fixes.surface: rebake (the cut mesh laid out afresh and its colour painted from the download) or left out');
@@ -182,6 +215,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(x.lod === undefined || (typeof x.lod === 'number' && x.lod >= 0.15 && x.lod <= 0.6), 'fixes.lod: 0.15–0.6 (the share of the body\'s triangles its low-detail copy keeps; 0.3 unless set)');
   need(x.normalSize === undefined || x.normalSize === 512 || x.normalSize === 1024, 'fixes.normalSize: 512 or 1024 (the baked normal map, px)');
   need(x.fingers === undefined || x.fingers === 'own' || x.fingers === 'fit', "fixes.fingers: 'own' (a rigged download's own finger joints and weights, where its finger chains are whole; the default) or 'fit' (re-fitted from the mesh, hands.mjs)");
+  // `rejoint`: rig joints moved along their bone toward their parent (skinfix.mjs moveJoints): { <rig joint>: share }.
+  need(x.rejoint === undefined || (x.rejoint && typeof x.rejoint === 'object' && Object.keys(x.rejoint).length > 0 && Object.entries(x.rejoint).every(([k, v]) => /^[a-z]+(_[lr])?$/.test(k) && (rejointShare(v) || (v && typeof v === 'object' && Object.keys(v).every((q) => q === 'share' || q === 'radius') && rejointShare(v.share) && (v.radius === undefined || (typeof v.radius === 'number' && v.radius >= 0.03 && v.radius <= 0.3)))))), 'fixes.rejoint: { <rig joint, or one without its side for both>: the share of the way from its parent it sits at (0.3–1, or 1–1.6 out past its place), or { share, radius } with the limb\'s radius (0.03–0.3 m at 1.8 m) set }');
   if (x.hold !== undefined) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
@@ -191,7 +226,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     // This look's own hands and arms on a gun (GripTune in packages/shared/src/content/looks.ts).
     const g = x.grip;
     const NUM = { elbowOut: 0.4, elbowDown: 0.4, curlR: 1.6, curlL: 1.6, rollR: 1.6, rollL: 1.6 };
-    const PTS = ['supportPistol', 'supportLong', 'gripLong'];
+    const PTS = ['supportPistol', 'supportLong', 'gripLong', 'gripPistol'];
     need(g && typeof g === 'object' && Object.keys(g).every((k) => k in NUM || PTS.includes(k)), `fixes.grip: { ${[...Object.keys(NUM), ...PTS].join(', ')} }`);
     for (const k of ['elbowOut', 'elbowDown']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: metres (−${NUM[k]}–${NUM[k]})`);
     for (const k of ['rollR', 'rollL']) need(g?.[k] === undefined || (typeof g[k] === 'number' && Math.abs(g[k]) <= NUM[k]), `fixes.grip.${k}: radians (−${NUM[k]}–${NUM[k]})`);
@@ -202,7 +237,9 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   if (x.hands !== undefined) {
     const h = x.hands;
     need(typeof h === 'object' && h !== null, 'fixes.hands: { palm, curl, scale }');
-    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together; or l / r for one side)`);
+    for (const k of Object.keys(h ?? {})) need(['palm', 'curl', 'scale', 'wrist', 'mitten', 'together', 'graft', 'l', 'r'].includes(k), `fixes.hands.${k}: unknown (palm, curl, scale, wrist, mitten, together, graft; or l / r for one side)`);
+    // New hand geometry (handgraft.mjs): both hands, or one.
+    need(h?.graft === undefined || h.graft === true || h.graft === 'l' || h.graft === 'r', "fixes.hands.graft: true (both hands get new geometry: the rig's own hand, fitted) or 'l' / 'r'");
     for (const side of [h, h?.l, h?.r].filter(Boolean)) {
       need(side.palm === undefined || isPoint(side.palm), 'fixes.hands.palm: [x, y, z] in the hand joint\'s space (m)');
       need(side.curl === undefined || (typeof side.curl === 'number' && side.curl >= 0 && side.curl <= 1.5), 'fixes.hands.curl: 0–1.5 (how far the fingers close)');
@@ -347,8 +384,8 @@ export function readClipSets() {
 
 /** The provenance pack a character's files are recorded under. */
 export const packOf = (m) => PACK[m.source.license];
-/** The part a look wears in first person: its own forearms (<id>_fparms) or a universal arms part. */
-export const armsOf = (m) => (!m.firstPerson?.arms || m.firstPerson.arms === 'own' ? `${m.id}_fparms` : m.firstPerson.arms);
+/** The part a look wears in first person: a universal arms part (the default), or its own forearms (<id>_fparms, `arms: own`). */
+export const armsOf = (m) => (m.firstPerson?.arms === 'own' ? `${m.id}_fparms` : (m.firstPerson?.arms ?? universalArms(m)));
 
 const SIDE_JOINTS = ['Shoulder', 'Arm', 'ForeArm', 'Hand', 'HandTip', 'UpLeg', 'Leg', 'Foot', 'ToeBase', 'ToeTip'];
 const SPINE_JOINTS = ['Hips', 'Spine02', 'Spine01', 'Spine', 'neck', 'Head', 'head_end'];
@@ -388,29 +425,79 @@ export function buildSpec(m) {
     feet: x.feet,
     centre: x.centre,
     scrubBlue: x.scrubBlue,
+    recolor: x.recolor,
     hands: x.hands,
     skin: x.skin,
     handsShare: x.handsShare,
     headShare: x.headShare,
+    plugs: x.plugs,
+    face: x.face,
     lod: x.lod,
     normalSize: x.normalSize,
     fingers: x.fingers,
+    rejoint: x.rejoint,
     joints,
   };
 }
 
 const q = (s) => `'${String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 
+/** The grip fit (tools/content/grip-fit.mjs): per character, fitted grip offsets, first-person arms colours, the audit. */
+export const GRIP_FIT_FILE = join(ROOT, 'content/grip-fit.json');
+let gripFit;
+/** One character's entry in content/grip-fit.json (null: not fitted yet). */
+export function gripFitOf(id) {
+  gripFit ??= existsSync(GRIP_FIT_FILE) ? JSON.parse(readFileSync(GRIP_FIT_FILE, 'utf8')).characters ?? {} : {};
+  return gripFit[id] ?? null;
+}
+/** Universal arms' colours for a character with none read yet (a neutral glove and sleeve). */
+const ARMS_FALLBACK = { skin: '#3a3530', cloth: '#4a4d50', trim: '#2a2b2c' };
+/** The universal arms part for a body. */
+const universalArms = (m) => `ranger_arms_${m.body === 'female' ? 'f' : 'm'}`;
+
 /** One generated look. */
 function lookLine(m) {
   const fp = m.firstPerson ?? {};
-  const own = !fp.arms || fp.arms === 'own';
+  const own = fp.arms === 'own';
   const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
+  // The manifest's own grip (hand-set offsets the audit kept, its curls and rolls); the fitted offsets and the arms'
+  // colours are in gripFit.generated.ts, loaded with the first character (kept out of the menu's first script).
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
-  const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms)}, skin: ${q(fp.skin)}, cloth: ${q(fp.cloth)}, trim: ${q(fp.trim)}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const dyes = ['skin', 'cloth', 'trim'].filter((k) => fp[k]).map((k) => `, ${k}: ${q(fp[k])}`).join('');
+  const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms ?? universalArms(m))}${dyes}${body} }`;
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
+}
+
+/** The grip fit's generated table (content/grip-fit.json, by look): fitted offsets and the universal arms' colours. */
+export const GRIP_FIT_TS = join(ROOT, 'packages/shared/src/content/gripFit.generated.ts');
+
+/** The TypeScript of the grip fit's table: each built look's fitted third-person offsets and first-person arms colours. */
+export function gripFitSource(list) {
+  const lines = [];
+  for (const m of list.filter((x) => !isQueued(x)).sort((a, b) => a.look.localeCompare(b.look))) {
+    const fit = gripFitOf(m.id);
+    const fp = m.firstPerson ?? {};
+    const own = new Set(Object.keys(m.fixes?.grip ?? {}));
+    const offsets = Object.entries(fit?.grip ?? {}).filter(([k]) => !own.has(k));
+    const parts = [];
+    if (offsets.length) parts.push(`grip: { ${offsets.map(([k, v]) => `${k}: [${v.join(', ')}]`).join(', ')} }`);
+    if (fp.arms !== 'own') {
+      const dye = { ...ARMS_FALLBACK, ...(fit?.arms ?? {}) };
+      parts.push(`arms: { skin: ${q(dye.skin)}, cloth: ${q(dye.cloth)}, trim: ${q(dye.trim)} }`);
+    }
+    if (parts.length) lines.push(`  ${q(m.look)}: { ${parts.join(', ')} },`);
+  }
+  return `// Generated by tools/content/character-manifests.mjs from content/grip-fit.json (tools/content/grip-fit.mjs) and
+// content/characters/*.json. Do not edit by hand. Loaded with the first character, not with the menu.
+import type { GripTune } from './looks.ts';
+
+/** Per look: the third-person grip offsets fitted from its drawn hands (under its manifest's own), and its universal first-person arms' colours. */
+export const GRIP_FITS: Readonly<Record<string, { grip?: GripTune; arms?: { skin: string; cloth: string; trim: string } }>> = {
+${lines.join('\n')}
+};
+`;
 }
 
 /** The generated TypeScript the shared looks read: one look and one bio per built manifest. */
@@ -438,11 +525,27 @@ ${bios.join('\n')}
 `;
 }
 
+/** The generated blood table (`blood` in each built manifest; lookBlood in content/blood.ts). */
+export function bloodSource(list) {
+  const rows = list.filter((m) => !isQueued(m) && m.blood).map((m) => `  ${q(m.look)}: ${q(m.blood)},`);
+  return `// Generated by tools/content/character-manifests.mjs from content/characters/*.json. Do not edit by hand:
+// change a manifest and run \`node tools/content/character-manifests.mjs\` (pnpm content:check fails until you do).
+import type { BloodKind } from './looks.ts';
+
+/** What each whole-body character bleeds when hit (\`blood\` in its manifest; docs/CHARACTERS.md, "Blood"). Apart from the looks: only the game reads it, so it stays out of the menu's first JS. */
+export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
+${rows.join('\n')}
+};
+`;
+}
+
 /** Problems with the generated looks file (empty when it matches the manifests). */
 export function looksProblems(list = readManifests()) {
-  const want = looksSource(list);
-  if (!existsSync(LOOKS_FILE) || readFileSync(LOOKS_FILE, 'utf8') !== want) return ['packages/shared/src/content/characters.generated.ts is out of date with content/characters (run node tools/content/character-manifests.mjs)'];
-  return [];
+  const out = [];
+  if (!existsSync(LOOKS_FILE) || readFileSync(LOOKS_FILE, 'utf8') !== looksSource(list)) out.push('packages/shared/src/content/characters.generated.ts is out of date with content/characters (run node tools/content/character-manifests.mjs)');
+  if (!existsSync(BLOOD_FILE) || readFileSync(BLOOD_FILE, 'utf8') !== bloodSource(list)) out.push('packages/shared/src/content/characterBlood.generated.ts is out of date with content/characters (run node tools/content/character-manifests.mjs)');
+  if (!existsSync(GRIP_FIT_TS) || readFileSync(GRIP_FIT_TS, 'utf8') !== gripFitSource(list)) out.push('packages/shared/src/content/gripFit.generated.ts is out of date with content/grip-fit.json (run node tools/content/character-manifests.mjs)');
+  return out;
 }
 
 /** A queued stub manifest for one entry of content/intake/meshy-queue.json (a character or creature). */
@@ -485,6 +588,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log(`checked ${list.length} character manifests and their looks`);
   } else {
     writeFileSync(LOOKS_FILE, looksSource(list));
+    writeFileSync(BLOOD_FILE, bloodSource(list));
+    writeFileSync(GRIP_FIT_TS, gripFitSource(list));
     console.log(`wrote the looks of ${list.filter((m) => !isQueued(m)).length} characters to packages/shared/src/content/characters.generated.ts`);
   }
 }

@@ -24,13 +24,14 @@ import { formatLock, readLock } from './lockfile.mjs';
 import { surfaceTypeIds } from './surface-types.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { writeKitModel } from './kit/glb.mjs';
+import { farLevel } from './kit/farLook.mjs';
 import { binMesh, crateMesh, framedCrateMesh } from './kit/crate.mjs';
 import { drumMesh } from './kit/drum.mjs';
 import { cartonMesh } from './kit/carton.mjs';
-import { barrierMesh, fenceMesh, railingMesh, stoneWallMesh } from './kit/fence.mjs';
+import { barrierMesh, chainlinkMesh, fenceMesh, railingMesh, stoneWallMesh } from './kit/fence.mjs';
 import { containerMesh } from './kit/container.mjs';
 import { bookcaseMesh, officeChairMesh, roundTableMesh, seatMesh, tableMesh } from './kit/furniture.mjs';
-import { counterMesh, shelfMesh, stallMesh, wasteBinMesh } from './kit/shop.mjs';
+import { counterMesh, shelfMesh, stallMesh, wallShelfMesh, wasteBinMesh } from './kit/shop.mjs';
 import { cornerSofaMesh, sofaMesh } from './kit/sofa.mjs';
 import { bedMesh } from './kit/bed.mjs';
 import { applianceMesh, cabinetMesh, freezerMesh } from './kit/cabinet.mjs';
@@ -40,7 +41,11 @@ import { consoleMesh, valveMesh } from './kit/plant.mjs';
 import { cogMesh, hopperMesh, leverMesh, machineMesh, pistonMesh, scannerMesh, tallHopperMesh, windowMachineMesh } from './kit/machines.mjs';
 import { anvilMesh, coneMesh, glassPipeMesh, pipeStubMesh, workbenchMesh } from './kit/yard.mjs';
 import { coolantPipeMesh, pipeJunctionMesh } from './kit/pipes.mjs';
-import { closetFrontMesh, closetMesh, deskHutchMesh, doorMesh } from './kit/academy.mjs';
+import { bannerPostMesh, cairnMesh, courtMesh, fieldWallMesh, guardPostMesh, islandBedMesh, markerMesh, pierMesh, stoneBenchMesh, volleyNetMesh } from './kit/grounds.mjs';
+import { closetFrontMesh, closetMesh, closetPairMesh, deskHutchMesh, deskPairMesh, doorMesh, spireMesh } from './kit/academy.mjs';
+import { chalkboardMesh, clockFaceMesh, noticeBoardMesh, pennantMesh, schoolDesksMesh, screenMesh } from './kit/school.mjs';
+import { altarMesh, bleacherMesh, courtLinesMesh, crestMesh, honoursMesh, hoopMesh, organMesh, pewMesh, poolLanesMesh, stainedGlassMesh, trophyCaseMesh, vaultBayMesh } from './kit/campus.mjs';
+import { awningMesh, bikeRackMesh, bollardMesh, busStopMesh, mailboxMesh, newsBoxMesh, spoolMesh } from './kit/street.mjs';
 import { domeArchMesh, domeCapMesh, domeDrumMesh, domeMesh, domePanelMesh, domeTrimMesh } from './kit/dome.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -51,7 +56,7 @@ const OUT = 'packages/client/public/kit';
 const SHARED = 'packages/shared/src/content/kitProps.generated.ts';
 
 /** Generator kinds and what makes each. */
-export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh, dome: domeMesh, domecap: domeCapMesh, domepanel: domePanelMesh, domedrum: domeDrumMesh, dometrim: domeTrimMesh, domearch: domeArchMesh, door: doorMesh, deskhutch: deskHutchMesh, closet: closetMesh, closetfront: closetFrontMesh };
+export const KINDS = { crate: crateMesh, framed: framedCrateMesh, bin: binMesh, drum: drumMesh, carton: cartonMesh, fence: fenceMesh, railing: railingMesh, stonewall: stoneWallMesh, barrier: barrierMesh, container: containerMesh, table: tableMesh, seat: seatMesh, bookcase: bookcaseMesh, shelf: shelfMesh, wallshelf: wallShelfMesh, stall: stallMesh, counter: counterMesh, wastebin: wasteBinMesh, sofa: sofaMesh, cabinet: cabinetMesh, appliance: applianceMesh, roundtable: roundTableMesh, officechair: officeChairMesh, bed: bedMesh, cornersofa: cornerSofaMesh, yokecrate: yokeCrateMesh, sign: signMesh, conveyor: conveyorMesh, freezer: freezerMesh, cart: cartMesh, bakery: bakeryMesh, checkout: checkoutMesh, chestfreezer: chestFreezerMesh, bottlereturn: bottleReturnMesh, produce: produceMesh, console: consoleMesh, valve: valveMesh, machine: machineMesh, windowmachine: windowMachineMesh, hopper: hopperMesh, tallhopper: tallHopperMesh, piston: pistonMesh, scanner: scannerMesh, lever: leverMesh, cog: cogMesh, glasspipe: glassPipeMesh, pipestub: pipeStubMesh, workbench: workbenchMesh, cone: coneMesh, anvil: anvilMesh, coolantpipe: coolantPipeMesh, pipejunction: pipeJunctionMesh, dome: domeMesh, domecap: domeCapMesh, domepanel: domePanelMesh, domedrum: domeDrumMesh, dometrim: domeTrimMesh, domearch: domeArchMesh, door: doorMesh, spire: spireMesh, deskhutch: deskHutchMesh, closet: closetMesh, closetfront: closetFrontMesh, deskpair: deskPairMesh, closetpair: closetPairMesh, cairn: cairnMesh, pier: pierMesh, fieldwall: fieldWallMesh, bannerpost: bannerPostMesh, marker: markerMesh, stonebench: stoneBenchMesh, islandbed: islandBedMesh, guardpost: guardPostMesh, volleynet: volleyNetMesh, court: courtMesh, awning: awningMesh, bollard: bollardMesh, bikerack: bikeRackMesh, mailbox: mailboxMesh, newsbox: newsBoxMesh, busstop: busStopMesh, spool: spoolMesh, chainlink: chainlinkMesh, chalkboard: chalkboardMesh, screen: screenMesh, noticeboard: noticeBoardMesh, schooldesks: schoolDesksMesh, pennants: pennantMesh, clockface: clockFaceMesh, pew: pewMesh, stainedglass: stainedGlassMesh, altar: altarMesh, organ: organMesh, crest: crestMesh, trophycase: trophyCaseMesh, honours: honoursMesh, vaultbay: vaultBayMesh, bleacher: bleacherMesh, courtlines: courtLinesMesh, hoop: hoopMesh, poollanes: poolLanesMesh };
 const { num, int, str, en, tup, arr, obj, map } = shape;
 const ID = /^kit\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
 const mm = (v) => Math.round(v * 1000) / 1000;
@@ -72,14 +77,14 @@ export function validate(content, root = ROOT) {
   const catalogue = loadPropManifest();
   const categories = new Set(catalogue.props.map((p) => p.category));
   const m = content.manifest;
-  problems.push(...check(m, obj({ $comment: str, generatorVersion: int, pack: obj({ id: str, title: str, creator: str, url: str, license: str, licenseFile: str }), budgets: obj({ maxBytes: int, triangles: map(arr(int, 1)) }), aliases: map(obj({ model: str, variant: int, scale: num })) }), MANIFEST));
+  problems.push(...check(m, obj({ $comment: str, generatorVersion: int, pack: obj({ id: str, title: str, creator: str, url: str, license: str, licenseFile: str }), budgets: obj({ maxBytes: int, triangles: map(arr(int, 1)) }), 'farLooks?': arr(str, 1), aliases: map(obj({ model: str, variant: int, scale: num, 'ownSize?': en([true]) })) }), MANIFEST));
   for (const k of Object.keys(m.budgets?.triangles ?? {})) if (!KINDS[k]) problems.push(`${MANIFEST}: budgets.triangles.${k}: not a generator kind (${Object.keys(KINDS).join(', ')})`);
   const families = [];
   const ids = new Set();
   for (const { file, data } of content.types) {
     for (const k of Object.keys(data)) if (!['$comment', 'type', 'props'].includes(k)) problems.push(`${file}: unknown field "${k}"`);
     const spec = obj({
-      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), 'bounds?': en(['within']), 'collide?': en(['none']), surface: str, detail: str,
+      id: str, displayName: str, category: str, assetVersion: int, notes: map(str), size: tup(3), 'bounds?': en(['within']), 'collide?': en(['none']), 'passage?': obj({ frame: num }), surface: str, detail: str,
       'breakable?': obj({ health: num, debris: str, 'blast?': obj({ radius: num, damage: num, edge: num }) }),
       generator: obj({ kind: en(Object.keys(KINDS)) }),
       lods: arr(obj({ distance: num }), 1),
@@ -119,6 +124,10 @@ export function validate(content, root = ROOT) {
     if (!f) problems.push(`${MANIFEST}: aliases.${from}: no kit family ${a.model}`);
     else if (!f.variants.some((v) => v.index === a.variant)) problems.push(`${MANIFEST}: aliases.${from}: ${a.model} has no variant ${a.variant}`);
     if (!(a.scale >= 0.25 && a.scale <= 4)) problems.push(`${MANIFEST}: aliases.${from}: scale must be 0.25–4`);
+    // A family of its own size (the Wall Shelf for the Quaternius piece that was a shrunken bookcase): only where
+    // nothing collides, before or after, so play is unchanged.
+    const was = catalogue.props.find((p) => `prop.${p.id}` === from);
+    if (a.ownSize && (was?.collide !== 'none' || f?.collide !== 'none')) problems.push(`${MANIFEST}: aliases.${from}: ownSize only for a prop and a family that both collide as nothing (collide: "none")`);
   }
   return { problems, families };
 }
@@ -131,6 +140,18 @@ export async function build(content, families) {
   const report = [];
   const props = [];
   const render = [];
+  // Far looks (tools/content/kit/farLook.mjs): the families of these types have their lighter levels baked from their
+  // own level 0; the choice each made is kept in the lock and reused while its model is unchanged.
+  const farTypes = new Set(m.farLooks ?? []);
+  // A variant that plays a retired catalogue prop (an alias) keeps its level 1 within that prop's triangles.
+  const oldTris = new Map(readLock(join(ROOT, 'content/props.lock.json')).files.map((x) => [x.file, x.triangles]));
+  const aliasCap = new Map();
+  for (const [from, a] of Object.entries(m.aliases ?? {})) {
+    const was = oldTris.get(`props/${from.slice(5)}.glb`);
+    const k = `${a.model}#${a.variant}`;
+    if (was !== undefined) aliasCap.set(k, Math.min(aliasCap.get(k) ?? Infinity, was));
+  }
+  const kept = new Map(existsSync(join(ROOT, LOCK)) ? readLock(join(ROOT, LOCK)).files.filter((x) => x.far).map((x) => [x.src, x.far]) : []);
   for (const f of families) {
     const make = KINDS[f.generator.kind];
     const [, type, name] = f.id.split('.');
@@ -142,28 +163,64 @@ export async function build(content, families) {
     for (const v of f.variants) {
       const g = { ...f.generator, ...(v.set ?? {}) };
       const levels = f.lods.map((l, i) => ({ distance: l.distance, mesh: make(v.seed, f.size, g, v.look, i) }));
+      let far;
+      const made = levels.map((l) => l.mesh);
+      // `tight`: a variant whose file came out over the byte budget keeps every lighter level within the generator's own
+      // triangles (recoloured at most: a whole dome's level 1 grew to 900 triangles); remembered in the lock.
+      const bake = (was, tight) => {
+        const plans = [];
+        for (let i = 1; i < levels.length; i++) {
+          const prev = i === 1 ? Math.min(made[0].triangles, (aliasCap.get(`${f.id}#${v.index}`) ?? Infinity) + 1) : levels[i - 1].mesh.triangles;
+          const before = tight ? Math.min(prev, made[i].triangles + 1) : prev;
+          const r = farLevel(made[0], made[i], i, was[i - 1], before);
+          levels[i].mesh = r.mesh;
+          plans.push(tight ? { ...r.plan, tight: true } : r.plan);
+        }
+        return plans;
+      };
+      if (farTypes.has(type)) {
+        const was = kept.get(`${f.id}#${v.name}`) ?? [];
+        // A variant kept at its own levels for its bytes (below) stays so without searching again.
+        far = was[0]?.key === 'own' ? was.map((p) => ({ ...p })) : bake(was, !!was[0]?.tight);
+        const over = async () => (await writeKitModel(`${type}_${name}_${v.name}`, levels, f.detailSpec)).length > m.budgets.maxBytes;
+        if (!was[0]?.tight && was[0]?.key !== 'own' && (await over())) far = bake([], true);
+        // Still over: the generator's own levels as they were.
+        if (far.some((p) => p.how !== 'own') && (await over())) {
+          for (let i = 1; i < levels.length; i++) levels[i].mesh = made[i];
+          far = far.map(() => ({ key: 'own', how: 'own', tight: true }));
+        }
+      }
       const t = levels.map((l) => l.mesh.triangles);
       const own = levels[0].mesh.boxes?.length ? levels[0].mesh.boxes.map((b) => b.map(mm)) : null;
       if (own && f.collide === 'none') throw new Error(`${f.id}#${v.name}: gives collision boxes, but its family has no collision (collide: "none")`);
       if (f.bounds === 'within' && !own && f.collide !== 'none') throw new Error(`${f.id}#${v.name}: bounds "within" needs its own collision boxes (it does not fill its size), or collide: "none"`);
       if (v === f.variants[0]) boxes = own;
       else if (JSON.stringify(own) !== JSON.stringify(boxes)) throw new Error(`${f.id}#${v.name}: its collision boxes differ from the first variant's (a family has one collision: structure that changes it belongs in another family)`);
-      for (const b of own ?? []) if (b.some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
+      // (A seventh number turns a box about its centre: an ajar door's leaf. Its turned corners are what must fit.)
+      const corners = (b) => {
+        if (b.length < 7) return b.slice(0, 6);
+        const [x0, y0, z0, x1, y1, z1, a] = b;
+        const [cx, cz, hx, hz] = [(x0 + x1) / 2, (z0 + z1) / 2, (x1 - x0) / 2, (z1 - z0) / 2];
+        const [c, s] = [Math.cos(a), Math.sin(a)];
+        const pts = [[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]].map(([u, w]) => [cx + u * c + w * s, cz - u * s + w * c]);
+        return [Math.min(...pts.map((p) => p[0])), y0, Math.min(...pts.map((p) => p[1])), Math.max(...pts.map((p) => p[0])), y1, Math.max(...pts.map((p) => p[1]))];
+      };
+      for (const b of own ?? []) if (corners(b).some((c, k) => Math.abs(c) > f.size[k % 3] / (k % 3 === 1 ? 1 : 2) + 0.001 || (k === 1 && c < 0))) throw new Error(`${f.id}#${v.name}: a collision box ${JSON.stringify(b)} lies outside the family's size`);
       tris ??= t.map(() => 0);
       t.forEach((n, i) => (tris[i] = Math.max(tris[i], n)));
       const file = `kit/${type}.${name}.${v.name}.glb`;
       const glb = await writeKitModel(`${type}_${name}_${v.name}`, levels, f.detailSpec);
       files.set(file, glb);
-      lockFiles.push({ file, sha256: sha(glb), bytes: glb.length, triangles: t[0], lodTriangles: t, source: m.pack.id, src: `${f.id}#${v.name}`, generatorVersion: m.generatorVersion, assetVersion: f.assetVersion, bounds: boundsOf(levels[0].mesh) });
+      lockFiles.push({ file, sha256: sha(glb), bytes: glb.length, triangles: t[0], lodTriangles: t, source: m.pack.id, src: `${f.id}#${v.name}`, generatorVersion: m.generatorVersion, assetVersion: f.assetVersion, bounds: boundsOf(levels[0].mesh), ...(far ? { far } : {}) });
       variants.push({ index: v.index, name: v.name, file });
       report.push(`${f.id}#${v.name}: ${t.join(' / ')} triangles, ${glb.length} B`);
     }
     const size = f.size.map(mm);
     props.push({ id: f.id, file: variants[0].file, displayName: f.displayName, category: f.category, size, collision: f.collide === 'none' ? null : size, ...(boxes ? { boxes } : {}), ...(f.breakable ? { breakable: { health: f.breakable.health, ...(f.breakable.blast ? { blast: { radius: f.breakable.blast.radius, damage: f.breakable.blast.damage, edge: f.breakable.blast.edge } } : {}), debris: f.breakable.debris } } : {}) });
-    render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants, ...(f.bounds === 'within' ? { within: true } : {}) });
+    render.push({ id: f.id, kind: f.generator.kind, assetVersion: f.assetVersion, surface: f.surface, lods: f.lods.map((l) => l.distance), triangles: tris, variants, ...(f.bounds === 'within' ? { within: true } : {}), ...(f.passage ? { passage: { frame: f.passage.frame } } : {}) });
   }
   lockFiles.sort((a, b) => (a.file < b.file ? -1 : 1));
-  const aliases = Object.entries(m.aliases ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)).map(([from, a]) => ({ from, model: a.model, variant: a.variant, scale: a.scale }));
+  const aliases = Object.entries(m.aliases ?? {}).sort(([a], [b]) => (a < b ? -1 : 1)).map(([from, a]) => ({ from, model: a.model, variant: a.variant, scale: a.scale, ...(a.ownSize ? { ownSize: true } : {}) }));
   const lock = formatLock({ $comment: 'Generated by tools/content/kitprops.mjs from content/kitprops.json and content/kitprops/*.json. Do not edit by hand.', generatorVersion: m.generatorVersion, files: lockFiles });
   const within = new Set(families.filter((f) => f.bounds === 'within').map((f) => f.id));
   return { files, lock, lockFiles, shared: renderShared(m, props, render, aliases), props, render, aliases, report, within };
@@ -245,7 +302,7 @@ export function budgetProblems(content, out, root = ROOT) {
     const t = byFile.get(v.file).lodTriangles;
     if (was !== undefined && t.length > 1 && t[1] > was) problems.push(`${a.from} → ${a.model}#${v.name}: ${t[1]} triangles from ${r.lods[1]} m, more than the ${was} of the prop it replaces`);
     const oldSize = sizes.get(a.from);
-    if (oldSize && p.size.some((s, i) => Math.abs(s * a.scale - oldSize[i]) > 0.005)) problems.push(`${a.from} → ${a.model}: size ${JSON.stringify(p.size.map((s) => mm(s * a.scale)))} is not the retired prop's ${JSON.stringify(oldSize)} (its collision would change as played: list it, or match it)`);
+    if (oldSize && !a.ownSize && p.size.some((s, i) => Math.abs(s * a.scale - oldSize[i]) > 0.005)) problems.push(`${a.from} → ${a.model}: size ${JSON.stringify(p.size.map((s) => mm(s * a.scale)))} is not the retired prop's ${JSON.stringify(oldSize)} (its collision would change as played: list it, or match it)`);
   }
   return problems;
 }

@@ -7,7 +7,7 @@
       "displayName": "Atrium Tower",
       "category": "Towers",
       "blurb": "A four-storey tower round a glazed atrium (two Atriums stacked, balconies all round), a lobby, offices up the east side and a stairwell joining the first floor to the second: 3 × 2 cells, levels 0-3.",
-      "packs": ["neon", "suburban", "harbor", "orbital", "military", "collegiate"],
+      "packs": ["neon", "suburban", "harbor", "orbital", "military", "collegiate", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,3] },
       "mirror": "none",
       "roles": {"glass":"breakable"},

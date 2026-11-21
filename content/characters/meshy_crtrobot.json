@@ -5,7 +5,8 @@
   "order": 82,
   "name": "CRT Robot",
   "look": "core.crtrobot",
-  "group": "creatures",
+  "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Runs on vacuum tubes and spite. The screen shows what it thinks of you.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.4,
     "roughness": 0.55
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

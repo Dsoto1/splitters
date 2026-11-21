@@ -16,8 +16,8 @@ import { CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
-import type { MapDocument, MapEntity, MapWeather, PropEntity, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
-import { buriedPassageLines, groundCutAt, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, visibleFaces, propFlushLifts } from '@tiletrigger/shared';
+import type { FaceCache, MapDocument, MapEntity, MapWeather, PropEntity, RenderFace, Rotation, Side, TerrainData, TilePlacement, Vec3, WorldBox } from '@tiletrigger/shared';
+import { buildOccupancy, buriedOpenEnds, isOpenEdge, buriedPassageLines, groundCutAt, groundCutsKey, mapGroundBores, mapWeather, DESTRUCTIBLE_SPECS, MAX_TEAMS, placedMountDef, mountTint, PLAYER, buildMapDecor, buildMapGeometry, dynamicBlockIds, getProp, mapLiquids, terrainHeightAt, yawXZ, mapFactions, mapTeams, placementCells, viewDirection, terrainUnderFloors, withPathsLaid, hungPropLift, rebeddedY, updateVisibleFaces, propFlushLifts } from '@tiletrigger/shared';
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
@@ -39,6 +39,9 @@ import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder'
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { BuildAreaVisuals } from './buildAreaVisuals.ts';
+import { GroundGlass } from './groundGlass.ts';
+import { SmallIcons } from './smallIcons.ts';
+import { isSmallThing } from './editorParts.ts';
 
 /** A picture laid over the ground while editing (MapMaker → Terrain, owner): never part of the map. */
 export interface TraceImage {
@@ -56,6 +59,10 @@ interface EntityMarker {
   node: TransformNode;
   /** Selection outline for pickups. */
   ring?: Mesh;
+  /** The entity the node was last put for, and what it stood on then (EditorView.placeEpoch). */
+  placed?: MapEntity;
+  placedEpoch?: number;
+  placedLift?: number;
 }
 
 /** A set piece as MapMaker outlines it (placing or selected): the grid cells it claims and its ports. */
@@ -85,6 +92,13 @@ export class EditorView {
   /** The border along the boundary (live preview of the Border setting). */
   readonly border: BorderVisuals;
   private readonly foliage: FoliageVisuals;
+  /** The ground as glass while a level below it is edited (groundGlass.ts). */
+  private readonly glass: GroundGlass;
+  /** Small things' icons, drawn through what hides them (smallIcons.ts). */
+  private readonly icons: SmallIcons;
+  /** The level last drawn (setMap). */
+  private shownLevel = 0;
+  private shownLevelHeight = 4;
   private foliageTerrain: MapDocument['terrain'] = null;
   private foliageKey = '';
   private faceHighlight?: Mesh;
@@ -121,14 +135,13 @@ export class EditorView {
   private roadMeshes: Mesh[] = [];
   private dimMeshes: Mesh[] = [];
   /** What the meshes were last built from: an edit rebuilds only what it changed (a prop moved: no tile, terrain or road meshes). */
-  private builtBoxes = '';
   private builtTheme = '';
   private drawnPaths: MapDocument['paths'] | null = null;
   private drawnTerrain: MapDocument['terrain'] | undefined = undefined;
   /** The cuts the drawn ground was built with (groundCutsKey). */
   private drawnCuts = '';
   /** The document's ground with its paths laid in (paths.ts), worked out again only when the ground or the paths change. */
-  private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; terrain: MapDocument['terrain'] } | null = null;
+  private laid: { from: MapDocument['terrain']; paths: MapDocument['paths']; tiles: MapDocument['classicStructure']['tiles']; terrain: MapDocument['terrain'] } | null = null;
   /** The ground as played (paths laid in, kept under every floor): what the terrain, plants and roads are drawn on. */
   private shownTerrain: MapDocument['terrain'] = null;
   /** The laid ground `shownTerrain` was kept under the floors from. */
@@ -166,6 +179,15 @@ export class EditorView {
     this.city = new CityVisuals(this.models, 'edcity');
     this.border = new BorderVisuals(this.scene, this.styler, this.models);
     this.foliage = new FoliageVisuals(this.scene, this.models);
+    this.glass = new GroundGlass(this.scene);
+    this.icons = new SmallIcons(this.scene, (mesh, id) => {
+      if (id) this.nodeEntity.set(mesh, id);
+      else this.nodeEntity.delete(mesh);
+    });
+    this.scene.onBeforeRenderObservable.add(() => {
+      this.icons.update(this.camera.position);
+      this.glass.update(this.camera.position);
+    });
     this.scene.onBeforeRenderObservable.add(() => this.foliage.update(this.camera.position));
     this.area = new BuildAreaVisuals(this.scene);
     this.scene.onBeforeRenderObservable.add(() => this.area.update(this.camera.position, viewDirection(this.yaw, this.pitch)));
@@ -199,6 +221,7 @@ export class EditorView {
       pickFill: flat('pickFill', '#00d1ff', 0.12),
     };
     this.applyCamera();
+    this.watchCanvasRect();
   }
 
   // ---------- camera ----------
@@ -252,9 +275,42 @@ export class EditorView {
     this.camera.position.set(target.x - d.x * dist, target.y - d.y * dist, target.z - d.z * dist);
   }
 
+  /**
+   * Where the canvas is on the page, read once a frame instead of on every pointer question. Asking the browser
+   * straight after the panels were rewritten (the hover update inside an edit's refresh) made it lay the whole page
+   * out there and then: 25 ms of every edit on a big map. It is read again after each frame is drawn (the layout the
+   * browser is about to do anyway), dropped when the window is resized or scrolled or the canvas changes size, and
+   * never trusted for longer than a frame (MapMaker left and come back to, a zoom: the next question reads it afresh).
+   */
+  private canvasRect: { rect: DOMRect | null; frame: number } | null = null;
+
+  private readCanvasRect(): DOMRect | null {
+    const engine = this.scene.getEngine();
+    const rect = (engine.getRenderingCanvasClientRect() as DOMRect | null) ?? null;
+    this.canvasRect = { rect, frame: engine.frameId };
+    return rect;
+  }
+
+  private viewRect(): DOMRect | null {
+    const kept = this.canvasRect;
+    if (kept && this.scene.getEngine().frameId - kept.frame <= 1) return kept.rect;
+    return this.readCanvasRect();
+  }
+
+  /** The canvas rectangle is asked for afresh when anything may have moved it. */
+  private watchCanvasRect(): void {
+    if (typeof window === 'undefined') return;
+    const drop = () => (this.canvasRect = null);
+    window.addEventListener('resize', drop);
+    window.addEventListener('scroll', drop, true);
+    window.visualViewport?.addEventListener('resize', drop);
+    const canvas = this.scene.getEngine().getRenderingCanvas();
+    if (canvas && typeof ResizeObserver !== 'undefined') new ResizeObserver(drop).observe(canvas);
+  }
+
   /** World-space ray under the pointer. */
   pointerRay(clientX: number, clientY: number): { origin: Vec3; dir: Vec3 } | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     return { origin: { x: ray.origin.x, y: ray.origin.y, z: ray.origin.z }, dir: { x: ray.direction.x, y: ray.direction.y, z: ray.direction.z } };
@@ -262,7 +318,7 @@ export class EditorView {
 
   /** Intersect the pointer ray with the horizontal plane y = planeY. */
   pickPlane(clientX: number, clientY: number, planeY: number): Vec3 | null {
-    const rect = this.scene.getEngine().getRenderingCanvasClientRect();
+    const rect = this.viewRect();
     if (!rect) return null;
     const ray = this.scene.createPickingRay(clientX - rect.left, clientY - rect.top, null, this.camera);
     if (Math.abs(ray.direction.y) < 1e-6) return null;
@@ -273,8 +329,7 @@ export class EditorView {
 
   /** Screen (client) coordinates of a world point; used by automation and future tooltips. */
   project(p: Vec3): { x: number; y: number } {
-    const engine = this.scene.getEngine();
-    const rect = engine.getRenderingCanvasClientRect()!;
+    const rect = this.viewRect()!;
     const v = Vector3.Project(new Vector3(p.x, p.y, p.z), Matrix.Identity(), this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(rect.width, rect.height));
     return { x: rect.left + v.x, y: rect.top + v.y };
   }
@@ -334,20 +389,18 @@ export class EditorView {
     const onLevel = (b: WorldBox) => levelOf(b) === level;
     // The level meshes, only when the boxes (or how they're styled) changed.
     const theme = JSON.stringify([doc.classicStructure.theme, doc.classicStructure.tiles.map((t) => t.surfaces ?? null), level]);
-    const boxKey = `${boxesFingerprint(drawn)}|${theme}`;
-    if (boxKey !== this.builtBoxes) {
-      this.builtBoxes = boxKey;
-      // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
-      const faces = visibleFaces(drawn);
-      this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)));
-      this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)));
-      for (const m of this.dimMeshes) m.visibility = 0.4;
-      this.applyTileLayer();
-    }
+    const restyled = theme !== this.builtStyle;
+    this.builtStyle = theme;
+    // Faces clipped against every level (a wall's top still gives way to the floor above it), then drawn in two sets.
+    // After an edit only the boxes near it are clipped again (facesUpdate.ts: on St. John's, 2,500 blocks, the whole
+    // pass took a third of a second per edit), and where no drawn box changed (a prop moved) the meshes stay.
+    this.faceCache = updateVisibleFaces(this.faceCache, drawn);
+    if (restyled || this.faceCache.changed) this.buildLevelMeshes(visible, drawn, this.faceCache.faces, onLevel);
     // The ground as played (what loadMap plays, settle.ts withGroundAsPlayed): the paths laid in (paths.ts) and the
     // terrain kept under every floor (terrainUnderFloors), worked out after every edit from the document's own ground,
     // which only sculpting changes: a path or a floor that moves takes its dip with it, and the ground comes back.
-    if (doc.terrain !== this.laid?.from || doc.paths !== this.laid.paths) this.laid = { from: doc.terrain, paths: doc.paths, terrain: withPathsLaid(doc).terrain };
+    // (A road through a buried tunnel leaves the hill over it alone: the tunnels' cuts, so the tiles count too.)
+    if (doc.terrain !== this.laid?.from || doc.paths !== this.laid.paths || doc.classicStructure.tiles !== this.laid.tiles) this.laid = { from: doc.terrain, paths: doc.paths, tiles: doc.classicStructure.tiles, terrain: withPathsLaid(doc, mapGroundBores(doc).cuts).terrain };
     const laid = this.laid.terrain;
     const ground = laid ? terrainUnderFloors({ ...doc, terrain: laid }, all) : null;
     // The floors moved but the ground came out the same: it stays the same terrain (nothing to rebuild).
@@ -369,7 +422,9 @@ export class EditorView {
       this.styler.buildTerrain(shown, 'edmap');
       this.drawnPaths = null;
     }
-    this.showBuried(shown);
+    this.shownLevel = level;
+    this.shownLevelHeight = doc.classicStructure.levelHeight;
+    this.showBuried(shown, level);
     if (doc.paths !== this.drawnPaths) {
       this.drawnPaths = doc.paths;
       disposeRoadMeshes(this.roadMeshes);
@@ -391,14 +446,27 @@ export class EditorView {
       this.foliageKey = foliageKey;
       void this.foliage.grow(shown.terrain, boxes, doc.metadata.id, water);
     }
+    // Below ground the ground turns to glass, so the tunnels under it show (and back at Ground it returns).
+    this.glassBelow(level);
     this.area.setMap(doc, level, this.shownTerrain);
     // Light fixtures and hung props are drawn fastened to the ceiling over them (settle.ts fixtureGap, hungPropLift).
     this.scenario.ceilings = boxes;
-    this.setEntities(doc, level, showAll, new Set());
+    this.setEntities(doc, level, showAll, this.selectedShown);
     // Glass in glazed windows (after the backdrop, whose sky it reflects).
     this.scenario.glass.build(visible, { windowsOnly: true });
     // Trim is pickable too, so it can be painted.
     return drawn;
+  }
+
+  /** What the level meshes were last styled by (theme, painted surfaces, level), and the faces they were built from. */
+  private builtStyle = '';
+  private faceCache: FaceCache | null = null;
+
+  private buildLevelMeshes(visible: MapDocument, drawn: readonly WorldBox[], faces: readonly RenderFace[], onLevel: (b: WorldBox) => boolean): void {
+    this.mapMeshes = this.styler.buildBoxes(visible, drawn, 'edmap', faces.filter((f) => onLevel(drawn[f.box]!)), this.builtStyle);
+    this.dimMeshes = this.dimStyler.buildBoxes(visible, drawn, 'edmapdim', faces.filter((f) => !onLevel(drawn[f.box]!)), this.builtStyle);
+    for (const m of this.dimMeshes) m.visibility = 0.4;
+    this.applyTileLayer();
   }
 
   /** The ground as drawn (paths laid in, kept under floors), or null on a map with no terrain. */
@@ -464,7 +532,7 @@ export class EditorView {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
     if (!on) return;
-    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
+    const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.gizmoHandle, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, ...this.icons.meshes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
     for (const n of aids) {
       if (!n || !n.isEnabled(false)) continue;
@@ -532,15 +600,52 @@ export class EditorView {
   /** Props drawn a hair apart where they lie flush on other props (propFlushLifts), worked out again when the props change. */
   private flush: { key: string; lifts: Map<string, [number, number, number]> } = { key: '', lifts: new Map() };
 
+  /** The lists the lifts were last worked out from: the same lists again need no second look (a click to select). */
+  private flushFor: { entities: readonly MapEntity[]; ceilings: readonly WorldBox[] } | null = null;
+
   private flushLifts(doc: MapDocument): Map<string, [number, number, number]> {
+    if (this.flushFor?.entities === doc.entities && this.flushFor.ceilings === this.scenario.ceilings) return this.flush.lifts;
+    this.flushFor = { entities: doc.entities, ceilings: this.scenario.ceilings };
     const key = this.scenario.ceilings.length + JSON.stringify(doc.entities.filter((e) => e.kind === 'prop' || e.kind === 'mover').map((e) => (e.kind === 'prop' ? [e.id, e.model, e.position, e.yaw, e.scale] : [e.id, e.props ?? []])));
     if (key !== this.flush.key) this.flush = { key, lifts: propFlushLifts(doc, PROP_CONTACTS, this.scenario.ceilings) };
     return this.flush.lifts;
   }
 
+  /**
+   * What each entity's marker is rebuilt on (its kind, item and every scenario property), kept per entity: the
+   * document's entities are never changed in place, so an entity seen before has the key it had (with the colour and
+   * the "driven by a mover" it had then).
+   */
+  private readonly markerKeys = new WeakMap<MapEntity, { key: string; color: string | null; driven: boolean }>();
+
+  private markerKey(e: MapEntity, color: string | null, driven: boolean): string {
+    const had = this.markerKeys.get(e);
+    if (had && had.color === color && had.driven === driven) return had.key;
+    const key = JSON.stringify({ ...e, position: null, name: null, color, driven });
+    this.markerKeys.set(e, { key, color, driven });
+    return key;
+  }
+
+  /**
+   * Where the markers were last put: an entity that has not changed is put again only when what it stands on or
+   * hangs from has (the ground as shown, the ceilings), or its own lift off a prop it lies flush on. On St. John's (3,400
+   * entities) every pointer step of a drag and every click to select placed them all again.
+   */
+  private placedOn: { ground: MapDocument['terrain']; made: MapDocument['terrain']; docGround: MapDocument['terrain']; ceilings: readonly WorldBox[]; rebed: unknown } | null = null;
+  private placeEpoch = 0;
+  /** The selection last drawn (setMap draws the entities again with it). */
+  private selectedShown: ReadonlySet<string> = new Set();
+
   setEntities(doc: MapDocument, level: number, showAll: boolean, selected: ReadonlySet<string>): void {
     const { levelHeight } = doc.classicStructure;
-    this.flushLifts(doc);
+    this.selectedShown = selected;
+    const lifts = this.flushLifts(doc);
+    const on = this.placedOn;
+    if (!on || on.ground !== this.shownTerrain || on.made !== this.groundMade || on.docGround !== doc.terrain || on.ceilings !== this.scenario.ceilings || on.rebed !== this.rebedCache) {
+      this.placedOn = { ground: this.shownTerrain, made: this.groundMade, docGround: doc.terrain, ceilings: this.scenario.ceilings, rebed: this.rebedCache };
+      this.placeEpoch++;
+    }
+    const epoch = this.placeEpoch;
     const seen = new Set<string>();
     const factions = mapFactions(doc);
     const factionColor = (id: string) => factions.find((f) => f.id === id)?.color ?? '#888888';
@@ -551,12 +656,13 @@ export class EditorView {
     const teams = mapTeams(doc, MAX_TEAMS);
     const dynamic = dynamicBlockIds(doc);
     this.scenario.dynamicBlocks = dynamic;
+    const small = new Set<string>();
     for (const e of doc.entities) {
       if (!showAll && e.position[1] > level * levelHeight + levelHeight - 0.1) continue;
       if (this.outlinerHidden(e.id)) continue;
       seen.add(e.id);
       // Rebuild a marker when the entity changed kind, item or any scenario property.
-      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : JSON.stringify({ ...e, position: null, name: null, color: e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, driven: dynamic.has(e.id) });
+      const key = e.kind === 'pickup' ? `pickup:${e.item}` : e.kind === 'spawn' ? 'spawn' : this.markerKey(e, e.kind === 'encounter' ? factionColor(e.faction) : e.kind === 'flag' ? this.scenario.teamColor(e.team) : null, dynamic.has(e.id));
       let m = this.markers.get(e.id);
       if (m && m.key !== key) {
         this.nodeEntity.delete(m.node);
@@ -572,13 +678,24 @@ export class EditorView {
       }
       const layer = e.kind === 'prop' || e.kind === 'spawn' || e.kind === 'pickup' ? e.kind : e.kind === 'mount' ? 'prop' : 'logic';
       m.node.setEnabled(!this.hiddenLayers.has(layer) && !this.hiddenKinds.has(e.kind));
+      if (isSmallThing(e)) {
+        this.icons.set(e, m.node.isEnabled(), selected.has(e.id));
+        small.add(e.id);
+      }
       if (e.kind === 'spawn') {
         m.node.position.set(e.position[0], e.position[1] + PLAYER.height / 2, e.position[2]);
         m.node.rotation.y = e.yaw;
         // Breakthrough spawn groups: the attackers' orange, the defenders' blue (the inspector says which sector).
         (m.node as Mesh).material = selected.has(e.id) ? this.mat.spawnSel : e.side ? this.teamMaterial(e.side === 'attack' ? '#ff8a3a' : '#5ab0ff') : e.faction ? this.teamMaterial(teams.find((t) => t.id === e.faction)?.color ?? '#888888') : this.mat.spawn;
       } else {
-        this.placeEntityNode(m.node as TransformNode, e, doc);
+        const lift = lifts.get(e.id);
+        const liftKey = lift ? lift[0] * 1e6 + lift[1] * 1e3 + lift[2] : 0;
+        if (m.placed !== e || m.placedEpoch !== epoch || m.placedLift !== liftKey) {
+          this.placeEntityNode(m.node as TransformNode, e, doc);
+          m.placed = e;
+          m.placedEpoch = epoch;
+          m.placedLift = liftKey;
+        }
         if (selected.has(e.id) && !m.ring) {
           m.ring = CreateCylinder(`edsel_${e.id}`, { diameter: selectionSize(e), height: 1.2, tessellation: 24 }, this.scene);
           m.ring.material = this.mat.outline;
@@ -590,6 +707,7 @@ export class EditorView {
         m.ring?.position.set(e.position[0], e.position[1] + 0.6, e.position[2]);
       }
     }
+    this.icons.keepOnly(small);
     for (const [id, m] of this.markers) {
       if (!seen.has(id)) {
         this.nodeEntity.delete(m.node);
@@ -686,8 +804,24 @@ export class EditorView {
   setGizmo(at: Vec3 | null): void {
     this.gizmo?.dispose();
     this.gizmo = undefined;
+    this.gizmoHandle?.setEnabled(false);
+    this.gizmoAt = at ? { x: at.x, y: at.y + 0.05, z: at.z } : null;
     if (!at) return;
     const o = new Vector3(at.x, at.y + 0.05, at.z);
+    // The handle at its middle, drawn over everything too: a drag on it moves the selection even when it is inside
+    // a wall or a set piece (editorInput.ts), where a click would pick what is in front.
+    if (!this.gizmoHandle) {
+      this.gizmoHandle = CreateBox('gizmoHandle', { size: 0.4 }, this.scene);
+      const mat = new StandardMaterial('gizmoHandleMat', this.scene);
+      mat.emissiveColor = new Color3(1, 1, 1);
+      mat.diffuseColor = new Color3(0, 0, 0);
+      mat.disableLighting = true;
+      this.gizmoHandle.material = mat;
+      this.gizmoHandle.isPickable = false;
+      this.gizmoHandle.renderingGroupId = 1;
+    }
+    this.gizmoHandle.position.copyFrom(o);
+    this.gizmoHandle.setEnabled(true);
     const arm = (d: Vector3) => {
       const tip = o.add(d.scale(3));
       const side = Math.abs(d.y) > 0.5 ? new Vector3(0.25, 0, 0) : new Vector3(0, 0.25, 0);
@@ -710,6 +844,9 @@ export class EditorView {
   }
 
   private ring?: LinesMesh;
+  private gizmoHandle?: Mesh;
+  /** The move gizmo's middle (its handle), or null with none shown. */
+  gizmoAt: Vec3 | null = null;
 
   /**
    * The rotate ring round the selection gizmo (rotateRing.ts): a circle on the ground plane at the gizmo, brighter when
@@ -749,21 +886,64 @@ export class EditorView {
     return this.markers.get(id)?.node.isEnabled() ?? false;
   }
 
+  /** The entity each drawn mesh belongs to ('' for a mesh that is no entity's), found once per mesh. */
+  private readonly meshOwner = new WeakMap<object, string>();
+
+  /**
+   * Where a block or a prop is and the most it can reach, for `pickEntities` (its middle, and its reach squared), or
+   * null for anything else; worked out once per entity as placed (the document's entities are never changed in place).
+   */
+  private readonly reach = new WeakMap<MapEntity, readonly number[] | null>();
+
+  private reachOf(e: MapEntity): readonly number[] | null {
+    let reach = this.reach.get(e);
+    if (reach !== undefined) return reach;
+    reach = null;
+    if (e.kind === 'block' || e.kind === 'prop') {
+      const size = e.kind === 'block' ? e.size : (getProp(e.model)?.size ?? [4, 4, 4]).map((v) => v * e.scale);
+      const r = Math.hypot(size[0]!, size[1]!, size[2]!) + 1.5;
+      reach = [e.position[0], e.position[1] + size[1]! / 2, e.position[2], r * r];
+    }
+    this.reach.set(e, reach);
+    return reach;
+  }
+
   /** Entity under a ray, by its drawn meshes: every visible entity hit, nearest first. */
   pickEntities(origin: Vec3, dir: Vec3): { id: string; distance: number }[] {
     const ray = new Ray(new Vector3(origin.x, origin.y, origin.z), new Vector3(dir.x, dir.y, dir.z), 10000);
-    const owner = (mesh: { parent: unknown }): string | undefined => {
-      for (let n = mesh.parent as TransformNode | null; n; n = n.parent as TransformNode | null) {
-        const id = this.nodeEntity.get(n);
-        if (id) return id;
-      }
-      return undefined;
+    const owner = (mesh: { parent: unknown }): string => {
+      let id = this.meshOwner.get(mesh);
+      if (id !== undefined) return id;
+      id = this.nodeEntity.get(mesh as unknown as TransformNode) ?? '';
+      for (let n = mesh.parent as TransformNode | null; n && !id; n = n.parent as TransformNode | null) id = this.nodeEntity.get(n) ?? '';
+      this.meshOwner.set(mesh, id);
+      return id;
     };
-    const hits = this.scene.multiPickWithRay(ray, (m) => m.isEnabled() && m.isVisible && (this.nodeEntity.has(m as unknown as TransformNode) || owner(m) !== undefined)) ?? [];
+    // A block or a prop the ray passes well clear of is left out before its meshes are tried (thousands of them on a
+    // big map, on every pointer move): by where it is and the most it can reach, with room for a lean or a lift.
+    const dl = Math.hypot(dir.x, dir.y, dir.z) || 1;
+    const clear = (id: string): boolean => {
+      const e = this.markers.get(id)?.placed;
+      const reach = e && this.reachOf(e);
+      if (!reach) return false;
+      const ox = reach[0]! - origin.x;
+      const oy = reach[1]! - origin.y;
+      const oz = reach[2]! - origin.z;
+      const along = (ox * dir.x + oy * dir.y + oz * dir.z) / dl;
+      return ox * ox + oy * oy + oz * oz - along * along > reach[3]!;
+    };
+    // (Whose mesh it is and whether the ray comes near it first: the two that rule out nearly every mesh. The same
+    // answer in any order.)
+    const hits =
+      this.scene.multiPickWithRay(ray, (m) => {
+        const id = owner(m);
+        if (id === '' || clear(id)) return false;
+        return m.isEnabled() && m.isVisible;
+      }) ?? [];
     const best = new Map<string, number>();
     for (const h of hits) {
       if (!h.hit || !h.pickedMesh) continue;
-      const id = this.nodeEntity.get(h.pickedMesh as unknown as TransformNode) ?? owner(h.pickedMesh);
+      const id = owner(h.pickedMesh);
       if (id && (best.get(id) ?? Infinity) > h.distance) best.set(id, h.distance);
     }
     return [...best].map(([id, distance]) => ({ id, distance })).sort((a, b) => a.distance - b.distance);
@@ -1063,9 +1243,14 @@ export class EditorView {
    * piece's cap where there is no terrain over it), drawn over everything, so a run under a hill can be followed and
    * clicked from above. Rebuilt when the pieces or the ground change.
    */
-  private showBuried(doc: MapDocument): void {
+  private showBuried(doc: MapDocument, level = 0): void {
     const lines = buriedPassageLines(doc);
-    const key = lines.length ? `${lines.map((l) => `${l.a},${l.b},${l.y}`).join(';')}|${doc.terrain ? doc.terrain.heights.length : 0}|${this.drawnCuts}|${doc.terrain === this.drawnTerrain}` : '';
+    const { cellSize, levelHeight } = doc.classicStructure;
+    // Below ground (the ground drawn as glass): the passages of the level being edited are drawn on their own floor,
+    // with their open ends (amber, closed with a plain face until a portal or a Dead End goes there) and their joints
+    // (green) marked; the other levels' stay on the ground over them.
+    const below = level < 0 && lines.some((l) => Math.round(l.y / levelHeight) === level);
+    const key = lines.length ? `${lines.map((l) => `${l.a},${l.b},${l.y}`).join(';')}|${doc.terrain ? doc.terrain.heights.length : 0}|${this.drawnCuts}|${doc.terrain === this.drawnTerrain}|${below ? level : ''}` : '';
     if (key === this.buriedKey && (!lines.length || doc.terrain === this.buriedOn)) return;
     this.buriedKey = key;
     this.buriedOn = doc.terrain;
@@ -1075,22 +1260,69 @@ export class EditorView {
     const t = doc.terrain;
     const cuts = mapGroundBores(doc).cuts;
     const dashes: Vector3[][] = [];
+    const colors: Color4[][] = [];
     const [on, off] = [0.6, 0.4];
+    const sky = new Color4(0.75, 0.9, 1, 1);
     for (const l of lines) {
+      const own = below && Math.round(l.y / levelHeight) === level;
       const len = Math.hypot(l.b[0] - l.a[0], l.b[1] - l.a[1]);
       const at = (d: number) => {
         const u = len ? d / len : 0;
         const x = l.a[0] + (l.b[0] - l.a[0]) * u;
         const z = l.a[1] + (l.b[1] - l.a[1]) * u;
+        if (own) return new Vector3(x, l.y + 0.08, z);
         const ground = t ? terrainHeightAt(t, x, z) : null;
         // On the ground over the piece; on its floor where the ground is cut away (a portal's apron) or there is none.
         const over = ground !== null && !groundCutAt(cuts, x, ground, z) ? ground : -Infinity;
         return new Vector3(x, Math.max(over, l.y + 0.05) + 0.12, z);
       };
-      for (let d = 0; d < len - 1e-6; d += on + off) dashes.push([at(d), at(Math.min(len, d + on))]);
+      // The level being edited: its passages' sides drawn whole; the others dashed.
+      if (own) {
+        dashes.push([at(0), at(len)]);
+        colors.push([sky, sky]);
+      } else {
+        for (let d = 0; d < len - 1e-6; d += on + off) {
+          dashes.push([at(d), at(Math.min(len, d + on))]);
+          colors.push([sky, sky]);
+        }
+      }
     }
-    const color = new Color4(0.75, 0.9, 1, 1);
-    this.buriedLines = CreateLineSystem('buried', { lines: dashes, colors: dashes.map((d) => d.map(() => color)) }, this.scene);
+    if (below) {
+      const { cells } = buildOccupancy(doc);
+      const half = cellSize / 2;
+      const amber = new Color4(1, 0.72, 0.2, 1);
+      const green = new Color4(0.45, 1, 0.55, 1);
+      const across = (x: number, y: number, z: number, side: Side, h: number, w: number): [Vector3, Vector3] => {
+        const [sx, sz] = side === 'N' ? [0, 1] : side === 'S' ? [0, -1] : side === 'E' ? [1, 0] : [-1, 0];
+        const cx = x * cellSize + sx * half;
+        const cz = y * cellSize + sz * half;
+        return [new Vector3(cx - sz * w, z * levelHeight + h, cz + sx * w), new Vector3(cx + sz * w, z * levelHeight + h, cz - sx * w)];
+      };
+      for (const e of buriedOpenEnds(cells, cellSize, levelHeight)) {
+        if (e.z !== level) continue;
+        // A frame across the closed end and a cross in it.
+        const [a0, b0] = across(e.x, e.y, e.z, e.side, 0.1, 1.8);
+        const [a1, b1] = across(e.x, e.y, e.z, e.side, 3, 1.8);
+        for (const seg of [[a0, b0], [a1, b1], [a0, a1], [b0, b1], [a0, b1], [b0, a1]] as [Vector3, Vector3][]) {
+          dashes.push(seg);
+          colors.push([amber, amber]);
+        }
+      }
+      for (const [k, occ] of cells) {
+        if (!occ.def.bore) continue;
+        const [x, y, z] = k.split(',').map(Number) as [number, number, number];
+        if (z !== level) continue;
+        // Each joint once, from its south or west piece: a short bar across the passage on the floor.
+        for (const side of ['N', 'E'] as const) {
+          const [dx, dy] = side === 'N' ? [0, 1] : [1, 0];
+          const next = cells.get(`${x + dx},${y + dy},${z}`);
+          if (!next?.def.bore || next.placement === occ.placement || !isOpenEdge(cells, x, y, z, side)) continue;
+          dashes.push(across(x, y, z, side, 0.1, 1.2));
+          colors.push([green, green]);
+        }
+      }
+    }
+    this.buriedLines = CreateLineSystem('buried', { lines: dashes, colors }, this.scene);
     this.buriedLines.isPickable = false;
     this.buriedLines.renderingGroupId = 1;
   }
@@ -1099,8 +1331,27 @@ export class EditorView {
   /** Redraw only the terrain (live preview while a brush is dragged). */
   previewTerrain(doc: MapDocument): void {
     this.styler.buildTerrain(doc, 'edmap');
+    this.glassBelow(this.shownLevel);
     // Built from a preview: the next setMap rebuilds it from the document.
     this.drawnTerrain = undefined;
+  }
+
+  /** The ground as glass on a level below it (with the earth under the level's floors), else as it is. */
+  private glassBelow(level: number): void {
+    const t = this.shownTerrain;
+    if (level >= 0 || !t) return this.glass.set(null);
+    const lh = this.shownLevelHeight;
+    this.glass.set({ floorY: level * lh, levelHeight: lh, min: [t.origin[0], t.origin[1]], max: [t.origin[0] + (t.cols - 1) * t.spacing, t.origin[1] + (t.rows - 1) * t.spacing] });
+  }
+
+  /** Below ground: the clear circle cut in the glass ground where the pointer's ray meets it (null: none). */
+  setGroundCut(at: { x: number; z: number } | null): void {
+    this.glass.setCut(at);
+  }
+
+  /** Whether the ground is drawn as glass (a level below ground is edited). */
+  get groundGlass(): boolean {
+    return this.glass.active;
   }
 
   /** Terrain brush outline draped over the ground; null hides it. */
@@ -1126,6 +1377,8 @@ export class EditorView {
 
   render(): void {
     this.scene.render();
+    // The frame's own look at where the canvas is (see `canvasRect`).
+    this.readCanvasRect();
   }
 }
 
@@ -1160,35 +1413,6 @@ function selectionSize(e: MapEntity): number {
     default:
       return 1.1;
   }
-}
-
-/** A quick fingerprint of a box list (positions, kinds, sources, materials): equal lists, equal strings. */
-function boxesFingerprint(boxes: readonly WorldBox[]): string {
-  let h1 = 0x811c9dc5;
-  let h2 = 0x01000193;
-  const mix = (n: number) => {
-    const v = Math.round(n * 1000) | 0;
-    h1 = Math.imul(h1 ^ v, 16777619);
-    h2 = Math.imul(h2 + v, 2246822519) ^ (h2 >>> 13);
-  };
-  const str = (t: string) => {
-    for (let i = 0; i < t.length; i++) mix(t.charCodeAt(i));
-  };
-  for (const b of boxes) {
-    mix(b.min[0]);
-    mix(b.min[1]);
-    mix(b.min[2]);
-    mix(b.max[0]);
-    mix(b.max[1]);
-    mix(b.max[2]);
-    mix(b.yaw ?? 0);
-    mix(b.pitch ?? 0);
-    mix(b.roll ?? 0);
-    str(b.kind);
-    str(b.sourceId);
-    if (b.surface) str(`${b.surface.material}${b.surface.tint ?? ''}`);
-  }
-  return `${boxes.length}:${(h1 >>> 0).toString(36)}${(h2 >>> 0).toString(36)}`;
 }
 
 /** Two grounds with the same heights, vertex for vertex. */

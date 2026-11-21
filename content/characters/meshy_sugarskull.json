@@ -6,6 +6,7 @@
   "name": "Sugar Skull",
   "look": "core.sugarskull",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "undead",
   "bio": "Dressed for the festival, stayed for the firefight.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

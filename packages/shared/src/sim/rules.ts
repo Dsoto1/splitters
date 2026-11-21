@@ -1,5 +1,5 @@
 import type { MapDocument } from '../map/schema.ts';
-import { racePath } from '../map/track.ts';
+import { racePath } from '../map/racePath.ts';
 import { TICK_RATE } from './constants.ts';
 import { mapTeams } from './npc.ts';
 
@@ -97,6 +97,11 @@ export interface MatchRules {
    */
   botCast?: string[];
   /**
+   * Themed names (Match Setup's Bots & AI; default true): random bots take their character's name and then its theme's
+   * ("Scamp", "Coco Bean", "Sgt. Dunmore"). false: general names for every random bot ("Brassneck", "Mildred").
+   */
+  themedNames?: boolean;
+  /**
    * Mix up weapon pickups: every weapon pickup not marked "keep fixed" rolls a weapon of the same category
    * as the one placed there each time it comes back (sim/pickupRoll.ts). Default off.
    */
@@ -106,6 +111,12 @@ export interface MatchRules {
    * pick up, with exactly that ammo (sim/drops.ts). Default true; never in Disc Arena or spears/discs only.
    */
   dropWeapons?: boolean;
+  /**
+   * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): picking up a second of the same small gun puts one
+   * in each hand (the weapons gunplay.ts akimboOf resolves). Default true; false: one gun at a time. The match reads
+   * it wherever dual wielding is in play (akimboReady, below); its switch stays hidden until AKIMBO_READY.
+   */
+  akimbo?: boolean;
   /**
    * Weapon set (sim/weaponSets.ts, content/weapon-sets.json: standard, military, scifi, medieval, chaos, mixed): what
    * everyone spawns with, what weapon and grenade pickups hold and what drops. Absent: the map's default
@@ -205,6 +216,29 @@ export const SCORE_LIMIT_MAX = 5000;
 
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
+
+/**
+ * Dual wielding is built in steps (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): play since step 2, the second gun
+ * drawn in first person since step 3 and in third person, for everyone else, since step 4, which set this true: a
+ * pair is made in any match whose rule allows it (MatchRules.akimbo, on by default), and Match Setup, the dedicated
+ * server's rules and the rules summaries offer the rule. False hides it all again (no pair is ever made).
+ */
+export const AKIMBO_READY: boolean = true;
+
+let akimboOn: boolean = AKIMBO_READY;
+/**
+ * Whether matches made from now on let anyone hold a pair (step 2: the match reads this, never the constant): the
+ * constant's value unless a test or a dev switch (`?akimbo=1`, through MatchOptions.akimbo) says otherwise. A match
+ * reads it once, when it is made.
+ */
+export const akimboReady = (): boolean => akimboOn;
+/** Tests: turn dual wielding on (or back to the constant's value with no argument) for the matches made after. */
+export function setAkimboReady(on: boolean = AKIMBO_READY): void {
+  akimboOn = on;
+}
+
+/** Whether a match allows dual wielding: the rule (default on, so a setup or server from before it reads as on). */
+export const akimboAllowed = (rules: Pick<MatchRules, 'akimbo'>): boolean => rules.akimbo !== false;
 
 /** Whether weapons drop on death in this match: the rule (default on), and never where it makes no sense. */
 export const dropsInPlay = (rules: MatchRules): boolean => rules.dropWeapons !== false && !restrictedWeapons(rules) && rules.mode !== 'core.discs';

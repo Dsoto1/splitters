@@ -85,6 +85,11 @@ export interface NetLabOptions {
   map?: MapDocument;
   /** Bots on the host as well (default 0: the players are the whole match). */
   botFill?: number;
+  /**
+   * Measure on past `seconds` until the players have fired this many rounds (4 × `seconds` at most); the rates are
+   * per second measured. For checks that need enough shots to judge: a busy machine runs fewer frames a second.
+   */
+  minShots?: number;
 }
 
 /** One shot, as the shooter saw it and as the host judged it. */
@@ -629,7 +634,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
   // The host's own record: where everyone was each tick, every round it fired, inputs it dropped.
   const poses = new Map<number, Map<number, HostPose>>();
   // Kept for the whole run: every shot is judged at the end.
-  const keepTicks = Math.ceil((warmup + seconds + 15) * TICK_RATE);
+  const keepTicks = Math.ceil((warmup + seconds * (o.minShots ? 4 : 1) + 15) * TICK_RATE);
   const hostShots = new Map<string, HostShot>();
   let measuring = false;
   let droppedInputs = 0;
@@ -717,7 +722,11 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
   for (const c of clients) c.measuring = true;
   const loop = monitorEventLoopDelay({ resolution: 5 });
   loop.enable();
+  const measureFrom = performance.now();
   await sleep(seconds * 1000);
+  const fired = () => clients.reduce((k, c) => k + c.shots.length, 0);
+  while (o.minShots && fired() < o.minShots && performance.now() - measureFrom < seconds * 4000) await sleep(100);
+  const measured = o.minShots ? (performance.now() - measureFrom) / 1000 : seconds;
   for (const c of clients) c.measuring = false;
   measuring = false;
   loop.disable();
@@ -776,7 +785,7 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
   const result: NetLabResult = {
     condition: o.condition,
     clients: n,
-    seconds,
+    seconds: Math.round(measured * 10) / 10,
     weapon: weaponId,
     rtt: { p50: Math.round(pct(rtts, 0.5)), p95: Math.round(pct(rtts, 0.95)) },
     shots: shots.length,
@@ -793,13 +802,13 @@ export async function runNetLab(o: NetLabOptions): Promise<NetLabResult> {
     lagCompAheadCm: { p95: Math.round(pct(lagAheadCm, 0.95)), shots: lagAheadCm.length },
     clampedShots: clamped,
     confirmMs: { p50: Math.round(pct(confirmTimes, 0.5)), p95: Math.round(pct(confirmTimes, 0.95)) },
-    correctionsPerMin: Math.round((corrections.length / n / seconds) * 60 * 10) / 10,
+    correctionsPerMin: Math.round((corrections.length / n / measured) * 60 * 10) / 10,
     correctionCm: { p50: Math.round(pct(corrections, 0.5) * 100), p95: Math.round(pct(corrections, 0.95) * 100), max: Math.round(pct(corrections, 1) * 100) },
-    hitCorrectionsPerMin: Math.round((hitCorrections.length / n / seconds) * 60 * 10) / 10,
+    hitCorrectionsPerMin: Math.round((hitCorrections.length / n / measured) * 60 * 10) / 10,
     hitCorrectionCm: Math.round(pct(hitCorrections, 0.95) * 100),
-    killsPerMin: Math.round((kills / seconds) * 60),
-    downKBps: Math.round((bytes.filter((_, i) => i % 2 === 1).reduce((s, b) => s + b, 0) / n / seconds / 1024) * 10) / 10,
-    upKBps: Math.round((bytes.filter((_, i) => i % 2 === 0).reduce((s, b) => s + b, 0) / n / seconds / 1024) * 10) / 10,
+    killsPerMin: Math.round((kills / measured) * 60),
+    downKBps: Math.round((bytes.filter((_, i) => i % 2 === 1).reduce((s, b) => s + b, 0) / n / measured / 1024) * 10) / 10,
+    upKBps: Math.round((bytes.filter((_, i) => i % 2 === 0).reduce((s, b) => s + b, 0) / n / measured / 1024) * 10) / 10,
     snapshotGapMs: { p95: Math.round(pct(gaps, 0.95)), max: Math.round(pct(gaps, 1)) },
     lostPackets: lost,
     labStallMs: { p99: Math.round(loop.percentile(99) / 1e6), max: Math.round(loop.max / 1e6) },

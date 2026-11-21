@@ -10,7 +10,9 @@
 // into the room. The open door's frame stands `back` m behind the prop's centre (−z), so its box is the frame and the
 // leaf and no more (a set piece's footprint must hold a prop's whole box: map/setPieceCheck.ts). Leaves (`leaf`): 'plank' (boards under three iron strap hinges, a
 // ring handle each side, ledges on the room side), 'glazed' (a framed door, reeded glass in its upper half behind
-// glazing bars) and 'panel' (framed, a diamond of mouldings on each panel).
+// glazing bars), 'panel' (framed, a diamond of mouldings on each panel), and for the painted doors of Tileset 11
+// (kit.door.painted): 'framed' (a plain two-panel house door) and 'shop' (a kick plate under one tall pane); their
+// furniture is a knob and a letter plate (`handle: 'knob'`) or an upright pull bar (`'pull'`) instead of the ring.
 //
 // The desk (`deskhutch`) is a pedestal desk with a hutch of shelves along its back, books on them; its front is +z.
 // It collides as two boxes, the desk and the hutch, open over the desk top in front of the hutch. The closet
@@ -22,8 +24,9 @@
 // Level 1 keeps the outline (frame, leaf, straps; desk, hutch and shelves; case and door); level 2 is a few boxes.
 
 import { rng } from '../env/rng.mjs';
-import { Mesh, bar, box, hex, quad, quadN, scale3, standIn, triN } from './geom.mjs';
+import { Mesh, bar, box, disc, hex, lathe, quad, quadN, scale3, standIn, triN } from './geom.mjs';
 import { woodTone } from './crate.mjs';
+import { seatMesh } from './furniture.mjs';
 
 const lerp = (p, q, t) => p + (q - p) * t;
 
@@ -53,7 +56,7 @@ const LEAF_T = 0.07;
 
 /**
  * An oak door in its frame. Settings `g`: `swing` (degrees the leaf stands open, toward +z), `leaf` ('plank',
- * 'glazed' or 'panel'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
+ * 'glazed', 'panel', 'framed' or 'shop'), `handle` ('ring', 'knob' or 'pull'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
  * glazed leaf's pane), `jitter`, `grime`.
  */
 export function doorMesh(seed, size, g, look, level) {
@@ -67,10 +70,12 @@ export function doorMesh(seed, size, g, look, level) {
   const r = rng(seed);
   const m = new Mesh();
   const tone = (c, k) => woodTone(c, r, look, seed + k);
-  // Shut and ajar collide as the frame's slab; open (collide: "none") gives no box.
+  // Shut and ajar collide as the frame's slab (a closed room). Open collides as its leaf, standing square into the
+  // room on its hinges: cover to hide behind, wood that rounds go through (owner, 2026-11-19: "i would like to hide
+  // behind doors for cover"); the doorway beside it stays clear for players and bots.
+  const back = g.back ?? 0;
   if (level === 0 && (g.swing ?? 0) < 60) m.boxes = [[-X, 0, -FRAME_Z, X, h, FRAME_Z]];
   // The frame: two posts and a head, the full depth.
-  const back = g.back ?? 0;
   const fc = tone(frameC, 1);
   box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
   box(m, [X - FRAME, 0, -FRAME_Z - back], [X, h, FRAME_Z - back], fc, ['ny']);
@@ -84,12 +89,27 @@ export function doorMesh(seed, size, g, look, level) {
   const zf = LEAF_T / 2;
   const [c, s] = [Math.cos(swing), Math.sin(swing)];
   const T = ([x, y, z]) => [hx + (x - hx) * c + (z - zf) * s, y, zf - (x - hx) * s + (z - zf) * c - back];
+  if (level === 0 && (g.swing ?? 0) > 0 && (g.swing ?? 0) < 60) {
+    // Ajar: the leaf too, at its angle (owner, 2026-11-19, "2b": cover as the open leaf is), beside the frame's slab:
+    // the leaf's box built shut, its middle turned on the hinges, and the turn as the box's own (a seventh number).
+    const [mx, , mz] = T([(lx + hx) / 2, 0, 0]);
+    const hw = (hx - lx) / 2;
+    m.boxes.push([mx - hw, 0, mz - zf, mx + hw, y1, mz + zf, swing]);
+  }
+  if (level === 0 && (g.swing ?? 0) >= 60) {
+    // The leaf's bounds as it stands open (square at 90°: its own box), floor to its top edge.
+    const pts = [[lx, 0, -zf], [hx, 0, -zf], [lx, 0, zf], [hx, 0, zf]].map(T);
+    const xs = pts.map((p) => p[0]);
+    const zs = pts.map((p) => p[2]);
+    m.boxes = [[Math.min(...xs), 0, Math.min(...zs), Math.max(...xs), y1, Math.max(...zs)]];
+  }
   const iron = (p, n) => scale3(ironC, n[1] > 0.5 ? 1.5 : 1);
   if (level >= 2) {
     tbox(m, T, [lx, y0, -zf], [hx, y1, zf], scale3(wood, 0.9), ['ny']);
     return m;
   }
   const fine = level === 0;
+  const st0 = 0.16;
   if (kind === 'plank') {
     // Boards side by side, each its own tone; the outer ones keep their edges.
     const n = fine ? 7 : 1;
@@ -114,7 +134,8 @@ export function doorMesh(seed, size, g, look, level) {
   } else {
     // A framed door: stiles and rails round a panel set back; the lock rail divides it.
     const st = 0.16;
-    const lock = [0.95, 1.17];
+    // (The shop door's lock rail is a kick plate's height up: glass from there to the top rail.)
+    const lock = kind === 'shop' ? [0.34, 0.5] : [0.95, 1.17];
     const rail = tone(wood, 11);
     const field = tone(scale3(wood, 0.86), 12);
     tbox(m, T, [lx, y0, -zf], [lx + st, y1, zf], rail, ['ny']);
@@ -122,6 +143,12 @@ export function doorMesh(seed, size, g, look, level) {
     for (const [ya, yb] of [[y0, y0 + 0.24], lock, [y1 - st, y1]]) tbox(m, T, [lx + st, ya, -zf], [hx - st, yb, zf], rail, ['nx', 'px', ...(ya === y0 ? ['ny'] : [])]);
     const panels = [[y0 + 0.24, lock[0]], [lock[1], y1 - st]];
     panels.forEach(([ya, yb], i) => {
+      if (kind === 'shop' && i === 1) {
+        // One clear pane the leaf's height (drawn as dark glass with the sky's light in its upper part: nothing is seen through a kit prop).
+        const pane = hex(look.glass ?? '#4c6672');
+        tbox(m, T, [lx + st, ya, -0.006], [hx - st, yb, 0.006], (p) => scale3(pane, 0.7 + 0.45 * ((p[1] - ya) / (yb - ya))), ['nx', 'px', 'ny', 'py']);
+        return;
+      }
       const glazed = kind === 'glazed' && i === 1;
       if (glazed) {
         // Reeded glass (a pale pane, opaque), a glazing bar down the middle and one across.
@@ -151,9 +178,34 @@ export function doorMesh(seed, size, g, look, level) {
     // Three butt hinges on the hall side.
     for (const y of [0.3, h * 0.5, y1 - 0.3]) tbox(m, T, [hx - 0.012, y - 0.07, -zf - 0.012], [hx + 0.02, y + 0.07, -zf], iron, ['pz']);
   }
-  // A ring handle each side: a plate, a boss, a ring hanging from it; a keyhole plate under it.
   const rxc = lx + 0.2;
   const ryc = 1.06;
+  if ((g.handle ?? 'ring') !== 'ring') {
+    // A painted door's furniture, each side: a knob on a back plate (`handle: 'knob'`) or a shop door's upright pull bar on two standoffs (`'pull'`).
+    for (const face of [-1, 1]) {
+      const zs = face * zf;
+      const out = (d) => zs + face * d;
+      const span = (a, b) => [Math.min(a, b), Math.max(a, b)];
+      const skip = [face > 0 ? 'nz' : 'pz'];
+      if (g.handle === 'pull') {
+        const x = lx + st0 / 2;
+        const [za, zb] = span(out(0.02), out(0.042));
+        tbox(m, T, [x - 0.014, 0.8, za], [x + 0.014, 1.5, zb], iron);
+        const [zc, zd] = span(zs, out(0.02));
+        for (const y of [0.88, 1.42]) tbox(m, T, [x - 0.012, y - 0.012, zc], [x + 0.012, y + 0.012, zd], iron, skip);
+      } else {
+        const x = lx + 0.085;
+        const [za, zb] = span(zs, out(0.008));
+        tbox(m, T, [x - 0.03, ryc - 0.09, za], [x + 0.03, ryc + 0.09, zb], iron, skip);
+        const [zc, zd] = span(out(0.008), out(0.04));
+        tbox(m, T, [x - 0.026, ryc - 0.026, zc], [x + 0.026, ryc + 0.026, zd], iron, skip);
+      }
+      // A letter plate in the lock rail of a house door (a plain flap: no words).
+      if (fine && g.handle === 'knob' && face < 0) tbox(m, T, [(lx + hx) / 2 - 0.13, 1.03, out(0.006)], [(lx + hx) / 2 + 0.13, 1.09, zs], iron, ['pz']);
+    }
+    return m;
+  }
+  // A ring handle each side: a plate, a boss, a ring hanging from it; a keyhole plate under it.
   for (const face of [-1, 1]) {
     const zs = face * zf;
     const out = (d) => zs + face * d;
@@ -377,6 +429,130 @@ export function closetFrontMesh(seed, size, g, look, level) {
   if (fine) {
     const hx = right ? xa : xb - 0.02;
     for (const y of [ya + 0.2, yb - 0.26]) box(m, [hx, y, zd], [hx + 0.02, y + 0.07, Z], metal, ['nz']);
+  }
+  return m;
+}
+
+// ---------------------------------------------------------------- the conical roof
+
+/**
+ * A turret's conical roof (St. John's step 3; docs/map-briefs/st_johns): a shingled cone over a short eaves skirt, a
+ * finial on top. It fills its bounds: [-w/2, w/2] × [0, h] × [-d/2, d/2], round in plan (w = d), the eaves' ring
+ * touching the box's sides. Settings `g`: `segments` per level, `eaves` (the skirt's height, m), `finial` (its height,
+ * m). `look`: `roof` (hex: the shingles), `trim` (hex: the finial), `jitter` (shingle courses' tone), `grime`.
+ * Collides as three stacked boxes, a stepped cone (nobody stands on it; shots stop at it).
+ */
+export function spireMesh(seed, size, g, look, level) {
+  const [w, h] = size;
+  const R = w / 2;
+  const seg = g.segments[Math.min(level, g.segments.length - 1)];
+  const eaves = g.eaves ?? 0.25;
+  const fin = g.finial ?? 0.9;
+  const top = h - fin;
+  const roof = hex(look.roof);
+  const trim = hex(look.trim ?? '#2a2c30');
+  const r = rng(seed);
+  const m = new Mesh();
+  if (level === 0) {
+    const H = top - eaves;
+    m.boxes = [0, 1, 2].map((k) => {
+      const rr = R * (1 - k / 3) * 0.92;
+      return [-rr, k === 0 ? 0 : eaves + (H * k) / 3, -rr, rr, eaves + (H * (k + 1)) / 3, rr];
+    });
+  }
+  // Courses of shingles: a band of tone each, darker under each course's lip (a step in the profile at level 0).
+  const courses = level === 0 ? 9 : level === 1 ? 4 : 1;
+  const tones = Array.from({ length: courses + 1 }, () => 1 + r.range(-1, 1) * (look.jitter ?? 0.06));
+  const prof = [[R * 0.97, 0], [R, eaves * 0.4], [R, eaves]];
+  const H = top - eaves;
+  for (let k = 0; k < courses; k++) {
+    const y0 = eaves + (H * k) / courses;
+    const y1 = eaves + (H * (k + 1)) / courses;
+    const ra = R * (1 - k / courses) * 0.96;
+    const rb = R * (1 - (k + 1) / courses) * 0.96;
+    if (level === 0 && k > 0) prof.push([ra * 1.04, y0]);
+    prof.push([ra, y0 + (level === 0 ? 0.02 : 0)]);
+    if (k === courses - 1) prof.push([Math.max(0.02, rb), y1]);
+  }
+  const grime = look.grime ?? 0.2;
+  const shade = (p, n, row) => {
+    const band = Math.min(courses, Math.max(0, Math.floor(((p[1] - eaves) / Math.max(0.01, H)) * courses)));
+    const low = p[1] < eaves + 0.01 ? 0.7 : 1;
+    return scale3(roof, tones[band] * low * (1 - grime * 0.3 * (1 - p[1] / h)));
+  };
+  lathe(m, prof, seg, shade, { hard: [2] });
+  // The eaves' underside, a dark ring.
+  disc(m, R * 0.97, 0.002, seg, scale3(roof, 0.35), { down: true });
+  // The finial: a rod, a ball, a spike.
+  if (level < 2) {
+    const s2 = Math.max(6, seg / 2);
+    lathe(m, [[0.05, top - 0.05], [0.05, top + fin * 0.45], [0.11, top + fin * 0.5], [0.12, top + fin * 0.58], [0.11, top + fin * 0.66], [0.035, top + fin * 0.7], [0.01, h]], s2, () => trim);
+  } else lathe(m, [[0.06, top], [0.01, h]], 4, () => trim);
+  return m;
+}
+
+// ---------------------------------------------------------------- the paired dorm furniture
+
+/** `sub` appended to `m` turned `turn` quarter turns about +Y (local +x to −z, as a prop's yaw) and moved by `at`. */
+function placeMesh(m, sub, turn, at) {
+  const c = [1, 0, -1, 0][turn & 3];
+  const s = [0, 1, 0, -1][turn & 3];
+  const o = m.vertexCount;
+  for (let i = 0; i < sub.P.length; i += 3) {
+    const [x, y, z] = [sub.P[i], sub.P[i + 1], sub.P[i + 2]];
+    const [nx, ny, nz] = [sub.N[i], sub.N[i + 1], sub.N[i + 2]];
+    m.P.push(at[0] + x * c + z * s, at[1] + y, at[2] - x * s + z * c);
+    m.N.push(nx * c + nz * s, ny, -nx * s + nz * c);
+  }
+  m.UV.push(...sub.UV);
+  m.C.push(...sub.C);
+  m.W.push(...sub.W);
+  for (const i of sub.I) m.I.push(i + o);
+}
+
+/**
+ * A dorm room's two desks with hutches side by side along a wall, a chair pushed in at each (St. John's step 4: one
+ * prop where there were four, so a room costs fewer of the map's 4,096 entities). Its front is +z; the desks are
+ * `desk` (the Desk with Hutch's size) at x = ±(w − desk w) / 2 against −z, the chairs `chair` (the Chair's size) in
+ * front of them, turned to face the desks, `tuck` m from a desk's middle to its chair's. Settings `g`: the desk's and
+ * the chair's generator settings (`deskG`, `chairG`; `leftG` and `rightG` over `deskG` for one desk), `desk`, `chair`,
+ * `tuck`, `chairs` (false: no chairs: a shut room's desks), `seeds` (optional [left desk, right desk, chairs]: the
+ * separate pieces' own seeds, so the pair looks as they did). `look`: `left` and `right` (the desks' looks: −x and +x), `chair` (the chairs'). Collides as the two
+ * desks' boxes (desk and hutch each); the chairs, pushed in, do not (as the separate chairs did not: `solid: false`).
+ */
+export function deskPairMesh(seed, size, g, look, level) {
+  const [w, , d] = size;
+  const [dw, , dd] = g.desk;
+  const dx = (w - dw) / 2;
+  const dz = -d / 2 + dd / 2;
+  const m = new Mesh();
+  const boxes = [];
+  for (const [k, sx] of [[0, -1], [1, 1]]) {
+    const desk = deskHutchMesh(g.seeds?.[k] ?? seed + k * 7, g.desk, { ...g.deskG, ...(sx < 0 ? g.leftG : g.rightG) }, sx < 0 ? look.left : look.right, level);
+    placeMesh(m, desk, 0, [sx * dx, 0, dz]);
+    for (const b of desk.boxes ?? []) boxes.push([b[0] + sx * dx, b[1], b[2] + dz, b[3] + sx * dx, b[4], b[5] + dz]);
+    if (g.chairs !== false) {
+      const chair = seatMesh(g.seeds?.[2] ?? seed + 20 + k, g.chair, g.chairG, look.chair, level);
+      placeMesh(m, chair, 2, [sx * dx, 0, dz + g.tuck]);
+    }
+  }
+  if (level === 0) m.boxes = boxes;
+  return m;
+}
+
+/**
+ * The two built-in closet fronts either side of a dorm room's doorway (St. John's step 4: one prop where there were
+ * two): each the Built-in Closet Front (`front`, its size) at x = ±(w − front w) / 2, facing +z, nothing between
+ * them. No collision (the wall behind is the closets). Settings `g`: `front`, `frontG` (the front's generator
+ * settings), `pulls` ('out': each pull on the side away from the doorway; else both as `frontG.pull`). `look`: the fronts' look.
+ */
+export function closetPairMesh(seed, size, g, look, level) {
+  const [w] = size;
+  const fx = (w - g.front[0]) / 2;
+  const m = new Mesh();
+  for (const [k, sx] of [[0, -1], [1, 1]]) {
+    const pull = g.pulls === 'out' ? (sx < 0 ? 'left' : 'right') : g.frontG?.pull ?? 'right';
+    placeMesh(m, closetFrontMesh(seed + k * 5, g.front, { ...g.frontG, pull }, look, level), 0, [sx * fx, 0, 0]);
   }
   return m;
 }

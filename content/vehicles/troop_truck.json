@@ -4,6 +4,7 @@
   "displayName": "Troop Truck",
   "kind": "vehicle",
   "model": "vehicles/troop_truck.glb",
+  "paint": 0.5,
   "rideHeight": 0.354,
   "wheels": {
     "model": "vehicles/offroad_tire.glb",
@@ -55,6 +56,7 @@
     "half": "Fitted to the whole truck, tires included (owner, 2026-11-11): 2.8 × 2.54 × 5.6 m.",
     "seats": "Measured on the model (slices of its triangles): the cab, a closed shell (no seats of its own), from z 0.3 to the windscreen at 2.3, roof 2.3-2.5 m up; the two in it sit on cushions 1.2 m up at z 1.1, 0.45 m either side. The flatbed is 1.6 m up from z -0.1 to the tail at -2.8, 2.4 m wide, open overhead; four riders stand on it two by two (x ±0.55, z -0.9 and -2.0), like the Buggy's deck riders. No mounted gun.",
     "cockpitEye": "A seated head height in the driver's seat, under the cab roof, behind the windscreen.",
-    "vehicle": "Wheeled heavy, from the Armored Rover (14 m/s, accel 7, turn 1.25, grip 0.38, mass 3.6): a little quicker (16 m/s, accel 8.5, turn 1.4), still heavy and grippy (grip 0.36, mass 3: it rams like the heavies and loses little in a crash); stiff truck springs on six wheels, barely loose at speed (drift 0.15). The suspension's contact points and hub height are unchanged; the rear two pairs of tires are drawn 4.5 cm off theirs (see model)."
+    "vehicle": "Wheeled heavy, from the Armored Rover (14 m/s, accel 7, turn 1.25, grip 0.38, mass 3.6): a little quicker (16 m/s, accel 8.5, turn 1.4), still heavy and grippy (grip 0.36, mass 3: it rams like the heavies and loses little in a crash); stiff truck springs on six wheels, barely loose at speed (drift 0.15). The suspension's contact points and hub height are unchanged; the rear two pairs of tires are drawn 4.5 cm off theirs (see model).",
+    "paint": "Half strength (owner, 2026-11-17, \"1a 2a\"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange)."
   }
 }

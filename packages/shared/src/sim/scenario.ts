@@ -25,6 +25,8 @@ import {
   entityPos,
   localToWorld,
   oboxAabb,
+  orientedAabb,
+  bodyInAabb,
   playerInOBox,
   pointInOBox,
   trapDamage,
@@ -1268,14 +1270,16 @@ export class Scenario {
   inShutDoor(pos: Vec3, radius: number): boolean {
     for (const d of this.doors.values()) {
       if (d.open >= 0.9) continue;
-      const b = this.doorPlane(d);
-      if (pos.x + radius > b.min.x && pos.x - radius < b.max.x && pos.z + radius > b.min.z && pos.z - radius < b.max.z && pos.y + PLAYER.height > b.min.y && pos.y < b.max.y) return true;
+      // (A door turned off the grid by its own slab, not the square round it: bodyInAabb.)
+      if (bodyInAabb(this.doorPlane(d), pos, radius, PLAYER.height)) return true;
     }
     return false;
   }
 
+  /** A door's own plane: its bounds, and for a door turned off the grid the turned slab itself (Aabb.obox). */
   private doorPlane(d: DoorRt): Aabb {
-    return oboxAabb({ ...doorway(d.e), half: { ...doorway(d.e).half, z: DOOR.thickness } });
+    const way = doorway(d.e);
+    return orientedAabb({ ...way, half: { ...way.half, z: DOOR.thickness } });
   }
 
   /**

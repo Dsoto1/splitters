@@ -2,7 +2,7 @@ import { ENV_SPECIES, envVariant, getEnvSpecies, isEnvModel, type EnvCategory, t
 import { createRng } from '../math.ts';
 import type { MapDocument, MapEntity, PropEntity } from '../map/schema.ts';
 import { settledPropY } from '../map/settle.ts';
-import { TERRAIN_MATERIALS, terrainHeightAt, type TerrainData, type TerrainMaterial } from '../map/terrain.ts';
+import { cellKind, terrainHeightAt, type TerrainData, type TerrainMaterial } from '../map/terrain.ts';
 import { pathGeometry } from '../map/track.ts';
 import { placementCells } from './operations.ts';
 import { allowedScale } from './propRandom.ts';
@@ -67,29 +67,35 @@ interface EnvPreset {
   density: number;
 }
 
-/** Biome presets (§8). A preset only sets the mix and filters: any species can be added to any mix. */
+/**
+ * Biome presets (§8). A preset only sets the mix and filters: any species can be added to any mix. Environment Phase 4
+ * appended its species to the mixes (more variety; the earlier entries and their order kept). Phase 5: Jungle gains the jungle set (the
+ * jungle tree with its lianas, the tree fern, the elephant ear); Alpine reads lighter and more open (the spruce in its
+ * lighter `alpine` look and fewer of it, more mountain pines and larches, a little less dense), as the owner's lead saw
+ * the dark spruces stand as solid cones.
+ */
 export const ENV_PRESETS: Record<EnvPresetId, EnvPreset> = {
   temperate: {
     label: 'Temperate woods',
-    species: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2, 'any'], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.rock.pebbles', 1]],
+    species: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2, 'any'], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.rock.pebbles', 1], ['env.broadleaf.birch', 2], ['env.grass.tall', 3]],
     materials: ['grass', 'dirt', 'moss', 'mud'],
     density: 6,
   },
   jungle: {
     label: 'Jungle',
-    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss']],
+    species: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5, 'moss'], ['env.grass.tall', 3], ['env.succulent.agave', 1, 'green'], ['env.broadleaf.jungle', 2], ['env.fern.tree_fern', 3], ['env.shrub.elephant_ear', 4]],
     materials: ['grass', 'dirt', 'moss', 'mud', 'sand'],
     density: 10,
   },
   alpine: {
     label: 'Alpine',
-    species: [['env.conifer.spruce', 4], ['env.conifer.pine_tall', 3], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1]],
+    species: [['env.conifer.spruce', 1.5, 'alpine'], ['env.conifer.pine_tall', 2], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1], ['env.conifer.mountain_pine', 4], ['env.conifer.larch', 3], ['env.shrub.juniper', 3], ['env.grass.tussock', 3], ['env.flower.alpine', 2, 'any'], ['env.rock.boulder_shard', 1.5]],
     materials: ['grass', 'dirt', 'stone', 'gravel', 'snow', 'moss'],
-    density: 4,
+    density: 3,
   },
   arid: {
     label: 'Arid',
-    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1]],
+    species: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1, 'dry'], ['env.shrub.laurel', 1, 'dry'], ['env.grass.clump', 3, 'dry'], ['env.rock.pebbles', 2, 'sand'], ['env.rock.boulder_angular', 1], ['env.cactus.barrel', 2, 'any'], ['env.succulent.agave', 2], ['env.shrub.sagebrush', 3], ['env.grass.tussock', 2, 'straw'], ['env.flower.desert', 1, 'any'], ['env.rock.sandstone', 1, 'any'], ['env.broadleaf.olive', 0.5], ['env.conifer.cypress', 0.5]],
     materials: ['sand', 'dirt', 'gravel', 'stone'],
     density: 3,
   },
@@ -105,6 +111,12 @@ export function presetSpecies(id: EnvPresetId): EnvBrushSpecies[] {
     const variant = name === 'any' ? 'any' : name ? s.variants.find((v) => v.name === name)?.index : undefined;
     return { model: s.id, weight, ...(variant !== undefined && variant !== 0 ? { variant } : {}) };
   });
+}
+
+/** Whether the brush's ground filter lets it paint on `material` (null: a floor or off the terrain, always allowed). */
+export function groundAllowed(brush: EnvBrush, material: TerrainMaterial | null): boolean {
+  const mats = brush.filters.materials;
+  return mats === null || material === null || mats.includes(material);
 }
 
 /** The brush with a preset picked: its mix, density and ground; size, turn, radius, seed and the other filters kept. */
@@ -225,7 +237,7 @@ export function blockingPlacement(doc: MapDocument, model: string, x: number, z:
   return keepClearHit(zones, x, z, envImpact(model, variant).reach * scale);
 }
 
-/** The ground under a point: its height, slope (degrees) and terrain material (null off the terrain or on a floor). */
+/** The ground under a point: its height, slope (degrees) and the kind of ground it is (terrain.ts groundKind; null off the terrain or on a floor). */
 export interface GroundSample {
   y: number;
   slope: number;
@@ -245,7 +257,7 @@ export function groundSampler(t: TerrainData | null, floorY = 0): (x: number, z:
     const slope = (Math.atan(Math.hypot(gx, gz)) * 180) / Math.PI;
     const c = Math.min(t.cols - 2, Math.floor((x - t.origin[0]) / t.spacing));
     const r = Math.min(t.rows - 2, Math.floor((z - t.origin[1]) / t.spacing));
-    const material = TERRAIN_MATERIALS[t.materials[r * (t.cols - 1) + c] ?? 0] ?? null;
+    const material = cellKind(t, r * (t.cols - 1) + c);
     return { y, slope, material };
   };
 }
@@ -275,6 +287,8 @@ export interface EnvDabResult {
   plants: NewProp[];
   /** Turned away by slope, altitude, ground material or a building. */
   filtered: number;
+  /** Of those, turned away by the ground material alone (the brush's ground filter: a preset's ground, MapMaker says so). */
+  wrongGround: number;
   /** Held back to keep spawns, routes and objectives clear. */
   keptClear: number;
   /** The first zone a plant was held back from (the status line names it). */
@@ -298,7 +312,7 @@ export interface EnvDabContext {
  * within itself; undergrowth keeps off trunks), filtered, kept clear and within budget. Deterministic.
  */
 export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: number, ctx: EnvDabContext): EnvDabResult {
-  const result: EnvDabResult = { plants: [], filtered: 0, keptClear: 0, clearOf: null, overBudget: false };
+  const result: EnvDabResult = { plants: [], filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null, overBudget: false };
   const mix = brush.species.map((m) => ({ m, s: getEnvSpecies(m.model) })).filter((x): x is { m: EnvBrushSpecies; s: EnvSpeciesData } => !!x.s && x.m.weight > 0);
   const total = mix.reduce((n, x) => n + x.m.weight, 0);
   if (!mix.length || total <= 0) return result;
@@ -322,7 +336,6 @@ export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: num
   const tries = target * 4;
   const [smin, smax] = brush.size[0] <= brush.size[1] ? brush.size : [brush.size[1], brush.size[0]];
   const [amin, amax] = brush.filters.altitude;
-  const mats = brush.filters.materials;
   for (let i = 0; i < tries && result.plants.length < target; i++) {
     // Every try draws the same numbers, so one filter's verdict never shifts the next try's plant.
     const a = rand() * Math.PI * 2;
@@ -343,9 +356,12 @@ export function envBrushDab(doc: MapDocument, brush: EnvBrush, x: number, z: num
       continue;
     }
     const steepest = Math.min(brush.filters.slope[1], s.placement.maxSlopeDegrees);
-    const offGround = g.slope < brush.filters.slope[0] || g.slope > steepest || (amin !== null && g.y < amin) || (amax !== null && g.y > amax) || (mats !== null && g.material !== null && !mats.includes(g.material));
-    if (offGround || built.has(`${Math.round(px / cs)},${Math.round(pz / cs)}`)) {
+    const offShape = g.slope < brush.filters.slope[0] || g.slope > steepest || (amin !== null && g.y < amin) || (amax !== null && g.y > amax);
+    const offMaterial = !groundAllowed(brush, g.material);
+    const inside = built.has(`${Math.round(px / cs)},${Math.round(pz / cs)}`);
+    if (offShape || offMaterial || inside) {
       result.filtered++;
+      if (offMaterial && !offShape && !inside) result.wrongGround++;
       continue;
     }
     const [lo, hi] = allowedScale(s.id);

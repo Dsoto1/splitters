@@ -6,6 +6,8 @@
   "name": "Virtua Soldier",
   "look": "core.polysoldier",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Low-poly, high morale. Counts his edges before every drop and has never come up one short.",
   "body": "male",
@@ -24,9 +26,6 @@
     "metallic": 0,
     "roughness": 0.8
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
@@ -35,11 +34,6 @@
         "mitten": true,
         "curl": 0.9
       }
-    },
-    "grip": {
-      "gripLong": [-0.03, 0.015, -0.03],
-      "supportLong": [-0.02, 0, 0],
-      "supportPistol": [-0.04, 0.02, -0.04]
     }
   }
 }

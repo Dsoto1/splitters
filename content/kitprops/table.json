@@ -610,6 +610,290 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.table.desk_hutch_pair",
+      "displayName": "Desks with Hutches (pair)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a dorm room's two Desks with Hutches side by side, 0.15 m apart, a Chair pushed in at each, as one prop: what were four props a room is one (a map as played holds at most 4,096 entities). Collides as the two desks' boxes (desk and hutch each, as a Desk with Hutch does); the chairs, pushed in, do not (as the separate ones, placed not solid, did not). Variant 'empty': the same desks without chairs (a shut room)."
+      },
+      "size": [
+        2.95,
+        1.7,
+        0.8
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "deskpair",
+        "desk": [
+          1.4,
+          1.7,
+          0.65
+        ],
+        "chair": [
+          0.404,
+          0.95,
+          0.404
+        ],
+        "tuck": 0.273,
+        "deskG": {
+          "desk": 0.76,
+          "hutch": 0.3,
+          "drawers": 3,
+          "shelves": 2,
+          "books": 0.7
+        },
+        "leftG": {
+          "books": 0.12
+        },
+        "chairG": {
+          "seat": 0.485,
+          "seatT": 0.035,
+          "leg": 0.04,
+          "back": 0.15,
+          "slats": 3
+        },
+        "seeds": [
+          9994,
+          9991,
+          8201
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 10101,
+          "look": {
+            "left": {
+              "wood": "#9a744a",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.3
+            },
+            "right": {
+              "wood": "#a67c4e",
+              "back": "#8a6540",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.25
+            },
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            }
+          }
+        },
+        {
+          "index": 1,
+          "name": "empty",
+          "seed": 10102,
+          "set": {
+            "chairs": false
+          },
+          "look": {
+            "left": {
+              "wood": "#9a744a",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.3
+            },
+            "right": {
+              "wood": "#a67c4e",
+              "back": "#8a6540",
+              "metal": "#3a3c40",
+              "jitter": 0.07,
+              "grime": 0.25
+            },
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.school_desks",
+      "displayName": "School Desks (row of four)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5): four single school desks in a row, two each side of a 0.7 m aisle, each a wooden top on a steel frame with a book shelf, a Chair pushed in at each on +z (pupils face -z): what would be eight props is one (a map as played holds at most 4,096 entities). Collides as the four desks' boxes; the chairs, pushed in, do not. Variant 'empty': no chairs."
+      },
+      "size": [
+        3.5,
+        0.95,
+        0.95
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "schooldesks",
+        "desk": [
+          0.65,
+          0.74,
+          0.5
+        ],
+        "aisle": 0.7,
+        "gap": 0.1,
+        "chair": [
+          0.404,
+          0.95,
+          0.404
+        ],
+        "chairG": {
+          "seat": 0.46,
+          "seatT": 0.035,
+          "leg": 0.04,
+          "back": 0.15,
+          "slats": 0,
+          "rails": 2
+        },
+        "tuck": 0.32
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 21031,
+          "look": {
+            "top": "#b48a5a",
+            "steel": "#3a3c40",
+            "chair": {
+              "wood": "#a67c4e",
+              "jitter": 0.08,
+              "grime": 0.25
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 21032,
+          "look": {
+            "top": "#c4a274",
+            "steel": "#3f5a45",
+            "chair": {
+              "wood": "#55684a",
+              "jitter": 0.08,
+              "grime": 0.25
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "empty",
+          "seed": 21033,
+          "set": {
+            "chairs": false
+          },
+          "look": {
+            "top": "#b48a5a",
+            "steel": "#3a3c40",
+            "chair": {
+              "wood": "#a67c4e"
+            },
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.altar",
+      "displayName": "Altar",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9, photos 11 and 21): a pale stone altar 2.2 m wide under a white cloth, a frontal of cloth on its face (green, or red), two plain unlit candlesticks, before a reredos 3 m wide and 3.2 m high (blind arches, a plain brass cross). Front +z. Collides as the altar and the reredos (bounds within)."
+      },
+      "size": [
+        3.0,
+        3.2,
+        1.24
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "altar",
+        "altar": [
+          2.2,
+          1.0,
+          0.85
+        ],
+        "reredos": 0.3,
+        "arches": 7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "green",
+          "seed": 33001,
+          "look": {
+            "stone": "#ece7dc",
+            "frontal": "#2f5a3a",
+            "cloth": "#f3f1ea",
+            "brass": "#b48a3c"
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 33002,
+          "look": {
+            "stone": "#ece7dc",
+            "frontal": "#7a1f24",
+            "cloth": "#f3f1ea",
+            "brass": "#b48a3c"
+          }
+        }
+      ]
     }
   ]
 }

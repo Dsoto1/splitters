@@ -9,18 +9,19 @@ Spaceships and Tank Pack (all CC0).
 
 | Mount | Seats | What it does |
 |---|---|---|
-| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at 2.4 times its model's built size (`scale` 2.4: 3.6 m long, the top of the receiver 1.54 m up, chest height to the gunner standing behind it); you see your own gun in front of you when you man it |
+| Heavy MG Turret | 1 gunner | A heavy machine gun on a tripod, ±80° arc, overheats instead of reloading. Drawn at 2.1 times its model's built size (`scale` 2.1: 3.15 m long, the top of the receiver 1.35 m up, a quarter of a metre under the gunner's eye, so the ground shows from about 26 degrees under the crosshair; a hip carry to the characters as drawn; 2.4 until 2026-11-14 hid the ground within about 6 degrees); you see your own gun in front of you when you man it |
 | Rocket Turret | 1 gunner | Slow, heavy rockets, ±70° arc (model: a Meshy community cannon on a pedestal, CC0 per the owner, `guns/arc_cannon_turret.glb`, centred on its pedestal so it turns about it) |
 | Sentry Gun | none | Aims and fires on its own at its team's enemies (no team: everyone) |
 | Arc Turret | none | An auto-turret like the Sentry Gun, with a tell: it winds up (0.75 s, a growing charge ball and a warning sound) on an enemy it can see within 22 m, then locks an energy arc on that hits 5 every 0.1 s and jumps to one enemy within 6 m of them (half damage). Breaking its line of sight or leaving its reach drops the lock and the charge; a 2 s lock ends in a 1.25 s vent. 240 health. Drawn on the Rocket Turret's cannon in its own violet energy colour (`MountDef.glow`). MapMaker warns (`mount.arc_spawn`) when one stands within 12 m of a spawn it would shoot at. See "Arc Turret" below |
 | Speeder | 2 (pilot, passenger) | Hovering; the pilot fires twin blasters ahead, the passenger shoots their own weapon |
-| Buggy | 6 (driver, front passenger, 4 on the deck) | Everyone but the driver shoots their own weapon, all round: the front passenger sits, the four in the back stand on the open deck behind the cage |
+| Troop Buggy (`troop_buggy`) | 6 (driver, front passenger, 2 seated behind, 2 standing in the back row) | The Tactical Off-Road Beast. Everyone but the driver shoots their own weapon, all round: four sit, the back row's two stand with their shoulders out of the open roof. The retired id `buggy` loads as this one |
+| Supply Buggy (`supply_buggy`) | 2 (driver, passenger) | The sci-fi buggy. A supply carrier: players on foot at its tailgate press Use to resupply (every carried gun's reserve and underbarrel rounds full, grenades topped up), ten times, then it is empty until it respawns; each player waits 4 s between two (`resupply`, sim/resupply.ts) |
 | Hauler | 6 (pilot, gunner, 4 passengers) | A slow hovering transport with a rocket gunner |
 | Skyfighter | 1 pilot | Flies: the pilot climbs (Space) and dives (Ctrl/crouch), up to 30 m above where it was parked, firing twin blasters ahead |
-| Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier with an all-round door gun; riders stand on the deck |
+| Dropship | 6 (pilot, gunner, 4 passengers) | A flying troop carrier, the owner's hover carrier: the pilot in an open cockpit, an all-round door gun standing on the open deck, four riders seated on its side benches |
 | Tank | 3 (driver, cannon, roof gun) | Slow and heavy (1200 health): the cannon fires explosive shells within 35° of the nose, the roof gun works all round |
-| Gun Jeep | 5 (driver, roof gun, 3 passengers) | Wheeled light: a quick pickup with an all-round machine gun on the back (380 health); a passenger in the cab and two sitting on the bed's side rails shoot their own weapons |
-| Armored Rover | 5 (driver, front gun, rear gun, 2 riders) | Wheeled heavy: slow, grippy and 900 health; the front gunner covers ±75° ahead, the rear gunner ±90° behind |
+| Gun Buggy (`gun_jeep`) | 3 (driver, passenger, roof gunner) | Wheeled light (the Recon Trike): an all-round machine gun on the roof; the driver and passenger sit in the cab, the gunner stands at the gun (380 health). Called the Gun Jeep until 2026-11-13 |
+| Armored Rover (`armored_rover`) | 7 (driver, front passenger, 2 on the bench, rear gun, 2 hanging on the sides) | Wheeled heavy: slow, grippy and 900 health; the rear gunner covers ±90° behind from the roof rack; the passenger beside the driver and the two on the bench sit inside, and one rider hangs on each side, standing on the sill by the doors. All riders but the driver and gunner shoot their own weapons |
 | Hover Bike | 1 rider | Hover: the fastest thing on the map (31 m/s), fragile (170 health), no gun |
 | Gunship | 3 (pilot, left and right door guns) | Flying, on the dropship's flight model: the pilot fires blasters ahead, each door gunner covers ±70° off their own side (950 health) |
 | Troop Truck | 6 (driver, cab passenger, 4 on the bed) | Wheeled heavy, no gun: a six-wheeled army truck (700 health); the cab passenger sits, the four on the flatbed stand, and all five shoot their own weapons |
@@ -73,13 +74,36 @@ Spaceships and Tank Pack (all CC0).
   and 1024 px normal map, 1.42 MB, 3.0 m long), replacing Kenney Holiday Kit's
   long sled on 2026-11-04; its riders sit astride (`straddle` on the seats). The tank is Quaternius' Tank Pack (CC0) desert tank. The hauler (Dispatcher), skyfighter
   (Spitfire) and dropship (Imperial) are from Quaternius' Ultimate
-  Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`.
-  The buggy (vehicle refresh part 2, 2026-11-11) is a Meshy Community sci-fi buggy (`Meshy_AI__1108120754`, CC0;
-  `vehicles/sixer_buggy.glb`, 20k triangles plus a quarter LOD, 2048 px colour map): a tube-frame four-wheeler with
-  a cage over two seats and an open deck behind, where four riders stand (the owner's layout: driver, a seated
-  front passenger, four standing). The suspension's contact points and hub height are the old buggy's
-  (`vehicle.suspension.wheels`, `hub`), so it drives as before. The Tactical Off-Road Beast it replaced is its
-  `fallback`.
+  Spaceships (CC0), trimmed by `tools/content/prepare-ships.mjs`; the Imperial is now the Dropship's fallback.
+  The **Dropship** (2026-11-16) is the owner's own Meshy hover carrier (Meshy, owned: "I made it on Meshy";
+  `vehicles/hover_carrier.glb`, pack `meshy-owned-drive-1116` in `content/guns.json`: 10k triangles plus a 2.5k one
+  from 40 m, 1024 px colour map, 0.83 MB, 9.6 m long): an open cockpit at the nose and an open sunken deck behind it
+  with a bench along each side. Its box, seats and cockpit eye were refitted to it (measured on the model:
+  `content/vehicles/dropship.json` notes); the drop route's dropship (`dropship_drop`) shares the model, its 12 riders
+  seated six a side on the benches. Kept as `dropship` on the owner's word ("replaces the Dropship's look"), not a new id.
+  **Seats checked on the drawn model (2026-11-17):** the cushions' tops 1.24-1.26 m up, the floor 0.74 m, three
+  cushions a side from z -0.25 to -3.75; the four riders' places (z -1.0, -3.0, 1.2 m: hips 0.07-0.17 m over the
+  cushion) kept, the drop
+  route's twelve spread evenly over the benches (its end pair had sat half off them). Front riders looked standing in
+  a parked picture because a seated rider was drawn facing its aim with the hips turned back to the seat at most the
+  waist's 77°: one looking along the hull or out over the side (or a pilot looking back) had its legs swung off the
+  cushion into the backrest. A seated rider is now drawn turned no further from its seat's way than the waist turns
+  (`riderPlacement.ts` `seatDrawnYaw`, every vehicle), so the hips face the seat and the legs stay on it.
+  **Ids name bodies** (owner, 2026-11-13): a vehicle's id stays with its model for good; a new body or a new job is a
+  new id, and a retired id loads as its replacement (sim/mounts.ts RETIRED_MOUNTS). The id `buggy` named the Off-Road
+  Beast until 2026-11-11 and the sci-fi buggy until 2026-11-13; it is retired to the Troop Buggy (the official maps'
+  46 buggies were swapped with MapMaker's Replace all).
+  The **supply buggy** (`supply_buggy`; vehicle refresh part 2, 2026-11-11, the six-seat Buggy until 2026-11-13) is a
+  Meshy Community sci-fi buggy (`Meshy_AI__1108120754`, CC0; `vehicles/sixer_buggy.glb`, 20k triangles plus a quarter
+  LOD, 2048 px colour map): a tube-frame four-wheeler with a cage over two seats and an open deck with a rack behind.
+  Two ride; players on foot resupply at its tailgate (`resupply`: the point `at` in its frame, `reach` 1.6 m, `uses`
+  10, `wait` 4 s per player). Use there resupplies instead of getting in (Match.resupplyAtMount; nothing needed, empty
+  or waiting: nothing is spent and the HUD says why); its stock comes back full when it respawns.
+  The **troop buggy** (`troop_buggy`, 2026-11-13; the Buggy until 2026-11-11) is the owner's Tactical Off-Road Beast
+  (`vehicles/offroad_buggy.glb`, on its separate tire): six aboard, a driver, a front passenger and two seated behind
+  them on the model's cushions, and two standing on its third bench either side of the (unmanned) roof gun, shoulders
+  out of the open roof bay. Its in-house cockpit is the Off-Road Beast's, back from git history. Its body is a 3.7 MB
+  model and arrives late on a slow connection (its tires show first).
   The **troop truck** (2026-11-11) is Ironclad Vanguard (Meshy Community CC0, the owner's Drive,
   `Meshy_AI_Ironclad_Vanguard_1111000212_texture.glb`; `vehicles/troop_truck.glb`, 20k triangles plus a quarter LOD):
   a three-axle army truck, a closed cab ahead of an open flatbed where four riders stand, on six suspension
@@ -205,8 +229,9 @@ small generated roughness grain. Everyone else, and your chase camera, see the
 body alone (`game/cockpitInterior.ts` adds the parts under your vehicle's body
 node, so they ride its springs and tilt).
 
-The buggy's was measured on its model (slices of the triangles; refitted to the
-sci-fi buggy on 2026-11-11): the roof frame at 1.65 m on rails 0.58 m either side
+The troop buggy's (the Off-Road Beast's) was measured on its model: a flat roof frame at 1.47 m, three rows of
+seats, the wheel on the left at z 0.78. The supply buggy's was measured on its model (slices of the triangles; refitted to
+the sci-fi buggy on 2026-11-11): the roof frame at 1.65 m on rails 0.58 m either side
 from the hoop behind the cabin (z -0.6, where the deck starts) to the front bar
 with its lamps (z 0.4), a hoop behind the seats (z -0.15), A-pillars and a centre
 brace falling to the hood, one row of seats (the deck riders stand), the wheel on
@@ -215,6 +240,12 @@ wheel, one per needle), built once on first use. The gun jeep can get
 one by adding an entry.
 
 ## Suspension (the Warthog feel)
+
+**Rigid driving (2026-11-15, the Troop Buggy):** the Troop Buggy is a real body on these springs now: the springs push
+the chassis itself, so it pitches, rolls and can flip, and its tyres have a friction limit (it slides back down slopes
+past about 46°, drifts flat out, the handbrake locks the rear). The driver's own buggy is predicted. Everything below
+still describes the other vehicles; the design, numbers and netcode are in docs/DRIVING_PHYSICS_PLAN.md
+(`?drive=classic` drives the old way, `?vehiclepredict=0` turns the prediction off).
 
 The buggy, the gun jeep and the troop truck ride on **raycast suspension** in the simulation
 (`shared/src/sim/suspension.ts`, tuning in `MOUNT_DEFS[…].vehicle.suspension`):
@@ -235,8 +266,8 @@ and the handbrake (Space) still breaks grip for a proper slide.
 
 | Vehicle | Springs (freq, damping) | Travel / bump stop | Squat · lean (rad per m/s²) | Air tumble | Landing | Drift | Steering lock |
 |---|---|---|---|---|---|---|---|
-| Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
-| Gun Jeep | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
+| Troop Buggy | 1.5 Hz, 0.32 (soft, bouncy) | 0.20 / 0.16 m | 0.004 · 0.0045 | 1.4 rad/s² | 0.5 | 0.55 | 0.5 rad |
+| Gun Buggy | 1.8 Hz, 0.38 (a pickup: firmer) | 0.16 / 0.13 m | 0.0028 · 0.0038 | 1.2 rad/s² | 0.45 | 0.4 | 0.45 rad |
 | Troop Truck (six wheels) | 1.9 Hz, 0.45 (a truck: stiff) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | 0.15 | 0.4 rad |
 | Armored Rover | 1.9 Hz, 0.45 (the truck's) | 0.14 / 0.11 m | 0.002 · 0.0025 | 0.8 rad/s² | 0.4 | none | 0.4 rad |
 
@@ -277,8 +308,13 @@ Urban grey or Team colour. Automatic paints a team-owned vehicle (one given a
 team in the inspector) in its team's colour and leaves the rest in factory
 paint, so the team bases on Coldwater Gulch and Frost Basin read at a glance.
 Skins are a tint over the model's own colours (the model gets its own copy of
-its materials); pale skins glow a touch so snow paint reads white. Paid
-upgrades are not planned.
+its materials); pale skins glow a touch so snow paint reads white. A
+textured model takes the paint at less than full strength (`paint` in its
+`content/vehicles/<id>.json`, 0 to 1, default 1: the tint mixed that far from
+white). Every vehicle is at 0.5 (owner, 2026-11-17): the full colour over the
+Meshy models' own colours made them about four times darker (the Dropship's
+olive and white a near-black and blue box, the Snow Sled's grey brown).
+Turrets and sentries keep the full colour. Paid upgrades are not planned.
 
 ## Parachutes and gliders
 
@@ -314,7 +350,7 @@ map that names one is still a valid file as written, and as played it has the ve
 | Retired | Reads as | Why that one |
 |---|---|---|
 | Go-Kart (`kart`: 1 seat, no gun, 20 m/s, 220 health) | Hover Bike (`hover_bike`) | Also one seat and no gun, a quick thing to run people over with. Faster (31 m/s), more fragile (170 health), and it hovers and drifts where the kart gripped |
-| Ice Cream Truck (`ice_cream_truck`: 4 seats, no gun, 16 m/s, 520 health) | Buggy (`buggy`) | Also no mounted gun, its riders shooting their own weapons, so a map gains no machine gun it was not made with (the Gun Jeep would bring one). Six seats for four, a little quicker (18 m/s) and lighter (450 health), 0.25 m wider a side |
+| Ice Cream Truck (`ice_cream_truck`: 4 seats, no gun, 16 m/s, 520 health) | Troop Buggy (`troop_buggy`; the Buggy until 2026-11-13) | Also no mounted gun, its riders shooting their own weapons, so a map gains no machine gun it was not made with (the Gun Jeep would bring one). Six seats for four, a little quicker (18 m/s) and lighter (450 health), 0.25 m wider a side |
 
 - A placed vehicle keeps its place, facing, team, paint and respawn time. A track's NPC cars (`ambientVehicle`) and
   its old race vehicle read the same way; a track that doesn't say gets Hover Bikes (the default was the Go-Kart).

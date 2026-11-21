@@ -144,7 +144,163 @@ Implement quality tiers that adjust density of non-gameplay decoration, shadow d
 
 **Phase 4 — Replace and migrate:** expand species/rock/cliff variants, migrate existing maps, retire legacy natural assets, run regression/performance tests.
 
+**Phase 4 status (2026-11-17): more variety built** (`wip/environment-4`; owner, 2026-11-16: "yes"). Seventeen species
+through the generators already there (docs/CONTENT_PIPELINE.md, "Environment Phase 4"), each with material variants,
+collision, surface, levels of detail, far stand-in, budgets and tests like its kind:
+- trees: Silver Birch, Olive, Mountain Pine, Larch, Italian Cypress;
+- bushes: Creeping Juniper, Sagebrush;
+- grasses: Tall Grass, Tussock;
+- flowers: Alpine Flowers, Desert Marigold;
+- desert: Barrel Cactus, Agave (a new `rosette` generator kind);
+- rocks: Shard Boulder, Sandstone Boulder;
+- cliffs: Sandstone Cliff, Mountain Crag (each its own seamless family).
+
+Additions only: no earlier model, picture or table entry changed (the build is byte-identical for them; no new atlas
+cell), so every shipped map looks and plays as before. MapMaker's Environment group lists them; the four presets append
+them. **Cost, measured** (`PERF_STILL=1`, medium, mean of 4 views): the showcase (2,526 placements, today's 8 species
+variants) 177 draws, 1.202 M triangles, 348 casters; the same placements with half of each category swapped to the new
+species (about 30 variants) 371 draws, 1.112 M triangles, 463 casters (High: 284 → 499 draws, 1.813 → 1.701 M triangles, 370 → 484 casters; a loaded box, so High's views did not all settle). Triangles fall (the new species are lighter),
+but each variant is its own batch in each square, so draws grow with the number of different variants in view: a
+mix of many species costs draws, not triangles. Batching a species' variants together (one model, colour per copy) is
+the Phase 5 lever. Still to do in Phase 4: the migration (existing maps' bought or downloaded natural props swapped for
+ours) and retiring the legacy pieces.
+
 **Phase 5 — Polish:** terrain material transitions, seasonal/biome variations if appropriate, LOD/shadow tuning, visual consistency pass.
+
+**Phase 5 status (2026-11-18): built** (`wip/environment-5`; owner, 2026-11-16: "yes"; the lead's order: draw calls, the
+Alpine look, a jungle set, then the polish). docs/CONTENT_PIPELINE.md, "Environment Phase 5", has the detail.
+- **Draw calls: a species' looks share one batch per square** (`environment/envLooks.ts`, `EnvLooksPlugin`): looks of one
+  shape at a level are one mesh carrying each look's vertex colours, each copy naming its own; found at load from the
+  models, so every look draws exactly as before. Snow-laden conifers and the meadow flowers (another shape) and the
+  stand-ins (their own pictures) keep their own batches. Measured (`PERF_STILL=1`, Medium, mean of 4 views, this
+  machine): the showcase (2,526 placements, 8 species' looks) 177 → 147 draws, 1.202 → 1.205 M triangles; the Phase 4 stress copy (half of each category swapped to the new species, about
+  30 looks; scratch, never committed) 372 → 275 draws, 1.113 → 1.146 M triangles (a shared batch spans more copies,
+  so its bounds cull a little less). Shadow casters 350 → 284 and 463 → 281, partly because the hidden templates no
+  longer sit in the caster list (they never drew), partly the shared shadow sets.
+- **The Alpine look:** the "dark solid cones with no trunk" in the painted Alpine preset were the Spruce (foliage to the
+  ground, the darkest green; at the editor's distance its lighter levels). The Spruce model is unchanged (St. John's
+  and the other maps keep theirs); it gains a lighter `alpine` look, and the Alpine preset paints fewer of them, in that
+  look, among more mountain pines and larches, a little less densely. The Mountain Pine (on no map) is assetVersion 2:
+  brighter, a bare trunk under its branches, more open, smaller far sprays.
+- **The jungle set:** Jungle Tree (`env.broadleaf.jungle`, lianas from the broadleaf generator's new `vines`), Tree Fern
+  (`env.fern.tree_fern`, the palm generator with fern fronds), Elephant Ear (`env.shrub.elephant_ear`, a new `leafplant`
+  kind); the Jungle preset paints them. 43 species.
+- **Seasons across a whole map:** MapMaker's Environment pane, "Season (whole map)" (Summer, Autumn, Snow-dusted, Dry
+  season) and Apply: every placed species to its look for the season, one undo step (`shared/editor/envSeason.ts`).
+  An edit of the placements' looks, not a map setting: no map format change, nothing changes until an author applies
+  it, and a look can still be changed by hand afterwards. Looks picked on purpose (moss, flower colours) stay.
+- **Shadows of distant plants:** plants, ground cover and pebbles cast in the near cascades only (High's far cascade
+  drops them; Medium unchanged). The hidden template meshes are out of the shadow list (they never drew; the casters
+  column counted them).
+- **Left for later:** ground-material transitions (MapMaker's painted ground already blends its borders softly; a
+  noisier, less straight edge would change every shipped map's ground, so it waits for the owner); a consistency pass
+  over the older species' colours and levels of detail (the same reason: shipped maps); far-level tuning of the Spruce
+  and Tall Pine (their lighter levels read heavy; changing them changes St. John's).
+
+**The nature swap (2026-11-18; owner: "start removing quaternius nature for our procedurally generated ones"):**
+MapMaker's Environment pane (Nature), **Swap natural props for ours**: every bought or downloaded natural prop on the
+map becomes our species in one undo step (`shared/editor/natureSwap.ts`), keeping its id, spot, turn, name and flags;
+its scale is the old scale times the table's factor, so it stands about as tall and wide as before (MapMaker's limits
+0.25 to 4). Play is kept: trees keep a trunk (their capsules instead of a 0.5 m box), bushes stay cover you hide in,
+rocks keep blocking shots and movement, logs keep a health of their own. A mix (two species for one old prop) is picked
+by the placement's id, so a rerun gives the same map. **Rocks** follow the menu beside the button: *by the ground*
+(sandstone where at least 40 % of the terrain is sand, else as listed), *grey (as listed)*, *mossy* (boulders moss,
+shards lichen) or *sandstone* (boulders become the Sandstone Boulder, sized between their height and width; shards keep
+their shape in the Shard Boulder's own **sandstone** look, owner 2026-11-19). A new
+species came with it: **Dead Tree** (`env.broadleaf.dead`, bare and pale looks; the broadleaf generator with no leaf
+cards), since nothing else stood for the dead trees. Picked by eye on a side-by-side sheet (old at scale 1 beside the
+new at its factor, from a standing eye and from the side; `?mode=lineup`).
+
+| Old prop | Generated (look, factor) |
+|---|---|
+| Birch / Autumn Birch | Silver Birch summer / autumn ×0.74 |
+| Snowy Birch | Dead Tree pale ×1.43 (a bare winter tree) |
+| Broadleaf Tree / Autumn Broadleaf | Oak ×0.8 (2 in 3) or Field Maple ×1.0, summer / autumn |
+| Broadleaf Tree (round) | Field Maple ×0.93 |
+| Snowy Broadleaf | Dead Tree pale ×1.25 |
+| Dead Tree, Dead Willow | Dead Tree bare ×1.07 |
+| Tall Pine / Snowy Tall Pine | Tall Pine summer / snow ×0.82 |
+| Young Pine | Spruce ×0.67 |
+| Autumn Pine | Larch autumn ×0.62 |
+| Curved Palm / Tall Palm | Leaning Palm ×0.8 / Coconut Palm ×0.74 |
+| Willow / Autumn Willow | Jungle Tree green / dry ×0.54 (the hanging lianas for the weeping crown) |
+| Saguaro Cactus | Saguaro ×1.04 |
+| Barrel Cactus / Flowering Cactus | Barrel Cactus ×1.29 / ×1.07 (both still collide) |
+| Leafy Bush | Broadleaf Shrub ×0.82 (3 in 4) or Laurel ×0.6: you hide in both |
+| Berry Bush / Snowy Bush | Laurel ×0.54 / Sagebrush grey ×1.0 (hidden in) |
+| Corn / Wheat | Tall Grass ×2.3 / dry ×1.16 (no longer hidden in: grass) |
+| Wildflowers | Meadow Flowers, the four colours mixed |
+| Wide Fern | Bracken ×1.6 (hidden in) |
+| Tall Boulder / Mossy Boulder / Snowy Boulder | Shard Boulder bare ×1.19 / lichen ×1.08 / snow ×1.08 |
+| Boulder | Angular or Round Boulder ×0.85 |
+| Flat Rock / Snowy Rock | Angular Boulder ×0.54 / ×0.81 |
+| Mossy Rock | Round Boulder moss ×0.86 |
+| Large / Mossy Stump | Fallen Log bare / moss ×1.2 (low cover; there is no stump species) |
+| Large / Mossy / Snowy Log | Fallen Log bare ×1.12 / moss ×1.22 / bare ×1.4 |
+| Kenney Boulder (`rock_large`) | Round Boulder ×1.0 or Angular ×0.95 |
+| Kenney Rock / Small Rock | Angular Boulder ×0.68 / ×0.47 |
+| Kenney Jagged Boulder / Flat Boulder / Round Boulder / Rock Spire | Rock Outcrop ×1.1 / ×0.65 / ×1.3 / ×1.0 |
+| Kenney Tall Rock | Shard Boulder ×2.2 |
+| Meshy Rock Pile / Mossy Rock Spire | Angular Boulder ×0.9 / moss ×1.25 |
+| Loafbrr Cave Rocks B / D | Shard Boulder ×1.29 / Angular Boulder ×1.05 |
+| Meshy Red Rock Spires | **Sandstone Spires** red ×1.0 (owner, 2026-11-19) |
+| Kenney Oak / Dark Oak / Autumn Oak | Oak summer / summer / autumn ×0.8 |
+| Kenney Round Tree (and dark, autumn) / Bushy Tree / Blocky Tree | Field Maple ×0.79 / ×0.72 / ×0.72 |
+| Kenney Leafy Tree / Cone Tree / Flat-top Tree | Oak ×0.69 / Spruce ×0.67 / Umbrella Acacia ×0.81 |
+| Kenney Thin Tree / Sapling | Silver Birch ×0.55 / ×0.28 |
+| Kenney Tall Pine / Tall Pine B / Round Pine / Small Pine / Low Pine | Tall Pine ×1.0 / ×0.91 / Mountain Pine ×1.4 / Spruce ×0.39 / Mountain Pine ×0.44 |
+| Kenney Tall Palm / Short Palm | Coconut Palm ×0.83 / ×0.46 |
+| Kenney Big Log / Old Stump / Cut Stump | Fallen Log bare ×1.4, turned a quarter (it lay along x, ours along z) / moss ×1.2 / bare ×1.2 (stumps stay short logs, owner 2026-11-19) |
+| Kenney Log Stack | not swapped: cut firewood, no generated woodpile yet |
+
+**Sandstone Spires** (`env.rock.sandstone_spires`, red and tan; 2026-11-19, owner's pick, made denser and more fused
+the same day, owner's 3b): one desert formation, 13.6 × 7.9 × 4.8 m like the Meshy spires it replaces. Three broad
+masses sunk into the ground make a single body up to about 5-6 m, and seven narrow spires (4.6 to 8 m) rise out of it in
+two staggered rows, all merged where they overlap. It is the outcrop generator with ten masses (fuller fractures than a
+boulder's, `cutDepth` 0.68-0.92, so the masses stay broad), the bedding and noise running through the whole formation;
+collision is one hull per mass (ten). A formation has its own triangle budget (`budget` on the species: 1,700 / 560 / 170
+triangles; it uses 1,397 / 503 / 160), above one boulder's; the Meshy spires were 3,000 at their nearest.
+
+**Run on 42 maps through MapMaker** (2026-11-18/19; Playwright on the real editor: Import, Environment → Nature, Swap
+natural props for ours with rocks by the ground, Export): 2,844 Quaternius placements and about 600 kit and Meshy rocks.
+Rocks came out sandstone on Sunstone Crag, Iron Maw, Sandsweep, Dustwater and Sunken Kingdom. **The last batch**
+(2026-11-19, the same way): the 19 Red Rock Spires as Sandstone Spires (Dustwater 12, Sunken Kingdom 6, Iron Maw 1);
+the shards on sandy ground in their sandstone look (Sandsweep 10, Dustwater 1, Iron Maw 1; those three maps swapped
+again from their files before the first swap, so nothing else on them changed); the Kenney Big Logs (Backwoods 9,
+Primeval Park 1, Serpent Gorge 1); St. John's (95: oaks, maples, birches, jungle trees, shrubs and laurels) and the
+coverage map (its wheat and its two Meshy rocks).
+
+**The Quaternius nature pack has left the build** (2026-11-19), with the one-prop Meshy pack of the Mossy Rock Spire,
+once no shipped map placed them (`content/props/` no longer lists them; about 2.6 MB of models and their palette
+pictures). An older map that still places one loads all the same (`map/natureAliases.ts`, in loadMap before it is
+checked): each placement becomes the species the table names, by the same pick and the map's ground, keeping its id,
+spot, turn, name and flags; a map's own set pieces' props too. Their files are gone, so this happens in MapMaker as well
+(the kit aliases keep a map as made there): its next Export names the species. A prop counts as retired when the swap
+table lists it and the catalogue no longer has it, so the Kenney Nature Kit can leave the same way later.
+
+**The last batch, measured** (`PERF_STILL=1`, Medium, mean of the four standard views, same machine; draws ·
+triangles · shadow casters): Dustwater 226 · 0.358 M · 179 → 226 · 0.350 M · 181; Sunken Kingdom 242 · 0.589 M · 90 →
+244 · 0.586 M · 91; Iron Maw 319 · 1.417 M · 99 → 316 · 1.417 M · 94; Sandsweep 94 · 0.215 M · 143 → 94 · 0.218 M · 146;
+Backwoods 440 · 0.842 M · 269 → 442 · 0.843 M · 272; Primeval Park 439 · 1.188 M · 134 → 441 · 1.183 M · 134; Serpent
+Gorge 380 · 0.651 M · 265 → 386 · 0.652 M · 276; **St. John's 478 · 1.363 M · 82 → 438 · 1.209 M · 81**. The rest is
+within the noise of a busy machine (the coverage map's views did not settle). The download: the client build
+503.8 → 501.0 MB (the 40 retired models 2.67 MB, their palette atlases; the spires and the sandstone shard add 0.4 MB). **Cost, measured** (`PERF_STILL=1`, Medium, mean of 4 views, same code
+before and after; draws, triangles, shadow casters):
+
+| Map | Before | After |
+|---|---|---|
+| Eagle Spires | 317 · 1.174 M · 92 | 294 · 0.868 M · 95 |
+| Step Temple | 372 · 1.290 M · 305 | 369 · 0.959 M · 295 |
+| Coldwater Gulch | 255 · 0.949 M · 95 | 244 · 0.826 M · 99 |
+| Primeval Park | 460 · 1.445 M · 130 | 435 · 1.180 M · 128 |
+| Norman Shores | 588 · 1.568 M · 106 | 512 · 1.336 M · 109 |
+| Sunstone Crag | 438 · 1.090 M · 122 | 348 · 0.972 M · 107 |
+| Iron Maw | 372 · 1.602 M · 97 | 322 · 1.424 M · 98 |
+| Frost Basin | 215 · 0.927 M · 110 | 197 · 0.838 M · 110 |
+| Apex Ring | 409 · 1.092 M · 89 | 372 · 0.973 M · 88 |
+
+Draws fall on every map but two (Gallows Yard +6, Hollowmere +1) and triangles on all of them (10-26 % on the
+forested ones); casters within a few. The download does not shrink until the Quaternius pack leaves the build.
 
 **Phase 6 — Kit-prop generators (owner-approved 2026-11-05; after Environment Phase 2):** the same deterministic
 generator approach applied to simple man-made props. Families, each with endless variants under a stable family id:

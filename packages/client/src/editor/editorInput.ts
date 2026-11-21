@@ -5,12 +5,12 @@ import {
   groupOf,
   levelName,
   matchEditorKey,
-  moveCommand,
+  coreCatalog,
+  transformCommand,
   moveEntitiesCommand,
   moverGroupOf,
   placementCells,
   selectionGroup,
-  TERRAIN_BRUSHES,
   withMoverGroups,
   type KeyAction,
   type Vec3
@@ -18,7 +18,32 @@ import {
 import { readClipboard } from './clipboardStore.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml, isTyping } from './editorDom.ts';
-import { LOOK_SENSITIVITY, snap, type DragState } from './editorParts.ts';
+import { LOOK_SENSITIVITY, snap, type DragState, type Hit } from './editorParts.ts';
+
+/** How near the move gizmo's handle a press grabs it (CSS pixels). */
+const GIZMO_GRAB_PX = 16;
+/** How near the last click a click counts as at the same spot, to step through what is there (CSS pixels). */
+const CYCLE_SAME_PX = 5;
+
+/** The small list by the pointer of what is under it, the one picked marked (a click again there picks the next). */
+function showCycleList(names: readonly string[], index: number, x: number, y: number): void {
+  let el = document.getElementById('ed-cycle');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'ed-cycle';
+    el.setAttribute('role', 'status');
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div class="ed-cycle-head">Here (click again for the next)</div>${names.map((n, i) => `<div class="ed-cycle-row${i === index ? ' on' : ''}">${escapeHtml(n)}</div>`).join('')}`;
+  el.style.left = `${x + 18}px`;
+  el.style.top = `${y + 12}px`;
+  el.hidden = false;
+}
+
+function hideCycleList(): void {
+  const el = document.getElementById('ed-cycle');
+  if (el) el.hidden = true;
+}
 
 /** MapMaker's input: the pointer on the view (pick, drag, box select, brushes, fly-look), right-click and its menu, and the keys through the key table (keymap.ts) (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class EditorInput {
@@ -130,7 +155,11 @@ export class EditorInput {
     item('Delete', 'Del', () => this.app.edits.deleteSelection());
     if (pieces.length === 1 && this.app.selCount() === 1) item('Explode to tiles', '', () => this.app.pieces.explode(pieces[0]!));
     item('Save as set piece…', '', () => this.app.pieces.saveSelectionDialog());
-    if (this.app.doc.terrain) item('Cut ground to floors', '', () => this.app.edits.cutGround());
+    if (this.app.doc.terrain) {
+      item('Fit ground to this', '', () => this.app.edits.fitGround());
+      item('Settle onto the ground', '', () => this.app.edits.settleOnGround());
+      item('Cut ground to floors', '', () => this.app.edits.cutGround());
+    }
     item('Select none', 'Esc', () => this.app.setSelection(emptySelection()));
     $('editor').append(menu);
     const r = menu.getBoundingClientRect();
@@ -149,20 +178,14 @@ export class EditorInput {
     const b = this.brush;
     const tool = this.app.tool;
     if (!b) return;
-    if (tool.kind === 'paint' && this.app.paintGround && !this.app.hoverFace) {
-      const p = this.app.paintGround;
-      if (b.at && Math.hypot(p.x - b.at.x, p.z - b.at.z) < this.app.terrain.brushRadius * 0.5) return;
-      b.at = { x: p.x, z: p.z };
-      b.key = null;
-      if (!b.invert) this.app.paint.paintGroundAtHover();
-      return;
-    }
     if (tool.kind === 'paint') {
+      // Structure paint: each surface once a stroke; over the ground (or a prop) nothing, said once.
       const t = this.app.paint.paintTarget();
-      const key = t ? `${t.tile.id}:${t.slot}` : null;
-      if (!key || key === b.key) return;
+      const key = t.kind === 'tile' ? `${t.tile.id}:${t.slot}` : t.kind === 'block' ? t.block.id : t.kind === 'part' ? `${t.placement.id}:${t.index}:${t.slot}` : `refused:${t.reason}`;
+      if (key === b.key) return;
+      const said = b.key !== null && b.key.startsWith('refused:');
       b.key = key;
-      return this.app.paint.paintAtHover(b.invert);
+      return this.app.paint.paintAtHover(b.invert, first || (t.kind === 'refused' && !said));
     }
     if (tool.kind === 'edge') {
       const key = this.app.paint.hoverEdge ? JSON.stringify(this.app.paint.hoverEdge) : null;
@@ -190,8 +213,9 @@ export class EditorInput {
     // Tiles and set pieces move cell by cell (their outlines show where they'd land, red where they can't).
     const byCell = this.app.selection.tiles.length > 0 || this.app.selPieces().length > 0;
     if (byCell) {
-      const preview = moveCommand(this.app.doc, this.app.selection, cellOffset[0], cellOffset[1], 0);
-      this.app.view.setOutlines(this.app.doc, this.app.selection.tiles, [cellOffset[0], cellOffset[1], 0], 'error' in preview, this.app.selectedPieceOutlines());
+      // Red where the release would be refused: the same command (and set-piece library) the release runs.
+      const preview = cellOffset[0] || cellOffset[1] ? transformCommand(this.app.doc, this.app.selection, { by: { cells: [cellOffset[0], cellOffset[1], 0] } }, coreCatalog, this.app.placeLib) : null;
+      this.app.view.setOutlines(this.app.doc, this.app.selection.tiles, [cellOffset[0], cellOffset[1], 0], !!preview && 'error' in preview, this.app.selectedPieceOutlines());
     }
     // Things follow the pointer as you drag (with tiles, cell by cell), so every kind previews where it lands.
     if (this.app.selection.entities.length) {
@@ -202,16 +226,67 @@ export class EditorInput {
     }
   }
 
+  /**
+   * Click again to cycle (MapMaker: picking things inside others): the last click on the view and everything that was
+   * under it (Hover.pickAll), with the one picked. A press at the same spot (a few pixels) on what that click picked
+   * waits for the button to come up: a click then picks the next thing there, a drag moves the selection as before.
+   */
+  cycle: { x: number; y: number; list: Hit[]; index: number; again: boolean } | null = null;
+
+  /** A press at the spot last clicked, on what that click picked: true, and the click (if no drag follows) steps on. */
+  private markAgain(e: PointerEvent): boolean {
+    const c = this.cycle;
+    const current = c?.list[c.index];
+    if (!c || !current || e.shiftKey || e.altKey || Math.hypot(c.x - e.clientX, c.y - e.clientY) > CYCLE_SAME_PX || !this.isSelected(current)) return false;
+    // The same things still under the pointer (the view may have moved since: then it is a new click).
+    const top = this.app.hover.pick();
+    if (!top || top.kind !== c.list[0]!.kind || top.id !== c.list[0]!.id) return false;
+    c.again = true;
+    return true;
+  }
+
+  private noteClick(e: PointerEvent, hit: Hit | null): void {
+    if (this.markAgain(e)) return;
+    hideCycleList();
+    if (!hit || e.shiftKey || e.altKey) {
+      this.cycle = null;
+      return;
+    }
+    const list = this.app.hover.pickAll();
+    this.cycle = { x: e.clientX, y: e.clientY, list, index: Math.max(0, list.findIndex((h) => h.kind === hit.kind && h.id === hit.id)), again: false };
+  }
+
+  /** Whether a pick target is what is selected now. */
+  private isSelected(h: Hit): boolean {
+    const sel = this.app.selection;
+    if (h.kind === 'tile') return sel.tiles.includes(h.id);
+    if (h.kind === 'setpiece') return this.app.selPieces().includes(h.id);
+    return sel.entities.includes(h.id);
+  }
+
+  /** The button came up from a click: on a click again at the same spot, the next thing under the pointer. */
+  private stepCycle(): void {
+    const c = this.cycle;
+    if (!c?.again) return;
+    c.again = false;
+    if (c.list.length < 2) return;
+    c.index = (c.index + 1) % c.list.length;
+    const h = c.list[c.index]!;
+    this.app.setSelection(h.kind === 'tile' ? { tiles: [h.id], entities: [] } : h.kind === 'setpiece' ? { tiles: [], entities: [], setPieces: [h.id] } : { tiles: [], entities: [h.id] }, true);
+    showCycleList(c.list.map((x) => this.app.hover.targetName(x)), c.index, c.x, c.y);
+  }
+
   endDrag(): void {
     const d = this.drag;
     this.drag = null;
     if (!d || !d.moved) return;
+    // One undo step, through the shared transform command (as a nudge or a typed X/Z would move it).
     if (this.app.selection.tiles.length || this.app.selPieces().length) {
       const [dx, dy] = d.cellOffset;
-      if (dx || dy) this.app.run('Move', moveCommand(this.app.doc, this.app.selection, dx, dy, 0));
+      if (dx || dy) this.app.transform('Move', { by: { cells: [dx, dy, 0] } });
     } else {
       const [dx, dz] = d.freeOffset;
-      if (dx || dz) this.app.run('Move', moveEntitiesCommand(this.app.doc, this.app.selection.entities, dx, 0, dz));
+      if (dx || dz) this.app.transform('Move', { by: { metres: [dx, 0, dz] } });
     }
     this.app.updateSelectionVisuals();
   }
@@ -240,6 +315,10 @@ export class EditorInput {
     this.drawMarquee();
     if (!m.moved) {
       if (!m.add) this.app.setSelection(emptySelection());
+      // A plain click on a road, trail, track or route with nothing else under the pointer: that path, opened in
+      // the Paths tool (its points to drag, add and remove; its length and look in the pane).
+      const path = m.add ? null : this.app.paths.pathUnder(this.app.hoverPoint);
+      if (path) this.app.editPath(path);
       return;
     }
     const [x0, x1] = [Math.min(m.x0, m.x1), Math.max(m.x0, m.x1)];
@@ -272,6 +351,8 @@ export class EditorInput {
     const canvas = () => this.app.host.canvas;
     window.addEventListener('pointermove', (e) => {
       if (!this.app.active) return;
+      // The pointer left the spot: the list of what was there goes (a click elsewhere starts afresh).
+      if (this.cycle && Math.hypot(this.cycle.x - e.clientX, this.cycle.y - e.clientY) > 12) hideCycleList();
       if (this.app.looking) {
         const dx = e.movementX;
         const dy = e.movementY;
@@ -314,6 +395,12 @@ export class EditorInput {
         if (this.drag.moved) this.updateDrag();
       }
     });
+    // Double-click with Select: Tile View on what was clicked (UI spec Phase 4a; owner answer 1). The first click
+    // has selected it.
+    window.addEventListener('dblclick', (e) => {
+      if (!this.app.active || e.target !== canvas() || e.button !== 0 || this.app.tool.kind !== 'select' || !this.app.selCount()) return;
+      this.app.openTileView();
+    });
     window.addEventListener('pointerdown', (e) => {
       if (!this.app.active || e.target !== canvas()) return;
       (document.activeElement as HTMLElement | null)?.blur?.();
@@ -344,10 +431,29 @@ export class EditorInput {
       if (this.app.tool.kind !== 'select') return this.app.placing.placeAtHover();
       // The rotate ring round the selection: a drag turns it.
       if (this.app.ring.begin({ x: e.clientX, y: e.clientY })) {
+        // (A click on it, not a turn, at the spot last clicked still steps through what is there.)
+        this.markAgain(e);
         canvas().setPointerCapture(e.pointerId);
         return this.app.hover.updateHover();
       }
+      // The move gizmo's handle (drawn over everything): a drag on it moves the selection, even one inside a wall or
+      // a set piece, where a click would pick what stands in front of it.
+      const handle = !e.shiftKey && !e.altKey && this.app.view.gizmoAt ? this.app.view.projectInView(this.app.view.gizmoAt) : null;
+      if (handle && Math.hypot(handle.x - e.clientX, handle.y - e.clientY) < GIZMO_GRAB_PX && this.app.hoverPoint && this.app.hoverCell) {
+        // (A click on it, not a drag, at the spot last clicked still steps through what is there.)
+        this.markAgain(e);
+        this.drag = { startCell: [this.app.hoverCell[0], this.app.hoverCell[1]], startPoint: { ...this.app.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
+        return;
+      }
       const hit = this.app.hover.pick();
+      // A click again at the same spot steps through everything under the pointer (decided when the button comes up
+      // without a drag: a press on the selection may be the start of moving it).
+      this.noteClick(e, hit);
+      if (this.cycle?.again) {
+        // (What the last click stepped to stays selected: a drag moves it, a click steps on when the button comes up.)
+        if (this.app.hoverPoint && this.app.hoverCell) this.drag = { startCell: [this.app.hoverCell[0], this.app.hoverCell[1]], startPoint: { ...this.app.hoverPoint }, pointerX: e.clientX, pointerY: e.clientY, moved: false, cellOffset: [0, 0], freeOffset: [0, 0] };
+        return;
+      }
       if (!hit) {
         // Empty ground: drag a box to select what's in it (Shift adds to the selection); a plain click selects nothing.
         this.marquee = { x0: e.clientX, y0: e.clientY, x1: e.clientX, y1: e.clientY, add: e.shiftKey, moved: false };
@@ -391,7 +497,10 @@ export class EditorInput {
       }
       if (e.button === 0) {
         if (this.app.ring.drag) {
+          const turned = !!this.app.ring.drag.turn;
           this.app.ring.end();
+          if (!turned) this.stepCycle();
+          else if (this.cycle) this.cycle.again = false;
           return this.app.hover.updateHover();
         }
         if (this.brush) {
@@ -401,7 +510,10 @@ export class EditorInput {
         }
         if (this.marquee) this.endMarquee();
         this.app.terrain.endStroke();
+        const clicked = !this.drag?.moved;
         this.endDrag();
+        if (clicked) this.stepCycle();
+        else if (this.cycle) this.cycle.again = false;
         this.app.paths.pointerUp();
         this.app.routes.pointerUp();
       }
@@ -441,6 +553,9 @@ export class EditorInput {
         return;
       }
       if (isTyping() || document.querySelector('#editor dialog[open]')) return;
+      // Enter on a focused button, tab or panel is theirs: Tile View is Enter with nothing else focused.
+      const focused = document.activeElement;
+      if (b?.action === 'tileView' && focused && focused !== document.body && focused !== this.app.host.canvas) return;
       this.app.keys.add(e.code);
       if (!b) return;
       this.keyActions[b.action](e);
@@ -458,8 +573,9 @@ export class EditorInput {
     redo: () => this.app.redo(),
     save: () => this.app.saving.save(),
     duplicate: () => this.app.edits.duplicate(),
-    togglePalette: () => this.app.topBar.toggleSidebar('pal'),
-    toggleSidePanel: () => this.app.topBar.toggleSidebar('right'),
+    // The left rail's collapse (\) and the right dock's three states (Shift+\): MapMaker UI spec Phase 1.
+    togglePalette: () => this.app.rail.toggle(),
+    toggleSidePanel: () => this.app.dock.cycle(),
     rotate: () => this.app.edits.rotate(false),
     rotateFine: () => this.app.edits.rotate(true),
     mirror: () => this.app.edits.mirror(),
@@ -473,13 +589,15 @@ export class EditorInput {
     // MapMaker overhaul Phase 4 item 3: bot hints (the last kind picked).
     botHints: () => this.app.setTool({ kind: 'bothint', hint: this.app.lastHint }),
     focus: () => this.app.focusSelection(),
+    // Enter: Tile View on the selection (UI spec Phase 4a; owner answer 1).
+    tileView: () => this.app.openTileView(),
     resetView: () => this.app.resetView(),
     logic: () => this.app.logic.toggle(),
     paint: () => this.app.setTool({ kind: 'paint' }),
-    terrain: () => {
-      const i = this.app.tool.kind === 'terrain' ? (TERRAIN_BRUSHES.indexOf(this.app.terrain.terrainBrush) + 1) % TERRAIN_BRUSHES.length : TERRAIN_BRUSHES.indexOf(this.app.terrain.terrainBrush);
-      this.app.terrain.setTerrainBrush(TERRAIN_BRUSHES[i]!);
-    },
+    // Shift+B: Ground paint, the Terrain tool's Paint brush (painting plan Phase 1).
+    groundPaint: () => this.app.terrain.setTerrainBrush('paint'),
+    // T cycles the sculpt brushes (Ground paint has its own key).
+    terrain: () => this.app.terrain.terrainTool(this.app.tool.kind === 'terrain'),
     walls: () => this.app.paint.wallsTool(this.app.tool.kind === 'edge'),
     erase: () => this.app.setTool({ kind: 'erase' }),
     // U: the measure tool (MapMaker overhaul Phase 1 item 3).
@@ -503,6 +621,8 @@ export class EditorInput {
       if (this.app.measure.clear() && this.app.tool.kind === 'measure') return this.app.hover.updateHover();
       // Esc drops a jump link half placed, else lets the selected bot hint go.
       if (this.app.hints.escape()) return this.app.hover.updateHover();
+      // Esc in Tile View: the picked thing let go, then back to the minimap (UI spec Phase 4a).
+      if (this.app.tileView.escape()) return;
       this.selectTool();
     },
     showAll: () => this.app.setShowAll(!this.app.showAll),

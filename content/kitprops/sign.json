@@ -1,5 +1,5 @@
 {
-  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks. The traffic cones (tools/content/kit/yard.mjs) are the sizes of the two Kenney cones they replace and, like them, have no collision (`collide: \"none\"`).",
+  "$comment": "Free-standing warning signs (tools/content/kit/factory.mjs): a hazard board on a post and a weighted base, a folding A-frame floor sign, a banded post marker. One family the size of the Kenney warning post it replaces, colliding as its box. Paint on sheet steel: nothing glows or blinks. The traffic cones (tools/content/kit/yard.mjs) are the sizes of the two Kenney cones they replace and, like them, have no collision (`collide: \"none\"`). The tower clock face (tools/content/kit/school.mjs, `clockface`; St. John's step 6) hangs on a wall like the boards (its back on −z, its foot the ring's foot) and collides as nothing; its hands are fixed (nothing moves, glows or blinks).",
   "type": "sign",
   "props": [
     {
@@ -292,6 +292,244 @@
             "body": "#b0623a",
             "foot": "#3a3632",
             "grime": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.crest_floor",
+      "displayName": "Crest Roundel (floor)",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7: the crest set in DeKoven's floor; Q12: a crest of our own): a roundel 3 m across inlaid in the floor: a brass rim, a royal purple band with a gold laurel, a stone field, and the game's own crest in it (a shield: two gold stars on purple over a gold chevron, an open book on silver below, a gold border; no real school's mark). Lies flat a hair over the floor. Collides as nothing."
+      },
+      "size": [
+        3.0,
+        0.02,
+        3.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "crest",
+        "form": "floor"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 16
+        },
+        {
+          "distance": 45
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 34001,
+          "look": {
+            "field": "#4b2a84",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "ring": "#3a2266",
+            "stone": "#d9d3c4",
+            "rim": "#a8823a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 34002,
+          "look": {
+            "field": "#24543a",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "ring": "#1d3f2c",
+            "stone": "#d9d3c4",
+            "rim": "#a8823a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.crest_wall",
+      "displayName": "Crest Shield (wall)",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7): the game's own crest (as the floor roundel's) as a shield on a dark wood board 1.2 x 1.5 m, to hang on a wall; its back on -z. Collides as nothing."
+      },
+      "size": [
+        1.2,
+        1.5,
+        0.06
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "crest",
+        "form": "wall"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 34011,
+          "look": {
+            "field": "#4b2a84",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "board": "#3b2618"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 34012,
+          "look": {
+            "field": "#24543a",
+            "metal": "#c9a23a",
+            "silver": "#dcdcd4",
+            "board": "#3b2618"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.honours",
+      "displayName": "Honours Board",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7: plaques and portraits in DeKoven's corridors): a portrait in a gilt frame (a dark oil of a head-and-shoulders shape: no face, nobody real) between two cast bronze plaques with raised borders and lines of relief standing for lettering (no words), 2.4 m across; its back on -z. Collides as nothing."
+      },
+      "size": [
+        2.4,
+        1.6,
+        0.1
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "honours",
+        "portrait": [
+          0.8,
+          1.05
+        ],
+        "plaque": [
+          0.5,
+          0.7
+        ],
+        "lines": 7
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "bronze",
+          "seed": 34021,
+          "look": {
+            "gilt": "#b08d3e",
+            "bronze": "#6e4f2a",
+            "ground": "#3a2a1c",
+            "figure": "#1d1a18"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sign.clock_face",
+      "displayName": "Clock Face",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 6, the clock tower): a 2.6 m tower clock face, a round dial in a moulded ring, twelve hour marks (the quarters longer), the hands fixed at ten past ten; its back on -z, hung with its foot at the height given. Collides as nothing. Variants: a cream dial with black hands in a stone ring; a black dial with gilt marks and hands. No numerals, no maker's name."
+      },
+      "size": [
+        2.6,
+        2.6,
+        0.08
+      ],
+      "collide": "none",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "clockface",
+        "ring": 0.16,
+        "marks": [
+          0.22,
+          0.06
+        ],
+        "time": [
+          10,
+          10
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "cream",
+          "seed": 21401,
+          "look": {
+            "dial": "#e9e2cf",
+            "ring": "#cfc8b6",
+            "marks": "#1d1e20",
+            "hands": "#1d1e20",
+            "grime": 0.18
+          }
+        },
+        {
+          "index": 1,
+          "name": "black",
+          "seed": 21402,
+          "look": {
+            "dial": "#1e2124",
+            "ring": "#cfc8b6",
+            "marks": "#c9a24a",
+            "hands": "#c9a24a",
+            "grime": 0.1
           }
         }
       ]

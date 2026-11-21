@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "ironhold_prison",
     "name": "Cormorant Isle",
@@ -24,11 +24,11 @@
     ],
     "release": {
       "mapId": "m_hec75nt4d7ttj6ub",
-      "versionId": "v_qmrr5uwozozhhy5s",
-      "revision": 11,
-      "contentHash": "sha256:e9de8c6f64b5379bd0020e0dad310f223c39fd549e2d7be59829d1f2c6e51731",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:53:28.815Z"
+      "versionId": "v_igteelw2dqft32zb",
+      "revision": 12,
+      "contentHash": "sha256:2ff324a79c1b663a4b3633d52497d1a0b49198b958fe0c2e1332936cde89fe69",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:55:18.768Z"
     }
   },
   "classicStructure": {
@@ -21189,7 +21189,7 @@
         91
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

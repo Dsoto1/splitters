@@ -6,6 +6,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/instancedMesh';
+import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import { PROXY_CELL, buildShadowProxies, proxyable, sortIntoCells } from '../src/game/shadowProxy.ts';
 
 const engines: NullEngine[] = [];
@@ -71,6 +72,10 @@ describe('shadow proxies for the static level', () => {
     for (const p of proxies) {
       expect(p.layerMask).toBe(0);
       expect(p.getTotalIndices()).toBe(36);
+      // Nothing kept in the page: the triangles live on the graphics card only, bounds and counts still known.
+      expect(p.getVerticesData(VertexBuffer.PositionKind)).toBeNull();
+      expect(p.getTotalVertices()).toBe(24);
+      expect(p.getBoundingInfo().boundingBox.extendSize.y).toBeGreaterThan(0.9);
     }
   });
 

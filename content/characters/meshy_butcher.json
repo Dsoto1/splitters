@@ -6,6 +6,7 @@
   "name": "The Butcher",
   "look": "core.butcher",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Forty years behind the counter. Knows exactly where to cut.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 14000,

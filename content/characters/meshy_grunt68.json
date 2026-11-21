@@ -6,6 +6,8 @@
   "name": "Grunt '68",
   "look": "core.grunt68",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Has been in the field so long the field started calling him sir.",
   "body": "male",
@@ -25,16 +27,10 @@
     "metallic": 0,
     "roughness": 0.75
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
     "grip": {
-      "gripLong": [-0.045, 0, -0.045],
-      "supportLong": [0.02, 0.02, 0],
-      "supportPistol": [0, 0.04, -0.08],
       "curlL": 1.6
     }
   }

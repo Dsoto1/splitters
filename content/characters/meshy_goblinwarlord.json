@@ -5,7 +5,8 @@
   "order": 111,
   "name": "Goblin Warlord",
   "look": "core.goblinwarlord",
-  "group": "legends",
+  "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "Rules the warren by fear, spite and a very large knife.",
   "body": "male",
@@ -25,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -35,7 +33,6 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
-    "hands": { "together": 1, "r": { "scale": 0.75 }, "l": { "scale": 0.85 } },
-    "grip": { "gripLong": [-0.03, 0, -0.03], "supportPistol": [-0.01, 0.04, -0.05] }
+    "hands": { "together": 1, "r": { "scale": 0.75 }, "l": { "scale": 0.85 } }
   }
 }

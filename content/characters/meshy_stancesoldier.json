@@ -6,6 +6,8 @@
   "name": "Pemberton",
   "look": "core.stancesoldier",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Puts the kettle on between rounds. Has never once missed tea, or a flank.",
   "body": "male",
@@ -23,9 +25,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.8
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

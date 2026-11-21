@@ -1,4 +1,7 @@
 import {
+  DEFAULT_GROUND_THEME,
+  coreMaterials,
+  type GroundThemeDefinition,
   edgeSegments,
   getProp,
   placedMountDef,
@@ -14,8 +17,6 @@ import {
   type ScenarioPaletteKey,
   type SetPieceDefinition,
   type SetPieceRole,
-  type TerrainData,
-  type TerrainMaterial,
   type Vec3
 } from '@tiletrigger/shared';
 import { itemColor } from '../game/pickupVisuals.ts';
@@ -46,20 +47,10 @@ export const NEW_MAP_SIZES: readonly [number, string, string][] = [
   [0, 'Sky map', 'No terrain · floating'],
 ];
 
-/** The material most of the terrain is (its index in TERRAIN_MATERIALS). */
-export function mainGround(t: TerrainData): number {
-  const counts = new Map<number, number>();
-  for (const m of t.materials) counts.set(m, (counts.get(m) ?? 0) + 1);
-  let best = 0;
-  let most = -1;
-  for (const [m, n] of counts) if (n > most) (best = m), (most = n);
-  return best;
-}
-
-/** The top bar's compact layouts (editor.css, fit-1..5): the fewest that make its contents fit its width. */
+/** The top bar's compact layouts (editor.css, fit-1..7): the fewest that make its contents fit its width. */
 export function fitTopBar(top: HTMLElement): void {
   if (top.offsetParent === null) return;
-  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4', 'fit-5'];
+  const levels = ['fit-1', 'fit-2', 'fit-3', 'fit-4', 'fit-5', 'fit-6', 'fit-7'];
   top.classList.remove(...levels);
   for (const c of levels) {
     if (top.scrollWidth <= top.clientWidth + 1) break;
@@ -67,16 +58,32 @@ export function fitTopBar(top: HTMLElement): void {
   }
 }
 
-/** A blank map: the starter room and spawn, on open ground of `size` metres (just under the floors) or none. */
-export function starterMap(size: number | null, ground: TerrainMaterial): MapDocument {
+/** A Ground theme as a menu shows it: its name and its base ground ("Quarry · Gravel"). */
+export const groundThemeLabel = (g: GroundThemeDefinition): string => `${g.displayName} · ${coreMaterials.get(g.base)?.displayName ?? g.base}`;
+
+/** A blank map: the starter room and spawn, on open ground of `size` metres (just under the floors, all the base of `groundTheme`) or none. */
+export function starterMap(size: number | null, groundTheme: string = DEFAULT_GROUND_THEME): MapDocument {
   const doc = newMapDocument('Untitled Map');
-  return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], ground), baseY: -0.15 } } : doc;
+  return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], groundTheme), baseY: -0.15 } } : doc;
 }
 
 export type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind } | { kind: 'envbrush' };
 
 /** What the pointer can pick: a tile, an entity, or a set piece (any of its parts picks the whole placement). */
 export type Hit = { kind: 'tile' | 'entity' | 'setpiece'; id: string };
+
+/**
+ * Small things (MapMaker: picking things inside others): spawns, pickups, lights and the logic and scenario markers
+ * a map maker places by the dozen. Each is drawn through walls and set pieces as an icon with a halo where it is
+ * hidden, and picked through them.
+ */
+const SMALL_KINDS: ReadonlySet<string> = new Set(['spawn', 'pickup', 'light', 'button', 'flag', 'objective', 'hostage', 'trap', 'pad']);
+export const isSmallThing = (e: Pick<MapEntity, 'kind'>): boolean => SMALL_KINDS.has(e.kind);
+
+/** How a small thing's icon looks: its colour and shape. */
+export function smallIconKind(e: Pick<MapEntity, 'kind'>): 'spawn' | 'pickup' | 'light' | 'logic' {
+  return e.kind === 'spawn' || e.kind === 'pickup' || e.kind === 'light' ? e.kind : 'logic';
+}
 
 /** The kinds of entity a set piece is made of (setPieceFromSelection takes these). */
 export const PIECE_PART_KINDS: ReadonlySet<string> = new Set(['block', 'prop', 'door', 'ladder', 'light']);

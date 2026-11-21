@@ -6,6 +6,7 @@
   "name": "Fishy Fred",
   "look": "core.fishyfred",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "critter",
   "bio": "Walked out of the river in his best red sneakers. Nobody has told him about the smell.",
   "body": "male",
@@ -25,9 +26,6 @@
     "metallic": 0,
     "roughness": 0.6
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -37,7 +35,6 @@
     "feet": true,
     "hands": { "scale": 0.7 },
     "grip": {
-      "gripLong": [-0.045, 0.02, -0.03],
       "rollR": 0.3
     },
     "skin": {

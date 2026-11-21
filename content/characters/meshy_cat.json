@@ -6,6 +6,7 @@
   "name": "Biscuit",
   "look": "core.biscuit",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "cat",
   "bio": "Stood up on his hind legs one morning and never went back down. Knocks things off ledges, you included.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.8
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 10000,

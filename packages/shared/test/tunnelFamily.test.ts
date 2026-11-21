@@ -27,7 +27,7 @@ import {
   type TilePlacement,
 } from '../src/index.ts';
 
-const SHAPES = ['straight', 'curve', 't', 'cross', 'end', 'portal'];
+const SHAPES = ['straight', 'curve', 't', 'cross', 'end', 'portal', 'outfall'];
 
 function mapOf(tiles: (Partial<TilePlacement> & { tile: string; x: number; y: number })[], hill = 0): MapDocument {
   const doc = newMapDocument('Tunnels');
@@ -56,8 +56,10 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     for (const shape of SHAPES) {
       const base = coreCatalog.get(`core.tunnel_concrete_${shape}`)!;
       const brick = coreCatalog.get(`core.tunnel_brick_${shape}`)!;
+      const mine = coreCatalog.get(`core.tunnel_mine_${shape}`)!;
       expect(base.familyOf).toEqual({ base: base.id, family: 'concrete', label: 'Concrete' });
-      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick (preview)' });
+      expect(brick.familyOf).toEqual({ base: base.id, family: 'brick', label: 'Brick Sewer' });
+      expect(mine.familyOf).toEqual({ base: base.id, family: 'mine', label: 'Mine' });
       expect(isTileOptionTwin(base)).toBe(false);
       expect(isTileOptionTwin(brick)).toBe(true);
       expect(brick.cells).toEqual(base.cells);
@@ -67,8 +69,17 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
       const hard = (d: typeof base) => [...(d.extraFloors ?? []), ...(d.solids ?? []).filter((b) => b.kind !== 'trim')].map(({ surface: _s, ...b }) => b);
       expect(hard(brick)).toEqual(hard(base));
       expect(new Set((brick.solids ?? []).map((b) => b.surface?.material))).not.toEqual(new Set((base.solids ?? []).map((b) => b.surface?.material)));
-      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id]);
-      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id]);
+      expect(mine.cells).toEqual(base.cells);
+      expect(mine.ports).toEqual(base.ports);
+      expect(mine.bore).toEqual(base.bore);
+      expect(hard(mine)).toEqual(hard(base));
+      // (The cave family, Tileset 04 step 7: the same shell too.)
+      const cave = coreCatalog.get(`core.tunnel_cave_${shape}`)!;
+      expect(cave.ports).toEqual(base.ports);
+      expect(cave.bore).toEqual(base.bore);
+      expect(hard(cave)).toEqual(hard(base));
+      expect(coreCatalog.familiesOf(base.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
+      expect(coreCatalog.familiesOf(brick.id).map((d) => d.id)).toEqual([base.id, brick.id, mine.id, cave.id]);
     }
     expect(coreCatalog.familiesOf('core.room')).toEqual([]);
     expect(coreCatalog.familiesOf('core.tunnel_vault_buried')).toEqual([]);
@@ -90,12 +101,15 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(mapGroundBores(brick)).toEqual(mapGroundBores(plain));
     expect(tileFamilies(brick.classicStructure.tiles[0]!)).toEqual([
       { family: 'concrete', label: 'Concrete', on: false },
-      { family: 'brick', label: 'Brick (preview)', on: true },
+      { family: 'brick', label: 'Brick Sewer', on: true },
+      { family: 'mine', label: 'Mine', on: false },
+      { family: 'cave', label: 'Cave', on: false },
     ]);
   });
 
   it('the format: v37 keeps the field through save and load; a v36 map opens unchanged; a family the tile has none of is a warning and is ignored', () => {
-    expect(MAP_FORMAT_VERSION).toBe(37);
+    // (v37 is where the field came in; later bumps are other pieces' and say so in their own tests.)
+    expect(MAP_FORMAT_VERSION).toBeGreaterThanOrEqual(37);
     const brick = mapOf([{ tile: 'core.tunnel_concrete_cross', x: 0, y: 0, family: 'brick' }]);
     const again = loadMap(serializeMap(brick), undefined, { forEditing: true, openWithErrors: true });
     expect(again.ok && again.map.classicStructure.tiles[0]!.family).toBe('brick');
@@ -153,7 +167,7 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     // The vaulted tunnel's end takes the vaulted Tunnel Portal.
     expect(placed['3,0']).toMatchObject({ tile: 'core.tunnel_portal', rotation: 3 });
     const done = applyCommand(brick, made.command);
-    expect(openEnds(done)).toEqual([{ tile: 'tile_6', side: 'N', x: -4, y: 5, z: 0 }, { tile: 'tile_6', side: 'S', x: -4, y: 3, z: 0 }]);
+    expect(openEnds(done)).toEqual([{ tile: 'tile_6', side: 'N', x: -4, y: 5, z: 0, bore: 'S' }, { tile: 'tile_6', side: 'S', x: -4, y: 3, z: 0, bore: 'S' }]);
     // Under a hill the open ends are the validator's buried mouths; with the portals on, none of that run's are left.
     const buried = (m: MapDocument) => validateMap({ ...m, terrain: { ...m.terrain!, heights: m.terrain!.heights.map(() => 800) } }).filter((i) => i.code === 'tunnel.mouth_buried').map((i) => i.targetId);
     expect(buried(brick).sort()).toEqual(['tile_0', 'tile_1', 'tile_3', 'tile_4', 'tile_6', 'tile_6']);
@@ -185,7 +199,10 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     expect(lights.length).toBe(3);
     expect(lights.map((l) => l.position)).toEqual([[0, 3.1, 0], [0, 3.1, 8], [0, 3.1, 16]]);
     // Open along its whole length (and through the tile joined on at its south end): 32 m of passage.
-    const physics = new PhysicsWorld(buildMapGeometry(built).filter((b) => b.kind !== 'barrier'), null);
+    // (Its two ends join nothing yet: each is closed by an end cap until a portal goes on it.)
+    const geometry = buildMapGeometry(built);
+    expect(geometry.filter((b) => b.endCap).length).toBe(2);
+    const physics = new PhysicsWorld(geometry.filter((b) => b.kind !== 'barrier' && !b.endCap), null);
     for (const [x, y] of [[0, 1.5], [1.6, 0.3], [-1.6, 3.1]] as [number, number][]) expect(physics.raycastWorld({ x, y, z: -11.9 }, { x: 0, y: 0, z: 1 }, 31.8)).toBeNull();
     physics.free();
     // The map's own tile and the piece's are one run; its open ends are the tile's south and the piece's north.
@@ -194,6 +211,9 @@ describe('tunnel families: a setting on the placed piece (map format v37)', () =
     const made = addPortalsCommand(placed);
     if ('error' in made) throw new Error(made.error);
     expect(made.placed.map((p) => `${p.tile}@${p.x},${p.y}r${p.rotation}`).sort()).toEqual(['core.tunnel_concrete_portal@0,-2r0', 'core.tunnel_concrete_portal@0,3r2']);
+    // With the portals on, the caps are gone.
+    const portaled = expandSetPieces({ ...placed, classicStructure: { ...placed.classicStructure, tiles: [...placed.classicStructure.tiles, ...made.placed] } }, builtInSetPieces()).map;
+    expect(buildMapGeometry(portaled).filter((b) => b.endCap)).toEqual([]);
   });
 
   it('a hint, not a warning, for a buried run mounded on flat ground that would be flush a level down; none under a hill or a level down', () => {

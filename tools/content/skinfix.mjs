@@ -103,6 +103,145 @@ export function bindRigid({ count, at, J, W, rigOf, regions }) {
   return report;
 }
 
+/**
+ * `fixes.rejoint`: joints of a download's rig moved along their bone toward their parent (or out past their place), in the download's own pose,
+ * with the skin past the new place handed from the parent to the joint. Meshy's rig put The Hollow Pilgrim's
+ * shoulders out at its robe's dropped shoulder seam (upper arm 9.7 cm, the arm a sixth of its height), so its hands
+ * could not reach a rifle's handguard; the shoulder moved in along the collarbone gives the arm its length.
+ * - `moves`: `{ <rig joint>: share }`, the share (0.3–1) of the way from the parent's joint to its own it then sits at,
+ *   or past it (1–1.6: out along the bone beyond its own place; the skin it held inside the new place goes back to the
+ *   parent: Freaky Frida's rig held her back under the vest's straps on the upper arms, 2026-11-19);
+ *   a joint named without its side (`upperarm`) moves on both sides. Or `{ <rig joint>: { share, radius } }`: the
+ *   limb's radius set (metres at a 1.8 m body) instead of measured, where the measure takes in more than the limb
+ *   (Warrior Sentinel's big gauntlets made it 19.6 cm and handed his vest's back and front to the upper arms).
+ * - The skin: a vertex the parent holds, past the new place along the bone (eased over BAND of the bone's length either
+ *   side of it) and within the limb's radius of the bone's line (eased out to 1.5 radii: a robe's side under the arm
+ *   stays with the body), goes to the joint by that share of the parent's weight. The radius is what the joint and its
+ *   child hold (90th percentile of their vertices' distance from the line).
+ * `rest[j]` (world, the download's pose) is changed in place, as are `J`/`W` (four per vertex); `at(v)` is vertex v's
+ * place in that pose; `rigOf[j]` is source joint j's rig joint. Returns one report per joint moved.
+ */
+export function moveJoints({ count, at, J, W, rest, parent, rigOf, moves }) {
+  const BAND = 0.15;
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const smooth = (e0, e1, x) => {
+    const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+  };
+  const pos = Array.from({ length: count }, (_, v) => at(v));
+  const major = (v) => {
+    let b = 0;
+    for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + b]) b = k;
+    return J[v * 4 + b];
+  };
+  const report = [];
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const q of pos) (lo = Math.min(lo, q[1])), (hi = Math.max(hi, q[1]));
+  const perMetre = (hi - lo) / 1.8;
+  for (const [name, move] of Object.entries(moves)) {
+    const share = typeof move === 'number' ? move : move.share;
+    const setRadius = typeof move === 'number' ? undefined : move.radius;
+    const targets = /_[lr]$/.test(name) ? [name] : [`${name}_l`, `${name}_r`];
+    for (const target of targets) {
+      const j = rigOf.indexOf(target);
+      const p = j >= 0 ? parent[j] : -1;
+      if (j < 0 || p < 0) throw new Error(`fixes.rejoint.${name}: no joint ${target} with a parent in the download's rig`);
+      const child = parent.findIndex((q) => q === j);
+      const a = rest[p];
+      const was = rest[j];
+      const bone = sub(was, a);
+      const L = Math.hypot(...bone);
+      const dir = bone.map((x) => x / L);
+      const to = a.map((x, k) => x + dir[k] * L * share);
+      // The limb's radius, from what the joint and its child hold about the bone's line beyond the new place.
+      const off = (q) => {
+        const r = sub(q, to);
+        const t = dot(r, dir);
+        return Math.hypot(r[0] - dir[0] * t, r[1] - dir[1] * t, r[2] - dir[2] * t);
+      };
+      const ds = [];
+      for (let v = 0; v < count; v++) if (major(v) === j || (child >= 0 && major(v) === child && dot(sub(pos[v], was), dir) < L)) ds.push(off(pos[v]));
+      ds.sort((x, y) => x - y);
+      const R = setRadius !== undefined ? setRadius * perMetre : ds.length ? ds[Math.floor(0.9 * (ds.length - 1))] : L;
+      let moved = 0;
+      if (share > 1) {
+        // Out past its own place: the skin the joint holds inside the new place along the bone (eased over BAND either
+        // side of it) goes back to the parent, whatever its distance from the bone's line (inside a shoulder that is the
+        // body: the back and chest under a vest's straps, which the upper arm held and dragged with it).
+        for (let v = 0; v < count; v++) {
+          let kj = -1;
+          for (let k = 0; k < 4; k++) if (J[v * 4 + k] === j && W[v * 4 + k] > 0) kj = k;
+          if (kj < 0) continue;
+          const t = dot(sub(pos[v], a), dir) / L;
+          const s = 1 - smooth(share - BAND, share + BAND, t);
+          if (s <= 1e-3) continue;
+          const give = W[v * 4 + kj] * s;
+          let kp = -1;
+          for (let k = 0; k < 4; k++) if (J[v * 4 + k] === p && W[v * 4 + k] > 0) kp = k;
+          if (kp < 0) {
+            if (s >= 0.999) {
+              J[v * 4 + kj] = p;
+              moved++;
+              continue;
+            }
+            let free = -1;
+            for (let k = 0; k < 4; k++) if (k !== kj && !(W[v * 4 + k] > 0)) free = k;
+            if (free < 0) {
+              free = [0, 1, 2, 3].filter((k) => k !== kj).sort((x, y) => W[v * 4 + x] - W[v * 4 + y])[0];
+              W[v * 4 + kj] += W[v * 4 + free];
+            }
+            J[v * 4 + free] = p;
+            W[v * 4 + free] = 0;
+            kp = free;
+          }
+          W[v * 4 + kj] -= give;
+          W[v * 4 + kp] += give;
+          moved++;
+        }
+        rest[j] = to;
+        report.push({ joint: target, from: was, to, radius: R, moved });
+        continue;
+      }
+      for (let v = 0; v < count; v++) {
+        let kp = -1;
+        for (let k = 0; k < 4; k++) if (J[v * 4 + k] === p && W[v * 4 + k] > 0) kp = k;
+        if (kp < 0) continue;
+        const t = dot(sub(pos[v], a), dir) / L;
+        const s = smooth(share - BAND, share + BAND, t) * (1 - smooth(R, 1.5 * R, off(pos[v])));
+        if (s <= 1e-3) continue;
+        const give = W[v * 4 + kp] * s;
+        let kj = -1;
+        for (let k = 0; k < 4; k++) if (J[v * 4 + k] === j && W[v * 4 + k] > 0) kj = k;
+        if (kj < 0 && s >= 0.999) {
+          J[v * 4 + kp] = j;
+          moved++;
+          continue;
+        }
+        if (kj < 0) {
+          // A free slot, or the smallest other influence handed to the parent first.
+          let free = -1;
+          for (let k = 0; k < 4; k++) if (k !== kp && !(W[v * 4 + k] > 0)) free = k;
+          if (free < 0) {
+            free = [0, 1, 2, 3].filter((k) => k !== kp).sort((x, y) => W[v * 4 + x] - W[v * 4 + y])[0];
+            W[v * 4 + kp] += W[v * 4 + free];
+          }
+          J[v * 4 + free] = j;
+          W[v * 4 + free] = 0;
+          kj = free;
+        }
+        W[v * 4 + kp] -= give;
+        W[v * 4 + kj] += give;
+        moved++;
+      }
+      rest[j] = to;
+      report.push({ joint: target, from: was, to, radius: R, moved });
+    }
+  }
+  return report;
+}
+
 /** The body part of a look's `fixes.skin`, or null when it has none. */
 export function bodySkin(skin) {
   if (!skin) return null;

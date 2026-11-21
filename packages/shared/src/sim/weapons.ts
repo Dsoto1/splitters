@@ -1,7 +1,7 @@
 import { add, dot, scale, type Vec3, hypot } from '../math.ts';
 import { PLAYER, type Stance } from './constants.ts';
 import { lastHit, rayBody, type HitBody, type LookHitbox } from './hitbox.ts';
-import type { AccuracySpec, BallisticSpec, FalloffSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
+import type { AccuracySpec, AkimboSpec, BallisticSpec, FalloffSpec, HandlingSpec, KickSpec, ReloadSpec, WeaponFamily } from './gunplay.ts';
 import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CODES } from '../content/weapons.generated.ts';
 
 export type WeaponKind = 'hitscan' | 'projectile' | 'melee';
@@ -21,16 +21,26 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
 };
 
 /**
- * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Vortex
- * Grenade's own look (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
- * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`).
+ * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Gravity
+ * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
+ * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
+ * Box Kit in flight (its crate, small).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
+  'ammoBox',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
+
+/**
+ * Projectile looks fired as a stream (the flamethrower's flame, goo, bubbles, plasma, oil): the snapshot names a
+ * stream projectile's shooter, so clients draw it leaving the shooter's muzzle as drawn now and blend it into where
+ * the host has it (client game/streamBlend.ts). Drawn from the snapshot alone it left the eye about 100 ms in the
+ * past and trailed behind you while you moved.
+ */
+export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil']);
 
 /**
  * Lingering effects a hit leaves on a player: `burn` and `poison` hurt over
@@ -200,6 +210,8 @@ export interface ProjectileSpec {
   airstrike?: { count: number; spacing: number; height: number; bomb: ProjectileSpec };
   /** Deployable cover: where it lands it becomes a solid wall (half extents, metres) facing the thrower, with its own health. */
   cover?: { half: [number, number, number]; health: number };
+  /** An Ammo Box Kit: where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX), square to the thrower. */
+  ammoBox?: boolean;
   /**
    * Arena discs (Disc Arena): no damage. A hit shoves the player `push` m/s
    * away (and `lift` m/s up). Then, or when its fuse runs out or it has bounced
@@ -274,6 +286,12 @@ export interface WeaponPresentation {
    */
   held?: { medium: string; high: string };
   /**
+   * A real optic in the model's scope tube (client game/opticView.ts): aiming down the sights brings the eyepiece to
+   * the eye and the view through it is magnified. Not a `zoomFov` scope: the sim treats it as iron sights (hip fire
+   * keeps its accuracy), the client draws the optic, with the scope's sway and breath.
+   */
+  optic?: OpticSpec;
+  /**
    * The second trigger's shot when it isn't the weapon's own (a melee weapon's barrel): its
    * sound and playback rate, its flash, and how much smoke it leaves (0..1.5, a puff cloud).
    */
@@ -315,6 +333,34 @@ export interface WeaponHold {
  * `burst` a short burst per press.
  */
 export type FireMode = 'auto' | 'semi' | 'burst';
+
+/**
+ * One of a weapon's switchable fire modes (spec §36; `fireModes`): its trigger and what it changes. The first mode
+ * is the weapon's own trigger (its `fireMode`, `fireIntervalTicks`, `burst` and `kick`); a later one overrides them.
+ */
+export interface FireModeSpec {
+  mode: FireMode;
+  /** The HUD's name for it ("Single", "Burst"). */
+  label: string;
+  /** Ticks from one trigger pull to the next (a burst's: from its first round to the next burst's). */
+  fireIntervalTicks?: number;
+  burst?: { count: number; intervalTicks: number };
+  /** Recoil in this mode, over the weapon's own (sim/gunplay.ts KickSpec). */
+  kick?: Partial<KickSpec>;
+}
+
+/**
+ * A real optic (client only): aiming down the sights looks through the model's own scope tube. `eye`: the centre of
+ * the eyepiece's glass on the model (model space, metres); `radius`: the eyepiece's clear radius; `relief`: how far
+ * in front of the eye the eyepiece sits when aimed (metres, default 0.075); `mag`: magnification over the hip view.
+ */
+export interface OpticSpec {
+  mag: number;
+  eye: ModelPoint;
+  radius: number;
+  relief?: number;
+  reticle?: 'duplex' | 'chevron';
+}
 
 /**
  * Legacy spread bloom per shot (the exotic arsenal's, before the gunplay pass); bloom recovers while not firing.
@@ -385,6 +431,8 @@ export interface WeaponDefinition {
   fireMode?: FireMode;
   /** `burst`: shots per press and ticks between them. */
   burst?: { count: number; intervalTicks: number };
+  /** Switchable fire modes (spec §36), switched by a key; absent: the one trigger above (sim/fireModes.ts). */
+  fireModes?: readonly FireModeSpec[];
   /** Hold the trigger this long before it fires (spin-up, charge). `windupResets`: charge again after every shot. */
   windupTicks?: number;
   windupResets?: boolean;
@@ -414,6 +462,8 @@ export interface WeaponDefinition {
   headshot?: number;
   /** Damage multiplier for a leg hit (default: the family's, else LEG_MULTIPLIER). */
   legshot?: number;
+  /** Damage multiplier for an arm hit (default: the family's, else ARM_MULTIPLIER). */
+  armshot?: number;
   /**
    * Legacy spread bloom, for weapons without a gunplay family (the exotic arsenal: their spread can't be moved to
    * `accuracy` without changing it). Family weapons use `accuracy`; their `maxBloom` only sets bots' burst length.
@@ -422,6 +472,11 @@ export interface WeaponDefinition {
   // ---- Gunplay (docs/GUNPLAY_SPEC.md §35; see sim/gunplay.ts). Each field overrides the family's default.
   /** Weapon family: velocity, spread, recoil, falloff and body-zone defaults. */
   family?: WeaponFamily;
+  /**
+   * Dual wielding: `true` makes the weapon eligible with its family's trade; an object overrides numbers, and `as`
+   * names the family to take them from (a weapon without one). See gunplay.ts akimboOf.
+   */
+  akimbo?: true | (Partial<AkimboSpec> & { as?: WeaponFamily });
   /** Ballistic bullets (hitscan weapons with a bullet family fly by default); null forces hitscan. */
   ballistic?: Partial<BallisticSpec> | null;
   /** Spread model: base / movement / air / sustained growth / max / recovery / ADS. */
@@ -432,6 +487,8 @@ export interface WeaponDefinition {
   reload?: ReloadSpec;
   /** Damage falloff over distance. */
   falloff?: FalloffSpec;
+  /** Running speed holding it and the time from a sprint to the first round (spec §27, §35; gunplayOf(def).handling). */
+  handling?: Partial<HandlingSpec>;
   /** AI: 0..1 general preference and the distance band (m) it is best at. */
   botDesirability: number;
   botRange: [number, number];
@@ -595,8 +652,8 @@ const scratchBody: HitBody = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance: 0, sc
  * Resolve a hitscan shot: the nearest of the first static surface and any
  * target capsule wins. `worldDistance` is the result of a static raycast (null = nothing within range).
  */
-/** Where a shot landed on a body: 0 torso and arms, 1 head, 2 legs. */
-export type HitZone = 0 | 1 | 2;
+/** Where a shot landed on a body: 0 torso, 1 head, 2 legs, 3 arms (GUNPLAY_SPEC §11). */
+export type HitZone = 0 | 1 | 2 | 3;
 /** Head hits hurt double (sniper rifles more); leg hits a bit less. */
 export const HEAD_MULTIPLIER = 2;
 
@@ -620,6 +677,8 @@ export function unarmedStrike(forward: number, ticksSincePunch: number): Unarmed
   return forward >= UNARMED.kickForward || ticksSincePunch <= UNARMED.comboTicks ? 'kick' : 'punch';
 }
 export const LEG_MULTIPLIER = 0.75;
+/** Arm hits (GUNPLAY_SPEC §11: 0.8-1.0): a little under the body, above the legs. Families set their own (`arms`). */
+export const ARM_MULTIPLIER = 0.9;
 
 /** The body zone at height `y` on a player standing at `feet` (`height` tall): the old height bands, for targets without measured shapes. */
 export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): HitZone {
@@ -630,7 +689,7 @@ export function hitZone(feet: Vec3, y: number, height: number = PLAYER.height): 
 }
 
 export function zoneMultiplier(zone: HitZone, headshot: number = HEAD_MULTIPLIER): number {
-  return zone === 1 ? headshot : zone === 2 ? LEG_MULTIPLIER : 1;
+  return zone === 1 ? headshot : zone === 2 ? LEG_MULTIPLIER : zone === 3 ? ARM_MULTIPLIER : 1;
 }
 
 export function resolveHitscan(origin: Vec3, dir: Vec3, range: number, worldDistance: number | null, targets: readonly ShotTarget[]): ShotResult {

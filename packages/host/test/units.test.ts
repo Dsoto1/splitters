@@ -14,9 +14,9 @@ import { ConfigError, DEFAULT_HUB, loadConfig, parseConfig } from '../src/config
 import { liveArgs, originAllowed, ownPage, startConfig } from '../src/control.ts';
 import { appWindowArgs, browserCandidates, findAppBrowser } from '../src/appWindow.ts';
 import { LogBuffer, launcherCsp, launcherPage, mapCatalog } from '../src/launcher.ts';
-import { DEFAULT_MAPS_DIR, suiteIds } from '../src/host.ts';
+import { DEFAULT_MAPS_DIR, TICKET_KEYS_REFETCH_MS, TICKET_KEYS_RETRY_MS, TicketKeys, suiteIds } from '../src/host.ts';
 import { syncMaps } from '../src/published.ts';
-import { loadMap as loadMapDoc, serializeMap } from '@tiletrigger/shared';
+import { loadMap as loadMapDoc, mapContentHash, serializeMap } from '@tiletrigger/shared';
 
 /** The rules side of a match target, for fakes that don't use it. */
 const noRules = () => ({
@@ -392,6 +392,89 @@ describe("a player's WebRTC link", () => {
   });
 });
 
+describe("a player's WebRTC link, up while the page is busy", () => {
+  it('reports the peer connection up while it is connected and open, not once closing', () => {
+    const dc = new FakeDc({ z: 1 }) as FakeDc & { peerConnection?: unknown };
+    const state = { connectionState: 'connected' };
+    dc.peerConnection = state;
+    const conn = peerConn(dc);
+    expect(conn.up?.()).toBe(true);
+    state.connectionState = 'disconnected';
+    expect(conn.up?.()).toBe(false);
+    state.connectionState = 'connected';
+    vi.useFakeTimers();
+    try {
+      conn.close(4009, 'no answer');
+      expect(conn.up?.()).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+    // No peer connection to ask (a test double): not up.
+    expect(peerConn(new FakeDc({})).up?.()).toBe(false);
+  });
+});
+
+describe("a player's WebRTC link, closed by the server", () => {
+  it('stays open for a last message until the player hangs up, and closes on its own after closeWaitMs', () => {
+    vi.useFakeTimers();
+    try {
+      // The player reads the reject and leaves: the link closes then, not on a timer.
+      const dc = new FakeDc({ z: 1 });
+      const conn = peerConn(dc);
+      let closed = false;
+      conn.onClose(() => (closed = true));
+      conn.send('{"t":"reject","reason":"kicked"}');
+      conn.close(4003, 'kicked');
+      expect(conn.send('{"t":"snapshot"}')).toBe(0);
+      vi.advanceTimersByTime(LINK_LIMITS.closeDelayMs + 1);
+      expect(dc.closed || closed).toBe(false);
+      dc.close();
+      expect(closed).toBe(true);
+      // A player that never hangs up: closed after closeWaitMs.
+      const mute = new FakeDc({ z: 1 });
+      const c2 = peerConn(mute);
+      let closed2 = false;
+      c2.onClose(() => (closed2 = true));
+      c2.close(4005, 'travel');
+      vi.advanceTimersByTime(LINK_LIMITS.closeWaitMs - 1);
+      expect(mute.closed).toBe(false);
+      vi.advanceTimersByTime(2);
+      expect(mute.closed && closed2).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("the hub's ticket keys", () => {
+  it('a fetch that failed is tried again in a few seconds, not after the 30 s between refreshes', async () => {
+    vi.useFakeTimers();
+    try {
+      const signer = new TicketSigner();
+      let up = false;
+      let asked = 0;
+      const fetcher = (async () => {
+        asked++;
+        if (!up) throw new Error('timed out');
+        return new Response(JSON.stringify(signer.keys()), { status: 200 });
+      }) as unknown as typeof fetch;
+      const keys = new TicketKeys('http://hub.test', fetcher);
+      await keys.refresh();
+      expect(asked).toBe(1);
+      up = true;
+      await vi.advanceTimersByTimeAsync(TICKET_KEYS_RETRY_MS + 1);
+      expect(asked).toBe(2);
+      expect(keys.verify(signer.sign('acct-1', 'ABCDEF').ticket, 'ABCDEF')).toMatchObject({ sub: 'acct-1' });
+      // Keys in hand: no more timers.
+      await vi.advanceTimersByTimeAsync(TICKET_KEYS_REFETCH_MS * 2);
+      expect(asked).toBe(2);
+      keys.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe('WebRTC and relay details', () => {
   it("escapes coturn's REST usernames for libdatachannel", () => {
     const [stun, turn] = iceForLibdatachannel([{ urls: 'stun:x:3478' }, { urls: ['turn:x:3478'], username: '1798403600:s_ABC234.host', credential: 'a+b/c=' }]);
@@ -591,7 +674,9 @@ describe('published maps on a Host Service', () => {
 
     expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 0, online: true });
     expect(name('frost_basin')).toBe('Frost Basin');
-    hub = { frost_basin: { text: doc('frost_basin', 'Frost Basin Fixed'), hash: 'h1', at: 1 }, owner_new: { text: doc('sandgate', 'New One', 'owner_new'), hash: 'h2', at: 2 } };
+    // Published a day after the bundled Frost Basin's release, so newer than it (shared publishedChoice.ts).
+    const released = Date.parse(JSON.parse(read(join(DEFAULT_MAPS_DIR, 'frost_basin.json'), 'utf8')).metadata.release.releasedAt);
+    hub = { frost_basin: { text: doc('frost_basin', 'Frost Basin Fixed'), hash: 'h1', at: released + 86_400_000 }, owner_new: { text: doc('sandgate', 'New One', 'owner_new'), hash: 'h2', at: 2 } };
     expect(await syncMaps(bundled, dir, 'http://hub', fetcher)).toMatchObject({ published: 2, added: ['owner_new'] });
     expect(name('frost_basin')).toBe('Frost Basin Fixed');
     expect(suiteIds(dir).has('owner_new')).toBe(true);
@@ -606,6 +691,60 @@ describe('published maps on a Host Service', () => {
     await syncMaps(bundled, dir, 'http://hub', fetcher);
     expect(name('frost_basin')).toBe('Frost Basin');
     expect(existsSync(join(dir, 'owner_new.json'))).toBe(false);
+  });
+});
+
+describe('published maps older than the ones that came with the Host Service', () => {
+  it('keeps its own map when it changed since the published version or is a later revision, until the owner publishes again', async () => {
+    const { copyFileSync, readFileSync: read, writeFileSync: write } = await import('node:fs');
+    const bundled = tmp();
+    const dir = tmp();
+    const own = join(bundled, 'frost_basin.json');
+    copyFileSync(join(DEFAULT_MAPS_DIR, 'frost_basin.json'), own);
+    const load = (text: string) => {
+      const r = loadMapDoc(text, undefined, { forEditing: true });
+      if (!r.ok) throw new Error('map failed to load');
+      return r.map;
+    };
+    const shippedMap = load(read(own, 'utf8'));
+    const rel = shippedMap.metadata.release!;
+    expect(rel.revision).toBeGreaterThan(1);
+    /** Frost Basin under another name, stamped as the given revision (its block describes it: the hash leaves the block out). */
+    const variant = (name: string, versionId: string, revision: number) => {
+      const m = { ...shippedMap, metadata: { ...shippedMap.metadata, name } };
+      const hash = mapContentHash(m);
+      const map = { ...m, metadata: { ...m.metadata, release: { ...rel, versionId, revision, contentHash: hash } } };
+      return { map, text: serializeMap(map), hash };
+    };
+    let hub: Record<string, { text: string; hash: string; at: number; release?: unknown }> = {};
+    const fetcher = (async (url: string) => {
+      const m = /\/api\/v1\/maps(?:\/(\w+))?/.exec(url)!;
+      if (!m[1]) return new Response(JSON.stringify({ maps: Object.entries(hub).map(([id, v]) => ({ id, hash: v.hash, at: v.at, ...(v.release ? { release: v.release } : {}) })) }));
+      return hub[m[1]] ? new Response(hub[m[1]]!.text) : new Response('{}', { status: 404 });
+    }) as unknown as typeof fetch;
+    const name = () => JSON.parse(read(join(dir, 'frost_basin.json'), 'utf8')).metadata.name;
+    const lines: string[] = [];
+    const log = (l: string) => lines.push(l);
+    const later = Date.parse(rel.releasedAt) + 86_400_000;
+
+    // An older revision published after the bundled one was released (a hub that doesn't list release blocks: read from the file).
+    const older = variant('Frost Basin Older', 'v_aaaaaaaaaaaaaaaa', rel.revision - 1);
+    hub = { frost_basin: { text: older.text, hash: older.hash, at: later } };
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher, log)).toMatchObject({ published: 0, online: true });
+    expect(name()).toBe('Frost Basin');
+    expect(lines.join('\n')).toMatch(/frost_basin: the version that came with the service \(.*older revision/);
+
+    // The owner publishes a newer revision: it is used.
+    const newer = variant('Frost Basin Newer', 'v_bbbbbbbbbbbbbbbb', rel.revision + 1);
+    hub = { frost_basin: { text: newer.text, hash: newer.hash, at: later + 1000, release: { mapId: rel.mapId, versionId: 'v_bbbbbbbbbbbbbbbb', revision: rel.revision + 1, current: true } } };
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher, log)).toMatchObject({ published: 1 });
+    expect(name()).toBe('Frost Basin Newer');
+
+    // The service is updated with a map changed since that published revision (its block records it): its own again.
+    write(own, serializeMap({ ...newer.map, metadata: { ...newer.map.metadata, name: 'Frost Basin Rebuilt' } }));
+    expect(await syncMaps(bundled, dir, 'http://hub', fetcher, log)).toMatchObject({ published: 0 });
+    expect(name()).toBe('Frost Basin Rebuilt');
+    expect(lines.at(-1)).toMatch(/which the built-in map has changed since/);
   });
 });
 

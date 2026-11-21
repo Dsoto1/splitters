@@ -133,7 +133,11 @@ export async function joinAsGuest(hub: string, code: string, name: string, extra
           g.snapshots++;
         }
         if (msg.t === 'welcome') g.welcome = msg;
-        if (msg.t === 'reject') g.rejected = msg.reason;
+        // Told why it can't play: it leaves, as the browser does (session.ts, 'reject'); the host holds the link until then.
+        if (msg.t === 'reject') {
+          g.rejected = msg.reason;
+          c.close();
+        }
         g.messages.push(msg);
         if (g.messages.length > 200) g.messages.splice(0, 100);
       });

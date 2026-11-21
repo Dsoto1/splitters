@@ -1,7 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
-import { validateMapNavigation } from './mapNav.ts';
+import { validateMapNavigation, type PrebuiltNav } from './mapNav.ts';
 import { Match } from './match.ts';
 import { mapGravityZones, mapPads, padLandings, type JumpPad } from './movement.ts';
 
@@ -39,8 +39,23 @@ interface Flyer {
   flown: number;
 }
 
-function flyer(map: MapDocument): Flyer | null {
-  const match = new Match(map, undefined, 1);
+/**
+ * How the pads are flown. `nav`: the navmesh already built from this map (the navigation check's, validateMapNavigation
+ * `prebuilt`): each match imports it instead of building its own (sim/mapNav.ts loadMapNav; a second build was 40 % of
+ * MapMaker's check on the owner's Iron Maw Remix, docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 1). A navmesh built from
+ * anything else is not taken (its key differs) and the match builds as before. `made`: each match made (tests).
+ */
+export interface FlyPadsOptions {
+  nav?: PrebuiltNav | null;
+  made?: (match: Match) => void;
+}
+
+/** Whether a map has jump pads to fly (none: no match is made). */
+export const mapHasPads = (map: MapDocument): boolean => map.entities.some((e) => e.kind === 'pad');
+
+function flyer(map: MapDocument, opts: FlyPadsOptions): Flyer | null {
+  const match = new Match(map, undefined, 1, opts.nav ? { nav: opts.nav } : {});
+  opts.made?.(match);
   const me = match.addHuman('pad-check');
   if (me) return { match, me, seq: 0, flown: 0 };
   match.destroy();
@@ -94,19 +109,19 @@ export const padFlightOk = (f: PadFlight): boolean => f.alive && !!f.landed && !
  * flight in it that misses is flown again in a match of its own, from its first tick, and that flight is the answer:
  * what moves on a map (trains, lifts, crumbling decks) is then where it starts, not where earlier flights left it.
  */
-export function flyPads(map: MapDocument): PadFlight[] {
+export function flyPads(map: MapDocument, opts: FlyPadsOptions = {}): PadFlight[] {
   const entities = map.entities.filter((e) => e.kind === 'pad');
   const pads = mapPads(entities);
   const out: PadFlight[] = [];
   let shared: Flyer | null = null;
   try {
     for (const [i, pad] of pads.entries()) {
-      shared ??= flyer(map);
+      shared ??= flyer(map, opts);
       if (!shared) break;
       const first = shared.flown === 0;
       let flight = flyPad(shared, map, entities[i]!.id, pad);
       if (!padFlightOk(flight) && !first) {
-        const own = flyer(map);
+        const own = flyer(map, opts);
         if (own) {
           try {
             flight = flyPad(own, map, entities[i]!.id, pad);
@@ -152,9 +167,11 @@ export function padFlightIssues(flights: readonly PadFlight[]): ValidationIssue[
 /**
  * A map's checks as it is played, for where maps are made (validate-map; MapMaker's check list runs the two parts one
  * after the other): the navigation checks (validateMapNavigation) and every jump pad flown by a player's body
- * (padFlightIssues).
+ * (padFlightIssues). The pads are flown on the navigation check's own navmesh (one build, not two); a map without pads
+ * flies nothing.
  */
 export function validateMapPlay(map: MapDocument, official: boolean, opts: { computed?: boolean } = {}): ReturnType<typeof validateMapNavigation> {
-  const nav = validateMapNavigation(map, official, opts);
-  return { ...nav, issues: [...nav.issues, ...padFlightIssues(flyPads(map))] };
+  if (!mapHasPads(map)) return validateMapNavigation(map, official, opts);
+  const { prebuilt, ...nav } = validateMapNavigation(map, official, { ...opts, prebuilt: true });
+  return { ...nav, issues: [...nav.issues, ...padFlightIssues(flyPads(map, { nav: prebuilt ?? null }))] };
 }

@@ -6,6 +6,7 @@
   "name": "Count Bonesworth",
   "look": "core.bonesworth",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "spooky",
   "bio": "Two hundred years dead and still dressed for dinner.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

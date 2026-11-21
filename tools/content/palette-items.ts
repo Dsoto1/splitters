@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { builtInSetPieces, coreCatalog, getKitFamily, getProp } from '../../packages/shared/src/index.ts';
+import { MOUNT_DEFS, builtInSetPieces, coreCatalog, getKitFamily, getProp } from '../../packages/shared/src/index.ts';
 import { atlasGroup, pictureKeys } from '../../packages/client/src/editor/paletteCatalog.ts';
 import { loadPropManifest } from './props-manifest.mjs';
 
@@ -33,7 +33,11 @@ const items = pictureKeys().map(({ key, tile, file, setPiece }) => {
   // A part of a larger build (a kit family with `within`) is framed by its own outline (modelThumbs.ts `mesh` fit):
   // the framing is part of what its picture is drawn from.
   const within = key.startsWith('prop:') && getKitFamily(key.slice(5))?.within;
-  const hash = tile ? sha(JSON.stringify(coreCatalog.get(tile))) : setPiece ? setPieceHash(setPiece) : within ? sha(Buffer.concat([modelBytes(file!), Buffer.from('fit:mesh:1')])) : sha(modelBytes(file!));
+  // A vehicle drawn with its tire model on every hub (modelThumbs.ts getMount): the tire, the hubs and the body's ride
+  // height and drawn size are part of its picture too.
+  const mount = key.startsWith('mount:') ? MOUNT_DEFS[key.slice(6) as keyof typeof MOUNT_DEFS] : undefined;
+  const tires = mount?.wheels ? Buffer.concat([modelBytes(mount.wheels.model), Buffer.from(JSON.stringify({ wheels: mount.wheels, ride: mount.rideHeight ?? 0, scale: mount.scale ?? 1 }))]) : null;
+  const hash = tile ? sha(JSON.stringify(coreCatalog.get(tile))) : setPiece ? setPieceHash(setPiece) : within ? sha(Buffer.concat([modelBytes(file!), Buffer.from('fit:mesh:1')])) : tires ? sha(Buffer.concat([modelBytes(file!), tires])) : sha(modelBytes(file!));
   return { key, group: atlasGroup(key, key.startsWith('prop:') ? packOf.get(key.slice(5)) : undefined), hash };
 });
 process.stdout.write(JSON.stringify(items));

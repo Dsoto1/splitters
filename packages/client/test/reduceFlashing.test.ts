@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
-import { REDUCE_FLASHING_EVENT, SAFE_BLINK, SAFE_LIGHT, blastStrength, blinkLevel, ease, indicator, loadReduceFlashing, reduceFlashing, resetReduceFlashingCache, saveReduceFlashing } from '../src/game/reduceFlashing.ts';
+import { REDUCE_FLASHING_EVENT, SAFE_BLINK, SAFE_LIGHT, blastSize, blastStrength, blinkLevel, ease, indicator, loadReduceFlashing, reduceFlashing, resetReduceFlashingCache, saveReduceFlashing } from '../src/game/reduceFlashing.ts';
 import { CALM_HEAVY, CALM_HURT, HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade } from '../src/game/hurtVignette.ts';
 import { STEADY_ARC, SteadyArcs } from '../src/game/steadyArcs.ts';
 
@@ -115,6 +115,19 @@ describe('lights and blasts', () => {
     let last = 0;
     for (let d = 0; d <= 30; d += 0.5) {
       const s = blastStrength(d, 4);
+      expect(s).toBeGreaterThanOrEqual(last);
+      last = s;
+    }
+  });
+
+  it('draws a blast smaller the nearer it is to the camera: half size close, full a few radii off', () => {
+    // A grenade (radius 4.5) 3-5 m off, as the flashing flow's `blast`: about half size, so the camera isn't inside it.
+    for (const d of [3, 4, 5]) expect(blastSize(d, 4.5)).toBeLessThan(0.6);
+    expect(blastSize(0, 4)).toBe(0.5);
+    expect(blastSize(30, 4)).toBe(1);
+    let last = 0;
+    for (let d = 0; d <= 30; d += 0.5) {
+      const s = blastSize(d, 4);
       expect(s).toBeGreaterThanOrEqual(last);
       last = s;
     }

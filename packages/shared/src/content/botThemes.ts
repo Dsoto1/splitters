@@ -5,7 +5,7 @@
  * keep its random bots to some groups and/or themes (MapDocument.botCast), and the host can change it
  * (MatchRules.botCast).
  */
-import { CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
+import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
 
 /**
  * Every name theme's id and label, by kind of creature. IDs never change (maps and server rules name them); never
@@ -76,31 +76,52 @@ const themeOf = (l: Pick<CharacterLook, 'nameTheme' | 'group'>): string | null =
 // ---------------------------------------------------------------- bot characters (which looks random bots wear)
 
 /**
- * Which looks random bots wear: character groups (CHARACTER_GROUPS ids) and/or name themes (NAME_THEME_INFO ids). A
- * look is in when its group or its theme is listed. Empty: every look (all).
+ * Which looks random bots wear: character groups (CHARACTER_GROUPS ids), Soldiers & Spies' branches (CHARACTER_BRANCHES:
+ * `army`, `agency`) and/or name themes (NAME_THEME_INFO ids). A look is in when its group, its branch or its theme is
+ * listed. Empty: every look (all).
  */
 export type BotCast = readonly string[];
 /** Most entries in a bot-characters setting. */
 export const BOT_CAST_MAX = 8;
 
 const isGroupId = (x: string) => CHARACTER_GROUPS.some((g) => g.id === x);
-export const isCastId = (x: unknown): x is string => typeof x === 'string' && (isGroupId(x) || THEMES_BY_ID.has(x));
+const isBranchId = (x: string) => CHARACTER_BRANCHES.some((b) => b.id === x);
+/**
+ * Retired cast ids and what they read as now (saved setups, maps, server rules; 2026-11-17): Agents & Spies is
+ * Soldiers & Spies' Agency (the same characters as before), Creatures is in Horrors & Creatures.
+ */
+export const CAST_ID_ALIASES: Readonly<Record<string, string>> = { agents: 'agency', creatures: 'horror' };
+/** A cast id as it reads now (a retired one's replacement). */
+export const currentCastId = (x: string): string => CAST_ID_ALIASES[x] ?? x;
+/** A choice that picks characters by what they are (a group or a branch), not by their names' theme. */
+export const isCharacterCastId = (x: string): boolean => isGroupId(x) || isBranchId(x);
+/** A known cast id, a retired one included (it reads as its replacement). */
+export const isCastId = (x: unknown): x is string => typeof x === 'string' && (isCharacterCastId(currentCastId(x)) || THEMES_BY_ID.has(x));
 
-/** A bot-characters setting made valid: known ids only, each once, at most BOT_CAST_MAX. Not a list: empty (all). */
+/** A bot-characters setting made valid: known ids only (retired ones as their replacement), each once, at most BOT_CAST_MAX. Not a list: empty (all). */
 export function validBotCast(raw: unknown): string[] {
   if (!Array.isArray(raw)) return [];
   const out: string[] = [];
-  for (const x of raw) if (isCastId(x) && !out.includes(x) && out.length < BOT_CAST_MAX) out.push(x);
-  return out;
+  for (const x of raw) {
+    if (!isCastId(x)) continue;
+    const id = currentCastId(x);
+    if (!out.includes(id) && out.length < BOT_CAST_MAX) out.push(id);
+  }
+  return foldBotCast(out);
 }
+
+/** Whether a look (group, branch, theme) answers a cast id. */
+const castHas = (x: string, l: Pick<CharacterLook, 'group' | 'branch'> | undefined, theme: string | null): boolean => {
+  const id = currentCastId(x);
+  return id === (l?.group ?? null) || id === (l?.branch ?? null) || x === theme;
+};
 
 /** Whether a look is in a bot-characters setting (empty: every look is). */
 export function castAllows(cast: BotCast | undefined, look: string): boolean {
   if (!cast?.length) return true;
   const l = builtInLook(look);
-  const group = l?.group ?? null;
   const theme = lookTheme(look);
-  return cast.some((x) => x === group || x === theme);
+  return cast.some((x) => castHas(x, l, theme));
 }
 
 /** The looks random bots wear under a bot-characters setting, in roster order; every look when none fits. */
@@ -112,16 +133,93 @@ export function castLooks(cast: BotCast | undefined): readonly CharacterLook[] {
 export function castLooksFrom(roster: readonly CharacterLook[], cast: BotCast | undefined): readonly CharacterLook[] {
   const pool = pickableLooks(roster);
   if (!cast?.length) return pool;
-  const out = pool.filter((l) => cast.some((x) => x === (l.group ?? null) || x === themeOf(l)));
+  const out = pool.filter((l) => cast.some((x) => castHas(x, l, themeOf(l))));
   return out.length ? out : pool;
 }
 
-/** The choices a menu offers, groups first: { id, label }. */
-export const BOT_CAST_CHOICES: readonly { id: string; label: string }[] = [...CHARACTER_GROUPS.map((g) => ({ id: g.id, label: g.label })), ...NAME_THEME_INFO.map((t) => ({ id: t.id, label: t.label }))];
+// ---------------------------------------------------------------- bot types (Match Setup's tick-boxes)
 
-/** "Soldiers", "Pirates + Knights & Kings", or "All characters". */
-export function botCastLabel(cast: BotCast | undefined): string {
-  if (!cast?.length) return 'All characters';
-  return cast.map((x) => BOT_CAST_CHOICES.find((c) => c.id === x)?.label ?? x).join(' + ');
+/**
+ * The bot types Match Setup, the pause menu's Host tab and MapMaker tick (owner, 2026-11-19: "isolate the selection
+ * of the bot types"): the character groups, Soldiers & Spies as its two branches. IDs are cast ids (CHARACTER_GROUPS,
+ * CHARACTER_BRANCHES), so a setting made of them plays as before.
+ */
+export const BOT_TYPES = [
+  { id: 'army', label: 'Soldiers' },
+  { id: 'agency', label: 'Spies' },
+  { id: 'folk', label: 'Everyday Folk' },
+  { id: 'space', label: 'Outer Space' },
+  { id: 'legends', label: 'Legends' },
+  { id: 'animals', label: 'Animalia' },
+  { id: 'machines', label: 'Machines' },
+  { id: 'horror', label: 'Horrors' },
+] as const;
+export type BotTypeId = (typeof BOT_TYPES)[number]['id'];
+const TYPE_IDS: readonly BotTypeId[] = BOT_TYPES.map((t) => t.id);
+
+/**
+ * The old "Named as" sets and the bot type each folds into (saved setups, links, server rules and maps that named
+ * one keep loading: owner, 2026-11-19, "the Named as sets fold into the groups"). By what the name theme is, not by
+ * which groups happen to hold a look with it.
+ */
+export const THEME_BOT_TYPES: Readonly<Record<string, BotTypeId>> = {
+  soldier: 'army',
+  monkey: 'animals',
+  bear: 'animals',
+  wolf: 'animals',
+  dog: 'animals',
+  cat: 'animals',
+  raccoon: 'animals',
+  critter: 'animals',
+  frog: 'animals',
+  pirate: 'legends',
+  knight: 'legends',
+  ninja: 'legends',
+  wizard: 'legends',
+  barbarian: 'legends',
+  myth: 'legends',
+  undead: 'horror',
+  spooky: 'horror',
+  goblin: 'horror',
+  robot: 'machines',
+  alien: 'space',
+  cowboy: 'folk',
+  gangster: 'folk',
+  townsfolk: 'folk',
+};
+
+/** The bot types a bot-characters setting covers, in BOT_TYPES order (a group, a branch or a retired set folded in); every type for all (empty, absent or nothing known). */
+export function botTypesOf(cast: BotCast | undefined): BotTypeId[] {
+  const on = new Set<BotTypeId>();
+  for (const raw of cast ?? []) {
+    if (typeof raw !== 'string') continue;
+    const id = currentCastId(raw);
+    if (id === 'soldiers') on.add('army').add('agency');
+    else if ((TYPE_IDS as readonly string[]).includes(id)) on.add(id as BotTypeId);
+    else if (THEME_BOT_TYPES[raw]) on.add(THEME_BOT_TYPES[raw]!);
+  }
+  return on.size ? TYPE_IDS.filter((t) => on.has(t)) : [...TYPE_IDS];
 }
 
+/** A bot-characters setting for some bot types: empty for every type (all), Soldiers and Spies together as `soldiers`. */
+export function castOfTypes(types: Iterable<string>): string[] {
+  const on = new Set(types);
+  const picked = TYPE_IDS.filter((t) => on.has(t));
+  if (!picked.length || picked.length === TYPE_IDS.length) return [];
+  const both = on.has('army') && on.has('agency');
+  return picked.flatMap((t) => (t === 'army' ? [both ? 'soldiers' : 'army'] : t === 'agency' && both ? [] : [t]));
+}
+
+/** A bot-characters setting as bot types (the old sets folded in, retired ids as their replacement); empty for all. */
+export const foldBotCast = (cast: BotCast | undefined): string[] => castOfTypes(botTypesOf(cast));
+
+/** The choices a server rule takes: every type, Soldiers & Spies both; the old sets read as their type (THEME_BOT_TYPES). */
+export const BOT_CAST_CHOICES: readonly { id: string; label: string }[] = [{ id: 'soldiers', label: 'Soldiers & Spies' }, ...BOT_TYPES];
+
+/** "Soldiers & Spies", "Legends + Animalia", or "All characters". */
+export function botCastLabel(cast: BotCast | undefined): string {
+  const types = botTypesOf(cast);
+  if (types.length === TYPE_IDS.length) return 'All characters';
+  const both = types.includes('army') && types.includes('agency');
+  return types.flatMap((t) => (t === 'army' && both ? ['Soldiers & Spies'] : t === 'agency' && both ? [] : [BOT_TYPES.find((b) => b.id === t)!.label])).join(' + ');
+}

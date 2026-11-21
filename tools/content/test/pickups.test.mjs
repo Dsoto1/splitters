@@ -69,4 +69,19 @@ describe('pickups generator (tools/content/pickups.mjs)', () => {
     expect(lmg.botValue).toBe(pickups.weaponBotValue(30));
     expect(out.items.find((i) => i.id === 'core.disc_fast')).toMatchObject({ displayName: undefined, disc: 'fast' });
   });
+
+  it('takes `rolls: false` on a weapon pickup only (the Pistol), and writes it into the table', () => {
+    const { out } = pickups.build(content);
+    expect(out.items.filter((i) => i.rolls === false).map((i) => i.id)).toEqual(['core.weapon_pistol']);
+    expect(pickups.render(out)).toMatch(/id: 'core\.weapon_pistol', displayName: 'Pistol', .* rolls: false \},/);
+    expect(pickups.render(out)).not.toMatch(/weapon_rifle'.*rolls/);
+    const c = clone(content);
+    find(c, 'core.health_small').rolls = false;
+    find(c, 'core.weapon_rifle').rolls = true;
+    find(c, 'core.weapon_smg').rolls = 'no';
+    const p = pickups.build(c).problems.join('\n');
+    expect(p).toMatch(/health_small\): "rolls" is only false, on a weapon pickup/);
+    expect(p).toMatch(/weapon_rifle\): "rolls" is only false, on a weapon pickup/);
+    expect(p).toMatch(/weapon_smg\).*rolls/);
+  });
 });

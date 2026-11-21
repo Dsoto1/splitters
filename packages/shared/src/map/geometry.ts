@@ -1,15 +1,18 @@
 import { PLAYER } from '../sim/constants.ts';
-import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, vault, type Corner, type EdgeArch, type EdgeRepeat, type EdgeShape, type EdgeStyle, type EdgeValue, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
+import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, vault, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
+import { getKitFamily, isKitModel } from '../content/kitProps.ts';
 import { envCanBreak, envVariant, getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import { terrainBoundary, terrainLowest, terrainTriangles } from './terrain.ts';
 import { mapGroundBores, terrainTrianglesCut } from './groundBore.ts';
 import { resolveBackdrop } from './backdrop.ts';
 import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './border.ts';
 import { pathsExtent } from './paths.ts';
-import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
+import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, GLASS_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
+import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
 /**
  * `trim` boxes are visual only (baseboards, cornices, frames): never in physics
@@ -42,6 +45,25 @@ export interface WorldBox {
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
   roof?: true;
+  /** A trim box drawn in the walls' paint (LocalBox.paint: a plain arch's spandrels); `metal`: a bar or barred gate (EdgeShape.paint). */
+  paint?: 'walls' | 'metal';
+  /** A bar, post or rail of a see-through edge (edgeLattice): it stops bodies and shots, never sight lines. */
+  lattice?: true;
+  /**
+   * Stops bodies and shots but is left out of the bots' navmesh (nav/index.ts NavWorld.build): an open door's leaf
+   * (a kit family with a `passage`), which the navmesh's 0.8 m keep-off would otherwise grow until the room it opens
+   * into has no navmesh left. Bots walk past it with their real 0.4 m, on the passage's link through the doorway.
+   */
+  navThrough?: true;
+  /** A step of a stair flight (LocalBox.step): MapMaker's headroom check walks these (map/headroom.ts). */
+  step?: true;
+  /**
+   * Stops bodies only (players, bots, vehicles), like a force field: shots, thrown things and sight lines pass. Behind a
+   * see-through edge with nothing built beyond it (boundaryLatticeBox), so nobody crawls out between its posts and rails.
+   */
+  bodyOnly?: true;
+  /** The face closing a buried passage's open end (buriedOpenEnds): gone once a portal, a Dead End or another piece is put there. */
+  endCap?: true;
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -298,11 +320,49 @@ export function cellHasFloor(occ: CellOccupant): boolean {
   return cellSlab(occ) || !!occ.def.extraFloors?.length;
 }
 
+/** How many storeys an edge style reaches into on a level `height` high: 1 for most, 2 for the Grand arch and the High wall, 3 for the Gate arch (its battlements stand over the storey above), 4 for the Towering wall. */
+export function edgeStoreys(style: ResolvedEdge, half: number, height: number): number {
+  if (style === 'none' || height <= 0) return 1;
+  const top = Math.max(0, ...edgeSegments(style, half, height).map((s) => s[3]));
+  return Math.max(1, Math.ceil(top / height - 0.01));
+}
+
+/** What a tall style would pass through: the level whose floor (or the roof under it) is over the side. */
+export interface TallEdgeBlock {
+  /** The level (z) it would reach into. */
+  level: number;
+  /** A floor or room there, or the roof (a Ceiling) of the room it stands in. */
+  what: 'floor' | 'roof';
+}
+
 /**
- * What gets built on one side of one cell: `none` (no wall: open ground, the
- * inside of a multi-cell tile, or a side left open), or one of the edge styles.
+ * Whether a style taller than one storey (`edgeStoreys` > 1) on side `side` of cell (x, y, z) would rise through
+ * something built over that side: the floor of a storey above where that storey has pieces on both sides of the wall
+ * (its upper part would stand inside their room; a tall piece's own storey with no floor of its own there is the room
+ * it is for, and doesn't count), or a roof (a Ceiling) on both sides, where its top would stick out of the middle of
+ * the roof. Null when it stands clear: an outside wall may rise past the storey above's own wall or above
+ * a roof (a high perimeter wall, a parapet), and the lower storey of a two-storey space is what the tall styles are
+ * for (the Grand Gallery). Owner, 2026-11-16: a Grand arch on an inside edge on Level 2 went through Level 3 and the roof.
  */
-export type ResolvedEdge = Exclude<EdgeStyle, 'auto' | 'open'> | 'none';
+export function tallEdgeBlock(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side, style: ResolvedEdge, cellSize: number, levelHeight: number): TallEdgeBlock | null {
+  const n = edgeStoreys(style, cellSize / 2, levelHeight);
+  if (n <= 1) return null;
+  const [dx, dy] = SIDE_DIRS[side];
+  const sides = [[x, y], [x + dx, y + dy]] as const;
+  for (let k = 1; k < n; k++) {
+    const below = sides.map(([cx, cy]) => cells.get(cellKey(cx, cy, z + k - 1)));
+    const above = sides.map(([cx, cy], i) => {
+      const occ = cells.get(cellKey(cx, cy, z + k));
+      const under = below[i];
+      return occ && !(under && occ.placement === under.placement && !cellHasFloor(occ)) ? occ : undefined;
+    });
+    if (above[0] && above[1]) return { level: z + k, what: 'floor' };
+    if (above[0] || above[1]) continue;
+    const roofed = (o: CellOccupant | undefined) => !!o?.placement.options?.ceiling && o.placement.options.ceiling !== 'open';
+    if (roofed(below[0]) && roofed(below[1])) return { level: z + k, what: 'roof' };
+  }
+  return null;
+}
 
 /**
  * Resolve a cell side: the cell's own choice for that side, else the
@@ -331,150 +391,6 @@ export function resolveEdge(cells: Map<string, CellOccupant>, x: number, y: numb
   return style === 'open' || style === 'auto' ? 'none' : style;
 }
 
-/** The shape of a built edge style (content/tiles/edges.json); none for `none`. */
-const shapeOf = (style: ResolvedEdge): EdgeShape | undefined => (style === 'none' ? undefined : EDGE_SHAPES[style]);
-
-/** An edge value along a side `half` long each way from its middle, on a level `height` high. */
-function edgeValue(v: EdgeValue, half: number, height: number): number {
-  if (typeof v === 'number') return v;
-  if ('upTo' in v) return Math.min(v.upTo, height);
-  const [x, k] = 'half' in v ? [half, v.half] : [height, v.height];
-  const base = k === 1 ? x : k === -1 ? -x : x * k;
-  return v.add === undefined ? base : base + v.add;
-}
-
-/** Each position of a repeat along a side. */
-function repeatAlong(r: EdgeRepeat, half: number, height: number, at: (u: number) => void): void {
-  const from = edgeValue(r.from, half, height);
-  const to = edgeValue(r.to, half, height);
-  if (r.through) for (let u = from; u <= to + 1e-6; u += r.step) at(u);
-  else for (let u = from; u < to; u += r.step) at(u);
-}
-
-/** Wall pieces of an edge style along one side: [u0, u1, y0, y1, thickness] with u along the side (-half..half). */
-export function edgeSegments(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
-  const out: [number, number, number, number, number][] = [];
-  const v = (x: EdgeValue) => edgeValue(x, half, height);
-  for (const s of shapeOf(style)?.segments ?? []) {
-    const t = s.t ?? TILE_DIMENSIONS.wallThickness;
-    const r = s.repeat;
-    if (r) {
-      const [o0, o1] = s.u as readonly [number, number];
-      repeatAlong(r, half, height, (u) => out.push([r.clamp ? Math.max(-half, u + o0) : u + o0, r.clamp ? Math.min(half, u + o1) : u + o1, v(s.y[0]), v(s.y[1]), t]));
-    } else out.push([v(s.u[0]), v(s.u[1]), v(s.y[0]), v(s.y[1]), t]);
-  }
-  return out;
-}
-
-/**
- * One trim box of a side, in the side's own frame: u along it, y up, v in from the cell's boundary (v0 < v1: the wall
- * itself spans v 0 to its thickness), turned `tilt` radians in the wall's plane about its middle (the +u end rises).
- */
-export interface SideTrim {
-  u0: number;
-  u1: number;
-  y0: number;
-  y1: number;
-  v0: number;
-  v1: number;
-  tilt?: number;
-  /** On the wall's inner face: how far it stands off it (v1 - v0, as the style gives it). */
-  depth?: number;
-  /** A library material of its own (the style's `surface`), instead of the tile's trim surface. */
-  surface?: { material: string; tint: string | null };
-}
-
-/** How thick a segmental arch's soffit is (from the curve up into the wall: it covers the stepped collision above it). */
-const ARCH_SOFFIT = 0.2;
-/** The joint between two voussoirs, along the curve. */
-const ARCH_JOINT = 0.025;
-
-/**
- * A segmental arch's dressing on one face: its voussoirs (the keystone `key` m taller in the middle of an odd count)
- * on the circle through the springing points and the crown, each standing off the face from `v0` by its depth, and
- * (`soffit`) the arch's underside through the wall's thickness `t`, tangent to the curve.
- */
-function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number): SideTrim[] {
-  const [u0, u1] = a.u;
-  const [spring, crown] = a.y;
-  const c = (u1 - u0) / 2;
-  const rise = crown - spring;
-  if (!(c > 0 && rise > 0 && a.count >= 1)) return [];
-  const mid = (u0 + u1) / 2;
-  const r = (c * c + rise * rise) / (2 * rise);
-  const centre = crown - r;
-  const sweep = Math.asin(Math.min(1, c / r));
-  const step = (2 * sweep) / a.count;
-  const halfLen = r * Math.tan(step / 2);
-  const depth = a.depth ?? 0.06;
-  const out: SideTrim[] = [];
-  const piece = (at: number, radius: number, along: number, band: number, va: number, vb: number, depth?: number) => {
-    const u = mid + (radius + band / 2) * Math.sin(at);
-    const y = centre + (radius + band / 2) * Math.cos(at);
-    out.push({ u0: u - along, u1: u + along, y0: y - band / 2, y1: y + band / 2, v0: va, v1: vb, ...(at ? { tilt: -at } : {}), ...(depth !== undefined ? { depth } : {}) });
-  };
-  for (let i = 0; i < a.count; i++) {
-    const at = -sweep + (i + 0.5) * step;
-    const key = a.count % 2 === 1 && i === (a.count - 1) / 2;
-    const band = a.band + (key ? (a.key ?? 0) : 0);
-    const d = key ? depth + 0.04 : depth;
-    piece(at, r, halfLen - ARCH_JOINT / 2, band, outward ? v0 - d : v0, outward ? v0 : v0 + d, outward ? undefined : d);
-    if (soffit > 0) piece(at, r, halfLen, ARCH_SOFFIT, 0, soffit);
-  }
-  return out;
-}
-
-/**
- * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
- * wall's inner face, standing off it from `from` (the style's trimFrom, else the wall thickness); an arch's soffit
- * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
- * boundary), for a side nothing is built beyond.
- */
-export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false): SideTrim[] {
-  const shape = shapeOf(style);
-  const from = shape?.trimFrom ?? TILE_DIMENSIONS.wallThickness;
-  const out: SideTrim[] = [];
-  const own = (p: { surface?: { material: string; tint?: string } }) => (p.surface ? { surface: { material: p.surface.material, tint: p.surface.tint ?? null } } : {});
-  const at = (u0: number, u1: number, y0: number, y1: number, depth: number, surface: Pick<SideTrim, 'surface'> = {}) => out.push({ u0, u1, y0, y1, v0: from, v1: from + depth, depth, ...surface });
-  const v = (x: EdgeValue) => edgeValue(x, half, height);
-  for (const p of shape?.trim ?? []) {
-    if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
-    else if ('cornice' in p) {
-      if (height >= 3) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
-    } else if ('frame' in p) {
-      const { half: d, top: h } = p.frame;
-      if (height > h + 0.2) {
-        at(-d - 0.16, -d, 0, h, 0.06, own(p));
-        at(d, d + 0.16, 0, h, 0.06, own(p));
-        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06, own(p));
-      }
-    } else if ('window' in p) {
-      const [u0, u1] = p.window.u;
-      const [y0, y1] = p.window.y;
-      at(u0 - 0.08, u1 + 0.08, y0 - 0.08, y0, 0.12);
-      at(u0 - 0.1, u1 + 0.1, y1, y1 + 0.12, 0.05);
-      at(u0 - 0.1, u0, y0, y1, 0.05);
-      at(u1, u1 + 0.1, y0, y1, 0.05);
-    } else if ('arch' in p) {
-      out.push(...archTrim(p.arch, from, false, Math.min(from, TILE_DIMENSIONS.wallThickness)));
-      if (outer && p.outside) out.push(...archTrim(p.arch, 0, true, 0));
-    } else if ('v' in p) {
-      // Set in the wall itself (a sash's bars by the glass): no face to stand off, so no `depth`.
-      out.push({ u0: v(p.u[0]), u1: v(p.u[1]), y0: v(p.y[0]), y1: v(p.y[1]), v0: p.v[0], v1: p.v[1], ...own(p) });
-    } else {
-      const pieces: [number, number][] = [];
-      if (p.repeat) {
-        const [o0, o1] = p.u as readonly [number, number];
-        repeatAlong(p.repeat, half, height, (u) => pieces.push([u + o0, u + o1]));
-      } else pieces.push([v(p.u[0]), v(p.u[1])]);
-      for (const [u0, u1] of pieces) {
-        at(u0, u1, v(p.y[0]), v(p.y[1]), p.depth, own(p));
-        if (outer && p.outside) out.push({ u0, u1, y0: v(p.y[0]), y1: v(p.y[1]), v0: -p.depth, v1: 0, ...own(p) });
-      }
-    }
-  }
-  return out;
-}
 
 /**
  * Visual trim for an edge on its inner face: [u0, u1, y0, y1, depth] standing off the wall face, and a sixth number,
@@ -492,6 +408,65 @@ export function isOpenEdge(cells: Map<string, CellOccupant>, x: number, y: numbe
   const [dx, dy] = SIDE_DIRS[side];
   const there = cells.get(cellKey(x + dx, y + dy, z));
   return !!here && !!there && hasPort(here, side) && hasPort(there, OPPOSITE[side]);
+}
+
+/** Whether a side of a cell has been closed with a wall style (a dead end the map maker made): a wall across the passage's middle, a metre up. */
+export function walledUpSide(cells: Map<string, CellOccupant>, x: number, y: number, z: number, side: Side, cellSize: number, levelHeight: number): boolean {
+  return edgeSegments(resolveEdge(cells, x, y, z, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1);
+}
+
+/** A buried passage: a piece with a bore the hill stays on top of (`cover`), not a mouth, not steps open to the sky. */
+export const isBuriedPassage = (def: TileDefinition): boolean => !!def.bore?.cover?.length && !def.bore.open && !def.bore.sky && !def.open;
+
+/** An end of a buried passage that joins nothing: its cell, the side, and the piece. */
+export interface BuriedOpenEnd {
+  occ: CellOccupant;
+  x: number;
+  y: number;
+  z: number;
+  side: Side;
+}
+
+/**
+ * The ends of buried passages (isBuriedPassage) that lead to nothing built and aren't walled up: without a portal or a
+ * Dead End there, the passage would look out into the ground's underside (owner, 2026-11-18). Each is closed with a
+ * plain face of the piece's own lining (buriedEndCaps) and validation warns about it (tunnel.mouth_buried).
+ */
+export function buriedOpenEnds(cells: Map<string, CellOccupant>, cellSize: number, levelHeight: number): BuriedOpenEnd[] {
+  const out: BuriedOpenEnd[] = [];
+  for (const [key, occ] of cells) {
+    if (!isBuriedPassage(occ.def)) continue;
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const side of SIDES) {
+      if (!hasPort(occ, side)) continue;
+      const [dx, dy] = SIDE_DIRS[side];
+      if (cells.has(cellKey(x + dx, y + dy, z)) || walledUpSide(cells, x, y, z, side, cellSize, levelHeight)) continue;
+      out.push({ occ, x, y, z, side });
+    }
+  }
+  return out;
+}
+
+/** How thick the face closing an open end is (inside the piece's own cell, so nothing past it changes). */
+export const END_CAP_THICKNESS = 0.3;
+
+/**
+ * The faces closing buried passages' open ends (buriedOpenEnds): a wall across the whole side, from under the floor to
+ * the top of the piece's bore, in the piece's own lining (its family's rock, brick or concrete), solid in play.
+ */
+function buriedEndCaps(cells: Map<string, CellOccupant>, cellSize: number, levelHeight: number, catalog: TileCatalog): WorldBox[] {
+  const half = cellSize / 2;
+  const out: WorldBox[] = [];
+  for (const { occ, x, y, z, side } of buriedOpenEnds(cells, cellSize, levelHeight)) {
+    const drawn = catalog.drawn(occ.placement) ?? occ.def;
+    const lining = drawn.solids?.find((b) => b.kind === 'wall' && b.surface)?.surface;
+    // The bore's top at this storey of the piece (its cut boxes are in the piece's frame, from its own level).
+    const cutTop = Math.max(...(occ.def.bore?.cut ?? []).map((c) => c[4] ?? 0), 0) - occ.level * levelHeight;
+    const top = Math.min(levelHeight, Math.max(2.5, cutTop));
+    const b = sideBox(side, x * cellSize, y * cellSize, half, -half, half, z * levelHeight - TILE_DIMENSIONS.floorThickness, z * levelHeight + top, 0, END_CAP_THICKNESS, occ.placement.id, 'wall');
+    out.push({ ...b, endCap: true, ...(lining ? { surface: { material: lining.material, tint: lining.tint ?? null } } : {}) });
+  }
+  return out;
 }
 
 /**
@@ -533,6 +508,13 @@ export function envHalfSize(e: Extract<MapEntity, { kind: 'prop' }>): [number, n
   return envVariant(species, e.variant).size.map((v) => (v * e.scale) / 2) as [number, number, number];
 }
 
+/**
+ * Kit prop generators whose pieces are bars or mesh with gaps (tools/content/kitprops.mjs KINDS): the Iron Fence,
+ * the chain-link fences and the Volleyball Net. Their collision box is a lattice to sight (WorldBox.lattice): bots see you through them, as
+ * you see them; the box still stops bodies, and rounds as the surface does (sheet metal: rifles go through).
+ */
+const LATTICE_KIT_KINDS: ReadonlySet<string> = new Set(['railing', 'chainlink', 'volleynet']);
+
 export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
   const out: WorldBox[] = [];
   // Props riding a mover are drawn only (its blocks collide).
@@ -554,13 +536,17 @@ export function propBoxes(map: MapDocument, breakable = false): WorldBox[] {
     const s = Math.sin(e.yaw);
     // Boxes turn with the prop (yaw like a mesh's rotation.y: local +Z goes to (sin, cos)), so a prop
     // turned at an angle collides with its own shape, not the much bigger square round it.
+    const family = isKitModel(e.model) ? getKitFamily(e.model) : undefined;
+    const lattice = { ...(LATTICE_KIT_KINDS.has(family?.kind ?? '') ? ({ lattice: true } as const) : {}), ...(family?.passage ? ({ navThrough: true } as const) : {}) };
     const turned = (px: number, pz: number, hw: number, hd: number, y0: number, y1: number): WorldBox =>
-      e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id };
+      e.yaw ? { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, yaw: e.yaw, ...lattice } : { min: [px - hw, y0, pz - hd], max: [px + hw, y1, pz + hd], kind: 'prop', sourceId: e.id, ...lattice };
     if (def.boxes) {
-      for (const [x0, y0, z0, x1, y1, z1] of def.boxes) {
+      for (const [x0, y0, z0, x1, y1, z1, own] of def.boxes) {
         const cx = ((x0 + x1) / 2) * e.scale;
         const cz = ((z0 + z1) / 2) * e.scale;
-        out.push(turned(x + cx * c + cz * s, z - cx * s + cz * c, ((x1 - x0) / 2) * e.scale, ((z1 - z0) / 2) * e.scale, y + y0 * e.scale, y + y1 * e.scale));
+        const b = turned(x + cx * c + cz * s, z - cx * s + cz * c, ((x1 - x0) / 2) * e.scale, ((z1 - z0) / 2) * e.scale, y + y0 * e.scale, y + y1 * e.scale);
+        // A part turned in the prop (an ajar door's leaf): its own turn on the prop's, and left out of the navmesh.
+        out.push(own ? { ...b, yaw: (e.yaw ?? 0) + own, navThrough: true } : b);
       }
       continue;
     }
@@ -689,6 +675,9 @@ export function mapKillY(boxes: readonly WorldBox[], map?: MapDocument): number 
   return Number.isFinite(low) ? low - 14 : -40;
 }
 
+/** Edge styles with window openings glass can fill (sim/glass.ts GLASS_EDGES). */
+const GLASS_STYLES: ReadonlySet<string> = new Set<string>(GLASS_EDGE_STYLES);
+
 function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
   const { floorThickness } = TILE_DIMENSIONS;
@@ -715,10 +704,25 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         // Trim marked `outside` dresses the wall's outer face too where nothing is built beyond (an arch from the street).
         const [dx, dy] = SIDE_DIRS[side];
         const outer = !cells.has(cellKey(gx + dx, gy + dy, gz));
-        for (const p of edgeTrimBoxes(style, half, levelHeight, outer)) boxes.push(sideTrimBox(side, cx, cz, half, baseY, p, id));
+        const metal = edgePaint(style);
+        // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
+        const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all')) {
+          const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
+          boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
+        }
       } else {
-        for (const [u0, u1, y0, y1, t] of edgeSegments(style, half, levelHeight)) {
-          boxes.push(sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall'));
+        const metal = edgePaint(style);
+        const segs = edgeSegments(style, half, levelHeight);
+        for (const seg of segs) {
+          const [u0, u1, y0, y1, t] = seg;
+          const b = sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall');
+          boxes.push({ ...b, ...(metal ? { paint: metal } : {}), ...(edgeLattice(style, seg) ? { lattice: true as const } : {}) });
+        }
+        const [dx, dy] = SIDE_DIRS[side];
+        if (!cells.has(cellKey(gx + dx, gy + dy, gz))) {
+          const shut = boundaryLatticeBox(style, segs, side, cx, cz, half, baseY, id);
+          if (shut) boxes.push(shut);
         }
       }
     }
@@ -736,8 +740,14 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
     }
     return boxes;
   }
+  // Buried passages' ends that join nothing are closed (no looking out into the ground's underside).
+  boxes.push(...buriedEndCaps(cells, cellSize, levelHeight, catalog));
   boxes.push(...propBoxes(map));
   boxes.push(...blockBoxes(map));
+  // Facade pieces deep enough to stand against collide (their boxes drawn as decor above).
+  const cover: WorldBox[] = [];
+  packFacadeBoxes(map, cells, cover);
+  boxes.push(...cover);
   if (map.terrain) boxes.push(...terrainBoundary(map.terrain));
   if (map.bounds) {
     let floorY = Infinity;
@@ -1126,6 +1136,26 @@ function sideBox(side: Side, cx: number, cz: number, half: number, u0: number, u
   }
 }
 
+/**
+ * A see-through edge (a fence, bars) with nothing built beyond it is where the map's built area ends: its gaps let a
+ * crouched or prone body (a small character most of all) out between the posts and under the rails, onto ground nothing
+ * routes back from (Atomic Court, 2026-11-19: a team spawning on a player who had crawled out). One body-only box
+ * (WorldBox.bodyOnly) closes it from the floor to its top: shots, thrown things and sight still pass between the slats.
+ * Not for an edge with a doorway in it (a gate is a way through). Null for any other edge.
+ */
+export function boundaryLatticeBox(style: ResolvedEdge, segs: readonly (readonly [number, number, number, number, number])[], side: Side, cx: number, cz: number, half: number, baseY: number, sourceId: string): WorldBox | null {
+  const shape = shapeOf(style);
+  if (!shape || shape.openings?.length || !segs.some((seg) => edgeLattice(style, seg))) return null;
+  let top = 0;
+  let t = 0;
+  for (const seg of segs) {
+    top = Math.max(top, seg[3]);
+    t = Math.max(t, seg[4]);
+  }
+  if (top <= 0) return null;
+  return { ...sideBox(side, cx, cz, half, -half, half, baseY, baseY + top, 0, t || 0.1, sourceId, 'barrier'), bodyOnly: true };
+}
+
 /** A trim box on one side of a cell (edgeTrimBoxes): tilted in the wall's plane, it is rolled on a north or south side (u runs along x) and pitched on an east or west one (u along z). */
 function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: number, p: SideTrim, sourceId: string): WorldBox {
   const b: WorldBox = { ...sideBox(side, cx, cz, half, p.u0, p.u1, baseY + p.y0, baseY + p.y1, p.v0, p.v1, sourceId, 'trim'), ...(p.surface ? { surface: p.surface } : {}) };
@@ -1135,7 +1165,7 @@ function sideTrimBox(side: Side, cx: number, cz: number, half: number, baseY: nu
 
 function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: number, cz: number, sourceId: string, kind: BoxKind): WorldBox {
   // Style Pack pieces keep their own material in any theme.
-  const surface = box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {};
+  const surface = { ...(box.surface ? { surface: { material: box.surface.material, tint: box.surface.tint ?? null } } : {}), ...(box.paint ? { paint: box.paint } : {}), ...(box.lattice ? { lattice: true as const } : {}), ...(box.step ? { step: true as const } : {}) };
   if (box.yaw || box.pitch || box.roll) {
     // Turned (and tilted) boxes keep their size; the centre turns with the tile and the yaw adds the tile's quarter turns.
     const hx = (box.max[0] - box.min[0]) / 2;
@@ -1332,7 +1362,7 @@ export function buildFacades(map: MapDocument, catalog: TileCatalog = coreCatalo
 
 // ---------------------------------------------------------------- Style Pack facades
 
-type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
+type PackFacade = 'concrete' | 'corrugated' | 'false_front' | 'adobe' | 'gothic_stone' | 'collegiate_stone' | 'collegiate_red' | 'collegiate_fieldstone' | 'manor_brick' | 'temple' | 'overgrown' | 'clapboard' | 'suburban_brick' | 'roman' | 'egyptian' | 'timber_frame' | 'village_plaster' | 'prefab' | 'snow_bunker' | 'desert_ashlar' | 'desert_plaster' | 'harbour_render' | 'tarred_timber';
 /**
  * Style Pack facades, built from boxes in library materials: the cladding
  * (`skin`) on every outside wall, `depth` proud of it, and what each adds:
@@ -1347,8 +1377,16 @@ const PACK_FACADES: Record<PackFacade, { skin: string; tint: string | null; dept
   adobe: { skin: 'core.pbr_adobe', tint: null, depth: 0.16 },
   // 05 Gothic Estate, 06 Jungle Ruins, 08 Suburban Chaos.
   gothic_stone: { skin: 'core.pbr_castle_stone', tint: '#9a9aa4', depth: 0.14 },
-  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble ashlar, dressed limestone.
-  collegiate_stone: { skin: 'core.cobble', tint: '#d9d5cb', depth: 0.14 },
+  // Collegiate Gothic (the set pieces' look for St. John's): grey lannonstone laid as rubble, dressed limestone trim.
+  // Roman Rubblework's photo laid round corners, its ochre stones toned to a grey buff (the tint is a multiply), a
+  // shade darker than the trim.
+  collegiate_stone: { skin: 'core.pbr_collegiate_rubble', tint: '#c8cad2', depth: 0.14 },
+  // The same rubble with its dressing (plinth, string course, hood moulds, pinnacle caps) in red sandstone (St. John's
+  // Scott Johnston / Hazelwood: PLAN_2026-11-12.md, "red trim").
+  collegiate_red: { skin: 'core.pbr_collegiate_rubble', tint: '#c8cad2', depth: 0.14 },
+  // The same rubble left warm, brown and buff field stones (St. John's Stangeland / Cord: the 1902 fieldstone hall,
+  // PLAN_2026-11-12.md Q13), with dressed limestone trim.
+  collegiate_fieldstone: { skin: 'core.pbr_collegiate_rubble', tint: '#e8dcc6', depth: 0.14 },
   manor_brick: { skin: 'core.pbr_brick_red', tint: '#a07c70', depth: 0.1 },
   temple: { skin: 'core.pbr_castle_stone', tint: '#d8d8b8', depth: 0.16 },
   overgrown: { skin: 'core.pbr_jungle_rock', tint: null, depth: 0.16 },
@@ -1392,8 +1430,22 @@ function floorRuns(segs: readonly [number, number, number, number, number][]): [
 /** Walls whose street face gets a frontier false front, awning and boardwalk. */
 const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
 
-/** The boxes of every Style Pack facade (visual only: trim with its own material). */
-function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): WorldBox[] {
+/**
+ * How far a Style Pack facade's piece must stand proud of the cladding, and how tall it must be, to collide
+ * (FACADE_COVER_*): a buttress, pilaster, plinth, talud, cornice or pinnacle you can stand against or hide behind
+ * (owner, 2026-11-19: "same with some of the building trim"); thin dressing (courses, hood moulds, sills, corner boards,
+ * the cladding itself) stays drawn only, and so does what stands over the roofline (parapets, cornices over the eaves,
+ * pinnacles, merlons): the roofs bots and players reach stay as they were.
+ */
+export const FACADE_COVER_PROUD = 0.1;
+export const FACADE_COVER_HEIGHT = 0.25;
+
+/**
+ * The boxes of every Style Pack facade (trim with its own material, drawn with the level's decor). With `cover`, the
+ * pieces deep and tall enough to collide (FACADE_COVER_PROUD) are also put there as collision only (kind `prop`: never
+ * drawn, as a prop's own box; the piece's material for the rounds that strike it).
+ */
+function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>, cover?: WorldBox[]): WorldBox[] {
   const { cellSize, levelHeight } = map.classicStructure;
   const half = cellSize / 2;
   const out: WorldBox[] = [];
@@ -1408,8 +1460,13 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
     const ground = !cells.has(`${gx},${gy},${gz - 1}`);
     const roofed = cells.has(`${gx},${gy},${gz + 1}`);
     const id = occ.placement.id;
+    // (`proud`: how far the piece stands out past the cladding's face, set once the cladding's depth is known.)
+    let face = 0;
+    let skin = false;
     const add = (side: Side, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, material: string, tint: string | null = null) => {
-      out.push({ ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } });
+      const b: WorldBox = { ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } };
+      out.push(b);
+      if (cover && !skin && face - v0 >= FACADE_COVER_PROUD - 1e-6 && y1 - y0 >= FACADE_COVER_HEIGHT - 1e-6 && y1 <= levelHeight + 1e-6) cover.push({ ...b, kind: 'prop' });
     };
     const dressed = new Set<Side>();
     for (const side of SIDES) {
@@ -1422,7 +1479,10 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
       const base = there && resolveEdge(cells, gx + dx, gy + dy, gz, OPPOSITE[side]) !== 'none' ? TILE_DIMENSIONS.wallThickness : 0;
       const out0 = -base - look.depth;
       const segs = edgeSegments(style, half, levelHeight).filter((g) => g[4] >= 0.3);
+      face = out0;
+      skin = true;
       for (const [u0, u1, y0, y1] of segs) add(side, u0, u1, y0, y1, out0, -base, look.skin, look.tint);
+      skin = false;
       const top = Math.max(0, ...segs.map((g) => g[3]));
       const full = top >= levelHeight - 1e-6;
       switch (facade) {
@@ -1452,11 +1512,13 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>): Wo
           } else if (!roofed && full) add(side, -half, half, top, top + 0.2, out0 - 0.06, TILE_DIMENSIONS.wallThickness, 'core.pbr_charred_wood');
           break;
         case 'gothic_stone':
-        case 'collegiate_stone': {
+        case 'collegiate_stone':
+        case 'collegiate_red':
+        case 'collegiate_fieldstone': {
           // A stone plinth, buttresses at the ends of each wall, a string course, hood moulds over the openings and a
           // battlemented parapet with pinnacles over the buttresses: dark flagstone dressing on Gothic stone, dressed
           // limestone on Collegiate stone.
-          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
+          const [dressing, plinthTint, courseTint] = facade === 'collegiate_stone' || facade === 'collegiate_fieldstone' ? ['core.stone_trim', '#c4bfb2', '#d8d3c6'] : facade === 'collegiate_red' ? ['core.stone_trim', '#9a5446', '#b4644f'] : ['core.pbr_flagstone', '#8a8a90', '#a0a0a8'];
           // The plinth runs under the wall and stops at a doorway (where no wall stands on the floor): a skybridge's
           // door ends, a hall's doors.
           if (ground) for (const [u0, u1] of floorRuns(segs)) add(side, u0, u1, 0, 0.6, out0 - 0.1, -base, dressing, plinthTint);

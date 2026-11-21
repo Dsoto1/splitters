@@ -1,4 +1,5 @@
 import { Peer, type DataConnection, type PeerOptions } from 'peerjs';
+import { hostSilent } from './hostSilence.ts';
 import { BROWSER_HOST_MAX_GUESTS, MessageGuard, PROTOCOL_VERSION, SnapshotDecoder, isJoinCode, parseCheckpoint, sanitizeName, type ClientMessage, type MatchCheckpoint, type PlayerInput, type ServerMessage } from '@tiletrigger/shared';
 import type { HostLink, RemoteLink, Signaling, Transport } from './transport.ts';
 import { CHUNK, GUEST_TO_HOST_LIMITS, HOST_TO_GUEST_LIMITS, Reassembler, Unzipper, plainPiece, type ReassemblyLimits } from '@tiletrigger/shared/peerZip';
@@ -8,6 +9,7 @@ import { makeJoinCode } from './joinCode.ts';
 import { netProbe } from './netProbe.ts';
 import { playerKey } from './playerKey.ts';
 import { myParty } from './party.ts';
+import { myRankPoints } from '../careerStats.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { adminToken, rememberAdminToken } from './netTransport.ts';
 import { accessToken } from '../account.ts';
@@ -21,8 +23,6 @@ import { accessToken } from '../account.ts';
  * PeerJS: the game uses it through the Signaling interface (transport.ts).
  */
 const PREFIX = 'tiletrigger-';
-/** A friend's browser host that sends nothing for this long has dropped (it streams snapshots all the time). */
-const HOST_SILENT_MS = 20_000;
 export { makeJoinCode };
 export const cleanJoinCode = (code: string): string => code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 
@@ -135,12 +135,15 @@ function linkFor(conn: DataConnection): RemoteLink {
     },
     close: () => conn.close(),
     // The browser's own network threads keep the connection up while the friend's page is busy.
-    connected: () => {
-      const pc = conn.peerConnection as RTCPeerConnection | undefined;
-      const state = pc?.connectionState ?? pc?.iceConnectionState;
-      return conn.open && (state === 'connected' || state === 'completed');
-    },
+    connected: () => linkUp(conn),
   };
+}
+
+/** Whether a data connection's peer connection is up (it stays up while the page at the other end is busy). */
+function linkUp(conn: DataConnection): boolean {
+  const pc = conn.peerConnection as RTCPeerConnection | undefined;
+  const state = pc?.connectionState ?? pc?.iceConnectionState;
+  return conn.open && (state === 'connected' || state === 'completed');
 }
 
 /** The host side: registers a join code and hands each friend's connection to the match. */
@@ -351,7 +354,7 @@ export class PeerTransport implements Transport {
         this.linked = true;
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
-        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
+        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), rx: myRankPoints(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
         heardAt = performance.now();
         let tickAt = heardAt;
         this.pingTimer = window.setInterval(() => {
@@ -359,8 +362,9 @@ export class PeerTransport implements Transport {
           // This page stalled (a long frame, a sleeping tab): the silence was ours, not the host's.
           if (now - tickAt > 3000) heardAt = now;
           tickAt = now;
-          // A player's browser host streams 20 snapshots a second and answers every ping: silence this long is a dropped host.
-          if (!this.dedicated && now - heardAt > HOST_SILENT_MS) return hostLost('silent');
+          // A host streams 20 snapshots a second and answers every ping: silence this long is a dropped host (a
+          // dedicated one: a link it has dropped, so we reconnect).
+          if (hostSilent(now, heardAt, this.dedicated, linkUp(conn))) return hostLost('silent');
           this.send({ t: 'ping', id: 0, ct: performance.now(), ...(this.rttMs ? { rtt: Math.round(this.rttMs) } : {}) });
         }, 1000);
       });

@@ -34,6 +34,8 @@ import {
   type SetPieceLibrary,
   type SetPiecePlacement,
   type WorldBox,
+  partInPlay,
+  placementOptions,
 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
@@ -186,7 +188,7 @@ describe('set pieces: the turn and the mirror move every part as one', () => {
           const e = parts.find((x) => x.id === `sp_piece_1_${i}`)!;
           expect(e.position).toEqual(placePoint(p, def, part.position));
           // Facing: the part's forward (sin yaw, cos yaw) carried through the mirror and the turn.
-          if (part.kind === 'block' && !part.pitch && !part.roll) return;
+          if ((part.kind === 'block' && !part.pitch && !part.roll) || part.kind === 'water') return;
           const yaw = (e as { yaw: number }).yaw;
           let [fx, fz] = [Math.sin(part.yaw), Math.cos(part.yaw)];
           if (mirror) fx = -fx;
@@ -251,7 +253,9 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
             expect(errors, `${def.id} ${rotation} ${mirror} ${pack}`).toEqual([]);
             const ex = expandSetPieces(doc, shipped);
             const parts = [...ex.map.classicStructure.tiles, ...ex.map.entities].filter((x) => x.id.startsWith('sp_'));
-            expect(parts.length).toBe(def.parts.length);
+            // (Every part but those for an option's other choices: map/setPieces.ts partInPlay.)
+            const options = placementOptions(doc.setPieces![0]!, def);
+            expect(parts.length).toBe(def.parts.filter((p) => partInPlay(p, options)).length);
             for (const x of parts) {
               expect(x.id).toMatch(/^sp_piece_1_\d+$/);
               expect(StableId.safeParse(x.id).success).toBe(true);
@@ -269,8 +273,8 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const doc = withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' });
     const map = expandSetPieces(doc, shipped).map;
     const passage = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!;
-    // St. John's own wall and trim stone (its halls' blocks), granite setts.
-    const stone = { material: 'core.cobble', tint: '#d9d5cb' };
+    // St. John's wall stone (Roman Rubblework toned grey) and dressed trim, granite setts.
+    const stone = { material: 'core.pbr_collegiate_rubble', tint: '#c8cad2' };
     expect(passage.surfaces).toEqual({ floor: { material: 'core.road_setts', tint: null }, walls: stone, solids: stone, trim: { material: 'core.stone_trim', tint: '#d8d3c6' } });
     expect(passage.options).toEqual({ ceiling: 'vault' });
     const above = map.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_1')!;
@@ -279,7 +283,7 @@ describe('set pieces: every shipped piece in each turn, mirror and role pack', (
     const doors = map.entities.filter((e) => e.kind === 'door');
     expect(doors.map((d) => d.kind === 'door' && d.style)).toEqual(['oak', 'oak']);
     const guard = map.entities.find((e) => e.id === 'sp_piece_1_6')!;
-    expect(guard.kind === 'block' && [guard.material, guard.tint]).toEqual(['core.cobble', '#d9d5cb']);
+    expect(guard.kind === 'block' && [guard.material, guard.tint]).toEqual(['core.pbr_collegiate_rubble', '#c8cad2']);
     // St. John's theme (Castle Keep) takes Collegiate Gothic without naming it.
     const castle = expandSetPieces(withPiece({ piece: 'setpiece.carriageway_1', x: 0, y: 0, z: 0, rotation: 0, mirror: false }, 'core.castle'), shipped).map;
     expect(castle.classicStructure.tiles.find((t) => t.id === 'sp_piece_1_0')!.surfaces).toEqual(passage.surfaces);

@@ -5,7 +5,8 @@
   "order": 114,
   "name": "Spacewalker",
   "look": "core.astronaut",
-  "group": "soldiers",
+  "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Six hours outside the airlock without a scratch. Six seconds down here and somebody's shooting.",
   "body": "male",
@@ -24,9 +25,6 @@
     "metallic": 0.05,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -36,11 +34,6 @@
     "feet": true,
     "scrubBlue": { "color": "#e6e6e6", "within": [[0.635, 0.512, 0.678, 0.559]] },
     "hands": { "curl": 0.6 },
-    "skin": { "knuckle": 0.2, "joints": 0.15 },
-    "grip": {
-      "gripLong": [-0.045, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
-    }
+    "skin": { "knuckle": 0.2, "joints": 0.15 }
   }
 }

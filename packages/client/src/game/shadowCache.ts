@@ -220,17 +220,31 @@ class DepthCopy {
 
 const emptyList = (): SubList => ({ data: [], length: 0 });
 
-/** Is this a static caster for good (a shadow proxy), drawn into the cache? */
-export const isStaticCaster = (m: AbstractMesh): boolean => (m.metadata as { shadowProxy?: boolean } | null)?.shadowProxy === true;
+/**
+ * Is this a static caster for good, drawn into the cache: a shadow proxy, or a shadow-only batch made never to change
+ * (`staticCaster`: the trees' and rocks' static shadow sets, game/shadowCasters.ts)? Atmosphere invalidates the cache
+ * when one joins the shadow map's list or leaves it.
+ */
+export const isStaticCaster = (m: AbstractMesh): boolean => {
+  const meta = m.metadata as { shadowProxy?: boolean; staticCaster?: boolean } | null;
+  return meta?.shadowProxy === true || meta?.staticCaster === true;
+};
 
 /**
  * Can this caster be cached while it stands still? Plain meshes only: no skeleton or morphs, no instances (one draw
- * stands for every copy) and no thin instances (destructibles change theirs without moving).
+ * stands for every copy) and no thin instances (destructibles change theirs without moving), unless the mesh says when
+ * its copies change (`thinVersion`, counted up each time: the prop batches of breakable props, propBatches.ts).
  */
 function stillable(m: AbstractMesh): boolean {
   const mesh = m as AbstractMesh & { hasInstances?: boolean; morphTargetManager?: unknown };
-  return !m.skeleton && !mesh.morphTargetManager && !m.isAnInstance && !mesh.hasInstances && !m.hasThinInstances && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster;
+  return !m.skeleton && !mesh.morphTargetManager && !m.isAnInstance && !mesh.hasInstances && (!m.hasThinInstances || thinVersion(m) !== null) && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster;
 }
+
+/** A thin-instanced caster's count of changes to its copies (null: it doesn't say). */
+const thinVersion = (m: AbstractMesh): number | null => {
+  const v = (m.metadata as { thinVersion?: number } | null)?.thinVersion;
+  return typeof v === 'number' ? v : null;
+};
 
 export class ShadowCache {
   /** Per layer: draw the static casters this frame. */
@@ -245,7 +259,7 @@ export class ShadowCache {
   private readonly lists = { s: [emptyList(), emptyList(), emptyList(), emptyList()], d: [emptyList(), emptyList(), emptyList(), emptyList()] };
   private readonly disposers: (() => void)[] = [];
   /** Casters that can move, watched: their world matrix's update flag, the frame it last changed, and whether cached now. */
-  private readonly still = new Map<AbstractMesh, { flag: number; since: number; cached: boolean; at: Float32Array }>();
+  private readonly still = new Map<AbstractMesh, { flag: number; since: number; cached: boolean; at: Float32Array; version: number | null }>();
 
   private constructor(
     private readonly scene: Scene,
@@ -286,7 +300,7 @@ export class ShadowCache {
     if (r) return r.cached;
     if (stillable(m)) {
       const w = m.getWorldMatrix();
-      this.still.set(m, { flag: w.updateFlag, since: this.frame, cached: false, at: Float32Array.from(w.m) });
+      this.still.set(m, { flag: w.updateFlag, since: this.frame, cached: false, at: Float32Array.from(w.m), version: thinVersion(m) });
     }
     return false;
   }
@@ -303,8 +317,11 @@ export class ShadowCache {
       const flag = w.updateFlag;
       // Worked out again isn't moved: a door whose logic sets its turn every frame keeps the same matrix.
       if (flag !== r.flag && sameMatrix(r.at, w.m)) r.flag = flag;
-      if (flag !== r.flag || !m.isEnabled() || !m.isVisible) {
+      // A batch whose copies changed (a prop broken, back at a new round, or at another level of detail) moved too.
+      const version = thinVersion(m);
+      if (flag !== r.flag || version !== r.version || !m.isEnabled() || !m.isVisible) {
         r.flag = flag;
+        r.version = version;
         r.at.set(w.m);
         r.since = this.frame;
         if (r.cached) {

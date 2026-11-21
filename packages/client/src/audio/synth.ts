@@ -11,9 +11,9 @@
 
 export const SYNTH_RATE = 44100;
 
-export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack' | 'engine' | 'rain' | 'wind';
+export type SynthRecipe = 'pistol' | 'rifle' | 'smg' | 'shotgun' | 'sniper' | 'launcher' | 'plasma' | 'swing' | 'dryfire' | 'flame' | 'beep' | 'alarm' | 'laser' | 'railgun' | 'arc' | 'bubble' | 'splat' | 'disc' | 'nail' | 'vortex' | 'freeze' | 'flamelet' | 'hitmark' | 'hum' | 'hithead' | 'hitarmor' | 'killconfirm' | 'splash' | 'crack' | 'engine' | 'rain' | 'wind' | 'heartbeat';
 
-export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack', 'engine', 'rain', 'wind'];
+export const SYNTH_RECIPES: readonly SynthRecipe[] = ['pistol', 'rifle', 'smg', 'shotgun', 'sniper', 'launcher', 'plasma', 'swing', 'dryfire', 'flame', 'beep', 'alarm', 'laser', 'railgun', 'arc', 'bubble', 'splat', 'disc', 'nail', 'vortex', 'freeze', 'flamelet', 'hitmark', 'hum', 'hithead', 'hitarmor', 'killconfirm', 'splash', 'crack', 'engine', 'rain', 'wind', 'heartbeat'];
 
 /** Small seeded PRNG (mulberry32) returning [-1, 1). */
 function noiseSource(seed: number): () => number {
@@ -363,6 +363,28 @@ function renderAlarm(): Float32Array<ArrayBuffer> {
   return finish(out);
 }
 
+/**
+ * A slow heartbeat, lub-dub (the low-health warning, lowHealth.ts): two soft low thumps, no click or high edge, so it
+ * reads under gunfire without startling. Variants differ a little in pitch and in the second beat's place.
+ */
+function renderHeartbeat(seed: number): Float32Array<ArrayBuffer> {
+  const rnd = noiseSource(seed);
+  const pitch = 1 + rnd() * 0.06;
+  const gap = 0.2 + rnd() * 0.03;
+  const lp = new Biquad('lowpass').set(140, 0.7);
+  const a = osc();
+  const b = osc();
+  return render(0.62, seed, (t, _u, r) => {
+    const thump = (at: number, f: number, gain: number, w: (freq: number) => number) => {
+      const k = t - at;
+      if (k < 0) return 0;
+      const env = Math.min(1, k / 0.008) * Math.exp(-k * 16);
+      return w(f * pitch * (1 - Math.min(0.25, k * 1.4))) * env * gain;
+    };
+    return thump(0, 58, 1, a) + thump(gap, 66, 0.7, b) + lp.run(r()) * 0.6 * Math.exp(-Math.min(t, Math.abs(t - gap)) * 30);
+  });
+}
+
 /** Render `seconds` of sound sample by sample: `f(t, u, rnd)` with t in seconds and u in 0..1. */
 function render(seconds: number, seed: number, f: (t: number, u: number, rnd: () => number) => number): Float32Array<ArrayBuffer> {
   const n = Math.ceil(seconds * SYNTH_RATE);
@@ -611,6 +633,8 @@ export function synthesize(recipe: SynthRecipe, variant: number): Float32Array<A
       return renderBeep();
     case 'alarm':
       return renderAlarm();
+    case 'heartbeat':
+      return renderHeartbeat(seed);
     case 'laser':
       return renderLaser(seed);
     case 'railgun':

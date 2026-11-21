@@ -90,6 +90,25 @@ describe('the coverage map', () => {
     expect(placements.filter((p) => !parts.has(`sp_${p.id}`)).map((p) => p.piece)).toEqual([]);
   });
 
+  it('has a set piece with paint on one part, and a look of your own that two pieces wear (painting Phase 5, made in MapMaker)', () => {
+    const placements = (raw.setPieces ?? []) as { id: string; pack?: string; overrides?: { paint?: Record<string, unknown> } }[];
+    expect(placements.some((p) => Object.keys(p.overrides?.paint ?? {}).length > 0)).toBe(true);
+    const looks = (raw.lookDefs ?? []) as { id: string }[];
+    expect(looks.length).toBeGreaterThan(0);
+    expect(looks.every((l) => placements.filter((p) => p.pack === l.id).length >= 1)).toBe(true);
+    expect(placements.filter((p) => p.pack === looks[0]!.id).length).toBeGreaterThanOrEqual(2);
+    // As played the looks are in their pieces' parts: the map carries none.
+    expect(map.lookDefs).toBeUndefined();
+  });
+
+  it("has an Arena Corner with its gate (octagon phase 3): the set piece, both Gate tiles, the gatehouse tower and its 45° portcullis", () => {
+    const placements = (raw.setPieces ?? []) as { id: string; piece: string }[];
+    const gate = placements.find((p) => p.piece === 'setpiece.arena_corner_gate');
+    expect(gate, 'setpiece.arena_corner_gate').toBeDefined();
+    expect(missing(['core.arena_corner_ground_gate', 'core.arena_corner_attic_gate', 'core.arena_corner_tower'], tiles)).toEqual([]);
+    expect(map.entities.some((e) => e.kind === 'door' && e.id.startsWith(`sp_${gate!.id}_`) && e.style === 'portcullis' && Math.abs(Math.sin(2 * e.yaw)) > 0.99)).toBe(true);
+  });
+
   it('has the markers of every game mode, terrain, roads, a track (NPC traffic), an AI route and logic', () => {
     expect(new Set(map.entities.flatMap((e) => (e.kind === 'flag' ? [e.team] : []))).size).toBeGreaterThanOrEqual(2);
     expect(playableModes(map)).toEqual(expect.arrayContaining(['core.ctf', 'core.forts', 'core.koth', 'core.bomb', 'core.hostage', 'core.breakthrough', 'core.zombies']));

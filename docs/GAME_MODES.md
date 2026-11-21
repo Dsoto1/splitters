@@ -28,7 +28,12 @@ Every mode spawns people and bots by one rule (docs/BOTS.md, "Spawning"): each s
 distance to the nearest enemy, enemy sight lines to it and fresh deaths near it (team modes on shared spawns: living
 teammates near it and each side's own end of the map, so the sides don't swap ends; spawning beside a teammate picks
 one no enemy can see), and one is picked at random
-among the safest few. Deathmatch and Team Deathmatch give every respawn 3 s of **spawn protection** (Roulette 2 s):
+among the safest few. **Everyone gets a point of their own** (owner, 2026-11-18: "not all clumped on one another"): a
+point someone stands on (within 1.5 m) or one given out this tick is never picked while another is free; free-for-all
+uses every spawn point on the map, team bases included, when the shared ones are fewer than the players; and once every
+point is taken the player starts beside the chosen one, 3 m out (then 1.6 or 4.5 m, up to 6 m) on walkable floor, clear
+of everyone (sim/spawns.ts `spawnTaken`, Match `besideSpot`; `packages/shared/test/dmSpawns.test.ts`). Team modes keep to
+their own sets the same way. Deathmatch and Team Deathmatch give every respawn 3 s of **spawn protection** (Roulette 2 s):
 nobody else's damage gets through until it runs out or you fire, throw or strike. The numbers are data:
 `content/match-play.json` (`node tools/content/match-play.mjs` checks them and writes
 `packages/shared/src/content/matchPlay.generated.ts`).
@@ -391,8 +396,10 @@ file, unchanged, no format bump) carries **NPC traffic**.
 - **Grip.** On any map with a track, wheeled vehicles grip the road 1.7× better and are 15% slower off it
   (`sim/road.ts`); hovercraft don't care.
 - **Checkpoints** are still sampled along the track (track data: `TrackGeometry.gates`), and MapMaker still shows
-  them; nothing scores them now. The track's other race settings (laps, grid, vehicle, combat) are kept in the file
-  but unused.
+  them; nothing scores them now. The track's other race settings (laps, grid, vehicle, combat) are gone: map format
+  v39 drops them from older files (`migrate.ts` `dropRaceSettingsV39`) and MapMaker no longer writes them; a track
+  keeps its curbs, NPC cars and pit lane. A map stamped for export before v39 keeps its version
+  (`identity.ts` `carryReleaseOverRaceDrop`: its stamp is checked with the old settings put back).
 - **Old maps.** A map whose modes still list `core.race` loads and simply doesn't offer it (`isGameMode` drops it;
   only Deathmatch is offered when it listed nothing else); the validator warns `race.removed` so MapMaker can drop it
   in Map properties. Saved setups, rotations, playlists and host commands that ask for race are refused or fall back.

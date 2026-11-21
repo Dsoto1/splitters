@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 48,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
@@ -17,7 +17,15 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
-    ]
+    ],
+    "release": {
+      "mapId": "m_frnmd4k4gnd6ttcs",
+      "versionId": "v_r4kyduuldnhzmzck",
+      "revision": 1,
+      "contentHash": "sha256:decc5c70fe7640b2ee1322a74b965f81ed0bd421cf9226ebc7e07f58deb9a03f",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:06:05.593Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1718,11 +1726,12 @@
         22
       ],
       "kind": "prop",
-      "model": "prop.nt_boulder_moss",
+      "model": "env.rock.boulder_shard",
       "yaw": 0.5,
-      "scale": 1,
+      "scale": 1.08,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_089",
@@ -1732,11 +1741,12 @@
         -6.5
       ],
       "kind": "prop",
-      "model": "prop.nt_log_moss",
+      "model": "env.deadwood.log",
       "yaw": 1.4,
-      "scale": 1,
+      "scale": 1.22,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_090",
@@ -2435,7 +2445,7 @@
         -17
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -2747,9 +2757,9 @@
         -19.2
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": -0.733,
-      "scale": 1,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -2789,9 +2799,9 @@
         -19.2
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": -1.344,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -2845,9 +2855,9 @@
         -10
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 0.175,
-      "scale": 1,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -2901,9 +2911,9 @@
         23
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_curved",
+      "model": "env.palm.leaning",
       "yaw": -0.716,
-      "scale": 1,
+      "scale": 0.8,
       "solid": true,
       "tint": null
     },
@@ -2957,9 +2967,9 @@
         33
       ],
       "kind": "prop",
-      "model": "prop.nt_palm_tall",
+      "model": "env.palm.coconut",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.74,
       "solid": true,
       "tint": null
     },
@@ -2999,11 +3009,12 @@
         2
       ],
       "kind": "prop",
-      "model": "prop.nt_log_moss",
+      "model": "env.deadwood.log",
       "yaw": 0.524,
-      "scale": 1,
+      "scale": 1.22,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_je74016k41",
@@ -3013,11 +3024,12 @@
         12
       ],
       "kind": "prop",
-      "model": "prop.nt_log_moss",
+      "model": "env.deadwood.log",
       "yaw": -0.262,
-      "scale": 1,
+      "scale": 1.22,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_nl8jy5oyw4",
@@ -3027,11 +3039,12 @@
         27
       ],
       "kind": "prop",
-      "model": "prop.nt_boulder_moss",
+      "model": "env.rock.boulder_shard",
       "yaw": 0,
-      "scale": 1,
+      "scale": 1.08,
       "solid": true,
-      "tint": null
+      "tint": null,
+      "variant": 1
     },
     {
       "id": "prop_ekrqxstr16",

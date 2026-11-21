@@ -122,7 +122,7 @@ describe('the Tank data', () => {
     expect(armourScale(TANK, 'melee')).toBe(0);
     expect(armourScale(TANK, 'other')).toBe(1);
     // Other vehicles keep full damage of every kind.
-    expect(armourScale(MOUNT_DEFS.buggy, 'bullet')).toBe(1);
+    expect(armourScale(MOUNT_DEFS.troop_buggy, 'bullet')).toBe(1);
   });
 
   it('the cannon has 10 shells, one back every 15 s, and the driver fires it while its seat is empty', () => {
@@ -132,13 +132,13 @@ describe('the Tank data', () => {
     expect(firingSeat(TANK, driver, (i) => i === CANNON)).toBeNull();
     expect(firingSeat(TANK, CANNON, () => true)).toBe(CANNON);
     // A buggy's driver still has no gun.
-    expect(firingSeat(MOUNT_DEFS.buggy, 0, () => false)).toBeNull();
+    expect(firingSeat(MOUNT_DEFS.troop_buggy, 0, () => false)).toBeNull();
   });
 });
 
 describe('the crew is sealed in', () => {
   it('nobody aboard a tank can be shot, blasted or struck from outside; a buggy driver can', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 26, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 26, 12)]), rules, 3);
     const pad = new Pad(match);
     const shooter = match.addHuman('shooter')!;
     const crew = match.addHuman('crew')!;
@@ -207,7 +207,7 @@ describe('the crew is sealed in', () => {
   });
 
   it('a buggy blowing up still throws its riders out into the blast instead', () => {
-    const match = new Match(yard([mount('buggy', 12, 12)]), rules, 3);
+    const match = new Match(yard([mount('troop_buggy', 12, 12)]), rules, 3);
     const pad = new Pad(match);
     const driver = match.addHuman('driver')!;
     pad.run(2);
@@ -261,7 +261,7 @@ describe('armour: rockets against bullets', () => {
   });
 
   it('bullets fired at it really do a tenth: an assault rifle emptied into the hull', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 26, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 26, 12)]), rules, 3);
     const pad = new Pad(match);
     const a = match.addHuman('a')!;
     pad.run(2);
@@ -331,7 +331,7 @@ describe('the cannon: limited shells, refills and the ammo pickup', () => {
     expect(gun.shells).toBe(10);
   });
 
-  it('a crewed tank over an ammo pickup fills right up and takes the pickup; an empty one leaves it', () => {
+  it('a crewed tank beside an Ammo Box fills right up from it (a use of the crate); an empty one leaves it', () => {
     const match = new Match(yard([mount('tank', 12, 12)], [ammoBox(12, 13)]), rules, 3);
     const pad = new Pad(match);
     const driver = match.addHuman('driver')!;
@@ -342,13 +342,17 @@ describe('the cannon: limited shells, refills and the ammo pickup', () => {
     // Nobody aboard: it stays where it is.
     let events = pad.run(12);
     expect(gun.shells).toBe(2);
-    expect(events.some((e) => e.e === 'pickup')).toBe(false);
+    expect(events.some((e) => e.e === 'resupply')).toBe(false);
     place(driver, 14, 12);
     expect(internals(match).enterMount(driver)).toBe(true);
     events = pad.run(12);
     expect(gun.shells).toBe(10);
-    expect(events.find((e) => e.e === 'pickup')).toMatchObject({ s: driver.slot, id: 'ammo_1', item: 'core.ammo' });
-    // Taken: down a shell again, it doesn't refill until the pickup is back.
+    expect(events.find((e) => e.e === 'resupply')).toMatchObject({ s: driver.slot, m: tank.index, ok: true, left: 9 });
+    // Each refill is one of its ten uses; with none left it is gone till its timer, and the gun stays short.
+    for (const b of (match as unknown as { boxes: { uses: number }[] }).boxes) b.uses = 1;
+    gun.shells = 5;
+    pad.run(12);
+    expect(gun.shells).toBe(10);
     gun.shells = 5;
     pad.run(12);
     expect(gun.shells).toBe(5);
@@ -479,7 +483,7 @@ describe('bots duck in standing places (owner, 2026-11-11)', () => {
 
 describe('tracks', () => {
   it('a tank turns on the spot; a buggy standing still does not', () => {
-    const match = new Match(yard([mount('tank', 12, 12), mount('buggy', 28, 12)]), rules, 3);
+    const match = new Match(yard([mount('tank', 12, 12), mount('troop_buggy', 28, 12)]), rules, 3);
     const pad = new Pad(match);
     const a = match.addHuman('a')!;
     const b = match.addHuman('b')!;
@@ -606,10 +610,11 @@ describe('bots in tanks', () => {
     return { refilled, nearest, bot, tank, crewed };
   }
 
-  it('low on shells (3 of 10) out of a fight, it drives over an Ammo Box 40 m off its way and fills up', () => {
+  it('low on shells (3 of 10) out of a fight, it drives to an Ammo Box 40 m off its way and fills up beside it', () => {
     const r = shortOfShells(3);
     expect(r.refilled).toBeGreaterThan(0);
-    expect(r.nearest).toBeLessThan(4);
+    // The box is a solid crate now (sim/resupply.ts): the tank pulls up beside it, its middle within its own length.
+    expect(r.nearest).toBeLessThan(5);
     expect(r.bot.bot!.tankLog.resupply).toBe(1);
   });
 
@@ -631,7 +636,7 @@ describe('bots in tanks', () => {
   });
 
   it('a bot alone at the wheel fires the cannon at an enemy vehicle and keeps its shells for targets worth one', () => {
-    const match = new Match(yard([mount('tank', 12, 6), mount('buggy', 12, 42)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
+    const match = new Match(yard([mount('tank', 12, 6), mount('troop_buggy', 12, 42)], [], 5, 7, [[0, 0, 0], [30, 0, 48]]), rules, 7);
     const bot = match.addBot('bot', quiet, BOT_DIFFICULTIES.hard)!;
     const enemy = match.addHuman('enemy')!;
     match.step();

@@ -5,7 +5,8 @@
   "order": 62,
   "name": "Sgt. Mackie",
   "look": "core.pruitt",
-  "group": "soldiers",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Thirty years on the beat. Has heard every excuse, and believes none of them.",
   "body": "male",
@@ -24,14 +25,12 @@
     "metallic": 0.05,
     "roughness": 0.65
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 15000,
     "surface": "rebake",
     "feet": true,
-    "headShare": 0.16,
+    "headShare": 0.26,
+    "face": { "box": [-0.05, 0.855, 0, 0.05, 0.921, 0.12], "share": 0.1 },
     "handsShare": 0.08,
     "normalSize": 1024,
     "lod": 0.22

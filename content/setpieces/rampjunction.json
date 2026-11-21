@@ -7,7 +7,7 @@
       "displayName": "Ramp Junction",
       "category": "Stairs & Overlooks",
       "blurb": "Three levels meet: a long ramp from the ground to a railed junction deck on level 1, a second ramp on up to level 2, and an arched passage and a corridor under them at ground level: 3 × 2 cells, levels 0-2.",
-      "packs": ["military", "neon", "orbital", "snow", "imperial", "suburban", "harbor"],
+      "packs": ["military", "neon", "orbital", "snow", "imperial", "suburban", "harbor", "urban"],
       "footprint": { "cells": [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]], "levels": [0,2] },
       "mirror": "none",
       "ports": [

@@ -6,6 +6,7 @@
   "name": "Fearsome Undead",
   "look": "core.fearsomeundead",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "Dug himself out for one more round. He plans to stay for several.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

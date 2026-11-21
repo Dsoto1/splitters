@@ -11,20 +11,24 @@
  * content/materials.generated.ts. The types, the pattern and category lists and
  * the lookups stay here; the painters stay in client/materials/patterns.ts.
  */
-import { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES } from '../content/materials.generated.ts';
+import { CORE_MATERIALS, CORE_THEMES, GROUND_THEMES, TINT_SWATCHES } from '../content/materials.generated.ts';
 import type { BallisticMaterial } from '../sim/gunplay.ts';
 import type { SurfaceTypeId } from '../sim/surfaceTypes.ts';
 
-export { CORE_MATERIALS, CORE_THEMES, TINT_SWATCHES };
+export { CORE_MATERIALS, CORE_THEMES, GROUND_THEMES, TINT_SWATCHES };
 
 /**
  * Paintable surface groups of a Classic Grid tile. `roof` is the top of a room's roof (room option Ceiling: Roof,
  * skylight or beams); until it is painted it looks like the room's floor, so it has no theme default of its own.
+ * `metal` (format v41) is what bars and barred gates are drawn in (edge styles with `paint: "metal"`): a
+ * theme's own metal when it names one, else DEFAULT_METAL; never the walls' stone.
  */
-export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim', 'roof'] as const;
+export const SURFACE_SLOTS = ['floor', 'walls', 'solids', 'underside', 'trim', 'roof', 'metal'] as const;
 export type SurfaceSlot = (typeof SURFACE_SLOTS)[number];
-/** The slots a theme gives a default for. */
-export type ThemeSlot = Exclude<SurfaceSlot, 'roof'>;
+/** The slots a theme must give a default for (`metal` is optional: DEFAULT_METAL). */
+export type ThemeSlot = Exclude<SurfaceSlot, 'roof' | 'metal'>;
+/** The metal of bars and barred gates in a theme that names none: dark weathered steel (iron). */
+export const DEFAULT_METAL = 'core.pbr_steel';
 
 export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   floor: 'Floor',
@@ -33,6 +37,7 @@ export const SURFACE_SLOT_LABELS: Record<SurfaceSlot, string> = {
   underside: 'Underside (ceiling below)',
   trim: 'Trim & frames',
   roof: 'Roof (top, outside)',
+  metal: 'Metal (bars & barred gates)',
 };
 
 /** Procedural patterns a material can use; each has its painter in client code (packages/client/src/materials/patterns.ts). */
@@ -118,6 +123,14 @@ export const PATTERN_IDS = [
   'thatch',
   /** Set pieces part 3 (trench revetment, parapets): courses of burlap sandbags in stretcher bond, each a rounded pillow. */
   'sandbags',
+  /** Style Pack 14 Urban & Civilian: asphalt with white parking bay lines (two bays wide and one deep a repeat), the paint worn. */
+  'parking_bays',
+  /** Style Pack 14: tactile paving slabs, rows of round studs. */
+  'tactile',
+  /** Style Pack 14: a brick wall with spray paint on it (abstract shapes only: no letters, words or marks); one storey a repeat. */
+  'graffiti',
+  /** Style Pack 14: painted plaster fallen away in patches to the brick behind (the accent). */
+  'spalled_plaster',
 ] as const;
 export type PatternId = (typeof PATTERN_IDS)[number];
 
@@ -152,6 +165,14 @@ export interface MaterialDefinition {
   surface?: SurfaceTypeId;
   /** Its ballistic class when it should differ from its surface type's (sim/gunplay.ts BALLISTIC_MATERIALS). */
   ballistic?: BallisticMaterial;
+  /**
+   * Laid round corners: on upright faces the texture runs along x + z instead of along the face's own axis, so it
+   * carries on unbroken across every upright edge (round a wall's corner, onto a buttress's sides) instead of starting
+   * again on each face. Neighbouring faces show it mirrored, which an irregular stone texture hides.
+   */
+  wrap?: boolean;
+  /** A little of its own colour added to the light (0-0.5), so its faces in shade still read as the material. */
+  shadeLift?: number;
 }
 
 export interface SurfaceStyleDef {
@@ -164,8 +185,23 @@ export interface ThemeDefinition {
   id: string;
   displayName: string;
   /** Default style for each slot when a tile does not override it. */
-  slots: Record<ThemeSlot, SurfaceStyleDef>;
+  slots: Record<ThemeSlot, SurfaceStyleDef> & { metal?: SurfaceStyleDef };
   sky: string;
+  /** Its matching Ground theme (a `ground.*` id): offered with it in the theme warning, and a new terrain's default. */
+  ground: string;
+}
+
+/**
+ * A Ground theme (docs/MAPMAKER_PAINTING_PLAN.md, Phase 4): the base ground every unpainted terrain cell shows, the
+ * grounds MapMaker's Ground paint offers first (the base first), and the Structure themes it suits.
+ */
+export interface GroundThemeDefinition {
+  id: string;
+  displayName: string;
+  /** The ground material an unpainted cell shows. */
+  base: string;
+  grounds: readonly string[];
+  suits: readonly string[];
 }
 
 class Registry<T extends { id: string }> {
@@ -186,5 +222,6 @@ class Registry<T extends { id: string }> {
 
 export const coreMaterials = new Registry(CORE_MATERIALS);
 export const coreThemes = new Registry(CORE_THEMES);
+export const groundThemes = new Registry(GROUND_THEMES);
 export type MaterialCatalog = Registry<MaterialDefinition>;
 export type ThemeCatalog = Registry<ThemeDefinition>;

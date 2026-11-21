@@ -41,15 +41,19 @@ export function schemas() {
     'wheels?': arr(tup(2), 1), 'hub?': num, travel: num, bump: num, freq: num, damping: num, squat: num, lean: num, tumble: num, land: num,
     maxTilt: num, steer: num,
   });
+  const rigid = obj({
+    on: bool, com: num, grip: num, slide: num, corner: tup(2), inertia: num, airLevel: num, airPitch: num, airRoll: num, rightAfter: tup(2), launch: num, rearSteer: num, 'gravity?': num,
+  });
   const vehicle = obj({
     maxSpeed: num, reverseSpeed: num, accel: num, turnRate: num, 'hover?': bool, 'grip?': num, 'mass?': num,
-    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'drift?': num, 'pivot?': num, 'idleBrake?': num, 'routeFit?': num,
+    'fly?': obj({ climb: num, ceiling: num }), 'draft?': num, 'suspension?': suspension, 'rigid?': rigid, 'drift?': num, 'pivot?': num, 'idleBrake?': num, 'routeFit?': num,
   });
   const sentry = obj({ weapon: str, range: num, turnRate: num, 'arc?': obj({ windUpSeconds: num, lockSeconds: num, ventSeconds: num }) });
   const mount = obj({
     id: str, 'order?': int, displayName: str, kind: en(['turret', 'sentry', 'vehicle']), model: str, 'scale?': num, health: num, half: vec3, seats: arr(seat),
-    enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str,
-    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1), 'radius?': num, 'width?': num }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2), 'traverse?': num }), 'fallback?': str, 'armour?': armour, 'bailHealth?': num, blurb: str, 'notes?': notes,
+    enterRadius: num, respawnSeconds: num, blast: obj({ radius: num, damage: num }), 'vehicle?': vehicle, 'sentry?': sentry, 'glow?': str, 'paint?': num,
+    'airplane?': bool, 'rideHeight?': num, 'wheels?': obj({ model: str, at: arr(vec3, 1), 'radius?': num, 'width?': num }), 'cockpitEye?': vec3, 'turret?': obj({ seat: int, 'pitch?': tup(2), 'traverse?': num }), 'fallback?': str, 'armour?': armour,
+    'resupply?': obj({ at: vec3, reach: num, uses: int, wait: num }), 'bailHealth?': num, blurb: str, 'notes?': notes,
   });
   return { mount, seat };
 }
@@ -110,6 +114,7 @@ export function build(content, root = ROOT) {
     if (d.wheels && [d.wheels.radius, d.wheels.width].some((v) => v !== undefined && (v <= 0 || v > 3))) problems.push(`${file}: wheels.radius and wheels.width are the drawn tire's size in metres, above 0 (left out: the tire model's own)`);
     if (d.scale !== undefined && (d.scale < 0.25 || d.scale > 4)) problems.push(`${file}: scale is how many times its built size the model is drawn, 0.25 to 4 (left out: 1)`);
     if (d.glow !== undefined && !isHex(d.glow)) problems.push(`${file}: glow must be a colour like #8f7bff`);
+    if (d.paint !== undefined && !(d.paint > 0 && d.paint <= 1)) problems.push(`${file}: paint is how strongly a skin or team colour paints the model, above 0 and up to 1 (left out: 1)`);
     if (d.turret && !d.seats[d.turret.seat]?.weapon) problems.push(`${file}: turret.seat must be a seat with a mounted weapon (its aim turns the model's turret and barrel)`);
     if (d.turret?.pitch && !(d.turret.pitch[0] <= 0 && d.turret.pitch[1] >= 0)) problems.push(`${file}: turret.pitch is [lowest, highest] drawn barrel pitch (rad), lowest ≤ 0 ≤ highest`);
     if (d.health <= 0) problems.push(`${file}: health must be above 0`);
@@ -122,6 +127,8 @@ export function build(content, root = ROOT) {
       if (a.sealed && d.kind !== 'vehicle') problems.push(`${file}: armour.sealed is for vehicles (a crew shut in)`);
     }
     if (d.bailHealth !== undefined && (d.bailHealth <= 0 || d.bailHealth >= 1)) problems.push(`${file}: bailHealth is a share of health, above 0 and under 1`);
+    if (d.resupply && (d.resupply.reach <= 0 || d.resupply.reach > 4 || d.resupply.uses < 1 || d.resupply.wait < 0)) problems.push(`${file}: resupply needs reach above 0 and up to 4 m, uses 1 or more and wait 0 or more (s)`);
+    if (d.resupply && d.kind !== 'vehicle') problems.push(`${file}: resupply is for vehicles (the Supply Buggy); placed boxes are pickups`);
     if (d.seats.filter((s) => s.driverFires).length > 1) problems.push(`${file}: only one seat can be driverFires`);
 
     // Seats by kind.

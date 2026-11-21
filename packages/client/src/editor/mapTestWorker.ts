@@ -3,8 +3,8 @@
 // starts a worker for each and ends it (Cancel) with terminate(). This entry only loads mapTestWorkerCore.ts.
 import type { FromMapTest, ToMapTest } from './mapTestWorkerCore.ts';
 
-const scope = self as unknown as { postMessage(m: FromMapTest): void; onmessage: ((e: MessageEvent<ToMapTest>) => void) | null };
-const post = (m: FromMapTest) => scope.postMessage(m);
+const scope = self as unknown as { postMessage(m: FromMapTest, transfer?: Transferable[]): void; onmessage: ((e: MessageEvent<ToMapTest>) => void) | null };
+const post = (m: FromMapTest, transfer?: Transferable[]) => scope.postMessage(m, transfer ?? []);
 
 scope.onmessage = (e: MessageEvent<ToMapTest>) => {
   import('./mapTestWorkerCore.ts')

@@ -5,7 +5,8 @@
   "order": 91,
   "name": "Pink Mantis",
   "look": "core.pinkalien",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "green",
   "nameTheme": "critter",
   "bio": "Folds his hands, bows politely, then eats the whole squad. Impeccable suit.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

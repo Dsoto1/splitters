@@ -9,7 +9,7 @@
 
 import { rng } from '../env/rng.mjs';
 import { noise3 } from '../env/noise.mjs';
-import { Mesh, box, clamp01, groundShade, hex, mix3, quadN, scale3, triN } from './geom.mjs';
+import { Mesh, bar, box, clamp01, cyl, groundShade, hex, mix3, quadN, ribbon, scale3, triN, wirePanel } from './geom.mjs';
 import { woodTone } from './crate.mjs';
 
 /**
@@ -441,3 +441,147 @@ export function barrierMesh(seed, size, g, look, level) {
 }
 
 const lerp = (p, q, t) => p + (q - p) * t;
+
+// ---------------------------------------------------------------- chain-link (Tileset 11, Urban & Civilian: plan step C7)
+
+/**
+ * Wire fencing on steel tube. Settings `g`: `style` ('panel': chain-link between two posts under a top rail; 'gate':
+ * two framed, braced leaves shut between two posts, a latch where they meet; 'site': a welded-mesh panel in a tube
+ * frame standing in two block feet, as round a building site), `post` (post or frame tube width, m), `rail` (rail
+ * tube width), `pitch` (the mesh's wire spacing, m), `bars` (how far apart its collision bars stand), `feet` [length
+ * along the run, height] (the site panel's blocks; they span the piece's depth). `look`: `iron`, `rust`, `feet`
+ * (hex), `rusty` (0–1), `grime`.
+ *
+ * Collision is the family's own boxes: the posts, the rails, the frames, the feet, and an upright bar every `bars`
+ * m across the mesh (as the Iron Fence collides: nobody walks through, most rounds pass, and the fence does not
+ * block sight). Nothing that collides is drawn from the seed.
+ */
+export function chainlinkMesh(seed, size, g, look, level) {
+  const f = frame(size);
+  const { L, T, h } = f;
+  const m = new Mesh();
+  const n = noise3(seed);
+  const iron = hex(look.iron);
+  const rust = hex(look.rust ?? '#6b3d24');
+  const rusty = look.rusty ?? 0.15;
+  const grime = look.grime ?? 0.2;
+  const metal = (k = 1) => (p, nn) => scale3(mix3(iron, rust, clamp01(rusty * 1.6 * (n(p[0] * 5, p[1] * 5, p[2] * 5) * 0.5 + 0.55) + (p[1] < 0.15 ? rusty * 0.5 : 0))), k * groundShade(p[1], 0.3, 1 - grime * 0.4) * (nn && nn[1] > 0.5 ? 1.12 : 1));
+  const style = g.style ?? 'panel';
+  const pw = g.post ?? 0.08;
+  const rt = g.rail ?? 0.045;
+  const step = g.bars ?? 0.25;
+  m.boxes = f.solids;
+  const wireC = metal(0.92);
+  const wd = level === 0 ? 0.011 : 0.018;
+  const pitch = (g.pitch ?? 0.16) * (level === 0 ? 1 : 2);
+  /** Diamond mesh in the piece's plane over u0…u1, y0…y1: wires on both diagonals, clipped to the rectangle. */
+  const diamond = (u0, y0, u1, y1) => {
+    if (level >= 2) return f.bx(m, u0, y0, -0.003, u1, y1, 0.003, wireC, ['ny', 'py']);
+    const stepD = pitch * Math.SQRT2;
+    for (const s of [1, -1]) {
+      // Lines u − s·y = c.
+      const cs = s > 0 ? [u0 - y1, u1 - y0] : [u0 + y0, u1 + y1];
+      const first = Math.ceil((cs[0] + 1e-6) / stepD) * stepD;
+      for (let c = first; c < cs[1] - 1e-6; c += stepD) {
+        // Where the line meets the rectangle: u from max(u0, c + s·y at an end) …
+        const ya = s > 0 ? Math.max(y0, u0 - c) : Math.max(y0, c - u1);
+        const yb = s > 0 ? Math.min(y1, u1 - c) : Math.min(y1, c - u0);
+        if (yb - ya < 0.02) continue;
+        ribbon(m, f.P(c + s * ya, ya, 0), f.P(c + s * yb, yb, 0), f.D(Math.SQRT1_2, -s * Math.SQRT1_2, 0), wd, wireC);
+      }
+    }
+  };
+  /** The upright collision bars across u0…u1, between y0 and y1. */
+  const bars = (u0, u1, y0, y1) => {
+    const count = Math.max(1, Math.round((u1 - u0) / step));
+    for (let i = 0; i < count; i++) {
+      const u = u0 + ((u1 - u0) * (i + 0.5)) / count;
+      f.solid(u - 0.01, y0, -0.01, u + 0.01, y1, 0.01);
+    }
+  };
+  /** A round post (a square one from the first lighter level) standing the full height at u. */
+  const post = (u, top = h) => {
+    if (level === 0) {
+      const mm = new Mesh();
+      cyl(mm, 1, 0, 0, 0, top, pw / 2, 8, metal(), { caps: '1' });
+      for (let i = 0; i < mm.P.length; i += 3) [mm.P[i], mm.P[i + 1], mm.P[i + 2]] = f.P(mm.P[i] + u, mm.P[i + 1], mm.P[i + 2]);
+      m.append(mm);
+    } else f.bx(m, u - pw / 2, 0, -pw / 2, u + pw / 2, top, pw / 2, metal(), ['ny']);
+    f.solid(u - pw / 2, 0, -pw / 2, u + pw / 2, top, pw / 2);
+  };
+  const tube = (u0, y0, u1, y1, t = rt) => bar(m, f.P(u0, y0, 0), f.P(u1, y1, 0), t, metal(), { up: f.D(0, 0, 1) });
+  if (style === 'site') {
+    // Feet: a block under each end, across the piece's depth; the frame's legs stand in them.
+    const [fl, fh] = g.feet ?? [0.22, 0.13];
+    const footC = hex(look.feet ?? '#8d8a82');
+    const foot = (p, nn) => scale3(footC, (nn[1] > 0.5 ? 1.05 : 0.82) * groundShade(p[1], 0.1, 0.8));
+    const us = [-L / 2 + fl / 2, L / 2 - fl / 2];
+    for (const u of us) {
+      f.bx(m, u - fl / 2, 0, -T / 2, u + fl / 2, fh, T / 2, foot, ['ny']);
+      f.solid(u - fl / 2, 0, -T / 2, u + fl / 2, fh, T / 2);
+    }
+    // The frame: two legs (out at the ends: the piece fills its length), a top and a bottom tube, a mid tube.
+    const [ua, ub] = [-L / 2 + pw / 2, L / 2 - pw / 2];
+    const yb = fh + 0.1;
+    for (const u of [ua, ub]) {
+      f.bx(m, u - pw / 2, fh, -pw / 2, u + pw / 2, h, pw / 2, metal(), ['ny']);
+      f.solid(u - pw / 2, fh, -pw / 2, u + pw / 2, h, pw / 2);
+    }
+    for (const y of [yb, h - pw / 2]) {
+      tube(ua + pw / 2, y, ub - pw / 2, y, pw);
+      f.solid(ua, y - pw / 2, -pw / 2, ub, y + pw / 2, pw / 2);
+    }
+    if (level < 2) tube(ua + pw / 2, lerp1(yb, h, 0.5), ub - pw / 2, lerp1(yb, h, 0.5), pw * 0.7);
+    // Welded mesh: upright wires close together, a few across.
+    if (level >= 2) f.bx(m, ua, yb, -0.003, ub, h - pw / 2, 0.003, wireC, ['ny', 'py']);
+    else wirePanel(m, f.P(ua, yb, 0), f.P(ub, yb, 0), f.P(ua, h - pw / 2, 0), f.P(ub, h - pw / 2, 0), Math.round((ub - ua) / (pitch * 0.9)) - 1, level === 0 ? 7 : 3, wd, wireC);
+    bars(ua + pw / 2, ub - pw / 2, yb, h - pw / 2);
+    return m;
+  }
+  const [ua, ub] = [-L / 2 + pw / 2, L / 2 - pw / 2];
+  post(ua);
+  post(ub);
+  if (style === 'gate') {
+    // Two leaves, each a tube frame with a brace, hung on the posts and meeting in the middle.
+    const gap = 0.03;
+    const y0 = 0.1;
+    const y1 = h - 0.08;
+    for (const s of [-1, 1]) {
+      const hinge = s * (L / 2 - pw - 0.02);
+      const meet = s * gap;
+      const [u0, u1] = [Math.min(hinge, meet), Math.max(hinge, meet)];
+      tube(u0, y0, u1, y0);
+      tube(u0, y1, u1, y1);
+      tube(u0 + rt / 2, y0, u0 + rt / 2, y1);
+      tube(u1 - rt / 2, y0, u1 - rt / 2, y1);
+      if (level < 2) tube(hinge - s * rt, y0 + rt, meet + s * rt, y1 - rt, rt * 0.7);
+      diamond(u0 + rt, y0 + rt / 2, u1 - rt, y1 - rt / 2);
+      f.solid(u0, y0 - rt / 2, -rt / 2, u1, y0 + rt / 2, rt / 2);
+      f.solid(u0, y1 - rt / 2, -rt / 2, u1, y1 + rt / 2, rt / 2);
+      f.solid(u0, y0, -rt / 2, u0 + rt, y1, rt / 2);
+      f.solid(u1 - rt, y0, -rt / 2, u1, y1, rt / 2);
+      bars(u0 + rt, u1 - rt, y0, y1);
+      // Hinges on the post.
+      if (level === 0) for (const y of [y0 + 0.25, y1 - 0.25]) f.bx(m, hinge - 0.03, y - 0.04, -pw / 2, hinge + 0.03, y + 0.04, pw / 2, metal(0.7));
+    }
+    // The latch across the meeting stiles and a drop bolt to the ground.
+    if (level === 0) {
+      f.bx(m, -0.12, h * 0.45, -pw / 2, 0.12, h * 0.45 + 0.07, pw / 2, metal(0.7));
+      f.bx(m, 0.05, 0, pw / 2 - 0.02, 0.07, h * 0.4, pw / 2, metal(0.8), ['ny']);
+    }
+    return m;
+  }
+  // The panel: a top rail, a bottom rail close to the ground, the mesh between them.
+  const yTop = h - 0.07;
+  const yLow = 0.07;
+  tube(ua + pw / 2, yTop, ub - pw / 2, yTop);
+  if (level < 2) tube(ua + pw / 2, yLow, ub - pw / 2, yLow, rt * 0.7);
+  f.solid(ua, yTop - rt / 2, -rt / 2, ub, yTop + rt / 2, rt / 2);
+  f.solid(ua, yLow - rt / 2, -rt / 2, ub, yLow + rt / 2, rt / 2);
+  diamond(ua + pw / 2, yLow, ub - pw / 2, yTop);
+  bars(ua + pw / 2, ub - pw / 2, yLow, yTop);
+  // Ties round the posts.
+  if (level === 0) for (const u of [ua, ub]) for (const y of [0.5, h / 2, h - 0.5]) f.bx(m, u - pw / 2, y - 0.02, -pw / 2, u + pw / 2, y + 0.02, pw / 2, metal(0.75));
+  return m;
+}
+const lerp1 = (a, b, t) => a + (b - a) * t;

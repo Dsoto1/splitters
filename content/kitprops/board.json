@@ -1,0 +1,266 @@
+{
+  "$comment": "Boards (tools/content/kit/school.mjs; docs/map-briefs/st_johns, step 5): a wall chalkboard (or a white board), a pull-down projector screen, an outdoor notice board under a little shingle roof. The wall pieces hang on a wall (their backs on the prop's -z face; place them at the height they hang) and collide as nothing; the notice board stands on two posts and collides as its box. No writing or school mark of anyone's; nothing glows or blinks.",
+  "type": "board",
+  "props": [
+    {
+      "id": "kit.board.chalk",
+      "displayName": "Chalkboard",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5): a 3 x 1.2 m wall chalkboard in a wooden frame with a chalk ledge, chalk and a duster; its back on -z, hung 0.85 m up in the classroom bays. Collides as nothing (thinner than the wall it hangs on). Variants: green slate, black slate, a white board in a metal frame."
+      },
+      "size": [
+        3.0,
+        1.25,
+        0.1
+      ],
+      "collide": "none",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "chalkboard",
+        "frame": 0.05,
+        "ledge": 0.065,
+        "strokes": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "green",
+          "seed": 21001,
+          "look": {
+            "slate": "#26372e",
+            "frame": "#8a6540",
+            "chalk": "#e8e6dc",
+            "faint": 0.45,
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "black",
+          "seed": 21002,
+          "look": {
+            "slate": "#1f2122",
+            "frame": "#6b4a30",
+            "chalk": "#e8e6dc",
+            "faint": 0.4,
+            "jitter": 0.06,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 21003,
+          "set": {
+            "strokes": 2
+          },
+          "look": {
+            "slate": "#d9dcd8",
+            "frame": "#a3a8ad",
+            "chalk": "#3b5f8a",
+            "faint": 1.0,
+            "jitter": 0.02,
+            "grime": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.board.screen",
+      "displayName": "Projector Screen",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5): a pull-down screen 2.4 m wide, its roller case under the ceiling and the sheet pulled part way down (0.8 m), a weighted bar and a pull cord; its back on -z. Collides as nothing. A plain matt sheet: nothing glows."
+      },
+      "size": [
+        2.4,
+        1.3,
+        0.14
+      ],
+      "collide": "none",
+      "surface": "plastic",
+      "detail": "plastic",
+      "generator": {
+        "kind": "screen",
+        "drop": 0.8,
+        "case": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 21011,
+          "look": {
+            "case": "#d4d4d0",
+            "sheet": "#e9e9e4",
+            "border": "#2a2b2e",
+            "bar": "#9a9c9e"
+          }
+        },
+        {
+          "index": 1,
+          "name": "grey",
+          "seed": 21012,
+          "look": {
+            "case": "#4a4c50",
+            "sheet": "#dcdcd6",
+            "border": "#202124",
+            "bar": "#3a3c40"
+          }
+        }
+      ],
+      "bounds": "within"
+    },
+    {
+      "id": "kit.board.notice",
+      "displayName": "Notice Board",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5, photo 19): an outdoor notice board 2 m wide on two posts, a cork board 0.9 to 1.9 m up with blank sheets pinned on both faces, under a small gabled roof of shingles to 2.6 m. Collides as its box."
+      },
+      "size": [
+        2.0,
+        2.6,
+        0.7
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "breakable": {
+        "health": 80,
+        "debris": "#6b4a30"
+      },
+      "generator": {
+        "kind": "noticeboard",
+        "board": [
+          0.9,
+          1.9
+        ],
+        "post": 0.12,
+        "notes": 5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 15
+        },
+        {
+          "distance": 45
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 21021,
+          "look": {
+            "wood": "#6b4a30",
+            "cork": "#a87d55",
+            "roof": "#5a3a2e",
+            "jitter": 0.06,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 21022,
+          "look": {
+            "wood": "#3f5a45",
+            "cork": "#a87d55",
+            "roof": "#4b4f55",
+            "jitter": 0.06,
+            "grime": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.board.pennants",
+      "displayName": "Pennant String",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 5b): a 7 m string of triangular pennants (0.28 m wide, 0.36 m drop) sagging 0.1 m along x, to hang along a wall under the ceiling; its top is the prop's top. Both faces drawn; plain colours, no marks. Collides as nothing. Variants: school (royal purple, white, red: St. John's colours), bright."
+      },
+      "size": [
+        7.0,
+        0.5,
+        0.04
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": {
+        "kind": "pennants",
+        "flag": [
+          0.28,
+          0.36
+        ],
+        "gap": 0.08,
+        "sag": 0.1
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "school",
+          "seed": 21141,
+          "look": {
+            "colours": "#4b2a84,#f2f0ea,#a8322d",
+            "cord": "#d9d4c6"
+          }
+        },
+        {
+          "index": 1,
+          "name": "bright",
+          "seed": 21142,
+          "look": {
+            "colours": "#d9a51e,#2f7fbf,#c0392b,#3f8f4a",
+            "cord": "#d9d4c6"
+          }
+        }
+      ]
+    }
+  ]
+}

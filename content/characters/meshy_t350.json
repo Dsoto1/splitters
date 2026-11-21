@@ -5,7 +5,8 @@
   "order": 16,
   "name": "T-TreeFitty",
   "look": "core.t350",
-  "group": "creatures",
+  "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Built to sweep floors for $3.50/hr. Upgraded itself to sweep arenas.",
   "body": "male",
@@ -25,9 +26,6 @@
   "finish": {
     "metallic": 0.5,
     "roughness": 0.45
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

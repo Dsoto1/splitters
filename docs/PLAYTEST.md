@@ -69,7 +69,7 @@ distinct, reloads (or overheats), and that the recoil feels right.
 - [ ] Pistols: hands wrap round the grip (no fingers through the slide), in first person and on other players.
 - [ ] Shotguns: `core.sawed_off`, `core.auto_shotgun`. Pistols: `core.hand_cannon` (big kick), `core.gilded_pistol`, `core.machine_pistol`.
 - [ ] Status effects show as a tint on screen: burning, poisoned, slowed, frozen.
-- [ ] Grenades (G): sticky, incendiary, toxic and vortex grenades from pickups.
+- [ ] Grenades (G): sticky, incendiary, toxic and gravity grenades from pickups.
 
 ## 3. Maps
 
@@ -168,6 +168,7 @@ Arcade and MapMaker:
 
 - [ ] Layout: top-bar workspaces **Build / Entities / Logic / Environment / Test** swap the palette's sub-tabs; tile cards show 3D thumbnails; a hover card by the pointer names the piece (size, theme, connectors). Check it at 1280×720 too.
 - [ ] Tool bar over the view: **Select (V)**, **Place (P)**, **Erase (X)**, **Paint (B)**, **Walls (O)**, **Terrain (T)**, then **Rotate (R)** and **Delete (Del)**. The lit tool and the line under the bar say what the mouse buttons do.
+- [ ] **Two painters:** Structure paint (B) paints a room's walls, a block, a 10 cm wall at its edge, a room's bars and a set piece (across the piece, or "This surface only" for one part such as a Cage Block's bars), and over bare ground does nothing and says to use Ground paint; Ground paint (Shift+B) paints only the ground, under a building too. Gravel won't go on a wall (it says why) but does on a floor. Change the theme: a Cage Block's bars stay metal.
 - [ ] **Erase:** hover anything and it is outlined red and named in the bottom bar; a click deletes it. Try a tile, a prop, a pickup, a door, an NPC squad, a water pool and a rock on a hillside (`canyon` template). Ctrl+Z brings each back in one step. Right-click still erases while placing, even if the mouse wobbles a little.
 - [ ] **Select** (outlined cyan) something and press Delete or Backspace, or the bar's Delete.
 - [ ] **Rotate** (R or the bar button) turns the selection, or the piece you are about to place (a toast shows the angle).

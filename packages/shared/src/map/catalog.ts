@@ -23,6 +23,7 @@ import { industrialPackTiles } from './packTilesIndustrial.ts';
 import { orbitalPackTiles } from './packTilesOrbital.ts';
 import { desertPackTiles } from './packTilesDesert.ts';
 import { junglePackTiles } from './packTilesJungle.ts';
+import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes } from './edgeShapes.ts';
 
 export * from './tileOptions.ts';
 import { SIDES, type Ceiling, type Corner, type EdgeStyle, type Facade, type FloorInsert, type RoomLayout, type TileCategory, type TilePort } from './tileOptions.ts';
@@ -44,10 +45,19 @@ export interface LocalBox {
    * the part in any theme.
    */
   surface?: { material: string; tint?: string | null };
+  /**
+   * A `trim` box drawn in the walls' paint, not the trim's: a plain arch's stepped spandrels (the kit's `wallRun` with
+   * `plain`), which look like the wall around them but never collide.
+   */
+  paint?: 'walls' | 'metal';
+  /** A bar, post or rail of a see-through wall run (edgeLattice): it stops bodies and shots, never sight lines. */
+  lattice?: true;
+  /** A step of a flight (flight, descending): MapMaker's headroom check walks these (map/headroom.ts). */
+  step?: true;
 }
 
 /** MapMaker's tile options that are tiles of their own (TileDefinition.optionOf), so a map needs no new field for one. */
-export const TILE_OPTIONS = ['sideWalls', 'underGround'] as const;
+export const TILE_OPTIONS = ['sideWalls', 'underGround', 'gate'] as const;
 export type TileOptionId = (typeof TILE_OPTIONS)[number];
 
 export interface TileDefinition {
@@ -160,7 +170,39 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
     const u0 = from + dir * i * run;
     const u1 = from + dir * (i + 1) * run;
     const top = base + (i + 1) * 0.25;
-    out.push(axis === 'x' ? box(Math.min(u0, u1), floor, a0, Math.max(u0, u1), top, a1) : box(a0, floor, Math.min(u0, u1), a1, top, Math.max(u0, u1)));
+    out.push({ ...(axis === 'x' ? box(Math.min(u0, u1), floor, a0, Math.max(u0, u1), top, a1) : box(a0, floor, Math.min(u0, u1), a1, top, Math.max(u0, u1))), step: true });
+  }
+  return out;
+}
+
+/**
+ * A spiral stair (the kit's `spiral`; St. John's chapel, docs/map-briefs/st_johns): `n` treads round a centre (cx,
+ * cz), each from radius `r0` to `r1` turned to face out from the centre, sweeping from angle `a0` by `sweep`
+ * (radians; 0 = +x/east, π/2 = +z/north; negative turns clockwise seen from above), the k-th one's top `base +
+ * height * k / n` high. Treads are slabs `slab` thick (so the turn below keeps its headroom), save those numbered
+ * `solid[0]`..`solid[1]` (from 1), which stand on the floor. Each ring of a tread is as long as the outer arc it
+ * covers, so the treads overlap a little and leave no crack;
+ * each is three boxes from the newel out (a wedge, near enough).
+ */
+function spiral(cx: number, cz: number, r0: number, r1: number, a0: number, sweep: number, n: number, height: number, base: number, slab: number, solid: readonly [number, number] | undefined): LocalBox[] {
+  const out: LocalBox[] = [];
+  const d = Math.abs(sweep) / n;
+  // Each tread in three rings, each as long as its own outer arc: a wedge, near enough, so a tread doesn't reach over
+  // its neighbours by the newel (which would leave a jumble of ledges there that the navmesh drops).
+  const rings = 3;
+  for (let k = 1; k <= n; k++) {
+    const a = a0 + (sweep * (k - 0.5)) / n;
+    const top = base + (height * k) / n;
+    const bottom = solid && k >= solid[0] && k <= solid[1] ? base : top - slab;
+    for (let i = 0; i < rings; i++) {
+      const ra = r0 + ((r1 - r0) * i) / rings;
+      const rb = r0 + ((r1 - r0) * (i + 1)) / rings;
+      const len = 2 * rb * Math.sin(d / 2) + 0.04;
+      const rm = (ra + rb) / 2;
+      const mx = cx + rm * Math.cos(a);
+      const mz = cz + rm * Math.sin(a);
+      out.push({ min: [mx - len / 2, bottom, mz - (rb - ra) / 2 - 0.01], max: [mx + len / 2, top, mz + (rb - ra) / 2 + 0.01], yaw: -(a + Math.PI / 2) });
+    }
   }
   return out;
 }
@@ -171,7 +213,7 @@ function flight(axis: 'x' | 'z', dir: 1 | -1, from: number, a0: number, a1: numb
  * `run` deep, standing on `floor`.
  */
 function descending(edge: number, x0: number, x1: number, n: number, top: number, floor = 0, run = 0.5): LocalBox[] {
-  return Array.from({ length: n }, (_, i) => box(x0, floor, edge - (i + 1) * run, x1, top - i * 0.25, edge - i * run));
+  return Array.from({ length: n }, (_, i) => ({ ...box(x0, floor, edge - (i + 1) * run, x1, top - i * 0.25, edge - i * run), step: true as const }));
 }
 
 /** A thin rail (1 m high) along a line at height `y`. */
@@ -510,9 +552,142 @@ export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitc
   | { arcade: { centre: Pair; r: number; turns: Pair; bays: number; height?: number } }
   | { roundRoom: { centre: Pair; r: number; door: number; window: number } }
   | { discStrips: { centre: Pair; r: number; strips: number; width: number; y: Pair } }
+  | { spiral: { centre: Pair; r: Pair; turns: Pair; steps: number; height: number; base?: number; slab?: number; solid?: Pair } }
   | { vault: { axis: 'x' | 'z'; span: Pair; along: Pair; spring: number; crown: number; pieces?: number; t?: number } }
   | { block: { across: number; height: number } }
+  | { turned: TurnedPart }
+  | { wallRun: WallRunPart }
 );
+
+/**
+ * A group of any parts turned about a pivot by any yaw (the kit's `turned`): flights, vaults, columns and rails at
+ * 45°. Each box's centre turns about the pivot and the yaw adds to its own, so the boxes keep their size; on a whole
+ * number of quarter turns a plain box stays a plain box (its corners turned), so 90° is exactly the group built that
+ * way. `yaw` is in radians, or `turns` in quarter turns (0.5 = 45°), the same way as a tile's R and a box's `yaw`
+ * (+x towards -z). The pivot is [x, z] in the tile's frame (default the first cell's centre).
+ */
+export interface TurnedPart {
+  yaw?: number;
+  turns?: number;
+  pivot?: Pair;
+  parts: readonly KitPart[];
+}
+
+/**
+ * A wall built from an edge style along any segment, not only a cell's side (the kit's `wallRun`): the style's
+ * collision (map/edgeShapes.ts edgeSegments) and its trim, `bays` times along the segment from `from` to `to`
+ * ([x, z]; each bay a side of its own, so "half" is half a bay), from `y` up on a level `height` high (default 4).
+ * The segment is the wall's outer face, its thickness on the `side` of it looking from `from` to `to` (`left`, the
+ * default, as a cell's side has it with the cell on the left; `right`; or `centre`, on the line). `outer` (default
+ * true) dresses the outer face too, as a side with nothing built beyond. `plain`: an arch's collision is its piers and
+ * one lintel over the crown; the steps over the curve are drawn in the walls' paint but never collide (the arch looks
+ * the same). Along a cell's side, at a quarter turn, it builds exactly what that side does.
+ */
+export interface WallRunPart {
+  from: Pair;
+  to: Pair;
+  style: Exclude<EdgeStyle, 'auto' | 'open'>;
+  bays?: number;
+  y?: number;
+  height?: number;
+  side?: 'left' | 'right' | 'centre';
+  outer?: boolean;
+  plain?: boolean;
+}
+
+/** Whether a yaw is a whole number of quarter turns, and which. */
+function quarterOf(yaw: number): number | null {
+  const q = yaw / HALF_PI;
+  const r = Math.round(q);
+  return Math.abs(q - r) < 1e-9 ? ((r % 4) + 4) % 4 : null;
+}
+
+/** Tidy a coordinate: round off what turning leaves (to the micrometre) and -0, so turned copies compare exactly. */
+const tidy = (v: number): number => Math.round(v * 1e6) / 1e6 + 0;
+
+/**
+ * Boxes turned by `yaw` about (px, pz): each centre turns and the yaw adds to its own (the kit's `turned`). A plain
+ * box on a whole number of quarter turns stays plain, its corners turned (map/geometry.ts rotateXZ's way round).
+ */
+export function turnBoxes(boxes: readonly LocalBox[], yaw: number, px = 0, pz = 0): LocalBox[] {
+  const q = quarterOf(yaw);
+  const c = q === null ? Math.cos(yaw) : [1, 0, -1, 0][q]!;
+  const s = q === null ? Math.sin(yaw) : [0, 1, 0, -1][q]!;
+  // The same turn as yawXZ (map/geometry.ts): +x goes to (cos, -sin).
+  const turn = (x: number, z: number): [number, number] => [px + (x - px) * c + (z - pz) * s, pz - (x - px) * s + (z - pz) * c];
+  return boxes.map((b) => {
+    if (q === 0) return b;
+    if (q !== null && !b.yaw && !b.pitch && !b.roll) {
+      const [ax, az] = turn(b.min[0], b.min[2]);
+      const [bx, bz] = turn(b.max[0], b.max[2]);
+      return { ...b, min: [tidy(Math.min(ax, bx)), b.min[1], tidy(Math.min(az, bz))], max: [tidy(Math.max(ax, bx)), b.max[1], tidy(Math.max(az, bz))] };
+    }
+    const hx = (b.max[0] - b.min[0]) / 2;
+    const hz = (b.max[2] - b.min[2]) / 2;
+    const [mx, mz] = turn((b.min[0] + b.max[0]) / 2, (b.min[2] + b.max[2]) / 2);
+    const own = (b.yaw ?? 0) + yaw;
+    const { yaw: _y, ...rest } = b;
+    // A box that ends on a whole number of quarter turns (two 45° turns) is a plain box again, its sides swapped on an odd one.
+    const ends = b.pitch || b.roll ? null : quarterOf(own);
+    const [ex, ez] = ends !== null && ends % 2 === 1 ? [hz, hx] : [hx, hz];
+    if (ends !== null) return { ...rest, min: [tidy(mx - ex), b.min[1], tidy(mz - ez)], max: [tidy(mx + ex), b.max[1], tidy(mz + ez)] };
+    return { ...rest, min: [mx - hx, b.min[1], mz - hz], max: [mx + hx, b.max[1], mz + hz], yaw: own };
+  });
+}
+
+/** Whether a placed tile draws anything in its `metal` surface: a side of bars or a barred gate (its own or its defaults'). */
+export function tileHasMetal(def: Pick<TileDefinition, 'edgeDefault' | 'edgeDefaults'> | undefined, placement: { edges?: Readonly<Record<string, string>> | undefined }): boolean {
+  const metal = (s: string | undefined) => !!s && s !== 'auto' && s !== 'open' && !!edgePaint(s as Parameters<typeof edgePaint>[0]);
+  return Object.values(placement.edges ?? {}).some(metal) || metal(def?.edgeDefault) || Object.values(def?.edgeDefaults ?? {}).some(metal);
+}
+
+/**
+ * The boxes of a wall run (WallRunPart) in the tile's frame: each bay built along +x with its thickness towards +z
+ * (a cell's south side, the cell to the north), then mirrored for `right`, moved onto the segment and turned along it.
+ */
+export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']> = 'wall'): LocalBox[] {
+  const [x0, z0] = w.from;
+  const [x1, z1] = w.to;
+  const len = Math.hypot(x1 - x0, z1 - z0);
+  const bays = Math.max(1, Math.round(w.bays ?? 1));
+  if (!(len > 0)) return [];
+  const half = len / bays / 2;
+  const height = w.height ?? 4;
+  const base = w.y ?? 0;
+  const segs = edgeSegments(w.style, half, height);
+  const metal = edgePaint(w.style);
+  const thick = Math.max(0, ...segs.map((g) => g[4]));
+  // Across the wall: v in from the outer face; `right` mirrors it, `centre` puts the line through the middle.
+  const across = (v0: number, v1: number): [number, number] => (w.side === 'right' ? [-v1, -v0] : w.side === 'centre' ? [v0 - thick / 2, v1 - thick / 2] : [v0, v1]);
+  const bay: LocalBox[] = [];
+  const raised = segs.filter((g) => g[2] > 1e-6);
+  const plain = !!w.plain && raised.length > 1;
+  for (const g of segs) {
+    const [u0, u1, y0, y1, t] = g;
+    const [v0, v1] = across(0, t);
+    const b: LocalBox = { min: [u0, base + y0, v0], max: [u1, base + y1, v1] };
+    // A plain arch: the steps over the curve are drawn (in the walls' paint) but never collide; one lintel does.
+    bay.push(plain && y0 > 1e-6 ? { ...b, kind: 'trim', paint: 'walls' } : { ...b, kind, ...(metal ? { paint: metal } : {}), ...(edgeLattice(w.style, g) ? { lattice: true as const } : {}) });
+  }
+  if (plain) {
+    const [v0, v1] = across(0, Math.max(...raised.map((g) => g[4])));
+    const top = Math.max(...raised.map((g) => g[3]));
+    const crown = Math.max(...raised.map((g) => g[2]));
+    bay.push({ min: [Math.min(...raised.map((g) => g[0])), base + crown, v0], max: [Math.max(...raised.map((g) => g[1])), base + top, v1], kind });
+  }
+  for (const p of edgeTrimBoxes(w.style, half, height, w.outer ?? true)) {
+    const [v0, v1] = across(p.v0, p.v1);
+    bay.push({ min: [p.u0, base + p.y0, v0], max: [p.u1, base + p.y1, v1], kind: 'trim', ...(p.tilt ? { roll: p.tilt } : {}), ...(p.surface ? { surface: p.surface } : metal ? { paint: metal } : {}) });
+  }
+  // Each bay along the segment, then the whole run turned from +x onto it about its start.
+  const yaw = Math.atan2(-(z1 - z0), x1 - x0);
+  const out: LocalBox[] = [];
+  for (let i = 0; i < bays; i++) {
+    const at = x0 + (2 * i + 1) * half;
+    for (const b of bay) out.push({ ...b, min: [b.min[0] + at, b.min[1], b.min[2] + z0], max: [b.max[0] + at, b.max[1], b.max[2] + z0] });
+  }
+  return turnBoxes(out, yaw, x0, z0);
+}
 
 /** A port, or every side of the first cell on a level, or the perimeter of a w × d footprint on some levels. */
 export type PortSpec = TilePort | { allSides: number } | { perimeter: Pair; levels?: readonly number[] };
@@ -575,6 +750,20 @@ function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
     const v = p.vault;
     // A vault is wall (it takes the walls' paint) unless the part says otherwise.
     return vault(v.axis, v.span, v.along, v.spring, v.crown, v.pieces ?? 12, v.t ?? 0.2, p.kind ?? 'wall');
+  } else if ('turned' in p) {
+    // A group turned about its pivot: the parts keep their own kinds unless this part names one (trim stays trim).
+    const t = p.turned;
+    const yaw = t.yaw ?? (t.turns ?? 0) * HALF_PI;
+    const inner = t.parts.flatMap((q) => kitPart(q, spec));
+    const turned = turnBoxes(inner, yaw, t.pivot?.[0] ?? 0, t.pivot?.[1] ?? 0);
+    return p.kind ? turned.map((b) => (b.kind === 'trim' ? b : { ...b, kind: p.kind })) : turned;
+  } else if ('wallRun' in p) {
+    // A wall run is wall (it takes the walls' paint) unless the part says otherwise; its trim stays trim.
+    return wallRunBoxes(p.wallRun, p.kind ?? 'wall');
+  } else if ('spiral' in p) {
+    // A spiral stair's treads; `turns` is [start, sweep] in quarter turns (a negative sweep climbs clockwise).
+    const a = p.spiral;
+    out = spiral(a.centre[0], a.centre[1], a.r[0], a.r[1], a.turns[0] * HALF_PI, a.turns[1] * HALF_PI, a.steps, a.height, a.base ?? 0, a.slab ?? 0.35, a.solid);
   } else if ('discStrips' in p) {
     // A half-disc floor in strips (z from the centre outward), each as wide as the circle there.
     const { centre: [cx, cz], r, strips, width, y } = p.discStrips;
@@ -685,7 +874,8 @@ export class TileCatalog {
       for (const d of this.byId.values()) {
         if (!d.familyOf) continue;
         const list = this.families.get(d.familyOf.base);
-        if (list) list.push(d);
+        // (The shape's own first family first, whatever order the kit lists its tiles in.)
+        if (list) d.id === d.familyOf.base ? list.unshift(d) : list.push(d);
         else this.families.set(d.familyOf.base, [d]);
       }
     }

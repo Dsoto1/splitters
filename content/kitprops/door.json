@@ -1,5 +1,5 @@
 {
-  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut and ajar collide as the frame's slab (a closed room), open has no collision (the doorway stays clear). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it).",
+  "$comment": "Doors as still props (tools/content/kit/academy.mjs; docs/map-briefs/st_johns): a thick oak door in its frame, made for the Room doorway (content/tiles/edges.json door_room, 2 m × 2.6 m) and for a 2 m gap in a partition. Nothing moves in play, so a hall of them costs nothing each tick. One family is one collision, so each swing is a family: shut collides as the frame's slab (a closed room), ajar as that slab and its leaf at its angle (owner, 2026-11-19, \"2b\"), open as its leaf standing square into the room (cover to hide behind; the doorway beside it stays clear: owner, 2026-11-19). The leaf hangs on the +x jamb and swings to +z: turn the prop so +z points into the room. The open door's centre is 0.92 m inside the room from the wall's middle (its box is the frame and the leaf standing out from it). Tileset 11 (Urban & Civilian) adds painted leaves on the same frame (kit.door.painted, shut and open): red, blue, white half-glazed and a glazed shop door. The slim Oak Doors (kit.door.oak_slim, _ajar, _open) are the same door 1.5 m wide, for a doorway brought in by jambs (owner, 2026-11-15: the room doors were a bit wide; 2026-11-20: 1.2 m looked too slim); the open one is a passage bots walk through on a link (sim/passages.ts), as a 1.5 m doorway is still narrower than the navmesh keeps open (1.6 m).",
   "type": "door",
   "props": [
     {
@@ -95,9 +95,10 @@
       "id": "kit.door.oak_ajar",
       "displayName": "Oak Door (ajar)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version: the Oak Door standing 25° open into the room (+z), the same four leaves. Collides as the frame's slab in the doorway, as the shut door does (still a closed room: nobody squeezes through the gap); the leaf itself reaches 0.8 m into the room and does not collide."
+        "1": "First version: the Oak Door standing 25° open into the room (+z), the same four leaves. Collides as the frame's slab in the doorway, as the shut door does (still a closed room: nobody squeezes through the gap); the leaf itself reaches 0.8 m into the room and does not collide.",
+        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players."
       },
       "size": [
         2,
@@ -185,9 +186,10 @@
       "id": "kit.door.oak_open",
       "displayName": "Oak Door (open)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version: the Oak Door standing open at 90° into the room (+z) on its +x jamb, the same four leaves. No collision: the doorway is clear for players, bots (who need its full 2 m) and shots. Its frame stands 0.92 m behind the prop's centre (the box is the frame and the leaf): place it that far inside the room from the middle of the wall."
+        "1": "First version: the Oak Door standing open at 90° into the room (+z) on its +x jamb, the same four leaves. No collision: the doorway is clear for players, bots (who need its full 2 m) and shots. Its frame stands 0.92 m behind the prop's centre (the box is the frame and the leaf): place it that far inside the room from the middle of the wall.",
+        "2": "Collides as its open leaf (a box from the floor to the leaf's top, square into the room on the hinge side): cover to hide behind, wood that rounds go through; the doorway stays clear (owner, 2026-11-19: walked through the dorm doors). Its doorway is a passage bots walk through on a link (sim/passages.ts), as the leaf beside it narrows the room's way in past what the navmesh keeps open."
       },
       "size": [
         2,
@@ -195,7 +197,9 @@
         2
       ],
       "bounds": "within",
-      "collide": "none",
+      "passage": {
+        "frame": -0.92
+      },
       "surface": "wood",
       "detail": "wood",
       "generator": {
@@ -269,6 +273,488 @@
             "iron": "#1c1e21",
             "jitter": 0.07,
             "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim",
+      "displayName": "Slim Oak Door (shut)",
+      "category": "Furniture",
+      "assetVersion": 2,
+      "notes": {
+        "1": "First version: the Oak Door made to a room door's width, 1.2 × 2.6 × 0.16 m, for a doorway brought in by jambs (a set piece's slim room doors): the same boards, strap hinges, ring handles and four leaves. Collides as its box: a closed room.",
+        "2": "Wider: 1.5 × 2.6 × 0.16 m (was 1.2 m; owner, 2026-11-20: \"the dorm doors should be slightly wider, they now look too slim\"), for the doorway brought in to 1.5 m."
+      },
+      "size": [
+        1.5,
+        2.6,
+        0.16
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 0,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13761,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13762,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13763,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13764,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim_ajar",
+      "displayName": "Slim Oak Door (ajar)",
+      "category": "Furniture",
+      "assetVersion": 3,
+      "notes": {
+        "1": "First version: the Slim Oak Door standing 25° open into the room (+z). Collides as the frame's slab in the doorway, as the shut door does (a closed room); the leaf reaches 0.44 m into the room and does not collide.",
+        "2": "Its leaf collides too, at its 25° angle (a box turned on the hinges, beside the slab that still closes the doorway): cover, as the open door's leaf is (owner, 2026-11-19, \"2b\"); left out of the bots' navmesh. The room stays closed to bots and players.",
+        "3": "Wider: 1.5 m (was 1.2 m; owner, 2026-11-20: \"slightly wider\"); the leaf reaches 0.6 m into the room at its 25°, its box 1.3 m deep. Collides as the slab and the leaf at its angle, as before."
+      },
+      "size": [
+        1.5,
+        2.6,
+        1.3
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 25,
+        "leaf": "plank"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13771,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13772,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13773,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13774,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim_open",
+      "displayName": "Slim Oak Door (open)",
+      "category": "Furniture",
+      "assetVersion": 3,
+      "notes": {
+        "1": "First version: the Slim Oak Door standing open against its hinge jamb, its frame 0.52 m behind the prop's centre (−z). No collision, and a passage (frame at z −0.52): 1.2 m is narrower than the navmesh keeps open (it stays 0.8 m off walls), so bots walk through it on a link from 1.6 m before the frame to 1.6 m beyond (sim/passages.ts).",
+        "2": "Collides as its open leaf (a box from the floor to the leaf's top, square into the room on the hinge side): cover to hide behind, wood that rounds go through; the doorway stays clear (owner, 2026-11-19: walked through the dorm doors).",
+        "3": "Wider: 1.5 m (was 1.2 m; owner, 2026-11-20: \"slightly wider\"); its frame 0.67 m behind the prop's centre (was 0.52), so the pieces stand it 0.15 m further into the room and the frame stays in the wall. Still a passage: 1.5 m is narrower than the navmesh keeps open (1.6 m)."
+      },
+      "size": [
+        1.5,
+        2.6,
+        1.5
+      ],
+      "bounds": "within",
+      "passage": {
+        "frame": -0.67
+      },
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "plank",
+        "back": 0.67
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13781,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13782,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13783,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13784,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.painted",
+      "displayName": "Painted Door (shut)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (Tileset 11, Urban & Civilian): the Oak Door's frame and size (2 × 2.6 × 0.16 m, made for the Room doorway) with painted leaves: a red and a blue two-panel house door with a brass knob and a letter plate, a white half-glazed door, and a glazed shop door (a kick plate under one tall pane, an upright pull bar). Collides as its box: a closed room. A still prop: a door that opens by itself is the Door entity."
+      },
+      "size": [
+        2,
+        2.6,
+        0.16
+      ],
+      "surface": "wood",
+      "detail": "painted_wood",
+      "generator": {
+        "kind": "door",
+        "swing": 0,
+        "leaf": "framed"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 12201,
+          "look": {
+            "wood": "#a3281f",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 12202,
+          "look": {
+            "wood": "#27508a",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 12203,
+          "look": {
+            "wood": "#e2dfd4",
+            "frame": "#cfccc0",
+            "iron": "#8a8d90",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "glazed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 3,
+          "name": "shop",
+          "seed": 12204,
+          "look": {
+            "wood": "#3a3d42",
+            "frame": "#3a3d42",
+            "iron": "#b9bcc0",
+            "jitter": 0.03,
+            "grime": 0.2,
+            "glass": "#4c6672"
+          },
+          "set": {
+            "leaf": "shop",
+            "handle": "pull"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.painted_open",
+      "displayName": "Painted Door (open)",
+      "category": "Furniture",
+      "assetVersion": 2,
+      "notes": {
+        "1": "First version: the Painted Door standing open at 90° into the room (+z) on its +x jamb, the same four leaves. No collision: the doorway is clear for players, bots and shots. Its frame stands 0.92 m behind the prop's centre, as the open Oak Door's does.",
+        "2": "Collides as its open leaf (a box from the floor to the leaf's top, square into the room on the hinge side): cover to hide behind, wood that rounds go through; the doorway stays clear (owner, 2026-11-19: walked through the dorm doors). Its doorway is a passage bots walk through on a link (sim/passages.ts), as the leaf beside it narrows the room's way in past what the navmesh keeps open."
+      },
+      "size": [
+        2,
+        2.6,
+        2
+      ],
+      "bounds": "within",
+      "passage": {
+        "frame": -0.92
+      },
+      "surface": "wood",
+      "detail": "painted_wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "framed",
+        "back": 0.92
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 12211,
+          "look": {
+            "wood": "#a3281f",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 12212,
+          "look": {
+            "wood": "#27508a",
+            "frame": "#e6e2d6",
+            "iron": "#b08d3c",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "framed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 2,
+          "name": "white",
+          "seed": 12213,
+          "look": {
+            "wood": "#e2dfd4",
+            "frame": "#cfccc0",
+            "iron": "#8a8d90",
+            "jitter": 0.03,
+            "grime": 0.2
+          },
+          "set": {
+            "leaf": "glazed",
+            "handle": "knob"
+          }
+        },
+        {
+          "index": 3,
+          "name": "shop",
+          "seed": 12214,
+          "look": {
+            "wood": "#3a3d42",
+            "frame": "#3a3d42",
+            "iron": "#b9bcc0",
+            "jitter": 0.03,
+            "grime": 0.2,
+            "glass": "#4c6672"
+          },
+          "set": {
+            "leaf": "shop",
+            "handle": "pull"
           }
         }
       ]

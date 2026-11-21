@@ -5,7 +5,8 @@
   "order": 109,
   "name": "Imperial Guard",
   "look": "core.imperialguard",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Stood guard for a dynasty. Standing guard for you now.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 14000,

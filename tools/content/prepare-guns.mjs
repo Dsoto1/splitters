@@ -31,6 +31,9 @@
 // gets a normal map baked from the full download (`normalSize`, default 512 px; meshy-mesh.mjs bakeNormals).
 // `budget: "hero"` holds an entry to `budgets.tiers.hero` instead of the default caps (content:check), and
 // `lod: [share, metres]` adds a lower level of detail that instanced copies (a crowd's guns) draw from that far.
+// `plate: { y, x: [min, max], z: [min, max], uvAt: [x, z] }` (or a list of them) adds a flat deck plate, facing up, under a floor the cut
+// left holes in (the Dropship's deck), to every level of detail, coloured like the floor under `uvAt`
+// (tools/content/deck-plate.mjs, which also adds it to a built file without the download).
 //
 // `glow: { color, warm: [r, r-b, r-g], strength }` (Meshy entries): the download's own glowing parts (lit panels,
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
@@ -66,7 +69,8 @@
 // `normalSize`, default 512, metal/roughness 256, with its `lod`), `<name>.medium.glb` (colour 1024, normal 512,
 // metal/roughness 256) and `<name>.high.glb` (colour 2048, normal 1024, metal/roughness 512: measured, a 1024 one
 // cost 4 MB of video memory a gun and showed nothing more), neither with a lower level of detail (your own gun
-// always draws full detail). The weapon names them in `view.held` (content/weapons).
+// always draws full detail). The weapon names them in `view.held` (content/weapons). `heldTriangles` (and
+// `heldMaxError`, `heldBudget`): the held copies get their own, finer cut of the download (see the build loop).
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -79,6 +83,7 @@ import sharp from 'sharp';
 import { fbxToDocument } from './fbx.mjs';
 import { MESHY_QUANTIZE, addLod, markings, meshyDocument, normalJpeg, paintOut, splitParts } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
+import { addDeckPlate } from './deck-plate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const manifest = JSON.parse(readFileSync(join(ROOT, 'content/guns.json'), 'utf8'));
@@ -420,6 +425,8 @@ async function buildAnimated(src, entry) {
   await doc.transform(weld(), simplify({ simplifier: MeshoptSimplifier, ratio: Math.min(1, (entry.triangles ?? before) / before), error: entry.maxError ?? 0.02 }), dedup(), prune());
   for (const mesh of doc.getRoot().listMeshes()) for (const prim of mesh.listPrimitives()) compactPrimitive(prim);
   doc.getRoot().getAsset().generator = 'tiletrigger content build';
+  // `plate`: a deck plate under a floor the cut left holes in, on every level of detail (deck-plate.mjs).
+  if (entry.plate) addDeckPlate(doc, entry.plate);
   return { glb: Buffer.from(await io.writeBinary(doc)), ...countTriangles(doc), normalMap: false, place: {} };
 }
 
@@ -585,13 +592,20 @@ for (const entry of manifest.models) {
   const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
   const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   const from = dir ? (src ?? join(dir, pack.models ?? '.', entry.file)) : null;
-  const made = from ? await build(from, entry, pack) : null;
+  let made = from ? await build(from, entry, pack) : null;
+  // `heldTriangles` (a Meshy `held` entry): the copies in your own hands are cut far less than everyone else's (their
+  // own build of the same download, `heldMaxError`, no lower level of detail), in exactly the world copy's frame (the
+  // same turn, scale and centre), so the hold, muzzle and sight numbers carry over. The world copy keeps `triangles`.
+  if (made && entry.heldTriangles) {
+    const fine = await build(from, { ...entry, triangles: entry.heldTriangles, maxError: entry.heldMaxError ?? entry.maxError, lod: null }, pack, made.place);
+    made = { ...made, tiers: made.tiers.map((t) => (t.tier === 'world' ? t : fine.tiers.find((x) => x.tier === t.tier))) };
+  }
   if (entry.held) {
     // The world copy under the entry's own budget; the held copies under the `held` tier's (sharper maps, more bytes).
     for (const { tier } of HELD_TIERS) {
       const t = made?.tiers.find((x) => x.tier === tier) ?? null;
       const extra = tier === 'world' ? {} : { tier, heldOf: `models/${entry.out}` };
-      record(tierFile(entry.out, tier), tier === 'world' ? entry : { ...entry, budget: 'held' }, pack, t, extra);
+      record(tierFile(entry.out, tier), tier === 'world' ? entry : { ...entry, budget: entry.heldBudget ?? 'held' }, pack, t, extra);
     }
   } else record(entry.out, entry, pack, made);
   if (interior) {

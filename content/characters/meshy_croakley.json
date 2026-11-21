@@ -6,6 +6,7 @@
   "name": "Croakley",
   "look": "core.croakley",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "frog",
   "bio": "Ran the bait shop by the pond until somebody shot it up. Now he returns the favour, suspenders and all.",
   "body": "male",
@@ -25,16 +26,10 @@
     "metallic": 0,
     "roughness": 0.6
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
     "grip": {
-      "gripLong": [-0.06, 0, -0.06],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.02, 0.04, -0.08],
       "curlL": 1.2,
       "rollL": -0.25
     }

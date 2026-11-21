@@ -1,11 +1,11 @@
 import {
   checkNote,
   coreCatalog,
-  coreMaterials,
   coreThemes,
   EDGE_STYLE_LABELS,
   edgeChoiceAt,
   edgeTargetAt,
+  tallEdgeRefusal,
   entityGhostNote,
   entityLabel,
   FOLIAGE_LEVELS,
@@ -17,14 +17,10 @@ import {
   MOUNT_DEFS,
   NPC_PALETTE,
   placementCells,
-  resolveSurface,
   rosterSize,
   SCENARIO_PALETTE,
-  SURFACE_SLOT_LABELS,
-  TERRAIN_MATERIAL_LABELS,
-  TERRAIN_SURFACES,
+  groundLayerAt,
   terrainHeightAt,
-  terrainMaterialFor,
   terrainRaycast,
   tileAt,
   tileGhostCheck,
@@ -36,20 +32,24 @@ import {
   type PlacementCheck,
   type TerrainBrush,
   type TileDefinition,
+  type TilePlacement,
   type Vec3,
   type WorldBox
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
 import { $, escapeHtml } from './editorDom.ts';
-import { pickRadius, type Hit } from './editorParts.ts';
-import { raycastBoxes } from './raycast.ts';
+import { perfOn } from '../game/perfSwitches.ts';
+import { isSmallThing, pickRadius, type Hit } from './editorParts.ts';
+import { groundWords } from './paintTools.ts';
+import { raycastBoxes, type BoxHit } from './raycast.ts';
 
 /** What's under the pointer: the pointer's ray onto the level, the ground and surfaces, picking, the hover card and status line, and the placing ghosts with why one is refused (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class Hover {
   constructor(readonly app: EditorApp) {}
 
   /** The boxes Paint and Walls can point at: everything drawn but the invisible barriers (map edge, ground fence). */
-  paintable: { from: WorldBox[]; boxes: WorldBox[]; tiles: WorldBox[] } = { from: [], boxes: [], tiles: [] };
+  /** What Paint and Walls cast at: everything drawn but the invisible walls; for Structure paint, thin boxes a little fatter. */
+  paintable: { from: WorldBox[]; boxes: WorldBox[]; paint: WorldBox[] } = { from: [], boxes: [], paint: [] };
 
   /** The level an entity stands on (things a little below a floor, like props bedded into ground, count as on it). */
   entityLevel(e: MapEntity): number {
@@ -96,6 +96,39 @@ export class Hover {
    * entity near the pointer, then the tile in the hovered cell.
    */
   pick(): Hit | null {
+    // One look per hover update (the outline and the card ask the same question of the same pointer and map).
+    if (this.hoverPick) return this.hoverPick.hit;
+    const hit = this.pickNow();
+    if (this.hovering) this.hoverPick = { hit };
+    return hit;
+  }
+
+  private hovering = false;
+  private hoverPick: { hit: Hit | null } | null = null;
+  /** The drawn map's entities by id, per document as drawn (built once, not on every pointer move). */
+  private readonly entitiesById = new WeakMap<object, Map<string, MapEntity>>();
+
+  /**
+   * Everything under the pointer, for a click again at the same spot to step through (MapMaker: picking things inside
+   * others): what a click picks first, then whatever else the pointer's ray passes through, nearest first (things,
+   * walls and floors of this level, set pieces), then a marker on the floor, the cell's tile and a set piece's cell.
+   */
+  pickAll(): Hit[] {
+    const out: Hit[] = [];
+    const seen = new Set<string>();
+    const add = (h: Hit | null) => {
+      if (!h || seen.has(`${h.kind}:${h.id}`)) return;
+      seen.add(`${h.kind}:${h.id}`);
+      out.push(h);
+    };
+    add(this.pick());
+    const all: { hit: Hit; d: number }[] = [];
+    this.pickNow(all);
+    for (const h of all.sort((a, b) => a.d - b.d)) add(h.hit);
+    return out;
+  }
+
+  private pickNow(all?: { hit: Hit; d: number }[]): Hit | null {
     // The map as drawn: a set piece's parts (tiles and entities of the expansion) pick their placement, as one.
     const view = this.app.viewDoc;
     const partOf = this.app.expansion.partOf;
@@ -103,30 +136,57 @@ export class Hover {
       const placement = partOf.get(h.id);
       return placement ? { kind: 'setpiece', id: placement } : { kind: h.kind, id: h.id };
     };
-    const byId = new Map(view.entities.map((e) => [e.id, e]));
+    let byId = this.entitiesById.get(view.entities);
+    if (!byId) this.entitiesById.set(view.entities, (byId = new Map(view.entities.map((e) => [e.id, e]))));
     // What the outliner hides or locks (editor-only) can't be picked: a set piece's parts follow their placement.
     const blocked = this.app.outliner.blocked;
     const free = (id: string) => !blocked.size || !(blocked.has(id) || blocked.has(partOf.get(id) ?? ''));
     const ok = (e: MapEntity | undefined): e is MapEntity => !!e && free(e.id) && this.reachable(e) && this.app.view.entityShown(e.id);
-    const tilesHere = new Set(view.classicStructure.tiles.filter((t) => free(t.id) && (placementCells(t) ?? []).some((c) => c[2] === this.app.level)).map((t) => t.id));
+    // A tile with a cell on this level (asked only of the few tiles the ray meets, not of every tile on every move).
+    let tilesById = this.tilesById.get(view.classicStructure.tiles);
+    if (!tilesById) {
+      this.tilesById.set(view.classicStructure.tiles, (tilesById = new Map()));
+      for (const t of view.classicStructure.tiles) tilesById.set(t.id, [...(tilesById.get(t.id) ?? []), t]);
+    }
+    const tileHere = (id: string): boolean => free(id) && (tilesById.get(id) ?? []).some((t) => (placementCells(t) ?? []).some((c) => c[2] === this.app.level));
     let best: { kind: 'tile' | 'entity'; id: string; d: number } | null = null;
     const ray = this.app.ray;
+    // A small thing (a spawn, a pickup, a light, logic) the ray passes through: drawn through walls (its icon), so
+    // picked through them too, whatever stands in front (a spawn dragged inside a set piece's stair).
+    let small: string | null = null;
     if (ray) {
-      const ent = this.app.view.pickEntities(ray.origin, ray.dir).find((h) => ok(byId.get(h.id)));
+      const ents = this.app.view.pickEntities(ray.origin, ray.dir).filter((h) => ok(byId.get(h.id)));
+      const ent = ents[0];
       if (ent) best = { kind: 'entity', id: ent.id, d: ent.distance };
-      const boxes = this.app.visibleBoxes.filter((b) => b.kind !== 'barrier' && (tilesHere.has(b.sourceId) || ok(byId.get(b.sourceId))));
-      const hit = raycastBoxes(ray.origin, ray.dir, boxes);
+      small = ents.find((h) => isSmallThing(byId.get(h.id)!))?.id ?? null;
+      const wanted = (b: WorldBox) => b.kind !== 'barrier' && (tileHere(b.sourceId) || ok(byId.get(b.sourceId)));
+      const hit = this.nearestBox(ray, wanted);
       // A model a hair behind the box it stands in still counts (crates in a doorway, props on a floor).
-      if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tilesHere.has(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
+      if (hit && (!best || hit.distance < best.d - 0.05)) best = { kind: tileHere(hit.box.sourceId) ? 'tile' : 'entity', id: hit.box.sourceId, d: hit.distance };
+      if (all) {
+        for (const h of ents) all.push({ hit: whole({ kind: 'entity', id: h.id }), d: h.distance });
+        for (const h of this.boxesAlong(ray, wanted)) all.push({ hit: whole({ kind: tileHere(h.box.sourceId) ? 'tile' : 'entity', id: h.box.sourceId }), d: h.distance });
+      }
     }
+    if (all) {
+      const p = this.app.hoverPoint;
+      if (p) for (const e of view.entities) if (Math.hypot(e.position[0] - p.x, e.position[2] - p.z) < pickRadius(e) && ok(e)) all.push({ hit: whole({ kind: 'entity', id: e.id }), d: Infinity });
+      const cell = this.app.hoverCell;
+      if (cell) {
+        const tile = tileAt(view, cell[0], cell[1], this.app.level);
+        if (tile && free(tile.id)) all.push({ hit: whole({ kind: 'tile', id: tile.id }), d: Infinity });
+        for (const [id, cells] of this.app.expansion.footprints) if (free(id) && cells.some((c) => c[0] === cell[0] && c[1] === cell[1] && c[2] === this.app.level)) all.push({ hit: { kind: 'setpiece', id }, d: Infinity });
+      }
+    }
+    if (small) return whole({ kind: 'entity', id: small });
     if (best?.kind === 'entity') return whole(best);
     const p = this.app.hoverPoint;
     if (p) {
       let near: { id: string; d: number } | null = null;
       for (const e of view.entities) {
-        if (!ok(e)) continue;
+        // (Near enough first: that rules out nearly all of them before the dearer questions are asked.)
         const d = Math.hypot(e.position[0] - p.x, e.position[2] - p.z);
-        if (d < pickRadius(e) && (!near || d < near.d)) near = { id: e.id, d };
+        if (d < pickRadius(e) && (!near || d < near.d) && ok(e)) near = { id: e.id, d };
       }
       // Flat markers (zones, squads, pads) on the floor under the pointer win over the floor itself.
       if (near && (!best || best.kind === 'tile')) return whole({ kind: 'entity', id: near.id });
@@ -143,6 +203,57 @@ export class Hover {
     // tunnel a level or more down, with nothing of this level there. The piece nearest under the ground wins.
     const under = this.app.tool.kind === 'select' ? this.buriedUnderPointer(free) : null;
     return under ? whole({ kind: 'tile', id: under }) : null;
+  }
+
+  /** The drawn map's tiles by id, per list of tiles (as `entitiesById`). */
+  private readonly tilesById = new WeakMap<object, Map<string, TilePlacement[]>>();
+  /** Each drawn box's middle and reach (squared, with a little to spare), for the list of boxes as last drawn. */
+  private boxReach: { from: readonly WorldBox[]; at: Float64Array } | null = null;
+
+  /**
+   * The nearest of the drawn boxes the ray hits that `wanted` takes: the same box as raycastBoxes over the wanted
+   * ones, found without sorting every box into wanted or not on every pointer move. A box the ray passes clear of
+   * (outside the ball round it) is never tried, and `wanted` is asked only of a box hit nearer than the best so far.
+   */
+  private nearestBox(ray: { origin: Vec3; dir: Vec3 }, wanted: (b: WorldBox) => boolean): BoxHit | null {
+    const boxes = this.app.visibleBoxes;
+    if (this.boxReach?.from !== boxes) {
+      const at = new Float64Array(boxes.length * 4);
+      boxes.forEach((b, i) => {
+        const r = Math.hypot(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) / 2 + 0.05;
+        at.set([(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, (b.min[2] + b.max[2]) / 2, r * r], i * 4);
+      });
+      this.boxReach = { from: boxes, at };
+    }
+    const at = this.boxReach.at;
+    const { origin, dir } = ray;
+    const dd = dir.x * dir.x + dir.y * dir.y + dir.z * dir.z || 1;
+    const one: WorldBox[] = [boxes[0]!];
+    let best: BoxHit | null = null;
+    for (let i = 0; i < boxes.length; i++) {
+      const ox = at[i * 4]! - origin.x;
+      const oy = at[i * 4 + 1]! - origin.y;
+      const oz = at[i * 4 + 2]! - origin.z;
+      const along = ox * dir.x + oy * dir.y + oz * dir.z;
+      if (ox * ox + oy * oy + oz * oz - (along * along) / dd > at[i * 4 + 3]!) continue;
+      one[0] = boxes[i]!;
+      const hit = raycastBoxes(origin, dir, one);
+      if (hit && (!best || hit.distance < best.distance) && wanted(hit.box)) best = hit;
+    }
+    return best;
+  }
+
+  /** Every drawn box the ray hits that `wanted` takes, nearest first, one hit a box (as nearestBox, without stopping at the first). */
+  private boxesAlong(ray: { origin: Vec3; dir: Vec3 }, wanted: (b: WorldBox) => boolean): BoxHit[] {
+    const boxes = this.app.visibleBoxes;
+    const out: BoxHit[] = [];
+    const one: WorldBox[] = [boxes[0]!];
+    for (const b of boxes) {
+      one[0] = b;
+      const hit = raycastBoxes(ray.origin, ray.dir, one);
+      if (hit && wanted(hit.box)) out.push(hit);
+    }
+    return out.sort((a, b) => a.distance - b.distance);
   }
 
   /** The buried piece (a tile with a bore: map/groundBore.ts) under the place on the ground the pointer is on, if any. */
@@ -184,10 +295,13 @@ export class Hover {
       const ray = this.app.view.pointerRay(clientX, clientY);
       const hit = ray ? terrainRaycast(t, ray.origin, ray.dir) : null;
       if (hit && ray) ground = { at: hit, distance: Math.hypot(hit.x - ray.origin.x, hit.y - ray.origin.y, hit.z - ray.origin.z) };
+      // Below ground: the glass ground is cut away round where the pointer meets it.
+      this.app.view.setGroundCut(hit);
       if (hit && this.app.tool.kind === 'terrain') this.app.terrain.terrainHover = hit;
-      // Spawns, pickups and props stand on the ground where it is nearer than the level plane.
+      // Spawns, pickups and props stand on the ground where it is nearer than the level plane (not below ground,
+      // where the ground is glass and things go on the level being edited).
       // (Tiles and set pieces go on the grid: the level being edited, not the ground.)
-      if (hit && ray && this.app.tool.kind !== 'tile' && this.app.tool.kind !== 'setpiece' && this.app.tool.kind !== 'terrain') {
+      if (hit && ray && !this.app.view.groundGlass && this.app.tool.kind !== 'tile' && this.app.tool.kind !== 'setpiece' && this.app.tool.kind !== 'terrain') {
         const dist = (p: Vec3) => Math.hypot(p.x - ray.origin.x, p.y - ray.origin.y, p.z - ray.origin.z);
         if (!this.app.hoverPoint || dist(hit) < dist(this.app.hoverPoint)) {
           this.app.hoverPoint = hit;
@@ -198,20 +312,18 @@ export class Hover {
     this.app.hoverCell = this.app.hoverPoint ? [Math.round(this.app.hoverPoint.x / cellSize), Math.round(this.app.hoverPoint.z / cellSize), this.app.level] : null;
     if (this.app.tool.kind === 'path') this.app.paths.hover(this.app.hoverPoint);
     if (this.app.tool.kind === 'measure') this.app.measure.setHover(this.app.placing.measurePointAtHover());
-    this.app.paintGround = null;
     if (this.app.tool.kind === 'paint' || this.app.tool.kind === 'edge') {
       const ray = this.app.view.pointerRay(clientX, clientY);
       // Only what is drawn: the invisible walls round the map (60 m high) would catch the ray first from far out.
       if (this.paintable.from !== this.app.visibleBoxes) {
         const boxes = this.app.visibleBoxes.filter((b) => b.kind !== 'barrier');
-        const tiles = new Set(this.app.doc.classicStructure.tiles.map((t) => t.id));
-        this.paintable = { from: this.app.visibleBoxes, boxes, tiles: boxes.filter((b) => tiles.has(b.sourceId)) };
+        this.paintable = { from: this.app.visibleBoxes, boxes, paint: boxes.map(pickMargin) };
       }
-      // Paint paints tiles' surfaces (a rock or crate in the way is not one: the ground under it is what it paints).
-      const face = ray ? raycastBoxes(ray.origin, ray.dir, this.app.tool.kind === 'paint' ? this.paintable.tiles : this.paintable.boxes) : null;
-      // The ground in front of a surface hides it; with nothing nearer, the ground is what Paint paints.
+      // Structure paint casts at everything drawn (tiles, free blocks, set-piece parts, bars; props say they aren't
+      // paintable), thin boxes caught at their edges; a miss is never the ground (painting plan Phase 1).
+      const face = ray ? raycastBoxes(ray.origin, ray.dir, this.app.tool.kind === 'paint' ? this.paintable.paint : this.paintable.boxes) : null;
+      // The ground in front of a surface hides it.
       this.app.hoverFace = face && (!ground || face.distance < ground.distance) ? face : null;
-      if (this.app.tool.kind === 'paint' && !this.app.hoverFace && ground) this.app.paintGround = ground.at;
     } else this.app.hoverFace = null;
     this.app.paint.hoverEdge = null;
     if (this.app.tool.kind === 'edge' && this.app.hoverFace) {
@@ -224,8 +336,15 @@ export class Hover {
   }
 
   updateHover(): void {
-    this.updateHoverTarget();
-    this.updateHoverCard();
+    this.hovering = true;
+    this.hoverPick = null;
+    try {
+      this.updateHoverTarget();
+      this.updateHoverCard();
+    } finally {
+      this.hovering = false;
+      this.hoverPick = null;
+    }
   }
 
   /**
@@ -238,6 +357,8 @@ export class Hover {
     const lines: string[] = [];
     /** Lines in red (why it can't be placed) or amber (a warning), by index in `lines`. */
     const marks = new Map<number, 'bad' | 'warn' | 'note'>();
+    /** The path a click with Select would open (lit while the pointer is on it). */
+    let previewPath: string | null = null;
     let title = '';
     let tone = '';
     const themeName = coreThemes.get(this.app.doc.classicStructure.theme)?.displayName ?? this.app.doc.classicStructure.theme;
@@ -245,9 +366,24 @@ export class Hover {
       const span = (i: 0 | 1 | 2) => Math.max(...def.cells.map((c) => c[i])) - Math.min(...def.cells.map((c) => c[i])) + 1;
       return [`Size: ${span(0)} × ${span(1)} × ${span(2)}`, `Theme: ${themeName}`, `Connectors: ${def.ports.length}`, `Rotation: ${rotation * 90}°`];
     };
+    /** A card of its own (Structure paint's layers): its HTML, in place of the title and lines. */
+    let html: string | null = null;
     if (at && !this.app.input.drag && !this.app.looking) {
       const g = this.app.pieceHover;
-      if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
+      if (this.app.tool.kind === 'paint' && (this.app.hoverFace || this.app.hoverPoint)) {
+        // Structure paint: what is under the cursor, the layers its look comes from (theme → look → your paint), the click.
+        const card = this.app.paint.card();
+        title = card.title;
+        tone = `${card.tone} ed-paint-card`;
+        html = card.html;
+      } else if (this.app.tool.kind === 'terrain' && this.app.terrain.terrainBrush === 'paint' && this.app.terrain.terrainHover && this.app.shownGround) {
+        // Ground paint: the ground under it, the Ground theme's base or painted, and what a click paints.
+        const h = this.app.terrain.terrainHover;
+        const g0 = groundLayerAt(this.app.shownGround, h.x, h.z);
+        title = g0 ? `Ground · ${groundWords(g0)}` : 'Ground';
+        tone = 'pick';
+        lines.push(`Click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} · radius ${this.app.terrain.brushRadius} m`, 'Shift+drag: back to the base · Buildings stay as they are');
+      } else if (this.app.tool.kind === 'setpiece' && this.app.hoverCell && g) {
         // The set piece about to be placed: what it is, how it's turned and themed, and whether it fits (and why not).
         title = g.def.displayName;
         tone = g.ok ? 'place' : 'bad';
@@ -270,6 +406,16 @@ export class Hover {
           if (why) marks.set(lines.push(`${why.tone === 'bad' ? '✗' : 'ℹ'} ${why.text}`) - 1, why.tone === 'bad' ? 'bad' : 'note');
           tone = check.ok ? 'place' : 'bad';
         }
+      } else if (this.app.tool.kind === 'edge' && this.app.paint.hoverEdge) {
+        // Walls & openings: the side about to be built, and (a tall style) why it can't go there, before the click.
+        const e = this.app.paint.hoverEdge;
+        const style = this.app.tool.style;
+        title = EDGE_STYLE_LABELS[style];
+        lines.push(`${{ N: 'North', E: 'East', S: 'South', W: 'West' }[e.side]} side · ${levelName(e.cell[2])} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]}`);
+        const refusal = tallEdgeRefusal(this.app.doc, e, style);
+        if (refusal) marks.set(lines.push(`✗ ${refusal}`) - 1, 'bad');
+        else lines.push('Click to build');
+        tone = refusal ? 'bad' : 'place';
       } else if (this.entityGhost()) {
         // Spawns, pickups, props, vehicles, NPCs and objects: shown only when there is something to say.
         const g = this.entityGhost()!;
@@ -299,12 +445,31 @@ export class Hover {
           }
           lines.push(this.app.tool.kind === 'erase' ? 'Click to erase' : 'Click to select');
         }
+        // Select over a road, trail, track or route with nothing else under the pointer: a click opens it in Paths.
+        const path = !hit && this.app.tool.kind === 'select' && !this.app.input.marquee ? this.app.paths.pathUnder(this.app.hoverPoint) : null;
+        const what = path ? this.app.paths.describe(path) : null;
+        previewPath = what ? path : null;
+        if (what) {
+          title = what.title;
+          tone = 'pick';
+          lines.push(...what.lines, 'Click to edit its points and length');
+        }
       }
     }
-    tip.hidden = !title;
-    if (!title || !at) return;
+    this.app.paths.preview(previewPath);
+    if (tip.hidden !== !title) tip.hidden = !title;
+    if (!title || !at) {
+      this.tipShown = null;
+      return;
+    }
+    const tipHtml = html ?? `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
+    // The same card at the same spot (an edit under a still pointer, most pointer moves within a cell): left as it is,
+    // without laying the page out to measure it (fix 6 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md).
+    const shown = `${tone}|${at.x}|${at.y}|${window.innerWidth}|${window.innerHeight}|${tipHtml}`;
+    if (perfOn('editlight') && shown === this.tipShown) return;
+    this.tipShown = shown;
     tip.className = `tone-${tone}`;
-    tip.innerHTML = `<b>${escapeHtml(title)}</b>${lines.map((l, i) => `<span${marks.has(i) ? ` class="${marks.get(i)}"` : ''}>${escapeHtml(l)}</span>`).join('')}`;
+    tip.innerHTML = tipHtml;
     // Beside the pointer, kept inside the window.
     const w = tip.offsetWidth;
     const h = tip.offsetHeight;
@@ -312,6 +477,9 @@ export class Hover {
     tip.style.left = `${at.x + 18 + w > viewRight - 8 ? Math.max(0, at.x - 18 - w) : at.x + 18}px`;
     tip.style.top = `${Math.min(window.innerHeight - h - 44, at.y + 18)}px`;
   }
+
+  /** What the hover card last showed, and where (updateHoverCard). */
+  private tipShown: string | null = null;
 
   updateHoverTarget(): void {
     // Placing tools show what they'd put down, see-through, before you click (first: every other tool hides them).
@@ -363,7 +531,7 @@ export class Hover {
       const p = this.app.hoverPoint;
       const env = this.app.tool.kind === 'envbrush';
       this.app.view.setBrushRing(p ? this.app.shownGround : null, p?.x ?? 0, p?.z ?? 0, this.app.terrain.brushRadius, env && this.app.env.mode === 'erase' ? '#ff7a4d' : '#6fdc6a');
-      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel();
+      $('ed-target').textContent = !p ? '' : this.app.env.hoverLabel(p);
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -374,7 +542,8 @@ export class Hover {
       const t = this.app.shownGround;
       const colors: Record<TerrainBrush, string> = { raise: '#ffd34d', lower: '#ff7a4d', smooth: '#7fd8ff', flatten: '#c7a6ff', roughen: '#b8e07a', paint: '#ffffff', foliage: '#6fdc6a' };
       this.app.view.setBrushRing(h ? t : null, h?.x ?? 0, h?.z ?? 0, this.app.terrain.brushRadius, colors[this.app.terrain.terrainBrush]);
-      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.app.terrain.terrainMaterial]}` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
+      const under = t && h && this.app.terrain.terrainBrush === 'paint' ? groundLayerAt(t, h.x, h.z) : null;
+      $('ed-target').textContent = !t ? 'No terrain yet: create one in the Terrain tab' : h ? `${this.app.terrain.terrainBrush === 'paint' ? `Ground paint · ${under ? `Ground · ${groundWords(under)} · ` : ''}click paints ${this.app.terrain.groundName(this.app.terrain.terrainMaterial)} (buildings stay as they are)` : this.app.terrain.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.app.terrain.foliageLevel]}` : this.app.terrain.terrainBrush} · height ${h.y.toFixed(1)} m · radius ${this.app.terrain.brushRadius} m` : '';
       this.app.view.setFaceHighlight(null, null);
       this.app.view.setHoverCell(this.app.doc, null);
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
@@ -393,7 +562,8 @@ export class Hover {
         this.app.view.setFaceHighlight(box, [-dx, 0, -dz]);
         const tileName = coreCatalog.get(tileAt(this.app.doc, gx, gy, gz)?.tile ?? '')?.displayName ?? '';
         const sideName = { N: 'North', E: 'East', S: 'South', W: 'West' }[e.side];
-        $('ed-target').textContent = `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
+        const refusal = tallEdgeRefusal(this.app.doc, e, this.app.tool.style);
+        $('ed-target').textContent = refusal ? `${sideName} side · can't build: ${refusal}` : `${sideName} side · ${tileName} · now ${EDGE_STYLE_LABELS[edgeChoiceAt(this.app.doc, e)]} → ${EDGE_STYLE_LABELS[this.app.tool.style]}`;
       } else {
         this.app.view.setFaceHighlight(null, null);
         $('ed-target').textContent = '';
@@ -402,19 +572,12 @@ export class Hover {
       this.app.view.setGhost(this.app.doc, null, null, 0, true);
       return;
     }
-    // Paint lights only a surface it can paint (a tile's), never a prop or block it would leave as it is.
-    const face = this.app.tool.kind === 'paint' && !this.app.paint.paintTarget() ? null : this.app.hoverFace;
+    // Structure paint lights only what it can paint, never a prop or the ground it leaves as they are.
+    const face = this.app.tool.kind === 'paint' && this.app.paint.paintTarget().kind === 'refused' ? null : this.app.hoverFace;
     this.app.view.setFaceHighlight(face?.box ?? null, face?.localNormal ?? null);
     if (this.app.tool.kind === 'paint') {
-      const target = this.app.paint.paintTarget();
-      const g = this.app.paintGround;
-      // On the ground: the ring it paints, as the Terrain tab's Paint brush shows it.
-      this.app.view.setBrushRing(g ? this.app.shownGround : null, g?.x ?? 0, g?.z ?? 0, this.app.terrain.brushRadius, '#ffb03b');
-      $('ed-target').textContent = target
-        ? `${SURFACE_SLOT_LABELS[target.slot]} · ${coreCatalog.get(target.tile.tile)?.displayName ?? target.tile.tile} · ${resolveSurface(this.app.doc, target.tile, target.slot).material.displayName}`
-        : g
-          ? `Ground · paint ${TERRAIN_MATERIAL_LABELS[this.app.paint.groundPaint]}${TERRAIN_SURFACES[this.app.paint.groundPaint] === this.app.paint.paintStyle.material || !terrainMaterialFor(this.app.paint.paintStyle.material) ? '' : ` (${coreMaterials.get(this.app.paint.paintStyle.material)?.displayName ?? 'swatch'})`} · radius ${this.app.terrain.brushRadius} m`
-          : '';
+      this.app.view.setBrushRing(null, 0, 0, 0);
+      $('ed-target').textContent = this.app.paint.label();
     } else if (this.app.tool.kind === 'path') {
       const over = this.app.paths.hovering;
       $('ed-target').textContent = this.app.paths.dragging ? 'Moving the point' : over === 'point' ? (this.app.paths.joining ? 'Click to join the ends (a loop) · drag to move this point' : 'Drag to move this point · right-click removes it') : over === 'path' ? 'Click to edit this path · Shift-click puts a point here' : '';
@@ -476,4 +639,14 @@ export class Hover {
     return this.entityGhostAt.value;
   }
   entityGhostAt: { key: string; value: { title: string; note: GhostNote } | null } | null = null;
+}
+
+/** Thinner than this (bars, railings, a 10 cm wall), a box is caught a little outside its faces. */
+const THIN = 0.2;
+const MARGIN = 0.04;
+/** A box fattened by MARGIN on each thin axis (the same object when it isn't thin), so Structure paint catches a thin wall's edge. */
+function pickMargin(b: WorldBox): WorldBox {
+  const grow = [0, 1, 2].map((i) => (b.max[i]! - b.min[i]! < THIN ? MARGIN : 0));
+  if (!grow.some(Boolean)) return b;
+  return { ...b, min: [b.min[0] - grow[0]!, b.min[1] - grow[1]!, b.min[2] - grow[2]!], max: [b.max[0] + grow[0]!, b.max[1] + grow[1]!, b.max[2] + grow[2]!] };
 }

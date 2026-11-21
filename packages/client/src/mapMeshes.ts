@@ -5,7 +5,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
-import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cutGroundPolygon, mapGroundBores, type GroundCut, type P3, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type TerrainMaterial, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cellGround, groundStyle, cutGroundPolygon, mapGroundBores, type GroundCut, type P3, axisFaces, buildMapDecor, boxQuat, quatRotate, coreMaterials, coreThemes, vertexY, yawXZ, faceSlot, resolveSurface, styleKey, type MapDocument, type MaterialDefinition, type ResolvedStyle, type RenderFace, type TilePlacement, type WorldBox, visibleFaces, LEVEL_DEPTH_BIAS } from '@tiletrigger/shared';
 import { materialPixels, patternSize } from './materials/patterns.ts';
 import { versioned } from './assetUrl.ts';
 import { jpegPixels, mergeLevel, type MergeSource } from './levelMerge.ts';
@@ -59,13 +59,14 @@ class FaceBuffer {
 
   /** Add one face (a convex polygon) with UVs in world metres divided by the material's repeat size. */
   /** `flat`/`fn`: the face before any turn, whose two axes perpendicular to the normal lay out the texture. */
-  add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n): void {
+  /** `wrap`: upright faces lay the texture along x + z, unbroken round corners (MaterialDefinition.wrap). */
+  add(corners: number[][], n: readonly [number, number, number], uvScale: number, flat: number[][] = corners, fn: readonly [number, number, number] = n, wrap = false): void {
     const base = this.positions.length / 3;
     corners.forEach((c, i) => {
       const f = flat[i]!;
       this.positions.push(c[0]!, c[1]!, c[2]!);
       this.normals.push(n[0], n[1], n[2]);
-      const u = fn[0] !== 0 ? f[2]! : f[0]!;
+      const u = wrap && fn[1] === 0 ? f[0]! + f[2]! : fn[0] !== 0 ? f[2]! : f[0]!;
       const v = fn[1] !== 0 ? f[2]! : f[1]!;
       this.uvs.push(u * uvScale, v * uvScale);
     });
@@ -96,10 +97,42 @@ export function boxVertexData(boxes: readonly WorldBox[]): VertexData {
  * mesh, so draw calls scale with the number of distinct looks, not tiles.
  * Textures and materials are cached per scene.
  */
-function terrainStyle(material: TerrainMaterial): ResolvedStyle {
-  const def = coreMaterials.get(TERRAIN_SURFACES[material]) ?? coreMaterials.get('core.proto_floor')!;
-  // Gravel's photo texture is near white in daylight; darken it so it reads as ground, not snow.
-  return { material: def, tint: material === 'gravel' ? '#8f877b' : null };
+/**
+ * How the terrain sorts its grounds (map format v45: a cell is the base or a painted ground, terrain.ts cellGround):
+ * one number a drawn material, the old layer's index for the eight grounds the terrain had before v45 (so their meshes,
+ * names and the soft borders' order are as they were), past them the material's palette index. With its mesh name.
+ */
+const OLD_LAYER_SURFACES: readonly string[] = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+const groundKeys = new Map<string, { key: number; name: string; style: ResolvedStyle }>();
+function groundDraw(id: string): { key: number; name: string; style: ResolvedStyle } {
+  let g = groundKeys.get(id);
+  if (!g) {
+    // groundStyle: the material and its ground tint (Gravel's photo is near white in daylight, so it is darkened).
+    const style = groundStyle(id);
+    const old = OLD_LAYER_SURFACES.indexOf(style.material.id);
+    g = old >= 0 ? { key: old, name: TERRAIN_MATERIALS[old]!, style } : { key: TERRAIN_MATERIALS.length + coreMaterials.all().findIndex((m) => m.id === style.material.id), name: style.material.id, style };
+    groundKeys.set(id, g);
+  }
+  return g;
+}
+
+/** Each cell's draw key (groundDraw), worked out once per ground index. */
+function cellDrawKeys(t: NonNullable<MapDocument['terrain']>): Int32Array {
+  const byIndex = new Map<number, number>();
+  const out = new Int32Array(t.materials.length);
+  for (let i = 0; i < out.length; i++) {
+    const m = t.materials[i]!;
+    let k = byIndex.get(m);
+    if (k === undefined) byIndex.set(m, (k = groundDraw(cellGround(t, i)).key));
+    out[i] = k;
+  }
+  return out;
+}
+
+/** The ground drawn for a draw key. */
+function keyGround(t: NonNullable<MapDocument['terrain']>, keys: Int32Array, key: number): { name: string; style: ResolvedStyle } {
+  const i = keys.indexOf(key);
+  return groundDraw(cellGround(t, Math.max(0, i)));
 }
 
 /**
@@ -109,6 +142,9 @@ function terrainStyle(material: TerrainMaterial): ResolvedStyle {
  */
 const BLEND_SHARPNESS = 1.5;
 const BLEND_CUTS = 3;
+
+/** MapMaker's level meshes are cut into ground squares this wide (m), so an edit rebuilds only the squares it touched. */
+const KEEP_SQUARE = 48;
 
 export class MapStyler {
   private readonly textures: Map<string, RawTexture>;
@@ -142,32 +178,82 @@ export class MapStyler {
    * the build-time pass that ended the z-fighting flicker). `faces`: those faces, already worked
    * out (MapMaker clips every level against all of them, then draws them in two sets).
    */
-  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes)): Mesh[] {
-    for (const m of this.meshes) m.dispose();
+  buildBoxes(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', faces: readonly RenderFace[] = visibleFaces(boxes), keep: string | false = false): Mesh[] {
     const tiles = new Map<string, TilePlacement>(doc.classicStructure.tiles.map((t) => [t.id, t]));
-    const groups = new Map<string, { style: ResolvedStyle; buf: FaceBuffer }>();
-    for (const f of faces) {
-      const b = boxes[f.box]!;
-      const tile = tiles.get(b.sourceId);
-      // Free blocks carry their own material on every face.
-      const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
-      const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
-      const key = styleKey(style);
-      let g = groups.get(key);
-      if (!g) groups.set(key, (g = { style, buf: new FaceBuffer() }));
-      g.buf.add(f.corners, f.normal, 1 / style.material.scale, f.flat, f.flatNormal);
+    // `keep` (MapMaker, which builds again after every edit): a mesh whose faces are the ones it was built from
+    // stays; only what an edit touched is built and sent to the graphics card again. The meshes are cut by style and
+    // by ground square (KEEP_SQUARE m), so an edit to one block of a town's thousand rebuilds a street's worth.
+    // What each face is styled as and adds to its mesh's signature is kept with the face (faces an edit leaves alone
+    // are the same objects: map/facesUpdate.ts), for as long as the map is styled the same (`keep`: what MapMaker
+    // styles it by, its theme and painted surfaces, as text).
+    if (keep !== false && this.faceInfoFor !== keep) {
+      this.faceInfoFor = keep;
+      this.faceInfo = new WeakMap();
     }
+    const groups = new Map<string, { style: ResolvedStyle; faces: RenderFace[]; h1: number; h2: number }>();
+    for (const f of faces) {
+      let info = keep !== false ? this.faceInfo.get(f) : undefined;
+      if (!info) {
+        const b = boxes[f.box]!;
+        const tile = tiles.get(b.sourceId);
+        // Free blocks carry their own material on every face.
+        const own = b.surface ? { material: coreMaterials.get(b.surface.material), tint: b.surface.tint } : null;
+        const style = own?.material ? (own as ResolvedStyle) : resolveSurface(doc, tile, faceSlot(b, f.normal));
+        let key = styleKey(style);
+        let a = 0x811c9dc5;
+        let c = 0x01000193;
+        if (keep !== false) {
+          key += `@${Math.floor((b.min[0] + b.max[0]) / 2 / KEEP_SQUARE)},${Math.floor((b.min[2] + b.max[2]) / 2 / KEEP_SQUARE)}`;
+          // The face as two numbers, added up over the mesh's faces (whatever order they come in).
+          const mix = (n: number) => {
+            const v = Math.round(n * 1000) | 0;
+            a = Math.imul(a ^ v, 16777619);
+            c = (Math.imul(c + v, 2246822519) ^ (c >>> 13)) | 0;
+          };
+          for (const p of f.corners) mix(p[0]), mix(p[1]), mix(p[2]);
+          for (const p of f.flat) mix(p[0]), mix(p[1]), mix(p[2]);
+          mix(f.normal[0]), mix(f.normal[1]), mix(f.normal[2]);
+          mix(f.flatNormal[0]), mix(f.flatNormal[1]), mix(f.flatNormal[2]);
+        }
+        info = { key, style, a, c };
+        if (keep !== false) this.faceInfo.set(f, info);
+      }
+      let g = groups.get(info.key);
+      if (!g) groups.set(info.key, (g = { style: info.style, faces: [], h1: 0, h2: 0 }));
+      g.faces.push(f);
+      g.h1 = (g.h1 + info.a) | 0;
+      g.h2 = (g.h2 + info.c) | 0;
+    }
+    const kept = new Map<string, { mesh: Mesh; sig: string }>();
+    const old = this.meshes;
     this.meshes = [...groups.entries()].map(([key, g]) => {
+      const sig = `${g.faces.length}:${g.h1}:${g.h2}`;
+      const had = keep !== false ? this.boxMeshes.get(key) : undefined;
+      if (had && had.sig === sig && !had.mesh.isDisposed()) {
+        kept.set(key, had);
+        return had.mesh;
+      }
+      const buf = new FaceBuffer();
+      for (const f of g.faces) buf.add(f.corners, f.normal, 1 / g.style.material.scale, f.flat, f.flatNormal, g.style.material.wrap);
       const mesh = new Mesh(`${name}_${key}`, this.scene);
-      g.buf.toVertexData().applyToMesh(mesh);
+      buf.toVertexData().applyToMesh(mesh);
       mesh.material = this.material(g.style);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
       this.styleOf.set(mesh, g.style);
+      kept.set(key, { mesh, sig });
       return mesh;
     });
+    const staying = new Set(this.meshes);
+    for (const m of old) if (!staying.has(m)) m.dispose();
+    this.boxMeshes = kept;
     return this.meshes;
   }
+
+  /** The box meshes by style (and ground square), and what each was built from (buildBoxes with `keep`). */
+  private boxMeshes = new Map<string, { mesh: Mesh; sig: string }>();
+  private faceInfo = new WeakMap<RenderFace, { key: string; style: ResolvedStyle; a: number; c: number }>();
+  private faceInfoFor: string | null = null;
 
   /**
    * Terrain: one mesh per ground material holding that material's cells, with
@@ -218,8 +304,9 @@ export class MapStyler {
         nrm[i + 2] = nz / l;
       }
     }
-    // Drawn cells (k = row of drawn cells × drawn columns + column), each the material of its first fine cell.
+    // Drawn cells (k = row of drawn cells × drawn columns + column), each the ground of its first fine cell.
     const byMaterial = new Map<number, number[]>();
+    const keys = cellDrawKeys(t);
     const dc = ci.length - 1;
     // Buried tunnels cut their bores out of the ground (shared groundBore.ts): the drawn cells a cut's footprint
     // touches, each with its cuts; what is left of such a cell is drawn in pieces (below).
@@ -248,15 +335,14 @@ export class MapStyler {
     this.cutCells.clear();
     for (let r = 0; r < ri.length - 1; r++) {
       for (let c = 0; c < dc; c++) {
-        const m = t.materials[ri[r]! * (cols - 1) + ci[c]!]!;
+        const m = keys[ri[r]! * (cols - 1) + ci[c]!]!;
         let list = byMaterial.get(m);
         if (!list) byMaterial.set(m, (list = []));
         list.push(r * dc + c);
       }
     }
     for (const [m, cells] of byMaterial) {
-      const material = TERRAIN_MATERIALS[m] ?? 'grass';
-      const style = terrainStyle(material);
+      const { name: material, style } = keyGround(t, keys, m);
       const def = style.material;
       const n = cells.length;
       const positions = new Float32Array(n * 12);
@@ -368,7 +454,7 @@ export class MapStyler {
       this.styleOf.set(mesh, style);
       this.terrainMeshes.push(mesh);
     }
-    if (this.terrainBlend && byMaterial.size > 1) this.buildTerrainBlend(t, name, ci, ri, hy, nrm);
+    if (this.terrainBlend && byMaterial.size > 1) this.buildTerrainBlend(t, keys, name, ci, ri, hy, nrm);
   }
 
   /**
@@ -384,11 +470,11 @@ export class MapStyler {
    * the same on either side of the cell edge: a path is a band that fades over a cell each way, not a row of squares.
    * One see-through mesh a material, on the very triangles of the ground under it (the same vertices and diagonal).
    */
-  private buildTerrainBlend(t: NonNullable<MapDocument['terrain']>, name: string, ci: number[], ri: number[], hy: Float32Array, nrm: Float32Array): void {
+  private buildTerrainBlend(t: NonNullable<MapDocument['terrain']>, keys: Int32Array, name: string, ci: number[], ri: number[], hy: Float32Array, nrm: Float32Array): void {
     const cols = t.cols;
     const dc = ci.length - 1;
     const dr = ri.length - 1;
-    const cell = (c: number, r: number): number => (c < 0 || r < 0 || c >= dc || r >= dr ? -1 : t.materials[ri[r]! * (cols - 1) + ci[c]!]!);
+    const cell = (c: number, r: number): number => (c < 0 || r < 0 || c >= dc || r >= dr ? -1 : keys[ri[r]! * (cols - 1) + ci[c]!]!);
     // A material's share of the (up to four) cells round a drawn vertex.
     const share = (m: number, vc: number, vr: number): number => {
       let has = 0;
@@ -426,8 +512,7 @@ export class MapStyler {
     const side = N + 1;
     const perCell = side * side;
     for (const [m, list] of quads) {
-      const material = TERRAIN_MATERIALS[m] ?? 'grass';
-      const style = terrainStyle(material);
+      const { name: material, style } = keyGround(t, keys, m);
       const inv = 1 / style.material.scale;
       const n = list.length / 2;
       const positions = new Float32Array(n * perCell * 3);
@@ -554,13 +639,14 @@ export class MapStyler {
       const tint = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       const specular = def.shine * 0.6;
       const power = 16 + def.shine * 96;
+      const lift = def.shadeLift ?? 0;
       if (def.texture) {
         const id = def.texture;
         const url = (map: string) => versioned(`${import.meta.env.BASE_URL}textures/${id}_${map}.jpg`);
-        sources.push({ mesh, key: `img:${id}`, size: 512, color: () => jpegPixels(url('color'), 512), normal: () => jpegPixels(url('normal'), 512), tint, specular, power });
+        sources.push({ mesh, key: `img:${id}`, size: 512, color: () => jpegPixels(url('color'), 512), normal: () => jpegPixels(url('normal'), 512), tint, specular, power, lift });
       } else {
         const size = patternSize(def);
-        sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power });
+        sources.push({ mesh, key: `pat:${def.id}`, size, color: async () => materialPixels(def, size), normal: null, tint, specular, power, lift });
       }
     }
     return sources;
@@ -596,14 +682,14 @@ export class MapStyler {
     return this.material(def ? { material: def, tint } : resolveSurface(doc, undefined, 'solids'));
   }
 
-  /** The material terrain of this kind is drawn in (the backdrop's ground uses it too). */
-  groundMaterial(material: TerrainMaterial): StandardMaterial {
-    return this.material(terrainStyle(material));
+  /** The material a ground (a material id) is drawn in on the terrain (the backdrop's ground past the border uses it too). */
+  groundMaterial(ground: string): StandardMaterial {
+    return this.material(groundStyle(ground));
   }
 
   /** Metres per repeat of that ground's texture. */
-  groundScale(material: TerrainMaterial): number {
-    return terrainStyle(material).material.scale;
+  groundScale(ground: string): number {
+    return groundStyle(ground).material.scale;
   }
 
   /** Sky colour of the map's theme. */
@@ -653,6 +739,8 @@ export class MapStyler {
       mat.diffuseColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();
       mat.specularColor = new Color3(def.shine * 0.6, def.shine * 0.6, def.shine * 0.6);
       mat.specularPower = 16 + def.shine * 96;
+      // Shade lift: emissive is added to the light before the colour texture multiplies it (StandardMaterial).
+      if (def.shadeLift && !def.emissive) mat.emissiveColor = mat.diffuseColor.scale(def.shadeLift);
       if (def.emissive && def.texture) {
         mat.emissiveTexture = this.image(def.texture, 'emission');
         mat.emissiveColor = style.tint ? Color3.FromHexString(style.tint) : Color3.White();

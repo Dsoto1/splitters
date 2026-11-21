@@ -1,11 +1,11 @@
 import type { Scene } from '@babylonjs/core/scene';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { CreateDashedLines, CreateLineSystem } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import type { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PATH_LOOKS, PATH_RANK_LIFT, coreMaterials, pathDrawRanks, pathDrawn, pathGeometry, racePath, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
+import { PATH_LOOKS, coreMaterials, pathBaseLift, pathDrawLevels, pathDrawn, pathGeometry, racePath, terrainHeightAt, type MapDocument, type MapPath, type TerrainData } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
 import { flat, pathRankUnits, strip } from './roadMeshes.ts';
 
@@ -16,7 +16,7 @@ export function pathSurfaceY(terrain: TerrainData | null, curveY: number, x: num
 
 /** How far a path's surface stands above the ground: a boardwalk a little proud of it, everything else just on it. */
 export function pathLift(p: MapPath): number {
-  return p.style === 'planks' ? 0.12 : 0.04;
+  return pathBaseLift(p);
 }
 
 /**
@@ -54,21 +54,23 @@ function pathStrip(terrain: TerrainData | null, p: MapPath, from: number, to: nu
  * The map's paths (paths.ts): each a ribbon of its style's surface laid on
  * the ground it follows (drawn just above it, pulled toward the camera so it
  * never fights the terrain), asphalt roads with white edge lines and a dashed
- * centre line. Where drawn paths overlap, the later one in the map's list lies
- * on top (pathDrawRanks: each rank a little higher and pulled further toward
- * the camera), never fighting the other in jagged patches. Shared by the game
+ * centre line. Where drawn paths overlap, a road lies over a footpath or trail
+ * and otherwise the later one in the map's list lies on top (pathDrawLevels:
+ * each rank a little higher and pulled further toward the camera), never
+ * fighting the other in jagged patches. Shared by the game
  * and MapMaker; `terrain` is the ground as played (with the paths laid in).
  */
 export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: TerrainData | null, styler: MapStyler, name = 'path'): Mesh[] {
   const out: Mesh[] = [];
   const mats = new Map<string, StandardMaterial>();
   const race = racePath(doc);
-  const ranks = pathDrawRanks(doc.paths);
+  const levels = pathDrawLevels(doc.paths);
   for (const p of doc.paths ?? []) {
     // Roads only (routes are never drawn; the race track is drawn as a race road, roadMeshes.ts).
     if (p.points.length < 2 || !pathDrawn(p) || p === race) continue;
     const look = PATH_LOOKS[p.style];
-    const rank = ranks.get(p.id) ?? 0;
+    const level = levels.get(p.id) ?? { rank: 0, lift: pathLift(p) };
+    const rank = level.rank;
     const units = pathRankUnits(rank);
     let mat = mats.get(`${p.style}|${rank}`);
     if (!mat) {
@@ -81,7 +83,7 @@ export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: Terrain
     // Columns about a metre apart, so the ribbon follows the ground's bumps across it.
     const cols = Math.max(2, Math.ceil(p.width));
     const scale = coreMaterials.get(look.surface)?.scale ?? 4;
-    const lift = pathLift(p) + rank * PATH_RANK_LIFT;
+    const lift = level.lift;
     out.push(strip(scene, `${name}_${p.id}`, pathStrip(terrain, p, -half, half, cols, lift), mat, (c, s) => [((c / cols) * p.width) / scale, s / scale]));
     if (look.lines && p.width >= 5) {
       const white = flat(scene, `${name}_paint`, '#e8e8e2', -4, 0, units);
@@ -93,6 +95,56 @@ export function buildPathMeshes(scene: Scene, doc: MapDocument, terrain: Terrain
   for (const m of out) {
     m.isPickable = false;
     m.freezeWorldMatrix();
+  }
+  return out;
+}
+
+/** Paths are merged per material in squares this wide (m) in the game: far squares cull as a whole. */
+export const PATH_MERGE_SQUARE = 128;
+
+/**
+ * The game's paths merged: every path was its own mesh (and an asphalt road four, with its paint lines), a draw each
+ * in the view (St. John's 31 paths were about 50). Ribbons with the same material (style and rank, so their order on
+ * the ground is kept) in the same PATH_MERGE_SQUARE square, by their middle, become one mesh: the same triangles and
+ * material. MapMaker keeps one mesh a path (it picks and redraws them one by one).
+ */
+export function mergePathMeshes(meshes: readonly Mesh[]): Mesh[] {
+  const groups = new Map<string, Mesh[]>();
+  const out: Mesh[] = [];
+  for (const m of meshes) {
+    if (!m.material || !m.getTotalVertices()) {
+      out.push(m);
+      continue;
+    }
+    const c = m.getBoundingInfo().boundingBox.centerWorld;
+    const key = `${m.material.uniqueId}|${Math.floor(c.x / PATH_MERGE_SQUARE)}:${Math.floor(c.z / PATH_MERGE_SQUARE)}`;
+    let list = groups.get(key);
+    if (!list) groups.set(key, (list = []));
+    list.push(m);
+  }
+  for (const list of groups.values()) {
+    const first = list[0]!;
+    if (list.length < 2) {
+      out.push(first);
+      continue;
+    }
+    const mat = first.material;
+    let one: Mesh | null = null;
+    try {
+      one = Mesh.MergeMeshes(list as Mesh[], false, true);
+    } catch {
+      // Meshes that can't be merged (different vertex layouts) stay as they are.
+    }
+    if (!one) {
+      out.push(...list);
+      continue;
+    }
+    for (const m of list) m.dispose();
+    one.name = `${first.name}_merged`;
+    one.material = mat;
+    one.isPickable = false;
+    one.freezeWorldMatrix();
+    out.push(one);
   }
   return out;
 }

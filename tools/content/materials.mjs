@@ -6,7 +6,8 @@
 //
 // Reads content/materials.json: every library surface material in MapMaker's palette order (a procedural pattern in
 // two colours, or a scanned texture set; repeat size, shine, glow), the themes (each surface slot's default material
-// and tint, the sky colour) and the tint swatches. Checks the schema (unknown fields are errors) and the references
+// and tint, the sky colour, the matching Ground theme), the Ground themes (a base ground, the grounds offered first,
+// the Structure themes they suit) and the tint swatches. Checks the schema (unknown fields are errors) and the references
 // (patterns and categories are the lists in map/materials.ts; texture sets are in content/textures.json and their
 // files are under packages/client/public/textures; themes name real materials; every material and theme the maps,
 // the Style Packs and the code name exists), then writes packages/shared/src/content/materials.generated.ts.
@@ -28,7 +29,7 @@ const GENERATED = 'packages/shared/src/content/materials.generated.ts';
 const MATERIALS_TS = 'packages/shared/src/map/materials.ts';
 const TEXTURES = 'packages/client/public/textures';
 
-const { num, str, bool, en, obj, notes } = shape;
+const { num, str, bool, en, obj, arr, notes } = shape;
 
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
 
@@ -47,6 +48,9 @@ export function load(root = ROOT) {
 
 const COLOUR = /^#[0-9a-f]{6}$/;
 const ID = /^core\.[a-z][a-z0-9_]*$/;
+const GROUND_ID = /^ground\.[a-z][a-z0-9_]*$/;
+/** The most grounds a map's terrain can use (map/terrain.ts MAX_GROUNDS): a Ground theme offers at most that many first. */
+const MAX_GROUNDS = 16;
 
 /** Material and theme ids named outside the table: maps, Style Packs, code. [kind, id, where]. */
 function namedElsewhere(root) {
@@ -67,9 +71,7 @@ function namedElsewhere(root) {
     }
   }
   // Code that names a library material (MapMaker's block presets, path looks, Style Pack facades, terrain layers).
-  const terrain = 'packages/shared/src/map/terrain.ts';
-  const layers = readFileSync(join(root, terrain), 'utf8').match(/TERRAIN_SURFACES[^=]*=\s*\{([^}]*)\}/);
-  for (const id of layers?.[1].matchAll(/'(core\.[^']+)'/g) ?? []) named.push(['material', id[1], terrain]);
+  for (const id of terrainLayers(root)) named.push(['material', id, 'packages/shared/src/map/terrain.ts']);
   for (const dir of ['packages/shared/src', 'packages/client/src']) {
     const walk = (rel) => {
       for (const e of readdirSync(join(root, rel), { withFileTypes: true })) {
@@ -85,25 +87,32 @@ function namedElsewhere(root) {
   return named;
 }
 
+/** The terrain layers' materials of before map format v45 (map/terrain.ts TERRAIN_SURFACES), in order. */
+function terrainLayers(root) {
+  const layers = readFileSync(join(root, 'packages/shared/src/map/terrain.ts'), 'utf8').match(/TERRAIN_SURFACES[^=]*=\s*\{([^}]*)\}/);
+  return [...(layers?.[1].matchAll(/'(core\.[^']+)'/g) ?? [])].map((m) => m[1]);
+}
+
 /** Check everything and build the tables: { problems, out: { materials, themes, tints } }. */
 export function build(content, root = ROOT) {
   const problems = [];
   const patterns = tsList(root, MATERIALS_TS, 'PATTERN_IDS');
   const categories = tsList(root, MATERIALS_TS, 'MATERIAL_CATEGORIES');
-  // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor).
-  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof');
+  // A theme gives every slot a default but the roof (an unpainted roof looks like the room's floor) and the metal (bars
+  // and barred gates: optional, a Metal; absent, DEFAULT_METAL in map/materials.ts).
+  const slots = tsList(root, MATERIALS_TS, 'SURFACE_SLOTS').filter((s) => s !== 'roof' && s !== 'metal');
   const textureSets = new Set(readJson(root, 'content/textures.json').textures);
 
   const material = obj({
     id: str, displayName: str, category: en(categories), 'pattern?': en(patterns), 'texture?': str, base: str, 'accent?': str,
-    scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'notes?': notes,
+    scale: num, shine: num, 'emissive?': bool, 'surface?': en(surfaceTypeIds(root)), 'ballistic?': en(tsList(root, 'packages/shared/src/sim/gunplay.ts', 'BALLISTIC_MATERIALS')), 'wrap?': bool, 'shadeLift?': num, 'notes?': notes,
   });
   const style = obj({ material: str, 'tint?': str });
-  const theme = obj({ id: str, displayName: str, sky: str, slots: obj(Object.fromEntries(slots.map((s) => [s, style]))), 'notes?': notes });
+  const theme = obj({ id: str, displayName: str, ground: str, sky: str, slots: obj({ ...Object.fromEntries(slots.map((s) => [s, style])), 'metal?': style }), 'notes?': notes });
 
   const top = content.materials;
-  for (const k of Object.keys(top ?? {})) if (!['$comment', 'materials', 'themes', 'tintSwatches'].includes(k)) problems.push(`${FILE}: unknown field "${k}"`);
-  for (const k of ['materials', 'themes', 'tintSwatches']) if (!Array.isArray(top?.[k]) || !top[k].length) problems.push(`${FILE}: "${k}" must be a list of at least 1`);
+  for (const k of Object.keys(top ?? {})) if (!['$comment', 'materials', 'themes', 'groundThemes', 'tintSwatches'].includes(k)) problems.push(`${FILE}: unknown field "${k}"`);
+  for (const k of ['materials', 'themes', 'groundThemes', 'tintSwatches']) if (!Array.isArray(top?.[k]) || !top[k].length) problems.push(`${FILE}: "${k}" must be a list of at least 1`);
   const colour = (v, where) => !COLOUR.test(v) && problems.push(`${where}: ${JSON.stringify(v)} is not a #rrggbb colour (lower case)`);
 
   const materials = [];
@@ -130,11 +139,13 @@ export function build(content, root = ROOT) {
     }
     if (!(m.scale > 0)) problems.push(`${where}: scale must be above 0 (metres a repeat covers)`);
     if (!(m.shine >= 0 && m.shine <= 1)) problems.push(`${where}: shine must be 0-1`);
+    if (m.shadeLift !== undefined && !(m.shadeLift >= 0 && m.shadeLift <= 0.5)) problems.push(`${where}: shadeLift must be 0-0.5`);
     // The resolved definition, in the hand-written table's key order.
     const def = {
       id: m.id, displayName: m.displayName, category: m.category, pattern: m.pattern ?? 'plain', base: m.base, accent: m.accent ?? m.base,
       scale: m.scale, shine: m.shine, ...(m.emissive ? { emissive: true } : {}), ...(m.texture !== undefined ? { texture: m.texture } : {}),
       ...(m.surface !== undefined ? { surface: m.surface } : {}), ...(m.ballistic !== undefined ? { ballistic: m.ballistic } : {}),
+      ...(m.wrap ? { wrap: true } : {}), ...(m.shadeLift !== undefined ? { shadeLift: m.shadeLift } : {}),
     };
     materials.push({ def, notes: m.notes });
   }
@@ -157,9 +168,49 @@ export function build(content, root = ROOT) {
       if (st.tint !== undefined) colour(st.tint, `${where}: slots.${s}.tint`);
       out[s] = st.tint !== undefined ? { material: st.material, tint: st.tint } : { material: st.material };
     }
-    themes.push({ def: { id: t.id, displayName: t.displayName, sky: t.sky, slots: out }, notes: t.notes });
+    const metal = t.slots.metal;
+    if (metal) {
+      const m = (Array.isArray(top?.materials) ? top.materials : []).find((x) => x?.id === metal.material);
+      if (!m) problems.push(`${where}: slots.metal names material ${metal.material}, which isn't in ${FILE}`);
+      else if (m.category !== 'Metal') problems.push(`${where}: slots.metal (bars and gates) must be a Metal, not ${m.category} (${metal.material})`);
+      if (metal.tint !== undefined) colour(metal.tint, `${where}: slots.metal.tint`);
+      out.metal = metal.tint !== undefined ? { material: metal.material, tint: metal.tint } : { material: metal.material };
+    }
+    themes.push({ def: { id: t.id, displayName: t.displayName, ground: t.ground, sky: t.sky, slots: out }, notes: t.notes });
   }
   if (themes.length && !themeIds.has('core.prototype')) problems.push(`${FILE}: themes must keep core.prototype (the fallback theme: map/surfaces.ts)`);
+
+  // Ground themes (painting Phase 4): ground materials only (the Ground category, or a terrain layer of before v45);
+  // the first old layer (grass) is some theme's base (the v45 migration makes a map's most common layer that is a
+  // theme's base the map's base: every shipped map's most common layer is one); each
+  // Structure theme's `ground` is a Ground theme that lists it in `suits`.
+  const layers = terrainLayers(root);
+  const allMaterials = Array.isArray(top?.materials) ? top.materials : [];
+  const isGround = (id) => layers.includes(id) || allMaterials.some((m) => m?.id === id && m.category === 'Ground');
+  const groundTheme = obj({ id: str, displayName: str, base: str, grounds: arr(str, 1), suits: arr(str), 'notes?': notes });
+  const groundThemes = [];
+  const groundIds = new Set();
+  for (const [i, g] of (Array.isArray(top?.groundThemes) ? top.groundThemes : []).entries()) {
+    const where = `${FILE}: groundThemes[${i}] (${g?.id})`;
+    const bad = check(g, groundTheme, where);
+    problems.push(...bad);
+    if (bad.length) continue;
+    if (!GROUND_ID.test(g.id)) problems.push(`${where}: id must be ground. then lower case letters, digits and _`);
+    if (groundIds.has(g.id)) problems.push(`${where}: id ${g.id} is listed twice`);
+    groundIds.add(g.id);
+    for (const id of [g.base, ...g.grounds]) if (!isGround(id)) problems.push(`${where}: ${id} is not a ground material (the Ground category, or a terrain layer of before v45)`);
+    if (g.grounds[0] !== g.base) problems.push(`${where}: grounds must start with the base (${g.base})`);
+    if (new Set(g.grounds).size !== g.grounds.length) problems.push(`${where}: a ground is listed twice`);
+    if (g.grounds.length > MAX_GROUNDS) problems.push(`${where}: at most ${MAX_GROUNDS} grounds`);
+    for (const t of g.suits) if (!themeIds.has(t)) problems.push(`${where}: suits ${t}, which isn't a theme`);
+    groundThemes.push({ def: { id: g.id, displayName: g.displayName, base: g.base, grounds: g.grounds, suits: g.suits }, notes: g.notes });
+  }
+  if (groundThemes.length && !groundThemes.some((g) => g.def.base === layers[0])) problems.push(`${FILE}: no Ground theme has ${layers[0]} (the first terrain layer, a new map's ground before v45) as its base`);
+  for (const t of themes) {
+    const g = groundThemes.find((x) => x.def.id === t.def.ground);
+    if (!g) problems.push(`${FILE}: theme ${t.def.id}: ground ${t.def.ground} is not a Ground theme`);
+    else if (!g.def.suits.includes(t.def.id)) problems.push(`${FILE}: theme ${t.def.id}: its Ground theme ${g.def.id} must list it in suits`);
+  }
 
   const tints = Array.isArray(top?.tintSwatches) ? top.tintSwatches : [];
   const seen = new Set();
@@ -179,14 +230,14 @@ export function build(content, root = ROOT) {
       if (kind === 'theme' && !themeIds.has(id)) problems.push(`${where}: names theme ${id}, which isn't in ${FILE} (a theme id never changes)`);
     }
   }
-  return { problems, out: { materials, themes, tints } };
+  return { problems, out: { materials, themes, groundThemes, tints } };
 }
 
 export function render(out) {
   const L = [];
   L.push('// Generated by tools/content/materials.mjs from content/materials.json. Do not edit by hand: edit the JSON and run');
   L.push('// `node tools/content/materials.mjs`.');
-  L.push("import type { MaterialDefinition, ThemeDefinition } from '../map/materials.ts';");
+  L.push("import type { GroundThemeDefinition, MaterialDefinition, ThemeDefinition } from '../map/materials.ts';");
   L.push('');
   L.push('/** Every library surface material, in MapMaker\'s palette order. */');
   L.push('export const CORE_MATERIALS: readonly MaterialDefinition[] = [');
@@ -196,6 +247,11 @@ export function render(out) {
   L.push('/** Themes: each surface slot\'s default material and tint, and the sky colour. */');
   L.push('export const CORE_THEMES: readonly ThemeDefinition[] = [');
   for (const t of out.themes) L.push(`${comments(t.notes, '  ')}  ${tsInline(t.def)},`);
+  L.push('];');
+  L.push('');
+  L.push('/** Ground themes: the base ground every unpainted terrain cell shows, the grounds offered first, the themes they suit. */');
+  L.push('export const GROUND_THEMES: readonly GroundThemeDefinition[] = [');
+  for (const g of out.groundThemes) L.push(`${comments(g.notes, '  ')}  ${tsInline(g.def)},`);
   L.push('];');
   L.push('');
   L.push('/** Curated tint swatches offered first in the UI; any #rrggbb is also allowed. */');
@@ -220,7 +276,7 @@ function main() {
       process.exit(1);
     }
   } else if (stale) writeFileSync(join(ROOT, GENERATED), text);
-  console.log(`materials OK: ${out.materials.length} materials, ${out.themes.length} themes${checkOnly ? '' : stale ? `; wrote ${GENERATED}` : '; up to date'}`);
+  console.log(`materials OK: ${out.materials.length} materials, ${out.themes.length} themes, ${out.groundThemes.length} Ground themes${checkOnly ? '' : stale ? `; wrote ${GENERATED}` : '; up to date'}`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();

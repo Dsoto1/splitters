@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import WebSocket from 'ws';
 import { BUTTON_FIRE, DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, MAX_PLAYER_SLOTS, PLAYER, PROTOCOL_VERSION, SnapshotDecoder, lookAngles, type MapDocument, type ServerMessage } from '@tiletrigger/shared';
@@ -80,6 +80,9 @@ class TestClient {
   }
 }
 
+/** Waits for a condition the server reaches on its own time (a busy machine runs its ticks and sockets late). */
+const until = (ok: () => unknown, timeout = 20_000) => vi.waitFor(() => expect(ok(), ok.toString()).toBeTruthy(), { timeout, interval: 20 });
+
 let server: RunningServer | undefined;
 afterEach(async () => {
   await server?.close();
@@ -154,8 +157,8 @@ describe('dedicated server', () => {
     expect(roster.players.filter((p) => p.bot)).toHaveLength(2);
     expect(roster.players.filter((p) => !p.bot).map((p) => p.name)).toEqual(['Alice']);
     a.ws.close();
-    await new Promise((r) => setTimeout(r, 50));
-    expect(server.match.combatants().filter((c) => c.kind === 'bot')).toHaveLength(3);
+    // Alice's place goes back to a bot once the server has seen her leave.
+    await until(() => server!.match.combatants().filter((c) => c.kind === 'bot').length === 3);
   });
 
   it('a player joining a running match replaces the worst-scoring bot and spawns normally, and a fresh bot fills their place when they leave', async () => {
@@ -175,9 +178,8 @@ describe('dedicated server', () => {
     const snap = await a.waitFor('snapshot', (s) => s.ev.some((e) => e.e === 'takeover'));
     expect(snap.ev.find((e) => e.e === 'takeover')).toEqual({ e: 'takeover', s: welcome.slot, from: worst, to: 'Alice' });
     a.ws.close();
-    await new Promise((r) => setTimeout(r, 50));
+    await until(() => server!.match.combatants().every((c) => c.kind === 'bot'));
     expect(server.match.combatants()).toHaveLength(3);
-    expect(server.match.combatants().every((c) => c.kind === 'bot')).toBe(true);
   });
 
   it('lets a player spectate (a bot fills their place, snapshots go on without them) and join again in the same slot', async () => {

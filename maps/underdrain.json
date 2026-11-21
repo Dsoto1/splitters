@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 48,
   "metadata": {
     "id": "underdrain",
     "name": "Underdrain",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_wtaygxmgpnk3xung",
-      "versionId": "v_czrzkytqeiumsaef",
-      "revision": 7,
-      "contentHash": "sha256:fc3ef3acb9263c6bf56d9868de0543abe0d3ee85f7b3cd1476607b40357a2854",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:20:56.956Z"
+      "versionId": "v_idmljqdxaki67och",
+      "revision": 8,
+      "contentHash": "sha256:8504ba95a995d9dd94f9d2d558ce4174d6b99fc34987b7bc586a52f8859f9354",
+      "schemaVersion": 48,
+      "releasedAt": "2026-11-19T00:20:34.632Z"
     }
   },
   "classicStructure": {
@@ -20670,7 +20670,7 @@
         -28
       ],
       "kind": "prop",
-      "model": "prop.rock_large",
+      "model": "env.rock.boulder_round",
       "yaw": 0.6,
       "scale": 0.9,
       "solid": true,
@@ -20684,7 +20684,7 @@
         -30
       ],
       "kind": "prop",
-      "model": "prop.rocks_tall",
+      "model": "env.rock.outcrop",
       "yaw": 0.2,
       "scale": 0.8,
       "solid": true,
@@ -20754,9 +20754,9 @@
         -4.4
       ],
       "kind": "prop",
-      "model": "prop.rock_medium",
+      "model": "env.rock.boulder_angular",
       "yaw": 0.3,
-      "scale": 1,
+      "scale": 0.68,
       "solid": true,
       "tint": null
     },
@@ -20768,9 +20768,9 @@
         -4.8
       ],
       "kind": "prop",
-      "model": "prop.rock_small",
+      "model": "env.rock.boulder_angular",
       "yaw": 1.2,
-      "scale": 1,
+      "scale": 0.47,
       "solid": true,
       "tint": null
     },

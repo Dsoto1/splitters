@@ -1,0 +1,132 @@
+{
+  "$comment": "Roofs as props (tools/content/kit/academy.mjs spireMesh; docs/map-briefs/st_johns, step 3): a turret's conical roof, shingled, with a finial, to cap a round turret (setpiece.corner_turret_round's cone tops) or any round tower. Round in plan, it fills its box; it collides as three stacked boxes, a stepped cone.",
+  "type": "roof",
+  "props": [
+    {
+      "id": "kit.roof.cone",
+      "displayName": "Conical Turret Roof",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a shingled cone 3.4 m across at its eaves and 4.6 m to the finial's tip (3.7 m of cone), nine courses of shingles over a short skirt, a rod, ball and spike for a finial; variants slate and red shingle. Collides as three stacked boxes."
+      },
+      "size": [
+        3.4,
+        4.6,
+        3.4
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "spire",
+        "segments": [
+          24,
+          12,
+          8
+        ],
+        "eaves": 0.25,
+        "finial": 0.9
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 80
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "slate",
+          "seed": 13801,
+          "look": {
+            "roof": "#4c535c",
+            "trim": "#26282c",
+            "jitter": 0.07,
+            "grime": 0.25
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 13802,
+          "look": {
+            "roof": "#94402f",
+            "trim": "#2a2c30",
+            "jitter": 0.08,
+            "grime": 0.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.roof.vault_bay",
+      "displayName": "Vault Bay (truss)",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10, photos 2 and 3: the gym's barrel vault on steel trusses): one 8 m bay of a barrel-vaulted roof 24 m across: the boarded underside rising 2.3 m from springing to crown with a sheet roof over it (so a hall left open at the top is roofed by it), a steel bowstring truss across the bay's middle, four pendant lamp shades hung from its tie (looks only: a set piece's light gives the light). Its springing is 1.6 m over its foot: place the foot 1.6 m under the walls' top. Variant end fills the vault's end on -z (the gable over a hall's end wall). Collides as nothing."
+      },
+      "size": [
+        24.0,
+        4.0,
+        8.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "vaultbay",
+        "spring": 1.6,
+        "rise": 2.3,
+        "tie": 0.0,
+        "lamps": 4,
+        "drop": 0.9
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 40
+        },
+        {
+          "distance": 110
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "maple",
+          "seed": 35001,
+          "look": {
+            "boards": "#c9a77a",
+            "steel": "#3c4045",
+            "shade": "#2c2f33",
+            "roof": "#55595e"
+          }
+        },
+        {
+          "index": 1,
+          "name": "end",
+          "seed": 35002,
+          "set": {
+            "ends": "back"
+          },
+          "look": {
+            "boards": "#c9a77a",
+            "steel": "#3c4045",
+            "shade": "#2c2f33",
+            "roof": "#55595e",
+            "gable": "#8a4a36"
+          }
+        }
+      ]
+    }
+  ]
+}

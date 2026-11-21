@@ -1,4 +1,4 @@
-import { BUILT_MOUNT_BASE, airCraftDef, enterReach, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
+import { BUILT_MOUNT_BASE, airCraftDef, enterReach, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, resupplyReach, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 import type { RiderSeat } from './riderPlacement.ts';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
@@ -24,6 +24,8 @@ export interface ClientMount {
   /** When the wreck stopped being solid (ms), so it can fade out; 0 otherwise. */
   wreckGoneAt: number;
   seats: number[];
+  /** Resupplies left (MountDef.resupply: the Supply Buggy); 0 without one. */
+  supply: number;
   /** Team colour, paint skin tint, or null: what the model is painted (see mountTint). */
   tint: string | null;
   /** Smoothed pose for drawing. */
@@ -87,7 +89,7 @@ export class MountState {
       if (plane) physics.setBoxEnabled(body, false);
       const team = e.kind === 'mount' && e.faction ? (teams.find((t) => t.id === e.faction)?.color ?? null) : null;
       const tint = e.kind === 'mount' && def.kind !== 'sentry' ? mountTint(e.skin, team) : null;
-      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null });
+      this.mounts.set(index, { index, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: true, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: def.seats.map(() => -1), supply: def.resupply?.uses ?? 0, tint, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null });
     });
   }
 
@@ -140,7 +142,8 @@ export class MountState {
       if (charging && !m.charging) this.charges.push({ ...m.pos });
       m.charging = charging ? m.charging || now : 0;
       m.arcing = (flags & MOUNT_FLAG_ARC) !== 0;
-      m.seats = s.slice(9);
+      m.seats = s.slice(9, 9 + m.def.seats.length);
+      m.supply = m.def.resupply ? (s[9 + m.def.seats.length] ?? 0) : 0;
       // The wreck is solid on the server too: keep it in the prediction physics until it goes. The plane never blocks.
       const solid = (alive || wreck) && !m.def.airplane;
       this.physics.setBoxEnabled(m.body, solid);
@@ -171,7 +174,7 @@ export class MountState {
     const pos = { x: s[1]!, y: s[2]!, z: s[3]! };
     const yaw = s[4]!;
     const body = this.physics.createBox({ x: pos.x, y: pos.y + def.half[1], z: pos.z }, { x: def.half[0], y: def.half[1], z: def.half[2] }, yaw);
-    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: [], tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null };
+    const m: ClientMount = { index: s[0]!, def, model: def.id, pos, yaw, aimYaw: yaw, aimPitch: 0, health: 100, alive: false, wreck: false, burning: false, charging: 0, arcing: false, wreckGoneAt: 0, seats: [], supply: 0, tint: null, shown: { pos: { ...pos }, yaw, aimYaw: yaw, aimPitch: 0 }, vel: { x: 0, y: 0, z: 0 }, spin: 0, tick: -1, at: 0, body, susp: null };
     this.mounts.set(m.index, m);
     return m;
   }
@@ -227,6 +230,21 @@ export class MountState {
         if (s >= 0 && seat?.seated) out.set(s, { yaw: m.shown.yaw + (seat.facing ?? 0), legDrop: seat.legDrop ?? SEAT_LEG_DROP, straddle: seat.straddle ?? 0 });
       });
     return out;
+  }
+
+  /** A resupply vehicle (MountDef.resupply) whose reach point you stand at (Use resupplies there), or null. */
+  resupplyInReach(feet: Vec3): ClientMount | null {
+    let best: ClientMount | null = null;
+    let bestD = Infinity;
+    for (const m of this.mounts.values()) {
+      if (!m.alive || !m.def.resupply) continue;
+      const d = resupplyReach(m.def.resupply, m.pos, m.yaw, feet);
+      if (d !== null && d < bestD) {
+        best = m;
+        bestD = d;
+      }
+    }
+    return best;
   }
 
   /** A vehicle in reach whose every seat is taken (the prompt says so instead of offering nothing), or null. */

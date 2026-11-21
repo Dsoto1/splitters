@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { tsList } from './materials.mjs';
 import { check, comments, shape, sq, tsInline } from './weapons.mjs';
 import { tunnelTiles } from './kit/tunnel.mjs';
+import { arenaCornerTiles } from './kit/arenaCorner.mjs';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const EDGES = 'content/tiles/edges.json';
@@ -79,7 +80,7 @@ const value = { t: 'num|str' };
 
 // ---------------------------------------------------------------- schema
 
-function schemas(root, materials) {
+function schemas(root, materials, edgeIds = []) {
   const sides = tsList(root, OPTIONS_TS, 'SIDES');
   const categories = tsList(root, OPTIONS_TS, 'TILE_CATEGORIES');
   const pair = tup(2, value);
@@ -87,14 +88,14 @@ function schemas(root, materials) {
   const segment = obj({ u: pair, y: pair, 't?': num, 'repeat?': repeat });
   const trimPiece = obj({
     'base?': pair, 'cornice?': pair, 'frame?': obj({ half: num, top: num }), 'window?': obj({ u: tup(2), y: tup(2) }),
-    'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num }),
+    'arch?': obj({ u: tup(2), y: tup(2), count: int, band: num, 'key?': num, 'depth?': num, 'keyDepth?': num }),
     'u?': pair, 'y?': pair, 'depth?': num, 'v?': tup(2), 'repeat?': repeat, 'outside?': bool,
     'surface?': obj({ material: en(materials), 'tint?': str }),
   });
   const edge = obj({
     id: str, label: str, 'rule?': en(['auto', 'open']), 'segments?': arr(segment), 'trim?': arr(trimPiece), 'trimFrom?': num,
     'openings?': arr(tup(4)), 'glass?': bool, 'corner?': bool, 'facade?': bool, 'street?': bool, 'openDefault?': bool,
-    'dressing?': obj({ kind: en(['door', 'window', 'see-through']), 'span?': num }), 'notes?': notes,
+    'dressing?': obj({ kind: en(['door', 'window', 'see-through']), 'span?': num }), 'paint?': en(['metal']), 'notes?': notes,
   });
   const surface = obj({ material: en(materials), 'tint?': str });
   const at2 = tup(2);
@@ -111,6 +112,7 @@ function schemas(root, materials) {
     arcade: obj({ centre: at2, r: num, turns: at2, bays: int, 'height?': num }),
     roundRoom: obj({ centre: at2, r: num, door: num, window: num }),
     discStrips: obj({ centre: at2, r: num, strips: int, width: num, y: at2 }),
+    spiral: obj({ centre: at2, r: at2, turns: at2, steps: int, height: num, 'base?': num, 'slab?': num, 'solid?': at2 }),
     vault: obj({ axis: en(['x', 'z']), span: at2, along: at2, spring: num, crown: num, 'pieces?': int, 't?': num }),
     block: obj({ across: num, height: num }),
   };
@@ -118,13 +120,23 @@ function schemas(root, materials) {
     ...Object.fromEntries(Object.entries(builders).map(([k, s]) => [`${k}?`, s])),
     'kind?': en(['solid', 'wall', 'floor', 'trim', 'prop']), 'yaw?': num, 'pitch?': num, 'roll?': num, 'surface?': surface,
   });
-  const port = obj({ 'side?': en(sides), 'level?': int, 'cell?': tup(2, int), 'allSides?': int, 'perimeter?': tup(2, int), 'levels?': arr(int, 1) });
+  // Builders that hold parts or name an edge style (map/catalog.ts TurnedPart, WallRunPart): a turned group of any
+  // parts (itself a part, so groups nest) and a wall run of an edge style along any segment.
+  const grouped = {
+    turned: obj({ 'yaw?': num, 'turns?': num, 'pivot?': at2, parts: arr(part, 1) }),
+    wallRun: obj({ from: at2, to: at2, style: en(edgeIds), 'bays?': int, 'y?': num, 'height?': num, 'side?': en(['left', 'right', 'centre']), 'outer?': bool, 'plain?': bool }),
+  };
+  for (const [k, sch] of Object.entries(grouped)) {
+    builders[k] = sch;
+    part.shape[`${k}?`] = sch;
+  }
+  const port = obj({ 'side?': en(sides), 'level?': int, 'cell?': tup(2, int), 'bore?': en(['S', 'L']), 'family?': str, 'allSides?': int, 'perimeter?': tup(2, int), 'levels?': arr(int, 1) });
   const tile = obj({
     id: str, displayName: str, category: en(categories), 'blurb?': str, 'cells?': arr(tup(3, int), 1), 'footprint?': arr(int, 2),
     floors: arr(int), ports: arr(port), 'open?': bool, 'edgeDefault?': str, 'edgeDefaults?': map(str), 'configurable?': bool,
     'model?': obj({ file: str, 'lift?': num }), 'solids?': arr(part), 'extraFloors?': arr(part), 'notes?': notes,
     // MapMaker's tile options that are tiles of their own (map/catalog.ts TILE_OPTIONS): this tile is `tile` with `option` on.
-    'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround']) }),
+    'optionOf?': obj({ tile: str, option: en(['sideWalls', 'underGround', 'gate']) }),
     // The tunnel kit (kit/tunnel.mjs): this tile is the shape `base` in the material family `family`.
     'familyOf?': obj({ base: str, family: str, label: str }),
     // A piece buried in terrain (map/groundBore.ts): boxes the ground's surface is cut out of, and mouths it opens at.
@@ -200,7 +212,7 @@ function codePackPrefixes(root) {
 export function build(content, root = ROOT) {
   const problems = [];
   const materials = readJson(root, 'content/materials.json').materials.map((m) => m.id);
-  const S = schemas(root, materials);
+  const S = schemas(root, materials, (Array.isArray(content.edges?.edges) ? content.edges.edges : []).filter((e) => e && !e.rule).map((e) => e.id));
 
   // Edge styles.
   const top = content.edges;
@@ -263,7 +275,7 @@ export function build(content, root = ROOT) {
       if (t.base) return { base: pair(t.base, uValue, `${path}.base`) };
       if (t.cornice) return { cornice: pair(t.cornice, uValue, `${path}.cornice`) };
       const own = t.surface ? { surface: t.surface } : {};
-      if (t.surface && !t.frame && !t.u) problems.push(`${where}: ${path}: surface goes on a frame or a trim box`);
+      if (t.surface && !t.frame && !t.arch && !t.u) problems.push(`${where}: ${path}: surface goes on a frame, an arch or a trim box`);
       if (t.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(t.surface.tint)) problems.push(`${where}: ${path}.surface.tint must be #rrggbb`);
       if (t.frame) return { frame: t.frame, ...own };
       if (t.window) return { window: t.window };
@@ -273,7 +285,8 @@ export function build(content, root = ROOT) {
         if (!(a.y[0] < a.y[1])) problems.push(`${where}: ${path}.arch.y: [springing, crown] with the crown higher`);
         if (!(a.count >= 1) || !(a.band > 0)) problems.push(`${where}: ${path}.arch: count at least 1 and band (the voussoirs' depth, m) above 0`);
         if (a.y[1] - a.y[0] > (a.u[1] - a.u[0]) / 2) problems.push(`${where}: ${path}.arch: a segmental arch rises at most half its span`);
-        return { arch: a, ...(t.outside ? { outside: true } : {}) };
+        if (a.keyDepth !== undefined && !(a.keyDepth >= 0)) problems.push(`${where}: ${path}.arch.keyDepth (how much prouder the keystone stands, m) must be 0 or more`);
+        return { arch: a, ...(t.outside ? { outside: true } : {}), ...own };
       }
       if (t.v !== undefined) {
         // A box set in the wall itself (a sash's bars by the glass): from and to, in from the cell's boundary.
@@ -293,7 +306,7 @@ export function build(content, root = ROOT) {
     const shape = {
       segments, trim, ...(e.trimFrom !== undefined ? { trimFrom: e.trimFrom } : {}),
       ...(e.openings ? { openings: e.openings } : {}), ...(e.openDefault ? { openDefault: true } : {}),
-      ...(e.dressing ? { dressing: e.dressing } : {}),
+      ...(e.dressing ? { dressing: e.dressing } : {}), ...(e.paint ? { paint: e.paint } : {}),
     };
     edges.push({ def, shape, flags: { glass: !!e.glass, corner: !!e.corner, facade: !!e.facade, street: !!e.street }, notes: e.notes });
   }
@@ -312,6 +325,8 @@ export function build(content, root = ROOT) {
       problems.push(`${TUNNELS}: ${e.message}`);
     }
   }
+  // The Arena Corner tiles (Flavius Rule's octagon), generated by kit/arenaCorner.mjs from the Seating Tier's numbers.
+  tileList.push(...arenaCornerTiles());
   if (!tileList.length) problems.push(`${CORE}: "tiles" must be a list of at least 1`);
   const tiles = [];
   const ids = new Set();
@@ -360,16 +375,30 @@ export function build(content, root = ROOT) {
       if (!built.has(s) || s === 'auto') problems.push(`${where}: edgeDefaults ${k}: ${s} is not an edge style in ${EDGES}`);
     }
     if (t.model && !existsSync(join(root, PUBLIC, t.model.file))) problems.push(`${where}: model ${PUBLIC}/${t.model.file} not found`);
-    for (const field of ['solids', 'extraFloors']) {
-      for (const [j, p] of (t[field] ?? []).entries()) {
-        const named = S.builders.filter((b) => p[b] !== undefined);
-        if (named.length !== 1) problems.push(`${where}: ${field}[${j}]: name one builder (${S.builders.join(', ')})`);
-        if (p.box && !(p.box[0] <= p.box[3] && p.box[1] <= p.box[4] && p.box[2] <= p.box[5])) problems.push(`${where}: ${field}[${j}]: box is [x0, y0, z0, x1, y1, z1] with each min at most its max`);
-        if ((p.yaw !== undefined || p.pitch !== undefined || p.roll !== undefined) && !p.box) problems.push(`${where}: ${field}[${j}]: yaw, pitch and roll go on a box`);
-        if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${field}[${j}]: surface.tint is a #rrggbb colour (lower case)`);
-        if (p.block && !t.footprint) problems.push(`${where}: ${field}[${j}]: a block is centred on a footprint`);
-        if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${field}[${j}]: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);
+    // Each part, and the parts inside a turned group (path: solids[2].turned.parts[0]).
+    const checkPart = (p, path) => {
+      if (!p || typeof p !== 'object') return;
+      const named = S.builders.filter((b) => p[b] !== undefined);
+      if (named.length !== 1) problems.push(`${where}: ${path}: name one builder (${S.builders.join(', ')})`);
+      if (p.box && !(p.box[0] <= p.box[3] && p.box[1] <= p.box[4] && p.box[2] <= p.box[5])) problems.push(`${where}: ${path}: box is [x0, y0, z0, x1, y1, z1] with each min at most its max`);
+      if ((p.yaw !== undefined || p.pitch !== undefined || p.roll !== undefined) && !p.box) problems.push(`${where}: ${path}: yaw, pitch and roll go on a box`);
+      if (p.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(p.surface.tint)) problems.push(`${where}: ${path}: surface.tint is a #rrggbb colour (lower case)`);
+      if (p.block && !t.footprint) problems.push(`${where}: ${path}: a block is centred on a footprint`);
+      if (p.vault && !(p.vault.span[0] < p.vault.span[1] && p.vault.along[0] < p.vault.along[1] && p.vault.spring < p.vault.crown)) problems.push(`${where}: ${path}: a vault spans [a0, a1] across and [b0, b1] along (each a0 < a1), its crown over its springing`);
+      if (p.turned) {
+        const g = p.turned;
+        if ((g.yaw === undefined) === (g.turns === undefined)) problems.push(`${where}: ${path}: a turned group has one of yaw (radians) or turns (quarter turns)`);
+        for (const [k, q] of (Array.isArray(g.parts) ? g.parts : []).entries()) checkPart(q, `${path}.turned.parts[${k}]`);
       }
+      if (p.wallRun) {
+        const w = p.wallRun;
+        if (Array.isArray(w.from) && Array.isArray(w.to) && !(Math.hypot(w.to[0] - w.from[0], w.to[1] - w.from[1]) > 0)) problems.push(`${where}: ${path}: a wall run goes from one point to another`);
+        if (w.bays !== undefined && !(w.bays >= 1)) problems.push(`${where}: ${path}: a wall run has at least 1 bay`);
+        if (w.height !== undefined && !(w.height > 0)) problems.push(`${where}: ${path}: a wall run's level height is over 0`);
+      }
+    };
+    for (const field of ['solids', 'extraFloors']) {
+      for (const [j, p] of (t[field] ?? []).entries()) checkPart(p, `${field}[${j}]`);
     }
     const { notes: tn, $comment: _c, ...spec } = t;
     tiles.push({ spec, notes: tn });
@@ -446,7 +475,7 @@ export function renderEdges(out) {
 export function renderTiles(out) {
   const L = [];
   L.push('// Generated by tools/content/tiles.mjs from content/tiles/core.json and content/tiles/tunnels.json (the tunnel kit:');
-  L.push('// tools/content/kit/tunnel.mjs). Do not edit by hand: edit the JSON and run');
+  L.push('// tools/content/kit/tunnel.mjs; the Arena Corner tiles: tools/content/kit/arenaCorner.mjs). Do not edit by hand: edit the JSON and run');
   L.push('// `node tools/content/tiles.mjs`.');
   L.push("import type { TileSpec } from '../map/catalog.ts';");
   L.push('');

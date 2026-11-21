@@ -1,5 +1,5 @@
 {
-  "$comment": "Fences (tools/content/kit/fence.mjs): wooden fences and iron railings, each the size of the Kenney piece it replaces.",
+  "$comment": "Fences (tools/content/kit/fence.mjs): wooden fences and iron railings, each the size of the Kenney piece it replaces. Tileset 11 (Urban & Civilian) adds wire fencing that replaces nothing: a chain-link panel, a chain-link gate and a site fence panel on feet.",
   "type": "fence",
   "props": [
     {
@@ -128,6 +128,57 @@
       "variants": [
         { "index": 0, "name": "black", "seed": 4501, "look": { "iron": "#26282b", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.35 } },
         { "index": 1, "name": "rusty", "seed": 4502, "look": { "iron": "#33302c", "rust": "#7a4526", "stone": "#77736a", "rusty": 0.8 } }
+      ]
+    },
+    {
+      "id": "kit.fence.chainlink",
+      "displayName": "Chain-link Fence",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Tileset 11, Urban & Civilian): a chain-link panel 3 m long and 2.4 m high between two 8 cm posts, a top rail, a bottom rail, diamond mesh. Looks: galvanised, green and rusty. It collides as its posts, its rails and an upright bar every 0.25 m across the mesh (as the Iron Fence does): nobody walks through, most rounds pass, and it does not block sight." },
+      "size": [3, 2.4, 0.08],
+      "surface": "sheet_metal",
+      "detail": "metal",
+      "generator": { "kind": "chainlink", "style": "panel", "post": 0.08, "rail": 0.045, "pitch": 0.16, "bars": 0.25 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "galvanised", "seed": 12241, "look": { "iron": "#9aa0a4", "rust": "#7a4526", "rusty": 0.08, "grime": 0.2 } },
+        { "index": 1, "name": "green", "seed": 12242, "look": { "iron": "#2f5a40", "rust": "#7a4526", "rusty": 0.12, "grime": 0.2 } },
+        { "index": 2, "name": "rusty", "seed": 12243, "look": { "iron": "#7d6a58", "rust": "#7a4526", "rusty": 0.7, "grime": 0.2 } }
+      ]
+    },
+    {
+      "id": "kit.fence.chainlink_gate",
+      "displayName": "Chain-link Gate",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a chain-link double gate, shut, the Chain-link Fence's size (3 × 2.4 × 0.08 m): two framed, braced leaves on the posts, a latch and a drop bolt where they meet. A still prop (it does not open): leave a panel out for a way through, or use the Barred gate wall style with a door. It collides as its posts, its leaves' frames and an upright bar every 0.25 m across the mesh." },
+      "size": [3, 2.4, 0.08],
+      "surface": "sheet_metal",
+      "detail": "metal",
+      "generator": { "kind": "chainlink", "style": "gate", "post": 0.08, "rail": 0.045, "pitch": 0.16, "bars": 0.25 },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "galvanised", "seed": 12251, "look": { "iron": "#9aa0a4", "rust": "#7a4526", "rusty": 0.08, "grime": 0.2 } },
+        { "index": 1, "name": "green", "seed": 12252, "look": { "iron": "#2f5a40", "rust": "#7a4526", "rusty": 0.12, "grime": 0.2 } },
+        { "index": 2, "name": "rusty", "seed": 12253, "look": { "iron": "#7d6a58", "rust": "#7a4526", "rusty": 0.7, "grime": 0.2 } }
+      ]
+    },
+    {
+      "id": "kit.fence.site_panel",
+      "displayName": "Site Fence Panel",
+      "category": "Fences & Walls",
+      "assetVersion": 1,
+      "notes": { "1": "First version: a building-site fence panel 3.4 m long and 2 m high: welded mesh in a tube frame standing in two concrete block feet (0.6 m across the line). Looks: galvanised, green and rusty. It collides as its feet, its frame and an upright bar every 0.25 m across the mesh." },
+      "size": [3.4, 2, 0.6],
+      "surface": "sheet_metal",
+      "detail": "metal",
+      "generator": { "kind": "chainlink", "style": "site", "post": 0.045, "pitch": 0.16, "bars": 0.25, "feet": [0.22, 0.13] },
+      "lods": [{ "distance": 0 }, { "distance": 14 }, { "distance": 40 }],
+      "variants": [
+        { "index": 0, "name": "galvanised", "seed": 12261, "look": { "iron": "#9aa0a4", "rust": "#7a4526", "rusty": 0.08, "grime": 0.2, "feet": "#8d8a82" } },
+        { "index": 1, "name": "green", "seed": 12262, "look": { "iron": "#2f5a40", "rust": "#7a4526", "rusty": 0.12, "grime": 0.2, "feet": "#8d8a82" } },
+        { "index": 2, "name": "rusty", "seed": 12263, "look": { "iron": "#7d6a58", "rust": "#7a4526", "rusty": 0.7, "grime": 0.2, "feet": "#8d8a82" } }
       ]
     }
   ]

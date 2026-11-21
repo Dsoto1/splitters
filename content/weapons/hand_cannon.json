@@ -10,14 +10,15 @@
   "damage": 58,
   "spread": 0.002,
   "fireIntervalTicks": 30,
-  "range": 140,
+  "range": 110,
+  "falloff": { "start": 20, "end": 55, "min": 0.4, "curve": "smooth" },
   "magazine": 6,
   "reserveMax": 36,
   "pickupAmmo": 12,
   "reloadTicks": 100,
   "raiseTicks": 22,
   "botDesirability": 0.55,
-  "botRange": [3, 35],
+  "botRange": [3, 30],
   "ammo": "light",
   "knockback": 3,
   "recoil": { "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
@@ -32,5 +33,6 @@
     "sound": "fire.heavy"
   },
   "notes": {
+    "range": "Best within 20 m: full damage, 2 body shots. Down to 40 % (5 shots) by 55 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The Meshy community BK 220 (CC0 per the owner; content/guns.json): a heavy semi-automatic pistol (the Heavy Revolver is the revolver), replacing the flat-colour kit revolver, now the fallback.", "group": "The extended arsenal: every one fires differently. 2: sidearms." }
 }

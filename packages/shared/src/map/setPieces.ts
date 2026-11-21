@@ -20,7 +20,7 @@
  * swapped (it stays axis-aligned). Props are placed mirrored in position and facing, not in shape.
  */
 import { coreCatalog, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
-import { cellKey, rotateSide, rotateXZ } from './geometry.ts';
+import { boxCorners, cellKey, rotateSide, rotateXZ } from './geometry.ts';
 import {
   MAX_TILE_CELL,
   MAX_TILE_LEVEL,
@@ -32,11 +32,13 @@ import {
   type SetPieceMaterialRole,
   type SetPiecePart,
   type SetPiecePlacement,
+  type SetPieceLookDef,
   type SetPieceRoleValues,
   type SetPieceRoleValuesInput,
   type SurfaceStyle,
 } from './schema.ts';
 import { RESOURCE_BUDGETS } from './budgets.ts';
+import { DEFAULT_METAL, coreThemes } from './materials.ts';
 import type { ValidationIssue } from './validate.ts';
 
 export type { SetPieceDefinition, SetPiecePlacement };
@@ -60,6 +62,27 @@ export interface SetPieceLibrary {
   packs: ReadonlyMap<string, SetPieceRolePack>;
 }
 
+/** A look of the player's own (a map's `lookDefs`, or their browser library) as a role pack: the default for no theme. */
+export const lookAsPack = (look: SetPieceLookDef): SetPieceRolePack => ({ id: look.id, displayName: look.displayName, themes: [], roles: look.roles });
+
+const lookCache = new WeakMap<readonly SetPieceLookDef[], { library: SetPieceLibrary; out: SetPieceLibrary }>();
+
+/**
+ * The library with the map's own looks (`lookDefs`, format v47) among its role packs, so a placement that names one is
+ * drawn and played in it. A map's look never replaces a shipped pack. No looks: the library as it is.
+ */
+export function withMapLooks<L extends SetPieceLibrary>(doc: Pick<MapDocument, 'lookDefs'>, library: L): L {
+  const looks = doc.lookDefs;
+  if (!looks?.length) return library;
+  const hit = lookCache.get(looks);
+  if (hit?.library === library) return hit.out as L;
+  const packs = new Map(library.packs);
+  for (const l of looks) if (!packs.has(l.id)) packs.set(l.id, lookAsPack(l));
+  const out = { ...library, packs };
+  lookCache.set(looks, { library, out });
+  return out;
+}
+
 /** The grid set pieces are built for: their tiles' parts and their entities' metres assume it. */
 export const SET_PIECE_GRID = { cellSize: 8, levelHeight: 4 } as const;
 /**
@@ -69,7 +92,7 @@ export const SET_PIECE_GRID = { cellSize: 8, levelHeight: 4 } as const;
  * RESOURCE_BUDGETS.entities) and what a joining player's welcome carries: every client loads it again (loadMap), so it
  * must itself be a map the schema takes.
  */
-export const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities } as const;
+export const SET_PIECE_PLAYED_MAX = { tiles: 4096, entities: RESOURCE_BUDGETS.entities } as const; // entities 8,192 since map format v48
 
 /** The id of a placement's part. */
 export const setPiecePartId = (placementId: string, index: number): string => `sp_${placementId}_${index}`;
@@ -199,6 +222,56 @@ export function tileMirrorAxis(def: TileDefinition): number | null {
   return result;
 }
 
+const DIAGONAL_SIDE: Record<Side, Side> = { N: 'E', E: 'N', S: 'W', W: 'S' };
+const diagonalAxes = new WeakMap<TileDefinition, boolean>();
+/** A box's corners, each rounded to the millimetre, sorted: two boxes built different ways compare as shapes. */
+const cornerKey = (corners: readonly (readonly number[])[]) =>
+  corners
+    .map((c) => c.map((v) => (Math.round(v * 1000) / 1000 + 0).toFixed(3)).join(','))
+    .sort()
+    .join(' ');
+const boxShape = (b: LocalBox, swap: boolean) => {
+  const corners = boxCorners({ ...b, min: [...b.min], max: [...b.max] }).map(([x, y, z]) => (swap ? [z, y, x] : [x, y, z]));
+  return `${cornerKey(corners)} ${b.kind ?? 'solid'} ${b.paint ?? '-'} ${b.surface ? `${b.surface.material}|${b.surface.tint ?? '-'}` : '-'}`;
+};
+/**
+ * A tile that is its own mirror image across the diagonal x = z through its anchor cell's centre (north and east
+ * swapped: the Arena Corner tiles, octagon phase 2): its cells, ports, default edges and boxes all map onto themselves.
+ * Mirrored (east and west swapped) such a tile is the same tile turned: x → −x is the diagonal mirror and then three
+ * quarter turns, so a mirrored set piece places it turned (3 − r) at its mirrored anchor. Boxes compare by their
+ * corners (to the millimetre), so turned and tilted boxes count too.
+ */
+export function tileDiagonalMirror(def: TileDefinition): boolean {
+  const known = diagonalAxes.get(def);
+  if (known !== undefined) return known;
+  const result = ((): boolean => {
+    if (def.model) return false;
+    const cell = (c: readonly number[]) => `${c[0]},${c[1]},${c[2]}`;
+    if (!sameBag(def.cells.map(cell), def.cells.map((c) => cell([c[1]!, c[0]!, c[2]!])))) return false;
+    const port = (p: TileDefinition['ports'][number], m: boolean) => {
+      const [cx, cy] = p.cell ?? [0, 0];
+      return m ? `${DIAGONAL_SIDE[p.side]} ${p.level} ${cy},${cx}` : `${p.side} ${p.level} ${cx},${cy}`;
+    };
+    if (!sameBag(def.ports.map((p) => port(p, false)), def.ports.map((p) => port(p, true)))) return false;
+    const edges = Object.entries(def.edgeDefaults ?? {});
+    if (!sameBag(edges.map(([k, v]) => `${k}=${v}`), edges.map(([k, v]) => `${diagonalKey(k)}=${v}`))) return false;
+    for (const list of [def.solids ?? [], def.extraFloors ?? []]) {
+      if (!sameBag(list.map((b) => boxShape(b, false)), list.map((b) => boxShape(b, true)))) return false;
+    }
+    return true;
+  })();
+  diagonalAxes.set(def, result);
+  return result;
+}
+
+/** A tile-frame key ("dx,dy,dz" or "dx,dy,dz:S") mirrored across the tile's diagonal (dx and dy swapped, N ↔ E, S ↔ W). */
+function diagonalKey(key: string): string {
+  const [c, s] = key.split(':') as [string, Side | undefined];
+  const [x, y, z] = c.split(',').map(Number) as [number, number, number];
+  const cell = `${y},${x},${z}`;
+  return s ? `${cell}:${DIAGONAL_SIDE[s]}` : cell;
+}
+
 const mirrorProblems = new WeakMap<SetPieceDefinition, string | null>();
 /**
  * Why a piece can't be placed mirrored, or null when it can: every tile in it must be its own mirror image
@@ -213,7 +286,7 @@ export function setPieceMirrorProblem(def: SetPieceDefinition, catalog: TileCata
     if (part.kind !== 'tile') continue;
     const t = catalog.get(part.tile);
     if (!t) out = `${part.tile} is not a tile`;
-    else if (tileMirrorAxis(t) === null) out = `${t.displayName} (${t.id}) isn't its own mirror image`;
+    else if (tileMirrorAxis(t) === null && !tileDiagonalMirror(t)) out = `${t.displayName} (${t.id}) isn't its own mirror image`;
     if (out) break;
   }
   if (catalog === coreCatalog) mirrorProblems.set(def, out);
@@ -230,8 +303,11 @@ function mirrorKey(key: string, a2: number): string {
 
 // ---------------------------------------------------------------- roles
 
-/** Which slot of the map's theme paints a material role no pack gives (the part's surface is then left as the theme's). */
-export const ROLE_THEME_SLOT: Record<SetPieceMaterialRole, 'walls' | 'trim' | 'floor' | 'roof' | 'solids'> = { stone: 'walls', trim: 'trim', floor: 'floor', paving: 'floor', roof: 'roof', wood: 'solids', metal: 'solids' };
+/**
+ * Which slot of the map's theme paints a material role no pack gives (the part's surface is then left as the theme's).
+ * Metal is the `metal` slot (the theme's metal, else iron: bars and railings), never `solids`, which can be brick.
+ */
+export const ROLE_THEME_SLOT: Record<SetPieceMaterialRole, 'walls' | 'trim' | 'floor' | 'roof' | 'solids' | 'metal'> = { stone: 'walls', trim: 'trim', floor: 'floor', paving: 'floor', roof: 'roof', wood: 'solids', metal: 'metal' };
 
 /** The role pack a placement is themed by: its own, else the one for the map's theme (null: the theme's own look). */
 export function placementPack(p: Pick<SetPiecePlacement, 'pack'>, theme: string, library: Pick<SetPieceLibrary, 'packs'>): SetPieceRolePack | null {
@@ -245,25 +321,74 @@ function roleValue<K extends keyof SetPieceRoleValues>(role: K, p: SetPiecePlace
   return p.overrides?.roles?.[role] ?? pack?.roles[role] ?? def.roles?.[role];
 }
 
+// ---------------------------------------------------------------- options
+
+/** Every option of a piece as a placement has it: its own value where that is one of the choices, else the first. */
+export function placementOptions(p: Pick<SetPiecePlacement, 'overrides'>, def: Pick<SetPieceDefinition, 'options'>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const o of def.options ?? []) {
+    const v = p.overrides?.options?.[o.name];
+    out[o.name] = v !== undefined && o.choices.some((c) => c.value === v) ? v : o.choices[0]!.value;
+  }
+  return out;
+}
+
+/** Whether a part is in the piece with these options (its `when` all met: the value, or one of a list; a part without one always is). */
+export function partInPlay(part: { when?: Record<string, string | readonly string[]> }, options: Readonly<Record<string, string>>): boolean {
+  if (!part.when) return true;
+  // A list: the part is in for any of those choices.
+  for (const [k, v] of Object.entries(part.when)) if (typeof v === 'string' ? options[k] !== v : !v.includes(options[k]!)) return false;
+  return true;
+}
+
 // ---------------------------------------------------------------- expansion
 
 /** A placement's parts as ordinary map pieces (hidden ones left out), in the map's frame, ids `sp_<id>_<index>`. */
 export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, theme: string, library: Pick<SetPieceLibrary, 'packs'>, catalog: TileCatalog = coreCatalog): { tiles: TilePlacement[]; entities: MapEntity[] } {
   const pack = placementPack(p, theme, library);
   const hidden = new Set(p.overrides?.hide ?? []);
-  const material = (v: SurfaceStyle | { role: SetPieceMaterialRole }): SurfaceStyle | undefined => ('role' in v ? roleValue(v.role, p, def, pack) : v);
+  // Metal no look gives is the theme's metal, else iron (ROLE_THEME_SLOT), never the theme's solids (which can be brick).
+  const metal = (): SurfaceStyle => {
+    const m = coreThemes.get(theme)?.slots.metal;
+    return { material: m?.material ?? DEFAULT_METAL, tint: m?.tint ?? null };
+  };
+  const material = (v: SurfaceStyle | { role: SetPieceMaterialRole }): SurfaceStyle | undefined => ('role' in v ? (roleValue(v.role, p, def, pack) ?? (v.role === 'metal' ? metal() : undefined)) : v);
   const glass = (v: string | { role: 'glass' }): 'breakable' | 'reinforced' | undefined => {
     const k = typeof v === 'string' ? v : roleValue('glass', p, def, pack);
     return k === 'breakable' || k === 'reinforced' ? k : undefined;
   };
   const tiles: TilePlacement[] = [];
   const entities: MapEntity[] = [];
+  const options = placementOptions(p, def);
   def.parts.forEach((part, i) => {
-    if (hidden.has(i)) return;
+    if (hidden.has(i) || !partInPlay(part, options)) return;
     const id = setPiecePartId(p.id, i);
+    // Paint on this one part (format v41) wins over its role and the look: a tile part's surfaces, a block's material.
+    const paint = p.overrides?.paint?.[String(i)];
     // Through the map schema: each part as a map file would hold it (its fields in the schema's order).
-    if (part.kind === 'tile') tiles.push(TilePlacement.parse(placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog)));
-    else entities.push(MapEntity.parse(placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack)))));
+    if (part.kind === 'tile') {
+      const t = placeTilePart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('facade', p, def, pack)), catalog);
+      // The placement's material family (format v44): a tunnel part that comes in it is drawn in it (as a placed tile's
+      // `family`); a part already in it, or one that doesn't come in it, is left as it is.
+      if (p.family) {
+        const own = catalog.get(t.tile)?.familyOf;
+        if (own && own.family !== p.family && catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === p.family)) t.family = p.family;
+        else if (own && own.family === p.family) delete t.family;
+      }
+      if (paint && !('material' in paint)) {
+        const s = { ...t.surfaces };
+        for (const [slot, v] of Object.entries(paint) as [keyof typeof s, SurfaceStyle | undefined][]) if (v) s[slot] = { material: v.material, tint: v.tint ?? null };
+        if (Object.keys(s).length) t.surfaces = s;
+      }
+      tiles.push(TilePlacement.parse(t));
+    } else {
+      const e = placeEntityPart(p, def, part, id, material, glass, (v) => (typeof v === 'string' ? v : roleValue('door', p, def, pack)));
+      if (paint && 'material' in paint && e.kind === 'block' && !e.glass) {
+        e.material = paint.material;
+        e.tint = paint.tint ?? null;
+      }
+      entities.push(MapEntity.parse(e));
+    }
   });
   return { tiles, entities };
 }
@@ -280,8 +405,9 @@ function placeTilePart(
   facade: Resolve<string | { role: 'facade' }, string>,
   catalog: TileCatalog,
 ): TilePlacement {
-  const { kind: _k, surfaces, glass: glassIn, options, edges, upperFloors, x, y, z, rotation, tile } = part;
+  const { kind: _k, when: _w, surfaces, glass: glassIn, options, edges, upperFloors, x, y, z, rotation, tile } = part;
   void _k;
+  void _w;
   let ax = x;
   let ay = y;
   let rot: number = rotation;
@@ -290,12 +416,20 @@ function placeTilePart(
     // The tile mirrored onto itself (tileMirrorAxis; definitions that need it are checked to have it), turned the
     // other way, its anchor moved so it covers the mirrored cells.
     const tileDef = catalog.get(tile);
-    const a2 = (tileDef && tileMirrorAxis(tileDef)) ?? 0;
-    rot = (4 - rotation) % 4;
-    const [sx, sy] = rotateXZ(a2, 0, rot);
-    ax = mirrorWidth(def) - x - sx;
-    ay = y - sy;
-    key = (k: string) => mirrorKey(k, a2);
+    const a2 = tileDef ? tileMirrorAxis(tileDef) : null;
+    if (a2 === null && tileDef && tileDiagonalMirror(tileDef)) {
+      // Its own mirror across its diagonal: east and west swapped is that mirror and three quarter turns, about its
+      // anchor cell, so it stays on the mirrored cells turned 3 − r.
+      rot = (7 - rotation) % 4;
+      ax = mirrorWidth(def) - x;
+      key = diagonalKey;
+    } else {
+      rot = (4 - rotation) % 4;
+      const [sx, sy] = rotateXZ(a2 ?? 0, 0, rot);
+      ax = mirrorWidth(def) - x - sx;
+      ay = y - sy;
+      key = (k: string) => mirrorKey(k, a2 ?? 0);
+    }
   }
   const [rx, ry] = rotateXZ(ax, ay, p.rotation);
   const out: TilePlacement = { id, tile, x: p.x + rx, y: p.y + ry, z: p.z + z, rotation: ((rot + p.rotation) % 4) as Rotation };
@@ -329,14 +463,16 @@ function placeTilePart(
 function placeEntityPart(
   p: SetPiecePlacement,
   def: SetPieceDefinition,
-  part: Exclude<SetPiecePart, { kind: 'tile' }>,
+  partIn: Exclude<SetPiecePart, { kind: 'tile' }>,
   id: string,
   material: Resolve<SurfaceStyle | { role: SetPieceMaterialRole }, SurfaceStyle>,
   glass: Resolve<string | { role: 'glass' }, 'breakable' | 'reinforced'>,
   doorStyle: Resolve<string | { role: 'door' }, string>,
 ): MapEntity {
+  const { when: _w, ...part } = partIn;
+  void _w;
   const position = placePoint(p, def, part.position);
-  const yaw = placeYaw(p, part.yaw);
+  const yaw = placeYaw(p, 'yaw' in part ? part.yaw : 0);
   if (part.kind === 'block') {
     const { material: m, glass: g, tint, size, pitch, roll, ...rest } = part;
     const surface = m === null ? undefined : typeof m === 'string' ? { material: m, tint: null } : material(m);
@@ -359,6 +495,12 @@ function placeEntityPart(
     else delete block.glass;
     return block;
   }
+  if (part.kind === 'water') {
+    // A box of water: no yaw of its own, its size turned with the piece as a block's is.
+    const r = p.rotation % 2 === 1;
+    const { size, ...rest } = part;
+    return { ...rest, id, position, size: r ? [size[2], size[1], size[0]] : [size[0], size[1], size[2]] };
+  }
   if (part.kind === 'door') {
     const { style, ...rest } = part;
     const s = style === undefined ? undefined : doorStyle(style);
@@ -371,7 +513,7 @@ function placeEntityPart(
 
 /** What expanding a map's set pieces gives. */
 export interface SetPieceExpansion {
-  /** The map as played: every placement's parts added to its tiles and entities, and no `setPieces` (nor `setPieceDefs`). */
+  /** The map as played: every placement's parts added to its tiles and entities, and no `setPieces` (nor `setPieceDefs`, nor `lookDefs`). */
   map: MapDocument;
   /** What stopped a placement expanding, or was ignored: unknown pieces, mirrored pieces that can't be, overrides that don't apply. */
   issues: ValidationIssue[];
@@ -401,11 +543,18 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
   const issues: ValidationIssue[] = [];
   const partOf = new Map<string, string>();
   const footprints = new Map<string, [number, number, number][]>();
-  if (doc.setPieces === undefined && doc.setPieceDefs === undefined) return { map: doc, issues, partOf, footprints };
+  if (doc.setPieces === undefined && doc.setPieceDefs === undefined && doc.lookDefs === undefined) return { map: doc, issues, partOf, footprints };
   const pieces = piecesFor(doc, library);
-  const { setPieces: _p, setPieceDefs: _d, ...rest } = doc;
+  library = withMapLooks(doc, library);
+  const { setPieces: _p, setPieceDefs: _d, lookDefs: _l, ...rest } = doc;
   void _p;
   void _d;
+  void _l;
+  const lookIds = new Set<string>();
+  for (const l of doc.lookDefs ?? []) {
+    if (lookIds.has(l.id)) issues.push({ severity: 'error', code: 'setpiece.look_id', message: `the map defines look ${l.id} twice` });
+    lookIds.add(l.id);
+  }
   for (const d of doc.setPieceDefs ?? []) {
     if (!d.id.startsWith('local.')) issues.push({ severity: 'error', code: 'setpiece.def_id', message: `the map's own set piece ${d.id} must be named local.<name> (setpiece.* are the shipped ones)` });
     else if ((doc.setPieceDefs ?? []).filter((o) => o.id === d.id).length > 1) issues.push({ severity: 'error', code: 'setpiece.def_id', message: `the map defines set piece ${d.id} twice` });
@@ -431,6 +580,15 @@ function expand(doc: MapDocument, library: SetPieceLibrary, catalog: TileCatalog
     if (p.pack && !library.packs.has(p.pack)) issues.push({ severity: 'warning', code: 'setpiece.pack', message: `set piece ${p.id} names an unknown role pack "${p.pack}": it takes the map's theme`, targetId: p.id });
     const bad = (p.overrides?.hide ?? []).filter((i) => i >= def.parts.length);
     if (bad.length) issues.push({ severity: 'warning', code: 'setpiece.hide', message: `set piece ${p.id} hides part ${bad.join(', ')}, which ${def.displayName} doesn't have (it has ${def.parts.length})`, targetId: p.id });
+    // Paint on a part (v41) must name a part that takes it: surfaces on a tile part, a material on a block part.
+    const misfit = Object.entries(p.overrides?.paint ?? {}).filter(([k, v]) => {
+      const part = def.parts[Number(k)];
+      return !part || (part.kind === 'tile' ? 'material' in v : part.kind !== 'block' || !('material' in v));
+    });
+    if (misfit.length) issues.push({ severity: 'warning', code: 'setpiece.paint', message: `set piece ${p.id} paints part ${misfit.map(([k]) => k).join(', ')}, which ${def.displayName} has no such surface on (it is left as it is)`, targetId: p.id });
+    // Options (v42) the piece has, to a value it offers.
+    const odd = Object.entries(p.overrides?.options ?? {}).filter(([k, v]) => !def.options?.some((o) => o.name === k && o.choices.some((c) => c.value === v)));
+    if (odd.length) issues.push({ severity: 'warning', code: 'setpiece.option', message: `set piece ${p.id} sets ${odd.map(([k, v]) => `${k} "${v}"`).join(', ')}, which ${def.displayName} doesn't offer (it takes the first choice)`, targetId: p.id });
     const cells = setPieceFootprint(p, def);
     footprints.set(p.id, cells);
     if (cells.some(([x, y, z]) => Math.abs(x) > MAX_TILE_CELL || Math.abs(y) > MAX_TILE_CELL || Math.abs(z) > MAX_TILE_LEVEL)) {

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { BUTTON_AUTO_RELOAD, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_RELOAD, PhysicsWorld, getWeapon, weaponCode, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@tiletrigger/shared';
+import { BUTTON_AUTO_RELOAD, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_RELOAD, PLAYER, PhysicsWorld, getWeapon, weaponCode, initPhysics, loadMap, type PlayerInput, type PlayerSnapshot, type PrivateState } from '@tiletrigger/shared';
 import { Match, heldWeapon, initNavigation } from '@tiletrigger/shared/match';
 import { LocalPlayer } from '../src/game/prediction.ts';
 
@@ -133,6 +133,63 @@ describe('client prediction', () => {
     expect(broken).toBe(1);
     expect(mismatches).toBe(0);
     expect(local.corrections).toBe(0);
+    match.destroy();
+  });
+
+  it('replays a hit\'s shove and stagger (owner, 2026-11-16: punchier hits): one correction a hit, on the ground or in the air, then exact', () => {
+    const loaded = loadMap(readFileSync(arenaPath, 'utf8'));
+    if (!loaded.ok) throw new Error('arena invalid');
+    const match = new Match(loaded.map, undefined, 5);
+    const me = match.addHuman('me')!;
+    const foe = match.addHuman('foe')!;
+    const local = new LocalPlayer(new PhysicsWorld(match.geometry));
+    match.step();
+    const sp = loaded.map.entities.find((e) => e.kind === 'spawn' && e.position[0] === 8 && e.position[2] === -2)!;
+    me.move = { ...me.move, pos: { x: sp.position[0], y: sp.position[1], z: sp.position[2] }, velY: 0 };
+    me.health = 100_000;
+    foe.move = { ...foe.move, pos: { x: sp.position[0], y: sp.position[1], z: sp.position[2] + 5 }, velY: 0 };
+    const gun = getWeapon('core.shotgun');
+    foe.weapons.set(weaponCode(gun), { def: gun, mag: gun.magazine, reserve: gun.reserveMax, alt: 0 });
+    foe.current = weaponCode(gun);
+    foe.raiseTicks = 0;
+    foe.fireCooldown = 0;
+    match.step();
+    local.reconcile(match.playerSnapshots().find((p) => p.s === me.slot)!, 0, match.privateState(me.slot));
+    const lag = 5;
+    const up: { at: number; input: PlayerInput }[] = [];
+    const down: { at: number; snap: PlayerSnapshot; ack: number; priv: PrivateState | undefined }[] = [];
+    let fseq = 0;
+    let hits = 0;
+    let shoved = 0;
+    let airShot = false;
+    for (let t = 0; t < 300; t++) {
+      // Walk on the spot-ish (a slow strafe back and forth) and jump at 150; the foe fires at 60 and in the jump.
+      const { input } = local.tick({ forward: 0, right: Math.sin(t / 30) * 0.4, buttons: t === 150 ? BUTTON_JUMP : 0 }, Math.PI / 2, 0, 0, 0);
+      up.push({ at: t + lag, input });
+      while (up.length && up[0]!.at <= t) match.queueInputs(me.slot, [up.shift()!.input]);
+      const fire = t === 60 || t === 160;
+      if (t === 160) airShot = !me.move.grounded;
+      const dx = me.move.pos.x - foe.move.pos.x;
+      const dz = me.move.pos.z - foe.move.pos.z;
+      const dy = me.move.pos.y + 1.1 - (foe.move.pos.y + PLAYER.eyeHeight);
+      match.queueInputs(foe.slot, [{ seq: ++fseq, forward: 0, right: 0, yaw: Math.atan2(dx, dz), pitch: Math.atan2(dy, Math.hypot(dx, dz)), buttons: fire ? BUTTON_FIRE : 0 }]);
+      const before = me.health;
+      match.step();
+      if (me.health < before) hits++;
+      if (me.impact.ticks > 0) shoved++;
+      down.push({ at: t + lag, snap: match.playerSnapshots().find((p) => p.s === me.slot)!, ack: me.lastSeq, priv: match.privateState(me.slot) });
+      while (down.length && down[0]!.at <= t) {
+        const d = down.shift()!;
+        local.reconcile(d.snap, d.ack, d.priv);
+      }
+    }
+    expect(airShot).toBe(true);
+    expect(hits).toBe(2);
+    expect(shoved).toBeGreaterThan(20);
+    // The client never predicts being hit, so each hit corrects once; the shove (push velocity) and the slow (`ms`)
+    // replay from there exactly, through the stagger window and its end.
+    expect(local.corrections).toBeGreaterThanOrEqual(1);
+    expect(local.corrections).toBeLessThanOrEqual(hits);
     match.destroy();
   });
 });

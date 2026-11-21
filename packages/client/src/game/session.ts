@@ -1,3 +1,4 @@
+import { endedReaders } from './endedHooks.ts';
 import { targetLabel } from './targetLabel.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
@@ -25,7 +26,9 @@ import {
   heightAboveGround,
   matchStats,
   CORE_WEAPONS,
+  type MatchSummary,
   gunplayOf,
+  bulletPhysics,
   traceBullet,
   THROWABLE_DEFS,
   predictThrow,
@@ -63,9 +66,18 @@ import {
   PhysicsWorld,
   SPEED_BOOST,
   TICK_DT,
+  rigidOf,
+  tippedOver,
   TICK_RATE,
+  akimboOf,
+  akimboRaise,
+  HOLD_KINDS,
+  HOLD_LABEL,
+  HOLD_CANCEL_TEXT,
+  type HoldKind,
   type CarryOver,
   weaponByCode,
+  fireModeCount,
   DESTRUCTIBLE_SPECS,
   glassAt,
   NPC_ROLES,
@@ -86,6 +98,7 @@ import {
   isTeamMode,
   MODE_LABELS,
   NPC_ID_BASE,
+  matchRankPoints,
   type NpcSnapshot,
   type PlayerSnapshot,
   buildMapGeometry,
@@ -140,6 +153,8 @@ import {
   type VoteCandidate,
   type VoteState,
   propBreakLook,
+  AMMO_BOX_MODEL,
+  isAmmoBoxPickup,
 } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
@@ -147,19 +162,23 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
+import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
+import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, pointerAsk, pointerWanted, releasePointer, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { DamageNumbers, SprayReadout, autoReloadOn } from './combatReadouts.ts';
-import { MountState } from './mountState.ts';
+import { MountState, type ClientMount } from './mountState.ts';
 import { RiderPlacement } from './riderPlacement.ts';
 import { ownBodyDrawn } from './ownBody.ts';
 import { LocalTransport } from './localTransport.ts';
 import { BotDebugView, botDebugWanted } from './botDebugView.ts';
 import { SYS, netProbe, perfProbe } from './perfProbe.ts';
+import { perfOn } from './perfSwitches.ts';
 import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts';
 import { loadHitboxOverlay } from './hitboxPrefs.ts';
 import { PerfRecorder, captureTrace, downloadJson, fileStamp, type RecorderContext } from './perfRecorder.ts';
@@ -172,12 +191,15 @@ import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
+import { AmmoBoxState } from './ammoBoxState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
 import type { MinimapBlip } from './minimap.ts';
 import { SQUAD_COLOR, SquadHud } from './squadHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
+import { CareerTally } from './careerTally.ts';
+import { ProfileCard, type ProfileCardData } from './profileCard.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
@@ -191,24 +213,39 @@ import { CoachHud } from './coachHud.ts';
 import { TipBook, type TipId } from './tips.ts';
 import { Tutorial, setTutorialState } from './tutorial.ts';
 import { zoomLookScale } from './lookFilter.ts';
+import { OPTIC_IN, OPTIC_OUT, opticFrame } from './opticView.ts';
+import { holdoverFor } from './holdover.ts';
+import { EYE_BOX, SCOPE_FEEL, type EyeBox, freshBreath, freshEyeBox, stepBreath, stepEyeBox, stepZoom, swayAt, zoomSteps } from './scopeFeel.ts';
+import type { GlintSource } from './scopeGlint.ts';
 import { markerSetting } from './crosshair.ts';
-import { Interpolator } from './interpolation.ts';
+import { Interpolator, type RemotePose } from './interpolation.ts';
 import { LocalPlayer } from './prediction.ts';
+import { TriggerLatch, shotDelay } from './triggerLatch.ts';
+import { VehiclePrediction, predictVehicles } from './vehiclePrediction.ts';
 import { SessionAudio } from './sessionAudio.ts';
+import { topScorer } from '../audio/announcer.ts';
+import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
 import { impactSoundId, impactStyle } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
-import { loadFirstPersonMode } from './graphicsSettings.ts';
+import { ADS_FOV } from './sightPose.ts';
+import { opticOf } from './optics.ts';
+import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
+import { bothGunsFired, gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
+import { matchGoal } from './matchGoal.ts';
+import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
 
-/** Field of view while aiming down the sights, as a fraction of the normal one. */
-const ADS_FOV = 0.72;
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
+/** How long a board that has just joined the loading screen stays before the countdown (ms). */
+const LOADING_BOARD_HOLD_MS = 1600;
+/** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
+const LOADING_STAGE_AFTER_MS = 4000;
 
 export interface SessionOptions {
   engine: AbstractEngine;
@@ -271,6 +308,11 @@ export interface SessionOptions {
   tutorial?: boolean;
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
   tips?: boolean;
+  /**
+   * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
+   * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
+   */
+  career?: { record(m: MatchSummary): void; card(): ProfileCardData; /** Your career's rank points (careerStats.ts myRankPoints; Ranks & badges). */ points?(): number; /** Your favourite class (a ClassId): picked for you as you join a match with classes. */ favClass(): string | null };
 }
 
 /** How a match stood when it ended for this player: the last standings, and enough to host the same match again. */
@@ -348,8 +390,15 @@ export class GameSession {
   private killTimes: number[] = [];
   /** Out of play: the kill cam, following someone and the free camera (spectatorCam.ts). */
   private readonly specCam = new SpectatorCam();
+  /** Your trigger and sprint before each input goes out (triggerLatch.ts). */
+  private readonly triggerLatch = new TriggerLatch();
+  /** The frame time, smoothed (s): how far a slow frame's shots are spread back to their ticks (shotDelay). */
+  private frameEwma = 1 / 60;
   /** Spectating by choice (the roster marks you `sp`): out of the match until you join again. */
   private spectator = false;
+  /** Your match for your career (careerTally.ts) and your profile card under the scoreboard (profileCard.ts): with `opts.career` only. */
+  private careerTally: CareerTally | null = null;
+  private profileCard: ProfileCard | null = null;
   /** The host lets players spectate by choice (welcome `spectate`). */
   private canSpectate = false;
   /** Out of play this frame: spectating, or dead in a running match. */
@@ -369,13 +418,39 @@ export class GameSession {
   }
 
   /** Hit confirmation on the crosshair for your shot: head, armor or body, told apart by shape (and by sound, in SessionAudio). */
+  /** The drag a weapon's rounds fly with under this match's ballistics, so drawn rounds slow as the host's do. */
+  private dragOf(def: WeaponDefinition | undefined): number {
+    const b = def ? gunplayOf(def).ballistic : null;
+    return b ? bulletPhysics(b, this.rules ?? {}).drag : 0;
+  }
+
+  /** A round of `def` fired from `from` hit you: the view's hit kick (view.hitKick), a pellet its share of the blast. */
+  private kickMe(def: WeaponDefinition | undefined, from: { x: number; z: number }): void {
+    if (!def) return;
+    const me = this.view.cameraPosition();
+    const dx = from.x - me.x;
+    const dz = from.z - me.z;
+    const len = Math.hypot(dx, dz) || 1;
+    // Right of the view is (cos yaw, -sin yaw): + when the round came from the right.
+    const side = ((dx * Math.cos(this.input.yaw) - dz * Math.sin(this.input.yaw)) / len);
+    const power = stoppingPower(def) / Math.max(1, def.pellets);
+    this.view.hitKick(power, side);
+    rumble(hitRumble(power * Math.max(1, Math.min(3, def.pellets / 3))), this.input.padActive);
+  }
+
   private hitFeedback(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     const target = hits.find((h): h is number => h !== null && h !== undefined);
     if (target === undefined) return;
     const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
-    this.hud.hit(head ? 'head' : armor ? 'armor' : 'body');
+    // Under spawn protection (its shield takes the round, no damage): a ring, by shape and sound (GUNPLAY_SPEC §21).
+    const shield = hits.every((h) => h === null || h === undefined || this.shieldedSlots.has(h));
+    this.hud.hit(shield ? 'shield' : head ? 'head' : armor ? 'armor' : 'body');
     this.hud.showTarget(this.targetLabel(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
   }
+  /** Players under spawn protection in the last snapshot (FX_PROTECTED): your hits on them show the shield marker. */
+  private shieldedSlots = new Set<number>();
+  /** Held weapon, life and seat last frame: a change lets a toggled aim go. */
+  private aimState = '';
   private outcome: 'victory' | 'defeat' | null = null;
   /** Role and faction of each NPC seen, for names and looks. */
   private npcInfo = new Map<number, { role: number; faction: number; size: number }>();
@@ -403,7 +478,11 @@ export class GameSession {
       // The HUD's portrait is the body you play now, not the one picked in the menu.
       const want = look;
       this.portraitLook = want;
-      void this.opts.portraitOf?.(want).then((src) => this.portraitLook === want && this.hud.setPortrait(src), () => undefined);
+      void this.opts.portraitOf?.(want).then((src) => {
+        if (this.portraitLook !== want) return;
+        this.hud.setPortrait(src);
+        this.profileCard?.setPortrait(src);
+      }, () => undefined);
     }
     this.view.characters.preload({ look });
   }
@@ -439,6 +518,7 @@ export class GameSession {
   /** Where riders are drawn (on their seats, see riderPlacement.ts). */
   private readonly riderPlacement = new RiderPlacement();
   private covers?: CoverState;
+  private ammoBoxes?: AmmoBoxState;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
@@ -506,6 +586,19 @@ export class GameSession {
     this.sfx.localStrike();
   }
 
+  /**
+   * Your own pair in third person (dual wielding): how far into its reload dip each gun is (the gun you held, the
+   * second), as first person dips them: one hand reloads at a time, so only the gun whose turn it is goes down.
+   */
+  private ownPairDip(local: LocalPlayer): readonly [number, number] | undefined {
+    const weapon = local.weapon;
+    if (!local.paired || !weapon) return undefined;
+    const [turn1, turn2] = local.pairReloading();
+    const first = turn1 ? reloadDipAmount(local.reloadTicks, local.reload?.total ?? weapon.reloadTicks) : 0;
+    const second = turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0;
+    return first || second ? [first, second] : undefined;
+  }
+
   /** A remote player's next punch: jab and cross in turn. */
   private nextPunch(slot: number): 'jab' | 'melee' {
     const jab = this.punches.get(slot) ?? true;
@@ -545,6 +638,46 @@ export class GameSession {
     if (p) {
       const at = this.view.towardCamera({ x: p.x, y: p.y + 2.1, z: p.z }, 0.3);
       this.view.playGameplayFx('streak', at, { calmable: true, size: this.view.farSize(at) });
+    }
+  }
+
+  /** Elimination and Bomb: the round now (its `elim` start event). */
+  private elimRound = 0;
+
+  /**
+   * The announcer's snapshot lines (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md): the clock's last minute, the leader 10 from
+   * the score limit (kill modes), you or your team taking the lead, and being the last one standing on your team in
+   * Elimination and Bomb.
+   */
+  private announceSnapshot(timeLeft: number, players: readonly { s: number; alive: 0 | 1 }[]): void {
+    const a = this.sfx.announcer;
+    const now = performance.now() / 1000;
+    const mode = this.rules?.mode;
+    if (!mode || mode === 'core.coop' || mode === 'core.zombies') return;
+    a.clock(timeLeft, now);
+    const totals = this.hud.teamTotals(this.scores);
+    const team = this.hud.team(this.slot)?.id;
+    let leader: number;
+    let iLead: boolean;
+    if (totals.size && team) {
+      const mine = totals.get(team) ?? 0;
+      const rivals = [...totals].filter(([id]) => id !== team).map(([, n]) => n);
+      leader = Math.max(mine, ...rivals);
+      iLead = rivals.every((n) => mine > n);
+    } else {
+      const mine = this.scores.find((x) => x.s === this.slot)?.k ?? 0;
+      const others = this.scores.filter((x) => x.s !== this.slot).map((x) => x.k);
+      leader = Math.max(mine, ...others);
+      iLead = others.every((n) => mine > n);
+    }
+    const killScored = mode === 'core.deathmatch' || mode === 'core.tdm' || mode === 'core.roulette';
+    a.scores(leader, killScored ? (this.rules?.scoreLimit ?? 0) : 0, iLead, now);
+    if ((mode === 'core.elim' || mode === 'core.bomb') && team) {
+      const mates = players.filter((p) => this.hud.team(p.s)?.id === team);
+      const meAlive = mates.some((p) => p.s === this.slot && p.alive === 1);
+      const others = mates.filter((p) => p.s !== this.slot);
+      const enemiesUp = players.some((p) => p.alive === 1 && this.hud.team(p.s)?.id !== team);
+      if (meAlive && others.length > 0 && others.every((p) => p.alive !== 1) && enemiesUp) a.lastAlive(this.elimRound, now);
     }
   }
 
@@ -596,6 +729,8 @@ export class GameSession {
   private fps = 0;
   private fpsAt = performance.now();
   private frameMs = 0;
+  /** The worn-down tab's toll each frame (fix 3d): two clock reads a frame. */
+  readonly toll = new TabToll();
   /** The performance overlay's measurements (on while it shows). */
   private readonly perf = new PerfOverlay();
   /** The match recording while "Record performance" is on (perfRecorder.ts). */
@@ -612,6 +747,7 @@ export class GameSession {
       pos: this.local ? [this.local.state.pos.x, this.local.state.pos.y, this.local.state.pos.z] : [cam.x, cam.y, cam.z],
       server: this.serverStats,
       shaders: this.view.shaderCount(),
+      outsideMs: this.toll.lastSecondMs,
     };
   }
   /** Stop the recording and download it. */
@@ -626,8 +762,7 @@ export class GameSession {
   private bytesInAt = 0;
   /** Scope sway state and breath (1 full). */
   private sway = { x: 0, y: 0, t: 0 };
-  private breath = 1;
-  private breathSpent = false;
+  private readonly breath = freshBreath();
   /** Smoothed eye height above the feet (crouching and prone lower it). */
   private eyeOffset: number | null = null;
   /** First-person roll riding a zipline (eased in and out). */
@@ -655,10 +790,17 @@ export class GameSession {
   private fov = DEFAULT_FOV;
   private zoomLevel = 0;
   private scopedNow = false;
+  /** How far the eye is onto a real optic (0..1, opticView.ts), and the gun it belongs to. */
+  private opticBlend = 0;
+  private opticWeapon: WeaponDefinition | undefined;
   private adsAmount = 0;
   private readonly markers = markerSetting();
   /** Health and armour last frame, and where the latest shot at you (or blast) came from, for the damage flash. */
   private lastHealth = 100;
+  /** The hold to use in progress, as the last snapshot gave it (PrivateState `hu`), and when it came. */
+  private holdUse: { kind: HoldKind; done: number; total: number; at: number } | null = null;
+  /** The low-health warning (lowHealth.ts). */
+  private readonly lowHealth = new LowHealthWarning();
   private lastArmor = 0;
   private hurtFrom: { x: number; z: number; at: number } | null = null;
   private kibPerSec = 0;
@@ -667,6 +809,11 @@ export class GameSession {
     this.view = new GameView(opts.engine);
     // Show hitboxes (dev and test setting): every body's hit shapes drawn over it.
     this.view.showHitboxes = loadHitboxOverlay();
+    // A soldier's marker is their rank badge (insignia.ts), players only (the roster has their look and name).
+    // With Ranks & badges on, a player's marker is their rank badge (hud.rank; the roster has their look and name).
+    this.view.insigniaOf = (slot) => (slot < NPC_ID_BASE ? this.hud.insignia(slot) : null);
+    this.hud.onRankUp = (slot) => this.view.rankUp(slot);
+    this.hud.rankPoints = () => opts.career?.points?.() ?? 0;
     // The bot debug view (`?botdebug=1`): only where the match runs in this browser (offline, MapMaker TEST, Host game).
     if (botDebugWanted() && opts.transport instanceof LocalTransport) {
       const v = (this.botDebug = new BotDebugView(this.view.scene, () => this.view.scene.activeCamera, (slot) => this.hud.name(slot)));
@@ -674,6 +821,7 @@ export class GameSession {
     }
     this.input = new InputState(opts.canvas);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
+    this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
     this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
@@ -725,6 +873,11 @@ export class GameSession {
       };
     }
     this.hud.reset();
+    // The loading screen from the start: nothing is drawn until the map is in (drawFrame). Start match showed the map's
+    // card from its click (main.ts); otherwise it says Loading until the welcome names the map.
+    const fresh = $('loading-screen').hidden;
+    this.hud.showLoading(fresh ? { name: 'Loading', mode: '', picture: null } : null, 0.1);
+    this.hud.setLoadingCard({ goal: '' });
     this.setUpCoach();
 
     const signal = this.abort.signal;
@@ -737,10 +890,13 @@ export class GameSession {
         return;
       }
       // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
-      // the option, so ask again plainly.
+      // the option, so ask again plainly: unless the page has let the mouse go since (a window opened over the pause
+      // menu), when the refusal comes back late and a lock now would hide the menu under it (the hostcontrols flake).
+      const ask = pointerAsk();
       const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
-      if (raw instanceof Promise) raw.catch(() => opts.canvas.requestPointerLock());
+      if (raw instanceof Promise) raw.catch(() => (pointerWanted(ask) ? opts.canvas.requestPointerLock() : undefined));
     };
+    this.takeMouse = lock;
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.confirmLeave(), { signal });
@@ -932,12 +1088,44 @@ export class GameSession {
       },
       { signal },
     );
-    this.sfx.bloodOn = () => this.view.blood.on;
+    this.sfx.bloodOn = (victim) => this.view.blood.wet(this.view.bloodKind(victim));
+    // Ranks & badges (also Options; ranksSetting.ts): off unless switched on, applied at once (names, badges, markers).
+    const ranksBox = $('ranks-toggle') as HTMLInputElement;
+    ranksBox.checked = ranksOn();
+    ranksBox.addEventListener('change', () => {
+      saveRanksOn(ranksBox.checked);
+      this.hud.updateRanks(this.scores, this.slot);
+    }, { signal });
+    window.addEventListener(RANKS_EVENT, () => (ranksBox.checked = ranksOn()), { signal });
     // Reduce flashing (also Options → Accessibility): on unless switched off, applied at once (reduceFlashing.ts).
     const flashBox = $('reduce-flashing') as HTMLInputElement;
     flashBox.checked = reduceFlashing();
     flashBox.addEventListener('change', () => saveReduceFlashing(flashBox.checked), { signal });
     window.addEventListener(REDUCE_FLASHING_EVENT, () => (flashBox.checked = reduceFlashing()), { signal });
+    // Combat accessibility (also Options → Accessibility; combatPrefs.ts): aim held or toggled, camera shake, controller vibration.
+    const aimSel = $('aim-mode') as HTMLSelectElement;
+    const shakeSel = $('camera-shake') as HTMLSelectElement;
+    const vibBox = $('pad-vibration') as HTMLInputElement;
+    const vibStrength = $('pad-vibration-strength') as HTMLInputElement;
+    $('pad-vibration-row').hidden = !vibrationSupported();
+    const showCombat = () => {
+      const c = combatPrefs();
+      aimSel.value = c.aim;
+      shakeSel.value = c.shake;
+      vibBox.checked = c.vibration;
+      vibStrength.value = String(c.vibrationStrength);
+      vibStrength.disabled = !c.vibration;
+    };
+    showCombat();
+    aimSel.addEventListener('change', () => saveCombatPrefs({ aim: aimSel.value as AimMode }), { signal });
+    shakeSel.addEventListener('change', () => saveCombatPrefs({ shake: shakeSel.value as ShakeLevel }), { signal });
+    vibBox.addEventListener('change', () => saveCombatPrefs({ vibration: vibBox.checked }), { signal });
+    vibStrength.addEventListener('change', () => {
+      saveCombatPrefs({ vibrationStrength: Number(vibStrength.value) });
+      // A taste of the new strength.
+      rumble(hitRumble(0.6), this.input.padActive);
+    }, { signal });
+    window.addEventListener(COMBAT_PREFS_EVENT, showCombat, { signal });
     // Room lights (also Options → Display): the map's lamps light the rooms, applied at once (roomLights.ts).
     const roomBox = $('room-lights') as HTMLInputElement;
     roomBox.checked = roomLightsOn();
@@ -976,6 +1164,21 @@ export class GameSession {
     window.addEventListener(
       'keydown',
       (e) => {
+        // While loading or counting down the menu waits (updatePause); Esc there acts as it would with the menu up
+        // (in MapMaker's Test, back to MapMaker), and the menu stays up from then on.
+        // Before the first time in play ("Click to fight"): a key press takes the mouse (a real gesture), and Esc asks
+        // for the menu as it does while loading.
+        if (this.fightHint && !this.fightHint.hidden && !this.input.locked && e.code !== 'Escape' && !e.repeat && !/^(F\d+|Shift|Control|Alt|Meta|Tab)/.test(e.code)) this.takeMouse?.();
+        if (e.code === 'Escape' && !this.input.locked && $('pause').hidden && !this.pauseAsked && (this.loadingUp || this.phase === 'countdown' || !this.engaged)) {
+          this.pauseAsked = true;
+          this.updatePause();
+          // At "Click to fight" (in play, the mouse not yet taken) this Esc only opens the menu, as it would in play.
+          if (!this.loadingUp && this.phase !== 'countdown') {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+        }
         const paused = !$('pause').hidden;
         if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
           e.preventDefault();
@@ -983,16 +1186,20 @@ export class GameSession {
           return;
         }
         if (e.code !== 'Escape') return;
-        if (this.input.locked) {
+        // A window over the pause menu (the Bots window) takes this Esc even if the mouse is still held (a late lock
+        // from Resume, released as the window opened: hostPanel.ts openBots): the mouse goes, the window closes.
+        const dialog = this.pauseMenu.dialogOpen;
+        if (this.input.locked && !dialog) {
           if (pageHoldsEscape() && !e.repeat) document.exitPointerLock();
           return;
         }
+        if (this.input.locked) releasePointer();
         if (!paused && this.voteHud?.open && !this.votePause) {
           // Over the vote: Esc opens the pause menu (Resume goes back to the vote).
           this.votePause = true;
           return this.updatePause();
         }
-        if (!paused) return;
+        if (!paused && !dialog) return;
         // The menu takes this Esc: a dialog under it (the Bots window) doesn't also act on it.
         e.preventDefault();
         e.stopPropagation();
@@ -1024,30 +1231,74 @@ export class GameSession {
   private rejected = false;
 
   /**
-   * Scoped sway: the sights drift in a slow figure of eight, and the drift
-   * moves your real aim. Holding Shift steadies it while your breath lasts;
-   * run out and it sways harder until you've recovered.
+   * Scoped sway (scopeFeel.ts; its numbers are content/optics.json `feel`): the sights drift in a slow figure of
+   * eight, and the drift moves your real aim. Holding Shift steadies it while your breath lasts; run out and it sways
+   * harder until you've recovered. The drift's size eases between the three, so the aim never jumps.
    */
   private updateScopeSway(dt: number, zoomed: boolean): void {
-    const holding = zoomed && this.input.held('ShiftLeft') && !this.breathSpent;
-    this.breath = Math.max(0, Math.min(1, this.breath + (holding ? -dt / 3.5 : dt / 4)));
-    if (this.breath === 0) this.breathSpent = true;
-    if (this.breathSpent && this.breath > 0.5) this.breathSpent = false;
-    this.hud.setBreath(this.breath, this.breathSpent);
+    stepBreath(this.breath, dt, this.input.holdingBreath, zoomed);
+    this.hud.setBreath(this.breath.level, this.breath.spent);
     if (!zoomed) {
       this.sway = { x: 0, y: 0, t: 0 };
       return;
     }
-    const amp = 0.0035 * (holding ? 0.12 : this.breathSpent ? 2.2 : 1);
-    const t = (this.sway.t += dt);
-    const x = (Math.sin(t * 0.9) + Math.sin(t * 2.1) * 0.3) * amp;
-    const y = Math.sin(t * 1.4) * amp * 0.75;
+    const amp = SCOPE_FEEL.sway * this.breath.size;
+    const at = swayAt((this.sway.t += dt));
+    const x = at.x * amp;
+    const y = at.y * amp;
     // Apply only the change, so your own aiming adds on top.
     this.input.yaw += x - this.sway.x;
     this.input.pitch += y - this.sway.y;
     this.sway.x = x;
     this.sway.y = y;
   }
+
+  /**
+   * Sniper glints (scopeFeel.ts GLINT, scopeGlint.ts): the other players who aim through a sniper scope, as the host
+   * says (PlayerSnapshot.zm, people and bots alike), seen from the camera. A host older than the field never says it:
+   * nobody glints there (nothing tells such a host from one where nobody is scoped, and no glint is better than a
+   * wrong one). Riders are left out (their hands are on the vehicle).
+   */
+  private updateGlints(dt: number, poses: readonly RemotePose[]): void {
+    const riders = this.mounts?.riders();
+    const sources: GlintSource[] = [];
+    for (const p of poses) {
+      if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !p.scoped || !p.alive || riders?.has(p.slot)) continue;
+      const def = weaponByCode(p.weapon);
+      if (!def || opticOf(def)?.id !== 'sniper') continue;
+      sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });
+    }
+    this.view.glints.update(dt, this.view.cameraPosition(), this.fov, sources);
+  }
+
+  /** The scope's shadow (scopeFeel.ts EYE_BOX): where its clear picture sits on the glass, and the view it last saw. */
+  private eyeBox: EyeBox = { rx: 0, ry: 0, x: 0, y: 0 };
+  private eyeBoxLast: { yaw: number; pitch: number; ry: number; rp: number } | null = null;
+
+  /**
+   * The eye box this frame: the shadow slides with your own turning, against the gun's kick and a little with the
+   * sway, and settles when the view is steady (and while you hold your breath: the sway it follows is small then).
+   * `aimed`: the view with its recoil (prediction's aimAngles).
+   */
+  private updateEyeBox(dt: number, scoped: boolean, fov: number, aimed: { yaw: number; pitch: number } | null): void {
+    if (!scoped || !aimed) {
+      this.eyeBoxLast = null;
+      return;
+    }
+    const [ry, rp] = [aimed.yaw - this.input.yaw, aimed.pitch - this.input.pitch];
+    const last = this.eyeBoxLast;
+    // Coming up to the eye: the shadow starts off the middle and opens.
+    if (!last) this.eyeBox = freshEyeBox(reduceFlashing());
+    const turn = last ? { x: angleDelta(last.yaw, this.input.yaw) - (this.sway.x - this.swayShown.x), y: this.input.pitch - last.pitch - (this.sway.y - this.swayShown.y) } : { x: 0, y: 0 };
+    const kick = last ? { x: ry - last.ry, y: rp - last.rp } : { x: 0, y: 0 };
+    this.eyeBoxLast = { yaw: this.input.yaw, pitch: this.input.pitch, ry, rp };
+    this.swayShown = { x: this.sway.x, y: this.sway.y };
+    const calm = reduceFlashing();
+    const dir = SCOPE_FEEL.sway > 0 ? { x: this.sway.x / SCOPE_FEEL.sway, y: this.sway.y / SCOPE_FEEL.sway } : { x: 0, y: 0 };
+    const e = stepEyeBox(this.eyeBox, dt, turn, kick, fov, dir, calm);
+    this.hud.setEyeBox(e.x, e.y, (calm ? EYE_BOX.calm : EYE_BOX.normal).dark);
+  }
+  private swayShown = { x: 0, y: 0 };
 
   /**
    * Aim assist (an option, for touchpads and controllers): when an enemy is
@@ -1085,8 +1336,15 @@ export class GameSession {
 
   private updatePause(): void {
     const was = $('pause').hidden;
+    // In play once (the mouse taken, or touch play on): from then on, losing the mouse is a pause.
+    if (this.input.locked) this.engaged = true;
+    const vote = !!this.voteHud?.open && !this.votePause;
     // The vote between matches holds the screen (the mouse is free to pick a map) until Esc asks for the menu.
-    $('pause').hidden = this.input.locked || !this.local || this.closed || (!!this.voteHud?.open && !this.votePause);
+    // Not over the loading screen or the countdown (a click takes the mouse), and not before the player has been in
+    // play at all (owner, 2026-11-19: after the countdown, straight to the fight): a calm "Click to fight" line instead
+    // (fightHint), until a click, a key or a controller's button takes the mouse; Esc still brings the menu.
+    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown' || !this.engaged) && !this.pauseAsked) || vote;
+    this.showFightHint(!this.input.locked && !!this.local && !this.closed && !this.engaged && !this.pauseAsked && !this.loadingUp && !vote);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -1737,7 +1995,7 @@ export class GameSession {
       status.textContent = 'Listing as the match starts…';
       return;
     }
-    const me = this.hud.name(this.slot);
+    const me = this.hud.rosterName(this.slot);
     const show = () => (status.textContent = this.advertiser?.error ? `Not listed: ${this.advertiser.error}` : 'Listed: anyone can join from Online → Game browser.');
     this.advertiser = new LobbyAdvertiser(
       () => ({
@@ -1834,14 +2092,48 @@ export class GameSession {
     this.hud.hide();
     $('pause').hidden = true;
     this.view.dispose();
+    this.dropTestHooks();
     this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined), end);
+  }
+
+  /**
+   * The page's automation hooks (`window.__cs`, `__tips`, `__tutorial`) hold this session: its view, scene, HUD and
+   * everything they reach. Left in place after the match they kept the whole match alive under MapMaker (Iron Maw
+   * with 15 bots: about 220 MB of script memory and a disposed scene per Test; the memory probe, fix 3c).
+   */
+  private dropTestHooks(): void {
+    const w = window as unknown as Record<string, { view?: unknown; map?: unknown } | undefined>;
+    // What a test may still read once the match has gone (the end-of-match board's "Next map", the map it was), and
+    // nothing that reaches the session. The readers a test polls keep their shape, answering "no match": a page
+    // dropped and rejoining (a reconnect, the next map) is between two sessions, and a poll such as
+    // `__cs.phase() === 'playing'` must keep waiting for the next one's hooks, not throw ("phase is not a function").
+    if (w.__cs?.view === this.view) w.__cs = { ended: true, map: w.__cs.map, slot: this.slot, hud: { nextMap: this.hud.nextMap }, ...endedReaders() } as { map?: unknown };
+    if (this.tips) delete w.__tips;
+    if (this.tutorial) delete w.__tutorial;
   }
 
   /** The map as the welcome brought it (before this page added anything to it), for hosting the match again. */
   private welcomeMap: MapDocument | null = null;
 
+  /**
+   * The newest snapshot's reconciliation of the local player, waiting for the next frame (reconcileLocal): a burst of
+   * snapshots replays the pending inputs once, not once each (2-10 ms net spikes; PERF_STJOHNS_2026-11-14). The
+   * colliders it replays against (doors, crates, vehicles) are already as that snapshot left them.
+   */
+  private toReconcile: Parameters<LocalPlayer['reconcile']> | null = null;
+
+  /** Reconcile the local player with the newest snapshot, if one is waiting (the frame's start; before other messages). */
+  private reconcileLocal(): void {
+    const r = this.toReconcile;
+    if (!r) return;
+    this.toReconcile = null;
+    this.local?.reconcile(...r);
+  }
+
   private onMessage(msg: ServerMessage): void {
     if (this.closed) return;
+    // Anything but a snapshot sees the local player as the snapshots so far left it.
+    if (msg.t !== 'snapshot') this.reconcileLocal();
     switch (msg.t) {
       case 'welcome': {
         this.welcomed = true;
@@ -1882,8 +2174,25 @@ export class GameSession {
         this.classesOn = classesInPlay(msg.rules);
         this.input.classCount = this.classesOn ? CLASS_IDS.length : 0;
         this.input.classMenu = this.classesOn;
+        // Your favourite class (Profile) is picked for you as you join; the class screen stays open to change it.
+        const fav = this.classesOn ? CLASS_IDS.indexOf(this.opts.career?.favClass() as (typeof CLASS_IDS)[number]) : -1;
+        if (fav >= 0 && !this.myClass) {
+          this.input.chooseClass(fav);
+          this.input.classMenu = true;
+        }
         this.hud.setMapName(loaded.map.metadata.name);
+        // The loading screen's card, and the line the countdown will show under its number.
+        const modeName = msg.rules.mode === 'core.coop' ? 'Co-op Mission' : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch');
+        this.hud.setLoadingCard({ name: loaded.map.metadata.name, mode: modeName, picture: this.opts.mapPicture?.(loaded.map.metadata.id) ?? loaded.map.metadata.thumbnail ?? null });
+        this.hud.setLoadingProgress(0.25);
+        this.hud.setCountdownInfo(`${loaded.map.metadata.name} · ${modeName}`, matchGoal(msg.rules));
         this.sfx.myTeam = () => this.hud.team(this.slot)?.id ?? null;
+        // The announcer: a new match's counts, and what it asks of the match.
+        this.sfx.announcer.reset();
+        this.sfx.lookOf = (slot) => this.looks.get(slot);
+        this.sfx.myPos = () => this.local?.state.pos;
+        this.sfx.topScorer = () => topScorer(this.scores, this.slot);
+        this.sfx.bombAttackers = () => (msg.rules.mode === 'core.bomb' ? (this.teamIds?.[0] ?? null) : null);
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
@@ -1894,6 +2203,14 @@ export class GameSession {
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
         this.awardsHud?.dispose();
         this.awardsHud = new AwardsHud(this.hud, () => this.slot, () => this.squadHud.current?.id ?? null);
+        // Your career's count of this match and your profile card (a few counters; the card is drawn only with the board).
+        if (this.opts.career && !this.careerTally) {
+          const career = this.opts.career;
+          this.careerTally = new CareerTally(() => this.slot, (a, b) => (this.allied ? b >= NPC_ID_BASE : !(this.hud.team(a) && this.hud.team(a)?.id === this.hud.team(b)?.id)), performance.now());
+          const card = (this.profileCard = new ProfileCard(this.opts.portrait));
+          const tally = this.careerTally;
+          this.hud.setProfileCard({ el: card.el, refresh: (final) => card.update(career.card(), this.spectator ? null : tally, final) });
+        }
         // Between matches: the vote on the next map (hosts that have one send it; mapVoteHud.ts).
         this.voteHud?.dispose();
         this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
@@ -1931,6 +2248,7 @@ export class GameSession {
         if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7), this.view.models);
+        this.ammoBoxes = new AmmoBoxState(this.view.scene, physics, this.view.models);
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();
@@ -1939,7 +2257,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }) };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -1966,11 +2284,20 @@ export class GameSession {
         break;
       case 'snapshot': {
         if (this.phase === 'countdown' && msg.phase === 'playing') this.hud.flashGo();
-        if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false);
+        if (msg.phase === 'countdown' && msg.timeLeft !== this.timeLeft && msg.timeLeft > 0) this.sfx.countdownBeep(false, msg.timeLeft);
         if (this.phase === 'countdown' && msg.phase === 'playing') this.sfx.countdownBeep(true);
+        const phaseWas = this.phase;
         this.phase = msg.phase;
+        // The match starts without us (its start gate stopped waiting on a slow load): the countdown is shown, not hidden
+        // under the loading screen; what is still loading comes in during play.
+        if (msg.phase === 'countdown' && phaseWas === 'waiting' && this.loadingUp && this.map) this.endLoading();
+        // The pause menu waits out the countdown (updatePause).
+        if ((phaseWas === 'countdown') !== (msg.phase === 'countdown')) this.updatePause();
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
+        // Ranks & badges (rankBook.ts): everyone's rank from the new lines; a rank-up glows in the feed and over the head.
+        this.hud.updateRanks(msg.score, this.slot);
+        if (msg.phase === 'playing' && !this.spectator && !document.hidden) this.announceSnapshot(msg.timeLeft, msg.players);
         for (const p of msg.players) this.hp.set(p.s, p.hp / PLAYER.maxHealth);
         for (const n of msg.np) this.hp.set(n[0], n[6] / 100);
         for (const n of msg.np) this.npcInfo.set(n[0], { role: n[7], faction: n[8], size: n[11] ?? 1 });
@@ -1992,12 +2319,16 @@ export class GameSession {
         for (const at of this.mounts?.takeCharges() ?? []) this.sfx.sentryCharge(at);
         this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
+        this.ammoBoxes?.apply(msg.ab);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
         this.jam = msg.me?.jm ?? 0;
         this.streak = msg.me?.ks ?? 0;
+        // A hold to use (sim/holdUse.ts): its progress, run on between snapshots by the clock.
+        this.holdUse = msg.me?.hu ? { kind: HOLD_KINDS[msg.me.hu[0]] ?? 'resupply', done: msg.me.hu[1], total: msg.me.hu[2], at: performance.now() } : null;
         if (this.local) this.local.zones = this.zones;
         this.localStatus = msg.players.find((p) => p.s === this.slot)?.fx ?? 0;
+        this.shieldedSlots = new Set(msg.players.filter((p) => p.s !== this.slot && ((p.fx ?? 0) & FX_PROTECTED) !== 0).map((p) => p.s));
         if (this.classesOn) {
           // Players held back from this snapshot (far away in a big match) keep the class they had.
           const kept = msg.hold ? [...this.classOf].filter(([slot]) => msg.hold!.includes(slot)) : [];
@@ -2043,7 +2374,14 @@ export class GameSession {
             this.livedBefore = true;
             this.wantWeapon = 0;
           }
-          this.local.reconcile(me, msg.ack, msg.me, msg.tick);
+          this.trackVehicle(msg.me?.vp);
+          // Once a frame (the newest snapshot's, at the frame's start), unless the player lived or died: then now, as the
+          // checks above and a fresh life's gun state read it. Also now while driving a predicted vehicle: its prediction
+          // is close, not exact, so it drifts for as long as it goes uncorrected (on a slow page with several snapshots
+          // a frame the e2e buggy's worst correction grew from under 1.5 m to 2.6-4.5 m). `?perfoff=reconcileframe`:
+          // every snapshot, as before.
+          this.toReconcile = [me, msg.ack, msg.me, msg.tick];
+          if ((me.alive === 1) !== this.local.alive || this.local.vehicle || !perfOn('reconcileframe')) this.reconcileLocal();
           this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
           // own switches (a better gun picked up, a thrown spear caught, `__give`).
@@ -2052,6 +2390,8 @@ export class GameSession {
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;
         const posesNow = () => (poses ??= this.interp.sample());
+        // Dual wielding: the shooters whose two guns both fired in this message (their flashes take turns: remoteFlash).
+        const pairedShots = bothGunsFired(msg.ev);
         for (const ev of msg.ev) {
           // Random characters: this life's look (the roster has the one they had when it was sent).
           if (ev.e === 'spawn' && this.rouletteHud) {
@@ -2074,7 +2414,9 @@ export class GameSession {
           if (ev.e === 'rl' && ev.a === 'swap' && ev.s !== undefined && ev.l) this.relook(ev.s, ev.l);
           if (ev.e === 'rl') this.rouletteHud?.event(ev);
           if (ev.e === 'awards' || ev.e === 'callout') this.awardsHud?.event(ev);
+          this.careerTally?.event(ev);
           if (ev.e === 'kill') this.streakMoment(ev, posesNow);
+          if (ev.e === 'elim' && ev.a === 'start') this.elimRound = ev.round;
           // In a background tab nothing draws, so effects would only pile up (blood, bullets,
           // sounds) and all land at once when you come back: skip the purely visual ones.
           if (document.hidden && VISUAL_EVENTS.has(ev.e)) continue;
@@ -2085,7 +2427,7 @@ export class GameSession {
             const def = CORE_WEAPONS[ev.w];
             const mine = ev.s === this.slot;
             const eye = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-            const muzzle = mine ? null : this.view.muzzleOf(ev.s);
+            const muzzle = mine ? null : this.view.muzzleOf(ev.s, !!ev.off);
             const color = def?.view.tracer ?? '#ffd36b';
             const strength = Math.min(2.5, Math.max(0.6, ((ev.alt ? def?.alt?.damage : undefined) ?? def?.damage ?? 20) / 25));
             if (def?.grapple) {
@@ -2108,8 +2450,8 @@ export class GameSession {
                   const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
-                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: 0 }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
-                  this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
+                  const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: this.dragOf(def) }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
+                  this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false, ...(ev.off ? { off: true } : {}) });
                 }
                 return;
               }
@@ -2122,6 +2464,7 @@ export class GameSession {
               if (victim === this.slot) {
                 this.hurtFrom = { x: eye.x, z: eye.z, at: performance.now() };
                 this.lastHitBy = { slot: ev.s, from: eye, at: performance.now() };
+                this.kickMe(def, eye);
               }
               if (victim !== null) {
                 const d = { x: to.x - eye.x, y: to.y - eye.y, z: to.z - eye.z };
@@ -2136,7 +2479,7 @@ export class GameSession {
                 if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / (ev.v ?? BULLET_SPEED)) * 1000 - 40));
                 return;
               }
-              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}) });
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}), ...(ev.off ? { off: true } : {}) });
             });
             // Rounds that went through a surface or glanced off it leave their mark there too.
             for (const p of ev.pn ?? []) this.view.landRound({ eye, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
@@ -2144,7 +2487,7 @@ export class GameSession {
               this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
-              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt);
+              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt, !!ev.off, false, pairedShots.has(ev.s));
             }
           } else if (ev.e === 'impact') {
             // A bullet that was in flight landed.
@@ -2154,7 +2497,10 @@ export class GameSession {
             const to = { x: ev.to[0], y: ev.to[1], z: ev.to[2] };
             const strength = Math.min(2.5, Math.max(0.6, (def?.damage ?? 20) / 25));
             const zone = ev.z ?? 0;
-            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            if (ev.hit === this.slot) {
+              this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+              this.kickMe(def, from);
+            }
             if (ev.hit !== null) {
               const d = { x: to.x - from.x, y: to.y - from.y, z: to.z - from.z };
               const len = Math.hypot(d.x, d.y, d.z) || 1;
@@ -2176,7 +2522,7 @@ export class GameSession {
               const len = Math.hypot(d.x, d.z) || 1;
               const dir = { x: d.x / len, y: 0.1, z: d.z / len };
               // Fists draw no blood, just the hit flash.
-              if (!ev.u) this.view.blood.hit(at, dir, 1.4);
+              if (!ev.u) this.view.blood.hit(at, dir, 1.4, this.view.bloodKind(ev.hit!));
               this.view.hitFx(at, 'melee');
               this.view.pushPlayer(ev.hit!, { x: dir.x * 4, y: 1.5, z: dir.z * 4 });
               this.view.flinchPlayer(ev.hit!, dir, ev.u === 1 ? 1 : 0, ev.u === 1 ? 1 : 1.8);
@@ -2189,7 +2535,9 @@ export class GameSession {
             // Lightning by its source (content/vfx.json map.arcs): an arc sentry, an electric fence (no shooter) or a gun.
             // With flashing reduced, each source holds one steady beam (keyed by it; a fence's by where it struck).
             const source = ev.m !== undefined ? 'mount' : ev.s < 0 ? 'fence' : 'default';
-            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined);
+            // A gun's lightning leaves the shooter's muzzle and stays on it (yours: the gun in your hands).
+            const anchor = ev.m === undefined && ev.s >= 0 ? this.view.muzzleAnchor({ local: ev.s === this.slot, slot: ev.s }) : null;
+            this.view.addArc(ev.pts.map((p) => ({ x: p[0], y: p[1], z: p[2] })), glow, source, ev.m !== undefined ? `m${ev.m}` : ev.s >= 0 ? `s${ev.s}` : undefined, anchor);
           } else if (ev.e === 'explode') {
             this.hurtFrom = { x: ev.p[0], z: ev.p[2], at: performance.now() };
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
@@ -2200,13 +2548,28 @@ export class GameSession {
             const cam = this.view.cameraPosition();
             const reach = ev.r * (ev.m !== undefined ? 6 : 3.5);
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / reach;
-            if (near > 0) this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+            if (near > 0) {
+              this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+              rumble(blastRumble(near), this.input.padActive);
+            }
           } else if (ev.e === 'crash') {
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
             this.view.impacts.sparkBurst(at, Math.round(6 + ev.n * 18), 2 + ev.n * 5);
             const cam = this.view.cameraPosition();
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
-            if (near > 0) this.view.shake(near * ev.n * 0.6);
+            if (near > 0) {
+              this.view.shake(near * ev.n * 0.6);
+              rumble(blastRumble(near * ev.n * 0.6), this.input.padActive);
+            }
+          } else if (ev.e === 'hold') {
+            // A hold to use stopped short (sim/holdUse.ts): say why.
+            if (ev.s === this.slot) this.hud.pickup(`${HOLD_KINDS[ev.k] === 'heal' ? 'Healing' : 'Resupply'} stopped: ${HOLD_CANCEL_TEXT[ev.x]}`);
+            if (ev.s === this.slot) this.holdUse = null;
+          } else if (ev.e === 'resupply') {
+            // The Supply Buggy's back (sim/resupply.ts): what you got, or why nothing.
+            if (ev.s === this.slot) this.hud.pickup(ev.ok ? `Resupplied (${ev.left} left)` : ev.left > 0 ? 'Nothing to resupply yet' : 'Out of supplies');
+            const at = ev.ok ? this.view.chestOf(ev.s) : null;
+            if (at) this.view.playGameplayFx('pickup.ammo', at, { size: this.view.farSize(at) });
           } else if (ev.e === 'pickup') {
             if (ev.s === this.slot) this.hud.pickup(getItem(ev.item)?.displayName ?? 'Item');
             if (ev.s === this.slot && getItem(ev.item)?.effect.kind === 'armor') this.tips?.trigger('armor', performance.now() / 1000);
@@ -2225,8 +2588,9 @@ export class GameSession {
               this.hud.killConfirm(this.killTimes.length);
             }
             const at = this.view.chestOf(ev.victim);
-            if (at) this.view.blood.kill(at);
-            if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2);
+            const bled = this.view.bloodKind(ev.victim);
+            if (at) this.view.blood.kill(at, bled);
+            if (at && ev.hs) this.view.blood.hit({ x: at.x, y: at.y + 0.55, z: at.z }, { x: 0, y: 0.6, z: 0 }, 2.2, bled);
             if (ev.hs && !ev.tk && ev.killer === this.slot) this.hud.headshot();
           } else if (ev.e === 'round_end') {
             if (ev.outcome === 'victory') this.chainOn(ev.next);
@@ -2237,7 +2601,16 @@ export class GameSession {
             this.hud.nextMap = ev.up ? nextMapLine(ev.up.map, ev.up.mode) : '';
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
+            // Your career: this match, summed in (not while spectating; a match you were in under half a minute doesn't count).
+            const summary = this.careerTally?.finish(ev, this.rules?.mode ?? 'core.deathmatch', this.hud.team(this.slot)?.id ?? null, performance.now());
+            if (summary && !this.spectator) {
+              // Your rank points this match (content/ranks.ts), carried with your career.
+              const mine = this.scores.find((x) => x.s === this.slot);
+              const points = mine ? matchRankPoints(mine) : 0;
+              this.opts.career?.record(points ? { ...summary, points } : summary);
+            }
           } else if (ev.e === 'round_start') {
+            this.careerTally?.reset(performance.now());
             this.outcome = null;
             this.hud.nextMap = '';
             // A new round: any vote is over (the match replayed).
@@ -2363,6 +2736,66 @@ export class GameSession {
     }
   }
 
+  /** The player has been in play (had the mouse, or touch play on) this session: losing it since is a pause. */
+  private engaged = false;
+  /** The page's own way to ask for the mouse (Resume's, a click's), for a key or a controller's button at "Click to fight". */
+  private takeMouse: (() => void) | null = null;
+  /** "Click to fight": one small line over the view before the first time in play (no pause menu then). */
+  private fightHint: HTMLElement | null = null;
+  private fightPad: boolean[] = [];
+
+  private showFightHint(on: boolean): void {
+    if (!on && !this.fightHint) return;
+    if (!this.fightHint) {
+      const el = document.createElement('div');
+      el.id = 'fight-hint';
+      el.className = 'fight-hint';
+      el.setAttribute('role', 'status');
+      $('hud').append(el);
+      this.fightHint = el;
+    }
+    const pad = [...(navigator.getGamepads?.() ?? [])].some((g) => g?.connected && g.mapping === 'standard');
+    this.fightHint.textContent = this.touch ? 'Tap to fight' : pad ? 'Click or press A to fight' : 'Click to fight';
+    this.fightHint.hidden = !on;
+  }
+
+  /** At "Click to fight", a controller's A or Start takes the mouse, as the pause menu's Resume did. */
+  private pollFightPad(): void {
+    if (!this.fightHint || this.fightHint.hidden) return;
+    // In play by another way (a test's touch play, a lock no event has told us of yet): the line goes.
+    if (this.input.locked) return this.updatePause();
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
+    if (!pad) return;
+    const down = pad.buttons.map((b) => b.pressed);
+    if ((down[0] && !this.fightPad[0]) || (down[9] && !this.fightPad[9])) this.takeMouse?.();
+    this.fightPad = down;
+  }
+
+  /** The loading screen is up (from the session's start until the match is loaded): no pause menu over it. */
+  private loadingUp = true;
+  /** The board on the loading screen: since when (performance.now), 0 while it isn't. */
+  private stagedAt = 0;
+  /** Esc was pressed while the pause menu waited (loading, the countdown): it shows from then on. */
+  private pauseAsked = false;
+  private boardUntil = 0;
+
+  /** The match's goal and the Tab board join the loading screen (once). */
+  private stageLoading(rules: MatchRules): void {
+    if (this.stagedAt || !this.loadingUp) return;
+    this.stagedAt = performance.now();
+    this.hud.setLoadingCard({ goal: matchGoal(rules) });
+    this.hud.stageLoading(true);
+  }
+
+  /** Loaded: the loading screen fades into the countdown, and the pause menu may show again. */
+  private endLoading(): void {
+    this.loadingUp = false;
+    // The board fades with the loading screen (hud.endLoading).
+    this.boardUntil = performance.now() + 350;
+    this.hud.endLoading();
+    this.updatePause();
+  }
+
   /**
    * Load what the match needs before saying we're ready: everyone's characters
    * (players and bots, from the roster), the weapon models we start with and
@@ -2404,11 +2837,16 @@ export class GameSession {
     }
     // Throwables' models (content/throwables.json `view`, as the weapon set shows them: its `looks`): the grenade
     // everyone may start with (the set's first, else the frag) and what grenade pickups may hold, loaded and warmed like
-    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight.
+    // the guns, so the first one in a hand, in the air or on the ground is no stall mid-fight. Every life is dealt one
+    // of the set's grenades (weaponSets.ts throwableFor), so any of them may be the first in a hand.
     const thrown = new Set<string>();
     const look = set?.id;
-    const first = rules.startingGrenades > 0 ? throwableModel((set && setThrowables(set)?.[0]) || 'frag', look) : null;
-    if (first) thrown.add(first);
+    if (rules.startingGrenades > 0) {
+      for (const kind of (set && setThrowables(set)) || ['frag' as const]) {
+        const model = throwableModel(kind, look);
+        if (model) thrown.add(model);
+      }
+    }
     for (const e of map.entities) {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
@@ -2421,6 +2859,7 @@ export class GameSession {
     for (const m of thrown) models.add(m);
     for (const e of map.entities) {
       if (e.kind === 'pickup') {
+        if (isAmmoBoxPickup(e)) models.add(AMMO_BOX_MODEL);
         const fx = getItem(e.item)?.effect;
         // Whatever a random (or mixed-up, or weapon set's) weapon pickup may roll, so a respawn never loads a model
         // mid-fight; the weapon placed there only while it stays as placed.
@@ -2431,6 +2870,8 @@ export class GameSession {
       if (e.kind === 'mount') {
         const def = getMountDef(e.model);
         if (def) models.add(def.model);
+        // Its separate tires too (MountDef.wheels: the off-road tire), so a vehicle never stands on bare hubs at the start.
+        if (def?.wheels) models.add(def.wheels.model);
       }
       // The plane or dropship flying a drop route (riders start in it).
       if (e.kind === 'airplane') models.add(airCraftDef(e.craft).model);
@@ -2454,13 +2895,29 @@ export class GameSession {
     let done = 0;
     const total = jobs.length + 2;
     // A file that finishes after the start (see the cap below) must not bring the loading screen back over the game.
-    const tick = () => void (started || this.hud.setLoading(`Loading ${map.metadata.name}`, ++done / total));
-    this.hud.setLoading(`Loading ${map.metadata.name}`, 0);
+    // Halfway through, the match's goal and the Tab board join the loading screen (the look at the teams blends into
+    // the load instead of adding a wait: owner, 2026-11-18).
+    const tick = () => {
+      if (started) return;
+      done++;
+      this.hud.setLoadingProgress(0.25 + (0.75 * done) / total);
+      if (done / total >= 0.5) this.stageLoading(rules);
+    };
+    // (A slow load stages it after a few seconds whatever the bar says, so the board is there to look at.)
+    window.setTimeout(() => started || this.closed || this.stageLoading(rules), LOADING_STAGE_AFTER_MS);
     const all = Promise.all([...jobs.map((j) => j.then(tick, tick)), this.view.scene.whenReadyAsync().then(tick, tick), this.view.city.ready.then(tick, tick)]);
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
     if (this.closed) return;
+    // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
+    // MapMaker's Test or a browser test: nothing to wait for there).
+    if (!this.opts.exitOnF5 && !testMode()) {
+      this.stageLoading(rules);
+      const hold = this.stagedAt + LOADING_BOARD_HOLD_MS - performance.now();
+      if (hold > 0) await new Promise((r) => setTimeout(r, hold));
+      if (this.closed) return;
+    }
     // Roulette: the cards further ahead, now the match has its files.
     for (const look of this.rlLater ?? []) {
       if (this.rlLoaded.has(look)) continue;
@@ -2468,7 +2925,7 @@ export class GameSession {
       void this.view.characters.preload({ look });
     }
     this.rlLater = null;
-    this.hud.setLoading(null);
+    this.endLoading();
     this.opts.transport.sendReady();
   }
 
@@ -2487,6 +2944,11 @@ export class GameSession {
     const rules = this.rules;
     const set = map && rules ? weaponSetInPlay(rules, map) : null;
     for (const id of set && rules ? (setWeaponsInPlay(set, rules) ?? []) : []) void this.view.models.load(getWeapon(id).view.model).catch(() => undefined);
+  }
+
+  /** Your favourite class's index in CLASS_IDS (the class screen marks it ★), or -1. */
+  private favClassIndex(): number {
+    return CLASS_IDS.indexOf(this.opts.career?.favClass() as (typeof CLASS_IDS)[number]);
   }
 
   /** Everyone on one side against NPCs (co-op missions and Zombies). */
@@ -2570,17 +3032,27 @@ export class GameSession {
     const myTeam = this.hud.team(this.slot)?.id ?? (this.rules?.mode === 'core.coop' ? 'players' : null);
     const target = local.alive ? pickUsable(map, local.eye, this.input.yaw, this.input.pitch, (i) => sc.usable(i, myTeam)) : null;
     const e = target === null ? undefined : map.entities[target];
-    const enter = local.alive && !this.seat ? this.mounts?.enterable(local.state.pos) : null;
+    const box = local.alive && !this.seat ? (this.ammoBoxes?.inReach(local.state.pos) ?? null) : null;
+    const supply = local.alive && !this.seat && !box ? (this.mounts?.resupplyInReach(local.state.pos) ?? null) : null;
+    const enter = local.alive && !this.seat && !supply && !box ? this.mounts?.enterable(local.state.pos) : null;
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
-      const hint = m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]) ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      const drives = !!m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]);
+      // A rigid vehicle on its side or roof: jump rolls it back onto its wheels (wheelPhysics.ts tippedOver).
+      const hint = drives && this.tipped(m) ? { key: 'Space', text: 'Flip back' } : drives ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
       this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (local.alive && local.state.zip !== undefined) {
       const two = local.weapon && !oneHanded(local.weapon);
       this.hud.setPrompt(two ? 'Zipline: Space or E to let go (sidearm or blade to shoot)' : 'Zipline: Space or E to let go');
     } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
       this.hud.setPrompt('Grab the zipline');
+    } else if (box) {
+      // Beside an ammo box: Use resupplies (the server's rule, Match.resupplyAtBox).
+      this.hud.setPrompt(this.holdUse ? null : `Hold to resupply from the ammo box (${box.uses} left)`);
+    } else if (supply) {
+      // At the Supply Buggy's back: Use resupplies instead of getting in (the server's rule, Match.resupplyAtMount).
+      this.hud.setPrompt(this.holdUse ? null : supply.supply > 0 ? `Hold to resupply from the ${supply.def.displayName} (${supply.supply} left)` : `The ${supply.def.displayName} is out of supplies`, supply.supply <= 0);
     } else if (enter) {
       const seat = enter.mount.def.seats[enter.seat]!;
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
@@ -2690,6 +3162,68 @@ export class GameSession {
     const next = STREAK_REWARDS.find((r) => r.kills > this.streak);
     return `STREAK ${this.streak}${next ? ` · ${next.name} at ${next.kills}` : ''}`;
   }
+
+  /**
+   * The hold ring (sim/holdUse.ts) and the low-health warning (lowHealth.ts) this frame: the ring's progress runs on
+   * from the last snapshot by the clock; the warning eases with your health and points at the nearest health.
+   */
+  private updateHoldAndWarning(local: LocalPlayer): void {
+    const now = performance.now();
+    const h = local.alive ? this.holdUse : null;
+    if (h) {
+      const done = h.done + ((now - h.at) / 1000) * TICK_RATE;
+      const label = HOLD_LABEL[h.kind];
+      this.hud.setHold(label, Math.min(1, done / h.total));
+    } else this.hud.setHold(null, 0);
+    const calm = reduceFlashing();
+    const w = this.lowHealth.update(now, local.health / PLAYER.maxHealth, local.alive && !this.spectator, calm);
+    this.hud.setLowHealth(w.edge, w.pulse);
+    this.view.setGradeSaturation(w.saturation);
+    if (w.beat) this.sfx.heartbeat(w.level);
+    this.healthHint(local, w.level > 0.01 && local.alive);
+  }
+
+  /**
+   * Low on health: a marker on the nearest health pack that is there to take (on screen, or an arrow at the edge),
+   * with its distance. Placed packs only (a random pickup shows what it holds: `pickupItems`).
+   */
+  private healthHint(local: LocalPlayer, on: boolean): void {
+    if (!on || !this.map) {
+      if (this.hintShown) this.hud.setHintMarkers([]);
+      this.hintShown = false;
+      return;
+    }
+    const eye = local.eye;
+    let best: { x: number; y: number; z: number } | null = null;
+    let bestD = Infinity;
+    for (const e of this.map.entities) {
+      if (e.kind !== 'pickup' || this.taken.has(e.id)) continue;
+      const item = getItem(this.pickupItems.get(e.id) ?? e.item);
+      if (item?.effect.kind !== 'health') continue;
+      const d = Math.hypot(e.position[0] - eye.x, e.position[2] - eye.z);
+      if (d < bestD) {
+        bestD = d;
+        best = { x: e.position[0], y: e.position[1] + 0.6, z: e.position[2] };
+      }
+    }
+    this.hintShown = true;
+    if (!best || bestD < 2) {
+      this.hud.setHintMarkers([]);
+      return;
+    }
+    const w = window.innerWidth;
+    const hgt = window.innerHeight;
+    const color = '#8fe3a6';
+    const label = `Health ${Math.round(bestD)} m`;
+    const screen = this.view.project(best);
+    if (screen && screen.x > 30 && screen.x < w - 30 && screen.y > 60 && screen.y < hgt - 30) this.hud.setHintMarkers([{ id: 'health', x: screen.x, y: screen.y, color, icon: '+', label }]);
+    else {
+      const bearing = Math.atan2(best.x - eye.x, best.z - eye.z) - this.input.yaw;
+      const a = Math.atan2(Math.sin(bearing), Math.cos(bearing));
+      this.hud.setHintMarkers([{ id: 'health', x: w / 2 + Math.sin(a) * (w / 2 - 70), y: hgt / 2 - Math.cos(a) * (hgt / 2 - 70), color, icon: '+', label, edge: a }]);
+    }
+  }
+  private hintShown = false;
 
   /** Team pings as screen markers (or edge arrows), following a pinged enemy while they're seen. */
   private updatePings(local: LocalPlayer, poses: readonly { slot: number; x: number; y: number; z: number; alive: boolean }[], now: number): void {
@@ -2806,6 +3340,47 @@ export class GameSession {
     const current = this.wantWeapon || this.local?.held || 0;
     if (slot !== current) this.lastWeapon = current;
     this.wantWeapon = slot;
+  }
+
+  /**
+   * Driving a rigid vehicle (PrivateState.vp): predict it (vehiclePrediction.ts), from the snapshot that first
+   * carries it until one doesn't (out of the seat, wrecked, or a host without rigid driving).
+   */
+  private trackVehicle(vp: readonly number[] | undefined): void {
+    const local = this.local;
+    if (!local) return;
+    const have = local.vehicle;
+    if (have && (!vp || vp[0] !== have.mount)) {
+      have.dispose();
+      local.vehicle = null;
+    }
+    if (!vp || local.vehicle || !predictVehicles()) return;
+    const m = this.mounts?.mounts.get(vp[0]!);
+    const setup = m ? rigidOf(m.def) : null;
+    if (!m || !setup) return;
+    local.vehicle = new VehiclePrediction(m.index, m.def, setup, local.physics, m.body, vp);
+  }
+
+  /** Your rigid vehicle is on its side or roof and still: jump flips it back (predicted state, else the snapshots'). */
+  private tipped(m: ClientMount): boolean {
+    const v = this.local?.vehicle;
+    if (v && v.mount === m.index) return tippedOver(v.state);
+    const t = rigidOf(m.def);
+    if (!m.susp || !t) return false;
+    // The snapshot's pitch and roll (drawn yaw, pitch, roll): its up axis's height is cos(pitch) cos(roll).
+    return Math.cos(m.susp.p) * Math.cos(m.susp.r) < 0.45 && Math.hypot(m.vel.x, m.vel.y, m.vel.z) < 2.5 && m.susp.wheel.filter((w) => w > 0.01 - t.travel).length < 2;
+  }
+
+  /** Your predicted vehicle drawn where prediction has it (between its last two ticks), not where the snapshots do. */
+  private drawPredictedVehicle(dt: number): void {
+    const v = this.local?.vehicle;
+    const m = v && this.mounts?.mounts.get(v.mount);
+    if (!v || !m || !m.alive) return;
+    v.fade(dt);
+    const pose = v.pose(this.acc / TICK_DT);
+    m.shown.pos = pose.pos;
+    m.shown.yaw = pose.yaw;
+    m.susp = { h: 0, p: pose.pitch, r: pose.roll, steer: pose.steer, wheel: pose.comp };
   }
 
   /** Advance prediction at a fixed 60 Hz and render one frame. */
@@ -2939,10 +3514,18 @@ export class GameSession {
   frame(): void {
     if (this.closed) return;
     const t0 = performance.now();
+    this.drawFrame(t0);
+    // A tab that has slowed (time outside our frame on late frames, 30 s over 8 ms): say once that a reload helps.
+    // Not in a browser test's match (CI draws in software: every frame is late there).
+    if (this.toll.frame(t0, performance.now(), currentFrameCap(), document.hidden) && !testMode()) this.hud.showMessage(TAB_SLOWING_TEXT, 10);
+  }
+
+  private drawFrame(t0: number): void {
     if (!$('pause').hidden) {
       this.pauseMenu.pollPad();
       this.drawPause();
     }
+    this.pollFightPad();
     const now = performance.now();
     if (perfProbe.on) {
       perfProbe.beginFrame(t0);
@@ -2951,7 +3534,10 @@ export class GameSession {
     }
     // Snapshots that came in a burst and wait merged: this frame draws the newest, not the one before it.
     this.opts.transport.flush?.();
+    // Then the local player, reconciled once with the newest of them.
+    this.reconcileLocal();
     const dt = Math.min(0.25, (now - this.last) / 1000);
+    this.frameEwma += (Math.min(0.25, Math.max(0, (now - this.last) / 1000)) - this.frameEwma) * 0.1;
     this.frameMs = now - this.last;
     this.last = now;
     const local = this.local;
@@ -2973,12 +3559,17 @@ export class GameSession {
         const next = inSlot[(i + 1) % inSlot.length];
         if (next) this.requestWeapon(next);
       }
+      // U: the held weapon's next fire mode (spec §36), with the selector's click; the mode rides in the next input.
+      if (this.input.takeFireModeSwitch() && local.alive && !this.seat) {
+        const mode = local.cycleFireMode();
+        if (mode) this.sfx.fireModeClick();
+      }
       this.updateWheel(local, building);
       this.updateOrderWheel(local);
       this.touch?.update();
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
-      if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = wheel > 0 ? 1 : 0;
+      if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = stepZoom(this.zoomLevel, wheel, zoomSteps(local.weapon));
       else if (wheel) {
         const owned = local.ownedCodes();
         const i = owned.indexOf(this.wantWeapon || local.held);
@@ -3037,13 +3628,16 @@ export class GameSession {
         if (this.thirdPerson && !this.seat && local.alive) sample.buttons |= BUTTON_THIRD_PERSON;
         // Auto-reload (Options → Controls, on by default): the host starts an empty magazine's reload by itself.
         if (local.alive && autoReloadOn()) sample.buttons |= BUTTON_AUTO_RELOAD;
+        // Taps fire at once with sprint held, and a pull while the gun comes up out of a sprint is kept (triggerLatch.ts).
+        if (local.alive && !this.seat) sample.buttons = this.triggerLatch.apply(sample.buttons, local.raiseTicks > 0, !!local.state.sprint, local.weapon?.fireIntervalTicks ?? 0, local.paired);
+        else this.triggerLatch.reset();
         moving ||= sample.forward !== 0 || sample.right !== 0;
         this.coachMoving ||= sample.forward !== 0 || sample.right !== 0;
         const before = { ...local.state.pos };
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
         if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
         this.meleeHeld = meleeNow;
-        const { input: cmd, shot, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        const { input: cmd, shot: shot1, shot2, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.
           this.input.yaw += local.portalTurn;
@@ -3065,10 +3659,14 @@ export class GameSession {
         this.sfx.localStep(local, before, local.speedTicks > 0 ? SPEED_BOOST : 1, !!this.seat);
         const ammo = local.inventory.get(local.held);
         if (local.alive && sample.buttons & BUTTON_FIRE && ammo && ammo[0] === 0 && ammo[1] === 0 && local.weapon?.magazine) this.sfx.dryFire(now);
-        if (shot) {
+        // (Dual wielding: the second gun's round the same tick is a shot like the first's.)
+        for (const shot of shot2 ? [shot1, shot2] : [shot1]) {
+          if (!shot) continue;
           this.coachShots++;
           if (this.input.zooming) this.coachAimed++;
-          this.sfx.localShot(shot.def, shot.alt);
+          // (A pair's shots sound from the hand that fired: the second gun's a little left, the first's a little right.)
+          const hand = shotGun(shot, true);
+          this.sfx.localShot(shot.def, shot.alt, shotDelay(this.acc, this.frameEwma), gunPan(local.paired || !!shot.off, hand));
           // The spray pattern (an option): single-round hitscan guns, round by round.
           if (!shot.alt && shot.def.kind === 'hitscan' && shot.def.pellets === 1 && shot.ends[0]) {
             const e = local.eye;
@@ -3076,16 +3674,20 @@ export class GameSession {
             const len = Math.hypot(d.x, d.y, d.z);
             if (len > 0.01) this.spray.shot(shot.def.id, { x: d.x / len, y: d.y / len, z: d.z / len }, (cmd.seq * 1000) / TICK_RATE);
           }
-          this.view.kick(shot.def, shot.alt);
-          const muzzle = this.view.localMuzzle();
+          this.view.kick(shot.def, shot.alt, this.slot, { off: !!shot.off, tick: cmd.seq, paired: local.paired || !!shot.off, together: !!shot1 && !!shot2 });
+          // Your gun's muzzle as drawn: the viewmodel's in first person (the second gun's for its own rounds), your
+          // character's in third (view.shotVisual).
+          const muzzle = this.view.localMuzzle(!!shot.off);
           const strength = Math.min(2.5, Math.max(0.6, ((shot.alt ? shot.def.alt?.damage : undefined) ?? shot.def.damage) / 25));
           // Your rounds leave at their real speed; only tracer rounds draw a streak (the rest still land).
-          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
+          shot.ends.forEach((end, i) => this.view.shotVisual({ eye: local.eye, muzzle, to: end, color: shot.def.view.tracer, victim: null, zone: 0, strength, def: shot.def, local: true, slot: this.slot, ...(shot.off ? { off: true } : {}), ...(shot.speed ? { speed: shot.speed, time: shot.times?.[i] ?? 0, tracer: shot.tracer !== false } : {}) }));
           // Mechanical recoil is in the prediction (the camera shows it, below); this is the visual kick on top.
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
           const visual = shot.alt ? (shot.def.alt?.kick?.visual ?? 0) : shot.def.kind === 'melee' ? 0 : (gunplayOf(shot.def).kick?.visual ?? 0);
           if (visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
+          // Controller vibration (Options → Accessibility): a buzz a round for automatics, a thump for heavy shots.
+          if (shot.def.kind !== 'melee' || shot.alt) rumble(fireRumble(visual || 0.4, shot.def.fireIntervalTicks <= 8), this.input.padActive);
         }
       }
       if (netProbe.on) for (const i of this.outbox) netProbe.inputAt.set(i.seq, now);
@@ -3095,6 +3697,7 @@ export class GameSession {
 
       // Seated: the camera rides the vehicle (cockpit or chase, see VehicleCamera); seat guns replace your own weapon.
       this.mounts?.smooth(dt);
+      this.drawPredictedVehicle(dt);
       // Vehicles are posed before the camera, so a cockpit view rides the model drawn this frame (no lag, no jitter).
       if (this.mounts) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
       const ride = local.alive && this.seat ? this.mounts?.mounts.get(this.seat[0]) : undefined;
@@ -3112,11 +3715,23 @@ export class GameSession {
       // Aiming down the sights of any other gun: a slight zoom and the gun brought up to the eye.
       const ads = !!weapon && !weapon.view.zoomFov && weapon.kind !== 'melee' && this.input.zooming && ready;
       if (!zoomed) this.zoomLevel = 0;
-      this.scopedNow = zoomed;
-      const wantFov = zoomed ? weapon!.view.zoomFov! * (this.zoomLevel ? 0.45 : 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
+      const wantFov = zoomed ? weapon!.view.zoomFov! * (zoomSteps(weapon!)[this.zoomLevel] ?? 1) : ads ? DEFAULT_FOV * ADS_FOV : DEFAULT_FOV;
       // Scopes snap; sights ease in and out.
       this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
       this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
+      // A real optic (opticView.ts): once the sights are up, the eye comes onto the model's own scope.
+      const optic = ads && !this.thirdPerson ? weapon!.view.optic : undefined;
+      this.opticBlend = optic && this.adsAmount > 0.9 ? Math.min(1, this.opticBlend + dt / OPTIC_IN) : Math.max(0, this.opticBlend - dt / OPTIC_OUT);
+      if (!optic && this.opticBlend > 0 && weapon !== this.opticWeapon) this.opticBlend = 0;
+      if (optic) this.opticWeapon = weapon;
+      const opticSpec = this.opticWeapon?.view.optic;
+      const frame = opticSpec && this.opticBlend > 0 ? opticFrame(opticSpec, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, this.opticBlend) : null;
+      if (frame) this.fov = frame.worldFov;
+      this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
+      // Holdover marks (spec §5) on the optic's reticle: its glass's edge spans the world's half-angle times its share.
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticOf(this.opticWeapon!)?.kind.reticle ?? opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
+      // The optic sways and steadies like a scope once the eye is on it.
+      this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
@@ -3201,6 +3816,12 @@ export class GameSession {
           this.view.firstPersonEye = true;
         }
       }
+      // A toggled aim (Options → Accessibility) lets go on a weapon change, death or getting in a vehicle.
+      const aimState = `${local.alive ? local.held : -1}:${this.seat ? 1 : 0}`;
+      if (aimState !== this.aimState) {
+        this.aimState = aimState;
+        this.input.cancelAim();
+      }
       this.view.setViewmodel(weapon);
       // Guns no longer carried free their first-person copies (and a held copy's video memory).
       if (local.inventory !== this.carriedInventory) {
@@ -3211,12 +3832,21 @@ export class GameSession {
           this.view.trimViewmodels(new Set([...local.inventory.keys()].map((code) => weaponByCode(code)?.id).filter((id): id is string => !!id)));
         }
       }
-      const reloadFrac = weapon && local.reloadTicks > 0 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? local.raiseTicks / weapon.raiseTicks : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed });
-      this.hud.setScope(zoomed);
-      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount);
-      this.updateScopeSway(dt, zoomed);
+      // A pair in hand (dual wielding): one hand reloads at a time, so only the gun whose turn it is dips; the second
+      // gun comes up over the pair's raise.
+      const pairSpec = weapon && local.paired ? akimboOf(weapon) : null;
+      const [turn1, turn2] = pairSpec ? local.pairReloading() : [true, false];
+      const reloadFrac = weapon && local.reloadTicks > 0 && turn1 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
+      const pairView = weapon && pairSpec ? { raise: akimboRaise(weapon, pairSpec) / TICK_RATE, reload: turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0 } : null;
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
+      // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
+      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
+      // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
+      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend), !!weapon && !opticOf(weapon));
+      this.updateScopeSway(dt, this.scopedNow);
+      this.updateEyeBox(dt, this.scopedNow && !this.thirdPerson, fov, local.alive ? local.aimAngles(this.input.yaw, this.input.pitch) : null);
       this.hud.setHealth(local.health, local.armor, local.alive);
+      this.updateHoldAndWarning(local);
       // Took damage since last frame: flash, pointing at the latest shot or blast near you.
       const lost = this.lastHealth + this.lastArmor - local.health - local.armor;
       if (local.alive && lost > 0) {
@@ -3231,7 +3861,15 @@ export class GameSession {
       // On a vehicle or turret gun the crosshair becomes a gunner's reticle (heat shown round it).
       this.hud.setGunnerReticle(seatGun && this.seat ? this.seat[2] : null);
       if (seatGun && this.seat) this.hud.setMountedGun(seatGun.displayName, this.seat[2], this.seat[3], gunSeat === null ? undefined : ride?.def.seats[gunSeat]?.ammo?.max);
-      else this.hud.setWeapons(local.inventory, local.held, local.reloadTicks > 0, local.alive, handsBusy);
+      else {
+        const second = local.paired ? local.offs.get(local.held) : undefined;
+        const [busy, busy2] = second ? local.pairReloading() : [local.reloadTicks > 0, false];
+        this.hud.setWeapons(local.inventory, local.held, busy, local.alive, handsBusy, second ? { mag: second.mag, reloading: busy2 } : null);
+      }
+      // (With a second gun of the held weapon, the fire-mode key is "both guns" or "one gun".)
+      const pairMode = local.pairMode();
+      const modeShown = pairMode ? { label: pairMode === 'pair' ? 'Pair' : 'One gun', mode: 'semi', burst: pairMode === 'pair' ? { count: 2 } : null } : local.fireMode();
+      this.hud.setFireMode(local.alive && !handsBusy && !(seatGun && this.seat) ? modeShown : null, pairMode ? 2 : local.weapon ? fireModeCount(local.weapon) : 1);
       this.hud.setThrowable(local.throwable, local.alive);
       // Holding G: show where the throw will go (bounces and the blast area).
       const aiming = this.input.throwAiming && local.alive && local.throwable && !handsBusy ? local.throwable.kind : null;
@@ -3243,9 +3881,12 @@ export class GameSession {
       } else this.view.throwArc.hide();
       // The throwable in your hands while you line it up (first person; your own model in third person throws as before).
       this.view.setThrowHold(aiming && !this.thirdPerson ? aiming : null);
-      this.input.altTrigger = !!local.weapon?.alt && local.weapon.kind === 'melee';
+      // A pair in hand (dual wielding): right mouse, LT and touch's Aim are the second gun's trigger, always held (no
+      // aiming, so no toggled aim), and touch's Fire pulls both.
+      this.input.pairTrigger = local.alive && !handsBusy && local.paired;
+      this.input.altTrigger = this.input.pairTrigger || (!!local.weapon?.alt && local.weapon.kind === 'melee');
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
-      this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), pick: (i) => this.input.chooseClass(i) } : null);
+      this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());
       this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
       // A spectator isn't waiting to respawn: no "Respawning…".
@@ -3267,7 +3908,7 @@ export class GameSession {
     this.view.updatePickups(this.taken, now, this.pickupItems);
     this.view.updateDrops(this.drops);
     const shells = this.interp.sampleProjectiles(now);
-    this.view.updateProjectiles(shells);
+    this.view.updateProjectiles(shells, this.slot);
     this.view.updateZones(this.zones, now);
     if (this.mounts) {
       const manned = this.seat ? this.mounts.mounts.get(this.seat[0]) : undefined;
@@ -3302,7 +3943,7 @@ export class GameSession {
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
     // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
     const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
     const self = bodyDrawn ? mine : undefined;
@@ -3356,13 +3997,15 @@ export class GameSession {
       this.mounts?.sitters(),
     );
     if (tAvatars) perfProbe.add(SYS.avatars, tAvatars);
+    this.updateGlints(dt, poses);
     this.sfx.remoteSteps(poses, this.riderPlacement.placed);
+    this.sfx.tick(performance.now());
     if (this.fxWatch) {
       const me = this.local;
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
     }
     const tHud = perfProbe.on ? performance.now() : 0;
-    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission', this.scores, this.slot, this.phase === 'intermission');
+    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission' || (this.stagedAt > 0 && (this.loadingUp || performance.now() < this.boardUntil)), this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
       // Teammates on the minimap (co-op: every player is one).
@@ -3415,6 +4058,7 @@ export class GameSession {
       this.showStats,
       {
         ...(this.showStats ? this.perf.lines() : {}),
+        ...(this.showStats ? { tab: `outside our script ${this.toll.lastSecondMs.toFixed(1)} ms a frame (late frames)${this.toll.streak >= 5 ? `, over 8 ms for ${this.toll.streak} s: the tab is slowing, a reload helps` : ''}` } : {}),
         renderer: this.opts.rendererKind,
         match: this.opts.transport.label,
         ...(this.showStats ? {} : { fps: this.fps.toFixed(0), frame: `${this.frameMs.toFixed(1)} ms` }),
@@ -3429,6 +4073,10 @@ export class GameSession {
     );
     this.perf.visible = this.showStats;
     if (tHud && perfProbe.on) perfProbe.add(SYS.hud, tHud);
+    // Nothing to draw before the welcome (no map yet: the loading screen is up). Drawing the empty scene compiled its
+    // sky and effect shaders in one long frame (over a second in software on a busy machine), and the welcome waited
+    // behind it: the editor flow's TEST-start flake (2026-11-18). Those shaders build after the map, under the loading screen.
+    if (!this.map) return;
     if (!perfProbe.on) return this.view.render();
     this.view.countDraws();
     const r0 = performance.now();

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 37,
+  "formatVersion": 49,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_vz5jy6nakd5q3rro",
-      "revision": 26,
-      "contentHash": "sha256:4fbcd9a3f6619e73c19fcd3a5d16deb14790e91b2a5e81ef2c76c7a442ba9317",
-      "schemaVersion": 37,
-      "releasedAt": "2026-11-13T12:34:03.061Z"
+      "versionId": "v_efrwwkldic6yfbxe",
+      "revision": 48,
+      "contentHash": "sha256:9abe085bde178ac05a388431825505a34bb57d285b1513940c8f004f01c8ee59",
+      "schemaVersion": 49,
+      "releasedAt": "2026-11-21T07:13:36.375Z"
     },
     "testOnly": true
   },
@@ -720,7 +720,8 @@
         "edges": {
           "0,0,0:N": "arch_round",
           "0,0,0:E": "embrasure",
-          "0,0,0:S": "bars_gate"
+          "0,0,0:S": "bars_gate",
+          "0,0,0:W": "arch_twin"
         }
       },
       {
@@ -912,11 +913,13 @@
         "edges": {
           "0,0,0:N": "window_sash",
           "0,0,0:E": "windows_sash",
-          "0,0,0:S": "door_room"
+          "0,0,0:S": "door_room",
+          "0,0,0:W": "windows_school"
         },
         "glass": {
           "0,0,0:N": "breakable",
-          "0,0,0:E": "reinforced"
+          "0,0,0:E": "reinforced",
+          "0,0,0:W": "breakable"
         }
       },
       {
@@ -1106,6 +1109,273 @@
         "y": -9,
         "z": -1,
         "rotation": 1
+      },
+      {
+        "id": "tile_869b9nzdhh",
+        "tile": "core.room",
+        "x": 14,
+        "y": 1,
+        "z": 0,
+        "rotation": 0,
+        "edges": {
+          "0,0,0:N": "shopfront",
+          "0,0,0:E": "window_arched"
+        },
+        "glass": {
+          "0,0,0:N": "breakable",
+          "0,0,0:E": "reinforced"
+        }
+      },
+      {
+        "id": "tile_70gz8uj00m",
+        "tile": "core.fire_escape",
+        "x": 17,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_g2tjfna6aj",
+        "tile": "core.scaffold_bay",
+        "x": 19,
+        "y": -51,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_fj9r08y3j4",
+        "tile": "core.tunnel_concrete_straight",
+        "x": 2,
+        "y": 16,
+        "z": -1,
+        "rotation": 1,
+        "family": "brick"
+      },
+      {
+        "id": "tile_ze3o4szbas",
+        "tile": "core.tunnel_concrete_outfall",
+        "x": 3,
+        "y": 16,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_qvil8zbeg7",
+        "tile": "core.tunnel_concrete_end",
+        "x": 0,
+        "y": 15,
+        "z": -1,
+        "rotation": 2,
+        "family": "mine"
+      },
+      {
+        "id": "tile_ifsyxd9ujb",
+        "tile": "core.tunnel_concrete_end",
+        "x": -1,
+        "y": 16,
+        "z": -1,
+        "rotation": 3,
+        "family": "mine"
+      },
+      {
+        "id": "tile_45b450pn0n",
+        "tile": "core.tunnel_concrete_end",
+        "x": 0,
+        "y": 18,
+        "z": -1,
+        "rotation": 0,
+        "family": "mine"
+      },
+      {
+        "id": "tile_96wgevk551",
+        "tile": "core.tunnel_road_wide_cross",
+        "x": 8,
+        "y": 17,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_jhtnswnmoo",
+        "tile": "core.tunnel_road_wide_straight",
+        "x": 9,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_xk8dqjnl2g",
+        "tile": "core.tunnel_road_wide_t",
+        "x": 10,
+        "y": 17,
+        "z": -1,
+        "rotation": 0,
+        "family": "brick"
+      },
+      {
+        "id": "tile_fzvozx34q6",
+        "tile": "core.tunnel_road_wide_straight",
+        "x": 11,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_438pxhef3v",
+        "tile": "core.tunnel_road_wide_curve",
+        "x": 12,
+        "y": 17,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_usoqxx5u6j",
+        "tile": "core.tunnel_road_wide_portal",
+        "x": 8,
+        "y": 18,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_yi6brh2cmd",
+        "tile": "core.tunnel_road_reducer",
+        "x": 8,
+        "y": 16,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qed1hjeofv",
+        "tile": "core.tunnel_road_wide_ramp",
+        "x": 10,
+        "y": 15,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_pikmwzwvu8",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 7,
+        "y": 17,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_cuy0f6j7pj",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 12,
+        "y": 18,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_apyfagqlqo",
+        "tile": "core.tunnel_concrete_end",
+        "x": 8,
+        "y": 15,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_vtd8qqdwpl",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 10,
+        "y": 14,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_qf5nbc0x7t",
+        "tile": "core.tunnel_brick_to_concrete",
+        "x": 14,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_4sn4jrjgs7",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 15,
+        "y": 17,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_npk33wlaes",
+        "tile": "core.tunnel_concrete_t",
+        "x": 16,
+        "y": 17,
+        "z": -1,
+        "rotation": 2,
+        "family": "cave"
+      },
+      {
+        "id": "tile_xluhy2mzhn",
+        "tile": "core.tunnel_cave_collapse",
+        "x": 16,
+        "y": 18,
+        "z": -1,
+        "rotation": 2
+      },
+      {
+        "id": "tile_36a6pp72yx",
+        "tile": "core.tunnel_concrete_to_cave",
+        "x": 17,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_mgsox7m7fe",
+        "tile": "core.tunnel_mine_to_brick",
+        "x": 18,
+        "y": 17,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_ovjup4q7g9",
+        "tile": "core.tunnel_mine_to_road",
+        "x": 17,
+        "y": 15,
+        "z": -1,
+        "rotation": 1
+      },
+      {
+        "id": "tile_x5ga364uv9",
+        "tile": "core.tunnel_concrete_end",
+        "x": 13,
+        "y": 17,
+        "z": -1,
+        "rotation": 3,
+        "family": "brick"
+      },
+      {
+        "id": "tile_gxvtls3bnr",
+        "tile": "core.tunnel_concrete_end",
+        "x": 19,
+        "y": 17,
+        "z": -1,
+        "rotation": 1,
+        "family": "mine"
+      },
+      {
+        "id": "tile_3kn87861dv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 16,
+        "y": 15,
+        "z": -1,
+        "rotation": 3
+      },
+      {
+        "id": "tile_r37trmpg0d",
+        "tile": "core.tunnel_concrete_end",
+        "x": 18,
+        "y": 15,
+        "z": -1,
+        "rotation": 1,
+        "family": "mine"
       }
     ]
   },
@@ -1444,7 +1714,7 @@
         0
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 0,
       "faction": null,
       "respawnSeconds": null
@@ -4580,10 +4850,11 @@
         124
       ],
       "kind": "prop",
-      "model": "prop.rock_mossy_spire",
+      "model": "env.rock.boulder_angular",
       "yaw": 0,
-      "scale": 1,
+      "scale": 1.25,
       "solid": true,
+      "variant": 1,
       "tint": null
     },
     {
@@ -4706,9 +4977,9 @@
         124
       ],
       "kind": "prop",
-      "model": "prop.rock_pile",
+      "model": "env.rock.boulder_angular",
       "yaw": 0,
-      "scale": 1,
+      "scale": 0.9,
       "solid": true,
       "tint": null
     },
@@ -4804,10 +5075,11 @@
         124
       ],
       "kind": "prop",
-      "model": "prop.nt_wheat",
+      "model": "env.grass.tall",
       "yaw": 0,
-      "scale": 1,
+      "scale": 1.16,
       "solid": true,
+      "variant": 1,
       "tint": null
     },
     {
@@ -5193,6 +5465,58 @@
       ],
       "kind": "prop",
       "model": "kit.cabinet.closet_front",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "mount_95h2qo8jbg",
+      "position": [
+        -68,
+        0,
+        0
+      ],
+      "kind": "mount",
+      "model": "supply_buggy",
+      "yaw": 0,
+      "faction": null,
+      "respawnSeconds": null
+    },
+    {
+      "id": "pickup_95h2qo8jbg",
+      "position": [
+        -103,
+        0,
+        12
+      ],
+      "kind": "pickup",
+      "item": "core.ammo_box_kit",
+      "respawnSeconds": null
+    },
+    {
+      "id": "prop_3jkgg80j04",
+      "position": [
+        150,
+        0,
+        112
+      ],
+      "kind": "prop",
+      "model": "kit.street.bus_stop",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_jetkop37rj",
+      "position": [
+        -35,
+        -0.18,
+        61.25
+      ],
+      "kind": "prop",
+      "model": "prop.mining_excavator_deck",
       "yaw": 0,
       "scale": 1,
       "solid": true,
@@ -5657,6 +5981,17 @@
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     ],
+    "groundTheme": "ground.meadow",
+    "grounds": [
+      "core.pbr_grass",
+      "core.pbr_forest",
+      "core.pbr_rock",
+      "core.pbr_sand",
+      "core.pbr_gravel",
+      "core.pbr_snow",
+      "core.pbr_moss",
+      "core.pbr_hex_paving"
+    ],
     "boundary": true,
     "foliage": []
   },
@@ -5764,10 +6099,6 @@
       "style": "asphalt",
       "lay": true,
       "race": {
-        "laps": 3,
-        "grid": 8,
-        "vehicle": "hover_bike",
-        "combat": false,
         "curbs": true,
         "ambient": 0,
         "ambientVehicle": "hover_bike",
@@ -5780,6 +6111,45 @@
   "blood": null,
   "teamSetup": null,
   "dependencies": [],
+  "lookDefs": [
+    {
+      "id": "my_coverage_rust",
+      "displayName": "Coverage rust",
+      "roles": {
+        "stone": {
+          "material": "core.pbr_brick_old",
+          "tint": null
+        },
+        "trim": {
+          "material": "core.pbr_concrete",
+          "tint": "#d6d2c8"
+        },
+        "floor": {
+          "material": "core.pbr_terrazzo",
+          "tint": null
+        },
+        "paving": {
+          "material": "core.pbr_hex_paving",
+          "tint": "#c4c0b8"
+        },
+        "roof": {
+          "material": "core.pbr_concrete_dark",
+          "tint": null
+        },
+        "wood": {
+          "material": "core.pbr_planks",
+          "tint": null
+        },
+        "metal": {
+          "material": "core.pbr_rusted_plate",
+          "tint": null
+        },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
+    }
+  ],
   "setPieces": [
     {
       "id": "setpiece_10e8y0g228",
@@ -6040,7 +6410,17 @@
       "y": -24,
       "z": 0,
       "rotation": 0,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "paint": {
+          "2": {
+            "metal": {
+              "material": "core.gold_leaf",
+              "tint": null
+            }
+          }
+        }
+      }
     },
     {
       "id": "setpiece_uayqdvdl2k",
@@ -6436,6 +6816,392 @@
       "z": -2,
       "rotation": 1,
       "mirror": false
+    },
+    {
+      "id": "setpiece_5rvb6dlsou",
+      "piece": "setpiece.porch",
+      "x": -2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "my_coverage_rust"
+    },
+    {
+      "id": "setpiece_rca301406m",
+      "piece": "setpiece.bus_shelter",
+      "x": 0,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "my_coverage_rust"
+    },
+    {
+      "id": "setpiece_4p6sm7lgyw",
+      "piece": "setpiece.parking_deck_ramp",
+      "x": 2,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_ybq0qzvwa6",
+      "piece": "setpiece.parking_deck_bay",
+      "x": 4,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_0p31wmz06r",
+      "piece": "setpiece.concrete_frame",
+      "x": 6,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_6k1tnq0myj",
+      "piece": "setpiece.concrete_frame_2",
+      "x": 8,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_d7j0u95sb0",
+      "piece": "setpiece.bandstand",
+      "x": 11,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_unuok927p7",
+      "piece": "setpiece.shop_unit",
+      "x": 14,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "urban"
+    },
+    {
+      "id": "setpiece_hymephh0he",
+      "piece": "setpiece.arena_corner",
+      "x": -4,
+      "y": 21,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_eh8bgt6vj2",
+      "piece": "setpiece.corner_tower_square",
+      "x": -20,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_5ufvvtunz5",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": -18,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_atvxwcf8vl",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": -15,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_poqeu5nf5f",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": -13,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_x1on898jvx",
+      "piece": "setpiece.stair_end_bay_bridge",
+      "x": -11,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_1l9n4n5r5x",
+      "piece": "setpiece.arena_corner_gate",
+      "x": 8,
+      "y": 21,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_4tw978dgz3",
+      "piece": "setpiece.hall_centre",
+      "x": -7,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_58q7mf5eb8",
+      "piece": "setpiece.corner_turret_round",
+      "x": -4,
+      "y": -55,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "top": "red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4zzx1qxc84",
+      "piece": "setpiece.tunnel_lit_chamber",
+      "x": 0,
+      "y": 16,
+      "z": -1,
+      "rotation": 0,
+      "mirror": false,
+      "family": "mine"
+    },
+    {
+      "id": "setpiece_dmknfvybym",
+      "piece": "setpiece.classroom_bay",
+      "x": -1,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_lbddqcxhrq",
+      "piece": "setpiece.classroom_entry_bay",
+      "x": 1,
+      "y": -51,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_nut1ib3t65",
+      "piece": "setpiece.refectory_bay",
+      "x": -4,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "fire_north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_idef2bxeja",
+      "piece": "setpiece.clock_tower",
+      "x": -1,
+      "y": -48,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_4rfli3o1ju",
+      "piece": "setpiece.pool_hall",
+      "x": -19,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_wziom7zk4s",
+      "piece": "setpiece.gym_bay",
+      "x": -13,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_mb8lvjnait",
+      "piece": "setpiece.gym_entrance",
+      "x": -9,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_q5k527yjkk",
+      "piece": "setpiece.admin_bay",
+      "x": -5,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_oxp9yynerd",
+      "piece": "setpiece.library_bay",
+      "x": -1,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_8eyldf8a5f",
+      "piece": "setpiece.chapel_bay",
+      "x": 3,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_gmcv6pybsj",
+      "piece": "setpiece.chapel_chancel",
+      "x": 7,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_cgohgmxwid",
+      "piece": "setpiece.chapel_narthex",
+      "x": 11,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_1tdbkqlhhk",
+      "piece": "setpiece.library_porch",
+      "x": -16,
+      "y": -19,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_zdr8alnlxi",
+      "piece": "setpiece.refectory_bay",
+      "x": -6,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9ck4mu05wg",
+      "piece": "setpiece.refectory_bay",
+      "x": -8,
+      "y": -49,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3rzat5hi4r",
+      "piece": "setpiece.stair_end_bay_roof",
+      "x": -10,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_war667jlcq",
+      "piece": "setpiece.stair_down_bay",
+      "x": -7,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_3cmndxtpjz",
+      "piece": "setpiece.admin_entry_bay",
+      "x": -2,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_fdaiyj9oal",
+      "piece": "setpiece.admin_bay",
+      "x": 1,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "solid"
+        }
+      }
     }
   ]
 }

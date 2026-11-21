@@ -5,7 +5,8 @@
   "order": 83,
   "name": "Baseball Robot",
   "look": "core.rollerbot",
-  "group": "creatures",
+  "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Built to field grounders. Now he IS the grounder, and he brought a gun.",
   "body": "male",
@@ -49,9 +50,6 @@
   "finish": {
     "metallic": 0.3,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

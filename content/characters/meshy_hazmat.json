@@ -5,7 +5,8 @@
   "order": 31,
   "name": "Hazmat Joe",
   "look": "core.hazmat",
-  "group": "soldiers",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.55
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

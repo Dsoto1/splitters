@@ -1,4 +1,4 @@
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, weaponByCode, type Faction, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, lookBranch, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
@@ -7,9 +7,19 @@ import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
 import { readSquads, squadGroups, squadHonours, type SquadHonours } from './squadBoard.ts';
 import { HEAVY_LOOK, HURT_LOOKS, HeavyFade, HurtFade, paintVignette } from './hurtVignette.ts';
+import { LOW_HEALTH_LOOK } from './lowHealth.ts';
+
+/** The hold ring's radius and length (viewBox units). */
+const HOLD_RING_R = 26;
+const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
+import { EYE_BOX, eyeBoxShade, stepScopeFade } from './scopeFeel.ts';
 import { feedLines } from './feedLimit.ts';
+import { insigniaSvg } from './insigniaSvg.ts';
+import { RankBook } from './rankBook.ts';
+import { ranksOn } from './ranksSetting.ts';
 import { isTouchDevice } from '../touchDevice.ts';
+import { setLoadingCard, setLoadingProgress, showLoadingScreen, type LoadingCard } from '../loadingScreen.ts';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -44,6 +54,7 @@ export class Hud {
   private readonly timer = $('timer');
   private readonly countdown = $('countdown');
   private readonly loading = $('loading-screen');
+  private readonly countdownInfo = $('countdown-info');
   private goUntil = 0;
   private readonly modeLabel = $('mode-label');
   private readonly sbLeft = $('sb-left');
@@ -112,11 +123,22 @@ export class Hud {
   show(): void {
     applyCrosshair();
     applyHitmarker();
+    this.root.classList.remove('only-loading');
     this.root.hidden = false;
   }
 
   hide(): void {
+    this.root.classList.remove('only-loading', 'ls-staged');
     this.root.hidden = true;
+    this.countdownInfo.hidden = true;
+  }
+
+  /**
+   * Before the match has let us in: the loading screen alone (show() brings the rest of the HUD), with the map's card
+   * when it is known (Start match already showed it from the click: loadingScreen.ts).
+   */
+  showLoading(card: LoadingCard | null, progress = 0): void {
+    showLoadingScreen(card, progress);
   }
 
   /** Clear per-match state left over from a previous session. */
@@ -143,6 +165,8 @@ export class Hud {
     this.weaponName.textContent = '';
     this.powerups.innerHTML = '';
     this.scope.hidden = true;
+    this.scopeLevel = 0;
+    this.optic.hidden = true;
     this.scoreboard.hidden = true;
     this.scoreboard.parentElement?.classList.remove('sb-up');
     this.board.clear();
@@ -207,14 +231,14 @@ export class Hud {
    * does; your class and the one you asked for marked, full ones dimmed.
    * Clicking one picks it (when the pointer is free); so does its number key.
    */
-  setClassMenu(open: boolean, menu: { current: number | null; next: number | null; full: readonly boolean[]; pick: (index: number) => void } | null): void {
+  setClassMenu(open: boolean, menu: { current: number | null; next: number | null; full: readonly boolean[]; /** Your favourite class (Profile), marked ★; -1 for none. */ fav?: number; pick: (index: number) => void } | null): void {
     let el = document.getElementById('class-menu');
     if (!open || !menu) {
       if (el) el.hidden = true;
       this.lastClassMenu = '';
       return;
     }
-    const key = `${menu.current}|${menu.next}|${menu.full.join()}`;
+    const key = `${menu.current}|${menu.next}|${menu.fav ?? -1}|${menu.full.join()}`;
     if (!el) {
       el = document.createElement('div');
       el.id = 'class-menu';
@@ -229,7 +253,7 @@ export class Hud {
       const def = CLASS_DEFS[id];
       const b = document.createElement('button');
       b.className = [i === menu.current ? 'on' : '', i === menu.next && menu.next !== menu.current ? 'next' : '', menu.full[i] ? 'full' : ''].filter(Boolean).join(' ');
-      b.innerHTML = `<kbd>${i + 1}</kbd><b>${escapeHtml(def.name)}</b> · ${def.role} · ${def.health} HP${i === menu.current ? ' · <em>playing</em>' : i === menu.next ? ' · <em>next</em>' : menu.full[i] ? ' · full' : ''}<small>${escapeHtml(def.blurb)}</small>`;
+      b.innerHTML = `<kbd>${i + 1}</kbd><b>${escapeHtml(def.name)}</b>${i === menu.fav ? ' <span class="fav" title="Your favourite class (Profile)">★</span>' : ''} · ${def.role} · ${def.health} HP${i === menu.current ? ' · <em>playing</em>' : i === menu.next ? ' · <em>next</em>' : menu.full[i] ? ' · full' : ''}<small>${escapeHtml(def.blurb)}</small>`;
       b.addEventListener('click', (e) => {
         e.stopPropagation();
         menu.pick(i);
@@ -252,6 +276,79 @@ export class Hud {
   /** Free-for-all: whether `slot` is in your party (friendly name and marker). */
   partyMate(slot: number, self = this.self): boolean {
     return ffaPartyMate(this.roster, self, slot);
+  }
+
+  /**
+   * A player's rank as shown (Options → Ranks & badges; shared content/ranks.ts, rankBook.ts): their title, badge and
+   * ranked name. Null with the switch off, and for NPCs and anyone not on the roster.
+   */
+  rank(slot: number): ShownRank | null {
+    if (!ranksOn() || slot >= NPC_ID_BASE) return null;
+    const p = this.roster.get(slot);
+    if (!p) return null;
+    // Before their first scoreboard line: step 1, or a leader's.
+    const step = this.ranks?.step(slot) ?? this.leaderStep(slot);
+    // Asked every frame for each marker: kept until their look, name or step changes.
+    const hit = this.rankCache.get(slot);
+    if (hit && hit.look === p.look && hit.name === p.name && hit.r.step === step) return hit.r;
+    const r = shownRank(p.look, p.name, step);
+    this.rankCache.set(slot, { look: p.look, name: p.name, r });
+    return r;
+  }
+
+  /** A player's rank badge (Options → Ranks & badges), else null: the plain arrow over their head and no badge by their name. */
+  insignia(slot: number): InsigniaId | null {
+    return this.rank(slot)?.ins ?? null;
+  }
+
+  private readonly rankCache = new Map<number, { look: string; name: string; r: ShownRank }>();
+  /** Who ranks how (rankBook.ts): made when the switch is first on. `myPoints`: your career's rank points. */
+  private ranks: RankBook | null = null;
+  rankPoints: () => number = () => 0;
+  /** A player ranked up (from points): the session shows it over their head too (view.rankUp). */
+  onRankUp: ((slot: number) => void) | null = null;
+
+  /** A leader's least step: a team leader 4, a squad leader 3 (content/ranks.ts LEADER_STEP), else 1. */
+  private leaderStep(slot: number): number {
+    if (this.leaders.has(slot)) return 4;
+    return this.squadLeaders().has(slot) ? 3 : 1;
+  }
+  private squadLeaders(): Set<number> {
+    if (this.squadLeadCache?.raw !== this.squadsRaw) {
+      const set = new Set<number>();
+      if (this.squadsRaw) for (const q of readSquads(this.squadsRaw)) if (q.leader >= 0) set.add(q.leader);
+      this.squadLeadCache = { raw: this.squadsRaw, set };
+    }
+    return this.squadLeadCache.set;
+  }
+  private squadLeadCache: { raw: readonly (readonly number[])[] | null; set: Set<number> } | null = null;
+
+  /**
+   * The scoreboard changed (every score message): ranks again, with the switch on. A rank-up's badge swells and glows
+   * in the kill feed (its lines naming them) and over the head (onRankUp).
+   */
+  updateRanks(scores: readonly ScoreEntry[], localSlot: number): void {
+    if (!ranksOn()) return;
+    this.ranks ??= new RankBook(() => this.rankPoints());
+    const up = this.ranks.update(this.roster, scores, localSlot, (slot) => (this.leaders.has(slot) ? 'team' : this.squadLeaders().has(slot) ? 'squad' : null));
+    for (const slot of up) {
+      this.feedRankUp(slot);
+      this.onRankUp?.(slot);
+    }
+  }
+
+  /** The kill feed's names of `slot` take their new rank, the badge swelling and glowing (style.css `.rank-up`). */
+  private feedRankUp(slot: number): void {
+    for (const el of this.feed.querySelectorAll<HTMLElement>(`span[data-rs="${slot}"]`)) {
+      el.innerHTML = this.feedName(slot);
+      el.querySelector('svg.ins')?.classList.add('rank-up', ...(reduceFlashing() ? ['calm'] : []));
+    }
+  }
+
+  /** A name in the kill feed: the badge (with the switch on) and the name as shown. */
+  private feedName(slot: number | null): string {
+    const ins = slot === null ? null : this.insignia(slot);
+    return `${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}`;
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -311,6 +408,18 @@ export class Hud {
     if (!layer) {
       layer = document.createElement('div');
       layer.id = 'ping-markers';
+      this.modeMarkers.after(layer);
+    }
+    this.drawMarkers(layer, list);
+  }
+
+  /** Hints (the low-health warning's nearest health), drawn like the objective markers on their own layer. */
+  setHintMarkers(list: ScreenMarker[]): void {
+    let layer = document.getElementById('hint-markers');
+    if (!layer) {
+      if (!list.length) return;
+      layer = document.createElement('div');
+      layer.id = 'hint-markers';
       this.modeMarkers.after(layer);
     }
     this.drawMarkers(layer, list);
@@ -427,6 +536,14 @@ export class Hud {
   name(slot: number | null): string {
     if (slot === null) return 'The arena';
     if (slot >= NPC_ID_BASE) return this.npcName(slot) ?? 'Enemy';
+    const p = this.roster.get(slot);
+    if (!p) return `Player ${slot + 1}`;
+    // Ranks & badges on: the title before the name; off: plain, an Army bot's rank left off ("Sgt. Dunmore" → "Dunmore").
+    return this.rank(slot)?.name ?? (p.bot && lookBranch(p.look) === 'army' ? nameWithoutRank(p.name) : p.name);
+  }
+
+  /** The name a player joined with, as the roster has it (no rank title): for listings, not for show. */
+  rosterName(slot: number): string {
     return this.roster.get(slot)?.name ?? `Player ${slot + 1}`;
   }
 
@@ -535,7 +652,35 @@ export class Hud {
     this.altEl.textContent = '';
   }
 
-  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false): void {
+  /** The held weapon's fire mode readout (U switches), or null for a weapon with one mode. */
+  private readonly fireModeEl = $('fire-mode');
+  private lastFireMode = '';
+  setFireMode(f: { label: string; mode: string; burst: { count: number } | null } | null, count = 1): void {
+    const key = f ? `${f.label}|${count}` : '';
+    if (key === this.lastFireMode) return;
+    const switched = !!f && !!this.lastFireMode && this.lastFireMode.split('|')[0] !== f.label;
+    this.lastFireMode = key;
+    if (!f) {
+      this.fireModeEl.innerHTML = '';
+      return;
+    }
+    // Pips: one round for Single, the burst's count, a long bar for Auto; then the mode's name and its key.
+    const pips = f.mode === 'auto' ? '<i class="auto"></i>' : '<i></i>'.repeat(f.burst?.count ?? 1);
+    this.fireModeEl.innerHTML = `<span class="pips">${pips}</span>${escapeHtml(f.label)}<kbd>U</kbd>`;
+    // A short nudge on a switch (a size change only: nothing brightens, Reduce flashing or not).
+    if (switched) {
+      this.fireModeEl.classList.remove('switched');
+      void this.fireModeEl.offsetWidth;
+      this.fireModeEl.classList.add('switched');
+    }
+  }
+
+  /**
+   * `pair`: dual wielding, a pair in hand: the second gun's magazine and whether it is reloading. The count then
+   * reads "L | R" (the second gun is the left hand's, the one you already held the right's) over the one reserve,
+   * and each side shows its own reload.
+   */
+  setWeapons(owned: ReadonlyMap<number, readonly [number, number, number, number]>, held: number, reloading: boolean, alive: boolean, driving = false, pair: { mag: number; reloading: boolean } | null = null): void {
     if (driving) {
       this.weaponName.textContent = 'Driving';
       this.ammoCount.textContent = '';
@@ -556,9 +701,17 @@ export class Hud {
     else if (barrel) this.ammoCount.textContent = reloading ? 'Loading…' : String(ammo[2]);
     else if (def.heat) this.ammoCount.textContent = ammo[3] >= 100 ? 'OVERHEAT' : `${Math.round(ammo[3])}°`;
     else if (def.magazine === 0) this.ammoCount.textContent = '∞';
-    else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
-    this.ammoCount.classList.toggle('reloading', reloading || (!!def?.heat && !!ammo && ammo[3] >= 100));
-    this.ammoCount.classList.toggle('low', !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
+    else if (pair) {
+      // Two magazines over the one reserve; a gun that is reloading shows the cue in its place (the reserve stays up).
+      this.ammoReserve.textContent = String(ammo[1]);
+      const low = Math.ceil(def.magazine / 4);
+      const side = (mag: number, busy: boolean, hand: string) => `<span class="pair-${hand}${busy ? ' reloading' : mag <= low ? ' low' : ''}">${busy ? '↻' : mag}</span>`;
+      const html = `${side(pair.mag, pair.reloading, 'l')}<i class="pair-bar">|</i>${side(ammo[0], reloading, 'r')}`;
+      if (this.ammoCount.innerHTML !== html) this.ammoCount.innerHTML = html;
+    } else this.ammoCount.textContent = reloading ? 'Reloading…' : String(ammo[0]);
+    this.ammoCount.classList.toggle('pair', !!pair && alive && !!def && !!ammo);
+    this.ammoCount.classList.toggle('reloading', !pair && (reloading || (!!def?.heat && !!ammo && ammo[3] >= 100)));
+    this.ammoCount.classList.toggle('low', !pair && !!def && !!ammo && (barrel ? ammo[2] === 0 : def.magazine > 0 && ammo[0] <= Math.ceil(def.magazine / 4)));
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;
@@ -613,8 +766,112 @@ export class Hud {
     this.pickupTimer = window.setTimeout(() => this.pickupMsg.classList.remove('on'), 1200);
   }
 
-  setScope(on: boolean): void {
-    this.scope.hidden = !on;
+  /**
+   * The full-screen scope with its optic kind's reticle (`fine`: a sniper scope's crosshair; `chevron`: a 2-3x optic's)
+   * and holdover marks. It comes in at once with the zoom and fades out (scopeFeel.ts SCOPE_FADE; slower with Reduce
+   * flashing on): never a cut to the bright scene.
+   */
+  setScope(on: boolean, marks: readonly HoldoverMark[] = [], reticle = 'fine'): void {
+    const now = performance.now();
+    const dt = Math.max(0, Math.min(0.1, (now - this.scopeAt) / 1000));
+    this.scopeAt = now;
+    if (!on && this.scopeLevel <= 0) return;
+    this.scopeLevel = stepScopeFade(this.scopeLevel, on, dt, reduceFlashing());
+    this.scope.hidden = this.scopeLevel <= 0;
+    const shown = this.scopeLevel.toFixed(3);
+    if (shown !== this.scopeShown) this.scope.style.setProperty('--so', (this.scopeShown = shown));
+    if (on) {
+      drawHoldover($('scope-holdover'), marks, 1);
+      if (this.scope.dataset.reticle !== reticle) this.scope.dataset.reticle = reticle;
+    }
+  }
+  private scopeLevel = 0;
+  private scopeAt = 0;
+  private scopeShown = '';
+
+  /**
+   * The eye box (scopeFeel.ts EYE_BOX): the scope's shadow slid `x`, `y` glass radii off the middle (x right, y down),
+   * `dark` its darkness. On whichever of the scope and the optic is up.
+   */
+  setEyeBox(x: number, y: number, dark: number): void {
+    this.eyeBox = { x, y, dark };
+    const host = !this.scope.hidden ? this.scope : !this.optic.hidden ? this.optic : null;
+    if (!host) return;
+    const el = (this.eyeBoxEls[host.id] ??= host.querySelector<HTMLElement>('.eyebox i'));
+    if (!el) return;
+    // (The sheet is three glass diameters across: a glass radius is a sixth of it.)
+    const key = `translate(${((x / 6) * 100).toFixed(2)}%, ${((y / 6) * 100).toFixed(2)}%)|${dark.toFixed(2)}`;
+    if (this.eyeBoxShown[host.id] === key) return;
+    this.eyeBoxShown[host.id] = key;
+    el.style.transform = key.slice(0, key.indexOf('|'));
+    el.style.opacity = dark.toFixed(2);
+  }
+  private eyeBox = { x: 0, y: 0, dark: 0 };
+  private readonly eyeBoxEls: Record<string, HTMLElement | null> = {};
+  private readonly eyeBoxShown: Record<string, string> = {};
+
+  /**
+   * The scope's or the optic's shade as drawn now, for the flicker check (it draws it over its frames, as it does the
+   * hurt vignette): the surround round the glass, the glass's darkened edge and the eye box's shadow. Null: none up.
+   */
+  scopeOverlay(): { image: HTMLCanvasElement; opacity: number } | null {
+    const scoped = !this.scope.hidden;
+    if (!scoped && this.optic.hidden) return null;
+    const c = (this.scopePicture ??= document.createElement('canvas'));
+    [c.width, c.height] = [320, Math.max(1, Math.round((320 * innerHeight) / Math.max(1, innerWidth)))];
+    const g = c.getContext('2d')!;
+    const [cx, cy] = [c.width / 2, c.height / 2];
+    // The glass's radius: the scope's is 92 of its 100 units (the shorter side's half), the optic's its --r.
+    const r = scoped ? 0.92 * Math.min(cx, cy) : (parseFloat(this.optic.style.getPropertyValue('--r')) / 50) * cy;
+    g.clearRect(0, 0, c.width, c.height);
+    g.save();
+    g.beginPath();
+    g.arc(cx, cy, r, 0, Math.PI * 2);
+    g.clip();
+    // The glass's own darkened edge, then the eye box's sheet with its clear hole slid off the middle.
+    const edge = g.createRadialGradient(cx, cy, 0, cx, cy, r);
+    edge.addColorStop(0.78, 'rgba(0,0,0,0)');
+    edge.addColorStop(0.93, 'rgba(0,0,0,0.45)');
+    edge.addColorStop(1, 'rgba(0,0,0,0.95)');
+    g.fillStyle = edge;
+    g.fillRect(0, 0, c.width, c.height);
+    const [hx, hy] = [cx + this.eyeBox.x * r, cy + this.eyeBox.y * r];
+    const shade = g.createRadialGradient(hx, hy, 0, hx, hy, r * EYE_BOX.full);
+    for (let i = 0; i <= 8; i++) {
+      const at = EYE_BOX.clear + ((EYE_BOX.full - EYE_BOX.clear) * i) / 8;
+      shade.addColorStop(at / EYE_BOX.full, `rgba(0,0,0,${(eyeBoxShade(at) * this.eyeBox.dark).toFixed(3)})`);
+    }
+    g.fillStyle = shade;
+    g.fillRect(0, 0, c.width, c.height);
+    g.restore();
+    // The surround: everything outside the glass.
+    g.fillStyle = scoped ? '#000' : 'rgba(0,0,0,0.9)';
+    g.beginPath();
+    g.rect(0, 0, c.width, c.height);
+    g.arc(cx, cy, r, 0, Math.PI * 2, true);
+    g.fill();
+    return { image: c, opacity: scoped ? this.scopeLevel : Number(this.optic.style.getPropertyValue('--o') || 1) };
+  }
+  private scopePicture: HTMLCanvasElement | null = null;
+
+  /** A real optic's view (game/opticView.ts): the glass's radius as a share of the half-height, or null. */
+  private readonly optic = $('optic');
+  private opticKey = '';
+  setOptic(o: { lens: number; blend: number; reticle: string; marks?: readonly HoldoverMark[] } | null): void {
+    if (o) {
+      drawHoldover($('optic-holdover'), o.marks ?? [], 1.4);
+      // Holdover marks take the place of the duplex's two plain hash marks below the centre.
+      this.optic.classList.toggle('holdover-on', !!o.marks?.length);
+    }
+    const key = o ? `${o.lens.toFixed(4)}|${o.blend.toFixed(3)}|${o.reticle}` : '';
+    if (key === this.opticKey) return;
+    this.opticKey = key;
+    this.optic.hidden = !o;
+    if (!o) return;
+    this.optic.style.setProperty('--r', `${(o.lens * 50).toFixed(3)}vh`);
+    // The shade and reticle come in over the second half of the eye's move (a fade, never a flash).
+    this.optic.style.setProperty('--o', Math.max(0, Math.min(1, (o.blend - 0.4) / 0.6)).toFixed(3));
+    this.optic.dataset.reticle = o.reticle;
   }
 
   /** While out of play: what you're watching ("Watching Ana", "Free camera") and the controls for it (null hides it). */
@@ -663,25 +920,32 @@ export class Hud {
     if (this.root.classList.contains('watching') !== on) this.root.classList.toggle('watching', on);
   }
 
-  /** Aiming down the sights (0..1): the crosshair fades out and a red-dot reticle takes its place. */
-  setAds(amount: number): void {
-    let dot = document.getElementById('reddot');
-    if (!dot) {
-      dot = document.createElement('div');
-      dot.id = 'reddot';
-      document.getElementById('crosshair')?.after(dot);
+  /**
+   * Aiming down the sights (0..1): the crosshair fades out. `dot`: the HUD's own aim dot takes its place, for a gun
+   * with neither sights nor an optic (game/optics.ts); iron sights show none (the front sight is the aim) and a red
+   * dot's or a holographic sight's mark is drawn on its glass (game/opticHousing.ts).
+   */
+  setAds(amount: number, dot = true): void {
+    let mark = document.getElementById('reddot');
+    if (!mark) {
+      mark = document.createElement('div');
+      mark.id = 'reddot';
+      document.getElementById('crosshair')?.after(mark);
     }
-    const on = amount > 0.6;
-    dot.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
+    const on = dot && amount > 0.6;
+    mark.style.opacity = on ? String(Math.min(1, (amount - 0.6) / 0.3)) : '0';
     const cross = document.getElementById('crosshair');
-    if (cross) cross.style.opacity = String(1 - Math.min(1, amount * 1.6));
+    // Through an optic its reticle is the aim (the crosshair would sit on top of it).
+    if (cross) cross.style.opacity = this.optic.hidden ? String(1 - Math.min(1, amount * 1.6)) : '0';
   }
 
   /** Breath meter under the scope (spent: it has to recover before you can hold again). */
   setBreath(breath: number, spent: boolean): void {
-    if (this.scope.hidden) return;
-    this.scope.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
-    this.scope.classList.toggle('spent', spent);
+    for (const el of [this.scope, this.optic]) {
+      if (el.hidden) continue;
+      el.style.setProperty('--breath', `${Math.round(breath * 100)}%`);
+      el.classList.toggle('spent', spent);
+    }
   }
 
   setStatus(phase: MatchPhase, timeLeft: number, alive: boolean, winner: string | null, outcome: 'victory' | 'defeat' | null = null): void {
@@ -693,7 +957,10 @@ export class Hud {
       this.countdown.hidden = false;
       this.countdown.classList.remove('go');
       this.countdown.textContent = String(Math.max(1, timeLeft));
-    } else if (performance.now() > this.goUntil) this.countdown.hidden = true;
+      // Under the number: the map and mode, and the goal (it fades out with "Go!").
+      this.countdownInfo.hidden = !this.countdownInfo.querySelector('b')!.textContent;
+      this.countdownInfo.classList.remove('go');
+    } else if (performance.now() > this.goUntil) this.countdown.hidden = this.countdownInfo.hidden = true;
     if (phase === 'waiting') this.banner.textContent = 'Waiting for players…';
     else if (phase === 'countdown') this.banner.textContent = '';
     else if (phase === 'intermission') this.banner.textContent = outcome === 'victory' ? 'Mission complete' : outcome === 'defeat' ? 'Mission failed' : winner ? `${winner} wins the round` : 'Round over';
@@ -705,18 +972,45 @@ export class Hud {
     this.countdown.hidden = false;
     this.countdown.textContent = 'Go!';
     this.countdown.classList.add('go');
+    this.countdownInfo.classList.add('go');
     this.goUntil = performance.now() + 900;
     setTimeout(() => {
-      if (performance.now() >= this.goUntil) this.countdown.hidden = true;
+      if (performance.now() >= this.goUntil) this.countdown.hidden = this.countdownInfo.hidden = true;
     }, 950);
   }
 
-  /** The loading screen over the match while its files arrive (null hides it). */
-  setLoading(text: string | null, progress = 0): void {
-    this.loading.hidden = text === null;
-    if (text === null) return;
-    this.loading.querySelector('b')!.textContent = text;
-    (this.loading.querySelector('.bar i') as HTMLElement).style.width = `${Math.round(Math.min(1, progress) * 100)}%`;
+  /** The loading screen's card (the map, its mode, the match's goal) and bar. */
+  setLoadingCard(card: Parameters<typeof setLoadingCard>[0]): void {
+    setLoadingCard(card);
+  }
+
+  setLoadingProgress(progress: number): void {
+    setLoadingProgress(progress);
+  }
+
+  /**
+   * Partway through loading the match's info and the Tab board join the loading screen (style.css `#hud.ls-staged`):
+   * the board sits under the card, over the screen.
+   */
+  stageLoading(on: boolean): void {
+    this.root.classList.toggle('ls-staged', on);
+  }
+
+  /** The loading screen fades out (into the countdown); the board goes with it. */
+  endLoading(): void {
+    if (this.loading.hidden) return;
+    this.loading.classList.add('ls-out');
+    window.setTimeout(() => {
+      this.loading.hidden = true;
+      this.loading.classList.remove('ls-out');
+      this.root.classList.remove('ls-staged');
+    }, 350);
+  }
+
+  /** The line under the countdown's big number: the map and mode, and the goal in a few words. */
+  setCountdownInfo(head: string, goal: string): void {
+    this.countdownInfo.querySelector('b')!.textContent = head;
+    this.countdownInfo.querySelector('span')!.textContent = goal;
   }
 
   /** Shown while you are dead ("Respawning…", or "Next round" in Elimination). */
@@ -725,7 +1019,8 @@ export class Hud {
   kill(killer: number | null, victim: number, weapon: string, localSlot: number, headshot = false, teamKill = false): void {
     const line = document.createElement('div');
     const color = (slot: number | null) => (slot === null ? '#ccc' : this.nameColor(slot, localSlot));
-    const name = (slot: number | null) => `<span style="color:${color(slot)}">${escapeHtml(this.name(slot))}</span>`;
+    // With Ranks & badges on, the rank badge and title before the name (feedName; a rank-up redraws it: feedRankUp).
+    const name = (slot: number | null) => `<span style="color:${color(slot)}"${slot === null ? '' : ` data-rs="${slot}"`}>${this.feedName(slot)}</span>`;
     line.innerHTML = killer === null ? `${name(victim)} ${HAZARD_DEATHS[weapon] ?? 'blew themselves up'}` : `${name(killer)} <small>${escapeHtml(weaponLabel(weapon))}</small> ${name(victim)}`;
     // Weapon icon between the names (reference board), rendered from the weapon's model.
     const icon = killer !== null ? weaponIcon(weapon) : null;
@@ -842,24 +1137,24 @@ export class Hud {
   /**
    * Hit confirmation on the crosshair, told apart by shape (GUNPLAY_SPEC §21):
    * a diamond for a body hit, a bigger red one for the head, a blue square
-   * when armor soaked it. `true` / `false` are head / body (older callers).
+   * when armor soaked it, a ring when a spawn-protected target's shield took it. `true` / `false` are head / body (older callers).
    */
-  hit(kind: 'body' | 'head' | 'armor' | boolean = 'body'): void {
+  hit(kind: 'body' | 'head' | 'armor' | 'shield' | boolean = 'body'): void {
     const k = kind === true ? 'head' : kind === false ? 'body' : kind;
     // A kill marker still showing wins over the hit that caused it.
     if (this.hitmarker.classList.contains('kill')) return;
     // Restart the pop animation on every hit.
-    this.hitmarker.classList.remove('on', 'head', 'armor');
+    this.hitmarker.classList.remove('on', 'head', 'armor', 'shield');
     void this.hitmarker.offsetWidth;
     this.hitmarker.classList.add('on');
     if (k !== 'body') this.hitmarker.classList.add(k);
     clearTimeout(this.hitTimer);
-    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head', 'armor'), k === 'head' ? 220 : 140);
+    this.hitTimer = window.setTimeout(() => this.hitmarker.classList.remove('on', 'head', 'armor', 'shield'), k === 'head' ? 220 : 140);
   }
 
   /** Kill confirmation: a sharp X that punches in, bigger and brighter with each kill in a row (`multi`, from 1). */
   killConfirm(multi: number): void {
-    this.hitmarker.classList.remove('on', 'head', 'armor', 'kill');
+    this.hitmarker.classList.remove('on', 'head', 'armor', 'shield', 'kill');
     void this.hitmarker.offsetWidth;
     this.hitmarker.dataset.multi = String(Math.min(4, Math.max(1, multi)));
     this.hitmarker.classList.add('on', 'kill');
@@ -904,6 +1199,63 @@ export class Hud {
     if (shown !== this.hurtShown) el.style.opacity = this.hurtShown = shown;
   }
   private hurtShown = '';
+
+  /**
+   * A hold to use (sim/holdUse.ts: resupplying, healing): a ring round the crosshair that fills as it runs, with what
+   * it is under it. Steady (no blinking); null hides it.
+   */
+  setHold(label: string | null, progress: number): void {
+    if (label === null) {
+      if (this.holdEl && !this.holdEl.hidden) this.holdEl.hidden = true;
+      return;
+    }
+    if (!this.holdEl) {
+      this.holdEl = document.createElement('div');
+      this.holdEl.id = 'hold-ring';
+      this.holdEl.innerHTML = `<svg viewBox="0 0 64 64" aria-hidden="true"><circle class="track" cx="32" cy="32" r="${HOLD_RING_R}"/><circle class="fill" cx="32" cy="32" r="${HOLD_RING_R}" stroke-dasharray="${HOLD_RING_LEN.toFixed(2)}"/></svg><span></span>`;
+      (document.getElementById('hud') ?? document.body).append(this.holdEl);
+    }
+    this.holdEl.hidden = false;
+    const span = this.holdEl.querySelector('span')!;
+    if (span.textContent !== label) span.textContent = label;
+    const left = (HOLD_RING_LEN * (1 - Math.max(0, Math.min(1, progress)))).toFixed(2);
+    const fill = this.holdEl.querySelector<SVGCircleElement>('circle.fill')!;
+    if (fill.getAttribute('stroke-dashoffset') !== left) fill.setAttribute('stroke-dashoffset', left);
+  }
+  private holdEl: HTMLElement | null = null;
+
+  /**
+   * The low-health warning's HUD parts (lowHealth.ts): the health bar's slow pulse (`pulse` 0..1, at most once a
+   * second, low contrast) and the screen edge's darkening (`edge` 0..1, a near-black, not a red).
+   */
+  setLowHealth(edge: number, pulse: number): void {
+    const shown = edge > 0.002 ? edge.toFixed(3) : '0';
+    if (shown !== this.lowShown) {
+      this.lowShown = shown;
+      if (!this.lowEl && edge > 0.002) {
+        this.lowEl = document.createElement('div');
+        this.lowEl.id = 'low-health';
+        this.lowEl.style.backgroundImage = `url(${paintVignette(LOW_HEALTH_LOOK).toDataURL()})`;
+        (document.getElementById('hud') ?? document.body).prepend(this.lowEl);
+      }
+      if (this.lowEl) this.lowEl.style.opacity = shown;
+    }
+    const p = pulse > 0.002 ? pulse.toFixed(2) : '0';
+    if (p !== this.lowPulse) {
+      this.lowPulse = p;
+      this.healthBar.style.setProperty('--low-pulse', p);
+      this.healthBar.classList.toggle('pulse', pulse > 0.002);
+    }
+  }
+  private lowEl: HTMLElement | null = null;
+  private lowShown = '';
+  private lowPulse = '';
+
+  /** The low-health edge as drawn now (the flicker check draws it over its frames). */
+  lowHealthOverlay(): { image: HTMLCanvasElement; opacity: number } {
+    return { image: (this.lowPicture ??= paintVignette(LOW_HEALTH_LOOK)), opacity: Number(this.lowShown || 0) };
+  }
+  private lowPicture: HTMLCanvasElement | null = null;
 
   /** You took a heavy hit (content/match-play.json heavyHit): the screen's edges darken for a moment (hurtVignette.ts HeavyFade). */
   heavyHit(amount: number): void {
@@ -972,8 +1324,16 @@ export class Hud {
     this.boardAt = now;
     this.boardOpen = true;
     this.board.render(this.boardData(scores, localSlot, final));
+    this.card?.refresh(final);
   }
   private boardAt = 0;
+
+  /** Your profile card under the board (game/profileCard.ts; not on the pause menu's): `refresh` patches it as the board redraws. */
+  setProfileCard(card: { el: HTMLElement; refresh(final: boolean): void } | null): void {
+    this.card = card;
+    this.board.setExtra(card?.el ?? null);
+  }
+  private card: { el: HTMLElement; refresh(final: boolean): void } | null = null;
   private boardOpen = false;
 
   /** The pause menu's Match tab: the same board, in the menu's width (`final`: the match is over, so where it goes next too). */
@@ -998,6 +1358,7 @@ export class Hud {
       return {
         slot: s.s,
         name: this.name(s.s),
+        ins: this.insignia(s.s),
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
@@ -1070,4 +1431,29 @@ export interface ScreenMarker {
   label: string;
   icon: string;
   edge?: number;
+}
+
+/** A scope's holdover mark (spec §5): `y` below the centre in the reticle's own units (100: the edge), and its label. */
+export interface HoldoverMark {
+  y: number;
+  label: string;
+  /** Every 200 m: a longer tick. */
+  major?: boolean;
+}
+
+/**
+ * Holdover marks on a reticle (game/holdover.ts works out where): a short tick on the lower post for each distance,
+ * its hundreds of metres beside it. Redrawn only when they move. `k`: line weight (the optic's svg is drawn smaller).
+ */
+export function drawHoldover(g: HTMLElement | SVGElement, marks: readonly HoldoverMark[], k: number): void {
+  const key = marks.map((m) => `${m.y.toFixed(1)}:${m.label}`).join('|');
+  if (g.dataset.key === key) return;
+  g.dataset.key = key;
+  g.innerHTML = marks
+    .map((m) => {
+      const w = (m.major ? 2.4 : 1.6) * k;
+      const y = m.y.toFixed(1);
+      return `<line x1="${-w}" y1="${y}" x2="${w}" y2="${y}" stroke-width="${(0.32 * k).toFixed(2)}" /><text x="${(w + 0.8 * k).toFixed(2)}" y="${y}" dy="${(0.9 * k).toFixed(2)}" font-size="${(2.2 * k).toFixed(2)}" stroke="none">${m.label}</text>`;
+    })
+    .join('');
 }

@@ -50,6 +50,14 @@ or the engine left a choice open, the choice is recorded below.
   bench tunnel through a rock buttress on L3 west and a deep drift through a buttress on L5 east (9 m,
   infantry and buggies). They're cut-and-cover: a trench in the terrain under a rock lid of blocks, because
   the terrain is a height field. Portals are concrete (rim) and timber sets (benches).
+  **Rebuilt 2026-11-17 with the tunnel kit (Tileset 04 step 8; `docs/map-briefs/tunnels/PLAN_2026-11-13.md`,
+  "Step 8: Iron Maw").** The lids are gone: the ground under them was raised to their tops in MapMaker (the rock they
+  stood for), and the tunnels are buried kit pieces cut through it, on the 8 m grid, so they follow the old arcs in
+  straights and quarter bends. T1: a road-family 7 m bore, six cells east-west at z -152 (portals at x -92 and -44),
+  the rim haul road through it. T2: a concrete 7 m bore along the L3 bench from (-96, -44) north to (-68, -96) east,
+  two jogs. T3: a concrete 7 m bore on L5 from x 20 west to (40, -52) north. 7 m instead of 16 m (T1) and 9 m (T2,
+  T3): every vehicle on the map fits (the widest, the Tank, is 2.9 m). The tunnels' three lights each stay, moved
+  under the new crowns; the West Bench and Deep Drift hills are in the new passages.
 - Vertical mine shafts: three lifts where a ramp's top landing stands 16 m over the bench inside it (the
   No. 1 headframe by the crusher, L2 → rim; No. 2 shaft, L4 → L2; the pit floor lift, floor → L4), plus
   twelve ladders (nine at the horseshoe ends, the crusher roof, the conveyor transfer tower and stockpile).

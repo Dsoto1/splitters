@@ -5,11 +5,12 @@
   "order": 67,
   "name": "Rusty Mech",
   "look": "core.rustymech",
-  "group": "creatures",
+  "group": "machines",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "A white war machine gone to rust. Still runs. Still angry about it.",
   "body": "male",
-  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"white rusty mech\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A white armoured mech, chipped to rust at the edges. Its texture is baked in thousands of small islands (the careful cut stopped at 28.4k triangles, over the 20k budget), so it is built with `surface: rebake`: cut in its own bind pose with the seams closed, laid out afresh and painted from the full download, each kept vertex keeping Meshy's skin weights. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
+  "notes": "Retired 2026-11-15 (the owner's Roster Board of 2026-11-14, flagged Remove): saved choices and bot sets play T-TreeFitty (RETIRED_LOOKS in looks.ts); manifest, files and portrait kept. The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"white rusty mech\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A white armoured mech, chipped to rust at the edges. Its texture is baked in thousands of small islands (the careful cut stopped at 28.4k triangles, over the 20k budget), so it is built with `surface: rebake`: cut in its own bind pose with the seams closed, laid out afresh and painted from the full download, each kept vertex keeping Meshy's skin weights. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.5,
     "roughness": 0.5
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 18000,

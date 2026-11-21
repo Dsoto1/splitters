@@ -6,6 +6,7 @@
   "name": "Barnaby Bruin",
   "look": "core.barnaby",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "bear",
   "bio": "Top hat, red coat, impeccable manners. Apologises before every headshot, and means it.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

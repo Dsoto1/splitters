@@ -117,6 +117,50 @@ describe('Host Service: a Node player joins whatever order the network delivers 
   }, 90_000);
 });
 
+/**
+ * A congested link: every channel's sends go out this much later (a full send buffer, or a resend after a lost
+ * packet). Undone by the returned function.
+ */
+async function slowSends(ms: number): Promise<() => void> {
+  const poly = (await import('node-datachannel/polyfill')) as unknown as { RTCDataChannel: { prototype: { send(d: unknown): void } } };
+  const proto = poly.RTCDataChannel.prototype;
+  const real = proto.send;
+  proto.send = function (this: unknown, d: unknown) {
+    setTimeout(() => {
+      try {
+        real.call(this, d);
+      } catch {
+        // Closed meanwhile: what the link had left is lost, as on a real one.
+      }
+    }, ms);
+  };
+  return () => void (proto.send = real);
+}
+
+describe('Host Service: a kicked player on a slow link', () => {
+  it('is told why before the link closes (the reject used to be lost when it was still queued after 400 ms)', async () => {
+    const hub = await startHub();
+    const host = await startHost(parseConfig({ hub: hub.url, map: 'sandgate', botFill: 2, name: 'Slow link' }), { log: () => undefined });
+    let restore = () => undefined as void;
+    try {
+      const ana = await joinAsGuest(hub.url, host.code, 'Ana');
+      await until(() => ana.welcome);
+      ana.send({ t: 'ready' });
+      await until(() => ana.snapshots > 10);
+      restore = await slowSends(600);
+      const slot = host.server.players().find((p) => p.name === 'Ana')!.slot;
+      expect(host.commands.command({ c: 'kick', slot, reason: 'test' }, 'Console')).toBeNull();
+      await until(() => ana.closed);
+      expect(ana.rejected).toMatch(/kicked.*test/);
+      await until(() => !host.server.players().some((p) => p.name === 'Ana'));
+    } finally {
+      restore();
+      await host.stop();
+      await hub.close();
+    }
+  }, 90_000);
+});
+
 describe('Host Service end to end (hub, host and players in this process)', () => {
   const cleanup: (() => unknown)[] = [];
   afterAll(async () => {

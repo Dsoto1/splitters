@@ -5,7 +5,8 @@
   "order": 98,
   "name": "The Hollow Visitor",
   "look": "core.hollowvisitor",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "green",
   "nameTheme": "alien",
   "bio": "Nobody has seen inside the hood. Nobody who stayed to tell, anyway.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

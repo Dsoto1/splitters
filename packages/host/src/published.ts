@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isMapId, isRetiredMap, loadMap, serializeMap } from '@tiletrigger/shared';
+import { builtInRecord, choosePublished, isMapId, isRetiredMap, loadMap, publishedRelease, serializeMap, type BuiltInRecord, type PublishedRelease } from '@tiletrigger/shared';
 import type { Fetch } from './advertiser.ts';
 
 /**
@@ -14,6 +14,11 @@ import type { Fetch } from './advertiser.ts';
  * MANIFEST records which files came from the hub (by content hash), so a
  * version taken down on the hub goes back to the one that came with the
  * service, and a published map that was taken down goes away.
+ *
+ * A published copy older than the map that came with the service (shared
+ * publishedChoice.ts: that map changed since the version it records, or the
+ * copy is an older revision) is not used: the service's own map is, until the
+ * owner publishes again. A running match keeps its version either way.
  */
 const MANIFEST = '.published.json';
 
@@ -21,7 +26,31 @@ interface Entry {
   id: string;
   hash: string;
   at: number;
+  /** The published file's release block (hubs from 2026-11-15 on list it). */
+  release?: PublishedRelease;
 }
+
+/** The records of the maps that came with the service, by file (path, size and time: worked out again when it changes). */
+const records = new Map<string, { stamp: string; record: BuiltInRecord | undefined }>();
+function bundledRecord(file: string): BuiltInRecord | undefined {
+  let stamp: string;
+  try {
+    const st = statSync(file);
+    stamp = `${st.size}:${st.mtimeMs}`;
+  } catch {
+    return undefined;
+  }
+  const known = records.get(file);
+  if (known?.stamp === stamp) return known.record;
+  const r = loadMap(readFileSync(file, 'utf8'), undefined, { forEditing: true });
+  const record = r.ok ? builtInRecord(r.map) : undefined;
+  records.set(file, { stamp, record });
+  return record;
+}
+/** Published files' release blocks by content hash (for a hub that doesn't list them: read from the file once). */
+const releases = new Map<string, PublishedRelease | undefined>();
+/** Published versions passed over for the map that came with the service (`<id>:<hash>`: logged once). */
+const kept = new Set<string>();
 
 export interface SyncResult {
   /** Maps from the hub in the folder now. */
@@ -68,29 +97,60 @@ export async function syncMaps(bundled: string, dir: string, hub: string, fetche
     listed = null;
   }
   const shipped = readdirSync(bundled).filter((f) => f.endsWith('.json'));
+  /** A published map's file from the hub (undefined: not now). */
+  const fetchMap = async (m: Entry): Promise<string | undefined> => {
+    const res = await fetcher(`${hub}/api/v1/maps/${m.id}?v=${m.at}`, { signal: AbortSignal.timeout(30_000) });
+    return res.ok ? res.text() : undefined;
+  };
   if (listed) {
     const now = new Set(listed.map((m) => m.id));
     for (const m of listed) {
-      if (manifest[m.id]?.hash === m.hash && existsSync(join(dir, `${m.id}.json`))) continue;
+      const own = join(bundled, `${m.id}.json`);
+      const record = existsSync(own) ? bundledRecord(own) : undefined;
+      const have = manifest[m.id]?.hash === m.hash && existsSync(join(dir, `${m.id}.json`));
+      // A map that came with the service but records no release: the published version, as always (no need to look).
+      const decide = record?.release ? record : undefined;
+      let text: string | undefined;
       try {
-        const res = await fetcher(`${hub}/api/v1/maps/${m.id}?v=${m.at}`, { signal: AbortSignal.timeout(30_000) });
-        if (!res.ok) continue;
-        const r = loadMap(await res.text());
+        let release = m.release ?? releases.get(m.hash);
+        if (decide && !m.release && !releases.has(m.hash)) {
+          // The hub doesn't list the release block: read it from the published file (the copy here, or the hub's).
+          text = have ? readFileSync(join(dir, `${m.id}.json`), 'utf8') : await fetchMap(m);
+          if (text === undefined) continue;
+          const r = loadMap(text, undefined, { forEditing: true });
+          release = r.ok ? publishedRelease(r.map) : undefined;
+          releases.set(m.hash, release);
+        }
+        if (decide) {
+          const choice = choosePublished(decide, { hash: m.hash, at: m.at, ...(release ? { release } : {}) });
+          if (choice.use === 'built-in') {
+            // The service's own map is newer (or the same): it is used, as if this map weren't published.
+            if (manifest[m.id] || !kept.has(`${m.id}:${m.hash}`)) log(`map ${m.id}: the version that came with the service (${choice.why})`);
+            kept.add(`${m.id}:${m.hash}`);
+            now.delete(m.id);
+            continue;
+          }
+        }
+        if (have) continue;
+        text ??= await fetchMap(m);
+        if (text === undefined) continue;
+        const r = loadMap(text);
         if (!r.ok || r.map.metadata.id !== m.id) continue;
         writeAtomic(join(dir, `${m.id}.json`), serializeMap(r.map));
-        manifest[m.id] = m;
+        manifest[m.id] = { id: m.id, hash: m.hash, at: m.at };
         log(`map ${m.id}: the published version`);
       } catch {
         // Next time.
       }
     }
-    // Taken down on the hub: back to the map that came with the service, or gone.
+    // Taken down on the hub (or older than the map that came with the service): back to that map, or gone.
     for (const id of Object.keys(manifest)) {
       if (now.has(id)) continue;
+      const takenDown = !listed.some((m) => m.id === id);
       delete manifest[id];
       if (existsSync(join(bundled, `${id}.json`))) copyFileSync(join(bundled, `${id}.json`), join(dir, `${id}.json`));
       else rmSync(join(dir, `${id}.json`), { force: true });
-      log(`map ${id}: no longer published`);
+      if (takenDown) log(`map ${id}: no longer published`);
     }
     writeAtomic(join(dir, MANIFEST), JSON.stringify(manifest));
   }

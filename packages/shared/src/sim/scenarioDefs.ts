@@ -1,4 +1,4 @@
-import { getProp } from '../content/props.ts';
+import { getProp, type PropDefinition } from '../content/props.ts';
 import { propMaterial } from './gunplay.ts';
 import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot } from '../map/geometry.ts';
 import { placementShapes, type EnvWorldShape } from '../map/environment.ts';
@@ -28,6 +28,12 @@ export interface OBox {
 export interface Aabb {
   min: Vec3;
   max: Vec3;
+  /**
+   * The turned box this bounds, when it is turned off the grid (a door at 45°: orientedAabb). Tests that know it
+   * (segmentHitsAabb, Scenario.inShutDoor, NavWorld.markOpenings) use the box itself, so a 45° door blocks its own
+   * slab, not the square round it. Absent for a box on the grid, which its bounds are exactly.
+   */
+  obox?: OBox;
 }
 
 export const entityPos = (e: { position: readonly [number, number, number] }): Vec3 => ({ x: e.position[0], y: e.position[1], z: e.position[2] });
@@ -68,8 +74,48 @@ export function oboxAabb(b: OBox): Aabb {
   };
 }
 
-/** Does the segment a -> b pass through the box (expanded by `pad` horizontally)? Slab test. */
+/** Whether a yaw turns a box off the grid (not a whole number of quarter turns). */
+export function offGrid(yaw: number): boolean {
+  const q = yaw / (Math.PI / 2);
+  return Math.abs(q - Math.round(q)) > 1e-6;
+}
+
+/** A turned box's bounds, carrying the box itself when it is turned off the grid (Aabb.obox); exactly oboxAabb otherwise. */
+export function orientedAabb(b: OBox): Aabb {
+  const box = oboxAabb(b);
+  return offGrid(b.yaw) ? { ...box, obox: b } : box;
+}
+
+/** A world (x, z) in a turned box's own frame (the inverse of localToWorld about its centre). */
+export function oboxLocal(b: OBox, x: number, z: number): [number, number] {
+  const dx = x - b.center.x;
+  const dz = z - b.center.z;
+  const c = Math.cos(b.yaw);
+  const s = Math.sin(b.yaw);
+  return [dx * c - dz * s, dx * s + dz * c];
+}
+
+/**
+ * Whether a body at `pos` (radius `radius` round, `height` tall) overlaps the box: in its own frame for a turned box
+ * (Aabb.obox), else against its bounds.
+ */
+export function bodyInAabb(box: Aabb, pos: Vec3, radius: number, height: number): boolean {
+  if (!(pos.y + height > box.min.y && pos.y < box.max.y)) return false;
+  const o = box.obox;
+  if (!o) return pos.x + radius > box.min.x && pos.x - radius < box.max.x && pos.z + radius > box.min.z && pos.z - radius < box.max.z;
+  const [lx, lz] = oboxLocal(o, pos.x, pos.z);
+  return Math.abs(lx) < o.half.x + radius && Math.abs(lz) < o.half.z + radius;
+}
+
+/** Does the segment a -> b pass through the box (expanded by `pad` horizontally)? Slab test; in its own frame for a turned box (Aabb.obox). */
 export function segmentHitsAabb(a: Vec3, b: Vec3, box: Aabb, pad = 0): boolean {
+  if (box.obox) {
+    const o = box.obox;
+    const [ax, az] = oboxLocal(o, a.x, a.z);
+    const [bx, bz] = oboxLocal(o, b.x, b.z);
+    const local: Aabb = { min: { x: -o.half.x, y: o.center.y - o.half.y, z: -o.half.z }, max: { x: o.half.x, y: o.center.y + o.half.y, z: o.half.z } };
+    return segmentHitsAabb({ x: ax, y: a.y, z: az }, { x: bx, y: b.y, z: bz }, local, pad);
+  }
   let t0 = 0;
   let t1 = 1;
   for (const k of ['x', 'y', 'z'] as const) {
@@ -271,16 +317,16 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>, everyth
 }
 
 /** A prop's catalogue boxes (its own space) placed as it stands: turned with it, as map/geometry.ts propBoxes turns them. */
-function propParts(e: Extract<MapEntity, { kind: 'prop' }>, boxes: readonly (readonly [number, number, number, number, number, number])[]): OBox[] {
+function propParts(e: Extract<MapEntity, { kind: 'prop' }>, boxes: NonNullable<PropDefinition['boxes']>): OBox[] {
   const c = Math.cos(e.yaw);
   const s = Math.sin(e.yaw);
-  return boxes.map(([x0, y0, z0, x1, y1, z1]) => {
+  return boxes.map(([x0, y0, z0, x1, y1, z1, own]) => {
     const cx = ((x0 + x1) / 2) * e.scale;
     const cz = ((z0 + z1) / 2) * e.scale;
     return {
       center: { x: e.position[0] + cx * c + cz * s, y: e.position[1] + ((y0 + y1) / 2) * e.scale, z: e.position[2] - cx * s + cz * c },
       half: { x: ((x1 - x0) / 2) * e.scale, y: ((y1 - y0) / 2) * e.scale, z: ((z1 - z0) / 2) * e.scale },
-      yaw: e.yaw,
+      yaw: e.yaw + (own ?? 0),
     };
   });
 }

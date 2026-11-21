@@ -110,6 +110,10 @@ export function summarise(rec, worstN = 8) {
     counts,
     shadersNew,
     serverTick,
+    // The memory readout (fix 3a, recordings from 2026-11-15 on): first and last second, and the most; the tab's toll.
+    memory: col('heapMB') < 0 ? null : Object.fromEntries(['heapMB', 'gpuTextures', 'gpuTextureMB', 'meshes', 'materials', 'geometries', 'domNodes', 'workers'].map((k) => { const i = col(k); const xs = rows.map((r) => r[i]).filter((x) => x >= 0); return [k, xs.length ? { first: xs[0], last: xs[xs.length - 1], most: Math.max(...xs) } : null]; })),
+    outside: wavg('outsideMs'),
+    tabSlowing: rec.memory?.tabSlowing?.told ?? null,
     hitches: { count: rec.hitchCount, perMinute: (rec.hitchCount / Math.max(1, rec.seconds)) * 60, over100: hitches.filter((h) => h.dt > 100).length, over250: hitches.filter((h) => h.dt > 250).length, worst, places: [...cells.values()].sort((a, b) => b.sum - a.sum).slice(0, worstN) },
   };
 }
@@ -156,6 +160,10 @@ const args = process.argv.slice(2);
   console.log('per frame (avg)');
   for (const k of Object.keys(a.counts)) console.log(`  ${k.padEnd(14)}${b ? `${fmt(a.counts[k])} → ${fmt(b.counts[k])}${delta(a.counts[k], b.counts[k])}` : fmt(a.counts[k])}`);
   console.log(`  ${'shaders built in play'.padEnd(14)} ${b ? `${a.shadersNew} → ${b.shadersNew}` : a.shadersNew}`);
+  for (const [s, label] of b ? [[a, 'before'], [b, 'after']] : [[a, '']]) {
+    if (s.outside !== null) console.log(`  outside our script on late frames ${fmt(s.outside, 1)} ms a frame${s.tabSlowing ? ' (the match said the tab is slowing)' : ''}${label ? ` (${label})` : ''}`);
+    if (s.memory) console.log(`  memory${label ? ` ${label}` : ''}: ${Object.entries(s.memory).filter(([, v]) => v).map(([k, v]) => `${k} ${v.first} → ${v.last} (most ${v.most})`).join(', ')}`);
+  }
   if (a.serverTick !== null || b?.serverTick) console.log(`  server tick ms ${b ? `${fmt(a.serverTick, 2)} → ${fmt(b.serverTick, 2)}` : fmt(a.serverTick, 2)}`);
   for (const [s, label] of b ? [[a, 'before'], [b, 'after']] : [[a, '']]) {
     console.log('');

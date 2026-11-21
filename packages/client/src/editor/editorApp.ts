@@ -2,10 +2,14 @@ import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
   applyCommand,
   blockBoxes,
+  GROUND_FIT_BLEND,
   budgetCulprits,
   BudgetTracker,
   BUILD_LEVELS,
+  buildMapDecor,
   buildMapGeometry,
+  themeChangeImpact,
+  type ThemeChangeImpact,
   builtInSetPieces,
   coreCatalog,
   EDGE_STYLE_LABELS,
@@ -34,9 +38,14 @@ import {
   terrainUnderFloors,
   turnByCommand,
   turnLabel,
-  withGroups,
+  transformCommand,
+  pruneSelection,
+  sameSelection,
+  wholeSelection,
+  type Transform,
   withGroupsTidied,
   withPathsLaid,
+  mapGroundBores,
   type BotHintKind,
   type EdgeStyle,
   type EdgeTarget,
@@ -74,7 +83,6 @@ import { MapChecks } from './mapChecks.ts';
 import { MapProperties } from './mapProperties.ts';
 import { MapSaving } from './mapSaving.ts';
 import { OutlinerPanel } from './outlinerPanel.ts';
-import { mountPanels } from './panels.ts';
 import { MapTestPanel } from './mapTestPanel.ts';
 import { MeasureTool } from './measureTool.ts';
 import { NoteTool } from './noteTool.ts';
@@ -98,7 +106,19 @@ import {
 import { SurfaceBoxes } from './surfaceBoxes.ts';
 import { TerrainTools } from './terrainTools.ts';
 import { TopBar } from './topBar.ts';
+import { LeftRail } from './leftRail.ts';
+import { MapSettingsView } from './mapSettingsView.ts';
+import { RightDock } from './rightDock.ts';
+import { MinimapPanel } from './minimapPanel.ts';
+import { TileViewPanel } from './tileViewPanel.ts';
+import { focusRefFor, type FocusRef } from './tileViewModel.ts';
+import { StatusBar } from './statusBar.ts';
+import type { EditorResume } from '../editorResume.ts';
+import { ToolBar } from './toolBar.ts';
+import { ViewMenu } from './viewMenu.ts';
 import { EditorTour } from './tour.ts';
+import type { PrebuiltNav } from '@tiletrigger/shared/match';
+import { perfOn } from '../game/perfSwitches.ts';
 
 export interface TestRequest {
   map: MapDocument;
@@ -106,6 +126,8 @@ export interface TestRequest {
   difficulty: 'easy' | 'normal' | 'hard';
   /** Play from here: you start at this spot (feet), facing this way, not at a spawn point. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /** The navigation check's navmesh (MapChecks.prebuilt): the match takes it if it was built from this map. */
+  nav?: PrebuiltNav | null;
 }
 
 export interface EditorHost {
@@ -153,6 +175,17 @@ export class EditorApp {
   readonly saving: MapSaving;
   /** Everything in the map in one list; hide and lock, editor-only (outlinerPanel.ts). */
   readonly outliner: OutlinerPanel;
+  /** MapMaker UI spec Phase 1: the right dock's three states (rightDock.ts), Map settings in it (mapSettingsView.ts), the left rail (leftRail.ts), the contextual tool bar (toolBar.ts), the View menu (viewMenu.ts) and the short status bar (statusBar.ts). */
+  readonly dock: RightDock;
+  /** MapMaker UI spec Phase 3: the live minimap, in the dock's Minimap tab and its compact card (minimapPanel.ts). */
+  readonly minimap: MinimapPanel;
+  /** MapMaker UI spec Phase 4a: Tile View, in the dock in the minimap's place while open (tileViewPanel.ts). */
+  readonly tileView: TileViewPanel;
+  readonly mapSettings: MapSettingsView;
+  readonly rail: LeftRail;
+  readonly toolBar: ToolBar;
+  readonly viewMenu: ViewMenu;
+  readonly statusBar: StatusBar;
 
   // ---------------------------------------------------------------- the editor's state
 
@@ -225,14 +258,39 @@ export class EditorApp {
   pointerAt: { x: number; y: number } | null = null;
   /** Pointer ray, for picking what is under the cursor. */
   ray: { origin: Vec3; dir: Vec3 } | null = null;
-  selection: Selection = emptySelection();
+  /**
+   * The one selection (MapMaker UI spec Phase 2; shared editor/selectionState.ts): the viewport, outliner, inspector,
+   * status bar and plan view all read it, and every write goes through `setSelection` (or, where the panels are
+   * redrawn straight after anyway, `adoptSelection`). `selectionRev` counts its changes, so a view that draws it
+   * compares a number, not every id.
+   */
+  private sel: Selection = emptySelection();
+  selectionRev = 0;
+  get selection(): Selection {
+    return this.sel;
+  }
   hoverPoint: Vec3 | null = null;
   /** The hover point is on the terrain (nearer than the level plane). */
   hoverOnTerrain = false;
   hoverCell: [number, number, number] | null = null;
   looking: { x: number; y: number; moved: boolean; travel: number; button: number } | null = null;
   keys = new Set<string>();
-  issues: ValidationIssue[] = [];
+  /** Fit ground to this: how far the ground is eased back into the ground about (m; the inspector's and the Paths pane's Blend). */
+  groundBlend = GROUND_FIT_BLEND;
+
+  /** The map's own issues as last worked out (MapChecks: a moment after each edit, in a worker). */
+  issuesNow: ValidationIssue[] = [];
+
+  /** The map's own issues, up to date with the document (worked out on the spot if an edit has not been checked yet). */
+  get issues(): ValidationIssue[] {
+    this.checks.settle();
+    return this.issuesNow;
+  }
+
+  set issues(v: ValidationIssue[]) {
+    this.issuesNow = v;
+  }
+
   private renderedRevision = -1;
   private renderedLevel = -1;
   private renderedShowAll = false;
@@ -242,8 +300,6 @@ export class EditorApp {
   /** Boxes currently shown (respecting floor isolation), for surface picking. */
   visibleBoxes: WorldBox[] = [];
   hoverFace: BoxHit | null = null;
-  /** Paint tool: the terrain under the pointer when it, not a surface, is what a click paints. */
-  paintGround: Vec3 | null = null;
 
   constructor(readonly host: EditorHost) {
     this.input = new EditorInput(this);
@@ -261,8 +317,25 @@ export class EditorApp {
     this.checks = new MapChecks(this);
     this.saving = new MapSaving(this);
     this.outliner = new OutlinerPanel(this, $('ed-outliner'));
-    // The side panel's Outliner, Inspector and Validation fold from their headings, as each person left them.
-    this.outliner.open = mountPanels($('ed-right'), (id, open) => id === 'outliner' && this.outliner.setOpen(open)).isOpen('outliner');
+    this.dock = new RightDock(this);
+    this.minimap = new MinimapPanel(this, { zoom: () => this.dock.minimapZoom(), setZoom: (z) => this.dock.setMinimapZoom(z) });
+    this.tileView = new TileViewPanel(this, {
+      snapCm: () => this.dock.tileSnapCm(),
+      setSnapCm: (cm) => this.dock.setTileSnapCm(cm),
+      frame: () => this.dock.tileFrame(),
+      setFrame: (f) => this.dock.setTileFrame(f),
+      changed: (open) => this.dock.tileViewChanged(open),
+    });
+    this.mapSettings = new MapSettingsView(this);
+    this.rail = new LeftRail(this);
+    this.toolBar = new ToolBar(this);
+    this.viewMenu = new ViewMenu(this);
+    this.statusBar = new StatusBar(this);
+    this.dock.mount();
+    this.rail.mount();
+    this.mapSettings.mount();
+    this.viewMenu.mount();
+    this.statusBar.mount();
     this.view = new EditorView(host.engine);
     this.view.outlinerHidden = (id) => this.outliner.hidden.size > 0 && (this.outliner.hidden.has(id) || this.outliner.hidden.has(this.expansion.partOf.get(id) ?? ''));
     this.thumbs = new ModelThumbnails(host.engine);
@@ -274,6 +347,8 @@ export class EditorApp {
       ground: () => this.view.ground,
       screen: (p) => this.view.projectInView(p),
       pointer: () => this.pointerAt,
+      blend: () => this.groundBlend,
+      setBlend: (v) => (this.groundBlend = v),
     });
     this.routes = new RouteTool({ doc: () => this.doc, run: (label, cmd) => this.run(label, cmd), toast: (t, bad) => this.toast(t, bad), scene: this.view.scene });
     this.measure = new MeasureTool({ scene: this.view.scene, project: (p) => this.view.projectInView(p), overlay: $('editor'), world: () => ({ boxes: this.placing.surfaceBoxes(), ground: this.shownGround }) });
@@ -353,7 +428,7 @@ export class EditorApp {
         project: (p) => this.view.projectInView(p),
         onPlane: (y) => (this.pointerAt ? this.view.pickPlane(this.pointerAt.x, this.pointerAt.y, y) : null),
         preview: (turn) => this.previewTurn(turn),
-        commit: (turn) => this.run(`Turn ${turnLabel(turn)}`, turnByCommand(this.doc, this.selection, turn, coreCatalog, this.placeLib)),
+        commit: (turn) => this.transform(`Turn ${turnLabel(turn)}`, { turn }),
         draw: (r) => this.view.setRing(r ? this.selectionCenter() : null, r),
       },
       $('editor'),
@@ -364,13 +439,12 @@ export class EditorApp {
       level: () => this.level,
       ground: () => this.shownGround,
       selected: () => new Set([...this.selection.tiles, ...this.selection.entities, ...this.selPieces()]),
+      selectionRev: () => this.selectionRev,
       showAll: () => this.showAll,
       setShowAll: (on) => this.setShowAll(on, true),
       toast: (t, bad) => this.toast(t, bad),
       changed: (on) => {
-        const b = $('ed-plan');
-        b.classList.toggle('on', on);
-        b.setAttribute('aria-pressed', String(on));
+        this.viewMenu.planChanged(on);
         this.hover.updateHover();
       },
     });
@@ -378,9 +452,9 @@ export class EditorApp {
     // The top bar steps through its compact layouts until it fits, whenever its width or contents change.
     const top = $('ed-top');
     new ResizeObserver(() => fitTopBar(top)).observe(top);
-    new MutationObserver(() => fitTopBar(top)).observe($('ed-status'), { childList: true, characterData: true, subtree: true });
+    new MutationObserver(() => fitTopBar(top)).observe($('ed-title-name'), { childList: true, characterData: true, subtree: true });
     void document.fonts?.ready.then(() => fitTopBar(top));
-    this.history = new EditHistory(starterMap(STARTER_TERRAIN, 'grass'));
+    this.history = new EditHistory(starterMap(STARTER_TERRAIN));
     // The live budget bar: counters kept from each edit (budgetCounters.ts), drawn when the document changes.
     this.budgets = new BudgetTracker(this.history.doc, this.setPieceLib);
     this.history.onChange = (c) => (c.reset ? this.budgets.reset(c.reset) : this.budgets.apply(c.command, c.doc));
@@ -415,10 +489,18 @@ export class EditorApp {
    */
   startFresh(): void {
     if (this.saving.autosaveTimer !== undefined) this.saving.flushDraft();
-    this.saving.replaceDocument(starterMap(STARTER_TERRAIN, 'grass'));
+    this.saving.replaceDocument(starterMap(STARTER_TERRAIN));
     const drafts = listDrafts().length;
     this.toast(drafts ? `New blank map · ${drafts} unsaved draft${drafts > 1 ? 's' : ''} in Open…` : 'New blank map · Open… loads a saved map or template');
     this.tour.maybeStart();
+  }
+
+  /**
+   * Entering MapMaker after a reload of the tab while it was open (editorResume.ts): the map being made, its unsaved
+   * changes included; a blank starter when there is nothing to come back to.
+   */
+  async resume(r: EditorResume): Promise<void> {
+    if (!(await this.saving.resume(r).catch(() => false))) this.startFresh();
   }
 
   get doc(): MapDocument {
@@ -446,6 +528,16 @@ export class EditorApp {
     return this.boxesFor.boxes;
   }
 
+  /** The map's boxes as drawn (collision and trim), for the theme warning's counts. */
+  drawnBoxes(): WorldBox[] {
+    return [...this.mapBoxes(), ...buildMapDecor(this.viewDoc)];
+  }
+
+  /** What changing the Structure theme to `to` would do: the warning's counts (painting Phase 2; shared editor/paintLayers.ts). */
+  themeImpact(to: string): ThemeChangeImpact {
+    return themeChangeImpact(this.doc, this.setPieceLib, to, this.drawnBoxes());
+  }
+
   /**
    * The ground as MapMaker shows it and the pointer meets it: the document's own ground (which MapMaker changes only
    * by sculpting) with the paths laid in and kept under every floor (EditorView.setMap, as loading plays it), or a
@@ -458,7 +550,7 @@ export class EditorApp {
   /** `terrain` as it would be shown: kept under the map's floors, with the paths laid in first unless `laid` is false (a brush's live preview). */
   groundShownFor(terrain: TerrainData, laid = true): TerrainData {
     const doc = { ...this.viewDoc, terrain };
-    return terrainUnderFloors(laid ? withPathsLaid(doc) : doc, this.mapBoxes())!;
+    return terrainUnderFloors(laid ? withPathsLaid(doc, mapGroundBores(doc).cuts) : doc, this.mapBoxes())!;
   }
 
   get placeLib(): SetPieceLibrary {
@@ -489,6 +581,8 @@ export class EditorApp {
     this.active = true;
     $('editor').hidden = false;
     this.refresh(true);
+    // A navigation check stopped (or held) while a Test ran.
+    this.checks.resume();
     // The owner (signed in, and listed on the hub) edits our maps as they are and publishes them.
     void isOwner().then((owner) => this.setOwner(owner));
   }
@@ -534,6 +628,9 @@ export class EditorApp {
     this.notes.frame();
     this.hints.frame();
     this.plan.update();
+    this.minimap.frame();
+    this.tileView.frame();
+    this.statusBar.memoryTick();
     this.view.render();
   }
 
@@ -553,21 +650,20 @@ export class EditorApp {
       this.updateSelectionVisuals();
       this.topBar.updateCounts();
       this.renderLevels();
+      this.statusBar.update();
     }
     if (docChanged) {
       this.renderedRevision = rev;
-      const pieces = this.selPieces().filter((id) => !!this.placementOf(id));
-      this.selection = {
-        tiles: this.selection.tiles.filter((id) => this.doc.classicStructure.tiles.some((t) => t.id === id)),
-        entities: this.selection.entities.filter((id) => this.doc.entities.some((e) => e.id === id)),
-        ...(pieces.length ? { setPieces: pieces } : {}),
-      };
+      // What the edit removed leaves the selection (the rest stays selected); the panels below are redrawn anyway.
+      if (this.adoptSelection(pruneSelection(this.doc, this.selection))) this.outliner.draw(true);
       this.pieces.renderMyPieces();
       this.updateSelectionVisuals();
       this.topBar.syncToolbar();
       this.checks.validate();
       this.budgetBar.update(this.budgets.counts);
       this.inspector.renderInspector();
+      this.mapSettings.refresh();
+      this.statusBar.update();
       this.topBar.updateTopBar();
       this.hover.updateHover();
       this.logic.render();
@@ -582,6 +678,14 @@ export class EditorApp {
   }
 
   // ---------------------------------------------------------------- editing
+
+  /**
+   * Move or turn the selection through the shared transform command (shared editor/transform.ts): the drag, the nudges,
+   * the rotate ring, the quick facings and the inspector's position and facing fields, so each gives the same result.
+   */
+  transform(label: string, t: Transform): boolean {
+    return this.run(label, transformCommand(this.doc, this.selection, t, coreCatalog, this.placeLib));
+  }
 
   run(label: string, cmd: EditCommand | { error: string }): boolean {
     if ('error' in cmd) {
@@ -659,7 +763,7 @@ export class EditorApp {
     $('ed-tb-place-what').textContent = this.lastPlace ? this.toolName(this.lastPlace) : '';
     const hints: Record<Tool['kind'], [string, string]> = {
       // One line per tool, in the same order: left-click · right-click (takes back what the tool does) · R · modifiers.
-      select: ['Select', 'Click picks · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
+      select: ['Select', 'Click picks (a road or path opens in Paths) · right-click: menu · drag moves · R turns (Shift+R a little), or drag the ring round it · Shift+click adds · Alt+click one piece of a build · Del deletes'],
       erase: ['Erase', 'Click or drag deletes what is outlined in red (a whole moving build; Alt: one piece) · Ctrl+Z brings it back'],
       tile: ['Place', 'Click places the green piece · right-click removes a tile · R turns it 90° · PgUp/PgDn level'],
       setpiece: ['Place', 'Click places the set piece where it shows green (red says why not) · right-click removes a set piece · R turns it 90° · M mirrors it · PgUp/PgDn level'],
@@ -667,7 +771,7 @@ export class EditorApp {
       pickup: ['Place', 'Click places the pickup · right-click removes a pickup'],
       scenario: ['Place', 'Click places it (doors, walls and lasers snap to doorways) · right-click removes an object · R turns it 90° (Shift+R 15°) · L opens Logic'],
       npc: ['Place', 'Click drops the NPCs here · right-click removes them · R turns them 90° (Shift+R 15°) · soldiers, faction and orders in the inspector'],
-      paint: ['Paint', 'Click or drag paints surfaces and the ground (terrain) · right-click (Shift+drag) resets them to the theme · Alt+click or I picks a style up'],
+      paint: ['Structure paint', "Click or drag paints tiles, blocks, bars and set pieces (never the ground: Shift+B is Ground paint) · on a set piece: across the piece, or this part only · right-click (Shift+drag) resets to the look or theme · Alt+click or I picks a look up"],
       edge: ['Walls', 'Click or drag along wall and floor edges to build them this way · right-click (Shift+drag) resets them · O cycles the style'],
       prop: ['Place', 'Click places the prop on what is under the pointer: a tabletop, a roof, the ground (Ctrl: no snap) · right-click removes a prop · R turns it 15° (Shift+R 5°) · Randomise in the Props tab'],
       mount: ['Place', 'Click places it · right-click removes a vehicle · R turns it 15° (Shift+R 5°) · players get in and out with E'],
@@ -681,12 +785,14 @@ export class EditorApp {
     };
     // A zipline's ends go where you click (the Route tool's hands, two points only).
     if (tool.kind === 'route' && this.routes.label === 'zipline end') hints.route = ['Zipline ends', 'Click the ground or a platform to put the far end there (click the start first to move that) · drag either end · Esc when done'];
+    // Ground paint is the Terrain tool's Paint brush (Shift+B).
+    if (tool.kind === 'terrain' && this.terrain.terrainBrush === 'paint') hints.terrain = ['Ground paint', 'Click or drag paints the ground only: buildings stay as they are (Structure paint, B, paints them) · [ ] brush size · the ground list in the Terrain tab'];
     const [name, hint] = hints[tool.kind];
     const what = PLACING.has(tool.kind) ? `: ${this.toolName(tool)}` : tool.kind === 'edge' ? `: ${EDGE_STYLE_LABELS[tool.style]}` : '';
     const hintEl = $('ed-toolhint');
     hintEl.className = `tool-${tool.kind === 'erase' ? 'erase' : PLACING.has(tool.kind) ? 'place' : 'other'}`;
     hintEl.innerHTML = `<b>${escapeHtml(name + what)}</b> ${escapeHtml(hint)}`;
-    $('ed-hint').textContent = 'Right-drag look · WASD/QE fly · wheel zoom · V select · P place · X erase · B paint · O walls · T terrain · N plants · G paths · U measure · Esc: Select tool · ? every key';
+    this.toolBar.syncTool();
     this.hover.updateHover();
   }
 
@@ -714,15 +820,40 @@ export class EditorApp {
     }
   }
 
+  /** Open a path (a road, trail, track or route) in the Paths tool: what a click on it with Select does. */
+  editPath(id: string): void {
+    const what = this.paths.describe(id);
+    if (!what) return;
+    this.setTool({ kind: 'path' });
+    this.paths.edit(id);
+    this.showPane('paths');
+    this.toast(`${what.title} · drag a point to move it, click to add one at the end, Shift-click the path to add one in it · Esc: back to Select`);
+  }
+
   /** Select: anything in a group brings its whole group (groups.ts), unless `single` (Alt-click: just that one). */
   setSelection(sel: Selection, single = false, keepHint = false): void {
     if (!keepHint) this.hints.deselect();
-    // Locked things (the outliner's padlock, editor-only) can't be selected.
-    this.selection = this.outliner.selectable(single ? sel : withGroups(this.doc, sel));
+    // Made whole wherever the pick came from (groups, moving builds; Alt: `single`); locked things (the outliner's
+    // padlock, editor-only) can't be selected, and ids the map doesn't have (a stale pick) are left out.
+    const changed = this.adoptSelection(pruneSelection(this.doc, wholeSelection(this.doc, sel, { single, blocked: this.outliner.locked })));
+    // Something selected: the dock shows it (Map settings step aside). A hidden or compact dock stays as it is.
+    if (this.selCount()) this.mapSettings.close();
     this.updateSelectionVisuals();
     this.inspector.renderInspector();
+    this.pieces.renderMyLooks();
     this.topBar.syncToolbar();
     this.outliner.draw(true);
+    // Picked anywhere else (the view, a problem, the budget pill): the outliner scrolls its row into view.
+    if (changed) this.outliner.reveal();
+    this.statusBar.update();
+  }
+
+  /** Store a selection without redrawing (the caller redraws): true when it changed (its revision is bumped). */
+  adoptSelection(sel: Selection): boolean {
+    if (sel === this.sel || sameSelection(sel, this.sel)) return false;
+    this.sel = sel;
+    this.selectionRev++;
+    return true;
   }
 
   updateSelectionVisuals(offset?: [number, number, number], bad = false): void {
@@ -813,12 +944,20 @@ export class EditorApp {
     return counts;
   }
 
+  /** What the level strip last showed (renderLevels). */
+  private levelsShown = '';
+
   /** The level strip: every level in use plus the ones either side of the current one, top first. */
   private renderLevels(): void {
     const counts = this.levelContents();
     const used = [...counts.keys(), this.level - 1, this.level, this.level + 1, 0];
     const hi = Math.min(16, Math.max(...used));
     const lo = Math.max(-16, Math.min(...used));
+    // Made again only when what it shows changed (fix 6 of docs/PERF_MAPMAKER_TRACE_2026-11-15.md: every edit made
+    // the strip again, 4.2 ms of the owner's 46 ms edit; most edits change no level's count).
+    const shows = `${hi}:${lo}:${this.level}:${this.doc.classicStructure.levelHeight}:${[...counts].sort((a, b) => a[0] - b[0]).join(';')}`;
+    if (perfOn('editlight') && shows === this.levelsShown) return;
+    this.levelsShown = shows;
     const list = $('ed-level-list');
     list.replaceChildren();
     for (let l = hi; l >= lo; l--) {
@@ -833,7 +972,6 @@ export class EditorApp {
     $('ed-level').textContent = levelName(this.level);
     $<HTMLButtonElement>('ed-level-up').disabled = this.level >= 16;
     $<HTMLButtonElement>('ed-level-down').disabled = this.level <= -16;
-    $('ed-level-name-bottom').textContent = `${levelName(this.level)} · ${this.level * this.doc.classicStructure.levelHeight} m`;
   }
 
   /** Home: the starting overview of the level being edited. */
@@ -841,6 +979,22 @@ export class EditorApp {
     if (this.plan.on) return this.plan.fit();
     this.view.resetView({ x: 0, y: this.level * this.doc.classicStructure.levelHeight, z: 0 });
     this.toast('View reset (Home)');
+  }
+
+  /**
+   * Tile View (UI spec Phase 4a; owner answers 1 and 8): the selected tile, set piece or group (else an area round the
+   * things selected) from above, in the dock. Enter, a double-click on a selection, or the minimap's button.
+   */
+  openTileView(ref: FocusRef | null = focusRefFor(this.doc, this.selection)): boolean {
+    if (!ref) {
+      this.toast('Tile View: select a tile, a set piece, a group or a thing first (then Enter)');
+      return false;
+    }
+    if (!this.tileView.open(ref)) {
+      this.toast("Tile View: there's nothing there to show", true);
+      return false;
+    }
+    return true;
   }
 
   focusSelection(): void {
@@ -923,7 +1077,10 @@ export class EditorApp {
     // As played: paths laid into the ground, terrain under the floors (what loadMap gives every match).
     const played = loadMap(this.doc);
     this.tour.note({ kind: 'test' });
-    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}) });
+    const nav = perfOn('navhandoff') ? this.checks.prebuilt : null;
+    // The navigation check stops while the Test builds its own navmesh and loads (back in MapMaker it runs again).
+    this.checks.pause();
+    this.host.startTest({ map: played.ok ? played.map : this.doc, botFill: fill, difficulty, ...(startAt ? { startAt } : {}), nav });
   }
 
   toast(message: string, error = false): void {

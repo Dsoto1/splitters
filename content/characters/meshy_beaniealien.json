@@ -5,7 +5,8 @@
   "order": 95,
   "name": "Beanie Alien",
   "look": "core.beaniealien",
-  "group": "creatures",
+  "group": "space",
+  "blood": "green",
   "nameTheme": "alien",
   "bio": "Varsity jacket, knit beanie, three-fingered trigger discipline.",
   "body": "male",
@@ -25,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.65
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -36,12 +34,11 @@
     "lod": 0.25,
     "feet": true,
     "hands": {
-      "scale": 0.7
+      "scale": 0.7,
+      "curl": 0.7,
+      "graft": true
     },
     "grip": {
-      "gripLong": [-0.045, 0, -0.045],
-      "supportLong": [-0.02, -0.02, 0],
-      "supportPistol": [0, 0.04, -0.08],
       "curlL": 0.6
     }
   }

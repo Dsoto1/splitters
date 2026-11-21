@@ -1,6 +1,43 @@
 {
   "$comment": "Kit props (docs/PROCEDURAL_ENVIRONMENT.md §11 Phase 6; docs/CONTENT_PIPELINE.md, \"Kit props\"): simple man-made props generated in code from seeds, families in content/kitprops/<type>.json, built by tools/content/kitprops.mjs. Budgets: bytes per file and triangles per level of detail by generator kind. Aliases: a retired catalogue prop and the family and variant that take its place as played (map/validate.ts loadMap; MapMaker keeps the map as made and offers Replace all); `scale` multiplies the placement's own.",
   "generatorVersion": 1,
+  "farLooks": [
+    "appliance",
+    "barrier",
+    "bed",
+    "bin",
+    "board",
+    "bookcase",
+    "booth",
+    "box",
+    "cabinet",
+    "console",
+    "container",
+    "conveyor",
+    "crate",
+    "dome",
+    "door",
+    "drum",
+    "fence",
+    "hopper",
+    "lamp",
+    "machine",
+    "monument",
+    "pipe",
+    "roof",
+    "seat",
+    "shelf",
+    "shop",
+    "sign",
+    "sofa",
+    "spool",
+    "sport",
+    "stall",
+    "street",
+    "table",
+    "tool",
+    "wall"
+  ],
   "pack": {
     "id": "tiletrigger-kitprops",
     "title": "Tile Trigger kit props (generated in code)",
@@ -14,13 +51,13 @@
     "triangles": {
       "crate": [
         700,
-        124,
-        10
+        140,
+        74
       ],
       "framed": [
         800,
         220,
-        10
+        64
       ],
       "bin": [
         900,
@@ -29,13 +66,13 @@
       ],
       "drum": [
         1000,
-        260,
-        40
+        336,
+        116
       ],
       "carton": [
         260,
         40,
-        10
+        18
       ],
       "fence": [
         900,
@@ -45,7 +82,7 @@
       "stonewall": [
         800,
         360,
-        40
+        120
       ],
       "barrier": [
         400,
@@ -59,28 +96,33 @@
       ],
       "container": [
         2600,
-        400,
-        12
+        500,
+        118
       ],
       "table": [
         420,
         120,
-        10
+        48
       ],
       "seat": [
         420,
         120,
-        20
+        48
       ],
       "bookcase": [
         1500,
-        320,
-        10
+        466,
+        118
       ],
       "shelf": [
         1500,
-        360,
-        10
+        470,
+        120
+      ],
+      "wallshelf": [
+        400,
+        96,
+        42
       ],
       "stall": [
         400,
@@ -90,37 +132,37 @@
       "counter": [
         200,
         60,
-        10
+        18
       ],
       "wastebin": [
         80,
         60,
-        10
+        26
       ],
       "sofa": [
         220,
         60,
-        20
+        42
       ],
       "cabinet": [
         260,
-        40,
-        10
+        86,
+        52
       ],
       "appliance": [
         460,
         90,
-        10
+        58
       ],
       "roundtable": [
         360,
         80,
-        10
+        62
       ],
       "officechair": [
         380,
-        120,
-        20
+        124,
+        54
       ],
       "bed": [
         320,
@@ -130,27 +172,27 @@
       "cornersofa": [
         240,
         100,
-        30
+        48
       ],
       "yokecrate": [
         500,
         70,
-        10
+        66
       ],
       "sign": [
         220,
         100,
-        24
+        30
       ],
       "conveyor": [
         760,
-        190,
-        10
+        208,
+        116
       ],
       "freezer": [
         760,
         120,
-        10
+        90
       ],
       "cart": [
         900,
@@ -159,8 +201,8 @@
       ],
       "bakery": [
         1300,
-        340,
-        30
+        542,
+        108
       ],
       "checkout": [
         420,
@@ -169,78 +211,78 @@
       ],
       "chestfreezer": [
         700,
-        120,
-        10
+        172,
+        92
       ],
       "bottlereturn": [
         520,
         160,
-        30
+        70
       ],
       "produce": [
         1100,
         300,
-        40
+        110
       ],
       "console": [
         460,
         150,
-        40
+        60
       ],
       "valve": [
         1000,
         360,
-        40
+        120
       ],
       "machine": [
         300,
         130,
-        40
+        58
       ],
       "windowmachine": [
         280,
         140,
-        30
+        52
       ],
       "hopper": [
         720,
         60,
-        30
+        48
       ],
       "tallhopper": [
         300,
         50,
-        30
+        36
       ],
       "piston": [
         760,
         240,
-        30
+        86
       ],
       "scanner": [
         240,
         80,
-        40
+        44
       ],
       "lever": [
         220,
         90,
-        30
+        48
       ],
       "cog": [
         380,
-        140,
-        30
+        184,
+        78
       ],
       "glasspipe": [
         680,
         150,
-        40
+        70
       ],
       "pipestub": [
         320,
-        100,
-        20
+        136,
+        62
       ],
       "workbench": [
         180,
@@ -249,43 +291,43 @@
       ],
       "cone": [
         240,
-        60,
-        10
+        88,
+        48
       ],
       "coolantpipe": [
         900,
-        80,
-        12
+        332,
+        114
       ],
       "pipejunction": [
         800,
-        144,
-        24
+        248,
+        114
       ],
       "anvil": [
         320,
         120,
-        24
+        38
       ],
       "dome": [
         1700,
-        620,
-        60
+        902,
+        120
       ],
       "domecap": [
         200,
-        70,
-        20
+        90,
+        48
       ],
       "domepanel": [
         320,
-        130,
-        10
+        180,
+        76
       ],
       "domedrum": [
         190,
-        80,
-        10
+        102,
+        48
       ],
       "dometrim": [
         260,
@@ -295,27 +337,222 @@
       "domearch": [
         540,
         260,
-        20
+        120
+      ],
+      "spire": [
+        1500,
+        400,
+        120
       ],
       "door": [
         760,
         300,
-        40
+        78
       ],
       "deskhutch": [
         620,
         160,
-        24
+        106
       ],
       "closet": [
         220,
         60,
-        10
+        32
       ],
       "closetfront": [
         180,
         50,
-        12
+        46
+      ],
+      "deskpair": [
+        2080,
+        560,
+        120
+      ],
+      "closetpair": [
+        360,
+        100,
+        28
+      ],
+      "cairn": [
+        1700,
+        450,
+        60
+      ],
+      "pier": [
+        1300,
+        480,
+        104
+      ],
+      "fieldwall": [
+        950,
+        300,
+        116
+      ],
+      "bannerpost": [
+        360,
+        280,
+        20
+      ],
+      "marker": [
+        60,
+        60,
+        30
+      ],
+      "stonebench": [
+        60,
+        40,
+        40
+      ],
+      "islandbed": [
+        1250,
+        566,
+        180
+      ],
+      "guardpost": [
+        2600,
+        900,
+        320
+      ],
+      "volleynet": [
+        700,
+        240,
+        100
+      ],
+      "court": [
+        400,
+        40,
+        40
+      ],
+      "awning": [
+        220,
+        90,
+        34
+      ],
+      "bollard": [
+        320,
+        160,
+        58
+      ],
+      "bikerack": [
+        440,
+        170,
+        80
+      ],
+      "mailbox": [
+        260,
+        110,
+        46
+      ],
+      "newsbox": [
+        220,
+        110,
+        38
+      ],
+      "busstop": [
+        420,
+        110,
+        38
+      ],
+      "spool": [
+        560,
+        220,
+        88
+      ],
+      "chainlink": [
+        560,
+        280,
+        110
+      ],
+      "chalkboard": [
+        220,
+        90,
+        44
+      ],
+      "screen": [
+        200,
+        80,
+        28
+      ],
+      "noticeboard": [
+        400,
+        160,
+        40
+      ],
+      "schooldesks": [
+        1600,
+        500,
+        120
+      ],
+      "pennants": [
+        140,
+        60,
+        32
+      ],
+      "clockface": [
+        300,
+        110,
+        40
+      ],
+      "pew": [
+        1600,
+        700,
+        200
+      ],
+      "stainedglass": [
+        3200,
+        900,
+        200
+      ],
+      "altar": [
+        900,
+        200,
+        40
+      ],
+      "organ": [
+        2400,
+        500,
+        100
+      ],
+      "crest": [
+        900,
+        300,
+        60
+      ],
+      "trophycase": [
+        1600,
+        600,
+        40
+      ],
+      "honours": [
+        300,
+        120,
+        40
+      ],
+      "vaultbay": [
+        1400,
+        500,
+        60
+      ],
+      "bleacher": [
+        400,
+        120,
+        60
+      ],
+      "courtlines": [
+        1400,
+        500,
+        200
+      ],
+      "hoop": [
+        700,
+        200,
+        80
+      ],
+      "poollanes": [
+        1600,
+        300,
+        300
       ]
     }
   },
@@ -699,6 +936,12 @@
       "model": "kit.pipe.junction",
       "variant": 0,
       "scale": 1
+    },
+    "prop.hm_wall_shelf": {
+      "model": "kit.shelf.wall",
+      "variant": 0,
+      "scale": 1,
+      "ownSize": true
     }
   }
 }

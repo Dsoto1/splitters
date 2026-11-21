@@ -20,6 +20,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
+import sharp from 'sharp';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { compactPrimitive, prune } from '@gltf-transform/functions';
 import { buildSpec, readManifests } from './character-manifests.mjs';
@@ -27,6 +28,7 @@ import { fitHands } from './hands.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
 import { writeLock } from './lockfile.mjs';
+import { graftHands } from './handgraft.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -122,13 +124,19 @@ function open(doc) {
       const pos = new Float32Array(n * 3);
       const J = new Uint16Array(n * 4);
       const W = new Float32Array(n * 4);
+      const UV = prim.getAttribute('TEXCOORD_0');
+      const N = prim.getAttribute('NORMAL');
+      const uv = UV ? new Float32Array(n * 2) : null;
+      const nrm = N ? new Float32Array(n * 3) : null;
       const el = [0, 0, 0, 0];
       for (let v = 0; v < n; v++) {
         pos.set(mulPoint(Q, P.getElement(v, el)), v * 3);
         J.set(prim.getAttribute('JOINTS_0').getElement(v, el), v * 4);
         W.set(prim.getAttribute('WEIGHTS_0').getElement(v, el), v * 4);
+        if (uv) uv.set(UV.getElement(v, el).slice(0, 2), v * 2);
+        if (nrm) nrm.set(N.getElement(v, el).slice(0, 3), v * 3);
       }
-      meshes.push({ node, prim, pos, J, W, idx: prim.getIndices()?.getArray() ?? null, lod: /_lod$/.test(node.getName()) });
+      meshes.push({ node, prim, pos, J, W, uv, nrm, idx: prim.getIndices()?.getArray() ?? null, lod: /_lod$/.test(node.getName()) });
     }
   }
   meshes.sort((a, b) => Number(a.lod) - Number(b.lod));
@@ -214,6 +222,135 @@ async function cutArms(doc) {
   for (const a of root.listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();
 }
 
+/** The donor of new hand geometry (`fixes.hands.graft`, handgraft.mjs): the athlete body part, as shipped. */
+let donorDoc = null;
+const DONOR = process.env.GRAFT_DONOR ?? 'athlete_torso_m';
+/** Levels of subdivision of the donor's hand (handgraft.mjs `subdivide`; GRAFT_SMOOTH for a trial). */
+const GRAFT_SMOOTH = Number(process.env.GRAFT_SMOOTH ?? 1);
+const donor = async () => (donorDoc ??= await io.read(join(OUT, `${DONOR}.glb`)));
+
+/** Per-vertex tangents from positions, normals and texture coordinates (the normal map's frame on new vertices). */
+function tangents(pos, nrm, uv, idx) {
+  const n = pos.length / 3;
+  const t = new Float64Array(n * 3);
+  const b = new Float64Array(n * 3);
+  for (let i = 0; i < idx.length; i += 3) {
+    const [i0, i1, i2] = [idx[i], idx[i + 1], idx[i + 2]];
+    const e1 = sub(pos.slice(i1 * 3, i1 * 3 + 3), pos.slice(i0 * 3, i0 * 3 + 3));
+    const e2 = sub(pos.slice(i2 * 3, i2 * 3 + 3), pos.slice(i0 * 3, i0 * 3 + 3));
+    const [du1, dv1] = [uv[i1 * 2] - uv[i0 * 2], uv[i1 * 2 + 1] - uv[i0 * 2 + 1]];
+    const [du2, dv2] = [uv[i2 * 2] - uv[i0 * 2], uv[i2 * 2 + 1] - uv[i0 * 2 + 1]];
+    const det = du1 * dv2 - du2 * dv1;
+    if (Math.abs(det) < 1e-12) continue;
+    const r = 1 / det;
+    const T = scale(sub(scale(e1, dv2), scale(e2, dv1)), r);
+    const B = scale(sub(scale(e2, du1), scale(e1, du2)), r);
+    for (const v of [i0, i1, i2]) for (let k = 0; k < 3; k++) [t[v * 3 + k], b[v * 3 + k]] = [t[v * 3 + k] + T[k], b[v * 3 + k] + B[k]];
+  }
+  const out = [];
+  for (let v = 0; v < n; v++) {
+    const N = [nrm[v * 3], nrm[v * 3 + 1], nrm[v * 3 + 2]];
+    let T = [t[v * 3], t[v * 3 + 1], t[v * 3 + 2]];
+    T = sub(T, scale(N, dot(N, T)));
+    let len = Math.hypot(...T);
+    if (len < 1e-9) {
+      // No texture slope (a flat-coloured triangle): any direction square to the normal.
+      T = cross(N, Math.abs(N[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0]);
+      len = Math.hypot(...T) || 1;
+    }
+    T = scale(T, 1 / len);
+    const w = dot(cross(N, T), [b[v * 3], b[v * 3 + 1], b[v * 3 + 2]]) < 0 ? -1 : 1;
+    out.push([...T, w]);
+  }
+  return out;
+}
+
+/**
+ * New hand geometry (`fixes.hands.graft`: true, or 'l' / 'r'): the old hands replaced by the rig's own, fitted
+ * (handgraft.mjs), before they are measured. Once per file (`extras.graft` on its skin records the sides).
+ */
+async function graft(doc, which, label) {
+  const want = which === true ? ['l', 'r'] : [which];
+  const skin = doc.getRoot().listSkins()[0];
+  const had = skin.getExtras()?.graft ?? [];
+  const sides = want.filter((s) => !had.includes(s));
+  if (!sides.length) return;
+  const c = open(doc);
+  const d = open(await donor());
+  // The donor's skin: of its primitives (a part's sleeve and skin are two), the one its hands are on, each detail.
+  const handVerts = (m2) => {
+    let k = 0;
+    for (let v = 0; v < m2.pos.length / 3; v++) {
+      let w = 0;
+      for (let q = 0; q < 4; q++) if (/^(hand|index|middle|ring|pinky|thumb)_/.test(d.jointNames[m2.J[v * 4 + q]])) w += m2.W[v * 4 + q];
+      if (w >= 0.5) k++;
+    }
+    return k;
+  };
+  d.meshes = [false, true].map((lod) => d.meshes.filter((m2) => m2.lod === lod).sort((a, b) => handVerts(b) - handVerts(a))[0]).filter(Boolean);
+  const measure = (x, ss) => fitHands({ meshes: x.meshes, jointNames: x.jointNames, world: x.world, rig, sides: ss, keep: ss }).data;
+  const { moved, sides: done } = graftHands({ target: c, donor: d, sides, measure, smooth: GRAFT_SMOOTH, log: (l) => console.log(`  ${label} ${l}`) });
+  const Qinv = affineInverse(c.Q);
+  for (const m of c.meshes) {
+    if (!m.added?.length) continue;
+    const n = m.pos.length / 3;
+    const extra = m.added.reduce((k, a) => k + a.pos.length, 0);
+    // Every attribute grown by the new vertices (written below, in the accessors' own encodings).
+    for (const sem of m.prim.listSemantics()) {
+      const a = m.prim.getAttribute(sem);
+      const old = a.getArray();
+      const grown = new old.constructor((n + extra) * a.getElementSize());
+      grown.set(old);
+      a.setArray(grown);
+    }
+    const kept = [];
+    for (let i = 0; i < m.idx.length; i += 3) if (!m.drop?.has(i)) kept.push(m.idx[i], m.idx[i + 1], m.idx[i + 2]);
+    let at = n;
+    const P = m.prim.getAttribute('POSITION');
+    for (const a of m.added) {
+      const flatPos = a.pos.flat();
+      const flatN = a.nrm.flat();
+      const flatUV = a.uv.flat();
+      const tan = tangents(flatPos, flatN, flatUV, a.idx);
+      a.pos.forEach((p, i) => {
+        const v = at + i;
+        P.setElement(v, mulPoint(Qinv, p).map((x) => Math.max(-1, Math.min(1, x))));
+        m.prim.getAttribute('NORMAL')?.setElement(v, a.nrm[i]);
+        m.prim.getAttribute('TEXCOORD_0')?.setElement(v, a.uv[i]);
+        m.prim.getAttribute('TANGENT')?.setElement(v, tan[i]);
+        m.prim.getAttribute('JOINTS_0').setElement(v, a.J[i]);
+        m.prim.getAttribute('WEIGHTS_0').setElement(v, a.W[i]);
+      });
+      for (const i of a.idx) kept.push(at + i);
+      at += a.pos.length;
+    }
+    m.prim.getIndices().setArray(new Uint32Array(kept));
+    compactPrimitive(m.prim);
+  }
+  await doc.transform(prune({ keepAttributes: true }));
+  for (const a of doc.getRoot().listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();
+  // The rig's finger and thumb joints onto the new hands (as rehand moves them: translations, bind matrices).
+  const byName = new Map(c.joints.map((j) => [j.getName(), j]));
+  const depth = (j) => (j.getParentNode() ? 1 + depth(j.getParentNode()) : 0);
+  const newT = new Map();
+  const tOf = (name) => newT.get(name) ?? c.world.get(name)?.t;
+  for (const name of [...moved.keys()].sort((a, b) => depth(byName.get(a)) - depth(byName.get(b)))) {
+    const j = byName.get(name);
+    const pw = c.world.get(j.getParentNode().getName());
+    newT.set(name, moved.get(name));
+    j.setTranslation(qrot(qinv(pw.q), sub(moved.get(name), tOf(j.getParentNode().getName()))));
+  }
+  const ibm = c.skin.getInverseBindMatrices();
+  const arr = ibm.getArray().slice();
+  c.joints.forEach((j, i) => {
+    if (newT.has(j.getName())) arr.set(mat4Mul(inverseRigid(c.world.get(j.getName()).q, newT.get(j.getName())), c.Q), i * 16);
+  });
+  ibm.setArray(arr);
+  // Measured only from now on: the rig's own finger weights are kept (hands.mjs `keep`).
+  for (const s of done) byName.get(`hand_${s}`).setExtras({ ...byName.get(`hand_${s}`).getExtras(), hand: { ...(byName.get(`hand_${s}`).getExtras()?.hand ?? {}), fingers: 'own' } });
+  skin.setExtras({ ...skin.getExtras(), graft: [...had, ...done].sort() });
+}
+
 /** Fit a built character's hands in place; returns the measurements. */
 function rehand(doc, overrides, label, skinFix) {
   const c = open(doc);
@@ -294,10 +431,13 @@ for (const m of readManifests({ ready: true })) {
     doc.getRoot().getAsset().generator = 'tiletrigger prepare-meshy-characters';
     const glb = await io.writeBinary(doc);
     writeFileSync(join(TRIAL ?? OUT, `${id}.glb`), glb);
-    Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: triangles(doc), ...(entry.lodTriangles !== undefined ? { lodTriangles: lodTriangles(doc) } : {}), bytes: glb.byteLength, hands: true });
+    // (`graft`: the sides with new hand geometry, handgraft.mjs; provenance names the hands' source.)
+    const grafted = doc.getRoot().listSkins()[0]?.getExtras()?.graft;
+    Object.assign(entry, { sha256: createHash('sha256').update(glb).digest('hex').slice(0, 16), triangles: triangles(doc), ...(entry.lodTriangles !== undefined ? { lodTriangles: lodTriangles(doc) } : {}), bytes: glb.byteLength, hands: true, ...(grafted?.length ? { graft: grafted.join(' ') } : {}) });
     console.log(`  ${`${id}.glb`.padEnd(26)} ${String(entry.triangles).padStart(6)} tris ${(glb.byteLength / 1024).toFixed(0).padStart(6)} KB`);
   };
   const doc = await io.read(join(OUT, `${m.id}.glb`));
+  if (spec.hands?.graft) await graft(doc, spec.hands.graft, 'body');
   rehand(doc, { ...withoutScale(spec.hands), armCloth: !!spec.armCloth }, 'body', spec.skin);
   await write(doc, m.id, body);
   let arms = lock.files.find((f) => f.id === `${m.id}_fparms`);
@@ -309,6 +449,7 @@ for (const m of readManifests({ ready: true })) {
     lock.files.splice(lock.files.indexOf(body) + 1, 0, arms);
   }
   // (Arms cut here from the body just now are already scaled as the body is; arms built at import were scaled then.)
+  if (spec.hands?.graft) await graft(armsDoc, spec.hands.graft, 'arms');
   rehand(armsDoc, withoutScale(spec.hands), 'arms', spec.skin);
   await write(armsDoc, `${m.id}_fparms`, arms);
   files.push(m.id);

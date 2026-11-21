@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 37,
   "metadata": {
     "id": "flatpack_depot",
     "name": "Flatpack Depot",
@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_nrfxczl6m2zcqbew",
-      "versionId": "v_6rsccgy4truc7neh",
-      "revision": 9,
-      "contentHash": "sha256:79630a3eac9f4180998ec638486aefc76220552979a811e4cd2cf412c07e2ec6",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T21:09:31.683Z"
+      "versionId": "v_aburgwc3qn6prsp5",
+      "revision": 10,
+      "contentHash": "sha256:8289e3f2e4d2acd543a3b3e0d0f9fcb6057774693188310f889d9009aa916ac0",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T17:53:34.975Z"
     }
   },
   "classicStructure": {
@@ -15824,7 +15824,7 @@
         -10
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.5707963267948966,
       "faction": null,
       "respawnSeconds": null

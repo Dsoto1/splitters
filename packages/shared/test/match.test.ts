@@ -139,14 +139,23 @@ describe('Match', () => {
 
 describe('Player Bots', () => {
   it('find, chase and kill an idle human on the arena using the navmesh', () => {
-    const match = new Match(loadArena(), { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 60 }, 7);
-    const human = match.addHuman('target')!;
-    const bot = match.addBot('hunter', CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES.hard)!;
-    let seq = 0;
-    const events = runTicks(match, 60 * 60, () => match.queueInputs(human.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 }]));
-    const kills = events.filter((e) => e.e === 'kill' && e.killer === bot.slot);
-    expect(kills.length).toBeGreaterThanOrEqual(3);
-    expect(bot.bot!.stuckCount).toBeLessThan(10);
+    // A minute each on three seeds: how soon it comes on the player again after a kill swings with where they
+    // respawn. Seeds 1-12, three profiles (2026-11-17): 80 kills before bots took a kill in after a beat (docs/BOTS.md,
+    // "After a kill"; they used to chase the spot where the player fell), 79 after; seed 7 alone went 4 -> 1, 8 4 -> 6,
+    // 12 4 -> 4.
+    let all = 0;
+    for (const seed of [7, 8, 12]) {
+      const match = new Match(loadArena(), { ...DEFAULT_DEATHMATCH_RULES, respawnDelayTicks: 60 }, seed);
+      const human = match.addHuman('target')!;
+      const bot = match.addBot('hunter', CORE_BOT_PROFILES[0]!, BOT_DIFFICULTIES.hard)!;
+      let seq = 0;
+      const events = runTicks(match, 60 * 60, () => match.queueInputs(human.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: 0 }]));
+      const kills = events.filter((e) => e.e === 'kill' && e.killer === bot.slot);
+      expect(kills.length).toBeGreaterThanOrEqual(1);
+      all += kills.length;
+      expect(bot.bot!.stuckCount).toBeLessThan(10);
+    }
+    expect(all).toBeGreaterThanOrEqual(9);
   });
 
   it('run a 32-bot match without errors and keep everyone inside the map', () => {

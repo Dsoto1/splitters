@@ -5,7 +5,8 @@
   "order": 18,
   "name": "King Aldric",
   "look": "core.aldric",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Rules three kingdoms and one leaderboard. Only one of them by election.",
   "body": "male",
@@ -26,9 +27,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 17000,

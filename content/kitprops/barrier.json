@@ -1,5 +1,5 @@
 {
-  "$comment": "Road barriers (tools/content/kit/fence.mjs): concrete barriers the size of the Kenney ones they replace.",
+  "$comment": "Road barriers (tools/content/kit/fence.mjs): concrete barriers the size of the Kenney ones they replace. Tileset 11 (Urban & Civilian) adds the Street Bollard (tools/content/kit/street.mjs), which replaces nothing.",
   "type": "barrier",
   "props": [
     {
@@ -19,6 +19,24 @@
         { "index": 1, "name": "striped", "seed": 6102, "look": { "concrete": "#a3a19a", "stripeA": "#d8b21f", "stripeB": "#232323", "stripeFrom": 0.5, "grime": 0.3, "chips": 0.25 } },
         { "index": 2, "name": "hazard", "seed": 6103, "look": { "concrete": "#a8a69f", "stripeA": "#b8322a", "stripeB": "#dedad0", "stripeFrom": 0.5, "grime": 0.3, "chips": 0.25 } },
         { "index": 3, "name": "worn", "seed": 6104, "look": { "concrete": "#8d8a82", "grime": 0.55, "chips": 0.6 } }
+      ]
+    },
+    {
+      "id": "kit.barrier.bollard",
+      "displayName": "Street Bollard",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Tileset 11, Urban & Civilian): a round steel post 0.95 m high and 0.18 m across on a 0.24 m base flange, a domed or flat top. Looks: yellow, stainless steel, concrete (flat top) and red and white bands. Collides as its box (0.24 × 0.95 × 0.24 m): it stops a player and a vehicle, and is too thin to be cover." },
+      "size": [0.24, 0.95, 0.24],
+      "surface": "concrete",
+      "detail": "painted_metal",
+      "generator": { "kind": "bollard", "top": "dome", "bands": 0, "post": 0.74 },
+      "lods": [{ "distance": 0 }, { "distance": 12 }, { "distance": 35 }],
+      "variants": [
+        { "index": 0, "name": "yellow", "seed": 12231, "look": { "body": "#dcae1c", "grime": 0.25, "wear": 0.2, "rust": 0.12, "base": "#3a3a3a" } },
+        { "index": 1, "name": "steel", "seed": 12232, "look": { "body": "#a4a9ae", "grime": 0.25, "wear": 0.05, "rust": 0.03, "base": "#8a8f94", "band": "#6e7378" }, "set": { "bands": 1 } },
+        { "index": 2, "name": "concrete", "seed": 12233, "look": { "body": "#a9a69e", "grime": 0.4, "wear": 0, "rust": 0, "base": "#a9a69e" }, "set": { "top": "flat", "post": 0.86 } },
+        { "index": 3, "name": "striped", "seed": 12234, "look": { "body": "#e6e3d8", "grime": 0.25, "wear": 0.2, "rust": 0.12, "band": "#b8281e", "base": "#3a3a3a" }, "set": { "bands": 2 } }
       ]
     }
   ]

@@ -28,5 +28,8 @@
     "muzzleAt": [0, 0.078, 0.475],
     "sound": "fire.shotgun"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 4: shotguns." }
+  "notes": {
+    "range": "Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
+    "group": "The extended arsenal: every one fires differently. 4: shotguns."
+  }
 }

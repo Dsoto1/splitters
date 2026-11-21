@@ -15,6 +15,10 @@ const TUBE = 0.15;
 const FAR_AHEAD = 0.5;
 /** Most points kept (one per small cell), to bound the per-frame test. */
 const CELL = 0.02;
+/** Measurements kept by look (the avatar's spec), so a second body of a look reuses the first's points. */
+const byLook = new Map<string, Vector3[]>();
+/** Looks kept at most (a match sees a few dozen); past it the oldest goes. */
+const MAX_LOOKS = 256;
 
 /**
  * The front of a character's torso around the right shoulder, measured once
@@ -33,11 +37,28 @@ export class TorsoSurface {
     this.world = local.map(() => Vector3.Zero());
   }
 
-  /** Measure a character in its current pose (null when it has no chest joint or no torso skin). */
-  static measure(ch: CharacterInstance): TorsoSurface | null {
+  /**
+   * Measure a character in its current pose (null when it has no chest joint or no torso skin). With `look` (the
+   * avatar's spec), the first body of that look is measured and later ones take its points: they are in the chest
+   * joint's own space, the same for every body of a look, and measuring skins the torso on the CPU (a few ms and
+   * hundreds of KB of garbage a body, once for every body a match makes).
+   */
+  static measure(ch: CharacterInstance, look?: string): TorsoSurface | null {
     const chest = ch.joints.get('spine_03');
     const shoulder = ch.joints.get('upperarm_r');
     if (!chest || !shoulder) return null;
+    const known = look === undefined ? undefined : byLook.get(look);
+    if (known) return known.length ? new TorsoSurface(chest, known) : null;
+    const local = TorsoSurface.points(ch, chest, shoulder);
+    if (look !== undefined) {
+      if (byLook.size >= MAX_LOOKS) byLook.delete(byLook.keys().next().value!);
+      byLook.set(look, local);
+    }
+    return local.length ? new TorsoSurface(chest, local) : null;
+  }
+
+  /** The torso's surface points in the chest joint's space, measured from the character's skin as it is posed now. */
+  private static points(ch: CharacterInstance, chest: TransformNode, shoulder: TransformNode): Vector3[] {
     ch.root.computeWorldMatrix(true);
     chest.computeWorldMatrix(true);
     shoulder.computeWorldMatrix(true);
@@ -80,7 +101,7 @@ export class TorsoSurface {
         }
       }
     }
-    return cells.size ? new TorsoSurface(chest, [...cells.values()]) : null;
+    return [...cells.values()];
   }
 
   /**

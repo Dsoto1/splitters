@@ -37,6 +37,7 @@ import {
   windowPanes,
   type EdgeStyle,
   type MapDocument,
+  type WorldBox,
   type ResolvedEdge,
 } from '../src/index.ts';
 import { boxPackTiles } from '../src/map/packTiles.ts';
@@ -82,6 +83,13 @@ function styleMap(): MapDocument {
   return makeMap(tiles);
 }
 
+/**
+ * Boxes as the fixture saw them: bars, gates and railings now say they are drawn in the Metal surface (`paint: 'metal'`,
+ * map format v41; metalBars.test.ts tests that), and the bars, posts and rails of see-through styles that they are a
+ * lattice to sight (`lattice`, 2026-11-16; botsSeeThroughBars.test.ts), which change no shape.
+ */
+const shapes = (boxes: WorldBox[]) => boxes.map((b) => (b.paint === 'metal' || b.lattice ? (({ paint: _p, lattice: _l, ...rest }) => rest)(b) : b));
+
 /** What a map builds from its tiles and edges: geometry, trim, facades, window glass, validation and room dressing. */
 function built(map: MapDocument) {
   const geometry = buildMapGeometry(map);
@@ -93,8 +101,8 @@ function built(map: MapDocument) {
     }
   });
   return {
-    geometry: hash(geometry),
-    decor: hash(buildMapDecor(map)),
+    geometry: hash(shapes(geometry)),
+    decor: hash(shapes(buildMapDecor(map))),
     facades: hash(buildFacades(map)),
     panes: hash(windowPanes(map)),
     issues: hash(validateMap(map)),
@@ -106,7 +114,8 @@ function tiles() {
   const all = coreCatalog.all();
   return norm({
     order: all.map((t) => t.id),
-    kit: all.filter((t) => !PACK_IDS.has(t.id)),
+    // (The Arena Corner tiles, thousands of boxes each, by a hash of their definition: arenaCorner.test.ts tests them.)
+    kit: all.filter((t) => !PACK_IDS.has(t.id)).map((t) => (t.id.startsWith('core.arena_corner_') ? { id: t.id, hash: hash(t) } : t)),
     dimensions: TILE_DIMENSIONS,
     edges: {
       styles: EDGE_STYLES,

@@ -68,7 +68,9 @@ export class HurtFade {
 export function paintVignette(look: HurtLook, size = 256): HTMLCanvasElement {
   const c = document.createElement('canvas');
   c.width = c.height = size;
-  const ctx = c.getContext('2d')!;
+  // On the CPU (willReadFrequently): its picture is read back once (toDataURL), and a canvas on the graphics card waits
+  // for it to finish everything before: at a match's start, its loading (MapMaker's Test start, fix 5).
+  const ctx = c.getContext('2d', { willReadFrequently: true })!;
   const mid = size / 2;
   const g = ctx.createRadialGradient(mid, mid, 0, mid, mid, mid * Math.SQRT2);
   const [r, gr, b] = look.color;

@@ -53,9 +53,10 @@ import sharp from 'sharp';
 import { autoSkin } from './autoskin.mjs';
 import { buildSpec, jointsFromLandmarks, readManifests } from './character-manifests.mjs';
 import { findLandmarks, landmarkPicture } from './landmarks.mjs';
+import { addPlugs, plugGeometry } from './plugs.mjs';
 import { fbxToDocument } from './fbx.mjs';
 import { fitHands } from './hands.mjs';
-import { bindRigid, bodySkin, fingerSkin, fixBodySkin } from './skinfix.mjs';
+import { bindRigid, bodySkin, fingerSkin, fixBodySkin, moveJoints } from './skinfix.mjs';
 import { keepArmsToArms } from './armweights.mjs';
 import { SIDE_DEPTH, capTears, cleanSkin, tearStretched } from './skinclean.mjs';
 import { addLowDetail } from './character-lod.mjs';
@@ -278,8 +279,10 @@ async function readMeshy(file, ual, c) {
       for (let k = 1; k < 4; k++) if (W[v * 4 + k] > W[v * 4 + b]) b = k;
       return names[J[v * 4 + b]];
     };
+    const head = { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE, dense: true };
     const out = await rebakeDownload({ P, N, UV, I: indices }, baseColor, normalMap, c.triangles ?? 11000, metalRough, [
-      { inside: (v) => /^(Head|head_end|headfront)$/.test(major(v)), share: c.headShare ?? HEAD_SHARE },
+      ...faceParts(c, P, head),
+      head,
       { inside: (v) => /Hand/.test(major(v)), share: c.handsShare ?? REBAKE_HANDS_SHARE },
     ]);
     const J2 = new J.constructor(out.from.length * 4);
@@ -313,7 +316,73 @@ async function readMeshy(file, ual, c) {
     metalRough,
     ownNormalMap,
   };
+  // Joints moved along their bone toward their parent (`fixes.rejoint`, skinfix.mjs), in the download's own pose, with
+  // the skin past the new place handed to the joint: a rig whose shoulders sat out at a robe's seam.
+  if (c.rejoint) {
+    const restAt = (v) => {
+      let p = [0, 0, 0];
+      for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
+      return p;
+    };
+    const done = moveJoints({ count: verts.count, at: restAt, J, W, rest, parent, rigOf: skel.rig ?? names.map((n) => JOINT_MAP[n]), moves: c.rejoint });
+    const cm = (a, b) => (Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 100).toFixed(1);
+    for (const [name, move] of Object.entries(c.rejoint)) {
+      const out = (typeof move === 'number' ? move : move.share) > 1;
+      for (const r of done.filter((d) => d.joint === name || d.joint.startsWith(`${name}_`)))
+        console.log(`  rejoint: ${r.joint} moved ${cm(r.from, r.to)} cm ${out ? 'out past its place' : 'toward its parent'}, ${r.moved} vertices handed ${out ? 'back to the parent' : 'to it'} (limb radius ${(r.radius * 100).toFixed(1)} cm)`);
+    }
+  }
+  // `fixes.plugs` (plugs.mjs) on a rigged download: the closed shapes go in in the download's own pose (after any
+  // rejoint), each new vertex skinned as the download's vertex nearest it, so a plug moves with the skin round it.
+  if (c.plugs) plugRigged(verts, c);
   return pose(skel, verts, ual, c);
+}
+
+/** `fixes.plugs` added to a rigged download's mesh (`verts` of readMeshy, changed in place). */
+function plugRigged(verts, c) {
+  const n = verts.count;
+  const { joints: J, weights: W } = verts;
+  const world = new Float32Array(n * 3);
+  for (let v = 0; v < n; v++) {
+    let p = [0, 0, 0];
+    for (let k = 0; k < 4; k++) if (W[v * 4 + k]) p = add(p, scale(verts.at(v, J[v * 4 + k])[0], W[v * 4 + k]));
+    world.set(p, v * 3);
+  }
+  const g = plugGeometry(world, verts.uv, c.plugs.at, c.plugs.shrink);
+  for (const line of g.log) console.log(`  ${c.id} ${line}`);
+  const m = g.pos.length;
+  if (!m) return;
+  const J2 = new J.constructor((n + m) * 4);
+  const W2 = new W.constructor((n + m) * 4);
+  J2.set(J);
+  W2.set(W);
+  const UV2 = new Float32Array((n + m) * 2);
+  UV2.set(verts.uv);
+  g.pos.forEach((q, i) => {
+    let best = 0;
+    let bd = Infinity;
+    for (let v = 0; v < n; v++) {
+      const d = (world[v * 3] - q[0]) ** 2 + (world[v * 3 + 1] - q[1]) ** 2 + (world[v * 3 + 2] - q[2]) ** 2;
+      if (d < bd) [bd, best] = [d, v];
+    }
+    J2.set(J.subarray(best * 4, best * 4 + 4), (n + i) * 4);
+    W2.set(W.subarray(best * 4, best * 4 + 4), (n + i) * 4);
+    UV2.set(g.uv[i], (n + i) * 2);
+  });
+  const I2 = new Uint32Array(verts.indices.length + g.idx.length);
+  I2.set(verts.indices);
+  g.idx.forEach((x, i) => (I2[verts.indices.length + i] = n + x));
+  const at = verts.at;
+  Object.assign(verts, {
+    count: n + m,
+    joints: J2,
+    weights: W2,
+    uv: UV2,
+    indices: I2,
+    // The new vertices sit where they were made, whichever of their joints is asked.
+    at: (v, j) => (v < n ? at(v, j) : [g.pos[v - n], g.nrm[v - n]]),
+  });
+  console.log(`  ${c.id} plugs: ${g.idx.length / 3} triangles`);
 }
 
 /**
@@ -621,6 +690,12 @@ async function readUnrigged(file, c, ual) {
     if (!p.getIndices()) p.setIndices(doc.createAccessor().setType('SCALAR').setArray(Uint32Array.from({ length: p.getAttribute('POSITION').getCount() }, (_, i) => i)));
   }
   await doc.transform(weld());
+  // `fixes.plugs` (plugs.mjs): closed shapes inside the body where the download's own surface is open, added before it
+  // is rigged (bone heat rigs them with the rest).
+  if (c.plugs) {
+    const added = addPlugs(mesh.listPrimitives()[0], c.plugs.at, c.plugs.shrink, (l) => console.log(`  ${c.id} ${l}`));
+    console.log(`  ${c.id} plugs: ${added} triangles`);
+  }
   let rebaked = null;
   {
     // Cut to the working detail (texture seams are kept, so the base colour still fits); a mesh the
@@ -645,7 +720,8 @@ async function readUnrigged(file, c, ual) {
       const normalImage = glb ? (mat?.getNormalTexture()?.getImage() ?? null) : existsSync(file.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(file.replace(/\.fbx$/i, '_normal.png')) : null;
       const full = { P: pos, N: new Float32Array(p.getAttribute('NORMAL').getArray()), UV: new Float32Array(p.getAttribute('TEXCOORD_0').getArray()), I: new Uint32Array(p.getIndices().getArray()) };
       const mrImage = glb && c.finishMaps ? (mat?.getMetallicRoughnessTexture()?.getImage() ?? null) : null;
-      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, mrImage, [{ ...parts[0], share: c.headShare ?? HEAD_SHARE }, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
+      const head = { ...parts[0], share: c.headShare ?? HEAD_SHARE, dense: true };
+      rebaked = await rebakeDownload(full, image, normalImage, c.triangles ?? 11000, mrImage, [...faceParts(c, pos, head), head, { ...parts[1], share: c.handsShare ?? REBAKE_HANDS_SHARE }]);
       const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(doc.getRoot().listBuffers()[0]);
       p.setAttribute('POSITION', acc('VEC3', rebaked.P)).setAttribute('NORMAL', acc('VEC3', rebaked.N)).setAttribute('TEXCOORD_0', acc('VEC2', rebaked.UV)).setIndices(acc('SCALAR', rebaked.I));
       for (const sem of p.listSemantics()) if (!['POSITION', 'NORMAL', 'TEXCOORD_0'].includes(sem)) p.setAttribute(sem, null);
@@ -838,6 +914,78 @@ async function scrub(image, spec) {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
 }
 
+/**
+ * `fixes.recolor`: shift colours of the download's colour map by rule, so a model can be told apart from a look it
+ * resembles (Azure Sentinel's black coat to navy, its teal lenses to amber). Each rule picks pixels by `hue` (degrees
+ * [from, to], wrapping past 360), `sat` and `light` (HSL, 0–1 [from, to]); a pixel's share fades out over `feather`
+ * (default 0.06, in the same units; hue in degrees × 1/360) past each bound, so no hard edge shows at a seam or along
+ * a gradient. A picked pixel gets `toHue` (degrees), its saturation `toSat` (or times `satScale`) and its lightness
+ * times `lightScale`, mixed by `amount` (0–1, default 1) times its share. Applied in order, after scrubBlue.
+ */
+export function recolorPixels(data, rules) {
+  const f = (v, [a, b], fe) => (v < a ? Math.max(0, 1 - (a - v) / fe) : v > b ? Math.max(0, 1 - (v - b) / fe) : 1);
+  for (let i = 0; i < data.length; i += 3) {
+    let r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+    for (const rule of rules) {
+      const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+      const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+      let h = 0;
+      if (d) h = 60 * (max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4);
+      const fe = rule.feather ?? 0.06;
+      let w = (rule.amount ?? 1) * (rule.sat ? f(s, rule.sat, fe) : 1) * (rule.light ? f(l, rule.light, fe) : 1);
+      if (rule.hue && w > 0) {
+        const [a, bb] = rule.hue;
+        const inside = a <= bb ? h >= a && h <= bb : h >= a || h <= bb;
+        const dist = inside ? 0 : Math.min(...[a, bb].map((e) => Math.min(Math.abs(h - e), 360 - Math.abs(h - e))));
+        w *= Math.max(0, 1 - dist / (fe * 360));
+      }
+      if (w <= 0) continue;
+      const nh = rule.toHue ?? h;
+      const ns = Math.min(1, rule.toSat ?? s * (rule.satScale ?? 1));
+      const nl = Math.min(1, l * (rule.lightScale ?? 1));
+      const c = (1 - Math.abs(2 * nl - 1)) * ns, x = c * (1 - Math.abs(((nh / 60) % 2) - 1)), m = nl - c / 2;
+      const [rr, gg, bb2] = nh < 60 ? [c, x, 0] : nh < 120 ? [x, c, 0] : nh < 180 ? [0, c, x] : nh < 240 ? [0, x, c] : nh < 300 ? [x, 0, c] : [c, 0, x];
+      r += (rr + m - r) * w; g += (gg + m - g) * w; b += (bb2 + m - b) * w;
+    }
+    data[i] = Math.round(Math.min(1, Math.max(0, r)) * 255);
+    data[i + 1] = Math.round(Math.min(1, Math.max(0, g)) * 255);
+    data[i + 2] = Math.round(Math.min(1, Math.max(0, b)) * 255);
+  }
+  return data;
+}
+
+async function recolor(image, rules) {
+  if (!rules?.length) return image;
+  const { data, info } = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  recolorPixels(data, rules);
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 3 } }).png().toBuffer();
+}
+
+/**
+ * `fixes.face` (`{ box, share }`): the face as its own part of a rebaked cut, ahead of the rest of the head, with its
+ * own share of the budget out of the head's (the head part's share less it), its charts laid out as finely as the
+ * head's. A head part's share counts the hair, a cap or a helmet too, and cut by error alone a face's eyes went: Sgt.
+ * Mackie's brim and cap took the head's triangles, and a wedge of cheek ran up over each eye (owner, 2026-11-17: "face
+ * still softer than the download"). `box` is in shares of the download's height in its own pose (feet at 0, x and z
+ * from its origin, +z its front: the `landmarks` and `rigid` frame). `P`: the download's positions; `head`: its head
+ * part (its share is lowered by the face's).
+ */
+function faceParts(c, P, head) {
+  if (!c.face) return [];
+  let [lo, hi] = [Infinity, -Infinity];
+  for (let v = 1; v < P.length; v += 3) [lo, hi] = [Math.min(lo, P[v]), Math.max(hi, P[v])];
+  const H = hi - lo;
+  const [x0, y0, z0, x1, y1, z1] = c.face.box;
+  head.share = Math.max(0.02, head.share - c.face.share);
+  const inside = (v) => {
+    const x = P[v * 3] / H;
+    const y = (P[v * 3 + 1] - lo) / H;
+    const z = P[v * 3 + 2] / H;
+    return x >= x0 && x <= x1 && y >= y0 && y <= y1 && z >= z0 && z <= z1;
+  };
+  return [{ inside, share: c.face.share, dense: true }];
+}
+
 /** The colour map a rebaked character is painted at (px). */
 const REBAKE_SIZE = 1024;
 /** Its charts: grown while each triangle faces within this many degrees of the chart's first (meshy-mesh.mjs rebake). */
@@ -886,10 +1034,18 @@ async function rebakeDownload(mesh, image, normalImage, target, metalRoughImage,
   const at = (k) => [pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]];
   const cut = cutKeeping(Uint32Array.from(tris), pos, target, parts.map((p) => ({ share: p.share, inside: (k) => p.inside(first[k], at(k)) })), { errors: [0.004, 0.008] });
   console.log(`  seams closed: ${n} vertices welded to ${first.length}, ${I.length / 3} triangles cut to ${cut.length / 3}`);
+  // Each part's triangles after the cut (a triangle in the first part with two of its corners inside), for the log.
+  const counts = parts.map(() => 0);
+  for (let t = 0; t < cut.length; t += 3) {
+    const k = parts.findIndex((p) => [0, 1, 2].filter((i) => p.inside(first[cut[t + i]], at(cut[t + i]))).length >= 2);
+    if (k >= 0) counts[k]++;
+  }
+  console.log(`  parts kept: ${counts.join(' / ')} triangles (shares ${parts.map((p) => p.share).join(' / ')})`);
   const map = await sharp(Buffer.from(image)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   // The head's charts laid out finer (REBAKE_HEAD_DENSITY): at one density for the whole body a face got a few dozen
   // texels across and read as a smear up close.
-  const headK = (k) => parts[0].inside(first[k], at(k));
+  const denseParts = parts.filter((p) => p.dense);
+  const headK = (k) => denseParts.some((p) => p.inside(first[k], at(k)));
   const dense = (t) => (headK(cut[t * 3]) + headK(cut[t * 3 + 1]) + headK(cut[t * 3 + 2]) >= 2 ? REBAKE_HEAD_DENSITY : 1);
   const out = await rebake({ pos, idx: cut }, { P, I, UV }, map, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
   const hiMap = normalImage ? await sharp(Buffer.from(normalImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
@@ -1059,7 +1215,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
   // The download's own layout: its gutters filled before it is shrunk (padCharts; a rebake fills its own).
   const padded = (image) => (src.ownNormalMap ? Buffer.from(image) : padCharts(image, src.uv, src.indices));
-  const jpeg = await sharp(await scrub(await padded(src.baseColor), c.scrubBlue)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
+  const jpeg = await sharp(await recolor(await scrub(await padded(src.baseColor), c.scrubBlue), c.recolor)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
   const tex = doc.createTexture(`${c.id}_albedo`).setImage(new Uint8Array(jpeg)).setMimeType('image/jpeg');
   // The game leaves materials it doesn't recognise as they are (textureFor), so this one keeps its texture.
   const material = doc.createMaterial(`MI_Meshy_${c.id}`).setBaseColorTexture(tex).setMetallicFactor(c.metallic).setRoughnessFactor(c.roughness);
@@ -1285,3 +1441,7 @@ for (const c of SPECS) {
 }
 writeLock(LOCK, lock);
 console.log(`wrote ${lock.files.length} files and content/meshy.lock.json`);
+// New hand geometry (`fixes.hands.graft`, handgraft.mjs) goes on a built file: a character rebuilt here has its download's
+// hands again until rehand-built.mjs grafts them.
+const grafted = SPECS.filter((c) => c.hands?.graft && (!only || only.includes(c.id)) && findDownload(c));
+if (grafted.length) console.log(`new hand geometry (fixes.hands.graft) not on these yet: ONLY=${grafted.map((c) => c.id).join(',')} node tools/content/rehand-built.mjs`);

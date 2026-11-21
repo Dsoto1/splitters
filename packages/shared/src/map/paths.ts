@@ -1,6 +1,7 @@
 import { pathGeometry, pathUses } from './track.ts';
-import { TERRAIN_MATERIALS, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
+import { TERRAIN_SURFACES, groundIndex, terrainHeightAt, type TerrainData, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument, MapPath, PathStyle } from './schema.ts';
+import { groundCutAt, type GroundCut } from './terrainCuts.ts';
 
 /**
  * Paths: roads, streets, trails and walkways, the race track and AI routes,
@@ -28,6 +29,8 @@ export const PATH_LOOKS: Record<PathStyle, { label: string; surface: string; tin
   dirt: { label: 'Dirt trail', surface: 'core.pbr_dusty_road', tint: null, ground: 'dirt', lines: false },
   sand: { label: 'Sand', surface: 'core.pbr_sand', tint: null, ground: 'sand', lines: false },
   planks: { label: 'Boardwalk', surface: 'core.pbr_weathered_planks', tint: null, ground: 'dirt', lines: false },
+  // A red brick walk (St. John's step 4; map format v43): Red Brick laid flat, stone ground under it.
+  brick: { label: 'Brick walk', surface: 'core.pbr_brick_red', tint: null, ground: 'stone', lines: false },
 };
 
 const smooth = (v: number): number => {
@@ -40,13 +43,18 @@ const smooth = (v: number): number => {
  * path's height, flat across; over `shoulder` metres either side it blends
  * back; the cells wholly under it are painted the path's ground, and the
  * cells it crosses lose their plants. Returns the same terrain when no path lays.
+ * Where a path runs through a buried tunnel (`cuts`: its point is inside a bore, the ground well over it: Tileset 04
+ * step 6, a road through a road tunnel) the ground is left alone there: the hill stays over the tunnel, and the road
+ * is the tunnel's floor.
  */
-export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): TerrainData {
+export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[], cuts: readonly GroundCut[] = []): TerrainData {
   const laid = paths.filter((p) => p.lay && pathDrawn(p) && p.points.length >= 2);
   if (!laid.length) return t;
   const heights = t.heights.slice();
-  const materials = t.materials.slice();
+  let materials = t.materials.slice();
   const foliage = t.foliage.length ? t.foliage.slice() : [];
+  // The path's ground is painted (a ground in the terrain's own list: it doesn't follow the Ground theme).
+  let grounds = t.grounds;
   for (const p of laid) {
     const g = pathGeometry(p);
     const half = p.width / 2;
@@ -65,6 +73,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
     // The path's height: the ground along it, smoothed (an average over ~12 m), so it follows the hills
     // instead of cutting straight between its points, and stays level across.
     const ground = g.samples.map((q) => terrainHeightAt(t, q.x, q.z) ?? q.y);
+    const buried = g.samples.map((q, i) => ground[i]! - q.y > 2 && groundCutAt(cuts, q.x, q.y + 0.5, q.z));
     const target = ground.map((_, i) => {
       let sum = 0;
       let n = 0;
@@ -87,7 +96,7 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         const x = t.origin[0] + c * t.spacing;
         const z = t.origin[1] + r * t.spacing;
         const near = g.nearest(x, z, reach + 1);
-        if (!near) continue;
+        if (!near || buried[near.index]) continue;
         const d = Math.abs(near.lateral);
         if (d > half + shoulder || near.dist > reach) continue;
         const i = r * t.cols + c;
@@ -96,7 +105,12 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         heights[i] = Math.round(heights[i]! + (want - heights[i]!) * k);
       }
     }
-    const paint = TERRAIN_MATERIALS.indexOf(PATH_LOOKS[p.style].ground);
+    const slot = groundIndex({ ...t, materials, grounds }, TERRAIN_SURFACES[PATH_LOOKS[p.style].ground]);
+    if (slot) {
+      materials = slot.terrain.materials;
+      grounds = slot.terrain.grounds;
+    }
+    const paint = slot ? slot.value : -1;
     for (let r = r0; r < Math.min(r1, t.rows - 1); r++) {
       for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
         const x = t.origin[0] + (c + 0.5) * t.spacing;
@@ -105,24 +119,31 @@ export function layPathsIntoTerrain(t: TerrainData, paths: readonly MapPath[]): 
         if (!near) continue;
         const d = Math.abs(near.lateral);
         const i = r * (t.cols - 1) + c;
+        // How far past an open path's end the cell's centre is (negative: short of it; 0 for a cell nearer a sample
+        // between the ends). Past the end the lateral distance alone says nothing: a cell beyond the last point,
+        // in line with the path, was painted, a square of path ground beside the path's end (shown hard-edged on
+        // Low graphics, where the paint doesn't blend).
+        const end = g.loop ? 0 : near.index === 0 ? -1 : near.index === g.samples.length - 1 ? 1 : 0;
+        const past = end ? ((x - near.sample.x) * near.sample.dx + (z - near.sample.z) * near.sample.dz) * end : -Infinity;
         // Paint only cells wholly under the path (the ground is one material per cell, so painting the edge
         // cells drew a staircase of squares along the road); plants go a little wider.
-        if (paint >= 0 && d <= half - t.spacing * 0.71) materials[i] = paint;
-        if (foliage.length && d <= half + t.spacing * 0.35) foliage[i] = 0;
+        if (paint >= 0 && d <= half - t.spacing * 0.71 && past <= -t.spacing * 0.71) materials[i] = paint;
+        if (foliage.length && d <= half + t.spacing * 0.35 && past <= t.spacing * 0.35) foliage[i] = 0;
       }
     }
   }
-  return { ...t, heights, materials, foliage };
+  return { ...t, heights, materials, grounds, foliage };
 }
 
 /**
  * The map as played: its terrain with the paths laid in, and each path
  * marked as laid (`lay: false`), so laying again (a host's map loaded by its
- * players) changes nothing. loadMap does this; MapMaker shows it without storing it.
+ * players) changes nothing. `cuts`: the map's buried tunnels' (groundBore.ts mapGroundBores), where a road runs
+ * through a bore and leaves the hill alone. loadMap does this; MapMaker shows it without storing it.
  */
-export function withPathsLaid(map: MapDocument): MapDocument {
+export function withPathsLaid(map: MapDocument, cuts: readonly GroundCut[] = []): MapDocument {
   if (!map.terrain || !map.paths?.some((p) => p.lay && pathDrawn(p))) return map;
-  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
+  return { ...map, terrain: layPathsIntoTerrain(map.terrain, map.paths, cuts), paths: map.paths.map((p) => (p.lay && pathDrawn(p) ? { ...p, lay: false } : p)) };
 }
 
 /**
@@ -151,21 +172,46 @@ export function pathsExtent(paths: readonly MapPath[] | null | undefined): { min
 /** Height step (m) between overlapping drawn paths, one per draw rank (pathDrawRanks). */
 export const PATH_RANK_LIFT = 0.03;
 
+/** Width (m) from which a drawn path counts as a road (pathIsRoad): a car lane and more; asphalt lines start here too. */
+export const ROAD_MIN_WIDTH = 5;
+
+/**
+ * Where a drawn path stands among the others it overlaps (pathDrawLevels): 2 for a street (the race track or an
+ * asphalt road), 1 for another road (anything ROAD_MIN_WIDTH wide or more: a gravel track, a concrete way, a haul
+ * road), 0 for a footpath, trail or boardwalk. A higher tier is drawn over a lower one where they meet, so a path
+ * running into a road ends under its surface and the join looks seamless (owner, 2026-11-13).
+ */
+export const pathRoadTier = (p: MapPath): number => (pathUses(p, 'race') || p.style === 'asphalt' ? 2 : p.width >= ROAD_MIN_WIDTH ? 1 : 0);
+
+/** Is this drawn path a road (pathRoadTier above 0) rather than a footpath, trail or boardwalk? */
+export const pathIsRoad = (p: MapPath): boolean => pathRoadTier(p) > 0;
+
+/** How far a drawn path's surface stands above the ground: a boardwalk a little proud of it, everything else just on it. */
+export const pathBaseLift = (p: MapPath): number => (p.style === 'planks' ? 0.12 : 0.04);
+
 /**
  * Which drawn path goes on top where drawn paths overlap (a concrete apron laid
- * over a haul road, a spur joining a road): each drawn path's draw rank, by id.
- * A path that overlaps none drawn before it is rank 0; otherwise one above the
- * highest of those it overlaps, so the later path in the map's list is drawn
- * over the earlier ones. Ribbons with the same rank lie at the same height on
- * the same ground, and where they cross the depth buffer picks a winner pixel
- * by pixel: hard, jagged patches of one through the other. The renderer lifts
- * each rank a little (PATH_RANK_LIFT) and pulls it toward the camera.
+ * over a haul road, a trail joining a road): each drawn path's draw rank and
+ * its surface's lift above the ground, by id. A street goes over the other roads
+ * and a road over the footpaths and trails it overlaps (pathRoadTier), whatever
+ * the map's list order; within a tier the later one in the list goes over the
+ * earlier ones.
+ * A path that overlaps none placed before it is rank 0 at its own lift
+ * (pathBaseLift); otherwise one rank above the highest of those it overlaps,
+ * and at least PATH_RANK_LIFT higher than each of them (so a road stays over a
+ * boardwalk that runs into it). Ribbons with the same rank lie at the same
+ * height on the same ground, and where they cross the depth buffer picks a
+ * winner pixel by pixel: hard, jagged patches of one through the other. The
+ * renderer lifts each by its `lift` and pulls each rank toward the camera.
+ * Worked out once when the paths are built; nothing per frame.
  */
-export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map<string, number> {
-  const ranks = new Map<string, number>();
+export function pathDrawLevels(paths: readonly MapPath[] | null | undefined): Map<string, { rank: number; lift: number }> {
+  const levels = new Map<string, { rank: number; lift: number }>();
+  const shown = (paths ?? []).filter((p) => p.points.length >= 2 && pathDrawn(p));
+  // Footpaths and trails first, then roads, then streets over them; each tier in the map's order.
+  const order = [0, 1, 2].flatMap((tier) => shown.filter((p) => pathRoadTier(p) === tier));
   const drawn: { id: string; half: number; pts: { x: number; z: number }[]; box: [number, number, number, number] }[] = [];
-  for (const p of paths ?? []) {
-    if (p.points.length < 2 || !pathDrawn(p)) continue;
+  for (const p of order) {
     const half = p.width / 2;
     const pts = pathGeometry(p).samples.map((s) => ({ x: s.x, z: s.z }));
     const box: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
@@ -176,14 +222,23 @@ export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map
       box[3] = Math.max(box[3], q.z + half);
     }
     let rank = 0;
+    let lift = pathBaseLift(p);
     for (const o of drawn) {
       if (box[0] > o.box[2] || o.box[0] > box[2] || box[1] > o.box[3] || o.box[1] > box[3]) continue;
       // Centre-line samples are 2 m apart: a metre of slack so ribbons that just touch count.
       const reach = (half + o.half + 1) ** 2;
-      if (pts.some((a) => o.pts.some((b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2 < reach))) rank = Math.max(rank, ranks.get(o.id)! + 1);
+      if (!pts.some((a) => o.pts.some((b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2 < reach))) continue;
+      const under = levels.get(o.id)!;
+      rank = Math.max(rank, under.rank + 1);
+      lift = Math.max(lift, under.lift + PATH_RANK_LIFT);
     }
-    ranks.set(p.id, rank);
+    levels.set(p.id, { rank, lift });
     drawn.push({ id: p.id, half, pts, box });
   }
-  return ranks;
+  return levels;
+}
+
+/** Each drawn path's draw rank, by id (pathDrawLevels). */
+export function pathDrawRanks(paths: readonly MapPath[] | null | undefined): Map<string, number> {
+  return new Map([...pathDrawLevels(paths)].map(([id, l]) => [id, l.rank]));
 }

@@ -1,4 +1,4 @@
-import { TERRAIN_MATERIALS, type TerrainMaterial } from './terrain.ts';
+import { TERRAIN_MATERIALS, TERRAIN_SURFACES, cellGround, groundKind, type TerrainMaterial } from './terrain.ts';
 import type { MapDocument } from './schema.ts';
 import type { BorderSides, BorderStyle } from './border.ts';
 import { PHOTO_SKIES } from '../content/skies.generated.ts';
@@ -108,20 +108,48 @@ export const THEME_BACKDROPS: Record<string, Backdrop> = {
   'core.industrial': b('overcast', 'city', 'gravel', 0.6),
 };
 
-/** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on in the terrain's commonest edge material). */
+/** The ground the terrain's edge cells show most (a material id; the first on a tie, in order of first use), or null with no terrain. */
+function commonestEdgeGround(t: NonNullable<MapDocument['terrain']>): string | null {
+  const counts = new Map<string, number>();
+  const w = t.cols - 1;
+  const h = t.rows - 1;
+  for (let i = 0; i < t.materials.length; i++) {
+    const c = i % w;
+    const r = Math.floor(i / w);
+    if (c === 0 || r === 0 || c === w - 1 || r === h - 1) {
+      const g = cellGround(t, i);
+      counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+  }
+  let best: string | null = null;
+  let most = 0;
+  // Old layer order first (as before v45: its ties went to the earlier layer), then any other ground.
+  const order = [...TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]), ...counts.keys()];
+  for (const g of order) if ((counts.get(g) ?? 0) > most) [best, most] = [g, counts.get(g)!];
+  return best;
+}
+
+/** The backdrop a map is drawn with: its own, or its theme's (the ground carrying on as the kind of the terrain's commonest edge ground). */
 export function resolveBackdrop(doc: Pick<MapDocument, 'backdrop' | 'terrain' | 'classicStructure'>): Backdrop {
   if (doc.backdrop) return doc.backdrop;
   const base = THEME_BACKDROPS[doc.classicStructure.theme] ?? THEME_BACKDROPS['core.prototype']!;
   const t = doc.terrain;
   if (!t || base.ground === 'none' || base.ground === 'water') return base;
-  const counts = new Array<number>(TERRAIN_MATERIALS.length).fill(0);
-  const w = t.cols - 1;
-  const h = t.rows - 1;
-  t.materials.forEach((m, i) => {
-    const c = i % w;
-    const r = Math.floor(i / w);
-    if (c === 0 || r === 0 || c === w - 1 || r === h - 1) counts[m] = (counts[m] ?? 0) + 1;
-  });
-  const top = counts.indexOf(Math.max(...counts));
-  return { ...base, ground: (TERRAIN_MATERIALS[top] ?? base.ground) as TerrainMaterial };
+  const top = commonestEdgeGround(t);
+  return { ...base, ground: top ? groundKind(top) : base.ground };
+}
+
+/**
+ * The ground material drawn past the border (null: water or nothing): with the theme's backdrop, the terrain's
+ * commonest edge ground itself (Packed Snow carries on as Packed Snow); with a backdrop of the map's own, its ground
+ * kind's material.
+ */
+export function backdropGroundSurface(doc: Pick<MapDocument, 'backdrop' | 'terrain' | 'classicStructure'>): string | null {
+  const b = resolveBackdrop(doc);
+  if (b.ground === 'none' || b.ground === 'water') return null;
+  if (!doc.backdrop && doc.terrain) {
+    const top = commonestEdgeGround(doc.terrain);
+    if (top) return top;
+  }
+  return TERRAIN_SURFACES[b.ground as TerrainMaterial];
 }

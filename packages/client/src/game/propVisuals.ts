@@ -16,9 +16,11 @@ import type { PropBatches } from './propBatches.ts';
  * matrices are frozen once the model is in. In the game (`instanced`)
  * untinted props are GPU instances of their model merged per material, so big
  * maps stay cheap to draw; with `batches`, static ones are thin instances in their square's batch instead (the
- * root stays, with no meshes under it). Take one down with `disposePropNode`.
+ * root stays, with no meshes under it; the caller decides which props go there). `indoor` (shared `indoorProps`): under
+ * a roof, so it stays out of the sun's shadow pass. `breakable`: it can break, so a batch draws it only while the root is
+ * enabled (PropBatches.shown). Take one down with `disposePropNode`.
  */
-export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null): TransformNode {
+export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null, indoor = false, breakable = false): TransformNode {
   const root = new TransformNode(name, scene);
   root.position.set(e.position[0], e.position[1], e.position[2]);
   root.scaling.setAll(e.scale);
@@ -29,8 +31,9 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   // Untinted copies of the same prop share one draw call per material (their parts merged); tinted ones need their own materials.
   // An environment species draws its variant's file (summer, autumn, snow…), a kit family its variant's (content/kitProps.ts).
   const file = kitModelFile(e.model, e.variant) ?? envModelFile(e.model, e.variant) ?? def.file;
-  // The game's static props (not breakable, not carried): copies in their square's batch (propBatches.ts), tint and all.
-  const batched = batches && frozen && !def.breakable ? batches.add(file, root, small, e.tint ?? null) : Promise.resolve(false);
+  // The game's static props (not carried): copies in their square's batch (propBatches.ts), tint and all. A `breakable`
+  // one (the caller's call: shared isBreakableProp) draws there only while `root` is enabled.
+  const batched = batches && frozen ? batches.add(file, root, small, e.tint ?? null, indoor, breakable) : Promise.resolve(false);
   const model = batched.then((ok) => (ok ? null : instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false)));
   void model.then((node) => {
     if (!node) return;
@@ -49,6 +52,11 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
       if (frozen) m.freezeWorldMatrix();
       // Small clutter casts its shadow only near the camera (Atmosphere, SMALL_CASTER_REACH).
       if (small) m.metadata = { ...(m.metadata as object | null), smallCaster: true };
+      // Indoors (under a roof or the floor above: shared `indoorProps`) it casts no sun shadow at all: the roof's covers it.
+      if (indoor) m.metadata = { ...(m.metadata as object | null), castsNoShadow: true };
+      // It can break (its root switched off): it never casts through the merged shadow proxies (shadowProxy.ts), which
+      // would keep a broken prop's shadow; on its own its shadow goes with it.
+      if (breakable) m.metadata = { ...(m.metadata as object | null), breakable: true };
     }
   });
   return root;

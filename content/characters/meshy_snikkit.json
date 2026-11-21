@@ -5,7 +5,8 @@
   "order": 59,
   "name": "Snikkit",
   "look": "core.snikkit",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "All teeth, ears and loincloth. Giggles when he reloads, which is somehow worse.",
   "body": "male",
@@ -25,9 +26,6 @@
     "metallic": 0,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -36,6 +34,6 @@
     "lod": 0.25,
     "feet": true,
     "hands": { "scale": 0.75 },
-    "grip": { "gripLong": [-0.03, 0.015, -0.03], "curlR": 0.7, "curlL": 0.3, "supportPistol": [0, 0.02, -0.04] }
+    "grip": { "curlR": 0.7, "curlL": 0.3 }
   }
 }

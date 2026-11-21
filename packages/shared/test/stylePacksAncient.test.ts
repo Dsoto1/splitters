@@ -186,12 +186,22 @@ describe('Ancient pack demo maps', () => {
     expect(map.weaponSet).toBe('medieval');
     const tiles = map.classicStructure.tiles;
     const ids = new Set(tiles.map((x) => x.tile));
-    for (const id of ['imperial.seating', 'imperial.gate', 'imperial.emperor_box', 'core.cavea', 'core.cavea_vomitorium', 'core.gallery_grand', 'core.tunnel_vault', 'core.tunnel_vault_t', 'core.tunnel_vault_cross', 'core.hatch_corner', 'core.stairwell', 'core.stairs_open', 'imperial.forum', 'imperial.temple', 'imperial.triumphal_arch', 'imperial.colonnade']) expect(ids.has(id), id).toBe(true);
-    // The emperor's box is back, at the centre of the north stand; the four corner gates at the north and south stands' ends.
+    for (const id of ['imperial.seating', 'imperial.emperor_box', 'core.cavea', 'core.cavea_vomitorium', 'core.gallery_grand', 'core.arena_corner_ground_gate', 'core.arena_corner_mid', 'core.arena_corner_upper', 'core.arena_corner_attic_gate', 'core.arena_corner_tower', 'core.tunnel_vault', 'core.tunnel_vault_t', 'core.tunnel_vault_cross', 'core.hatch_corner', 'core.stairwell', 'core.stairs_open', 'imperial.forum', 'imperial.temple', 'imperial.triumphal_arch', 'imperial.colonnade']) expect(ids.has(id), id).toBe(true);
+    // The emperor's box is back, at the centre of the north stand. The octagon (OCTAGON_PLAN.md, phase 4): an Arena Corner
+    // (Gate) on each diagonal, anchored on the sand's corner cell and turned a quarter a corner, its gate tower included.
     expect(tiles.filter((x) => x.tile === 'imperial.emperor_box').map((x) => [x.x, x.y, x.z])).toEqual([[0, 4, 0]]);
-    expect(tiles.filter((x) => x.tile === 'imperial.gate').map((x) => `${x.x},${x.y}`).sort()).toEqual(['-3,-4', '-3,4', '3,-4', '3,4']);
-    // The sand: 7 × 7 cells at ground level, the board's twelve pillars on its 4 m squares, its four hatches.
-    expect(tiles.filter((x) => (x.tile === 'core.yard' || x.tile === 'core.hatch_corner') && x.z === 0 && Math.abs(x.x) <= 3 && Math.abs(x.y) <= 3)).toHaveLength(49);
+    expect(tiles.some((x) => x.tile === 'imperial.gate')).toBe(false);
+    expect(tiles.filter((x) => x.tile === 'core.arena_corner_ground_gate').map((x) => `${x.x},${x.y},${x.z},${x.rotation}`).sort()).toEqual(['-2,-2,0,2', '-2,2,0,3', '2,-2,0,1', '2,2,0,0']);
+    expect(tiles.filter((x) => x.tile === 'core.arena_corner_tower')).toHaveLength(4);
+    // No stair towers or court stairs in the corners now: the outer courts are open ground.
+    expect(tiles.some((x) => x.z === 0 && Math.abs(x.x) >= 4 && Math.abs(x.y) >= 4 && Math.abs(x.x) <= 10 && Math.abs(x.y) <= 10 && !x.tile.startsWith('core.arena_corner_'))).toBe(false);
+    // The hypogeum ring's corners are Vaulted Tunnel Crossings, open to both stair wells.
+    expect(tiles.filter((x) => x.tile === 'core.tunnel_vault_cross' && x.z === -1 && Math.abs(x.x) === 4 && Math.abs(x.y) === 4)).toHaveLength(4);
+    // The sand: 7 × 7 cells less the four corner cells under the corners' podiums (the half cells beside them stay),
+    // the board's twelve pillars on its 4 m squares, its four hatches.
+    const sand = tiles.filter((x) => (x.tile === 'core.yard' || x.tile === 'core.hatch_corner') && x.z === 0 && Math.abs(x.x) <= 3 && Math.abs(x.y) <= 3);
+    expect(sand).toHaveLength(45);
+    expect(sand.some((x) => Math.abs(x.x) === 3 && Math.abs(x.y) === 3)).toBe(false);
     const pillars = map.entities.filter((e) => e.kind === 'prop' && e.model === 'prop.im_column_ionic').map((e) => `${e.position[0]},${e.position[2]}`).sort();
     expect(pillars).toEqual(['-16,-16', '-16,16', '-24,0', '-8,-8', '-8,8', '0,-24', '0,24', '16,-16', '16,16', '24,0', '8,-8', '8,8']);
     expect(map.entities.filter((e) => e.kind === 'ladder')).toHaveLength(4);
@@ -206,14 +216,22 @@ describe('Ancient pack demo maps', () => {
 
   it("Sandfall Colosseum's follow-ups (owner, 2026-11-09): fewer collision boxes, the portcullis gates on winches, Deathmatch, side-walled tunnels", () => {
     const map = load('sandfall_colosseum');
-    // The stands' inner arcades and the east and west facades went (solid fill in their place): about 31,700 before.
-    expect(buildMapGeometry(map).length).toBeLessThan(23_000);
-    expect(map.entities.filter((e) => e.kind === 'block' && e.name?.startsWith('Stand fill'))).toHaveLength(10);
+    // The stands' inner arcades and the east and west facades went (solid fill in their place): about 31,700 before,
+    // 22,240 as a square; the octagon's corners (phase 4) took it to about 17,900, their gallery stairs (phase 5) to 18,240.
+    expect(buildMapGeometry(map).length).toBeLessThan(20_000);
+    // The ten fill blocks stop at the three kept bays of each stand (24 m along it).
+    const fill = map.entities.filter((e): e is Extract<MapEntity, { kind: 'block' }> => e.kind === 'block' && !!e.name?.startsWith('Stand fill'));
+    expect(fill).toHaveLength(10);
+    for (const b of fill) expect(Math.abs(b.position[0]) < 1 ? b.size[0] : b.size[2], b.name).toBe(24);
     expect([...map.metadata.supportedModes].sort()).toEqual(['core.ctf', 'core.deathmatch', 'core.koth', 'core.tdm']);
     // A portcullis in each Gladiator Gate's opening, a winch in the passage and a chain on the sand, each toggling it.
     // (The hypogeum's beast pens have portcullis doors of their own, opened by nothing.)
     const gates = map.entities.filter((e): e is Extract<MapEntity, { kind: 'door' }> => e.kind === 'door' && e.style === 'portcullis' && /^Gate [1-4]$/.test(e.name ?? ''));
-    expect(gates.map((g) => `${g.position[0]},${g.position[2]}`).sort()).toEqual(['-24,-29', '-24,29', '24,-29', '24,29']);
+    // Hung in the corners' gate mouths (the set pieces' own portcullis left out), 1 m in from the podium's face, square
+    // to the diagonal.
+    expect(gates.map((g) => `${g.position[0]},${g.position[2]}`).sort()).toEqual(['-20.707,-20.707', '-20.707,20.707', '20.707,-20.707', '20.707,20.707']);
+    for (const g of gates) expect(Math.abs(Math.cos(2 * g.yaw)), g.name).toBeLessThan(1e-3);
+    for (const p of (JSON.parse(read('maps/sandfall_colosseum.json')).setPieces ?? []).filter((p: { piece: string }) => p.piece === 'setpiece.arena_corner_gate')) expect(p.overrides?.hide).toEqual([5]);
     for (const gate of gates) {
       const rules = map.logic.rules.filter((r) => r.when.event === 'button_pressed' && r.do.some((a) => a.type === 'door_toggle' && a.target === gate.id));
       expect(rules, gate.name).toHaveLength(2);
@@ -226,6 +244,28 @@ describe('Ancient pack demo maps', () => {
       expect(gate.startOpen && !gate.auto && !gate.locked).toBe(true);
     }
     expect(map.classicStructure.tiles.some((t) => t.tile.endsWith('_walled') && t.tile.startsWith('core.tunnel_vault'))).toBe(true);
+  });
+
+  it("Flavius Rule's octagon (phase 4): twelve spawns a team, four along each gate passage and two in each outer court; the description is up to date", () => {
+    const map = load('sandfall_colosseum');
+    const spawns = map.entities.filter((e): e is Extract<MapEntity, { kind: 'spawn' }> => e.kind === 'spawn');
+    for (const [team, sz] of [['embers', 1], ['tide', -1]] as const) {
+      const own = spawns.filter((s) => s.faction === team);
+      expect(own).toHaveLength(12);
+      for (const sx of [1, -1]) {
+        const corner = own.filter((s) => Math.sign(s.position[0]) === sx && Math.sign(s.position[2]) === sz);
+        // On the diagonal in the passage (depth under 48 m, the facade's inner face), or out in the court.
+        const depth = (s: (typeof own)[number]) => (Math.abs(s.position[0]) + Math.abs(s.position[2]) - 40) / Math.SQRT2;
+        const passage = corner.filter((s) => Math.abs(Math.abs(s.position[0]) - Math.abs(s.position[2])) < 0.01 && depth(s) < 48);
+        expect(passage, `${team} ${sx}`).toHaveLength(4);
+        // Past the facade's outer face, clear of the gatehouse tower (23 m wide on the diagonal).
+        expect(corner.filter((s) => depth(s) > 56 && Math.abs(Math.abs(s.position[0]) - Math.abs(s.position[2])) / Math.SQRT2 > 11.5)).toHaveLength(2);
+        // Facing the sand.
+        for (const s of passage) expect(Math.sin(s.yaw) * -sx + Math.cos(s.yaw) * -sz).toBeCloseTo(Math.SQRT2, 2);
+      }
+    }
+    expect(map.metadata.description).not.toMatch(/lift|aqueduct|portal/i);
+    expect(map.metadata.cardCamera).toBeTruthy();
   });
 
   it("Pharaoh's Reach has its temple, pyramid, tomb with traps and the curse, the river and its boats, and the tomb portal", () => {

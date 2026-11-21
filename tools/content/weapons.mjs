@@ -3,7 +3,7 @@
 //   node tools/content/weapons.mjs           check the content and write the generated file and the codes lock
 //   node tools/content/weapons.mjs --check   check the content, and that the generated file and the lock are up to date
 //
-// Reads content/weapons/families.json (the default block and the gunplay families), content/weapons/<name>.json (one
+// Reads content/weapons/families.json (the default block, the gunplay families and the dual-wielding trade), content/weapons/<name>.json (one
 // weapon each: only the values that differ from the defaults, its network code and its design notes),
 // content/throwables.json, content/classes.json and content/abilities.json. Checks the schema and the references
 // (ammo types, models and sounds exist; slots 0-9; codes unique and never reused; classes name real weapons), then
@@ -34,6 +34,8 @@ const nullable = (of) => ({ t: 'null|', of });
 const oneOf = (key, cases) => ({ t: 'oneOf', key, cases });
 const map = (of) => ({ t: 'map', of });
 const lazy = (f) => ({ t: 'lazy', f });
+/** `true`, or an object of the given shape (a flag that can also carry its own numbers). */
+const trueOr = (of) => ({ t: 'true|', of });
 const vec3 = tup(3);
 const notes = map(str);
 /** Schema building blocks, for the other data generators (vehicles.mjs, npcs.mjs, pickups.mjs). */
@@ -61,13 +63,17 @@ export function schemas(root = ROOT, families = []) {
     'cluster?': obj({ count: int, speed: num, spec: lazy(() => projectile) }),
     'walker?': obj({ speed: num }), 'retrievable?': bool,
     'airstrike?': obj({ count: int, spacing: num, height: num, bomb: lazy(() => projectile) }),
-    'cover?': obj({ half: vec3, health: num }), 'disc?': obj({ push: num, lift: num, 'split?': bool }),
+    'cover?': obj({ half: vec3, health: num }), 'ammoBox?': bool, 'disc?': obj({ push: num, lift: num, 'split?': bool }),
   });
   const kick = { pitch: arr(num, 1), yaw: arr(num), variance: num, delay: int, settle: num, rate: num, visual: num };
   const accuracy = { base: num, move: num, air: num, perShot: num, tight: int, max: num, recovery: num, ads: num, adsTicks: int };
   const ballistic = { velocity: num, gravityScale: num, 'drag?': num, energy: num, tracerEvery: int, 'tracerFinal?': int };
   const partial = (shape) => obj(Object.fromEntries(Object.entries(shape).map(([k, v]) => [k.endsWith('?') ? k : `${k}?`, v])));
   const falloff = obj({ start: num, end: num, min: num, curve: en(['linear', 'smooth', 'steep']) });
+  const handling = { move: num, sprintExit: int };
+  // Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): what holding a pair costs. Multipliers on the aim cone,
+  // a shotgun's pellet pattern, the kick, the reload time and the raise time; `move` is added to handling.move.
+  const akimbo = { cone: num, pattern: num, kick: num, reload: num, raise: num, move: num };
   const reload = oneOf('type', {
     magazine: obj({ type: str, tactical: int, empty: int, out: num, in: num }),
     shell: obj({ type: str, start: int, each: int, end: int }),
@@ -78,7 +84,9 @@ export function schemas(root = ROOT, families = []) {
     model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
+    'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
   });
+  const fireModeSpec = obj({ mode: en(['auto', 'semi', 'burst']), label: str, 'fireIntervalTicks?': int, 'burst?': obj({ count: int, intervalTicks: int }), 'kick?': partial(kick) });
   const alt = obj({
     label: str, ammo: en(['shared', 'own']), cost: int, 'max?': int, 'pickup?': int, fireIntervalTicks: int, kind: en(['hitscan', 'projectile']),
     'damage?': num, 'pellets?': int, 'spread?': num, 'range?': num, 'projectile?': projectile,
@@ -90,16 +98,16 @@ export function schemas(root = ROOT, families = []) {
     damage: num, pellets: int, spread: num, fireIntervalTicks: int, range: num, magazine: int, reserveMax: int, pickupAmmo: int,
     reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num,
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
-    'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
+    'fireModes?': arr(fireModeSpec, 2), 'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,
-    'headshot?': num, 'legshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
+    'headshot?': num, 'legshot?': num, 'armshot?': num, 'recoil?': obj({ bloom: num, maxBloom: num, recover: num }),
     'ballistic?': nullable(partial(ballistic)), 'accuracy?': partial(accuracy), 'kick?': partial(kick), 'reload?': reload,
-    'falloff?': falloff, botDesirability: num, botRange: tup(2), view, 'notes?': notes,
+    'falloff?': falloff, 'handling?': partial(handling), 'akimbo?': trueOr(obj({ ...partial(akimbo).shape, 'as?': en(families) })), botDesirability: num, botRange: tup(2), view, 'notes?': notes,
   });
-  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, head: num, legs: num, 'notes?': notes });
+  const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, handling: obj(handling), 'akimbo?': partial(akimbo), head: num, legs: num, arms: num, 'notes?': notes });
   const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'handOnly?': bool, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
   const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
-  return { weapon, family, throwable, projectile };
+  return { weapon, family, throwable, projectile, akimbo: obj(akimbo) };
 }
 
 /** Problems with `v` against schema `s`, as "path: message". */
@@ -137,6 +145,10 @@ export function check(v, s, path, out = []) {
       break;
     case 'null|':
       if (v !== null) check(v, s.of, path, out);
+      break;
+    case 'true|':
+      if (v === false) bad('true or an object (leave it out for "no")');
+      else if (v !== true) check(v, s.of, path, out);
       break;
     case 'oneOf': {
       const c = v && s.cases[v[s.key]];
@@ -197,10 +209,26 @@ export function build(content, root = ROOT) {
   const familyIds = Object.keys(families.families ?? {});
   const S = schemas(root, familyIds);
   for (const [id, f] of Object.entries(families.families ?? {})) check(f, S.family, `families.json: families.${id}`, problems);
+  /** Handling (spec §27, §35): mild on purpose (GUNPLAY_DIRECTION: no severe movement penalties, no slow sprint-to-fire). */
+  const handlingProblems = (h, where) => {
+    if (h?.move !== undefined && (h.move < 0.85 || h.move > 1.1)) problems.push(`${where}: handling.move is a share of running speed, 0.85-1.1`);
+    if (h?.sprintExit !== undefined && (h.sprintExit < 0 || h.sprintExit > 18)) problems.push(`${where}: handling.sprintExit is 0-18 ticks (0.3 s at most)`);
+  };
+  for (const [id, f] of Object.entries(families.families ?? {})) handlingProblems(f.handling, `families.json: families.${id}`);
+  // Dual wielding: the base block, then a family's, then the weapon's own. A pair is a trade, never a better gun.
+  const akimboBase = families.akimbo;
+  check(akimboBase, S.akimbo, 'families.json: akimbo', problems);
+  const akimboProblems = (a, where) => {
+    for (const k of ['cone', 'pattern', 'kick', 'reload', 'raise']) if (typeof a?.[k] === 'number' && (a[k] < 1 || a[k] > 3)) problems.push(`${where}: akimbo.${k} multiplies what one gun has, 1-3 (a pair is never better than one gun)`);
+    if (typeof a?.move === 'number' && (a.move < -0.1 || a.move > 0)) problems.push(`${where}: akimbo.move is taken off handling.move, -0.1 to 0`);
+  };
+  akimboProblems(akimboBase, 'families.json');
+  for (const [id, f] of Object.entries(families.families ?? {})) akimboProblems(f.akimbo, `families.json: families.${id}`);
 
   const sounds = new Set(Object.keys(readJson(root, 'content/sounds.json').sounds));
   const procedural = new Set([...readFileSync(join(root, 'packages/client/src/content/models.ts'), 'utf8').matchAll(/path === '(procedural\/[\w-]+)'/g)].map((m) => m[1]));
-  const modelExists = (p) => procedural.has(p) || existsSync(join(root, 'packages/client/public/models', p));
+  // Models under public/models, or a prop under public/props (the Ammo Box Kit's crate: content/props, `props/…`).
+  const modelExists = (p) => procedural.has(p) || existsSync(join(root, /^props\//.test(p) ? 'packages/client/public' : 'packages/client/public/models', p));
 
   // Other sections (npcRoles: tools/content/npcs.mjs) are kept as they are.
   const { $comment: _lc, ...others } = content.lock;
@@ -240,11 +268,36 @@ export function build(content, root = ROOT) {
     if (def.id !== `core.${name}`) problems.push(`${file}: id must be core.${name}`);
     if (def.slot < 0 || def.slot > 9) problems.push(`${file}: slot ${def.slot} is not 0-9`);
     if (def.botRange[0] > def.botRange[1]) problems.push(`${file}: botRange runs backwards`);
+    handlingProblems(def.handling, file);
     if (def.vehicleDamage !== undefined && (def.vehicleDamage <= 0 || def.vehicleDamage > 5)) problems.push(`${file}: vehicleDamage multiplies what it does to vehicles, above 0 and at most 5`);
     for (const m of [def.view.model, def.view.fallback, def.view.held?.medium, def.view.held?.high]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
     const sound = def.view.sound ?? `fire.${name}`;
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);
+    // Fire modes (spec §36): the first is the weapon's own trigger (its top-level fireMode), so readers that don't know modes see it.
+    if (def.fireModes) {
+      if (def.fireModes[0]?.mode !== (def.fireMode ?? 'auto')) problems.push(`${file}: fireModes[0] is the weapon's own trigger: its mode must be the weapon's fireMode (${def.fireMode ?? 'auto'})`);
+      def.fireModes.forEach((m, i) => {
+        if (m.mode === 'burst' && !(m.burst ?? def.burst)) problems.push(`${file}: fireModes[${i}] is a burst without a burst count`);
+        if (i === 0 && (m.fireIntervalTicks !== undefined || m.burst || m.kick)) problems.push(`${file}: fireModes[0] takes the weapon's own interval, burst and kick (set them on the weapon)`);
+      });
+    }
+    // Dual wielding needs the second trigger and the fire-mode key for itself, and a pair can't aim.
+    if (def.akimbo !== undefined) {
+      const no = (what) => problems.push(`${file}: akimbo is refused on a weapon with ${what}`);
+      if (def.alt) no('an alt-fire (`alt`): right mouse is the second gun\'s trigger');
+      if (def.view.zoomFov !== undefined || def.view.optic) no('a zoom scope (`view.zoomFov` or `view.optic`): a pair can\'t aim');
+      if (def.fireModes) no('fire modes (`fireModes`): the fire-mode key puts the second gun away');
+      if (def.kind === 'melee') no('kind "melee": melee pairs come later');
+      const own = def.akimbo === true ? {} : def.akimbo;
+      const from = own?.as ?? def.family;
+      const fam = from ? families.families?.[from] : null;
+      if (!from) problems.push(`${file}: akimbo on a weapon without a family needs \`"akimbo": { "as": "<family>" }\` (the family whose akimbo numbers it takes)`);
+      else if (fam && !fam.akimbo) problems.push(`${file}: family ${from} has no akimbo block in families.json (add one, or name another family with \`as\`)`);
+      akimboProblems(own, file);
+      const move = (def.handling?.move ?? families.families?.[def.family]?.handling?.move ?? 1) + (own?.move ?? fam?.akimbo?.move ?? akimboBase?.move ?? 0);
+      if (move < 0.85) problems.push(`${file}: a pair would run at ${move.toFixed(2)} of running speed; handling.move with akimbo.move stays at 0.85 or more`);
+    }
     if (def.magazine > 0 && def.kind !== 'melee' && !def.ammo && def.reserveMax > 0) problems.push(`${file}: a weapon with a reserve needs an ammo type`);
     if (!p.length) weapons.push({ code: def.code, id: def.id, notes: def.notes, def: strip(def), file });
   }
@@ -390,7 +443,7 @@ export function renderFamilies(out) {
   const L = [];
   L.push('// Generated by tools/content/weapons.mjs from content/weapons/families.json. Do not edit by hand: edit the JSON and');
   L.push('// run `node tools/content/weapons.mjs`.');
-  L.push("import type { FamilyDefaults } from '../sim/gunplay.ts';");
+  L.push("import type { AkimboSpec, FamilyDefaults } from '../sim/gunplay.ts';");
   L.push("import type { WEAPON_FAMILIES } from './weapons.generated.ts';");
   L.push('');
   L.push('/** Family baselines (spec §4 velocities, §11 body multipliers, §37 falloff). */');
@@ -400,6 +453,9 @@ export function renderFamilies(out) {
     L.push(`${comments(notes, '  ')}  ${key(id)}: ${ts(f, '  ')},`);
   }
   L.push('};');
+  L.push('');
+  L.push('/** Dual wielding: what a pair costs before a family\'s and a weapon\'s own numbers (families.json `akimbo`). */');
+  L.push(`export const AKIMBO_BASE: Readonly<AkimboSpec> = ${tsInline(out.families.akimbo)};`);
   return `${L.join('\n')}\n`;
 }
 

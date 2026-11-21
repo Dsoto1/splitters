@@ -2,8 +2,8 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import type { Scene } from '@babylonjs/core/scene';
 import type { LastingFx } from './lastingFx.ts';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Mesh as MeshClass, type Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
@@ -12,9 +12,11 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
+import { FresnelParameters } from '@babylonjs/core/Materials/fresnelParameters';
 import { CreatePlane } from '@babylonjs/core/Meshes/Builders/planeBuilder';
 import { SMOKE, STATUS_BURN, STATUS_CHILL, STATUS_FROZEN, STATUS_POISON, STATUS_SLOW, ZONE_KINDS, type ProjectileVisual, type SmokeCloud, type Vec3, type ZoneSnapshot } from '@tiletrigger/shared';
 import { indicator, reduceFlashing } from './reduceFlashing.ts';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Looks for the extended arsenal, all built from simple shapes and glowing
@@ -550,17 +552,13 @@ export class ZoneVisuals {
 }
 
 /** A solid glowing beam (lasers, rails, freeze rays) that thins out over its short life. */
-export function createBeam(scene: Scene, from: Vec3, to: Vec3, color: string, width: number): Mesh {
-  const a = new Vector3(from.x, from.y - 0.08, from.z);
-  const b = new Vector3(to.x, to.y, to.z);
-  const len = Vector3.Distance(a, b);
-  const beam = CreateCylinder('beam', { diameter: width, height: Math.max(0.01, len), tessellation: 6 }, scene);
-  beam.position = a.add(b).scale(0.5);
-  // Cylinders run along Y: tip the beam onto the line from a to b.
-  const dir = b.subtract(a).normalize();
-  const axis = Vector3.Cross(Vector3.Up(), dir);
-  const angle = Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(Vector3.Up(), dir))));
-  if (axis.lengthSquared() > 1e-9) beam.rotate(axis.normalize(), angle);
+/**
+ * A solid beam: a unit cylinder along Y in `color`, `width` across, laid from one point to another by `layBeam` (each
+ * frame, for a beam that leaves a gun's muzzle: muzzleAnchor.ts).
+ */
+export function createBeam(scene: Scene, color: string, width: number): Mesh {
+  const beam = CreateCylinder('beam', { diameter: width, height: 1, tessellation: 6 }, scene);
+  beam.rotationQuaternion = Quaternion.Identity();
   const m = new StandardMaterial('beamMat', scene);
   m.emissiveColor = Color3.FromHexString(color);
   m.diffuseColor = Color3.Black();
@@ -569,6 +567,15 @@ export function createBeam(scene: Scene, from: Vec3, to: Vec3, color: string, wi
   beam.material = m;
   beam.isPickable = false;
   return beam;
+}
+
+/** Lay a `createBeam` beam from `a` to `b` (its +Y end at `b`). Keeps its width (x, z scaling) as it is. */
+export function layBeam(beam: Mesh, a: Vec3, b: Vec3): void {
+  const d = new Vector3(b.x - a.x, b.y - a.y, b.z - a.z);
+  const len = Math.max(0.01, d.length());
+  beam.position.set((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+  beam.scaling.y = len;
+  Quaternion.FromUnitVectorsToRef(Vector3.Up(), d.scaleInPlace(1 / len), beam.rotationQuaternion ?? (beam.rotationQuaternion = Quaternion.Identity()));
 }
 
 /** Jagged lightning through a list of points. */
@@ -602,23 +609,90 @@ export function statusColor(bits: number): string | null {
   return null;
 }
 
-/** A see-through shell round a character showing its status (a block of ice when frozen). */
+/**
+ * A character's plain status look (game/statusFx.ts: where no pack aura is drawn, and under a poisoned or gooed one's
+ * in daylight): a block of ice round a frozen one, else a glowing outline in the status' colour, a body-sized
+ * ellipsoid whose rim is opaque and whose middle is clear (an opacity fresnel; one draw, no texture, no particles).
+ * It holds still on every setting: a steady glow (docs/LOOK.md, "Reduce flashing").
+ */
 export function createAura(scene: Scene, parent: TransformNode): Mesh {
-  const shell = CreateCylinder('aura', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene);
+  // Every character gets one (spawn protection is a status), so a busy match built two fresh shapes with every respawn
+  // (Flavius Rule's allocation profile, docs/PERF_FLAVIUS_MEMORY_2026-11-16.md): their geometry is now made once a
+  // scene and shared (`?perfoff=aurashare` builds them afresh).
+  const shapes = perfOn('aurashare') ? auraShapes(scene) : null;
+  const shell = shapes ? shapeCopy('aura', shapes.shell, scene) : CreateCylinder('aura', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene);
   shell.position.y = 0.95;
   shell.parent = parent;
   shell.isPickable = false;
+  const rim = shapes ? shapeCopy('aura_rim', shapes.rim, scene) : CreateSphere('aura_rim', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene);
+  rim.parent = shell;
+  rim.isPickable = false;
+  auraRims.set(shell, rim);
   shell.setEnabled(false);
   return shell;
 }
 
-export function setAura(scene: Scene, aura: Mesh, bits: number, now: number): void {
+const auraRims = new WeakMap<Mesh, Mesh>();
+
+/** The aura's two shapes, made once a scene and kept hidden: every aura draws with their geometry. */
+const shapesByScene = new WeakMap<Scene, { shell: Mesh; rim: Mesh }>();
+function auraShapes(scene: Scene): { shell: Mesh; rim: Mesh } {
+  let s = shapesByScene.get(scene);
+  if (!s || s.shell.isDisposed() || s.rim.isDisposed()) {
+    s = { shell: CreateCylinder('aura_shape', { diameter: 1.0, height: 1.95, tessellation: 12 }, scene), rim: CreateSphere('aura_rim_shape', { diameterX: 0.95, diameterY: 2.0, diameterZ: 0.95, segments: 10 }, scene) };
+    for (const m of [s.shell, s.rim]) {
+      m.setEnabled(false);
+      m.isPickable = false;
+    }
+    shapesByScene.set(scene, s);
+  }
+  return s;
+}
+
+/** A mesh drawing with `shape`'s geometry (shared, not copied: the shape keeps it when every copy has gone). */
+function shapeCopy(name: string, shape: Mesh, scene: Scene): Mesh {
+  const m = new MeshClass(name, scene);
+  shape.geometry!.applyToMesh(m);
+  return m;
+}
+
+/** How opaque the outline's rim (seen edge-on) and its middle (seen face-on) are. */
+export const AURA_RIM = { edge: 0.9, middle: 0.05, power: 0.6 } as const;
+
+/** The outline's material for a colour (shared, never disposed by effects). */
+function rimMat(scene: Scene, hex: string): StandardMaterial {
+  let byKey = materials.get(scene);
+  if (!byKey) materials.set(scene, (byKey = new Map()));
+  const key = `rim|${hex}`;
+  let m = byKey.get(key);
+  if (!m) {
+    m = new StandardMaterial(`aura_rim_${hex}`, scene);
+    m.disableLighting = true;
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.emissiveColor = Color3.FromHexString(hex);
+    // The shader adds the fresnel term to the material's alpha: 0 here, so the middle is AURA_RIM.middle.
+    m.alpha = 0;
+    m.opacityFresnelParameters = new FresnelParameters({ leftColor: new Color3(AURA_RIM.edge, AURA_RIM.edge, AURA_RIM.edge), rightColor: new Color3(AURA_RIM.middle, AURA_RIM.middle, AURA_RIM.middle), power: AURA_RIM.power, bias: 0 });
+    m.disableDepthWrite = true;
+    byKey.set(key, m);
+  }
+  return m;
+}
+
+export function setAura(scene: Scene, aura: Mesh, bits: number, _now: number): void {
   const color = statusColor(bits);
   aura.setEnabled(!!color);
   if (!color) return;
   const frozen = (bits & STATUS_FROZEN) !== 0;
-  // Reduce flashing: the shell holds still (it pulsed about twice a second).
-  const still = frozen || reduceFlashing();
-  aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : still ? 0.18 : 0.18 + 0.08 * Math.sin(now * 0.012));
-  aura.scaling.set(frozen ? 1.05 : still ? 1 : 1 + Math.sin(now * 0.01) * 0.04, 1, frozen ? 1.05 : still ? 1 : 1 + Math.cos(now * 0.01) * 0.04);
+  const rim = auraRims.get(aura);
+  // Frozen: the block of ice, still. Otherwise the outline, still (the old see-through slab read as a placeholder
+  // beside the pack auras, and pulsed about twice a second with Reduce flashing off).
+  aura.isVisible = frozen || !rim;
+  if (aura.isVisible) aura.material = mat(scene, color, frozen ? 0.4 : 0.9, frozen ? 0.55 : 0.18);
+  aura.scaling.set(frozen ? 1.05 : 1, 1, frozen ? 1.05 : 1);
+  if (rim) {
+    rim.setEnabled(!frozen);
+    if (!frozen) rim.material = rimMat(scene, color);
+  }
 }

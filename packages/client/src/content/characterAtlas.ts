@@ -8,6 +8,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { GEAR_FINISH_SLOTS, gearFinishTexels } from './mergeParts.ts';
+import type { OwnedAssets } from './ownedAssets.ts';
 
 /** Where a texture sits in the atlas: atlas UV = offset + UV × scale (UVs in [0, rep)). */
 interface Tile {
@@ -119,7 +120,7 @@ export class CharacterAtlas {
    * lights only this character). Call before merging parts: parts that now
    * share the material merge into one mesh.
    */
-  async apply(meshes: readonly AbstractMesh[], name: string, accept: (mat: PBRMaterial) => boolean): Promise<PBRMaterial | null> {
+  async apply(meshes: readonly AbstractMesh[], name: string, accept: (mat: PBRMaterial) => boolean, own?: OwnedAssets): Promise<PBRMaterial | null> {
     const parts: { mesh: Mesh; mat: PBRMaterial; tex: BaseTexture; uv: Float32Array | number[]; rep: [number, number] }[] = [];
     for (const m of meshes) {
       const mat = m.material;
@@ -142,14 +143,20 @@ export class CharacterAtlas {
     // Tiles can come from the cache after the match (and this atlas) went away while we waited.
     if (this.disposed || tiles.filter(Boolean).length < 2) return null;
     const finish = gear.length ? this.finishes(base) : null;
-    const material = base.clone(`${name}_atlas`) as PBRMaterial;
+    // The body's own (its dispose frees it and the texture copies the clone makes; never the atlas's textures).
+    const clone = () => base.clone(`${name}_atlas`) as PBRMaterial;
+    const material = own ? own.track(clone) : clone();
+    const was = material.albedoTexture;
     material.albedoTexture = this.texture;
+    own?.release(was);
     material.albedoColor = Color3.White();
     if (finish) {
       // Metallic and roughness from the finish texture (the skin's own values everywhere but gear's texels).
       material.metallic = 1;
       material.roughness = 1;
+      const wasMr = material.metallicTexture;
       material.metallicTexture = finish;
+      own?.release(wasMr);
       material.useRoughnessFromMetallicTextureAlpha = false;
       material.useRoughnessFromMetallicTextureGreen = true;
       material.useMetallnessFromMetallicTextureBlue = true;

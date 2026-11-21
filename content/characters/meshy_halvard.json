@@ -5,7 +5,8 @@
   "order": 61,
   "name": "Old King Halvard",
   "look": "core.halvard",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Reigned for fifty years and outlived every rival. Not planning to stop now.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 14000,

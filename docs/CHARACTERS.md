@@ -94,20 +94,96 @@ built. The groups are `CHARACTER_GROUPS` in looks.ts (section order and labels);
 every built-in look names exactly one, and a unit test
 (`packages/shared/test/lookGroups.test.ts`) keeps it that way:
 
+The owner's Roster Board (2026-11-14, categories decided 2026-11-15) set nine. Knights &
+Legends became Legends (`legends`), Creatures & Machines split into Creatures and Machines (`machines`),
+Animals renamed Animalia (`animals`, the board's Animalia merged in), Undead & Horror renamed Horrors (`horror`, the
+board's Supernatural merged in), the board's Future merged into Outer Space; its "other" was empty and dropped.
+The owner's pass of 2026-11-17 made it seven: Creatures merged into **Horrors & Creatures** (`horror`) and Agents &
+Spies into **Soldiers & Spies** (`soldiers`); Steel Guardian moved to Machines, Shadow Enforcer to Outer Space, Teddy,
+The Hollow Pilgrim and Scary Larry to Horrors & Creatures. The retired ids still read (`CHARACTER_GROUP_ALIASES`;
+in a bot-characters setting `CAST_ID_ALIASES`: `agents` is Agency, the same characters as before, `creatures` is
+`horror`), so saved setups, maps and host.json files that name them keep working.
+Retired looks (Capt. Nova, Bamboo, Uncle Bao, the Rusty Mech and the earlier ones in `RETIRED_LOOKS`) sort as the
+look they play.
+
+**Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
+**Army** (the uniformed soldiers; the old Soldiers) or **Agency** (agents and spies; the old Agents & Spies: Customs
+Agent Zhao, Kenji, Santa, Stealth Operative and the Dummy). A map's Bot characters (MapMaker's Map properties), Match
+Setup, the pause menu and the server's `cast` rule offer them as two bot types, Soldiers and Spies (`army`,
+`agency`; both ticked is `soldiers`), so a map that recreates a real battle (Shingle Point) can field Army only. `lookBranch(id)` reads it; the
+manifest checker wants one on every `soldiers` character and none elsewhere. Character Select shows it as a tag.
+Santa stays Agency (owner, 2026-11-17); the Operatives (the retired Operative preset and Crimson Operative, held back)
+are Agency too. Shingle Point's Bot characters are Soldiers only (set in MapMaker).
+
+**Bot types (owner, 2026-11-19).** Match Setup's Bots & AI tab, the pause menu's Host tab and MapMaker's map
+settings pick random bots' characters with one tick-box per bot type (`BOT_TYPES`: Soldiers, Spies, Everyday Folk,
+Outer Space, Legends, Animalia, Machines, Horrors; every one ticked: all; All and None to start over). The old
+"Named as" sets fold into a type (`THEME_BOT_TYPES`: pirate, knight, ninja, wizard, barbarian, myth → Legends; the
+animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer Space; cowboy, gangster,
+townsfolk → Everyday Folk; soldier → Soldiers), so saved setups, links, server rules and maps that named one load
+as that type (`validBotCast`, `normalizeSetup`). Under the types, plain switches: **Ranks & badges** (the Options
+setting, `game/ranksSetting.ts`) and **Themed names** (`MatchSetup.themedNames`, `MatchRules.themedNames`; off:
+random bots take the general names, `BOT_NAMES`).
+
+**Ranks & badges (owner, 2026-11-18; Options → Ranks & badges and the pause menu, off by default).** Off, names are
+plain and the marker over a head is the arrow (the ally diamond, the enemy's downward triangle), as before 11-18: an
+Army bot's "Sgt. Dunmore" shows as "Dunmore" (its name keeps the rank; a character's own, "Flt. Lt. Ember", stays). On,
+every player and bot wears a rank on nine steps: its title before the name and its badge, in the kill feed, on the Tab
+and pause boards and as the marker over the head on both sides (in the marker's colour: your ally colour, red over
+enemies where enemy markers are shown; hidden as the arrow is, under smoke or a cloak; far off it grows, up to 2.5 times).
+
+| Group (rank group) | Badge | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Soldiers & Spies: Army (`army`) | chevrons, bars, stars | Pvt. | Pfc. | Cpl. | Sgt. | SSgt. | Lt. | Capt. | Maj. | Col. |
+| Soldiers & Spies: Agency (`agency`) | Agency ring | Asset | Courier | Contact | Handler | Operative | Agent | Senior Agent | Station Chief | Spymaster |
+| Horrors & Creatures (`horror`) | skull | Ghoul | Shade | Wraith | Ghast | Fiend | Revenant | Horror | Dread Lord | Overlord |
+| Outer Space (`space`) | star | Cadet | Ensign | Pilot | Navigator | Flight Officer | Commander | Captain | Commodore | Admiral |
+| Machines (`machines`) | gear | Unit | Drone | Servo | Automaton | Android | Titan | Overseer | Mainframe | Prime |
+| Legends (`legends`) | crown | Squire | Knight | Champion | Baron | Earl | Duke | Prince | King | Emperor |
+| Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex |
+| Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
+
+The first and last titles are the owner's ("as written is fine"); the steps between are the lead's. **Badges**
+(`content/insignia.ts`, `INSIGNIA_SHAPES` and `INSIGNIA_CUTS`; a few flat polygons in a -1..1 box, so they read at
+kill-feed size and far off): the Army's are its military ranks (Pvt. one chevron, Pfc. one and a rocker, Cpl. two,
+Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one star, Col. two stars). Every other group
+wears its own mark, the step told the same way for all: steps 1-3 the bare mark, 4-6 the mark inside a ring, 7-9 inside
+a double ring, with no, one or two bars under it. A skull's eyes, nose and teeth and a gear's hole are cuts drawn in the
+dark outline colour. The badge shows in the name's colour with a dark outline (inline SVG, `game/insigniaSvg.ts`) and
+over the head as a flat mesh with a dark rim (`game/insigniaMesh.ts`; crowds batch markers by colour and badge).
+
+**Progression** (`content/ranks.ts`, `game/rankBook.ts`): rank points, a kill 10 and an objective play 30 (Fireteams'
+own points where higher); steps start at 0, 100, 250, 500, 900, 1,500, 2,400, 3,600 and 5,000 points. Everyone starts on
+step 1; a squad leader wears at least step 3 and a team leader step 4 while they lead. Ranks rise quietly over a
+session and carry from match to match: bots by name for the session (an Army bot's own rank left off its name; kept in
+the page until it closes), players with their career (`points` in `net/career.ts`, summed from each match's summary;
+a career from before them counts its kills at 10 each). A player's browser sends its career rank points as it joins
+(`rx` in the hello; the roster passes it on), so everyone sees the same rank for them. Every browser works ranks out
+from the roster and the scoreboard it already has: no message more and nothing at match start. Purely cosmetic.
+
+**Rank-up** (`game/rankGlow.ts`, style.css `rank-up`): when a rank rises from points, the badge swells (to 1.45 times)
+and a soft halo in its colour rises and fades over a second, in the kill feed (its lines naming them take the new title)
+and over the head. Under Reduce flashing it is smaller and dimmer (1.2 times, the halo at most 0.3) and eases in and
+out: a soft glow, no flash. The flicker check's `rankup` moment records it.
+
+**Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
+Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
+
 | Group (`id`) | Who |
 |---|---|
-| Soldiers (`soldiers`) | Modern and sci-fi military, agents, pilots, hazmat, astronauts: Agent Zhao, Bulwark, Commando, Desert Ranger, Dust Trooper, Flt. Lt. Ember, Frost, Grunt '68, Hazmat, Medic, Operative, Scout, Sentinel, Sgt. Pruitt, Space Marine, Spacewalker, Starfarer, Tactical Soldier, Trooper (NPC skin), Vanguard, Warden (Capt. Nova retired 2026-11-06: its saved choices and bot sets play Spacewalker) |
-| Knights & Legends (`legends`) | Medieval, royalty, monks, wizards, mythic and historical warriors: Anubis, Ashwalker, Brother Ansel, Elder Tomo, Frost Viking, Goblin Warlord, Grizzelda, Imperial Guard, Iron Knight, King Aldric, Lancer Mei, Linktifa, Merrow the Wise, Old King Halvard, Ser Brannock, Shade, Sir Galloway, Thornweaver |
-| Everyday Folk (`folk`) | Ordinary people: Big Bogdan, Biker Gang Girl, Brawler, Cap'n Barnacle, Chef Basile, The Butcher, Dale, Drifter, Dusty Colt, Engineer, Farmhand, Grandpa Chains, Hector, Huntress, Old Timer, Pathfinder, Patches, Saint Nick, Sprout, The Dapper, Tracker, Umpire, Uncle Bao, Wayfarer |
-| Undead & Horror (`horror`) | Bonejack, Count Bonesworth, Fearsome Undead, Giggles, Gorgle, Groaner, Lurcher (queued), The Masked Figure, Punkin, Rattles, Rotter, Shambler, Spiked Skeleton Biker |
-| Animals (`animals`) | Bandit, Barnaby Bruin (queued), Big Bab, Biscuit, Brass Hare, Croakley, Fishy Fred (small; name a placeholder), Greyfang, Hyena Warrior, Scamp, Shellback (standard size since 2026-11-06; it came in large), Shiba, Teddy, Wealthy Otter (Bamboo retired 2026-11-06: its saved choices play Shellback) |
-| Creatures & Machines (`creatures`) | Aliens, goblins, reptiles, robots, monsters: Boglurker, Botboy, Cool Hands Rex (large; bot names from the gangster theme), Emerald Robot, Goblin, Imp and Puglin (NPC skins), Ivory Rustwalker, Ricochet, Salamander Warlord, Snikkit, T-350, The Hollow Visitor, The Visitor |
+| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Gas Mask Engineer, Grunt '68, Kenji, Pemberton, Santa, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
+| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
+| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
+| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Sun Warrior, The Purple Comet |
+| Animalia (`animals`) | Bandit, Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Salamander Warlord, Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
+| Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
+| Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
 copied into characters.generated.ts); an NPC skin gets it from
-`NPC_LOOK_GROUPS` in sim/npc.ts (creatures → Creatures & Machines, the zombie
-→ Undead & Horror, the soldier roles → Soldiers). `lookGroup(id)` reads any of
+`NPC_LOOK_GROUPS` in sim/npc.ts (creatures and the zombie → Horrors & Creatures,
+the Dummy (trooper) → Soldiers & Spies as Agency, the other soldier roles as Army). `lookGroup(id)` reads any of
 them; a design of yours has none and goes under **Yours**. The screen is one
 grid that scrolls through the sections in that order (each group with anyone
 in it, its characters by name, then Yours with **Design new**), each under a
@@ -135,8 +211,8 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   (`characterSections`). A person can still choose one, for themselves or for a bot in the bot manager (`BOT_LOOKS`),
   and a saved choice keeps working (`getLook` resolves any roster look by id).
 - **Left out of automatic picks.** `PICKABLE_LOOKS` (the core tier of `CORE_LOOKS`; "core" in `CORE_LOOKS` is the id
-  prefix, not the tier) is what the default look, random bots (`lookForBot`, `castLooks` under a bot-characters
-  setting), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
+  prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
+  `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
   `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
 - **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
   `pnpm quality-gates` prints the characters after the maps and exits 1 on a failing core character
@@ -159,6 +235,54 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   none today. Not gated yet, because they need the game's renderer: how the hands sit on each gun (the grip sheet),
   the face and the portrait's picture, clipping in first person. A new experimental character has no shipped portrait
   until the next capture (the menu draws it live), so `portrait` reports until then.
+
+## Blood
+
+What a character bleeds when hit (the owner, 2026-11-17, "a"): `blood` in its manifest, one of `BLOOD_KINDS`
+(`packages/shared/src/content/looks.ts`; the manifest checker wants one on every built character). Drawn by
+`game/bloodVisuals.ts` (`bloodStyle`) at every hit on the character and its body, its kill and its headshot:
+
+| Kind | Drawn as |
+|---|---|
+| `red` | the red spray, mist, splats and pool (people) |
+| `green`, `blue` | the same in MapMaker's Alien green or Coolant blue (aliens) |
+| `oil` | black oil drops, splats and pool, with Binbun Electric FX sparks (`blood.oil` in content/vfx.json map.gameplay; robots and machines) |
+| `bone` | a few pale bone chips and a drifting cloud of bone dust; no splats, no pool, no wet splat sound (skeletons) |
+| `stone` | the same in grey: stone dust (a statue) |
+| `spirit` | a white-grey spectral wisp that eases in, rises and fades, with Binbun Hit FX's `vfx_impact_05` tinted white-grey (`blood.spirit`); no drops, no splats, no pool, no wet splat sound (ghosts and spirits) |
+
+**Who decides.** A character's own kind wins over the map's colour. Anyone without one bleeds the map's blood (MapMaker →
+Map properties → Blood; red unless set): the part-built presets (Ranger, Medic …), designs of yours, the soldier NPC
+mannequins (the Dummy) and the hostages. NPC creature skins have theirs by role (`NPC_SKIN_BLOOD` in `sim/npc.ts`:
+imp, puglin and zombie red, cyclops blue, oculus and scolitex green); roles drawn as a character (goblin, otter …)
+bleed what that character's manifest says. The map's **amount** (None, Light, Heavy) and the player's **Blood** switch
+in the pause menu rule every kind: None or switched off, nothing is drawn, sparks and wisps included. `lookBlood(id)`
+reads it; the manifests' kinds are generated into `WHOLE_BODY_BLOOD` (characterBlood.generated.ts; `content/blood.ts`), apart from the
+looks, so the menu's first JS doesn't carry it.
+
+**Reduce flashing.** The sparks and the wisp play smaller and dimmer, eased in, and at most one of each a second
+however fast the hits come (a machine gun on a robot crackles once a second, not ten times); off, at most one every
+60 ms. The `flashing` e2e flow records a robot, a skeleton and a ghost hit ten times a second each at night (moment
+`blood`).
+
+**Who gets what** (tagged by group first: Machines oil, every other group red; then by hand, in *italics*; the owner's
+answers of 2026-11-18: Alien Biker, Spud Marshal and Space Marine blue, Brass Hare red, Bronzer stone dust, the wisp
+white-grey; 133 characters on the roster):
+
+| Kind | How many | Who |
+|---|---|---|
+| **Red** (`red`) | 100 | Anoobys, Astronaut Explorer, Azure Sentinel, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Gas Mask Engineer, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
+| **Green** (`green`) | 5 | *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *The Visitor* |
+| **Blue** (`blue`) | 6 | *Alien Biker*, *Octo Buddy*, *Reef Wanderer*, *Ricochet*, *Space Marine*, *Spud Marshal* |
+| **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
+| **Bone dust** (`bone`) | 10 | *Bonejack*, *Count Bonesworth*, *Dog Tag Doyle*, *Grinning Gus*, *Mummy Bot*, *Pharaoh Mummy Warrior*, *Rattles*, *Spiked Skeleton Biker*, *Sugar Skull*, *Teddy* |
+| **Stone dust** (`stone`) | 1 | *Bronzer* |
+| **Spectral wisp** (`spirit`) | 1 | *The Hollow Pilgrim* |
+
+Retired looks (`RETIRED_LOOKS`) keep a `blood` in their manifests, but bleed as the look they play: Bamboo (as Shellback), Bill (as Cal), Briggs (as Grunt '68), Capt. Nova (as Spacewalker), Crimson Operative (as Stealth Operative), Dust Trooper (as Desert Ranger), Goblin (as Goblina), Hollis (as WWII Infantry), Ivory Rustwalker (as T-TreeFitty), Rotter (as Shambler), Rusty Mech (as T-TreeFitty), Shade (as Lancer Mei), Slugger-9 (as T-TreeFitty), The Hollow Visitor (as The Visitor), Uncle Bao (as Old Timer), Vampire (as Count Bonesworth), Wealthy Otter (as Brass Hare).
+
+**Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#a6a39b`), for a statue. The **wisp** is white-grey:
+its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.22 of its size and 0.45 of its strength, eased in (softer than a white burst; owner, 2026-11-18).
 
 ## Character Designer
 
@@ -368,6 +492,27 @@ How the hands close on the weapon:
   grid (the hold's points sat in the trigger guard on the Freeze Ray and at the
   end of the wire stock on the Machine Pistol until 2026-11-06).
 
+### Grips auto-fit (owner, 2026-11-18)
+
+The owner: "How can we avoid having to fine tune all these grips custom to the model? ... I would still want to ensure
+bullets come out of the gun properly (especially in 3rd person)"; answer "1a 2a autofit plan". The plan, as built on
+`wip/grips-autofit`:
+
+| | What is automatic | What is measured | Pass mark | Hand-tuned only when |
+|---|---|---|---|---|
+| **1. First person** | Every character wears the **universal first-person arms** (`ranger_arms_m/f`) wherever first person draws arms: Arms only, and full body's fallbacks (a seat, before your character has loaded, a `body: false` character). Their colours are read off the character's own model at content build (`tools/content/arm-colours.mjs`): **skin** = the median texture colour of the skin on the hand and finger joints (a glove, a paw), **cloth** = the forearms', **trim** = the upper arms' (a darker shade of the cloth where they match). **Full body keeps the character's own arms for now** (owner question): tried 2026-11-18, the universal arms holding the gun with the body's arms cut out left shreds of a Meshy character's sleeves at the shoulders looking down, shrinking the arms into the shoulders crushed the sleeves into shards, and shrinking only the forearms left a blob at each elbow (Croakley's shirt worst). Full body has no per-character first-person tuning (GripTune is third person only). | The same first-person grip checks as before (`characters` e2e: palms within 2 cm of their points, drawn hands on the grip). | as before | A manifest can still set `firstPerson.skin/cloth/trim` (a colour read badly), or `arms: "own"` (opt out). No per-character first-person grip tuning. |
+| **2. Third person** | Each character's grip offsets (`gripLong`, `supportLong`, `gripPistol`, `supportPistol`) are **fitted from its drawn hands** (`tools/content/grip-fit.mjs`, in the game's own animator): with no offsets the hands are drawn, the error from the target measured, the points moved by it, five damped steps. The **target** is the median drawn hand position (gun axes, model m) over every character whose hold the audit passes as approved (hand-set where the owner set some, else the shared hold). Results in `content/grip-fit.json` (keyed by the model's hash), generated into `packages/shared/src/content/gripFit.generated.ts` (loaded with the first character, not with the menu: the menu's first script has a size budget) and applied under the manifest's own values. | Per character × hold (long gun: the rifle; pistol: the pistol): each hand's **error** in cm from the target, weighted by axis (shooting hand: up and ahead 1, across the grip 0.5; long gun's support hand: across and up 1, ahead 0: it slides along the handguard by design; pistol support: all 1), plus the audit's hand flags (`palm`, `off`, `open`, `back`; tools/content/grip-flags.mjs). | shooting hand ≤ 2.5 cm, support hand ≤ 4 cm, no hand flag | The audit compares none / hand-set / fitted per hold. The hand-set offsets stay in the manifest only where they beat the fit by more than 0.5 cm of summed error (`KEEP_MARGIN`); the rest are removed (`STRIP=1`). A hold over the pass mark either way is an **outlier**, listed in `summary.md` for hand tuning. |
+| **3. Bullets** | Tracers and muzzle flashes start at the gun's **muzzle as drawn**: the weapon's `muzzleAt`, else the middle of the model's front-most geometry (`game/muzzlePoint.ts`; was the bounds' front a fifth above the middle). Your own shots in third person leave your character's gun (they started under your eyes) and flash on it (they didn't flash); every tracer's start settles on its gun's muzzle in the frame it first shows (`ImpactVisuals.settleStarts`, after the guns are placed). Hits still come from the aim. | The `physicsfx` e2e (`tracerMuzzleChecks`): three builds (Ranger, Wealthy Otter, Iron Knight) × rifle and pistol × standing, strafing, crouched and aiming, third person (and first person): each tracer's gap to the muzzle point that frame (drift), to the nearest drawn vertex of the gun, and behind the gun's front. | drift ≤ 1 cm, on the gun ≤ 3 cm, ≤ 3 cm behind its front, never from the eyes, a flash on your gun | — |
+
+Re-run the fit after a character's model changes (its hash in `content/grip-fit.json` no longer matches the lock):
+
+    pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
+    ONLY=<ids> WRITE=1 STRIP=1 node tools/content/grip-fit.mjs http://localhost:4860 <work dir outside the repo>
+    node tools/content/character-manifests.mjs
+
+(`ONLY` fits to the committed targets; a run of everyone measures them again.) Reduce flashing applies to the
+third-person flash on your own gun as to everyone's (`SAFE_MUZZLE`).
+
 ### Full-body first person (default)
 
 Options → Display → **First person: Full body / Arms only** (`tiletrigger.firstPerson`, `graphicsSettings.ts`;
@@ -404,7 +549,7 @@ loaded for third person, `hiddenSelf`) from its eyes, `FirstPersonBodyRig` in `g
 
 Your own view shows your look's arms holding the viewmodel:
 - **Which arms:** the arms part of your look. Under a sportswear top it's `athlete_fparms_m/f`, bare arms cut from the base body for this view only.
-- **Whole-body characters** (the Meshy characters, `content/characters`) wear their own forearms and hands in first person: `<id>_fparms.glb`, cut from the same model (the elbow half of each forearm dropped, sleeves pulled in towards the bone, hands a little smaller so a gauntlet doesn't fill the view), on the character's own fitted skeleton. A manifest can choose a universal arms part instead (`firstPerson: { arms: "ranger_arms_m", skin, cloth, trim }`): a base-body arms part on the shared rig, sleeves dyed and hands tinted to match.
+- **Whole-body characters** (the Meshy characters, `content/characters`) wear the **universal arms** (since 2026-11-18, grips auto-fit): `ranger_arms_m/f` on the shared rig, sleeves dyed and hands tinted with the colours read off the model (`content/grip-fit.json` `arms`; a manifest's `firstPerson: { skin, cloth, trim }` overrides any of them, `arms: "peasant_arms_f"` another part). `firstPerson: { arms: "own" }` opts back into the character's own forearms and hands, `<id>_fparms.glb` (still built: cut from the same model, the elbow half of each forearm dropped, sleeves pulled in towards the bone, hands a little smaller), on the character's own fitted skeleton.
 - **Placement:** they hang from the camera at the character's own size, the body a little behind the eyes. While a gun is held, the shoulder joints are set from the view, not from the character's build (a hunched cat's would sit in front of the eyes): beside and below the eye (`FP_SHOULDER` in characterAnimator.ts), so the forearms rise from the bottom of the screen. A shoulder comes forward toward its point on the gun as far as the arm needs to keep a natural bend (only the off-screen shoulder region stretches); the support hand first slides back along the handguard (no nearer the grip than 12 cm) before the shoulder comes further. A hand with nothing to hold (a knife) hangs out of view.
 - **Grip:** the gun keeps its tuned viewmodel placement, with bob, recoil and the reload dip. `gripExternal` IKs the palms onto its grip and support points with the same solver as third person; on a long gun the support hand is turned to cup the handguard from below (palm up, fingers round its far side). `window.__grips.miss()` in `?mode=grips` says how far each palm ended from its point (the `characters` e2e flow checks large guns).
 - **A pistol in first person** (both views; `PISTOL` in characterAnimator.ts, owner 2026-11-05: "looks as if their
@@ -576,7 +721,12 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   stays rigid when the arms move; a head hung low over the chest keeps off it.
 - **Stance:** hunched bodies (goblin, boglurker) lean back per spine joint when
   re-posed (`lean`), the head keeping the way it faced, so the shared clips
-  stand them up. The hyena's digitigrade legs have their joints on the leg's
+  stand them up. A character whose rigged download can't be fetched (its Meshy
+  rig task 404s on this key) is leaned in its shipped file instead:
+  `ONLY=<id> node tools/content/relean-built.mjs` turns the built chain back the
+  same way (the collarbones and arms ride the chest without turning), moves the
+  joints and bind matrices with it and records the lean in the file, so a
+  second run does nothing (Rattles, 2026-11-17). The hyena's digitigrade legs have their joints on the leg's
   centre line (hock as the ankle, paw as the foot), so straightening them
   turns the thigh and shin only a little. The goblin's rags are hundreds of
   small texture islands: its simplification collapses across seams only where
@@ -590,7 +740,12 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
 - **Rebaked characters (`surface: rebake`):** some downloads cut their texture
   into thousands of small islands (Barnaby Bruin's coat, Slugger-9's plating, the
   Rusty Mech's baked map): every cut that keeps the texture coordinates stops over
-  the 20k budget, and even the careful cut scrambles them in places. These are
+  the 20k budget, and even the careful cut scrambles them in places. A download
+  already within its budget may want it too, for its face: Kenji's map is a
+  mosaic of one island per triangle at 2048 px, and the shared 1024 px copy (with
+  its gutters filled) washed the dark fringe strands painted over his forehead
+  into a pale patch; rebaked (no cut: 10000 triangles), the head's charts get 2.5
+  times the texels and the strands, brows and eyes stay sharp (2026-11-17). These are
   cut on the download itself, before rigging and posing (rebakeDownload in
   prepare-meshy-characters.mjs): the copies of a vertex on either side of a seam
   become one, the full mesh is cut to `triangles` (head 12%, hands 8%, never past
@@ -608,7 +763,7 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
 - **Long guns on deep or short-armed bodies:** the stock's clearance also counts
   the chest straight ahead of the shoulder (a deep chest turned across the
   aim), the support hand slides back along the handguard when the arms can't
-  reach, and a stock the arms still can't hold clear tucks out past the
+  reach (never off its end; see "Third-person long guns since 2026-11-20"), and a stock the arms still can't hold clear tucks out past the
   shoulder (the otter, the warlord) instead of into the chest.
 - In game, `content/creatures.ts` (`CreatureLibrary`) loads and instances
   them and `game/creatureAnimator.ts` drives them; `view.ts` uses them when an
@@ -671,9 +826,11 @@ repo; they live in a downloads dir outside it.
 | `kind`, `use` | `character` (rides our rig) or `creature` (not built here: creatures keep their own rigs); `player`, `npc` or `player+npc`. An NPC-only character gets a look (`WHOLE_BODY_NPC_LOOKS`) but isn't on the roster; NPC roles name looks in `NPC_ROLE_SPECS` by hand. |
 | `status` | `queued` for a stub that isn't ready: it is checked only for the queue's fields and not built. Drop it once the rest is filled in. |
 | `order` | Roster position among the whole-body characters (unique). |
-| `group` | What the character is, for Character Select's tabs: `soldiers`, `legends`, `folk`, `horror`, `animals` or `creatures` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `group` | What the character is, for Character Select's sections: `soldiers`, `folk`, `space`, `legends`, `animals`, `machines` or `horror` (see Looks, Character Select's groups). Needed on a player look; the checker's list (`GROUPS`) matches `CHARACTER_GROUPS`. |
+| `branch` | `soldiers` only, and needed there: `army` or `agency` (Soldiers & Spies' Army or Agency; `CHARACTER_BRANCHES`). A bot-characters setting can ask for one. |
+| `sortAs` | Optional: the name Character Select lists it under within its section (left out: its `name`). |
 | `tier` | `core` or `experimental` (left out: core): an experimental character sits under its own heading in Character Select and is never a bot's, a random character's or Roulette's pick (see Looks, Tier). |
-| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals and creatures → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
+| `nameTheme` | What kind of creature it is, for its bots' names (`shared/content/botNames.ts`): `soldier`, `monkey`, `bear`, `wolf`, `dog`, `cat`, `raccoon`, `critter`, `frog`, `pirate`, `knight`, `ninja`, `wizard`, `barbarian`, `undead`, `spooky`, `robot`, `alien`, `goblin`, `cowboy`, `gangster`, `townsfolk` or `myth`. The first bot wearing the character takes its `name`, the rest the theme's names ("Sgt. Dunmore"). Left out: its group's (soldiers → soldier, legends → knight, folk → townsfolk, horror → spooky; animals → the general names). Every character on the roster has one (a test checks); the checker's list (`NAME_THEMES`) matches botNames.ts. |
 | `name`, `look`, `bio` | The look's display name, its ID (`core.<name>`, never changed once shipped: saved looks and bots use it) and its one-line bio. |
 | `body`, `size` | `male` or `female` proportions (clips and hip height); `small` / `large` body size, or left out. |
 | `source.license` | `owned` (the owner says they made it, or we generated it through the Meshy API with their approval; provenance pack `meshy-owned`) or `CC0` (a community model, which is what a model from the owner's Drive is unless the owner says they made it, 2026-11-06; pack `meshy-community-characters`, with `community.model` as named on its page or download). A licence changed in a manifest reaches the lock without the download: `node tools/content/prepare-meshy-characters.mjs <any empty dir>` gives every character it keeps its manifest's pack (content:check fails until it has). |
@@ -686,7 +843,7 @@ repo; they live in a downloads dir outside it.
 | `clipsWhy` | With `clips: false` only: why this body keeps the rig's own gait. |
 | `firstPerson.arms` | `own` (its own forearms and hands, `<id>_fparms.glb`), or a universal arms part with `skin`, `cloth` and `trim` dyes. |
 | `firstPerson.body` | `false`: full-body first person shows this character's arms only (its hat brim, cape or hood would fill the view from its own eyes: Grizzelda). Left out: full body. |
-| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `centre` (true: the body moved over the origin by its hips; Meshy centres a download's box, so a long tail behind stood the body that far ahead of the origin the game moves and collides it by: the crocodile's hips 0.39 m ahead at 1.8 m, nearer Character Select's camera than everyone else with its head out of frame. As of 2026-11-06 Bandit 0.48 m, Scamp 0.35 and Greyfang 0.26 stand ahead too: candidates once their downloads are at hand), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges: `#rrggbb` repaints every strongly blue texel; `{ "color": "#rrggbb", "within": [[u0, v0, u1, v1], …] }` only those inside boxes of the download's colour map (shares of its width and height, the download's own layout, so not with `surface: rebake`): the Spacewalker's mission patch went, the flag on its other shoulder stayed), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down, out }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel, square to it and out to the gun shoulder's side, in third person and Character Select; Bandit's broad build put the stock at his snout, Bamboo's big low head the rifle across its snout), `grip` (this look's own hands and arms on a gun, in third person and Character Select: `supportPistol` / `supportLong` / `gripLong` move the support hand's point on a pistol or handguard and the shooting palm's point on a long gun's grip (`[right, up, ahead]` in the gun's frame, m), `curlR` / `curlL` scale how far each hand closes, `rollR` / `rollL` turn a hand about its fingers (radians), `elbowOut` / `elbowDown` move where the long-gun shooting elbow bends toward (m); set per look from before/after shots and the grip audit, since a change to the shared hold moves every look; HANDOFF.md, "Grips round 3"; an offset set before 2026-11-05 was tuned while some palms were read back to front, so re-check it: in hands round 5 a pistol's `supportPistol` near `[-0.01, 0.03, -0.03]` put the support hand round the shooting hand where the old `[0, 0.04, -0.08]` held it back under the wrist, and `supportLong [0, 0.02, 0.03]` the long-gun support hand on the handguard. First person reads none of it), `skin` (this look's own skin weights: finger `tips`, `knuckle`, `joints`, `lanes`, `fingers`; body `hops`, `clamp`, `smooth`, `wrist`; a hard part held whole by one joint, `rigid`; see "A look's own skin weights")., `fingers` (`own`, the default: a rigged download whose finger chains are whole keeps its own finger joints and weights; `fit`: re-fitted from the mesh as before; see "The download's own fingers"). |
+| `fixes` | `triangles` (the body's budget; 11000 for an unrigged download, half the download's for a rigged one), `lean` (degrees back per spine joint for a hunched body), `cloth` (cloth below the hips follows the pelvis), `tail` (points from the hips), `feet` (turn the feet level: the foot bone pointed the rig's way, then each foot turned about its ankle until the lowest points of its heel and of its front are level; Meshy's rig left feet 7-23 degrees toes up without this), `centre` (true: the body moved over the origin by its hips; Meshy centres a download's box, so a long tail behind stood the body that far ahead of the origin the game moves and collides it by: the crocodile's hips 0.39 m ahead at 1.8 m, nearer Character Select's camera than everyone else with its head out of frame. As of 2026-11-06 Bandit 0.48 m, Scamp 0.35 and Greyfang 0.26 stand ahead too: candidates once their downloads are at hand), `seamWeld` (simplify across texture seams; the head and hands then get no share of their own), `surface` (`rebake`: the download cut to `triangles` with its texture seams closed, laid out afresh and its colour and normal maps painted from the full download; see "Rebaked characters"), `scrubBlue` (repaint blue badges: `#rrggbb` repaints every strongly blue texel; `{ "color": "#rrggbb", "within": [[u0, v0, u1, v1], …] }` only those inside boxes of the download's colour map (shares of its width and height, the download's own layout, so not with `surface: rebake`): the Spacewalker's mission patch went, the flag on its other shoulder stayed), `recolor` (colours shifted by rule on the colour map, after `scrubBlue`: each rule picks texels by `hue` (degrees `[from, to]`, may wrap past 360), `sat` and `light` (HSL 0-1 `[from, to]`), fading over `feather` (0.06) past each bound so no edge shows, and sets `toHue` (degrees), `toSat` or `satScale`, and `lightScale`, mixed by `amount`; Azure Sentinel's coat navy and lenses amber, Spud Marshal's armour olive drab, both so they read as their own characters, owner 2026-11-14), `hands` (below), `armCloth` (cloth hanging off an arm goes with the body; see "Arm skin kept to the arms"), `skinClean` (weights cleaned in the download's own pose, contacts torn; see "Skin cleaned in the download's pose"), `handsShare` (the share of the triangle budget the hands keep in the cut, 0.04 unless set (0.08 in a rebake): more where cuffs the skinning left on the hands took it, as on King Aldric), `headShare` (the head's share, 0.12 unless set), `face` (`{ box, share }`, with `surface: rebake` only: the face its own part of the rebaked cut, ahead of the rest of the head, with `share` of the budget out of the head's and its charts laid out as finely as the head's; `box` `[x0, y0, z0, x1, y1, z1]` in shares of the download's height in its own pose, the `landmarks` frame. A head's share counts the hair and a cap too, and cut by error alone Sgt. Mackie's brim and cap took the triangles and a wedge of cheek ran up over each eye: `box [-0.05, 0.855, 0, 0.05, 0.921, 0.12]`, `share 0.1`, `headShare 0.26` (the cap and hair keep the 0.16 they had); the face went from 354 to 1310 triangles, 2026-11-17; the build log's `parts kept` gives each part's triangles), `normalSize` (1024: a 1024 px normal map instead of 512), `lod` (the far copy's share of the body's triangles, 0.3 unless set; see "Level of detail"), `hold` (`{ forward, down, out }`, metres at a 1.8 m body: this look's long-gun hold against everyone's, along the barrel, square to it and out to the gun shoulder's side, in third person and Character Select; Bandit's broad build put the stock at his snout, Bamboo's big low head the rifle across its snout), `grip` (this look's own hands and arms on a gun, in third person and Character Select: `supportPistol` / `supportLong` / `gripLong` / `gripPistol` move the support hand's point on a pistol or handguard and the shooting palm's point on a long gun's or (`gripPistol`, 2026-11-17) a pistol's grip (`[right, up, ahead]` in the gun's frame, m), `curlR` / `curlL` scale how far each hand closes, `rollR` / `rollL` turn a hand about its fingers (radians), `elbowOut` / `elbowDown` move where the long-gun shooting elbow bends toward (m); set per look from before/after shots and the grip audit, since a change to the shared hold moves every look; HANDOFF.md, "Grips round 3"; an offset set before 2026-11-05 was tuned while some palms were read back to front, so re-check it: in hands round 5 a pistol's `supportPistol` near `[-0.01, 0.03, -0.03]` put the support hand round the shooting hand where the old `[0, 0.04, -0.08]` held it back under the wrist, and `supportLong [0, 0.02, 0.03]` the long-gun support hand on the handguard. First person reads none of it), `skin` (this look's own skin weights: finger `tips`, `knuckle`, `joints`, `lanes`, `fingers`; body `hops`, `clamp`, `smooth`, `wrist`; a hard part held whole by one joint, `rigid`; see "A look's own skin weights")., `fingers` (`own`, the default: a rigged download whose finger chains are whole keeps its own finger joints and weights; `fit`: re-fitted from the mesh as before; see "The download's own fingers"), `rejoint` (`{ <rig joint>: share }`, a rigged download only: the joint moved along its bone toward its parent to that share of the way (0.3–1; `upperarm` without a side moves both), or out past its own place (1–1.6: the skin the joint held inside the new place goes back to the parent, eased over 15% of the bone either side, at any distance from the bone's line; Meshy rigged Freaky Frida's shoulders 3 cm inside her arms' roots and her upper arms held her back under the vest's straps, which lifted off her shoulders in the hold: `upperarm: 1.3`, 2026-11-19), in the download's own pose, and (moving in) the skin the parent held past the new place (eased over 15% of the bone either side, within the limb's radius of its line, eased out to 1.5 radii so a robe's side under the arm stays with the body) handed to the joint; `moveJoints` in skinfix.mjs. Meshy rigged The Hollow Pilgrim's shoulders out at its robe's dropped shoulder seam, 9.7 cm from the elbow, so its arms were a sixth of its height and the support hand fell 12 cm short of a rifle's handguard: `upperarm: 0.7`, 2026-11-16), `plugs` (`{ at: [[x, y, z, reach], …], shrink }`: closed ellipsoids added inside the body where the download's own surface is open, before it is rigged (rigged with the rest by bone heat; on a rigged download, since 2026-11-19, added in its own pose after any `rejoint`, each new vertex skinned as the download's vertex nearest it), so a gap shows the cloth's colour, not the scene behind; each `[x, y, z, reach]` in shares of the download's height in its own pose, the `landmarks` frame, fitted inside the points within `reach` (principal axes, each radius `shrink` (0.85) times their 70th percentile spread) and coloured by the point nearest its centre; tools/content/plugs.mjs. Freaky Frida's download models the shirt under her vest's armholes as loose torn sheets, see-through in the download itself (108 and 68 open edges round her shoulders); her T-pose arms covered the holes, and lowered to hold a gun or run they showed the scene through her shoulders, the owner's "textures that are tearing" (skin stretch there was 1.4-1.7x, as on Sun Warrior): six plugs, `shrink 0.8`, 2026-11-17; kept, at the same places, when she was rebuilt from the owner's rigged download, 2026-11-19: the download is the same mesh). |
 | `source.modelUrl` | For Meshy's rigging API: `"upload"` (the unrigged download in the downloads dir, sent as a data URI; the usual choice), or a public link to a `.glb` file. Meshy refuses a link whose path doesn't end in `.glb` ("invalid model file format"), so Google Drive download links don't work. |
 | `landmarks` | Optional, for an unrigged download: found from the mesh when left out (see "Rigging an unrigged download"). The joints in units of the model's height, feet at y = 0, +x the character's left, +z its front. `spine`: hips, three spine joints, neck, head, top of the head. `L`/`R`: clavicle, shoulder, elbow, wrist, hand tip, hip, knee, ankle, ball, toe tip. Read them off front and side views. |
 
@@ -823,8 +980,37 @@ The steps on their own:
 
 In the game a long gun's support hand cups the handguard over the base of its
 fingers (its palm centre sits back from the handguard by 0.22 of the hand's
-length, `CUP_BACK`) and closes all the way round it; a pistol's support hand
-closes part way round the shooting hand. A long gun's barrel line keeps
+length, `CUP_BACK`) and closes round it; a pistol's support hand
+closes part way round the shooting hand.
+
+**Third-person long guns since 2026-11-20** (owner, "ok fix them all": the support hand sat behind the magazine or
+under the gun, the gun out in front of the chest, the hands janky; it had been so since at least v0.9.0):
+- **Stock nearer the chest:** the stock's butt may sink `STOCK_SINK` (6 cm) into the body's surface in front of the
+  shooting shoulder (the torso's clearance less that); it sat 13-18 cm out along the barrel on the WWII Infantry and
+  Big Bogdan.
+- **Support shoulder forward:** the body turns `longGunBlade` into the stock (0.3 rad; a gun whose support point is
+  more than 32 cm ahead of its grip further, up to 0.6: the shotgun, the sniper rifle), and the support shoulder
+  comes up to 10 cm toward the handguard by rolling its collarbone (`reachShoulder`, `SUPPORT_CLAVICLE_MAX`), held
+  at 0.96 of the arm's reach (a little bend left in the elbow).
+- **On the handguard:** the handguard is measured off the gun's own model under its support point
+  (`game/guardUnderside.ts`: a vertical line through the gun's faces, solid by solid; a vertical grip or a bipod
+  clamp at the point moves the guard's start just behind it) and followed back while its underside stays within
+  3 cm of that height. The support hand slides back along it only as far as the arm still needs and never past
+  its end (a magazine, a receiver); a gun still out of reach then comes back into the shoulder (the stock deeper,
+  up to 8 cm). The palm lies on the guard's measured underside, half the hand's thickness below it (the support
+  point is a point to hold, not on the surface: on the Assault Rifle it is 1.5 cm up inside the wood).
+- **Fingers close to their curl, not by it:** each finger joint closes to its share of the curl counted from
+  straight (`closeHand`), not that much more on top of the hold clip's bend: fingers already bent folded into the
+  palm and turned their skin through itself at the knuckles (the grip audit's flipped triangles, three to five
+  times an open hand's). A handguard's support hand closes to 0.6 of the full curl (`LONG_SUPPORT_CURL`): fingers
+  up round its side from a palm on its underside. The shooting thumb lies over the grip along its far side
+  (`LONG_THUMB`), not stood up beside the gun. A pistol held round its grip in first person keeps its own close.
+- **Checked:** the e2e flow `characters4` poses every character in Character Select's pose with the rifle (the
+  shotgun on every second, the SMG and the sniper rifle on every eighth) and checks the drawn support hand lies where the animator
+  put it on the handguard, within reach and not off the guard's end (`__grips.support()`); the unit test
+  `guardUnderside.test.ts` finds a guard under every long gun's support point.
+
+A long gun's barrel line keeps
 `HEAD_CLEAR` (0.15 m) from the head's joint: the stock drops (up to 5 cm) where
 a big helmet or a short neck put the head by the gun (Capt. Nova).
 
@@ -956,10 +1142,39 @@ together even where gaps were found; a thumb or fold read as a gap crumpled a sp
 hand into shards: Honest Abe's and Virtua Soldier's right hands), `together` (0–1, written on the hand for the game:
 as the hand closes, its fingers come in toward the middle finger by that share of their spread, in every view; a
 download's own fingers can be fanned wide, and closed as they lay they stood apart round the grip like a claw: Frost
-Viking's 23 degrees from index to little finger, the Goblin Warlord's 20), for both hands or one (`l`, `r`). A rigid
+Viking's 23 degrees from index to little finger, the Goblin Warlord's 20), for both hands or one (`l`, `r`). `graft`
+(`true`, or `'l'` / `'r'`: **new hand geometry**, `tools/content/handgraft.mjs`, 2026-11-17): the hand is replaced by
+the rig's own, the athlete body part's (Quaternius Universal Base Characters, CC0, as shipped), fitted to it. A
+low-poly Meshy hand (a few long slivers per finger, cut that way from the download) folded into shards when it closed,
+whatever its weights: blends, lanes and curls only softened it (HANDOFF.md, "Hands round 5"). The donor hand is laid
+in the old hand's joint frame as it sits in its own (so the clips' finger poses and the game's curl bend it as the
+rig's), sized to the old hand's measured length and width (its thickness in proportion: a measured thickness counts
+relaxed, half-closed fingers), subdivided once (Loop's rules, weights and normals blended: the donor's own fingers are
+six-sided and closed they read as blocks; `GRAFT_SMOOTH`), skinned with the donor's finger weights and the rig's
+finger and thumb joints moved onto it; the old hand's triangles go (those the hand chain holds at least half). Its
+surface is the old hand's own: each new triangle reads the character's map through the old hand triangle nearest it
+(its corners projected onto that triangle and kept inside it), so a glove keeps its weave and a skin its tone and
+mottling (an early version took one flat colour: owner, 2026-11-17, "plain grey"). About 1,500 triangles a hand
+(the far copy keeps the donor's own, not subdivided). From then on the hand is measured only (`fingers: 'own'`).
+`rehand-built.mjs` applies it to a built file, the body and the first-person arms, once (`extras.graft` on the skin;
+the lock's `graft`; provenance names the hands' source); a rebuild from the download brings the download's hands
+back, and `prepare-meshy-characters.mjs` says to run `rehand-built.mjs` for it. On Alien Biker, Beanie Alien, Luther
+Vanguard, Agent Zhao and Anoobys (whose mitten paddle also curled away from a rifle's handguard), all with
+`curl: 0.7`. In full-body first person a closed grafted hand reads lower on the audit's pistol palm (`sideR`, from the
+hand's thinnest way: a fist has none): 0.5-0.7 closed against 0.8 open; Vanguard's 0.13 (its narrow hand). A rigid
 gauntlet (`fingers: none`, curl 0) given a `curl` is skinned as a mitten that closes on the grip. The Iron Knight's
 gauntlets (own fingers since its Iron Warden model) measure thick for their length, which caps the curl at 0.5; it has
 `fixes.hands.curl: 1` (2026-11-06: they close round the grip in both views).
+
+**The gun inside a hand** (2026-11-17). The grip audit measures, per weapon and hand, third person and full-body
+first person, how far the gun goes into the hand as drawn (`tools/gripInside.ts`, `__grips.inside()`; summary.md's
+last column, the pistol's): the hand's skin inside the gun (vertices behind its nearest face, how deep) and the gun
+inside the hand's skin (points on the gun's faces, by ray parity, how deep). Measured, not flagged. The grafted hands
+(`graft` above) sat their palms in the pistol's grip in third person, its panel showing through the palm (owner,
+2026-11-17): each look's `gripPistol` (about 5 cm out along the palm, `[0.05, 0, 0]`; Alien Biker 0.065), `supportPistol`
+moved left off the grip, and `gripLong` / `supportLong` for the rifle and shotgun put the palms on the grips' surfaces
+(HANDOFF.md for the numbers). First person reads none of a look's grip settings. `__grips.tune(look, { grip, hands })`
+tries a look's GripTune and measured hands live before a manifest is written.
 
 **Hand size against a gun.** A hand much bigger than a grip swallows it, worst in first person (Frost Viking's and the
 Goblin Warlord's own hands were 24-28 cm long and 19-21 cm wide, splayed). `fixes.hands.scale` shrinks one at import
@@ -1054,8 +1269,10 @@ hitboxes, no evening-out within a size class; small or thin looks are harder to 
   weapons, ballistics and bot-aim tests, which pass with main's thresholds). Each look keeps its own proportions: a
   standard chest is 0.68 × 0.62 m with the margin (0.32 × 0.26 measured), its head 0.50 m across (0.26).
 - **Zones:** a round strikes the nearest padded surface; its zone is the shape whose own (unpadded) core the line
-  passes deepest into or nearest to: head sphere = head (×`head`), thighs and shins = legs (×`legs`), torso and arms =
-  body (1.0×). A shot at the face over a padded forearm is a head shot, one at the belt a body shot. No height bands
+  passes deepest into or nearest to: head sphere = head (×`head`), thighs and shins = legs (×`legs`), torso = body (1.0×),
+  arms = arms (×`arms`, 0.9 for every bullet family; 2026-11-17, GUNPLAY_SPEC §11). A shot at the face over a padded
+  forearm is a head shot, one at the belt a body shot, one through a forearm into the chest a body shot, one that
+  clips a forearm held out and misses the chest an arm shot. No height bands
   (the old fixed 0.32 m head band was a third of a small look's height).
 - **Stance and size:** standing, crouching and prone each have their own shapes, measured in the pose the game draws
   (below). They turn with the body's yaw and scale with its size (the size class, or a `size` stat). The game has

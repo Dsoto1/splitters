@@ -71,7 +71,8 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
   pts.sort((a, b) => len(sub(b, [0, cy, 0])) - len(sub(a, [0, cy, 0])));
   const chosen = spread(pts.slice(0, Math.max(lod.cards, Math.round(pts.length * 0.6))), lod.cards);
   const leaves = look.leaves.map(toLinear);
-  const keys = ['shrub.0', 'shrub.1', 'shrub.2', 'shrub.3'];
+  // The card pictures (g.cards: atlas keys, e.g. a juniper's needle sprays; the broadleaf shrub cards by default).
+  const keys = g.cards ?? ['shrub.0', 'shrub.1', 'shrub.2', 'shrub.3'];
   for (const q of chosen) {
     const out = norm(sub(q, [0, cy * 0.6, 0]));
     const face = norm(add(mul(out, 0.7), r.unit()));
@@ -81,7 +82,7 @@ export function shrubMesh(seed, sk, g, lod, look, atlas) {
     const v = (0.5 + 0.5 * depth) * (1 + r.jitter(look.jitter)) * (0.75 + 0.25 * Math.min(1, q[1] / g.height));
     const size = g.cardSize * lod.cardScale * r.range(0.85, 1.15);
     const c = add(mul(q, 1 - 0.12 * (lod.cardScale - 1)), [0, 0, 0]);
-    card(leaf, { c, up, face, size, card: atlas.cards[keys[r.int(0, 3)]], colour: base.map((x) => x * v), lit: norm(add(mul(out, 0.8), [0, 0.3, 0])), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 1] });
+    card(leaf, { c, up, face, size, card: atlas.cards[keys[r.int(0, keys.length - 1)]], colour: base.map((x) => x * v), lit: norm(add(mul(out, 0.8), [0, 0.3, 0])), wind: (p) => [Math.min(1, p[1] / g.height) ** 1.5 * 0.6, 1] });
   }
   return { bark, leaf };
 }
@@ -283,4 +284,103 @@ export function eelgrassMesh(seed, g, look) {
     m.tri(ids[segs - 1][0], ids[segs - 1][1], tipId);
   }
   return { grass: m };
+}
+
+/**
+ * A rosette succulent (env.succulent.*, an agave): 10–14 stiff, thick sword leaves from one crown, in two or three
+ * rings, the inner ones steeper, each a strip of two segments to a sharp point, curving out a little toward the tip,
+ * a slight fold along its midrib in the shading. Vertex colour only (env.grass: root, tip and an edge tint), almost no
+ * sway. Decoration only (no collision, no concealment). { leaves: Mesh }.
+ */
+export function rosetteMesh(seed, g, look) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const [root, tip] = [toLinear(look.root), toLinear(look.tip)];
+  const alt = look.alt ? toLinear(look.alt) : tip;
+  const n = r.int(g.leaves[0], g.leaves[1]);
+  let az = r.next() * Math.PI * 2;
+  for (let b = 0; b < n; b++) {
+    az += ((137.5 + r.jitter(12)) * Math.PI) / 180;
+    // Inner leaves (later ones) stand steeper and shorter.
+    const inner = b / Math.max(1, n - 1);
+    const out = [Math.cos(az), 0, Math.sin(az)];
+    const rise = ((g.elevation[0] + (g.elevation[1] - g.elevation[0]) * inner + r.jitter(6)) * Math.PI) / 180;
+    const L = g.length * (1 - 0.35 * inner) * r.range(0.85, 1.1);
+    const w = g.width * r.range(0.85, 1.15);
+    const curl = r.range(0.04, 0.16);
+    const dir = norm(add(mul(out, Math.cos(rise)), [0, Math.sin(rise), 0]));
+    const pts = [0, 0.35, 0.7, 1].map((t) => add(add(mul(out, 0.03), mul(dir, L * t)), [0, -curl * L * t * t, 0]));
+    const side = norm(cross([0, 1, 0], out));
+    const up = norm(cross(dir, side));
+    const tint = r.chance(0.3) ? alt : tip;
+    const shade = 0.85 + 0.25 * r.next();
+    strip(m, pts, side, w, w * 0.55, norm(add(mul(up, -1), [0, 0.6, 0])), (t) => root.map((v, i) => (v + (tint[i] - v) * Math.min(1, t * 1.4)) * shade), (t) => [t * t * 0.15, 0], true);
+  }
+  return { leaves: m };
+}
+
+/**
+ * A broadleaf understory plant (env.shrub.elephant_ear, the jungle set; environment Phase 5): a clump of long
+ * stalks rising from one root, each holding a big heart-shaped blade that hangs out and down from the stalk's top,
+ * folded along its midrib, the paler vein down its middle. Vertex colour only (env.grass: double-sided, no
+ * texture). `g` = { leaves: [min, max], stalk (m), blade (m), width (share of the blade), elevation: [outer, inner]
+ * (degrees), droop }; `look` = { stalk, leaf, alt, vein }; `lod` = { segs } (segments along a blade).
+ */
+export function leafPlantMesh(seed, g, look, lod) {
+  const r = rng(seed);
+  const m = new Mesh();
+  const stalkCol = toLinear(look.stalk);
+  const leafCol = toLinear(look.leaf);
+  const altCol = toLinear(look.alt ?? look.leaf);
+  const veinCol = toLinear(look.vein ?? look.leaf);
+  const n = r.int(g.leaves[0], g.leaves[1]);
+  const segs = lod.segs ?? 5;
+  let az = r.next() * Math.PI * 2;
+  for (let b = 0; b < n; b++) {
+    az += ((137.5 + r.jitter(20)) * Math.PI) / 180;
+    const inner = b / Math.max(1, n - 1);
+    const out = [Math.cos(az), 0, Math.sin(az)];
+    const rise = ((g.elevation[0] + (g.elevation[1] - g.elevation[0]) * inner + r.jitter(6)) * Math.PI) / 180;
+    const stalkL = g.stalk * (0.75 + 0.35 * inner) * r.range(0.85, 1.1);
+    const sdir = norm(add(mul(out, Math.cos(rise)), [0, Math.sin(rise), 0]));
+    const top = add(mul(out, 0.04), mul(sdir, stalkL));
+    const side = norm(cross([0, 1, 0], out));
+    const tint = r.chance(0.35) ? altCol : leafCol;
+    const shade = 0.8 + 0.3 * r.next();
+    const sway = (p) => [Math.min(1, Math.max(0, p[1]) / (g.stalk + g.blade)) ** 1.3 * 0.7, 0];
+    // The stalk: a narrow strip, a little bowed.
+    const stalkPts = [0, 0.5, 1].map((t) => add(mul(sdir, stalkL * t), [0, 0, 0]).map((v, i) => v + out[i] * 0.04 * t + (i === 1 ? 0 : 0)));
+    strip(m, stalkPts, side, 0.05, 0.03, norm(add(out, [0, 0.4, 0])), () => stalkCol.map((v) => v * shade), (t) => sway(stalkPts[Math.round(t * 2)]), false);
+    // The blade: from the stalk's top, out and drooping, a heart's width profile to a point, folded along the midrib.
+    const L = g.blade * (0.8 + 0.3 * (1 - inner)) * r.range(0.9, 1.1);
+    const W = L * g.width;
+    const tilt = ((-10 - g.droop * 40 * (1 - inner) + r.jitter(8)) * Math.PI) / 180;
+    let dir = norm(add(mul(out, Math.cos(tilt)), [0, Math.sin(tilt), 0]));
+    const fold = 0.18 + r.next() * 0.12;
+    const rows = [];
+    let p = add(top, mul(dir, -L * 0.12));
+    for (let k = 0; k <= segs; k++) {
+      const t = k / segs;
+      // A heart: wide lobes at the stalk, widest a third along, to a point.
+      const half = (W / 2) * Math.max(0, Math.sin(Math.PI * (0.36 + 0.64 * t))) ** 0.6;
+      const up = norm(cross(dir, side));
+      const nrm = up[1] < 0 ? mul(up, -1) : up;
+      const edgeDrop = mul(nrm, -half * fold);
+      const w = sway(p);
+      const c = (k2) => tint.map((v, i) => (v * (0.85 + 0.25 * t) + (veinCol[i] - v) * k2) * shade);
+      rows.push([
+        m.vertex(add(add(p, mul(side, -half)), edgeDrop), nrm, [0, t], c(0), [w[0], 1]),
+        m.vertex(p, nrm, [0.5, t], c(0.55), [w[0], 1]),
+        m.vertex(add(add(p, mul(side, half)), edgeDrop), nrm, [1, t], c(0), [w[0], 1]),
+      ]);
+      // The blade curves down toward its tip.
+      dir = norm(add(dir, [0, -g.droop * 0.35 / segs, 0]));
+      p = add(p, mul(dir, L / segs));
+    }
+    for (let k = 0; k < segs; k++) {
+      m.quad(rows[k][0], rows[k][1], rows[k + 1][1], rows[k + 1][0]);
+      m.quad(rows[k][1], rows[k][2], rows[k + 1][2], rows[k + 1][1]);
+    }
+  }
+  return { leaves: m };
 }

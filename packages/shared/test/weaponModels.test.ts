@@ -9,8 +9,9 @@ import { CORE_WEAPONS, MODEL_FALLBACKS, THROWABLE_DEFS, THROWABLES, heldModel, t
  * and the throwables still drawn in code are the ones listed here (no model fits them yet: docs/ARSENAL.md).
  */
 const PUBLIC = join(__dirname, '../../client/public/models');
-const exists = (path: string) => path.startsWith('procedural/') || existsSync(join(PUBLIC, path));
-const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; bytes: number }[] };
+// (A prop under public/props: the Ammo Box Kit's crate, `props/…`, as the model loader and tools/content/weapons.mjs take it.)
+const exists = (path: string) => path.startsWith('procedural/') || existsSync(path.startsWith('props/') ? join(PUBLIC, '..', path) : join(PUBLIC, path));
+const lock = JSON.parse(readFileSync(join(__dirname, '../../../content/guns.lock.json'), 'utf8')) as { files: { file: string; triangles: number; tier?: string; heldOf?: string; budget?: string; bytes: number }[] };
 const locked = new Map(lock.files.map((f) => [f.file, f]));
 /** Throwables drawn in code (arsenalVisuals.ts): no model for them in the intake. */
 const DRAWN_IN_CODE = new Set(['airstrike']);
@@ -24,7 +25,7 @@ describe('weapon models', () => {
     expect(missing).toEqual([]);
   });
 
-  it("a held copy is the same mesh as everyone's copy, with bigger maps, and falls back to it", () => {
+  it("a held copy is the same mesh as everyone's copy (or a finer cut of it), with bigger maps, and falls back to it", () => {
     const held = Object.values(CORE_WEAPONS).filter((w) => w.view.held);
     expect(held.length).toBeGreaterThanOrEqual(12);
     for (const w of held) {
@@ -34,7 +35,12 @@ describe('weapon models', () => {
       expect(world, w.id).toBeDefined();
       expect([medium.tier, high.tier], w.id).toEqual(['medium', 'high']);
       expect([medium.heldOf, high.heldOf], w.id).toEqual([`models/${w.view.model}`, `models/${w.view.model}`]);
-      expect([medium.triangles, high.triangles], w.id).toEqual([world.triangles, world.triangles]);
+      // The same mesh, or (`heldTriangles`, budget `heldHero`: the Battle Rifle) a finer cut of the same download in
+      // the same frame: more triangles than everyone's copy, the same in both tiers.
+      if (medium.budget === 'heldHero') {
+        expect(medium.triangles, w.id).toBe(high.triangles);
+        expect(medium.triangles, w.id).toBeGreaterThan(world.triangles);
+      } else expect([medium.triangles, high.triangles], w.id).toEqual([world.triangles, world.triangles]);
       expect(high.bytes, w.id).toBeGreaterThan(medium.bytes);
       expect(MODEL_FALLBACKS[w.view.held!.high], w.id).toBe(w.view.model);
       expect(heldModel(w, 'low'), w.id).toBeNull();

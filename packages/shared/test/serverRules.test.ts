@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
+import { AKIMBO_READY, DEFAULT_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 const map = (() => {
@@ -20,6 +20,7 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['ff', 'half', 'core.tdm', { friendlyFire: 'half' }, ['friendlyFire']],
   ['mix', true, 'core.tdm', { mixPickups: true }, ['mixPickups']],
   ['drops', false, 'core.tdm', { dropWeapons: false }, ['dropWeapons']],
+  ['akimbo', false, 'core.tdm', { akimbo: false }, ['akimbo']],
   ['set', 'military', 'core.tdm', { weaponSet: 'military' }, ['weaponSet']],
   ['style', 'arena', 'core.tdm', { botStyle: 'arena' }, ['botStyle']],
   ['cast', 'soldiers', 'core.tdm', { botCast: ['soldiers'] }, ['botCast']],
@@ -115,5 +116,12 @@ describe('server match rules (RULES): parity with the browser host', () => {
     const text = serverRulesText({ modes: { tdm: { score: 60 } } }, now, 'test_yard');
     expect(text).toMatch(/score\s+40\s+→ 60 at the restart/);
     expect(text).not.toMatch(/laps/);
+  });
+
+  // Dual wielding: on offer since step 4 (akimboRule.test.ts has the rule's details; akimboHidden.test.ts the switch off).
+  it('offers dual wielding now that everyone sees the pair', () => {
+    expect(AKIMBO_READY).toBe(true);
+    expect(ruleSpec('akimbo')).toBeDefined();
+    expect(validateServerRules({ akimbo: false }).error).toBeUndefined();
   });
 });

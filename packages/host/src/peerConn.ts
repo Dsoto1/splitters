@@ -21,8 +21,15 @@ const claimed = new WeakSet<DataLike>();
 export const LINK_LIMITS = {
   /** Messages held back for a player who can't keep up (~5 s of snapshots): past it the link closes instead of growing. */
   maxBacklog: 150,
-  /** Time for a last message (reject, travel) to get there before the link closes. */
+  /** A link the host closes on its own (a player that can't keep up, or sent what it mustn't): it goes after this. */
   closeDelayMs: 400,
+  /**
+   * A link the server closes, which may just have sent a last message (a reject saying why, a travel): held open
+   * until the player hangs up, as the browser does once it has read it (session.ts, 'reject'), and this long at
+   * most. A fixed short wait lost the message: on a congested link it can still be queued (or waiting on a
+   * resend) when the channel closes, and the player only saw the link drop (host.test's kick, on loaded runners).
+   */
+  closeWaitMs: 5000,
 } as const;
 
 /**
@@ -47,14 +54,16 @@ export function peerConn(dc: DataLike, log: (line: string) => void = () => undef
     closed = true;
     for (const cb of closeHandlers.splice(0)) cb();
   };
-  const close = (why?: string) => {
+  /** Stop sending, then close: after `waitMs`, or as soon as the player hangs up (finish, from the channel's close). */
+  const close = (why?: string, waitMs: number = LINK_LIMITS.closeDelayMs) => {
     if (closing) return;
     closing = true;
     if (why) log(`closing a player's link: ${why}`);
     setTimeout(() => {
+      if (closed) return;
       dc.close();
       finish();
-    }, LINK_LIMITS.closeDelayMs).unref?.();
+    }, waitMs).unref?.();
   };
   dc.on('close', finish);
   dc.on('error', finish);
@@ -81,8 +90,9 @@ export function peerConn(dc: DataLike, log: (line: string) => void = () => undef
       }
       return text.length;
     },
-    close: () => close(),
+    close: () => close(undefined, LINK_LIMITS.closeWaitMs),
     address: () => remoteAddress(dc),
+    up: () => !closing && linkUp(dc),
     onMessage(cb) {
       dc.on('data', (data) => {
         if (closing) return;
@@ -101,6 +111,17 @@ export function peerConn(dc: DataLike, log: (line: string) => void = () => undef
       else closeHandlers.push(cb);
     },
   };
+}
+
+/** Whether the link's peer connection is up (node-datachannel's polyfill: connectionState, else iceConnectionState). */
+export function linkUp(dc: DataLike): boolean {
+  try {
+    const pc = dc.peerConnection as { connectionState?: string; iceConnectionState?: string } | undefined;
+    const state = pc?.connectionState ?? pc?.iceConnectionState;
+    return dc.open && (state === 'connected' || state === 'completed');
+  } catch {
+    return false;
+  }
 }
 
 /** The player's address when the link is direct; a relayed link only shows the relay's (useless for a ban). */

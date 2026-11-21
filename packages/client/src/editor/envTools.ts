@@ -4,6 +4,8 @@ import {
   ENV_CATEGORIES,
   ENV_PRESETS,
   ENV_PRESET_IDS,
+  ENV_SEASONS,
+  ENV_SEASON_LABELS,
   ENV_SPECIES,
   MAP_BUDGETS,
   TERRAIN_MATERIALS,
@@ -17,9 +19,15 @@ import {
   environmentShapes,
   getEnvSpecies,
   getProp,
+  groundAllowed,
   groundSampler,
   keepClearZones,
   newId,
+  seasonCommand,
+  natureSwapCommand,
+  NATURE_ROCK_LOOKS,
+  NATURE_ROCK_LOOK_LABELS,
+  type NatureRockLook,
   terrainHeightAt,
   withPreset,
   type BudgetCounts,
@@ -27,6 +35,7 @@ import {
   type EnvBrush,
   type EnvCategory,
   type EnvPresetId,
+  type EnvSeason,
   type KeepClearZone,
   type MapDocument,
   type PropDefinition,
@@ -70,6 +79,10 @@ const TURNS: readonly [number, string][] = [[180, 'Any way'], [90, '±90°'], [4
 export class EnvTools {
   brush: EnvBrush = structuredClone(ENV_BRUSH_DEFAULTS);
   preset: EnvPresetId | 'custom' = 'temperate';
+  /** The season the pane's Apply sets the whole map to. */
+  season: EnvSeason = 'autumn';
+  /** How the nature swap makes rocks (auto: sandstone on sandy ground). */
+  rockLook: NatureRockLook = 'auto';
   mode: 'paint' | 'erase' = 'paint';
   /** The eraser takes every species, not only the brush's. */
   eraseAll = false;
@@ -81,7 +94,7 @@ export class EnvTools {
   private zones: KeepClearZone[] | null = null;
   private built: Set<string> | null = null;
   private last: { x: number; z: number } | null = null;
-  private stroke = { added: 0, removed: 0, filtered: 0, keptClear: 0, clearOf: null as KeepClearZone | null, overBudget: false, ms: 0, dabs: 0 };
+  private stroke = { added: 0, removed: 0, filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null as KeepClearZone | null, overBudget: false, ms: 0, dabs: 0 };
 
   constructor(private readonly host: EnvHost) {}
 
@@ -210,6 +223,22 @@ export class EnvTools {
       changed(true);
     });
     row('Preset', preset, 'A biome mix and the ground it suits; change any weight below to mix species from any family');
+    // The ground filter a preset sets, said out loud with a way out (owner, 2026-11-16: Arid "didn't seem to work" on grass).
+    if (b.filters.materials) {
+      const g = add(document.createElement('div'));
+      g.id = 'ed-env-ground';
+      g.className = 'ed-note';
+      g.append(`Paints only on ${this.groundWords()}. `);
+      const any = document.createElement('button');
+      any.id = 'ed-env-any-ground';
+      any.textContent = 'Paint on any ground';
+      any.title = 'Tick every ground below: the mix paints wherever the brush goes';
+      any.addEventListener('click', () => {
+        b.filters.materials = null;
+        this.renderPane();
+      });
+      g.append(any);
+    }
     const radius = document.createElement('input');
     radius.type = 'range';
     radius.id = 'ed-env-radius';
@@ -331,6 +360,45 @@ export class EnvTools {
       this.overlayDoc = null;
       this.refresh();
     });
+    // A season across the whole map (Phase 5, shared/editor/envSeason.ts): one undo step, looks only.
+    heading('Season (whole map)');
+    const seasonRow = add(document.createElement('div'));
+    seasonRow.className = 'ed-row-buttons';
+    const season = document.createElement('select');
+    season.id = 'ed-env-season';
+    season.title = 'Every placed tree, plant and rock takes its look for the season; looks picked on purpose (moss, flower colours) stay';
+    for (const id of ENV_SEASONS) season.append(new Option(ENV_SEASON_LABELS[id], id, false, id === this.season));
+    season.addEventListener('change', () => (this.season = season.value as EnvSeason));
+    const apply = document.createElement('button');
+    apply.id = 'ed-env-season-apply';
+    apply.textContent = 'Apply to map';
+    apply.title = 'Set every placed species to its look for this season (one undo step; play is unchanged)';
+    apply.addEventListener('click', () => {
+      const cmd = seasonCommand(this.host.doc(), this.season);
+      if (!cmd) return this.host.toast(`Already ${ENV_SEASON_LABELS[this.season].toLowerCase()}: nothing to change`);
+      if (this.host.run(`Season: ${ENV_SEASON_LABELS[this.season]}`, cmd)) this.host.toast(`${cmd.after.length} placements set to ${ENV_SEASON_LABELS[this.season].toLowerCase()}`);
+    });
+    seasonRow.append(season, apply);
+    // The nature swap (shared/editor/natureSwap.ts): bought and downloaded trees, plants and rocks become ours, one undo step.
+    heading('Swap natural props for ours');
+    const swapRow = add(document.createElement('div'));
+    swapRow.className = 'ed-row-buttons';
+    const rocks = document.createElement('select');
+    rocks.id = 'ed-env-swap-rocks';
+    rocks.title = 'Rocks by the ground: sandstone where the ground is mostly sand, else grey (mossy ones stay mossy)';
+    for (const id of NATURE_ROCK_LOOKS) rocks.append(new Option(NATURE_ROCK_LOOK_LABELS[id], id, false, id === this.rockLook));
+    rocks.addEventListener('change', () => (this.rockLook = rocks.value as NatureRockLook));
+    const swap = document.createElement('button');
+    swap.id = 'ed-env-swap';
+    swap.textContent = 'Swap natural props for ours';
+    swap.title = 'Every bought tree, bush, plant, log and rock (the Kenney Nature Kit, the kit rocks, the Meshy rocks and spires) becomes our generated species, in its spot, turn and size (one undo step)';
+    swap.addEventListener('click', () => {
+      const r = natureSwapCommand(this.host.doc(), this.rockLook);
+      if (!r.command) return this.host.toast('No natural props to swap: the map uses ours already');
+      const n = r.command.after.length;
+      if (this.host.run('Swap natural props for ours', r.command)) this.host.toast(`${n} natural props swapped for ours${r.rockLook === 'sandstone' ? ' (rocks as sandstone)' : ''}${r.clamped ? ` · ${r.clamped} at the size limit` : ''}`);
+    });
+    swapRow.append(rocks, swap);
     const status = add(document.createElement('div'));
     status.id = 'ed-env-status';
     status.className = 'ed-note';
@@ -354,11 +422,20 @@ export class EnvTools {
   }
 
   /** The brush in hand: the status line under the pointer. */
-  hoverLabel(): string {
+  hoverLabel(at?: { x: number; z: number }): string {
     const r = this.host.radius();
     if (this.mode === 'erase') return `Erase ${this.eraseAll ? 'every species' : 'the brush species'} · radius ${r} m`;
     const name = this.preset === 'custom' ? 'Custom mix' : ENV_PRESETS[this.preset].label;
+    // Before the click: the ground under the pointer is one the brush's ground filter leaves alone.
+    const under = at ? groundSampler(this.host.ground(), this.host.floorY())(at.x, at.z)?.material : null;
+    if (under && !groundAllowed(this.brush, under)) return `${name} paints only on ${this.groundWords()}: not on ${TERRAIN_MATERIAL_LABELS[under].toLowerCase()} here · "Paint on any ground" in the brush panel`;
     return `Paint ${name} · radius ${r} m · ${this.brush.density} per 100 m² · seed ${this.brush.seed}`;
+  }
+
+  /** The grounds the brush's filter allows, in words ("sand, dirt, gravel or stone"). */
+  private groundWords(): string {
+    const m = (this.brush.filters.materials ?? []).map((x) => TERRAIN_MATERIAL_LABELS[x].toLowerCase());
+    return m.length <= 1 ? (m[0] ?? 'no ground') : `${m.slice(0, -1).join(', ')} or ${m.at(-1)}`;
   }
 
   /** A stroke starts (pointer down with the brush). */
@@ -366,7 +443,7 @@ export class EnvTools {
     this.last = null;
     this.zones = null;
     this.built = null;
-    this.stroke = { added: 0, removed: 0, filtered: 0, keptClear: 0, clearOf: null, overBudget: false, ms: 0, dabs: 0 };
+    this.stroke = { added: 0, removed: 0, filtered: 0, wrongGround: 0, keptClear: 0, clearOf: null, overBudget: false, ms: 0, dabs: 0 };
   }
 
   /** The pointer moved with the brush down: a dab once it has gone 0.8 of the radius from the last (or `first`). */
@@ -402,6 +479,7 @@ export class EnvTools {
       const name = this.preset === 'custom' ? 'plants' : ENV_PRESETS[this.preset].label;
       if (res.plants.length && this.host.run(`Paint ${name}`, { kind: 'addEntities', entities: res.plants.map((e) => ({ ...e, id: newId('prop') })) })) this.stroke.added += res.plants.length;
       this.stroke.filtered += res.filtered;
+      this.stroke.wrongGround += res.wrongGround;
       this.stroke.keptClear += res.keptClear;
       this.stroke.clearOf ??= res.clearOf;
       if (res.overBudget && !this.stroke.overBudget) this.host.toast('The environment budget is full: the brush stops here (see the budget bar)', true);
@@ -416,6 +494,13 @@ export class EnvTools {
     const s = this.stroke;
     if (!s.dabs) return;
     const parts = [s.added ? `${s.added} painted` : '', s.removed ? `${s.removed} erased` : '', s.keptClear ? `${s.keptClear} kept clear of ${s.clearOf?.label ?? 'play'}` : ''].filter(Boolean);
+    // Never a stroke that silently does nothing: the ground filter turned every plant away.
+    if (!s.added && !s.removed && s.wrongGround) {
+      const name = this.preset === 'custom' ? 'This mix' : ENV_PRESETS[this.preset].label;
+      const why = `${name} paints only on ${this.groundWords()}, and none is under the brush`;
+      parts.push('nothing painted: wrong ground');
+      this.host.toast(`${why}: press "Paint on any ground" in the brush panel, or tick this ground under it`, true);
+    }
     this.updateStatus(parts.join(', '));
     (window as unknown as { __envStroke?: typeof s }).__envStroke = { ...s };
     s.dabs = 0;

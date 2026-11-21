@@ -6,6 +6,8 @@
   "name": "Desert Ranger",
   "look": "core.desertranger",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Two tours in the sand. Thinks the arena is a nice change of scenery.",
   "body": "female",
@@ -28,20 +30,12 @@
     "metallic": 0.1,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 15000,
     "feet": true,
     "headShare": 0.16,
     "handsShare": 0.08,
     "normalSize": 1024,
-    "lod": 0.22,
-    "grip": {
-      "gripLong": [-0.06, -0.015, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
-    }
+    "lod": 0.22
   }
 }

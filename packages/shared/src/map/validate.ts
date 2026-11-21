@@ -1,27 +1,27 @@
 import { coreCatalog, type TileCatalog } from './catalog.ts';
 import { isCastId } from '../content/botThemes.ts';
-import { SURFACE_SLOTS, coreMaterials, coreThemes } from './materials.ts';
+import { SURFACE_SLOTS, coreMaterials, coreThemes, groundThemes } from './materials.ts';
 import { getItem } from '../sim/items.ts';
 import { itemCategory } from '../sim/pickupRoll.ts';
 import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, propBoxes, resolveEdge, rotateSide, yawXZ, type WorldBox } from './geometry.ts';
+import { buildOccupancy, isBuriedPassage, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
-import { SIDE_DIRS } from './tileOptions.ts';
+import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
 import { PLAYER } from '../sim/constants.ts';
-import { terrainHeightAt } from './terrain.ts';
+import { DEFAULT_GROUND_THEME, isGroundMaterial, terrainHeightAt } from './terrain.ts';
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
 import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
-import { migrateMapDocument, MapMigrationError } from './migrate.ts';
+import { carryReleaseOverGroundLayers, migrateMapDocument, MapMigrationError, withOldGroundEncoding } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
 import { RESOURCE_BUDGETS, resourceBudgetIssues, utf8Length } from './budgets.ts';
-import { releaseCurrent } from './identity.ts';
+import { carryReleaseOverRaceDrop, mapContentHash, releaseCurrent } from './identity.ts';
 import { validateTrack } from './track.ts';
 import { airplaneIssues } from '../sim/airplane.ts';
 import { arcSentryIssues } from '../sim/mounts.ts';
@@ -30,6 +30,7 @@ import { GLASS_EDGES } from '../sim/glass.ts';
 import { expandSetPieces, setPieceOverlapIssues, type SetPieceLibrary } from './setPieces.ts';
 import { withTileAliases } from './setPieceAliases.ts';
 import { withPropAliases } from './propAliases.ts';
+import { withNatureAliases } from './natureAliases.ts';
 import { retiredMountIssues, withMountAliases } from './mountAliases.ts';
 import { builtInSetPieces } from './setPieceLibrary.ts';
 import { checkSetPieceDefinition } from './setPieceCheck.ts';
@@ -90,12 +91,23 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
       issues: parsed.error.issues.map((i) => ({ severity: 'error', code: 'schema', message: `${i.path.join('.') || '(root)'}: ${i.message}` })),
     };
   }
+  // A release stamp from before v39 whose map changed only by losing race mode's dead track settings keeps its version.
+  // One from before v45 whose map changed only by v45's ground encoding (groundLayersV45) keeps its version too, and
+  // one from before v39 checks its race settings with the ground put back as it was then.
+  if (migrated.fromVersion < 45) parsed.data = carryReleaseOverGroundLayers(parsed.data);
+  if (migrated.fromVersion < 39 && !releaseCurrent(parsed.data)) {
+    const asOld = withOldGroundEncoding(parsed.data) ?? parsed.data;
+    const carried = carryReleaseOverRaceDrop(raw, asOld);
+    const r = carried.metadata.release;
+    if (carried !== asOld && r) parsed.data = { ...parsed.data, metadata: { ...parsed.data.metadata, release: { ...r, contentHash: mapContentHash(parsed.data) } } };
+  }
+  // A natural prop whose pack left the build (natureAliases.ts) is its generated species from here on, in MapMaker too.
+  parsed.data = withNatureAliases(parsed.data);
   const library = opts.library ?? builtInSetPieces();
   // The map is checked as written (a retired tile is still a tile, and its release hash is the file's); as played a
   // retired tile plays as the set piece that replaced it (setPieceAliases.ts: the piece covers exactly its cells, so
   // nothing new can overlap), and MapMaker keeps it as made and offers Replace all.
   const issues = validateMap(parsed.data, catalog, library);
-  const doc = opts.forEditing ? parsed.data : withTileAliases(parsed.data);
   if (issues.some((i) => i.severity === 'error') && !(opts.forEditing && opts.openWithErrors)) return { ok: false, issues };
   // MapMaker (`forEditing`) keeps the map as made: its set pieces as placements, its paths, and its own ground, which
   // it never lowers under a floor, so the parts, the laid paths and the ground kept under the floors follow a piece, a
@@ -105,8 +117,17 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // A retired prop plays as the kit family that replaced it (propAliases.ts: the family has its size, so collision is
   // unchanged), set pieces' props included; MapMaker keeps it as made.
   // A retired vehicle plays as the one that replaced it (mountAliases.ts); MapMaker keeps it as made.
-  const map = opts.forEditing ? parsed.data : withGroundAsPlayed(withMountAliases(withPropAliases(expandSetPieces(doc, library, catalog).map)), catalog);
+  const map = opts.forEditing ? parsed.data : mapAsPlayed(parsed.data, library, catalog);
   return { ok: true, map, issues, migratedFrom: migrated.fromVersion };
+}
+
+/**
+ * A map as played (loadMap without `forEditing`) from the map as made: retired tiles as their set pieces, set pieces
+ * expanded, retired props and vehicles as their replacements, on the ground as played. MapMaker's navigation check
+ * builds from this too, so its navmesh is the Test's (sim/mapNav.ts navInputKey).
+ */
+export function mapAsPlayed(doc: MapDocument, library: SetPieceLibrary = builtInSetPieces(), catalog: TileCatalog = coreCatalog): MapDocument {
+  return withGroundAsPlayed(withMountAliases(withPropAliases(expandSetPieces(withTileAliases(doc), library, catalog).map)), catalog);
 }
 
 /**
@@ -145,18 +166,53 @@ function buriedMouthIssues(map: MapDocument, cells: ReturnType<typeof buildOccup
       if (cells.has(cellKey(gx + dx, gy + dy, gz))) continue;
       // Closed by the map maker (the side's wall style in the inspector): a dead end, as meant.
       if (edgeSegments(resolveEdge(cells, gx, gy, gz, side), cellSize / 2, levelHeight).some(([u0, u1, y0, y1]) => u0 < 0 && u1 > 0 && y0 < 1 && y1 > 1)) continue;
-      ground ??= terrainUnderFloors(withPathsLaid(map), undefined, catalog)!;
+      ground ??= terrainUnderFloors(withPathsLaid(map, mapGroundBores(map, catalog).cuts), undefined, catalog)!;
       const floor = gz * levelHeight;
       let over = -Infinity;
       for (const out of [0.4, 1.2, 2]) over = Math.max(over, (terrainHeightAt(ground, (gx + dx * 0.5) * cellSize + dx * out, (gy + dy * 0.5) * cellSize + dy * out) ?? -Infinity) - floor);
-      if (over > PLAYER.maxStepHeight + 0.1) {
+      if (over > PLAYER.maxStepHeight + 0.1 || isBuriedPassage(occ.def)) {
         issues.push({
           severity: 'warning',
           code: 'tunnel.mouth_buried',
-          message: `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
+          message: isBuriedPassage(occ.def)
+            ? `the ${occ.def.displayName} at (${gx}, ${gy}, ${levelWord(gz)}) has an open end on its ${side} side: it is closed with a plain face for now; put a Tunnel Portal or a Dead End on it (Tunnel: Add portals, Close open ends)`
+            : `the ${occ.def.displayName} at (${gx}, ${gy}) ends in the ground on its ${side} side (${over.toFixed(1)} m of earth over its floor): put a Tunnel Portal on that end, or close it with a wall`,
           targetId: occ.placement.id,
         });
       }
+    }
+  }
+  return issues;
+}
+
+/**
+ * Two buried pieces joined port to port with different bores (Tileset 04 step 6: a 7 m bore against a 3.6 m passage):
+ * the walls don't meet, so the joint is open to the ground. A Reducer joins the two. Once for each joint.
+ */
+function boreProfileIssues(cells: ReturnType<typeof buildOccupancy>['cells']): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const portAt = (occ: CellOccupant, side: string) =>
+    occ.def.ports.find((p) => p.level === occ.level && (p.cell?.[0] ?? 0) === occ.local[0] && (p.cell?.[1] ?? 0) === occ.local[1] && rotateSide(p.side, occ.placement.rotation) === side);
+  for (const [key, occ] of cells) {
+    if (!occ.def.bore) continue;
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    // (Each joint once: from its west or south piece.)
+    for (const side of ['N', 'E'] as const) {
+      const mine = portAt(occ, side);
+      if (!mine) continue;
+      const [dx, dy] = SIDE_DIRS[side];
+      const next = cells.get(cellKey(gx + dx, gy + dy, gz));
+      if (!next?.def.bore || next.placement.id === occ.placement.id) continue;
+      const theirs = portAt(next, side === 'N' ? 'S' : 'W');
+      if (!theirs || (mine.bore ?? 'S') === (theirs.bore ?? 'S')) continue;
+      const wide = (mine.bore ?? 'S') === 'L' ? occ : next;
+      const narrow = wide === occ ? next : occ;
+      issues.push({
+        severity: 'warning',
+        code: 'tunnel.profile_mismatch',
+        message: `the ${wide.def.displayName} (7 m bore) meets the ${narrow.def.displayName} (3.6 m passage) at (${gx}, ${gy}): the walls don't meet there. Put a Reducer between them`,
+        targetId: narrow.placement.id,
+      });
     }
   }
   return issues;
@@ -170,7 +226,7 @@ function moundedRunIssues(map: MapDocument, cells: ReturnType<typeof buildOccupa
   const t = map.terrain;
   if (!t || !mapGroundBores(map, catalog).tiles.size) return [];
   const { cellSize, levelHeight } = map.classicStructure;
-  const made = withPathsLaid(map).terrain ?? t;
+  const made = withPathsLaid(map, mapGroundBores(map, catalog).cuts).terrain ?? t;
   const mounded: string[] = [];
   for (const [key, occ] of cells) {
     const cover = occ.def.bore?.cover?.[0]?.[4];
@@ -237,7 +293,7 @@ function groupIssues(map: MapDocument): ValidationIssue[] {
 }
 
 function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPieceLibrary): ValidationIssue[] {
-  if (map.setPieces === undefined && map.setPieceDefs === undefined) return validateExpanded(map, map, catalog);
+  if (map.setPieces === undefined && map.setPieceDefs === undefined && map.lookDefs === undefined) return validateExpanded(map, map, catalog);
   const ex = expandSetPieces(map, library, catalog);
   const issues: ValidationIssue[] = [];
   const taken = new Set([...map.classicStructure.tiles.map((t) => t.id), ...map.entities.map((e) => e.id)]);
@@ -250,6 +306,15 @@ function validatePieces(map: MapDocument, catalog: TileCatalog, library: SetPiec
   const played = ex.map === map ? 0 : utf8Length(JSON.stringify(ex.map));
   if (played > RESOURCE_BUDGETS.mapBytes) issues.push({ severity: 'error', code: 'budget.bytes', message: `as played (its set pieces expanded) the map is ${(played / 1048576).toFixed(1)} MB: at most ${RESOURCE_BUDGETS.mapBytes / 1048576} MB` });
   for (const def of map.setPieceDefs ?? []) for (const p of checkSetPieceDefinition(def, { packs: library.packs, catalog })) issues.push({ severity: 'warning', code: 'setpiece.def', message: `the map's set piece ${def.id}: ${p}` });
+  // The map's own looks (v47): each role a material the game has; a ground material only on floor, paving and roof (painting plan, 2a).
+  for (const look of map.lookDefs ?? []) {
+    for (const [role, v] of Object.entries(look.roles)) {
+      if (!v || typeof v !== 'object') continue;
+      if (!coreMaterials.get(v.material)) issues.push({ severity: 'warning', code: 'setpiece.look', message: `the map's look "${look.displayName}" (${look.id}): ${role} is ${v.material}, which is not a material (it takes the theme's)` });
+      else if (isGroundMaterial(v.material) && role !== 'floor' && role !== 'paving' && role !== 'roof') issues.push({ severity: 'warning', code: 'setpiece.look', message: `the map's look "${look.displayName}" (${look.id}): ${role} is the ground material ${v.material}, which goes on floors, paving and roofs only` });
+    }
+    if (library.packs.has(look.id)) issues.push({ severity: 'error', code: 'setpiece.look_id', message: `the map's look ${look.id} has the id of a shipped look` });
+  }
   for (const i of validateExpanded(ex.map, map, catalog)) {
     const placement = i.targetId ? ex.partOf.get(i.targetId) : undefined;
     issues.push(placement ? { ...i, targetId: placement } : i);
@@ -270,6 +335,8 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   if (map.bounds) {
     const { min, max } = map.bounds;
     for (const e of map.entities) {
+      // Props and lights outside it are scenery (the scenery zone is meant to be built in: editor/ghostWhy.ts).
+      if (e.kind === 'prop' || e.kind === 'light') continue;
       const [x, , z] = e.position;
       if (x < min[0] || x > max[0] || z < min[1] || z > max[1]) {
         issues.push({ severity: e.kind === 'spawn' ? 'error' : 'warning', code: 'bounds.outside', message: `${e.kind} ${e.id} is outside the map boundary`, targetId: e.id });
@@ -298,6 +365,11 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
         issues.push({ severity: 'error', code: 'material.unknown', message: `tile ${t.id} uses unknown material "${style.material}"`, targetId: t.id });
       }
     }
+  }
+  // The ground (map format v45): a Ground theme that exists, and grounds that are ground materials (nothing else draws as ground).
+  if (map.terrain) {
+    if (map.terrain.groundTheme && !groundThemes.get(map.terrain.groundTheme)) issues.push({ severity: 'warning', code: 'ground.theme_unknown', message: `unknown Ground theme "${map.terrain.groundTheme}": the ground shows ${DEFAULT_GROUND_THEME}'s base` });
+    for (const g of map.terrain.grounds ?? []) if (!isGroundMaterial(g)) issues.push({ severity: 'error', code: 'material.unknown', message: `the terrain's grounds name "${g}", which is not a ground material` });
   }
   const blocks = map.entities.filter((e) => e.kind === 'block');
   for (const b of blocks) {
@@ -366,6 +438,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...buriedMouthIssues(map, cells, catalog));
+  issues.push(...boreProfileIssues(cells));
   issues.push(...floodedBoreIssues(map, catalog));
   issues.push(...moundedRunIssues(map, cells, catalog));
   for (const t of map.classicStructure.tiles) {
@@ -392,6 +465,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...glassIssues(map, catalog));
+  issues.push(...tallEdgeIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
   if (stored.metadata.release && !releaseCurrent(stored)) {
@@ -407,6 +481,40 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   if (min > max) issues.push({ severity: 'error', code: 'meta.players', message: `recommended players min ${min} > max ${max}` });
 
   return issues;
+}
+
+/** Level names as MapMaker shows them (editor/operations.ts levelName). */
+const levelWord = (z: number) => (z === 0 ? 'Ground' : z > 0 ? `Level ${z}` : z === -1 ? 'Basement' : `Basement ${-z}`);
+
+/**
+ * Tall wall styles (two storeys and more: Grand arch, Gate arch, High wall, Towering wall) that rise through a floor or
+ * a roof over their side (geometry.ts tallEdgeBlock): a warning each (MapMaker refuses new ones; owner, 2026-11-16).
+ */
+export function tallEdgeIssues(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+  const tiles = map.classicStructure.tiles;
+  if (!tiles.some((t) => t.edges && Object.values(t.edges).some((s) => s !== 'auto' && s !== 'open'))) return [];
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const { cells } = buildOccupancy(map, catalog);
+  const out: ValidationIssue[] = [];
+  const seen = new Set<string>();
+  for (const [key, occ] of cells) {
+    const [x, y, z] = key.split(',').map(Number) as [number, number, number];
+    for (const [, side] of cellSides(occ)) {
+      const style = resolveEdge(cells, x, y, z, side);
+      if (style === 'none' || edgeStoreys(style, half, levelHeight) <= 1) continue;
+      // One wall, two cells: count it once.
+      const [dx, dy] = SIDE_DIRS[side];
+      const wall = `${[`${x},${y}`, `${x + dx},${y + dy}`].sort().join('|')}|${z}`;
+      if (seen.has(wall)) continue;
+      seen.add(wall);
+      const block = tallEdgeBlock(cells, x, y, z, side, style, cellSize, levelHeight);
+      if (!block) continue;
+      const through = block.what === 'roof' ? `the roof over ${levelWord(block.level - 1)}` : `${levelWord(block.level)}'s floor`;
+      out.push({ severity: 'warning', code: 'edge.tall', message: `tile ${occ.placement.id}: ${EDGE_STYLE_LABELS[style]} on its ${side} side (${levelWord(z)}) rises through ${through}; use a one-storey style there, or open the storey above`, targetId: occ.placement.id });
+    }
+  }
+  return out;
 }
 
 /** Glass options that do nothing: glass on a side with no window, glass on a block that isn't plain solid. */
@@ -483,8 +591,8 @@ export const MAP_BUDGETS = {
   footprint: 400,
   tiles: 1500,
   props: 1500,
-  /** Different prop models (each is a download and a set of draw calls). */
-  propModels: 80,
+  /** Different prop models (each is a download and a set of draw calls). 120 since 2026-11-21 (80 before). */
+  propModels: 120,
   /** Solid free blocks: merged into the level's meshes like tiles, so mostly a navmesh build-time cost. */
   blocks: 3000,
   /** Breakable, crumbling and trapdoor blocks, and solid blocks logic drives or movers carry (each is simulated and sent to players). */

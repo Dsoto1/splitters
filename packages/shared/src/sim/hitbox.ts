@@ -253,7 +253,7 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
   for (let pass = 0; pass < 2; pass++) {
     for (const l of pass ? s.arms : s.legs) {
       const t = capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat);
-      if (t >= 0) take(t, pass ? 0 : 2, raySegment(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2]) - l.r);
+      if (t >= 0) take(t, pass ? 3 : 2, raySegment(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2]) - l.r);
     }
   }
   if (zone === -1) return null;

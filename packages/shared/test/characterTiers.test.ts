@@ -28,9 +28,10 @@ import { CLIP_SET_CLIPS as TOOL_CLIPS, TIERS } from '../../../tools/content/char
 
 // Character tiers (docs/CHARACTERS.md, "Tier"): the same rules as for maps. A synthetic experimental character stands
 // in for one (no real manifest carries a tier yet): the roster with it added is what a build with one would give.
-const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'creatures', nameTheme: 'robot', tier: 'experimental' };
+const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'machines', nameTheme: 'robot', tier: 'experimental' };
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
-// The roster's own tiers (since 2026-11-11 it has experimental characters of its own: the ten of that day's intake).
+// The roster's own tiers (experimental characters of its own come and go: the ten of 2026-11-11 until 2026-11-12, the twelve
+// of 2026-11-13 until 2026-11-14, the twelve of 2026-11-14 the same day; today none).
 const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
 const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 
@@ -59,7 +60,7 @@ describe('character tiers', () => {
     }
     expect(castLooksFrom(ROSTER, [])).toEqual(pool);
     // Its own group and its own name theme: still not offered (the others of them are).
-    for (const cast of [['creatures'], ['robot'], ['creatures', 'robot']]) {
+    for (const cast of [['machines'], ['robot'], ['machines', 'robot']]) {
       const looks = castLooksFrom(ROSTER, cast);
       expect(looks.length).toBeGreaterThan(0);
       expect(looks).not.toContain(trial);
@@ -97,7 +98,7 @@ describe('character tiers', () => {
     // (A section lists its looks by name.)
     expect(exp.looks.map((l) => l.id).sort()).toEqual([trial.id, ...EXPERIMENTAL.map((l) => l.id)].sort());
     // It left its group's section.
-    expect(withOne.find((s) => s.id === 'creatures')!.looks.map((l) => l.id)).not.toContain(trial.id);
+    expect(withOne.find((s) => s.id === 'machines')!.looks.map((l) => l.id)).not.toContain(trial.id);
     // Yours is there even when empty (it holds "Design new").
     expect(characterSections(CORE_LOOKS.map(entry)).at(-1)).toEqual({ id: 'mine', label: 'Yours', looks: [] });
   });

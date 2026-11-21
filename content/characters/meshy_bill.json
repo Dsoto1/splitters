@@ -6,6 +6,7 @@
   "name": "Bill",
   "look": "core.bill",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Came for the barbecue. Stayed for the firefight.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 14000,

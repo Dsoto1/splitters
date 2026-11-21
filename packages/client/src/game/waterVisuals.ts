@@ -708,7 +708,7 @@ export class WaterFx {
    * Bodies (players, NPCs) and projectiles this frame: going in makes a
    * splash, wading or swimming at the surface leaves ripples.
    */
-  track(bodies: readonly { slot: number; x: number; y: number; z: number }[], projectiles: ReadonlyMap<number, readonly [number, number, number, number]>): void {
+  track(bodies: readonly { slot: number; x: number; y: number; z: number }[], projectiles: ReadonlyMap<number, readonly [number, number, number, number, ...number[]]>): void {
     if (!this.liquids.length) return;
     const now = performance.now();
     const seen = new Set<number>();

@@ -1,0 +1,24 @@
+{
+  "$comment": "Cable spools (tools/content/kit/street.mjs; Tileset 11, Urban & Civilian: docs/map-briefs/urban/URBAN_PLAN.md step C6): a timber cable drum standing on its rims, generated in code. It replaces nothing.",
+  "type": "spool",
+  "props": [
+    {
+      "id": "kit.spool.cable",
+      "displayName": "Cable Spool",
+      "category": "Industrial",
+      "assetVersion": 1,
+      "notes": { "1": "First version (Tileset 11, Urban & Civilian): a timber cable spool standing on its rims, 1.4 m across and 0.9 m wide: two battened flanges on a drum, black cable wound on it. Looks: new timber, weathered, orange duct, and empty (the bare drum). Collides as its box (0.9 × 1.4 × 1.4 m): standing cover on a building site or in a yard." },
+      "size": [0.9, 1.4, 1.4],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": { "kind": "spool", "cable": 0.78, "flange": 0.07, "core": 0.36 },
+      "lods": [{ "distance": 0 }, { "distance": 18 }, { "distance": 50 }],
+      "variants": [
+        { "index": 0, "name": "wood", "seed": 12301, "look": { "wood": "#b08a54", "steel": "#5c6064", "jitter": 0.05, "grime": 0.3, "cable": "#1b1b1d" } },
+        { "index": 1, "name": "weathered", "seed": 12302, "look": { "wood": "#857c6c", "steel": "#5c6064", "jitter": 0.05, "grime": 0.5, "cable": "#222224" } },
+        { "index": 2, "name": "empty", "seed": 12303, "look": { "wood": "#a88450", "steel": "#5c6064", "jitter": 0.05, "grime": 0.3 }, "set": { "cable": 0 } },
+        { "index": 3, "name": "orange", "seed": 12304, "look": { "wood": "#b08a54", "steel": "#5c6064", "jitter": 0.05, "grime": 0.3, "cable": "#c8641e" } }
+      ]
+    }
+  ]
+}

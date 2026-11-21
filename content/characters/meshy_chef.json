@@ -6,6 +6,7 @@
   "name": "Chef Basile",
   "look": "core.basile",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Runs the hottest kitchen in the arena. Everything is served well done.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.65
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

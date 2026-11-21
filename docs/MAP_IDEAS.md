@@ -20,7 +20,7 @@ moment work. *Gap* lists a small thing the kit lacks; every concept works
 without it, and the gap says what it would add. Complexity: **S** is about a
 day of scripting in `tools/maps/`, **M** a few days, **L** a week or more with
 heavy logic or a large terrain. Budgets are from [MAP_BUDGETS.md](MAP_BUDGETS.md):
-150 breakable, crumbling or trapdoor blocks, 300 active pieces, 80 prop
+150 breakable, crumbling or trapdoor blocks, 300 active pieces, 120 prop
 models, 3,000 solid blocks.
 
 ## Index

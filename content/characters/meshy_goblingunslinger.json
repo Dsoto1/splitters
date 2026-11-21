@@ -5,7 +5,8 @@
   "order": 126,
   "name": "Goblin Gunslinger",
   "look": "core.goblingunslinger",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "Fastest draw under four feet tall.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

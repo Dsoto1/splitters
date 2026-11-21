@@ -133,6 +133,16 @@ what's in the menu chunk, a throwaway Vite config with a `generateBundle` hook t
 `modules[id].renderedLength` (and gzips `code`) does it without source maps (a source-mapped build ran out of memory
 here).
 
+**The movement code and the kit props' table** (2026-11-18, the performance batch): at 2799.3 of 2800 kB the menu had
+no room left. Three small modules the menu reads pulled in big ones: the buttons (`BUTTON_*`, read by the key bindings
+and the class cards) lived in `sim/movement.ts`, so the movement code, the nav links (zipline, portals, passages) and
+through them `content/kitProps.generated.ts` (156 kB raw) rode in the menu's `index` chunk; `hasTrack` (sim/rules.ts)
+reached `map/track.ts` for `racePath`; `setIdRandom` (main.ts, test mode) reached the edit commands. They now live in
+`sim/inputs.ts`, `map/racePath.ts` and `editor/ids.ts` (the old modules re-export them): the menu's first JS went from
+2796.6 to 2646.9 kB raw (784.6 to 753.9 kB gzip; with music and announcer, merged after, 2799.3 to 2642.3 kB), the same budget. What left loads with the match and MapMaker, which
+already import those modules (and the idle prefetch brings them in while the menu is up). A module the menu reads is
+put in the menu's chunk whole, with everything it imports: keep what the menu needs in small modules of its own.
+
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
 way the hub does and alternates runs between them).
@@ -146,3 +156,28 @@ portrait, the shipped portraits and the first map pictures, each capped) and
 fades out when they're done, after 12 s at the most, or as soon as a match,
 MapMaker or the Character Designer takes over (they have their own). The
 /host page, the team tools and test mode (`?test=1`) skip it.
+
+## Starting a match
+
+What a player sees from Start match (or MapMaker's Test) to the fight (owner, 2026-11-18: "stage the loading process
+so it looks and feels right"; the fix batch of 2026-11-18):
+
+1. **From the click**, the loading screen (`src/loadingScreen.ts`, a few hundred bytes in the menu's chunk): the map's
+   card (its picture, name and mode) and the bar, over everything, while the match code and the map come in. No grey
+   frame: the session draws nothing until the welcome brings the map (`GameSession.drawFrame`), and the loading
+   screen stays up alone until then (`Hud.showLoading`, `#hud.only-loading`).
+2. **The welcome** names the map on the card; the bar moves with the files `prepareMatch` loads.
+3. **Partway** (half the files, or 4 s into a slow load), the match's goal in a few words (`game/matchGoal.ts`:
+   "First team to 50 kills") and the Tab board (teams, players and bots) join the loading screen (`#hud.ls-staged`):
+   the look at the teams happens during the load instead of after it. The pause menu stays away meanwhile.
+4. **Loaded**: a board that has only just appeared stays 1.6 s so it can be read (not in MapMaker's Test or a browser
+   test), then the screen fades into the countdown. If the match's start gate stops waiting (a very slow load) and
+   the countdown begins, the screen goes at once.
+5. **The countdown** shows one line under the big number: map · mode, and the goal (`#countdown-info`); it fades
+   with "Go!".
+6. **Go**: straight into the fight (owner, 2026-11-19: "it should just let me go/fight, not pop up that screen"). No
+   pause menu and no Tab board: until the player has first been in play this session (the mouse taken, or touch play
+   on), a missing mouse is no pause. If the browser hasn't given the mouse (it only does on a click or key, not when a
+   countdown ends), one calm line says "Click to fight" ("Tap to fight" on a phone; "Click or press A to fight" with a
+   controller), steady, no flash (`GameSession.showFightHint`, `.fight-hint`); a click, a key or A / Start takes the
+   mouse. Esc there opens the pause menu, as in play; once in play, losing the mouse pauses as before.

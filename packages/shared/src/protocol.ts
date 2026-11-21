@@ -26,7 +26,7 @@ export type ClientMessage =
    * server/src/tickets.ts), so a host knows the account without seeing the player's sign-in token.
    */
   /** `party`: the party tag this player came with (net/party.ts: from the invite link they followed, or their own). */
-  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string }
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string; rx?: number }
   /** Between matches: this player's vote for the next map (index into the open vote's options; sim/mapVote.ts). Older hosts ignore it. */
   | { t: 'vote'; i: number }
   | { t: 'input'; inputs: PlayerInput[] }
@@ -198,6 +198,18 @@ export interface PlayerSnapshot {
   dr?: 1;
   /** Riding a zipline: [line (index in mapZiplines), metres along it from its start, signed speed along it (m/s, + toward its end)]. */
   zl?: [number, number, number];
+  /**
+   * Aiming through a magnified optic (a 2-3x optic or a sniper scope: content/optics.json kinds with `mag`): the
+   * scope picture is up (sim/match.ts `scopeUp`). Absent otherwise, and from hosts older than the field. Others see
+   * a sniper scope's glint by it (GUNPLAY_SPEC section 15).
+   */
+  zm?: 1;
+  /**
+   * Dual wielding: a pair is drawn, a gun in each hand (the weapon in hand has its second gun and it is out;
+   * sim/match.ts `pairDrawn`). Absent otherwise, and from hosts older than the field (docs/MULTIPLAYER_PROTOCOL.md
+   * section 24).
+   */
+  dw?: 1;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -211,8 +223,16 @@ export interface PrivateState {
    * (SeatDef.ammo: the Tank's shells)]. A driver working an empty gunner seat's gun (driverFires) gets that gun's.
    */
   mo?: [number, number, number] | [number, number, number, number];
+  /**
+   * Driving a rigid vehicle (sim/wheelPhysics.ts): its whole state, to predict it from (rigidWire: [mount index,
+   * position, orientation, velocity, spin, steering, tipped, righting, air ticks, flags, take-off controls, hull solver]).
+   * Older clients ignore it.
+   */
+  vp?: number[];
   /** Carried grenades or mines as [index into THROWABLES, count]; absent = none. */
   gr?: [number, number];
+  /** A hold to use in progress (sim/holdUse.ts): [kind (HOLD_KINDS index), ticks held, ticks it takes]. */
+  hu?: [number, number, number];
   /** Ticks left on reload / weapon raise (0 = ready). */
   rl: number;
   rs: number;
@@ -220,6 +240,15 @@ export interface PrivateState {
   rd?: [number, number, number, number];
   /** Weapon codes with a magazine in but no round chambered (an empty reload stopped early). */
   uc?: number[];
+  /**
+   * Dual wielding: the second guns you hold, as [weapon code, magazine, flags] in code order (the reserve is the
+   * weapon's one, in `inv`). Flags (left out when 0): 1 its magazine is in but no round chambered, 2 it is put away
+   * (one gun in hand). Absent without a second gun.
+   */
+  ow?: [number, number, number?][];
+  /** The second gun's reload, as `rl` and `rd` are the first's (absent when it isn't reloading). A run at 0 inputs beside a first-gun reload under way is waiting its turn. */
+  rl2?: number;
+  rd2?: [number, number, number, number];
   /**
    * Damage you dealt lately (the HUD's optional damage numbers): [tick, amount, flags, x, y, z], one entry per target
    * per tick (a shotgun shell's pellets summed), the last few snapshots' worth (the client shows each tick once).
@@ -273,7 +302,8 @@ export const FX_JACKPOT = 1024;
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
  * pitch, health %, state bits (MOUNT_FLAG_ALIVE, MOUNT_FLAG_WRECK,
- * MOUNT_FLAG_BURNING, an arc sentry's MOUNT_FLAG_CHARGING and MOUNT_FLAG_ARC; 0 = gone), ...occupant slot per seat (-1 = empty)]. A
+ * MOUNT_FLAG_BURNING, an arc sentry's MOUNT_FLAG_CHARGING and MOUNT_FLAG_ARC; 0 = gone), ...occupant slot per seat (-1 = empty),
+ * then, for a mount with MountDef.resupply (the Supply Buggy), its resupplies left]. A
  * sentry a player built (Classes) has index BUILT_MOUNT_BASE + their slot.
  */
 export type MountSnapshot = number[];
@@ -289,7 +319,7 @@ export const POWERUP_DAMAGE_BIT = 2;
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */
   | {
-      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1;
+      e: 'shot'; s: number; w: string; from: Tuple3; to: Tuple3[]; hit: (number | null)[]; /** Body zone per hit (0 body, 1 head, 2 legs, 3 arms), parallel to `hit`. */ z?: number[]; /** Second trigger. */ alt?: 1; /** Dual wielding: the second gun of a pair fired it. */ off?: 1;
       /** Ballistic bullets: muzzle speed (m/s) and gravity (m/s²) they fly with, for client tracers. */ v?: number; g?: number;
       /** Pellet indices still in flight (their `to` is where they were when this was sent; an `impact` event follows). */ fl?: number[];
       /** A hit landed on armor. */ ar?: 1;
@@ -312,6 +342,15 @@ export type GameEvent =
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
   | { e: 'knock'; s: number; t: number }
   | { e: 'pickup'; s: number; id: string; item: string }
+  /**
+   * `s` used a resupply point (sim/resupply.ts): on mount `m` (map entity index), or ammo box `b` (`m` -1). `ok`
+   * resupplied, else nothing given (full, empty or waiting); `left` uses left.
+   */
+  | { e: 'resupply'; s: number; m: number; b?: number; left: number; ok: boolean }
+  /** A hold to use (sim/holdUse.ts) stopped short: `s`'s hold of kind `k` (HOLD_KINDS index), and why. */
+  | { e: 'hold'; s: number; k: number; x: 'released' | 'moved' | 'fired' | 'swapped' | 'hurt' | 'gone' }
+  /** An ammo box was destroyed at `p` and cooks off (its blasts follow as `explode` events); `n` the share of stock it held. */
+  | { e: 'boxcook'; p: Tuple3; n: number }
   | { e: 'kill'; killer: number | null; victim: number; weapon: string; /** The killing blow was a head hit (never on a team kill). */ hs?: 1; /** A team kill: the killer downed a teammate (friendly fire); the feed marks it and nothing rewards it. */ tk?: 1 }
   | { e: 'spawn'; s: number; /** Random characters: the look this life plays (sim/randomLooks.ts). */ l?: string;
       /** Roulette: this life's roll (1 jackpot, 2 tiny), and the cards the player is dealt next (the client preloads them). */ j?: 1 | 2; nx?: string[] }
@@ -443,6 +482,8 @@ export interface RosterEntry {
   sp?: 1;
   /** The party this person came with (net/party.ts): people sharing it are marked as your party on the scoreboard. */
   py?: string;
+  /** A person's career rank points as their browser sent them on joining (content/ranks.ts; Options → Ranks & badges). Absent: none sent (an older browser). */
+  rx?: number;
 }
 
 export interface ServerStats {
@@ -596,8 +637,11 @@ export type ServerMessage =
       players: PlayerSnapshot[];
       score: ScoreEntry[];
       ev: GameEvent[];
-      /** Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)]. */
-      pr: [number, number, number, number, number][];
+      /**
+       * Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)], and for a stream's own shots
+       * (STREAM_VISUALS, not the pieces a projectile splits into) the shooter's slot after them.
+       */
+      pr: ([number, number, number, number, number] | [number, number, number, number, number, number])[];
       /** IDs of pickups currently taken (waiting to respawn). */
       pk: string[];
       /** Random weapon pickups holding something other than what was placed: [pickup ID, item ID] (absent: none). */
@@ -616,6 +660,11 @@ export type ServerMessage =
       ms?: number[][];
       /** Deployed cover walls, when any stand (absent means none). */
       cv?: CoverSnapshot[];
+      /**
+       * Ammo boxes standing (sim/resupply.ts): [id, x, y (ground), z, yaw, health %, uses left, 1 when deployed (0:
+       * a map's Ammo Box)]. Absent: none stands. Older clients ignore it.
+       */
+      ab?: number[][];
       /** Receiving player's private state (absent while not in the match). */
       me?: PrivateState;
       /** Scenario state changes (absent when nothing changed). */

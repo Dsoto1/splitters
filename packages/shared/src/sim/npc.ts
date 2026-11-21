@@ -1,4 +1,4 @@
-import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterGroup } from '../content/looks.ts';
+import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
 import { NPC_ROLE_BOTS, NPC_ROLE_SPECS } from '../content/npcRoles.generated.ts';
 import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
@@ -168,16 +168,28 @@ export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56
 export const validLookId = (id: string | undefined): string => (npcLookRole(id) ? id! : getLook((id && RETIRED_LOOKS[id]) || id).id);
 /**
  * Character Select's group for each NPC skin (what it is; CHARACTER_GROUPS). The ones not offered there
- * (gunner, heavy, …) have one too, so a saved choice of theirs still sorts.
+ * (gunner, heavy, …) have one too, so a saved choice of theirs still sorts. The Dummy (the trooper mannequin) sits in
+ * Soldiers & Spies as Agency (it was Agents & Spies: the owner's Roster Board, 2026-11-14), the other soldier roles as
+ * Army; the creatures and the zombie in Horrors & Creatures (2026-11-17).
  */
 export const NPC_LOOK_GROUPS: Readonly<Record<string, CharacterGroup>> = Object.fromEntries(
-  NPC_LOOKS.map((l) => [l.id, NPC_ROLE_SPECS[l.role].creature ? 'creatures' : l.role === 'zombie' ? 'horror' : 'soldiers']),
+  NPC_LOOKS.map((l) => [l.id, NPC_ROLE_SPECS[l.role].creature || l.role === 'zombie' ? 'horror' : 'soldiers']),
+);
+/** The soldier NPC skins' branches (Soldiers & Spies): the Dummy Agency, the others Army. */
+const NPC_LOOK_BRANCHES: Readonly<Record<string, CharacterBranch>> = Object.fromEntries(
+  NPC_LOOKS.filter((l) => NPC_LOOK_GROUPS[l.id] === 'soldiers').map((l) => [l.id, l.role === 'trooper' ? 'agency' : 'army']),
 );
 /** What a look is (Character Select's groups): built-in looks and NPC skins have one; a design of yours (or anything unknown) is null. */
 export const lookGroup = (id: string | undefined): CharacterGroup | null => {
   if (npcLookRole(id)) return NPC_LOOK_GROUPS[id!] ?? null;
   const key = (id && RETIRED_LOOKS[id]) || id;
   return CORE_LOOKS.find((l) => l.id === key)?.group ?? null;
+};
+/** A look's branch in Soldiers & Spies (Army or Agency); null outside it, for a design of yours or anything unknown. */
+export const lookBranch = (id: string | undefined): CharacterBranch | null => {
+  if (npcLookRole(id)) return NPC_LOOK_BRANCHES[id!] ?? null;
+  const key = (id && RETIRED_LOOKS[id]) || id;
+  return CORE_LOOKS.find((l) => l.id === key)?.branch ?? null;
 };
 
 /** First-person arm colour for each NPC skin (creature hide, soldier uniform). */

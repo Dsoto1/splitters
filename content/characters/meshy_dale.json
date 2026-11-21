@@ -6,6 +6,7 @@
   "name": "Cal",
   "look": "core.dale",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Came in to fix the vending machine. Has been winning ever since.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

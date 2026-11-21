@@ -6,6 +6,7 @@
   "name": "Zombie Soldier A",
   "look": "core.zombiesoldier1",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Reported for duty. Never stopped.",
   "body": "male",
@@ -24,16 +25,9 @@
     "metallic": 0,
     "roughness": 0.8
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
-    "grip": {
-      "gripLong": [-0.015, 0, -0.03],
-      "supportPistol": [-0.02, 0, -0.04]
-    },
     "hold": {
       "out": 0.07
     },

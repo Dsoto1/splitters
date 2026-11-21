@@ -199,6 +199,11 @@ export interface PlayerConn {
   onClose(cb: () => void): void;
   /** The player's address when known and direct (a WebSocket's peer, a WebRTC link's non-relay candidate). */
   address?(): string | undefined;
+  /**
+   * Whether the connection itself is still up (a WebRTC link's peer connection): the browser's network threads keep
+   * it up while the player's page is busy, so a silent player with it up has stalled, not gone (STALLED_SILENT_MS).
+   */
+  up?(): boolean;
 }
 
 export interface RunningServer {
@@ -278,6 +283,19 @@ const SILENT_MS = 20_000;
  * (as a browser host allows its friends, matchHost.ts FRIEND_LOADING_SILENT_MS).
  */
 const LOADING_SILENT_MS = 60_000;
+/**
+ * …and a loaded one whose connection is still up (PlayerConn.up): its page has stalled, it isn't gone. A slow machine
+ * can freeze for half a minute building shaders (software rendering has no parallel shader builds: CI's
+ * dedicatedhost, the owner's page after the admin's restart, 2026-11-16), as a browser host allows its friends
+ * (matchHost.ts FRIEND_STALLED_SILENT_MS).
+ */
+const STALLED_SILENT_MS = 60_000;
+
+/** How long a player may say nothing before their connection is closed: loading, stalled with the connection up, or silent. */
+export function silentLimitMs(c: { loaded?: boolean; conn: Pick<PlayerConn, 'up'> }): number {
+  if (!c.loaded) return LOADING_SILENT_MS;
+  return c.conn.up?.() ? STALLED_SILENT_MS : SILENT_MS;
+}
 
 /**
  * Limits on who can come in (on top of the hub's: broker sockets and joins per
@@ -635,6 +653,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         }
         client.slot = player.slot;
         client.who = who;
+        // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
+        if (msg.rx !== undefined) player.rankPoints = msg.rx;
         player.account = !!proof?.name;
         event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         if (back) notice(`${name} is back`);
@@ -988,8 +1008,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       if (away.away.length || away.released.length) broadcast({ t: 'roster', players: match.roster() });
       const nowMs = Date.now();
       for (const c of clients) {
-        if (c.slot === null || nowMs - c.heardAt <= (c.loaded ? SILENT_MS : LOADING_SILENT_MS)) continue;
-        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s${c.loaded ? '' : ' (loading)'}, closing the connection`);
+        if (c.slot === null || nowMs - c.heardAt <= silentLimitMs(c)) continue;
+        event(`${c.who?.name ?? 'a player'}: nothing heard for ${Math.round((nowMs - c.heardAt) / 1000)} s${c.loaded ? (c.conn.up?.() ? ' (connection up)' : '') : ' (loading)'}, closing the connection`);
         c.conn.close(4009, 'no answer');
       }
       // Every other second: each human's ping, for the scoreboard.

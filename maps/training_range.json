@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 37,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_hslr4ju4faub772g",
-      "revision": 5,
-      "contentHash": "sha256:cdc316301a73aeac6197b23568302209549ccf74b37d14fe01e450824467e1ae",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T02:41:41.679Z"
+      "versionId": "v_lvkuovsd4kcndsgc",
+      "revision": 6,
+      "contentHash": "sha256:e0d9676a352ec2a7f09b82137aa6a5cb2be99e92da4918afdabf5f1e2cc3bda4",
+      "schemaVersion": 37,
+      "releasedAt": "2026-11-13T18:00:59.885Z"
     }
   },
   "classicStructure": {
@@ -6920,7 +6920,7 @@
         30
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": 1.571,
       "faction": null,
       "respawnSeconds": null
@@ -6944,7 +6944,7 @@
         -32
       ],
       "kind": "mount",
-      "model": "buggy",
+      "model": "troop_buggy",
       "yaw": -1.571,
       "faction": null,
       "respawnSeconds": null

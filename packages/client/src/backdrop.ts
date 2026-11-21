@@ -11,7 +11,7 @@ import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import type { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
-import { CORE_THEMES, PROP_FENCES, SKIES, mapTimeOfDay, presetDirection, sunAt, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type TerrainMaterial, type WorldBox } from '@tiletrigger/shared';
+import { CORE_THEMES, PROP_FENCES, SKIES, mapTimeOfDay, presetDirection, sunAt, borderStyleAt, boxBounds, coastHeightAt, coastSides, pathsExtent, resolveBackdrop, vertexY, backdropGroundSurface, TERRAIN_SURFACES, type Backdrop, type MapDocument, type PropEntity, type SceneryId, type SkyDefinition, type WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from './content/models.ts';
 import { createPropNode } from './game/propVisuals.ts';
 import { EnvScatter, type EnvCopy } from './environment/envScatter.ts';
@@ -189,7 +189,9 @@ export class BackdropVisuals {
    * and runs out 3 km, easing to a level plain with gentle swells.
    */
   private buildGround(doc: MapDocument, backdrop: Backdrop, area: PlayArea): void {
-    const ground = backdrop.ground as TerrainMaterial | 'water';
+    // The ground material past the border (map format v45: the terrain's commonest edge ground itself, Packed Snow as
+    // Packed Snow, when the backdrop is the theme's), or water.
+    const ground = backdrop.ground === 'water' ? 'water' : (backdropGroundSurface(doc) ?? TERRAIN_SURFACES.grass);
     const t = doc.terrain;
     const per = perimeter(area.min, area.max, 4);
     const edgeHeights = per.map(([x, z]) => edgeHeight(doc, x, z, area.floor));
@@ -201,7 +203,7 @@ export class BackdropVisuals {
     const uvs: number[] = [];
     const indices: number[] = [];
     const water = ground === 'water';
-    const scale = water ? 8 : this.styler.groundScale(ground as TerrainMaterial);
+    const scale = water ? 8 : this.styler.groundScale(ground);
     // A shoreline border: the land past it drops under the border's sea.
     const shore = per.map(([x, z]) => borderStyleAt(doc, x, z) === 'water');
     const sea = Math.min(...edgeHeights.filter((_, i) => shore[i])) - 1.1;
@@ -260,7 +262,7 @@ export class BackdropVisuals {
       mat.specularPower = 64;
       this.materials.push(mat);
       mesh.material = mat;
-    } else mesh.material = this.styler.groundMaterial(ground as TerrainMaterial);
+    } else mesh.material = this.styler.groundMaterial(ground);
     mesh.isPickable = false;
     mesh.freezeWorldMatrix();
     this.meshes.push(mesh);

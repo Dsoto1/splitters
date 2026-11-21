@@ -9,8 +9,8 @@
   "damage": 24,
   "spread": 0.004,
   "fireIntervalTicks": 9,
-  "range": 110,
-  "falloff": { "start": 15, "end": 45, "min": 0.45, "curve": "linear" },
+  "range": 90,
+  "falloff": { "start": 15, "end": 45, "min": 0.3, "curve": "linear" },
   "magazine": 15,
   "reserveMax": 90,
   "pickupAmmo": 30,
@@ -21,6 +21,7 @@
   "ammo": "cells",
   "recoil": { "bloom": 0.004, "maxBloom": 0.02, "recover": 0.0015 },
   "kick": { "pitch": [0.012], "yaw": [0.003, -0.003], "variance": 0.0024000000000000002, "delay": 4, "settle": 8, "rate": 0.1, "visual": 0.18 },
+  "akimbo": { "as": "pistol" },
   "view": {
     "model": "guns/plasma_defender.glb",
     "held": { "medium": "guns/plasma_defender.medium.glb", "high": "guns/plasma_defender.high.glb" },
@@ -33,6 +34,7 @@
     "beam": true
   },
   "notes": {
+    "range": "Best within 15 m: full damage, 5 body shots. Down to 30 % (14 shots) by 45 m; reaches 90 m. Hitscan: by distance.",
     "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
     "model": "The Meshy community Plasma Defender (CC0 per the owner; content/guns.json), replacing the Meshy community ornate handgun (still built), the kit sci-fi pistol as the fallback."

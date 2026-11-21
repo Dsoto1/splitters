@@ -15,11 +15,15 @@
  * Fireteams (docs/FIRETEAMS_PLAN.md, Part 3): each team's rows grouped by
  * squad under a line with the squad's name and points (its MVP at the end).
  */
+import type { InsigniaId } from '@tiletrigger/shared';
+import { insigniaSvg } from './insigniaSvg.ts';
 
 /** One player's line. Strings are shown as they are (already formatted). */
 export interface BoardRow {
   slot: number;
   name: string;
+  /** A soldier's rank badge, shown before the name (insignia.ts); none for everyone else. */
+  ins?: InsigniaId | null;
   bot: boolean;
   /** A person: a verified account (signed in, playing under their username), or a guest (shown only when others are playing). */
   who?: 'acct' | 'guest';
@@ -159,6 +163,7 @@ interface RowEls {
   el: HTMLElement;
   rank: HTMLElement;
   mark: HTMLElement;
+  ins: HTMLElement;
   name: HTMLElement;
   cls: HTMLElement;
   k: HTMLElement;
@@ -360,7 +365,16 @@ export class ScoreBoard {
       this.groups.push({ el, name, score, list, hd });
     }
     this.root.append(this.head, this.note, this.body);
+    if (this.extra) this.root.append(this.extra);
   }
+
+  /** A strip under the board (your profile card: game/profileCard.ts), kept there across rebuilds; null removes it. */
+  setExtra(el: HTMLElement | null): void {
+    if (this.extra && this.extra !== el) this.extra.remove();
+    this.extra = el;
+    if (el && this.body && el.parentNode !== this.root) this.root.append(el);
+  }
+  private extra: HTMLElement | null = null;
 
   /** The row for a player, patched to `r` (only the cells that changed). */
   private row(r: BoardRow, rank: number): RowEls {
@@ -371,9 +385,11 @@ export class ScoreBoard {
       const rk = make('span', 'sb-rank');
       const nameCell = make('span', 'sb-name');
       const mark = make('i', 'sb-mark');
+      const ins = make('i', 'sb-ins');
+      ins.hidden = true;
       const name = make('span', 'sb-nm');
-      nameCell.append(mark, name);
-      e = { el, rank: rk, mark, name, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), pts: make('span', 'sb-n sb-pts'), key: '' };
+      nameCell.append(mark, ins, name);
+      e = { el, rank: rk, mark, ins, name, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), pts: make('span', 'sb-n sb-pts'), key: '' };
       // Same cells as the header row.
       const f = this.cells;
       if (f.rank) el.append(rk);
@@ -385,7 +401,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
+    const key = `${rank}|${r.ins ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -399,6 +415,13 @@ export class ScoreBoard {
     e.name.classList.toggle('party', !!r.party);
     e.name.title = [r.party ? 'In your party' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
     set(e.mark, r.leader ? '★' : r.squadLead ? '◆' : '●');
+    // A soldier's rank badge, in the row's colour (insignia.ts).
+    if ((e.ins.dataset.ins ?? '') !== (r.ins ?? '')) {
+      e.ins.dataset.ins = r.ins ?? '';
+      e.ins.innerHTML = r.ins ? insigniaSvg(r.ins) : '';
+      e.ins.hidden = !r.ins;
+    }
+    e.ins.style.color = r.color;
     e.mark.style.color = r.leader ? '' : r.color;
     e.mark.classList.toggle('leader', r.leader);
     e.mark.title = r.leader ? 'Team leader' : r.squadLead ? 'Squad leader' : '';

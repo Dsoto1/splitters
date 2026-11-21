@@ -8,9 +8,12 @@ import {
   paintSlopes,
   smoothTerrain,
   TERRAIN_BRUSHES,
-  TERRAIN_MATERIAL_LABELS,
-  TERRAIN_MATERIALS,
-  TERRAIN_SURFACES,
+  GROUND_MATERIALS,
+  MAX_GROUNDS,
+  groundIndex,
+  groundThemes,
+  matchingGroundTheme,
+  terrainGroundTheme,
   terrainHeightAt,
   terrainHoldMask,
   terrainSpacingFor,
@@ -18,14 +21,13 @@ import {
   type MapEntity,
   type TerrainBrush,
   type TerrainData,
-  type TerrainMaterial,
   type Vec3
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { openChangeGridDialog } from './changeGridDialog.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
-import { mainGround } from './editorParts.ts';
+import { groundThemeLabel } from './editorParts.ts';
 import { type TraceImage } from './editorView.ts';
 
 /** The Terrain tool: its brush, live sculpting strokes, whole-map smoothing, the trace image and the Terrain palette (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -33,7 +35,10 @@ export class TerrainTools {
   constructor(readonly app: EditorApp) {}
 
   terrainBrush: TerrainBrush = 'raise';
-  terrainMaterial: TerrainMaterial = 'dirt';
+  /** Ground paint's ground (a ground material id), or null: the base (cells go back to following the Ground theme). */
+  terrainMaterial: string | null = 'core.pbr_forest';
+  /** Ground paint's stroke paints the base (Shift held, or the Base chip). */
+  private strokeBase = false;
   foliageLevel = 3;
   brushRadius = 8;
   brushStrength = 0.5;
@@ -47,10 +52,21 @@ export class TerrainTools {
 
   // ---------------------------------------------------------------- terrain
 
+  /** The last brush other than Ground paint (Terrain picks it up again). */
+  sculptBrush: TerrainBrush = 'raise';
+
+  /** The Terrain tool (T): its last sculpt brush; `cycle` moves on to the next (Ground paint is Shift+B, not in the cycle). */
+  terrainTool(cycle: boolean): void {
+    const brushes: TerrainBrush[] = TERRAIN_BRUSHES.filter((b) => b !== 'paint');
+    const now = brushes.indexOf(this.sculptBrush);
+    this.setTerrainBrush(cycle && this.terrainBrush !== 'paint' ? brushes[(now + 1) % brushes.length]! : this.sculptBrush);
+  }
+
   setTerrainBrush(brush: TerrainBrush): void {
     this.terrainBrush = brush;
+    if (brush !== 'paint') this.sculptBrush = brush;
     this.app.setTool({ kind: 'terrain' });
-    for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === this.terrainMaterial);
+    for (const b of document.querySelectorAll<HTMLElement>('[data-ground]')) b.classList.toggle('active', brush === 'paint' && b.dataset.ground === (this.terrainMaterial ?? 'base'));
     for (const b of document.querySelectorAll<HTMLElement>('[data-foliage]')) b.classList.toggle('active', brush === 'foliage' && Number(b.dataset.foliage) === this.foliageLevel);
   }
 
@@ -68,6 +84,12 @@ export class TerrainTools {
     const t = this.app.doc.terrain;
     if (!t || !this.terrainHover) return;
     if (invert && (this.terrainBrush === 'raise' || this.terrainBrush === 'lower')) this.terrainBrush = this.terrainBrush === 'raise' ? 'lower' : 'raise';
+    // Ground paint with Shift: the cells go back to the base (they follow the Ground theme again).
+    this.strokeBase = this.terrainBrush === 'paint' && invert;
+    if (this.terrainBrush === 'paint' && !this.strokeBase && this.terrainMaterial && !groundIndex(t, this.terrainMaterial)) {
+      this.app.toast(`This terrain already uses ${MAX_GROUNDS} grounds: paint some cells another ground it uses (or back to the base, Shift) to make room for ${this.groundName(this.terrainMaterial)}`, true);
+      return;
+    }
     // The brush works on the document's own ground; Flatten levels it to the height under the pointer as shown.
     // Flatten to the height typed in the Terrain tab, else to the height where the stroke starts.
     const typed = $<HTMLInputElement>('ed-tr-flatten-y').value.trim();
@@ -83,7 +105,7 @@ export class TerrainTools {
     if (!h) return;
     const rate = this.brushStrength;
     const strength = this.terrainBrush === 'raise' || this.terrainBrush === 'lower' ? rate * 6 * dt : this.terrainBrush === 'roughen' ? rate * 1.5 * dt : Math.min(1, rate * 8 * dt);
-    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, material: this.terrainMaterial, level: this.foliageLevel, seed: s.seed });
+    s.now = applyBrush(s.now, { brush: this.terrainBrush, x: h.x, z: h.z, radius: this.brushRadius, strength, target: s.target, ground: this.strokeBase ? null : this.terrainMaterial, level: this.foliageLevel, seed: s.seed });
     // Shown kept under the floors as it is sculpted (the paths are laid in again on release).
     s.shown = this.app.groundShownFor(s.now, false);
     this.app.view.previewTerrain({ ...this.app.viewDoc, terrain: s.shown });
@@ -98,8 +120,17 @@ export class TerrainTools {
     const s = this.stroke;
     if (!s) return;
     this.stroke = null;
-    const label = this.terrainBrush === 'paint' ? `Paint ${TERRAIN_MATERIAL_LABELS[this.terrainMaterial]}` : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
+    const label = this.terrainBrush === 'paint' ? (this.strokeBase || !this.terrainMaterial ? 'Ground back to the base' : `Paint ${this.groundName(this.terrainMaterial)}`) : this.terrainBrush === 'foliage' ? `Plants: ${FOLIAGE_LEVELS[this.foliageLevel]}` : `Terrain ${this.terrainBrush}`;
     if (s.now !== s.before) this.app.run(label, { kind: 'setTerrain', before: s.before, after: s.now });
+  }
+
+  /** A ground's name (its material's), or the base's: "Base (Gravel)". */
+  groundName(ground: string | null): string {
+    if (ground === null) {
+      const t = this.app.doc.terrain;
+      return `the base${t ? ` (${coreMaterials.get(terrainGroundTheme(t).base)?.displayName ?? ''})` : ''}`;
+    }
+    return coreMaterials.get(ground)?.displayName ?? ground;
   }
 
   setTerrain(label: string, after: TerrainData | null): void {
@@ -160,10 +191,18 @@ export class TerrainTools {
     const t = this.app.doc.terrain;
     $('ed-tr-create').hidden = !!t;
     $('ed-tr-edit').hidden = !t;
+    // Before a terrain is made, its Ground theme follows the Structure theme's match until one is picked.
+    const newGround = $<HTMLSelectElement>('ed-tr-new-ground');
+    if (!t && !newGround.dataset.picked && newGround.options.length) newGround.value = matchingGroundTheme(this.app.doc.classicStructure.theme);
     if (t) {
       $<HTMLInputElement>('ed-tr-boundary').checked = t.boundary;
       $('ed-tr-size').textContent = `${((t.cols - 1) * t.spacing).toFixed(0)} × ${((t.rows - 1) * t.spacing).toFixed(0)} m · ${t.spacing} m grid`;
-      $<HTMLSelectElement>('ed-tr-base').value = TERRAIN_MATERIALS[mainGround(t)] ?? 'grass';
+      const g = terrainGroundTheme(t);
+      const text = `Ground theme: ${groundThemeLabel(g)}`;
+      if ($('ed-tr-theme').textContent !== text) $('ed-tr-theme').textContent = text;
+      const base = document.querySelector<HTMLElement>('#ed-tr-materials [data-ground="base"] .lbl');
+      const baseText = `Base: ${coreMaterials.get(g.base)?.displayName ?? g.base}`;
+      if (base && base.textContent !== baseText) base.textContent = baseText;
     }
   }
 
@@ -194,26 +233,38 @@ export class TerrainTools {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `terrain:${brush}`;
-      const label = `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
+      const label = brush === 'paint' ? 'Ground paint' : `${brush[0]!.toUpperCase()}${brush.slice(1)}`;
       b.innerHTML = `<svg viewBox="0 0 56 56">${icons[brush]}</svg>${label}`;
       b.addEventListener('click', () => this.setTerrainBrush(brush));
       brushes.append(b);
       this.app.palette.register(b, { key: b.dataset.tool, name: `${label} terrain`, tags: 'terrain ground sculpt brush' });
     }
+    // Ground paint's list (painting Phase 4): every ground material, each drawn as itself (nothing is swapped for a
+    // look-alike), and the base (cells back to following the Ground theme). The palette puts the Ground theme's first.
     const grounds = $('ed-tr-materials');
-    for (const m of TERRAIN_MATERIALS) {
-      const def = coreMaterials.get(TERRAIN_SURFACES[m]);
+    const base = document.createElement('button');
+    base.className = 'mat-btn ground-base';
+    base.dataset.ground = 'base';
+    base.title = 'Ground paint (Shift+B): back to the base, the Ground theme\'s ground (or Shift+drag with any ground). Base cells change with the Ground theme; painted ones stay';
+    base.innerHTML = '<span class="ground-base-icon" aria-hidden="true">⟲</span><span class="lbl">Base</span>';
+    base.addEventListener('click', () => {
+      this.terrainMaterial = null;
+      this.setTerrainBrush('paint');
+    });
+    grounds.append(base);
+    for (const m of GROUND_MATERIALS) {
+      const def = coreMaterials.get(m)!;
       const b = document.createElement('button');
       b.className = 'mat-btn';
       b.dataset.ground = m;
-      b.title = `Paint the ground with ${TERRAIN_MATERIAL_LABELS[m]}`;
-      b.innerHTML = `${def ? `<img alt="" src="${materialThumbnail(def)}">` : ''}<span class="lbl">${TERRAIN_MATERIAL_LABELS[m]}</span>`;
+      b.title = `Ground paint (Shift+B): ${def.displayName}`;
+      b.innerHTML = `<img alt="" src="${materialThumbnail(def)}"><span class="lbl">${def.displayName}</span>`;
       b.addEventListener('click', () => {
         this.terrainMaterial = m;
         this.setTerrainBrush('paint');
       });
       grounds.append(b);
-      this.app.palette.register(b, { key: `ground:${m}`, name: `${TERRAIN_MATERIAL_LABELS[m]} ground`, tags: 'ground terrain paint material' });
+      this.app.palette.register(b, { key: `ground:${m}`, name: `${def.displayName} ground`, tags: 'ground terrain paint material' });
     }
     const levels = $('ed-tr-foliage');
     FOLIAGE_LEVELS.forEach((label, level) => {
@@ -232,7 +283,7 @@ export class TerrainTools {
     });
     $('ed-tr-new').addEventListener('click', () => {
       const size = Number($<HTMLSelectElement>('ed-tr-new-size').value);
-      const ground = $<HTMLSelectElement>('ed-tr-new-ground').value as TerrainMaterial;
+      const ground = $<HTMLSelectElement>('ed-tr-new-ground').value;
       // Width and depth, when typed, make an oblong terrain (32-400 m each way); the grid widens past 320 m.
       const side = (id: string) => {
         const v = Number($<HTMLInputElement>(id).value);
@@ -243,22 +294,18 @@ export class TerrainTools {
       // Just under ground-floor tiles, so the two never fight for the same pixels.
       this.setTerrain('Create terrain', { ...newTerrain(width, terrainSpacingFor(width, depth), [0, 0], ground, depth), baseY: -0.15 });
     });
-    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-new-ground').append(new Option(TERRAIN_MATERIAL_LABELS[m], m, m === 'grass', m === 'grass'));
+    // A new terrain's Ground theme: the Structure theme's match first (every cell starts as its base).
+    const newGround = $<HTMLSelectElement>('ed-tr-new-ground');
+    for (const g of groundThemes.all()) newGround.append(new Option(groundThemeLabel(g), g.id));
+    newGround.addEventListener('change', () => (newGround.dataset.picked = '1'));
+    newGround.value = matchingGroundTheme(this.app.doc.classicStructure.theme);
     $('ed-tr-remove').addEventListener('click', () => {
       // Undoable like every edit (Ctrl+Z), so no question first.
       this.setTerrain('Remove terrain', null);
       this.app.toast('Terrain removed · Ctrl+Z brings it back');
     });
-    for (const m of TERRAIN_MATERIALS) $<HTMLSelectElement>('ed-tr-base').append(new Option(TERRAIN_MATERIAL_LABELS[m], m));
-    $('ed-tr-base-set').addEventListener('click', () => {
-      const t = this.app.doc.terrain;
-      if (!t) return;
-      const to = TERRAIN_MATERIALS.indexOf($<HTMLSelectElement>('ed-tr-base').value as TerrainMaterial);
-      const from = mainGround(t);
-      if (to < 0 || to === from) return;
-      // Undoable, one step: the main ground becomes the new one; cells painted another material keep it.
-      this.setTerrain(`Main ground: ${TERRAIN_MATERIAL_LABELS[TERRAIN_MATERIALS[to]!]}`, { ...t, materials: t.materials.map((m) => (m === from ? to : m)) });
-    });
+    // The Ground theme is changed in one place, Map settings, through its warning.
+    $('ed-tr-theme-set').addEventListener('click', () => this.app.topBar.openGroundTheme());
     $('ed-tr-grid').addEventListener('click', () =>
       openChangeGridDialog({
         doc: () => this.app.doc,
@@ -273,7 +320,11 @@ export class TerrainTools {
     );
     $('ed-tr-smooth-all').addEventListener('click', () => this.smoothAllTerrain(Number($<HTMLSelectElement>('ed-tr-smooth-all-amount').value), $<HTMLInputElement>('ed-tr-smooth-hold').checked));
     $('ed-tr-cliffs').addEventListener('click', () => {
-      if (this.app.doc.terrain) this.setTerrain('Paint cliffs as stone', paintSlopes(this.app.doc.terrain, 35, 'stone'));
+      const t = this.app.doc.terrain;
+      if (!t) return;
+      const after = paintSlopes(t, 35);
+      if (after === t) return this.app.toast(`This terrain already uses ${MAX_GROUNDS} grounds: no room for Mossy Rock`, true);
+      this.setTerrain('Paint cliffs as rock', after);
     });
     $<HTMLInputElement>('ed-tr-boundary').addEventListener('change', (e) => {
       if (this.app.doc.terrain) this.setTerrain('Terrain boundary', { ...this.app.doc.terrain, boundary: (e.target as HTMLInputElement).checked });

@@ -1,5 +1,5 @@
 import type { WorldBox } from './geometry.ts';
-import { coreMaterials, coreThemes, type MaterialCatalog, type MaterialDefinition, type SurfaceSlot, type ThemeCatalog } from './materials.ts';
+import { DEFAULT_METAL, coreMaterials, coreThemes, type MaterialCatalog, type MaterialDefinition, type SurfaceSlot, type ThemeCatalog } from './materials.ts';
 import type { MapDocument, TilePlacement } from './schema.ts';
 
 export interface ResolvedStyle {
@@ -24,6 +24,11 @@ export function resolveSurface(
     return { material: materials.get(own.material) ?? resolveSurface(doc, tile, 'floor', materials, themes).material, tint: own.tint ?? null };
   }
   const theme = themes.get(doc.classicStructure.theme) ?? themes.get(FALLBACK_THEME)!;
+  if (slot === 'metal') {
+    // Bars and barred gates: their own paint, else the theme's metal, else iron; never the walls' stone.
+    const chosen = tile?.surfaces?.metal ?? theme.slots.metal ?? { material: DEFAULT_METAL };
+    return { material: materials.get(chosen.material) ?? materials.get(DEFAULT_METAL)!, tint: chosen.tint ?? null };
+  }
   const override = tile?.surfaces?.[slot];
   const chosen = override ?? theme.slots[slot];
   const material = materials.get(chosen.material) ?? materials.get(theme.slots[slot].material)!;
@@ -31,8 +36,9 @@ export function resolveSurface(
 }
 
 /** Which paintable slot a box face belongs to. Floor slabs: top face is the floor (a room's roof: the roof), every other face the underside. */
-export function faceSlot(box: Pick<WorldBox, 'kind' | 'roof'>, normal: readonly [number, number, number]): SurfaceSlot {
-  if (box.kind === 'trim') return 'trim';
+export function faceSlot(box: Pick<WorldBox, 'kind' | 'roof' | 'paint'>, normal: readonly [number, number, number]): SurfaceSlot {
+  if (box.paint === 'metal') return 'metal';
+  if (box.kind === 'trim') return box.paint ?? 'trim';
   if (box.kind === 'prop') return 'solids';
   if (box.kind === 'barrier') return 'walls';
   if (box.kind === 'wall') return 'walls';

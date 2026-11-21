@@ -6,6 +6,7 @@
   "name": "Anoobys",
   "look": "core.anubis",
   "group": "legends",
+  "blood": "red",
   "nameTheme": "myth",
   "bio": "Weighs every heart in the arena. Most come up light.",
   "body": "male",
@@ -29,20 +30,13 @@
     "metallic": 0.35,
     "roughness": 0.5
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "feet": true,
     "hands": {
       "scale": 0.85,
-      "curl": 0.8
-    },
-    "grip": {
-      "gripLong": [-0.03, 0.02, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03]
+      "curl": 0.7,
+      "graft": true
     }
   }
 }

@@ -4,6 +4,7 @@
   "displayName": "Skyfighter",
   "kind": "vehicle",
   "model": "vehicles/skyfighter.glb",
+  "paint": 0.5,
   "health": 280,
   "half": [1.6, 0.8, 2.2],
   "seats": [
@@ -33,6 +34,7 @@
   },
   "blurb": "A one-seat fighter that flies: jump to climb, crouch to dive; twin blasters ahead",
   "notes": {
-    "seats": "The pilot sits in the cockpit (2026-11-11: they stood on the fuselage)."
+    "seats": "The pilot sits in the cockpit (2026-11-11: they stood on the fuselage).",
+    "paint": "Half strength (owner, 2026-11-17, \"1a 2a\"): every textured vehicle takes its team colour or a paint skin at 0.5, the tint mixed halfway to white, so its own colours stay readable under it (the full colour darkened these models about four times; the Snow Sled's grey read brown under ember orange)."
   }
 }

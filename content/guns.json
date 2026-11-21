@@ -92,6 +92,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-owned-drive-1116": {
+      "title": "Tile Trigger originals (made with Meshy): the hover carrier, the Dropship (textured GLB download from the owner's Drive, 2026-11-16)",
+      "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-16: \"I made it on Meshy\")",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-11-16",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-community-drive-1111": {
       "title": "Meshy community models (the Troop Truck and the Hauler, textured GLB downloads from the owner's Drive, 2026-11-11)",
       "creator": "Meshy community (author not recorded; CC0 per the owner's rule of 2026-11-06)",
@@ -138,6 +148,10 @@
       "held": {
         "maxTriangles": 20000,
         "maxBytes": 4500000
+      },
+      "heldHero": {
+        "maxTriangles": 80000,
+        "maxBytes": 9000000
       }
     }
   },
@@ -414,7 +428,12 @@
         0.2,
         12
       ],
-      "textureSize": 1024
+      "textureSize": 1024,
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero"
     },
     {
       "out": "guns/ornate_pistol.glb",
@@ -515,7 +534,7 @@
       "out": "vehicles/offroad_buggy.glb",
       "pack": "meshy-community-arsenal",
       "glb": "Meshy_AI_Tactical_Off_Road_Bea_1029195057_texture.glb",
-      "label": "Tactical Off-Road Beast, the buggy (Meshy Community download, 2026-10-29)",
+      "label": "Tactical Off-Road Beast, the Supply Buggy (Meshy Community download, 2026-10-29)",
       "url": "https://www.meshy.ai/s/hHUmqb",
       "forward": "-x",
       "length": 4.4,
@@ -1211,6 +1230,31 @@
         40
       ],
       "normalSize": 1024
+    },
+    {
+      "out": "vehicles/hover_carrier.glb",
+      "pack": "meshy-owned-drive-1116",
+      "glb": "Meshy_AI_hover_carrier_topdown_1116164125_texture.glb",
+      "label": "Hover carrier, the Dropship (the owner's own Meshy model, owner's Drive, 2026-11-16)",
+      "forward": "-x",
+      "length": 9.6,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "textureSize": 1024,
+      "budget": "vehicle",
+      "lod": [
+        0.25,
+        40
+      ],
+      "normalSize": 512,
+      "plate": [
+        { "y": -0.93, "x": [-1.65, 1.65], "z": [-4.3, 2.0], "uvAt": [0, -1] },
+        { "y": -0.95, "x": [-1.97, -1.83], "z": [-0.32, 0.02], "uvAt": [-1.5, -0.2] },
+        { "y": -0.95, "x": [1.83, 1.97], "z": [-0.32, 0.02], "uvAt": [1.5, -0.2] },
+        { "y": 0.29, "x": [-0.47, 0.14], "z": [3.8, 3.89], "uvAt": [-0.2, 3.7] },
+        { "y": 0.29, "x": [-0.47, -0.3], "z": [3.775, 3.8], "uvAt": [-0.2, 3.7] }
+      ]
     }
   ]
 }

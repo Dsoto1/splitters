@@ -1,5 +1,5 @@
 import { coreCatalog, type TileCatalog } from '../map/catalog.ts';
-import { RESOURCE_BUDGETS, utf8Length } from '../map/budgets.ts';
+import { RESOURCE_BUDGETS, breakablePropInBudget, utf8Length } from '../map/budgets.ts';
 import { MAP_BUDGETS, serializeMap } from '../map/validate.ts';
 import { expandSetPieces, type SetPieceLibrary } from '../map/setPieces.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
@@ -31,10 +31,13 @@ export interface BudgetRow {
 
 /**
  * The draw estimate (owner's call: see HANDOFF, "MapMaker Phase 1A"): a draw call per different untinted prop model
- * (instanced), per tinted prop (each its own), per environment species variant and per body of liquid. Its budget is
- * the sum of the budgets behind those rows (80 prop models, 24 species variants, 32 liquids).
+ * (instanced), per tinted prop (each its own), per environment species variant and per body of liquid. It is a
+ * performance bar with a scale of its own: 136, which was the sum of the budgets behind those rows when it was set
+ * (80 prop models, 24 species variants, 32 liquids). It did not move when the prop model budget went to 120
+ * (2026-11-21): every model still costs its draws (docs/MAP_BUDGETS.md, "120 different prop models"), so a map may
+ * use 120 models and stay under this bar only while its tints, species variants and liquids leave the room.
  */
-export const DRAW_ESTIMATE_BUDGET = MAP_BUDGETS.propModels + MAP_BUDGETS.env.variants + MAP_BUDGETS.liquids;
+export const DRAW_ESTIMATE_BUDGET = 136;
 
 export const BUDGET_ROWS: readonly BudgetRow[] = [
   { id: 'entities', label: 'Entities', what: 'everything placed but tiles (the file holds at most this many)', max: RESOURCE_BUDGETS.entities, hard: true },
@@ -42,7 +45,7 @@ export const BUDGET_ROWS: readonly BudgetRow[] = [
   { id: 'models', label: 'Models', what: 'different prop models (each is a download and its own draw calls)', max: MAP_BUDGETS.propModels, hard: false },
   { id: 'draws', label: 'Draws', what: 'draw calls, estimated: a different prop model, a tinted prop, a species variant or a liquid each', max: DRAW_ESTIMATE_BUDGET, hard: false },
   { id: 'lights', label: 'Lights', what: 'lights', max: MAP_BUDGETS.lights, hard: false },
-  { id: 'destructibles', label: 'Destructibles', what: 'destructibles and blocks that break, crumble, drop or are glass', max: RESOURCE_BUDGETS.destructibles, hard: true },
+  { id: 'destructibles', label: 'Destructibles', what: 'destructibles, blocks that break, crumble, drop or are glass, and props that break (all of them where everything breaks; a log given health)', max: RESOURCE_BUDGETS.destructibles, hard: true },
   { id: 'vehicles', label: 'Vehicles', what: 'vehicles, mounted guns and airplanes', max: RESOURCE_BUDGETS.vehicles, hard: true },
   { id: 'env', label: 'Plants', what: 'environment species placed (trees, plants, rocks, cliffs)', max: MAP_BUDGETS.env.placements, hard: false },
   { id: 'envColliding', label: 'Colliding', what: 'trees, boulders and cliffs (environment species that collide)', max: MAP_BUDGETS.env.colliding, hard: false },
@@ -81,7 +84,7 @@ export function budgetCulprits(doc: MapDocument, id: BudgetId): string[] {
     case 'lights':
       return pick((e) => e.kind === 'light');
     case 'destructibles':
-      return pick(isDestructible);
+      return pick((e) => isDestructible(e) || breakablePropInBudget(e, !!doc.metadata.destruction));
     case 'vehicles':
       return pick(isVehicle);
     case 'env':
@@ -108,6 +111,9 @@ class Tally {
   env = 0;
   envColliding = 0;
   envCliffs = 0;
+  /** Props in the breakable budget where everything breaks, and on any other map (breakablePropInBudget). */
+  breakEverything = 0;
+  breakAlways = 0;
   /** Untinted props by model (one instanced draw each), and tinted ones (each its own draw; still a download). */
   readonly models = new Map<string, number>();
   readonly tintedModels = new Map<string, number>();
@@ -131,6 +137,8 @@ class Tally {
     } else if (e.kind === 'light') this.lights += sign;
     else if (e.kind === 'water') this.liquids += sign;
     if (isDestructible(e)) this.destructibles += sign;
+    if (breakablePropInBudget(e, true)) this.breakEverything += sign;
+    if (breakablePropInBudget(e, false)) this.breakAlways += sign;
     if (isVehicle(e)) this.vehicles += sign;
   }
 }
@@ -178,17 +186,18 @@ function itemsBytes(items: readonly object[], depth: number): number {
 export function countBudgets(doc: MapDocument, library: SetPieceLibrary = builtInSetPieces(), catalog: TileCatalog = coreCatalog): BudgetCounts {
   const t = new Tally();
   for (const e of expandSetPieces(doc, library, catalog).map.entities) t.add(e, 1);
-  return countsOf(t, doc.entities.length, utf8Length(serializeMap(doc)));
+  return countsOf(t, doc.entities.length, utf8Length(serializeMap(doc)), !!doc.metadata.destruction);
 }
 
-function countsOf(t: Tally, entities: number, size: number): BudgetCounts {
+/** `everything`: the map's "Everything breaks" (metadata.destruction), which decides which breakable props count. */
+function countsOf(t: Tally, entities: number, size: number, everything: boolean): BudgetCounts {
   return {
     entities,
     props: t.props,
     models: t.models.size + [...t.tintedModels.keys()].filter((m) => !t.models.has(m)).length,
     draws: t.models.size + t.tinted + t.variants.size + t.liquids,
     lights: t.lights,
-    destructibles: t.destructibles,
+    destructibles: t.destructibles + (everything ? t.breakEverything : t.breakAlways),
     vehicles: t.vehicles,
     env: t.env,
     envColliding: t.envColliding,
@@ -225,7 +234,7 @@ export class BudgetTracker {
 
   get counts(): BudgetCounts {
     const size = this.skeleton + this.itemBytes + arrayBytes(this.entities, ENTITY_DEPTH) + arrayBytes(this.tiles, TILE_DEPTH) + arrayBytes(this.pieces, ENTITY_DEPTH);
-    return countsOf(this.tally, this.entities, size);
+    return countsOf(this.tally, this.entities, size, !!this.doc.metadata.destruction);
   }
 
   /** Count a document from scratch (opened, or a new map). */
@@ -291,6 +300,7 @@ export class BudgetTracker {
         return;
       case 'setTheme':
       case 'setSetPieceDefs':
+      case 'setLookDefs':
         touched.pieces = true;
         touched.settings = true;
         return;

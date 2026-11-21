@@ -1,7 +1,9 @@
 import type { ValidationIssue } from './validate.ts';
 import { type RaceSettings, type MapDocument, type MapEntity, type MapPath, type MountEntity, type PathUse, type Track } from './schema.ts';
 import { terrainHeightAt, type TerrainData } from './terrain.ts';
+import { groundCutAt, terrainCuts } from './terrainCuts.ts';
 import { hypot } from '../math.ts';
+import { pathUses, racePath } from './racePath.ts';
 import { liveMount } from '../sim/mounts.ts';
 
 /**
@@ -58,6 +60,11 @@ const GATE_MARGIN = 4;
 /** Grid rows are this far apart; the front row this far behind the line. */
 const GRID_ROW = 7;
 const GRID_FRONT = 6;
+/**
+ * Places on the start grid, which sets how far down an open track its start line is. Race mode's own setting (`grid`)
+ * went with it (format v39); every track keeps the old default's start line.
+ */
+const START_GRID = 8;
 /** Bucket size for the road lookup grid. */
 const CELL = 8;
 
@@ -118,7 +125,7 @@ export class TrackGeometry {
     this.samples = centreLine(track, this.loop, shape);
     const last = this.samples[this.samples.length - 1]!;
     this.length = this.loop ? last.s + hypot(this.samples[0]!.x - last.x, this.samples[0]!.z - last.z) : last.s;
-    const depth = GRID_FRONT + Math.ceil(track.grid / 2) * GRID_ROW + 4;
+    const depth = GRID_FRONT + Math.ceil(START_GRID / 2) * GRID_ROW + 4;
     this.start = this.loop ? 0 : Math.min(depth, this.length * 0.4);
     this.gates = this.buildGates();
     this.samples.forEach((p, i) => {
@@ -210,7 +217,7 @@ export class TrackGeometry {
   }
 
   /** Start grid: `count` places two abreast behind the start line, facing down the road. */
-  grid(count = this.track.grid): GridSlot[] {
+  grid(count = START_GRID): GridSlot[] {
     const out: GridSlot[] = [];
     const side = Math.min(this.width * 0.25, 3.2);
     for (let i = 0; i < count; i++) {
@@ -316,7 +323,7 @@ function centreLine(track: Track, loop: boolean, shape: CurveShape): TrackSample
  * written out so the menu (raceTrack) doesn't run the zod schemas
  * (test/menuSplit.test.ts checks they match RaceSettings.parse({})).
  */
-export const DEFAULT_RACE: RaceSettings = { laps: 3, grid: 8, vehicle: 'hover_bike', combat: false, curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null };
+export const DEFAULT_RACE: RaceSettings = { curbs: true, ambient: 0, ambientVehicle: 'hover_bike', pit: null };
 
 /** How a smooth path's centre line is drawn through its points (see CurveShape). */
 const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
@@ -325,7 +332,7 @@ const SMOOTH_CURVE = { step: 1, centripetal: true } as const;
 export function pathTrack(p: MapPath): Track {
   const race = { ...DEFAULT_RACE, ...p.race };
   // A retired vehicle a track still names is its replacement here, so MapMaker's view of the map as made agrees with play.
-  return { ...race, vehicle: liveMount(race.vehicle), ambientVehicle: liveMount(race.ambientVehicle), points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
+  return { ...race, ambientVehicle: liveMount(race.ambientVehicle), points: p.points, width: p.width, loop: p.closed, surface: p.style === 'dirt' ? 'dirt' : 'asphalt' };
 }
 
 const geometry = new WeakMap<MapPath, TrackGeometry>();
@@ -336,13 +343,8 @@ export function pathGeometry(p: MapPath): TrackGeometry {
   return g;
 }
 
-/** Does the path have this use? */
-export const pathUses = (p: MapPath, use: PathUse): boolean => p.uses.includes(use);
-
-/** The map's race track: its first path used as a race (null: none). */
-export function racePath(map: { paths?: readonly MapPath[] | undefined }): MapPath | null {
-  return map.paths?.find((p) => pathUses(p, 'race') && p.points.length >= 2) ?? null;
-}
+// pathUses and racePath live in racePath.ts (the menu's rules read them without the track geometry).
+export { pathUses, racePath };
 
 /** The race track's settings and points (track.ts's shape), or null when the map has none. */
 export function raceTrack(map: { paths?: readonly MapPath[] | undefined }): Track | null {
@@ -434,10 +436,15 @@ export function roadStrip(map: MapDocument, from: number, to: number, cols: numb
   return { rows, s };
 }
 
-/** Ease a new control point's height onto the ground under it (MapMaker places points where you click). */
+/**
+ * Ease a new control point's height onto the ground under it (MapMaker places points where you click). `terrain` is the
+ * ground as shown (as played: a tunnel mouth's cutting dug, its cuts remembered). A point picked on a buried tunnel's
+ * floor, the ground well over it, stays on that floor (Tileset 04 step 6: a road laid through a road tunnel).
+ */
 export function trackPointAt(terrain: TerrainData | null, x: number, y: number, z: number): [number, number, number] {
   const r = (v: number) => Math.round(v * 100) / 100;
   const h = terrain ? terrainHeightAt(terrain, x, z) : null;
+  if (terrain && h !== null && h - y > 2 && groundCutAt(terrainCuts(terrain), x, y + 0.5, z)) return [r(x), r(y), r(z)];
   return [r(x), r(h ?? y), r(z)];
 }
 

@@ -21,7 +21,7 @@ describe('materials generator (tools/content/materials.mjs)', () => {
     const src = 'packages/shared/src/map/materials.ts';
     expect(materials.tsList(ROOT, src, 'PATTERN_IDS')).toContain('glyphs_painted');
     expect(materials.tsList(ROOT, src, 'MATERIAL_CATEGORIES')).toContain('Ground');
-    expect(materials.tsList(ROOT, src, 'SURFACE_SLOTS')).toEqual(['floor', 'walls', 'solids', 'underside', 'trim', 'roof']);
+    expect(materials.tsList(ROOT, src, 'SURFACE_SLOTS')).toEqual(['floor', 'walls', 'solids', 'underside', 'trim', 'roof', 'metal']);
   });
 
   it('checks the schema: unknown fields, enums, colours and numbers', () => {
@@ -37,6 +37,8 @@ describe('materials generator (tools/content/materials.mjs)', () => {
     mat(c, 'core.pbr_concrete').pattern = 'noise';
     theme(c, 'core.tomb').slots.roof = { material: 'core.sandstone' };
     theme(c, 'core.desert').slots.walls.tint = 'red';
+    // Bars and gates: a theme's own metal is optional, and must be a Metal (never the walls' stone).
+    theme(c, 'core.castle').slots.metal = { material: 'core.sandstone' };
     c.materials.extra = 1;
     const p = materials.build(c).problems.join('\n');
     expect(p).toMatch(/core\.concrete\): unknown field "roughness"/);
@@ -50,6 +52,7 @@ describe('materials generator (tools/content/materials.mjs)', () => {
     expect(p).toMatch(/core\.pbr_concrete\): a texture material has no "pattern"/);
     expect(p).toMatch(/core\.tomb\)\.slots: unknown field "roof"/);
     expect(p).toMatch(/core\.desert\): slots\.walls\.tint: "red"/);
+    expect(p).toMatch(/core\.castle\): slots\.metal \(bars and gates\) must be a Metal, not Stone/);
     expect(p).toMatch(/materials\.json: unknown field "extra"/);
   });
 

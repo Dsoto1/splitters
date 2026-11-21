@@ -1,0 +1,36 @@
+{
+  "id": "meshy_alienexplorer",
+  "kind": "character",
+  "use": "player",
+  "order": 150,
+  "name": "Reef Wanderer",
+  "look": "core.alienexplorer",
+  "group": "space",
+  "blood": "blue",
+  "nameTheme": "alien",
+  "bio": "Came up from an alien sea to see the stars, and stayed for the fights.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-14 (\"Alien Explorer\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core: the owner approved it on 2026-11-14 (\"mark all twelve as finished\"). Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Alien Explorer"
+    },
+    "date": "2026-11-14",
+    "url": null,
+    "file": "^Meshy_AI_Alien_Explorer_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

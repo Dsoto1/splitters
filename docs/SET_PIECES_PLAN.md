@@ -58,7 +58,7 @@ Each file holds a family, e.g. `carriageway.json` with a 2-, 3- and 4-cell-wide 
 - Overrides are small per-placement tweaks: a role's material, or hiding a part by index.
 - **Expansion:** at load, every placement expands deterministically into tiles, blocks, props and so on, with stable
   derived IDs (`sp_<placementId>_<partIndex>`), before geometry, collision and nav are built.
-- **Doc size:** the doc stores only the placement, so it stays small, and the 4,096-entity cap counts placements,
+- **Doc size:** the doc stores only the placement, so it stays small, and the entity cap (8,192 since map format v48; 4,096 before) counts placements,
   not expanded parts.
 - **Older maps** load unchanged (migration from v26 adds nothing).
 - **Validation:**
@@ -110,7 +110,7 @@ docs/CONTENT_PIPELINE.md, "Set pieces". What the design settled while it was bui
   itself (`tileMirrorAxis`: its cells, ports, default edges and parts are their own mirror image), so a piece with one
   that isn't (stairs) says `mirror: "none"`; no mirrored twins were needed for Phase 1.
 - **Budgets:** the file's caps count what it stores (a placement is one `setPieces` entry, at most 1024). The map as
-  played (hand-placed pieces and parts together) holds at most 4096 tiles, 4096 entities and 2 MB of JSON, the
+  played (hand-placed pieces and parts together) holds at most 4096 tiles, 8192 entities (4096 before map format v48) and 2 MB of JSON, the
   schema's own caps: it is what a joining player's welcome carries and every client loads it again. Validation and
   the budgets see the expanded map; issues on a part name its placement.
 - **New kit pieces** (usable by any map, not only set pieces): the edge style **`arch_segmental`** (a 5 m shallow
@@ -679,7 +679,7 @@ with one desk a room: 110 collision boxes and 28 props a bay.
 blocks, 660 props of 9 models, 20 lights, no doors, 2,000 collision boxes (1,360 of them furniture), 2,600 trim boxes,
 80 glass panes. What it draws: tiles, blocks and trim merge by surface style (8 styles: the count does not grow with
 the bays); untinted props are GPU instances, one draw per model part and level of detail (9 models); glass panes are
-batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop models 80, lights
+batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop models 120 (80 when this was written), lights
 256, active pieces 300. St. John's needs about 35 bays (140 rooms): 70 tiles, 490 blocks, about 1,150 props, 35
 lights and 3,500 collision boxes, before the blocks and props it removes are taken off (the map has 733 props and
 3,915 collision boxes today: the props budget is the one to watch; `overrides.hide` drops a room's second desk and
@@ -690,6 +690,78 @@ Tests: `packages/shared/test/setPiecesAcademy.test.ts` (each piece walked in eve
 and back, the stairs, shut rooms stay shut; five bays end to end on one floor, and the demonstration hall on two and
 three floors with both end stairs and the middle stair; the wall styles; costs). The coverage map has the
 demonstration hall on two floors, the three-floor end bay, and a Room with the three wall styles and the new props.
+
+## As built: part 8 (Smythe Hall's pieces; 2026-11-14)
+St. John's step 2 (docs/map-briefs/st_johns/PLAN_2026-11-12.md, 3.3 and 3.5): the pieces Smythe Hall's L needed
+beyond part 7, in the same `academy.json`. Smythe itself was rebuilt from them in MapMaker (the plan's section 4b).
+
+| Piece | Cells, levels | Mirror | What it is |
+|---|---|---|---|
+| Dorm Corner Bay (`setpiece.dorm_corner_bay`) | 2 × 2, level 0 | free | Where a hall turns: a Dorm Bay's hall comes in at the west and leaves south (x 2.8 to 5.2 m), so the south mouth meets a Dorm Bay turned a quarter on the same anchor column. Two rooms north (a Dorm Bay's north rooms), one east (a north room turned a quarter), a lounge in the outer corner (sofa, two armchairs on a round rug, a fireplace between the windows, a wide cabinet; an Oak Door standing open), a washroom in the inner corner (two toilets in stalls, two showers, three basins). Two lights. |
+| Dorm Entry Bay (`setpiece.dorm_entry_bay`) | 1 × 2, level 0 | free | A side entry: the south half of a Dorm Bay is an entrance hall under a Round arch in the outer wall, open to the hall through 6 m between two short piers; benches, a rug, two plants. The north rooms as a Dorm Bay's. A Dorm Bay goes over it upstairs. |
+| Stair End Bay (arched door) (`setpiece.stair_end_bay_arched`) | 1 × 2, levels 0-1 | none | The Stair End Bay with a Round arch (no leaf) for the lobby's outside door: a hall's far end. |
+| Stair End Bay (upper door) (`setpiece.stair_end_bay_bridge`) | 1 × 2, levels 0-1 | none | The Stair End Bay with a Room doorway and an open Oak Door in the upper landing room's outer wall, over the lobby's door: where a skybridge or a walkway meets the hall's end. |
+| Square Corner Tower (`setpiece.corner_tower_square`) | 1 × 1, levels 0-3 | free | A tower of blocks in the cell's south-east corner, 5.4 m square and 13.75 m to its merlons, to stand against a hall's end flush with its front: a dressed plinth, string courses, a cornice, battlements; firing slits up three faces; a small door (2 m wide, a stepped round head to 2.85 m with jambs, ring stones and a keystone) into a room 4.4 m square; a ladder through a hatch to a lookout. |
+
+What they needed to know:
+- **A corner can't have a room in each quadrant.** The hall's turn touches the outer corner's cell only at a point, so a
+  room there would have no straight wall to the hall for its door. The outer corner is a lounge entered from the south
+  leg (where the second east room would be); the inner corner a washroom off the west leg.
+- **A lounge must leave bots 1.6 m.** The first layout (a round table between the sofa and two armchairs) closed the
+  lounge's north half to bots: the gaps were 0.9 to 1.4 m. The table went; the armchairs stand 1.8 m apart and 2.8 m
+  from the sofa.
+- **A ladder's top lands behind it** (`ladderLinks`: 0.9 m behind its face at its height). A ladder against a wall
+  lands in the wall; so the tower's ladder stands at the north edge of a hatch, the deck behind it. A 4.3 m tower
+  had no deck left for bots once the navmesh kept 0.8 m off the parapet and the hatch; 5.4 m leaves 1.5 × 2.8 m.
+- **Footprints are tight.** Trim proud of a block's face counts: the tower's plinth and string courses stood 0.08 m
+  past the cell's edge, so the tower sits 0.18 m in from the cell's south edge (0.18 m behind the hall's front).
+
+Tests: `setPiecesAcademy.test.ts` walks each in every turn and mirror, and builds Smythe's L (the arched end, the
+corner on two floors, a long arm of Dorm Bays with the entry bay, the upper-door end meeting a Skybridge, the tower):
+the hall end to end on both floors, rooms off both arms, the lounge, both stairs, the side entry, across the bridge,
+up the tower's ladder.
+
+## As built: part 9 (Scott Johnston / Hazelwood's pieces, slim room doors; 2026-11-16)
+St. John's step 3 (docs/map-briefs/st_johns/PLAN_2026-11-12.md, 3.5, and its "4c"): the pieces the three-floor hall
+needed, in `academy.json`, and the owner's slim room doors (2026-11-15: "the doors to each room … are a bit wide, we
+should move the frame in").
+
+| Piece | Cells, levels | Mirror | What it is |
+|---|---|---|---|
+| Hall Centre (3 floors) (`setpiece.hall_centre`) | 2 × 3, levels 0-2 | none | Two cells of hall on three floors with a block a cell forward of them. North of the hall the Dorm Bay's rooms (four a floor, Room doors option); south an open landing the width of both cells through two 6 m openings (the Dorm Entry Bay's piers). The forward block: a Stairwell west (ground to first floor), the entrance hall east under a Round arch (benches, plants), a second Stairwell over the entrance hall (first to second floor), a room over the first with twin sashes; the stairs open north onto the landings. Facade on its outer sides; a twin sash and an arched window high up. 10 lights. |
+| Round Corner Turret (`setpiece.corner_turret_round`) | 1 × 1, levels 0-4 | free | A solid round turret 3 m across in the cell's south-east corner (its centre 1.75 m in from the east and south edges): twelve turned blocks of the look's stone to a dressed cornice at 14 m, a cap; option **Top**: merlons on every other face, or the Conical Turret Roof in slate or red shingle (`kit.roof.cone`, 4.6 m). 26-32 parts in play. |
+
+**Room doors** (set piece options, map format v42; CONTENT_PIPELINE.md, "Set pieces"): Dorm Bay, Dorm Bay (two rooms
+shut), Dorm Corner Bay, Dorm Entry Bay, Dorm Office Bay and the Hall Centre offer Wide (2 m, as built before: the
+default) and Slim. Slim swaps each room doorway's two piers (in the closet-deep walls) for piers 0.25 m wider, so the
+doorway is 1.5 m and the wall the same number of blocks; the office bay's 0.12 m walls get a jamb 0.25 m wide either side
+of each door instead. The door is the Slim Oak Door (1.5 m since 2026-11-20, 1.2 m before; the same leaves; shut, ajar and open where the wide one
+was). **Bots:** 1.5 m is still narrower than the navmesh keeps open (0.8 m off walls closes anything under about 1.8 m), so the
+open slim door is a passage (`sim/passages.ts`): a walking link each way through its frame, 1.6 m either side. Shut
+rooms stay shut. `slimDoors.test.ts`: the doorway is 1.5 m between the piers; without the links the rooms are off the
+navmesh and with them every open room is reached and left in every turn; a body that follows the route's corners as
+bots do (0.45 m) walks in and out; bots in a match ordered to Hold in a room get into it. The academy walks
+(`setPiecesAcademy.test.ts`) run every piece with the slim doors too.
+
+What they needed to know:
+- **A map as played held at most 4,096 entities** then (`SET_PIECE_PLAYED_MAX`, the schema's cap; **8,192 since map
+  format v48**, owner 2026-11-18, for steps 7-10: docs/MAP_BUDGETS.md, "Entity cap"). A Dorm Bay is about
+  50 entities as played (14 blocks, 36 props, a light), a closed one 45, the Hall Centre 200. Scott Johnston /
+  Hazelwood at the plan's 9 cells and the first turret (97 blocks each) put St. John's at 4,634; the hall is 8 cells
+  (four Dorm Bays a floor, not five), the turret 25 blocks and its top, the slim doors no extra blocks, the centre
+  10 lights: St. John's is at about 4,070. **The halls still to come will only fit by taking out more old blocks
+  than they add** (Stangeland / Cord's 234, Welles's 330, DeKoven's 330 and the chapel's 191 are still there), or
+  with a lighter dorm room (the bunk alone is 12 collision boxes but one entity; the chairs and closet fronts are 16
+  props a bay).
+- **A stair to every floor in the centre** alternates cells, as the three-floor end bay does: a Stairwell takes two
+  levels of its cell.
+- **Turned blocks are fine in a set piece:** an untilted block keeps any yaw; a quarter turn of the placement swaps its
+  width and depth (the same box turned 90°).
+
+Tests: `setPiecesAcademy.test.ts` walks both in every turn (the centre: the hall on every floor, in under the arch, up
+both stairs, every north room, the room over the stair; the turret: round it, and nobody in it), `setPiecePlay`'s open-
+sided list has both, `slimDoors.test.ts`. The coverage map has both (the centre with slim doors, the turret with the
+red cone), placed in MapMaker.
 
 ## Phase 1 (this task)
 1. **Schema and expansion** (shared): definitions, the format v27 `setPieces` field, the expansion, overlap checks

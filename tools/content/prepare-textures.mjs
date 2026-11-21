@@ -29,6 +29,19 @@ const MAPS = [
   ['_NormalGL.jpg', 'normal'],
   ['_Emission.jpg', 'emission'],
 ];
+/**
+ * A set's colour map, adjusted as content/textures.json's `adjust` says: `contrast` (0-1) pulls every pixel toward
+ * the map's mean colour by that factor (1 unchanged), e.g. a speckled floor whose specks shout at phone size.
+ */
+async function adjusted(img, kind, adjust) {
+  if (kind !== 'color' || !adjust?.contrast || adjust.contrast === 1) return img;
+  const pixels = await img.clone().removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const mean = [0, 0, 0];
+  for (let i = 0; i < pixels.data.length; i += 3) for (let c = 0; c < 3; c++) mean[c] += pixels.data[i + c];
+  const n = pixels.data.length / 3;
+  const a = adjust.contrast;
+  return sharp(pixels.data, { raw: pixels.info }).linear([a, a, a], mean.map((m) => (m / n) * (1 - a)));
+}
 const only = process.argv.includes('--only') ? new Set((process.argv[process.argv.indexOf('--only') + 1] ?? '').split(',')) : null;
 const LOCK = join(ROOT, 'content/textures.lock.json');
 const oldLock = JSON.parse(readFileSync(LOCK, 'utf8'));
@@ -50,7 +63,7 @@ try {
       const src = readdirSync(dir).find((f) => f.endsWith(suffix));
       if (!src) continue;
       const out = `${id}_${kind}.jpg`;
-      const data = await sharp(join(dir, src)).resize(manifest.size, manifest.size, { kernel: 'lanczos3' }).jpeg({ quality: 82, progressive: true, mozjpeg: true }).toBuffer();
+      const data = await adjusted(sharp(join(dir, src)).resize(manifest.size, manifest.size, { kernel: 'lanczos3' }), kind, manifest.adjust?.[id]).then((img) => img.jpeg({ quality: 82, progressive: true, mozjpeg: true }).toBuffer());
       writeFileSync(join(OUT, out), data);
       lock.files.push({ file: `textures/${out}`, asset: id, map: kind, source: url, bytes: data.byteLength, sha256: createHash('sha256').update(data).digest('hex').slice(0, 16) });
     }

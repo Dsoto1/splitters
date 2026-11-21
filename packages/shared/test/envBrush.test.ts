@@ -11,6 +11,7 @@ import {
   envEraseDab,
   envImpact,
   getEnvSpecies,
+  groundAllowed,
   groundSampler,
   keepClearZones,
   loadMap,
@@ -42,9 +43,9 @@ function hillside(): TerrainData {
   for (let r = 0; r < t.rows - 1; r++)
     for (let c = 0; c < t.cols - 1; c++) {
       const x = t.origin[0] + (c + 0.5) * t.spacing;
-      materials[r * (t.cols - 1) + c] = x > 40 ? 2 : 0; // stone : grass
+      materials[r * (t.cols - 1) + c] = x > 40 ? 1 : 0; // painted Mossy Rock (stone) : the base, Grass
     }
-  return { ...t, heights, materials };
+  return { ...t, heights, materials, grounds: ['core.pbr_rock'] };
 }
 
 function map(t: TerrainData | null = hillside()): MapDocument {
@@ -185,6 +186,60 @@ describe('environment brush: budget, erase, presets', () => {
     const alpine = withPreset(brush(), 'alpine');
     expect(alpine.filters.materials).toContain('snow');
     expect(alpine.species.find((m) => m.model === 'env.conifer.spruce')!.weight).toBeGreaterThan(0);
+  });
+  it('Environment Phase 4: every preset paints some of the new species, and keeps its earlier mix as it was', () => {
+    const weight = (id: (typeof ENV_PRESET_IDS)[number], model: string) => presetSpecies(id).find((m) => m.model === model)?.weight ?? 0;
+    // The mixes before Phase 4 (species and weights): appended to, never changed, but for Alpine's (Phase 5: fewer
+    // spruces, in their lighter look, and fewer tall pines: the lead saw the dark spruces stand as solid cones).
+    const before: Record<(typeof ENV_PRESET_IDS)[number], [string, number][]> = {
+      temperate: [['env.broadleaf.oak', 3], ['env.broadleaf.maple', 3], ['env.conifer.pine_tall', 1], ['env.shrub.broadleaf', 3], ['env.fern.bracken', 3], ['env.grass.clump', 6], ['env.flower.meadow', 2], ['env.rock.boulder_angular', 0.5], ['env.rock.pebbles', 1]],
+      jungle: [['env.palm.coconut', 2], ['env.palm.leaning', 2], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 3], ['env.shrub.broadleaf', 2], ['env.fern.bracken', 5], ['env.grass.clump', 3], ['env.rock.boulder_angular', 0.5]],
+      alpine: [['env.conifer.spruce', 1.5], ['env.conifer.pine_tall', 2], ['env.rock.boulder_angular', 2], ['env.rock.pebbles', 2], ['env.grass.clump', 2], ['env.fern.bracken', 1]],
+      arid: [['env.cactus.saguaro', 3], ['env.broadleaf.acacia', 1], ['env.shrub.laurel', 1], ['env.grass.clump', 3], ['env.rock.pebbles', 2], ['env.rock.boulder_angular', 1]],
+    };
+    const added: Record<(typeof ENV_PRESET_IDS)[number], string[]> = {
+      temperate: ['env.broadleaf.birch', 'env.grass.tall'],
+      jungle: ['env.grass.tall', 'env.succulent.agave', 'env.broadleaf.jungle', 'env.fern.tree_fern', 'env.shrub.elephant_ear'],
+      alpine: ['env.conifer.mountain_pine', 'env.conifer.larch', 'env.shrub.juniper', 'env.grass.tussock', 'env.flower.alpine', 'env.rock.boulder_shard'],
+      arid: ['env.cactus.barrel', 'env.succulent.agave', 'env.shrub.sagebrush', 'env.grass.tussock', 'env.flower.desert', 'env.rock.sandstone', 'env.broadleaf.olive', 'env.conifer.cypress'],
+    };
+    for (const id of ENV_PRESET_IDS) {
+      for (const [model, w] of before[id]) expect(weight(id, model), `${id} ${model}`).toBe(w);
+      for (const model of added[id]) expect(weight(id, model), `${id} ${model}`).toBeGreaterThan(0);
+      const painted = presetSpecies(id).filter((m) => m.weight > 0).map((m) => m.model);
+      expect(painted.sort(), id).toEqual([...before[id].map(([m]) => m), ...added[id]].sort());
+    }
+    // Named variants resolve: the jungle's agave is the green one, the arid tussock straw; Arid's barrels any colour.
+    expect(presetSpecies('jungle').find((m) => m.model === 'env.succulent.agave')?.variant).toBe(1);
+    expect(presetSpecies('arid').find((m) => m.model === 'env.grass.tussock')?.variant).toBe(1);
+    expect(presetSpecies('arid').find((m) => m.model === 'env.cactus.barrel')?.variant).toBe('any');
+    // Alpine's spruces wear the lighter alpine look (Phase 5).
+    expect(presetSpecies('alpine').find((m) => m.model === 'env.conifer.spruce')?.variant).toBe(2);
+  });
+});
+
+describe('environment brush: a preset\'s ground is never a silent no-op (owner, 2026-11-16: Arid on grass)', () => {
+  it('Arid on grass places nothing and counts every try as the wrong ground; on sand, or with any ground, it paints its dry mix', () => {
+    const doc = map();
+    const arid = { ...withPreset(brush({ radius: 12 }), 'arid'), density: 6 };
+    expect(arid.filters.materials).toEqual(['sand', 'dirt', 'gravel', 'stone']);
+    expect(groundAllowed(arid, 'grass')).toBe(false);
+    expect(groundAllowed(arid, null)).toBe(true);
+    const onGrass = envBrushDab(doc, arid, -40, 0, ctx(doc));
+    expect(onGrass.plants).toEqual([]);
+    expect(onGrass.wrongGround).toBeGreaterThan(0);
+    expect(onGrass.wrongGround).toBe(onGrass.filtered);
+    // Sand under the same spot: the preset's ground, so it paints.
+    const t = doc.terrain!;
+    const sand = { ...doc, terrain: { ...t, materials: t.materials.map(() => 1), grounds: ['core.pbr_sand'] } };
+    expect(groundSampler(sand.terrain)(-40, 0)?.material).toBe('sand');
+    const onSand = envBrushDab(sand, arid, -40, 0, ctx(sand));
+    expect(onSand.plants.length).toBeGreaterThan(3);
+    expect(onSand.wrongGround).toBe(0);
+    // "Paint on any ground": the filter off, it paints on grass too, its acacias, laurels and grass the dry variant.
+    const any = envBrushDab(doc, { ...arid, filters: { ...arid.filters, materials: null } }, -40, 0, ctx(doc)).plants;
+    expect(any.length).toBeGreaterThan(3);
+    for (const p of any) if (['env.broadleaf.acacia', 'env.shrub.laurel', 'env.grass.clump'].includes(p.model)) expect(p.variant).toBe(1);
   });
 });
 

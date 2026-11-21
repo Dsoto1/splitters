@@ -38,12 +38,12 @@ const BEFORE_X = 90;
 const LINEUP: [string, number, string, number, number][] = [
   ['env.broadleaf.oak', 0, 'prop.oak', -12, 4],
   ['env.broadleaf.oak', 1, 'prop.oak_autumn', -3.5, 4],
-  ['env.conifer.pine_tall', 0, 'prop.nt_pine_tall', 4.5, 4],
-  ['env.conifer.pine_tall', 1, 'prop.nt_pine_snow_tall', 11, 4],
+  ['env.conifer.pine_tall', 0, 'prop.pine_tall', 4.5, 4],
+  ['env.conifer.pine_tall', 1, 'prop.pine_tall_b', 11, 4],
   ['env.shrub.broadleaf', 0, 'prop.bush_large', -4, -4],
   ['env.shrub.broadleaf', 1, 'prop.bush_leafy', -1.6, -4],
-  ['env.rock.boulder_angular', 0, 'prop.nt_boulder', 1.6, -4],
-  ['env.rock.boulder_angular', 1, 'prop.nt_boulder_moss', 4.6, -4],
+  ['env.rock.boulder_angular', 0, 'prop.boulder_round', 1.6, -4],
+  ['env.rock.boulder_angular', 1, 'prop.boulder_jagged', 4.6, -4],
   ['env.grass.clump', 0, 'prop.grass_tall', -7.5, -5],
   ['env.grass.clump', 1, 'prop.grass_patch', -6.2, -5],
   // The plants brush's flowers and fern (foliage.ts), in front of the grass.
@@ -93,6 +93,51 @@ const LINEUP2: [string, number, string, number, number, number][] = [
   ['env.deadwood.log', 1, 'prop.log', 8, -90, 0.3],
   ['env.hedge.privet', 1, 'prop.hedge', 1.2, -91, 1.3],
   ['env.hedge.yew', 1, 'prop.hedge_large', 5.2, -91, 1.3],
+];
+
+/**
+ * Environment Phase 4's species (more variety), every variant, in a lineup of their own to the right of the second's
+ * (so the earlier views and the visual baseline don't change): ground cover in front, bushes, cacti and boulders, trees
+ * in two rows, then the two new cliff families. [species, variant index, x, z, yaw]. Views: variety, variety-small,
+ * variety-cliffs (best with Show: new).
+ */
+const LINEUP4: [string, number, number, number, number][] = [
+  ...(
+    [['env.grass.tall', 0], ['env.grass.tall', 1], ['env.grass.tussock', 0], ['env.grass.tussock', 1], ['env.flower.alpine', 0], ['env.flower.alpine', 1], ['env.flower.alpine', 2], ['env.flower.desert', 0], ['env.flower.desert', 1], ['env.succulent.agave', 0], ['env.succulent.agave', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 42 + i * 1.8, -89, i * 0.7]),
+  ...(
+    [['env.shrub.juniper', 0], ['env.shrub.juniper', 1], ['env.shrub.sagebrush', 0], ['env.shrub.sagebrush', 1], ['env.cactus.barrel', 0], ['env.cactus.barrel', 1], ['env.rock.boulder_shard', 0], ['env.rock.boulder_shard', 1], ['env.rock.boulder_shard', 2], ['env.rock.sandstone', 0], ['env.rock.sandstone', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + i * 2.4, -84.5, i * 0.9]),
+  ...(
+    [['env.broadleaf.birch', 0], ['env.broadleaf.olive', 0], ['env.conifer.mountain_pine', 0], ['env.conifer.larch', 0], ['env.conifer.cypress', 0], ['env.broadleaf.birch', 1], ['env.broadleaf.olive', 1], ['env.conifer.mountain_pine', 1], ['env.conifer.larch', 1], ['env.conifer.cypress', 1]] as const
+  ).map(([m, v], i): [string, number, number, number, number] => [m, v, 39 + (i % 5) * 6 + (i >= 5 ? 3 : 0), i < 5 ? -77 : -69, i * 1.1]),
+  ['env.cliff.sandstone', 0, 39, -48, 0],
+  ['env.cliff.sandstone', 1, 47, -48, 0],
+  ['env.cliff.crag', 0, 55, -48, 0],
+  ['env.cliff.crag', 1, 63, -48, 0],
+];
+
+/**
+ * Environment Phase 5's additions, every look, between Phase 4's trees and its cliffs (inside the lab's bounds, so the
+ * shadow map's extent and the visual baseline don't change): the jungle set (the jungle tree, the tree fern,
+ * the elephant ear) and the spruce's alpine look; then the nature swap's Dead Tree, sandstone shard and Sandstone
+ * Spires. Views: jungle, spires.
+ */
+const LINEUP5: [string, number, number, number, number][] = [
+  ['env.shrub.elephant_ear', 0, 41, -62, 0.4],
+  ['env.shrub.elephant_ear', 1, 44, -62, 1.9],
+  ['env.fern.tree_fern', 0, 48, -61, 0.3],
+  ['env.fern.tree_fern', 1, 54, -61, 2.2],
+  ['env.broadleaf.jungle', 0, 43, -56, 0.6],
+  ['env.broadleaf.jungle', 1, 57, -56, 2.6],
+  ['env.conifer.spruce', 2, 61, -62, 1.2],
+  // The nature swap (2026-11-18): the Dead Tree, both looks.
+  ['env.broadleaf.dead', 0, 64, -57, 0.8],
+  ['env.broadleaf.dead', 1, 66, -61, 2.4],
+  // The nature swap's last batch (2026-11-19): the Shard Boulder's sandstone look and the Sandstone Spires, both looks.
+  ['env.rock.boulder_shard', 3, 68, -57, 1.3],
+  ['env.rock.sandstone_spires', 0, 24, -62, 0],
+  ['env.rock.sandstone_spires', 1, 24, -46, 0.4],
 ];
 
 const EYE = 1.7;
@@ -188,6 +233,8 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     entities.push(ent(`lineup2_${i}`, model, [x, 0, z], variant, yaw));
     oldEntities.push(ent(`old2_${i}`, old, [x + BEFORE_X, 0, z], undefined, yaw));
   }
+  for (const [i, [model, variant, x, z, yaw]] of LINEUP4.entries()) entities.push(ent(`lineup4_${i}`, model, [x, 0, z], variant, yaw));
+  for (const [i, [model, variant, x, z, yaw]] of LINEUP5.entries()) entities.push(ent(`lineup5_${i}`, model, [x, 0, z], variant, yaw));
   // A cliff wall of four panels side by side (the seams), the old cliff pieces in the "before" set.
   for (let k = 0; k < 4; k++) {
     entities.push(ent(`wall_${k}`, 'env.cliff.face', [-12 + k * 8, 0, 30], k % 2));
@@ -258,6 +305,12 @@ export async function openEnvLab(engine: AbstractEngine, canvas: HTMLCanvasEleme
     VIEWS[k] = [new Vector3(...p), new Vector3(...t)];
     VIEWS[`before-${k}`] = [new Vector3(p[0] + BEFORE_X, p[1], p[2]), new Vector3(t[0] + BEFORE_X, t[1], t[2])];
   }
+  // Environment Phase 4's lineup (no "before" set: these are new species).
+  VIEWS.variety = [new Vector3(51, EYE, -100), new Vector3(51, 3.2, -72)];
+  VIEWS['variety-small'] = [new Vector3(51, EYE, -95), new Vector3(51, 0.4, -86)];
+  VIEWS['variety-cliffs'] = [new Vector3(51, EYE, -65), new Vector3(51, 4.5, -48)];
+  VIEWS.jungle = [new Vector3(51, EYE, -67), new Vector3(51, 4, -56)];
+  VIEWS.spires = [new Vector3(24, EYE, -84), new Vector3(24, 4, -62)];
   VIEWS['lod-row'] = [new Vector3(-40, EYE, -4), new Vector3(-40, 3, 60)];
   VIEWS.overview = [new Vector3(-30, 28, -45), new Vector3(0, 0, 20)];
 

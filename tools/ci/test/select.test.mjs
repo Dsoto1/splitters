@@ -1,7 +1,7 @@
 // Change-based selection (e2e/flowMap.mjs) and shard balancing (e2e/shards.mjs).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLOWS, MAP_FLOWS, MAP_PARTS, MAX_NAMED_MAPS, mapPartOf, selectForPaths, unitJobs, unitTestPaths } from '../../../e2e/flowMap.mjs';
+import { CHARACTER_FLOWS, COVERAGE_MAP, COVERED_MAPS, FLASHING_FLOWS, FLOWS, MAP_FLOWS, MAP_PARTS, MAX_NAMED_MAPS, mapPartOf, selectForPaths, unitJobs, unitTestPaths } from '../../../e2e/flowMap.mjs';
 import { assignShards, durationOf, loadTimings, planShards, shardCount, withNamedMaps, MAX_SHARDS, PER_MAP_S, TARGET_SHARD_S, UNKNOWN_FLOW_S } from '../../../e2e/shards.mjs';
 import { mergeTimings } from '../timings.mjs';
 
@@ -79,7 +79,7 @@ describe('change-based selection', () => {
     ['content/props/kenney-survival-kit.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props.lock.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/guns.json', ['arsenal', 'vehicles', ...CHARACTER_FLOWS], ['shared']],
-    ['content/vfx.json', ['physicsfx', 'arsenal', 'flashing'], ['client']],
+    ['content/vfx.json', ['physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'flashing', 'flashing2', 'flashing3', 'flashing4', 'flashing5'], ['client']],
     ['content/gear.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['shared']],
     ['content/sounds.json', ['offline'], ['client']],
   ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
@@ -144,13 +144,13 @@ describe('change-based selection', () => {
       expect(s.flows, p).toContain('flashing');
     }
     const own = sel('packages/client/src/game/reduceFlashing.ts', 'packages/client/src/game/steadyArcs.ts', 'packages/client/src/game/hurtVignette.ts');
-    expect(own).toMatchObject({ full: false, flows: ['offline', 'physicsfx', 'arsenal', 'visual', 'flashing'], unit: ['client'] });
+    expect(own).toMatchObject({ full: false, flows: ['offline', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'visual', 'flashing', 'flashing2', 'flashing3', 'flashing4', 'flashing5'], unit: ['client'] });
   });
 
   it('MapMaker code runs the editor flows and client unit tests only', () => {
     const s = sel('packages/client/src/editor/palette.ts');
     expect(s.full).toBe(false);
-    expect(s.flows).toEqual(expect.arrayContaining(['editor', 'editorux', 'editorpieces', 'editortools', 'editorenv', 'scenery', 'visual']));
+    expect(s.flows).toEqual(expect.arrayContaining(['editor', 'editorux', 'editorpieces', 'editortools', 'editorenv', 'scenery', 'coverage', 'visual']));
     expect(s.flows).not.toContain('online');
     expect(s.flows.some((f) => MAP_FLOWS.includes(f))).toBe(false);
     expect(s.unit).toEqual(['client']);
@@ -222,7 +222,10 @@ describe('change-based selection', () => {
     const src = readFileSync(new URL('../../../e2e/flowMap.mjs', import.meta.url), 'utf8');
     const named = [...src.matchAll(/'([a-z0-9]+)'/g)].map((m) => m[1]);
     const runner = readFileSync(new URL('../../../e2e/run.mjs', import.meta.url), 'utf8');
-    for (const f of FLOWS.filter((f) => !MAP_FLOWS.includes(f) && !CHARACTER_FLOWS.includes(f))) expect(runner).toMatch(new RegExp(`\\b${f}: \\w+Flow\\b`));
+    for (const f of FLOWS.filter((f) => !MAP_FLOWS.includes(f) && !CHARACTER_FLOWS.includes(f) && !FLASHING_FLOWS.includes(f))) expect(runner).toMatch(new RegExp(`\\b${f}: \\w+Flow\\b`));
+    // (The flicker check's flows: one entry each in FLASHING_PARTS, their moments by scene.)
+    expect(runner).toMatch(/FLASHING_FLOWS\.map\(\(name\) => \[name, flashingFlow\(name\)\]\)/);
+    for (const f of FLASHING_FLOWS) expect(runner).toMatch(new RegExp(`\\n  ${f}: \\{ (night|day): \\[`));
     expect(runner).toMatch(/CHARACTER_FLOWS\.map\(\(name, part\) => \[name, \(b\) => charactersFlow\(b, part\)\]\)/);
     expect(new Set(FLOWS).size).toBe(FLOWS.length);
     expect(named.filter((n) => FLOWS.includes(n)).length).toBeGreaterThan(20);
@@ -295,9 +298,12 @@ describe('shards', () => {
     expect(shards.length).toBeLessThanOrEqual(MAX_SHARDS);
     expect(shards.flatMap((s) => s.flows).sort()).toEqual([...NO_TOUR].sort());
     const longest = Math.max(...NO_TOUR.map((f) => durationOf(timings, f))) + timings.startup;
+    // When the whole run is more than 16 shards of the goal (physicsfx's true time, 2026-11-20), no packing beats the
+    // mean shard: that is the floor then.
+    const mean = (NO_TOUR.reduce((t, f) => t + durationOf(timings, f), 0) + MAX_SHARDS * timings.startup) / MAX_SHARDS;
     // Longest-first packing lands within a few per cent of the goal when all 16 runners are near it (the seed timings
     // are: editorux split in four, 2026-11-09, moved the packing 6 s over with the same total).
-    expect(Math.max(...shards.map((s) => s.seconds))).toBeLessThanOrEqual(Math.max(TARGET_SHARD_S, longest) * 1.05);
+    expect(Math.max(...shards.map((s) => s.seconds))).toBeLessThanOrEqual(Math.max(TARGET_SHARD_S, longest, mean) * 1.05);
     const nightly = planShards(FLOWS, timings, { order: FLOWS });
     expect(nightly).toHaveLength(MAX_SHARDS);
     expect(nightly.flatMap((s) => s.flows).sort()).toEqual([...FLOWS].sort());

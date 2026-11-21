@@ -1,8 +1,11 @@
-import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage, type VoteOption } from '@tiletrigger/shared';
+import { BROWSER_HOST_MAX_GUESTS, MAX_PLAYER_SLOTS, SNAPSHOT_BINARY_VERSION, SnapshotBinaryDecoder, type CarryOver, type GameMode, type HostCommand, type HostState, type MapDocument, type MatchRules, type PlayerInput, type RotationCommand, type ServerMessage, type VoteOption } from '@tiletrigger/shared';
 import { deviceMaxPlayers } from '../touchDevice.ts';
 import { MatchHost, dispatchToHost, sinkTo, type FromSimHost, type HostFacts, type HostListing, type LocalMatchOptions, type ToSimHost } from './matchHost.ts';
+import { allowedHere } from '../testMode.ts';
 import { playerKey } from './playerKey.ts';
 import { perfProbe } from './perfProbe.ts';
+import { perfOn } from './perfSwitches.ts';
+import { INTERP_KEEPS_SNAPSHOTS } from './interpolation.ts';
 import { SnapshotCoalescer, type SnapshotBacklog } from './snapshotMerge.ts';
 import type { RemoteLink, Transport } from './transport.ts';
 import { checkTicket, helloTicket } from './ticketCheck.ts';
@@ -18,6 +21,14 @@ export type { LocalMatchOptions } from './matchHost.ts';
 export type SimThread = 'worker' | 'main';
 
 const SIM_KEY = 'tiletrigger.sim';
+/**
+ * Binary snapshots are read into a ring of reused player objects this long: more than the interpolation buffer
+ * keeps (the only reader that holds a snapshot's players past the next few; session.ts reads the rest at once),
+ * with room for what a frame still has in hand.
+ */
+export const SNAPSHOT_RING = INTERP_KEEPS_SNAPSHOTS + 11;
+/** Buffers of read snapshots go back to the worker this many at a time. */
+const RETURN_BUFFERS = 4;
 /** How often the page tells the match which friends' links are up (MatchHost.linkUp). */
 const LINK_UP_EVERY_MS = 2000;
 
@@ -71,6 +82,8 @@ export interface SimHook {
   eval(src: string, arg?: unknown): Promise<unknown>;
   /** How the page has kept up with the worker's snapshots (null with the match on the page). */
   backlog: SnapshotBacklog | null;
+  /** Snapshots that came as binary messages (0 with the match on the page, or with `?perfoff=snapbin`). */
+  binary: number;
 }
 
 /**
@@ -114,6 +127,12 @@ export class LocalTransport implements Transport {
   private onClose?: (reason: string) => void;
   /** With the match in a worker: a page that fell behind handles the snapshots waiting for it as one. */
   private snapshots?: SnapshotCoalescer;
+  /** With the match in a worker: reads its binary snapshots (asked for in `start`; `?perfoff=snapbin` asks for objects). */
+  private decoder?: SnapshotBinaryDecoder;
+  /** Buffers of snapshots read, on their way back to the worker. */
+  private spent: ArrayBuffer[] = [];
+  /** Binary snapshots read (perf runs and tests: `window.__sim.binary`). */
+  binarySnapshots = 0;
 
   constructor(
     private readonly map: MapDocument,
@@ -245,13 +264,21 @@ export class LocalTransport implements Transport {
     // The tab is closing (or reloading): friends hear it from us, not from a dead link.
     if (typeof window.addEventListener === 'function') window.addEventListener('pagehide', this.onPageHide);
     // This browser's key goes with the match: a successor keeps our place for it if the match is handed on.
-    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...this.opts }, hidden: document.hidden };
+    // `?drive=classic` / `?drive=rigid` / `?drive=own`: every vehicle that has rigid driving drives the classic way, or
+    // rigid even where it is off, or rigid with driving physics 3's own hull contacts and sweep in place of the Rapier
+    // body (docs/DRIVING_PHYSICS_PLAN.md), for comparing.
+    const drive = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('drive');
+    // `?akimbo=1` (a dev server, a test-hooks build or this machine only, as test mode): dual wielding in play in
+    // this browser's own matches while it is being built (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield").
+    const akimbo = typeof location !== 'undefined' && new URLSearchParams(location.search).get('akimbo') === '1' && allowedHere();
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...(akimbo ? { akimbo: true } : {}), ...this.opts }, hidden: document.hidden };
     if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
     if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }
 
   /** The match in a module worker. False when one can't be made here. */
-  private startWorker(start: ToSimHost): boolean {
+  private startWorker(first: ToSimHost): boolean {
+    let start = first;
     let worker: Worker;
     try {
       worker = spare ?? newSimWorker();
@@ -261,7 +288,12 @@ export class LocalTransport implements Transport {
     }
     this.worker = worker;
     this.thread = 'worker';
+    const decoder = perfOn('snapbin') ? new SnapshotBinaryDecoder({ ring: SNAPSHOT_RING }) : undefined;
+    this.decoder = decoder;
+    if (decoder && start.k === 'start') start = { ...start, snap: SNAPSHOT_BINARY_VERSION };
     this.snapshots = new SnapshotCoalescer((m) => {
+      // A snapshot handed on keeps its (reused) objects until the ring comes round; one merged away never took a place.
+      if (m.t === 'snapshot') decoder?.commit();
       if (!this.stopped) this.onMessage?.(m);
     });
     worker.onmessage = (e: MessageEvent<FromSimHost>) => this.receive(e.data);
@@ -307,8 +339,13 @@ export class LocalTransport implements Transport {
     this.worker?.terminate();
     this.worker = undefined;
     this.snapshots = undefined;
+    this.decoder = undefined;
+    this.spent = [];
     this.startHere(start);
   }
+
+  /** The test hooks this transport put on the page (installHooks): taken off when it closes. */
+  private hook?: SimHook;
 
   private installHooks(): void {
     const transport = this;
@@ -316,6 +353,9 @@ export class LocalTransport implements Transport {
       mode: this.thread ?? 'main',
       get backlog() {
         return transport.snapshots?.backlog ?? null;
+      },
+      get binary() {
+        return transport.binarySnapshots;
       },
       eval: (src, arg) =>
         new Promise((resolve, reject) => {
@@ -325,6 +365,7 @@ export class LocalTransport implements Transport {
         }),
     };
     const w = window as unknown as { __sim: SimHook; __give: (id: string) => void };
+    this.hook = hook;
     w.__sim = hook;
     w.__give = (id) => this.toHost({ k: 'give', id });
   }
@@ -346,6 +387,28 @@ export class LocalTransport implements Transport {
       case 'local':
         if (this.snapshots) return this.snapshots.push(m.msg);
         return this.onMessage?.(m.msg);
+      case 'snap': {
+        const msg = this.decoder?.decode(m.b) ?? null;
+        if (!msg) {
+          // Not readable here (another version, or damaged): dropped, and the match is asked for objects instead.
+          if (!this.snapRefused) {
+            this.snapRefused = true;
+            console.warn(`binary snapshot not read (${this.decoder?.error ?? 'not asked for'}): asking for objects`);
+            this.toHost({ k: 'snapobjects' });
+          }
+          return;
+        }
+        this.binarySnapshots++;
+        // Everything is read out of the buffer: it goes back to be written again.
+        this.spent.push(m.b);
+        if (this.spent.length >= RETURN_BUFFERS) {
+          const bufs = this.spent;
+          this.spent = [];
+          this.worker?.postMessage({ k: 'snapbufs', bufs } satisfies ToSimHost, bufs);
+        }
+        if (this.snapshots) return this.snapshots.push(msg);
+        return this.onMessage?.(msg);
+      }
       case 'facts':
         this.facts = m.facts;
         return;
@@ -377,6 +440,8 @@ export class LocalTransport implements Transport {
       }
     }
   }
+
+  private snapRefused = false;
 
   private fail(reason: string): void {
     const cb = this.onClose;
@@ -466,6 +531,14 @@ export class LocalTransport implements Transport {
     window.clearInterval(this.upTimer);
     this.upTimer = undefined;
     this.links.clear();
+    // The test hooks (`__sim`, `__give`, and `__match` for a match on this thread) would keep the ended match, and
+    // through `onClose` its session, view and scene, alive under MapMaker or the menu (the memory probe, fix 3c).
+    const w = window as unknown as { __sim?: SimHook; __give?: unknown; __match?: unknown };
+    if (this.hook && w.__sim === this.hook) {
+      delete w.__sim;
+      delete w.__give;
+    }
+    if (this.inThread) delete w.__match;
     this.toHost({ k: 'stop' });
     this.stopped = true;
     this.snapshots?.clear();

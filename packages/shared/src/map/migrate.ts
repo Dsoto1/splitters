@@ -1,4 +1,7 @@
-import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION } from './schema.ts';
+import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument } from './schema.ts';
+import { mapContentHash, releaseCurrent } from './identity.ts';
+import { DEFAULT_GROUND_THEME, TERRAIN_MATERIALS, TERRAIN_SURFACES } from './terrain.ts';
+import { GROUND_THEMES } from './materials.ts';
 
 /** Upgrades a raw document from `from` to `from + 1`. Must not mutate its input. */
 export type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
@@ -93,7 +96,101 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v36 -> v37: a placed tile's optional `family` (the tunnel kit's material families: the same shape drawn in
   // another family's materials and trim). Absent = the tile's own, as before: v36 data is valid as is.
   [36, (doc) => ({ ...doc })],
+  // v37 -> v38: two more wall styles a side may name, `shopfront` and `window_arched` (Tileset 11, Urban & Civilian;
+  // content/tiles/edges.json). Nothing an older map says changes meaning: v37 data is valid as is. The bump is for
+  // the other direction: a build that only knows v37 refuses a v38 map outright, instead of failing on a style it
+  // has never heard of.
+  [37, (doc) => ({ ...doc })],
+  // v38 -> v39: race mode's dead settings go (race mode was removed on 2026-11-08): a track path's `race` keeps
+  // its curbs, NPC cars (`ambient`, `ambientVehicle`) and pit lane, and loses `laps`, `grid`, `vehicle` and `combat`.
+  [38, dropRaceSettingsV39],
+  // v39 -> v40: kept free for the tunnel kit's later steps (HANDOFF); nothing changes.
+  [39, (doc) => ({ ...doc })],
+  // v40 -> v41: painting (docs/MAPMAKER_PAINTING_PLAN.md, Phase 1): a tile's optional `metal` surface (bars, barred
+  // gates and railings, drawn in it instead of the walls' stone) and a set piece's optional per-part paint
+  // (`overrides.paint`). Absent = as before (bars and railings follow the theme's metal, else iron): v40 data is
+  // valid as is. The bump is for the other direction: an older build would drop the paint without a word.
+  [40, (doc) => ({ ...doc })],
+  // v41 -> v42: set piece options (map/schema.ts SetPieceOption): a definition's named choices, its parts' `when`, and
+  // a placement's `overrides.options` (a dorm bay's room doors wide or slim); and the facade `collegiate_red`. Absent = every option's first choice,
+  // which is the piece as it was: v41 data is valid as is. The bump is for the other direction: an older build would
+  // drop the choice without a word.
+  [41, (doc) => ({ ...doc })],
+  // v42 -> v43: a path style `brick` (a red brick walk; map/paths.ts PATH_LOOKS) and the dorm pieces' Room furniture
+  // option (`overrides.options.furniture`; absent = paired). v42 data is valid as is. The bump is for the other
+  // direction: an older build refuses a v43 map outright instead of failing on a style it has never heard of.
+  [42, (doc) => ({ ...doc })],
+  // v43 -> v44: a placed set piece's optional `family` (the tunnel kit, Tileset 04 step 5): its tunnel parts drawn in
+  // that material family (a Lit Tunnel Run in brick). Absent = each part's own: v43 data is valid as is. The bump is
+  // for the other direction: an older build would drop the family without a word. (v44 -> v45 touches only the
+  // terrain, so a set piece's family passes through it.)
+  [43, (doc) => ({ ...doc })],
+  // v44 -> v45: the ground's base layer (docs/MAPMAKER_PAINTING_PLAN.md, "Format change A"; painting Phase 4):
+  // groundLayersV45.
+  [44, groundLayersV45],
+  // v45 -> v46: a wall style `windows_school` (Classroom windows) and the facade `collegiate_fieldstone` (St. John's
+  // step 5, Stangeland / Cord). Nothing an older map says changes meaning: v45 data is valid as is. The bump is for the
+  // other direction: an older build refuses a v46 map outright instead of failing on a style it has never heard of.
+  [45, (doc) => ({ ...doc })],
+  // v46 -> v47: the map's own looks, `lookDefs` (docs/MAPMAKER_PAINTING_PLAN.md, "Format change B"; painting Phase 5:
+  // looks saved in MapMaker that its set pieces name in `pack`). Absent = none: v46 data is valid as is. The bump is
+  // for the other direction: an older build would draw a placement in an unknown look as the theme's.
+  [46, (doc) => ({ ...doc })],
+  // v47 -> v48: a map holds up to 8,192 entities (MAP_MAX_ENTITIES; 4,096 before; owner, 2026-11-18). v47 data is
+  // valid as is. The bump is for the other direction: an older build refuses a v48 map outright (it could hold more
+  // entities than that build's schema takes) instead of failing on its entity count.
+  [47, (doc) => ({ ...doc })],
+  // v48 -> v49: a wall style `arch_twin` (Twin arches: two round arches on a middle pier, St. John's step 7a) and a set
+  // piece part's `when` naming several choices of an option (a list). v48 data is valid as is. The bump is for the
+  // other direction: an older build refuses a v49 map outright instead of failing on a style it has never heard of.
+  [48, (doc) => ({ ...doc })],
 ]);
+
+/**
+ * v44 -> v45: a terrain cell is 0 (the base: it follows the map's Ground theme) or k (painted with the terrain's own
+ * `grounds[k − 1]`), where before it was one of the eight layers (terrain.ts TERRAIN_MATERIALS). Every cell keeps its
+ * look:
+ * 1. `grounds` is the eight layers' materials in their old order (TERRAIN_SURFACES), so old layer j is k = j + 1.
+ * 2. The base is the map's most common layer that is some Ground theme's base (content/materials.json groundThemes,
+ *    the first such theme; on a tie, the earlier layer), and `groundTheme` is that theme. Every shipped map's most
+ *    common layer is one; a terrain with none (all Hex Paving, say) gets DEFAULT_GROUND_THEME and every cell painted.
+ * 3. That layer's cells become 0 (they follow the theme); every other cell keeps its layer, painted.
+ * So a Ground theme change later moves the base cells and leaves the rest as painted (the owner's 6a).
+ */
+export function groundLayersV45(doc: Record<string, unknown>): Record<string, unknown> {
+  const t = doc.terrain as Record<string, unknown> | null | undefined;
+  if (!t || typeof t !== 'object' || !Array.isArray(t.materials)) return { ...doc };
+  const cells = t.materials as unknown[];
+  const counts = new Array<number>(TERRAIN_MATERIALS.length).fill(0);
+  for (const m of cells) if (typeof m === 'number' && counts[m] !== undefined) counts[m]++;
+  let base = -1;
+  let theme = DEFAULT_GROUND_THEME;
+  counts.forEach((n, j) => {
+    const owner = GROUND_THEMES.find((g) => g.base === TERRAIN_SURFACES[TERRAIN_MATERIALS[j]!]);
+    if (!owner || n === 0 || (base >= 0 && n <= counts[base]!)) return;
+    base = j;
+    theme = owner.id;
+  });
+  const grounds = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+  const materials = cells.map((m) => (typeof m === 'number' ? (m === base ? 0 : m + 1) : m));
+  return { ...doc, terrain: { ...t, groundTheme: theme, grounds, materials } };
+}
+
+/** Race mode's own settings on a track path, unused since race mode was removed (v38 -> v39 drops them). */
+export const DEAD_RACE_KEYS = ['laps', 'grid', 'vehicle', 'combat'] as const;
+
+/** v38 -> v39: each path's `race` without DEAD_RACE_KEYS (everything else as it was). */
+export function dropRaceSettingsV39(doc: Record<string, unknown>): Record<string, unknown> {
+  if (!Array.isArray(doc.paths)) return { ...doc };
+  const paths = (doc.paths as unknown[]).map((p) => {
+    if (!p || typeof p !== 'object' || !('race' in p)) return p;
+    const race = (p as { race?: unknown }).race;
+    if (!race || typeof race !== 'object') return p;
+    const kept = Object.fromEntries(Object.entries(race).filter(([k]) => !(DEAD_RACE_KEYS as readonly string[]).includes(k)));
+    return { ...p, race: kept };
+  });
+  return { ...doc, paths };
+}
 
 /** The race track's own settings as they were in v22 (missing = the v22 defaults). */
 const V22_TRACK_DEFAULTS: Record<string, unknown> = { width: 12, loop: true, laps: 3, grid: 8, vehicle: 'kart', combat: false, surface: 'asphalt', curbs: true, ambient: 0, ambientVehicle: 'kart', pit: null };
@@ -131,6 +228,33 @@ export function migratePathsV23(doc: Record<string, unknown>): Record<string, un
     });
   }
   return paths.length ? { ...rest, paths } : (({ paths: _none, ...r }) => r)(rest);
+}
+
+/**
+ * A release stamp made before v45 still describes a map whose only change since is v45's (groundLayersV45: the same
+ * ground, stored as base and painted cells). The terrain is put back in the old encoding to check the stamp; one that
+ * matches is carried over to the map as it is now (same mapId, versionId and revision; the new hash and format), as
+ * carryReleaseOverRaceDrop does for v39. Anything else: the map unchanged.
+ */
+export function carryReleaseOverGroundLayers(map: MapDocument): MapDocument {
+  const r = map.metadata.release;
+  if (!r || r.schemaVersion >= 45 || !map.terrain || releaseCurrent(map)) return map;
+  const back = withOldGroundEncoding(map);
+  if (!back || mapContentHash({ ...back, formatVersion: r.schemaVersion as MapDocument['formatVersion'] }) !== r.contentHash) return map;
+  return { ...map, metadata: { ...map.metadata, release: { ...r, contentHash: mapContentHash(map), schemaVersion: MAP_FORMAT_VERSION } } };
+}
+
+/** The map with its terrain as groundLayersV45 found it (the eight layers' indices, no Ground theme), or null when it isn't one that migration made. */
+export function withOldGroundEncoding(map: MapDocument): MapDocument | null {
+  const t = map.terrain;
+  if (!t) return map;
+  const layers = TERRAIN_MATERIALS.map((m) => TERRAIN_SURFACES[m]);
+  if (!t.grounds || t.grounds.length !== layers.length || t.grounds.some((g, j) => g !== layers[j])) return null;
+  const base = layers.indexOf(GROUND_THEMES.find((g) => g.id === t.groundTheme)?.base ?? '');
+  const { groundTheme: _g, grounds: _l, ...rest } = t;
+  const materials = t.materials.map((m) => (m === 0 ? base : m - 1));
+  if (materials.some((m) => m < 0)) return null;
+  return { ...map, terrain: { ...rest, materials } };
 }
 
 export class MapMigrationError extends Error {}

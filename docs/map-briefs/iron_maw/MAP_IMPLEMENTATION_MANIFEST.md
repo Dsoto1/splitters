@@ -60,9 +60,13 @@
 | SC | 3 | 304° → 280° | (29, -16, -90) | (1, -24, -96) | 27 m | 38 % (graded part) |
 
 | Tunnel | Arc | Floor y | Clear width | Portals (x, z) |
-| T1 South Rim Tunnel | 236°–252° | 0 | 16 m | (-87, -146), (-50, -154) |
-| T2 West Bench Tunnel | 195.5°–214.5° | -24 | 9 m | (-95, -56), (-85, -84) |
-| T3 Deep Drift | 317.5°–334.5° | -40 | 9 m | (25, -64), (37, -54) |
+| T1 South Rim Tunnel | 236°–252° | 0 | 7 m (road bore) | mouths at (-92, -152) west, (-44, -152) east |
+| T2 West Bench Tunnel | 195.5°–214.5° | -24 | 7 m (concrete bore) | mouths at (-96, -44) north, (-68, -96) east |
+| T3 Deep Drift | 317.5°–334.5° | -40 | 7 m (concrete bore) | mouths at (20, -64) west, (40, -52) north |
+
+(Rebuilt with the tunnel kit, 2026-11-17: buried 7 m bores through rock on the 8 m grid; before, cut-and-cover
+trenches under rock lids, 16 m and 9 m wide, portals at T1 (-87, -146), (-50, -154); T2 (-95, -56), (-85, -84); T3
+(25, -64), (37, -54).)
 
 Bench widths (between faces): L1 12–27 m, L2 12–27 m, L3 12–25 m, L4 10–24 m, L5 10–25 m; the floor about
 95 × 68 m with a 15 m shelf ramp round its north-west.
@@ -119,7 +123,7 @@ All structures are MapMaker pieces: Classic Grid tiles (theme `core.factory`), f
 | Conveyor gantries | blocks (`core.pbr_walkway` decks, `core.pbr_steel` rails, legs, cross-beams) + `prop.conveyor` along them | see traversal graph | solid | walkable decks |
 | Headframe and lifts | blocks (`core.pbr_rusted_plate` cage posts and crown, `core.pbr_steel` A-frame and sheave deck), `prop.cog` sheave, `mover` lifts with `core.pbr_tread_plate` platforms and landing decks | θ 107°, 7.5°, 244° | solid; platforms ride | open on the low and high sides |
 | Ladder rigs | `core.pbr_rusted_plate` block (2.6 × 8.5 × 7 m) + `ladder` on its face | each ramp's top end | solid | climb |
-| Tunnels | trench in the terrain under `core.pbr_rock` lid blocks; portals `core.pbr_concrete` (T1) or `core.pbr_walnut` timber sets (T2, T3); strip lights | see traversal graph | solid | both ends open |
+| Tunnels | tunnel kit pieces buried in the rock (T1 `core.tunnel_road_wide_*`, T2 and T3 the same shapes in the concrete family): wide portals, straights and curves; the kit's strip lights and the map's three lights a tunnel | see traversal graph | solid (the kit's shells) | both ends open |
 | NW motor pool | tiles `military.vehicle_shed` ×3, `military.barracks` ×2, `core.bunker` (HQ), `military.guard_tower` | cells x −22…−13, y 15…22 | tiles | sheds open-fronted, barracks and bunker doors, tower stairs |
 | NE workers' camp | tiles `military.barracks` ×6, `military.vehicle_shed` ×2, `core.bunker`, `military.guard_tower` | cells x 13…22, y 13…22 | tiles | as above |
 | Transfer towers | `core.pbr_rusted_plate` blocks | (100, 0, 178), (172, 0, −48) | solid | ladder / ramp |

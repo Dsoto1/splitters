@@ -20,6 +20,8 @@ export interface PlanHost {
   level(): number;
   ground(): TerrainData | null;
   selected(): ReadonlySet<string>;
+  /** Bumped whenever the selection changes (EditorApp.selectionRev): the overlay redraws on a new number. */
+  selectionRev(): number;
   showAll(): boolean;
   setShowAll(on: boolean): void;
   toast(message: string, error?: boolean): void;
@@ -43,6 +45,7 @@ export class PlanView {
   private drawnKey = '';
   private clipped = new Map<Material, Plane | null | undefined>();
   private clippedFor: unknown = null;
+  private clippedLevel = 0;
 
   constructor(private readonly host: PlanHost) {}
 
@@ -122,9 +125,8 @@ export class PlanView {
     cam.orthoBottom = -f.halfH;
     if (view.scene.clipPlane?.d !== -cut) view.scene.clipPlane = new Plane(0, 1, 0, -cut);
     const doc = this.host.doc();
-    if (this.clippedFor !== doc) this.keepTerrainWhole(doc);
-    const sel = [...this.host.selected()].join(',');
-    const key = `${f.cx},${f.cz},${f.halfH},${w},${h},${this.host.level()},${sel}`;
+    if (this.clippedFor !== doc || this.clippedLevel !== this.host.level()) this.keepTerrainWhole(doc);
+    const key = `${f.cx},${f.cz},${f.halfH},${w},${h},${this.host.level()},${this.host.selectionRev()}`;
     if (key === this.drawnKey && this.drawnDoc === doc) return;
     this.drawnKey = key;
     this.drawnDoc = doc;
@@ -136,6 +138,15 @@ export class PlanView {
   /** The terrain's materials aren't cut (hills above the cut are still the ground). Once per document version. */
   private keepTerrainWhole(doc: MapDocument): void {
     this.clippedFor = doc;
+    this.clippedLevel = this.host.level();
+    // Below ground the ground is cut with everything else: the basement's plan shows its tunnels and rooms, not the
+    // grass over them (MapMaker: building below ground).
+    if (this.clippedLevel < 0) {
+      this.unclip();
+      this.clippedFor = doc;
+      this.clippedLevel = this.host.level();
+      return;
+    }
     for (const m of this.host.view.scene.meshes) {
       if (!m.name.includes('_terrain_') || !m.material || this.clipped.has(m.material)) continue;
       this.clipped.set(m.material, m.material.clipPlane);
@@ -370,8 +381,8 @@ export class PlanView {
   }
 }
 
-/** One plan icon at (x, y), `r` across its middle. */
-function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
+/** One plan icon at (x, y), `r` across its middle (the plan view's and the minimap's). */
+export function drawIcon(g: CanvasRenderingContext2D, m: Pick<PlanMarker, 'kind' | 'yaw' | 'label'>, x: number, y: number, r: number, color: string, u: number): void {
   g.save();
   g.translate(x, y);
   g.lineWidth = 1.5 * u;

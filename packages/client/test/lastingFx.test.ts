@@ -217,4 +217,39 @@ describe('lasting effects (lastingFx.ts)', () => {
     expect(live.filter((l) => !l.stopped).length).toBe(1);
     expect(live.at(-1)!.opts.slow).toBeUndefined();
   });
+
+  it('ranks every effect out of view after everything in view (Low: 4 places)', () => {
+    const { vfx } = fakeVfx(4);
+    const fx = new LastingFx(vfx);
+    const cam = { x: 0, y: 0, z: 0 };
+    // In view: x > 0. Four flame-trap jets out of sight (behind, in the oven), two pads and a portal ahead, one pickup.
+    const inView = (at: { x: number }) => at.x > 0;
+    const ask = () => {
+      for (let i = 0; i < 4; i++) fx.want(`trap${i}`, 'fire.trap', { x: -22 - i, y: 0, z: 0 });
+      fx.want('pad1', 'pad', { x: 12, y: 0, z: 0 });
+      fx.want('pad2', 'pad', { x: 14, y: 0, z: 0 });
+      fx.want('gate', 'portal', { x: 20, y: 0, z: 0 });
+      fx.want('loot', 'loot.ammo', { x: 6, y: 0, z: 0 });
+    };
+    ask();
+    fx.update(cam, inView);
+    // The pads, the portal and the pickup's glow in view; the jets out of sight get none of the four places.
+    expect([fx.drawn('pad1'), fx.drawn('pad2'), fx.drawn('gate'), fx.drawn('loot')]).toEqual([true, true, true, true]);
+    expect([0, 1, 2, 3].filter((i) => fx.drawn(`trap${i}`)).length).toBe(0);
+    // Without the view test the jets, nearer than the portal, take its place as before.
+    const plain = new LastingFx(fakeVfx(4).vfx);
+    for (let i = 0; i < 4; i++) plain.want(`trap${i}`, 'fire.trap', { x: -2 - i, y: 0, z: 0 });
+    plain.want('gate', 'portal', { x: 20, y: 0, z: 0 });
+    plain.update(cam);
+    expect(plain.drawn('gate')).toBe(false);
+  });
+
+  it('counts an effect within a few metres as in view wherever it is', () => {
+    const { vfx } = fakeVfx(1);
+    const fx = new LastingFx(vfx);
+    fx.want('aura', 'fire.zone', { x: -2, y: 0, z: 0 });
+    fx.want('pad', 'pad', { x: 12, y: 0, z: 0 });
+    fx.update({ x: 0, y: 0, z: 0 }, (at) => at.x > 0);
+    expect(fx.drawn('aura')).toBe(true);
+  });
 });

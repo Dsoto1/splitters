@@ -92,10 +92,27 @@ lines the top of the front and rear sights up under the eye.
 `maps/training_range.json`): the gunplay test arena
 of GUNPLAY_DIRECTION.md, described in [GUNPLAY_AUDIT.md](GUNPLAY_AUDIT.md#gunplay-test-arena).
 
-**Ammo pickups.** The general Ammo Box gives half a pickup to every weapon and
-one underbarrel grenade. Typed boxes (Light, Rifle, Shells, Sniper, Explosives,
+**Ammo boxes** (2026-11-13; `sim/resupply.ts`). A map's Ammo Box (`core.ammo`,
+placed as a pickup in MapMaker) is a solid crate in play, the WWII Ammo Crate:
+press Use beside it (within 1.5 m) to resupply, which fills every carried gun's
+reserve and underbarrel rounds and tops your grenades up to their kind's most
+(none carried: the weapon set's first kind; never sandbags, the airstrike flare or
+another kit). Each crate holds 10 resupplies; each player waits 4 s between two.
+Emptied or destroyed, it is gone until its pickup's respawn time (at least 20 s)
+has passed, then back full. The **Ammo Box Kit** (`core.ammo_box_kit`, a
+throwable carried like Sandbags, one at a time) sets one down where it lands: 10
+resupplies for 2 minutes, one per player (setting down another takes the first
+away). Shots and blasts hurt a box (80 health placed, 60 deployed); destroyed, it
+**cooks off**: a round of small blasts round it over 2.6 s (16 at the centre, 3 at
+the 2.4 m edge), from one for an empty box to eight for a full one, credited to
+whoever destroyed it. Tanks refill their cannon pulled up beside a placed crate
+(a use). Bots short of ammo walk to a box and press Use; a box being shot (under
+60 % health) is off their list, and a cook-off is a hazard they wait out.
+**Ammo pickups.** Typed boxes (Light, Rifle, Shells, Sniper, Explosives,
 Energy Cells; told apart by their stripe colour) fill every weapon of that type
-with a full pickup; Explosives also refill underbarrel grenades.
+with a full pickup; Explosives also refill underbarrel grenades. (A random
+pickup that rolls the general Ammo Box stays a walk-over pickup: half a pickup
+to every weapon and one underbarrel grenade.)
 
 **Throwables (G).** One kind is carried at a time, with a count shown beside
 the ammo. Frag grenades bounce and go off after 2.5 s (everyone spawns with
@@ -110,6 +127,73 @@ wall, window pane (one hit), board barricade, gas cylinder (explodes) and
 generator (explodes). Panes and boards snap to doorways and windows. 84 props
 are breakable too, and powder kegs, machines, valves and fire baskets explode.
 Explosions chain into other destructibles in range.
+
+## The Battle Rifle: fire modes, full-quality model, a real optic (2026-11-16)
+
+The owner (2026-11-16): fire modes for the Battle Rifle, single and a 3-round burst; "can't you just use the same one
+but not reduce quality?"; and a real 3-4x scope instead of the modelled one.
+
+**Fire modes** (spec §36; shared `sim/fireModes.ts`). A weapon may list `fireModes` (content/weapons); the first is its
+own trigger (`fireMode`, `fireIntervalTicks`, `burst`, `kick`), a later one overrides the interval, the burst and the
+kick. **U** switches round them (B, the usual key, is the quick-message and order key: `FIRE_MODE_KEY`, reserved for the
+weapon wheel), with a small click (the magazine's metal click, quieter and higher); the HUD shows the mode under the
+weapon's name (pips: one round, the burst's count, a bar for auto; then its name and U). The mode wanted rides in
+every input (`PlayerInput.fireMode`, an index; absent keeps the gun's), so the host applies it (`WeaponState.mode`) and
+client prediction replays it input for input like the trigger itself; an older host ignores it (first mode). A burst
+fired in one mode finishes on its own timer if the mode changes mid-burst. Weapons without a list read through the
+same code with their one mode: the Burst Rifle (3 × 4 ticks, 24-tick cycle) and every semi-auto fire exactly as before
+(`fireModes.test.ts` checks every weapon). Bots burst inside 22 m and fire single past it, with a 3 m band either way
+(`bots/fireModePick.ts`).
+
+| Battle Rifle | Single | Burst |
+|---|---|---|
+| Trigger | one round a press, at most every 12 ticks (300 rpm) | 3 rounds 5 ticks apart (720 rpm), next burst 33 ticks after the first round |
+| Kick per round (pitch / yaw, mrad) | 26, 30, 34 up (the weapon's) | 7, 6 up; 15 right then 20 back left (the burst's own) |
+| Body kill, perfect control | 0.60 s (4 rounds) | 0.55 s (a burst and a round) |
+| Two heads, perfect control | 0.20 s | 0.083 s (in one burst) |
+| No recoil control, chest aim (10 / 20 / 30 / 40 m) | 0.60 / 0.40 / 0.42 / 2.8 s | 0.55 / 0.17 / 0.57 s / no kill in 3 s |
+| No recoil control, head aim (10 / 20 / 30 m) | 0.20 / 0.20 / 0.22 s | 0.083 / 0.55 / 0.57 s |
+
+(The 0.17 s and 0.40 s at 20 m: the climb walks a chest-aimed round into the head, for both.) So the burst is the
+close-quarters mode: the burst's second round jumps sideways too quickly to pull against, so two heads in one burst
+only work inside about 12 m and past 35 m a burst mostly misses; Single owns range. The Battle Rifle's place is kept:
+never the quickest body kill of the rifles on paper (the Assault Rifle's 0.5 s up close), its case the first shot, the
+head and what's behind cover. The Battle Rifle was a 300 rpm automatic before; Single is now its trigger (the owner's
+"single and triple").
+
+**The model at full quality.** Same model, the Meshy Community Frontier Rifle (provenance kept: community CC0, its post
+URL). What lost its quality: the 820,000-triangle download was cut to 14,000 triangles (1.7 %, at a 3 cm error) and
+its colour repainted onto new charts at 1024 px with a 512 px normal map, the metal and roughness thrown away for a
+matte finish, and there was no `held` copy: your own hands drew everyone's copy. Now (`content/guns.json`,
+`heldTriangles`, a new option of `tools/content/prepare-guns.mjs`): your own hands draw a second cut of the same
+download, 60,000 triangles at a 0.7 mm error, in exactly the world copy's frame (the holds, muzzle and optic numbers
+carry over), with the download's own metal and roughness (`pbr`); Medium 1024 px colour, 512 normal, 256 metal/roughness
+(2.5 MB download); High 2048 / 1024 / 512 (3.3 MB). Everyone else's copy stays 14,000 triangles with its 2,796-triangle
+lower level of detail from 12 m, now with metal and roughness too (0.95 MB, was 0.98). Cost in your hands at High:
+about 29 MB of video memory for the maps (as every held gun: docs above) and about 2 MB of geometry, one draw call;
+the extra triangles are one mesh near the eye. The held copies have their own budget tier, `heldHero` (80,000
+triangles, 9 MB).
+
+| Copy | Triangles | Colour | Normal | Metal/roughness | File |
+|---|---|---|---|---|---|
+| Before: everyone's and yours | 13,988 (+2,796 LOD) | 1024 | 512 | none (matte) | 0.98 MB |
+| Everyone's | 13,988 (+2,796 LOD) | 1024 | 512 | 256 | 0.95 MB |
+| Yours, Medium | 60,000 | 1024 | 512 | 256 | 2.5 MB |
+| Yours, High | 60,000 | 2048 | 1024 | 512 | 3.3 MB |
+
+**A real 3.5x optic** (`view.optic`, client `game/opticView.ts`). The Frontier Rifle's own scope tube is straight and
+level on the bore's line (side and rear views on a 1 cm grid): its eyepiece glass is at [0, 0.133, -0.262] on the
+model, 14 mm clear radius. Aiming brings that eyepiece 12 cm in front of the eye (beyond the camera's 10 cm near
+plane); once the sights are up the eye eases onto it (0.12 s): the camera narrows to 3.5 times the hip view (the
+scene's own rendering, post-processing, fog and level of detail: no second render), while the gun is drawn at a field
+of view of its own by squashing it across the view axis (a node between the camera and the gun), so the eyepiece's
+glass fills 62 % of the screen's half-height. A depth-only disc on the glass, drawn first in the gun's rendering group,
+keeps the tube's inside from covering the view; the HUD draws the reticle (since the optics pass a chevron between
+three posts, its tip the aim, with the holdover ticks under it: spec §15, "Optics by gun") inside the glass and shades everything round it (the eyepiece's shadow), fading in over
+the second half of the move. Scope sway and Shift to hold your breath work as on the scoped rifles; zoomed look speed
+follows the zoom (spec §15). It is not a `zoomFov` scope to the sim: hip fire keeps the rifle's true first shot (no
+no-scope penalty) and the sights tighten it like any rifle's (spec §15: ADS never mandatory). No glint or bright
+moment (Reduce flashing unaffected).
 
 ## Gunplay pass 2 (2026-11-08): identities, readouts, the Battle Rifle
 
@@ -166,7 +250,7 @@ Grenades (the owner's picks, 2026-11-06), one model each in the hand, in flight 
 |---|---|---|
 | Globe Grenade (`guns/globe_grenade.glb`) | Frag; the 3DModelsCC0 frag (`guns/frag_m67.glb`) is its look in the Military weapon set | Styloo frag (the fallback) |
 | Countdown Sphere (`guns/countdown_sphere.glb`; the blinking light kept on top) | Sticky | shapes in code |
-| "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Vortex | shapes in code |
+| "just a grenade" (`guns/vortex_grenade.glb`, its own projectile look `vortexNade`: the Singularity Cannon keeps `vortex`) | Gravity Grenade (id `vortex`) | shapes in code |
 | Emergency Flare (`guns/dynamite.glb`; Meshy Community CC0, Drive file `Meshy_AI_Emergency_Flare_1110164645_texture.glb`, 2026-11-10; red stick with a fuse) | Dynamite (hand, flight and pickup; mechanics unchanged) | shapes in code |
 | Gold and silver toned orb (`guns/holy_bomb.glb`; Meshy Community CC0, Drive file `Meshy_AI__Gold_Silver_Toned_Hi_1110164632_texture.glb`, 2026-11-10; an ornate gold grenade with a cross gem) | Holy Bomb (hand, flight and pickup; mechanics unchanged) | shapes in code |
 | mur de sacs 12 (`guns/sandbags.glb` small, for hand, flight and pickup; `guns/sandbag_wall.glb` the deployed 1.9 x 0.64 x 1 m wall; Meshy Community CC0, Drive file `Meshy_AI_mur_de_sacs_12_1110164725_texture.glb`, 2026-11-10) | Sandbags (`view.cover` is the wall's model, `CoverState`) | stacked capsules in code |
@@ -310,7 +394,7 @@ recipes.
 | 3 | Burst Rifle | Three-round bursts per trigger pull |
 | 3 | Laser Rifle | Continuous beam, no ammo: overheats, then locks until cool |
 | 3 | Marksman Rifle | Semi-auto, 0.7 zoom |
-| 3 | Battle Rifle | Heavy automatic (300 rpm, 25 damage, 20 rounds): a true first shot, two head hits kill, climbs hard held down (2026-11-08) |
+| 3 | Battle Rifle | Heavy rifle (25 damage, 20 rounds), Single (300 rpm) or a 3-round Burst (U), a real 3.5x optic: a true first shot, two head hits kill (2026-11-08; modes and optic 2026-11-16) |
 | 4 | Sawed-Off | Two barrels, 14 pellets, knockback |
 | 4 | Auto Shotgun | Automatic, big recoil |
 | 4 | Flak Cannon | Seven shards that ricochet twice |
@@ -395,7 +479,7 @@ server's `set` rule (`MatchRules.weaponSet`).
 |---|---|---|---|---|
 | **Standard** | the mode's own (knife, pistol; co-op, Zombies, Bomb and Hostage add a rifle) | frag | as placed on the map | as placed |
 | **Military** | knife, pistol, assault rifle; sniper-role bots a marksman rifle instead | frag | rifle, burst rifle, SMG, machine pistol, spin gun, shotgun, auto shotgun, sawed-off, sniper, marksman, grenade launcher, rockets, pistol, revolver, hand cannon | frag, mine, smoke |
-| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, vortex, smoke |
+| **Sci-fi** | knife, pulse pistol, plasma rifle; sniper-role bots the railgun instead | sticky | plasma, laser rifle, railgun, pulse pistol, arc caster, disc launcher, swarm, guided | sticky, gravity, smoke |
 | **Medieval** | knife, spear | incendiary | spear, battle axe, knife | incendiary, holy bomb |
 | **Chaos** | knife, pistol, a random oddball each life | sheep | swarm, singularity, freeze ray, goo gun, bubble blaster, oil slicker, flare gun, nailgun, flak, blast rockets, gilded pistol | sheep, holy bomb, cluster bomb |
 | **Mixed bag** | knife, pistol, a random main gun each life | frag | every weapon a pickup can hold | every grenade |
@@ -450,7 +534,7 @@ are unchanged; each has a pickup like every weapon):
 | 1 | Medi-Beam | Medkit | Heals the teammate in your sights 6 HP five times a second, 9 m (Medic) |
 
 **Grenades (G):** frag, proximity mine, sticky (rides on whoever it hits),
-incendiary (a pool of fire), gas (a toxic cloud), vortex (a small
+incendiary (a pool of fire), gas (a toxic cloud), the Gravity Grenade (id `vortex`: a small
 singularity) and dynamite (Style Pack 02 Frontier Dust: a 3 s fuse, a 6 m
 blast that throws people about; pickup `core.dynamite`). And the Smoke Grenade (a cloud that hides whoever is
 behind it, 18 s; pickup `core.smoke_grenades`): see "Weapons intake of 2026-11-06".

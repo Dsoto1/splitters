@@ -5,7 +5,9 @@
   "order": 43,
   "name": "Customs Agent Zhao",
   "look": "core.zhao",
-  "group": "folk",
+  "group": "soldiers",
+  "branch": "agency",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Thirty years at customs. Nothing gets past him, and nobody gets through.",
   "body": "male",
@@ -24,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 14000,
     "surface": "rebake",
@@ -36,11 +35,10 @@
     "feet": true,
     "hands": {
       "scale": 0.85,
-      "curl": 1
+      "curl": 0.7,
+      "graft": true
     },
     "grip": {
-      "gripLong": [-0.015, 0, 0],
-      "supportPistol": [0, 0.04, -0.08],
       "curlR": 1.2,
       "curlL": 1.4
     }

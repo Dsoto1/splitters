@@ -707,7 +707,7 @@
   {
    "item": {
     "id": "core.vortex_grenades",
-    "displayName": "Vortex Grenades",
+    "displayName": "Gravity Grenades",
     "effect": {
      "kind": "throwable",
      "throwable": "vortex",
@@ -1060,6 +1060,36 @@
     "botValue": 0.35
    },
    "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.ammo_box_kit",
+    "displayName": "Ammo Box Kit",
+    "effect": {
+     "kind": "throwable",
+     "throwable": "ammo_box",
+     "count": 1
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.3
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_pistol",
+    "displayName": "Pistol",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.pistol"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675,
+    "rolls": false
+   },
+   "category": "pistol",
    "found": true
   }
  ],

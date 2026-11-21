@@ -6,6 +6,7 @@
   "name": "Dusty Ranger",
   "look": "core.dustycolt",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "cowboy",
   "bio": "Rode into the arena on a horse that has since left without him.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

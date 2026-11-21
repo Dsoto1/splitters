@@ -18,7 +18,10 @@ import type { CharacterInstance } from '../content/characters.ts';
  *   arm's front in the bind pose; negative: bent backwards);
  * - gun: where the gun sits against the body (the butt and grip against the shoulder and head, the head's
  *   distance from the gun's line) and whether the arms cross the body's midline;
- * - stretch: skin edges much longer than in the bind pose (cloth dragged out by an arm: "spikes").
+ * - stretch: skin edges much longer than in the bind pose (cloth dragged out by an arm: "spikes");
+ * - tear: per hand, the hand's own skin as drawn against its bind pose (triangles whose corners the hand chain
+ *   mostly holds): the longest edge's stretch, edges past twice their length, and triangles turned over against
+ *   the hand (fingers folded into shards: a finger's skin torn from its neighbour's, or folded through itself).
  */
 
 const FINGER = /(?:^|_)(index|middle|ring|pinky)_0\d_([lr])$/;
@@ -107,6 +110,8 @@ export interface GripAudit {
   } | null;
   /** `by`: spikes counted by the joint that holds each one's first end most. */
   stretch: { max: number; spikes: number; worst: string | null; by: Record<string, number> };
+  /** The hands' own skin as drawn (see above): `max` edge stretch, `over2` edges past 2x, `flipped` of `tris` turned over. */
+  tear: Record<'l' | 'r', { max: number; over2: number; flipped: number; tris: number } | null>;
 }
 
 /** Measure the posed character (call after the pose has settled and been drawn). */
@@ -293,5 +298,58 @@ export function auditGrip(ch: CharacterInstance, weapon: TransformNode | null, h
       }
     }
   }
-  return { verts: count, hands, elbows, gun, stretch: { max: Math.round(max * 10) / 10, spikes, worst, by: at_ } };
+  // Tear: each hand's own skin, edges and facing against the bind pose turned by its joints.
+  const tear = {} as GripAudit['tear'];
+  for (const side of ['l', 'r'] as const) {
+    const hb = bone(`hand_${side}`);
+    if (!idx || hb < 0) {
+      tear[side] = null;
+      continue;
+    }
+    const re = HANDISH(side);
+    const on = names.map((n) => re.test(n));
+    const held = new Uint8Array(count);
+    for (let v = 0; v < count; v++) {
+      let w = 0;
+      for (let j = 0; j < 4; j++) if (on[bi[v * 4 + j]!]) w += bw[v * 4 + j]!;
+      held[v] = w >= 0.5 ? 1 : 0;
+    }
+    // Each triangle against the joint that holds its first corner most (a curled finger's skin turns with it).
+    const mats_ = new Map<number, Matrix>();
+    const turnOf = (v: number) => {
+      let wb = hb;
+      let ww = 0;
+      for (let j = 0; j < 4; j++) if (bw[v * 4 + j]! > ww) [ww, wb] = [bw[v * 4 + j]!, bi[v * 4 + j]!];
+      let m = mats_.get(wb);
+      if (!m) mats_.set(wb, (m = M(wb)));
+      return m;
+    };
+    let tmax = 1;
+    let over2 = 0;
+    let flipped = 0;
+    let tris = 0;
+    const seen = new Set<number>();
+    for (let i = 0; i + 2 < idx.length; i += 3) {
+      const a = idx[i]!;
+      const b = idx[i + 1]!;
+      const c = idx[i + 2]!;
+      if (!held[a] || !held[b] || !held[c]) continue;
+      tris++;
+      const n0 = Vector3.Cross(at(bind, b).subtract(at(bind, a)), at(bind, c).subtract(at(bind, a)));
+      const n1 = Vector3.Cross(at(posed, b).subtract(at(posed, a)), at(posed, c).subtract(at(posed, a)));
+      if (n0.lengthSquared() > 1e-16 && n1.lengthSquared() > 1e-16 && Vector3.Dot(Vector3.TransformNormal(n0, turnOf(a)).normalize(), n1.normalize()) < -0.2) flipped++;
+      for (const [p, q] of [[a, b], [b, c], [c, a]] as const) {
+        const key = p < q ? p * count + q : q * count + p;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const b0 = Vector3.Distance(at(bind, p), at(bind, q)) * k;
+        if (b0 < 0.001) continue;
+        const ratio = (Vector3.Distance(at(posed, p), at(posed, q)) * k) / b0;
+        tmax = Math.max(tmax, ratio);
+        if (ratio > 2) over2++;
+      }
+    }
+    tear[side] = { max: Math.round(tmax * 10) / 10, over2, flipped, tris };
+  }
+  return { verts: count, hands, elbows, gun, stretch: { max: Math.round(max * 10) / 10, spikes, worst, by: at_ }, tear };
 }

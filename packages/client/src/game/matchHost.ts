@@ -13,6 +13,8 @@ import {
   SNAPSHOT_INTERVAL_TICKS,
   TICK_RATE,
   encodeSnapshots,
+  SNAPSHOT_BINARY_VERSION,
+  SnapshotBinaryEncoder,
   SnapshotStream,
   getWeapon,
   initPhysics,
@@ -40,7 +42,9 @@ import {
   mapPlayerCaps,
 } from '@tiletrigger/shared';
 import { Zipper } from '@tiletrigger/shared/peerZip';
-import type { BotDebugFrame } from '@tiletrigger/shared/match';
+import { openNavStore } from './navCache.ts';
+import { perfOn } from './perfSwitches.ts';
+import type { BotDebugFrame, PrebuiltNav } from '@tiletrigger/shared/match';
 
 /** How often (ticks) the bot debug view gets a frame while on: four a second. */
 const BOT_DEBUG_EVERY = Math.round(TICK_RATE / 4);
@@ -74,8 +78,25 @@ export interface LocalMatchOptions {
   spectate?: boolean;
   /** The party this browser's player is in (shared net/party.ts): friends whose invite link carries it join their team. */
   party?: string;
+  /** This browser's player's career rank points (careerStats.ts myRankPoints): on the roster for the others' badges. */
+  rankPoints?: number;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
+  /**
+   * MapMaker's Test: the navigation check's navmesh of the map (editor/mapChecks.ts `prebuilt`), taken instead of
+   * building one when it was built from the same (Match `nav`).
+   */
+  nav?: PrebuiltNav | null;
+  /**
+   * Rigid driving for every vehicle that has it, the classic driving for all, or rigid with driving physics 3's own hull
+   * solver instead of the Rapier body (`?drive=`; MatchOptions.drive).
+   */
+  drive?: 'classic' | 'rigid' | 'own';
+  /**
+   * Dual wielding in play in this match while it is still being built (`?akimbo=1`, honoured where test mode is:
+   * testMode.ts allowedHere; MatchOptions.akimbo). Without it the match follows shared rules.ts akimboReady.
+   */
+  akimbo?: boolean;
 }
 
 /** The game browser listing of a hosted match, for the successor to carry on (net/handoff.ts): its name only. */
@@ -108,6 +129,10 @@ export interface MatchHostSink {
   facts(f: HostFacts): void;
   /** The in-game bot debug view's frame (`?botdebug=1`: shared bots/debugView.ts), while the page has it on. */
   botdebug?(f: BotDebugFrame): void;
+  /** Buffers of binary snapshots the page has read and let go of (sinkTo): written again. */
+  recycle?(bufs: ArrayBuffer[]): void;
+  /** The page could not read a binary snapshot: this player's snapshots as objects from now on. */
+  objectsOnly?(): void;
 }
 
 /**
@@ -236,6 +261,9 @@ export class MatchHost {
     private readonly sink: MatchHostSink,
   ) {}
 
+  /** How long the match took to make (ms; the navmesh most of it, unless it was handed one: `Match.navReused`). */
+  loadMs = 0;
+
   /** Load the simulation, start the match and its loop. Resolves once the welcome has gone out. */
   async start(): Promise<void> {
     // The match module pulls in Recast; load it only when a local match starts.
@@ -246,7 +274,31 @@ export class MatchHost {
     const cp = this.opts.restore;
     const rules = cp?.rules ?? this.opts.rules ?? rulesForMap(this.map);
     const test = this.opts.test;
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true });
+    const t0 = performance.now();
+    // The navmesh kept from an earlier match of this map (this browser's storage: navCache.ts), unless MapMaker's
+    // check handed one over; the match takes either only if it was built from the same (Match `nav`).
+    let nav = this.opts.nav ?? null;
+    let from = nav ? "the navigation check's navmesh" : '';
+    const store = perfOn('navcache') ? await openNavStore(mod.navBuildId()).catch(() => null) : null;
+    if (this.stopped) return;
+    if (!nav && store) {
+      const key = mod.mapNavKey(this.map, rules);
+      const kept = await store.get(key);
+      if (this.stopped) return;
+      if (kept) {
+        nav = { key, nav: kept };
+        from = 'the navmesh kept from an earlier match';
+      }
+    }
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}), ...(this.opts.akimbo ? { akimbo: true } : {}) });
+    this.loadMs = Math.round(performance.now() - t0);
+    console.info(`match made in ${this.loadMs} ms (${match.navReused ? from || 'the navmesh kept in this thread' : 'navmesh built'})`);
+    // (The navmesh's data is the match's now: not kept a second time.)
+    this.opts.nav = null;
+    // A navmesh built here is kept for the next match of this map, after the welcome (writing it is no part of the start).
+    const built = match.navBuilt;
+    match.navBuilt = null;
+    if (built && store) setTimeout(() => void store.put(built.key, built.nav), 2000);
     const bots = new BotFiller(match, BOT_DIFFICULTIES[cp?.skill ?? this.opts.difficulty], { botSet: this.opts.botSet ?? null });
     const fill = Math.min(cp?.fill ?? this.opts.botFill, MAX_PLAYER_SLOTS);
     let me: Combatant;
@@ -261,6 +313,7 @@ export class MatchHost {
     } else {
       me = match.addHuman(this.opts.name, this.opts.look)!;
       if (this.opts.party) me.party = this.opts.party;
+      if (this.opts.rankPoints !== undefined) me.rankPoints = this.opts.rankPoints;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
       const at = this.opts.startAt;
       if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
@@ -712,6 +765,8 @@ export class MatchHost {
         return this.drop(id);
       }
       r.slot = player.slot;
+      // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
+      if (msg.rx !== undefined) player.rankPoints = msg.rx;
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1 } satisfies ServerMessage));
@@ -970,6 +1025,16 @@ export class MatchHost {
     for (const r of this.remotes.values()) if (r.slot !== null) this.sink.send(r.id, text);
   }
 
+  /** Binary snapshots' buffers back from the page (sinkTo writes the next ones into them). */
+  snapshotBuffers(bufs: ArrayBuffer[]): void {
+    this.sink.recycle?.(bufs);
+  }
+
+  /** The page could not read a binary snapshot: objects from now on. */
+  snapshotObjects(): void {
+    this.sink.objectsOnly?.();
+  }
+
   private sendFacts(): void {
     const c = this.control;
     if (!c || !this.match || !this.me || this.stopped) return;
@@ -983,7 +1048,15 @@ export class MatchHost {
 
 /** The page → the match host (a worker's messages; the same calls on the page's own thread). */
 export type ToSimHost =
-  | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean }
+  /**
+   * `snap`: the page reads binary snapshots of this version (shared/net/snapshotBinary.ts): a match host that
+   * writes that version sends them so; without it, or with another version, snapshots come as objects.
+   */
+  | { k: 'start'; map: MapDocument; opts: LocalMatchOptions; hidden: boolean; snap?: number }
+  /** Binary snapshots' buffers, read and handed back for the next ones. */
+  | { k: 'snapbufs'; bufs: ArrayBuffer[] }
+  /** The page could not read a binary snapshot: objects from now on. */
+  | { k: 'snapobjects' }
   | { k: 'input'; inputs: PlayerInput[] }
   | { k: 'ready' }
   /** The page's own player spectates by choice (on) or joins play again. */
@@ -1018,6 +1091,11 @@ export type ToSimHost =
 /** The match host → the page. */
 export type FromSimHost =
   | { k: 'local'; msg: ServerMessage }
+  /**
+   * This player's snapshot as a binary message (shared/net/snapshotBinary.ts), its buffer handed over, not copied:
+   * only to a page whose `start` said it reads this version.
+   */
+  | { k: 'snap'; b: ArrayBuffer }
   | { k: 'send'; id: number; text: string }
   /** Compressed pieces for a friend's link, ready to go on the wire as they are. */
   | { k: 'bytes'; id: number; pieces: Uint8Array[] }
@@ -1033,10 +1111,26 @@ export type FromSimHost =
  * compress get their stream compressed here, where the match runs (the sim worker): the page
  * only puts the pieces on the wire (`transfer` hands their buffers over without a copy).
  */
-export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void): MatchHostSink {
+export function sinkTo(post: (m: FromSimHost, transfer?: Transferable[]) => void, opts: { snap?: number } = {}): MatchHostSink {
   const zips = new Map<number, Zipper>();
+  // This player's snapshots in binary, when the page said it reads the version written here (a worker's page:
+  // the buffer is transferred, and the page reads it into objects it reuses). Anything else: objects, as ever.
+  let binary = opts.snap === SNAPSHOT_BINARY_VERSION ? new SnapshotBinaryEncoder() : null;
   return {
-    local: (msg) => post({ k: 'local', msg }),
+    local: (msg) => {
+      if (binary && msg.t === 'snapshot') {
+        const b = binary.encode(msg);
+        if (b) return post({ k: 'snap', b }, [b]);
+        // A snapshot the format can't carry exactly (the type moved on without it): objects from now on.
+        console.warn(`binary snapshots off: ${binary.failed}`);
+        binary = null;
+      }
+      post({ k: 'local', msg });
+    },
+    recycle: (bufs) => {
+      if (binary) for (const b of bufs) binary.recycle(b);
+    },
+    objectsOnly: () => void (binary = null),
     send: (id, text) => {
       const zip = zips.get(id);
       if (!zip) return post({ k: 'send', id, text });
@@ -1109,6 +1203,10 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return;
     case 'stop':
       return host.stop();
+    case 'snapbufs':
+      return host.snapshotBuffers(m.bufs);
+    case 'snapobjects':
+      return host.snapshotObjects();
     case 'warm':
       return;
   }

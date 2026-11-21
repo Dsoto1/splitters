@@ -6,6 +6,8 @@
   "name": "Gas Mask Engineer",
   "look": "core.gasmaskengineer",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Breathes through a filter, works through a war. Never says what's in the tanks.",
   "body": "male",
@@ -23,9 +25,6 @@
   "finish": {
     "metallic": 0.15,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

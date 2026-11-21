@@ -47,7 +47,7 @@ describe('cockpit interior', () => {
 });
 
 describe('in-house cockpits', () => {
-  const buggy = COCKPITS.buggy!;
+  const buggy = COCKPITS.supply_buggy!;
   const built = buildCockpit(buggy);
 
   it('the buggy has one, every other mount id it names exists', () => {
@@ -112,7 +112,7 @@ describe('in-house cockpits', () => {
   });
 
   it('keeps the driver view clear: no part between the eye and the road ahead over the dash', () => {
-    const eye = MOUNT_DEFS.buggy.cockpitEye!;
+    const eye = MOUNT_DEFS.supply_buggy.cockpitEye!;
     // Straight ahead and 12° down (over the hood): no vertex of the cockpit within 5 cm of either line of sight
     // between 0.15 and 1.2 m out.
     for (const down of [0, 0.21]) {

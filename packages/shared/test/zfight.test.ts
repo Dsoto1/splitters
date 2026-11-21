@@ -197,7 +197,10 @@ describe('visibleFaces on real maps', () => {
 // The audit: coplanar overlaps (two faces in the same plane, facing the same way, overlapping by more than a
 // SLIVER both ways) in what every map draws. Goal zero, with no allow-list.
 describe('z-fighting audit over maps/', () => {
-  it.each(ids)('%s draws no coplanar overlaps', (id) => {
+  // Sized like the props audit below (the same maps, the same full face pass): Sandfall Colosseum is 52,000 boxes and
+  // 328,000 faces, 8 s of CPU alone (6.9 s of it visibleFaces), past the 20 s default on a busy
+  // machine (25 s at a load of 16).
+  it.each(ids)('%s draws no coplanar overlaps', { timeout: 60_000 }, (id) => {
     const boxes = drawnBoxes(id);
     const faces = visibleFaces(boxes);
     const left = coplanarOverlaps(boxes, { faces });

@@ -8,7 +8,7 @@ import {
   SKIES,
   SKY_IDS,
   THEME_BACKDROPS,
-  TERRAIN_MATERIALS,
+  TERRAIN_SURFACES,
   applyBrush,
   getEnvSpecies,
   cellFoliage,
@@ -35,7 +35,7 @@ describe('backdrops', () => {
   it("a map without its own backdrop uses its theme's, with the ground following the terrain's edge", () => {
     const map = makeMap([{ id: 'tile_1', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }]);
     expect(resolveBackdrop(map)).toEqual(THEME_BACKDROPS['core.prototype']);
-    map.terrain = newTerrain(32, 2, [0, 0], 'snow');
+    map.terrain = newTerrain(32, 2, [0, 0], 'ground.snowfield');
     expect(resolveBackdrop(map).ground).toBe('snow');
     map.classicStructure.theme = 'core.station';
     expect(resolveBackdrop(map).ground).toBe('none');
@@ -72,7 +72,8 @@ describe('foliage', () => {
   it('without a painted layer, plants follow the ground: grass grows, stone stays bare', () => {
     const t = newTerrain(16, 2, [0, 0], 'grass');
     expect(cellFoliage(t, 0)).toBeGreaterThan(0);
-    t.materials[0] = TERRAIN_MATERIALS.indexOf('stone');
+    t.grounds = [TERRAIN_SURFACES.stone];
+    t.materials[0] = 1;
     expect(cellFoliage(t, 0)).toBe(0);
   });
 

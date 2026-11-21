@@ -5,7 +5,8 @@
   "order": 66,
   "name": "Slugger-9",
   "look": "core.slugger",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Built for the batting cage. Found out bullets come in faster than fastballs, and liked it.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.45,
     "roughness": 0.45
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

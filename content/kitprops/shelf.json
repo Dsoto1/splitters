@@ -301,6 +301,86 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.shelf.wall",
+      "displayName": "Wall Shelf",
+      "category": "Home",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (owner, 2026-11-16: the Quaternius Wall Shelf was a tiny bookcase): a plank on two brackets with books, jars or a plant, 0.4 m high and 14 cm deep, its back where the wall was behind the Quaternius piece (MapMaker's Dress room hung that one 3 cm off the wall), so it takes that piece's place on the maps (content alias). No collision, as the piece it replaces."
+      },
+      "size": [
+        0.8,
+        0.4,
+        0.142
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "wallshelf",
+        "back": -0.071,
+        "depth": 0.142,
+        "plank": [
+          0.1,
+          0.025
+        ],
+        "stock": "books",
+        "fill": 0.85
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 10
+        },
+        {
+          "distance": 28
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "books",
+          "seed": 8701,
+          "look": {
+            "wood": "#9a6b3f",
+            "bracket": "#3a3a3c",
+            "grime": 0.15
+          }
+        },
+        {
+          "index": 1,
+          "name": "jars",
+          "seed": 8702,
+          "look": {
+            "wood": "#c9a77a",
+            "bracket": "#e8e4dc",
+            "grime": 0.1
+          },
+          "set": {
+            "stock": "jars",
+            "fill": 0.75
+          }
+        },
+        {
+          "index": 2,
+          "name": "decor",
+          "seed": 8703,
+          "look": {
+            "wood": "#6f4a2f",
+            "bracket": "#2a2a2a",
+            "grime": 0.2
+          },
+          "set": {
+            "stock": "decor",
+            "fill": 0.7
+          }
+        }
+      ]
     }
   ]
 }

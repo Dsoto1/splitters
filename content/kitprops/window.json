@@ -1,0 +1,133 @@
+{
+  "$comment": "Windows (tools/content/kit/campus.mjs; docs/map-briefs/st_johns, step 9): stained glass of our own colours drawn on both faces of the wall it is set in (the wall is solid behind it: a window to look at, not through). Nothing glows or blinks.",
+  "type": "window",
+  "props": [
+    {
+      "id": "kit.window.stained",
+      "displayName": "Stained Glass Window",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9, photos 11 and 21): a tall pointed window 2.2 x 6 m in a stone surround, two lights under a round eye, filled with small panes of our own colours between dark leading; drawn on both faces of the wall it is set in (depth 0.58: a 0.5 m wall and a hair each side), the wall solid behind it. Steady colours, nothing glows. Collides as nothing. Variants: blue (deep blues with flecks of gold, red and green), amber (golds and reds)."
+      },
+      "size": [
+        2.2,
+        6.1,
+        0.56
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "glass",
+      "detail": "glass",
+      "generator": {
+        "kind": "stainedglass",
+        "shape": "lancet",
+        "pane": [
+          0.22,
+          0.3
+        ],
+        "surround": 0.18,
+        "flecks": 0.08
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "blue",
+          "seed": 32001,
+          "look": {
+            "glass": "#1f3f8f,#27509e,#173273,#2d5fb0",
+            "fleck": "#b8862b,#8e2a2a,#3d7a46",
+            "lead": "#26282c",
+            "stone": "#d6d0c2"
+          }
+        },
+        {
+          "index": 1,
+          "name": "amber",
+          "seed": 32002,
+          "look": {
+            "glass": "#a8742a,#c08a2e,#8e2a2a,#b55a26",
+            "fleck": "#27509e,#3d7a46",
+            "lead": "#26282c",
+            "stone": "#d6d0c2"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.window.rose",
+      "displayName": "Rose Window",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 9, photo 11: the small round window high in the end wall over the altar): a wheel 3.2 m across in a stone ring, twelve spokes from a round centre, small panes of our own colours; drawn on both faces of its wall, the wall solid behind. Collides as nothing."
+      },
+      "size": [
+        3.2,
+        3.2,
+        0.56
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "glass",
+      "detail": "glass",
+      "generator": {
+        "kind": "stainedglass",
+        "shape": "rose",
+        "spokes": 12,
+        "pane": [
+          0.18,
+          0.18
+        ],
+        "surround": 0.2,
+        "flecks": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "blue",
+          "seed": 32011,
+          "look": {
+            "glass": "#1f3f8f,#27509e,#173273,#2d5fb0",
+            "fleck": "#b8862b,#8e2a2a,#3d7a46",
+            "lead": "#26282c",
+            "stone": "#d6d0c2"
+          }
+        },
+        {
+          "index": 1,
+          "name": "amber",
+          "seed": 32012,
+          "look": {
+            "glass": "#a8742a,#c08a2e,#8e2a2a,#b55a26",
+            "fleck": "#27509e,#3d7a46",
+            "lead": "#26282c",
+            "stone": "#d6d0c2"
+          }
+        }
+      ]
+    }
+  ]
+}

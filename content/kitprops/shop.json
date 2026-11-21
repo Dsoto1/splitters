@@ -1,5 +1,5 @@
 {
-  "$comment": "Shop fittings (tools/content/kit/market.mjs): each the size of the Kenney mini-market piece it replaces, colliding as finer boxes that close and leave open what that piece's did. Its variants share the size, collision and surface and differ in structure (from their seed and settings) and look.",
+  "$comment": "Shop fittings (tools/content/kit/market.mjs): each the size of the Kenney mini-market piece it replaces, colliding as finer boxes that close and leave open what that piece's did. Its variants share the size, collision and surface and differ in structure (from their seed and settings) and look. Tileset 11 (Urban & Civilian) adds the striped Shop Awning (tools/content/kit/street.mjs): it replaces nothing and has no collision.",
   "type": "shop",
   "props": [
     {
@@ -455,6 +455,101 @@
             "wood": "#8f8472",
             "crate": "#9a8a6a",
             "board": "#2b2d30",
+            "grime": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.awning",
+      "displayName": "Shop Awning",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (Tileset 11, Urban & Civilian): a striped canvas awning 3.2 m wide standing 1.3 m out from a wall and 1 m high, eight stripes, a pointed valance, closed sides, two steel arms. Looks: red, green, blue and yellow stripes on cream, and a faded one. No collision, as the game's other awnings: it hangs over a shop window above head height (raise it to 2.4 m or more), its back (−z) against the wall."
+      },
+      "size": [
+        3.2,
+        1,
+        1.3
+      ],
+      "collide": "none",
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": {
+        "kind": "awning",
+        "stripes": 8,
+        "drop": 0.22
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 12221,
+          "look": {
+            "canvas": "#e9e3d2",
+            "stripe": "#b12a22",
+            "frame": "#6a6e72",
+            "fade": 0.15,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 12222,
+          "look": {
+            "canvas": "#e9e3d2",
+            "stripe": "#2f6b45",
+            "frame": "#6a6e72",
+            "fade": 0.15,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 2,
+          "name": "blue",
+          "seed": 12223,
+          "look": {
+            "canvas": "#e9e3d2",
+            "stripe": "#2a4f8c",
+            "frame": "#6a6e72",
+            "fade": 0.15,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 3,
+          "name": "yellow",
+          "seed": 12224,
+          "look": {
+            "canvas": "#ece6d6",
+            "stripe": "#d8a11e",
+            "frame": "#6a6e72",
+            "fade": 0.15,
+            "grime": 0.2
+          }
+        },
+        {
+          "index": 4,
+          "name": "faded",
+          "seed": 12225,
+          "look": {
+            "canvas": "#d9d3c2",
+            "stripe": "#9a5a50",
+            "frame": "#6a6e72",
+            "fade": 0.5,
             "grime": 0.45
           }
         }

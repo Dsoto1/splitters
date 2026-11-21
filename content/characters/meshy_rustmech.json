@@ -5,7 +5,8 @@
   "order": 15,
   "name": "Ivory Rustwalker",
   "look": "core.rustwalker",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "oil",
   "nameTheme": "robot",
   "bio": "Woke up in a scrapyard with no orders and a full magazine. Has been following both ever since.",
   "body": "male",
@@ -25,9 +26,6 @@
   "finish": {
     "metallic": 0.4,
     "roughness": 0.55
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

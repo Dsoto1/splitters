@@ -1,6 +1,7 @@
 import type { MapDocument } from './schema.ts';
 import { isBreakableProp } from './geometry.ts';
 import { isEnvModel } from '../content/environment.ts';
+import { MAP_MAX_ENTITIES } from './mapKeys.ts';
 import type { EventType, LogicAction, LogicRule } from './logic.ts';
 
 /**
@@ -15,8 +16,8 @@ export const RESOURCE_BUDGETS = {
   // ---- checked before / while loading
   /** Raw map JSON, checked before parsing wherever a map arrives. */
   mapBytes: 2 * 1024 * 1024,
-  /** Entities in the file (also the schema's cap). */
-  entities: 4096,
+  /** Entities in the file and in the map as played (also the schema's cap; 4,096 before map format v48). */
+  entities: MAP_MAX_ENTITIES,
   /** Vehicles, mounted guns and airplanes. */
   vehicles: 32,
   /** Destructibles plus blocks that break, crumble, drop or are glass. */
@@ -56,6 +57,16 @@ export function utf8Length(s: string): number {
   return n;
 }
 
+/**
+ * Whether a prop counts in the breakable budget (`destructibles`): on a map where everything breaks
+ * (`metadata.destruction`), every prop that breaks there, each one more piece of state every player is sent; a log
+ * given health on any map. The validator and MapMaker's budget bar (editor/budgetCounters.ts) both count by it.
+ */
+export function breakablePropInBudget(e: MapDocument['entities'][number], everything: boolean): boolean {
+  if (e.kind !== 'prop') return false;
+  return everything ? isBreakableProp(e, true) : isEnvModel(e.model) && isBreakableProp(e);
+}
+
 /** A budget the map goes over, as a creator-facing message (code, message, severity). */
 export interface BudgetIssue {
   severity: 'error' | 'warning';
@@ -70,8 +81,8 @@ export function resourceBudgetIssues(map: MapDocument): BudgetIssue[] {
   const count = (pred: (e: MapDocument['entities'][number]) => boolean) => map.entities.filter(pred).length;
   const vehicles = count((e) => e.kind === 'mount' || e.kind === 'airplane');
   if (vehicles > RESOURCE_BUDGETS.vehicles) out.push({ severity: 'error', code: 'budget.vehicles', message: `${vehicles} vehicles and mounted guns: at most ${RESOURCE_BUDGETS.vehicles} per map` });
-  // (On a map where everything breaks, its props count too: each is one more piece of state every player is sent. A log given health counts on any map.)
-  const breakables = count((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass)) || (!!map.metadata.destruction && isBreakableProp(e, true)) || (e.kind === 'prop' && isEnvModel(e.model) && isBreakableProp(e)));
+  const everything = !!map.metadata.destruction;
+  const breakables = count((e) => e.kind === 'destructible' || (e.kind === 'block' && (e.behaviour !== 'solid' || !!e.glass)) || breakablePropInBudget(e, everything));
   if (breakables > RESOURCE_BUDGETS.destructibles) out.push({ severity: 'error', code: 'budget.destructibles', message: `${breakables} destructibles and breakable blocks: at most ${RESOURCE_BUDGETS.destructibles} per map` });
   const npcCap = map.entities.reduce((n, e) => n + (e.kind === 'encounter' ? e.activeCap : 0), 0);
   if (npcCap > RESOURCE_BUDGETS.activeNpcs) {

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { NavWorld, initNavigation } from '../src/nav/index.ts';
-import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, serializeMap, smoothGrid, smoothTerrain, stepMovement, terrainHoldMask, terrainHeightAt, terrainRaycast, terrainSpacingFor, validateMap, TERRAIN_MATERIALS, type MapDocument } from '../src/index.ts';
+import { EditHistory, PhysicsWorld, applyBrush, buildMapGeometry, initPhysics, loadMap, mapTerrainMesh, newTerrain, paintSlopes, serializeMap, smoothGrid, smoothTerrain, stepMovement, terrainHoldMask, terrainHeightAt, terrainRaycast, terrainSpacingFor, validateMap, TERRAIN_SURFACES, type MapDocument } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
@@ -62,8 +62,11 @@ describe('terrain', () => {
     expect(terrainHeightAt(flat, 0, 0)).toBeCloseTo(0.5, 2);
     const smooth = applyBrush(t, { brush: 'smooth', x: 0, z: 0, radius: 8, strength: 1 });
     expect(terrainHeightAt(smooth, 0, 0)!).toBeLessThan(2);
-    const painted = applyBrush(t, { brush: 'paint', x: 0, z: 0, radius: 3, strength: 1, material: 'dirt' });
-    expect(painted.materials.filter((m) => m === TERRAIN_MATERIALS.indexOf('dirt')).length).toBeGreaterThanOrEqual(4);
+    const painted = applyBrush(t, { brush: 'paint', x: 0, z: 0, radius: 3, strength: 1, ground: 'core.pbr_forest' });
+    expect(painted.grounds).toEqual(['core.pbr_forest']);
+    expect(painted.materials.filter((m) => m === 1).length).toBeGreaterThanOrEqual(4);
+    // Back to the base (a right-drag): the cells follow the Ground theme again.
+    expect(applyBrush(painted, { brush: 'paint', x: 0, z: 0, radius: 3, strength: 1, ground: null }).materials.every((m) => m === 0)).toBe(true);
     // The input terrain is never changed.
     expect(terrainHeightAt(t, 0, 0)).toBeCloseTo(2, 2);
   });
@@ -71,8 +74,10 @@ describe('terrain', () => {
   it('paints steep slopes as stone', () => {
     let t = newTerrain(32, 2);
     t = applyBrush(t, { brush: 'raise', x: 0, z: 0, radius: 5, strength: 8 });
-    const stone = TERRAIN_MATERIALS.indexOf('stone');
-    expect(paintSlopes(t).materials.filter((m) => m === stone).length).toBeGreaterThan(0);
+    const sloped = paintSlopes(t);
+    const stone = sloped.grounds!.indexOf(TERRAIN_SURFACES.stone) + 1;
+    expect(stone).toBeGreaterThan(0);
+    expect(sloped.materials.filter((m) => m === stone).length).toBeGreaterThan(0);
   });
 
   it('loads and validates as part of a map, spawns on terrain count as on the floor', () => {

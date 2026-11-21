@@ -5,6 +5,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
+import type { Material } from '@babylonjs/core/Materials/material';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { dropArea, type EditCommand, type MapDocument, type MapEntity, type Vec3 } from '@tiletrigger/shared';
 
@@ -227,52 +228,121 @@ export class RouteTool {
     this.draw();
   }
 
+  /**
+   * The route's balls and its line. Only what changed is drawn again: the markers are kept with what they were drawn
+   * for (`drawnAs`), a ball that is still there is moved and recoloured where it is, and the line is made again only
+   * when the route (or the point being dragged) moved. Lines share one material (`lineMaterial`).
+   */
   private draw(): void {
-    for (const m of this.markers) m.dispose();
-    for (const l of this.lines) l.dispose();
-    this.markers = [];
-    this.lines = [];
+    const scene = this.host.scene;
     const e = this.entity;
-    if (!this.active || !e) return;
+    if (!this.active || !e) {
+      for (const m of this.markers) m.dispose();
+      for (const l of this.lines) l.dispose();
+      this.markers = [];
+      this.lines = [];
+      this.drawnAs = this.lineAs = '';
+      this.ballSize = 0;
+      return;
+    }
     const pts = this.world(e).map((q, i) => (this.drag && this.drag.index === i ? this.drag.at : q));
-    pts.forEach((q, i) => {
-      const s = CreateSphere(`routePt${i}`, { diameter: e.kind === 'airplane' ? 3 : 0.8, segments: 6 }, this.host.scene);
-      s.position.set(q.x, q.y + 0.4, q.z);
-      s.material = i === this.selected ? this.mats.sel : this.mats.point;
-      s.isPickable = false;
-      this.markers.push(s);
-    });
+    const loop = e.kind !== 'zipline' && (e.kind === 'airplane' ? e.closed : e.mode === 'loop');
+    // A drop route: green where it flies over the play area (riders may jump), grey outside it.
+    const area = e.kind === 'airplane' ? dropArea(this.host.doc()) : null;
+    const lineAs = `${e.kind}|${loop ? 'loop' : ''}|${e.kind === 'zipline' ? e.height : ''}|${area ? `${area.x0},${area.z0},${area.x1},${area.z1}` : ''}|${pts.map((q) => `${q.x},${q.y},${q.z}`).join(';')}`;
+    const as = `${this.selected}|${lineAs}`;
+    if (as !== this.drawnAs) {
+      this.drawnAs = as;
+      const size = e.kind === 'airplane' ? 3 : 0.8;
+      if (size !== this.ballSize) {
+        for (const m of this.markers) m.dispose();
+        this.markers = [];
+        this.ballSize = size;
+      }
+      for (const m of this.markers.splice(pts.length)) m.dispose();
+      pts.forEach((q, i) => {
+        let s = this.markers[i];
+        if (!s) {
+          s = CreateSphere(`routePt${i}`, { diameter: size, segments: 6 }, scene);
+          s.isPickable = false;
+          this.markers.push(s);
+        }
+        s.position.set(q.x, q.y + 0.4, q.z);
+        s.material = i === this.selected ? this.mats.sel : this.mats.point;
+      });
+      if (lineAs !== this.lineAs) {
+        this.lineAs = lineAs;
+        for (const l of this.lines) l.dispose();
+        this.lines = [this.drawLine(e, pts, loop, area)];
+      }
+    }
+    // The scene lists the markers as it always did, last and in the order they were made in (the balls, then the
+    // line): every redraw used to make them anew, after whatever the edit before it had drawn.
+    const mine: Mesh[] = [...this.markers, ...this.lines];
+    const all = scene.meshes;
+    const from = all.length - mine.length;
+    if (from < 0 || mine.some((m, i) => all[from + i] !== m)) {
+      const moved = new Set<unknown>(mine);
+      let n = 0;
+      for (const m of all) if (!moved.has(m)) all[n++] = m;
+      all.length = n;
+      for (const m of mine) all.push(m);
+    }
+  }
+
+  /** What the markers were drawn for (the selected point and `lineAs`), what the line was (the route's kind, shape and points), and the balls' size. */
+  private drawnAs = '';
+  private lineAs = '';
+  private ballSize = 0;
+
+  private drawLine(e: Mover | Plane | Zip, pts: Vec3[], loop: boolean, area: ReturnType<typeof dropArea>): LinesMesh {
+    const scene = this.host.scene;
     const line = pts.map((q) => new Vector3(q.x, q.y + 0.4, q.z));
+    let l: LinesMesh;
     if (e.kind === 'zipline') {
       // The cable while dragging (the posts' tops), so you see where it will run.
-      const l = CreateLines('routePoly', { points: pts.map((q) => new Vector3(q.x, q.y + e.height, q.z)) }, this.host.scene);
+      l = CreateLines('routePoly', { points: pts.map((q) => new Vector3(q.x, q.y + e.height, q.z)), material: this.lineMaterial(false) }, scene);
       l.color = Color3.FromHexString('#7dffb0');
-      l.isPickable = false;
-      this.lines.push(l);
-      return;
-    }
-    if ((e.kind === 'airplane' ? e.closed : e.mode === 'loop') && line.length >= 3) line.push(line[0]!.clone());
-    if (e.kind === 'airplane') {
-      // A drop route: green where it flies over the play area (riders may jump), grey outside it.
-      const area = dropArea(this.host.doc());
-      const inside = (v: Vector3) => !area || (v.x >= area.x0 && v.x <= area.x1 && v.z >= area.z0 && v.z <= area.z1);
-      const dense: Vector3[] = [];
-      for (let i = 0; i + 1 < line.length; i++) {
-        const [a, b] = [line[i]!, line[i + 1]!];
-        const n = Math.max(1, Math.ceil(Vector3.Distance(a, b) / 4));
-        for (let k = 0; k < n; k++) dense.push(Vector3.Lerp(a, b, k / n));
+    } else {
+      if (loop && line.length >= 3) line.push(line[0]!.clone());
+      if (e.kind === 'airplane') {
+        const inside = (v: Vector3) => !area || (v.x >= area.x0 && v.x <= area.x1 && v.z >= area.z0 && v.z <= area.z1);
+        const dense: Vector3[] = [];
+        for (let i = 0; i + 1 < line.length; i++) {
+          const [a, b] = [line[i]!, line[i + 1]!];
+          const n = Math.max(1, Math.ceil(Vector3.Distance(a, b) / 4));
+          for (let k = 0; k < n; k++) dense.push(Vector3.Lerp(a, b, k / n));
+        }
+        if (line.length) dense.push(line[line.length - 1]!.clone());
+        const green = new Color4(0.49, 1, 0.69, 1);
+        const grey = new Color4(0.55, 0.58, 0.62, 1);
+        l = CreateLines('routePoly', { points: dense, colors: dense.map((v) => (inside(v) ? green : grey)), material: this.lineMaterial(true) }, scene);
+      } else {
+        l = CreateLines('routePoly', { points: line, material: this.lineMaterial(false) }, scene);
+        l.color = Color3.FromHexString('#7dffb0');
       }
-      if (line.length) dense.push(line[line.length - 1]!.clone());
-      const green = new Color4(0.49, 1, 0.69, 1);
-      const grey = new Color4(0.55, 0.58, 0.62, 1);
-      const l = CreateLines('routePoly', { points: dense, colors: dense.map((v) => (inside(v) ? green : grey)) }, this.host.scene);
-      l.isPickable = false;
-      this.lines.push(l);
-      return;
     }
-    const l = CreateLines('routePoly', { points: line }, this.host.scene);
-    l.color = Color3.FromHexString('#7dffb0');
     l.isPickable = false;
-    this.lines.push(l);
+    return l;
+  }
+
+  /**
+   * One line material for the plain lines and one for the drop route's coloured one, shared by every line drawn. A
+   * line mesh left to itself makes a material of its own, and every new material has Babylon look through every mesh
+   * in the scene (`markAsDirty`): most of a redraw on a big map. Each is the material of a line mesh kept (unseen) for
+   * it, so it is the very material Babylon gives such a line; a plain line's colour is still its own `color`.
+   */
+  private readonly lineMats = new Map<boolean, LinesMesh>();
+
+  private lineMaterial(vertexColors: boolean): Material {
+    let holder = this.lineMats.get(vertexColors);
+    if (!holder) {
+      const points = [Vector3.Zero(), Vector3.Zero()];
+      holder = CreateLines(`routeLineMat_${vertexColors ? 'colors' : 'plain'}`, vertexColors ? { points, colors: [new Color4(1, 1, 1, 1), new Color4(1, 1, 1, 1)] } : { points }, this.host.scene);
+      holder.isPickable = false;
+      holder.setEnabled(false);
+      this.lineMats.set(vertexColors, holder);
+    }
+    return holder.material!;
   }
 }

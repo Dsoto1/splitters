@@ -5,7 +5,8 @@
   "order": 4,
   "name": "Goblin",
   "look": "core.goblin",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "red",
   "nameTheme": "goblin",
   "bio": "Gutter-born, bandage-wrapped and grinning. Steals the kill, then the loot, then your seat.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

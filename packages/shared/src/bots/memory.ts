@@ -78,6 +78,14 @@ export class EnemyMemory {
     for (let i = this.spots.length - 1; i >= 0; i--) if (this.spots[i]!.slot === slot) this.spots.splice(i, 1);
   }
 
+  /** Spots of nobody known (shots, noises) within `radius` m of `pos` go: they were someone now dead. */
+  forgetNear(pos: Vec3, radius: number): void {
+    for (let i = this.spots.length - 1; i >= 0; i--) {
+      const e = this.spots[i]!;
+      if (e.slot < 0 && horizontalDistance(e.pos, pos) < radius) this.spots.splice(i, 1);
+    }
+  }
+
   /** Entries older than `keepTicks` go. */
   expire(tick: number, keepTicks: number): void {
     for (let i = this.spots.length - 1; i >= 0; i--) if (tick - this.spots[i]!.tick > keepTicks) this.spots.splice(i, 1);

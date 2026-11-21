@@ -6,6 +6,7 @@
   "name": "Patches",
   "look": "core.hoboclown",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Twenty years of birthday parties, three of them paid. Today he is working for tips.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.02,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

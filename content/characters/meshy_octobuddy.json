@@ -5,7 +5,8 @@
   "order": 119,
   "name": "Octo Buddy",
   "look": "core.octobuddy",
-  "group": "creatures",
+  "group": "animals",
+  "blood": "blue",
   "nameTheme": "critter",
   "bio": "Eight arms, one grudge. He only brought two of them to the fight.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

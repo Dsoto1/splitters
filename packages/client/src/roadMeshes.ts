@@ -4,7 +4,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { PATH_LOOKS, PATH_RANK_LIFT, coreMaterials, pathDrawRanks, pathDrawn, racePath, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
+import { PATH_LOOKS, coreMaterials, pathBaseLift, pathDrawLevels, pathDrawn, racePath, roadStrip, roadSurfaceY, trackGeometry, type MapDocument } from '@tiletrigger/shared';
 import type { MapStyler } from './mapMeshes.ts';
 
 /**
@@ -31,9 +31,11 @@ export function buildRoadMeshes(scene: Scene, doc: MapDocument, styler: MapStyle
   const half = t.width / 2;
   // A race path that is also a road is drawn as a race road; one that isn't gets only its start line and arches.
   const road = pathDrawn(path);
-  // Over or under the map's other drawn paths where they overlap (pathDrawRanks).
-  const rank = pathDrawRanks(doc.paths).get(path.id) ?? 0;
-  const up = rank * PATH_RANK_LIFT;
+  // Over or under the map's other drawn paths where they overlap (pathDrawLevels: a road over the paths and trails
+  // that run into it); `up` is how far above a lone road's height it is drawn.
+  const level = pathDrawLevels(doc.paths).get(path.id) ?? { rank: 0, lift: pathBaseLift(path) };
+  const rank = level.rank;
+  const up = level.lift - 0.04;
   const units = pathRankUnits(rank);
   if (road) {
     const cols = Math.max(2, Math.ceil(t.width / 3));

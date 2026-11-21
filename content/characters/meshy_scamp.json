@@ -6,6 +6,7 @@
   "name": "Scamp",
   "look": "core.scamp",
   "group": "animals",
+  "blood": "red",
   "nameTheme": "monkey",
   "bio": "Swings in, steals the high ground and throws things at you from it.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.85
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

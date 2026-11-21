@@ -190,6 +190,14 @@ export interface PaneLook {
   framed: boolean;
   /** Health % it starts at (0 for glass blocks hidden at the start). */
   start: number;
+  /** A window pane's sash bars (sim/glass.ts GlassPane `bars`): drawn here, gone with the glass, back with it. */
+  bars?: { box: OBox; tint: string | null }[];
+}
+
+/** A tint's sash bars, one thin-instanced mesh. */
+interface BarSet {
+  mesh: Mesh;
+  matrices: Float32Array;
 }
 
 interface Chunk {
@@ -205,6 +213,8 @@ interface Pane extends PaneLook {
   /** Frame instances (mullion, transom) in the frame mesh, for framed panes. */
   frame: number;
   shown: number;
+  /** Where its sash bars are drawn: [the tint's set, instance] for each. */
+  barSlots: [BarSet, number][];
 }
 
 interface Crack {
@@ -218,10 +228,14 @@ interface Crack {
  * round stopped on a pane.
  */
 export class GlassVisuals {
+  /** Chunks a frame's apply changed (reused across frames). */
+  private readonly dirty = new Set<Chunk>();
   private panes: Pane[] = [];
   private readonly byIndex = new Map<number, Pane>();
   private chunks: Chunk[] = [];
   private frames: { mesh: Mesh; matrices: Float32Array } | null = null;
+  private bars = new Map<string, BarSet>();
+  private readonly barsDirty = new Set<BarSet>();
   private cracks: { mesh: Mesh; matrices: Float32Array; list: Crack[] } | null = null;
 
   constructor(private readonly scene: Scene) {}
@@ -233,7 +247,7 @@ export class GlassVisuals {
   build(map: MapDocument, opts: { windowsOnly?: boolean; skip?: ReadonlySet<string> } = {}): void {
     this.dispose();
     if (this.scene.isDisposed) return;
-    const looks: PaneLook[] = windowPanes(map).map((p, k) => ({ index: map.entities.length + k, box: p.box, kind: p.kind, tint: GLASS.tint, framed: false, start: 100 }));
+    const looks: PaneLook[] = windowPanes(map).map((p, k) => ({ index: map.entities.length + k, box: p.box, kind: p.kind, tint: GLASS.tint, framed: false, start: 100, ...(p.bars ? { bars: p.bars } : {}) }));
     if (!opts.windowsOnly) {
       for (const p of glassBlocks(map)) {
         if (p.entity === undefined || opts.skip?.has(p.id)) continue;
@@ -263,7 +277,7 @@ export class GlassVisuals {
       mesh.metadata = { glassChunk: key };
       const chunk: Chunk = { mesh, matrices: new Float32Array(list.length * 16), colors: new Float32Array(list.length * 4), count: list.length };
       list.forEach((l, slot) => {
-        const pane: Pane = { ...l, chunk, slot, frame: -1, shown: l.start };
+        const pane: Pane = { ...l, chunk, slot, frame: -1, shown: l.start, barSlots: [] };
         this.panes.push(pane);
         this.byIndex.set(l.index, pane);
       });
@@ -280,6 +294,28 @@ export class GlassVisuals {
       this.frames = { mesh, matrices: new Float32Array(framed.length * 2 * 16) };
       framed.forEach((p, k) => (p.frame = k * 2));
     }
+    // Sash bars: one mesh per paint tint (painted wood: matte, a little sheen).
+    const barCount = new Map<string, number>();
+    for (const p of this.panes) for (const b of p.bars ?? []) barCount.set(b.tint ?? '#e6e1d3', (barCount.get(b.tint ?? '#e6e1d3') ?? 0) + 1);
+    for (const [tint, n] of barCount) {
+      const mesh = CreateBox(`glass_bars_${this.bars.size}`, { size: 1 }, this.scene);
+      const m = new StandardMaterial(`glassBarMat_${tint}`, this.scene);
+      m.diffuseColor = Color3.FromHexString(tint);
+      m.specularColor = new Color3(0.08, 0.08, 0.08);
+      mesh.material = m;
+      mesh.isPickable = false;
+      mesh.receiveShadows = true;
+      this.bars.set(tint, { mesh, matrices: new Float32Array(n * 16) });
+    }
+    const used = new Map<BarSet, number>();
+    for (const p of this.panes) {
+      for (const b of p.bars ?? []) {
+        const set = this.bars.get(b.tint ?? '#e6e1d3')!;
+        const k = used.get(set) ?? 0;
+        used.set(set, k + 1);
+        p.barSlots.push([set, k]);
+      }
+    }
     for (const p of this.panes) this.write(p, p.start);
     for (const c of this.chunks) {
       c.mesh.thinInstanceSetBuffer('matrix', c.matrices, 16, false);
@@ -289,6 +325,11 @@ export class GlassVisuals {
     if (this.frames) {
       this.frames.mesh.thinInstanceSetBuffer('matrix', this.frames.matrices, 16, false);
       this.frames.mesh.thinInstanceRefreshBoundingInfo(false);
+    }
+    for (const set of this.bars.values()) {
+      set.mesh.thinInstanceSetBuffer('matrix', set.matrices, 16, false);
+      // Bounds from every bar standing (a broken one's zero scale would shrink them).
+      set.mesh.thinInstanceRefreshBoundingInfo(false);
     }
   }
 
@@ -307,6 +348,13 @@ export class GlassVisuals {
     // Bulletproof glass frosts as it cracks: whiter and more opaque.
     const c = gone || p.kind !== 'reinforced' ? 0 : glassCracks(health);
     p.chunk.colors.set([1 + c * 0.5, 1 + c * 0.5, 1 + c * 0.5, 1 + c * 2.2], p.slot * 4);
+    // Its sash bars go with the glass and come back with it.
+    p.bars?.forEach((bar, i) => {
+      const [set, k] = p.barSlots[i]!;
+      const bb = bar.box;
+      Matrix.ComposeToRef(gone ? Vector3.ZeroReadOnly : new Vector3(bb.half.x * 2, bb.half.y * 2, bb.half.z * 2), Quaternion.Identity(), new Vector3(bb.center.x, bb.center.y, bb.center.z), tmp);
+      tmp.copyToArray(set.matrices, k * 16);
+    });
     if (this.frames && p.frame >= 0) {
       // The cross frame of a Window pane: a mullion and a transom through its middle.
       const thick = b.half.z * 2 + 0.02;
@@ -320,7 +368,11 @@ export class GlassVisuals {
   /** Follow replicated pane states (scenario index -> [health %, …]). */
   apply(states: ReadonlyMap<number, readonly [number, number]>): void {
     if (!this.panes.length) return;
-    const dirty = new Set<Chunk>();
+    // Reused: this runs every frame and almost never finds a pane changed.
+    const dirty = this.dirty;
+    dirty.clear();
+    const barsDirty = this.barsDirty;
+    barsDirty.clear();
     let frames = false;
     for (const p of this.panes) {
       const s = states.get(p.index);
@@ -332,7 +384,9 @@ export class GlassVisuals {
       this.write(p, health);
       dirty.add(p.chunk);
       frames ||= p.frame >= 0;
+      for (const [set] of p.barSlots) barsDirty.add(set);
     }
+    for (const set of barsDirty) set.mesh.thinInstanceBufferUpdated('matrix');
     for (const c of dirty) {
       c.mesh.thinInstanceBufferUpdated('matrix');
       c.mesh.thinInstanceBufferUpdated('color');
@@ -449,6 +503,11 @@ export class GlassVisuals {
     this.frames?.mesh.material?.dispose();
     this.frames?.mesh.dispose();
     this.frames = null;
+    for (const set of this.bars.values()) {
+      set.mesh.material?.dispose();
+      set.mesh.dispose();
+    }
+    this.bars.clear();
     this.cracks?.mesh.material?.dispose();
     this.cracks?.mesh.dispose();
     this.cracks = null;

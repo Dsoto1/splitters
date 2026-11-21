@@ -5,7 +5,8 @@
   "order": 49,
   "name": "Luther Vanguard",
   "look": "core.vanguard",
-  "group": "soldiers",
+  "group": "legends",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "First in, last out, never seen in between.",
   "body": "male",
@@ -38,10 +39,11 @@
     "triangles": 11000,
     "feet": true,
     "skinClean": true,
+    "hands": {
+      "curl": 0.7,
+      "graft": true
+    },
     "grip": {
-      "gripLong": [-0.06, 0, -0.03],
-      "supportLong": [-0.04, 0, 0.06],
-      "supportPistol": [-0.02, 0.04, -0.04],
       "curlR": 1.2,
       "curlL": 1
     }

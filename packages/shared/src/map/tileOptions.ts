@@ -25,6 +25,16 @@ export interface TilePort {
   level: number;
   /** Which cell (local [dx, dy]) of a multi-cell tile; default [0, 0]. */
   cell?: readonly [number, number];
+  /**
+   * The tunnel kit's bore profile on this side (Tileset 04 step 6): 'L', the 7 m bore, or 'S' (the default), the
+   * 3.6 m passage. Two buried pieces' ports meet cleanly only in the same profile (validate-map warns otherwise).
+   */
+  bore?: 'S' | 'L';
+  /**
+   * A tunnel transition's family on this side (Tileset 04 step 7: a Joint to Cave is its placed family to the south
+   * and a cave to the north): what a portal or Dead End put on this end is drawn in. Absent: the placed piece's.
+   */
+  family?: string;
 }
 
 /**
@@ -60,7 +70,8 @@ export interface EdgeSegment {
 /**
  * A segmental arch's dressing: `count` voussoirs (an odd count has a keystone `key` m taller in the middle) on the
  * circle through the springing points (u[0] and u[1] at height y[0]) and the crown (y[1] over the middle), each
- * `band` m deep and standing `depth` off the wall, and a soffit under the curve through the wall's thickness.
+ * `band` m deep and standing `depth` off the wall (0.06 m unless given; the keystone `keyDepth` more, 0.04 m unless
+ * given), and a soffit under the curve through the wall's thickness.
  */
 export interface EdgeArch {
   u: readonly [number, number];
@@ -69,6 +80,7 @@ export interface EdgeArch {
   band: number;
   key?: number;
   depth?: number;
+  keyDepth?: number;
 }
 /**
  * Trim on a side's inner face: a baseboard, a cornice (levels 3 m or more), a door frame (when the level is 0.2 m
@@ -81,7 +93,7 @@ export type EdgeTrim =
   | { cornice: readonly [EdgeValue, EdgeValue] }
   | { frame: { half: number; top: number }; surface?: EdgeTrimSurface }
   | { window: { u: readonly [number, number]; y: readonly [number, number] } }
-  | { arch: EdgeArch; outside?: boolean }
+  | { arch: EdgeArch; outside?: boolean; surface?: EdgeTrimSurface }
   | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean; surface?: EdgeTrimSurface }
   | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; v: readonly [number, number]; surface?: EdgeTrimSurface };
 /** A library material of its own for a trim piece (a door's oak frame, a sash's painted bars), instead of the tile's trim surface. */
@@ -101,6 +113,8 @@ export interface EdgeShape {
   openDefault?: boolean;
   /** How room dressing reads it: a way in, a window gap, or see-through (default: wall to stand things against). */
   dressing?: { kind: 'door' | 'window'; span: number } | { kind: 'see-through' };
+  /** Drawn in the tile's `metal` surface, not its walls and trim (bars, barred gates: never the walls' stone). */
+  paint?: 'metal';
 }
 
 // ---------------------------------------------------------------- room options
@@ -173,7 +187,7 @@ export type Corner = (typeof CORNERS)[number];
  * window frames, or tarred lap boards (11 Coastal Harbor); insulated steel panels, or
  * snow-capped concrete (12 Snow Outpost).
  */
-export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'collegiate_stone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
+export const FACADES = ['none', 'brick', 'storefront', 'plaster', 'hull', 'glass', 'neon', 'concrete', 'corrugated', 'false_front', 'adobe', 'gothic_stone', 'collegiate_stone', 'collegiate_red', 'collegiate_fieldstone', 'manor_brick', 'temple', 'overgrown', 'clapboard', 'suburban_brick', 'roman', 'egyptian', 'timber_frame', 'village_plaster', 'prefab', 'snow_bunker', 'desert_ashlar', 'desert_plaster', 'harbour_render', 'tarred_timber'] as const;
 export type Facade = (typeof FACADES)[number];
 export const FACADE_LABELS: Record<Facade, string> = {
   none: 'None',
@@ -190,6 +204,8 @@ export const FACADE_LABELS: Record<Facade, string> = {
   adobe: 'Adobe',
   gothic_stone: 'Gothic stone',
   collegiate_stone: 'Collegiate stone',
+  collegiate_red: 'Collegiate stone, red trim',
+  collegiate_fieldstone: 'Collegiate fieldstone',
   manor_brick: 'Victorian brick',
   temple: 'Temple stone',
   overgrown: 'Overgrown rock',

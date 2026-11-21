@@ -64,6 +64,21 @@ After step A a builder can pick "Urban & Civilian" and build five of the six set
 
 Each new set piece family also gets a label in `SET_PIECE_FAMILIES` (`packages/client/src/editor/paletteCatalog.ts`).
 
+**As built (2026-11-13):** one family, `content/setpieces/urban.json` (category Town), eight pieces, each built in MapMaker, saved with "Save selection as set piece", exported, and given its id, name and roles in the file (a block has no tint in the inspector, so roles that carry a tint, trim and metal, are named there). All suit the `urban` role pack first.
+
+| Piece | Cells | Made of | Differs from the plan |
+|---|---|---|---|
+| `setpiece.porch` | 1 | 7 blocks (deck, step, four posts, tilted roof), 8 Board Fence panels | The deck is 0.3 m up (a 0.15 m step), not higher: a house's door is at ground level and a player steps 0.3 m. |
+| `setpiece.bus_shelter` | 1 | 8 blocks (four posts, three glass panes, canopy), Platform Seats, Street Sign | Posts are 0.2 m (a block's least width). The sign is the street-name sign: there is no bus stop sign. |
+| `setpiece.parking_deck_bay` | 1, two levels | 2 Platforms (Parking Bays floors, the deck's south side Half Wall), 2 columns, 2 bollards | Columns on the west edge only, so a row has one pair every 8 m. |
+| `setpiece.parking_deck_ramp` | 2, two levels | 2 Platforms (asphalt), 6 blocks (tilted slab, level head, two tilted parapets, two columns) | A tilted block, not `core.ramp`: that tile is a walled flight of steps with no wall styles to set. Vehicles climb it (the vehicle probe, `setPiecesUrban.test.ts`). |
+| `setpiece.concrete_frame` | 1 | 1 Room (open sides, column rows, roof slab), a cable spool, a pallet | A Room, not a Platform: only a Room takes the column rows layout. |
+| `setpiece.concrete_frame_2` | 2, two levels | Open Stairs, 2 Rooms, a site fence panel | Its stair is part of it, so the upper floor is reached. |
+| `setpiece.bandstand` | 2 x 2, two levels | 4 Round Arcades (Small) in a ring, 5 blocks (stage, four stepped roof slabs) | The roof is square and stepped (blocks cannot make a cone); the ring is 15.5 m across, the tile's size. |
+| `setpiece.shop_unit` | 2 x 2 | 2 Rooms (Shopfront with glass, doorways), 2 Platforms of pavement, a door, 2 awnings, a lit sign, counter, shelf, newspaper box, 2 bollards | It carries its pavement: the awnings hang over it, and a set piece's props must stand inside its footprint. |
+
+Not done here: the family's label in `SET_PIECE_FAMILIES` (MapMaker's code was held by another session; the tab shows the family as "Urban").
+
 ### Step E. New tiles (only where nothing else will do)
 
 | # | Item | Type | Unlocks | Effort | How it is built here |
@@ -71,6 +86,17 @@ Each new set piece family also gets a label in `SET_PIECE_FAMILIES` (`packages/c
 | E1 | Fire escape: a narrow landing on a building face with a switchback stair, 1 cell, stackable by level | New geometry (tile) | Com, Res | M | Prefer a **data tile** in `content/tiles/core.json` (parts `flight`, `rail`, `box`), id `core.fire_escape`, so it follows the theme and can be repainted. A self-painted code tile only if the data builders cannot do it. |
 | E2 | Scaffold bay: two decks on tube frames with a ladder side, 1 cell, 2 levels | New geometry (tile) | Con | M | Same preference: a data tile first. |
 | E3 | Gable as a room ceiling choice, with end walls | New geometry (room option) | Res | M to L | A new value in `CEILINGS` (`map/tileOptions.ts`) and its builder in `map/geometry.ts`, reusing `gableRoof` from `packTilesMedieval.ts`. A schema value: decision 5. The "Pitched Roof" block covers most needs today. |
+
+**As built (2026-11-14):** E1 and E2 are data tiles in `content/tiles/core.json` (category Vertical), in pack 14; `packages/shared/test/tilesUrban.test.ts` walks them. E3 is not built (decision 5).
+
+| Tile | Cells | What it is | Differs from the plan |
+|---|---|---|---|
+| `core.fire_escape` Fire Escape | 1, one level | A steel switchback against the building on its south side: eight steps east up the outer lane to a half landing at 2 m, eight back west up the lane by the wall to a railed landing at 4 m at the west end, where the next one up starts. Stack one a storey. Treads and landings are steel grating, rails two thin bars on posts (shots pass). | It is 5.2 m deep, not narrow: the bots' navmesh keeps 0.8 m from every edge, so a lane under 2.4 m is not pathed (2 m was tried). The storey's landing is the west 2.4 m of the wall, so a centred Door misses it: use an Arch, a Wide doorway or an open side there. A balcony along the whole wall with one straight flight does not fit a cell (16 steps need 6.4 m). The top landing and its rail stand in the level above. |
+| `core.scaffold_bay` Scaffold Bay | 1, two levels | Plank decks 2.8 m deep along the south edge at 2 m and 4 m on steel tubes, a switchback stair outside them (a landing at each deck). Deck ends are open: bays side by side are one long deck. Shots pass between tubes and rail bars; planks stop them. | A stair, not a ladder (ladders are entities, not tile parts). It fills 7.6 m of the cell's depth, for the same navmesh reason. The upper deck is 6 cm thick: with 10 cm the 1.9 m between the decks was read as too low for a bot. |
+
+Both are painted with library materials of their own (steel, grating, planks), not the theme's paint, so they read as steel in every theme and do not follow a repaint; that is the one way they fall short of "can be repainted".
+
+**Follow-ups to step D, done the same day:** the bandstand is reshaped (an octagonal plank stage 0.5 m up with a step on four sides, eight posts, a picket rail on the four diagonal sides, a pitched roof with a gable over each open side; 24 parts, built in MapMaker); the family's tab reads "Town pieces"; `kit.street.bus_stop` (a pole with a flag sign, a plain picture of a bus, four looks) stands where the bus shelter's street-name sign stood.
 
 ### Step F. Prove it (guide Phase 5)
 

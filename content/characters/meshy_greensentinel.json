@@ -6,6 +6,8 @@
   "name": "Sentinel in Green",
   "look": "core.greensentinel",
   "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "Holds the line and blends into the hedge behind it.",
   "body": "male",
@@ -23,9 +25,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

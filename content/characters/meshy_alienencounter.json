@@ -5,7 +5,8 @@
   "order": 92,
   "name": "Alien Encounter",
   "look": "core.alienencounter",
-  "group": "creatures",
+  "group": "space",
+  "blood": "green",
   "nameTheme": "alien",
   "bio": "Small, green and absolutely sure you started it.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

@@ -1,0 +1,36 @@
+{
+  "id": "meshy_armoredsentinel",
+  "kind": "character",
+  "use": "player",
+  "order": 143,
+  "name": "Armored Sentinel",
+  "look": "core.armoredsentinel",
+  "group": "machines",
+  "blood": "oil",
+  "nameTheme": "robot",
+  "bio": "A cone-headed guard bot with shoulder pads big enough to hide behind.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-14 (\"Armored Sentinel\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core: the owner approved it on 2026-11-14 (\"mark all twelve as finished\"). Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Armored Sentinel"
+    },
+    "date": "2026-11-14",
+    "url": null,
+    "file": "^Meshy_AI_Armored_Sentinel_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

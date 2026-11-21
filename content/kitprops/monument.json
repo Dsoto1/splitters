@@ -1,0 +1,245 @@
+{
+  "$comment": "Monuments and garden pieces of the grounds (tools/content/kit/grounds.mjs; St. John's step 4: docs/map-briefs/st_johns): the entrance's fieldstone cairn and its kerbed island bed, the class marker stone. Our own shapes and colours; no school mark.",
+  "type": "monument",
+  "props": [
+    {
+      "id": "kit.monument.cairn",
+      "displayName": "Fieldstone Cairn",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a cairn of rounded field stones 5.5 m tall on a dressed plinth 2.6 m square, tapering from 2.2 m to 0.9 m across, a pointed-arched niche with dressed edges near the top of its front (+z), a dressed cap. Collides as the plinth and three steps up the shaft."
+      },
+      "size": [
+        2.6,
+        5.5,
+        2.6
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "cairn",
+        "plinth": 0.45,
+        "foot": 2.2,
+        "head": 0.9,
+        "shaft": 5.15,
+        "niche": [
+          0.46,
+          3.85,
+          4.75
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 90
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "fieldstone",
+          "seed": 11001,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "niche": "#2b2824"
+          }
+        },
+        {
+          "index": 1,
+          "name": "grey",
+          "seed": 11002,
+          "look": {
+            "stones": [
+              "#8a877e",
+              "#7d7a73",
+              "#96928a",
+              "#6f6c66",
+              "#a09c93"
+            ],
+            "mortar": "#46443f",
+            "dressed": "#b8b5ad",
+            "niche": "#2b2a27",
+            "jitter": 0.08
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.monument.island_bed",
+      "displayName": "Kerbed Island Bed",
+      "category": "Plants & Flowers",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): an oval bed 6 × 9 m in a drive: a concrete kerb round a low wall of field stones 0.4 m high, mulch with clumps of flowers and low leaves inside, the middle left bare for a cairn or a tree. Collides as three boxes stepped round the oval, 0.4 m high (a step up)."
+      },
+      "size": [
+        6,
+        0.65,
+        9
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "islandbed",
+        "kerb": [
+          0.22,
+          0.15
+        ],
+        "wall": [
+          0.3,
+          0.4
+        ],
+        "clumps": 36,
+        "clear": 1.6
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 110
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "summer",
+          "seed": 11101,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "kerb": "#a9a69e",
+            "cap": "#a19a8d",
+            "mulch": "#4a3426",
+            "leaf": "#3f6131",
+            "flowers": [
+              "#c23b4a",
+              "#e8c547",
+              "#f2f0e6",
+              "#8a4fa8"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "name": "autumn",
+          "seed": 11102,
+          "look": {
+            "stones": [
+              "#8d877c",
+              "#a39a88",
+              "#7a7268",
+              "#9b7f6a",
+              "#b0a593",
+              "#6f6a63",
+              "#a08a74",
+              "#857b6e",
+              "#94887a"
+            ],
+            "mortar": "#4c4740",
+            "dressed": "#bdb6a6",
+            "jitter": 0.08,
+            "kerb": "#a9a69e",
+            "cap": "#a19a8d",
+            "mulch": "#4a3426",
+            "leaf": "#5a5a2c",
+            "flowers": [
+              "#c8742a",
+              "#a8332a",
+              "#d9b13b"
+            ]
+          }
+        }
+      ],
+      "bounds": "within"
+    },
+    {
+      "id": "kit.monument.marker",
+      "displayName": "Marker Stone",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a dark polished marker stone 1.2 × 0.9 m on a low base, its top sloped back, a border and a plain star cut in its face (a class marker on a lawn; no words, no school mark)."
+      },
+      "size": [
+        1.2,
+        0.9,
+        0.4
+      ],
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "marker",
+        "base": 0.1,
+        "slope": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "black",
+          "seed": 11201,
+          "look": {
+            "stone": "#26272a",
+            "cut": "#8e8d88",
+            "base": "#6c6a66"
+          }
+        },
+        {
+          "index": 1,
+          "name": "red",
+          "seed": 11202,
+          "look": {
+            "stone": "#4a2a28",
+            "cut": "#a08a80",
+            "base": "#6c6a66"
+          }
+        }
+      ]
+    }
+  ]
+}

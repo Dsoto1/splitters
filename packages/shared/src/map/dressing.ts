@@ -25,6 +25,7 @@ import { getProp } from '../content/props.ts';
 import { SIDE_DIRS, SIDES, seededRandom, type EdgeShape, type Side } from './catalog.ts';
 import { boxBounds, buildMapGeometry, buildOccupancy, cellKey, cellSlab, edgeSegments, resolveEdge, rotateXZ, type WorldBox } from './geometry.ts';
 import type { MapDocument } from './schema.ts';
+import { MAP_BUDGETS } from './validate.ts';
 import { EDGE_SHAPES } from '../content/edgeStyles.generated.ts';
 
 // ---------------------------------------------------------------- room types
@@ -380,14 +381,14 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall([one('hm_kitchen_cabinet'), one('hm_shelf_large'), onTop('hh_cupboard', 'hh_microwave')], 0.6, 2),
     wall([one('kit.appliance.washer'), one('hm_washer'), one('hh_washing_machine')], 0.3, 1),
     corner(ones(['hm_bin_large', 'kit.bin.waste', 'hm_houseplant_tall', 'hh_bin']), 1, 2),
-    decor([one('hm_wall_shelf')], 1, 2, 1.6),
+    decor([one('kit.shelf.wall')], 1, 2, 1.6),
   ],
   dining: [
     centre([seated('dg_table_long', 'hm_chair_wood', { above: 'hm_chandelier' }), seated('kit.table.dining', 'kit.seat.chair_cushion', { ends: true }), seated('hm_table_round', 'hm_chair_wood'), seated('hh_table', 'hh_chair', { ends: true }), seated('hh_round_table', 'hh_chair')], 0.9, 2, { min: 1, face: 'axis', gap: 0.7 }),
     wall(ones(['hm_dresser', 'kit.cabinet.kitchen', 'hm_chest_drawers', 'hh_chest_drawers']), 0.8, 2, { place: 'mid' }),
     wall([one('hm_fireplace')], 0.4, 1, { place: 'far' }),
     corner(ones(['hm_houseplant_tall', 'hm_floor_lamp', 'rn_urn']), 1.5, 4),
-    decor([one('hm_wall_shelf')], 0.6, 2, 1.6),
+    decor([one('kit.shelf.wall')], 0.6, 2, 1.6),
   ],
   living: [
     centre([lounge('hm_couch', 'hm_side_table', 'hm_armchair', 'hm_rug'), lounge('kit.sofa.two_seat', 'kit.table.console', 'kit.sofa.armchair', 'rug'), lounge('hh_sofa', 'hh_coffee_table', 'hh_armchair', 'hh_rug')], 0.8, 1, { min: 1, face: 'axis', gap: 0.5 }),
@@ -395,7 +396,7 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall(ones(['hm_bookshelf', 'kit.bookcase.tall', 'hm_shelf_large', 'hh_bookcase', 'hh_bookcase_wide']), 1.2, 3),
     wall(ones(['hm_couch_large', 'kit.sofa.two_seat', 'hh_corner_sofa', 'hh_sofa_small']), 0.4, 1),
     corner(ones(['hm_floor_lamp', 'hm_houseplant_tall', 'hm_potted_palm', 'floor_lamp', 'hh_floor_lamp', 'hh_plant']), 2, 4),
-    decor([one('hm_wall_shelf'), one('hh_wall_shelf')], 0.6, 2, 1.6),
+    decor([one('kit.shelf.wall'), one('hh_wall_shelf')], 0.6, 2, 1.6),
   ],
   bedroom: [
     wall([flanked('hm_bed_king', 'hm_nightstand'), flanked('hm_bed_single', 'hm_nightstand', 1), flanked('kit.bed.double', 'kit.table.console', 1), flanked('hh_bed_double', 'hh_bedside'), flanked('hh_bed_single', 'hh_bedside', 1)], 0.9, 2, { min: 1, place: 'far' }),
@@ -403,7 +404,7 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall([seatInFront('kit.table.desk', 'hm_chair_wood', { top: 'hm_desk_lamp' }), seatInFront('hh_desk', 'hh_chair', { top: 'hh_desk_lamp' })], 0.3, 1),
     centre(ones(['hm_rug', 'rug', 'hh_rug_small']), 0.5, 1, { face: 'axis', gap: 0.2 }),
     corner(ones(['hm_floor_lamp', 'hm_houseplant', 'coat_rack', 'hh_floor_lamp']), 1.2, 3),
-    decor([one('hm_wall_shelf')], 0.6, 2, 1.5),
+    decor([one('kit.shelf.wall')], 0.6, 2, 1.5),
   ],
   bathroom: [
     wall([one('hm_bathtub', Q), one('hm_shower'), one('bathtub'), one('hh_bath'), one('hh_shower')], 0.9, 1, { min: 1, place: 'far' }),
@@ -419,14 +420,14 @@ export const DRESS_RECIPES: Record<RoomType, DressItem[]> = {
     wall([seatInFront('kit.table.desk', 'hm_chair_office')], 0.5, 2),
     wall([one('sf_computer'), one('kit.shelf.gondola')], 0.3, 1),
     corner(ones(['potted_plant', 'hm_houseplant_tall', 'kit.bin.waste', 'hm_floor_lamp', 'coat_rack']), 2, 4),
-    decor([one('hm_wall_shelf')], 0.5, 2, 1.6),
+    decor([one('kit.shelf.wall')], 0.5, 2, 1.6),
   ],
   classroom: [
     wall([seatInFront('kit.table.desk', 'hm_chair_office', { top: 'hm_desk_lamp' })], 1, 1, { min: 1, place: 'front' }),
     centre([seatBehind('kit.table.desk', 'hm_chair_wood', { seats: 2 })], 3, 12, { min: 2, face: 'front', gap: 0.5 }),
     wall(ones(['kit.bookcase.tall', 'hm_bookshelf', 'hm_shelf_large']), 1, 3),
     corner(ones(['potted_plant', 'kit.bin.waste', 'coat_rack']), 1, 2),
-    decor([one('hm_wall_shelf')], 0.6, 3, 1.6),
+    decor([one('kit.shelf.wall')], 0.6, 3, 1.6),
   ],
   library: [
     wall(ones(['rn_bookcase', 'hm_bookshelf', 'kit.bookcase.wide', 'kit.bookcase.tall']), 3, 10, { min: 2 }),
@@ -1214,7 +1215,7 @@ export function dressMapRoom(map: MapDocument, cell: readonly [number, number, n
 }
 
 /** The map's prop models so far and the budget of different models (MAP_BUDGETS.md), for `DressOptions.models`. */
-export function modelBudget(map: MapDocument, limit = 80): { used: Set<string>; limit: number } {
+export function modelBudget(map: MapDocument, limit: number = MAP_BUDGETS.propModels): { used: Set<string>; limit: number } {
   return { used: new Set(map.entities.flatMap((e) => (e.kind === 'prop' ? [e.model] : []))), limit };
 }
 

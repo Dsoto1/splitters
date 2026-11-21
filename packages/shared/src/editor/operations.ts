@@ -1,5 +1,6 @@
 import { SIDE_DIRS, coreCatalog, type EdgeStyle, type Side, type TileCatalog, type TileDefinition } from '../map/catalog.ts';
-import { buildOccupancy, canAddFloor, cellKey, cellSlab, edgeKey, localCellKey, localSide, rotateXZ, type CellOccupant } from '../map/geometry.ts';
+import { buildOccupancy, canAddFloor, cellKey, cellSlab, edgeKey, localCellKey, localSide, rotateXZ, tallEdgeBlock, type CellOccupant } from '../map/geometry.ts';
+import { EDGE_STYLE_LABELS } from '../map/tileOptions.ts';
 import type { SurfaceSlot } from '../map/materials.ts';
 import { emptyLogic } from '../map/logic.ts';
 import { DESTRUCTIBLE_SPECS, TRAP_SPECS } from '../sim/scenarioDefs.ts';
@@ -225,8 +226,10 @@ export function deleteCommand(doc: MapDocument, sel: Selection): EditCommand {
       after.push({ ...m, blocks, props: props.length ? props : undefined });
     }
   }
-  const defs = setPieces.length ? unusedDefsCommand(doc, new Set(setPieces.map((p) => p.id))) : null;
-  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }, { kind: 'removeSetPieces', setPieces }, ...(defs ? [defs] : [])] };
+  const pieceIds = new Set(setPieces.map((p) => p.id));
+  const defs = setPieces.length ? unusedDefsCommand(doc, pieceIds) : null;
+  const looks = setPieces.length ? unusedLooksCommand(doc, pieceIds) : null;
+  return { kind: 'batch', commands: [{ kind: 'removeTiles', tiles }, { kind: 'removeEntities', entities: [...entities, ...emptied] }, { kind: 'updateEntities', before, after }, { kind: 'removeSetPieces', setPieces }, ...(defs ? [defs] : []), ...(looks ? [looks] : [])] };
 }
 
 /**
@@ -241,6 +244,20 @@ export function unusedDefsCommand(doc: MapDocument, gone: ReadonlySet<string>): 
   const after = before.filter((d) => used.has(d.id));
   if (after.length === before.length) return null;
   return { kind: 'setSetPieceDefs', before, after: after.length ? after : null };
+}
+
+/**
+ * The map's own looks (`lookDefs`, v47) that no placement names once the placements `gone` are taken out, dropped
+ * from the map; null when there are none. A look travels with a map only so its placements play anywhere: it stays in
+ * your library.
+ */
+export function unusedLooksCommand(doc: MapDocument, gone: ReadonlySet<string>): EditCommand | null {
+  const before = doc.lookDefs ?? null;
+  if (!before?.length) return null;
+  const used = new Set((doc.setPieces ?? []).filter((p) => !gone.has(p.id)).map((p) => p.pack));
+  const after = before.filter((l) => used.has(l.id));
+  if (after.length === before.length) return null;
+  return { kind: 'setLookDefs', before, after: after.length ? after : null };
 }
 
 /**
@@ -1206,6 +1223,8 @@ export function setEdgeCommand(doc: MapDocument, target: EdgeTarget, style: Edge
   const [dx, dy] = SIDE_DIRS[target.side];
   const there = cells.get(cellKey(target.cell[0] + dx, target.cell[1] + dy, target.cell[2]));
   if (there?.placement === here.placement) return { error: 'that side is inside one piece' };
+  const tall = tallEdgeRefusal(doc, target, style, cells);
+  if (tall) return { error: tall };
   const withEdge = (t: TilePlacement, key: string, value: EdgeStyle | null): TilePlacement => {
     const edges = { ...(t.edges ?? {}) };
     if (value === null || value === 'auto') delete edges[key];
@@ -1223,6 +1242,20 @@ export function setEdgeCommand(doc: MapDocument, target: EdgeTarget, style: Edge
     }
   }
   return { kind: 'updateTiles', before, after };
+}
+
+/**
+ * Why a style taller than one storey (Grand arch, Gate arch, High wall, Towering wall) can't go on this side: it would
+ * rise through the floor of the level above or a roof (map/geometry.ts tallEdgeBlock); null when it stands clear or is
+ * one storey. MapMaker refuses it with this, and its hover card says it before the click.
+ */
+export function tallEdgeRefusal(doc: MapDocument, target: EdgeTarget, style: EdgeStyle, cells: Map<string, CellOccupant> = buildOccupancy(doc).cells): string | null {
+  if (style === 'auto' || style === 'open') return null;
+  const { cellSize, levelHeight } = doc.classicStructure;
+  const block = tallEdgeBlock(cells, target.cell[0], target.cell[1], target.cell[2], target.side, style, cellSize, levelHeight);
+  if (!block) return null;
+  const through = block.what === 'roof' ? `the roof over ${levelName(block.level - 1)}` : `${levelName(block.level)}'s floor`;
+  return `${EDGE_STYLE_LABELS[style]} would rise through ${through} here: use it under an open storey (a two-storey hall), or a one-storey style (Round arch, Archway)`;
 }
 
 /** The effective edge choice stored for a cell side (its own, else the neighbour's), or `auto`. */

@@ -10,9 +10,9 @@ import { SetPieceDefinition, type MapDocument, type MapEntity, type Rotation, ty
 import { checkSetPieceDefinition } from '../map/setPieceCheck.ts';
 import { builtInSetPieces } from '../map/setPieceLibrary.ts';
 import { TILE_ALIASES, placementsForTiles } from '../map/setPieceAliases.ts';
-import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceMirrorProblem, setPieceParts, setPiecePorts, tileMirrorAxis, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
+import { ROLE_THEME_SLOT, SET_PIECE_GRID, piecesFor, placementPack, setPieceMirrorProblem, setPieceParts, setPiecePorts, tileMirrorAxis, withMapLooks, type SetPieceLibrary, type SetPieceRolePack } from '../map/setPieces.ts';
 import { newId, type EditCommand } from './commands.ts';
-import { checkLayout, unusedDefsCommand, type PlacementCheck, type Selection } from './operations.ts';
+import { checkLayout, unusedDefsCommand, unusedLooksCommand, type PlacementCheck, type Selection } from './operations.ts';
 
 /** Whether set pieces fit where they would go (their footprints against tiles, other set pieces and the build limit). */
 export function checkSetPiecePlacement(doc: MapDocument, placements: readonly SetPiecePlacement[], ignoreIds: readonly string[] = [], catalog: TileCatalog = coreCatalog, library: SetPieceLibrary = builtInSetPieces()): PlacementCheck {
@@ -65,12 +65,12 @@ export function mirrorSetPieceCommand(doc: MapDocument, id: string, catalog: Til
   return updateSetPieceCommand(doc, p, { ...p, mirror: !p.mirror }, catalog, library);
 }
 
-/** Delete placements (and the map's own definitions nothing places any more). */
+/** Delete placements (and the map's own definitions and looks nothing uses any more). */
 export function deleteSetPieceCommand(doc: MapDocument, ids: readonly string[]): EditCommand {
   const set = new Set(ids);
   const remove: EditCommand = { kind: 'removeSetPieces', setPieces: (doc.setPieces ?? []).filter((p) => set.has(p.id)) };
-  const defs = unusedDefsCommand(doc, set);
-  return defs ? { kind: 'batch', commands: [remove, defs] } : remove;
+  const tidy = [unusedDefsCommand(doc, set), unusedLooksCommand(doc, set)].filter((c): c is EditCommand => !!c);
+  return tidy.length ? { kind: 'batch', commands: [remove, ...tidy] } : remove;
 }
 
 
@@ -83,12 +83,12 @@ export function explodeSetPieceCommand(doc: MapDocument, id: string, catalog: Ti
   if (!p) return { error: `no set piece ${id}` };
   const def = piecesFor(doc, library).get(p.piece);
   if (!def) return { error: `unknown set piece ${p.piece}` };
-  const { tiles, entities } = setPieceParts(p, def, doc.classicStructure.theme, library, catalog);
+  const { tiles, entities } = setPieceParts(p, def, doc.classicStructure.theme, withMapLooks(doc, library), catalog);
   const taken = new Set([...doc.classicStructure.tiles.map((t) => t.id), ...doc.entities.map((e) => e.id)]);
   const clash = [...tiles, ...entities].find((x) => taken.has(x.id));
   if (clash) return { error: `can't explode ${def.displayName}: the map already has a piece called ${clash.id}` };
   return {
-    command: { kind: 'batch', commands: [{ kind: 'removeSetPieces', setPieces: [p] }, { kind: 'addTiles', tiles }, { kind: 'addEntities', entities }, ...[unusedDefsCommand(doc, new Set([p.id]))].filter((c): c is EditCommand => !!c)] },
+    command: { kind: 'batch', commands: [{ kind: 'removeSetPieces', setPieces: [p] }, { kind: 'addTiles', tiles }, { kind: 'addEntities', entities }, ...[unusedDefsCommand(doc, new Set([p.id])), unusedLooksCommand(doc, new Set([p.id]))].filter((c): c is EditCommand => !!c)] },
     selection: { tiles: tiles.map((t) => t.id), entities: entities.map((e) => e.id) },
   };
 }
@@ -191,7 +191,7 @@ export function setPieceFromSelection(
     if (!pieceIds.has(p.id)) continue;
     const def = pieces.get(p.piece);
     if (!def) return { error: `unknown set piece ${p.piece}` };
-    const parts = setPieceParts(p, def, doc.classicStructure.theme, library, catalog);
+    const parts = setPieceParts(p, def, doc.classicStructure.theme, withMapLooks(doc, library), catalog);
     tiles.push(...parts.tiles);
     entities.push(...parts.entities);
   }
@@ -368,6 +368,16 @@ export function setPiecePortStates(
   return setPiecePorts(p, def).map((port) => {
     const [dx, dy] = SIDE_DIRS[port.side];
     const floor = port.z * levelHeight;
+    // Only what stands within a cell of the port can be in it (a big map has thousands of boxes; every probe point
+    // went through them all, after every edit).
+    const mx = port.x * cellSize + (dx * cellSize) / 2;
+    const mz = port.y * cellSize + (dy * cellSize) / 2;
+    const close = (b: WorldBox) => {
+      const r = Math.hypot(b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]) / 2 + cellSize + levelHeight;
+      return Math.abs((b.min[0] + b.max[0]) / 2 - mx) <= r && Math.abs((b.min[2] + b.max[2]) / 2 - mz) <= r && Math.abs((b.min[1] + b.max[1]) / 2 - floor) <= r;
+    };
+    const mineHere = mine.filter(close);
+    const othersHere = others.filter(close);
     /** What stands in the port `v` metres out from the side (in: negative), across its middle at waist to chest height. */
     const probe = (v: number, list: readonly WorldBox[]): string | null => {
       const out = cellSize / 2 + v;
@@ -382,7 +392,7 @@ export function setPiecePortStates(
       }
       return null;
     };
-    const closed = !!probe(-PORT_PROBE.out, mine);
-    return { ...port, closed, blockedBy: closed ? null : probe(PORT_PROBE.out, others) };
+    const closed = !!probe(-PORT_PROBE.out, mineHere);
+    return { ...port, closed, blockedBy: closed ? null : probe(PORT_PROBE.out, othersHere) };
   });
 }

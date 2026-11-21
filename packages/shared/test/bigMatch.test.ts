@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { BOT_DIFFICULTIES, CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DEFAULT_RULES, INTEREST_MIN_PLAYERS, MAX_PLAYER_SLOTS, SNAPSHOT_INTERVAL_TICKS, SnapshotDecoder, SnapshotStream, encodeSnapshots, initPhysics, interestFor, loadMap, rulesForMode, type GameEvent, type PlayerSnapshot, type ServerMessage, type SnapshotBody } from '../src/index.ts';
 import { AWAY, BotFiller, Match, clumpArea, clumpInto, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
+import { cpuMs } from './cpuClock.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
@@ -262,17 +263,21 @@ describe('a full dedicated host: 128 players', () => {
     expect([...teams.values()]).toEqual([64, 64]);
     const ticks = 60 * 15;
     let total = 0;
+    let wall = 0;
     let max = 0;
     for (let i = 0; i < ticks; i++) {
-      const t0 = performance.now();
+      const t0 = cpuMs();
+      const w0 = performance.now();
       match.step();
-      const ms = performance.now() - t0;
+      const ms = cpuMs() - t0;
+      wall += performance.now() - w0;
       total += ms;
       max = Math.max(max, ms);
     }
     const avg = total / ticks;
-    console.log(`${MAX_PLAYER_SLOTS} bots on Frost Basin: avg tick ${avg.toFixed(2)} ms, max ${max.toFixed(1)} ms (pnpm bench 128 60 maps/frost_basin.json --mode=core.tdm)`);
-    // Generous: shared CI runners are slow and noisy. The real budget is 16.7 ms a tick.
+    console.log(`${MAX_PLAYER_SLOTS} bots on Frost Basin: avg tick ${avg.toFixed(2)} ms CPU (${(wall / ticks).toFixed(2)} ms wall), max ${max.toFixed(1)} ms (pnpm bench 128 60 maps/frost_basin.json --mode=core.tdm)`);
+    // Judged on CPU time (cpuClock.ts): the wall clock on a shared machine counts other processes too. Generous: CI
+    // runners are slow. The real budget is 16.7 ms a tick.
     expect(avg).toBeLessThan(30);
     for (const c of match.combatants()) expect(c.move.pos.y).toBeGreaterThan(match.killY);
     match.destroy();
@@ -304,9 +309,9 @@ describe('a full dedicated host: 128 players', () => {
       if (match.tick % SNAPSHOT_INTERVAL_TICKS) continue;
       const b = match.snapshot(pending);
       pending = [];
-      const t0 = performance.now();
+      const t0 = cpuMs();
       const texts = encodeSnapshots(b, streams.map((stream, s) => ({ slot: s, ack: 0, me: match.privateState(s), stream })));
-      ms += performance.now() - t0;
+      ms += cpuMs() - t0;
       snaps++;
       chars += texts[1]!.length;
       fullChars += encodeSnapshots(b, [{ slot: 1, ack: 0, me: match.privateState(1) }])[0]!.length;
@@ -314,7 +319,7 @@ describe('a full dedicated host: 128 players', () => {
       expect(msg.players.length + (msg.hold?.length ?? 0)).toBe(96);
     }
     const perSecond = chars / seconds / 1024;
-    console.log(`hosted 48 v 48, clumped Frost Basin: ${perSecond.toFixed(0)} KB/s a friend before compression (full snapshots: ${(fullChars / seconds / 1024).toFixed(0)} KB/s); writing ${friends} friends' copies ${(ms / snaps).toFixed(2)} ms a snapshot`);
+    console.log(`hosted 48 v 48, clumped Frost Basin: ${perSecond.toFixed(0)} KB/s a friend before compression (full snapshots: ${(fullChars / seconds / 1024).toFixed(0)} KB/s); writing ${friends} friends' copies ${(ms / snaps).toFixed(2)} ms CPU a snapshot`);
     // Measured ~120 KB/s (full snapshots ~450); generous for noisy runners.
     expect(perSecond).toBeLessThan(220);
     expect(ms / snaps).toBeLessThan(15);

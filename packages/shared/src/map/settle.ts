@@ -131,6 +131,8 @@ export function floatingProps(map: MapDocument, boxes: readonly WorldBox[] = sup
   const out: { id: string; gap: number }[] = [];
   for (const e of map.entities) {
     if (e.kind !== 'prop') continue;
+    // A set piece's parts stand where the piece puts them (a board hung on a classroom's wall); MapMaker can't settle them.
+    if (e.id.startsWith('sp_')) continue;
     const ground = settledPropY(t, e);
     if (ground === null) continue;
     const gap = e.position[1] - (ground + 0.03);
@@ -421,7 +423,7 @@ function stepFeet(t: TerrainData, foot: ReadonlyMap<number, number>, floors: rea
  * made (the laid ground changes none of them); `boxes` is that geometry when the caller has it.
  */
 export function withGroundAsPlayed(map: MapDocument, catalog: TileCatalog = coreCatalog, boxes?: readonly WorldBox[]): MapDocument {
-  const laid = withPathsLaid(map);
+  const laid = withPathsLaid(map, mapGroundBores(map, catalog).cuts);
   const made = map.terrain;
   if (!laid.terrain || !made) return laid;
   const geometry = boxes ?? buildMapGeometry(map, catalog);

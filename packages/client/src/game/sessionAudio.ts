@@ -1,12 +1,16 @@
-import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
+import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
+import { gunPan } from './pairView.ts';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
+import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
 import type { LocalPlayer } from './prediction.ts';
 import type { RemotePose } from './interpolation.ts';
 
 /** Metres walked per footstep. */
 const STRIDE = 2.3;
-/** Kills this close together (seconds) count towards a multi-kill. */
+/** Kills this close together (seconds) count towards a multi-kill (the announcer's chain uses the same window). */
 const MULTI_KILL_WINDOW = 4;
+/** A kill this soon (ms) after its killer's blast with the same weapon was that blast's. */
+const BLAST_KILL_MS = 300;
 /** Shotgun pellets that each make an impact sound (the rest would only add mush). */
 const MAX_IMPACTS_PER_SHOT = 2;
 
@@ -45,6 +49,8 @@ export class SessionAudio {
   private wasGrounded = true;
   private fallSpeed = 0;
   private prevReload = 0;
+  /** The second gun's reload (a pair), as `prevReload`. */
+  private prevReload2 = 0;
   private prevHeld = 0;
   private dryFireAt = 0;
   private recentKills: number[] = [];
@@ -55,6 +61,33 @@ export class SessionAudio {
   private fieldHumAt = 0;
   /** When each arc sentry (mount index) last crackled: its arc hits ten times a second, heard every ARC_SOUND_MS. */
   private readonly arcSoundAt = new Map<number, number>();
+  /** Recent blasts (who, with what, when; `key` tells them apart), for the announcer's explosive kills. */
+  private blasts: { s: number; w: string; at: number; key: string }[] = [];
+  private blastCount = 0;
+  /** Breakthrough: the team attacking this round. */
+  private btAttackers: string | null = null;
+  /** The announcer's "3, 2, 1, FIGHT!" is under way (the countdown's beeps give way). */
+  private countingDown = false;
+
+  /** The owner's announcer (audio/announcer.ts): lines on match flow, objectives and your kills. */
+  readonly announcer: Announcer;
+
+  /** A player's look (the roster's, or this life's): "blew up a dog" asks if it is an animal. */
+  lookOf: (slot: number) => string | undefined = () => undefined;
+
+  /** Your own position (the predicted one), for a kill's distance. */
+  myPos: () => Vec3 | undefined = () => undefined;
+
+  /** At the match's end: whether you top the board (most kills, nobody level with you). */
+  topScorer: () => boolean = () => false;
+
+  /** Bomb mode: the attacking team (the mode's first), else null. */
+  bombAttackers: () => string | null = () => null;
+
+  /** The low-health warning's heartbeat (lowHealth.ts): louder as it gets worse, never loud. */
+  heartbeat(level: number): void {
+    this.audio.play('ui.heartbeat', { gain: 0.45 + 0.55 * Math.max(0, Math.min(1, level)) });
+  }
 
   /** Whether a block (entity index) is up: force fields only hum while they stand. */
   blockPresent: (i: number) => boolean = () => true;
@@ -68,13 +101,32 @@ export class SessionAudio {
    */
   worldImpact: (from: Vec3, to: Vec3) => SoundId | null = () => 'impact.world';
 
-  /** Whether blood is shown (the map's setting and the player's): the wet splat on a kill goes with it. */
-  bloodOn: () => boolean = () => true;
+  /** Whether a kill of this victim makes the wet splat: blood is shown (the map's setting and the player's) and the victim's blood is a liquid (not bone dust or a wisp). */
+  bloodOn: (victim: number) => boolean = () => true;
 
   constructor(
     private readonly audio: AudioSystem,
     private readonly localSlot: () => number,
-  ) {}
+  ) {
+    this.announcer = new Announcer(
+      {
+        speak: (line) => audio.speak(line),
+        sound: (id) => {
+          const secs = audio.duration(id);
+          if (secs !== null) audio.play(id, { announcer: true });
+          return secs;
+        },
+      },
+      localSlot,
+    );
+    // Its lines load once the game's sounds are in, when the page is idle (never on the match's way in).
+    if (typeof audio.onUnlock === 'function') loadVoiceLines(audio);
+  }
+
+  /** Every frame: the announcer says what's waiting once the last line is done. */
+  tick(now: number): void {
+    this.announcer.update(now / 1000);
+  }
 
   /** An arc sentry starting its wind-up on someone: the warning (break its line of sight). */
   sentryCharge(at: Vec3): void {
@@ -113,21 +165,36 @@ export class SessionAudio {
     // The announcer waits for the countdown's "Go!" (countdownBeep).
   }
 
-  /** One tick of the start countdown, or the "Go!" when it ends. */
-  countdownBeep(go: boolean): void {
-    this.audio.play(go ? 'announce.fight' : 'message');
+  /**
+   * One tick of the start countdown (`secondsLeft`), or the "Go!" when it ends. At 3 the announcer's "3, 2, 1,
+   * FIGHT!" starts (its FIGHT on the Go), and the beeps under it stop; without it, the old "Fight!" on the Go.
+   */
+  countdownBeep(go: boolean, secondsLeft = 0, now = performance.now()): void {
+    if (go) {
+      this.countingDown = false;
+      this.announcer.started(now / 1000);
+      return;
+    }
+    if (this.announcer.countdown(secondsLeft, now / 1000)) this.countingDown = true;
+    if (!this.countingDown) this.audio.play('message');
   }
 
-  /** A shot the local player just fired (predicted). */
-  localShot(def: WeaponDefinition, alt = false): void {
+  /** A shot the local player just fired (predicted); `delay`: seconds to wait, its tick's place in a slow frame (shotDelay). */
+  localShot(def: WeaponDefinition, alt = false, delay = 0, pan = 0): void {
     const own = alt ? def.view.altShot : undefined;
-    if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15 });
-    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id));
+    if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15, delay });
+    // (`pan`: a pair's guns sound a little to their own side, pairView.ts gunPan; one gun's stays in the middle.)
+    else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), pan ? { delay, pan } : { delay });
   }
 
   /** Your own punch or kick: a swish as you throw it. */
   localStrike(): void {
     this.audio.play('fire.knife', { gain: 0.6 });
+  }
+
+  /** The selector clicked over to another fire mode: the magazine's metal click, quieter and higher (a small part). */
+  fireModeClick(): void {
+    this.audio.play('reload.start', { gain: 0.45, rate: 1.4 });
   }
 
   /** The fire button is down with an empty magazine. */
@@ -204,11 +271,17 @@ export class SessionAudio {
   localWeapon(local: LocalPlayer): void {
     if (local.alive) {
       if (local.held !== this.prevHeld && this.prevHeld !== 0) this.audio.play('weapon.raise');
-      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start');
-      if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end');
+      // A pair's reloads sound from their own hands (the second gun's a little left, the first's a little right).
+      const pan = local.paired ? { pan: gunPan(true, 'right') } : {};
+      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start', pan);
+      if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end', pan);
+      const second = local.paired ? local.reloadTicks2 : 0;
+      if (second > 0 && this.prevReload2 === 0) this.audio.play('reload.start', { pan: gunPan(true, 'left') });
+      if (second === 0 && this.prevReload2 > 0 && local.paired && local.held === this.prevHeld) this.audio.play('reload.end', { pan: gunPan(true, 'left') });
     }
     this.prevHeld = local.alive ? local.held : 0;
     this.prevReload = local.alive ? local.reloadTicks : 0;
+    this.prevReload2 = local.alive && local.paired ? local.reloadTicks2 : 0;
   }
 
   /** When each rider's (slot; -1 you) zipline whirr last started. */
@@ -282,9 +355,17 @@ export class SessionAudio {
   }
 
   /** Server events. `poses` gives remote positions for events that carry none. */
-  /** Your hit, by sound (GUNPLAY_SPEC §21): a bright ding for the head, a dull clank for armor, the tick for flesh. */
+  /** Whether a player is under spawn protection now (set by the session): your hits on them ping off the shield. */
+  shielded?: (slot: number) => boolean;
+
+  /** Your hit, by sound (GUNPLAY_SPEC §21): a bright ding for the head, a dull clank for armor, a ping off a shield, the tick for flesh. */
   private hitSound(hits: readonly (number | null)[], zones: readonly number[] | undefined, armor: boolean): void {
     if (!hits.some((h) => h !== null && h !== undefined)) return;
+    // A spawn-protected target's shield took it: a high, thin ping (the armour clank pitched up and softer).
+    if (this.shielded && hits.every((h) => h === null || h === undefined || this.shielded!(h))) {
+      this.audio.play('ui.hit.armor', { rate: 1.7, gain: 0.7 });
+      return;
+    }
     const head = zones?.some((z, i) => z === 1 && hits[i] !== null && hits[i] !== undefined) ?? false;
     this.audio.play(head ? 'ui.hit.head' : armor ? 'ui.hit.armor' : 'ui.hit');
   }
@@ -378,6 +459,9 @@ export class SessionAudio {
       }
       case 'explode': {
         const at = tuple(ev.p);
+        if (ev.w) {
+          this.blasts = [...this.blasts.filter((b) => now - b.at < BLAST_KILL_MS), { s: ev.s, w: ev.w, at: now, key: `b${++this.blastCount}` }];
+        }
         // A vehicle going up: a deeper, longer boom under the usual crack, and metal raining down.
         if (ev.m !== undefined) this.audio.play('explosion.vehicle', { at });
         this.audio.play('explosion', { at });
@@ -387,6 +471,16 @@ export class SessionAudio {
       }
       case 'crash': {
         this.audio.play('vehicle.crash', { at: tuple(ev.p), gain: 0.4 + ev.n * 0.8 });
+        break;
+      }
+      case 'resupply': {
+        // The Supply Buggy's back: the ammo pickup's sound when it gave something.
+        if (!ev.ok) break;
+        if (ev.s === me) this.audio.play('pickup.ammo');
+        else {
+          const at = poseOf(ev.s);
+          if (at) this.audio.play('pickup.ammo', { at, gain: 0.7 });
+        }
         break;
       }
       case 'pickup': {
@@ -403,7 +497,7 @@ export class SessionAudio {
         const at = ev.victim === me ? undefined : poseOf(ev.victim);
         if (ev.victim === me) this.audio.play('death');
         else if (at) this.audio.play('death', { at });
-        if (at && this.bloodOn()) this.audio.play('blood.splat', { at });
+        if (at && this.bloodOn(ev.victim)) this.audio.play('blood.splat', { at });
         // A team kill: the death sounds only, no kill confirmation.
         if (ev.killer === me && ev.victim !== me && !ev.tk) {
           const t = now / 1000;
@@ -412,14 +506,17 @@ export class SessionAudio {
           const step = Math.min(4, this.recentKills.length) - 1;
           this.audio.play('ui.kill.confirm', { rate: 1 + step * 0.12 });
           this.audio.play('ui.kill', { rate: 1 + step * 0.122, gain: 0.8 });
-          if (this.recentKills.length === 2) this.audio.play('announce.multikill');
         }
+        this.announceKill(ev, poses, now);
         break;
       }
-      case 'round_end':
-        if (ev.team !== undefined) this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');
-        else this.audio.play(ev.winner === null ? 'announce.tie' : ev.winner === me ? 'announce.win' : 'announce.lose');
+      case 'round_end': {
+        const t = now / 1000;
+        if (ev.team !== undefined) this.announcer.sound(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose', 'flow', t, 'result');
+        else this.announcer.sound(ev.winner === null ? 'announce.tie' : ev.winner === me ? 'announce.win' : 'announce.lose', 'flow', t, 'result');
+        this.announcer.matchOver(this.topScorer(), !!(ev.next || ev.up), t + 0.001);
         break;
+      }
       // Objective modes: existing cues, chosen by whether it is good or bad news for your team.
       case 'flag': {
         const ours = ev.team === this.myTeam();
@@ -427,6 +524,7 @@ export class SessionAudio {
         else if (ev.a === 'drop') this.audio.play('message');
         else if (ev.a === 'return') this.audio.play('cue.chime');
         else this.audio.play(ours ? 'cue.buzzer' : 'objective.complete');
+        this.announcer.flag(ev.a, now / 1000);
         break;
       }
       case 'hill':
@@ -438,6 +536,7 @@ export class SessionAudio {
         else if (ev.a === 'follow' && ev.s === me) this.audio.play('cue.chime');
         break;
       case 'bomb':
+        if (ev.a === 'plant' || ev.a === 'defuse') this.announcer.bomb(ev.a, now / 1000);
         if (ev.a === 'plant') this.audio.play('cue.alarm');
         else if (ev.a === 'defuse') this.audio.play('objective.complete');
         else if (ev.a === 'pickup' && ev.s === me) this.audio.play('pickup.powerup');
@@ -449,18 +548,31 @@ export class SessionAudio {
         if (ev.a === 'plant') this.audio.play('cue.alarm');
         else if (ev.a === 'capture' || ev.a === 'destroy' || ev.a === 'defuse') this.audio.play(ours === (ev.a !== 'defuse') ? 'objective.complete' : 'cue.buzzer');
         else if (ev.a === 'sector') this.audio.play(ours ? 'objective.new' : 'cue.alarm');
-        else if (ev.a === 'round') this.audio.play(ours ? 'announce.win' : 'announce.lose');
-        else if (ev.a === 'start') this.audio.play('announce.fight');
+        // A round's end by side (`team`: the winners), "Attackers win" or "Defenders win"; the start, "3, 2, 1, FIGHT!".
+        else if (ev.a === 'round') this.announcer.sideWon(ev.team === this.btAttackers, now / 1000);
+        else if (ev.a === 'start') {
+          this.btAttackers = ev.team ?? null;
+          this.announcer.started(now / 1000);
+        }
         else if (ev.a === 'pool' && ours) this.audio.play('cue.alarm');
+        if (ev.a === 'plant' || ev.a === 'defuse') this.announcer.bomb(ev.a, now / 1000);
         break;
       }
-      case 'elim':
-        if (ev.a === 'start') this.audio.play('announce.fight');
-        else this.audio.play(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose');
+      case 'elim': {
+        const t = now / 1000;
+        const attackers = this.bombAttackers();
+        if (ev.a === 'start') this.announcer.started(t);
+        // Bomb mode's rounds by side; Elimination's by your team.
+        else if (attackers && ev.team !== null) this.announcer.sideWon(ev.team === attackers, t);
+        else this.announcer.sound(ev.team === null ? 'announce.tie' : ev.team === this.myTeam() ? 'announce.win' : 'announce.lose', 'flow', t, 'round');
         break;
+      }
       case 'round_start':
         this.recentKills = [];
-        this.audio.play('announce.fight');
+        this.announcer.started(now / 1000);
+        break;
+      case 'rl':
+        if (ev.a === 'jackpot' && ev.s === me) this.announcer.jackpot(now / 1000);
         break;
       case 'door':
         this.audio.play(ev.open ? 'door.open' : 'door.close', { at: this.entityAt(ev.i, 1.5) });
@@ -535,6 +647,25 @@ export class SessionAudio {
       case 'spawn':
         break;
     }
+  }
+
+  /** A kill for the announcer: yours (multi-kills, streaks, special kills), your death, and everyone's streaks. */
+  private announceKill(ev: Extract<GameEvent, { e: 'kill' }>, poses: () => readonly RemotePose[], now: number): void {
+    const me = this.localSlot();
+    const mine = ev.killer === me && ev.victim !== me;
+    let distance: number | null = null;
+    let blast: string | null = null;
+    if (mine) {
+      const from = this.myPos();
+      const p = poses().find((q) => q.slot === ev.victim);
+      if (from && p) distance = Math.hypot(p.x - from.x, p.y - from.y, p.z - from.z);
+      blast = this.blasts.find((b) => b.s === ev.killer && b.w === ev.weapon && now - b.at < BLAST_KILL_MS)?.key ?? null;
+    }
+    const melee = ev.weapon === UNARMED.punch.id || ev.weapon === UNARMED.kick.id || CORE_WEAPONS[ev.weapon]?.kind === 'melee';
+    this.announcer.kill(
+      { killer: ev.killer, victim: ev.victim, tk: !!ev.tk, headshot: !!ev.hs, distance, melee, explosive: blast !== null, blast, victimAnimal: mine && lookGroup(this.lookOf(ev.victim)) === 'animals' },
+      now / 1000,
+    );
   }
 
   private entityAt(i: number, lift: number): Vec3 | undefined {

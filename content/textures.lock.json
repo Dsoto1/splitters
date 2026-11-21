@@ -94,7 +94,7 @@
     {"file":"textures/SheetMetal004_normal.jpg","asset":"SheetMetal004","map":"normal","source":"https://ambientcg.com/get?file=SheetMetal004_1K-JPG.zip","bytes":64878,"sha256":"1e8ce91912c0dc28"},
     {"file":"textures/Snow015_color.jpg","asset":"Snow015","map":"color","source":"https://ambientcg.com/get?file=Snow015_1K-JPG.zip","bytes":80401,"sha256":"fac99757f92cc42a"},
     {"file":"textures/Snow015_normal.jpg","asset":"Snow015","map":"normal","source":"https://ambientcg.com/get?file=Snow015_1K-JPG.zip","bytes":54317,"sha256":"26c20f825fc588b1"},
-    {"file":"textures/Terrazzo013_color.jpg","asset":"Terrazzo013","map":"color","source":"https://ambientcg.com/get?file=Terrazzo013_1K-JPG.zip","bytes":63376,"sha256":"a800a731261402ce"},
+    {"file":"textures/Terrazzo013_color.jpg","asset":"Terrazzo013","map":"color","source":"https://ambientcg.com/get?file=Terrazzo013_1K-JPG.zip","bytes":46211,"sha256":"740f9b1de9959189"},
     {"file":"textures/Terrazzo013_normal.jpg","asset":"Terrazzo013","map":"normal","source":"https://ambientcg.com/get?file=Terrazzo013_1K-JPG.zip","bytes":1228,"sha256":"89f2a7fdeefc9e34"},
     {"file":"textures/Tiles074_color.jpg","asset":"Tiles074","map":"color","source":"https://ambientcg.com/get?file=Tiles074_1K-JPG.zip","bytes":31625,"sha256":"8a870421d502f933"},
     {"file":"textures/Tiles074_normal.jpg","asset":"Tiles074","map":"normal","source":"https://ambientcg.com/get?file=Tiles074_1K-JPG.zip","bytes":1862,"sha256":"d38c9acfd0442808"},

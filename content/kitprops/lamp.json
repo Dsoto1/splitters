@@ -1,0 +1,92 @@
+{
+  "$comment": "Lamp posts (tools/content/kit/grounds.mjs; St. John's step 4): still props; nothing in them glows or blinks (stand a light entity by the lantern for light).",
+  "type": "lamp",
+  "props": [
+    {
+      "id": "kit.lamp.post_banner",
+      "displayName": "Lamp Post with Banner",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4): a black lamp post 4.5 m tall, a lantern head, an arm at 3.3 m reaching +x with a banner of two colours and a chevron (plain colours, no mark). Collides as the post only."
+      },
+      "size": [
+        1.6,
+        4.5,
+        0.5
+      ],
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "bannerpost",
+        "base": 0.6,
+        "shaft": 3.75,
+        "arm": 3.3,
+        "banner": [
+          0.18,
+          0.74,
+          1.75
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 20
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "crimson",
+          "seed": 11501,
+          "look": {
+            "iron": "#1b1c1e",
+            "glass": "#d9cfb4",
+            "banner": "#7b2027",
+            "band": "#c9a54a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "navy",
+          "seed": 11502,
+          "look": {
+            "iron": "#1b1c1e",
+            "glass": "#d9cfb4",
+            "banner": "#23304f",
+            "band": "#c9a54a"
+          }
+        },
+        {
+          "index": 2,
+          "name": "slate",
+          "seed": 11503,
+          "look": {
+            "iron": "#1b1c1e",
+            "glass": "#d9cfb4",
+            "banner": "#5b5f63",
+            "band": "#9a9c9e"
+          }
+        },
+        {
+          "index": 3,
+          "name": "royal_purple",
+          "seed": 11504,
+          "look": {
+            "iron": "#1b1c1e",
+            "glass": "#d9cfb4",
+            "banner": "#4b2a84",
+            "band": "#f2f0ea",
+            "trim": "#b3202a"
+          }
+        }
+      ]
+    }
+  ]
+}

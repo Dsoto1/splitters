@@ -5,7 +5,8 @@
   "order": 7,
   "name": "Salamander Warlord",
   "look": "core.warlord",
-  "group": "creatures",
+  "group": "animals",
+  "blood": "red",
   "nameTheme": "frog",
   "bio": "Lord of a sunken fortress, armoured in rust and spite. Expects the arena to kneel.",
   "body": "male",
@@ -24,9 +25,6 @@
   "finish": {
     "metallic": 0.3,
     "roughness": 0.5
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

@@ -101,8 +101,9 @@ describe('flyers driven into something they cannot pass', () => {
       match.step();
       top = Math.max(top, ship.pos.y);
       if (past < 0 && ship.pos.z > 26) past = t;
-      // Over and well past it, short of the yard's far wall: down again (by as much as it rose on its own).
-      if (past >= 0 && t > past + 60 * 3) break;
+      // Over and well past it, short of the yard's far wall: down again (by as much as it rose on its own). (Two seconds
+      // on: at three, 15 m/s takes it to the far wall at z 60, where it starts its climb over that.)
+      if (past >= 0 && t > past + 60 * 2) break;
     }
     expect(past).toBeGreaterThan(0);
     expect(top).toBeGreaterThan(3.2);

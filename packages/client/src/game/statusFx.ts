@@ -10,8 +10,9 @@ import { ease } from './reduceFlashing.ts';
  *
  * Lasting effects of the moment (game/lastingFx.ts, the first tier: someone near you on fire is news), but only
  * the nearest STATUS_FX_MAX characters within STATUS_FX_RANGE ask, so a burning crowd can't take the places of
- * the fires and gas around it. A character with no place keeps the plain look (the see-through shell in the
- * status' colour); a frozen one keeps its block of ice under the crystals either way. Never asked for your own
+ * the fires and gas around it. A character with no place keeps the plain look (a glowing outline in the status'
+ * colour, game/arsenalVisuals.ts `createAura`); a frozen one keeps its block of ice under the crystals either way,
+ * and a poisoned or gooed one its outline under the bubbles (plainStatus). Never asked for your own
  * character: from its eyes an aura would be a sheet over the view, and the screen's tint already says it.
  */
 
@@ -46,12 +47,15 @@ export function statusFxKind(bits: number): StatusFxKind | null {
 }
 
 /**
- * The status bits the plain shell should still show for a character whose pack aura is drawn (`worn`): nothing,
- * except the block of ice round a frozen one, which says "can't move" and stays.
+ * The status bits the plain look should still show for a character whose pack aura is drawn (`worn`): the block of
+ * ice round a frozen one, which says "can't move", and the outline under poison and goo, whose pack auras (pale
+ * bubbles) fade into daylight, more so with Reduce flashing on; burning reads on every setting and keeps none.
  */
 export function plainStatus(bits: number, worn: boolean): number {
   if (!worn) return bits;
-  return bits & STATUS_FROZEN ? STATUS_FROZEN : 0;
+  if (bits & STATUS_FROZEN) return STATUS_FROZEN;
+  const kind = statusFxKind(bits);
+  return kind === 'poison' ? STATUS_POISON : kind === 'slow' ? STATUS_SLOW : 0;
 }
 
 /** The aura's level after `dt` seconds: toward its strength while it is drawn, nothing while it isn't. */

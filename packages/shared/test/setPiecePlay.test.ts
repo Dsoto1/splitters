@@ -28,6 +28,7 @@ import {
   type MapEntity,
   type MoveState,
   type Rotation,
+  type SetPieceDefinition,
   type SetPiecePlacement,
   type Side,
   type TilePlacement,
@@ -45,37 +46,79 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
  * setPieces4.test.ts the command bunker's gates and the gatehouse's arches (MAP 21), and setPieces5.test.ts the
  * brainstorm list's open ones (catwalks, the overlook, the dock, the arena, the bunker cluster, the plaza, the ramp
  * junction) and MAP 21's sea wall and its breach; setPiecesAcademy.test.ts the dormitory bays; tunnelFamily.test.ts
- * the Lit Tunnel Run.
+ * the Lit Tunnel Run; setPiecesUrban.test.ts the Urban family (the porch, the bus shelter, the parking deck, the concrete
+ * frames, the bandstand, the shop unit with its open pavement).
  */
 const OPEN_SIDED = [
+  // The campus family (setPiecesCampus.test.ts walks them): bays and ends whose halls run out of an open side, and the
+  // round porch (an open tile round its round room).
+  'setpiece.admin_bay',
+  'setpiece.admin_entry_bay',
+  'setpiece.chapel_bay',
+  'setpiece.chapel_chancel',
+  'setpiece.chapel_narthex',
+  'setpiece.gym_bay',
+  'setpiece.gym_entrance',
+  'setpiece.library_bay',
+  'setpiece.library_porch',
   'setpiece.arena_arcade',
   'setpiece.arena_attic',
   'setpiece.arena_bay_podium',
   'setpiece.arena_bay_tier',
+  'setpiece.arena_corner',
+  'setpiece.arena_corner_gate',
   'setpiece.arena_vomitorium',
+  'setpiece.bandstand',
   'setpiece.bunker_cluster',
+  'setpiece.bus_shelter',
   'setpiece.cage_block',
   'setpiece.cage_lift',
   'setpiece.catwalk_bridge_2',
   'setpiece.catwalk_bridge_3',
   'setpiece.catwalk_bridge_4',
   'setpiece.city_gate_wall',
+  // The classroom bay (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, as the dorm bays'.
+  'setpiece.classroom_bay',
+  'setpiece.classroom_entry_bay',
   'setpiece.cliff_stair_gate',
   'setpiece.cliff_stair_grand',
+  // The clock tower (setPiecesAcademy.test.ts walks in at its door and up to the belfry): its door is in the tile's own
+  // stone walls, not a tile's edge.
+  'setpiece.clock_tower',
   'setpiece.command_bunker',
+  'setpiece.concrete_frame',
+  // A tower of blocks: its door is in its own block walls, not a tile's edge (setPiecesAcademy.test.ts walks it).
+  'setpiece.corner_tower_square',
+  // A round turret of blocks, solid (setPiecesAcademy.test.ts walks round it).
+  'setpiece.corner_turret_round',
+  'setpiece.concrete_frame_2',
   'setpiece.courtyard_gate_wall',
   'setpiece.crossroads_plaza',
   // The dormitory bays (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, no doorway of a tile's.
   'setpiece.dorm_bay',
   'setpiece.dorm_bay_closed',
+  'setpiece.dorm_corner_bay',
+  'setpiece.dorm_entry_bay',
   'setpiece.dorm_office_bay',
+  'setpiece.hall_centre',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
+  'setpiece.parking_deck_bay',
+  'setpiece.parking_deck_ramp',
+  'setpiece.porch',
   'setpiece.ramp_junction',
+  // The mess hall bay (setPiecesAcademy.test.ts): the hall runs on out of each end, as the classroom bays'.
+  'setpiece.refectory_bay',
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
+  'setpiece.shop_unit',
+  // The Basement Stair Bay (setPiecesAcademy.test.ts): the hall runs through between walls of its own, as the stair ends'.
+  'setpiece.stair_down_bay',
   'setpiece.stair_end_bay',
   'setpiece.stair_end_bay_3',
+  'setpiece.stair_end_bay_arched',
+  'setpiece.stair_end_bay_bridge',
+  'setpiece.stair_end_bay_roof',
   'setpiece.sunken_arena',
   'setpiece.temple_pylon',
   'setpiece.twin_stair_overlook',
@@ -84,6 +127,8 @@ const OPEN_SIDED = [
   'setpiece.tunnel_cross',
   'setpiece.tunnel_hatch',
   'setpiece.tunnel_junction',
+  // (The chamber's openings, closed or joined: tunnelFamilies5.test.ts.)
+  'setpiece.tunnel_lit_chamber',
   'setpiece.tunnel_lit_run',
   // (A ladder between a tunnel and the field, or between two levels: tunnelElevation.test.ts, tunnelLadderBots.test.ts.)
   'setpiece.tunnel_riser',
@@ -179,9 +224,18 @@ describe('z-fighting audit over every set piece', () => {
     const pieces: SetPiecePlacement[] = [];
     let n = 0;
     const packs = ['collegiate', 'military', 'medieval', 'orbital'];
+    // Pieces wider than 4 cells (the Arena Corner, 9 × 9) each in a map of their own, one per turn and mirror.
+    const wide = (def: SetPieceDefinition) => Math.max(...def.footprint.cells.flat()) - Math.min(...def.footprint.cells.flat()) >= 4;
     for (const def of library.pieces.values()) {
       for (const rotation of [0, 1, 2, 3] as Rotation[]) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
+          if (wide(def)) {
+            const map = played(mapOf([room('home', -30, -30)], [{ id: 'piece_wide', piece: def.id, x: 0, y: 0, z: 0, rotation, mirror, pack: packs[rotation % packs.length] }]));
+            const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];
+            const left = coplanarOverlaps(boxes, { faces: visibleFaces(boxes) });
+            expect(left.slice(0, 5).map((o) => `${def.id} ${rotation} ${mirror}: ${boxes[o.a]!.sourceId} / ${boxes[o.b]!.sourceId} at ${o.center.map((v) => v.toFixed(2))}`)).toEqual([]);
+            continue;
+          }
           // 8 cells apart, 16 a row: the largest pieces (the command bunker, 4 × 4) turn about their anchor into the cells behind it.
           pieces.push({ id: `piece_${n}`, piece: def.id, x: (n % 16) * 8 - 64, y: Math.floor(n / 16) * 8 - 96, z: def.id.includes('skybridge') ? 1 : 0, rotation, mirror, pack: packs[n % packs.length] });
           n++;
@@ -189,7 +243,7 @@ describe('z-fighting audit over every set piece', () => {
       }
     }
     // In maps of 96 placements each, every piece where the one map had it: all of them as played are over a map's
-    // 4096 entities since the dormitory bays (47 parts a bay, in eight turns).
+    // entities (4,096 then) since the dormitory bays (47 parts a bay, in eight turns).
     for (let i = 0; i < pieces.length; i += 96) {
       const map = played(mapOf([room('home', -10, -10)], pieces.slice(i, i + 96)));
       const boxes: WorldBox[] = [...buildMapGeometry(map), ...buildMapDecor(map)];

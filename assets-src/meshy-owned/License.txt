@@ -28,8 +28,24 @@ assets-src/meshy-community-characters/License.txt now. What is owned:
   Drive; import list batch 1, docs/IMPORT_LIST.md). The owner, 2026-11-06:
   "call him 'Cool Hands Rex', i made him in meshy". Built by
   tools/content/prepare-meshy-characters.mjs.
+- Freaky Frida (character meshy_frida, pack meshy-owned): the download
+  "freaky frida rigged" (2026-11-01, rigged and animated on Meshy, from the
+  owner's session upload). The owner, 2026-11-18: "i created her with meshy".
+  Recorded as Meshy Community CC0 from 2026-11-06 until then (built from the
+  unrigged "freaky frida lowpoly" download). Built by
+  tools/content/prepare-meshy-characters.mjs.
+- The hover carrier (the Dropship's model, vehicles/hover_carrier.glb, pack
+  meshy-owned-drive-1116 in content/guns.json): the textured GLB download
+  Meshy_AI_hover_carrier_topdown_1116164125_texture.glb from the owner's
+  Drive (2026-11-16). The owner, 2026-11-16: "I made it on Meshy". Built by
+  tools/content/prepare-guns.mjs.
+- The walkable-deck excavator (prop mining_excavator_deck, pack
+  meshy-owned-drive-1117, for Iron Maw): the textured GLB download
+  Meshy_AI_CelShadedExcavator_1117150026_texture.glb from the owner's Drive
+  (2026-11-17), one of the owner's new Meshy models of that day, recorded as
+  Meshy, owned (docs/QUEUE.md). Built by tools/content/prepare-props.mjs.
 
-Their download file names are recorded in content/props.lock.json and
-content/meshy.lock.json. The raw downloads are not kept in the repo.
+Their download file names are recorded in content/props.lock.json,
+content/meshy.lock.json and content/guns.lock.json. The raw downloads are not kept in the repo.
 
 Provenance: Meshy, owned.

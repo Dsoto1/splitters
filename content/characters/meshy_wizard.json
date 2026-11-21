@@ -5,7 +5,8 @@
   "order": 52,
   "name": "Merrow the Wise",
   "look": "core.merrow",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "wizard",
   "bio": "Studied magic for four hundred years. Found the rifle quicker.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.85
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

@@ -5,7 +5,8 @@
   "order": 117,
   "name": "Cool Hands Rex",
   "look": "core.trex",
-  "group": "creatures",
+  "group": "horror",
+  "blood": "red",
   "nameTheme": "gangster",
   "bio": "Shades on, collar up, and the steadiest trigger claw since the Cretaceous.",
   "body": "male",
@@ -21,9 +22,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.65
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

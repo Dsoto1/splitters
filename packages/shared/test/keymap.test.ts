@@ -88,7 +88,13 @@ describe('MapMaker key table and the ? overlay (Phase 1, item 5)', () => {
                           : // Phase 4 item 3: Y bot hints.
                             code === 'KeyY' && !mod
                             ? 'botHints'
-                            : null;
+                            : // Painting plan Phase 1: Shift+B is Ground paint (B stays Structure paint).
+                              code === 'KeyB' && shift && !mod
+                              ? 'groundPaint'
+                              : // MapMaker UI spec Phase 4a: Enter opens Tile View on the selection.
+                                (code === 'Enter' || code === 'NumpadEnter') && !shift && !mod
+                                ? 'tileView'
+                                : null;
           const want = added ?? (code === 'Slash' && shift && !mod ? 'keys' : before(code, shift, mod));
           expect(now, `${mod ? 'Ctrl+' : ''}${shift ? 'Shift+' : ''}${code}`).toBe(want);
           // ⌘ on a Mac is Ctrl.

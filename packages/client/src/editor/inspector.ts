@@ -38,12 +38,13 @@ import {
   ROOM_TYPES,
   roomCells,
   seededRandom,
-  setFacingCommand,
   setPieceMirrorRefusal,
   setUpperFloorsCommand,
   SIDES,
   SURFACE_SLOT_LABELS,
   SURFACE_SLOTS,
+  takesGround,
+  tileHasMetal,
   updateTileCommand,
   upperFloorLevels,
   type DressDensity,
@@ -56,15 +57,14 @@ import {
   type ReplaceSize,
   type RoomOptions,
   type RoomType,
-  type Selection,
   type SurfaceSlot,
   type SurfaceStyle,
   type TilePlacement,
   getKitFamily,
 } from '@tiletrigger/shared';
 import type { EditorApp } from './editorApp.ts';
-import { modeSection } from './modeInspector.ts';
-import { $, button, h2, numberInput, row, small, text } from './editorDom.ts';
+import { emptyLine, modeSection } from './modeInspector.ts';
+import { $, button, fillWhenOpened, h2, numberInput, row, small, text, type ChoiceGroups } from './editorDom.ts';
 import { dressable, dressTag } from './editorParts.ts';
 import { groupSection, type GroupHost } from './groupPanel.ts';
 import { rebuildKeepingEdit } from './inspectorKeep.ts';
@@ -73,11 +73,12 @@ import {
   RETIRED_PROPS
 } from './paletteCatalog.ts';
 import { quickFacings } from './quickFacings.ts';
+import { groundFitSection } from './groundFitPanel.ts';
 import { replaceTilePanel } from './retiredTiles.ts';
 import { tileOptionPanel } from './tileOptionPanel.ts';
 import { tunnelPanel } from './tunnelPanel.ts';
 
-/** The side panel's inspector: what's selected (a tile, a set piece, an entity, a moving build, several things) or Map properties with nothing selected; the tile's walls, room options, upper floors, dressing and surfaces (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
+/** The right dock's Properties (the inspector): only what's selected (a tile, a set piece, an entity, a moving build, several things); with nothing selected one line that links to Map settings (mapSettingsView.ts, MapMaker UI spec Phase 1) and the tab's own section; the tile's walls, room options, upper floors, dressing and surfaces (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 export class Inspector {
   constructor(readonly app: EditorApp) {}
 
@@ -90,12 +91,43 @@ export class Inspector {
     ungroup: () => this.app.edits.ungroup(),
   };
 
-  /** The inspector rebuilt, the field being typed in kept as it was (inspectorKeep.ts: a placement's rebuild dropped the first edit). */
+  /**
+   * The inspector rebuilt, the field being typed in kept as it was (inspectorKeep.ts: a placement's rebuild dropped the
+   * first edit). With nothing selected, the empty line and the tab's section, already shown, are left standing when
+   * nothing they show has changed (`emptyStands`).
+   */
   renderInspector(): void {
+    if (this.emptyStands()) return;
     rebuildKeepingEdit($('ed-inspector'), () => this.buildInspector());
   }
 
+  /** What the empty inspector (the line and the tab's section) was last built from, while it is what the inspector shows. */
+  private built: { doc: MapDocument; ws: string; placed: string } | null = null;
+
+  /**
+   * The empty inspector as shown is still right: the same tab, and no change to the map's settings (every part of the
+   * document but the things placed on it: the Sky pane is drawn from them too) or to the Gameplay tab's counts. The
+   * Test tab's section lists the problems themselves: it is always built again.
+   */
+  private emptyStands(): boolean {
+    const b = this.built;
+    if (!b || this.app.selCount() !== 0 || this.app.hints.selected()) return false;
+    const doc = this.app.doc;
+    if (this.app.paletteWs !== b.ws || this.app.paletteWs === 'test') return false;
+    if (doc === b.doc) return true;
+    for (const k of new Set([...Object.keys(doc), ...Object.keys(b.doc)]) as Set<keyof MapDocument>) if (k !== 'entities' && doc[k] !== b.doc[k]) return false;
+    return this.placedKey(doc) === b.placed;
+  }
+
+  /** What the Gameplay tab's section counts. */
+  private placedKey(doc: MapDocument): string {
+    if (this.app.paletteWs !== 'entities') return '';
+    const count = (kinds: readonly string[]) => doc.entities.filter((e) => kinds.includes(e.kind)).length;
+    return JSON.stringify([['spawn'], ['flag', 'hill', 'bombsite', 'hostage', 'rescue', 'sector', 'objective'], ['pickup'], ['encounter'], ['mount']].map(count));
+  }
+
   buildInspector(): void {
+    this.built = null;
     this.app.mapProps.renderSkyPane();
     const el = $('ed-inspector');
     el.replaceChildren();
@@ -106,16 +138,19 @@ export class Inspector {
     const pieces = this.app.selPieces();
     const doc = this.app.doc;
     if (this.app.selCount() === 0) {
-      // The mode's own section first (modeInspector.ts), then Map properties.
+      // Only what's selected (MapMaker UI spec §3, the owner's answer 3): one line that opens Map settings, then the
+      // tab's own section where it has one (modeInspector.ts).
+      el.append(emptyLine(() => this.app.mapSettings.open()));
       const mode = modeSection(this.app);
       if (mode) el.append(mode);
-      return this.app.mapProps.renderMapProperties(el);
+      this.built = { doc, ws: this.app.paletteWs, placed: this.placedKey(doc) };
+      return;
     }
     if (pieces.length === 1 && tiles.length + entities.length === 0) {
       this.app.pieces.pieceInspector(el, pieces[0]!);
-      // A buried set piece (a Lit Tunnel Run): a portal on each of its open ends, as for buried tiles.
+      // A buried set piece (a Lit Tunnel Run): its Family (format v44) and a portal or a Dead End on each of its open ends, as for buried tiles.
       const parts = [...this.app.expansion.partOf].filter(([, piece]) => piece === pieces[0]).map(([id]) => id);
-      const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), 'portals') : null;
+      const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), pieces[0], () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
@@ -129,9 +164,10 @@ export class Inspector {
     } else {
       el.append(h2(`${this.app.selCount()} selected`));
       el.append(text(`${tiles.length} tiles, ${entities.length} entities${pieces.length ? `, ${pieces.length} set piece${pieces.length === 1 ? '' : 's'}` : ''}`));
+      if (pieces.length > 1) el.append(this.app.pieces.multiLookRow(pieces));
       const tileOpts = tiles.length ? tileOptionPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
       if (tileOpts) el.append(tileOpts);
-      const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd)) : null;
+      const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
@@ -164,6 +200,8 @@ export class Inspector {
       settle.title = 'Bed the selected props into the terrain under them (no floating corners on slopes)';
       el.append(settle);
     }
+    // Fit ground to this / Settle onto the ground (groundFitPanel.ts).
+    if (doc.terrain) el.append(groundFitSection(this.app));
   }
 
   /** One tile selected: its type, place, walls, room options, upper floors, dressing and surfaces. */
@@ -174,15 +212,7 @@ export class Inspector {
     const type = document.createElement('select');
     for (const def of coreCatalog.all()) type.append(new Option(def.displayName, def.id, false, def.id === t.tile));
     type.addEventListener('change', () => this.app.run('Replace tile', updateTileCommand(doc, t, { ...t, tile: type.value })));
-    const set = (patch: Partial<typeof t>) => this.app.run('Edit tile', updateTileCommand(doc, t, { ...t, ...patch }));
-    el.append(
-      row('Type', type),
-      row('X', numberInput(t.x, 1, (v) => set({ x: v }))),
-      row('Y', numberInput(t.y, 1, (v) => set({ y: v }))),
-      row('Level', numberInput(t.z, 1, (v) => set({ z: v }))),
-      row('Rotation', text(`${t.rotation * 90}°`)),
-      this.quickFacings({ tiles: [t.id], entities: [] }, (t.rotation * Math.PI) / 2),
-    );
+    el.append(row('Type', type), ...this.cellFields(t.id, [t.x, t.y, t.z], 'Move tile'), row('Rotation', text(`${t.rotation * 90}°`)), this.quickFacings(t.id, (t.rotation * Math.PI) / 2));
     const def = coreCatalog.get(t.tile);
     const wallsHead = document.createElement('h3');
     wallsHead.textContent = 'Walls';
@@ -214,14 +244,14 @@ export class Inspector {
     if (def?.configurable) this.roomOptionsPanel(el, t);
     const tileOpts = tileOptionPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
     if (tileOpts) el.append(tileOpts);
-    const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd));
+    const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc);
     if (tunnel) el.append(tunnel);
     this.upperFloorsPanel(el, t);
     if (def && dressable(def)) this.dressPanel(el, t);
     const h3 = document.createElement('h3');
     h3.textContent = 'Surfaces';
     el.append(h3);
-    // The Paint tool's own "Apply to", shared: a change here is a change there.
+    // Structure paint's own "Apply to", shared: a change here is a change there.
     const scope = document.createElement('select');
     scope.id = 'ed-insp-scope';
     for (const [v, label] of [['surface', 'This surface'], ['sameType', 'Same piece type'], ['level', 'Whole level'], ['all', 'Whole map']] as const) scope.append(new Option(label, v, false, v === this.app.paint.paintScope));
@@ -232,7 +262,9 @@ export class Inspector {
     el.append(row('Apply to', scope));
     // The roof's top only where the room has a roof (room option Ceiling).
     const roofed = !!t.options?.ceiling && t.options.ceiling !== 'open';
-    for (const slot of SURFACE_SLOTS) if (slot !== 'roof' || roofed || t.surfaces?.roof) el.append(this.surfaceRow(t, slot));
+    // Metal (bars, barred gates) only where the tile has some.
+    const metal = !!t.surfaces?.metal || tileHasMetal(coreCatalog.get(t.tile), t);
+    for (const slot of SURFACE_SLOTS) if ((slot !== 'roof' || roofed || t.surfaces?.roof) && (slot !== 'metal' || metal)) el.append(this.surfaceRow(t, slot));
     el.append(small(`ID ${t.id}`));
   }
 
@@ -250,27 +282,28 @@ export class Inspector {
     const target = document.createElement('select');
     target.id = 'ed-replace-with';
     const suggested = REPLACEMENTS[model];
-    const species = document.createElement('optgroup');
-    species.label = 'Our species';
+    // Every prop and every look of it, by group, in the list's order: [label, value] pairs.
+    const groups: ChoiceGroups = [];
+    const species: [string, string][] = [];
     for (const s of ENV_SPECIES)
       for (const v of s.variants) {
         const value = v.index ? `${s.id}#${v.index}` : s.id;
-        if (value !== model) species.append(new Option(`${s.displayName} (${v.name})`, value, false, value === suggested));
+        if (value !== model) species.push([`${s.displayName} (${v.name})`, value]);
       }
-    target.append(species);
+    groups.push(['Our species', species]);
     for (const category of PROP_CATEGORIES) {
-      const group = document.createElement('optgroup');
-      group.label = category;
+      const group: [string, string][] = [];
       for (const def of CORE_PROPS.filter((d) => d.category === category && d.id !== model && !RETIRED_PROPS.has(d.id))) {
-        group.append(new Option(def.displayName, def.id, false, def.id === suggested));
+        group.push([def.displayName, def.id]);
         // A kit family's other looks (content/kitProps.ts), each its own choice: a retired piece's replacement can
         // be one of them (the striped barrier, the blue container).
         for (const v of getKitFamily(def.id)?.variants ?? []) {
-          if (v.index) group.append(new Option(`${def.displayName} (${v.name.replace(/_/g, ' ')})`, `${def.id}#${v.index}`, false, `${def.id}#${v.index}` === suggested));
+          if (v.index) group.push([`${def.displayName} (${v.name.replace(/_/g, ' ')})`, `${def.id}#${v.index}`]);
         }
       }
-      if (group.children.length) target.append(group);
+      if (group.length) groups.push([category, group]);
     }
+    fillWhenOpened(target, groups, suggested);
     el.append(row('With', target));
     const size = document.createElement('select');
     size.id = 'ed-replace-size';
@@ -312,10 +345,23 @@ export class Inspector {
   }
 
   /** Inspector fields for one entity: position, facing and its kind's settings. */
-  /** The inspector's quick facings for one thing: 0°, 90°, 180°, 270° in one click (one undo step each). */
-  quickFacings(sel: Selection, facing: number): HTMLElement {
+  /**
+   * A tile's or set piece's X, Y and Level (whole cells), through the shared transform command (MapMaker UI spec Phase
+   * 2): the layout check and what is selected with it carried along, as a drag or the arrow keys.
+   */
+  cellFields(id: string, at: readonly [number, number, number], label: string): HTMLElement[] {
+    return (['X', 'Y', 'Level'] as const).map((name, i) => {
+      const f = numberInput(at[i]!, 1, (value) => this.app.transform(label, { set: { id, axis: i as 0 | 1 | 2, value } }));
+      f.id = `ed-insp-${'xyz'[i]}`;
+      f.title = `${name === 'Level' ? 'Level' : `${name} in cells`} (Enter: move · Esc: put back)`;
+      return row(name, f);
+    });
+  }
+
+  /** The inspector's quick facings for the thing `id` (the rest of the selection turns with it): 0°, 90°, 180°, 270° in one click (one undo step each). */
+  quickFacings(id: string, facing: number): HTMLElement {
     return quickFacings(facing, (deg) => {
-      this.app.run(`Face ${deg}°`, setFacingCommand(this.app.doc, sel, deg, coreCatalog, this.app.placeLib));
+      this.app.transform(`Face ${deg}°`, { face: { id, deg } });
     });
   }
 
@@ -492,7 +538,8 @@ export class Inspector {
     const current = t.surfaces?.[slot];
     const mat = document.createElement('select');
     mat.append(new Option(slot === 'roof' ? 'Same as the floor' : `Theme (${resolveSurface({ ...this.app.doc }, undefined, slot).material.displayName})`, '', false, !current));
-    for (const def of coreMaterials.all()) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
+    // Ground materials go on floors and roofs only (painting plan, the owner's answer 2a).
+    for (const def of coreMaterials.all()) if (def.category !== 'Ground' || takesGround(slot) || current?.material === def.id) mat.append(new Option(def.displayName, def.id, false, current?.material === def.id));
     const tint = document.createElement('input');
     tint.type = 'color';
     tint.value = current?.tint ?? '#ffffff';
@@ -503,12 +550,14 @@ export class Inspector {
     tint.addEventListener('change', () => current && apply({ material: current.material, tint: tint.value.toLowerCase() }));
     const wrap = document.createElement('div');
     wrap.className = 'surface-row';
-    // The Paint tool's current brush, onto this surface.
+    // Structure paint's current brush, onto this surface.
     const brush = document.createElement('button');
     brush.type = 'button';
     brush.className = 'ed-use-brush';
     brush.textContent = 'Brush';
-    brush.title = `Paint it with the Paint tool's brush (${coreMaterials.get(this.app.paint.paintStyle.material)?.displayName ?? this.app.paint.paintStyle.material})`;
+    const brushDef = coreMaterials.get(this.app.paint.paintStyle.material);
+    brush.disabled = brushDef?.category === 'Ground' && !takesGround(slot);
+    brush.title = brush.disabled ? `${brushDef!.displayName} is a ground: on buildings it goes on floors and roofs only` : `Paint it with Structure paint's brush (${brushDef?.displayName ?? this.app.paint.paintStyle.material})`;
     brush.addEventListener('click', () => apply(this.app.paint.paintStyle));
     wrap.append(text(SURFACE_SLOT_LABELS[slot]), mat, tint, brush);
     return wrap;

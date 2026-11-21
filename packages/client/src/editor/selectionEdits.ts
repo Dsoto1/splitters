@@ -4,14 +4,14 @@ import {
   copySelection,
   coreCatalog,
   cutGroundToFloorsCommand,
+  fitGroundToSelectionCommand,
+  settleSelectionOnGroundCommand,
   deleteCommand,
   duplicateCommand,
   emptySelection,
   flipCommand,
   groupCommand,
   mirrorSetPieceCommand,
-  moveCommand,
-  moveEntitiesCommand,
   normalizeYaw,
   pasteCommand,
   pasteNote,
@@ -28,6 +28,7 @@ import {
 import { readClipboard, writeClipboard } from './clipboardStore.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
+import { groundFitRebedNote } from './groundFitPanel.ts';
 import { openMirrorDialog } from './mirrorDialog.ts';
 
 /** Edits to the selection: turn, nudge, delete, duplicate, group and ungroup, copy and paste, mirror and flip, cut the ground to the floors and settle props on the ground (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
@@ -100,11 +101,11 @@ export class SelectionEdits {
   nudge(dx: number, dy: number, dz: number): void {
     if (!this.app.selCount()) return;
     // Tiles and set pieces move by whole cells (and things with them); things alone by half a metre.
+    // Through the shared transform command, as a drag or a typed X/Z: each press one undo step.
     if (this.app.selection.tiles.length || this.app.selPieces().length || dz !== 0) {
-      this.app.run('Move', moveCommand(this.app.doc, this.app.selection, dx, dy, dz));
-      if (dz) this.app.setLevel(this.app.level + dz);
+      if (this.app.transform('Move', { by: { cells: [dx, dy, dz] } }) && dz) this.app.setLevel(this.app.level + dz);
     } else {
-      this.app.run('Move', moveEntitiesCommand(this.app.doc, this.app.selection.entities, dx * 0.5, 0, dy * 0.5));
+      this.app.transform('Move', { by: { metres: [dx * 0.5, 0, dy * 0.5] } });
     }
   }
 
@@ -170,6 +171,20 @@ export class SelectionEdits {
     const r = cutGroundToFloorsCommand(this.app.doc, this.app.selection, coreCatalog, this.app.placeLib);
     if ('error' in r) return this.app.toast(`Can't cut the ground: ${r.error}`, true);
     if (this.app.run('Cut ground to floors', r.command)) this.app.toast(`The ground cut down to the floors: ${r.vertices} point${r.vertices === 1 ? '' : 's'}, up to ${r.deepest} m · Ctrl+Z to undo`);
+  }
+
+  /** Fit ground to this (groundFit.ts): the ground as made raised or lowered to meet the selection's base, eased into the ground about. */
+  fitGround(): void {
+    const r = fitGroundToSelectionCommand(this.app.doc, this.app.selection, this.app.groundBlend, coreCatalog, this.app.placeLib);
+    if ('error' in r) return this.app.toast(`Can't fit the ground: ${r.error}`, true);
+    if (this.app.run('Fit ground to build', r.command)) this.app.toast(`The ground fitted to it: ${r.raised} point${r.raised === 1 ? '' : 's'} raised, ${r.lowered} lowered, up to ${r.most} m${groundFitRebedNote(r.rebedded)} · Ctrl+Z to undo`);
+  }
+
+  /** Settle onto the ground (groundFit.ts): the selection moved down or up onto the ground as made. */
+  settleOnGround(): void {
+    const r = settleSelectionOnGroundCommand(this.app.doc, this.app.selection, coreCatalog, this.app.placeLib);
+    if ('error' in r) return this.app.toast(`Can't settle it: ${r.error}`, true);
+    if (this.app.run('Settle onto the ground', r.command)) this.app.toast(`Moved ${Math.abs(r.by)} m ${r.by < 0 ? 'down' : 'up'} onto the ground · Ctrl+Z to undo`);
   }
 
   /** Shift+M: Mirror… (mirrorDialog.ts), the selection or half the map. */

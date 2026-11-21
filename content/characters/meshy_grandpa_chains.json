@@ -5,7 +5,8 @@
   "order": 30,
   "name": "Grandpa Chains",
   "look": "core.grandpachains",
-  "group": "folk",
+  "group": "legends",
+  "blood": "red",
   "nameTheme": "townsfolk",
   "bio": "Slippers on, gold chain out, and a better aim than any of his grandchildren.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.7
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

@@ -273,6 +273,8 @@ describe('team kills', () => {
     expect(r.match.roulette).not.toBeNull();
     const seat = (r.match.roulette as unknown as { seat(c: Combatant): { lifeKills: number; giantKills: number; airKills: number } }).seat.bind(r.match.roulette);
     seat(r.me).lifeKills = 2;
+    // The teammate in a standard-size body, whatever the deal gave them (a small or tiny one ducks under the rifle's line).
+    r.mate.size = 1;
     SOURCES.bullets!(r, r.mate);
     expect(r.mate.alive).toBe(false);
     expect(killOf(r, r.mate)!.tk).toBe(1);

@@ -6,6 +6,7 @@
   "name": "Biker Gang Girl",
   "look": "core.bikergirl",
   "group": "folk",
+  "blood": "red",
   "nameTheme": "gangster",
   "bio": "Rides with the pack, shoots with the pack, and never once waited at a red light.",
   "body": "female",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.05,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

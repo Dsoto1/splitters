@@ -10,6 +10,8 @@
 
 import { MOUNT_DEFS, MOUNT_MODELS, ROUTE_CRAFT_DEFS } from '../content/mounts.generated.ts';
 import type { SuspensionTuning } from './suspension.ts';
+import type { RigidTuning } from './wheelPhysics.ts';
+import type { ResupplySpec } from './resupply.ts';
 
 /**
  * The mounts' tuning (speed, health, seats, mounted weapons, drawing numbers) is data: content/vehicles/<id>.json,
@@ -25,14 +27,17 @@ export type MountModel = (typeof MOUNT_MODELS)[number];
  * the ids stay readable for good (map/mountAliases.ts): a map that names one is still a valid file, and plays with
  * the replacement. Never reuse a retired id.
  * - `kart` (Go-Kart: one seat, quick, no gun) -> `hover_bike` (one rider, quick, no gun).
- * - `ice_cream_truck` (a van for four, no mounted gun, riders shoot their own weapons) -> `buggy` (the same idea
- *   for six), so a map gains no mounted weapon it was not made with.
+ * - `ice_cream_truck` (a van for four, no mounted gun, riders shoot their own weapons) -> `troop_buggy` (the same
+ *   idea for six), so a map gains no mounted weapon it was not made with.
+ * - `buggy` (owner, 2026-11-13: one id per body; the id had been the Off-Road Beast, then the sci-fi buggy) ->
+ *   `troop_buggy` (the Off-Road Beast, six aboard), so a map's buggies stay troop carriers. The sci-fi body is the
+ *   Supply Buggy, `supply_buggy`.
  */
-export const RETIRED_MOUNTS = { kart: 'hover_bike', ice_cream_truck: 'buggy' } as const satisfies Readonly<Record<string, MountModel>>;
+export const RETIRED_MOUNTS = { kart: 'hover_bike', ice_cream_truck: 'troop_buggy', buggy: 'troop_buggy' } as const satisfies Readonly<Record<string, MountModel>>;
 export type RetiredMountModel = keyof typeof RETIRED_MOUNTS;
-export const RETIRED_MOUNT_MODELS = ['kart', 'ice_cream_truck'] as const satisfies readonly RetiredMountModel[];
+export const RETIRED_MOUNT_MODELS = ['kart', 'ice_cream_truck', 'buggy'] as const satisfies readonly RetiredMountModel[];
 /** What the retired ones were called (MapMaker says what a map still names). */
-export const RETIRED_MOUNT_NAMES: Readonly<Record<RetiredMountModel, string>> = { kart: 'Go-Kart', ice_cream_truck: 'Ice Cream Truck' };
+export const RETIRED_MOUNT_NAMES: Readonly<Record<RetiredMountModel, string>> = { kart: 'Go-Kart', ice_cream_truck: 'Ice Cream Truck', buggy: 'Buggy' };
 /** A vehicle id as a map file may name it: a placeable one, or a retired one. */
 export type PlacedMountModel = MountModel | RetiredMountModel;
 export const isRetiredMount = (id: unknown): id is RetiredMountModel => typeof id === 'string' && Object.hasOwn(RETIRED_MOUNTS, id);
@@ -198,6 +203,12 @@ export interface MountDef {
      * dives under braking and lands bouncing. Absent: the body is drawn settling to the ground (View.suspend).
      */
     suspension?: SuspensionTuning;
+    /**
+     * Rigid driving (sim/wheelPhysics.ts, docs/DRIVING_PHYSICS_PLAN.md): the chassis is a real body on its
+     * suspension's wheels, with tyre grip that can fail; `on` false keeps the classic driving unless a match asks for
+     * rigid (MatchOptions.drive, `?drive=rigid`). Needs `suspension`. Absent: classic driving.
+     */
+    rigid?: RigidTuning & { on: boolean };
     /** Share of tyre grip lost at top speed (rising with the square of speed): loose at speed, so it powerslides. Default 0. */
     drift?: number;
     /** Tracks: turns on the spot at this rate (rad/s) standing still, fading out by 5 m/s (where steering takes over). Default none. */
@@ -220,6 +231,13 @@ export interface MountDef {
    * while it winds up (MOUNT_FLAG_CHARGING) and while its arc is locked on (MOUNT_FLAG_ARC); its arcs are this colour.
    */
   glow?: string;
+  /**
+   * Drawing: how strongly a paint skin or team colour (mountTint) paints the model, 0 to 1 (default 1, the full
+   * colour). The tint is mixed this far from white before it multiplies the model's own colours, so a model with a
+   * dark scheme of its own (the Dropship's olive and white) keeps it and takes the colour as a cast, where the full
+   * colour would turn it near black.
+   */
+  paint?: number;
   /** The transport plane: flies its map entity's route on its own, can't be hurt, and riders jump out (E or jump) to parachute down. */
   airplane?: boolean;
   /** Drawn this far above the ground (m) instead of the class default (hovercraft float 0.35 m; sleds sit on the snow). */
@@ -254,6 +272,11 @@ export interface MountDef {
   armour?: MountArmour;
   /** Bots aboard get out below this share of health (default BAIL_HEALTH, bots/vehicles.ts), or once it is on fire. */
   bailHealth?: number;
+  /**
+   * Players on foot resupply from it (the Supply Buggy's back; sim/resupply.ts): Use at `at` instead of getting in.
+   * It holds `uses` resupplies, back to full when it respawns.
+   */
+  resupply?: ResupplySpec;
   /** One line for MapMaker. */
   blurb: string;
 }
@@ -480,4 +503,17 @@ export function arcSentryIssues(entities: readonly { kind: string; id: string; p
     if (near) out.push({ severity: 'warning', code: 'mount.arc_spawn', message: `${getMountDef(e.model)!.displayName} ${e.id} is ${near.d.toFixed(1)} m from spawn ${near.id}: players it shoots at could spawn inside its wind-up. Keep it ${ARC_SENTRY_SPAWN_CLEAR} m away, or give it that spawn's team`, targetId: e.id });
   }
   return out;
+}
+
+/** Look-to-steer's gain: steering (-1..1) per radian between where the driver looks and where the vehicle points. */
+export const LOOK_STEER_GAIN = 2.2;
+
+/**
+ * Look-to-steer (the Warthog way): the wheel turns toward where the driver looks (`lookYaw`), on top of A/D
+ * (`right`); backing up it steers the other way round, so the nose still swings toward the look. The match and the
+ * driver's own prediction of a rigid vehicle (client vehiclePrediction.ts) both use it.
+ */
+export function lookSteer(right: number, lookYaw: number, vehicleYaw: number, speed: number): number {
+  const off = Math.atan2(Math.sin(lookYaw - vehicleYaw), Math.cos(lookYaw - vehicleYaw));
+  return Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (speed < -0.5 ? -1 : 1)));
 }

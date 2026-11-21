@@ -4,7 +4,7 @@
  * atlas each piece's preview lives in. Plain data, no Babylon, so the atlas
  * tool (tools/content/palette-items.ts) and the tests read the same rules.
  */
-import { CORE_PROPS, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, builtInSetPieces, coreCatalog, envModelFile, isTileOptionTwin, type PropDefinition, type SetPieceDefinition } from '@tiletrigger/shared';
+import { CORE_PROPS, DEFAULT_METAL, ENV_SPECIES, KIT_ALIASES, MOUNT_DEFS, MOUNT_MODELS, STYLE_PACKS, builtInSetPieces, coreCatalog, envModelFile, isTileOptionTwin, stylePackHas, cellGround, cellPainted, terrainGroundTheme, type TerrainData, type PropDefinition, type SetPieceDefinition, type StylePack, type ThemeDefinition } from '@tiletrigger/shared';
 
 /** Palette categories: each tab has one, with one colour used on the tab, its headings and a thin accent on its pieces. */
 export const PALETTE_CATEGORIES = {
@@ -227,6 +227,7 @@ export const SET_PIECE_FAMILIES: readonly (readonly [family: string, label: stri
   ['sunkenarena', 'Sunken arenas'],
   ['plaza', 'Plazas'],
   ['seawall', 'Sea walls'],
+  ['urban', 'Town pieces'],
 ];
 
 /** A family's label in the Set pieces tab. */
@@ -254,6 +255,87 @@ export function setPieceSuitsStylePack(def: Pick<SetPieceDefinition, 'packs'>, s
 export function stylePackRoles(stylePack: string, packs: ReadonlyMap<string, { id: string; stylePack?: string }>): string | null {
   for (const p of packs.values()) if (p.stylePack === stylePack) return p.id;
   return packs.has(stylePack) ? stylePack : null;
+}
+
+// ------------------------------------------------------------ the palette follows the map's themes (painting Phase 3)
+
+/**
+ * The palette's view (docs/MAPMAKER_PAINTING_PLAN.md, "The palette follows the map's themes"): the Style Pack picker's
+ * first choice, **This map's themes** (the default), puts the pieces of the packs that use the map's Structure theme
+ * first; **All** is the catalogue's own order; a pack id narrows to that pack, as before.
+ */
+export const THEMES_VIEW = '@themes';
+
+/** The Style Packs that use a theme: the packs whose own theme it is (its first) before those that only list it, each in pack order. */
+export function themeStylePacks(theme: string, packs: readonly StylePack[] = STYLE_PACKS): StylePack[] {
+  const own = packs.filter((p) => p.themes[0] === theme);
+  return [...own, ...packs.filter((p) => !own.includes(p) && p.themes.includes(theme))];
+}
+
+/**
+ * Where a palette card goes in This map's themes: 0 the theme's packs have it (a set piece by the looks it suits),
+ * 1 everything else. Cards everyone shares (walls, spawns, the modes' pieces, paint) are 0: every pack has them.
+ * With no pack for the theme nothing moves (all 1).
+ */
+export function themeRank(tool: string, packs: readonly StylePack[], suitsPiece: (pack: StylePack) => boolean = () => true): 0 | 1 {
+  if (!packs.length) return 1;
+  if (tool.startsWith('setpiece:')) return packs.some(suitsPiece) ? 0 : 1;
+  return packs.some((p) => stylePackHas(p, tool)) ? 0 : 1;
+}
+
+/** A stable order by rank: lower ranks first, each rank keeping the order it had (the catalogue's). */
+export function rankedOrder<T>(items: readonly T[], rank: (item: T) => number): T[] {
+  return items.map((item, i) => ({ item, i, r: rank(item) })).sort((a, b) => a.r - b.r || a.i - b.i).map((x) => x.item);
+}
+
+/** Structure paint's This map's themes list: the theme's own slot materials, then its packs' materials, then Recent (none listed twice). */
+export interface ThemePaintList {
+  theme: string[];
+  packs: string[];
+  recent: string[];
+}
+
+/**
+ * Structure paint's list in This map's themes (plan, "The palette follows the map's themes"): the Structure theme's
+ * own slot materials (floor, walls, solids, underside, trim, then its metal: DEFAULT_METAL when it names none), then
+ * the materials of the packs that use the theme, then the materials painted lately (`recent`, newest first, at most
+ * `recentMax`). Only ids `known` accepts (the library's), none twice.
+ */
+export function themePaintList(theme: Pick<ThemeDefinition, 'slots'> | undefined, packs: readonly StylePack[], recent: readonly string[], known: (id: string) => boolean, recentMax = 8): ThemePaintList {
+  const seen = new Set<string>();
+  const take = (ids: Iterable<string>, max = Infinity) => {
+    const out: string[] = [];
+    for (const id of ids) {
+      if (out.length >= max) break;
+      if (seen.has(id) || !known(id)) continue;
+      seen.add(id);
+      out.push(id);
+    }
+    return out;
+  };
+  const slots = theme ? [theme.slots.floor, theme.slots.walls, theme.slots.solids, theme.slots.underside, theme.slots.trim].map((s) => s?.material).filter((m): m is string => !!m) : [];
+  if (theme) slots.push(theme.slots.metal?.material ?? DEFAULT_METAL);
+  return { theme: take(slots), packs: take(packs.flatMap((p) => p.materials)), recent: take(recent, recentMax) };
+}
+
+/**
+ * Ground paint's order (plan: "the Ground theme's list first, then the other Ground materials"; painting Phase 4):
+ * the terrain's Ground theme's grounds (its base first), then the grounds this terrain has painted that the theme
+ * doesn't list (most cells first), then every other ground in its own order. Returns the order and how many lead
+ * (the theme's and the map's), for the list's two headings. No terrain: every ground in its own order.
+ */
+export function themeGroundOrder(all: readonly string[], terrain: Pick<TerrainData, 'materials' | 'groundTheme' | 'grounds'> | null): { order: string[]; lead: number } {
+  if (!terrain) return { order: [...all], lead: 0 };
+  const theme = terrainGroundTheme(terrain).grounds.filter((g) => all.includes(g));
+  const counts = new Map<string, number>();
+  for (let i = 0; i < terrain.materials.length; i++) {
+    if (!cellPainted(terrain, i)) continue;
+    const g = cellGround(terrain, i);
+    counts.set(g, (counts.get(g) ?? 0) + 1);
+  }
+  const painted = [...counts].filter(([g]) => !theme.includes(g) && all.includes(g)).sort((a, b) => b[1] - a[1]).map(([g]) => g);
+  const lead = [...theme, ...painted];
+  return { order: [...lead, ...all.filter((g) => !lead.includes(g))], lead: lead.length };
 }
 
 /** Scenario palette entries (Objects & Logic tab) by sub-group; game-mode objects, lights and NPC spawners have their own tabs. */

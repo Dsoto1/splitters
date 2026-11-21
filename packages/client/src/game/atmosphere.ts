@@ -19,6 +19,7 @@ import { buildShadowProxies, proxyable } from './shadowProxy.ts';
 import { underSmall } from './shadowFlags.ts';
 import { BOX_SLACK, ShadowCache, isStaticCaster } from './shadowCache.ts';
 import { perfOn } from './perfSwitches.ts';
+import { SMALL_REACH_IN, castsInLayer, smallCasts } from './shadowCasters.ts';
 
 export * from './graphicsSettings.ts';
 
@@ -35,8 +36,12 @@ const MIN_TEXELS = 6;
  * as they're created (map, props, characters, pickups); the first-person
  * view model, the sky and the far backdrop are left out.
  */
-/** Small clutter props (propVisuals.ts `isSmallProp`) cast shadows only within this many metres of the camera. */
-export const SMALL_CASTER_REACH = 15;
+/**
+ * Small clutter props (propVisuals.ts `isSmallProp`) cast shadows only within this many metres of the camera. With
+ * cheaper small casters (`?perfoff=smallcasters` not set) they start within shadowCasters.ts SMALL_REACH_IN (20 m) and
+ * stop past SMALL_REACH_OUT (a band, no flicker at the line); before, a hard line at 15 m.
+ */
+export const SMALL_CASTER_REACH = perfOn('smallcasters') ? SMALL_REACH_IN : 15;
 /** Static casters are merged into shadow proxies once none has come for this long (ms): the level and props load in bursts. */
 const STATIC_SETTLE_MS = 500;
 
@@ -94,6 +99,8 @@ export class Atmosphere {
     /** `near` without the static casters, for a cascade that takes them from the static shadow cache this frame. */
     const nearMoving: AbstractMesh[] = [];
     let nearFrame = -1;
+    // The cascades this map has (a bit each; Medium's one map is cascade 0): a static set for other cascades is left out.
+    const layers = s instanceof CascadedShadowGenerator ? (1 << s.numCascades) - 1 : 1;
     // Then each map (a cascade on high) draws only the casters inside its own square, as the light sees
     // it: with three cascades every caster was drawn three times. Depth is clamped, so only the sides cut.
     // This is decided per mesh as it draws (customAllowRendering), not by giving each map a list of its own:
@@ -105,6 +112,9 @@ export class Atmosphere {
     /** The square the map being drawn covers, worked out once per map per frame. */
     const square = { frame: -1, layer: -1, ok: false, kx: 0, ky: 0, minRadius: 0 };
     let counted = -1;
+    // Small casters casting now (the band's memory: shadowCasters.ts smallCasts).
+    const banded = perfOn('smallcasters');
+    const smallIn = new WeakSet<AbstractMesh>();
     // Static casters drawn only when a cascade moves (shadowCache.ts), the rest every frame on top.
     this.cache = map && perfOn('shadowcache') ? ShadowCache.attach(scene, s, csm) : null;
     const cache = this.cache;
@@ -124,8 +134,19 @@ export class Atmosphere {
           const b = m.getBoundingInfo().boundingSphere;
           const d = Vector3.Distance(b.centerWorld, c) - b.radiusWorld;
           if (d > reach) continue;
+          const mask = (m.metadata as { shadowLayers?: number } | null)?.shadowLayers;
+          if (mask !== undefined && !(mask & layers)) continue;
           // Small clutter (grass, flowers, small rocks: propVisuals' `smallCaster`) casts only near the camera.
-          if (d > SMALL_CASTER_REACH && (m.metadata as { smallCaster?: boolean } | null)?.smallCaster) continue;
+          if ((m.metadata as { smallCaster?: boolean } | null)?.smallCaster) {
+            if (!banded) {
+              if (d > SMALL_CASTER_REACH) continue;
+            } else {
+              const on = smallCasts(d, smallIn.has(m));
+              if (on) smallIn.add(m);
+              else smallIn.delete(m);
+              if (!on) continue;
+            }
+          }
           if (off.size && underAny(m, off)) continue;
           near.push(m);
           if (!(cache ? cache.isStatic(m) : isStaticCaster(m))) nearMoving.push(m);
@@ -139,11 +160,17 @@ export class Atmosphere {
           counted = frame;
           this.casterCount = 0;
         }
-        if (m.hasInstances || m.hasThinInstances) {
+        // Instanced meshes always draw (their copies' visibility is kept per pass). A thin-instanced batch is one mesh
+        // whose bounds cover its copies (the environment's and the props' batches by square), so it is tested as any
+        // other caster: each cascade draws only the batches in its square, not all of them three times.
+        if (m.hasInstances) {
           this.casterCount++;
           return true;
         }
         const layer = csm ? ((csm as unknown as { _currentLayer?: number })._currentLayer ?? 0) : 0;
+        // A static shadow set drawn only into some cascades (the trees' full detail near, their light level far:
+        // shadowCasters.ts). Medium's one map is cascade 0.
+        if (!castsInLayer((m.metadata as { shadowLayers?: number } | null)?.shadowLayers, layer)) return false;
         if (square.frame !== frame || square.layer !== layer) {
           square.frame = frame;
           square.layer = layer;
@@ -161,7 +188,8 @@ export class Atmosphere {
         const toMap = csm ? csm.getCascadeTransformMatrix(layer) : s.getTransformMatrix();
         if (!toMap) return true;
         const b = m.getBoundingInfo().boundingSphere;
-        if (b.radiusWorld < square.minRadius) return false;
+        // (A thin-instanced batch's bounds are its copies' together: no speck test, as before.)
+        if (b.radiusWorld < square.minRadius && !m.hasThinInstances) return false;
         Vector3.TransformCoordinatesToRef(b.centerWorld, toMap, at);
         const r = b.radiusWorld;
         if (Math.abs(at.x) - r * square.kx > 1 || Math.abs(at.y) - r * square.ky > 1) return false;
@@ -318,6 +346,13 @@ export class Atmosphere {
         continue;
       }
       addCaster(map, m);
+      // A shadow-only batch made never to change (the trees' static sets) is drawn into the static cache: every cascade
+      // draws its static casters again now, and again when it goes.
+      if (isStaticCaster(m) && this.cache) {
+        const cache = this.cache;
+        cache.invalidate();
+        m.onDisposeObservable.addOnce(() => cache.invalidate());
+      }
     }
   }
 

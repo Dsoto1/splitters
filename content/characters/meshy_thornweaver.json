@@ -5,7 +5,8 @@
   "order": 57,
   "name": "Thornweaver",
   "look": "core.thornweaver",
-  "group": "legends",
+  "group": "folk",
+  "blood": "red",
   "nameTheme": "knight",
   "bio": "Tracks anything across any ground, then waits for it.",
   "body": "female",
@@ -27,9 +28,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.75
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 16000,

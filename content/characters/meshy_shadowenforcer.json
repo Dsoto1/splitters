@@ -5,7 +5,8 @@
   "order": 123,
   "name": "Shadow Enforcer",
   "look": "core.shadowenforcer",
-  "group": "soldiers",
+  "group": "space",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "You don't see him arrive. You do see the paperwork after.",
   "body": "male",
@@ -23,9 +24,6 @@
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

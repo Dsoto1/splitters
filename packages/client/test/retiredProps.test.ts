@@ -7,6 +7,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { KIT_ALIASES, ROOM_TYPES, STYLE_PACKS, builtInSetPieces, getProp, isKitModel, recipeModels } from '@tiletrigger/shared';
 import { beltModels } from '../src/backdrop.ts';
+import { RETIRED_PROPS } from '../src/editor/paletteCatalog.ts';
 
 const ROOT = new URL('../../../', import.meta.url);
 const aliases = JSON.parse(readFileSync(new URL('content/kitprops.json', ROOT), 'utf8')).aliases as Record<string, { model: string }>;
@@ -41,5 +42,18 @@ describe('retired props', () => {
     }
     // Every prop or kit family named exists (the plants of the belt are species, `env.…`).
     for (const m of new Set(all)) if (!m.startsWith('env.')) expect(getProp(m), m).toBeTruthy();
+  });
+
+  // Everything the palette no longer offers (the plants our species replaced as well as the kit aliases): a pack that
+  // listed one would count a piece its picker can't show. Maps that place them still load; only the lists changed.
+  it('are listed by no Style Pack, whatever retired them', () => {
+    for (const id of retired) expect(RETIRED_PROPS.has(id), id).toBe(true);
+    const hits = STYLE_PACKS.flatMap((p) => p.props.filter((id) => RETIRED_PROPS.has(id)).map((id) => `${p.id}: ${id}`));
+    expect(hits).toEqual([]);
+    // Retired, not removed: each still resolves for the maps that place it.
+    for (const id of ['prop.cactus', 'prop.hedge', 'prop.palm', 'prop.fern', 'prop.tree_round']) {
+      expect(RETIRED_PROPS.has(id), id).toBe(true);
+      expect(getProp(id), id).toBeTruthy();
+    }
   });
 });

@@ -36,7 +36,7 @@ export function createMountNode(scene: Scene, models: ModelLibrary, model: strin
     node.position.y -= min.y - root.position.y - ride;
     for (const m of node.getChildMeshes()) {
       m.isPickable = false;
-      if (tint) paint(m, tint);
+      if (tint) paint(m, tint, def.paint);
       else if (def.glow) glowsOf(root).push(...energise(m, def.glow));
     }
     // A model with wheels of its own (meshes named wheel-front-left and so on, or a model's wheel_* parts) on a vehicle with
@@ -130,11 +130,19 @@ export function wheelsOf(root: TransformNode): MountWheel[] {
   return list;
 }
 
+/**
+ * The colour a skin or team tint multiplies a model's own colours by, at `strength` (MountDef.paint, 0 to 1): the
+ * tint mixed that far from white. Full strength is the tint itself.
+ */
+export function paintColor(tint: string, strength = 1): Color3 {
+  return Color3.Lerp(Color3.White(), Color3.FromHexString(tint), Math.max(0, Math.min(1, strength)));
+}
+
 /** Give a mesh its own copy of its material, tinted (pale skins also glow a little, so snow paint reads white). */
-function paint(mesh: { material: PBRMaterial | StandardMaterial | null | unknown }, tint: string): void {
+function paint(mesh: { material: PBRMaterial | StandardMaterial | null | unknown }, tint: string, strength = 1): void {
   const src = mesh.material as PBRMaterial | StandardMaterial | null;
   if (!src) return;
-  const c = Color3.FromHexString(tint);
+  const c = paintColor(tint, strength);
   const mat = src.clone(`${src.name}_${tint}`) as PBRMaterial | StandardMaterial | null;
   if (!mat) return;
   if ('albedoColor' in mat) mat.albedoColor = (mat.albedoColor ?? Color3.White()).multiply(c);

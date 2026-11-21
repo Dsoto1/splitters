@@ -11,6 +11,7 @@
   },
   "size": 512,
   "budgets": { "maxBytes": 160000 },
+  "adjust": { "Terrazzo013": { "contrast": 0.55, "why": "Its specks read as noise at phone size: softer, with finer specks from core.pbr_terrazzo's scale (docs/MOBILE_AUDIT.md, proposal 9)." } },
   "textures": [
     "Asphalt031", "Bricks059", "Bricks076C", "Bricks090", "Carpet012", "Clay005", "Concrete031", "Concrete034",
     "Concrete042A", "CorrugatedSteel006A", "CorrugatedSteel007A", "CorrugatedSteel009", "Fabric028", "Fabric061", "Facade006", "Grass001",

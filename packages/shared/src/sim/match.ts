@@ -19,11 +19,12 @@ import { add, createRng, distance, dot, horizontalDistance, lookAngles, normaliz
 import {
   MOUNT_BURN_FRACTION, MOUNT_BURN_SECONDS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, MOUNT_WRECK_FADE_SECONDS, MOUNT_WRECK_SECONDS, VEHICLE_DAMAGE_SCALE,
   airCraftDef, BUILT_MOUNT_BASE, enterReach, FLOAT, MOUNT_DEFS, footprintGap, getMountDef, mountMass, mountToWorld, type MountDef, type SeatDef, type SeatRole, ammoRefillTicks, ammoRefilledBy, armourScale, firingSeat, sealedMount, type MountHit,
+  lookSteer,
 } from './mounts.ts';
 import { airRoute, botDropIndex, canDrop, dropArea, dropIndex, dropOffsets, dropPlan, dropStretchEnds, dropTarget, routePose, shouldJump, ticksToRouteEnd, type AirRoute, type DropPlan } from './airplane.ts';
 import { CHUTE, heightAboveGround } from './parachute.ts';
 import type { NavWorld } from '../nav/index.ts';
-import { buildMapNav } from './mapNav.ts';
+import { buildMapNav, loadMapNav, type PrebuiltNav } from './mapNav.ts';
 import {
   POWERUP_DAMAGE_BIT,
   POWERUP_SPEED_BIT,
@@ -51,6 +52,7 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
+import { OPTIC_KINDS, WEAPON_OPTICS } from '../content/optics.generated.ts';
 import { lastHit, type LookHitbox } from './hitbox.ts';
 import { lookHitbox, npcHitbox } from './lookHitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
@@ -58,10 +60,12 @@ import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
-import { rollPickup } from './pickupRoll.ts';
+import { dealPickup, rollPickup } from './pickupRoll.ts';
+import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
-import { bodyHeightOf, eyeHeightOf, stanceOf } from './movement.ts';
+import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
+import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies } from '../content/environment.ts';
@@ -70,12 +74,13 @@ import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
 import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
-import { PhysicsWorld, type GroundHeight } from './physics.ts';
+import { PhysicsWorld, type ChassisBody, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
+import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid, yawPitchRoll, type RigidSetup, type RigidState } from './wheelPhysics.ts';
 import { terrainHeightAt } from '../map/terrain.ts';
 import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, akimboAllowed, akimboReady, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, CheckpointSquad, MatchCheckpoint } from '../net/handoff.ts';
 import { tallied, tallyOf, tallyRow } from './squadScores.ts';
@@ -89,7 +94,7 @@ import { Scenario, teamAllows } from './scenario.ts';
 import { liftLinks } from './movers.ts';
 import { MatchAwards } from './awards.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
-import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
+import { IMPROMPTU_MIN_PLAYERS, SPAWN_DEATHS_KEPT, SpawnSides, leaderSpotSafe, spawnProtection, WAVE_MIN_PLAYERS, centroid, generateSpawns, pickSpawn, spawnShortfall, spawnTaken, SPAWN_TAKEN, spawnsPerTick, type SpawnDeath, type SpawnSpot } from './spawns.ts';
 import { applyPortals, portalCarry, portalSegment } from './portals.ts';
 import { Encounters } from './encounters.ts';
 import { ZombieSurvival } from './zombies.ts';
@@ -98,18 +103,19 @@ import { TrackDriver, type DrivenVehicle } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, getLook, lookForBot } from '../content/looks.ts';
+import { DEFAULT_LOOK, botLookOrder, getLook } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
 import { castLooks, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
-  RELOAD_KINDS, RICOCHET_MAX_ANGLE, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, shotCone, stepAds, stepReload, surfaceMaterial,
-  type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
+  RELOAD_KINDS, RICOCHET_MAX_ANGLE, akimboCone, akimboKick, akimboLoader, akimboMove, akimboOf, akimboRaise, autoReloadDue, beginReload, bulletPhysics, counterRecoil, entityMaterial, falloffAt, flyBullet, gunplayOf, impactFalloff, lethalityScale, newGunState, penetrate, recoilIdle, recoilShot, ricochets, roundsReady, offBox, pairReloadTurn, shotCone, spreadOf, stepAds, stepReload, storeOff, surfaceMaterial,
+  type AkimboSpec, type BallisticMaterial, type FalloffSpec, type GunState, type Gunplay, type KickSpec, type ReloadRun,
 } from './gunplay.ts';
+import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
-import { blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
+import { OIL_TRACTION, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
 const MAX_INPUTS_PER_TICK = 2;
@@ -150,6 +156,12 @@ function lyingItem(p: Projectile): ItemDefinition | undefined {
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
+/** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
+const DRIVE_WAIT_MAX = 12;
+/** A driven vehicle is heard by bots (an engine noise, Match.noteCombat) when going this fast (m/s), every this many ticks, out to at most this far (m). */
+const ENGINE_HEARD_SPEED = 2;
+const ENGINE_NOISE_TICKS = 30;
+const ENGINE_NOISE_RANGE = 40;
 const RAM_MIN_SPEED = 5;
 /** A vehicle nobody drives brakes at this rate (m/s²) when its data has no `vehicle.idleBrake`. */
 const DEFAULT_IDLE_BRAKE = 10;
@@ -174,8 +186,16 @@ export interface WeaponState {
   overheated?: boolean;
   /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
   firedTick?: number;
+  /** The fire mode it is set to (index into its `fireModes`, sim/fireModes.ts; absent: its first). */
+  mode?: number;
   /** A magazine is in but no round is chambered (an empty reload stopped before the bolt). */
   unchambered?: boolean;
+  /**
+   * Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): the second gun of a pair, with its own magazine over
+   * the weapon's one reserve. `away`: put away with the fire-mode key (one gun in hand, with its sights; the second
+   * keeps its magazine). Only ever set for a person, when the match allows pairs (Match.canPair).
+   */
+  off?: { mag: number; unchambered?: boolean; away?: boolean };
   /** Mounted guns with limited ammunition (SeatDef.ammo): rounds aboard, and ticks toward the next one back. */
   shells?: number;
   shellTicks?: number;
@@ -208,6 +228,8 @@ interface MountRt {
   alive: boolean;
   respawnAt: number;
   respawnTicks: number;
+  /** Resupplies left (MountDef.resupply: the Supply Buggy's back); 0 without one. */
+  supply: number;
   /** Occupant per seat (actor slot), or null. */
   seats: (number | null)[];
   /** Mounted gun per seat. */
@@ -243,6 +265,25 @@ interface MountRt {
   /** Raycast suspension (wheeled light vehicles, sim/suspension.ts): its tuning and the sprung body. */
   suspSetup?: SuspensionSetup;
   susp?: SuspensionState;
+  /**
+   * Rigid driving (sim/wheelPhysics.ts: a real body on sprung raycast wheels; MountDef.vehicle.rigid): its numbers,
+   * its state, the hull's sweep capsule, and the pose and speed it last left in pos, yaw and speed (so a move from
+   * outside, a respawn or a test putting it somewhere, starts it again there).
+   */
+  rigidSetup?: RigidSetup;
+  rigid?: RigidState;
+  chassisProbe?: RAPIER.Collider;
+  /** Driving physics 4: the hull as a Rapier body (PhysicsWorld.createChassisBody); absent with `?drive=own` (the probe's sweep). */
+  chassisBody?: ChassisBody;
+  /**
+   * The driver's inputs applied this tick: a driven rigid vehicle steps once for each, as the driver's own prediction
+   * steps once per input (Match.driveRigid).
+   */
+  driveQueue?: MountRt['drive'][];
+  /** Ticks waited for the driver's next input, and whether the driver is sending them (not just got in, not gone quiet). */
+  driveWait?: number;
+  driveFed?: boolean;
+  rigidSeen?: { pos: Vec3; yaw: number; speed: number };
   cooldown: number;
   /** Who damaged it last (credit for the explosion). */
   lastHitBy: number | null;
@@ -296,6 +337,8 @@ export interface Spectator {
   account?: boolean;
   /** Their party (Combatant.party), kept for when they join again. */
   party?: string;
+  /** Their career rank points (Combatant.rankPoints). */
+  rankPoints?: number;
   kills: number;
   deaths: number;
   selfKills: number;
@@ -342,6 +385,8 @@ export interface Combatant {
   padFlight?: boolean;
   /** Tick it last took damage (squad spawns avoid teammates in a fight). */
   hurtAt?: number;
+  /** Ticks spent standing outside the play area (stepOutOfBounds): warned, then returned. */
+  outsideTicks?: number;
   /** Takes no damage (the browser's test mode, offline only); falling out of the map still kills. */
   invulnerable?: boolean;
   /** Kills since this one last died (kill-streak rewards). */
@@ -376,6 +421,8 @@ export interface Combatant {
    * modes put a joining member on the team most of their party is on (takeOverBot). People only; the roster says it (`py`).
    */
   party?: string;
+  /** A person's career rank points as their browser sent them on joining (content/ranks.ts): only passed on in the roster (`rx`), cosmetic. */
+  rankPoints?: number;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -399,6 +446,11 @@ export interface Combatant {
   throwable: { kind: ThrowableKind; count: number } | null;
   // Timers below count applied inputs (not server ticks) so client prediction can mirror them exactly.
   fireCooldown: number;
+  /** Dual wielding: the second gun's own timers and trigger latch (0 / false / null without a pair in hand). */
+  fireCooldown2: number;
+  reloadTicks2: number;
+  semiLatch2: boolean;
+  reload2: ReloadRun | null;
   throwCooldown: number;
   /** Unarmed quick melee: ticks until the next strike, and the tick of the last punch (punch, then kick). */
   meleeCooldown: number;
@@ -413,12 +465,18 @@ export interface Combatant {
   prevButtons: number;
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
   useTick?: number;
+  /** Tick from which this player may resupply again (sim/resupply.ts: a short wait between two). */
+  resupplyAt?: number;
+  /** A hold to use in progress (sim/holdUse.ts: resupplying, or healing with the Medkit). */
+  hold?: HoldUse;
   windup: number;
   /** A person on foot in the third-person view (their input's BUTTON_THIRD_PERSON): rounds go toward the crosshair. */
   thirdPerson?: boolean;
   semiLatch: boolean;
   burstLeft: number;
   burstTimer: number;
+  /** Ticks between a burst's rounds (the mode it was fired in: a mode switch mid-burst doesn't change it). */
+  burstEvery?: number;
   bloom: number;
   /** Mechanical recoil offset, spray and sights (gunplay.ts), counted in applied inputs like the timers. */
   gun: GunState;
@@ -515,6 +573,13 @@ interface Bullet {
   energy: number;
   /** Damage left after penetrations and ricochets (1 = full). */
   scale: number;
+  /**
+   * Damage by impact speed (gunplay.ts impactFalloff): the speed its muzzle speed has become through what it passed
+   * (penetration, water, a ricochet: their damage is in `scale`), so speed / ref is what drag alone left; and its
+   * speed at the start of the segment being flown (the strike's speed is read along it).
+   */
+  ref: number;
+  seg: number;
   pens: number;
   rics: number;
   /** Surfaces it passed through or glanced off (drawn as impacts). */
@@ -569,6 +634,32 @@ interface Cover {
   max: number;
   body: RAPIER.Collider;
 }
+/**
+ * An ammo box (sim/resupply.ts): a placed one (a map's Ammo Box pickup, as a solid crate) or one deployed from an Ammo
+ * Box Kit. `body` is its collider while it stands (null while a placed one waits to come back).
+ */
+interface AmmoBox {
+  id: number;
+  kind: 'placed' | 'deployed';
+  /** The map pickup it stands for (placed). */
+  pickupId?: string;
+  /** Ground point under its centre. */
+  pos: Vec3;
+  yaw: number;
+  health: number;
+  max: number;
+  uses: number;
+  maxUses: number;
+  body: RAPIER.Collider | null;
+  /** Who set it down (deployed). */
+  owner: number | null;
+  /** Deployed: the tick it goes. Placed, while gone: the tick it is back. */
+  until: number;
+  /** Placed: ticks it stays gone once emptied or destroyed (its pickup's respawn time). */
+  respawnTicks: number;
+  /** Last to hurt it (the cook-off is theirs). */
+  lastHitBy: number | null;
+}
 /** Per-tick damage of hazards and status effects. */
 const BURN_DPS = 12;
 const POISON_DPS = 9;
@@ -603,8 +694,6 @@ function arcFlags(m: MountRt): number {
   if (!arc || st.target === null || st.vent > 0) return 0;
   return st.charge < Math.round(arc.windUpSeconds * TICK_RATE) ? MOUNT_FLAG_CHARGING : MOUNT_FLAG_ARC;
 }
-/** Look-to-steer: steering (-1..1) per radian the driver looks off the nose. */
-const LOOK_STEER_GAIN = 2.2;
 /** The vehicle probe's feet ride this far over the ground (the character controller's skin): the wheels' rest. */
 const VEHICLE_SKIN = 0.02;
 /** Suspension rays a tick before vehicles start reusing last tick's ground (24 four-wheelers). */
@@ -615,6 +704,17 @@ const CHEST = PLAYER.height * 0.55;
 const chest = (p: Vec3): Vec3 => ({ x: p.x, y: p.y + CHEST, z: p.z });
 
 export const heldWeapon = (c: Combatant): WeaponState => c.weapons.get(c.current)!;
+/** The held weapon's handling (spec §27): its running speed and sprint-exit time; full speed with nothing in hand. */
+const NO_HANDLING = { move: 1, sprintExit: 0 };
+const handlingOf = (c: Combatant): { move: number; sprintExit: number } => {
+  const w = c.weapons.get(c.current);
+  if (!w) return NO_HANDLING;
+  const h = gunplayOf(w.def).handling;
+  const pair = pairOf(w);
+  return pair && pair.move !== 0 ? { move: akimboMove(h.move, pair), sprintExit: h.sprintExit } : h;
+};
+/** The pair in hand: the weapon has a second gun and it is out (not put away with the fire-mode key); its trade, or null. */
+const pairOf = (w: WeaponState): AkimboSpec | null => (w.off && !w.off.away ? akimboOf(w.def) : null);
 
 /**
  * Authoritative Deathmatch simulation. Contains no networking or Node/DOM
@@ -683,6 +783,11 @@ export class Match {
   private readonly dropHints = new Map<number, number>();
   private nextProjectileId = 1;
   private covers: Cover[] = [];
+  /** Ammo boxes: placed crates and deployed ones (sim/resupply.ts). */
+  private boxes: AmmoBox[] = [];
+  private nextBoxId = 1;
+  /** Cook-off blasts still to go off: when, where, whose. */
+  private cookOffs: { tick: number; at: Vec3; owner: number | null }[] = [];
   /** UAV sweeps running: side (team, or one player in free-for-all) -> tick it ends. */
   private readonly uavUntil = new Map<string, number>();
   /** Counter-UAVs running: the jamming side -> tick it ends (everyone else's minimap is jammed). */
@@ -724,7 +829,7 @@ export class Match {
    */
   readonly watchers = new Set<number>();
   /** The movement environment handed to stepMovement, refilled per actor (applyInputs). */
-  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1 };
+  private readonly moveEnv: MoveEnv = { liquids: undefined, jet: false, ladders: undefined, scale: 1, gravity: 1, gravityZones: undefined, airJumps: undefined, jetpack: undefined, glider: undefined, autoChute: undefined, ground: undefined, jump: 1, stamina: 1, weaponMove: 1 };
   /** Where the people (and watchers) are this tick, in big matches only (relaxedMove). */
   private watched: Vec3[] | null = null;
   /** The cuts buried tunnels make in the ground (groundBore.ts): bots in or over one never move coarsely (relaxedMove). */
@@ -753,6 +858,14 @@ export class Match {
   /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
   readonly classes: ClassPlay | null;
 
+  /** The navmesh came from `opts.nav` (built ahead) or the process's navCache, not built at load. */
+  readonly navReused: boolean;
+  /** The navmesh built at load, as data (a browser host keeps it in its storage: client game/navCache.ts); null when reused. Set it to null once kept. */
+  navBuilt: PrebuiltNav | null;
+
+  /** Dual wielding is in play in this match (rules.ts akimboReady when it was made, or MatchOptions.akimbo); the rule decides on top. */
+  private readonly pairs: boolean;
+
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
     readonly map: MapDocument,
@@ -763,10 +876,13 @@ export class Match {
      * players and spectators alike, so a match only spectators watch starts
      * once they have), at most START_WAIT_SECONDS, then count down; every
      * later round counts down too. Off (play at once) for headless matches
-     * and tests.
+     * and tests. `nav`: a navmesh built ahead from this map (MapMaker's navigation check, for its Test; a browser
+     * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
+     * `navReused`), as the process's navCache is.
      */
-    private readonly opts: { startGate?: boolean } = {},
+    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own'; /** Dual wielding on or off for this match whatever rules.ts akimboReady says (the client's `?akimbo=1`). */ akimbo?: boolean } = {},
   ) {
+    this.pairs = opts.akimbo ?? akimboReady();
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
     this.phys = matchPhysics(rules, map);
@@ -774,7 +890,10 @@ export class Match {
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    this.nav = buildMapNav(map, this.geometry, this.physics, this.envShapes, this.phys);
+    const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
+    this.nav = nav.nav;
+    this.navReused = nav.reused;
+    this.navBuilt = nav.built;
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -784,6 +903,11 @@ export class Match {
       if (e.kind !== 'pickup') continue;
       const item = getItem(e.item);
       if (!item) continue;
+      // A placed Ammo Box is a resupply crate, not a pickup (sim/resupply.ts; not where weapons are restricted).
+      if (isAmmoBoxPickup(e)) {
+        if (!restrictedWeapons(rules)) this.addBox('placed', { x: e.position[0], y: e.position[1], z: e.position[2] }, 0, null, e.id, Math.round(Math.max(item.respawnSeconds, e.respawnSeconds ?? 0, 20) * TICK_RATE));
+        continue;
+      }
       const p: PickupState = { id: e.id, item, placed: item, pool: null, rolls: 0, entity: { item: e.item, random: e.random, keepFixed: e.keepFixed }, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true };
       this.pickups.push(p);
       this.repool(p);
@@ -1340,6 +1464,10 @@ export class Match {
       current: 0,
       throwable: null,
       fireCooldown: 0,
+      fireCooldown2: 0,
+      reloadTicks2: 0,
+      semiLatch2: false,
+      reload2: null,
       meleeCooldown: 0,
       punchedAt: -1000,
       throwCooldown: 0,
@@ -1443,12 +1571,27 @@ export class Match {
     return this.rules.botCast ?? validBotCast(this.map.botCast);
   }
 
-  /** A random bot's look for its slot: spread across the looks the bot-characters setting allows (all: the whole roster, as ever). */
+  /** Each cast's deal (botLookOrder over castLooks), by cast key. */
+  private botDeals = new Map<string, string[]>();
+
+  /**
+   * A random bot's look for its slot: the match's own shuffle of the looks the bot-characters setting allows (all:
+   * the whole core roster), each bot a different look until the pool runs out. The deal starts at the slot's place
+   * and steps past looks other random bots already wear (a set's hand picks and away players' bodies count too).
+   */
   botLook(slot: number): string {
     const cast = this.botCast;
-    if (!cast.length) return lookForBot(slot);
-    const pool = castLooks(cast);
-    return pool[(slot + 1) % pool.length]!.id;
+    const key = cast.join(',');
+    let order = this.botDeals.get(key);
+    if (!order) this.botDeals.set(key, (order = botLookOrder(castLooks(cast), this.seed)));
+    const worn = new Set<string>();
+    for (const c of this.combatants()) if (c.kind === 'bot' && c.slot !== slot) worn.add(c.ownLook ?? c.look);
+    const start = slot % order.length;
+    for (let k = 0; k < order.length; k++) {
+      const id = order[(start + k) % order.length]!;
+      if (!worn.has(id)) return id;
+    }
+    return order[start]!;
   }
 
   /**
@@ -1759,7 +1902,7 @@ export class Match {
   spectate(slot: number): boolean {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
-    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}) };
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}) };
     // Their client stays loaded: a spectator counts for the start gate as a player does.
     const loaded = this.readySlots.has(slot);
     this.remove(slot);
@@ -1784,6 +1927,7 @@ export class Match {
     c.objective = s.objective;
     if (s.account) c.account = true;
     if (s.party) c.party = s.party;
+    if (s.rankPoints !== undefined) c.rankPoints = s.rankPoints;
     // Their client has the match loaded already (the start gate needn't wait for them).
     this.readySlots.add(slot);
     this.resetIdle(slot);
@@ -1951,6 +2095,7 @@ export class Match {
       this.stepDrops();
       this.stepBullets();
       this.stepZones();
+      this.stepBoxes();
       this.stepStatuses();
       if (prof) lap('projectiles');
       if (this.phase === 'playing') this.scenario.step();
@@ -1960,6 +2105,7 @@ export class Match {
       if (this.phase === 'playing' && this.roulette) this.phys.gravity = this.roulette.step();
       if (this.phase === 'playing') this.zombies?.step();
       if (this.phase === 'playing') this.classes?.step();
+      this.stepOutOfBounds();
       this.spawnDue();
       for (const c of this.npcs.values()) if (!c.alive && this.tick >= c.npc!.removeAt) this.removeNpc(c.slot);
       if (this.tick >= this.phaseEndTick) this.endRound();
@@ -2067,6 +2213,15 @@ export class Match {
     }
     // Weapons dropped by the fallen count as weapon pickups.
     for (const d of this.drops) lying.push({ id: `drop_${d.id}`, item: d.item, pos: d.pos, available: true });
+    // Ammo boxes (sim/resupply.ts) are Ammo Box pickups to the bots (`box_<id>`; they press Use beside one): one being
+    // shot (under 60 % health) is off their list, and a cooking one is a hazard to wait out.
+    const boxItem = getItem(AMMO_BOX_ITEM);
+    if (boxItem && !restrictedWeapons(this.rules)) {
+      for (const b of this.boxes) {
+        const up = !!b.body && b.uses > 0;
+        lying.push({ id: `box_${b.id}`, item: boxItem, pos: b.pos, available: up && b.health >= b.max * 0.6, ...(!up && b.kind === 'placed' ? { respawnIn: Math.max(0, (b.until - this.tick) / TICK_RATE) } : {}) });
+      }
+    }
     const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
@@ -2078,7 +2233,10 @@ export class Match {
     const doorButtonsFor = (team: string | null) => buttonsBy.get(team) ?? buttonsBy.set(team, this.scenario.doorButtons(team)).get(team)!;
     const lifts = this.scenario.liftViews();
     const portals = this.scenario.portalViews();
-    const hazards = this.scenario.hazards();
+    const hazards = [
+      ...this.scenario.hazards(),
+      ...this.cookOffs.map((k) => ({ min: { x: k.at.x - COOK_OFF.radius, y: k.at.y - 1, z: k.at.z - COOK_OFF.radius }, max: { x: k.at.x + COOK_OFF.radius, y: k.at.y + 2, z: k.at.z + COOK_OFF.radius } })),
+    ];
     const spawnPoints = this.spawnPoints.map((s) => s.pos);
     // Team Deathmatch bots roam toward the other side's spawns, so the teams meet in the middle.
     const teamRoam = new Map<string, Vec3[]>();
@@ -2117,6 +2275,8 @@ export class Match {
       return list;
     };
     const anySentries = this.mounts.some((m) => m.def.sentry && m.alive);
+    // Who has died (or gone): a bot's target missing from its `others` may only be out of its reckoning.
+    const fallen = (slot: number): boolean => (slot >= SENTRY_VIEW_BASE ? !this.mounts[slot - SENTRY_VIEW_BASE]?.alive : !this.actor(slot)?.alive);
     this.directBots(actors);
     const director = this.director;
     const every = this.botBudget(actors);
@@ -2167,6 +2327,7 @@ export class Match {
         tick: this.tick,
         self: views.get(c.slot)!,
         others,
+        fallen,
         physics: this.physics,
         // Shared sight lines and bounded perception only in big matches: smaller ones see exactly as before.
         sight: every > 1 ? this.sight : undefined,
@@ -2174,7 +2335,7 @@ export class Match {
         ...(this.smokeClouds().length ? { smoke: this.smokeClouds() } : {}),
         nav: this.nav,
         spawnPoints: orderGoal === undefined ? spawnPoints : npc && orderGoal ? [orderGoal.pos] : (c.faction && teamRoam.get(c.faction)) || spawnPoints,
-        pickups: npc ? npcPickups : pickups,
+        pickups: npc ? npcPickups : this.withSupplyStops(pickups, c),
         inventory: this.inventoryOf(c),
         throwables: c.throwable?.count ?? 0,
         throwable: c.throwable?.kind ?? null,
@@ -2251,6 +2412,13 @@ export class Match {
       if (c.alive && (c.gun.rp > 0 || c.gun.ry !== 0)) {
         const k = c.bot.difficulty.aim.recoilComp ?? 0.5;
         input.rc = [c.gun.rp * k, c.gun.ry * k];
+      }
+      // Resupplying (sim/holdUse.ts): a bot waits it out, standing still with E held, unless it has to fight (firing
+      // cancels the hold; it presses again when it is next beside the stock and short).
+      if (c.hold?.kind === 'resupply' && !(input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE))) {
+        input.buttons = (input.buttons & ~(BUTTON_JUMP | BUTTON_SPRINT)) | BUTTON_USE_HOLD;
+        input.forward = 0;
+        input.right = 0;
       }
       c.queue.push(input);
       if (every > 1) this.botThought.set(c.slot, { input, tick: this.tick });
@@ -2629,6 +2797,15 @@ export class Match {
         if (!c.bot || !c.alive || !this.hostile(shooter, c)) continue;
         if (ev.hit.includes(c.slot) || segmentDistance(c.move.pos, from, to, CHEST) < 1.6) c.shotAt = { tick: this.tick, from };
       }
+    }
+    // A vehicle being driven is heard (its engine), twice a second, further the faster it goes: before, bots only knew
+    // of one they could see, so a buggy coming up behind them, or its driver getting out there, went unnoticed until
+    // the driver fired (owner, 2026-11-15).
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.vehicle || m.def.airplane || Math.abs(m.speed) < ENGINE_HEARD_SPEED || (this.tick + m.index) % ENGINE_NOISE_TICKS !== 0) continue;
+      const driver = m.seats[m.def.seats.findIndex((seat) => seat.role === 'driver')];
+      if (driver === null || driver === undefined) continue;
+      this.noises.push({ pos: { ...m.pos }, tick: this.tick, by: driver, range: Math.min(ENGINE_NOISE_RANGE, 15 + Math.abs(m.speed) * 1.5) });
     }
     if (this.noises.length > 48) this.noises.splice(0, this.noises.length - 48);
   }
@@ -3032,8 +3209,19 @@ export class Match {
       }
 
       if (input.weapon && input.weapon !== c.current && c.weapons.has(input.weapon)) this.switchTo(c, input.weapon);
+      // Dual wielding: the fire-mode key puts the second gun away and brings it back (a pair has no fire modes: mode 1
+      // is one gun). Then, with the pair in hand: no aiming (not its walk either), and the second trigger ends a
+      // sprint as the first does. Before the move, so prediction replays it with the rest of the input.
+      const mine = c.weapons.get(c.current);
+      if (mine?.off && input.fireMode !== undefined) this.setPairAway(c, mine, input.fireMode === 1);
+      const pair = mine?.off && (!c.mount || this.gunSeatOf(c) === null) ? pairOf(mine) : null;
+      if (pair) {
+        input.buttons &= ~BUTTON_ZOOM;
+        if (input.buttons & BUTTON_ALT) input.buttons &= ~BUTTON_SPRINT;
+      }
 
       const zipBefore = c.move.zip;
+      let sprintEnded = false;
       const seat = c.mount ? this.seatOf(c) : null;
       if (seat) {
         // In a turret or vehicle: no walking. Drivers steer; gunners' aim stays within the gun's arc.
@@ -3053,12 +3241,10 @@ export class Match {
           const down = !!(input.buttons & BUTTON_CROUCH);
           // Look-to-steer (the Warthog way): the wheel turns toward where the driver looks, on top of A/D; backing up
           // it steers the other way round, so the nose still swings toward the look.
-          let right = input.right;
-          if (input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly) {
-            const off = Math.atan2(Math.sin(c.yaw - m.yaw), Math.cos(c.yaw - m.yaw));
-            right = Math.max(-1, Math.min(1, right + off * LOOK_STEER_GAIN * (m.speed < -0.5 ? -1 : 1)));
-          }
+          const right = input.buttons & BUTTON_STEER_LOOK && m.def.vehicle && !m.def.vehicle.fly ? lookSteer(input.right, c.yaw, m.yaw, m.speed) : input.right;
           m.drive = m.def.vehicle?.fly ? { forward: input.forward, right, lift: (up ? 1 : 0) - (down ? 1 : 0) } : { forward: input.forward, right, brake: up };
+          // A rigid vehicle steps once per driver input, as the driver's prediction does (driveRigid).
+          if (m.rigid) (m.driveQueue ??= []).push(m.drive);
         }
         if (seat.arc !== undefined) {
           const centre = m.yaw + (seat.facing ?? 0);
@@ -3114,10 +3300,14 @@ export class Match {
           env.ground = detail !== 'full' && this.groundAt ? this.groundAt : undefined;
           env.ziplines = this.ziplines.length ? this.ziplines : undefined;
           env.team = this.ziplines.length ? c.faction : undefined;
+          // The held weapon's running speed (spec §27; client prediction passes the same).
+          env.weaponMove = handlingOf(c).move;
           // Bots ride a zipline to its end: a stray E (a door, a vehicle) or a stuck-hop must not drop them off it.
           if (c.bot && c.move.zip !== undefined) input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
+          const sprinted = !!c.move.sprint;
           const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
+          sprintEnded = sprinted && !stepped.sprint;
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
           const through = this.scenario.portals.length && c.move.zip === undefined ? applyPortals(this.scenario.portals, before, c.move, this.scenario.portalOn, c.size, bodyHeightOf(c.move, c.size)) : null;
           if (through) {
@@ -3131,9 +3321,13 @@ export class Match {
         }
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
+      if (c.fireCooldown2 > 0) c.fireCooldown2--;
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.meleeCooldown > 0) c.meleeCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
+      // Out of a sprint: the weapon comes up before it fires (spec §27, sprint-exit time), on the raise timer, so
+      // everything that waits for a raise waits for this too, and client prediction replays it (prediction.ts).
+      if (sprintEnded) c.raiseTicks = Math.max(c.raiseTicks, handlingOf(c).sprintExit);
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
       this.advanceReload(c);
@@ -3142,13 +3336,17 @@ export class Match {
       if (input.buttons & BUTTON_USE && (c.move.zip !== undefined) !== (zipBefore !== undefined)) input.buttons &= ~BUTTON_USE;
       if (input.buttons & BUTTON_USE) {
         c.useTick = this.tick;
-        // Get out, get in, or use whatever you are looking at.
-        if (c.mount) {
+        // Get out, get in, or use whatever you are looking at (a press during a hold to use is part of it).
+        if (c.hold) {
+          // Holding already.
+        } else if (c.mount) {
           const ride = this.mounts[c.mount.index];
           if (!ride?.route || this.mayJumpOut(c, ride)) this.leaveMount(c, true);
-        } else if (!this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
+        } else if (!this.resupplyAtBox(c) && !this.resupplyAtMount(c) && !this.enterMount(c)) this.scenario.use(c.slot, { x: c.move.pos.x, y: c.move.pos.y + PLAYER.eyeHeight, z: c.move.pos.z }, c.yaw, c.pitch);
         if (this.phase !== 'playing') break;
       }
+      // A hold to use (sim/holdUse.ts): goes on, completes, or is cancelled (firing below cancels a resupply).
+      if (c.hold) this.stepHoldUse(c, input);
       // A mode tool (the Fort Wars Builder) takes the trigger for itself.
       if (!c.mount && this.mode?.useInput?.(c, input)) input.buttons &= ~(BUTTON_FIRE | BUTTON_ALT | BUTTON_ZOOM | BUTTON_RELOAD);
       // Seated: the seat's gun if it has one; drivers without one can't shoot; passengers use their own.
@@ -3160,23 +3358,33 @@ export class Match {
       // On a zipline one hand holds the trolley: sidearms and blades only.
       const unarmed = (seatNow?.role === 'driver' && !gun) || (!!c.mount && !!this.mounts[c.mount.index]!.def.airplane) || (c.move.zip !== undefined && !gun && !oneHanded(held.def));
       const def = held.def;
+      // The pair in hand (never from a seat's gun).
+      const paired = gun ? null : pair;
+      // The fire mode the player wants for the gun in hand (spec §36): part of the input, so prediction replays it.
+      if (!gun && input.fireMode !== undefined && def.fireModes) held.mode = clampFireMode(def, input.fireMode);
+      const firing = firingOf(def, gun ? 0 : held.mode);
       c.thirdPerson = c.kind === 'human' && !c.mount && (input.buttons & BUTTON_THIRD_PERSON) !== 0;
       const fireDown = (input.buttons & BUTTON_FIRE) !== 0;
       const pressed = input.buttons & ~c.prevButtons;
       c.prevButtons = input.buttons;
       if (!fireDown) c.semiLatch = false;
+      if (!(input.buttons & BUTTON_ALT)) c.semiLatch2 = false;
       // Reloads give way to emergency actions (spec §16): breaking into a sprint, using something.
-      if (c.reload && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload(c);
-      if (input.buttons & BUTTON_RELOAD) this.startReload(c);
+      if ((c.reload || c.reload2) && ((pressed & BUTTON_SPRINT && input.forward > 0) || pressed & BUTTON_USE)) this.cancelReload(c);
+      if (input.buttons & BUTTON_RELOAD) {
+        // A pair: both guns, one after the other (advanceReload: the emptier first).
+        this.startReload(c);
+        if (paired) this.startReloadOff(c);
+      }
       const frozen = c.frozenTicks > 0;
       const gp = gunplayOf(def);
-      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun);
+      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun && !paired);
       // Firing interrupts a reload whenever a round is ready: a loaded shell, a tactical reload's chambered round.
       // A melee weapon loading its barrel always swings (the loads already in stay); its barrel fires once one is in.
       if (c.reload && !gun && c.fireCooldown === 0 && c.raiseTicks === 0) {
         const swing = def.kind === 'melee' && ((fireDown && !c.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
         const shoot = (fireDown && !c.semiLatch && roundsReady(held) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && held.alt >= def.alt.cost);
-        if (swing || shoot) this.cancelReload(c);
+        if (swing || shoot) this.cancelReload(c, paired ? 1 : 0);
       }
       const ready = c.fireCooldown === 0 && (gun ? this.turretOnAim(c) : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
@@ -3189,23 +3397,22 @@ export class Match {
         // The rest of a burst follows on its own timer.
         if (--c.burstTimer <= 0) {
           if (!frozen && c.reloadTicks === 0 && spendRound(held)) {
-            this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+            this.fire(c, primaryTrigger(def, firing), input.viewTick ?? 0);
             fired = true;
             c.burstLeft--;
-            c.burstTimer = def.burst?.intervalTicks ?? 1;
+            c.burstTimer = c.burstEvery ?? def.burst?.intervalTicks ?? 1;
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
         if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
         else if (spendRound(held)) {
-          const mode = def.fireMode ?? 'auto';
-          c.fireCooldown = def.fireIntervalTicks;
-          c.semiLatch = mode !== 'auto';
-          this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
+          c.fireCooldown = firing.interval;
+          c.semiLatch = firing.mode !== 'auto';
+          this.fire(c, paired ? pairTrigger(def, firing, paired, false) : primaryTrigger(def, firing), input.viewTick ?? 0);
           fired = true;
-          if (mode === 'burst' && def.burst) {
-            c.burstLeft = def.burst.count - 1;
-            c.burstTimer = def.burst.intervalTicks;
+          if (firing.burst) {
+            c.burstLeft = firing.burst.count - 1;
+            c.burstTimer = c.burstEvery = firing.burst.intervalTicks;
           }
           if (def.windupResets) c.windup = 0;
         }
@@ -3218,6 +3425,27 @@ export class Match {
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared' || alt.reload) this.startReload(c);
       }
+      // Dual wielding: the second gun on the second trigger, by the first's rules with its own latch, cooldown,
+      // magazine and reload. Both guns kick the one aim and feed the one spray (GunState), so volume costs accuracy.
+      if (paired && held.off) {
+        const off = held.off;
+        const altDown = (input.buttons & BUTTON_ALT) !== 0;
+        const rounds = off.unchambered ? 0 : off.mag;
+        const up = c.fireCooldown2 === 0 && c.raiseTicks === 0 && altDown && !c.semiLatch2;
+        // Firing interrupts its reload whenever a round is ready, as for the first gun.
+        if (c.reload2 && up && rounds > 0) this.cancelReload(c, 2);
+        // (One hand holds a zipline's trolley: the first gun only.)
+        if (up && c.reloadTicks2 === 0 && !frozen && !unarmed && c.move.zip === undefined) {
+          if (rounds === 0) this.startReloadOff(c);
+          else {
+            off.mag--;
+            c.fireCooldown2 = firing.interval;
+            c.semiLatch2 = firing.mode !== 'auto';
+            this.fire(c, pairTrigger(def, firing, paired, true), input.viewTick ?? 0);
+            fired = true;
+          }
+        }
+      }
       // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
       if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
         if (def.kind === 'melee' && !getWeapon(def.id).heal) {
@@ -3229,13 +3457,15 @@ export class Match {
         } else {
           // Melee is an emergency action: the press breaks a reload where it is (spec §16), struck or not (prediction
           // mirrors it); the ammunition keeps the stage the reload reached.
-          if (c.reload) this.cancelReload(c);
+          if (c.reload || c.reload2) this.cancelReload(c);
           // (Not in Disc Arena, where nobody takes damage: discs only knock people off.)
           if (c.meleeCooldown === 0 && !def.projectile?.disc) this.strike(c, unarmedStrike(input.forward, this.tick - c.punchedAt), input.viewTick ?? 0);
         }
       }
       // Auto-reload (the player's option): an empty magazine starts reloading by itself once the gun is ready.
       if (input.buttons & BUTTON_AUTO_RELOAD && !gun && !unarmed && !frozen && !fired && autoReloadDue(def, held, c, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReload(c);
+      // (The second gun's own: an empty magazine reloads by itself while the first goes on firing.)
+      if (paired && input.buttons & BUTTON_AUTO_RELOAD && !unarmed && !frozen && !fired && autoReloadDue(def, offBox(held), { reloadTicks: c.reloadTicks2, fireCooldown: c.fireCooldown2, raiseTicks: c.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff(c);
       if (fired && gun) gun.firedTick = this.tick;
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
@@ -3245,7 +3475,7 @@ export class Match {
       }
       if (!fired && c.bloom > 0) c.bloom = Math.max(0, c.bloom - (def.recoil?.recover ?? 0.002));
       // Aim settles back after the recoil along the weapon's curve; the spray recovers.
-      if (!fired) recoilIdle(c.gun, gp.kick, gp.accuracy, def.fireIntervalTicks);
+      if (!fired) recoilIdle(c.gun, firing.kick, gp.accuracy, firing.interval);
       // Classes: G is the class's ability (sentry, overcharge, cloak) when it has one.
       if (input.buttons & BUTTON_THROW && !frozen && !gun && c.cls && this.classes?.useAbility(c)) {
         // Used.
@@ -3273,7 +3503,9 @@ export class Match {
     const w = c.weapons.get(code);
     if (!w) return;
     c.current = code;
-    c.raiseTicks = w.def.raiseTicks;
+    // A pair comes up a little slower (its `raise`).
+    const pair = pairOf(w);
+    c.raiseTicks = pair ? akimboRaise(w.def, pair) : w.def.raiseTicks;
     // Swapping always beats a reload: whatever stage it reached stays done (spec §16, §19).
     this.cancelReload(c);
     c.windup = 0;
@@ -3289,29 +3521,109 @@ export class Match {
   private startReload(c: Combatant): void {
     if (c.reloadTicks > 0) return;
     const w = heldWeapon(c);
-    const run = beginReload(w.def, w);
+    // (One of a pair: its reload takes the pair's `reload` times as long.)
+    const run = beginReload(pairOf(w) ? akimboLoader(w.def) : w.def, w);
     if (!run) return;
     c.reload = run;
     c.reloadTicks = run.total;
     c.burstLeft = 0;
   }
 
-  /** Stop a reload where it is: the ammunition keeps the stage it reached. */
-  private cancelReload(c: Combatant): void {
-    c.reload = null;
-    c.reloadTicks = 0;
+  /** Dual wielding: start a reload of the second gun (it waits its turn while the first gun's is under way: advanceReload). */
+  private startReloadOff(c: Combatant): void {
+    const w = heldWeapon(c);
+    if (c.reloadTicks2 > 0 || !pairOf(w)) return;
+    const run = beginReload(akimboLoader(w.def), offBox(w));
+    if (!run) return;
+    c.reload2 = run;
+    c.reloadTicks2 = run.total;
+  }
+
+  /** Stop a reload where it is: the ammunition keeps the stage it reached. `which`: 1 the gun's, 2 the second gun's of a pair, 0 both. */
+  private cancelReload(c: Combatant, which: 0 | 1 | 2 = 0): void {
+    if (which !== 2) {
+      c.reload = null;
+      c.reloadTicks = 0;
+    }
+    if (which !== 1) {
+      c.reload2 = null;
+      c.reloadTicks2 = 0;
+    }
   }
 
   /** One applied input of reloading (something else zeroing `reloadTicks` cancels it). */
   private advanceReload(c: Combatant): void {
+    if (c.reload2) return this.advancePairReload(c);
     if (!c.reload || c.reloadTicks === 0) {
       c.reload = null;
       c.reloadTicks = 0;
       return;
     }
     const w = heldWeapon(c);
-    c.reload = stepReload(w.def, w, c.reload);
+    const pair = pairOf(w);
+    // (A pair's reload that waited for the other gun's starts from the ammunition as it is now.)
+    if (pair && c.reload.t === 0) c.reload = beginReload(akimboLoader(w.def), w);
+    if (c.reload) c.reload = stepReload(pair ? akimboLoader(w.def) : w.def, w, c.reload);
     c.reloadTicks = c.reload ? Math.max(1, c.reload.total - c.reload.t) : 0;
+  }
+
+  /**
+   * Dual wielding, the second gun's reload in play: one hand reloads at a time, so of the two guns' reloads the one
+   * under way goes on and the other waits at its start (the emptier gun first when both wait); the gun that waits or
+   * isn't reloading still fires (which cancels its wait). Nothing else is kept: the two runs say it all, so the
+   * snapshot's `rd` and `rd2` are enough for prediction.
+   */
+  private advancePairReload(c: Combatant): void {
+    const w = heldWeapon(c);
+    if (c.reloadTicks2 === 0 || !pairOf(w)) {
+      c.reload2 = null;
+      c.reloadTicks2 = 0;
+      return this.advanceReload(c);
+    }
+    if (c.reload && c.reloadTicks === 0) c.reload = null;
+    const def = akimboLoader(w.def);
+    if (pairReloadTurn(c.reload, c.reload2!, w.mag, w.off!.mag) === 1) {
+      if (c.reload!.t === 0) c.reload = beginReload(def, w);
+      if (c.reload) c.reload = stepReload(def, w, c.reload);
+      c.reloadTicks = c.reload ? Math.max(1, c.reload.total - c.reload.t) : 0;
+      return;
+    }
+    const b = offBox(w);
+    let run: ReloadRun | null = c.reload2!;
+    if (run.t === 0) run = beginReload(def, b);
+    if (run) run = stepReload(def, b, run);
+    storeOff(w, b);
+    c.reload2 = run;
+    c.reloadTicks2 = run ? Math.max(1, run.total - run.t) : 0;
+  }
+
+  /** Dual wielding: put the second gun away, or bring it back (the fire-mode key; a toggle beats a reload, like a swap). */
+  private setPairAway(c: Combatant, w: WeaponState, away: boolean): void {
+    if (!w.off || !!w.off.away === away) return;
+    if (away) w.off.away = true;
+    else delete w.off.away;
+    this.cancelReload(c);
+    c.semiLatch2 = false;
+    if (!away) this.pairOut(c, w);
+  }
+
+  /** The second gun comes out beside the one in hand: it takes the pair's raise before its first round; the first gun is never held up. No sights. */
+  private pairOut(c: Combatant, w: WeaponState): void {
+    const pair = akimboOf(w.def);
+    if (!pair) return;
+    c.fireCooldown2 = Math.max(c.fireCooldown2, akimboRaise(w.def, pair));
+    c.gun.ads = 0;
+  }
+
+  /** Whether `c` may make a pair of `def`: a person, in a match with dual wielding in play and allowed by its rule, an eligible weapon. Bots never pair. */
+  private canPair(c: Combatant, def: WeaponDefinition): boolean {
+    return this.pairs && c.kind === 'human' && akimboAllowed(this.rules) && akimboOf(def) !== null;
+  }
+
+  /** A second gun of a weapon `c` holds one of: now a pair, its magazine holding `mag`. */
+  private makePair(c: Combatant, w: WeaponState, mag: number): void {
+    w.off = { mag: Math.max(0, Math.min(w.def.magazine, mag)) };
+    if (c.weapons.get(c.current) === w) this.pairOut(c, w);
   }
 
   /** Where a shooter's rounds go: the view plus the mechanical recoil offset. */
@@ -3388,19 +3700,23 @@ export class Match {
     if (gp.accuracy && !def.alt) {
       // Gunplay spread (spec §14): base, movement, air and sustained fire, tightened by stance and the sights,
       // plus the pellet pattern of a shotgun.
-      spread = shotCone(def, gp.accuracy, shooter.gun, { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] });
+      const ctx = { run: shooter.moveSpeed / PLAYER.runSpeed, airborne: !shooter.move.grounded, stance: STANCE_SPREAD[stanceOf(shooter.move)] };
+      // (One of a pair: a wider aim cone, a wider pellet pattern.)
+      spread = def.pair ? akimboCone(def.pair, spreadOf(gp.accuracy, shooter.gun, ctx), def.pellets > 1 ? def.spread : 0) : shotCone(def, gp.accuracy, shooter.gun, ctx);
       // A scoped rifle fired from the hip is a gamble: fine across a room, a guess further out (not a lottery: ADS is never mandatory).
       const zoom = getWeapon(def.id).view.zoomFov;
-      if (zoom && !shooter.npc && shooter.gun.ads < 0.5) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
+      if (zoom && !shooter.npc && shooter.gun.ads < SCOPE_UP_ADS) spread += zoom < 0.5 ? NO_SCOPE_SPREAD : 0.012;
     } else {
       // Bloom from sustained fire widens the spread; each shot adds more. So does
       // shooting on the run or in the air; aiming down a scope tightens it, and a
       // scoped rifle fired from the hip is a guess.
       spread = aimSpread(shooter, def, def.spread + (def.alt ? 0 : shooter.bloom) + movementSpread(shooter, def)) * STANCE_SPREAD[stanceOf(shooter.move)];
+      if (def.pair) spread *= def.pellets > 1 ? def.pair.pattern : def.pair.cone;
       if (def.recoil && !def.alt) shooter.bloom = Math.min(def.recoil.maxBloom, shooter.bloom + def.recoil.bloom);
     }
     // Mechanical recoil: this round kicks the aim for the next one (a second trigger only by its own kick).
-    if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, gp.kick);
+    if (def.pair) recoilShot(shooter.gun, akimboKick(gp.kick, def.pair.kick));
+    else if (!def.alt && def.kind !== 'melee') recoilShot(shooter.gun, def.modeKick !== undefined ? def.modeKick : gp.kick);
     else if (def.alt && def.kick) recoilShot(shooter.gun, def.kick);
     if (def.kind === 'projectile' && def.projectile?.disc && !def.alt) {
       this.throwDisc(shooter, def.projectile, def.id);
@@ -3418,6 +3734,14 @@ export class Match {
       return;
     }
     const heal = getWeapon(def.id).heal;
+    if (heal && isHoldHealTool(getWeapon(def.id))) {
+      // The Medkit is held, not clicked (sim/holdUse.ts): the trigger starts a heal, holding it finishes it.
+      if (!shooter.hold) {
+        const target = this.medkitTarget(shooter, eye, aim, def.range);
+        if (target) shooter.hold = startHold('heal', this.tick, shooter.current, { target: target.slot });
+      }
+      return;
+    }
     if (heal) {
       this.useMedkit(shooter, eye, aim, heal, def.range);
       return;
@@ -3471,7 +3795,15 @@ export class Match {
         if (world) bodies.push({ handle: world.handle, dist: wallAt, at: add(eye, scale(dir, wallAt)) });
         continue;
       }
-      const shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      let shot = resolveHitscan(eye, dir, def.range, world?.dist ?? null, targets);
+      if (shot.hitSlot === null && world) {
+        // Into an open vehicle's hull: its riders are exposed (openHull).
+        const open = this.openHull(world.handle, eye, dir, def.range);
+        if (open) {
+          const inside = resolveHitscan(eye, dir, def.range, open.beyond, targets.filter((t) => open.riders.includes(t.slot)));
+          if (inside.hitSlot !== null) shot = inside;
+        }
+      }
       // Shots go through breakable glass, shattering it on the way (sim/glass.ts), and lose a little for each pane.
       const broke = this.scenario.shootGlass(eye, dir, hypot(shot.end.x - eye.x, shot.end.y - eye.y, shot.end.z - eye.z), shooter.slot);
       to.push(tuple(shot.end));
@@ -3481,7 +3813,7 @@ export class Match {
       if (shot.hitSlot !== null) struck.push({ slot: shot.hitSlot, dir, zone, dist: shot.distance, keep: GLASS.passDamage ** broke });
       else if (world) bodies.push({ handle: world.handle, dist: world.dist, at: shot.end });
     }
-    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}) });
+    this.pendingEvents.push({ e: 'shot', s: shooter.slot, w: def.id, from: tuple(eye), to, hit: hits, ...(zones.some((z) => z) ? { z: zones } : {}), ...(def.alt ? { alt: 1 as const } : {}), ...(def.off ? { off: 1 as const } : {}) });
     // A second trigger can bring its own falloff and head multiple (the Battle Axe's blunderbuss).
     const falloff = def.falloff ?? gp.falloff;
     for (const { slot, dir, zone, dist, keep } of struck) {
@@ -3583,11 +3915,12 @@ export class Match {
   /**
    * Stopping power (sim/impact.ts): a hit by `weapon` with `share` of a full shot's damage shoves a
    * living body a little along `dir` and slows it briefly, within the stagger caps and immunity.
-   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly.
+   * Stays on the ground (no lift), so the ground's grip takes the shove back off quickly; someone in the air takes
+   * IMPACT.airShove times as much, and keeps it until they land.
    */
   private stagger(victim: Combatant, power: number, dir: Vec3, share: number): void {
     if (!victim.alive || victim.mount || victim.invulnerable) return;
-    const shove = hitImpact(victim.impact, power, share);
+    const shove = hitImpact(victim.impact, power, share) * (victim.move.grounded ? 1 : IMPACT.airShove);
     if (shove <= 0) return;
     const h = hypot(dir.x, dir.z);
     if (h < 0.05) return;
@@ -3631,7 +3964,7 @@ export class Match {
     c.meleeCooldown = s.cooldownTicks;
     if (kind === 'punch') c.punchedAt = this.tick;
     else c.punchedAt = -1000;
-    if (c.reload) this.cancelReload(c);
+    if (c.reload || c.reload2) this.cancelReload(c);
     const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
     const { hit, body } = this.meleeTrace(c, eye, s.range * c.size, this.targetsFor(c, viewTick));
     this.pendingEvents.push({ e: 'melee', s: c.slot, hit, u: kind === 'punch' ? 1 : 2 });
@@ -3944,7 +4277,7 @@ export class Match {
     let armored = false;
     for (let p = 0; p < Math.max(1, def.pellets); p++) {
       const dir = this.spreadDir(aim, spread);
-      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, pens: 0, rics: 0, marks: [], born: this.tick };
+      const b: Bullet = { owner: shooter.slot, trig: def, origin: eye, pos: { ...eye }, vel: scale(dir, phys.speed), gravity: phys.gravity, drag: phys.drag, travelled: 0, age: 0, energy: bal.energy, scale: 1, ref: phys.speed, seg: phys.speed, pens: 0, rics: 0, marks: [], born: this.tick };
       // Near range: one straight ray, no time taken.
       const near = add(eye, scale(dir, Math.min(NEAR_INSTANT_M, def.range)));
       b.pos = near;
@@ -3976,6 +4309,7 @@ export class Match {
       ...(flying.length ? { fl: flying } : {}),
       ...(armored ? { ar: 1 as const } : {}),
       ...(marks.length ? { pn: marks } : {}),
+      ...(def.off ? { off: 1 as const } : {}),
     });
     for (const end of ends) this.bulletHit(shooter, def, end);
   }
@@ -4027,6 +4361,7 @@ export class Match {
   private flyTick(b: Bullet, targets: ShotTargets): BulletEnd | null {
     const dt = TICK_DT / BULLET_SUBSTEPS;
     for (let i = 0; i < BULLET_SUBSTEPS; i++) {
+      b.seg = hypot(b.vel.x, b.vel.y, b.vel.z);
       const seg = flyBullet(b, b.gravity, b.drag, dt);
       b.age += dt;
       const end = this.bulletSegment(b, seg.from, seg.to, targets);
@@ -4067,6 +4402,22 @@ export class Match {
         zone = lastHit.zone;
       }
     }
+    if (!victim && wall && wall.dist < len) {
+      // Into an open vehicle's hull: its riders are exposed (openHull); the round goes on to one inside it.
+      const open = this.openHull(wall.handle, a, u, len);
+      if (open) {
+        let inBest = Math.min(len, open.beyond);
+        for (const t of targets) {
+          if (!open.riders.includes(t.slot) || (t.who && !t.who.alive)) continue;
+          const d = rayTarget(a, u, t, inBest);
+          if (d !== null && d < inBest) {
+            inBest = best = d;
+            victim = t;
+            zone = lastHit.zone;
+          }
+        }
+      }
+    }
     // Water soaks up energy on the way to whatever is hit (spec §8): a pistol round dies in a metre of it,
     // a rifle round comes out the far side slower and weaker.
     const wet = this.liquids.length ? waterSpan(this.liquids, a, u, Math.min(len, best)) : null;
@@ -4078,7 +4429,7 @@ export class Match {
       }
       const kept = left / b.energy;
       b.energy = left;
-      b.vel = scale(b.vel, Math.sqrt(kept));
+      this.slowBullet(b, Math.sqrt(kept));
       b.scale *= kept;
     }
     // Breakable glass before whatever stops it shatters, and the round goes on a little weaker (GLASS.passDamage).
@@ -4090,7 +4441,7 @@ export class Match {
     if (victim) {
       const at = add(a, scale(u, best));
       const gp = gunplayOf(getWeapon(b.trig.id));
-      const damage = b.trig.damage * zoneScale(gp, zone) * falloffAt(gp.falloff, b.travelled + best) * b.scale;
+      const damage = b.trig.damage * zoneScale(gp, zone) * this.bulletFalloff(b, gp, best, len) * b.scale;
       return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
     }
     if (wall) {
@@ -4101,14 +4452,15 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
-      this.noteTargetHit(owner, wall.handle, raw * falloffAt(gunplayOf(getWeapon(b.trig.id)).falloff, b.travelled + wall.dist), at);
+      this.noteTargetHit(owner, wall.handle, raw * this.bulletFalloff(b, gunplayOf(getWeapon(b.trig.id)), wall.dist, len), at);
       if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
       const grazing = Math.asin(Math.min(1, Math.abs(u.x * n.x + u.y * n.y + u.z * n.z)));
       if (b.rics < MAX_RICOCHETS && spec.ricochet > 0 && grazing < RICOCHET_MAX_ANGLE && ricochets(mat, grazing, this.rng())) {
         const vn = b.vel.x * n.x + b.vel.y * n.y + b.vel.z * n.z;
-        b.vel = scale({ x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z }, 0.6);
+        b.vel = { x: b.vel.x - 2 * vn * n.x, y: b.vel.y - 2 * vn * n.y, z: b.vel.z - 2 * vn * n.z };
+        this.slowBullet(b, 0.6);
         b.pos = add(at, scale(n, 0.02));
         b.scale *= 0.5;
         b.energy *= 0.4;
@@ -4126,7 +4478,7 @@ export class Match {
           if (left !== null) {
             const kept = left / b.energy;
             b.energy = left;
-            b.vel = scale(b.vel, Math.sqrt(kept));
+            this.slowBullet(b, Math.sqrt(kept));
             b.scale *= kept;
             b.pens++;
             b.travelled += wall.dist + thick;
@@ -4140,6 +4492,23 @@ export class Match {
     }
     b.travelled += len;
     return null;
+  }
+
+  /** A bullet slowed by what it passed (penetration, water, a ricochet): its damage takes that share through `scale`, so the speed reference goes down with it. */
+  private slowBullet(b: Bullet, k: number): void {
+    b.vel = scale(b.vel, k);
+    b.ref *= k;
+    b.seg *= k;
+  }
+
+  /**
+   * Damage multiple of a bullet striking `at` metres along the segment it is flying (`len` long): by its speed at the
+   * strike over its muzzle speed under Standard and Advanced ballistics, by distance flown under Arcade (impactFalloff).
+   */
+  private bulletFalloff(b: Bullet, gp: Gunplay, at: number, len: number): number {
+    const end = hypot(b.vel.x, b.vel.y, b.vel.z);
+    const speed = b.seg + (end - b.seg) * Math.min(1, Math.max(0, at / Math.max(len, 1e-6)));
+    return impactFalloff(gp, this.rules, b.travelled + at, b.ref > 0 ? speed / b.ref : 1);
   }
 
   /** Where a ray entering a surface at `at` comes out (null: thicker than a metre or so, or solid all the way). */
@@ -4172,8 +4541,9 @@ export class Match {
     const box = this.physics.boxAt(handle);
     if (!box) return 'concrete';
     if (box.kind === 'prop') {
+      // A prop's box, or a facade piece's collision (map/geometry.ts packFacadeBoxes: its own material).
       const e = this.entityById(box.sourceId);
-      return e ? entityMaterial(e) : 'wood';
+      return e ? entityMaterial(e) : box.surface ? surfaceMaterial(box.surface.material) : 'wood';
     }
     // Free blocks and Style Pack pieces carry their own material; tile structure is structural.
     return box.surface ? surfaceMaterial(box.surface.material) : 'concrete';
@@ -4255,6 +4625,7 @@ export class Match {
       this.pendingEvents.push({ e: 'msg', text: 'Airstrike inbound!', secs: 3 });
     }
     if (spec.cover) this.deployCover(p, at, spec.cover);
+    if (spec.ammoBox) this.deployBox(p, at);
   }
 
   /** A sandbag wall on the ground where it landed, square to the thrower; nothing when someone stands in the way. */
@@ -4324,6 +4695,15 @@ export class Match {
 
   /** Heal the hurt teammate you're aiming at within reach, or else yourself. */
   private useMedkit(shooter: Combatant, eye: Vec3, aim: Vec3, amount: number, range: number): void {
+    const target = this.medkitTarget(shooter, eye, aim, range);
+    if (!target) return;
+    const n = Math.min(amount, target.maxHealth - target.health);
+    target.health += n;
+    this.pendingEvents.push({ e: 'heal', s: shooter.slot, t: target.slot, n });
+  }
+
+  /** Whom a heal tool works on: the hurt teammate you're aiming at within reach, or else yourself when hurt; null: nobody. */
+  private medkitTarget(shooter: Combatant, eye: Vec3, aim: Vec3, range: number): Combatant | null {
     let best: Combatant | null = null;
     let bestD = range;
     for (const c of this.actors()) {
@@ -4334,11 +4714,70 @@ export class Match {
         bestD = d;
       }
     }
-    const target = best ?? (shooter.health < shooter.maxHealth ? shooter : null);
-    if (!target) return;
-    const n = Math.min(amount, target.maxHealth - target.health);
-    target.health += n;
-    this.pendingEvents.push({ e: 'heal', s: shooter.slot, t: target.slot, n });
+    return best ?? (shooter.health < shooter.maxHealth ? shooter : null);
+  }
+
+  // ---------------------------------------------------------------- hold to use (sim/holdUse.ts)
+
+  /** One tick of `c`'s hold: in reach and held it goes on; done, it gives; otherwise it stops and says why. */
+  private stepHoldUse(c: Combatant, input: PlayerInput): void {
+    const h = c.hold!;
+    const heal = h.kind === 'heal';
+    const held = (input.buttons & (heal ? BUTTON_FIRE : BUTTON_USE_HOLD)) !== 0;
+    const fired = (input.buttons & (BUTTON_FIRE | BUTTON_ALT | BUTTON_THROW | BUTTON_MELEE)) !== 0;
+    const result = stepHold(h, this.tick, { held, inReach: !c.mount && c.alive && this.holdInReach(c, h), fired, weapon: c.current, hurtAt: c.hurtAt });
+    if (result === null) return;
+    c.hold = undefined;
+    if (result !== 'done') {
+      // Out of stock or the target gone reads as "nothing left there", not as having moved.
+      const why: HoldCancel = result === 'moved' && !c.mount && c.alive && !this.holdSourceStands(h) ? 'gone' : result;
+      this.pendingEvents.push({ e: 'hold', s: c.slot, k: HOLD_KINDS.indexOf(h.kind), x: why });
+      return;
+    }
+    if (heal) {
+      const t = this.slots[h.target!] ?? this.npcs.get(h.target!);
+      const amount = (getWeapon(weaponByCode(h.weapon)?.id ?? '').heal ?? 0) * HOLD_HEAL_SCALE;
+      if (!t || !t.alive || amount <= 0) return;
+      const n = Math.min(amount, t.maxHealth - t.health);
+      t.health += n;
+      this.pendingEvents.push({ e: 'heal', s: c.slot, t: t.slot, n });
+      return;
+    }
+    if (h.box !== undefined) {
+      const b = this.boxes.find((x) => x.id === h.box);
+      if (b) this.giveFromBox(c, b);
+    } else if (h.mount !== undefined) {
+      const m = this.mounts.find((x) => x.index === h.mount);
+      if (m) this.giveFromMount(c, m);
+    }
+  }
+
+  /** Whatever a hold works on still stands (the box, the vehicle with stock, the target alive and hurt). */
+  private holdSourceStands(h: HoldUse): boolean {
+    if (h.kind === 'heal') {
+      const t = this.slots[h.target!] ?? this.npcs.get(h.target!);
+      return !!t && t.alive && t.health < t.maxHealth;
+    }
+    if (h.box !== undefined) return this.boxes.some((b) => b.id === h.box && b.body && b.uses > 0);
+    const m = h.mount !== undefined ? this.mounts.find((x) => x.index === h.mount) : undefined;
+    return !!m && m.alive && m.supply > 0;
+  }
+
+  /** Still in reach of what the hold works on (and it still stands). */
+  private holdInReach(c: Combatant, h: HoldUse): boolean {
+    if (!this.holdSourceStands(h)) return false;
+    if (h.kind === 'heal') {
+      const t = (this.slots[h.target!] ?? this.npcs.get(h.target!))!;
+      if (t === c) return true;
+      const range = (weaponByCode(h.weapon)?.range ?? 3) + HOLD_HEAL_SLACK;
+      return hypot(t.move.pos.x - c.move.pos.x, t.move.pos.z - c.move.pos.z) <= range && Math.abs(t.move.pos.y - c.move.pos.y) <= range;
+    }
+    if (h.box !== undefined) {
+      const b = this.boxes.find((x) => x.id === h.box)!;
+      return Math.abs(c.move.pos.y - b.pos.y) <= 1.6 && horizontalDistance(c.move.pos, b.pos) <= AMMO_BOX_REACH;
+    }
+    const m = this.mounts.find((x) => x.index === h.mount)!;
+    return resupplyReach(m.def.resupply!, m.pos, m.yaw, c.move.pos) !== null;
   }
 
   private spawnProjectile(owner: number, spec: ProjectileSpec, weapon: string, pos: Vec3, vel: Vec3): void {
@@ -4449,6 +4888,7 @@ export class Match {
       alive: true,
       respawnAt: 0,
       respawnTicks: Math.round((respawnSeconds ?? def.respawnSeconds) * TICK_RATE),
+      supply: def.resupply?.uses ?? 0,
       seats: def.seats.map(() => null),
       guns: def.seats.map((seat) => (seat.weapon ? { def: getWeapon(seat.weapon), mag: 0, reserve: 0, alt: 0, heat: 0, ...(seat.ammo ? { shells: seat.ammo.start ?? seat.ammo.max, shellTicks: 0 } : {}) } : null)),
       ammoGuns: def.seats.some((seat) => !!seat.weapon && !!seat.ammo),
@@ -4478,6 +4918,18 @@ export class Match {
       m.suspSetup = setup;
       m.susp = newSuspension(setup);
     }
+    // Rigid driving where the vehicle has it on (or the match asks for it: MatchOptions.drive); not afloat.
+    const rigid = rigidOf(def);
+    const drive = this.opts.drive;
+    if (rigid && !floats && (drive === 'rigid' || drive === 'own' || (drive !== 'classic' && def.vehicle?.rigid?.on))) {
+      m.rigidSetup = rigid;
+      m.rigid = newRigid(rigid, pos, yaw);
+      m.rigidSeen = { pos: m.pos, yaw, speed: 0 };
+      // Driving physics 4: the hull a Rapier body (owner, 2026-11-16: 1a, straight to the default); `?drive=own` keeps
+      // driving physics 3's own hull contacts and sweep, to compare.
+      if (drive === 'own') m.chassisProbe = this.physics.createChassisProbe(rigid.probeR, rigid.probeHalf);
+      else m.chassisBody = this.physics.createChassisBody(rigid.hullPoints, rigid.hullBorder, rigid.com, [1 / rigid.invI[0], 1 / rigid.invI[1], 1 / rigid.invI[2]], rigid.hullFriction);
+    }
     this.mounts.push(m);
     this.mountBodies.set(body.handle, m);
   }
@@ -4485,6 +4937,20 @@ export class Match {
   private seatOf(c: Combatant): SeatDef | null {
     if (!c.mount) return null;
     return this.mounts[c.mount.index]?.def.seats[c.mount.seat] ?? null;
+  }
+
+  /**
+   * A shot that struck `handle`: when it is an open vehicle's hull (not sealed: MountArmour) with riders, how far the
+   * shot could go on through it, and who rides in it. Riders of an open vehicle are exposed: its collision box (the
+   * Troop Buggy's is 1.6 m tall over an open tube frame) stands in for the whole body, and a seated rider's chest is
+   * inside it, so without this every round aimed at a driver's middle stopped in the box (owner, 2026-11-16: "bots not
+   * being able to shoot me ... only me, the driver"). The vehicle is not hurt by a round that hits a rider.
+   */
+  private openHull(handle: number, from: Vec3, dir: Vec3, maxDist: number): { beyond: number; riders: (number | null)[] } | null {
+    const m = this.mountBodies.get(handle);
+    if (!m || !m.alive || m.def.kind !== 'vehicle' || sealedMount(m.def) || !m.seats.some((s) => s !== null)) return null;
+    const next = this.physics.raycastHitPast(from, dir, maxDist, m.body);
+    return { beyond: next?.dist ?? maxDist, riders: m.seats };
   }
 
   /** Aboard a sealed vehicle that still stands (MountArmour.sealed, the Tank): out of reach of everything outside. */
@@ -4531,7 +4997,13 @@ export class Match {
 
   /** Where a seat's occupant stands right now. */
   private seatFeet(m: MountRt, seat: number): Vec3 {
-    return mountToWorld(m.pos, m.yaw, m.def.seats[seat]!.offset);
+    const o = m.def.seats[seat]!.offset;
+    // A rigid vehicle leans, pitches and rolls over: its seats go with it.
+    if (m.rigid && m.alive) {
+      const d = rotateQ(m.rigid.q, { x: o[0], y: o[1], z: o[2] });
+      return { x: m.pos.x + d.x, y: m.pos.y + d.y, z: m.pos.z + d.z };
+    }
+    return mountToWorld(m.pos, m.yaw, o);
   }
 
   /**
@@ -4544,6 +5016,209 @@ export class Match {
   }
 
   /** Climb into the nearest turret or vehicle in reach with a free seat (driver first, then gunner, then passengers). */
+  // ---------------------------------------------------------------- ammo boxes (sim/resupply.ts)
+
+  /** A box standing at `pos` (its ground point), full. Placed ones keep their pickup's id and respawn time. */
+  private addBox(kind: AmmoBox['kind'], pos: Vec3, yaw: number, owner: number | null, pickupId?: string, respawnTicks = 0): AmmoBox {
+    const spec = kind === 'placed' ? PLACED_BOX : DEPLOYED_BOX;
+    const b: AmmoBox = { id: this.nextBoxId++, kind, ...(pickupId ? { pickupId } : {}), pos, yaw, health: spec.health, max: spec.health, uses: spec.uses, maxUses: spec.uses, body: null, owner, until: kind === 'deployed' ? this.tick + Math.round(DEPLOYED_BOX.lifeSeconds * TICK_RATE) : 0, respawnTicks, lastHitBy: null };
+    this.standBox(b);
+    this.boxes.push(b);
+    return b;
+  }
+
+  private standBox(b: AmmoBox): void {
+    const [hx, hy, hz] = AMMO_BOX_HALF;
+    b.body = this.physics.createBox({ x: b.pos.x, y: b.pos.y + hy, z: b.pos.z }, { x: hx, y: hy, z: hz }, b.yaw);
+    this.physics.commit();
+  }
+
+  /** Emptied, destroyed or expired: its collider goes; a placed one comes back full later, a deployed one is gone. */
+  private removeBox(b: AmmoBox): void {
+    if (b.body) {
+      this.physics.removeCollider(b.body);
+      this.physics.commit();
+      b.body = null;
+    }
+    if (b.kind === 'placed') b.until = this.tick + b.respawnTicks;
+    else this.boxes = this.boxes.filter((x) => x !== b);
+  }
+
+  private damageBox(b: AmmoBox, amount: number, attacker: Combatant | null): void {
+    if (!b.body || amount <= 0) return;
+    if (attacker) b.lastHitBy = attacker.slot;
+    b.health -= amount;
+    if (b.health > 0) return;
+    // Destroyed: it cooks off, more of it the more it held.
+    const share = b.uses / b.maxUses;
+    const base = { x: b.pos.x, y: b.pos.y, z: b.pos.z };
+    for (const k of cookOff(share, b.id * 7919 + this.seed, TICK_RATE)) this.cookOffs.push({ tick: this.tick + k.tick, at: { x: base.x + k.dx, y: base.y + k.dy, z: base.z + k.dz }, owner: b.lastHitBy });
+    this.pendingEvents.push({ e: 'boxcook', p: tuple({ x: base.x, y: base.y + AMMO_BOX_HALF[1], z: base.z }), n: Math.round(share * 10) / 10 });
+    b.uses = 0;
+    this.removeBox(b);
+  }
+
+  /** Deployed boxes expire, placed ones come back, and cook-offs go off. */
+  private stepBoxes(): void {
+    for (const b of [...this.boxes]) {
+      if (b.kind === 'deployed' && b.body && this.tick >= b.until) this.removeBox(b);
+      else if (b.kind === 'placed' && !b.body && this.tick >= b.until) {
+        b.health = b.max;
+        b.uses = b.maxUses;
+        b.lastHitBy = null;
+        this.standBox(b);
+      }
+    }
+    if (!this.cookOffs.length) return;
+    const due = this.cookOffs.filter((k) => k.tick <= this.tick);
+    if (!due.length) return;
+    this.cookOffs = this.cookOffs.filter((k) => k.tick > this.tick);
+    for (const k of due) {
+      const owner = k.owner === null ? null : (this.actor(k.owner) ?? null);
+      this.pendingEvents.push({ e: 'explode', s: k.owner ?? -1, p: tuple(k.at), r: COOK_OFF.radius, w: COOK_OFF.weapon });
+      this.splash(k.at, COOK_OFF.radius, COOK_OFF.damage, COOK_OFF.edge, owner, COOK_OFF.weapon, 1, 2);
+    }
+  }
+
+  /** An Ammo Box Kit lands: a box on the ground there, square to the thrower; their older one goes. */
+  private deployBox(p: Projectile, at: Vec3): void {
+    const owner = this.actor(p.owner);
+    const yaw = owner?.yaw ?? Math.atan2(p.vel.x, p.vel.z);
+    const back = { x: -Math.sin(yaw) * 0.4, z: -Math.cos(yaw) * 0.4 };
+    const from = { x: at.x + back.x, y: at.y + 0.4, z: at.z + back.z };
+    const down = this.physics.raycastHit(from, { x: 0, y: -1, z: 0 }, 6);
+    if (!down) return;
+    const pos = { x: from.x, y: from.y - down.dist, z: from.z };
+    const reach = Math.hypot(AMMO_BOX_HALF[0], AMMO_BOX_HALF[2]) + PLAYER.radius;
+    if (this.actors().some((c) => c.alive && hypot(c.move.pos.x - pos.x, c.move.pos.z - pos.z) < reach && c.move.pos.y < pos.y + AMMO_BOX_HALF[1] * 2 && c.move.pos.y + PLAYER.height > pos.y)) {
+      // Someone stands there: the kit goes back to its thrower rather than being wasted.
+      if (owner?.alive && !owner.throwable) owner.throwable = { kind: 'ammo_box', count: 1 };
+      return;
+    }
+    for (const old of this.boxes.filter((b) => b.kind === 'deployed' && b.owner === p.owner)) this.removeBox(old);
+    this.addBox('deployed', pos, yaw, p.owner);
+  }
+
+  /**
+   * On foot beside a standing ammo box: Use resupplies you there (sim/resupply.ts). True when Use was taken by it:
+   * resupplied, or nothing given (full, or waiting; the event says which).
+   */
+  private resupplyAtBox(c: Combatant): boolean {
+    let best: AmmoBox | null = null;
+    let bestD = Infinity;
+    for (const b of this.boxes) {
+      if (!b.body || b.uses <= 0 || Math.abs(c.move.pos.y - b.pos.y) > 1.6) continue;
+      const d = horizontalDistance(c.move.pos, b.pos);
+      if (d <= AMMO_BOX_REACH && d < bestD) {
+        best = b;
+        bestD = d;
+      }
+    }
+    if (!best) return false;
+    // Something to give and no wait: hold Use (sim/holdUse.ts); otherwise say why not at once.
+    if (this.tick >= (c.resupplyAt ?? 0) && this.resupplyWanted(c)) c.hold = startHold('resupply', this.tick, c.current, { box: best.id });
+    else this.pendingEvents.push({ e: 'resupply', s: c.slot, m: -1, b: best.id, left: best.uses, ok: false });
+    return true;
+  }
+
+  /** The throwable a resupply hands out when none is carried (this life's kind of the weapon set's), or null. */
+  private resupplySpawnThrowable(c: Combatant): ThrowableKind | null {
+    return this.weaponSet && !restrictedWeapons(this.rules) ? (setLoadout(this.weaponSet, this.rules, { seed: this.seed, slot: c.slot, life: c.spawns ?? 0, sniper: false }).throwable?.kind ?? null) : null;
+  }
+
+  /** A resupply would give `c` something now (worked out on copies: nothing is changed). */
+  private resupplyWanted(c: Combatant): boolean {
+    const guns = [...c.weapons.values()].map((w) => ({ def: w.def, reserve: w.reserve, alt: w.alt }));
+    return resupplyLoadout(guns, c.throwable ? { ...c.throwable } : null, this.resupplySpawnThrowable(c)).given;
+  }
+
+  /** A finished hold at an ammo box: the stock, a use spent, the wait begun. */
+  private giveFromBox(c: Combatant, best: AmmoBox): void {
+    let given = false;
+    if (best.body && best.uses > 0 && this.tick >= (c.resupplyAt ?? 0)) {
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, this.resupplySpawnThrowable(c));
+      if (r.given) {
+        given = true;
+        c.throwable = r.throwable;
+        best.uses--;
+        c.resupplyAt = this.tick + Math.round(AMMO_BOX_WAIT * TICK_RATE);
+      }
+    }
+    this.pendingEvents.push({ e: 'resupply', s: c.slot, m: -1, b: best.id, left: best.uses, ok: given });
+    if (best.uses <= 0) this.removeBox(best);
+  }
+
+  /** Standing boxes for the snapshot (`ab`): [id, x, y, z, yaw, health %, uses left, 1 when deployed]. */
+  boxSnapshots(): number[][] {
+    return this.boxes.filter((b) => b.body).map((b) => [b.id, r3(b.pos.x), r3(b.pos.y), r3(b.pos.z), r3(b.yaw), Math.ceil((Math.max(0, b.health) / b.max) * 100), b.uses, b.kind === 'deployed' ? 1 : 0]);
+  }
+
+  /** Standing boxes with stock, for the bots (and the tank refill): where, how many uses, and how hurt. */
+  ammoBoxes(): { id: number; pos: Vec3; uses: number; health: number; placed: boolean }[] {
+    return this.boxes.filter((b) => b.body && b.uses > 0).map((b) => ({ id: b.id, pos: b.pos, uses: b.uses, health: b.health / b.max, placed: b.kind === 'placed' }));
+  }
+
+  /**
+   * The bots' pickups plus the Supply Buggies (MountDef.resupply) a bot may resupply at: its own team's or nobody's,
+   * standing, with stock, within BOT_RESUPPLY_REACH. Each is an Ammo Box pickup at the tailgate (`supply_<entity
+   * index>`) to the bot's pickup choice (BotBrain.bestPickup: worth it when short of ammo), and beside it the bot
+   * presses Use (BotBrain.act).
+   */
+  private withSupplyStops(pickups: PickupView[], c: Combatant): PickupView[] {
+    if (c.mount || restrictedWeapons(this.rules)) return pickups;
+    const item = getItem('core.ammo');
+    if (!item) return pickups;
+    let out: PickupView[] | null = null;
+    for (const m of this.mounts) {
+      const spec = m.def.resupply;
+      if (!spec || !m.alive || m.supply <= 0 || (m.faction !== null && m.faction !== c.faction)) continue;
+      const at = resupplyPoint(spec, m.pos, m.yaw);
+      if (horizontalDistance(at, c.move.pos) > BOT_RESUPPLY_REACH) continue;
+      (out ??= [...pickups]).push({ id: `supply_${m.index}`, item, pos: at, available: true });
+    }
+    return out ?? pickups;
+  }
+
+  /**
+   * On foot at a resupply vehicle's reach point (the Supply Buggy's tailgate): Use resupplies you there instead of
+   * getting in (sim/resupply.ts). True when Use was taken by it: resupplied, or nothing given (full, empty, waiting;
+   * the event says which, so the HUD can).
+   */
+  private resupplyAtMount(c: Combatant): boolean {
+    let best: MountRt | null = null;
+    let bestD = Infinity;
+    for (const m of this.mounts) {
+      if (!m.alive || !m.def.resupply) continue;
+      const d = resupplyReach(m.def.resupply, m.pos, m.yaw, c.move.pos);
+      if (d !== null && d < bestD) {
+        best = m;
+        bestD = d;
+      }
+    }
+    if (!best) return false;
+    // Something to give, stock and no wait: hold Use (sim/holdUse.ts); otherwise say why not at once.
+    if (best.supply > 0 && this.tick >= (c.resupplyAt ?? 0) && this.resupplyWanted(c)) c.hold = startHold('resupply', this.tick, c.current, { mount: best.index });
+    else this.pendingEvents.push({ e: 'resupply', s: c.slot, m: best.index, left: best.supply, ok: false });
+    return true;
+  }
+
+  /** A finished hold at a resupply vehicle's tailgate: the stock, a use spent, the wait begun. */
+  private giveFromMount(c: Combatant, best: MountRt): void {
+    const spec = best.def.resupply!;
+    let left = best.supply;
+    let given = false;
+    if (best.alive && left > 0 && this.tick >= (c.resupplyAt ?? 0)) {
+      const r = resupplyLoadout(c.weapons.values(), c.throwable, this.resupplySpawnThrowable(c));
+      if (r.given) {
+        given = true;
+        c.throwable = r.throwable;
+        left = --best.supply;
+        c.resupplyAt = this.tick + Math.round(spec.wait * TICK_RATE);
+      }
+    }
+    this.pendingEvents.push({ e: 'resupply', s: c.slot, m: best.index, left, ok: given });
+  }
+
   private enterMount(c: Combatant): boolean {
     let best: MountRt | null = null;
     let bestD = Infinity;
@@ -4568,7 +5243,7 @@ export class Match {
     best.seats[seat] = c.slot;
     c.mount = { index: this.mounts.indexOf(best), seat };
     c.move = this.seatMove(best, seat);
-    c.reloadTicks = 0;
+    c.reloadTicks = c.reloadTicks2 = 0;
     c.windup = 0;
     c.burstLeft = 0;
     this.pendingEvents.push({ e: 'mount', s: c.slot, m: best.index, seat });
@@ -4739,6 +5414,11 @@ export class Match {
       this.damageCover(cv, amount);
       return true;
     }
+    const box = this.boxes.find((b) => b.body?.handle === handle);
+    if (box) {
+      this.damageBox(box, amount, attacker);
+      return true;
+    }
     const m = this.mountBodies.get(handle);
     if (!m) return false;
     this.damageMount(m, amount, attacker, false, hit, weapon);
@@ -4803,6 +5483,7 @@ export class Match {
   private respawnMount(m: MountRt): void {
     m.alive = true;
     m.health = m.def.health;
+    m.supply = m.def.resupply?.uses ?? 0;
     m.burning = false;
     m.wreckUntil = 0;
     m.restSince = undefined;
@@ -4912,6 +5593,28 @@ export class Match {
     const crew = m.seats.find((s) => s !== null);
     if (crew === undefined || crew === null) return;
     const reach = Math.max(m.def.half[0], m.def.half[2]) + PICKUP_RADIUS;
+    // A map's Ammo Box is a crate now (sim/resupply.ts): pulled up beside one, a crewed vehicle refills from it (a use).
+    for (const b of this.boxes) {
+      if (!b.body || b.uses <= 0 || b.kind !== 'placed' || restrictedWeapons(this.rules)) continue;
+      if (!m.guns.some((g, i) => g?.shells !== undefined && m.def.seats[i]?.ammo && g.shells < m.def.seats[i]!.ammo!.max && ammoRefilledBy(m.def.seats[i]!.ammo!, AMMO_BOX_ITEM))) continue;
+      if (horizontalDistance(b.pos, m.pos) > reach + AMMO_BOX_REACH || Math.abs(b.pos.y - m.pos.y) > 1.5) continue;
+      const s = Math.sin(m.yaw);
+      const c = Math.cos(m.yaw);
+      const dx = b.pos.x - m.pos.x;
+      const dz = b.pos.z - m.pos.z;
+      if (Math.abs(dx * c - dz * s) > m.def.half[0] + AMMO_BOX_REACH || Math.abs(dx * s + dz * c) > m.def.half[2] + AMMO_BOX_REACH) continue;
+      m.guns.forEach((g, i) => {
+        const ammo = m.def.seats[i]?.ammo;
+        if (g && ammo && ammoRefilledBy(ammo, AMMO_BOX_ITEM)) {
+          g.shells = ammo.max;
+          g.shellTicks = 0;
+        }
+      });
+      b.uses--;
+      this.pendingEvents.push({ e: 'resupply', s: crew, m: m.index, b: b.id, left: b.uses, ok: true });
+      if (b.uses <= 0) this.removeBox(b);
+      return;
+    }
     for (const p of this.pickups) {
       if (!p.enabled || this.tick < p.availableAt || p.item.effect.kind !== 'ammo' || restrictedWeapons(this.rules)) continue;
       // Only a pickup that refills a gun running short (SeatAmmo.pickups).
@@ -5086,6 +5789,7 @@ export class Match {
    * dents the vehicle. Walls bleed speed, less for heavy ones.
    */
   private driveVehicle(m: MountRt, ticks = 1): void {
+    if (m.rigid) return this.driveRigid(m, ticks);
     const dt = TICK_DT * ticks;
     const v = m.def.vehicle!;
     const { forward, right, brake } = m.drive;
@@ -5208,8 +5912,13 @@ export class Match {
     m.vel = { x: vx, z: vz };
     this.ramMounts(m, vx, vz, driver);
     if (!m.alive) return;
-    // Running people over.
+    this.runOver(m, driver);
+  }
+
+  /** Running people over (5 m/s and up), credited to the driver. */
+  private runOver(m: MountRt, driver: Combatant | null): void {
     if (Math.abs(m.speed) < 5) return;
+    const dir = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
     for (const c of this.actors()) {
       if (!c.alive || m.seats.includes(c.slot) || (m.runOver.get(c.slot) ?? 0) > this.tick) continue;
       const rel = { x: c.move.pos.x - m.pos.x, z: c.move.pos.z - m.pos.z };
@@ -5223,6 +5932,109 @@ export class Match {
       this.damage(c, Math.abs(m.speed) * 5, driver, 'core.roadkill');
       this.pendingEvents.push({ e: 'crash', p: tuple(chest(c.move.pos)), n: Math.min(1, Math.abs(m.speed) / 40) });
     }
+  }
+
+  /**
+   * A rigid vehicle's tick (sim/wheelPhysics.ts): the body on its wheels, then what the classic drive does after a
+   * move (hard landings, the wedge watch, crashes, running people over), and the box, seats and snapshot from its pose.
+   */
+  private driveRigid(m: MountRt, ticks: number): void {
+    const t = m.rigidSetup!;
+    const v = m.def.vehicle!;
+    const seen = m.rigidSeen!;
+    let s = m.rigid!;
+    // Put somewhere from outside (a respawn, a test, a teleport): it starts again there, upright and still.
+    if (m.pos !== seen.pos || m.yaw !== seen.yaw) {
+      s = m.rigid = newRigid(t, m.pos, m.yaw);
+      m.driveWait = 0;
+    }
+    else if (m.speed !== seen.speed) {
+      // Its speed changed from outside (stopped dead, a crash's loss, a test): its speed along its heading becomes that.
+      const f = { x: Math.sin(m.yaw), z: Math.cos(m.yaw) };
+      const along = s.vel.x * f.x + s.vel.z * f.z;
+      s.vel = { x: s.vel.x + f.x * (m.speed - along), y: s.vel.y, z: s.vel.z + f.z * (m.speed - along) };
+      if (m.speed === 0) s.spin = { x: 0, y: 0, z: 0 };
+    }
+    // Pushes (blasts, being rammed): straight into its speed.
+    if (m.push.x || m.push.z) {
+      s.vel = { x: s.vel.x + m.push.x, y: s.vel.y, z: s.vel.z + m.push.z };
+      m.push = { x: 0, z: 0 };
+      s.rest = 0;
+    }
+    const piloted = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null) || !!m.ambient;
+    const road = roadHandling(this.road, m.pos, false);
+    const world = this.physics.chassisWorld(m.chassisProbe ?? null, m.body, m.chassisBody);
+    const before = { ...m.pos };
+    let landing = 0;
+    let blocked = 0;
+    // Driven, it steps once per driver input, as the driver's prediction does (and as players move: one move per
+    // input), so the host runs exactly what the driver predicted however the link bunches the inputs. A tick with
+    // none in waits for them (DRIVE_WAIT_MAX ticks at most: then it goes on with the last controls).
+    const queue = m.driveQueue ?? [];
+    m.driveQueue = [];
+    const driven = m.def.seats.some((seat, i) => seat.role === 'driver' && m.seats[i] !== null);
+    const run = (drive: MountRt['drive']) => {
+      const r = stepRigid(s, t, world, { forward: drive.forward, right: drive.right, brake: !!drive.brake, piloted, grip: road.grip, speed: road.speed }, TICK_DT);
+      landing = Math.max(landing, r.landing);
+      blocked = Math.max(blocked, r.blocked);
+    };
+    if (!driven || ticks > 1) {
+      for (let k = 0; k < ticks; k++) run(m.drive);
+      m.driveWait = 0;
+      m.driveFed = false;
+    } else if (queue.length) {
+      for (const drive of queue) run(drive);
+      m.driveWait = 0;
+      m.driveFed = true;
+    } else {
+      m.driveWait = (m.driveWait ?? 0) + 1;
+      if (m.driveWait > DRIVE_WAIT_MAX) m.driveFed = false;
+      if (!m.driveFed) run(m.drive);
+    }
+    const forward = m.drive.forward;
+    const pose = yawPitchRoll(s.q);
+    const speeds = rigidSpeeds(s);
+    m.pos = { ...s.pos };
+    m.yaw = pose.yaw;
+    m.speed = speeds.forward;
+    m.slide = speeds.side;
+    m.velY = s.vel.y;
+    m.airborne = s.contact === 0 && !s.hull;
+    // Hard landing: as the classic drive, by how fast it came down and how heavy it is.
+    if (landing > 11) this.damageMount(m, (landing - 11) * 6 * (v.mass ?? 1), null);
+    // The drawn body: no sprung offset of its own (the pose is the body's), its pitch and roll, steering and springs.
+    const susp = m.susp!;
+    susp.h = susp.hv = susp.pv = susp.rv = 0;
+    susp.p = pose.pitch;
+    susp.r = pose.roll;
+    susp.steer = s.steer;
+    for (let i = 0; i < susp.wheel.length; i++) susp.wheel[i] = s.comp[i] ?? 0;
+    susp.contact = s.contact;
+    susp.settled = s.rest > 0;
+    const mid = rotateQ(s.q, { x: 0, y: m.def.half[1], z: 0 });
+    this.physics.setBoxTransform(m.body, { x: m.pos.x + mid.x, y: m.pos.y + mid.y, z: m.pos.z + mid.z }, s.q);
+    if (m.pos.y < this.killY) {
+      this.destroyMount(m, false);
+      return;
+    }
+    // Wedged: driven and getting nowhere for a while (bots leave it for something else until it is got out).
+    const throttle = piloted && Math.abs(forward) > 0.2;
+    const step = Math.hypot(m.pos.x - before.x, m.pos.z - before.z);
+    m.stall = throttle && step < WEDGE_STEP * ticks ? m.stall + ticks : Math.max(0, m.stall - 2 * ticks);
+    if (m.stall >= WEDGE_TICKS && !m.wedged) m.wedged = { at: { ...m.pos } };
+    else if (m.wedged && Math.hypot(m.pos.x - m.wedged.at.x, m.pos.z - m.wedged.at.z) > WEDGE_FREED) {
+      m.wedged = undefined;
+      m.stall = 0;
+    }
+    void blocked;
+    const driverSlot = m.seats[m.def.seats.findIndex((seat) => seat.role === 'driver')] ?? null;
+    const driver = driverSlot === null ? null : (this.actor(driverSlot) ?? null);
+    m.vel = { x: s.vel.x, z: s.vel.z };
+    const speed = m.speed;
+    this.ramMounts(m, s.vel.x, s.vel.z, driver);
+    m.rigidSeen = { pos: m.pos, yaw: m.yaw, speed };
+    if (!m.alive) return;
+    this.runOver(m, driver);
   }
 
   /** Suspension rays cast this tick (stepMounts resets it): past SUSPENSION_RAY_BUDGET, vehicles sample less often. */
@@ -5409,7 +6221,7 @@ export class Match {
 
   /** Mounts for snapshots (see MountSnapshot). */
   mountSnapshots(): MountSnapshot[] {
-    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0) | (m.alive && m.arc ? arcFlags(m) : 0), ...m.seats.map((s) => s ?? -1)]);
+    return this.mounts.map((m) => [m.index, r3(m.pos.x), r3(m.pos.y), r3(m.pos.z), r3(m.yaw), r3(m.aimYaw), r3(m.aimPitch), Math.ceil((Math.max(0, m.health) / m.def.health) * 100), (m.alive ? MOUNT_FLAG_ALIVE : 0) | (this.tick < m.wreckUntil ? MOUNT_FLAG_WRECK : 0) | (m.burning ? MOUNT_FLAG_BURNING : 0) | (m.alive && m.arc ? arcFlags(m) : 0), ...m.seats.map((s) => s ?? -1), ...(m.def.resupply ? [m.supply] : [])]);
   }
 
   // ---------------------------------------------------------------- hazards and status effects
@@ -5580,6 +6392,11 @@ export class Match {
       const d = Math.max(0, distance(at, centre) - Math.min(m.def.half[0], m.def.half[2]));
       if (d <= radius) this.damageMount(m, (damage + (edge - damage) * (d / radius)) * boost, owner, false, 'blast', weapon);
     }
+    for (const b of [...this.boxes]) {
+      if (!b.body) continue;
+      const d = Math.max(0, distance(at, { x: b.pos.x, y: b.pos.y + AMMO_BOX_HALF[1], z: b.pos.z }) - AMMO_BOX_HALF[2]);
+      if (d <= radius) this.damageBox(b, (damage + (edge - damage) * (d / radius)) * boost, owner);
+    }
     for (const cv of [...this.covers]) {
       const d = Math.max(0, distance(at, { x: cv.pos.x, y: cv.pos.y + cv.half.y, z: cv.pos.z }) - cv.half.x);
       // Bags soak blasts well: explosives are the way through, just slower than you'd like.
@@ -5701,6 +6518,7 @@ export class Match {
   }
 
   private kill(victim: Combatant, killer: Combatant | null, weapon: string, head = false): void {
+    victim.hold = undefined;
     this.leaveMount(victim, false);
     victim.alive = false;
     victim.health = 0;
@@ -5817,6 +6635,15 @@ export class Match {
   private takeDrop(c: Combatant, d: WeaponDrop): boolean {
     const code = weaponCode(d.def);
     const owned = c.weapons.get(code);
+    if (owned && !owned.off && this.canPair(c, d.def)) {
+      // The second of a gun they hold: a pair, its magazine the drop's; the drop's reserve tops theirs up, and it goes.
+      this.makePair(c, owned, d.mag);
+      d.mag = 0;
+      takeDropAmmo(owned, d);
+      d.mag = d.reserve = d.alt = 0;
+      d.until = -1;
+      return true;
+    }
     if (owned) return takeDropAmmo(owned, d);
     c.weapons.set(code, { def: d.def, mag: Math.min(d.def.magazine, d.mag), reserve: Math.min(d.def.reserveMax, d.reserve), alt: d.alt });
     d.mag = d.reserve = d.alt = 0;
@@ -5848,9 +6675,21 @@ export class Match {
     else p.item = p.placed;
   }
 
-  /** The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). */
+  /**
+   * The next roll of a random pickup (deterministic: the match seed, its ID and its roll count). A grenade pickup in a
+   * set with grenades of its own is dealt from a deck of them (every kind before a repeat), and never the one that lay there.
+   */
   private reroll(p: PickupState): void {
-    if (p.pool) p.item = rollPickup(this.seed, p.id, p.rolls++, p.pool, p.item);
+    const pool = p.pool;
+    if (!pool) return;
+    if (pool[0]?.effect.kind !== 'throwable') {
+      p.item = rollPickup(this.seed, p.id, p.rolls++, pool, p.item);
+      return;
+    }
+    let item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    // (A deck never deals the same twice running; only the first deal can meet what was placed there.)
+    if (item === p.item && pool.length > 1) item = dealPickup(this.seed, p.id, p.rolls++, pool);
+    p.item = item;
   }
 
   /** What random pickups hold now, where it isn't what was placed: [pickup ID, item ID] (the snapshot's `pw`). */
@@ -5906,7 +6745,10 @@ export class Match {
         const owned = c.weapons.get(weaponCode(def));
         if (owned) {
           const altMax = def.alt?.ammo === 'own' ? (def.alt.max ?? 0) : 0;
-          if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
+          // Dual wielding: the second of a gun they hold makes a pair (a full magazine), and still gives its ammo.
+          const pairs = !owned.off && this.canPair(c, def);
+          if (pairs) this.makePair(c, owned, def.magazine);
+          else if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
           owned.reserve = Math.min(def.reserveMax, owned.reserve + def.pickupAmmo);
           owned.alt = Math.min(altMax, owned.alt + (def.alt?.pickup ?? 0));
           return true;
@@ -5966,7 +6808,10 @@ export class Match {
     const own = forMode?.length ? forMode : this.teams && c.faction ? this.spawnPoints.filter((sp) => sp.team === c.faction) : [];
     const shared = this.spawnPoints.filter((sp) => sp.team === null);
     // A team without spawns of its own (more teams than the map has bases) uses the shared ones, else anyone's, farthest from enemies.
-    const candidates = own.length ? own : shared.length ? shared : this.spawnPoints;
+    // Free-for-all: the shared points, or every point on the map (team bases too) when there are fewer shared points
+    // than players, so everyone gets a point of their own (owner, 2026-11-18: "not all clumped on one another").
+    const ffaAll = !this.teams && shared.length < this.combatants().length;
+    const candidates = own.length ? own : shared.length && !ffaAll ? shared : this.spawnPoints;
     // Team modes on shared spawns: the sides rotate. Spawns near teammates out of a fight win, and each side keeps its
     // own end of the map (SpawnSides) wherever the fight has moved: no spawn flips. (On a side's own spawns, the
     // squad spawn below puts them beside a teammate.)
@@ -5978,12 +6823,20 @@ export class Match {
     const home = own.length && own.some((sp) => sp.generated) && c.faction ? this.sideHome(c.faction) : null;
     const partyAt = party?.size ? [...party].filter((o) => (o.hurtAt ?? -Infinity) < calm).map((o) => o.move.pos) : [];
     const pick = pickSpawn({ tick: this.tick, candidates, lastUsed: this.spawnUsed, enemies, occupants, ...(mates ? { mates } : {}), ...(partyAt.length ? { party: partyAt } : {}), home, side, deaths: this.recentDeaths, sees: (a, b) => this.sees(a, b), rng: this.rng });
-    const best = candidates[pick];
+    let best: SpawnSpot | undefined = candidates[pick];
+    // Every spawn point taken (more players than points): beside the chosen one, clear of whoever is on it.
+    if (best && spawnTaken(best, { occupants, lastUsed: this.spawnUsed, tick: this.tick })) {
+      const near = this.besideSpot(best.pos, best.yaw, occupants);
+      if (near) {
+        this.spawnUsed.set(best, this.tick);
+        best = { ...best, pos: near };
+      }
+    }
     // Team modes: usually beside a teammate who's out of the fight and out of enemy sight, else the safest spawn point.
     // Fireteams: a squadmate beside its leader when that's safe, else at the team's spawn.
     const leader = this.fireteamSpawn(c);
     const squad = leader !== undefined ? leader : this.teams && this.rules.squadSpawn !== false && this.rng() < 0.7 ? this.squadSpawnSpot(c) : null;
-    if (!squad && best) this.spawnUsed.set(best, this.tick);
+    if (!squad && best && candidates.includes(best)) this.spawnUsed.set(best, this.tick);
     // Play from here: until play begins, this player's lives start where MapMaker's camera was (startHere).
     const at = c.startAt;
     const sp = at ? { pos: at.pos, yaw: at.yaw } : (squad ?? best ?? { pos: { x: 0, y: 0, z: 0 }, yaw: 0 });
@@ -6005,9 +6858,10 @@ export class Match {
     c.padFlight = false;
     c.breath = 0;
     c.chill = c.bloom = c.windup = c.burstLeft = 0;
-    c.semiLatch = false;
+    c.semiLatch = c.semiLatch2 = false;
     c.gun = newGunState();
-    c.reload = null;
+    c.reload = c.reload2 = null;
+    c.fireCooldown2 = c.reloadTicks2 = 0;
     c.spawns = (c.spawns ?? 0) + 1;
     this.loadout(c, c.spawns);
     c.discPower = undefined;
@@ -6068,6 +6922,21 @@ export class Match {
    * the weapon set's (sim/weaponSets.ts setLoadout: its spawn weapons, its random gun for the life, a sniper-role
    * bot's scoped gun, its first grenade), or one spear or a hand of arena discs where the weapons are fixed.
    */
+  /**
+   * PlayerSnapshot.dw: a pair is drawn. Alive, the weapon in hand has its second gun and it is out (not put away
+   * with the fire-mode key), and not from a seat that takes the hands (a driver, a seat with a gun, the plane).
+   */
+  private pairDrawn(c: Combatant): boolean {
+    if (!this.pairs || !c.alive) return false;
+    const w = c.weapons.get(c.current);
+    if (!w?.off || w.off.away) return false;
+    if (c.mount) {
+      const seat = this.seatOf(c);
+      if (!seat || seat.role === 'driver' || seat.weapon || this.mounts[c.mount.index]?.def.airplane) return false;
+    }
+    return true;
+  }
+
   private loadout(c: Combatant, life: number): void {
     c.weapons = new Map();
     const set = this.weaponSet;
@@ -6079,7 +6948,7 @@ export class Match {
       c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
-    // A grenade or two of the set's first kind (frags, TimeSplitters-style; the rest are pickups after that).
+    // A grenade or two of the life's kind, dealt from the set's (frags without a set's own; the rest are pickups after that).
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
   }
 
@@ -6524,6 +7393,23 @@ export class Match {
 
   // ---------------------------------------------------------------- snapshots
 
+  /**
+   * PlayerSnapshot.zm: the scope picture is up. The held gun carries a magnified optic (content/optics.json: a kind
+   * with `mag`, the 2-3x optic and the sniper scope), the aim button is held in the last input taken, the gun is
+   * ready (raised, not reloading: the client shows no scope otherwise) and its aim (GunState.ads, which the match
+   * already steps) is at least SCOPE_UP_ADS: the line a shot's no-scope penalty is drawn at. Not from a seat whose
+   * rider's hands are busy (a driver, a seat with a gun, the plane). Read only: nothing in the match depends on it.
+   */
+  private scopeUp(c: Combatant): boolean {
+    if (!c.alive || !(c.prevButtons & BUTTON_ZOOM) || c.gun.ads < SCOPE_UP_ADS || c.raiseTicks > 0 || c.reload) return false;
+    if (c.mount) {
+      const seat = this.seatOf(c);
+      if (!seat || seat.role === 'driver' || seat.weapon || this.mounts[c.mount.index]?.def.airplane) return false;
+    }
+    const optics = WEAPON_OPTICS[heldWeapon(c).def.id];
+    return !!optics && OPTIC_KINDS[optics.default].mag !== undefined;
+  }
+
   playerSnapshots(): PlayerSnapshot[] {
     return this.combatants().map((c) => {
       const s: PlayerSnapshot = {
@@ -6552,6 +7438,8 @@ export class Match {
       if (c.move.sprint) s.sr = 1;
       if (c.move.chute) s.ch = c.move.chute;
       if (c.move.drop) s.dr = 1;
+      if (this.scopeUp(c)) s.zm = 1;
+      if (this.pairDrawn(c)) s.dw = 1;
       if (c.move.zip !== undefined) s.zl = [c.move.zip, c.move.zs ?? 0, c.move.zv ?? 0];
       return s;
     });
@@ -6660,6 +7548,8 @@ export class Match {
     let mate: Combatant | null = null;
     let mateScore = -Infinity;
     for (const o of mates.slice(0, 4)) {
+      // Never beside a teammate outside the play area (behind a fence, cut off): the squad would be stranded with them.
+      if (!this.inPlay(o.move.pos)) continue;
       const near = enemies.map((e) => ({ e, d: distance(e.move.pos, o.move.pos) })).filter((x) => x.d < 50).sort((a, b) => a.d - b.d);
       const head = { x: o.move.pos.x, y: o.move.pos.y + 1.6, z: o.move.pos.z };
       if (near.slice(0, 3).some((x) => this.sees({ x: x.e.move.pos.x, y: x.e.move.pos.y + 1.6, z: x.e.move.pos.z }, head))) continue;
@@ -6671,6 +7561,120 @@ export class Match {
   }
 
   /** A clear spot on walkable ground a step from `mate` (behind or beside them), facing their way; null: none. */
+  /**
+   * A place beside a spawn point everyone's on (more players than points): on a ring 3, 1.6 or 4.5 m out in sight of the point
+   * (then up to 6 m, anywhere), on walkable floor (the navmesh), clear of walls, and at least SPAWN_TAKEN from everyone. Null when none.
+   */
+  private besideSpot(at: Vec3, yaw: number, occupants: readonly Vec3[]): Vec3 | null {
+    // In sight of the point first; past that, anywhere walkable on the rings (a point in a tight corner).
+    for (const [r, sight] of [[3, true], [1.6, true], [4.5, true], [3, false], [4.5, false], [6, false]] as const) {
+      for (let k = 0; k < 8; k++) {
+        const a = yaw + Math.PI + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * (Math.PI / 4);
+        const pos = { x: at.x + Math.sin(a) * r, y: at.y, z: at.z + Math.cos(a) * r };
+        if (!this.physics.headroom({ x: pos.x, y: pos.y + 0.05, z: pos.z }, PLAYER.height)) continue;
+        const floor = this.physics.raycastWorld({ x: pos.x, y: pos.y + 0.5, z: pos.z }, { x: 0, y: -1, z: 0 }, 1.5);
+        if (floor === null) continue;
+        if (sight && !this.physics.lineOfSight({ x: at.x, y: at.y + 1, z: at.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
+        const spot = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
+        const q = this.nav.closestPoint({ x: spot.x, y: spot.y + 0.5, z: spot.z }, { x: 0.6, y: 1.2, z: 0.6 });
+        if (!q || Math.abs(q.y - spot.y) >= 1) continue;
+        // In the play area: a ring can reach past a see-through fence (sight lines pass between its slats).
+        if (!this.inPlay(spot)) continue;
+        if (occupants.some((o) => Math.abs(o.y - spot.y) <= 2 && horizontalDistance(o, spot) < SPAWN_TAKEN)) continue;
+        return spot;
+      }
+    }
+    return null;
+  }
+
+  /** A place in the spawns' area that inPlay's hops head for (the navmesh's first main place), found once. */
+  private homeGoal: Vec3 | null | undefined;
+
+  /** Inside the map's boundary rectangle (when it has one), with a little give for a body against its wall. */
+  private insideBounds(p: Vec3): boolean {
+    const b = this.map.bounds;
+    if (!b) return true;
+    const give = PLAYER.radius + 0.25;
+    return p.x >= b.min[0] - give && p.x <= b.max[0] + give && p.z >= b.min[1] - give && p.z <= b.max[1] + give;
+  }
+
+  /**
+   * In the play area: inside the boundary, and not on ground that can't get back to the spawns' area: none that routes
+   * back (NavWorld.stranded), nor the step or hop bots take off a cut-off patch (NavWorld.escapes: a sunken court, a
+   * pool) with nothing a body bumps into in the way (a fence's posts and its body-only box count; sight lines don't).
+   * Where a squad may spawn beside a teammate, and where nobody is moved from.
+   */
+  inPlay(p: Vec3): boolean {
+    if (!this.insideBounds(p)) return false;
+    if (!this.nav.stranded(p)) return true;
+    const goal = (this.homeGoal ??= this.nav.mainPlaces()[0] ?? null);
+    if (!goal) return true;
+    const moveRay = (a: Vec3, b: Vec3, h: number): boolean => {
+      const d = { x: b.x - a.x, y: 0, z: b.z - a.z };
+      const len = Math.hypot(d.x, d.z);
+      return len < 1e-3 || this.physics.moveRay({ x: a.x, y: a.y + h, z: a.z }, { x: d.x / len, y: 0, z: d.z / len }, len) === null;
+    };
+    const clear = (a: Vec3, b: Vec3) => {
+      const y = Math.max(a.y, b.y);
+      return moveRay({ ...a, y }, { ...b, y }, 0.5) && moveRay({ ...a, y }, { ...b, y }, 1.6);
+    };
+    return this.nav.escapes(p, goal, clear, 'body').length > 0;
+  }
+
+  /**
+   * Nobody stays outside the play area (crawled out through a gap, thrown over a fence, landed there): standing outside
+   * it for OUT_OF_BOUNDS.warn they're told, calmly (a message, no flash: Reduce flashing), and after OUT_OF_BOUNDS.back
+   * they're put back on the nearest clear ground inside it, as they are (no death, nothing taken). Checked every
+   * OUT_OF_BOUNDS.every ticks, players and bots on foot; draws no random numbers.
+   */
+  private stepOutOfBounds(): void {
+    if (this.tick % OUT_OF_BOUNDS.every !== 0) return;
+    for (const c of this.combatants()) {
+      if (!c.alive || c.mount || c.move.zip !== undefined || c.move.chute) {
+        c.outsideTicks = 0;
+        continue;
+      }
+      // In the air: neither in nor out (a jump, a fall); the count waits for the ground.
+      if (!c.move.grounded) continue;
+      if (this.inPlay(c.move.pos)) {
+        c.outsideTicks = 0;
+        continue;
+      }
+      const was = c.outsideTicks ?? 0;
+      const now = was + OUT_OF_BOUNDS.every;
+      c.outsideTicks = now;
+      const warnAt = OUT_OF_BOUNDS.warn * TICK_RATE;
+      const backAt = OUT_OF_BOUNDS.back * TICK_RATE;
+      if (was < warnAt && now >= warnAt && c.kind === 'human') {
+        this.pendingEvents.push({ e: 'msg', text: `Outside the play area: back in ${Math.round(OUT_OF_BOUNDS.back - OUT_OF_BOUNDS.warn)} s, or you'll be returned`, secs: 3, s: c.slot });
+      }
+      if (now < backAt) continue;
+      c.outsideTicks = 0;
+      const spot = this.returnSpot(c);
+      if (spot) {
+        c.move = { pos: spot, velY: 0, grounded: false };
+        if (c.kind === 'human') this.pendingEvents.push({ e: 'msg', text: 'Returned to the play area', secs: 2, s: c.slot });
+      } else this.spawn(c);
+    }
+  }
+
+  /** The nearest clear place in the play area to `c` (the navmesh's main places), or null. */
+  private returnSpot(c: Combatant): Vec3 | null {
+    const at = c.move.pos;
+    const occupants = this.actors().filter((o) => o.alive && o !== c).map((o) => o.move.pos);
+    const near = this.nav
+      .mainPlaces()
+      .map((p) => ({ p, d: Math.hypot(p.x - at.x, p.z - at.z) + Math.abs(p.y - at.y) * 2 }))
+      .sort((a, b) => a.d - b.d);
+    for (const { p } of near.slice(0, 24)) {
+      if (!this.insideBounds(p)) continue;
+      if (!this.physics.headroom({ x: p.x, y: p.y + 0.05, z: p.z }, PLAYER.height)) continue;
+      if (occupants.some((o) => Math.abs(o.y - p.y) <= 2 && horizontalDistance(o, p) < SPAWN_TAKEN)) continue;
+      return { x: p.x, y: p.y + 0.05, z: p.z };
+    }
+    return null;
+  }
+
   private besideMate(mate: Combatant): { pos: Vec3; yaw: number } | null {
     // Only beside a teammate on walkable ground (the navmesh), and onto it: one stuck where nobody walks drew every
     // squadmate spawning after it in with it (a rider thrown under a street's floor: four bots a round).
@@ -6679,6 +7683,9 @@ export class Match {
       return !!q && Math.abs(q.y - p.y) < 1;
     };
     if (!walkable(mate.move.pos)) return null;
+    // Nor beside one outside the play area (Atomic Court, 2026-11-19: one player crawled out under the fence and half
+    // the team spawned out there with him): the map's boundary, or ground that doesn't route back to the spawns.
+    if (!this.inPlay(mate.move.pos)) return null;
     for (const a of [Math.PI, Math.PI / 2, -Math.PI / 2, 0, (3 * Math.PI) / 4, (-3 * Math.PI) / 4]) {
       const yaw = mate.yaw + a;
       const pos = { x: mate.move.pos.x + Math.sin(yaw) * 1.4, y: mate.move.pos.y, z: mate.move.pos.z + Math.cos(yaw) * 1.4 };
@@ -6688,10 +7695,36 @@ export class Match {
       if (floor === null) continue;
       if (!this.physics.lineOfSight({ x: mate.move.pos.x, y: mate.move.pos.y + 1, z: mate.move.pos.z }, { x: pos.x, y: pos.y + 1, z: pos.z })) continue;
       const at = { x: pos.x, y: pos.y + 0.5 - floor, z: pos.z };
-      if (!walkable(at)) continue;
+      if (!walkable(at) || !this.inPlay(at)) continue;
       return { pos: at, yaw: mate.yaw };
     }
     return null;
+  }
+
+  /** The driver of a rigid vehicle gets its whole state, to predict it from (PrivateState.vp, wheelPhysics.ts rigidWire). */
+  private rigidPrivate(c: Combatant): { vp?: number[] } {
+    const m = this.mounts[c.mount!.index];
+    if (!m?.rigid || !m.alive || m.def.seats[c.mount!.seat]?.role !== 'driver') return {};
+    return { vp: rigidWire(m.index, m.rigid, !!m.chassisBody) };
+  }
+
+  /**
+   * Dual wielding's private state: `ow`, the second guns ([weapon code, magazine, flags: 1 no round chambered, 2 put
+   * away]; flags left out when 0), and the second gun's reload (`rl2`, `rd2`, as `rl` and `rd`). Nothing without a pair.
+   */
+  private pairPrivate(c: Combatant): Pick<PrivateState, 'ow' | 'rl2' | 'rd2'> {
+    let ow: [number, number, number?][] | undefined;
+    for (const [code, w] of c.weapons) {
+      if (!w.off) continue;
+      const flags = (w.off.unchambered ? 1 : 0) | (w.off.away ? 2 : 0);
+      (ow ??= []).push(flags ? [code, w.off.mag, flags] : [code, w.off.mag]);
+    }
+    if (!ow) return {};
+    ow.sort((a, b) => a[0] - b[0]);
+    return {
+      ow,
+      ...(c.reload2 && c.reloadTicks2 > 0 ? { rl2: c.reloadTicks2, rd2: [RELOAD_KINDS.indexOf(c.reload2.kind), c.reload2.t, c.reload2.total, c.reload2.stage] as [number, number, number, number] } : {}),
+    };
   }
 
   /** The owning player's inventory and timers. */
@@ -6703,11 +7736,13 @@ export class Match {
       ...(statusSpeed(c) !== 1 ? { ms: Math.round(statusSpeed(c) * 1000) } : {}),
       ...(c.speedMul !== 1 || c.stats.jump !== 1 || c.stats.stamina !== 1 ? { bs: [Math.round(c.speedMul * 1000), Math.round(c.stats.jump * 1000), Math.round(c.stats.stamina * 1000)] as [number, number, number] } : {}),
       ...(c.mount ? { mo: this.seatState(c) } : {}),
+      ...(c.mount ? this.rigidPrivate(c) : {}),
       ...(c.throwable ? { gr: [THROWABLES.indexOf(c.throwable.kind), c.throwable.count] as [number, number] } : {}),
       rl: c.reloadTicks,
       rs: c.raiseTicks,
       ...(c.dealt?.some((d) => d[0] > this.tick - DEALT_KEEP_TICKS) ? { dd: c.dealt.filter((d) => d[0] > this.tick - DEALT_KEEP_TICKS).map((d) => [d[0], Math.round(d[1]), d[2], round2(d[3]), round2(d[4]), round2(d[5])] as [number, number, number, number, number, number]) } : {}),
       ...(c.reload && c.reloadTicks > 0 ? { rd: [RELOAD_KINDS.indexOf(c.reload.kind), c.reload.t, c.reload.total, c.reload.stage] as [number, number, number, number] } : {}),
+      ...(this.pairs ? this.pairPrivate(c) : {}),
       ...([...c.weapons.values()].some((w) => w.unchambered) ? { uc: [...c.weapons.entries()].filter(([, w]) => w.unchambered).map(([code]) => code) } : {}),
       sp: c.speedTicks,
       dm: c.damageTicks,
@@ -6720,6 +7755,7 @@ export class Match {
       ...(this.classes?.privateState(c) ?? {}),
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
       ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),
+      ...(c.hold ? { hu: [HOLD_KINDS.indexOf(c.hold.kind), Math.max(0, this.tick - c.hold.start), c.hold.ticks] as [number, number, number] } : {}),
     };
   }
 
@@ -6763,11 +7799,12 @@ export class Match {
       players: this.playerSnapshots(),
       score: this.scores(),
       ev: events,
-      pr: this.projectiles.map((p) => [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)]),
+      pr: this.projectiles.map((p) => (STREAM_VISUALS.has(p.spec.visual) && !p.extra ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
       pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
+      ...(this.boxes.some((b) => b.body) ? { ab: this.boxSnapshots() } : {}),
       ...(this.mounts.some((m) => m.susp && m.alive) ? { ms: this.suspensionSnapshots() } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.kind === 'smoke' ? this.smokeNow(z) : z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
@@ -6781,10 +7818,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}) }));
     // Spectators by choice, last: on no team, marked `sp`.
     if (!this.spectators.size) return players;
-    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}) }))];
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}) }))];
   }
 
   destroy(): void {
@@ -6799,7 +7836,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -6946,7 +7983,8 @@ export class BotFiller {
     if (this.set) for (const e of this.set.entries) used.add(e.name.toLowerCase());
     // Roulette: every life wears another look, so a name after one ("Biscuit", the cat) soon names the wrong
     // character (the owner aimed at the old man and read "Biscuit"): a general name, kept for the match.
-    const from = this.match.roulette ? undefined : look;
+    // Themed names off (rules.themedNames): a general name for every random bot.
+    const from = this.match.roulette || this.match.rules.themedNames === false ? undefined : look;
     // Matches differ in which names come up (the seed); seed 1 (tests, default) takes each list in order.
     return botNameFor(from, (n) => used.has(n.toLowerCase()), (this.match.seed - 1) * 37);
   }
@@ -7349,6 +8387,11 @@ interface Trigger {
   headshot?: number;
   /** Second triggers: their own kick and falloff (AltFire). */
   kick?: KickSpec;
+  /** The primary trigger's recoil in the fire mode it was pulled in (sim/fireModes.ts). */
+  modeKick?: KickSpec | null;
+  /** Dual wielding: the round is one of a pair's (its trade applies), and `off` when the second gun fired it. (Not named `akimbo`: a WeaponDefinition has a field of that name, and tests fire a definition as a trigger.) */
+  pair?: AkimboSpec;
+  off?: true;
   falloff?: FalloffSpec;
 }
 
@@ -7366,6 +8409,12 @@ export const RELAXED_RANGE = 45;
 /** Bots this close (m) to a buried tunnel's footprint always make the exact move (Match.relaxedMove). */
 const RELAXED_BORE = 2;
 const NO_BORES: readonly GroundCut[] = [];
+/**
+ * Out of the play area (Match.stepOutOfBounds): checked every `every` ticks; a player standing outside is told after
+ * `warn` seconds and put back inside after `back` seconds.
+ */
+export const OUT_OF_BOUNDS = { every: 30, warn: 1, back: 6 } as const;
+
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */
 const RELAXED_PORTAL = 6;
 /** Held buttons a coasting bot keeps (movement stance); fire, use, jump and the rest are one-shot. */
@@ -7381,6 +8430,8 @@ const SEARCH_BUDGET = 24;
 const STANCE_SPREAD = [1, 0.7, 0.5] as const;
 /** Extra cone (radians) of a scoped rifle fired before the scope is half up: 30 cm at 10 m. */
 export const NO_SCOPE_SPREAD = 0.03;
+/** GunState.ads from which a scoped weapon's shot counts as scoped (below it: the no-scope penalty), and PlayerSnapshot.zm is set. */
+export const SCOPE_UP_ADS = 0.5;
 
 /** Extra spread from moving and jumping (radians); multi-pellet guns already spray, so they care less. */
 function movementSpread(c: Combatant, def: Trigger): number {
@@ -7403,8 +8454,9 @@ function aimSpread(c: Combatant, def: Trigger, spread: number): number {
   return spread + (w.view.zoomFov < 0.5 ? 0.05 : 0.012);
 }
 
-function primaryTrigger(def: WeaponDefinition): Trigger {
+function primaryTrigger(def: WeaponDefinition, firing?: Firing): Trigger {
   return {
+    ...(firing && firing.index > 0 ? { modeKick: firing.kick } : {}),
     id: def.id,
     kind: def.kind,
     damage: def.damage,
@@ -7419,6 +8471,14 @@ function primaryTrigger(def: WeaponDefinition): Trigger {
     ...(def.recoil ? { recoil: def.recoil } : {}),
     ...(def.headshot !== undefined ? { headshot: def.headshot } : {}),
   };
+}
+
+/** A round from one gun of a pair: the weapon's own trigger with the pair's trade; `off`: the second gun's. */
+function pairTrigger(def: WeaponDefinition, firing: Firing, akimbo: AkimboSpec, off: boolean): Trigger {
+  const t = primaryTrigger(def, firing);
+  t.pair = akimbo;
+  if (off) t.off = true;
+  return t;
 }
 
 /** Use one round (or add heat) for a shot; false when the weapon can't fire. */
@@ -7451,9 +8511,9 @@ function isMeleeWeapon(weapon: string): boolean {
   return CORE_WEAPONS[weapon]?.kind === 'melee';
 }
 
-/** Body-zone damage multiple for a weapon: head, torso or legs (spec §11). */
+/** Body-zone damage multiple for a weapon: head, torso, legs or arms (spec §11). */
 function zoneScale(gp: Gunplay, zone: HitZone): number {
-  return zone === 1 ? gp.head : zone === 2 ? gp.legs : 1;
+  return zone === 1 ? gp.head : zone === 2 ? gp.legs : zone === 3 ? gp.arms : 1;
 }
 /** Movement multiplier from status effects (frozen solid, chilled, slowed) and the mode (carrying a flag). */
 function statusSpeed(c: Combatant): number {

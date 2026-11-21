@@ -36,7 +36,7 @@ describe('getting out of a vehicle parked against a wall', () => {
     // The street ends at the wall; beyond it there is no floor until the slab 4 m down.
     expect(I.physics.moveRay({ x: 202, y: 3, z: 45 }, { x: 0, y: -1, z: 0 }, 10)).toBeCloseTo(3, 1);
     expect(I.physics.moveRay({ x: 204.3, y: 3, z: 45 }, { x: 0, y: -1, z: 0 }, 10)).toBeGreaterThan(6.5);
-    const m = I.mounts.find((x) => x.def.id === 'buggy')!;
+    const m = I.mounts.find((x) => x.def.id === 'troop_buggy')!;
     // Facing south (yaw π), its left side (leaveMount's first spot) to the wall, its hull 0.1 m short of it.
     const at = { x: 204.3 - (m.def.half[0] + 0.9), y: 0, z: 45.3 };
     m.pos = at;

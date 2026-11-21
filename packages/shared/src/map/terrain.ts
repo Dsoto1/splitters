@@ -1,12 +1,22 @@
 import type { WorldBox } from './geometry.ts';
 import type { Vec3 } from '../math.ts';
 import { hypot } from '../math.ts';
+import { coreMaterials, coreThemes, groundThemes, type GroundThemeDefinition, type PatternId } from './materials.ts';
+import type { ResolvedStyle } from './surfaces.ts';
 
 /**
- * Outdoor terrain: a heightmap grid with a ground material per cell (grass,
- * dirt, stone…). Heights are stored in centimetres above `baseY` so the map
- * file stays compact and exact. It collides as a triangle mesh, is part of the
- * bots' navmesh, and is sculpted in MapMaker with brushes.
+ * Outdoor terrain: a heightmap grid with a ground per cell. Heights are stored in centimetres above `baseY` so the
+ * map file stays compact and exact. It collides as a triangle mesh, is part of the bots' navmesh, and is sculpted in
+ * MapMaker with brushes.
+ *
+ * The ground (map format v45, docs/MAPMAKER_PAINTING_PLAN.md "Format change A"): a cell is 0, **the base** (it
+ * follows the map's Ground theme, `groundTheme`: content/materials.json groundThemes), or k, **painted** with the
+ * map's own ground `grounds[k − 1]` (a ground material: the Ground category, or one of the old layers below). Any
+ * ground draws as itself; nothing is swapped for a look-alike.
+ *
+ * The eight kinds below were the terrain's only grounds before v45 (a cell stored its kind's index). They stay as
+ * what a ground **behaves** like (groundKind): the plants it grows (cellFoliage), what the Environment brush grows on,
+ * the ground past the border, a path's ground, a height-grid import's plants. Never how it looks.
  */
 export const TERRAIN_MATERIALS = ['grass', 'dirt', 'stone', 'sand', 'gravel', 'snow', 'moss', 'mud'] as const;
 export type TerrainMaterial = (typeof TERRAIN_MATERIALS)[number];
@@ -22,7 +32,7 @@ export const TERRAIN_MATERIAL_LABELS: Record<TerrainMaterial, string> = {
   mud: 'Dark earth',
 };
 
-/** Surface material (see materials.ts) drawn for each terrain material. */
+/** The material each kind was drawn in before v45 (the v45 migration's `grounds`, in this order). */
 export const TERRAIN_SURFACES: Record<TerrainMaterial, string> = {
   grass: 'core.pbr_grass',
   dirt: 'core.pbr_forest',
@@ -55,8 +65,12 @@ export interface TerrainData {
   baseY: number;
   /** cols × rows heights in centimetres above baseY, row by row (Z), X fastest. */
   heights: number[];
-  /** (cols − 1) × (rows − 1) cell materials (indices into TERRAIN_MATERIALS). */
+  /** (cols − 1) × (rows − 1) cells: 0 the base (the Ground theme's), k painted with `grounds[k − 1]` (map format v45). */
   materials: number[];
+  /** The Ground theme (a `ground.*` id): what every unpainted cell shows. Absent or unknown: DEFAULT_GROUND_THEME. */
+  groundTheme?: string;
+  /** The map's own grounds (ground material ids, at most MAX_GROUNDS) that painted cells name. Absent: none. */
+  grounds?: string[];
   /** Invisible walls round the edge keep players and grenades in. */
   boundary: boolean;
   /** Plant cover per cell, 0–4 (see FOLIAGE_LEVELS); empty = from each cell's material. */
@@ -83,7 +97,170 @@ const MATERIAL_FOLIAGE: Record<TerrainMaterial, number> = { grass: 2, moss: 1, d
 /** Plant cover (0–4) of terrain cell `i`. */
 export function cellFoliage(t: TerrainData, i: number): number {
   if (t.foliage.length) return t.foliage[i] ?? 0;
-  return MATERIAL_FOLIAGE[TERRAIN_MATERIALS[t.materials[i] ?? 0] ?? 'grass'];
+  return MATERIAL_FOLIAGE[cellKind(t, i)];
+}
+
+// ---------------------------------------------------------------- the ground: Ground themes and painted grounds
+
+/** A map's terrain with no Ground theme (and a new map's on the Prototype theme): grass. */
+export const DEFAULT_GROUND_THEME = 'ground.meadow';
+/** The most grounds a terrain's own list holds (`grounds`): a cell is 0..MAX_GROUNDS. */
+export const MAX_GROUNDS = 16;
+
+const OLD_LAYERS = new Set<string>(Object.values(TERRAIN_SURFACES));
+
+/** A ground material: the Ground category, or a terrain layer of before v45 (Mossy Rock, Hex Paving). Never anything else. */
+export function isGroundMaterial(id: string): boolean {
+  return OLD_LAYERS.has(id) || coreMaterials.get(id)?.category === 'Ground';
+}
+
+/** Every ground material, in MapMaker's palette order (Ground paint's list). */
+export const GROUND_MATERIALS: readonly string[] = coreMaterials.all().filter((m) => isGroundMaterial(m.id)).map((m) => m.id);
+
+/** A Ground theme by id; an unknown or absent one is DEFAULT_GROUND_THEME. */
+export function groundThemeDef(id: string | undefined): GroundThemeDefinition {
+  return (id ? groundThemes.get(id) : undefined) ?? groundThemes.get(DEFAULT_GROUND_THEME)!;
+}
+
+/** The terrain's Ground theme. */
+export const terrainGroundTheme = (t: Pick<TerrainData, 'groundTheme'>): GroundThemeDefinition => groundThemeDef(t.groundTheme);
+
+/** The base ground (a material id) every unpainted cell shows. */
+export const groundBase = (t: Pick<TerrainData, 'groundTheme'>): string => terrainGroundTheme(t).base;
+
+/** A Structure theme's matching Ground theme (content/materials.json: the theme's `ground`). */
+export function matchingGroundTheme(structureTheme: string): string {
+  const g = coreThemes.get(structureTheme)?.ground;
+  return g && groundThemes.get(g) ? g : DEFAULT_GROUND_THEME;
+}
+
+/** The ground (a material id) cell `i` shows: the base, or the painted ground. */
+export function cellGround(t: Pick<TerrainData, 'materials' | 'groundTheme' | 'grounds'>, i: number): string {
+  const m = t.materials[i] ?? 0;
+  return (m > 0 ? t.grounds?.[m - 1] : undefined) ?? groundBase(t);
+}
+
+/** Whether cell `i` is painted (not the base). A cell painted the base's own ground is painted: it stays when the theme changes. */
+export const cellPainted = (t: Pick<TerrainData, 'materials' | 'grounds'>, i: number): boolean => (t.materials[i] ?? 0) > 0 && !!t.grounds?.[(t.materials[i] ?? 0) - 1];
+
+/** Grounds drawn with a tint of their own: Gravel's photo is near white in daylight, so it is darkened to read as ground, not snow. */
+export const GROUND_TINTS: Readonly<Record<string, string>> = { 'core.pbr_gravel': '#8f877b' };
+
+/** How a ground material is drawn on the terrain (and past the border): the material and its ground tint. */
+export function groundStyle(id: string): ResolvedStyle {
+  const def = coreMaterials.get(id) ?? coreMaterials.get('core.proto_floor')!;
+  return { material: def, tint: GROUND_TINTS[def.id] ?? null };
+}
+
+/** The kind a ground behaves as (plants, the Environment brush, the border's ground, the plan's colour): never its look. */
+export function groundKind(id: string): TerrainMaterial {
+  return terrainMaterialFor(id) ?? 'grass';
+}
+
+/** The kind cell `i` behaves as. */
+export const cellKind = (t: Pick<TerrainData, 'materials' | 'groundTheme' | 'grounds'>, i: number): TerrainMaterial => groundKind(cellGround(t, i));
+
+/** How many cells use each ground index (0 the base, k grounds[k − 1]). */
+export function groundCounts(t: Pick<TerrainData, 'materials'>): Map<number, number> {
+  const out = new Map<number, number>();
+  for (const m of t.materials) out.set(m, (out.get(m) ?? 0) + 1);
+  return out;
+}
+
+/**
+ * The cell value that paints `ground` (a ground material id; null: the base), with the terrain's list grown to hold it.
+ * A ground already in the list keeps its index. A full list (MAX_GROUNDS) first drops the grounds no cell uses any more
+ * (cells renumbered, the look unchanged). Null when the list is full of grounds in use: Ground paint says so; it never
+ * substitutes another ground.
+ */
+export function groundIndex(t: TerrainData, ground: string | null): { terrain: TerrainData; value: number } | null {
+  if (ground === null) return { terrain: t, value: 0 };
+  const grounds = t.grounds ?? [];
+  const at = grounds.indexOf(ground);
+  if (at >= 0) return { terrain: t, value: at + 1 };
+  if (grounds.length < MAX_GROUNDS) return { terrain: { ...t, grounds: [...grounds, ground] }, value: grounds.length + 1 };
+  const compact = compactGrounds(t);
+  const list = compact.grounds ?? [];
+  if (list.length >= MAX_GROUNDS) return null;
+  return { terrain: { ...compact, grounds: [...list, ground] }, value: list.length + 1 };
+}
+
+/** The terrain with the grounds no cell uses dropped from its list (and the same ground listed twice merged), cells renumbered: it looks the same. */
+export function compactGrounds(t: TerrainData): TerrainData {
+  const grounds = t.grounds ?? [];
+  const used = groundCounts(t);
+  const next: string[] = [];
+  const map = new Map<number, number>([[0, 0]]);
+  grounds.forEach((g, k) => {
+    if (!used.has(k + 1)) return;
+    const was = next.indexOf(g);
+    if (was >= 0) map.set(k + 1, was + 1);
+    else {
+      next.push(g);
+      map.set(k + 1, next.length);
+    }
+  });
+  if (next.length === grounds.length) return t;
+  return { ...t, grounds: next, materials: t.materials.map((m) => map.get(m) ?? 0) };
+}
+
+/** Photo grounds with no old layer of their own, and the kind that behaves closest. */
+const NEAREST: Readonly<Record<string, TerrainMaterial>> = {
+  'core.pbr_ice': 'snow',
+  'core.pbr_asphalt': 'stone',
+  'core.pbr_wet_asphalt': 'stone',
+  'core.pbr_lava': 'stone',
+  'core.pbr_dusty_road': 'dirt',
+};
+
+/** Patterns that say what a ground is, whatever its colour. */
+const BY_PATTERN: Partial<Record<PatternId, TerrainMaterial>> = {
+  snow: 'snow',
+  snowcrete: 'snow',
+  ice: 'snow',
+  frostrock: 'snow',
+  pebbles: 'gravel',
+  roots: 'dirt',
+  cobbles: 'stone',
+  setts: 'stone',
+  flags: 'stone',
+  slabs: 'stone',
+  ashlar: 'stone',
+  sandstone_ashlar: 'sand',
+  blocks: 'stone',
+  hex: 'mud',
+};
+
+/** HSL of a #rrggbb colour (h in degrees, s and l 0..1). */
+function hsl(hex: string): { h: number; s: number; l: number } {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2, d = max - min;
+  if (d === 0) return { h: 0, s: 0, l };
+  const s = d / (1 - Math.abs(2 * l - 1));
+  const h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return { h: h * 60, s, l };
+}
+
+/**
+ * The kind a material behaves as on the ground (its old layer, else the one closest by pattern, else by colour):
+ * plants, the Environment brush's filters, the ground past the border. Since v45 it never decides how a ground
+ * looks: every ground draws as itself. Null: not a material.
+ */
+export function terrainMaterialFor(materialId: string): TerrainMaterial | null {
+  const exact = TERRAIN_MATERIALS.find((m) => TERRAIN_SURFACES[m] === materialId);
+  if (exact) return exact;
+  if (NEAREST[materialId]) return NEAREST[materialId]!;
+  const def = coreMaterials.get(materialId);
+  if (!def) return null;
+  const byPattern = BY_PATTERN[def.pattern];
+  if (byPattern) return byPattern;
+  const { h, s, l } = hsl(def.base);
+  if (l > 0.8 && s < 0.35) return 'snow';
+  if (s < 0.15) return l > 0.45 ? 'stone' : 'gravel';
+  if (h >= 70 && h <= 170) return l > 0.3 ? 'grass' : 'moss';
+  if (h >= 35 && h < 70 && l > 0.45) return 'sand';
+  return 'dirt';
 }
 
 /**
@@ -97,9 +274,9 @@ export function terrainSpacingFor(width: number, depth = width): number {
 
 /**
  * A flat terrain `sizeMetres` across (east-west) and `depthMetres` (north-south, default the same) round `centre`,
- * vertices `spacing` m apart (at most MAX_TERRAIN_VERTS a side).
+ * vertices `spacing` m apart (at most MAX_TERRAIN_VERTS a side), every cell the base of `groundTheme`.
  */
-export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, number] = [0, 0], material: TerrainMaterial = 'grass', depthMetres = sizeMetres): TerrainData {
+export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, number] = [0, 0], groundTheme = DEFAULT_GROUND_THEME, depthMetres = sizeMetres): TerrainData {
   const cols = Math.min(MAX_TERRAIN_VERTS, Math.round(sizeMetres / spacing) + 1);
   const rows = Math.min(MAX_TERRAIN_VERTS, Math.round(depthMetres / spacing) + 1);
   return {
@@ -109,7 +286,9 @@ export function newTerrain(sizeMetres: number, spacing = 2, centre: [number, num
     rows,
     baseY: 0,
     heights: new Array(cols * rows).fill(0),
-    materials: new Array((cols - 1) * (rows - 1)).fill(TERRAIN_MATERIALS.indexOf(material)),
+    materials: new Array((cols - 1) * (rows - 1)).fill(0),
+    groundTheme,
+    grounds: [],
     boundary: true,
     foliage: [],
   };
@@ -276,8 +455,8 @@ export interface BrushStroke {
   strength: number;
   /** Flatten: the world height to level to. */
   target?: number;
-  /** Paint: the material to lay. */
-  material?: TerrainMaterial;
+  /** Paint: the ground material to lay (painted: it stays when the Ground theme changes); null or absent: back to the base. */
+  ground?: string | null;
   /** Foliage: the plant cover to lay (0 bare … 4 overgrown). */
   level?: number;
   /** Roughen: seed for the noise. */
@@ -291,7 +470,6 @@ export interface BrushStroke {
  */
 export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
   const heights = t.heights.slice();
-  const materials = t.materials.slice();
   const c0 = Math.max(0, Math.floor((s.x - s.radius - t.origin[0]) / t.spacing));
   const c1 = Math.min(t.cols - 1, Math.ceil((s.x + s.radius - t.origin[0]) / t.spacing));
   const r0 = Math.max(0, Math.floor((s.z - s.radius - t.origin[1]) / t.spacing));
@@ -302,15 +480,25 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
   };
   const clampCm = (v: number) => Math.round(Math.max(-5000, Math.min(20000, v)));
   if (s.brush === 'paint') {
-    const m = TERRAIN_MATERIALS.indexOf(s.material ?? 'grass');
+    if (s.ground && !isGroundMaterial(s.ground)) return t;
+    const slot = groundIndex(t, s.ground ?? null);
+    if (!slot) return t;
+    t = slot.terrain;
+    const m = slot.value;
+    const materials = t.materials.slice();
+    let changed = false;
     for (let r = r0; r < Math.min(r1, t.rows - 1); r++) {
       for (let c = c0; c < Math.min(c1, t.cols - 1); c++) {
         const x = t.origin[0] + (c + 0.5) * t.spacing;
         const z = t.origin[1] + (r + 0.5) * t.spacing;
-        if (hypot(x - s.x, z - s.z) <= s.radius) materials[r * (t.cols - 1) + c] = m;
+        const i = r * (t.cols - 1) + c;
+        if (hypot(x - s.x, z - s.z) <= s.radius && materials[i] !== m) {
+          materials[i] = m;
+          changed = true;
+        }
       }
     }
-    return { ...t, materials };
+    return changed ? { ...t, materials } : t;
   }
   if (s.brush === 'foliage') {
     // The first stroke turns the automatic cover (from each cell's material) into a painted layer.
@@ -374,11 +562,14 @@ export function applyBrush(t: TerrainData, s: BrushStroke): TerrainData {
   return { ...t, heights };
 }
 
-/** Lay stone on every cell steeper than `degrees` (cliffs), keeping other cells' materials. */
-export function paintSlopes(t: TerrainData, degrees = 35, material: TerrainMaterial = 'stone'): TerrainData {
+/** Paint `ground` (Mossy Rock) on every cell steeper than `degrees` (cliffs), keeping other cells' grounds. */
+export function paintSlopes(t: TerrainData, degrees = 35, ground = TERRAIN_SURFACES.stone): TerrainData {
+  const slot = groundIndex(t, ground);
+  if (!slot) return t;
+  t = slot.terrain;
   const materials = t.materials.slice();
   const limit = Math.tan((degrees * Math.PI) / 180);
-  const m = TERRAIN_MATERIALS.indexOf(material);
+  const m = slot.value;
   for (let r = 0; r < t.rows - 1; r++) {
     for (let c = 0; c < t.cols - 1; c++) {
       const hs = [vertexY(t, c, r), vertexY(t, c + 1, r), vertexY(t, c, r + 1), vertexY(t, c + 1, r + 1)];

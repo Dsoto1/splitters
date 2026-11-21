@@ -4,92 +4,14 @@ import { PLAYER, SPRINT, STANCES, TICK_DT, quantize, type Stance } from './const
 import type { GroundHeight, PhysicsWorld } from './physics.ts';
 import { JET, LIQUID_SPECS, SWIM_DEPTH, liquidAt, type LiquidBox } from './liquids.ts';
 import { mapPortals, portalLinks } from './portals.ts';
+import { passageLinks } from './passages.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 import { grabZipline, rideZipline, startRide, ziplineLinks, mapZiplines, type Zipline } from './zipline.ts';
 import { hypot } from '../math.ts';
 
-export const BUTTON_JUMP = 1;
-export const BUTTON_FIRE = 2;
-export const BUTTON_RELOAD = 4;
-export const BUTTON_ZOOM = 8;
-/** Use / interact (E): press buttons, open manual doors. Sent once per key press. */
-export const BUTTON_USE = 16;
-/** Second trigger (right mouse on weapons that have one). */
-export const BUTTON_ALT = 32;
-/** Throw the carried grenade or mine (G). */
-export const BUTTON_THROW = 64;
-/** Sprint while held (Shift): faster forward running that uses stamina. */
-export const BUTTON_SPRINT = 128;
-/** Wants to crouch / lie prone (held state; the client turns toggle keys into it). */
-export const BUTTON_CROUCH = 256;
-export const BUTTON_PRONE = 512;
-/** Walking speed while aiming down the sights. */
-export const ADS_SPEED = 0.75;
-/** Ask to respawn now (stuck somewhere): you die where you stand and come back as usual. Counts as a suicide. */
-export const BUTTON_RESPAWN = 1024;
-/** Quick melee (side mouse button or Y): swing the held melee weapon, or punch / kick when none is held (UNARMED). */
-export const BUTTON_MELEE = 2048;
-/**
- * Look-to-steer (held while the option is on): a driver's vehicle steers toward where they look (their yaw), the
- * Warthog way, on top of any A/D steering. Ignored on foot and in flyers.
- */
-export const BUTTON_STEER_LOOK = 4096;
-/**
- * Third-person view on foot (held while it's on): the host sends this player's rounds from the eye toward what
- * the third-person crosshair is on (sim/thirdPerson.ts thirdPersonAim, worked out by the host), not along the
- * view from the eye. Older hosts mask it off (rounds go along the view, as before).
- */
-export const BUTTON_THIRD_PERSON = 8192;
-/**
- * Auto-reload (held every input while the player's option is on, the default): an empty magazine starts its reload
- * by itself once the gun is ready, without a trigger pull (gunplay.ts autoReloadDue; prediction mirrors the
- * host). Not while sprinting forward or holding quick melee, so both still break a reload. Older hosts mask it off (reloads wait for the trigger, as before).
- */
-export const BUTTON_AUTO_RELOAD = 16384;
-const ALL_BUTTONS = BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
-
-/** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
-export interface PlayerInput {
-  seq: number;
-  /** -1..1 forward/back. */
-  forward: number;
-  /** -1..1 strafe right/left. */
-  right: number;
-  yaw: number;
-  pitch: number;
-  buttons: number;
-  /** Weapon code (see weaponCode) the player wants held (0 = keep current). */
-  weapon?: number;
-  /** Server tick the player was looking at when this input was made (lag compensation). */
-  viewTick?: number;
-  /** A quick message (1-QUICK_MESSAGES.length) or emote (EMOTE_DANCE) sent with this input. */
-  say?: number;
-  /** Fort Wars Builder: the piece picked (FORT_PIECE_KINDS index) plus quarter turns × 16. */
-  build?: number;
-  /**
-   * Recoil counter (radians, pitch and yaw): how much of this input's mouse
-   * movement pulled against the weapon's recoil. The client doesn't move its
-   * view by that amount; the server takes it off the recoil offset instead
-   * (gunplay.ts counterRecoil), so the aim never overshoots on recovery.
-   */
-  rc?: [number, number];
-  /**
-   * A spectator's camera input (or a dead player's while watching: kill cam, follow or free camera): they
-   * turned, moved the free camera or picked whom to watch this tick. Counts as activity for the idle and
-   * away rules (Match.noteActivity). Optional: hosts that don't know it go by turning alone.
-   */
-  sp?: 1;
-}
-
-/** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
-export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!', 'Hold here!'] as const;
-/** QUICK_MESSAGES numbers that are also orders to your team's bots. */
-export const SAY_FOLLOW = 1;
-export const SAY_HOLD = 7;
-/** `say` value for a ping: marks what you're aiming at for your team. */
-export const PING = 101;
-/** `say` value for the dance emote. */
-export const EMOTE_DANCE = 100;
+// The buttons, the input and the quick messages live in inputs.ts (the menu reads them without the movement code).
+import { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, ALL_BUTTONS, type PlayerInput } from './inputs.ts';
+export { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, type PlayerInput };
 
 export interface MoveState {
   /** Feet position. */
@@ -167,6 +89,11 @@ export interface MoveEnv {
   team?: string | null;
   /** Character stats (sim/characterStats.ts): jump speed and how long stamina lasts, multiples of everyone's. */
   jump?: number;
+  /**
+   * The held weapon's running speed (gunplayOf(def).handling.move; spec §27): a multiple of walking and running, not
+   * of sprinting (a sprint is as fast with every weapon). Absent: 1.
+   */
+  weaponMove?: number;
   stamina?: number;
 }
 
@@ -270,6 +197,7 @@ export function sanitizeInput(i: PlayerInput): PlayerInput {
     weapon: Math.max(0, Math.min(255, Math.trunc(finite(i.weapon ?? 0)))),
     ...(i.say ? { say: Math.max(0, Math.min(255, Math.trunc(finite(i.say)))) } : {}),
     viewTick: Math.max(0, Math.trunc(finite(i.viewTick ?? 0))),
+    ...(i.fireMode !== undefined ? { fireMode: Math.max(0, Math.min(3, Math.trunc(finite(i.fireMode)))) } : {}),
     ...(i.build ? { build: Math.max(0, Math.min(63, Math.trunc(finite(i.build)))) } : {}),
     ...(Array.isArray(i.rc) ? { rc: [Math.max(-0.5, Math.min(0.5, finite(i.rc[0]))), Math.max(-0.5, Math.min(0.5, finite(i.rc[1])))] as [number, number] } : {}),
   };
@@ -335,7 +263,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   } else if (rest > 0) rest--;
   else stamina = quantize(Math.min(1, stamina + SPRINT.regen * dt));
   if (winded && stamina >= SPRINT.restart) winded = false;
-  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : 1) * (aiming ? ADS_SPEED : 1);
+  speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : (env.weaponMove ?? 1)) * (aiming ? ADS_SPEED : 1);
 
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
@@ -546,6 +474,6 @@ export function padLandings(pads: readonly JumpPad[], physics: PhysicsWorld, gra
 }
 
 /** Every one-way navmesh link a map needs for bots: jump pad flights, ladders up and down, portal pairs both ways and zipline rides. */
-export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0], physics: PhysicsWorld, gravity = 1, extra?: ExtraRay): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
-  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities), extra), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics)];
+export function navLinks(entities: Parameters<typeof mapPads>[0] & Parameters<typeof mapLadders>[0] & Parameters<typeof mapGravityZones>[0] & Parameters<typeof mapPortals>[0] & Parameters<typeof mapZiplines>[0] & Parameters<typeof passageLinks>[0], physics: PhysicsWorld, gravity = 1, extra?: ExtraRay): { start: Vec3; end: Vec3; reach?: Vec3 }[] {
+  return [...padLandings(mapPads(entities), physics, gravity, mapGravityZones(entities), extra), ...ladderLinks(mapLadders(entities)), ...portalLinks(mapPortals(entities)), ...ziplineLinks(mapZiplines(entities), physics), ...passageLinks(entities)];
 }

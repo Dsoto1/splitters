@@ -531,7 +531,7 @@ const out = {
   },
   counts: Object.fromEntries(Object.entries(counts).sort(([a], [b]) => byStr(a, b))),
   mapFormatVersions: Object.fromEntries([...versions].sort(([a], [b]) => byStr(a, b))),
-  stylePacks: shared.STYLE_PACKS.map((p) => ({ id: p.id, number: p.number, name: p.displayName, style: p.style, themes: [...p.themes], facades: [...p.facades], tiles: p.tiles.length, ownTiles: p.tiles.filter((t) => t.startsWith(`${p.id}.`)).length, props: p.props.length, materials: p.materials.length, setPieces: [...library.pieces.values()].filter((d) => palette.setPieceSuitsStylePack(d, p.id, library.packs)).length, demo: p.demo })),
+  stylePacks: shared.STYLE_PACKS.map((p) => ({ id: p.id, number: p.number, name: p.displayName, style: p.style, themes: [...p.themes], facades: [...p.facades], tiles: p.tiles.length, ownTiles: p.tiles.filter((t) => t.startsWith(`${p.id}.`)).length, props: p.props.length, materials: p.materials.length, setPieces: [...library.pieces.values()].filter((d) => palette.setPieceSuitsStylePack(d, p.id, library.packs)).length, demo: p.demo ?? null })),
   propGroups: palette.PROP_GROUPS.map((g) => ({ id: g.id, label: g.label, categories: [...g.categories] })),
   tileCategories: [...shared.TILE_CATEGORIES],
   maps,

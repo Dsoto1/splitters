@@ -22,7 +22,7 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const FILE = 'content/pickups.json';
 const GENERATED = 'packages/shared/src/content/pickups.generated.ts';
 
-const { num, int, str, en, obj, oneOf, notes } = shape;
+const { num, int, str, bool, en, obj, oneOf, notes } = shape;
 
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
 
@@ -86,7 +86,7 @@ export function build(content, root = ROOT) {
     uav: obj({ kind: str, seconds: num }),
     disc: obj({ kind: str, power: en(discPowers) }),
   });
-  const pickup = obj({ id: str, 'displayName?': str, effect, respawnSeconds: num, 'botValue?': num, 'notes?': notes });
+  const pickup = obj({ id: str, 'displayName?': str, effect, respawnSeconds: num, 'botValue?': num, 'rolls?': bool, 'notes?': notes });
   const rules = obj({
     pickup: obj({ radius: num, 'notes?': notes }),
     armor: obj({ max: num, absorb: num, 'notes?': notes }),
@@ -129,6 +129,9 @@ export function build(content, root = ROOT) {
     } else if (displayName === undefined && e.kind !== 'disc') problems.push(`${where}: "displayName" is missing (only weapon pickups and disc powers take theirs from elsewhere)`);
     if (botValue === undefined) problems.push(`${where}: "botValue" is missing (only weapon pickups have a default)`);
     else if (!(botValue >= 0 && botValue <= 1)) problems.push(`${where}: botValue must be 0-1`);
+    // `rolls: false`: a weapon pickup that lies only where a map maker placed it (random pickups, the host's mix-up and
+    // weapon sets never roll it); only `false` means anything, and only on a weapon pickup.
+    if (p.rolls !== undefined && (p.rolls !== false || e.kind !== 'weapon')) problems.push(`${where}: "rolls" is only false, on a weapon pickup (one random pickups never roll)`);
     if (!(p.respawnSeconds > 0)) problems.push(`${where}: respawnSeconds must be above 0`);
     if ((e.kind === 'health' || e.kind === 'armor') && !(e.amount > 0)) problems.push(`${where}: amount must be above 0`);
     if ((e.kind === 'powerup' || e.kind === 'uav') && !(e.seconds > 0)) problems.push(`${where}: seconds must be above 0`);
@@ -136,7 +139,7 @@ export function build(content, root = ROOT) {
       const max = throwables.get(e.throwable)?.max ?? 0;
       if (!(e.count >= 1 && e.count <= max)) problems.push(`${where}: count must be 1-${max} (the most a player carries of ${e.throwable})`);
     }
-    items.push({ id: p.id, displayName, disc: displayName === undefined ? e.power : undefined, effect: e, respawnSeconds: p.respawnSeconds, botValue, notes: p.notes });
+    items.push({ id: p.id, displayName, disc: displayName === undefined ? e.power : undefined, effect: e, respawnSeconds: p.respawnSeconds, botValue, rolls: p.rolls, notes: p.notes });
   }
 
   // Maps and Style Packs name pickups by id: a pickup they use can't be renamed or removed.
@@ -164,7 +167,7 @@ export function render(out) {
   L.push('export const CORE_ITEMS: readonly ItemDefinition[] = [');
   for (const i of out.items) {
     const name = i.displayName === undefined ? `DISC_POWER_LABELS.${i.disc}` : sq(i.displayName);
-    L.push(`${comments(i.notes, '  ')}  { id: ${sq(i.id)}, displayName: ${name}, effect: ${tsInline(i.effect)}, respawnSeconds: ${tsInline(i.respawnSeconds)}, botValue: ${tsInline(i.botValue)} },`);
+    L.push(`${comments(i.notes, '  ')}  { id: ${sq(i.id)}, displayName: ${name}, effect: ${tsInline(i.effect)}, respawnSeconds: ${tsInline(i.respawnSeconds)}, botValue: ${tsInline(i.botValue)}${i.rolls === false ? ', rolls: false' : ''} },`);
   }
   L.push('];');
   return `${L.join('\n')}\n`;

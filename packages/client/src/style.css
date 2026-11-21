@@ -128,6 +128,11 @@ button.cta { border-color: transparent; background: var(--orange); color: #24140
 button.cta:hover { background: #ffc46e; }
 .profile-entry .cta { padding: 9px 14px; }
 .featured { position: absolute; right: 36px; bottom: 76px; width: min(360px, 40vw); padding: 0; overflow: hidden; }
+/* A phone upright: no room for the featured map beside the menu (it covered Quick Play); Quick Play's Pick a map and
+   Match Setup's picker show every map. */
+@media (max-width: 520px) and (orientation: portrait) {
+  .home .featured { display: none; }
+}
 .featured-pic { height: 170px; }
 .featured .meta { display: flex; gap: 12px; align-items: center; padding: 10px 14px 12px; }
 .featured .card-plan { width: 84px; height: 84px; }
@@ -231,6 +236,18 @@ button.cta:hover { background: #ffc46e; }
 .quick-play .qp-mode small { font: 500 13px var(--font-body); color: var(--muted); }
 .quick-play .qp-mode:focus-visible, .quick-play .qp-mode:hover { outline: none; border-color: var(--cyan); background: rgba(0, 209, 255, 0.14); }
 .quick-play .qp-last { position: absolute; top: 10px; right: 10px; padding: 1px 6px; border-radius: 3px; background: rgba(0, 209, 255, 0.16); color: var(--cyan); font: 700 10px var(--font-display); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; }
+.quick-play .qp-modes { grid-template-columns: 1fr 1fr 1fr; }
+/* Pick a map (docs/MOBILE_AUDIT.md, proposal 2): Match Setup with the map cards open. */
+.quick-play .qp-pick-icon { font-size: 26px; line-height: 28px; color: var(--cyan); }
+/* On a phone the panel is solid over the menu (the featured map's words showed through). */
+html.touch .quick-play { background: rgba(14, 20, 33, 0.97); }
+/* A phone upright: the two modes side by side, Pick a map a row under them. */
+@media (max-width: 520px) {
+  .quick-play .qp-modes { grid-template-columns: 1fr 1fr; }
+  .quick-play .qp-pick { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; }
+  .quick-play .qp-pick .qp-pick-icon { grid-row: span 2; }
+  .quick-play .qp-mode b { font-size: 16px; }
+}
 .quick-play .qp-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .quick-play .qp-link { padding: 6px 10px; background: transparent; color: var(--muted); font-size: 12px; }
 .quick-play .qp-link:hover, .quick-play .qp-link:focus-visible { color: var(--text); outline: none; border-color: var(--cyan); }
@@ -312,7 +329,6 @@ button.cta:hover { background: #ffc46e; }
 /* Presets: sizes worked out for the map (the one the setup is on lit, else Custom), then the party bundles. */
 .preset-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .preset-note { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); font: 500 12px var(--font-body); }
-.more-layouts { flex: 0 1 auto; margin-left: auto; padding: 4px 6px; font-size: 12px; max-width: 48%; }
 .size-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .size-chip { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 5px 10px; min-width: 0; background: var(--surface-1); text-align: left; text-transform: none; letter-spacing: 0; }
 .size-chip b { color: var(--muted); font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
@@ -397,6 +413,12 @@ button.cta:hover { background: #ffc46e; }
 .setup-title { min-width: 0; }
 .setup-title h3 { overflow: hidden; text-overflow: ellipsis; }
 #arcade-map { display: none; max-width: 100%; margin: 4px 0; padding: 4px 6px; }
+/* A phone's map button and picker (docs/MOBILE_AUDIT.md, proposal 2): shown under the 900 px rule below. */
+#arcade-map-pick { display: none; align-items: center; gap: 10px; max-width: 100%; min-width: 0; margin: 4px 0; padding: 6px 12px; text-align: left; text-transform: none; letter-spacing: 0; background: rgba(11, 15, 26, 0.8); border-color: rgba(0, 209, 255, 0.55); }
+#arcade-map-pick b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 16px var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; }
+#arcade-map-pick span { flex: none; color: var(--cyan); font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
+#arcade-map-pick span::after { content: ' ▸'; }
+.map-pick-head { display: none; }
 /* The modes the map can't play, in one line (each one's reason on hover or focus). */
 .setup-hint { margin: 0; color: var(--muted); font: 500 13px/1.35 var(--font-body); }
 .cap-note { margin: 0; padding: 5px 8px; color: var(--warning); border-left: 2px solid var(--warning); background: rgba(241, 196, 15, 0.08); font: 500 13px/1.35 var(--font-body); }
@@ -493,10 +515,37 @@ button.cta:hover { background: #ffc46e; }
 .num-head .glyph { color: var(--cyan); }
 .setup-body .num-head h4 { flex: none; font-size: 14px; letter-spacing: 0.08em; }
 .setup-body .num-head h4::before, .setup-body .pane-title::before { content: none; }
-.num-head .more-layouts { flex: 0 1 150px; margin-left: auto; max-width: 150px; min-width: 90px; }
 .team-count-slot { display: inline-flex; margin-left: auto; }
+/* Teams & players (2026-11-19): how many teams and players on each, two steppers over the layout chips. */
+.team-steppers { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; }
+.team-steppers .team-count-slot { margin-left: 0; }
+.team-steppers .team-count .row-label { display: inline; }
+.layout-chips .size-chip { flex-direction: row; align-items: baseline; gap: 6px; }
+.layout-chips .size-chip b { color: var(--text); font-size: 13px; letter-spacing: 0.04em; text-transform: none; }
+.layout-chips .size-chip small { font-size: 13px; }
+.layout-chips .size-chip.pick b::after { content: ' ★'; color: var(--cyan); }
+.layout-chips .size-chip.off { opacity: 0.45; cursor: not-allowed; }
+/* Bots & AI (2026-11-19): bot types as tick-boxes, then the options as switches. */
+.bot-block { display: grid; gap: 6px; padding-top: 6px; }
+.bot-block .pane-title { display: flex; align-items: center; gap: 6px; margin: 0; }
+.type-picks { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.type-pick { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-1); color: var(--text); font: 600 13px var(--font-body); cursor: pointer; }
+.type-pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.type-pick input { flex: none; width: 16px; height: 16px; margin: 0; accent-color: var(--cyan); cursor: pointer; }
+.type-pick:has(input:checked) { border-color: rgba(0, 209, 255, 0.6); background: rgba(0, 209, 255, 0.12); }
+.type-pick:has(input:focus-visible) { outline: 2px solid var(--cyan); outline-offset: 1px; }
+.type-pick:has(input:disabled) { opacity: 0.5; cursor: not-allowed; }
+.type-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; min-height: 20px; }
+.type-hint { color: var(--muted); font: 500 12px var(--font-body); }
+.type-foot button.link { padding: 2px 4px; background: none; border: 0; color: var(--cyan); font: 600 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+.type-foot button.link:hover:not(:disabled) { text-decoration: underline; }
+.type-foot button.link:disabled { color: var(--muted); opacity: 0.5; cursor: default; }
+.opt-switches { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.opt-switch { padding: 4px 0; }
+@media (max-width: 720px) {
+  .type-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .team-count-slot:empty { display: none; }
-.team-count-slot:not(:empty) + .more-layouts { margin-left: 0; }
 /* The mode in a line, at the end of the title's line. */
 .num-head .mode-line { flex: 1; min-width: 0; margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; }
 /* Variants and Party presets: one row saying what's on, until opened. */
@@ -605,7 +654,6 @@ button.cta:hover { background: #ffc46e; }
   .map-bar { flex-wrap: wrap; }
   .setup-tab .glyph { display: none; }
   .team-count .row-label { display: none; }
-  .num-head .more-layouts { flex-basis: 96px; }
   .foot-bar .saved-menu > summary > span { display: none; }
   .setup .foot-bar .go.spectate { padding: 0 11px; }
   .setup .foot-bar .go.primary { flex-basis: 150px; font-size: 18px; }
@@ -618,9 +666,36 @@ button.cta:hover { background: #ffc46e; }
   #menu .screen.play { grid-template-columns: minmax(0, 1fr); }
   .screen.play .map-browse { display: none; }
   .screen.play .setup { grid-column: 1; grid-row: 2; }
-  #arcade-map { display: block; }
+  #arcade-map-pick { display: flex; }
+  /* The picker: the map list (its tabs, Filter maps, search, sort, favourites) full screen over the setup. */
+  .screen.play.picking .map-browse { display: flex; position: fixed; inset: 0; z-index: 40; gap: 8px; padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left)); background: var(--deep-space); }
+  .screen.play.picking .map-pick-head { display: flex; align-items: center; gap: 10px; }
+  .map-pick-head h3 { margin: 0; font: italic 700 22px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+  .map-pick-head .qp-close { margin-left: auto; min-width: 44px; padding: 4px 10px; }
+  .screen.play.picking .map-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .screen.play.picking .map-tabs { flex: 1 1 100%; }
+  /* Small cards: the name gets the width (no plan tile; the setup's header shows it once picked), two lines if it needs. */
+  .screen.play.picking .map-card .meta { height: auto; min-height: 58px; padding: 6px 8px 8px 10px; }
+  .screen.play.picking .map-card .meta .card-plan { display: none; }
+  .screen.play.picking .map-card b { font-size: 14px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .screen.play.picking .map-card .meta-text { gap: 4px; }
+  .screen.play.picking .view-pick { display: none; }
+  .screen.play.picking .map-tools { flex-wrap: nowrap; min-width: 0; }
+  .screen.play.picking #map-sort { flex: 0 1 auto; min-width: 0; }
   .setup-title h3, .setup-title > small { display: none; }
   .menu-footer[data-screen='play'] #hint-filter { display: none; }
+}
+/* A phone sideways, picking a map: the title gives way, Close sits at the end of one bar (tabs scroll, then Filter
+   maps, search and sort), so two rows of cards show. */
+@media (max-width: 900px) and (max-height: 500px) {
+  .screen.play.picking .map-browse { padding-top: 8px; padding-right: calc(64px + env(safe-area-inset-right)); }
+  .screen.play.picking .map-pick-head { position: absolute; top: 8px; right: max(12px, env(safe-area-inset-right)); }
+  .screen.play.picking .map-pick-head h3 { display: none; }
+  .screen.play.picking .map-bar { flex-wrap: nowrap; }
+  .screen.play.picking .map-tabs { flex: 1 1 0; min-width: 0; }
+  .screen.play.picking .map-tools { flex: 0 1 auto; }
+  .screen.play.picking .view-pick { display: none; }
+  .screen.play.picking #map-search { flex: 0 1 140px; }
 }
 /* Little room (down to 640 × 360, a phone sideways): tighter screen, header, tabs and sections, small mode tiles; the setup body scrolls and the foot stays. */
 @media (max-height: 600px), (max-width: 700px) {
@@ -630,8 +705,8 @@ button.cta:hover { background: #ffc46e; }
   .setup-head { display: flex; align-items: center; gap: 8px; padding: 6px 52px 6px 10px; }
   .setup-head h3 { font-size: 18px; margin: 0; }
   .setup-title { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 14px; padding-right: 0; }
-  .setup-facts, #arcade-map { margin: 0; }
-  #arcade-map { flex: 1 1 130px; min-width: 0; }
+  .setup-facts, #arcade-map, #arcade-map-pick { margin: 0; }
+  #arcade-map, #arcade-map-pick { flex: 1 1 130px; min-width: 0; }
   .setup-facts { font-size: 12px; }
   .setup-facts > span { padding: 0 8px; }
   .setup-head small, .setup-head .inspired, .setup-blurb { display: none; }
@@ -689,6 +764,14 @@ html.touch .mode-pick { grid-template-columns: repeat(auto-fill, minmax(126px, 1
 html.touch .mode-chip b, html.touch .mode-chip b.long { font-size: 12px; letter-spacing: 0; }
 html.touch :is(.variant-label, .variant-chip, .field-label, .fit-chip, .saved-pop h4, .size-chip b) { font-size: 12px; letter-spacing: 0.02em; }
 html.touch .fact-time { font-size: 12px; }
+/* Match Setup on a phone (docs/MOBILE_AUDIT.md, proposal 11): the header that stays while the setup scrolls names the
+   mode too, and the steppers' − and + are 40 px squares for a finger. */
+.setup-facts > .fact-mode { display: none; }
+@media (max-height: 600px), (max-width: 700px) {
+  html.touch .setup-facts > .fact-mode { display: inline; color: var(--cyan); font-weight: 700; letter-spacing: 0.04em; }
+  html.touch .setup-facts > .fact-mode::before { display: none; }
+}
+html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper button { min-width: 40px; min-height: 40px; padding: 0 8px; }
 .info { display: inline-grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(142, 162, 192, 0.6); color: var(--muted); font: italic 700 11px/1 Georgia, serif; text-transform: none; letter-spacing: 0; cursor: help; }
 .info:hover, .info:focus-visible { color: var(--deep-space); background: var(--cyan); border-color: var(--cyan); outline: none; }
 .tip-card { position: fixed; left: 0; top: 0; z-index: 1000; max-width: 300px; padding: 10px 12px; white-space: pre-line; pointer-events: none; color: var(--text); font: 500 13px/1.4 var(--font-body); background: rgba(11, 15, 26, 0.96); border: 1px solid var(--cyan); border-left-width: 3px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
@@ -720,14 +803,20 @@ html.touch .fact-time { font-size: 12px; }
 .profile-panel button.link, .prof-foot a { padding: 0; color: var(--text); opacity: 0.8; background: none; border: 0; font: inherit; text-transform: none; letter-spacing: 0; text-decoration: underline; cursor: pointer; }
 .profile-panel button.link:hover, .prof-foot a:hover { opacity: 1; }
 .prof-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding: 12px 18px 14px; border-top: 1px solid var(--line); font-size: 12px; }
+.prof-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.prof-stat { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); border-radius: 3px; }
+.prof-stat b { font: 700 20px/1.1 var(--font-display); color: var(--text); }
+.prof-stat small { color: var(--muted); font: 600 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.prof-fav-weapon { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--muted); }
+.prof-fav-weapon b { color: var(--text); }
 
 /* Character select */
 #menu .screen.characters { display: flex; flex-direction: column; }
 /* The jump strip over the grid: a chip per section, the one in view lit; Q / E at its ends. */
 .char-jump { flex: none; display: flex; align-items: center; gap: 6px; width: min(900px, 64vw); margin-top: 16px; padding: 6px 8px; background: var(--glass); border: 1px solid var(--line); border-bottom: 0; border-radius: 4px 4px 0 0; }
-.char-jump-chips { flex: 1; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.char-jump-chips { flex: 1; min-width: 0; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .char-jump-chips::-webkit-scrollbar { display: none; }
-.char-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; font: 600 12px var(--font-display); letter-spacing: 0.05em; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 3px; }
+.char-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 4px 5px; font: 600 12px var(--font-display); letter-spacing: 0.02em; color: var(--muted); background: transparent; border: 1px solid transparent; border-radius: 3px; }
 .char-chip:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); border-color: var(--line); }
 .char-chip.on { color: var(--text); background: rgba(0, 209, 255, 0.14); border-color: rgba(0, 209, 255, 0.6); }
 /* One grid through every section; it takes the room between the strip and the info panel and scrolls; a fade says there's more below. */
@@ -935,6 +1024,9 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #hitmarker.armor { transform: none; border-color: #6fc8ff; border-style: dashed; }
 #hitmarker[data-style='ticks'].armor { transform: rotate(45deg); }
 #hitmarker[data-style='ticks'].armor::before, #hitmarker[data-style='ticks'].armor::after { background: linear-gradient(#6fc8ff 0 9px, transparent 9px 21px, #6fc8ff 21px); }
+/* A spawn-protected target's shield took it (no damage): a pale gold ring, round where every other marker is angular. */
+#hitmarker.shield, #hitmarker[data-style='ticks'].shield { transform: none; border: 2px solid #ffe08a; border-radius: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6); }
+#hitmarker[data-style='ticks'].shield::before, #hitmarker[data-style='ticks'].shield::after { display: none; }
 /* Kill confirmation: a sharp, bigger X that punches in; kills in a row make it bigger and hotter. */
 #hitmarker.kill, #hitmarker[data-style='ticks'].kill { border: none; transform: none; width: 44px; height: 44px; margin: -22px 0 0 -22px; animation: kill-punch 0.3s ease-out; }
 #hitmarker.kill::before, #hitmarker.kill::after, #hitmarker[data-style='ticks'].kill::before, #hitmarker[data-style='ticks'].kill::after { content: ''; position: absolute; left: 20px; top: 0; width: 4px; height: 44px; background: linear-gradient(#ff2a2a 0 15px, transparent 15px 29px, #ff2a2a 29px); filter: drop-shadow(0 0 2px #000); transform: rotate(45deg); }
@@ -946,6 +1038,14 @@ html.touch .char-spin .spin-label kbd { display: none; }
 /* Taking damage: the screen edge tints red (its picture and strength each frame from hud.ts / hurtVignette.ts: a duller red
    that eases in with Reduce flashing on), and an arc on a ring shows where it came from. */
 #shield-note { position: absolute; left: 50%; top: calc(50% + 46px); transform: translateX(-50%); padding: 3px 10px; background: rgba(12, 22, 40, 0.7); border: 1px solid rgba(120, 190, 255, 0.55); color: #cfe6ff; font: 600 13px var(--font-display); letter-spacing: 0.04em; pointer-events: none; }
+#low-health { position: absolute; inset: 0; opacity: 0; pointer-events: none; background-size: 100% 100%; background-repeat: no-repeat; }
+#hold-ring { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; pointer-events: none; }
+#hold-ring svg { width: 64px; height: 64px; transform: rotate(-90deg); filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.9)); }
+#hold-ring circle { fill: none; stroke-width: 4; }
+#hold-ring .track { stroke: rgba(255, 255, 255, 0.22); }
+#hold-ring .fill { stroke: #d8f5e0; stroke-linecap: round; }
+#hold-ring span { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); white-space: nowrap; font-weight: 600; font-size: 13px; color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.9); }
+#health-bar.pulse { filter: brightness(calc(1 + var(--low-pulse, 0) * 0.25)); }
 #heavy-hit { position: absolute; inset: 0; opacity: 0; pointer-events: none; background-size: 100% 100%; background-repeat: no-repeat; z-index: 1; }
 #hurt { position: absolute; inset: 0; opacity: 0; pointer-events: none; background-size: 100% 100%; background-repeat: no-repeat; }
 #hurt i { position: absolute; left: 50%; top: 50%; width: 220px; height: 220px; margin: -110px 0 0 -110px; border-radius: 50%; border-top: 6px solid rgba(255, 40, 40, 0.9); filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.8)); opacity: 0; transform: rotate(var(--hurt-dir, 0rad)); }
@@ -954,6 +1054,13 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #headshot.on { animation: headshot-pop 0.9s ease-out; }
 @keyframes headshot-pop { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 #feed .hs { color: #ff4b4b; margin-left: 4px; }
+/* A soldier's rank badge before their name (game/insigniaSvg.ts), in the name's colour. */
+#feed svg.ins { width: 1.15em; height: 1.15em; margin-right: 4px; vertical-align: -0.22em; }
+/* A rank-up (Ranks & badges; game/rankGlow.ts has the same curve): the badge swells and glows in the name's colour, then settles over a second. Calm (Reduce flashing): smaller, dimmer, eased in and out; never a flash. */
+#feed svg.ins.rank-up { animation: rank-up 1s ease-out; transform-origin: 50% 60%; }
+#feed svg.ins.rank-up.calm { animation: rank-up-calm 1s ease-in-out; }
+@keyframes rank-up { 0% { transform: scale(1); filter: drop-shadow(0 0 0 currentColor); } 25% { transform: scale(1.45); filter: drop-shadow(0 0 4px currentColor); } 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } }
+@keyframes rank-up-calm { 0% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } 50% { transform: scale(1.2); filter: drop-shadow(0 0 2px currentColor); } 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } }
 /* A team kill: the warning colour on its edge and a TK tag (no reward to show). */
 #feed .tk { border-right-color: var(--warning); }
 #feed .tk-tag { color: var(--deep-space); background: var(--warning); padding: 0 4px; margin-right: 2px; border-radius: 2px; font-weight: 700; letter-spacing: 0.04em; }
@@ -965,13 +1072,41 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pickup-msg { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); padding: 6px 14px 6px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.92), rgba(18, 24, 39, 0.7)); border-left: 3px solid var(--success); font: 600 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.3s; }
 #pickup-msg::before { content: '+ '; color: var(--success); }
 #pickup-msg.on { opacity: 1; transition: none; }
-#scope { position: absolute; inset: 0; animation: scope-in 0.16s ease-out; }
+/* The scope's surround, reticle and shadow come in at once with the zoom and go out with --so (hud.ts setScope,
+   scopeFeel.ts SCOPE_FADE): a fade, never a cut (leaving a scope by day would turn most of the screen from black to
+   daylight at once). */
+#scope { position: absolute; inset: 0; --so: 1; opacity: var(--so); }
+/* The eye box (scopeFeel.ts EYE_BOX): the scope's shadow, a dark sheet with a clear round hole the size of the glass,
+   clipped to the glass and slid by hud.ts setEyeBox (a transform: no repaint). The hole's edge is soft (0.8 to 1.08
+   glass radii), so the picture darkens toward the edge of the glass and a crescent comes in from the side. */
+.eyebox { position: absolute; left: 50%; top: 50%; width: 92vmin; height: 92vmin; transform: translate(-50%, -50%); border-radius: 50%; overflow: hidden; pointer-events: none; }
+#optic .eyebox { left: 0; top: 0; width: 100%; height: 100%; transform: none; }
+.eyebox i { position: absolute; inset: -100%; will-change: transform; background: radial-gradient(circle closest-side, transparent 26.67%, rgba(0, 0, 0, 0.5) 31.33%, #000 36%); }
+/* A real optic (game/opticView.ts): the glass is a circle of radius --r (its share of the half-height); round it the
+   eyepiece's shadow, darker the further the eye is onto it (--o). No brightening anywhere (Reduce flashing). */
+#optic { position: absolute; inset: 0; pointer-events: none; --r: 30vh; --o: 1; opacity: var(--o); background: radial-gradient(circle at 50% 50%, transparent calc(var(--r) - 1px), rgba(3, 6, 9, 0.6) calc(var(--r) + 0.4vh), rgba(0, 0, 0, 0.9) calc(var(--r) + 3vh)); }
+#optic .lens { position: absolute; left: 50%; top: 50%; width: calc(var(--r) * 2); height: calc(var(--r) * 2); transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, transparent 74%, rgba(6, 22, 34, 0.18) 90%, rgba(0, 0, 0, 0.55) 100%); }
+#optic .lens svg { position: relative; width: 100%; height: 100%; display: block; }
+#optic .chevron { display: none; }
+#optic[data-reticle='chevron'] .chevron { display: inline; }
+#optic[data-reticle='chevron'] .duplex line:nth-child(n + 5) { display: none; }
+#optic[data-reticle='chevron'] svg > circle { display: none; }
+#optic.holdover-on .duplex line:nth-child(n + 7) { display: none; }
+.holdover text { font-family: Barlow, sans-serif; font-weight: 600; }
+#optic-breath { position: absolute; left: 50%; bottom: 9vh; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
+#optic-breath i { display: block; width: 120px; height: 3px; background: rgba(255, 255, 255, 0.15); }
+#optic-breath i::after { content: ''; display: block; height: 100%; width: var(--breath, 100%); background: var(--cyan); }
+#optic.spent #optic-breath i::after { background: var(--danger); }
+#optic-breath .out, #scope-breath .out, #optic.spent #optic-breath .hold, #scope.spent #scope-breath .hold { display: none; }
+#optic.spent #optic-breath .out, #scope.spent #scope-breath .out { display: inline; color: var(--danger); }
 #scope svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Each optic kind's own reticle (content/optics.json): a sniper scope's fine crosshair, a 2-3x optic's chevron. */
+#scope .chevron, #scope[data-reticle='chevron'] .fine { display: none; }
+#scope[data-reticle='chevron'] .chevron { display: inline; }
 #scope-breath { position: absolute; left: 50%; bottom: 9vh; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 11px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.55); }
 #scope-breath i { display: block; width: 120px; height: 3px; background: rgba(255, 255, 255, 0.15); }
 #scope-breath i::after { content: ''; display: block; height: 100%; width: var(--breath, 100%); background: var(--cyan); }
 #scope.spent #scope-breath i::after { background: var(--danger); }
-@keyframes scope-in { from { opacity: 0; transform: scale(1.15); } to { opacity: 1; transform: none; } }
 #perf { position: absolute; left: 12px; top: 12px; margin: 0; font: 12px/1.45 ui-monospace, monospace; background: var(--panel); padding: 8px 10px; border-radius: 6px; }
 #sc-timers { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
 #sc-timers div { background: rgba(120, 20, 20, 0.75); padding: 3px 10px; border-radius: 5px; font-weight: 600; }
@@ -1057,7 +1192,34 @@ img:not([src]) { visibility: hidden; }
 @keyframes countdown-go { from { transform: scale(0.8); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 #loading-screen { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: radial-gradient(ellipse at center, #16213a, #070a12 70%); }
 #loading-screen[hidden] { display: none; }
+/* Before the match has let us in (Hud.showLoading): the loading screen alone. */
+#hud.only-loading > :not(#loading-screen):not(#scoreboard) { visibility: hidden; }
 #loading-screen b { font: italic 700 34px var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; }
+/* The map's card (loadingScreen.ts): its picture, name, mode and (partway through) the match's goal. */
+#loading-screen .ls-card { display: flex; align-items: center; gap: 18px; max-width: min(720px, 92vw); transition: transform 0.45s ease; }
+#loading-screen .ls-pic { width: min(320px, 42vw); aspect-ratio: 16 / 9; object-fit: cover; border: 1px solid var(--line); border-top: 3px solid var(--cyan); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); background: #121827; }
+#loading-screen .ls-text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#loading-screen .ls-mode { color: var(--cyan); font: 600 15px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+#loading-screen .ls-goal { color: #d6deea; font: 500 14px var(--font-display); min-height: 1.2em; opacity: 0; transition: opacity 0.4s ease; }
+#hud.ls-staged #loading-screen .ls-goal { opacity: 1; }
+#loading-screen.ls-out { opacity: 0; transition: opacity 0.35s ease; }
+/* Partway through, the Tab board joins the loading screen: the card moves up, the board comes in under it. */
+#hud.ls-staged #loading-screen { justify-content: flex-start; padding-top: 5vh; }
+#hud.ls-staged #scoreboard { z-index: 21; top: auto; bottom: 3vh; transform: translateX(-50%); max-height: 58vh; animation: ls-board-in 0.45s ease-out; }
+#hud.ls-staged #loading-screen.ls-out ~ #scoreboard { opacity: 0; transition: opacity 0.35s ease; }
+@keyframes ls-board-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translateX(-50%); } }
+@media (max-height: 560px) { #loading-screen .ls-pic { width: min(200px, 32vw); } #hud.ls-staged #scoreboard { max-height: 52vh; } }
+/* Under the countdown's number: the map and mode, and the goal (it fades out with "Go!"). */
+#countdown-info { position: absolute; top: calc(24% + 140px); width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; pointer-events: none; text-shadow: 0 2px 6px #000; }
+#countdown-info[hidden] { display: none; }
+/* "Click to fight" (session.ts showFightHint): one calm line before the first time in play, instead of the pause menu.
+   Steady (no blinking or pulse: Reduce flashing), low contrast, clicks go through to the view. */
+.fight-hint { position: absolute; left: 50%; top: 62%; transform: translateX(-50%); padding: 6px 16px; border-radius: 999px; background: rgba(8, 12, 18, 0.55); color: rgba(255, 255, 255, 0.86); font: 600 15px var(--font-body); letter-spacing: 0.03em; pointer-events: none; white-space: nowrap; text-shadow: 0 1px 3px #000; }
+.fight-hint[hidden] { display: none; }
+#countdown-info b { font: italic 700 22px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; color: #fff; }
+#countdown-info span { font: 500 15px var(--font-display); color: #d6deea; }
+#countdown-info.go { animation: countdown-info-out 0.9s ease-out forwards; }
+@keyframes countdown-info-out { to { opacity: 0; } }
 #loading-screen .bar { width: min(420px, 70vw); height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
 #loading-screen .bar i { display: block; height: 100%; width: 0; background: var(--cyan); transition: width 0.2s ease; }
 #loading-screen small { color: #8ea2c0; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
@@ -1096,6 +1258,10 @@ img:not([src]) { visibility: hidden; }
 #ammo-reserve { font-size: 18px; color: var(--muted); }
 #ammo-reserve:not(:empty)::before { content: '/ '; }
 #ammo-count.reloading { color: var(--orange); font-size: 20px; }
+/* Dual wielding: two magazine counts, "L | R", each with its own low and reload states. */
+#ammo-count.pair .pair-bar { font-style: normal; font-weight: 400; color: var(--muted); margin: 0 0.22em; }
+#ammo-count.pair .low { color: var(--error); }
+#ammo-count.pair .reloading { color: var(--orange); }
 
 #target { position: absolute; left: 50%; top: calc(50% - 76px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; font: 600 13px var(--font-display); text-shadow: 0 1px 3px #000; }
 #target .bar { width: 140px; height: 5px; }
@@ -1103,6 +1269,14 @@ img:not([src]) { visibility: hidden; }
 #throwable:empty { display: none; }
 #ammo-alt { font: 600 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan); }
 #ammo-alt:empty { display: none; }
+#fire-mode { display: flex; align-items: center; gap: 6px; margin-top: 2px; font: 600 10px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text, #e8ecf4); }
+#fire-mode:empty { display: none; }
+#fire-mode .pips { display: flex; gap: 2px; }
+#fire-mode .pips i { display: block; width: 3px; height: 9px; background: var(--orange); border-radius: 1px; }
+#fire-mode .pips i.auto { width: 14px; }
+#fire-mode kbd { font: 600 9px var(--font-display); padding: 0 4px; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 3px; color: var(--muted); }
+#fire-mode.switched { animation: fire-mode-switch 0.22s ease-out; }
+@keyframes fire-mode-switch { from { transform: scale(1.18); } to { transform: scale(1); } }
 img.wicon { height: 18px; width: auto; vertical-align: middle; margin: 0 4px; filter: drop-shadow(0 1px 1px #000); }
 img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .loadout span { display: flex; align-items: center; }
@@ -1136,7 +1310,7 @@ img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 #bt-warning { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); padding: 10px 24px; background: rgba(60, 8, 8, 0.85); border: 2px solid #ff4a3a; color: #ffdad6; font: 700 24px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; pointer-events: none; }
 #bt-warning.hurting { animation: ms-blink 0.6s steps(2) infinite; }
 @keyframes ms-blink { 50% { opacity: 0.45; } }
-#mode-markers, #ping-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+#mode-markers, #ping-markers, #hint-markers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .mode-marker { position: absolute; transform: translate(-50%, -100%); text-align: center; font: 700 12px var(--font-display); text-shadow: 0 1px 3px #000; }
 .mode-marker b { display: block; font-size: 20px; line-height: 22px; }
 .mode-marker span { color: #f2f2f2; }
@@ -1296,6 +1470,26 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
   .opt-row { grid-template-columns: 1fr; gap: 8px; }
   .opt-control, .opt-stack { justify-content: flex-start; align-items: flex-start; }
 }
+/* The description's (i): only on a phone, where it stands in for the description (docs/MOBILE_AUDIT.md, proposal 7). */
+.opt-label .opt-info { display: none; }
+/* Options on a phone (sideways or upright): the sections are chips along the top, the panel takes the whole height,
+   and each setting is one line, its name (and an (i) for what it does) beside its control. */
+@media (max-height: 600px), (max-width: 760px) {
+  html.touch #menu .screen.options { padding: 8px 12px 10px; }
+  html.touch .screen.options .screen-head h2 { font-size: 20px; }
+  html.touch .opt-layout { flex: 1 1 auto; margin-top: 8px; width: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  html.touch .opt-nav { flex-direction: row; gap: 6px; min-height: 0; padding: 6px 10px; overflow-x: auto; scrollbar-width: none; border-right: 0; border-bottom: 1px solid var(--line); }
+  html.touch .opt-nav button { flex: none; padding: 0 14px; border-radius: 20px; border-color: var(--line); font-size: 13px; letter-spacing: 0.04em; }
+  html.touch .opt-body { padding: 0 14px 12px; }
+  html.touch .opt-title { display: none; }
+  html.touch .opt-row { grid-template-columns: minmax(0, 1fr) minmax(140px, 46%); gap: 12px; padding: 6px 0; }
+  html.touch .opt-label > span { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  html.touch .opt-label small { display: none; }
+  html.touch .opt-label .opt-info { display: inline-grid; width: 26px; height: 26px; font: italic 700 14px/1 Georgia, serif; text-transform: none; letter-spacing: 0; }
+  html.touch .opt-control, html.touch .opt-stack { justify-content: flex-end; align-items: flex-end; }
+  html.touch .opt-sub { margin: 14px 0 4px; }
+  html.touch .opt-note { font-size: 13px; }
+}
 
 /* Fort Wars panel: phase clock, build points and the Builder's piece picker. */
 #fort-panel { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 12px var(--font-display); letter-spacing: 0.04em; color: #f2f2f2; text-shadow: 0 1px 2px #000; pointer-events: none; max-width: calc(100vw - 32px); }
@@ -1320,6 +1514,7 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 #class-menu .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
 #class-menu button { display: block; text-align: left; padding: 8px 10px; background: #1c2333; border: 1px solid #2f384c; color: inherit; font: inherit; cursor: pointer; }
 #class-menu button:hover, #class-menu button.next { border-color: var(--cyan, #00d1ff); }
+#class-menu .fav { color: var(--orange, #ffb347); }
 #class-menu button.on { background: #24304a; }
 #class-menu button.full { opacity: 0.45; }
 #class-menu button kbd { display: inline-block; min-width: 18px; text-align: center; margin-right: 6px; background: #2a3142; border-radius: 3px; }
@@ -1398,6 +1593,15 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
  * their column; your row is sticky so it never scrolls out of sight.
  */
 #scoreboard { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 96vw; max-height: min(90vh, 940px); display: flex; flex-direction: column; padding: 10px 12px 12px; background: rgba(18, 24, 39, 0.95); border: 1px solid var(--line); border-top: 3px solid var(--cyan); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45); pointer-events: auto; }
+/* Your profile card under the board (game/profileCard.ts). */
+#profile-card { flex: none; display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 6px 8px; border-top: 1px solid var(--line); background: linear-gradient(90deg, rgba(0, 209, 255, 0.08), transparent 70%); font: 500 13px var(--font-display); color: var(--text); }
+#profile-card img { flex: none; width: 44px; height: 44px; border-radius: 3px; object-fit: cover; border: 2px solid var(--orange); background: #121827; }
+#profile-card .pc-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#profile-card .pc-who { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#profile-card .pc-who b { font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+#profile-card .pc-who span, #profile-card .pc-career, #profile-card .pc-where { color: var(--muted); }
+#profile-card .pc-match { color: var(--cyan); }
+#profile-card .pc-where { margin-left: 6px; font-size: 11px; }
 .sb { --sb-row: 26px; --sb-font: 14px; font-family: var(--font-display); font-variant-numeric: tabular-nums; min-width: 0; }
 .sb.sb-dense { --sb-row: 20px; --sb-font: 12.5px; }
 .sb-head { flex: none; margin: 0 2px 8px; font: 600 13px var(--font-display); letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1424,6 +1628,10 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 .sb-nm.guest::after { content: 'GUEST'; margin-left: 5px; padding: 0 3px; border: 1px dashed var(--line); color: var(--muted); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-nm.bot::after { content: 'BOT'; margin-left: 5px; padding: 0 3px; border: 1px solid var(--line); color: var(--muted); font-size: 0.68em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark { flex: none; width: 1em; font-style: normal; text-align: center; font-size: 0.8em; }
+.sb-ins { flex: none; display: inline-flex; width: 1.15em; height: 1.15em; font-style: normal; }
+.sb-ins[hidden] { display: none; }
+.sb-ins svg { width: 100%; height: 100%; }
+.sb-row.dead .sb-ins { opacity: 0.45; }
 .sb-nm.party::before { content: 'PARTY'; margin-right: 5px; padding: 0 3px; background: rgba(255, 179, 71, 0.16); color: var(--orange); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark.leader { color: #ffd24a; font-size: 1em; text-shadow: 0 0 4px rgba(255, 210, 74, 0.6); }
 .sb-cls { color: var(--muted); font-size: 0.82em; letter-spacing: 0.05em; text-transform: uppercase; }
@@ -1447,6 +1655,10 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 /* Little room (640 × 360): tighter rows and heading. */
 @media (max-height: 520px) {
   #scoreboard { padding: 6px 8px 8px; max-height: 94vh; }
+  #profile-card { margin-top: 4px; padding: 3px 6px; font-size: 11px; }
+  #profile-card img { display: none; }
+  #profile-card .pc-text { flex-direction: row; flex-wrap: wrap; column-gap: 10px; }
+  #profile-card .pc-who b { font-size: 12px; }
   .sb { --sb-row: 18px; --sb-font: 12px; }
   .sb.sb-dense { --sb-row: 16px; --sb-font: 11px; }
   .sb-head { margin-bottom: 4px; font-size: 11px; }
@@ -1594,7 +1806,7 @@ html.touch #weapon-bar { display: none; }
 html.touch #minimap { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 104px; height: 104px; }
 html.touch #vitals { left: calc(8px + env(safe-area-inset-left)); bottom: auto; top: 118px; transform: scale(0.72); transform-origin: top left; }
 /* The ammo panel sits by the fire buttons, above Reload and Throw, clearing the lower centre (where targets' feet are). */
-html.touch #ammo { right: calc(14px + env(safe-area-inset-right)); bottom: 212px; padding: 3px 10px 3px 14px; }
+html.touch #ammo { right: calc(14px + env(safe-area-inset-right)); bottom: calc(212px * var(--tc-scale, 1)); padding: 3px 10px 3px 14px; }
 html.touch #ammo-count { font-size: 26px; }
 html.touch #ammo-count.reloading { font-size: 15px; }
 html.touch #ammo-reserve, html.touch #throwable { font-size: 14px; }
@@ -1620,17 +1832,34 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
   /* The ammo panel just above Reload, without the weapon's name (the feed keeps 3 lines above it: feedLimit.ts). */
   html.touch #feed { gap: 2px; }
   html.touch #feed div { padding: 1px 10px; }
-  html.touch #ammo { bottom: 206px; padding: 1px 10px 1px 12px; }
+  html.touch #ammo { bottom: calc(206px * var(--tc-scale, 1)); padding: 1px 10px 1px 12px; }
   html.touch #weapon-name { display: none; }
   html.touch #ammo-count { font-size: 22px; }
 }
+
+/* Left-handed (Options → Controls → Touch; html.tc-left): the HUD mirrors with the controls. The minimap and vitals go
+   top right above the pad, the kill feed top left beside the pause button, and the ammo panel left above the buttons. */
+html.touch.tc-left #minimap { left: auto; right: calc(8px + env(safe-area-inset-right)); }
+html.touch.tc-left #vitals { left: auto; right: calc(8px + env(safe-area-inset-right)); transform-origin: top right; }
+html.touch.tc-left #feed { right: auto; left: calc(60px + env(safe-area-inset-left)); align-items: flex-start; }
+html.touch.tc-left #ammo { right: auto; left: calc(14px + env(safe-area-inset-left)); align-items: flex-start; }
 
 /* The on-screen controls (game/touchControls.ts). */
 #touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
 #touch-ui[hidden] { display: none; }
 #touch-ui > * { pointer-events: auto; touch-action: none; }
 #touch-ui .tc-look { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; }
-#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: var(--pad); height: var(--pad); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
+/* The layout (Options → Controls → Touch; game/touchLayout.ts): --tc-scale sizes the pad and the button cluster, --tc-opacity
+   draws them lighter (a pressed one at full strength), html.tc-left swaps sides for left-handed play. */
+#touch-ui .tc-cluster { position: absolute; right: 0; bottom: 0; width: 310px; height: 240px; pointer-events: none; transform: scale(var(--tc-scale, 1)); transform-origin: bottom right; }
+#touch-ui .tc-cluster > .tc-btn { pointer-events: auto; right: calc(var(--x) + env(safe-area-inset-right)); }
+#touch-ui .tc-cluster > .tc-btn, #touch-ui .tc-pad { opacity: var(--tc-opacity, 1); }
+#touch-ui .tc-cluster > .tc-btn.on, #touch-ui .tc-pad:active { opacity: 1; }
+html.tc-left #touch-ui .tc-look { right: auto; left: 0; }
+html.tc-left #touch-ui .tc-cluster { right: auto; left: 0; transform-origin: bottom left; }
+html.tc-left #touch-ui .tc-cluster > .tc-btn { right: auto; left: calc(var(--x) + env(safe-area-inset-left)); }
+html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-inset-right)); }
+#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: calc(var(--pad) * var(--tc-scale, 1)); height: calc(var(--pad) * var(--tc-scale, 1)); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
 #touch-ui .tc-pad.sprint { box-shadow: 0 0 0 2px var(--orange); }
 #touch-ui .tc-arm { position: absolute; width: 0; height: 0; border: 11px solid transparent; opacity: 0.55; }
 #touch-ui .tc-arm.up { left: 50%; top: 7%; margin-left: -11px; border-bottom-color: var(--text); border-top-width: 0; }
@@ -1645,20 +1874,20 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
 #touch-ui .tc-jump.on { background: rgba(0, 209, 255, 0.4); }
 #touch-ui .tc-btn { position: absolute; display: flex; align-items: center; justify-content: center; width: 58px; height: 58px; min-height: 0; padding: 0; border-radius: 50%; border: 2px solid rgba(230, 240, 255, 0.45); background: rgba(18, 24, 39, 0.5); color: var(--text); font: 700 12px var(--font-display); letter-spacing: 0.02em; text-transform: uppercase; -webkit-user-select: none; user-select: none; }
 #touch-ui .tc-btn.on { background: rgba(0, 209, 255, 0.4); border-color: var(--cyan); }
-#touch-ui .tc-fire { right: calc(26px + env(safe-area-inset-right)); bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
+#touch-ui .tc-fire { --x: 26px; bottom: 34px; width: 92px; height: 92px; font-size: 15px; border-color: rgba(255, 94, 94, 0.75); background: rgba(80, 20, 28, 0.45); }
 #touch-ui .tc-fire.on { background: rgba(255, 70, 70, 0.5); border-color: #ff6b6b; }
-#touch-ui .tc-aim { right: calc(132px + env(safe-area-inset-right)); bottom: 22px; }
-#touch-ui .tc-melee { right: calc(136px + env(safe-area-inset-right)); bottom: 92px; }
-#touch-ui .tc-reload { right: calc(84px + env(safe-area-inset-right)); bottom: 148px; }
-#touch-ui .tc-throw { right: calc(14px + env(safe-area-inset-right)); bottom: 146px; width: 50px; height: 50px; }
-#touch-ui .tc-use { right: calc(204px + env(safe-area-inset-right)); bottom: 50px; }
-#touch-ui .tc-wheel { right: calc(158px + env(safe-area-inset-right)); bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
+#touch-ui .tc-aim { --x: 132px; bottom: 22px; }
+#touch-ui .tc-melee { --x: 136px; bottom: 92px; }
+#touch-ui .tc-reload { --x: 84px; bottom: 148px; }
+#touch-ui .tc-throw { --x: 14px; bottom: 146px; width: 50px; height: 50px; }
+#touch-ui .tc-use { --x: 204px; bottom: 50px; }
+#touch-ui .tc-wheel { --x: 158px; bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
 /* ("Weapons" ran past the 64 px ring at 11 px; 12 px fits the 68 px one without letter spacing.) */
 /* The scorebar's tap target: invisible, over the scorebar; a tap shows the scoreboard, another hides it. */
 #touch-ui .tc-scores { left: 50%; top: 0; width: min(300px, 40vw); height: 66px; transform: translateX(-50%); border: 0; border-radius: 0; background: transparent; }
 #touch-ui .tc-scores.on { background: transparent; }
 /* Fireteams: the Orders button (the order wheel), orange like orders and objectives; only while you lead a squad. */
-#touch-ui .tc-orders { right: calc(230px + env(safe-area-inset-right)); bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
+#touch-ui .tc-orders { --x: 230px; bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
 #touch-ui .tc-orders[hidden] { display: none; }
 #touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }
@@ -1726,6 +1955,13 @@ html.touch #mode-label, html.touch .sb-box small { font-size: 12px; letter-spaci
   .prof-sec { padding: 10px 14px; }
   .prof-char > img { width: 64px; height: 64px; }
   .menu-footer .hintbar { display: none; }
+}
+/* Phones sideways under ~420 px tall (an S25+ at 832 × 384): the menu's last button (Options) ran under the news bar. */
+@media (max-height: 420px) {
+  #menu .screen.home { padding-top: 8px; }
+  .logo { font-size: clamp(26px, 4.4vw, 36px); }
+  .nav { margin-top: 8px; }
+  .nav button, html.touch .nav button { min-height: 34px; padding: 4px 14px; font-size: 15px; }
 }
 /* Smaller phones sideways (~320 px tall): the stats as numbers, no tags, so the name, stats and buttons share a row. */
 @media (max-height: 360px) {
@@ -1806,6 +2042,8 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #map-vote .mv-votes b, #map-vote .mv-votes span { position: relative; }
 #map-vote .mv-votes b { margin-right: 3px; }
 #map-vote .mv-hint { margin: 6px 0 0; font-size: 12px; color: var(--muted); text-align: center; }
+/* The awards up without the vote: the board sits above them (awardsHud.ts sets --awards-h). */
+#hud.awards-on:not(.vote-on) #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(93vh - var(--awards-h, 0px) - 18px); }
 #hud.vote-on #scoreboard { top: 10px; transform: translateX(-50%); max-height: calc(100vh - var(--vote-h, 250px) - var(--awards-h, 0px) - 24px); }
 #hud.vote-on #match-awards { bottom: calc(var(--vote-h, 250px) + 4px); top: auto; width: min(860px, calc(100vw - 32px)); padding: 6px 10px 8px; gap: 6px 8px; }
 #hud.vote-on #match-awards .award { min-width: 150px; padding: 4px 8px; }
@@ -1847,4 +2085,86 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 @media (max-height: 380px) {
   .nav { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; width: min(340px, 46vw); }
   .nav button { font-size: 13px; padding: 4px 10px; gap: 8px; min-height: 34px; letter-spacing: 0.04em; }
+}
+
+/* Character Select: search, Favourites only and a favourite's star (every screen; docs/MOBILE_AUDIT.md, proposal 4). */
+.char-find { flex: none; display: flex; align-items: center; gap: 4px; margin-left: 4px; }
+.char-search { width: 130px; min-width: 0; padding: 4px 8px; font-size: 13px; }
+.char-favs-only { min-width: 32px; padding: 2px 8px; color: var(--muted); font-size: 15px; line-height: 1; }
+.char-favs-only.on { color: var(--orange); border-color: var(--orange); background: rgba(255, 179, 71, 0.14); }
+.char-chip[hidden], .char-sec[hidden], .char-grid .char-tile[hidden] { display: none; }
+.char-empty { margin: 16px 4px; color: var(--muted); font-size: 14px; }
+.char-fav { position: absolute; top: 4px; left: 4px; z-index: 1; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(8, 11, 19, 0.65); color: var(--muted); font-size: 14px; line-height: 1; opacity: 0; transition: opacity 0.15s; cursor: pointer; }
+.char-tile:hover .char-fav, .char-tile:focus-visible .char-fav, .char-fav.on, html.touch .char-fav { opacity: 1; }
+.char-fav.on { color: var(--orange); }
+html.touch .char-fav { width: 30px; height: 30px; font-size: 16px; }
+/* Arrows, not Q / E key caps, at the ends of the strip on a touch screen. */
+.bumper-arrow { display: none; }
+html.touch .bumper-btn kbd { display: none; }
+html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 4px; color: var(--text); font-size: 13px; }
+.char-sheet-toggle { display: none; }
+
+/* Character Select on a phone (html.touch, sideways or upright; docs/MOBILE_AUDIT.md, proposal 4): the grid takes the
+   height; the details are a sheet along the bottom: down, a strip with the name and Choose; up (a tap on a portrait or
+   the handle), everything over the grid's lower part. */
+@media (max-height: 600px), (max-width: 760px) {
+  html.touch #menu .screen.characters { padding-bottom: 72px; }
+  html.touch .char-grid { flex: 1 1 auto; }
+  html.touch .char-info { position: fixed; z-index: 6; left: max(20px, env(safe-area-inset-left)); bottom: 8px; margin: 0; max-height: 58px; background: rgb(14, 20, 33); display: flex; align-items: center; gap: 10px; padding: 6px 10px; overflow: hidden; }
+  html.touch .char-info .char-sheet-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; min-width: 44px; padding: 0 8px; font-size: 16px; }
+  html.touch .char-info > img, html.touch .char-info .char-stats, html.touch .char-info .loadout, html.touch .char-info .who p, html.touch .char-info .tags { display: none; }
+  html.touch .char-info .who { flex: 1; min-width: 0; overflow: hidden; }
+  html.touch .char-info h3 { margin: 0; font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.touch .char-info .char-actions { flex: none; flex-direction: row; gap: 6px; }
+  html.touch .char-info .char-actions button { padding: 6px 12px; font-size: 13px; }
+  html.touch .char-info:not(.sheet-open) .char-actions button:not(#char-choose) { display: none; }
+  /* Up: the whole panel, scrolling inside itself. */
+  html.touch .char-info.sheet-open { max-height: min(78vh, calc(100vh - 64px)); display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'who toggle' 'stats stats' 'loadout loadout' 'acts acts'; align-items: start; gap: 8px 12px; padding: 8px 12px 12px; overflow-y: auto; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5); }
+  html.touch .char-info.sheet-open .char-sheet-toggle { grid-area: toggle; }
+  html.touch .char-info.sheet-open .who { grid-area: who; }
+  html.touch .char-info.sheet-open .who p { display: block; margin: 4px 0 0; font-size: 13px; max-width: none; }
+  html.touch .char-info.sheet-open .tags { display: flex; flex-wrap: wrap; margin-top: 6px; }
+  html.touch .char-info.sheet-open .char-stats { display: grid; grid-area: stats; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  html.touch .char-info.sheet-open .char-stats .stat-bar, html.touch .char-info.sheet-open .char-stats h4 { display: revert; }
+  html.touch .char-info.sheet-open .char-stats h4 { grid-column: 1 / -1; }
+  html.touch .char-info.sheet-open .stat-row { grid-template-columns: 56px minmax(40px, 1fr) 40px; }
+  html.touch .char-info.sheet-open .loadout { display: flex; flex-wrap: wrap; gap: 4px 10px; grid-area: loadout; font-size: 13px; }
+  html.touch .char-info.sheet-open .loadout h4 { flex-basis: 100%; margin: 0; }
+  html.touch .char-info.sheet-open .char-actions { grid-area: acts; }
+  html.touch .char-info.sheet-open .char-actions button { flex: 1; padding: 8px 12px; font-size: 14px; }
+  html.touch .char-find .char-search { width: 96px; }
+  html.touch .char-fav:not(.on) { opacity: 0.7; }
+}
+/* Sideways: smaller portraits (two rows and more show), a smaller head, and the sheet up leaves the strip in view. */
+@media (max-height: 600px) and (orientation: landscape) {
+  html.touch #menu .screen.characters { padding-top: 8px; padding-bottom: 66px; }
+  html.touch .screen.characters .screen-head h2 { font-size: 20px; }
+  html.touch .screen.characters .screen-head .back-btn { min-height: 36px; padding: 4px 12px; }
+  html.touch .char-jump { margin-top: 6px; padding: 3px 6px; }
+  html.touch .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 5px; }
+  html.touch .char-sec-head { padding: 6px 10px 5px; }
+  html.touch .char-info { bottom: 6px; max-height: 52px; padding: 4px 10px; }
+  html.touch .char-info.sheet-open { max-height: calc(100vh - 104px); }
+  /* The turning model's drag area starts right of the strip and grid (it covered their right edge, and Favourites only). */
+  html.touch .char-spin { left: calc(min(900px, 70vw) + 36px); }
+}
+@media (max-height: 360px) and (orientation: landscape) {
+  html.touch .char-spin { left: calc(min(900px, 74vw) + 36px); }
+}
+/* Upright: the grid and sheet take the width (no room for the turning model beside them, so the sheet shows the portrait). */
+@media (max-width: 760px) and (orientation: portrait) {
+  html.touch #menu .screen.characters { padding: 10px 12px 72px; }
+  html.touch .screen.characters .screen-head h2 { font-size: 22px; }
+  html.touch .screen.characters .screen-head h2 br { display: none; }
+  html.touch .char-grid, html.touch .char-jump { width: 100%; }
+  html.touch .char-jump { margin-top: 8px; padding: 4px 6px; flex-wrap: wrap; row-gap: 6px; }
+  html.touch .char-jump-chips { order: 1; flex-basis: calc(100% - 90px); }
+  html.touch .char-find { order: 3; flex: 1 1 100%; margin: 0; }
+  html.touch .char-find .char-search { flex: 1; width: auto; }
+  html.touch .char-jump .bumper-btn:last-of-type { order: 2; }
+  html.touch .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  html.touch .char-info { left: 12px; right: 12px; width: auto; }
+  html.touch .char-info.sheet-open { grid-template-columns: 84px minmax(0, 1fr) auto; grid-template-areas: 'pic who toggle' 'stats stats stats' 'loadout loadout loadout' 'acts acts acts'; }
+  html.touch .char-info.sheet-open > img { display: block; grid-area: pic; width: 84px; height: 84px; }
+  html.touch .char-spin { display: none; }
 }

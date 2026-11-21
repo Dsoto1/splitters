@@ -6,6 +6,8 @@
   "name": "Stealth Operative",
   "look": "core.stealthop",
   "group": "soldiers",
+  "branch": "agency",
+  "blood": "red",
   "nameTheme": "soldier",
   "bio": "You won't hear her coming. You'll hear the respawn timer.",
   "body": "female",
@@ -24,9 +26,6 @@
     "metallic": 0.05,
     "roughness": 0.7
   },
-  "firstPerson": {
-    "arms": "own"
-  },
   "fixes": {
     "triangles": 11000,
     "headShare": 0.16,
@@ -38,9 +37,6 @@
       "curl": 1
     },
     "grip": {
-      "gripLong": [-0.06, 0, -0.03],
-      "supportLong": [0, 0.02, 0.03],
-      "supportPistol": [-0.01, 0.03, -0.03],
       "curlL": 0.8
     },
     "fingers": "fit"

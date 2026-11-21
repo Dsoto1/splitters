@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import WebSocket from 'ws';
 import { DEFAULT_DEATHMATCH_RULES, MAP_FORMAT_VERSION, PROTOCOL_VERSION, parseServerInfo, type MapDocument, type ServerInfo, type ServerMessage } from '@tiletrigger/shared';
 import { answerDiscovery, discoverLan, lanAddresses } from '../src/lan.ts';
@@ -60,8 +60,9 @@ describe('LAN', () => {
   it('servers answer a discovery probe over UDP, and a scan collects them', async () => {
     const a = await answerDiscovery(() => info({ name: 'A' }), 0, '127.0.0.1');
     try {
-      const found = await discoverLan({ port: a.port, targets: ['127.0.0.1'], timeoutMs: 300 });
-      expect(found.map((f) => f.name)).toContain('A');
+      // A scan listens 300 ms; on a busy machine the answer (from this same process) can come after that: scan
+      // again until it is found.
+      await vi.waitFor(async () => expect((await discoverLan({ port: a.port, targets: ['127.0.0.1'], timeoutMs: 300 })).map((f) => f.name)).toContain('A'), { timeout: 20_000, interval: 0 });
     } finally {
       a.close();
     }

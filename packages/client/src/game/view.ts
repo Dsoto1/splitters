@@ -22,16 +22,21 @@ import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { createMountNode, mountGun, mountTurret, setMountGlow, wheelsOf } from './mountVisuals.ts';
 import { CockpitInterior, type CockpitDrive } from './cockpitInterior.ts';
 import { createViewCamera, poseCamera } from './cameraPose.ts';
-import { createCanopy, placeCanopy, releaseCanopy } from './canopyVisuals.ts';
+import { canopyHarness, createCanopy, placeCanopy, releaseCanopy, type CanopyHarness } from './canopyVisuals.ts';
 import { BackdropVisuals } from '../backdrop.ts';
 import { BorderVisuals } from '../borderVisuals.ts';
 import { FoliageVisuals } from '../foliage.ts';
 import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
 import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
-import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, setAura } from './arsenalVisuals.ts';
+import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
+import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
+import { muzzlePoint } from './muzzlePoint.ts';
+import { streamPoint, streamStart, type StreamStart } from './streamBlend.ts';
+import type { ProjectileSample } from './interpolation.ts';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
+import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Mesh as MeshClass } from '@babylonjs/core/Meshes/mesh';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
@@ -39,6 +44,8 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import {
   armsLookFor,
+  blockBoxes,
+  propBoxes,
   PLAYER,
   POWERUP_DAMAGE_BIT,
   angleDelta,
@@ -63,6 +70,7 @@ import {
   type WeaponHold,
   type WorldBox,
   PROJECTILE_VISUALS,
+  STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
   FX_PROTECTED,
@@ -76,6 +84,9 @@ import {
   type LiquidBox,
   type OBox,
   DEFAULT_BLOOD,
+  lookBlood,
+  NPC_LOOK_PREFIX,
+  type BloodKind,
   EffectsWorld,
   debrisBurst,
   vehicleDebris,
@@ -97,28 +108,40 @@ import {
   type MapWeather,
   type SkyDefinition,
   isBreakableProp,
+  isAmmoBoxPickup,
+  AMMO_BOX_KIT_HAND_SCALE,
+  AMMO_BOX_KIT_SCALE,
+  AMMO_BOX_MODEL,
+  indoorProps,
+  TICK_RATE,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
+import type { InsigniaId } from '@tiletrigger/shared';
+import { INSIGNIA_HALF, createInsigniaMesh } from './insigniaMesh.ts';
+import { rankGlow } from './rankGlow.ts';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Material } from '@babylonjs/core/Materials/material';
 import { BloodVisuals, bloodPreference } from './bloodVisuals.ts';
 import { PosedBody, RAGDOLL_PREWARM, Ragdoll, type DeadBody } from './ragdoll.ts';
 import { RAGDOLL_BUDGET, fitBudget, screenShare, tierFor, type RagdollTier } from './ragdollBudget.ts';
 import { Atmosphere, SMALL_CASTER_REACH } from './atmosphere.ts';
-import { PROP_BATCH_MIN, PropBatches } from './propBatches.ts';
+import { PropBatches, joinsPropBatch } from './propBatches.ts';
 import { castSmall } from './shadowFlags.ts';
 import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
-import { BLAST_FADE_IN, SAFE_MUZZLE, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { addKick, kickAt, type HitKick } from './hitKick.ts';
+import { shakeScale } from './combatPrefs.ts';
 import { SteadyArcs } from './steadyArcs.ts';
+import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
-import { buildPathMeshes } from '../pathMeshes.ts';
+import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
@@ -129,8 +152,10 @@ import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
-import { DROP_LIE_HEIGHT, PICKUP_HOVER, createPickupVisual } from './pickupVisuals.ts';
-import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel } from './lootGlow.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
+import { PickupBatch } from './pickupBatch.ts';
+import { setGlow } from './glow.ts';
+import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
 import { StatusFx, plainStatus } from './statusFx.ts';
 import { LIQUID_LOOKS, ScenarioVisuals } from './scenarioVisuals.ts';
 import { createPropNode } from './propVisuals.ts';
@@ -139,14 +164,21 @@ import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
-import { ANIM_LOD_FAR, ANIM_LOD_NEAR, SHOT_OVERLAY_REACH, animStep, animStepByShare } from './animLod.ts';
+import { seatDrawnYaw } from './riderPlacement.ts';
+import { ANIM_LOD_FAR, ANIM_LOD_NEAR, CROWD_KEEP, SHOT_OVERLAY_REACH, animStep, animStepByShare, byNumber, crowdStep, rankIn } from './animLod.ts';
+import { BODY_POOL_PER_LOOK, bodyPoolStats, bodyPoolTotal } from './bodyPool.ts';
 import { perfOn } from './perfSwitches.ts';
+import { sliced } from './sliced.ts';
+import { FrameSpread } from './frameSpread.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
-import { loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
+import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
+import { MIRROR_X, PAIR_AWAY_DROP, PairFlashGate, casingSide, easeUp, pairPlace, pairReloadDip, stepPairUp } from './pairView.ts';
+import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
+import { CLIP_NAME, attachOptic } from './opticHousing.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -154,6 +186,7 @@ import { CreatureAnimator } from './creatureAnimator.ts';
 import type { RemotePose } from './interpolation.ts';
 import { COUNT, SYS, perfProbe } from './perfProbe.ts';
 import { Effect } from '@babylonjs/core/Materials/effect';
+import { scrubCompiledEffects } from '../effectScrub.ts';
 
 /** Remote players' pack muzzle flashes: within this range of the camera (m), on at most this many guns. */
 const REMOTE_FLASH_RANGE = 45;
@@ -197,6 +230,8 @@ interface Fx {
 
 /** Reduce flashing: a fight's bright moments (armour breaking, a heavy hit, a streak's burst) at this size and brightness. */
 const CALM_MOMENT = { scale: 0.8, gain: 0.55 } as const;
+/** A spirit's wisp off a hit plays at this share of the pack's strength (blood by character; owner, 2026-11-18: softer). */
+const SPIRIT_GAIN = 0.45;
 
 /** Spawn protection's shimmer: the pack's ball at this strength, and the soft blue the body glows (both faint). */
 const SHIELD_SHIMMER = 0.32;
@@ -204,7 +239,33 @@ const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
 /** How much of SHIELD_GLOW the body takes at most (a faint tint, the body still reads). */
 const SHIELD_GLOW_PEAK = 0.08;
 
+/** A gun's muzzle and flash on a character (the first gun's are the avatar's own fields). */
+interface GunFx {
+  muzzle?: { node: TransformNode; local: Vector3 };
+  flashUntil?: number;
+  flash?: Mesh;
+  flashRig?: MuzzleFlashRig;
+}
+
+/** The second gun of a pair as a character holds it (Avatar.pair). */
+interface AvatarPair extends GunFx {
+  /** The weapon code it is a second gun of (its model loads for it). */
+  code: number;
+  /** How far up it is (0..1), eased over PAIR_UP_3P; and the time of the last step. */
+  up: number;
+  at: number;
+  /** The snapshot still says it is out (going down while false, then gone). */
+  on: boolean;
+  /** With Reduce flashing on, the pair shares one flash (pairView.ts PairFlashGate). */
+  gate: PairFlashGate;
+}
+
+/** Seconds another player's second gun takes to come up in their hand (third person; the match's raise is theirs). */
+const PAIR_UP_3P = 0.3;
+
 interface Avatar {
+  /** What it bleeds (its look's `blood`; null: the map's), kept by its body after death. */
+  blood?: BloodKind | null;
   /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
   shieldGlow?: number;
   shieldStep?: number;
@@ -223,7 +284,9 @@ interface Avatar {
    * Team-colour marker over a teammate's head (Team Deathmatch): its own disc, or in crowds a plain node where the
    * disc goes, drawn through its colour's thin instances (GameView.drawTags).
    */
-  tag?: { node: TransformNode; color: string };
+  tag?: { node: TransformNode; color: string; ins: InsigniaId | null };
+  /** A rank-up's soft halo behind the badge (setRankHalo), while it shows. */
+  rankHalo?: Mesh;
   last?: { x: number; y: number; z: number; t: number };
   vel: { x: number; z: number };
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
@@ -232,7 +295,7 @@ interface Avatar {
   /** How see-through it is drawn now (Classes: a cloaked Shade); 1 = solid. */
   shown?: number;
   /** Parachute or glider over them, and which. */
-  canopy?: { node: TransformNode; kind: number };
+  canopy?: { node: TransformNode; kind: number; harness?: CanopyHarness };
   /** The zipline trolley over a rider's head (made on first ride). */
   trolley?: TransformNode;
   /** The body after death (until the next spawn): a ragdoll (full or cheap) or laid down (ragdoll.ts, ragdollBudget.ts). */
@@ -250,6 +313,11 @@ interface Avatar {
   flash?: Mesh;
   /** The pack's muzzle flash for their gun (muzzleFlash.ts); `flash` is the plain star used before it loads and for the railgun. */
   flashRig?: MuzzleFlashRig;
+  /**
+   * Dual wielding (step 4): the pair's second gun in their left hand (PlayerSnapshot.dw; your own from prediction in
+   * third person), with its own muzzle and flash; setAvatarPair.
+   */
+  pair?: AvatarPair;
   /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
   emergeAt?: number;
   /** Team leader's crown (rules.leaders), made on first need. */
@@ -261,6 +329,8 @@ interface Avatar {
   glowKey?: string;
   /** Roulette's outline and glow last applied (GameView.auraOf), only set again when it changes. */
   auraKey?: string;
+  /** Its character held hidden until its first pose (a crowd come into view is posed over a few frames). */
+  awaitingPose?: boolean;
   /** Crowds: left out of drawing while outside the view (see updateAvatars). */
   culled?: boolean;
   /** Your own body while you look through your own eyes: kept loaded, not drawn. */
@@ -306,37 +376,36 @@ const PUSH_KEEP_MS = 1200;
  * draws a little behind the snapshots), which on a page drawing a frame a second is past PUSH_KEEP_MS.
  */
 const PUSH_KEEP_FRAMES = 3;
+/** Over-head rank badges (insigniaMesh.ts) are drawn at their size out to this distance (m), then grow with it. */
+const INSIGNIA_FULL_SIZE_M = 14;
+const INSIGNIA_MAX_GROW = 2.5;
 /** An enemy's marker colour (a downward triangle; allies get a diamond). */
 const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b';
 /** The fog's colour and thickness inside a smoke cloud: a mid grey (not white) through which you see about 2-3 m. */
 const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
 const SMOKE_FOG_DENSITY = 0.42;
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
-/**
- * A material's glow, set only when it differs: setting a colour makes Babylon look through every mesh of the scene
- * for the material's users (thousands in a big match), and a new avatar's "no glow" is usually what it has already
- * (several of a character's meshes share a material, too).
- */
-function setGlow(mat: { emissiveColor: Color3 }, color: Color3): void {
-  if (!mat.emissiveColor.equals(color)) mat.emissiveColor = color;
-}
 
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
 
 /**
  * Characters kept for reuse per look (spec) when their avatar goes (a body that sank away, one past MAX_CORPSES, a player
  * who left): the next avatar of that look (a respawn) takes one at once instead of building a new one (10-25 ms each,
- * just after a frame: a busy match's respawns were most of its hitches' unexplained time).
- */
-const BODY_POOL_PER_LOOK = 2;
-/**
- * And in all: past this the longest-kept body goes. Roulette deals every life another look, so two a look came to
+ * just after a frame: a busy match's respawns were most of its hitches' unexplained time). Two a look
+ * (BODY_POOL_PER_LOOK) and, in all, bodyPoolTotal (bodyPool.ts): 16, or one for every two players up to 32 in a big
+ * match. Past the total the longest-kept body goes: Roulette deals every life another look, so two a look came to
  * some 160 hidden bodies by mid-match, each with its paused clips still on the scene's list of running animations
  * (about 30,000 entries, which every clip start and stop searches: St. John's, 2026-11-10).
  */
-const BODY_POOL_TOTAL = 16;
+/**
+ * Time (ms) a frame may spend putting away going characters (View.retireAvatar: back to the body pool, or disposed),
+ * after the first step: a crowded match past MAX_CORPSES lost a body with every death, a new round all of them at once.
+ */
+const RETIRE_MS = 1.5;
 /** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
 const BUILD_CATCH_UP_MS = 250;
+/** A slice of the match's loading work spread over frames (sliced.ts): this much at most before a frame is drawn (ms). */
+const START_SLICE_MS = 8;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
 const RAGDOLL_PREWARM_BODIES = 12;
 /**
@@ -391,6 +460,11 @@ interface PickupVisual {
   /** Its floor glow (lootGlow.ts): the lasting effect it asks for (none for some kinds) and its level now. */
   glowKey: string | null;
   glow: number;
+  /** How far the nearest wall is (pickupVisuals.ts pickupRoom): a bigger gun keeps clear of it. */
+  room: number;
+  /** The dark outline under the glow's ring (lootGlow.ts LOOT_OUTLINE), made the first time the glow shows, and its key. */
+  outline?: Mesh;
+  outlineKey?: string;
 }
 
 /** First-person match scene: map, viewmodel, remote avatars, pickups, projectiles and effects. */
@@ -414,14 +488,21 @@ export class GameView {
   private readonly avatars = new Map<number, Avatar>();
   /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
   private crowd = false;
+  /** The most remote players and NPCs seen at once this match (the body pool's size: bodyPool.ts). */
+  private mostPoses = 0;
   /** updateAvatars calls so far: the animation LOD's frame count (animLod.ts). */
   private avatarFrame = 0;
+  /** The living characters in view this frame, as squared distances, nearest first (updateAvatars). */
+  private readonly nearInView: number[] = [];
   private readonly pickups = new Map<string, PickupVisual>();
+  /** The pickups' shapes and models as thin instances (pickupBatch.ts; `?perfoff=pickupbatch`: GPU instances, as before). */
+  private pickupBatch: PickupBatch | null = null;
   /** When pickups were last updated (ms; their glows ease by the time since). */
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
   private readonly drops = new Map<number, { root: TransformNode; item: string }>();
-  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number }>();
+  /** `at`: where the host has it (sampled); `stream`: a stream's piece, drawn from its shooter's muzzle (streamBlend.ts). */
+  private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
   private effects: Fx[] = [];
@@ -429,6 +510,8 @@ export class GameView {
   private readonly vfx: GodotVfx;
   /** Lightning with flashing reduced: a steady beam per source instead of crackling bolts (steadyArcs.ts). */
   readonly steadyArcs: SteadyArcs;
+  /** Sniper glints: what you see of a sniper scope aimed your way (scopeGlint.ts). */
+  readonly glints: ScopeGlints;
   /** Pack effects that last while something burns or glows (fires, flares), the nearest drawn first. */
   private readonly lasting: LastingFx;
   /** Pack auras round other characters with a status (statusFx.ts). */
@@ -447,6 +530,33 @@ export class GameView {
   private viewWeapon?: string;
   /** Your own character's arms in first person, gripping the viewmodel. */
   private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
+  /**
+   * Dual wielding (pairView.ts; docs/GUNPLAY_SPEC.md "Akimbo / Dual Wield"): the second gun, in the left hand. It
+   * and its arm hang under `pairRoot`, the camera's space seen in a mirror, so the gun is the first one mirrored and
+   * the arm is the same character's right arm made a left one, holding it by the ordinary grip code. All made on
+   * the first pair, never before.
+   */
+  private pairRoot?: TransformNode;
+  private viewRoot2?: TransformNode;
+  /** Second copies of the first-person guns you have paired, by weapon id (null while one loads), and the model each was made from. */
+  private readonly viewmodels2 = new Map<string, { node: TransformNode | null; path: string }>();
+  private viewmodel2?: TransformNode;
+  /** The weapon the second gun shown is a copy of. */
+  private pairWeapon?: string;
+  /** The second gun's rise: 0 away, 1 up beside the first (pairView.ts stepPairUp). */
+  private pairUp = 0;
+  /** The first gun is held in one hand now (the other has the second gun). */
+  private pairSolo = false;
+  private fpArms2?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
+  private flashRig2?: MuzzleFlashRig;
+  private flash2?: Mesh;
+  private kickAmount2 = 0;
+  private flashUntil2 = 0;
+  private starFlash2 = false;
+  /** Reduce flashing: a pair's two guns share one flash (pairView.ts). */
+  private readonly flashGate = new PairFlashGate();
+  /** Your own flashes drawn and left out so far, by gun (tests). */
+  readonly ownFlashes = { right: 0, left: 0, skipped: 0 };
   /** Your own look (setLocalLook): its arms are built when first person needs them. */
   private localLook?: string;
   /** First person: your whole character from its eyes, or arms only (Options → Display). */
@@ -457,15 +567,53 @@ export class GameView {
   firstPersonEye = false;
   /** The gun is hidden this frame (scoped, third person, dead): the full body is too. */
   private viewHidden = true;
+  /** Between the camera and the gun: squashed across the view axis through an optic (setOptic). */
+  private readonly opticRoot: TransformNode;
+  /** The depth-only disc on an optic's glass (the gun's rendering group draws it first). */
+  private opticMask: Mesh | null = null;
+  /** How far the eye is onto the optic (0..1; opticView.ts). */
+  private opticBlend = 0;
+
+  /**
+   * Looking through the held gun's optic (opticView.ts): `squash` across the view axis for the gun (the camera's
+   * field of view is the session's), `blend` how far the eye is onto it; null or blend 0: the plain sights.
+   */
+  setOptic(o: { squash: number; blend: number } | null): void {
+    const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
+    const optic = def?.view.optic;
+    const on = !!o && o.blend > 0 && !!optic;
+    this.opticBlend = on ? o!.blend : 0;
+    // Off the optic the gun's own sight picture sets the scale (updateViewmodel).
+    if (on) this.opticRoot.scaling.set(o!.squash, o!.squash, 1);
+    if (on && optic && !this.opticMask) {
+      const mask = CreateDisc('opticMask', { radius: 1, tessellation: 48, sideOrientation: MeshClass.DOUBLESIDE }, this.scene);
+      const mat = new StandardMaterial('opticMaskMat', this.scene);
+      mat.disableColorWrite = true;
+      mat.disableLighting = true;
+      mask.material = mat;
+      mask.renderingGroupId = 1;
+      mask.isPickable = false;
+      mask.parent = this.viewRoot;
+      this.opticMask = mask;
+    }
+    if (this.opticMask) {
+      this.opticMask.setEnabled(on && !this.viewHidden);
+      if (on && optic) {
+        this.opticMask.position.set(optic.eye[0], optic.eye[1], optic.eye[2]);
+        this.opticMask.scaling.setAll(optic.radius);
+      }
+    }
+  }
   /** The camera before any shake (the full body stands under the steady eye). */
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
-  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
   private muzzleY = 0.02;
+  private muzzleX = 0;
   private kickAmount = 0;
   /** The last kick was a melee weapon's barrel going off (a gun's recoil, heavier), not a swing. */
   private kickShot = false;
@@ -545,6 +693,7 @@ export class GameView {
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
     this.throwArc = new ThrowArc(this.scene);
     this.blood.enabled = bloodPreference();
+    this.blood.onFx = (key, at) => this.bloodFx(key, at);
 
     const hemi = new HemisphericLight('hemi', new Vector3(0.2, 1, 0.1), this.scene);
     hemi.intensity = 0.8;
@@ -554,8 +703,17 @@ export class GameView {
     this.sunLight = sun;
     sun.intensity = 0.6;
 
+    // The gun hangs under a node that squashes it across the view axis while looking through an optic (opticView.ts).
+    this.opticRoot = new TransformNode('opticRoot', this.scene);
+    this.opticRoot.parent = this.camera;
     this.viewRoot = new TransformNode('viewRoot', this.scene);
-    this.viewRoot.parent = this.camera;
+    this.viewRoot.parent = this.opticRoot;
+    // The optic's depth-only disc goes first in the gun's rendering group, so the tube behind the glass never draws.
+    this.scene.setRenderingOrder(1, (a, b) => {
+      const ma = a.getMesh() === this.opticMask || a.getMesh().name === CLIP_NAME;
+      const mb = b.getMesh() === this.opticMask || b.getMesh().name === CLIP_NAME;
+      return ma === mb ? RenderingGroup.PainterSortCompare(a, b) : ma ? -1 : 1;
+    });
     this.atmosphere = new Atmosphere(this.scene, this.camera, sun, this.viewRoot);
     this.skyEffects = new SkyEffects(this.scene, this.camera, this.atmosphere.quality);
     // Rain and snow fade out under a roof: a ray up from the camera against the level's shapes.
@@ -566,10 +724,12 @@ export class GameView {
     // made it trail the muzzle by a frame whenever you moved.
     this.flash.billboardMode = MeshClass.BILLBOARDMODE_NONE;
     void loadMuzzleFlashes();
-    // Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot).
-    Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
+    installFlashHold();
     this.vfx = new GodotVfx(this.scene);
     this.steadyArcs = new SteadyArcs(this.scene);
+    this.glints = new ScopeGlints(this.scene);
+    // Effects on a gun's muzzle are placed once every gun is, just before the frame is drawn (followMuzzles).
+    this.scene.onBeforeRenderObservable.add(() => this.followMuzzles(performance.now()));
     // Low graphics plays fewer pack effects at once and thins the lasting ones (fires, charge balls).
     this.vfx.quality = this.atmosphere.quality;
     this.lasting = new LastingFx(this.vfx);
@@ -621,7 +781,7 @@ export class GameView {
     }
     buildRoadMeshes(this.scene, doc, styler);
     // Paths (MapMaker's roads, streets and trails), on the ground as played (loadMap laid them in).
-    buildPathMeshes(this.scene, doc, doc.terrain, styler);
+    mergePathMeshes(buildPathMeshes(this.scene, doc, doc.terrain, styler));
     const backdropVisuals = new BackdropVisuals(this.scene, styler, this.models);
     const backdrop = backdropVisuals.build(doc, boxes);
     if (backdropVisuals.sky) this.skyEffects.apply(doc, backdrop, backdropVisuals.sky);
@@ -649,14 +809,25 @@ export class GameView {
     // Water bakes its depth (clear shallows, foam on the shore) from the level under it.
     this.scenario.liquids.levelBoxes = boxes;
     void this.foliage.grow(doc.terrain, boxes, doc.metadata.id, this.liquids.filter((l) => l.liquid === 'water' || l.liquid === 'swamp'));
-    for (const e of doc.entities) if (e.kind === 'pickup') this.addPickup(e);
+    // (A placed Ammo Box is a crate now, drawn from the snapshot: game/ammoBoxState.ts.)
+    {
+      // Weapon pickups are drawn bigger, short of the nearest wall (pickupVisuals.ts pickupRoom): the map's own boxes,
+      // its blocks and props.
+      const pickups = doc.entities.filter((e): e is PickupEntity => e.kind === 'pickup' && !isAmmoBoxPickup(e));
+      const solid = pickups.length ? [...boxes, ...blockBoxes(doc), ...propBoxes(doc)] : [];
+      this.pickupBatch?.dispose();
+      this.pickupBatch = pickups.length && perfOn('pickupbatch') ? new PickupBatch(this.scene) : null;
+      for (const e of pickups) this.addPickup(e, e.item, pickupRoom(e.position, solid));
+    }
     // Props riding movers (a locomotive, a mine cart) move, so their matrices stay live.
     const carried = new Set(doc.entities.flatMap((e) => (e.kind === 'mover' ? (e.props ?? []) : [])));
     // Environment species (`env.*`) with the environment renderer (on unless ?env=0): chunked thin instances, not a node each.
     // (A log given health breaks: it is drawn as an ordinary prop node below, as ?env=0 draws every species, so breakProp can switch it off.)
     const env = envBatchedOn() ? doc.entities.filter((e): e is PropEntity => e.kind === 'prop' && !carried.has(e.id) && EnvironmentVisuals.draws(e) && !isBreakableProp(e)) : [];
     if (env.length) {
-      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality());
+      // With shadows, trees and rocks cast through static shadow-only batches (game/shadowCasters.ts; `?perfoff=smallcasters`:
+      // through the batches they are drawn with, as before).
+      this.environment ??= new EnvironmentVisuals(this.scene, loadGraphicsQuality(), { shadowSets: perfOn('smallcasters') && loadGraphicsQuality() !== 'low' });
       void this.environment.setPlacements(env, doc.terrain);
     }
     const drawnAsEnv = new Set(env.map((e) => e.id));
@@ -665,17 +836,22 @@ export class GameView {
     // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
     // A batch reads a prop's matrix once its model is in (never in this loop), so the hung and flush lifts below are in it.
     this.propBatches?.dispose();
-    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH) : null;
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH, perfOn('smallcasters') && loadGraphicsQuality() !== 'low') : null;
     const batches = this.propBatches;
     // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
     const copies = new Map<string, number>();
     const modelKey = (e: PropEntity) => `${e.model}|${e.variant ?? ''}`;
     for (const e of doc.entities) if (e.kind === 'prop' && !drawnAsEnv.has(e.id) && !carried.has(e.id)) copies.set(modelKey(e), (copies.get(modelKey(e)) ?? 0) + 1);
+    // Props under a roof or the floor above cast no sun shadow (shared map/indoors.ts): the roof's shadow covers them.
+    const indoor = perfOn('indoorshadow') ? indoorProps(doc, boxes) : () => false;
+    // A prop that can break (the placement's own health, the catalogue's, or the map's destruction) is a copy in a batch
+    // of breakables while intact, out of it once broken (setPropShown); `?perfoff=breakbatch`: its own node, as before.
+    const breakBatched = perfOn('breakbatch');
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
-      // (A prop that can break is its own node, switched off when it goes: the placement's own health, or the map's destruction.)
-      const batch = batches && (copies.get(modelKey(e)) ?? 0) >= PROP_BATCH_MIN && !isBreakableProp(e, !!doc.metadata.destruction) ? batches : null;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch);
+      const breakable = isBreakableProp(e, !!doc.metadata.destruction);
+      const batch = batches && joinsPropBatch(copies.get(modelKey(e)) ?? 0, breakable, !!getProp(e.model)?.breakable, breakBatched) ? batches : null;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch, !carried.has(e.id) && indoor(e), breakable);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       const lift = flush.get(e.id);
@@ -699,8 +875,11 @@ export class GameView {
     this.impacts.warm();
     void GodotVfx.preload(...mappedPacks()).then(() => {
       if (this.scene.isDisposed) return;
-      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones).
-      for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+      // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones),
+      // a few a frame (`?perfoff=startslices`: all at once): in one go they were 350 ms of the welcome's task, MapMaker's
+      // Test start's longest freeze (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 5).
+      if (!perfOn('startslices')) for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
+      else void sliced(mappedEffects(), (r) => this.vfx.warm(r.pack, r.effect), START_SLICE_MS, () => this.scene.isDisposed);
     });
   }
 
@@ -803,11 +982,14 @@ export class GameView {
     try {
       await GodotVfx.preload(...mappedPacks());
       const ends: (() => void)[] = [];
-      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then).
-      for (const r of mappedEffects()) {
+      // Each effect plays out of sight for a few frames (its particles spawn: their pieces draw then); started a few a
+      // frame, as in buildMap.
+      const start = (r: { pack: string; effect: string }) => {
         const end = this.vfx.warm(r.pack, r.effect, true);
         if (end) ends.push(end);
-      }
+      };
+      if (perfOn('startslices')) await sliced(mappedEffects(), start, START_SLICE_MS, () => this.scene.isDisposed);
+      else for (const r of mappedEffects()) start(r);
       effects = ends.length;
       await this.afterFrames(4, 2500);
       await ready();
@@ -913,11 +1095,20 @@ export class GameView {
     const anim = a?.anim;
     if (!a || !(anim instanceof CharacterAnimator)) return;
     const k = Math.min(1, strength / 2);
-    anim.flinch(zone, dir, 0.35 + 0.65 * k);
+    anim.flinch(zone, dir, 0.45 + 0.55 * k, reduceFlashing());
     // The hit clip over the flinch only where it shows (as remote shots' recoil, SHOT_OVERLAY_REACH).
     const eye = this.scene.activeCamera?.globalPosition;
     const near = !eye || Math.hypot(a.root.position.x - eye.x, a.root.position.z - eye.z) <= SHOT_OVERLAY_REACH;
-    if (strength >= 1.6 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+    // Heavy hits (stopping power 0.6 and up: the Battle Rifle, revolvers, shotguns, snipers) play the hit clip.
+    if (strength >= 1.3 && near) anim.trigger(zone === 1 ? 'hit_head' : 'hit');
+  }
+
+  /** The low-health warning's grey (lowHealth.ts): colour taken off the world grade's saturation (`delta` ≤ 0). */
+  setGradeSaturation(delta: number): void {
+    const c = this.scene.imageProcessingConfiguration.colorCurves;
+    if (!c) return;
+    const v = WORLD_GRADE.saturation + Math.round(delta * 2) / 2;
+    if (c.globalSaturation !== v) c.globalSaturation = v;
   }
 
   cameraPosition(): Vec3 {
@@ -1151,8 +1342,9 @@ export class GameView {
     this.dropCanopy(a);
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
+    this.dropAvatarPair(a);
     this.corpses.push({ a, slot, born: performance.now() });
-    while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.disposeAvatar(this.corpses.shift()!.a);
+    while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.retireAvatar(this.corpses.shift()!.a);
   }
 
   /** Ray test against the level's static shapes (null before the map is built). */
@@ -1167,7 +1359,7 @@ export class GameView {
 
   /** Remove every body (a new round). */
   clearCorpses(): void {
-    for (const c of this.corpses) this.disposeAvatar(c.a);
+    for (const c of this.corpses) this.retireAvatar(c.a);
     this.corpses = [];
     this.lyingDead.clear();
   }
@@ -1175,20 +1367,46 @@ export class GameView {
   // ---------------------------------------------------------------- shots
 
   /** World position of your own gun's muzzle (the viewmodel), or null while it isn't shown. */
-  localMuzzle(): Vec3 | null {
+  localMuzzle(off = false): Vec3 | null {
     if (!this.viewmodel || !this.viewRoot.isEnabled(false)) return null;
-    this.viewRoot.computeWorldMatrix(true);
-    const p = Vector3.TransformCoordinates(new Vector3(0, this.muzzleY, this.muzzleZ + 0.02), this.viewRoot.getWorldMatrix());
+    // (`off`: the second gun of a pair, when it is up; the same point on the mirrored gun.)
+    const root = off && this.pairShown() ? this.viewRoot2! : this.viewRoot;
+    root.computeWorldMatrix(true);
+    const p = Vector3.TransformCoordinates(new Vector3(this.muzzleX, this.muzzleY, this.muzzleZ + 0.02), root.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
   }
 
-  /** World position of a remote player's muzzle, or null when their gun isn't drawn. */
-  muzzleOf(slot: number): Vec3 | null {
-    const m = this.avatars.get(slot)?.muzzle;
-    if (!m || m.node.isDisposed()) return null;
+  /** Whether the left arm of a pair has loaded (tests). */
+  hasPairArm(): boolean {
+    return !!this.fpArms2?.anim;
+  }
+
+  /** Whether the second gun of a pair is drawn in your left hand now. */
+  pairShown(): boolean {
+    return !!this.viewRoot2 && this.pairUp > 0 && !!this.viewmodel2 && this.viewmodel2.isEnabled(false) && this.viewRoot2.isEnabled(false);
+  }
+
+  /** World position of a remote player's muzzle, or null when their gun isn't drawn (or not yet in their hands). */
+  muzzleOf(slot: number, off = false): Vec3 | null {
+    const a = this.avatars.get(slot);
+    // (`off`: the second gun of their pair, while it is in their hand; else the gun they held.)
+    const m = off && a?.pair?.muzzle && a.pair.up > 0 ? a.pair.muzzle : a?.muzzle;
+    if (!m || m.node.isDisposed() || !m.node.isEnabled(false)) return null;
     m.node.computeWorldMatrix(true);
     const p = Vector3.TransformCoordinates(m.local, m.node.getWorldMatrix());
     return { x: p.x, y: p.y, z: p.z };
+  }
+
+  /**
+   * The muzzle an effect leaves, asked each frame it draws (muzzleAnchor.ts): yours (`local`) is the first-person
+   * gun's, else your character's held gun in third person (`slot`, yours); anyone else's is their character's held
+   * gun. Null when there's no gun to follow (a turret, a fence).
+   */
+  muzzleAnchor(o: { local?: boolean; slot?: number; off?: boolean }): MuzzleAnchor | null {
+    const slot = o.slot !== undefined && o.slot >= 0 ? o.slot : null;
+    // Yours in third person: your drawn character's gun (not while it's hidden for first person, or scoped in).
+    if (o.local) return () => this.localMuzzle(o.off) ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot, o.off));
+    return slot === null ? null : () => this.muzzleOf(slot, o.off);
   }
 
   /**
@@ -1197,16 +1415,25 @@ export class GameView {
    * damage, more on a head), or a hole, sparks and dust on a wall. Bodies
    * lying in the way take the hit too and are knocked about.
    */
-  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean }): void {
+  shotVisual(o: { eye: Vec3; muzzle: Vec3 | null; to: Vec3; color: string; victim: number | null; zone: number; strength: number; def?: WeaponDefinition; local?: boolean; slot?: number; speed?: number; time?: number; tracer?: boolean; land?: boolean; off?: boolean }): void {
     if (o.def?.view.beam) {
+      // A beam stays on the gun's muzzle while it shows, however you move (muzzleAnchor.ts); with no gun drawn it
+      // starts just under the eye. Its far end stays where the shot landed.
+      const anchor = this.muzzleAnchor(o);
+      const from = anchor?.() ?? o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.08, z: o.eye.z };
       // Reduce flashing: a fast-firing beam (the Arc Caster, lasers) holds one steady beam instead of one per shot.
-      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? 'me' : (o.slot ?? 'other')}`, [o.muzzle ?? o.eye, o.to], o.def.view.tracer);
-      else this.addShot(o.def, o.muzzle ?? o.eye, o.to, o.color);
+      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? (o.off ? 'me2' : 'me') : `${o.slot ?? 'other'}${o.off ? ':2' : ''}`}`, [from, o.to], o.def.view.tracer, undefined, anchor);
+      else this.addShot(o.def, from, o.to, o.color, undefined, anchor);
       this.landRound(o);
       return;
     }
     // Bullets fly at their real speed (and only tracer rounds draw); `land: false` when the server's impact will land it.
-    this.impacts.fire(o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z }, o.to, o.color, o.land === false ? undefined : () => this.landRound(o), o.local ? 1.5 : 0, { ...(o.speed ? { speed: o.speed } : {}), ...(o.tracer === false ? { tracer: false } : {}) });
+    // The round leaves the gun as drawn: yours in first person (the viewmodel's muzzle), your character's in third
+    // person, anyone else's in their hands; its start settles on that muzzle once the frame has placed the guns
+    // (ImpactVisuals.settleStarts). With no gun drawn it starts just under the eye.
+    const anchor = this.muzzleAnchor(o);
+    const from = o.muzzle ?? anchor?.() ?? { x: o.eye.x, y: o.eye.y - 0.1, z: o.eye.z };
+    this.impacts.fire(from, o.to, o.color, o.land === false ? undefined : () => this.landRound(o), o.local ? 1.5 : 0, { ...(o.speed ? { speed: o.speed } : {}), ...(o.tracer === false ? { tracer: false } : {}), start: anchor });
   }
 
   /** What happens where a round lands (see shotVisual). */
@@ -1221,7 +1448,7 @@ export class GameView {
     if (body) {
       const at = { x: o.eye.x + dir.x * body.dist, y: o.eye.y + dir.y * body.dist, z: o.eye.z + dir.z * body.dist };
       body.body.applyImpulseAtPoint({ x: dir.x * 4 * o.strength, y: dir.y * 4 * o.strength + 0.4, z: dir.z * 4 * o.strength }, at, true);
-      this.blood.hit(at, dir, o.strength);
+      this.blood.hit(at, dir, o.strength, owner?.a.blood);
       // Its time to settle starts again from the hit (else a body hit late in its fall froze mid-tumble).
       owner?.body.kick();
     } else {
@@ -1229,11 +1456,11 @@ export class GameView {
       const rest = this.restingBodyOnRay(o.eye, dir, len);
       if (rest) {
         const push = { x: dir.x * 2.5 * o.strength, y: 0.6 + dir.y * 2.5 * o.strength, z: dir.z * 2.5 * o.strength };
-        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength);
+        if (this.rewake(rest.a, push)) this.blood.hit(rest.at, dir, o.strength, rest.a.blood);
       }
     }
     if (o.victim !== null) {
-      this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength);
+      this.blood.hit(o.to, dir, o.zone === 1 ? o.strength * 1.8 : o.strength, this.bloodKind(o.victim));
       this.accent(impactStyle('flesh').accent, o.to);
       return;
     }
@@ -1291,6 +1518,37 @@ export class GameView {
     return farFxSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z));
   }
 
+  /** What a slot's character bleeds (its look's `blood`; null: the map's, or nobody drawn there). */
+  bloodKind(slot: number): BloodKind | null {
+    return this.avatars.get(slot)?.blood ?? null;
+  }
+
+  /** When each blood effect last played (performance.now ms), for Reduce flashing's one a second. */
+  private readonly bloodFxAt = new Map<string, number>();
+  /** Blood effects started (the `flashing` flow's `blood` moment reads it). */
+  bloodFxPlayed = 0;
+
+  /**
+   * A blood kind's pack effect at a hit (content/vfx.json map.gameplay `blood.oil` sparks, `blood.spirit` wisp): minor
+   * (dropped when many effects play, past the accents' range). Reduce flashing: smaller and dimmer, eased in, and at
+   * most one of each a second (no crackle under a machine gun's stream).
+   */
+  private bloodFx(key: 'blood.oil' | 'blood.spirit', at: Vec3): void {
+    const fx = gameplayFx(key);
+    if (!fx) return;
+    const cam = this.scene.activeCamera?.globalPosition;
+    if (cam && Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) > ACCENT_RANGE) return;
+    const calm = reduceFlashing();
+    const now = performance.now();
+    if (now - (this.bloodFxAt.get(key) ?? -Infinity) < (calm ? 1000 : 60)) return;
+    this.bloodFxAt.set(key, now);
+    this.bloodFxPlayed++;
+    const near = this.towardCamera(at, 0.3);
+    // The wisp is soft (owner, 2026-11-18: white-grey, not a pure white burst): 0.45 of the pack's strength, eased in.
+    const soft = key === 'blood.spirit' ? SPIRIT_GAIN : 1;
+    this.vfx.play(fx.pack, fx.effect, new Vector3(near.x, near.y, near.z), { scale: fx.scale * (calm ? CALM_MOMENT.scale : 1), minor: true, ...(fx.tint ? { tint: fx.tint } : {}), ...(calm ? { gain: CALM_MOMENT.gain * soft, fadeIn: BLAST_FADE_IN } : soft < 1 ? { gain: soft, fadeIn: BLAST_FADE_IN } : {}) });
+  }
+
   /** A moment of play's effect (content/vfx.json map.gameplay: `pickup.health`, `spawn`, `portal`, `pad`, `trap.shock`, `zipline` …). */
   playGameplayFx(key: string, at: Vec3, o: { size?: number; calmable?: boolean } = {}): boolean {
     const fx = gameplayFx(key);
@@ -1314,16 +1572,27 @@ export class GameView {
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
-  remoteFlash(slot: number, def?: WeaponDefinition, alt = false): void {
+  remoteFlash(slot: number, def?: WeaponDefinition, alt = false, off = false, gated = false, together = false): void {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
+    // A pair's second gun flashes at its own muzzle; with Reduce flashing on the pair shares one flash (PairFlashGate:
+    // never both at once, never more often than one gun's rounds). `gated`: the caller's gate already chose (yours).
+    const pair = a.pair?.muzzle && a.pair.up > 0 ? a.pair : null;
+    // (Their rounds come a snapshot at a time: the tick is this page's clock's, and both guns' rounds in one message
+    // are `together`, so the flash takes turns between the guns.)
+    if (pair && def && !gated && !pair.gate.allow({ tick: Math.round(performance.now() / (1000 / TICK_RATE)), gun: off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: true, calm: reduceFlashing(), together })) {
+      this.remotePairFlashes.skipped++;
+      return;
+    }
+    if (pair) this.remotePairFlashes[off ? 'left' : 'right']++;
+    const set: GunFx = off && pair ? pair : a;
     const barrel = alt ? def?.view.altShot : undefined;
     const fx = barrel ? { id: barrel.flash.effect, scale: barrel.flash.scale ?? 0.2 } : def ? muzzleEffectFor(def) : null;
-    if (barrel?.smoke) {
+    if (barrel?.smoke && set.muzzle) {
       // The cloud hangs where they fired, rolling out along the barrel.
-      a.muzzle.node.computeWorldMatrix(true);
-      const m = a.muzzle.node.getWorldMatrix();
-      const at = Vector3.TransformCoordinates(a.muzzle.local, m);
+      set.muzzle.node.computeWorldMatrix(true);
+      const m = set.muzzle.node.getWorldMatrix();
+      const at = Vector3.TransformCoordinates(set.muzzle.local, m);
       const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
       this.muzzleSmoke(at, fwd, barrel.smoke);
       this.smokeClouds.remote++;
@@ -1331,25 +1600,28 @@ export class GameView {
     // The pack's flash only near the camera, on a few guns at a time (each rig is a dozen meshes);
     // further off, or in a crowd, the plain star does.
     const near = Vector3.DistanceSquared(a.root.position, this.camera.globalPosition) < REMOTE_FLASH_RANGE * REMOTE_FLASH_RANGE;
-    if (fx && near && MuzzleFlashRig.ready() && (a.flashRig || this.remoteRigs < MAX_REMOTE_RIGS)) {
-      if (!a.flashRig) {
-        a.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
+    if (fx && near && MuzzleFlashRig.ready() && (set.flashRig || this.remoteRigs < MAX_REMOTE_RIGS)) {
+      if (!set.flashRig) {
+        set.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig${set === a ? '' : '2'}`);
         this.remoteRigs++;
       }
       // A little bigger than your own: it's seen from further off. Reduce flashing: smaller and dimmer.
       const calm = reduceFlashing();
-      if (a.flashRig.fire(fx.id, fx.scale * 1.25 * (calm ? SAFE_MUZZLE.scale : 1), calm ? SAFE_MUZZLE.opacity : 1)) {
-        this.placeRemoteFlash(a);
+      if (set.flashRig.fire(fx.id, fx.scale * 1.25 * (calm ? SAFE_MUZZLE.scale : 1), calm ? SAFE_MUZZLE.opacity : 1)) {
+        this.placeRemoteFlash(set);
         return;
       }
     }
-    a.flash ??= this.createFlash(a.root.name);
-    a.flashUntil = performance.now() + 55;
-    kickFlash(a.flash, reduceFlashing() ? SAFE_MUZZLE.scale : 1, reduceFlashing() ? SAFE_MUZZLE.opacity : 1);
+    set.flash ??= this.createFlash(`${a.root.name}${set === a ? '' : '_2'}`);
+    set.flashUntil = performance.now() + 55;
+    kickFlash(set.flash, reduceFlashing() ? SAFE_MUZZLE.scale : 1, reduceFlashing() ? SAFE_MUZZLE.opacity : 1);
   }
 
+  /** Other players' pairs' flashes (tests, the flicker check): drawn per gun, and left out by the shared flash's gate. */
+  readonly remotePairFlashes = { right: 0, left: 0, skipped: 0 };
+
   /** Put a remote flash rig at the muzzle, pointing down the barrel. */
-  private placeRemoteFlash(a: Avatar): void {
+  private placeRemoteFlash(a: GunFx): void {
     if (!a.flashRig || !a.muzzle) return;
     a.muzzle.node.computeWorldMatrix(true);
     const m = a.muzzle.node.getWorldMatrix();
@@ -1376,7 +1648,12 @@ export class GameView {
     let t = prof ? now : 0;
     this.propFlames.want(this.camera.globalPosition);
     if (prof) t = perfProbe.add(SYS.flames, t);
-    this.lasting.update(this.camera.globalPosition);
+    {
+      // Effects out of the camera's view are ranked after the fixtures in it (lastingFx.ts).
+      const cam = this.scene.activeCamera;
+      const planes = cam ? Frustum.GetPlanes(cam.getTransformationMatrix()) : null;
+      this.lasting.update(this.camera.globalPosition, planes ? (at, r) => inView(planes, at.x, at.y, at.z, r) : undefined);
+    }
     if (prof) t = perfProbe.add(SYS.fx, t);
     this.propFlames.show();
     if (prof) t = perfProbe.add(SYS.flames, t);
@@ -1386,18 +1663,6 @@ export class GameView {
       this.vfx.update(dt * 1000);
     }
     this.impacts.update(wall);
-    this.steadyArcs.update(now);
-    // Remote muzzle flashes follow the guns.
-    for (const a of this.avatars.values()) {
-      if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
-      if (!a.flash) continue;
-      const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
-      a.flash.setEnabled(on);
-      if (on && a.muzzle) {
-        a.muzzle.node.computeWorldMatrix(true);
-        a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
-      }
-    }
     if (prof) t = perfProbe.add(SYS.fx, t);
     for (const a of this.avatars.values()) if (a.fall && !a.ragdoll) this.stepFall(a, dt);
     for (const c of this.corpses) if (c.a.fall && !c.a.ragdoll) this.stepFall(c.a, dt);
@@ -1420,7 +1685,7 @@ export class GameView {
         const age = (now - c.born) / 1000 - CORPSE_STAY;
         if (age <= 0) return true;
         if (age >= CORPSE_SINK) {
-          this.disposeAvatar(c.a);
+          this.retireAvatar(c.a);
           return false;
         }
         // Sink into the ground: the ragdoll lets go and the body slides down.
@@ -1464,6 +1729,8 @@ export class GameView {
   }
 
   private localCanopy?: { node: TransformNode; kind: number };
+  /** Your own slot (from updateAvatars): your first-person parachute wears its colours, as others see it. */
+  private canopySlot = 0;
 
   /** Your own canopy in first person (overhead, where looking up shows it); null packs it away. */
   updateLocalCanopy(pos: Vec3 | null, yaw: number, kind: number): void {
@@ -1472,7 +1739,7 @@ export class GameView {
       this.localCanopy = undefined;
     }
     if (!pos || !kind) return;
-    this.localCanopy ??= { node: createCanopy(this.scene, 'canopy_local', kind), kind };
+    this.localCanopy ??= { node: createCanopy(this.scene, 'canopy_local', kind, this.canopySlot), kind };
     placeCanopy(this.localCanopy.node, pos, yaw, performance.now(), 0);
   }
 
@@ -1588,6 +1855,13 @@ export class GameView {
     this.steadyEye.pos.set(eye.x, eye.y, eye.z);
     this.steadyEye.yaw = yaw;
     this.steadyEye.pitch = pitch;
+    // The hit kick (hitKick.ts): presentation only, the aim stays where it is.
+    if (this.hitKickState) {
+      const k = kickAt(this.hitKickState, performance.now() / 1000);
+      if (k.pitch === 0 && k.yaw === 0) this.hitKickState = null;
+      yaw += k.yaw;
+      pitch += k.pitch;
+    }
     const shake = this.currentShake();
     if (shake > 0) {
       // Trauma squared: big blasts jolt, small ones barely tremble.
@@ -1612,6 +1886,12 @@ export class GameView {
   /** Viewmodel's top (where a sight sits) and rear, in its own space: placing it for aiming down the sights. */
   private sightTop = 0.1;
   private stockZ = -0.3;
+  /** Where the shown viewmodel sits at full aim (sightPose.ts), worked out when first needed after it is shown. */
+  private aimAt: GunPlacement | null = null;
+  /** How much larger the shown gun is drawn at full aim (sightPose.ts sightPicture: a glass, a long gun's iron sights), worked out with `aimAt`. */
+  private aimPicture = 1;
+  /** The shown gun's sight-window clip (opticHousing.ts CLIP_NAME), found with `aimAt`. */
+  private aimClip: AbstractMesh | null = null;
 
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
@@ -1622,12 +1902,13 @@ export class GameView {
     this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
-    const show = (v: { node: TransformNode; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
-      ({ muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
+      ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+      this.aimAt = null;
       v.node.setEnabled(true);
       this.viewmodel = v.node;
-      this.fpArms?.anim?.gripExternal(v.node, def.view.hold);
-      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold);
+      this.fpArms?.anim?.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
     };
     const kept = this.viewmodels.get(def.id);
     if (kept) return show(kept);
@@ -1637,8 +1918,11 @@ export class GameView {
       node.parent = this.viewRoot;
       // Draw on top of the world so the gun never clips into walls.
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      const at = def.view.muzzleAt;
-      const v = { node, muzzleZ: at ? at[2] : bounds.max.z, muzzleY: at ? at[1] : (bounds.min.y + bounds.max.y) / 2 + (bounds.max.y - bounds.min.y) * 0.2, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      // The muzzle as drawn (muzzlePoint.ts): the weapon's `muzzleAt`, else the middle of the model's front-most geometry.
+      const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
+      // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
+      attachOptic(this.scene, node, def, true);
+      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
@@ -1661,6 +1945,7 @@ export class GameView {
     for (const [id, v] of this.viewmodels) {
       if (carried.has(id) || id === this.viewWeapon) continue;
       if (this.viewmodel === v.node) this.viewmodel = undefined;
+      this.dropSecond(id);
       v.node.dispose();
       this.viewmodels.delete(id);
       const path = this.viewmodelPaths.get(id);
@@ -1721,6 +2006,8 @@ export class GameView {
       p = this.models.instantiate(path, `throwHold_${this.throwModels.size}`).then(
         (node) => {
           node.parent = root;
+          // (The Ammo Box Kit's model is the full-size crate: in the hand it is a small one.)
+          if (path === AMMO_BOX_MODEL) node.scaling.setAll(AMMO_BOX_KIT_HAND_SCALE);
           // Drawn over the world like the gun, so it never clips into a wall in front of you.
           for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
           node.setEnabled(false);
@@ -1738,8 +2025,8 @@ export class GameView {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     const node = def ? (this.viewmodel ?? null) : null;
     node?.setEnabled(true);
-    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null);
-    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null);
+    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
   }
 
   /**
@@ -1752,6 +2039,7 @@ export class GameView {
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+        attachOptic(this.scene, node, def, true);
         const old = v.node;
         // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
         takeOverViewmodel(old, node);
@@ -1759,9 +2047,13 @@ export class GameView {
         this.viewmodelPaths.set(def.id, path);
         if (this.viewmodel === old) {
           this.viewmodel = node;
-          this.fpArms?.anim?.gripExternal(node, def.view.hold);
-          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold);
+          // Its optic's parts are the new copy's: found again with the aim's placement.
+          this.aimAt = null;
+          this.fpArms?.anim?.gripExternal(node, def.view.hold, this.soloFor(def.id));
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold, this.soloFor(def.id));
         }
+        // (A second gun made from the old copy is made again from this one, so the two look alike.)
+        this.dropSecond(def.id);
         old.dispose();
       },
       () => undefined,
@@ -1809,6 +2101,8 @@ export class GameView {
     this.fpArms?.anim?.dispose();
     this.fpArms?.root.dispose();
     const root = new TransformNode('fpArms', this.scene);
+    // On the camera, not under the gun's frame: the hands follow the gun as it is drawn (a glass's larger sight
+    // picture included) at their own size, as your whole body's do; through a model's optic they are hidden.
     root.parent = this.camera;
     const arms = { look, anim: null as CharacterAnimator | null, root };
     this.fpArms = arms;
@@ -1820,7 +2114,7 @@ export class GameView {
         m.receiveShadows = false;
       }
       arms.anim = new CharacterAnimator(this.scene, ch);
-      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
     });
   }
 
@@ -1864,12 +2158,28 @@ export class GameView {
     return t < 0.3 ? Math.sin((t / 0.3) * (Math.PI / 2)) : Math.cos(((t - 0.3) / 0.7) * (Math.PI / 2));
   }
 
-  /** Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). */
-  kick(def: WeaponDefinition, alt = false): void {
+  /**
+   * Recoil kick and muzzle flash for a predicted shot (`alt`: the second trigger). `gun`: which gun fired it and
+   * when (dual wielding: `off` the second gun, `paired` a pair is in hand, `together` both fired on this `tick`),
+   * so each gun of a pair kicks, flashes and throws its case by itself.
+   */
+  kick(def: WeaponDefinition, alt = false, slot?: number, gun?: { off: boolean; tick: number; paired: boolean; together?: boolean }): void {
     const barrel = alt ? def.view.altShot : undefined;
-    this.kickShot = !!barrel;
     // Reduce flashing: your own flash is smaller and dimmer (in the dark it was the brightest thing on screen).
     const calm = reduceFlashing();
+    // Reduce flashing with a pair: the two guns share one flash, no brighter and no more often than one gun's
+    // (pairView.ts PairFlashGate), asked once a round and kept for first and third person alike; the round whose flash
+    // is left out still kicks, sounds and throws its case.
+    let gateSays: boolean | undefined;
+    const flashes = () => (gateSays ??= !gun || this.flashGate.allow({ tick: gun.tick, gun: gun.off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: gun.paired, calm, together: !!gun.together }));
+    // Third person: the flash is on your character's gun as drawn (followMuzzles keeps it there), as everyone sees it
+    // (a pair's second gun's on the gun in your left hand).
+    const thirdPerson = slot !== undefined && !this.viewRoot.isEnabled(false);
+    if (thirdPerson && (def.kind !== 'melee' || alt) && !def.view.beam) {
+      const a = this.avatars.get(slot);
+      if (a?.muzzle && !a.hiddenSelf && (barrel || def.kind === 'melee' || flashes())) this.remoteFlash(slot, def, alt, !!gun?.off, true);
+    }
+    this.kickShot = !!barrel;
     const size = calm ? SAFE_MUZZLE.scale : 1;
     const opacity = calm ? SAFE_MUZZLE.opacity : 1;
     if (barrel) {
@@ -1890,7 +2200,10 @@ export class GameView {
     const rail = def.id === 'core.railgun';
     // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
     const visual = gunplayOf(def).kick?.visual;
-    this.kickAmount = Math.min(1, this.kickAmount + (def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45));
+    const left = !!gun?.off && this.pairShown();
+    const amount = def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45;
+    if (left) this.kickAmount2 = Math.min(1, this.kickAmount2 + amount);
+    else this.kickAmount = Math.min(1, this.kickAmount + amount);
     if (rail) {
       // The rail slams back with a big blue-white flash.
       this.flashUntil = performance.now() + 80;
@@ -1899,11 +2212,29 @@ export class GameView {
       return;
     }
     if (def.kind === 'melee' || def.view.beam) return;
-    this.flashUntil = performance.now() + 45;
-    const fx = muzzleEffectFor(def);
-    this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
-    if (this.starFlash) kickFlash(this.flash, (def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1) * size, opacity);
-    if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1);
+    if (!flashes()) this.ownFlashes.skipped++;
+    else {
+      this.ownFlashes[left ? 'left' : 'right']++;
+      const fx = muzzleEffectFor(def);
+      const star = (def.pellets > 1 || def.damage >= 60 ? 1.5 : def.damage < 15 ? 0.7 : 1) * size;
+      if (left) {
+        this.flashUntil2 = performance.now() + 45;
+        this.starFlash2 = !(fx && this.flashRig2!.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
+        if (this.starFlash2) kickFlash(this.flash2!, star, opacity);
+      } else {
+        this.flashUntil = performance.now() + 45;
+        this.starFlash = !(fx && this.flashRig.fire(fx.id, fx.scale * OWN_FLASH_SCALE * size, opacity));
+        if (this.starFlash) kickFlash(this.flash, star, opacity);
+      }
+    }
+    if (def.kind === 'hitscan' && def.ammo) {
+      const size = def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1;
+      // Third person: out of your character's gun as drawn (a pair's second gun's for its rounds), out of its right side.
+      const drawn = thirdPerson ? this.avatars.get(slot) : undefined;
+      const fromGun = drawn && !drawn.hiddenSelf ? (gun?.off && drawn.pair?.muzzle && drawn.pair.up > 0 ? drawn.pair.muzzle : drawn.muzzle) : undefined;
+      if (fromGun) this.ejectCasingFrom(fromGun, size, !!gun?.off);
+      else if (!thirdPerson) this.ejectCasing(size, left);
+    }
   }
 
   /**
@@ -1921,12 +2252,36 @@ export class GameView {
     }
   }
 
-  /** A spent case flips out of the right side of your gun and rattles on the floor. */
-  private ejectCasing(size: number): void {
+  /**
+   * A spent case flips out of the right side of your gun and rattles on the floor (`left`: out of the second gun
+   * of a pair, to the left: its frame is the first gun's in a mirror, so each gun throws away from the other).
+   */
+  private ejectCasing(size: number, left = false): void {
     if (!this.physics || !this.viewmodel) return;
-    this.viewRoot.computeWorldMatrix(true);
-    const m = this.viewRoot.getWorldMatrix();
-    const at = Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m);
+    const root = left && this.viewRoot2 ? this.viewRoot2 : this.viewRoot;
+    this.ownCasings[casingSide(left ? 'left' : 'right') < 0 ? 'left' : 'right']++;
+    root.computeWorldMatrix(true);
+    const m = root.getWorldMatrix();
+    this.throwCasing(Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m), m, size);
+  }
+
+  /**
+   * Third person: a spent case out of your character's gun as drawn, `muzzle` its gun and muzzle point (a pair's
+   * second gun for its rounds): from its ejection port, a little behind the muzzle, out of the gun's right side. A
+   * pair's guns are the same gun in either hand (not mirrored, as first person's are), so both throw to the right.
+   */
+  private ejectCasingFrom(muzzle: { node: TransformNode; local: Vector3 }, size: number, left: boolean): void {
+    if (!this.physics || muzzle.node.isDisposed()) return;
+    this.ownCasings[left ? 'left3p' : 'right3p']++;
+    muzzle.node.computeWorldMatrix(true);
+    const m = muzzle.node.getWorldMatrix();
+    const at = Vector3.TransformCoordinates(new Vector3(muzzle.local.x + 0.02, muzzle.local.y, muzzle.local.z * 0.35), m);
+    this.throwCasing(at, m, size);
+  }
+
+  /** A spent case thrown from `at` out of the right side of a gun whose frame is `m`, rattling on the floor. */
+  private throwCasing(at: Vector3, m: Matrix, size: number): void {
+    if (!this.physics) return;
     const right = Vector3.TransformNormal(new Vector3(1, 0, 0), m).normalize();
     const up = Vector3.TransformNormal(new Vector3(0, 1, 0), m).normalize();
     const back = Vector3.TransformNormal(new Vector3(0, 0, -1), m).normalize();
@@ -1945,13 +2300,145 @@ export class GameView {
     }
   }
 
-  /** Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. */
-  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number }): void {
+  /** Whether the first gun `id` is held in one hand now (its pair's second gun is up). */
+  private soloFor(id: string | undefined): boolean {
+    return this.pairSolo && !!id && id === this.pairWeapon;
+  }
+
+  /** The second copy of a first-person gun goes (no longer carried, or its first copy changed). */
+  private dropSecond(id: string): void {
+    const second = this.viewmodels2.get(id);
+    if (!second) return;
+    this.viewmodels2.delete(id);
+    if (second.node && this.viewmodel2 === second.node) this.viewmodel2 = undefined;
+    second.node?.dispose();
+  }
+
+  /**
+   * The second gun of a pair, each frame (before the first gun is placed): made on the first pair (the mirror, the
+   * copy of the gun, the left arm, its flash), brought up over the pair's raise and put away when the pair ends
+   * (the fire-mode key: one gun; a switch to another weapon; at once when the guns are hidden or you die). Returns
+   * how far up it is, eased (0: no pair to draw).
+   */
+  private stepPair(dt: number, def: WeaponDefinition | undefined, pair: { raise: number; reload: number } | null, hidden: boolean): number {
+    if (!this.viewRoot2 && !pair) return 0;
+    if (!def || !this.viewmodel) {
+      // Nothing in hand (dead, a seat's gun): the second gun is gone with the first.
+      this.pairUp = 0;
+      this.kickAmount2 = 0;
+      this.flashGate.reset();
+    }
+    if (pair && def && this.viewmodel) {
+      if (!this.viewRoot2) {
+        this.pairRoot = new TransformNode('pairRoot', this.scene);
+        this.pairRoot.parent = this.camera;
+        this.pairRoot.scaling.x = MIRROR_X;
+        this.viewRoot2 = new TransformNode('viewRoot2', this.scene);
+        this.viewRoot2.parent = this.pairRoot;
+        this.flashRig2 = new MuzzleFlashRig(this.scene, 'muzzleFlashRig2', { renderingGroupId: 1 });
+        this.flashRig2.root.parent = this.viewRoot2;
+        this.flash2 = createStarFlash(this.scene, 'muzzleFlash2', 0.32);
+        this.flash2.renderingGroupId = 1;
+        this.flash2.billboardMode = MeshClass.BILLBOARDMODE_NONE;
+        this.flash2.parent = this.viewRoot2;
+        this.flash2.setEnabled(false);
+      }
+      // The copy of the gun in hand, from the model the first is drawn with now (its sharper copy once that is in).
+      const path = this.viewmodelPaths.get(def.id) ?? def.view.model;
+      let second = this.viewmodels2.get(def.id);
+      if (!second) {
+        const made = { node: null as TransformNode | null, path };
+        second = made;
+        this.viewmodels2.set(def.id, made);
+        const root = this.viewRoot2;
+        void this.models.instantiate(path, `view2_${def.id}`).then(
+          (node) => {
+            if (this.viewmodels2.get(def.id) !== made || this.scene.isDisposed) return node.dispose();
+            node.parent = root;
+            for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+            attachOptic(this.scene, node, def, true);
+            node.setEnabled(false);
+            made.node = node;
+          },
+          () => void this.viewmodels2.delete(def.id),
+        );
+      }
+      if (second.node && this.viewmodel2 !== second.node) {
+        this.viewmodel2?.setEnabled(false);
+        this.viewmodel2 = second.node;
+        second.node.setEnabled(true);
+        this.pairWeapon = def.id;
+        this.fpArms2?.anim?.gripExternal(second.node, def.view.hold, true);
+      }
+      this.buildFpArms2();
+    }
+    // It comes up once its copy is in (models load in real time), over the pair's raise; it goes down quicker.
+    const on = !!pair && !!def && !!this.viewmodel2 && this.pairWeapon === def.id;
+    this.pairUp = stepPairUp(this.pairUp, on, dt, pair?.raise ?? 0);
+    const shown = this.pairUp > 0 && !hidden && !!def && !!this.viewmodel2;
+    this.viewRoot2?.setEnabled(shown);
+    if (this.pairUp === 0 && this.viewmodel2 && !on) {
+      this.viewmodel2.setEnabled(false);
+      this.viewmodel2 = undefined;
+      this.pairWeapon = undefined;
+      this.flashRig2?.hide();
+      this.flash2?.setEnabled(false);
+    }
+    // The first gun in one hand while the second is up; both hands back on it after.
+    const solo = this.pairUp > 0;
+    if (solo !== this.pairSolo) {
+      this.pairSolo = solo;
+      if (def && this.viewmodel && !this.throwHold?.node) {
+        this.fpArms?.anim?.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+      }
+    }
+    const arms2 = this.fpArms2;
+    const armsOn = shown && this.opticBlend === 0;
+    arms2?.root.setEnabled(armsOn);
+    if (armsOn && arms2?.anim) arms2.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
+    return shown ? easeUp(this.pairUp) : 0;
+  }
+
+  /** The left arm of a pair: your look's first-person arms again, under the mirror, its right arm on the second gun. */
+  private buildFpArms2(): void {
+    const look = this.localLook;
+    if (!look || !this.pairRoot || this.fpArms2?.look === look) return;
+    this.fpArms2?.anim?.dispose();
+    this.fpArms2?.root.dispose();
+    const root = new TransformNode('fpArms2', this.scene);
+    root.parent = this.pairRoot;
+    const arms = { look, anim: null as CharacterAnimator | null, root };
+    this.fpArms2 = arms;
+    void this.characters.create({ look: armsLookFor(look), armsOnly: true }, 'fpArms2Char').then((ch) => {
+      if (this.fpArms2 !== arms) return ch.dispose();
+      fitFirstPersonArms(ch, root);
+      for (const m of ch.meshes) {
+        m.renderingGroupId = 1;
+        m.receiveShadows = false;
+      }
+      arms.anim = new CharacterAnimator(this.scene, ch);
+      if (this.viewmodel2 && this.pairWeapon) arms.anim.gripExternal(this.viewmodel2, getWeapon(this.pairWeapon).view.hold, true);
+    });
+  }
+
+  /** Spent cases thrown from your own guns so far, by the side they went (tests). */
+  readonly ownCasings = { right: 0, left: 0, right3p: 0, left3p: 0 };
+
+  /**
+   * Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. `pair`: a pair is in
+   * hand (dual wielding): the second gun's raise time (s) and how far into its own reload dip it is (0..1; `reload`
+   * is then the first gun's own, each gun dipping out of view by itself).
+   */
+  updateViewmodel(dt: number, o: { moving: boolean; raise: number; reload: number; hidden: boolean; ads?: number; speed?: number; pair?: { raise: number; reload: number } | null }): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     this.viewRoot.setEnabled(!o.hidden && !!def);
     this.viewHidden = o.hidden || !def;
+    // The second gun of a pair: up while the pair is in hand (not while a throwable is), away otherwise.
+    const pair = def && o.pair && !this.throwHold?.node ? o.pair : null;
+    const up = this.stepPair(dt, def, pair, o.hidden);
     // Full body: your own character's hands hold the gun instead of the arms.
-    const arms = !o.hidden && !!def && !this.fpBody;
+    const arms = !o.hidden && !!def && !this.fpBody && this.opticBlend === 0;
     this.fpArms?.root.setEnabled(arms);
     if (arms && this.fpArms?.anim) this.fpArms.anim.update(dt, { speed: 0, moveAngle: 0, airborne: false, alive: true, pitch: 0, celebrate: false });
     if (!def) return;
@@ -1960,26 +2447,46 @@ export class GameView {
     const pace = o.moving ? (o.speed === undefined ? 1 : Math.min(1.5, o.speed / PLAYER.runSpeed)) : 0;
     this.bobPhase += dt * 9 * pace;
     this.bobAmount += (Math.min(1, pace) - this.bobAmount) * Math.min(1, dt * 8);
-    const ads = o.ads ?? 0;
-    const bob = this.bobAmount * (1 - ads * 0.8);
-    const [vx, vy, vz] = def.view.viewOffset;
-    // Aiming down the sights: the gun comes to the centre with the top of the receiver (where
-    // the sight sits) just under the eye line, and far enough forward that the stock stays
-    // out of view, so you look along the gun at the target (see the red dot on the HUD).
-    const adsY = -(this.sightTop + 0.006);
-    const adsZ = Math.max(vz, 0.2 - this.stockZ);
-    const x = vx * (1 - ads);
-    const y = vy + (adsY - vy) * ads;
-    const z = vz + (adsZ - vz) * ads;
+    // (A pair has no sights.)
+    const ads = up > 0 ? 0 : (o.ads ?? 0);
+    // Through an optic the gun holds still on the eye: no bob or kick (the camera's recoil still moves the view).
+    const still = 1 - this.opticBlend;
+    // Aiming down the sights (sightPose.ts): a gun with a sight fit is turned and moved so the eye sits behind its own
+    // drawn sights with the front sight on the aim; a gun with an optic brings its eyepiece onto the eye, its relief
+    // in front of it (opticView.ts); a gun without usable sights comes to the centre with its top just under the eye
+    // line. Each far enough forward that the stock stays out of view.
+    if (!this.aimAt) {
+      this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ });
+      this.aimPicture = sightPicture(def, this.aimAt);
+      this.aimClip = this.viewmodel?.getChildMeshes().find((m) => m.name === CLIP_NAME) ?? null;
+    }
+    // A sight window's clip (opticHousing.ts) is on once the gun is most of the way up.
+    if (this.aimClip && !this.aimClip.isDisposed()) this.aimClip.setEnabled(ads > 0.7);
+    const aim = blendPlacement(def, this.aimAt, ads);
+    // A pair's guns sit wider and a little higher than the one gun's hip place: the middle of the screen stays clear and
+    // the hands stay above the HUD's corner panels.
+    const { x, y, z } = up > 0 ? pairPlace(def.view.viewOffset, up) : aim;
+    // One hand reloads a pair's gun: it dips out of view and comes back (pairView.ts), by itself.
+    const dip = pairReloadDip(o.reload);
+    const drop = o.reload * 0.08 * (1 - up) + dip.drop * up;
+    const tip = o.reload * 0.6 * (1 - up) + dip.pitch * up;
+    const roll = o.reload * 0.4 * (1 - up) + dip.roll * up;
+    // The sight picture: a gun with a glass, and a long gun's iron sights, are drawn larger about the view axis as the gun
+    // comes up (optics.ts), and its bob
+    // and kick are drawn that much smaller, so they move the window on screen as far as they did.
+    const picture = 1 + (this.aimPicture - 1) * ads * ads * (3 - 2 * ads);
+    if (this.opticBlend === 0) this.opticRoot.scaling.set(picture, picture, 1);
+    const bob = (this.bobAmount * (1 - ads * 0.8) * still) / picture;
     // A melee weapon's barrel kicks like a heavy gun (back and up), not a swing.
     const melee = def.kind === 'melee' && !this.kickShot;
     const heavy = this.kickShot ? 2.6 : 1;
+    const kick = (this.kickAmount * still) / picture;
     this.viewRoot.position.set(
       x + Math.sin(this.bobPhase) * 0.012 * bob,
-      y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - o.reload * 0.08,
-      z - this.kickAmount * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
+      y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - drop,
+      z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
-    this.viewRoot.rotation.set(-this.kickAmount * (melee ? -0.6 : 0.12 * heavy) + o.reload * 0.6, melee ? this.kickAmount * 0.5 : 0, o.reload * 0.4);
+    this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + tip, aim.yaw + (melee ? kick * 0.5 : 0), roll);
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -1997,13 +2504,38 @@ export class GameView {
         this.boot.rotation.set(-0.5 + strike * 0.4, 0, 0);
       }
     }
+    if (this.viewRoot2 && this.pairUp > 0) {
+      // The second gun, worked out as a right-hand gun and drawn in the mirror: its own kick and reload dip, the
+      // first gun's raise (a switch to the pair brings both up) and its own rise; the walk's sway goes the same way
+      // on screen as the first gun's (so flipped here), its lift half a step later (the hands swing in turn).
+      this.kickAmount2 = Math.max(0, this.kickAmount2 - dt * 6);
+      const place = pairPlace(def.view.viewOffset, 1);
+      const dip2 = pairReloadDip(pair?.reload ?? 0);
+      const away = (1 - up) * PAIR_AWAY_DROP;
+      this.viewRoot2.position.set(
+        place.x - Math.sin(this.bobPhase) * 0.012 * bob,
+        place.y + Math.abs(Math.sin(this.bobPhase)) * 0.01 * bob - o.raise * 0.25 - dip2.drop - away,
+        place.z - this.kickAmount2 * 0.06,
+      );
+      this.viewRoot2.rotation.set(-this.kickAmount2 * 0.12 + dip2.pitch + (1 - up) * 0.5, 0, dip2.roll);
+      if (strike > 0) {
+        this.viewRoot2.position.y -= strike * (kicking ? 0.1 : 0.14);
+        this.viewRoot2.position.x += strike * (kicking ? 0 : 0.06);
+        this.viewRoot2.rotation.z += strike * (kicking ? 0.1 : 0.45);
+      }
+      const flashing2 = now < this.flashUntil2;
+      this.flash2!.setEnabled(flashing2 && this.starFlash2);
+      this.flashRig2!.root.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
+      this.flashRig2!.update();
+      if (flashing2) this.flash2!.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + 0.08);
+    }
     const flashing = performance.now() < this.flashUntil;
     this.flash.setEnabled(flashing && this.starFlash);
-    this.flashRig.root.position.set(0, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
+    this.flashRig.root.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + OWN_FLASH_AHEAD);
     this.flashRig.update();
     if (flashing) {
       this.flash.parent = this.viewRoot;
-      this.flash.position.set(0, this.muzzleY, this.muzzleZ + 0.08);
+      this.flash.position.set(this.muzzleX, this.muzzleY, this.muzzleZ + 0.08);
     }
   }
 
@@ -2015,9 +2547,11 @@ export class GameView {
    */
   updateAvatars(poses: readonly RemotePose[], localSlot: number, spec: (slot: number) => AvatarSpec, celebrate = false, allyColor: (slot: number) => string | null = () => null, seated: ReadonlySet<number> = new Set(), sitting: ReadonlyMap<number, { yaw: number; legDrop: number; straddle?: number }> = new Map()): void {
     const now = performance.now();
+    this.canopySlot = localSlot;
     this.avatarFrame++;
     const crowd = poses.length > ANIM_LOD_CROWD;
     this.crowd = crowd;
+    if (poses.length > this.mostPoses) this.mostPoses = poses.length;
     // Crowds draw characters' low-detail meshes sooner.
     setCharacterLodCrowd(crowd);
     const planes = crowd && this.scene.activeCamera ? Frustum.GetPlanes(this.scene.activeCamera.getTransformationMatrix()) : null;
@@ -2025,20 +2559,27 @@ export class GameView {
     // Shadows: the nearest SHADOW_CHARACTERS live characters in view cast (squared distance of the last that does).
     const eye = this.scene.activeCamera?.globalPosition;
     let shadowCut = Infinity;
+    // The living characters in view, nearest first (squared distances): the shadow cut and the animation crowd rule's
+    // ranks (animLod.ts crowdStep). One array kept from frame to frame.
+    const near = this.nearInView;
+    near.length = 0;
     if (eye) {
-      const near: number[] = [];
       for (const p of poses) {
         if (p.slot === localSlot || !p.alive) continue;
         if (planes && !inView(planes, p.x, p.y + 0.9, p.z, CULL_RADIUS)) continue;
         near.push((p.x - eye.x) ** 2 + (p.z - eye.z) ** 2);
       }
-      if (near.length > SHADOW_CHARACTERS) shadowCut = near.sort((x, y) => x - y)[SHADOW_CHARACTERS - 1]!;
+      near.sort(byNumber);
+      if (near.length > SHADOW_CHARACTERS) shadowCut = near[SHADOW_CHARACTERS - 1]!;
     }
+    const crowdRule = crowd && near.length > CROWD_KEEP && perfOn('animcrowd') && perfOn('animlod4');
     const seen = new Set<number>();
     let deathMs = 0;
     let deathsStarted = 0;
     // Fresh deaths start their bodies nearest first, RAGDOLL_BUDGET.startsPerFrame a frame at most (and DEATH_START_MS
     // of work): a blast that kills thirty spreads its starts over a few frames, the ones you see best first.
+    // Last frames' going characters first: one back in the pool can be this frame's respawn.
+    this.retiring.run();
     const starting = this.deathsToStart(poses, eye);
     for (const p of poses) {
       if (p.slot === localSlot) {
@@ -2083,7 +2624,7 @@ export class GameView {
       const want = spec(p.slot);
       const key = JSON.stringify(want);
       if (a && a.specKey !== key) {
-        this.disposeAvatar(a);
+        this.retireAvatar(a);
         a = undefined;
       }
       if (!a) {
@@ -2166,7 +2707,11 @@ export class GameView {
           if (t >= 1) a.emergeAt = undefined;
           else a.root.position.y -= EMERGE_DEPTH * (1 - t) * (1 - t);
         }
-        a.root.rotation.y = p.yaw;
+        // A rider in a real seat is drawn turned no further from the seat's way than the waist turns, so the hips and
+        // legs stay on the seat: one looking over its shoulder (a bench rider aiming out over the side, a pilot looking
+        // back) had its legs swung off the cushion, back into the backrest, and read as standing (seatDrawnYaw).
+        const sitAt = sitting.get(p.slot);
+        a.root.rotation.y = sitAt ? seatDrawnYaw(p.yaw, sitAt.yaw) : p.yaw;
       }
       // Show hitboxes (dev and test setting): the shapes the host tests shots against, over the body.
       if (this.showHitboxes && p.alive && !a.ragdoll) {
@@ -2222,10 +2767,20 @@ export class GameView {
           // Characters in view: by their size on screen (animLod.ts, round 4), every frame near, then 30, 20, 15, 10 and
           // 5 Hz (and at most every 2nd, 3rd, 4th, 6th, 12th frame), each smoothed between its evaluations, on each one's
           // own phase, with the fingers' pose kept from the last full close; the state machine runs with them.
-          const step = perfOn('animlod4') ? animStepByShare(screenShare(far, fov)) : animStep(far, perfOn('animlod2'));
+          const share = screenShare(far, fov);
+          const banded = perfOn('animlod4') ? animStepByShare(share) : animStep(far, perfOn('animlod2'));
+          // In a crowd, all but the nearest few a rung or two slower (crowdStep).
+          const step = crowdRule ? crowdStep(banded, rankIn(near, d2), share, near.length) : banded;
           run = a.anim.stepAt(now, step, this.avatarFrame, (p.slot * 37) % 100);
           stepped = step.frames > 1;
           if (run && perfProbe.on) perfProbe.n[COUNT.animated]!++;
+          // A crowd come into view together is posed over a few frames (StepClock's spread); one never posed yet stays
+          // hidden until its first pose instead of showing its bind pose (the match-start spike, PERF_STJOHNS_2026-11-14).
+          const unposed = !a.anim.posed;
+          if (unposed !== !!a.awaitingPose) {
+            a.awaitingPose = unposed;
+            a.anim.ch.root.setEnabled(!unposed);
+          }
         } else if (a.anim instanceof CreatureAnimator && perfOn('animlod2')) {
           // Creatures: their clips and bones step by distance as characters' do (round 2; they were evaluated every
           // frame and only the state machine stepped), and not at all out of view; the state machine runs with them.
@@ -2257,11 +2812,12 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
-          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(p.yaw, sit.yaw) } : {}),
+          ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      this.setAvatarPair(a, p, now);
       // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
       // (Not a cloaked one: its shell fades with it, an aura would give it away.)
       if (p.status && p.alive && !a.culled && eye && !(p.status & FX_CLOAK)) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
@@ -2287,8 +2843,8 @@ export class GameView {
       const chute = p.alive && !seated.has(p.slot) ? (p.chute ?? 0) : 0;
       if (a.canopy && a.canopy.kind !== chute) this.dropCanopy(a);
       if (chute) {
-        a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute), kind: chute };
-        placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot);
+        a.canopy ??= { node: createCanopy(this.scene, `canopy_${p.slot}`, chute, p.slot), kind: chute };
+        placeCanopy(a.canopy.node, a.root.position, p.yaw, now, p.slot, (a.canopy.harness ??= canopyHarness(hitboxForSpec(want))));
       }
       if (!a.ragdoll) {
         // Gliding: lying forward under the wing, tipped round the hips (not the feet) so the body stays under it.
@@ -2305,7 +2861,22 @@ export class GameView {
       const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
       // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
       const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
-      this.setTag(a, (cloaked || smoked) && enemy ? null : tag);
+      this.setTag(a, (cloaked || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
+      // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
+      if (a.tag?.ins) {
+        const c = this.camera.position, r = a.root.position;
+        // A rank-up (Options → Ranks & badges): the badge swells and glows in its colour, then settles (rankGlow.ts).
+        const up = this.rankUps.get(p.slot);
+        const g = up === undefined ? null : rankGlow((now - up) / 1000, reduceFlashing());
+        if (up !== undefined && !g) this.rankUps.delete(p.slot);
+        this.setRankHalo(a, g?.glow ?? 0);
+        const k = Math.min(INSIGNIA_MAX_GROW, Math.max(1, Math.hypot(r.x - c.x, r.y - c.y, r.z - c.z) / INSIGNIA_FULL_SIZE_M)) * (g?.scale ?? 1);
+        if (a.tag.node.scaling.x !== k) {
+          a.tag.node.scaling.setAll(k);
+          // Its foot stays where it was, clear of the head.
+          a.tag.node.position.y = PLAYER.height + 0.35 + (k - 1) * INSIGNIA_HALF;
+        }
+      }
       // Team leaders wear a gold star over their marker, for both sides to see.
       const leads = p.alive && !cloaked && this.leaderSlots.has(p.slot);
       if (leads || a.crown) {
@@ -2325,7 +2896,7 @@ export class GameView {
     this.statusFx.flush(now, reduceFlashing());
     for (const [slot, a] of this.avatars) {
       if (!seen.has(slot)) {
-        this.disposeAvatar(a);
+        this.retireAvatar(a);
         this.avatars.delete(slot);
       }
     }
@@ -2337,6 +2908,45 @@ export class GameView {
    * still show the sides) and glow (a jackpot life: a steady gold overlay, never a flash). Null: none.
    */
   auraOf: ((slot: number) => { outline: string | null; glow: string | null } | null) | null = null;
+  /** A player's rank badge (Options → Ranks & badges; insignia.ts): their marker is drawn as it, in the marker's colour; null keeps the arrow. */
+  insigniaOf: ((slot: number) => InsigniaId | null) | null = null;
+  /** Rank-ups being shown over heads: when each began (ms). */
+  private readonly rankUps = new Map<number, number>();
+
+  /** A player ranked up: their badge over the head swells and glows for about a second (rankGlow.ts). */
+  rankUp(slot: number): void {
+    this.rankUps.set(slot, performance.now());
+  }
+
+  /** The soft halo behind a badge in a rank-up, in the marker's colour (`level` 0: none). */
+  private setRankHalo(a: Avatar, level: number): void {
+    if (level <= 0.002) {
+      if (a.rankHalo) {
+        a.rankHalo.dispose(false, true);
+        a.rankHalo = undefined;
+      }
+      return;
+    }
+    if (!a.tag) return;
+    if (!a.rankHalo || a.rankHalo.parent !== a.tag.node) {
+      a.rankHalo?.dispose(false, true);
+      const m = CreateDisc(`${a.root.name}_rankHalo`, { radius: INSIGNIA_HALF * 1.9, tessellation: 24 }, this.scene);
+      const mat = new StandardMaterial(`${a.root.name}_rankHaloMat`, this.scene);
+      mat.emissiveColor = Color3.FromHexString(a.tag.color);
+      mat.diffuseColor = Color3.Black();
+      mat.specularColor = Color3.Black();
+      mat.disableLighting = true;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = true;
+      m.material = mat;
+      m.isPickable = false;
+      m.parent = a.tag.node;
+      // Just behind the badge (its rim sits at +0.004).
+      m.position.z = 0.012;
+      a.rankHalo = m;
+    }
+    a.rankHalo.visibility = level;
+  }
   /** Roulette: the loading gate's warm-up also draws its samples outlined and glowing (their shaders built before play). */
   auraWarm = false;
 
@@ -2472,11 +3082,11 @@ export class GameView {
       a.weaponNode = undefined;
       fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
       this.fpBody = fp;
-      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold);
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
       // Your own arms aren't needed while the body holds the gun.
       this.fpArms?.root.setEnabled(false);
     }
-    const shown = !this.viewHidden;
+    const shown = !this.viewHidden && this.opticBlend === 0;
     a.root.setEnabled(shown);
     fp.rig.setEnabled(shown);
     anim.setDormant(!shown);
@@ -2530,11 +3140,67 @@ export class GameView {
     return [...this.avatars.values()].filter((a) => !a.hiddenSelf && a.anim instanceof CreatureAnimator && a.anim.ch.kind === kind).length;
   }
 
+  /**
+   * Dual wielding in third person (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield", step 4): a character holding a pair
+   * (RemotePose.pair: the snapshot's `dw`, or your own in third person) gets a second copy of the gun in its left hand
+   * (CharacterAnimator.holdPair), coming up over PAIR_UP_3P and going down as fast when the pair is put away, with its
+   * own muzzle and flash. Only a character holding the first gun already (a capsule stand-in, or a crowd's far
+   * character still loading its gun, draws one gun). Your own reload dips the gun whose turn it is (`pairDip`).
+   */
+  private setAvatarPair(a: Avatar, p: RemotePose, now: number): void {
+    const anim = a.anim instanceof CharacterAnimator ? a.anim : null;
+    const want = !!p.pair && p.alive && !a.unarmed && !!anim && !!a.muzzle && a.weaponSlot === p.weapon && p.weapon > 0;
+    let pair = a.pair;
+    if (!pair && !want) return;
+    if (pair && pair.code !== p.weapon) {
+      this.dropAvatarPair(a);
+      pair = undefined;
+      if (!want) return;
+    }
+    if (!pair) {
+      const def = weaponByCode(p.weapon);
+      if (!def || !anim) return;
+      pair = a.pair = { code: p.weapon, up: 0, at: now, on: true, gate: new PairFlashGate() };
+      const made = pair;
+      void (this.crowd ? this.models.instantiateWhole(def.view.model, `held2_${p.weapon}`) : this.models.instantiate(def.view.model, `held2_${p.weapon}`)).then((node) => {
+        if (a.pair !== made || a.root.isDisposed() || a.anim !== anim) return node.dispose();
+        castSmall(node);
+        made.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
+        if (!this.crowd) attachOptic(this.scene, node, def, false);
+        anim.holdPair(node);
+      });
+    }
+    pair.on = want;
+    const dt = Math.min(0.1, Math.max(0, (now - pair.at) / 1000));
+    pair.at = now;
+    // Up once its model is in; down at once when it ends (as quick as first person's PAIR_LOWER_SECONDS), then gone.
+    pair.up = pair.muzzle ? stepPairUp(pair.up, want, dt, PAIR_UP_3P) : 0;
+    if (!want && pair.up <= 0) return this.dropAvatarPair(a);
+    anim?.pairPose(easeUp(pair.up), p.pairDip?.[0] ?? 0, p.pairDip?.[1] ?? 0);
+  }
+
+  /** A character's pair ends: the second gun, its muzzle and its flash go. */
+  private dropAvatarPair(a: Avatar): void {
+    const pair = a.pair;
+    if (!pair) return;
+    a.pair = undefined;
+    pair.flash?.material?.dispose();
+    pair.flash?.dispose();
+    if (pair.flashRig) {
+      pair.flashRig.dispose();
+      this.remoteRigs--;
+    }
+    if (a.anim instanceof CharacterAnimator && a.anim.pairWeapon === pair.muzzle?.node) a.anim.holdPair(null);
+    else pair.muzzle?.node.dispose();
+  }
+
   private setAvatarWeapon(a: Avatar, slot: number): void {
     a.weaponSlot = slot;
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
     a.muzzle = undefined;
+    // (The second gun of a pair goes with the first: hold drops it.)
+    this.dropAvatarPair(a);
     a.anim?.hold(null);
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
@@ -2546,10 +3212,10 @@ export class GameView {
       if (a.weaponSlot !== slot || a.root.isDisposed()) return node.dispose();
       // A held gun's shadow is a speck past a few metres: it casts only near the camera.
       castSmall(node);
-      // The muzzle is the front of the gun along its forward axis, measured before it's put in a hand.
-      const { min, max } = node.getHierarchyBoundingVectors(true);
-      const at = def.view.muzzleAt;
-      a.muzzle = { node, local: at ? new Vector3(at[0], at[1], at[2]) : new Vector3(0, (min.y + max.y) / 2 + (max.y - min.y) * 0.2, max.z) };
+      // The muzzle as drawn (muzzlePoint.ts), measured before it's put in a hand: the same point as your own copy's.
+      a.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
+      // The optic it carries, as everyone sees it: the housing alone (crowds leave it off: a draw a gun).
+      if (!this.crowd) attachOptic(this.scene, node, def, false);
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;
@@ -2602,7 +3268,7 @@ export class GameView {
     const mat = solid(this.scene, `avatar_${slot}_mat`, spec.npc?.color ?? slotColor(slot));
     placeholder.material = mat;
     placeholder.isPickable = false;
-    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, ...(spec.npc?.zombie ? { unarmed: true } : {}) };
+    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, blood: lookBlood(spec.look ?? (spec.creature ? `${NPC_LOOK_PREFIX}${spec.creature}` : undefined)), ...(spec.npc?.zombie ? { unarmed: true } : {}) };
     if (spec.creature) {
       void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
         if (root.isDisposed()) return ch.dispose();
@@ -2624,6 +3290,7 @@ export class GameView {
     }
     const kept = this.bodyPool.get(specKey)?.pop();
     if (kept) {
+      bodyPoolStats.reused++;
       this.pooled.delete(kept);
       // A body of this look kept from an avatar that went: back in play at once (it was fitted and sized for this spec).
       kept.ch.root.parent = root;
@@ -2633,12 +3300,16 @@ export class GameView {
       placeholder.setEnabled(false);
       return a;
     }
+    bodyPoolStats.built++;
     void this.characters.create(spec, `char_${slot}`).then((ch) => {
       if (root.isDisposed()) return ch.dispose();
       ch.root.parent = root;
       fitCharacter(ch);
       if (spec.size && spec.size !== 1) ch.root.scaling.scaleInPlace(spec.size);
-      a.anim = new CharacterAnimator(this.scene, ch);
+      const anim = new CharacterAnimator(this.scene, ch);
+      // Bodies of one look share the first one's torso measurement.
+      anim.torsoLook = specKey;
+      a.anim = anim;
       if (a.culled) a.anim.setDormant(true);
       placeholder.setEnabled(false);
       // Move the held weapon from the capsule to the hand.
@@ -2670,28 +3341,32 @@ export class GameView {
     return mesh;
   }
 
-  private setTag(a: Avatar, color: string | null): void {
-    if (a.tag && a.tag.color !== color) {
+  private setTag(a: Avatar, color: string | null, ins: InsigniaId | null = null): void {
+    if (a.tag && (a.tag.color !== color || a.tag.ins !== ins)) {
       a.tag.node.dispose(false, a.tag.node instanceof MeshClass);
       a.tag = undefined;
     }
     if (!color || a.tag) return;
     // Crowds: a plain node where the disc goes; every marker of a colour is a thin instance of one disc, placed there
     // each frame (drawTags): one draw per colour and no mesh per player for the scene to look at.
-    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color);
+    const node = this.crowd ? new TransformNode(`${a.root.name}_tag`, this.scene) : this.tagDisc(`${a.root.name}_tag`, color, true, ins);
     if (this.crowd) {
-      this.tagBatch(color);
-      if (isEnemyTag(color)) node.rotation.z = -Math.PI / 2;
+      this.tagBatch(color, ins);
+      if (isEnemyTag(color) && !ins) node.rotation.z = -Math.PI / 2;
     }
     node.billboardMode = MeshClass.BILLBOARDMODE_ALL;
     node.parent = a.root;
     node.position.y = PLAYER.height + 0.35;
     if (node instanceof MeshClass) node.isPickable = false;
-    a.tag = { node, color };
+    a.tag = { node, color, ins };
   }
 
-  /** A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read apart at a glance. */
-  private tagDisc(name: string, color: string, turned = true): Mesh {
+  /**
+   * A marker disc in a team colour. Allies: a diamond; enemies (red by default): a downward triangle, so the two read
+   * apart at a glance. A soldier's is their rank badge instead (insigniaMesh.ts), on both sides, in the same colour.
+   */
+  private tagDisc(name: string, color: string, turned = true, ins: InsigniaId | null = null): Mesh {
+    if (ins) return createInsigniaMesh(name, ins, color, this.scene);
     const enemy = isEnemyTag(color);
     const mesh = CreateDisc(name, { radius: enemy ? 0.13 : 0.11, tessellation: enemy ? 3 : 4 }, this.scene);
     if (enemy && turned) mesh.rotation.z = -Math.PI / 2;
@@ -2705,11 +3380,13 @@ export class GameView {
   /** Per colour, the disc every crowd marker of that colour is a thin instance of, and their matrices. */
   private readonly tagBatches = new Map<string, { mesh: Mesh; matrices: Float32Array; count: number }>();
 
-  private tagBatch(color: string): { mesh: Mesh; matrices: Float32Array; count: number } {
-    let b = this.tagBatches.get(color);
+  /** A crowd marker's batch: by colour, and badge (a soldier's) or none (the arrow). */
+  private tagBatch(color: string, ins: InsigniaId | null): { mesh: Mesh; matrices: Float32Array; count: number } {
+    const key = ins ? `${color}|${ins}` : color;
+    let b = this.tagBatches.get(key);
     if (!b) {
       // At the world's origin (its thin instances carry each marker's whole matrix, turned and placed by its node).
-      const mesh = this.tagDisc(`tag_${color}`, color, false);
+      const mesh = this.tagDisc(`tag_${key}`, color, false, ins);
       mesh.isPickable = false;
       mesh.freezeWorldMatrix();
       // A handful of small discs: drawn without a bounds test (they move every frame), and they cast no shadow.
@@ -2718,7 +3395,7 @@ export class GameView {
       const matrices = new Float32Array(16 * 16);
       mesh.thinInstanceSetBuffer('matrix', matrices, 16, false);
       mesh.setEnabled(false);
-      this.tagBatches.set(color, (b = { mesh, matrices, count: 0 }));
+      this.tagBatches.set(key, (b = { mesh, matrices, count: 0 }));
     }
     return b;
   }
@@ -2733,7 +3410,7 @@ export class GameView {
     for (const a of this.avatars.values()) {
       const t = a.tag;
       if (!t || t.node instanceof MeshClass || a.hiddenSelf || (a.shown ?? 1) !== 1 || !t.node.isEnabled()) continue;
-      const b = this.tagBatches.get(t.color);
+      const b = this.tagBatches.get(t.ins ? `${t.color}|${t.ins}` : t.color);
       if (!b) continue;
       if (b.matrices.length < (b.count + 1) * 16) {
         const more = new Float32Array(b.matrices.length * 2);
@@ -2752,6 +3429,55 @@ export class GameView {
     }
   }
 
+  /** Going characters' remaining steps (retireAvatar), RETIRE_MS of them a frame. */
+  private readonly retiring = new FrameSpread(RETIRE_MS);
+
+  /** Characters still being put away (tests). */
+  retiringSteps(): number {
+    return this.retiring.size;
+  }
+
+  /**
+   * An avatar going (a body past MAX_CORPSES or sunk away, a new round, a look changed, a player gone): hidden and out
+   * of every list at once, its ragdoll and the rest that ties it to the scene dropped; then over the next frames
+   * (RETIRE_MS a frame) its character back in the body pool (thawing its frozen pose recomputes every joint) or
+   * disposed, and its node tree. A frame that lost several bodies paid for every one (`?perfoff=bodyspread`: so again).
+   */
+  private retireAvatar(a: Avatar): void {
+    if (!perfOn('bodyspread') || this.scene.isDisposed) return this.disposeAvatar(a);
+    if (this.fpBody?.a === a) this.dropFpBody();
+    this.atmosphere.shadowless.delete(a.root);
+    a.root.setEnabled(false);
+    a.hitbox?.dispose();
+    a.hitbox = undefined;
+    a.flash?.material?.dispose();
+    a.flash?.dispose();
+    a.flash = undefined;
+    if (a.flashRig) {
+      a.flashRig.dispose();
+      a.flashRig = undefined;
+      this.remoteRigs--;
+    }
+    this.dropAvatarPair(a);
+    a.ragdoll?.dispose();
+    a.ragdoll = undefined;
+    this.dropCanopy(a);
+    this.retiring.push(
+      () => {
+        if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
+      },
+      () => {
+        a.anim?.dispose();
+        a.anim = undefined;
+      },
+      () => {
+        a.weaponNode?.dispose();
+        a.weaponNode = undefined;
+        disposeTree(a.root, true);
+      },
+    );
+  }
+
   private disposeAvatar(a: Avatar): void {
     if (this.fpBody?.a === a) this.dropFpBody();
     a.hitbox?.dispose();
@@ -2763,6 +3489,7 @@ export class GameView {
       a.flashRig.dispose();
       this.remoteRigs--;
     }
+    this.dropAvatarPair(a);
     a.ragdoll?.dispose();
     if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
     a.anim?.dispose();
@@ -2773,7 +3500,7 @@ export class GameView {
 
   /** Characters kept for the next avatar of their look (BODY_POOL_PER_LOOK), by spec key. */
   private readonly bodyPool = new Map<string, CharacterAnimator[]>();
-  /** Every kept body with its spec key, longest-kept first (BODY_POOL_TOTAL). */
+  /** Every kept body with its spec key, longest-kept first (bodyPoolTotal). */
   private readonly pooled = new Map<CharacterAnimator, string>();
 
   /** Keep a going avatar's character for reuse (taken off the avatar, hidden, its clips paused); false: pool full. */
@@ -2781,14 +3508,20 @@ export class GameView {
     if (this.scene.isDisposed || anim.firstPerson || anim.ch.root.isDisposed()) return false;
     let list = this.bodyPool.get(key);
     if (!list) this.bodyPool.set(key, (list = []));
-    if (list.length >= BODY_POOL_PER_LOOK) return false;
+    if (list.length >= BODY_POOL_PER_LOOK) {
+      bodyPoolStats.refused++;
+      return false;
+    }
     anim.standBy();
     anim.ch.root.parent = null;
     anim.ch.root.setEnabled(false);
     list.push(anim);
     this.pooled.set(anim, key);
+    bodyPoolStats.kept++;
+    const total = (bodyPoolStats.size = bodyPoolTotal(this.mostPoses));
     // Over the total: the longest-kept body goes (a Map keeps the order they were put in).
-    if (this.pooled.size > BODY_POOL_TOTAL) {
+    while (this.pooled.size > total) {
+      bodyPoolStats.evicted++;
       const [oldest, itsKey] = this.pooled.entries().next().value!;
       this.pooled.delete(oldest);
       const its = this.bodyPool.get(itsKey);
@@ -2802,11 +3535,37 @@ export class GameView {
 
   // ---------------------------------------------------------------- pickups
 
-  private addPickup(e: PickupEntity, item = e.item): void {
-    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook);
+  private addPickup(e: PickupEntity, item = e.item, room = Infinity): void {
+    const root = createPickupVisual(this.scene, this.models, item, `pickup_${e.id}`, true, false, this.setLook, room, this.pickupBatch ?? undefined);
     const baseY = e.position[1] + PICKUP_HOVER;
     root.position.set(e.position[0], baseY, e.position[2]);
-    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0 });
+    this.pickups.set(e.id, { root, baseY, phase: (e.position[0] * 7 + e.position[2] * 3) % (Math.PI * 2), item, placed: e.item, glowKey: lootGlowKey(item), glow: 0, room });
+  }
+
+  /** Tests (the flicker check's ring contrast, the effects checks): no pickup asks for a floor glow while this is set. */
+  holdLootGlows = false;
+  /** Tests: draw no dark outline under the glows (how they looked before it). */
+  lootOutlines = true;
+  /** Tests (ring contrast): pickups' own models hidden, their glows and outlines kept. */
+  hidePickupModels = false;
+
+  /** The glow's dark outline (lootGlow.ts): as dark as the glow is up, at the floor under the pickup; hidden with no glow. */
+  private placeLootOutline(id: string, p: PickupVisual, calm: boolean): void {
+    const a = this.lootOutlines && p.glowKey ? lootOutlineAlpha(p.glow, calm) : 0;
+    if (a <= 0.005) {
+      if (p.outline?.isEnabled()) p.outline.setEnabled(false);
+      return;
+    }
+    if (!p.outline || p.outlineKey !== p.glowKey) {
+      p.outline?.dispose(false, false);
+      const radii = lootOutlineRadii(p.glowKey!, lastingFx(p.glowKey!)?.scale ?? 1);
+      if (!radii) return;
+      p.outline = createLootOutline(this.scene, radii[0], radii[1], `lootOutline_${id}`);
+      p.outlineKey = p.glowKey!;
+    }
+    p.outline.setEnabled(true);
+    p.outline.position.set(p.root.position.x, p.baseY - PICKUP_HOVER + 0.015, p.root.position.z);
+    p.outline.visibility = a;
   }
 
   /** How many pickups' floor glows are drawn now (tests). */
@@ -2837,22 +3596,37 @@ export class GameView {
         // Not its materials: they are shared (the model library's, the ring colours' cache), and disposing them
         // drew every other copy of that gun, your own first-person one included, in plain white.
         p.root.dispose(false, false);
-        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook);
+        p.root = createPickupVisual(this.scene, this.models, want, `pickup_${id}`, true, false, this.setLook, p.room, this.pickupBatch ?? undefined);
         p.root.position.copyFrom(at);
         p.item = want;
         p.glowKey = lootGlowKey(want);
       }
-      p.root.setEnabled(!taken.has(id));
+      p.root.setEnabled(!taken.has(id) && !this.hidePickupModels);
       // The glow on the floor under it while it waits (the nearest few; the rest look as they always did).
       const pos = p.root.position;
       const glowId = `loot:${id}`;
-      if (p.glowKey && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
+      if (p.glowKey && !this.holdLootGlows && !taken.has(id) && (pos.x - cam.x) ** 2 + (p.baseY - cam.y) ** 2 + (pos.z - cam.z) ** 2 < LOOT_GLOW_RANGE ** 2) {
         p.glow = lootGlowLevel(p.glow, this.lasting.drawn(glowId), dt, calm);
         this.lasting.want(glowId, p.glowKey, { x: pos.x, y: p.baseY - PICKUP_HOVER + 0.02, z: pos.z }, { level: p.glow, steady: calm });
       } else p.glow = 0;
+      this.placeLootOutline(id, p, calm);
       p.root.rotation.y = now * 0.0015 + p.phase;
       p.root.position.y = p.baseY + Math.sin(now * 0.003 + p.phase) * 0.08;
     }
+    this.pickupBatch?.update();
+  }
+
+  /** Whether a pickup's part (its gun: `_gun`) is drawn now, as a mesh of its own or in the pickups' batch (tests). */
+  pickupPartDrawn(id: string, part: string): boolean {
+    const p = this.pickups.get(id);
+    if (!p) return false;
+    if (this.pickupBatch) return this.pickupBatch.draws(p.root, part);
+    return p.root.getChildMeshes(false).some((m) => m.name.startsWith(`${p.root.name}${part}`) && m.getTotalVertices() > 0);
+  }
+
+  /** The pickups' batch meshes and the parts they draw (tests and the perf probe; null without the batch). */
+  pickupBatchStats(): { meshes: number; parts: number } | null {
+    return this.pickupBatch?.stats() ?? null;
   }
 
   /**
@@ -2891,8 +3665,15 @@ export class GameView {
   applyPropStates(states: ReadonlyMap<number, readonly [number, number]>): void {
     for (const [i, node] of this.props) {
       const s = states.get(i);
-      if (s) node.setEnabled(s[0] > 0);
+      if (s) this.setPropShown(node, s[0] > 0);
     }
+  }
+
+  /** A breakable prop drawn or not: its node, and its copy in a prop batch (PropBatches.shown) when it changes. */
+  private setPropShown(node: TransformNode, on: boolean): void {
+    if (node.isEnabled(false) === on) return;
+    node.setEnabled(on);
+    this.propBatches?.shown(node);
   }
 
   /** Props carried by movers follow them (`tick` fractional, like the blocks they ride). */
@@ -2908,19 +3689,27 @@ export class GameView {
 
   /** A broken prop vanishes (the session adds its debris). */
   breakProp(index: number): void {
-    this.props.get(index)?.setEnabled(false);
+    const node = this.props.get(index);
+    if (node) this.setPropShown(node, false);
   }
 
-  updateProjectiles(positions: ReadonlyMap<number, [number, number, number, number]>): void {
+  /** `localSlot`: yours, so a stream you fire leaves your first-person gun (streamBlend.ts). */
+  updateProjectiles(positions: ReadonlyMap<number, ProjectileSample>, localSlot = -1): void {
     const now = performance.now();
     for (const [id, pos] of positions) {
       let p = this.projectiles.get(id);
       if (!p) {
-        p = { node: this.createProjectile(id, PROJECTILE_VISUALS[pos[3]] ?? 'grenade'), look: pos[3], born: now };
+        const visual = PROJECTILE_VISUALS[pos[3]] ?? 'grenade';
+        p = { node: this.createProjectile(id, visual), look: pos[3], born: now, at: new Vector3(pos[0], pos[1], pos[2]) };
+        // A stream's own shot (the snapshot names its shooter) leaves the shooter's muzzle as drawn this frame.
+        const shooter = pos[4];
+        if (shooter >= 0 && STREAM_VISUALS.has(visual)) p.stream = streamStart({ x: pos[0], y: pos[1], z: pos[2] }, this.muzzleAnchor({ local: shooter === localSlot, slot: shooter }), now);
         this.projectiles.set(id, p);
       }
-      const prev = p.node.position.clone();
-      p.node.position.set(pos[0], pos[1], pos[2]);
+      // Its heading from where the host had it (a stream piece is drawn off that path for its first moments).
+      const prev = p.at.clone();
+      p.at.set(pos[0], pos[1], pos[2]);
+      p.node.position.copyFrom(p.at);
       const look = PROJECTILE_VISUALS[p.look];
       // A flare burns in flight and where it sticks (Flame FX, map.lasting `fire.flare`).
       if (look === 'flare') this.lasting.want(`proj:${id}`, 'fire.flare', { x: pos[0], y: pos[1], z: pos[2] });
@@ -3038,6 +3827,8 @@ export class GameView {
         const longest = Math.max(size.max.x - size.min.x, size.max.y - size.min.y, size.max.z - size.min.z);
         if (!(longest > 0.05 && longest < 5)) return m.dispose();
         m.parent = node;
+        // The Ammo Box Kit flies as the small crate it is in the hand (its model is the full-size one).
+        if (model === AMMO_BOX_MODEL) m.scaling.setAll(AMMO_BOX_KIT_SCALE);
         // A sheep's position is on the ground (arsenalVisuals SHEEP_LIFT): its model, centred on its bounds, is raised.
         if (look === 'sheep') m.position.y = (THROWABLE_DEFS.sheep.view?.fit ?? 0) / 2;
         for (const s of shapes) s.setEnabled(false);
@@ -3108,15 +3899,25 @@ export class GameView {
     return blastStrength(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z), radius);
   }
 
+  /**
+   * How big a blast at `at` is drawn (times its usual): 1, or with flashing reduced smaller the nearer it is to the
+   * camera, so the camera never sits inside its fireball (reduceFlashing.ts blastSize).
+   */
+  private blastSize(at: Vec3, radius: number): number {
+    if (!reduceFlashing()) return 1;
+    const cam = this.camera.globalPosition;
+    return blastSize(Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z), radius);
+  }
+
   /** The Binbun explosion for a blast (content/vfx.json map.explosions: by weapon, its projectile, the kind), sized to its radius. */
   private blastFx(at: Vec3, radius: number, weapon: string | undefined, kind: string | null, minScale: number): boolean {
     // Nothing under it within a couple of metres: an air burst.
     const airborne = kind !== 'vehicle' && !this.physics?.raycast({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 2.2);
     const fx = explosionFor(weapon, airborne ? 'air' : kind, (id) => CORE_WEAPONS[id]);
     const y = airborne ? at.y : at.y - 0.3;
-    // Reduce flashing: dimmed near the camera, and brought up over a few frames instead of popping in white.
+    // Reduce flashing: dimmed and drawn smaller near the camera, and brought up over a few frames instead of popping in white.
     const calm = reduceFlashing() ? { gain: this.blastStrength(at, radius), fadeIn: BLAST_FADE_IN } : {};
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale), ...calm });
+    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale) * this.blastSize(at, radius), ...calm });
   }
 
   explosion(at: Vec3, radius: number, weapon?: string): void {
@@ -3128,6 +3929,7 @@ export class GameView {
     ball.position.set(at.x, at.y, at.z);
     ball.isPickable = false;
     const strength = this.blastStrength(at, radius);
+    const size = this.blastSize(at, radius);
     // Reduce flashing: it fades in over the first third of its life instead of starting at full.
     const rise = strength < 1 || reduceFlashing() ? 0.3 : 0;
     this.effects.push({
@@ -3135,7 +3937,7 @@ export class GameView {
       born: performance.now(),
       ttl: 380,
       update: (f) => {
-        ball.scaling.setAll(radius * 2 * (0.3 + 0.7 * Math.sqrt(f)));
+        ball.scaling.setAll(radius * 2 * size * (0.3 + 0.7 * Math.sqrt(f)));
         mat.alpha = 0.85 * strength * (1 - f) * (rise ? Math.min(1, f / rise) : 1);
       },
     });
@@ -3206,13 +4008,27 @@ export class GameView {
     }
   }
 
+  private hitKickState: HitKick | null = null;
+
+  /**
+   * You were hit (owner, 2026-11-16): the view kicks a little, up and away from the round (`side`: -1 it came from
+   * the left .. 1 the right), by `power` (stopping power times the hit's share). Calmer with Reduce flashing on.
+   */
+  hitKick(power: number, side: number): void {
+    const amount = shakeScale();
+    if (amount <= 0) return;
+    this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing(), amount);
+  }
+
   // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
   private shakeAmount = 0;
   private shakeAt = 0;
 
-  /** Shake the camera (0..1; explosions and crashes near you). */
+  /** Shake the camera (0..1; explosions and crashes near you, a heavy round leaving the barrel), by the Camera shake setting. */
   shake(amount: number): void {
-    this.shakeAmount = Math.min(1, this.currentShake() + amount);
+    const k = shakeScale();
+    if (k <= 0) return;
+    this.shakeAmount = Math.min(k, this.currentShake() + amount * k);
     this.shakeAt = performance.now();
   }
 
@@ -3791,8 +4607,9 @@ export class GameView {
     st.t = now;
     const k = Math.min(1, dt * 18);
     st.h += (want.h - st.h) * k;
-    st.p += (want.p - st.p) * k;
-    st.r += (want.r - st.r) * k;
+    // The short way round (a rigid vehicle rolling over goes from +π to -π).
+    st.p += Math.atan2(Math.sin(want.p - st.p), Math.cos(want.p - st.p)) * k;
+    st.r += Math.atan2(Math.sin(want.r - st.r), Math.cos(want.r - st.r)) * k;
     st.steer += (want.steer - st.steer) * k;
     want.wheel.forEach((w, i) => (st.wheel[i] = (st.wheel[i] ?? w) + (w - (st.wheel[i] ?? w)) * k));
     // Babylon: rotation.x + is nose down, rotation.z + lifts the right side.
@@ -3908,9 +4725,15 @@ export class GameView {
     return smokeBlocks({ x: e.x, y: e.y, z: e.z }, at, this.smoke);
   }
 
-  /** A solid beam (lasers, rails, freeze rays) that thins away. */
-  addBeam(from: Vec3, to: Vec3, color: string, width = 0.05, ttlMs = 110): void {
-    const mesh = createBeam(this.scene, from, to, color, width);
+  /** A solid beam (lasers, rails, freeze rays) that thins away; `anchor`: its start stays on that gun's muzzle (muzzleAnchor.ts). */
+  addBeam(from: Vec3, to: Vec3, color: string, width = 0.05, ttlMs = 110, anchor?: MuzzleAnchor | null): void {
+    const mesh = createBeam(this.scene, color, width);
+    const start = following(from, anchor);
+    layBeam(mesh, start(), to);
+    if (anchor) {
+      const lay = () => (mesh.isDisposed() ? this.onMuzzle.delete(lay) : layBeam(mesh, start(), to));
+      this.onMuzzle.add(lay);
+    }
     this.effects.push({
       mesh,
       born: performance.now(),
@@ -3951,12 +4774,14 @@ export class GameView {
     const muzzle = from();
     place();
     this.lastRope = { from: { ...last }, muzzle: !!muzzle };
+    // On the muzzle as drawn this frame (followMuzzles).
+    const follow = () => (mesh.isDisposed() ? this.onMuzzle.delete(follow) : place());
+    this.onMuzzle.add(follow);
     this.effects.push({
       mesh,
       born: performance.now(),
       ttl: ttlMs,
       update: (f) => {
-        place();
         mesh.scaling.x = mesh.scaling.z = 1 - f * 0.6;
       },
     });
@@ -3968,11 +4793,15 @@ export class GameView {
    * fence or a gun). Each bolt plays a few times faster than the pack's, to last about as long as the game's gap
    * between arcs. Where the pack can't play (not in yet, or too many effects at once) the plain jagged line does.
    */
-  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default', key?: string): void {
-    // Reduce flashing: one steady beam per source instead of a new crackling bolt each arc (steadyArcs.ts).
+  addArc(pts: readonly Vec3[], color = '#9fd8ff', source: 'mount' | 'fence' | 'default' = 'default', key?: string, anchor?: MuzzleAnchor | null): void {
+    // A gun's lightning leaves its muzzle (the event's first point is the shooter's eye on the host, a moment ago).
+    const muzzle = anchor?.();
+    if (muzzle && pts.length > 1) pts = [muzzle, ...pts.slice(1)];
+    // Reduce flashing: one steady beam per source instead of a new crackling bolt each arc (steadyArcs.ts), its
+    // start kept on the gun's muzzle.
     if (reduceFlashing()) {
       const first = pts[0];
-      this.steadyArcs.hit(key ?? (source === 'fence' && first ? `fence:${Math.round(first.x)},${Math.round(first.z)}` : source), pts, color);
+      this.steadyArcs.hit(key ?? (source === 'fence' && first ? `fence:${Math.round(first.x)},${Math.round(first.z)}` : source), pts, color, undefined, anchor ?? null);
       return;
     }
     const fx = arcFx(source);
@@ -4007,13 +4836,13 @@ export class GameView {
     }
   }
 
-  /** A shot's trail: beam weapons draw beams, everything else tracers. */
-  addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90): void {
+  /** A shot's trail: beam weapons draw beams (kept on `anchor`'s muzzle), everything else tracers. */
+  addShot(def: WeaponDefinition | undefined, from: Vec3, to: Vec3, color: string, ttlMs = 90, anchor?: MuzzleAnchor | null): void {
     if (def?.id === 'core.railgun') {
       // A thick glowing rail that lingers, with a hot white core that snaps off first.
-      this.addBeam(from, to, def.view.tracer, 0.14, 750);
-      this.addBeam(from, to, '#ffffff', 0.04, 220);
-    } else if (def?.view.beam) this.addBeam(from, to, def.view.tracer, 0.04, 90);
+      this.addBeam(from, to, def.view.tracer, 0.14, 750, anchor);
+      this.addBeam(from, to, '#ffffff', 0.04, 220, anchor);
+    } else if (def?.view.beam) this.addBeam(from, to, def.view.tracer, 0.04, 90, anchor);
     else this.addTracer(from, to, color, ttlMs);
   }
 
@@ -4054,6 +4883,47 @@ export class GameView {
     return { draws: counter?.current ?? 0, meshes: this.scene.getActiveMeshes().length, casters: this.atmosphere.casterCount, characters, effects: this.vfx.count + this.effects.length };
   }
 
+  /** Beams laid from a gun's muzzle again each frame (addBeam with an anchor); each goes with its mesh. */
+  private readonly onMuzzle = new Set<() => void>();
+  /** Scratch point for stream pieces (followMuzzles). */
+  private readonly streamAt: Vec3 = { x: 0, y: 0, z: 0 };
+
+  /**
+   * Everything drawn on a gun's muzzle, placed where the guns are this frame: beams (addBeam's, and the steady ones
+   * of Reduce flashing) and other players' flashes. Run just before the frame is drawn (the scene's before-render),
+   * once the camera, your first-person gun and the characters' held guns have all been placed: the characters put
+   * the gun in their hands after their animations, inside the scene's render. Run earlier (with the effects'
+   * physics, in setCamera) it used the guns of the frame before, and a beam's start lagged behind the muzzle.
+   */
+  private followMuzzles(now: number): void {
+    for (const lay of this.onMuzzle) lay();
+    this.impacts.settleStarts(this.scene.getFrameId());
+    // Stream pieces in their first moments: off the muzzle, blending into the host's path.
+    for (const p of this.projectiles.values()) {
+      if (!p.stream) continue;
+      const at = streamPoint(p.stream, p.at, now, this.streamAt);
+      p.node.position.set(at.x, at.y, at.z);
+      if (now - p.stream.born > 1000) p.stream = undefined;
+    }
+    this.steadyArcs.update(now);
+    for (const a of this.avatars.values()) {
+      this.followFlash(a, now);
+      if (a.pair) this.followFlash(a.pair, now);
+    }
+  }
+
+  /** A character's gun's flash kept on its muzzle as drawn this frame (followMuzzles). */
+  private followFlash(a: GunFx, now: number): void {
+    if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
+    if (!a.flash) return;
+    const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
+    a.flash.setEnabled(on);
+    if (on && a.muzzle) {
+      a.muzzle.node.computeWorldMatrix(true);
+      a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
+    }
+  }
+
   /** Rooms without lamp light (phones on Low): see render. */
   indoorFill: IndoorFill | null = null;
 
@@ -4092,6 +4962,7 @@ export class GameView {
   }
 
   dispose(): void {
+    this.retiring.flush();
     this.weather.dispose();
     setCharacterLodCrowd(false);
     for (const list of this.bodyPool.values()) for (const anim of list) anim.dispose();
@@ -4099,13 +4970,28 @@ export class GameView {
     this.pooled.clear();
     this.atmosphere.dispose();
     this.propBatches?.dispose();
+    this.pickupBatch?.dispose();
     this.blood.dispose();
     this.impacts.dispose();
     this.environment?.dispose();
+    const engine = this.scene.getEngine();
     this.scene.dispose();
+    // The engine's shader cache would keep this scene reachable through the effects it compiled (effectScrub.ts).
+    scrubCompiledEffects(engine);
     this.physics?.free();
     this.physics = null;
   }
+}
+
+/**
+ * Browser tests hold flashes still to look at them (window.__flashHold = ms after the shot). Defined once, out here:
+ * defined in the view's constructor its two arrows held that view (and its whole scene) after the match ended.
+ */
+let flashHoldInstalled = false;
+function installFlashHold(): void {
+  if (flashHoldInstalled) return;
+  flashHoldInstalled = true;
+  Object.defineProperty(window, '__flashHold', { configurable: true, set: (v: number | undefined) => (MuzzleFlashRig.hold = v), get: () => MuzzleFlashRig.hold });
 }
 
 /**

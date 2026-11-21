@@ -3,6 +3,74 @@
 Everything here is data in `packages/shared` and works in MapMaker, offline
 matches and the dedicated server alike.
 
+## MapMaker's layout: top bar, rail, tool bar, right dock, status bar (UI spec Phase 1)
+
+The layout of `docs/MAPMAKER_UI_SPEC.md` Phase 1 (owner's answers in the spec). Every tool and setting MapMaker had
+is still there; this says where each one is now.
+
+- **Top bar:** Quit; the **map's title** (a click opens **Map settings**; the name is edited there); New, Open…, Save,
+  Export, Import (Publish for the owner); Undo and Redo; the seven **mode tabs**; **View ▾**; **Snap**; the
+  **Structure theme** chip (it opens Map settings at the theme: painting Phase 3); TEST's **bots** and **skill** (not saved with the map: the map's own bots are in Map settings → Gameplay →
+  Bots); ▶ Here and ▶ PLAY TEST. On a narrow window it tightens in steps (`fitTopBar`, `fit-1`…`fit-7`); at 1280 px and
+  up nothing is cut off. Under about 1,000 px the theme chip goes first (the theme is in Map settings), then the bots.
+- **View ▾** (`viewMenu.ts`): Grid, Full grid, Overlaps, **Plan view** (K) and the **map layers** (Tiles, Props,
+  Pickups, Logic & traps, Spawn points). They only change what MapMaker shows; none is saved in the map. The arrow keys
+  move in the menu, Esc closes it.
+- **Left rail** (`leftRail.ts`): **Map** (Map settings), **Assets** (opens the asset browser, the palette; with it
+  open, goes to its search) and the fold arrow (`\`: fold the asset browser to the rail and back).
+- **Tool bar** (over the view; `toolBar.ts`, the table in `toolBarTools.ts`): each mode tab shows its own tools.
+  Build: Select, Place, Erase, Walls, Rotate, Delete. Props: Select, Place, Erase, Rotate, Delete. Gameplay: those and
+  Bot hints. Environment: Select, Erase, **Paint, Terrain, Plants** (the Environment brush), Rotate, Delete. Paths:
+  Select, Erase, Paths, Rotate, Delete. Test: Select, Bot hints, Measure, Notes, **Plan**, **Bot test**. Every tab has
+  Keys and Help, and **More (⋯)**: a menu of every tool and action (Mirror, Mirror…, Duplicate, Group, Ungroup, Plan
+  view, Bot test, **Dress all bare rooms**, **Settle all props on ground**, Keys, Help), so nothing another tab keeps on
+  its bar is more than two clicks away. Every key works in every tab as before; the tool in hand stays on the bar, lit
+  (dashed when it is another tab's).
+- **Right dock** (`rightDock.ts`): three states, cycled by **`Shift+\`** and by its own buttons (▭ compact, › hide; the
+  edge tab brings a hidden dock back), kept in this browser (`tiletrigger.editor.dock`, carried over once from the old
+  `tiletrigger.editor.sidebars`):
+  - **expanded:** Outliner, **Properties** (the inspector) and Validation, each folding from its heading; drag the
+    dock's inner edge to make it wider or narrower (double-click: back to the default);
+  - **compact:** a small card where the minimap will be (Phase 3 builds it), with Expand;
+  - **hidden:** gone; the view has the width. Selecting something never opens a hidden dock; the status bar says what
+    is selected.
+  Under 900 px wide the dock starts compact, and narrowing the window past 900 px folds an expanded dock to compact
+  until it is widened again (not kept); a dragged width is fitted to 45 % of a smaller window (UI Phase 5). Its edge
+  also takes the arrow keys, Home and End.
+- **Kept in this browser** (UI Phase 5, `viewPrefs.ts`, `tiletrigger.editor.view`): View → Grid, Full grid and Snap.
+  Overlaps, the map layers and the plan view start fresh each visit.
+- **Tile View and the minimap from the keyboard** (UI Phase 5, `planKeys.ts`): Tab into either; Tile View's **]** / **[**
+  pick the next or previous thing or wall side and **Enter** goes to its fields; both take **+ / −**, **Home** and
+  **Alt+arrows** (the minimap the plain arrows too); the minimap's **Enter** opens Tile View. All in the `?` list.
+- **Tile View** (`tileViewPanel.ts`, maths in `tileViewModel.ts`; UI spec Phase 4a): the selected tile, set piece or
+  group from straight above, in the expanded dock in the minimap's place. **Enter** (nothing else focused), a
+  **double-click** on a selection in the view or on the minimap, or the minimap's **⊞** opens it; **Esc** steps back
+  (the picked thing, then the minimap), as does **← Map**. Selecting things alone is an area round them.
+  - Breadcrumbs: Map › the focus › what is picked in it; the focus outlined white, the child cyan.
+  - Things standing in it (props, blocks, lights, door leaves, movers whole): click to pick, drag to move on the snap
+    step (**1 / 5 / 10 / 50 cm**; hold Ctrl or Shift: free), **arrow keys** nudge a step (Shift: 1 cm), **R** turns
+    15° (Shift+R back). Below the plan: **X / Z / Height / Facing** in **Local** (from the tile's anchor cell, turned
+    with it) or **World** coordinates. One drag is one undo step; everything goes through the same transform command
+    as the view.
+  - **Cell sides**: click a wall to change its style and glass (doors and windows are edge styles; never dragged). This
+    reaches every side of a multi-cell tile, which the inspector's Walls rows don't.
+  - **Set pieces**: their parts are shown and can be picked, but are read-only (Parts in Properties, or Explode to
+    tiles, to edit them).
+  - The snap and Local/World are kept in this browser with the dock, never in the map.
+- **Map settings** (`mapSettingsView.ts`, fields in `mapProperties.ts`): a view in the right dock, not a dialog, so
+  the 3D view stays live beside it (the time-of-day preview, framing the picture and the card shot). The title, the
+  rail's Map and the inspector's "Map settings…" open it; × closes it; selecting something closes it. Its groups:
+  **General** (name, theme, description, size, picture, card shot, notes), **Gameplay** (mode, also offered, teams,
+  players, weapon set, bots and their characters, players by mode, everything breaks, gravity and falls, boundary),
+  **Presentation** (time of day and weather, blood, Sky, scenery & border…) and **Advanced** (map ID, tier, test map).
+  Every field is one undo step, as before.
+- **Properties** (the inspector) shows only the selection. With nothing selected it is one line, **"Nothing selected ·
+  Map settings…"**, and then the tab's own section where it has one (Paths: the map's paths; Test: ready or not;
+  Gameplay: the counts).
+- **Status bar** (`statusBar.ts`): the level · what's selected (and how much of it is on other levels: a level change
+  keeps the selection) · the map's counts (the full list in its tooltip) · the budget pill · what's under the pointer ·
+  the **problems pill** (it opens the dock on the Validation list). The every-key line it had is the `?` list.
+
 ## MapMaker's modes, panels and outliner (MapMaker overhaul Phase 2)
 
 - **Mode tabs** (top bar; `client/src/editor/editorModes.ts`): **Build** (Tiles, Set pieces, Walls), **Props** (Props,
@@ -12,16 +80,30 @@ matches and the dedicated server alike.
   here, the bot test, the plan view, the problems list; picking Test no longer plays at once). Every palette pane is in
   one mode; a card picked from search, favourites or by its key moves the tabs to its mode. With nothing selected the
   inspector starts with the mode's own section (Paths: the map's paths; Test: ready or not, its first problem, spawns and
-  pickups; Gameplay: counts of spawns, objectives, pickups, NPC squads and vehicles), then Map properties.
-- **Folding panels:** the side panel's Outliner, Inspector and Validation fold from their headings; the palette's groups
-  fold from theirs; Backslash and Shift+Backslash fold the whole palette and side panel. All of it stays as each person
-  left it (this browser's storage).
+  pickups; Gameplay: counts of spawns, objectives, pickups, NPC squads and vehicles), after the line that links to
+  Map settings (UI Phase 1: Map settings are no longer in the inspector).
+- **Folding panels:** the right dock's Outliner, Properties and Validation fold from their headings; the palette's
+  groups fold from theirs; Backslash folds the asset browser to the left rail and Shift+Backslash cycles the right
+  dock (above). All of it stays as each person left it (this browser's storage).
 - **Outliner** (side panel; `client/src/editor/outlinerPanel.ts`, the list's rules shared `editor/outliner.ts`): every
   tile, set piece and entity, grouped by kind and, inside a kind on several levels, by level. Search matches names, kinds
   and ids (every word). A click selects and frames (Shift adds), moving to its level. The eye hides a thing from
   MapMaker's view (not picked either); the padlock keeps it from being picked or selected. Hide and lock are kept per map
   in this browser and never go in the map file: a test match and the game play everything. The list draws only the rows
   in view, so a map with 4,096 things stays quick.
+- **Select opens a path** (owner, 2026-11-11: "need way to easily select an already created path/road"). With the
+  Select tool, a road, trail, track or route under the pointer (and nothing else there) lights up, its hover card
+  names it, and a click opens it in the Paths tool: its points to drag, Shift-click the path to add one in it,
+  right-click or Del to remove one. The Paths pane has its **Length** by number (longer runs straight on from the last
+  point with one more point, shorter ends where the path was that far along; shared `editor/pathEdit.ts`) and **Add
+  points at the end / at the start**.
+- **What an edit costs on a big map** (owner, 2026-11-11: selecting and editing lagged). After an edit MapMaker
+  clips again only the level boxes near what changed (`map/facesUpdate.ts`; a full pass on St. John's 2,500 blocks
+  took a third of a second), in the whole map's frames for turned boxes (`faceFrames`), so the faces come out exactly
+  as a full pass cuts them, rebuilds only the level meshes the edit touched (cut by style and 48 m ground square),
+  puts an entity's marker again only when it or what it stands on changed, and runs the map's own checks and the
+  overlaps check in a worker (`mapTestWorkerCore.ts`, a `check` job), the issues list following a moment later.
+  `node tools/perf/editor-edit.mjs` measures a click, a move and an undo on a map: the page's script time, frames apart.
 - **Favourites and recent:** the quick row over the palette puts the current mode's favourites (or recent pieces) first
   and the rest after; **This mode only** shows just the mode's.
 
@@ -59,6 +141,140 @@ Every climbable piece is tested for bot paths in all four rotations
 (narrower runs fall foul of the navmesh's ledge filter), and flights need
 clear space at both ends.
 
+### Parts at any angle: `turned` and `wallRun` (octagon kit, phase 1)
+
+A kit tile is a list of parts, each naming one builder (`box`, `flight`, `rail`, `columns`, `vault`, `arc`…). Two
+builders put pieces off the grid; only a plain `box` takes `yaw` (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§3.1). No shipped tile uses them yet; phase 2 builds the Arena Corner pieces with them.
+
+- **`turned`**: a group of any parts (flights, vaults, columns, rails, boxes, wall runs, other groups) turned about
+  `pivot` ([x, z] in the tile's frame, default the first cell's centre) by `turns` (quarter turns, so 0.5 is 45°) or
+  `yaw` (radians), the same way round as a tile's R. Each box's centre turns and the turn adds to its own yaw, so it
+  keeps its size; on whole quarter turns a plain box stays a plain box, so `turns: 1` is exactly the same parts built
+  the other way. A `kind` on the group goes on what it builds (its trim stays trim).
+
+  ```json
+  { "turned": { "turns": 0.5, "pivot": [8, 8], "parts": [
+      { "flight": { "axis": "x", "dir": 1, "from": 4, "across": [7, 9], "steps": 12 } },
+      { "box": [10, 0, 7, 12.5, 3, 9] } ] } }
+  ```
+
+- **`wallRun`**: a wall in any edge style (Solid wall, Round arch, Grand arch, Window…) along any segment `from` →
+  `to`, not only a cell's side: the style's collision and trim (`map/edgeShapes.ts`, the same pieces a cell side
+  builds), `bays` times along it (each bay a side of its own: "half" is half a bay). The segment is the wall's outer
+  face, its thickness on the `side` of it looking from `from` to `to`: `left` (the default; a cell's side has the cell
+  on its left), `right`, or `centre`. `y` lifts it, `height` is the level height (default 4; a Grand arch is two of
+  them), `outer: false` leaves the outer face undressed. Along a cell's side it builds exactly what that side does.
+- **`plain: true`** (on a `wallRun`; new pieces only, owner 2026-11-14): an arch collides as its two piers and one
+  lintel from the crown up, not one slice for every step over the curve (a Round or Grand arch: 19 boxes become 3).
+  The steps are still drawn, in the walls' paint (`LocalBox.paint`), so the arch looks the same; shots and bodies
+  pass the stone between the curve and the crown near each pier. Styles with one piece over the opening (Window,
+  Doorway, Archway) are the same either way.
+
+  ```json
+  { "wallRun": { "from": [10, -3], "to": [18, 5], "style": "arch_grand", "side": "centre", "plain": true } }
+  ```
+
+`tools/content/tiles.mjs` checks both (one of `yaw` or `turns`; a built edge style; a segment longer than 0; at least
+one bay), and the parts inside a group like any part. Doors placed off the grid (a 45° portcullis) block bots, mark
+the navmesh and keep spawns out by their own turned slab (`Aabb.obox`); doors on the grid are as before. Tests:
+`packages/shared/test/octagonKit.test.ts`.
+
+### The Arena Corner (octagon kit, phase 2)
+
+A 45° corner of the colosseum's stands for an octagonal arena (docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md
+§2, §3.2): **`setpiece.arena_corner`** (Arena stands family) stacks four big tiles, one a storey band, each claiming
+its cells only on its own two levels: **Arena Corner (Ground)** `core.arena_corner_ground` (levels 0-1), **(Middle)**
+`_mid` (2-3), **(Upper)** `_upper` (4-5) and **(Attic)** `_attic` (6-7), in the palette under Vertical and themed by
+the slots like the Seating Tier (seats in solids, lips in trim, walls, vaults and cheeks in walls, walkways and slabs in
+floor).
+
+- **Where it goes:** its anchor is the sand's corner cell; the tile covers the 9 × 9 cells east and north of it (less
+  the sand and the outer court), with straight Arena Bays meeting it to the west (the north stand, arena to the south)
+  and to the south (the east stand, turned one). R turns it to the other corners. The diagonal front runs |x| + |z| =
+  40 m from the arena's centre (22.6 m long, on cell corners), so with three straight bays a side the octagon is within
+  1% of regular. The two half-sand cells either side of the diagonal's front are left free at level 0: a map's sand
+  tiles stay there under the podium's edge.
+- **What is in it:** the podium (2 m wall, walkway, eight rows of 0.25 m, the top walkway at 4 m, as Arena Seating),
+  40 rows of the Seating Tier's (0.5 m by 1 m) from 4 m to 24 m, each one long box between aisles; an aisle up each
+  mitre (2.4 m clear between cheek walls 0.5 m thick that hide both sides' row ends) and one up the diagonal's centre
+  line; a vomitorium on the upper tier's centre line (as the Seating Tier (Vomitorium): a passage 3.2 m wide from the
+  top gallery out under the top rows, an aisle stair either side); the vaulted galleries behind the seats at levels 0,
+  2 and 4 continuing round the corner (blind round arches at the back of the lower two, open into the facade's arcade
+  from the top one); solid fill under the tiers; two-storey Grand arcades round the facade at levels 0, 2 and 4; the
+  attic walk with windows, its roof and parapet. Every arch collides plain (`wallRun.plain`).
+- **How it is made:** `tools/content/kit/arenaCorner.mjs` writes the four tiles from these numbers with the kit's parts
+  (boxes, flights, `wallRun`, `turned`), and `tools/content/tiles.mjs` checks them with the rest of the kit. The north
+  wedge (from the straight bays to the mitre) is written out, the east wedge is its mirror image across the diagonal,
+  and the diagonal is built in its own frame and turned 45°; where two sectors meet at a mitre each box runs to the
+  mitre at its deeper edge, so the bit past it lies inside its neighbour's box of the same band.
+- **Mirror:** each tile is its own mirror image across its diagonal (`tileDiagonalMirror`, map/setPieces.ts), so a
+  mirrored corner (M) is placed as the same tiles turned (three quarter turns more, at the mirrored anchor). The
+  selection Mirror (Shift+M, and M's flip in place) does the same with the tiles once exploded (`tileMirrorTwin`,
+  editor/mirror.ts): an exploded corner mirrors exactly as the set piece does, its lights and the gate's portcullis
+  with it, in one undo step.
+- **Budget:** a whole corner collides as 1,296 boxes (343, 428, 456 and 69), with 6,795 trim boxes, and brings 13
+  lights (candles in the galleries, chandeliers in the attic).
+- **Bots:** they walk each gallery round the corner, up each mitre aisle from the podium's walkway to the attic, up the
+  centre aisle to the vomitorium's mouth and through it into the top gallery (`packages/shared/test/arenaCorner.test.ts`,
+  every turn). As in the straight Vomitorium bay, the stairs either side of its mouth start from a 1 m row the navmesh
+  does not hold, so bots reach the centre aisle over the top gallery from the attic.
+
+### The Arena Corner's gate and gatehouse (octagon kit, phase 3)
+
+**`setpiece.arena_corner_gate`** (Arena Corner (Gate), Arena stands family) is the Arena Corner with its gate
+(docs/map-briefs/sandfall_colosseum/OCTAGON_PLAN.md §3.2-§3.5; owner 2a, 3a, 4b): the ground and attic storeys' gate
+option, the middle and upper storeys as they are, the gatehouse tower, a 45° portcullis and 18 lights. Anchor and
+turn it like the plain corner. Buttons and rules for the portcullis are the map's own (a winch in the passage, a chain
+on the sand within 4 m of the door, each with a Toggle door rule), as on Flavius Rule today.
+
+- **The Gate option** (the tile inspector's **Gate** checkbox on `core.arena_corner_ground` and `_attic`; their twins
+  `core.arena_corner_ground_gate` and `core.arena_corner_attic_gate`, `optionOf` with the new option id `gate`, same
+  cells and ports, hidden from the palette). Switching it keeps the tile's place, turn and paint.
+  - **Ground, Gate:** a Gladiator Gate on the diagonal's centre line. The passage is 3.2 m wide: 3 m clear under the
+    gatehouse block at the podium's face (hang the portcullis 1 m in, yaw 45° plus the corner's turn), roofed at 3.2 m
+    through the podium, across the gallery (a lintel in its front wall, a Round arch on the centre line of its back
+    wall: five bays instead of four), 3.4 m high through the fill and out through the facade's middle Grand arch (the
+    ground arcade's inner face has nine bays instead of eight, so an arch stands on the centre line).
+  - **Stair wells** (3a), one either side of the passage, 2.4 m wide: from a door off the passage 29 m in, sixteen steps
+    down along the passage toward the sand to level -1, where a landing square to the grid meets the north side (and
+    the east side) of tile cell (2, 2, -1), the hypogeum ring's corner under the stand, through a 3.6 m opening, the
+    width of a Vaulted Tunnel. Put the hypogeum's tunnels there: a Vaulted Tunnel Crossing on that cell takes both
+    wells (or a Junction turned toward one). The wells hang a level under the tile's cells: no cell at level -1 is
+    claimed, so MapMaker doesn't stop a tile being put where they are. The tile has a `bore` that takes the ground's
+    surface out round both wells, so they work on terrain.
+  - **Podium stairs** (4b): eight steps up from the sand against the podium wall either side of the gate's mouth (from
+    3 m to 7 m off the centre line, 2.4 m out onto the sand) and a landing at 2 m, level with the wall's top and the
+    walkway; the parapet is left off over the top of each. They stay open with the portcullis down.
+  - **Attic, Gate:** no windows or parapet over the facade's middle three bays, so the walk (24 m) and its roof (28 m)
+    open into the tower.
+- **The gatehouse tower** `core.arena_corner_tower` (Arena Corner Gatehouse, Vertical; its own tile, not part of the
+  option, whose cells must stay the plain tile's): turned 45°, 23 m wide (the facade's middle three bays, its sides on
+  the piers between bays) from the facade's outer face (56 m) out to 66.1 m, 33.2 m to its parapet. The gate passage
+  runs through its foot to the outer court; a hall across the tower on the facade side, then a switchback either side
+  of the passage (lane A by the passage climbs 2 m outward, a half landing, lane B climbs 2 m back), so a landing
+  crosses the tower every 4 m: through the facade's arches into the arcade storeys at 8 and 16 m, onto the attic walk
+  at 24 m and its roof at 28 m, and the lookout at 32 m. It claims only the cells the corner leaves free: the outer
+  court's cells under it at levels 0-7 and all of level 8. It stands against the facade rather than through it, so the
+  middle and upper storeys keep their facade; the arches open into its landings. Its outside faces (owner, phase 3's
+  3a; added in phase 4) have arrow slits, dark strips 0.2 by 1.6 m standing 3 cm proud (two on the outer face either
+  side of the passage and one in the middle of each side, at 6, 14, 22 and 29.5 m), and a string course 0.3 m high and
+  0.15 m proud round all four faces under the lookout's parapet (31.7-32 m). Both are drawn only: the tower's collision
+  is phase 3's (291 boxes; `arenaCornerGate.test.ts` hashes it), its trim 40 → 60 boxes.
+- **Ports:** the ground storey (plain and Gate) now has ports on the sides of its cells that face the two half-sand
+  cells, so the sand's Courtyard tiles build no wall there (before, their walls rose up through the podium; with the
+  gate they would close its mouth).
+- **Budget:** collision 448 (ground, Gate) + 428 + 456 + 58 (attic, Gate) + 291 (tower) = **1,681 boxes** for the
+  whole gate corner (the plain corner 1,296); trim 2,122 + 2,230 + 2,453 + 72 + 40 = 6,917; 18 lights (the plain
+  corner's 13, one moved onto the gallery's lintel, and a chandelier in the passage, a candle at each well's head and
+  two on the tower's core).
+- **Bots** (`packages/shared/test/arenaCornerGate.test.ts`, every turn, with the hypogeum's corner as a Crossing): from
+  the sand through the passage out through the facade and the tower's foot, down each well to the hypogeum and back,
+  up the tower to every landing and the lookout and off it onto the arcades, the attic walk and its roof, up both
+  podium stairs to the walkway and the top walkway. The shut portcullis blocks its own slab and keeps spawns out of
+  it only; open, bots go through; a bot raises it with its chain button to reach a gun behind it. Mirrored equals
+  turned; the five tiles overlap nowhere; no coplanar faces; exploded equals placed; on terrain the wells stay clear.
+
 ## Walls and openings (edge styles, `content/tiles/edges.json`)
 
 Any side of any cell can be built as: Auto, Solid wall, Doorway, Wide doorway,
@@ -73,14 +289,22 @@ wall, a visor and stepped cheeks outside), Half wall, Railing, High wall,
 Towering wall, Tall fence, Broken wall (a ragged hole with rubble), Bars
 (floor-to-ceiling, see and shoot through), Barred gate (bars either side of a 3 m
 gateway: hang a Portcullis door in it), Shutter (a wide opening with its
-shutter stuck 1.35 m up: crouch under; bots don't path through it) or No wall.
+shutter stuck 1.35 m up: crouch under; bots don't path through it), Shopfront (a stall
+riser 0.45 m high between two 1 m piers and one opening 6 m wide up to a head at
+3 m: give it Glass; bots don't path through it), Arched window (2 m wide, sill
+0.9 m, a round head from 2 m to 3 m, voussoirs and a keystone; takes Glass like
+the Window) or No wall. Shopfront and Arched window came with **map format v38**
+(Tileset 11, Urban & Civilian; owner-approved 2026-11-13): a map that uses one
+needs a build that knows v38, and every older map loads as it was (the v37 to
+v38 step changes nothing).
 Use the **Walls & Openings** tool (O cycles styles; right-click resets) or the
 tile inspector. Choices are stored on the tile in its own frame (they turn with
 it) and apply to both halves of a shared wall.
 
 ### Glass (glass panes)
 
-Windows can hold real glass. Window, Twin windows and Firing slit sides take a
+Windows can hold real glass. Window, Twin windows, Firing slit, the sash windows,
+Shopfront and Arched window sides take a
 **Glass** setting (the select under the wall styles in **Walls & Openings**:
 *Glass: none / breakable / reinforced*; stored per side in the tile's `glass`,
 `MapBuilder.glass(x, y, z, side, kind)` in map scripts). Free blocks take the
@@ -174,7 +398,7 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   stepped wing walls, an apron. It opens the ground by itself: the hill is cut back to the headwall, the approach is
   dug out along the way it faces until the ground as made is down to its floor (at most 48 m), and banks no steeper
   than 1.5 in 1 lie either side. Nothing is stored: move or delete the portal and the hill is back. A buried end with
-  no portal on it is the validator's warning "ends in the ground" (wall the end up in the inspector for a dead end).
+  no portal on it is closed with a plain face and is the validator's warning (below: no open ends).
   A mouth in flat ground (no hill to come out of): a portal a level down digs its own earth ramp, or use the kit's
   Surface Stairs (below).
 - **Earth comes to a buried piece.** Every buried tunnel keeps at least 0.2 m of earth over its cap, and the earth
@@ -186,6 +410,19 @@ Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As 
   with *Whole run* ticked, every buried piece joined to them. *Add a portal at the open end*: a portal on each end
   that leads to nothing built, facing out. Buried passages show as dashes on the ground over them, and on the plan
   and the minimap.
+- **Building below ground (owner, 2026-11-19; `editor/groundGlass.ts`).** On Basement and below the ground turns to a
+  faint glass (its paint still reads), a dark earth lies just under the level's floors, and a clear circle is cut in
+  the glass where the pointer meets it. Seen from above the level, the view is cut 2.6 m over its floor (the tunnels'
+  roofs come off, as in an architect's section); flown down into a tunnel it is drawn whole. The level's passages
+  are outlined on their own floor, its joints marked green and its open ends amber (a frame with a cross). The plan
+  view (K) of a basement cuts the ground away too. Back at Ground the ground is itself again. Below ground a spawn,
+  pickup or prop goes on the level being edited, never onto the glass ground.
+- **No open ends into the ground (`map/geometry.ts` `buriedOpenEnds`).** A buried passage's end (a piece with a bore
+  the hill stays on, not a mouth or surface stairs) that joins nothing and isn't walled up is closed with a face of
+  the piece's own lining (rock, brick or concrete) across the whole side, solid in play and drawn in MapMaker, until
+  a portal, a Dead End or another piece goes there. Validation names each such end (`tunnel.mouth_buried`: "closed
+  with a plain face for now"). No shipped map has one; open ground pieces with a bore (the Arena Corner's gate) are
+  never capped.
 - **A tunnel under flat ground:** place the run a level down (Page Down). The surface stays as it is, and each
   portal digs its own ramp down from the field (2 m level at the mouth, then about 11 m of ramp for 4 m of depth).
   On level 0 of flat ground a buried run is an earth mound instead.
@@ -231,7 +468,7 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   core halls, Reactor rooms, Server vaults, Loading docks, Atrium towers, Catwalk bridges, Overlooks, Ramp junctions,
   Courtyard gates, Bunker clusters, Sunken arenas, Plazas and Sea walls), pictured from the palette
   atlas (`thumbs/setpieces.*.webp`), then **My set pieces** (your own, and the map's own that came with it). Search
-  finds pieces by name; the **Style Pack** picker narrows the tab to the pieces made for that pack's look.
+  finds pieces by name; the **Style Pack** picker opens on **This map's themes** (the packs for the map's theme first, marked; nothing hidden), **All pieces** is the catalogue's order, and a pack narrows the tab to the pieces made for that pack's look.
 - **Placing:** pick a piece, then click the map. A see-through **ghost of the whole piece** follows the pointer in its
   real materials, its footprint and ports outlined **green** where it fits and **red** where it doesn't; the hover
   card and the status line say **why** (it overlaps a tile or another set piece, it's past the build limit…). **R**
@@ -245,6 +482,19 @@ lights; in MapMaker it stays one thing you place, select, turn and theme until y
   undo step. The **inspector** shows the piece and its family, its **Look**, **Mirror**, X / Y / Level and turn, its
   **ports**, and the **overrides**: a role's material (Stone, Trim, Floor, Paving, Roof, Wood, Metal; the facade, the
   doors' style, the glass) for this placement only, and its **parts**, each with a tick: untick one to leave it out.
+- **Looks of your own (painting Phase 5, format v47).** The inspector's **Look** is grouped: the map theme's, **This
+  map's themes** (the looks of the packs for the map's Structure theme), **My looks**, **All looks** (those made for the
+  piece first). **Save as my look…** (under Look) names the piece's look as it shows, your paint across the piece
+  included, and keeps it in this browser; the piece then wears it and looks exactly the same (a role no layer gives is
+  left out, so it keeps following the theme). On a piece wearing one of your looks the dialog offers **Update** it:
+  every piece wearing it changes with it. **My looks** (Set pieces tab) lists your looks and the map's own: **Apply**
+  puts the selected set pieces in one (with none selected, **Place in it** makes it the look new pieces are placed in),
+  **Rename…**, **Delete** (maps keep their copy), and **Save to my looks** for a look that came with a map. Several
+  set pieces selected get one Look row. A map carries the looks its pieces wear (`lookDefs`, ids `my_<name>`; at most
+  32), so it plays anywhere; a look nobody wears leaves the map (deleting, Explode, another look). A look holds roles
+  only (stone, trim, floor, paving, roof, wood, metal, facade, doors, glass), so it fits any piece; paint on single
+  parts stays with its placement. Layers: the Structure theme, then the look, then your paint. Copy and paste carry
+  the looks the copied pieces wear (a paste into a map with a different look of the same id is refused).
 - **Ports** (where a piece meets what's round it: its doors and openings) are drawn on the ghost's and the selected
   piece's outline: a door frame and an arrow out, blue for a door, green for an opening, **red and crossed where a wall
   stands in it** (a tile's wall or window, a block: MapMaker looks just outside the port, at waist to chest height),
@@ -331,14 +581,14 @@ with the map but never collides, and has its own paintable slot.
 MapMaker draws the build area on the level being edited
 (`client/src/editor/buildAreaVisuals.ts`, rules in `shared/src/editor/buildArea.ts`):
 
-- **The grid** (top bar **Grid**) is local: it covers the cells round where the
+- **The grid** (View → **Grid**) is local: it covers the cells round where the
   camera looks at the level being edited, fades out with distance, and draws
   every 4th line stronger. It grows as the camera rises (12 to 40 cells) and is
   rebuilt only when its centre moves 4 cells, so it stays cheap.
-  **Full grid** (next to it) draws every cell of the whole build area instead,
+  **Full grid** (View → Full grid) draws every cell of the whole build area instead,
   on demand. Grid off hides either; the outlines stay.
 - **The playable boundary** (orange, at the level and 6 m up with corner posts):
-  the map's **Boundary** (Map properties), or, when it has none, its terrain's
+  the map's **Boundary** (Map settings → Gameplay), or, when it has none, its terrain's
   edge. A faint copy shows through hills and buildings.
 - **The build limit** (white, dashed, with corner posts that span the levels):
   where placement stops. Tiles stand within **256 cells** (2,048 m with 8 m
@@ -370,7 +620,7 @@ shows the budget nearest its limit: green OK, amber Near (80 %), red Over, each
 with its word. Click the name to select what it counts; the arrow lists every
 budget above it (docs/MAP_BUDGETS.md).
 
-**Keys:** `?` (or the tool bar's Keys button) lists every key MapMaker binds,
+**Keys:** `?` (or the tool bar's Keys button, in every tab) lists every key MapMaker binds,
 from the same table its keys are bound with (`shared/src/editor/keymap.ts`).
 
 ## Floors over tall pieces (format v26)
@@ -436,7 +686,8 @@ Sprint 7, Set 1 "Foundation": 01 Military Compound, 02 Frontier Dust, 03
 Imperial Arena, 04 Orbital Station, 05 Gothic Estate, 06 Jungle Ruins, 07 Neon
 Megacity, 08 Suburban Chaos and 09 Sands of Egypt (the Egypt theme asked for
 alongside the set), then from the owner's tileset sheets 10 Medieval Village,
-11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces);
+11 Coastal Harbor and 12 Snow Outpost, then 13 Industrial Factory (owner, 2026-11-12: a pack of our own pieces)
+and 14 Urban & Civilian (owner, 2026-11-13: a list of existing pieces, no demo map yet);
 09 is now **Desert City**, which
 replaced Sands of Egypt (owner, 2026-10-31) and still carries all its pieces,
 and 06 Jungle Ruins was refreshed from the Jungle Ruins sheet with the Ancient
@@ -1059,6 +1310,56 @@ glass) on the Loading Dock, Power Core Hall, Reactor Room, Server Vault, Catwalk
 Towers. **Gameplay pieces**: the Roll-up Door, goods lift, sliding platform, blast door, ladder, alarm light,
 barrier, fence, crates and barrels, gas, the generator, crusher, flames and shock traps.
 
+### 14 Urban & Civilian (present-day town)
+
+Tileset 11, from the owner's universal tileset guide (`docs/map-briefs/urban/`; owner, 2026-11-13: "the guide is
+applied to what we have"). **A list, not a kit**: it has no tiles of its own and copies nothing. It names pieces
+the game already has (the eight Suburban tiles, the five city buildings and streets, the Neon shop and block, the
+seven Industrial tiles, the core house, shop, gas station, street, intersection, warehouse and plaza, rooms, stairs,
+the ramp and the platforms; street lights, traffic lights, signs, benches, bins, dumpsters, barriers, cones, fences,
+the hydrant, vending machines, rooftop units, parked cars, metro and gas station props, shop fittings), and those
+packs keep their lists: a piece in two packs is one piece. Themes: City Block, Suburban Chaos, Factory. Facades:
+*City brick*, *Storefront*, *Plaster*, *Clapboard*, *Suburban brick*, *Glass* and *Corrugated sheet*.
+**It has no demo map yet** (owner, 2026-11-13), so `StylePack.demo` is optional and the picker's note leaves the demo
+out for a pack with none. **Set pieces**: role pack `urban` (old brick, pale concrete trim, terrazzo, grey pavers,
+dark concrete roofs, the brick facade, a wooden door, breakable glass) on the Crossroads Plaza, Loading Dock,
+Skybridges, Stair Towers, Atrium Tower, Catwalk Bridges, Twin-Stair Overlook, Ramp Junction, Server Vault and Sunken
+Arena. The role pack is the default for **no theme**: City Block, Factory and Research Lab maps place set pieces
+with no pack named, and those keep the look their theme paints; a piece takes the urban look when it is placed with
+the pack picked. `test/stylePacksUrban.test.ts`.
+
+**Made for the pack (plan step B: same shapes, new looks).** Four materials, each a pattern of our own in
+`client/materials/patterns.ts` (no downloaded artwork, no texture file): *Parking Bays* (`core.parking_bays`: asphalt
+with white lines, one repeat 5 m: two bays 2.5 m wide, one 5 m deep), *Tactile Paving* (`core.tactile_paving`: 0.4 m
+slabs of 6 x 6 studs; tint it), *Graffiti on Brick* (`core.graffiti_brick`: one storey a repeat, spray paint across
+its middle; abstract shapes only, no letters, words, logos or real marks) and *Damaged Plaster*
+(`core.damaged_plaster`: plaster fallen away in patches to brick). None sets a surface type (that is a separate
+decision). Two kit looks: **Painted Door** (`kit.door.painted`, `kit.door.painted_open`: the Oak Door's frame, size and
+collision; red, blue, white half-glazed and a glazed shop door) and **Shop Awning** (`kit.shop.awning`: 3.2 m wide,
+1.3 m out, 1 m high; red, green, blue, yellow and faded stripes; no collision, raise it over a shop window).
+`client/test/patternsUrban.test.ts`.
+
+**Made for the pack (plan step C: small new shapes).** Two wall styles, *Shopfront* and *Arched window* (above, "Walls
+and openings"; map format v38; `test/urbanWallStyles.test.ts`). A shopfront with **Glass: none** is an open shop front:
+its 0.45 m riser is more than a walking step (0.3 m), so players jump it and bots do not path through; with glass it
+is closed to players, and to shots as the glass kind says. Kit families, each with looks and one collision:
+
+| Family | Size (m) | Looks | Collision |
+|---|---|---|---|
+| `kit.barrier.bollard` Street Bollard | 0.24 x 0.95 x 0.24 | yellow, steel, concrete, striped | its box |
+| `kit.street.bike_rack` Bike Rack | 2 x 0.85 x 0.7 | steel, black, green, red | its three hoops only (5 cm tube): shots and sight pass |
+| `kit.street.mailbox` Street Mailbox | 0.56 x 1.22 x 0.5 | blue, red, green, yellow | its box (crouch cover) |
+| `kit.street.newsbox` Newspaper Box | 0.5 x 1.2 x 0.46 | red, blue, yellow, green, white | its box (crouch cover) |
+| `kit.street.bus_stop` Bus Stop Sign | 0.66 x 2.7 x 0.16 | blue, yellow, green, red | its pole and its flag only: walked under, shots pass beside the pole |
+| `kit.spool.cable` Cable Spool | 0.9 x 1.4 x 1.4 | wood, weathered, empty, orange | its box |
+| `kit.fence.chainlink` Chain-link Fence | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, rails, an upright bar every 0.25 m |
+| `kit.fence.chainlink_gate` Chain-link Gate (shut, a still prop) | 3 x 2.4 x 0.08 | galvanised, green, rusty | posts, leaf frames, bars |
+| `kit.fence.site_panel` Site Fence Panel | 3.4 x 2 x 0.6 | galvanised, green, rusty | two block feet, frame, bars |
+
+The mailbox and the newspaper box are plain paint: no postal service's or publisher's name, sign or livery. Nothing
+glows or blinks. **No curb drop wedge** (plan C8): a vehicle moves on the same controller as a player (autostep 0.3 m)
+and rides up the street tiles' 0.15 m sidewalks (`test/urbanKerb.test.ts`).
+
 ### 06 Jungle Ruins refresh (Ancient Temple folded in)
 
 From the owner's concept sheets "Tileset 04 – Jungle Ruins" (weathered mossy stone, overgrown temple
@@ -1171,6 +1472,25 @@ small and exact.
   it (a free block of rock). New terrain sits 0.15 m under a level, which with a flight's first 0.25 m step makes a lip
   bots can't climb: Flatten the ground at a stair's foot to the floor's height. Flatten levels at a steady rate a
   frame, so hold the brush on each spot; two flattened areas side by side need to overlap or a ditch stays between them.
+- **Fit ground to this, and Settle onto the ground** (owner, 2026-11-12: foundations hung over slopes; shared
+  `editor/groundFit.ts`). With a build selected (tiles, a set piece, blocks, props) on a map with terrain, the
+  inspector's **Ground** section and the selection menu (right-click) have both; a path has them in the Paths pane.
+  **Fit ground** changes the ground as made (the stored heights) and leaves the build where it is: under its footprint
+  and one terrain cell round it the ground goes to the build's base (its lowest bottom; only the parts within a metre
+  of that count, so a roof or an upper floor brings nothing up), and from there it is eased back into the ground about
+  over **Blend** metres (6 by default, 0 to 40; where the ground is far above or below, the bank runs further, two
+  metres out for every metre of height, so it can be walked). It raises and lowers. A thin floor slab (1 m or less)
+  is the one exception (owner, 2026-11-13): a **foundation** slab, with a wall, block, tile or set piece part standing
+  on its top (its bottom between the slab's bottom and 0.15 m over its top, rising at least 0.25 m over it, its middle
+  over the slab; selected or not; props do not count), has the ground brought flush with its top; a **lone platform**,
+  with nothing built on it, stands on the ground with its underside. Props standing on the ground Fit moved (within
+  0.25 m of it, or sunk up to 1.5 m, and not held up by a floor, block or another prop) are re-bedded on it by the
+  settle rule, each on the lowest ground under it, in the same undo step; the ground is not repainted. For a path
+  the ground goes to the path's line across its width (props beside it re-bedded the same way). **Settle onto the ground** is
+  the reverse and leaves the ground alone: blocks and props move straight down or up until their base is on the lowest
+  ground under them (as Settle on ground beds a prop); a selection with tiles or set pieces moves by whole levels to
+  the level nearest the ground; a path's points each go to the ground's height there. One undo step each. What a floor
+  or a tunnel does to the ground as played is still worked out from these heights, never stored.
 - **MapMaker, Terrain → Change grid…** (format v32; `editor/changeGrid.ts`).
   Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
   380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows
@@ -1238,7 +1558,7 @@ in the same themes and paint slots as straight walls.
 - **Wall styles** (Walls & Openings tool): High wall (2 storeys), Towering
   wall (4 storeys) and Tall fence (3 m bars you can see and shoot through),
   next to the earlier doors, windows, arches and railings.
-- **Boundary** (Map properties): None, Invisible walls, Solid walls or Tall
+- **Boundary** (Map settings → Gameplay): None, Invisible walls, Solid walls or Tall
   fence round a rectangle. Choosing a style fits it round everything built,
   4 m out; "Fit to map" refits; the edges and height can be typed in. An
   invisible barrier always reaches 60 m up, so nothing is thrown or jumped
@@ -1423,6 +1743,20 @@ A new piece a map needs goes into MapMaker's palette or inspector, not into
 a script. Every map in `maps/` shows up in the Arcade and as a MapMaker
 template automatically.
 
+## Picking things inside others (MapMaker; owner, 2026-11-18)
+
+- **Small things show through walls.** Spawns, pickups, lights and logic markers (buttons, flags, objectives,
+  hostages, traps, pads; `editor/editorParts.ts` `isSmallThing`) each have an icon with a halo in its kind's colour,
+  drawn only where something stands in front of it (`editor/smallIcons.ts`: a reversed depth test), so a spawn inside
+  a set piece's stair shows through the steps and one in the open looks as before. A click on it picks it through
+  whatever is in front. Steady, no blinking.
+- **Click again to cycle.** A click again at the same spot (within 5 px) on what the last click picked steps to the
+  next thing under the pointer (the small thing, then what the ray passes through, nearest first, then the cell's
+  tile and set piece), with a small list by the pointer of what is there. A press that drags still moves the
+  selection.
+- **The move gizmo on top.** The gizmo's arrows and its white handle are drawn over everything; a drag on the handle
+  moves the selection even when it is inside something (one undo step, as any move).
+
 ## Measuring and placing props (MapMaker)
 
 - **Measure (U).** Click two points: the distance, the height difference and the slope (degrees and percent), and
@@ -1448,13 +1782,13 @@ template automatically.
   round). It says why when it can't (nothing below, no room, too steep, outside the boundary). In the plan view it
   starts you on the level shown, under the middle of the view. Esc (twice in a browser with the mouse captured) or
   the pause menu's Back to MapMaker brings you back where you were, undo and all.
-- **The plan view (K, Plan).** The level being edited from straight above, cut 0.6 of a level above its floor, so
+- **The plan view (K; View → Plan view; the Test tab's Plan).** The level being edited from straight above, cut 0.6 of a level above its floor, so
   roofs and the levels above are out of the way. Tiles are outlined in white (the level below dashed); icons show the
   spawns (team colours, pointing the way they face), flags, hills (with their zones), objectives (bomb sites,
   Breakthrough objectives, hostages and rescue zones, with their letters) and pickups. PgUp / PgDn change the level;
   select, move and place as in 3D; the wheel zooms about the pointer, a right or middle drag (or WASD) pans, Home
   fits the map, F centres the selection. **Export PNG** downloads the plan with a scale bar, a north arrow and a key.
-- **Tier (Map properties → Tier; map format v35, `map/qualityGates.ts`).** A map is **Core** or **Experimental**
+- **Tier (Map settings → Advanced → Tier; map format v35, `map/qualityGates.ts`).** A map is **Core** or **Experimental**
   (owner, 2026-11-11). Experimental maps are listed under "Experimental maps" in the menus and are never Quick Play's
   pick, the featured map or on the next-map ballot (a host can still put one in a rotation by hand). A new map starts
   experimental; a file without the field is core (every map offered before the tiers). Choosing Core is refused, with
@@ -1464,7 +1798,7 @@ template automatically.
   match for every offered map, and exits 1 when a core map fails one (an experimental map's only report); a test
   (`shared/test/qualityGates.test.ts`) holds every core map of `maps/` to the gates that need only the map.
   Characters have the same two tiers and their own headless gates, printed after the maps': docs/CHARACTERS.md, "Tier".
-- **Everything breaks (Map properties → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
+- **Everything breaks (Map settings → Gameplay → Everything breaks; map format v36, `map/geometry.ts` `isBreakableProp`).** Off,
   only the catalogue's breakable props break (crates, barrels, furniture…). On, every solid prop can be shot apart;
   natural rocks, walls, floors, terrain and doors stay. A prop the catalogue gives no health takes one from what it is
   made of and how big it is (`propHealth`, `sim/scenarioDefs.ts`). In a prop's inspector: **Unbreakable** keeps a piece
@@ -1473,12 +1807,12 @@ template automatically.
   the switch says; only a fallen log (`env.deadwood.log`) can break, and only with a **Health** of its own in its
   inspector (0, the default: solid cover), on any map. A map with the switch on draws its props one
   by one (no batching) and counts them in the breakable budget (1024), so keep it small.
-- **The card shot (Map properties → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
+- **The card shot (Map settings → General → Card shot).** Set card shot… shows the menu card's frame (16:9) with the card
   picture's own lens; Eye level (on by default) keeps the camera 1.7 m over what's under it as you fly. Enter saves
   the camera in the map (`metadata.cardCamera`), Esc cancels; Preview shows the saved shot in the frame; Clear goes
   back to the automatic camera. The card picture (`maps/shots/<id>.jpg`, 640×360) is rendered from it by
   `tools/content/capture-map-shots.mjs`; MapMaker stores no picture for it (Set thumbnail is the maker's own picture).
-- **Bot test (the top bar).** Opens the Test panel, beside the view; keep building while it's open.
+- **Bot test (the Test tab's tool bar, and ⋯ in every tab).** Opens the Test panel, beside the view; keep building while it's open.
   - **Run bots:** a bot match on the map as it is now, played in the background (its own worker): the mode (those the
     map plays), Bots a team (team modes) or Bots (free-for-all, up to 32), and the length (30 s to 5 min). The bar shows
     how far it got; Cancel ends it at once. Then a summary (kills, stuck recoveries, failed route searches, the
@@ -1509,11 +1843,13 @@ template automatically.
   (east ↔ west, north ↔ south) or a point (a half turn) and where it is (it snaps to a cell's middle or edge). Keep
   the original adds a mirrored copy, whose team things swap to the other team (spawns, flag bases, team zones, doors,
   buttons, team vehicles); untick it to flip the selection itself. Half the map copies one half onto the other, which
-  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. Tiles that have no
-  mirror image among their turns (most model buildings) can only go through a point. Terrain and paths are left as
+  must be empty; things on the line stay. The dialog says what it will do before you press Mirror. A tile that is its
+  own mirror image, or whose mirror image is itself turned (a corner; an Arena Corner storey, across its diagonal),
+  is placed turned, so an exploded Arena Corner mirrors as the set piece does. Tiles that have no mirror image among
+  their turns (most model buildings) can only go through a point. Terrain and paths are left as
   they are.
 - **Note pins (J).** Notes for the map's makers ("too long a sightline from B"): click the map to pin one, click a pin
-  to read or edit it (Ctrl+Enter saves), drag it to move it. Map properties → Notes lists them. They are saved in the
+  to read or edit it (Ctrl+Enter saves), drag it to move it. Map settings → General → Notes lists them. They are saved in the
   map and never shown in play.
 
 ## Bot hints (MapMaker, format v33)
@@ -1539,7 +1875,7 @@ Skies, distant scenery, ground past the border, terrain plants and the Nature ta
 
 ### Time of day and weather (map format v34)
 
-Map properties (nothing selected) → **Time of day & weather**:
+Map settings → Presentation → **Time of day & weather**:
 - **Time of day:** tick it and drag the slider (quarter hours), or click Dawn, Morning, Noon, Afternoon, Dusk or Night.
   The view shows the time as you drag; letting go sets it (one undo step). The map's sky (Environment → Sky) is its
   look by day; the time moves the sun (east at dawn, high in the south at noon, west at dusk, the moon at night) and

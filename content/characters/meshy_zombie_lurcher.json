@@ -6,6 +6,7 @@
   "name": "Lurcher",
   "look": "core.lurcher",
   "group": "horror",
+  "blood": "red",
   "nameTheme": "undead",
   "bio": "All skin, no bones about it. Mostly skin.",
   "body": "male",
@@ -27,9 +28,6 @@
   "finish": {
     "metallic": 0,
     "roughness": 0.85
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 11000,

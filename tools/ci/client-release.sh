@@ -94,6 +94,13 @@ publish() {
       # This version's CHANGELOG section (from its heading to the next one).
       awk -v v="$version" '/^## /{p = ($2 == v); next} p' CHANGELOG.md > "$notes"
       [ -s "$notes" ] || echo "See CHANGELOG.md." > "$notes"
+      # GitHub caps a release body at 125,000 characters: a long section keeps its start (the highlights) and
+      # links the full list.
+      if [ "$(wc -c < "$notes")" -gt 120000 ]; then
+        head -c 110000 "$notes" | sed '$d' > "$notes.cut"
+        printf '\n\n*The full list is longer than a release page allows: see [CHANGELOG.md](https://github.com/%s/blob/v%s/CHANGELOG.md).*\n' "$GITHUB_REPOSITORY" "$version" >> "$notes.cut"
+        mv "$notes.cut" "$notes"
+      fi
       ;;
     refs/heads/main)
       tag=main-latest; title="Latest main build"; keep="${KEEP_MAIN:-20}"

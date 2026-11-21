@@ -688,11 +688,11 @@
   "npc:gunner": "soldiers",
   "npc:heavy": "soldiers",
   "npc:sniper": "soldiers",
-  "npc:imp": "creatures",
-  "npc:puglin": "creatures",
-  "npc:cyclops": "creatures",
-  "npc:oculus": "creatures",
-  "npc:scolitex": "creatures",
+  "npc:imp": "horror",
+  "npc:puglin": "horror",
+  "npc:cyclops": "horror",
+  "npc:oculus": "horror",
+  "npc:scolitex": "horror",
   "npc:zombie": "horror"
  }
 }

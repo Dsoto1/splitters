@@ -6,6 +6,7 @@
   "name": "Dog Tag Doyle",
   "look": "core.undeadsoldier",
   "group": "horror",
+  "blood": "bone",
   "nameTheme": "soldier",
   "bio": "Buried with full honours in three different wars. Keeps marching back for a fourth.",
   "body": "male",
@@ -24,9 +25,6 @@
     "metallic": 1,
     "roughness": 1,
     "maps": true
-  },
-  "firstPerson": {
-    "arms": "own"
   },
   "fixes": {
     "triangles": 17000,

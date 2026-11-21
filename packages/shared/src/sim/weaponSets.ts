@@ -21,7 +21,7 @@
 import type { MapDocument, PickupEntity } from '../map/schema.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS } from '../content/weaponSets.generated.ts';
 import { CORE_ITEMS, getItem, type ItemDefinition } from './items.ts';
-import { categoryItems, itemCategory, pickupPool, rollHash } from './pickupRoll.ts';
+import { categoryItems, dealFrom, itemCategory, pickupPool } from './pickupRoll.ts';
 import { restrictedWeapons, type MatchRules } from './rules.ts';
 import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CATEGORIES, getWeapon, type ThrowableKind, type WeaponCategory, type WeaponDefinition } from './weapons.ts';
 
@@ -163,7 +163,7 @@ export function setCategoryPool(set: WeaponSetDef, category: WeaponCategory): re
   let pool = pools.get(key);
   if (!pool) {
     const ids = setWeaponIds(set);
-    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && (!ids || ids.has(i.effect.weapon));
+    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && i.rolls !== false && (!ids || ids.has(i.effect.weapon));
     const has = (c: WeaponCategory) => categoryItems(c).some(inSet);
     const cats = new Set(nearCategories(category, has));
     pools.set(key, (pool = CORE_ITEMS.filter((i) => inSet(i) && cats.has(itemCategory(i)!))));
@@ -238,33 +238,24 @@ export function randomGunFor(set: WeaponSetDef, seed: number, slot: number, life
   if (!set.randomGun) return null;
   const guns = setMainGuns(set);
   if (!guns.length) return null;
-  const i = Math.max(0, life - 1);
-  return guns[gunDeck(guns.length, seed, slot, Math.floor(i / guns.length))[i % guns.length]!]!.id;
+  return guns[dealFrom(guns.length, `spawn_gun_${slot}`, seed, Math.max(0, life - 1))]!.id;
 }
 
-/** A slot's deck of `n` guns for a round of lives: a seeded shuffle, whose first is never the round before's last. */
-function gunDeck(n: number, seed: number, slot: number, round: number): number[] {
-  // Two guns take turns.
-  if (n <= 2) return shuffledGuns(n, seed, slot, 0);
-  const deck = shuffledGuns(n, seed, slot, round);
-  // The round before's last is its shuffle's own: trading its first two places never moves the last of three or more.
-  if (round > 0 && deck[0] === shuffledGuns(n, seed, slot, round - 1)[n - 1]) [deck[0], deck[1]] = [deck[1]!, deck[0]!];
-  return deck;
-}
-
-function shuffledGuns(n: number, seed: number, slot: number, round: number): number[] {
-  const deck = Array.from({ length: n }, (_, k) => k);
-  for (let k = n - 1; k > 0; k--) {
-    const j = rollHash(`spawn_gun_${slot}_${round}_${k}`, seed >>> 0) % (k + 1);
-    [deck[k], deck[j]] = [deck[j]!, deck[k]!];
-  }
-  return deck;
+/**
+ * A set's grenade for a life (1, 2, 3…): dealt like the random guns from a deck of the set's grenades shuffled from the
+ * match seed and the slot (Chaos: a sheep, a holy bomb and a cluster in some order every three lives, never the same
+ * twice running); frags in a set without grenades of its own.
+ */
+export function throwableFor(set: WeaponSetDef, seed: number, slot: number, life: number): ThrowableKind {
+  const kinds = setThrowables(set);
+  if (!kinds?.length) return 'frag';
+  return kinds[dealFrom(kinds.length, `spawn_grenade_${slot}`, seed, Math.max(0, life - 1))]!;
 }
 
 /**
  * A spawn loadout in a set: its spawn weapons (Standard: the mode's own), its random main gun for this life, and for a
- * sniper-role bot the set's scoped gun in place of the main gun (added when the spawn has none); the set's first grenade
- * (frags in a set without grenades of its own), as many as the rules give (at most what a player carries).
+ * sniper-role bot the set's scoped gun in place of the main gun (added when the spawn has none); the life's grenade
+ * (throwableFor: dealt from the set's, frags in a set without grenades of its own), as many as the rules give (at most what a player carries).
  */
 export function setLoadout(set: WeaponSetDef, rules: Pick<MatchRules, 'startingWeapons' | 'startingGrenades'>, o: { seed: number; slot: number; life: number; sniper?: boolean }): SpawnLoadout {
   const weapons = [...setSpawnWeapons(set, rules)];
@@ -275,7 +266,7 @@ export function setLoadout(set: WeaponSetDef, rules: Pick<MatchRules, 'startingW
     if (last >= 0 && getWeapon(weapons[last]!).slot >= 3) weapons[last] = set.sniper;
     else weapons.push(set.sniper);
   }
-  const kind = setThrowables(set)?.[0] ?? 'frag';
+  const kind = throwableFor(set, o.seed, o.slot, o.life);
   const count = Math.min(rules.startingGrenades, THROWABLE_DEFS[kind].max);
   return { weapons, throwable: count > 0 ? { kind, count } : null };
 }

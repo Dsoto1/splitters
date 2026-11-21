@@ -1,0 +1,190 @@
+{
+  "$comment": "Sports grounds (tools/content/kit/grounds.mjs; St. John's step 4b: docs/map-briefs/st_johns, the volleyball court at Scott Johnston / Hazelwood's west end): a net on two posts and a sand court with its lines. Our own shapes and colours.",
+  "type": "sport",
+  "props": [
+    {
+      "id": "kit.sport.volleyball_net",
+      "displayName": "Volleyball Net",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4b): a volleyball net 9.5 m wide and 1 m deep, its top at 2.43 m, between two steel posts 2.55 m tall on foot plates, 10.6 m over all; white tapes, a dark cord grid, guy cords to the posts. Collides as its posts and the net's band (1.43 to 2.43 m), a lattice to sight as the chain-link fence is: bots see through it, rounds pass (fabric). Place it across the Sand Court's middle, turned as the court is."
+      },
+      "size": [10.6, 2.55, 0.3],
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": { "kind": "volleynet", "top": 2.43, "net": 1.0, "span": 9.5, "post": 0.1, "plate": 0.3, "cell": 0.15 },
+      "lods": [{ "distance": 0 }, { "distance": 25 }, { "distance": 70 }],
+      "variants": [
+        { "index": 0, "name": "blue", "seed": 19501, "look": { "post": "#3c5e7c", "tape": "#f1efe8", "cord": "#1f2124", "plate": "#5b5d60" } },
+        { "index": 1, "name": "white", "seed": 19502, "look": { "post": "#d9d8d2", "tape": "#f1efe8", "cord": "#1f2124", "plate": "#5b5d60" } }
+      ]
+    },
+    {
+      "id": "kit.sport.court_sand",
+      "displayName": "Sand Court",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 4b): a sand bed 15 × 24 m and 4 cm deep with a bevelled edge, the lines of a volleyball court 9 × 18 m round its middle and a centre line across (under the net). No collision: walked on as the ground under it, so lay it on flat ground (MapMaker's Terrain flatten, or a level spot)."
+      },
+      "size": [15, 0.04, 24],
+      "collide": "none",
+      "surface": "sand",
+      "detail": "stone",
+      "generator": { "kind": "court", "court": [9, 18], "line": 0.05, "patch": 1.5 },
+      "lods": [{ "distance": 0 }, { "distance": 40 }, { "distance": 120 }],
+      "variants": [
+        { "index": 0, "name": "sand", "seed": 19511, "look": { "sand": "#cdb78f", "line": "#f2f1ec", "jitter": 0.05 } },
+        { "index": 1, "name": "pale", "seed": 19512, "look": { "sand": "#ddd0b0", "line": "#2f5f8f", "jitter": 0.04 } }
+      ]
+    },
+    {
+      "id": "kit.sport.court_lines",
+      "displayName": "Basketball Court Lines",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10): a basketball court's lines painted on a floor, 26 x 14 m: outline, centre line and circle, the keys filled in a colour, free-throw circles, three-point lines. Lies a hair over the floor (an Oak Planks floor reads as maple). Collides as nothing."
+      },
+      "size": [
+        26.2,
+        0.01,
+        14.2
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "courtlines",
+        "court": [
+          26,
+          14
+        ],
+        "width": 0.05
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 45
+        },
+        {
+          "distance": 120
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "purple",
+          "seed": 35011,
+          "look": {
+            "line": "#f2f0ea",
+            "key": "#4b2a84"
+          }
+        },
+        {
+          "index": 1,
+          "name": "plain",
+          "seed": 35012,
+          "look": {
+            "line": "#f2f0ea"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sport.hoop_wall",
+      "displayName": "Basketball Hoop (wall)",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10): a basketball hoop on a steel bracket from a wall (its back on -z): a white backboard 1.2 m out with its target square, an orange rim at 3.05 m with a cord net. Collides as nothing (above everyone's head)."
+      },
+      "size": [
+        1.9,
+        4.1,
+        1.9
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "metal",
+      "generator": {
+        "kind": "hoop",
+        "reach": 1.2
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "white",
+          "seed": 35021,
+          "look": {
+            "steel": "#4a4f55",
+            "board": "#f1f1ee",
+            "rim": "#d0571f",
+            "net": "#eeeeea"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.sport.pool_lanes",
+      "displayName": "Pool Lanes",
+      "category": "Town & Market",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 10, Gerber Pool): a pool's four lanes, 22 x 10 m: three lane ropes floating at the prop's top (the water's surface) in bands of red, white and blue, red near the walls; dark lane stripes with a T on the floor; a target on each end wall. Its foot on the pool's floor. Collides as nothing (the water and the basin do)."
+      },
+      "size": [
+        22.0,
+        1.45,
+        10.0
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "plastic",
+      "detail": "plastic",
+      "generator": {
+        "kind": "poollanes",
+        "lanes": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 35
+        },
+        {
+          "distance": 100
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 35031,
+          "look": {
+            "stripe": "#1d2a44",
+            "colours": "#d33b2c,#f2f0ea,#2a5bd7",
+            "ends": "#d33b2c"
+          }
+        }
+      ]
+    }
+  ]
+}
