@@ -77,3 +77,49 @@ pointed-arch entrance shows further right in the next wing.
   entrances"); the hall sign in photo 3 is not readable in the copy seen.
 - Which external door the owner means in point 3.
 - Whether the "other dorm hall" in point 5 is Smythe, Scott Johnston / Hazelwood or another.
+
+## The owner's answers and more notes (same day, about 12:00 UTC)
+
+The photos are now also in the owner's Drive, folder `screens` (fetch per container; never commit them).
+Lane F's other session hands all its St. John's work to this session once its usage is up.
+
+> the external door is on on wells wall of the corner, and it should be on the dekoven side show in image. Dekoven
+> connects to wells dorm halls from 2nd floor and 3rd floors. the railings of stairwells in dorms were black metal.
+> I think Welles had higher mess hal ceilings(whil also be recessed slightly, i remember going down slightly into
+> the hall. when entering from dekoven the kitchen was on the left behind cafeteria line in front. To the right, i
+> would say the main hall had 4 rows of tables, each row having 2 long tables each with space between. the far back
+> wall near the clocktower entrance/exit was the drink stations. if we went past line and 4 rows, there was another
+> seating area with smaller cafeteria tables positioned the other way in rows of themselves. Entrance in photo 5 is
+> for dekoven. right now it has a small door, and basic facade.
+
+So the open points above are settled:
+
+- **The external door (point 3):** the main entrance built on 2026-11-21 in **Welles's** wall of the inside corner
+  (step 7a, the Twin arches in the Refectory Bay at cell (4, -11)) belongs on the **DeKoven** side of that corner,
+  as photo 1 shows it: the projecting porch with the wide pointed arch, double doors and buttresses. Move it.
+- **The dorm halls (point 5):** DeKoven joins **Welles's dorm halls on the 2nd and the 3rd floor**. So Welles's
+  upper floors are dorm halls (check what ours has there: step 6 gave Welles a classroom floor and step 7b put "no
+  door to Welles's classroom floor"), and the corridor runs round the corner on both floors, with the blocking
+  dorm rooms removed.
+- **Photo 5 is DeKoven's entrance:** ours has a small door and a plain front. It gets the gate tower look and the
+  two mirrored outside stairs to the 2nd-floor landing.
+- **New: stairwell railings in the dorms are black metal.**
+- **New: Welles's mess hall** has a higher ceiling than ours, and its floor is slightly sunk: you step down a
+  little going in (QUEUE Maps already has "mess hall floor sunk 0.5 m").
+
+### The mess hall's layout (the owner's sketch, described; plan view, the long side left to right)
+
+- **Far left, the full depth of the room:** the kitchen. **Next to it, a narrower strip:** the serving line and
+  cafeteria food, between the kitchen and the hall. Coming in from DeKoven, the kitchen is on the left behind the
+  line, the line in front.
+- **The door "to DeKoven":** in the long wall at the bottom of the sketch, at its left end, just right of the
+  serving strip.
+- **A podium:** against the same bottom wall, about the middle of the hall.
+- **The clock tower's entrance / exit ("clock"):** the bottom right corner.
+- **Drink stations:** along the right-hand end wall (the far wall from the kitchen), near the clock tower door.
+- **The main hall:** four rows of long tables, each row two tables end to end with a gap between them (two columns
+  of four), the tables running left to right.
+- **Past the line and the four rows, along the top wall:** a second seating area with smaller cafeteria tables
+  turned the other way (their long side up and down), in a row of their own: five drawn, in groups, plus one more.
+- **Between the two areas:** "the room has pillars with small arches dividing these spaces": a row of piers with
+  small arches separates the main hall from the second seating area.
