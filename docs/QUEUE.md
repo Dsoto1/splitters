@@ -224,6 +224,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-21 · F · St. John's step 7b: DeKoven rebuilt and joined to Welles (the stair from DeKoven's 2nd floor to the mess hall's entrance), new generic pieces (stair bay to the roof, stair-down bay, admin entry bay, basement room and stairwell tiles, Admin Bay options) (`check/stjohns-7b` at 4c73c9fa, run 44885411126).
 - 2026-11-21 · F · St. John's step 7a: the mess hall's double-arched main entrance (new wall style Twin arches, two Refectory Bay choices; map format v49) (`check/stjohns-7` at 30396b4e, run 44868885032).
 - 2026-11-21 · B · Dual wielding on (AKIMBO_READY true): the third-person pair square to the aim, other players' pairs over the network (hostgame check), pair flashes taking turns under Reduce flashing; double kick and first-person pair pose unchanged for the owner to test (`check/fable-dual-4` at 7ecc1f83, run 44858042875).
 - 2026-11-21 · B · Slim dorm doors 1.2 m → 1.5 m wide (owner: "slightly wider"), at the source: kit.door.oak_slim/_ajar/_open and every academy doorway, plus St. John's copied Welles stair door through MapMaker (`check/fixes-20261120b` at bf830d99, run 44848023139).
