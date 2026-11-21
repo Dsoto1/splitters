@@ -12588,7 +12588,9 @@ async function flashingScene(browser, scene, names) {
         w.reserve = def.reserveMax;
       }, 1000 / 60);
       b.queue.fire = 2 | 32;
-      // (Half turned toward you: both muzzles and their flashes in view, the rounds going wide of you.)
+      // (Turned a little toward you, close: both muzzles and their flashes large in view (side on at 3 m and half
+      // turned at 2.5 m, they changed only 0.2 % of the picture on CI, under the check's 0.3 %), the rounds going
+      // about a metre wide of you.)
       b.queue.yaw = Math.PI / 4;
       return true;
     }, on);
@@ -12729,11 +12731,11 @@ async function flashingScene(browser, scene, names) {
       // Dual wielding seen by everyone else (step 4): another player's pair, a flash at each gun's muzzle. With the
       // setting on their pair shares one flash too (view.ts remoteFlash, PairFlashGate), as yours does in `pair`.
       name: 'pairtp',
-      label: "another player's pair of machine pistols 2.5 m in front, half turned your way, both triggers held, in the dark room",
+      label: "another player's pair of machine pistols 1.3 m in front, turned a little your way, both triggers held, in the dark room",
       weapon: 'core.machine_pistol',
       me: [0, 0, -25.5],
-      look: aim([0, 0, -25.5], [0, 1.2, -28]),
-      bots: [[0, 0, -28]],
+      look: aim([0, 0, -25.5], [0, 1.35, -26.8]),
+      bots: [[0, 0, -26.8]],
       before: async () => {
         await botPairOf(true);
         for (let i = 0; i < 12 && !(await page.evaluate(() => [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) >= 1))); i++) await step(5);
