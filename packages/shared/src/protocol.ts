@@ -210,6 +210,16 @@ export interface PlayerSnapshot {
    * section 24).
    */
   dw?: 1;
+  /**
+   * Sliding (sprint, then crouch: sim/moves.ts SLIDE): drawn as a slide. Absent otherwise, and from hosts older than the
+   * field (docs/MULTIPLAYER_PROTOCOL.md section 25).
+   */
+  sd?: 1;
+  /**
+   * Leaning (peek), in steps: -10 full left .. 10 full right (sim/moves.ts LEAN.steps); absent upright. The head, gun and
+   * hit shapes are out to that side (section 25).
+   */
+  ln?: number;
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -272,6 +282,8 @@ export interface PrivateState {
   ks?: number;
   /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
   sta?: [number, number, number];
+  /** A slide under way and the stamina moves' cooldown, when either is: [ticks into the slide (0: none), cooldown ticks left] (sim/moves.ts). */
+  mv?: [number, number];
   /**
    * Classes: [class (index into CLASS_IDS), class asked for at the next spawn, ability 0-100 (charge, energy
    * or readiness), ability active 0/1, air jumps used + 4 while jump is held (for predicting double jumps)].

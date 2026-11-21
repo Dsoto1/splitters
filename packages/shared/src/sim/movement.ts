@@ -8,10 +8,11 @@ import { passageLinks } from './passages.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 import { grabZipline, rideZipline, startRide, ziplineLinks, mapZiplines, type Zipline } from './zipline.ts';
 import { hypot } from '../math.ts';
+import { SLIDE, canStartMove, stepLean } from './moves.ts';
 
 // The buttons, the input and the quick messages live in inputs.ts (the menu reads them without the movement code).
-import { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, ALL_BUTTONS, type PlayerInput } from './inputs.ts';
-export { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, type PlayerInput };
+import { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, ALL_BUTTONS, type PlayerInput } from './inputs.ts';
+export { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, type PlayerInput };
 
 export interface MoveState {
   /** Feet position. */
@@ -53,6 +54,15 @@ export interface MoveState {
   zip?: number;
   zs?: number;
   zv?: number;
+  /**
+   * Sliding (sim/moves.ts SLIDE): ticks since it started (absent when not). The slide's momentum is the push velocity
+   * (`vx`, `vz`), which the slide slows itself instead of the ground's quick decay.
+   */
+  slide?: number;
+  /** Ticks left before another stamina move (slide; later the dodge-step and roll) may start. */
+  moveCd?: number;
+  /** Leaning (peek): steps, -LEAN.steps (full left) .. LEAN.steps (full right); absent upright (sim/moves.ts). */
+  lean?: number;
 }
 
 /** Current stance of a move state. */
@@ -215,6 +225,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     const grab = grabZipline(env.ziplines, state.pos, input.yaw, env.team);
     if (grab) return rideZipline(physics, env.ziplines, startRide(env.ziplines, state, grab), false, false, dt, env.scale ?? 1, env.gravity ?? 1);
   }
+  const baseSpeed = speedScale;
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
   const k = env.scale ?? 1;
@@ -252,18 +263,38 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   let stamina = state.stamina ?? 1;
   let rest = state.rest ?? 0;
   let winded = state.winded ?? false;
+  // In liquid: swimming once it's up to your chest, wading before that. On a ladder: climbing.
+  const chest = env.liquids?.length ? liquidAt(env.liquids, { x: state.pos.x, y: state.pos.y + SWIM_DEPTH, z: state.pos.z }) : null;
+  const ladder = !chest && env.ladders?.length ? ladderAt(env.ladders, state.pos) : null;
+  // The slide (sim/moves.ts): from a sprint, a fresh crouch on the ground starts it, if the stamina is there; it goes
+  // on while crouch is held and you stay on the ground, and ends crouched.
+  let moveCd = state.moveCd ?? 0;
+  if (moveCd > 0) moveCd--;
+  let slide = state.slide ?? 0;
+  const footing = state.grounded && !chest && !ladder && !state.chute;
+  const slideStart = !slide && !!state.sprint && was === 0 && want === 1 && stance === 1 && footing && canStartMove(SLIDE, stamina, winded, moveCd, env.stamina ?? 1);
+  if (slide && !(want === 1 && stance === 1 && footing)) {
+    slide = 0;
+    moveCd = Math.round(SLIDE.cooldown / dt);
+  } else if (slideStart || slide) slide++;
   // Aiming down the sights (or through a scope): no sprinting, and you walk at 75%.
   const aiming = (input.buttons & BUTTON_ZOOM) !== 0;
   const sprint = !aiming && (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
-  if (sprint) {
+  if (slideStart) {
+    stamina = quantize(Math.max(0, stamina - SLIDE.cost / (env.stamina ?? 1)));
+    if (stamina === 0) winded = true;
+  }
+  if (sprint || slide) {
     // Quantised here (not just on output) so running dry is seen the same on server and client.
-    stamina = quantize(Math.max(0, stamina - (SPRINT.drain / (env.stamina ?? 1)) * dt));
+    if (sprint) stamina = quantize(Math.max(0, stamina - (SPRINT.drain / (env.stamina ?? 1)) * dt));
     rest = Math.round(SPRINT.rest / dt);
     if (stamina === 0) winded = true;
   } else if (rest > 0) rest--;
   else stamina = quantize(Math.min(1, stamina + SPRINT.regen * dt));
   if (winded && stamina >= SPRINT.restart) winded = false;
   speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : (env.weaponMove ?? 1)) * (aiming ? ADS_SPEED : 1);
+  // The lean (peek): on the ground, standing or crouched, not sprinting or sliding; never into a wall (sim/moves.ts).
+  const lean = stepLean(physics, state.pos, input.yaw, stance, state.lean ?? 0, input.buttons, footing && stance < 2 && !sprint && !slide, k);
 
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
@@ -275,8 +306,6 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     wx /= wl;
     wz /= wl;
   }
-  // In liquid: swimming once it's up to your chest, wading before that.
-  const chest = env.liquids?.length ? liquidAt(env.liquids, { x: state.pos.x, y: state.pos.y + SWIM_DEPTH, z: state.pos.z }) : null;
   const feet = chest ?? (env.liquids?.length ? liquidAt(env.liquids, { x: state.pos.x, y: state.pos.y + 0.1, z: state.pos.z }) : null);
   const wet = chest ? LIQUID_SPECS[chest.liquid].swim : feet ? LIQUID_SPECS[feet.liquid].wade : 1;
   wx *= PLAYER.runSpeed * speedScale * wet;
@@ -285,6 +314,18 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   // Push velocity. On a slick surface (traction < 1) running feeds momentum instead of moving you directly, so you slide.
   let vx = state.vx ?? 0;
   let vz = state.vz ?? 0;
+  // Sliding: the momentum is the push; the legs only steer a little. It starts from the sprint's speed, the way you
+  // were running (or facing).
+  const slideFrom = slideStart ? PLAYER.runSpeed * baseSpeed * SPRINT.speed * SLIDE.boost * wet : 0;
+  if (slideStart) {
+    const l = hypot(wx, wz);
+    vx += l > 1e-6 ? (wx / l) * slideFrom : sin * slideFrom;
+    vz += l > 1e-6 ? (wz / l) * slideFrom : cos * slideFrom;
+  }
+  if (slide) {
+    wx *= SLIDE.control;
+    wz *= SLIDE.control;
+  }
   if (traction < 1 && state.grounded) {
     vx += wx * (1 - traction) * 0.07;
     vz += wz * (1 - traction) * 0.07;
@@ -296,7 +337,6 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const jump = jumpPressed;
   let airJumped = 0;
   let jet = false;
-  const ladder = !chest && env.ladders?.length ? ladderAt(env.ladders, state.pos) : null;
   // Canopy: packs up on the ground, in water or on a ladder; crouch cuts it away. Opens on jump
   // (not with a jetpack, which jump fires) or by itself when the automatic opener is armed.
   // A double jump still in hand takes a fresh press before the cord does.
@@ -368,7 +408,31 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (velY > 0 && moved.movedY < desiredY - 1e-4) velY = 0;
   if (velY > 0) grounded = false;
 
-  const decay = grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
+  if (slide) {
+    // The slide slows itself: steadily on the flat, less downhill and more uphill (by the grade it just slid over), never
+    // past its starting speed; it ends slow, after SLIDE.maxSeconds, against a wall, or off the ground.
+    const v = hypot(vx, vz);
+    const dx = moved.feet.x - state.pos.x;
+    const dz = moved.feet.z - state.pos.z;
+    const run = hypot(dx, dz);
+    const grade = run > 1e-3 ? Math.max(-SLIDE.maxGrade, Math.min(SLIDE.maxGrade, -(moved.feet.y - state.pos.y) / run)) : 0;
+    const top = slideStart ? slideFrom : Math.max(v, PLAYER.runSpeed * SLIDE.endSpeed);
+    const next = Math.min(top, v + (PLAYER.gravity * g * SLIDE.slope * grade - SLIDE.decel) * dt);
+    const blocked = run < v * dt * SLIDE.blocked;
+    if (next <= PLAYER.runSpeed * SLIDE.endSpeed * baseSpeed || slide >= Math.round(SLIDE.maxSeconds / dt) || blocked || !grounded) {
+      slide = 0;
+      moveCd = Math.round(SLIDE.cooldown / dt);
+      // Into the crouch walk without a lurch: the legs take back their full share of the speed, so the push keeps
+      // only what is over a crouch walk (and none against a wall).
+      const keep = blocked || v < 1e-6 ? 0 : Math.max(0, v - PLAYER.runSpeed * STANCES[1].speed * baseSpeed) / v;
+      vx *= keep;
+      vz *= keep;
+    } else if (v > 1e-6) {
+      vx *= next / v;
+      vz *= next / v;
+    }
+  }
+  const decay = slide ? 1 : grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
   vx = Math.abs(vx * decay) < 0.02 ? 0 : quantize(vx * decay);
   vz = Math.abs(vz * decay) < 0.02 ? 0 : quantize(vz * decay);
   // Built field by field in the same order the optional ones always had (no temporary object per optional
@@ -390,6 +454,9 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (env.airJumps && jump) out.jumpHeld = true;
   if (chute && !grounded) out.chute = chute;
   if (drop && !grounded) out.drop = drop;
+  if (slide) out.slide = slide;
+  if (moveCd) out.moveCd = moveCd;
+  if (lean) out.lean = lean;
   return out;
 }
 

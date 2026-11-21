@@ -615,6 +615,8 @@ export interface ShotTarget {
   yaw?: number;
   stance?: Stance;
   scale?: number;
+  /** Leaning (peek), in steps (sim/moves.ts): the upper shapes move with it (sim/hitbox.ts). */
+  lean?: number;
 }
 
 export interface ShotResult {
@@ -638,6 +640,7 @@ export function rayTarget(origin: Vec3, dir: Vec3, t: ShotTarget, max = Infinity
   scratchBody.stance = t.stance ?? 0;
   scratchBody.scale = t.scale ?? 1;
   scratchBody.box = t.box;
+  scratchBody.lean = t.lean ?? 0;
   return rayBody(origin, dir, scratchBody, max, thick);
 }
 

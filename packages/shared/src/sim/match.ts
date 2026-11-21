@@ -65,6 +65,7 @@ import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPP
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
+import { eyePoint } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
@@ -602,9 +603,9 @@ interface BulletEnd {
 /** Bodies a shot can hit; `who` is the actor (lists kept for a whole bullet pass skip anyone killed during it). */
 type ShotTargets = readonly ShotBody[];
 /** A body as a shot sees it: where it stands and, for the measured shapes, its yaw, stance, scale and shapes. */
-type ShotBody = { slot: number; feet: Vec3; height: number; radius: number; box: LookHitbox; yaw: number; stance: Stance; scale: number; who?: Combatant };
+type ShotBody = { slot: number; feet: Vec3; height: number; radius: number; box: LookHitbox; yaw: number; stance: Stance; scale: number; lean?: number; who?: Combatant };
 /** One body in the lag-compensation history. */
-type PastBody = Vec3 & { h: number; yaw: number; stance: Stance; scale: number; box: LookHitbox };
+type PastBody = Vec3 & { h: number; yaw: number; stance: Stance; scale: number; box: LookHitbox; lean: number };
 
 /** A ground hazard or field (see ZONE_KINDS). */
 interface Zone {
@@ -3636,7 +3637,7 @@ export class Match {
     let yaw = c.yaw;
     let pitch = c.pitch;
     if (c.thirdPerson && !c.mount) {
-      const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+      const eye = this.eyeOf(c);
       const bodies: RayQuery | undefined = targets
         ? (o, d, max) => {
             let best: number | null = null;
@@ -3657,7 +3658,7 @@ export class Match {
 
   /** Launch a projectile from the eye along the aim (lifted a little for throws, so they arc). */
   private launch(shooter: Combatant, spec: ProjectileSpec, weapon: string, lift = 0, spread = 0): void {
-    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
+    const eye = this.eyeOf(shooter);
     const aim = this.spreadDir(lift ? normalize(add(viewDirection(shooter.yaw, shooter.pitch), { x: 0, y: lift, z: 0 })) : this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, 0, true) : undefined), spread);
     this.projectiles.push({
       id: this.nextProjectileId++,
@@ -3693,7 +3694,7 @@ export class Match {
   }
 
   private fireNow(shooter: Combatant, def: Trigger, viewTick: number): void {
-    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
+    const eye = this.eyeOf(shooter);
     const aim = this.aimOf(shooter, shooter.thirdPerson ? this.targetsFor(shooter, viewTick, true) : undefined);
     const gp = gunplayOf(getWeapon(def.id));
     let spread: number;
@@ -3834,7 +3835,7 @@ export class Match {
   /** Disc Arena: throw a disc (or, with a power disc, a fast, triple, splitting or freezing throw). */
   private throwDisc(shooter: Combatant, spec: ProjectileSpec, weapon: string): void {
     const power = shooter.discPower ?? null;
-    const eye = { x: shooter.move.pos.x, y: shooter.move.pos.y + eyeHeightOf(shooter.move, shooter.size), z: shooter.move.pos.z };
+    const eye = this.eyeOf(shooter);
     discThrows(spec, power?.kind ?? null).forEach((t, i) => {
       const aim = viewDirection(shooter.yaw + t.yaw, shooter.pitch);
       this.projectiles.push({ id: this.nextProjectileId++, owner: shooter.slot, spec: t.spec, weapon, pos: add(eye, scale(aim, 0.5)), vel: scale(aim, t.spec.speed), ticksLeft: Math.round(t.spec.fuseSeconds * TICK_RATE), age: 0, ...(i > 0 ? { extra: true } : {}) });
@@ -3965,7 +3966,7 @@ export class Match {
     if (kind === 'punch') c.punchedAt = this.tick;
     else c.punchedAt = -1000;
     if (c.reload || c.reload2) this.cancelReload(c);
-    const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+    const eye = this.eyeOf(c);
     const { hit, body } = this.meleeTrace(c, eye, s.range * c.size, this.targetsFor(c, viewTick));
     this.pendingEvents.push({ e: 'melee', s: c.slot, hit, u: kind === 'punch' ? 1 : 2 });
     if (hit !== null) {
@@ -4027,14 +4028,24 @@ export class Match {
       .map((o) => {
         const then = past?.get(o.slot);
         // The rewound body is the whole body as it was: where it stood, which way it faced, its stance and shapes.
-        return then ? { slot: o.slot, feet: then, height: then.h, radius: PLAYER.radius * o.size, box: then.box, yaw: then.yaw, stance: then.stance, scale: then.scale, who: o } : this.shotBody(o);
+        return then ? { slot: o.slot, feet: then, height: then.h, radius: PLAYER.radius * o.size, box: then.box, yaw: then.yaw, stance: then.stance, scale: then.scale, lean: then.lean, who: o } : this.shotBody(o);
       });
   }
 
   /** A combatant's body where it is now, for shots: its measured shapes, facing, stance and scale. */
   private shotBody(o: Combatant): ShotBody {
     const box = hitboxOf(o);
-    return { slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, box, yaw: o.yaw, stance: stanceOf(o.move), scale: o.hitScale * o.size, who: o };
+    return { slot: o.slot, feet: o.move.pos, height: bodyHeightOf(o.move, o.size), radius: PLAYER.radius * o.size, box, yaw: o.yaw, stance: stanceOf(o.move), scale: o.hitScale * o.size, lean: this.leanOf(o), who: o };
+  }
+
+  /** How far a combatant leans (peek; sim/moves.ts), in steps: on foot and alive only (a seat takes the lean away). */
+  private leanOf(c: Combatant): number {
+    return c.alive && !c.mount ? (c.move.lean ?? 0) : 0;
+  }
+
+  /** A combatant's eye: where rounds, throws and sight lines start (a lean moves it out to the side). */
+  private eyeOf(c: Combatant): Vec3 {
+    return eyePoint(c.move.pos, c.yaw, stanceOf(c.move), this.leanOf(c), c.size);
   }
 
   private recordHistory(): void {
@@ -4045,7 +4056,7 @@ export class Match {
     for (const c of this.actors()) {
       if (!c.alive) continue;
       let o = e.pool.get(c.slot);
-      if (!o) e.pool.set(c.slot, (o = { x: 0, y: 0, z: 0, h: 0, yaw: 0, stance: 0, scale: 1, box: c.hitbox }));
+      if (!o) e.pool.set(c.slot, (o = { x: 0, y: 0, z: 0, h: 0, yaw: 0, stance: 0, scale: 1, box: c.hitbox, lean: 0 }));
       o.x = c.move.pos.x;
       o.y = c.move.pos.y;
       o.z = c.move.pos.z;
@@ -4054,6 +4065,8 @@ export class Match {
       o.stance = stanceOf(c.move);
       o.box = hitboxOf(c);
       o.scale = c.hitScale * c.size;
+      // The lean as it was: a round aimed at a head round a corner meets it where the shooter saw it.
+      o.lean = this.leanOf(c);
       e.at.set(c.slot, o);
     }
   }
@@ -4786,7 +4799,7 @@ export class Match {
 
   /** Laser-guided rockets turn toward whatever their shooter is aiming at. */
   private guide(p: Projectile, owner: Combatant, turnRate: number): void {
-    const eye = { x: owner.move.pos.x, y: owner.move.pos.y + eyeHeightOf(owner.move, owner.size), z: owner.move.pos.z };
+    const eye = this.eyeOf(owner);
     const look = viewDirection(owner.yaw, owner.pitch);
     const hit = this.physics.raycastWorld(eye, look, 300);
     const target = add(eye, scale(look, hit ?? 300));
@@ -7436,6 +7449,9 @@ export class Match {
       if (c.move.stance) s.sn = c.move.stance;
       if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
       if (c.move.sprint) s.sr = 1;
+      if (c.move.slide && c.alive) s.sd = 1;
+      const lean = this.leanOf(c);
+      if (lean) s.ln = lean;
       if (c.move.chute) s.ch = c.move.chute;
       if (c.move.drop) s.dr = 1;
       if (this.scopeUp(c)) s.zm = 1;
@@ -7468,7 +7484,7 @@ export class Match {
 
   /** What `c` aims at: an enemy in their sights (its middle), else the world along their view within 150 m; null: nothing. */
   private aimAt(c: Combatant): { at: Vec3; target: Combatant | null } | null {
-    const eye = { x: c.move.pos.x, y: c.move.pos.y + eyeHeightOf(c.move, c.size), z: c.move.pos.z };
+    const eye = this.eyeOf(c);
     const dir = viewDirection(c.yaw, c.pitch);
     const wall = this.physics.raycastWorld(eye, dir, 150) ?? 150;
     let target: Combatant | null = null;
@@ -7752,6 +7768,8 @@ export class Match {
       ...(c.streak ? { ks: c.streak } : {}),
       ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
+      // A slide under way and the stamina moves' cooldown, for prediction (sim/moves.ts).
+      ...(c.move.slide || c.move.moveCd ? { mv: [c.move.slide ?? 0, c.move.moveCd ?? 0] as [number, number] } : {}),
       ...(this.classes?.privateState(c) ?? {}),
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
       ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),
@@ -7836,7 +7854,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -7862,6 +7880,9 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean, sheltered:
   v.hitScale = c.hitScale;
   v.shielded = !!c.shieldUntil && c.alive;
   v.shieldUntil = c.shieldUntil ?? 0;
+  v.lean = c.alive && !c.mount ? (c.move.lean ?? 0) : 0;
+  v.stamina = c.move.stamina ?? 1;
+  v.sprinting = !!c.move.sprint;
 }
 
 /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */

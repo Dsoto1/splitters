@@ -94,6 +94,11 @@ export interface CombatantView {
   chute?: boolean;
   /** Out of breath (ran its stamina dry): no sprinting until it is back (sim/movement.ts SPRINT.restart). */
   winded?: boolean;
+  /** Leaning (peek), in steps (sim/moves.ts): its eye and head are out to that side. */
+  lean?: number;
+  /** Stamina 0..1 (a slide costs SLIDE.cost of it) and whether it sprinted this tick. */
+  stamina?: number;
+  sprinting?: boolean;
   /** Holding Use or the Medkit's trigger (sim/holdUse.ts): resupplying or healing. */
   holding?: 'resupply' | 'heal';
   /** Body size (BODY_SIZES scale: small 0.78, large 1.18; absent = 1): eye, aim point and hit body scale with it. */

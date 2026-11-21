@@ -14,6 +14,7 @@
  */
 import type { Vec3 } from '../math.ts';
 import { HITBOX_MARGIN, type Stance } from './constants.ts';
+import { LEAN, leanPivot } from './moves.ts';
 import type { HitZone } from './weapons.ts';
 
 /** A capsule squashed across the body: `x` its middle across, `w` half its width, `r` its depth radius, `a`→`b` its axis as [up, forward]. */
@@ -60,7 +61,27 @@ export interface HitBody {
   /** Multiplies the shapes (size class, a character-stats size, an NPC role's scale). */
   scale: number;
   box: LookHitbox;
+  /**
+   * Leaning (peek), in steps (-LEAN.steps..LEAN.steps, + right; sim/moves.ts): the head, torso and arms roll about the
+   * hips and shift out with it, as the eye does (eyePoint); the legs stay. Absent: upright.
+   */
+  lean?: number;
 }
+
+/**
+ * A lean's roll and shift for the upper shapes: [sin, cos of the roll, shift across (unscaled m), pivot height]; null
+ * upright. Rays meet the upper shapes in the frame that undoes it.
+ */
+function leanFrame(body: { lean?: number; stance?: Stance }): [number, number, number, number] | null {
+  const lean = body.lean;
+  if (!lean) return null;
+  const f = Math.max(-1, Math.min(1, lean / LEAN.steps));
+  const a = LEAN.angle * f;
+  return [Math.sin(a), Math.cos(a), LEAN.shift * f, leanPivot(body.stance ?? 0)];
+}
+
+/** Most a lean moves any upper shape (unscaled m): the broad phase grows by it. */
+const LEAN_REACH = LEAN.shift + 1.0 * Math.sin(LEAN.angle) + 0.1;
 
 export function shapesFor(box: LookHitbox, stance: Stance): HitShapes {
   return (stance === 2 ? box.prone : stance === 1 ? box.crouch : null) ?? box.stand;
@@ -195,7 +216,8 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
   const fatHead = HITBOX_MARGIN.head + thick / k;
   // Broad phase: the stance's bounding sphere.
   const [cy, R0] = shapesBounds(s);
-  const R = R0 + Math.max(fat, fatHead);
+  const tilt = leanFrame(body);
+  const R = R0 + Math.max(fat, fatHead) + (tilt ? LEAN_REACH : 0);
   const ex = o.x - body.feet.x;
   const ey = o.y - (body.feet.y + cy * k);
   const ez = o.z - body.feet.z;
@@ -210,6 +232,18 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
   const px = o.x - body.feet.x, py = o.y - body.feet.y, pz = o.z - body.feet.z;
   const lx = (px * cos - pz * sin) / k, ly = py / k, lz = (px * sin + pz * cos) / k;
   const qx = (d.x * cos - d.z * sin) / k, qy = d.y / k, qz = (d.x * sin + d.z * cos) / k;
+  // Leaning, the head, torso and arms are rolled about the hips and shifted across: the ray in their own frame (the
+  // lean undone: shift back, then roll back about the pivot). Lengths are kept, so t stays the world distance.
+  let ux0 = lx, uy0 = ly, vx0 = qx, vy0 = qy;
+  if (tilt) {
+    const [sa, ca, shift, pivot] = tilt;
+    const x0 = lx - shift, y0 = ly - pivot;
+    // Forward: x' = x cos + y sin, y' = -x sin + y cos (a point above the pivot goes toward +x for a right lean).
+    ux0 = x0 * ca - y0 * sa;
+    uy0 = x0 * sa + y0 * ca + pivot;
+    vx0 = qx * ca - qy * sa;
+    vy0 = qx * sa + qy * ca;
+  }
   // The round strikes the nearest padded surface; its zone is the shape whose own (unpadded) core the line passes
   // deepest into or nearest to: a shot at the face over a padded forearm is still a head shot, one at the belt a body
   // shot, not the thigh's padding.
@@ -228,32 +262,35 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
   };
   if (s.head) {
     const h = s.head;
-    const cx = lx - h.x, cyy = ly - h.y, cz = lz - h.z;
-    const dd = qx * qx + qy * qy + qz * qz;
-    const B = qx * cx + qy * cyy + qz * cz;
+    const cx = ux0 - h.x, cyy = uy0 - h.y, cz = lz - h.z;
+    const dd = vx0 * vx0 + vy0 * vy0 + qz * qz;
+    const B = vx0 * cx + vy0 * cyy + qz * cz;
     const hr = h.r + fatHead;
     const C = cx * cx + cyy * cyy + cz * cz - hr * hr;
     const disc = B * B - dd * C;
     const t = C <= 0 ? 0 : disc >= 0 ? (-B - Math.sqrt(disc)) / dd : -1;
     if (t >= 0) {
       // How near the line passes the head's centre, less its own radius.
-      const along = Math.max(0, -(ux * cx + uy * cyy + uz * cz));
-      take(t, 1, Math.hypot(cx + ux * along, cyy + uy * along, cz + uz * along) - h.r);
+      const hx = vx0 / ql, hy = vy0 / ql;
+      const along = Math.max(0, -(hx * cx + hy * cyy + uz * cz));
+      take(t, 1, Math.hypot(cx + hx * along, cyy + hy * along, cz + uz * along) - h.r);
     }
   }
   if (s.torso) {
     const c = s.torso;
     const sq = (c.r + fat) / (c.w + fat);
-    const t = capsule((lx - c.x) * sq, ly, lz, qx * sq, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r + fat);
+    const t = capsule((ux0 - c.x) * sq, uy0, lz, vx0 * sq, vy0, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1], c.r + fat);
     if (t >= 0) {
       const cs = c.r / c.w;
-      take(t, 0, raySegment((lx - c.x) * cs, ly, lz, qx * cs, qy, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1]) - c.r);
+      take(t, 0, raySegment((ux0 - c.x) * cs, uy0, lz, vx0 * cs, vy0, qz, 0, c.a[0], c.a[1], 0, c.b[0], c.b[1]) - c.r);
     }
   }
   for (let pass = 0; pass < 2; pass++) {
+    // (The arms ride with the upper body; the legs stay.)
+    const ox = pass ? ux0 : lx, oy = pass ? uy0 : ly, dx = pass ? vx0 : qx, dy = pass ? vy0 : qy;
     for (const l of pass ? s.arms : s.legs) {
-      const t = capsule(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat);
-      if (t >= 0) take(t, pass ? 3 : 2, raySegment(lx, ly, lz, qx, qy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2]) - l.r);
+      const t = capsule(ox, oy, lz, dx, dy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2], l.r + fat);
+      if (t >= 0) take(t, pass ? 3 : 2, raySegment(ox, oy, lz, dx, dy, qz, l.a[0], l.a[1], l.a[2], l.b[0], l.b[1], l.b[2]) - l.r);
     }
   }
   if (zone === -1) return null;
@@ -265,18 +302,33 @@ export function rayBody(o: Vec3, d: Vec3, body: HitBody, max = Infinity, thick =
  * Where a body's head is (world), for aiming at it: the head sphere's centre, or the top of the body less a
  * head's radius when the shapes have no head.
  */
-export function headPoint(body: Pick<HitBody, 'feet' | 'yaw' | 'stance' | 'scale' | 'box'>): Vec3 {
+export function headPoint(body: Pick<HitBody, 'feet' | 'yaw' | 'stance' | 'scale' | 'box' | 'lean'>): Vec3 {
   const s = shapesFor(body.box, body.stance);
   const k = body.scale;
-  const h = s.head ?? { x: 0, y: (s.torso ? Math.max(s.torso.a[0], s.torso.b[0]) : 1.5), z: 0 };
+  let h = s.head ?? { x: 0, y: (s.torso ? Math.max(s.torso.a[0], s.torso.b[0]) : 1.5), z: 0 };
+  const tilt = leanFrame(body);
+  if (tilt) h = { x: upperX(tilt, h.x, h.y), y: upperY(tilt, h.x, h.y), z: h.z };
   const sin = Math.sin(body.yaw);
   const cos = Math.cos(body.yaw);
   // Body frame to world: right = (cos, 0, -sin), forward = (sin, 0, cos).
   return { x: body.feet.x + (h.x * cos + h.z * sin) * k, y: body.feet.y + h.y * k, z: body.feet.z + (-h.x * sin + h.z * cos) * k };
 }
 
-/** A point in a body's frame (right, up, forward; unscaled metres) to the world. */
-export function bodyToWorld(body: Pick<HitBody, 'feet' | 'yaw' | 'scale'>, x: number, y: number, z: number): Vec3 {
+/** Where a lean puts a point of the upper body (unscaled body frame): across, and up. */
+const upperX = ([sa, ca, shift, pivot]: [number, number, number, number], x: number, y: number): number => x * ca + (y - pivot) * sa + shift;
+const upperY = ([sa, ca, , pivot]: [number, number, number, number], x: number, y: number): number => pivot - x * sa + (y - pivot) * ca;
+
+/**
+ * A point in a body's frame (right, up, forward; unscaled metres) to the world. `upper`: a point of the upper body
+ * (head, chest, arms), which a lean moves.
+ */
+export function bodyToWorld(body: Pick<HitBody, 'feet' | 'yaw' | 'scale'> & { lean?: number; stance?: Stance }, x: number, y: number, z: number, upper = false): Vec3 {
+  const tilt = upper ? leanFrame(body) : null;
+  if (tilt) {
+    const x1 = upperX(tilt, x, y);
+    y = upperY(tilt, x, y);
+    x = x1;
+  }
   const sin = Math.sin(body.yaw);
   const cos = Math.cos(body.yaw);
   const k = body.scale;

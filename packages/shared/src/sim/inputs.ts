@@ -46,8 +46,14 @@ export const BUTTON_AUTO_RELOAD = 16384;
  * Ammo Box) runs while it is. BUTTON_USE stays the press. Older hosts mask it off (a press resupplies at once, as before).
  */
 export const BUTTON_USE_HOLD = 32768;
+/**
+ * Lean (peek) left / right while held (sim/moves.ts stepLean): the head, the gun and the hit shapes move out to that
+ * side. Both held, or neither: upright. Older hosts mask them off (no lean, as before).
+ */
+export const BUTTON_LEAN_LEFT = 65536;
+export const BUTTON_LEAN_RIGHT = 131072;
 /** Every button a host takes (sanitizeInput masks the rest off). */
-export const ALL_BUTTONS = BUTTON_USE_HOLD | BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
+export const ALL_BUTTONS = BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT | BUTTON_USE_HOLD | BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

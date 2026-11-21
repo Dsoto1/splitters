@@ -17,7 +17,7 @@ export type SnapshotMessage = Extract<ServerMessage, { t: 'snapshot' }>;
 /** The first four bytes, "TTSN" (little-endian u32). */
 export const SNAPSHOT_BINARY_MAGIC = 0x4e535454;
 /** The layout's version: a reader takes only the versions it knows (today, this one). */
-export const SNAPSHOT_BINARY_VERSION = 2;
+export const SNAPSHOT_BINARY_VERSION = 3;
 /** The most one message may be: a reader refuses anything longer before reading it, a writer doesn't make one. */
 export const SNAPSHOT_BINARY_MAX_BYTES = 4 * 1024 * 1024;
 
@@ -63,7 +63,7 @@ export const SNAPSHOT_JSON_KEYS = [
   ['rl', 'a', false],
 ] as const;
 /** A player's fields, all of them (the record's layout is in the protocol document). */
-export const SNAPSHOT_PLAYER_KEYS = ['s', 'p', 'vy', 'g', 'yaw', 'pitch', 'hp', 'ar', 'alive', 'w', 'pu', 'vx', 'vz', 'fx', 'st', 'sn', 'em', 'sr', 'cl', 'ch', 'dr', 'zl', 'zm', 'dw'] as const;
+export const SNAPSHOT_PLAYER_KEYS = ['s', 'p', 'vy', 'g', 'yaw', 'pitch', 'hp', 'ar', 'alive', 'w', 'pu', 'vx', 'vz', 'fx', 'st', 'sn', 'em', 'sr', 'cl', 'ch', 'dr', 'zl', 'zm', 'dw', 'sd', 'ln'] as const;
 
 type RowKey = (typeof SNAPSHOT_ROW_KEYS)[number][0];
 type JsonKey = (typeof SNAPSHOT_JSON_KEYS)[number][0];
@@ -93,7 +93,9 @@ const BIT_DROP = 16;
 const BIT_ZOOM = 32;
 /** Dual wielding (`dw`, a pair is drawn: sim/match.ts pairDrawn). */
 const BIT_PAIR = 64;
-const BITS_KNOWN = 127;
+/** Sliding (`sd`; version 3). */
+const BIT_SLIDE = 128;
+const BITS_KNOWN = 255;
 const HAS_VX = 1;
 const HAS_VZ = 2;
 const HAS_FX = 4;
@@ -102,7 +104,9 @@ const HAS_SN = 16;
 const HAS_CL = 32;
 const HAS_CH = 64;
 const HAS_ZL = 128;
-const MASK_KNOWN = 255;
+/** Leaning (`ln`, steps as an i8; version 3). */
+const HAS_LN = 256;
+const MASK_KNOWN = 511;
 
 const isInt = (v: unknown, lo: number, hi: number): v is number => typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi;
 const isNum = (v: unknown): v is number => typeof v === 'number';
@@ -259,6 +263,11 @@ export class SnapshotBinaryEncoder {
         bits |= BIT_PAIR;
         fields++;
       }
+      if (p.sd !== undefined) {
+        if (p.sd !== 1) throw new Unfit('sd out of range');
+        bits |= BIT_SLIDE;
+        fields++;
+      }
       const maskAt = at + 2;
       dv.setUint8(at, p.s);
       dv.setUint8(at + 1, bits);
@@ -321,6 +330,11 @@ export class SnapshotBinaryEncoder {
         dv.setFloat64(at + 8, zl[1], true);
         dv.setFloat64(at + 16, zl[2], true);
         at += 24;
+      }
+      if (p.ln !== undefined) {
+        if (!isInt(p.ln, -127, 127)) throw new Unfit('ln out of range');
+        mask |= HAS_LN;
+        dv.setInt8(at++, p.ln);
       }
       dv.setUint16(maskAt, mask, true);
       for (let m = mask; m; m &= m - 1) fields++;
@@ -388,7 +402,7 @@ const newShell = (): Shell => ({ players: [], made: [], rows: new Map() });
  * A player entry with every field in place (absent ones undefined): entries are refilled in place, and one
  * shape for all of them keeps the readers' property reads fast.
  */
-const blankPlayer = (): PlayerSnapshot => ({ s: 0, p: [0.5, 0.5, 0.5], vy: 0.5, g: 0, yaw: 0.5, pitch: 0.5, hp: 0, ar: 0, alive: 0, w: 0, pu: 0, vx: undefined, vz: undefined, fx: undefined, st: undefined, sn: undefined, em: undefined, sr: undefined, cl: undefined, ch: undefined, dr: undefined, zl: undefined, zm: undefined, dw: undefined }) as unknown as PlayerSnapshot;
+const blankPlayer = (): PlayerSnapshot => ({ s: 0, p: [0.5, 0.5, 0.5], vy: 0.5, g: 0, yaw: 0.5, pitch: 0.5, hp: 0, ar: 0, alive: 0, w: 0, pu: 0, vx: undefined, vz: undefined, fx: undefined, st: undefined, sn: undefined, em: undefined, sr: undefined, cl: undefined, ch: undefined, dr: undefined, zl: undefined, zm: undefined, dw: undefined, sd: undefined, ln: undefined }) as unknown as PlayerSnapshot;
 
 export interface SnapshotBinaryDecoderOptions {
   /**
@@ -551,6 +565,7 @@ export class SnapshotBinaryDecoder {
       p.dr = bits & BIT_DROP ? 1 : undefined;
       p.zm = bits & BIT_ZOOM ? 1 : undefined;
       p.dw = bits & BIT_PAIR ? 1 : undefined;
+      p.sd = bits & BIT_SLIDE ? 1 : undefined;
       const pos = p.p;
       pos[0] = dv.getFloat64(at + 4, true);
       pos[1] = dv.getFloat64(at + 12, true);
@@ -590,6 +605,8 @@ export class SnapshotBinaryDecoder {
         // (Its own array: a zipline ride is rare, and readers may keep it.)
         p.zl = [dv.getFloat64(at, true), dv.getFloat64(at + 8, true), dv.getFloat64(at + 16, true)];
       } else p.zl = undefined;
+      if (mask & HAS_LN) p.ln = dv.getInt8(this.take(1));
+      else p.ln = undefined;
       out[i] = p;
     }
     return out;
