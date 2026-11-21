@@ -331,6 +331,57 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.wall.arch_parabola",
+      "displayName": "Parabolic Stone Arch",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's photo: the library's big pale smooth stone arch, about as high as it is wide, springing almost from the ground): a parabola-shaped arch of pale stone 4.9 m wide and 4.15 m high, its band 0.55 m wide and 0.7 m deep (it stands 0.1 m proud of both faces of a 0.5 m wall), the opening 3.8 m wide at the ground and 3.6 m high at the crown. Collides as nothing: the wall it stands in gives the piers (stepped inside the band)."
+      },
+      "size": [
+        4.9,
+        4.15,
+        0.7
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "parabolaarch",
+        "band": 0.55
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 90
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "pale",
+          "seed": 41301,
+          "look": {
+            "stone": "#d6d0c0"
+          }
+        },
+        {
+          "index": 1,
+          "name": "buff",
+          "seed": 41302,
+          "look": {
+            "stone": "#c9b990"
+          }
+        }
+      ]
     }
   ]
 }

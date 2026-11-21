@@ -18,6 +18,12 @@ const EDGE = 1e-6;
  * stained-glass window drawn on both faces of the wall it is set in, its outer face a hair proud of the wall's).
  */
 const FACE = 0.05;
+/**
+ * And how far a roof's eaves may: a prop that collides as nothing and stands a storey or more over the piece's lowest
+ * floor (a roof bay on its walls' top, a spire) may overhang the footprint by this much. Nobody walks there, and a
+ * neighbour's own walls stop at the cell's edge under it.
+ */
+const EAVE = 0.75;
 
 /** What is wrong with a definition (empty: nothing). `packs`: the role packs it may name. */
 export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?: ReadonlyMap<string, SetPieceRolePack>; catalog?: TileCatalog } = {}): string[] {
@@ -83,7 +89,7 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
         // Its own box, turned as it stands (a bed against the wall at the footprint's edge is inside it).
         const [w, h, d] = prop.size.map((v) => v * part.scale) as [number, number, number];
         const corners = ([[-1, -1], [1, -1], [1, 1], [-1, 1]] as const).map(([sx, sz]) => yawXZ((sx * w) / 2, (sz * d) / 2, part.yaw));
-        const edge = prop.collision === null && !prop.boxes?.length ? FACE : EDGE;
+        const edge = prop.collision === null && !prop.boxes?.length ? (py >= (l0 + 1) * levelHeight - EDGE ? EAVE : FACE) : EDGE;
         if (!corners.every(([ox, oz]) => inside(px + ox, py, pz + oz, edge) && inside(px + ox, py + h, pz + oz, edge))) out.push(`${where}: ${part.model} reaches outside the footprint`);
       }
       return;

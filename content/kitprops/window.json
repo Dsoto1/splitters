@@ -128,6 +128,127 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.window.leaded_band",
+      "displayName": "Leaded Window (wide, low)",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's photo: a band of wide, low, cream-framed windows of many small panes tight under the eave): a window 1.7 m wide and 0.9 m high drawn on both faces of the 0.5 m wall it is set in: a cream frame, three lights of nine small leaded panes each. A window to look at, not through (the wall is solid). Collides as nothing."
+      },
+      "size": [
+        1.7,
+        0.9,
+        0.56
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "glass",
+      "detail": "glass",
+      "generator": {
+        "kind": "leaded",
+        "lights": 3,
+        "panes": [
+          3,
+          3
+        ],
+        "frame": 0.09
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "cream",
+          "seed": 41201,
+          "look": {
+            "frame": "#e3dcc6",
+            "glass": "#8fa3a6",
+            "lead": "#23262a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "stone",
+          "seed": 41202,
+          "look": {
+            "frame": "#d6d0c0",
+            "glass": "#8fa3a6",
+            "lead": "#23262a"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.window.leaded",
+      "displayName": "Leaded Window",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's photo: small rectangular windows of many panes in pale smooth stone surrounds in the fieldstone storey): a window 1.1 m wide and 1.5 m high drawn on both faces of the 0.5 m wall it is set in: a pale stone surround and sill, two lights of fifteen small leaded panes each. A window to look at, not through. Collides as nothing."
+      },
+      "size": [
+        1.1,
+        1.5,
+        0.56
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "glass",
+      "detail": "glass",
+      "generator": {
+        "kind": "leaded",
+        "lights": 2,
+        "panes": [
+          3,
+          5
+        ],
+        "frame": 0.12,
+        "sill": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 25
+        },
+        {
+          "distance": 70
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "stone",
+          "seed": 41211,
+          "look": {
+            "frame": "#d6d0c0",
+            "glass": "#8fa3a6",
+            "lead": "#23262a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "cream",
+          "seed": 41212,
+          "look": {
+            "frame": "#e3dcc6",
+            "glass": "#8fa3a6",
+            "lead": "#23262a"
+          }
+        }
+      ]
     }
   ]
 }

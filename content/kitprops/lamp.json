@@ -87,6 +87,59 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.lamp.lantern_hanging",
+      "displayName": "Hanging Lantern",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: small iron lanterns hung from the roof): a small square iron lantern with pale panes under a pointed cap on a 0.9 m rod; place its top at the beam it hangs from. Nothing glows or flickers (a light beside it gives the light). Collides as nothing."
+      },
+      "size": [
+        0.34,
+        1.4,
+        0.34
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "lantern",
+        "body": 0.5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "iron",
+          "seed": 41401,
+          "look": {
+            "iron": "#1d1e21",
+            "pane": "#f0dba0"
+          }
+        },
+        {
+          "index": 1,
+          "name": "brass",
+          "seed": 41402,
+          "look": {
+            "iron": "#6a5426",
+            "pane": "#f0dba0"
+          }
+        }
+      ]
     }
   ]
 }
