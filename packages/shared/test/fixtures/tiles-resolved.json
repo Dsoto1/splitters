@@ -1,6 +1,7 @@
 {
  "order": [
   "core.room",
+  "core.room_basement",
   "core.room_pillar",
   "core.corridor",
   "core.corner",
@@ -422,6 +423,54 @@
     }
    ],
    "configurable": true
+  },
+  {
+   "id": "core.room_basement",
+   "category": "Rooms",
+   "displayName": "Basement Room",
+   "blurb": "A Room for below ground, under a building: the ground over it is cut out of its cell, so no earth lies in it whatever the ground's shape",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [
+    0
+   ],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "configurable": true,
+   "bore": {
+    "cut": [
+     [
+      -4,
+      0.3,
+      -4,
+      4,
+      7.5,
+      4
+     ]
+    ],
+    "sky": true
+   }
   },
   {
    "id": "core.room_pillar",

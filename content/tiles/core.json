@@ -11,6 +11,18 @@
       "configurable": true
     },
     {
+      "id": "core.room_basement",
+      "category": "Rooms",
+      "displayName": "Basement Room",
+      "blurb": "A Room for below ground, under a building: the ground over it is cut out of its cell, so no earth lies in it whatever the ground's shape",
+      "cells": [[0,0,0]],
+      "floors": [0],
+      "ports": [{"allSides":0}],
+      "configurable": true,
+      "bore": {"cut":[[-4,0.3,-4,4,7.5,4]],"sky":true},
+      "notes": {"design":"St. John's step 7b (DeKoven's basement offices). The Room, with the ground's surface cut out of its cell (map/groundBore.ts: from just over its floor to 3.5 m over the floor above). Under a building the ground as played lies 2 cm under the ground floor's slab, within reach (settle.ts FLOOR_REACH) of anything with a top in the room below: a partition, a wainscot, the room's own floor. Where a point of the ground's grid falls on one, the ground steps down it and lies across the basement (found on St. John's: its 2.5 m grid falls on the Admin Bay's corridor wall). Cut ground to floors would dig the whole basement out and leave a ditch along the outside walls. Its own floor pulls no ground down and nothing else of the ground changes; close its outside walls (a side left open into the ground is reported, as a tunnel's is)."}
+    },
+    {
       "id": "core.room_pillar",
       "configurable": true,
       "category": "Rooms",

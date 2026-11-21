@@ -42,9 +42,9 @@ const library = builtInSetPieces();
 const ROTATIONS = [0, 1, 2, 3] as Rotation[];
 type P3 = [number, number, number];
 
-function mapOf(placements: SetPiecePlacement[]): MapDocument {
+function mapOf(placements: SetPiecePlacement[], spacing = 2): MapDocument {
   const map = makeMap([{ id: 'home', tile: 'core.room', x: -20, y: -20, z: 0, rotation: 0 }], [[-160, 0, -160]]);
-  const r = loadMap(serializeMap({ ...map, setPieces: placements, terrain: newTerrain(200, 2, [0, 0], 'grass') }));
+  const r = loadMap(serializeMap({ ...map, setPieces: placements, terrain: newTerrain(200, spacing, [0, 0], 'grass') }));
   if (!r.ok) throw new Error(r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '));
   return r.map;
 }
@@ -463,7 +463,11 @@ function dekoven(): SetPiecePlacement[] {
 
 describe("a three-floor office hall with a basement and a roof perch, joined to a mess hall (DeKoven Hall's shape)", () => {
   it('every floor end to end, both stairs, the basement, the roof, the reception, and the mess hall to the 2nd floor through the lobby', { timeout: 300_000 }, () => {
-    const map = mapOf(dekoven());
+    // (On a 2 m ground grid and on a 2.5 m one: St. John's 2.5 m grid has points on the basement's corridor walls, which
+    // pulled the ground down into a basement of plain Rooms. The route checks are the same on both.)
+    for (const spacing of [2, 2.5]) dekovenWalks(mapOf(dekoven(), spacing), `ground grid ${spacing} m`);
+  });
+  function dekovenWalks(map: MapDocument, grid: string): void {
     const nav = navOf(map);
     const hallMiddle = (y: number): Vec3 => v([4, y, 20]);
     // Every floor's corridor from its south end to its north end (the ground floor through the Basement Stair Bay).
@@ -486,7 +490,7 @@ describe("a three-floor office hall with a basement and a roof perch, joined to 
     expect(miss(nav, v([8, 0, 47]), hallMiddle(0)), 'in at the north door').toBeLessThan(1.2);
     expect(miss(nav, v([-7, 0, 24]), hallMiddle(0)), 'in at the reception').toBeLessThan(1.2);
     // The basement: down the Basement Stair Bay, along its hall to the far end, into its open office.
-    expect(miss(nav, hallMiddle(0), v([4, -4, 6])), 'down to the basement and along it').toBeLessThan(1.2);
+    expect(miss(nav, hallMiddle(0), v([4, -4, 6])), `${grid}: down to the basement and along it`).toBeLessThan(1.2);
     expect(miss(nav, v([4, -4, 30]), v([4, 0, 12])), 'up from the basement').toBeLessThan(1.2);
     // Offices and rooms: a ground-floor office, a first-floor one, a top-floor room.
     expect(miss(nav, hallMiddle(0), v([-2.6, 0, 5.8])), 'a ground-floor office').toBeLessThan(1.2);
@@ -498,8 +502,10 @@ describe("a three-floor office hall with a basement and a roof perch, joined to 
     nav.destroy();
     // A player walks from the mess hall through both doorways into the lobby, and up the roof stair's last flight.
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
-    expect(walk(physics, v([0, 0.05, -7]), 0, 140).pos.z, 'walked north out of the mess hall into the lobby').toBeGreaterThan(-2.5);
-  });
+    expect(walk(physics, v([0, 0.05, -7]), 0, 140).pos.z, `${grid}: walked north out of the mess hall into the lobby`).toBeGreaterThan(-2.5);
+    // No ground lies in the basement: over its corridor and offices the ground as played is cut away or above the ceiling.
+    for (const z of [10, 16, 24]) for (const x of [-1, 3.6, 4.4, 9]) expect(physics.headroom({ x, y: -3.7, z }, PLAYER.height), `${grid}: standing room in the basement at (${x}, ${z})`).toBe(true);
+  }
 });
 
 describe("a mess hall's main entrance: Twin arches (St. John's step 7a, map format v49)", () => {
