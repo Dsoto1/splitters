@@ -271,3 +271,19 @@ its timber beams and trusses in view (photo 11's trusses, photo 10's striped raf
 upper floor over it. Both the interior references (photos 10, 11) and the exterior one (photo 14) bind the build,
 with every library picture in the owner's Drive (the St. John's references of 2026-11-12 and the folder `screens`;
 fetched per container into a scratch folder, never committed).
+
+## The stair lobbies' door (same day, about 21:00 UTC), and the references folder
+
+The owner's references folder on Drive is shared now: folder id `1uVRNvRRIccYEOz3REQw1lU1QGfUlFjHg` (the 2026-11-12
+set and what was added since; fetched into a scratch folder with an index, never committed).
+
+With a screenshot from the live game (free camera in a stair end bay's lobby on St. John's: rubble walls, terrazzo
+floor, the stair rising on the right over a solid plastered mass, a single oak door ajar in the far wall, squeezed
+beside that mass):
+
+> this door and stair. the under stair could be removed to make room for a larger double door to fit there. it
+> would work well where this is found elsewhere, like across the skyway.
+
+So: on the Stair End Bay pieces, a generic option that opens the space under the stair's upper flight where there
+is standing height and puts a wider double door in that wall in place of the single one; set on St. John's where
+that door is a main way through, the bays at the ends of the skyway (the bridge) first. Taken into step 7c.
