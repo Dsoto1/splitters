@@ -673,13 +673,14 @@ takes its own version only and refuses the rest, and a writer writes only when t
 |---|---|
 | 1 | the first layout (November 2026) |
 | 2 | two more player bits: 32 `zm` (aiming through a magnified optic, section 23) and 64 `dw` (dual wielding, a pair is drawn: section 24; reserved with this version, written since dual wielding step 2 with no change of version). No byte added: both go in the record's bits byte. A version 1 record is a valid version 2 record with neither bit |
+| 3 | slide and peek (section 25): player bit 128 `sd` (sliding), and mask bit 256 `ln` (the lean in steps, an i8 after `zl`). A version 2 record is a valid version 3 record with neither; a version 2 reader refuses both (bit 128 and mask bit 256 were unknown to it), and the page and worker are built together |
 
-**Layout** (little-endian; version 2). Every message is whole in itself: nothing depends on an earlier one.
+**Layout** (little-endian; version 3). Every message is whole in itself: nothing depends on an earlier one.
 
 | Bytes | |
 |---|---|
 | 0-3 | magic `54 54 53 4E` ("TTSN") |
-| 4-5 | version (u16): 2. A reader takes only versions it knows; anything else is refused before another byte is read |
+| 4-5 | version (u16): 3. A reader takes only versions it knows; anything else is refused before another byte is read |
 | 6-7 | flags (u16): bit 0, the snapshot has `hold` |
 | 8-11 | the message's length in bytes (u32; the buffer may be longer: buffers are pooled). At most 4 MiB |
 | 12-15, 16-19 | `tick`, `ack` (u32) |
@@ -695,8 +696,8 @@ A player's record (60 bytes, then its optional fields):
 | Field | Type | |
 |---|---|---|
 | `s` | u8 | slot |
-| bits | u8 | 1 `g`, 2 `alive`, 4 `em`, 8 `sr`, 16 `dr`, 32 `zm`, 64 `dw`. 128 is not used: a reader refuses it |
-| mask | u16 | which optional fields follow: 1 `vx`, 2 `vz`, 4 `fx`, 8 `st`, 16 `sn`, 32 `cl`, 64 `ch`, 128 `zl` |
+| bits | u8 | 1 `g`, 2 `alive`, 4 `em`, 8 `sr`, 16 `dr`, 32 `zm`, 64 `dw`, 128 `sd` |
+| mask | u16 | which optional fields follow: 1 `vx`, 2 `vz`, 4 `fx`, 8 `st`, 16 `sn`, 32 `cl`, 64 `ch`, 128 `zl`, 256 `ln`. Higher bits are not used: a reader refuses them |
 | `p` (x, y, z), `vy`, `yaw`, `pitch` | 6 × f64 | exactly the sim's values |
 | `hp`, `ar` | i16 | |
 | `w` | u16 | weapon code |
@@ -706,6 +707,7 @@ A player's record (60 bytes, then its optional fields):
 | `st` | u16 | index into the message's strings |
 | `sn`, `cl`, `ch` | u8 each | `sn` and `ch` are 1 or 2 |
 | `zl` | 3 × f64 | |
+| `ln` | i8 | lean steps, -10..10 |
 
 **Precision: nothing is quantised.** Positions, speeds, angles, timers and every row's numbers travel as the sim's
 own 64-bit floats (a `-0` stays a `-0`); integers go in integer fields only after the encoder has checked they fit.
@@ -801,3 +803,22 @@ player with a pair in hand, and `BUTTON_SPRINT` with `BUTTON_ALT`, before it mov
 
 `me` goes whole with every snapshot, so `ow`, `rl2` and `rd2` are gone the snapshot after their cause. Host handoff's
 checkpoint does not carry second guns: after a handoff a pair is one gun again.
+
+## 25. Slide and peek (November 2026)
+
+docs/GUNPLAY_SPEC.md section 27, "Slide and peek". **`PROTOCOL_VERSION` stays 5**: two input bits an older host masks
+off and optional fields an older client ignores. **`SNAPSHOT_BINARY_VERSION` 2 → 3** (the local match's binary player
+record gains the slide bit and the lean byte: section 22).
+
+| Field | Where | |
+|---|---|---|
+| `BUTTON_LEAN_LEFT` 65536, `BUTTON_LEAN_RIGHT` 131072 | `PlayerInput.buttons` | Held. An older host's `sanitizeInput` masks them off (no lean). The slide needs no bit: it is a sprint, then `BUTTON_CROUCH` |
+| `sd: 1` | `PlayerSnapshot` (public) | Sliding. Absent otherwise. In the delta snapshots' optional keys (`net/interest.ts`: named when set, `null` when it goes); bit 128 of the binary record |
+| `ln: n` | `PlayerSnapshot` (public) | Leaning, in steps (-10 full left .. 10 full right); absent upright, dead or seated. Optional key in the deltas; mask bit 256 (an i8) in the binary record. Receivers blend it between snapshots (`game/interpolation.ts`) |
+| `mv: [slide ticks, cooldown ticks]` | `PrivateState` (`me`) | A slide under way and the stamina moves' cooldown, for prediction; absent when both are 0 |
+
+Prediction also takes the sprint back from `sr` on a correction (a slide starts from a sprint the tick before), the
+lean from `ln`, and replays them as the host steps them. **An older client** on a new host sees nobody lean or slide
+(it draws a sliding player crouched and moving fast) and is never sent a lean of its own (it cannot press the keys);
+a new client on an older host leans and slides only in its own prediction until the host's snapshot puts it back.
+

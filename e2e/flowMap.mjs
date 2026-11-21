@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -44,7 +44,7 @@ export function mapPartOf(id, ids) {
 /** Maps a flow opens by name (besides the tour), so a change to one runs those flows. */
 const MAP_USERS = {
   m3_vault: ['vault'],
-  m4_outpost: ['outpost'],
+  m4_outpost: ['outpost', 'slidepeek'],
   sandgate: ['sandgate', 'lobby', 'zombies', 'fireteams'],
   citadel: ['citadel'],
   canyon: ['canyon', 'scenery', 'physicsfx', 'arsenal', 'vehicles'],
@@ -58,7 +58,7 @@ const MAP_USERS = {
   grid_rings: ['classes'],
   apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
-  void_yard: ['hostcontrols'],
+  void_yard: ['hostcontrols', 'slidepeek'],
   [COVERAGE_MAP]: ['coverage'],
   test_breakthrough: ['breakthrough'],
   env_showcase: ['environment'],

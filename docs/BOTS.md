@@ -1259,6 +1259,22 @@ squads by proximity with **fixed squads** made from the roster.
   flags defended (a kill of an enemy within 20 m of the killer's own flag base, or of our flag's carrier), flag
   returns by defenders and squad-seconds on the defend role (the CTF defence table; `--compare` shows both sides).
 
+## Slide and peek (November 2026)
+
+Bots use the two movement moves (docs/GUNPLAY_SPEC.md section 27, "Slide and peek"), simply and on the same rules as
+players (`bots/brain.ts` `inCover`):
+
+- **Slide into cover.** Sprinting into cover under fire, a bot with the stamina for it (0.3 of the bar) may slide the
+  last 2.6-5.5 m: one try per cover spot, taken 40-80 % of the time by its tactical sense. It holds crouch for the
+  slide, so it lands crouched behind the cover, where the hide phase wants it. A slide the match refuses (no stamina,
+  in the air) is just a crouch.
+- **Peek from cover.** Round tall cover, the peek steps out 0.8 m instead of 1.1 m and leans the rest of the way, to the
+  spot's side (its right, facing the threat, for the +1 side), so its head and gun come out round the edge as a
+  player's do.
+- **Fair both ways.** A bot sees a leaning head where it is (the sight line goes to the leaned eye), sees from its own
+  leaned eye, and aims at a leaning target's real head and chest (`bots/aim.ts`, the hit shapes with the lean). The
+  match keeps a bot's lean off walls as it does a player's.
+
 ## Snipers (Bot AI Phase B)
 
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked

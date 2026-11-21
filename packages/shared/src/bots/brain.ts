@@ -2572,6 +2572,9 @@ export class BotBrain {
     if (sprint && moveYaw !== null && forward > 0.3) buttons |= BUTTON_SPRINT;
     else if (stance === 2) buttons |= BUTTON_PRONE;
     else if (stance === 1) buttons |= BUTTON_CROUCH;
+    // Straight out of a sprint, a crouch would slide (sim/moves.ts): only when the bot means to (inCover's slide); any
+    // other crouch waits a tick, for the sprint to end.
+    if (buttons & BUTTON_CROUCH && view.self.sprinting && !(tick < this.slideUntil)) buttons &= ~BUTTON_CROUCH;
 
     // Arena bots hop (harder to hit, faster through the air): on the Arena style all the time while they
     // strafe or run; ARENA characters on the Mixed style only in a fight, and less often (arenaHop).
@@ -3152,7 +3155,7 @@ export class BotBrain {
       const l = hypot(tx, tz) || 1;
       // A shorter step out, and a lean (peek) the same way the rest of the 1.1 m the spot was judged at: the head and
       // gun come out round the edge, as a player's do (its right, facing the threat, is the spot's +1 side).
-      const lean = { x: c.pos.x + (tz / l) * c.peek * 0.8, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 0.8 };
+      const lean = { x: c.pos.x + (tz / l) * c.peek * 1.1, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 1.1 };
       const moveYaw = horizontalDistance(me.pos, lean) > 0.3 ? Math.atan2(lean.x - me.pos.x, lean.z - me.pos.z) : null;
       this.leanSide = c.peek;
       this.leanTick = tick;

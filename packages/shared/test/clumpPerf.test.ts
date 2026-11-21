@@ -48,7 +48,9 @@ describe('clumped 96-bot match', () => {
       process.stderr.write(`clumped 48 v 48: CPU ${clumped.cpu.toFixed(2)} ms a tick vs ${spread.cpu.toFixed(2)} spread (x${(clumped.cpu / spread.cpu).toFixed(2)}), ${clumped.rays.toFixed(0)} sight rays a tick, ${clumped.kills} kills\n`);
       // It is a fight: plenty of kills, fighting bots steer between thoughts. (Riot Junction plays Military: since each
       // life's grenade is dealt from the set's deck, frags, mines and smoke, fewer go off as frags: 15 kills, was 28.)
-      expect(clumped.kills).toBeGreaterThan(10);
+      // (Slide and peek, 2026-11-21: bots lean out of cover and slide into it, and this seed's four seconds give 8 kills,
+      // was 13; over seeds 41-47 the clump gives 10-20, was 10-27.)
+      expect(clumped.kills).toBeGreaterThan(6);
       expect(clumped.steering).toBeGreaterThan(ticks * 5);
       // Perception casts a few rays per look however many enemies are in view (was ~200 a tick).
       expect(clumped.rays).toBeLessThan(90);

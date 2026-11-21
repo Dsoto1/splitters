@@ -1410,6 +1410,63 @@ sprint button only once the trigger has been let go for 0.5 s (a slow gun: its f
 a pull made while the gun comes up (out of a sprint, or any raise) until it is up. Only the buttons sent change, so the
 host and prediction rules above are untouched and it works on every host. `packages/client/test/triggerLatch.test.ts`.
 
+### Slide and peek (owner, 2026-11-18, "a"; built 2026-11-21)
+
+Two movement moves, shared by the host and client prediction (`packages/shared/src/sim/moves.ts`, stepped inside
+`stepMovement`), so they are predicted like the rest of movement and need no new message.
+
+**Slide.** Sprint, then crouch (Shift held, then C). The slide starts a little faster than the sprint (×1.1, about
+8.6 m/s), keeps that momentum along the way you were running (the legs steer only a quarter of a crouch walk's worth),
+slows at 8 m/s² on the flat and ends crouched at a crouch walk: about 0.75 s on the flat, never more than 1.1 s.
+Rules:
+
+| Rule | Value |
+|---|---|
+| Starts from | a sprint the tick before, a fresh crouch, on the ground (not in the air, swimming, on a ladder or under a canopy) |
+| Stamina | 0.2 of the bar to start (about a second of sprinting: `SPRINT.drain` is 0.22/s); none comes back while sliding; with less than 0.2, or winded, no slide (a plain crouch) |
+| Cooldown | 0.5 s after a slide before another stamina move (no chaining) |
+| Slopes | the grade it slides over adds (downhill) or takes (uphill) half of gravity along it, so a downhill slide lasts a little longer, never faster than it started |
+| Ends early | letting go of crouch or jumping (you stand, the momentum fades as a knockback does), a wall in the way, leaving the ground (the momentum carries on through the air) |
+
+The momentum is the existing push velocity (`MoveState.vx/vz`, which knockback and jump pads use), slowed by the slide
+instead of the ground's quick decay; when the slide ends the push keeps only what is over a crouch walk, so there is no
+lurch. Shooting while sliding is allowed (hip fire's moving spread applies; responsiveness over realism).
+
+**Stamina moves.** `STAMINA_MOVES` is the table the bigger moves take stamina from: a cost to start and one cooldown
+they share (`MoveState.moveCd`, so a slide can't be chained into a dodge). The dodge-step and combat roll (the second
+step, later) are rows of it.
+
+**Peek (lean).** Held: Left / Right. Q and E already go back to your last weapon / open the weapon wheel and use, so
+the defaults are the key left of 1 (` on most layouts) for left and Left Alt for right; Options → Controls rebinds
+both (`loadLeanKeys`, `game/input.ts`). Ten ticks to lean all the way (0.17 s), back the same. The upper body rolls
+about the hips by up to 0.3 rad (17°) and shifts 12 cm at the hips, so the eye moves about 0.33 m out standing
+(0.24 m crouched) and 3 cm down. No stamina. Not while sprinting or sliding, prone, in the air, swimming or seated.
+Never into a wall: a ray from the upright eye stops the lean 0.2 m short of anything to that side, and a wall that
+comes closer pulls it in at once.
+
+- **Hit shapes move with it** (`sim/hitbox.ts`, `HitBody.lean`): the head, torso and arms are tested rolled and
+  shifted exactly as the eye is; the legs stay. **Lag compensation rewinds the lean** with the rest of the body
+  (`Match.recordHistory` keeps it), so a round aimed at a head seen round a corner lands where the shooter saw it.
+- **Rounds, throws, melee and sight lines leave the leaned eye** (`Match.eyeOf`, `sim/moves.ts eyePoint`); third-person
+  aim works from it too. Bots see a leaning head where it is, and see from their own leaned eye.
+- **The camera** moves out with the eye (always: it is where your rounds go) and rolls at most 0.07 rad (4°), eased;
+  Options → Camera shake scales that roll (Off: none) and the system's reduce-motion setting removes it. No flash, no
+  fade: the slide's camera is the crouch's own eased drop.
+
+**Drawn.** In third person and for everyone else, the body leans (the spine rolls 0.5 rad, more than the hit shapes'
+roll because a skinned spine can't shift at the hips; the drawn head lands where the hit head is) and slides (the
+crouch pose tipped back 0.42 rad over the feet, the spine bringing the gun back onto the aim). The snapshot says
+`sd` (sliding) and `ln` (lean steps); docs/MULTIPLAYER_PROTOCOL.md section 25.
+
+**Bots** (docs/BOTS.md, "Slide and peek"): a bot sprinting the last few metres into cover under fire may slide into it
+(once per spot, with the stamina for it); a bot peeking round tall cover steps out less and leans the rest of the way.
+
+Tests: `packages/shared/test/slidePeek.test.ts` (momentum, the 0.6-0.9 s slide, stamina and its refusal, no slide in
+the air or from a walk, the cooldown, a replay from any tick; the lean both ways, never into a wall; hit shapes and
+lag compensation with the lean; a leaning shooter's rounds), `packages/client/test/slidePeekPrediction.test.ts` (no
+correction at 100-300 ms), the e2e flow `slidepeek` (a slide and leans in a real match, first and third person,
+another body drawn sliding and leaning, and two players on a dedicated server: one sees the other lean and slide).
+
 ---
 
 # 28. Suppression

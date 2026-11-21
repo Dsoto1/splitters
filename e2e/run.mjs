@@ -13983,6 +13983,185 @@ async function impGrips(browser) {
   await imp.context().close();
 }
 
+/**
+ * Slide and peek (docs/GUNPLAY_SPEC.md section 27, "Slide and peek"): in a real match a sprint then a crouch slides (on
+ * stamina) and the lean keys lean, in first and third person; a bot drawn sliding and leaning (side and front); then two
+ * players on a dedicated server: one leans and slides, and the other sees it, drawn from the snapshots. SLIDEPEEK_PICS
+ * (a folder): the pictures are kept there too.
+ */
+async function slidepeekFlow(browser) {
+  const SPRINT = 128, CROUCH = 256, LEAN_L = 65536, LEAN_R = 131072;
+  const pics = process.env.SLIDEPEEK_PICS;
+  const pic = async (page, name) => {
+    if (pics) await page.screenshot({ path: `${pics}/${name}.png` });
+  };
+  const errors = [];
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  livePages.add(page);
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=void_yard&test=1&god=1&bots=2&name=Tester`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), null, { timeout: T(90000) });
+  await playWithoutMouse(page);
+  await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+  // The bot does as the flow says: queue.fwd, queue.btn and queue.yaw (and nobody shoots).
+  const bot = await sim(page, (m) => {
+    const b = m.combatants().find((c) => c.bot);
+    for (const c of m.combatants()) {
+      if (!c.bot) continue;
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: c.queue.fwd ?? 0, right: 0, buttons: c.queue.btn ?? 0, pitch: 0, ...(c.queue.yaw !== undefined ? { yaw: c.queue.yaw } : {}) })));
+      c.queue.held = true;
+    }
+    return b.slot;
+  });
+  const place = (slot, pos, yaw) => sim(page, (m, me, a) => {
+    const c = m.combatants().find((x) => x.slot === a.slot);
+    c.move = { pos: a.pos, velY: 0, grounded: true };
+    c.yaw = a.yaw;
+    if (c.bot) {
+      c.queue.yaw = a.yaw;
+      c.queue.fwd = 0;
+      c.queue.btn = 0;
+    }
+  }, { slot, pos, yaw });
+  const me = await page.evaluate(() => window.__cs.slot);
+  const drive = (forward, buttons) => page.evaluate(([f, b]) => (window.__autoInput = { forward: f, buttons: b }), [forward, buttons]);
+  const look = (yaw, pitch = 0) => page.evaluate(([y, p]) => Object.assign(window.__cs.input, { yaw: y, pitch: p }), [yaw, pitch]);
+  // An open run down the yard, facing +z (the bot out of the way).
+  await place(bot, { x: 14, y: 0, z: 14 }, 0);
+  await place(me, { x: 0, y: 0, z: -14 }, 0);
+  await look(0, -0.05);
+  await drive(1, SPRINT);
+  check(await meWait(page, (m, me) => me.move.sprint && (me.move.stamina ?? 1) < 0.98, null, 2), 'sprinting');
+  const before = await sim(page, (m, me) => me.move.stamina ?? 1);
+  await drive(1, SPRINT | CROUCH);
+  const slid = await meWait(page, (m, me) => (me.move.slide ?? 0) >= 6 && ((me.slideStamina = me.move.stamina ?? 1), true), null, 1);
+  check(slid, 'sprint, then crouch: a slide in the match');
+  const seenSlide = await page.waitForFunction(() => (window.__cs.local.state.slide ?? 0) > 0, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(seenSlide, 'the slide is predicted on the page');
+  await pic(page, '01-first-person-mid-slide');
+  const after = await sim(page, (m, me) => ({ stamina: me.slideStamina ?? 1 }));
+  check(before - after.stamina >= 0.19, `the slide took its stamina (${before.toFixed(3)} → ${after.stamina.toFixed(3)})`);
+  check(await meWait(page, (m, me) => !me.move.slide && me.move.stance === 1, null, 2), 'the slide ends in a crouch');
+  // Lean (peek), standing.
+  await drive(0, 0);
+  await place(me, { x: 0, y: 0, z: -8 }, 0);
+  await look(0, -0.05);
+  for (const [buttons, side, name] of [[LEAN_R, 1, 'right'], [LEAN_L, -1, 'left']]) {
+    await drive(0, buttons);
+    check(await meWait(page, (m, me, s) => me.move.lean === 10 * s, side, 1), `leans ${name} in the match`);
+    check(await page.waitForFunction((s) => window.__cs.local.state.lean === 10 * s, side, { timeout: T(5000) }).then(() => true, () => false), `the lean ${name} is predicted on the page`);
+    await sleep(300);
+    await pic(page, `0${name === 'right' ? 2 : 3}-first-person-lean-${name}`);
+  }
+  await drive(0, 0);
+  // Third person: your own body leans and slides.
+  await page.keyboard.press('KeyH');
+  await page.waitForFunction(() => window.__cs.view.avatars.get(window.__cs.slot)?.root.isEnabled(), null, { timeout: T(5000) }).catch(() => {});
+  for (const [buttons, name] of [[LEAN_R, 'right'], [LEAN_L, 'left']]) {
+    await drive(0, buttons);
+    const leaned = await page.waitForFunction(([s, want]) => Math.abs((window.__cs.view.avatars.get(s)?.anim?.leanNow ?? 0) - want) < 0.05, [me, name === 'right' ? 1 : -1], { timeout: T(8000) }).then(() => true, () => false);
+    check(leaned, `third person: your body leans ${name}`);
+    await pic(page, `0${name === 'right' ? 4 : 5}-third-person-own-lean-${name}`);
+  }
+  await drive(0, 0);
+  await page.keyboard.press('KeyH');
+  await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
+  // A bot (another body, drawn from the snapshots) slides and leans: from the side and from the front.
+  await place(me, { x: 0, y: 0, z: -14 }, 0);
+  await look(0, -0.08);
+  const botPose = (want) => page.waitForFunction(([s, w]) => {
+    const a = window.__cs.view.avatars.get(s)?.anim;
+    return !!a && (w.lean !== undefined ? Math.abs(a.leanNow - w.lean) < 0.05 : a.slideTip < -0.3);
+  }, [bot, want], { timeout: T(10000), polling: 'raf' }).then(() => true, () => false);
+  for (const [view, yaw] of [['side', Math.PI / 2], ['front', Math.PI]]) {
+    await place(bot, { x: 0, y: 0, z: -9 }, yaw);
+    await sleep(500);
+    for (const [buttons, lean, name] of [[LEAN_R, 1, 'right'], [LEAN_L, -1, 'left']]) {
+      await sim(page, (m, me, a) => void (m.combatants().find((c) => c.slot === a.s).queue.btn = a.b), { s: bot, b: buttons });
+      const ok = await botPose({ lean });
+      check(ok, `another body is drawn leaning ${name} (${view})`);
+      await pic(page, `${view === 'side' ? '06' : '08'}-bot-lean-${name}-${view}`);
+    }
+    // The slide: across the view (side) or toward the camera (front).
+    const from = view === 'side' ? { x: -5, y: 0, z: -7 } : { x: 0.6, y: 0, z: -1 };
+    await place(bot, from, yaw);
+    await sim(page, (m, me, a) => {
+      const c = m.combatants().find((x) => x.slot === a.s);
+      c.move = { ...c.move, stamina: undefined, moveCd: 0 };
+      c.queue.fwd = 1;
+      c.queue.btn = a.sprint;
+    }, { s: bot, sprint: SPRINT });
+    await simWait(page, (m, me, a) => m.combatants().find((c) => c.slot === a).move.sprint, bot, T(5000));
+    await sleep(250);
+    await sim(page, (m, me, a) => void (m.combatants().find((c) => c.slot === a.s).queue.btn = a.b), { s: bot, b: SPRINT | CROUCH });
+    const sliding = await botPose({});
+    check(sliding, `another body is drawn sliding (${view})`);
+    await pic(page, `${view === 'side' ? '07' : '09'}-bot-slide-${view}`);
+    await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a).queue, { fwd: 0, btn: 0 }), bot);
+    await sleep(400);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+  livePages.delete(page);
+
+  // Two players on a dedicated server: Alice leans and slides, Bob sees it (drawn from the network's snapshots).
+  const port = await pickPort('E2E_SLIDEPEEK_PORT', 7797);
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/m4_outpost.json', import.meta.url)) });
+  await sleep(4000);
+  const join = async (name) => {
+    const p = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+    livePages.add(p);
+    p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
+    await p.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${port}`);
+    await p.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
+    await playWithoutMouse(p);
+    await p.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+    return p;
+  };
+  const alice = await join('Alice');
+  const bob = await join('Bob');
+  // (A countdown first: both in play and alive.)
+  for (const p of [alice, bob]) await p.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
+  const aliceSlot = await alice.evaluate(() => window.__cs.slot);
+  // Each faces the other (Bob from where he sees Alice drawn).
+  const faceEachOther = async () => {
+    const a = await alice.evaluate(() => window.__cs.local.state.pos);
+    const b = await bob.evaluate(() => window.__cs.local.state.pos);
+    const yawAB = Math.atan2(b.x - a.x, b.z - a.z);
+    await alice.evaluate((y) => Object.assign(window.__cs.input, { yaw: y, pitch: 0 }), yawAB);
+    await bob.evaluate((y) => Object.assign(window.__cs.input, { yaw: y, pitch: -0.05 }), yawAB + Math.PI);
+    return Math.hypot(b.x - a.x, b.z - a.z);
+  };
+  await faceEachOther();
+  await alice.evaluate((b) => (window.__autoInput = { forward: 0, buttons: b }), LEAN_R);
+  const seenLean = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.leanNow ?? 0) > 0.9, aliceSlot, { timeout: T(15000) }).then(() => true, () => false);
+  check(seenLean, 'over the network: Bob sees Alice lean');
+  await sleep(300);
+  await pic(bob, '10-network-lean-seen-by-other-player');
+  await pic(alice, '11-network-lean-alice-first-person');
+  await alice.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
+  // Alice turns away from Bob, sprints a moment, then slides; Bob sees the slide.
+  await faceEachOther();
+  await alice.evaluate(() => (window.__cs.input.yaw += Math.PI));
+  await alice.evaluate((b) => (window.__autoInput = { forward: 1, buttons: b }), SPRINT);
+  const sprinted = await alice.waitForFunction(() => window.__cs.local.state.sprint, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(sprinted, 'online: Alice sprints');
+  await alice.evaluate((b) => (window.__autoInput = { forward: 1, buttons: b }), SPRINT | CROUCH);
+  const aliceSlid = await alice.waitForFunction(() => (window.__cs.local.state.slide ?? 0) > 0, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(aliceSlid, 'online: Alice slides (predicted)');
+  const seenSlide2 = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.slideTip ?? 0) < -0.2, aliceSlot, { timeout: T(8000), polling: 'raf' }).then(() => true, () => false);
+  check(seenSlide2, 'over the network: Bob sees Alice slide');
+  await pic(bob, '12-network-slide-seen-by-other-player');
+  await alice.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
+  const corrections = await alice.evaluate(() => window.__cs.local.corrections);
+  check(corrections <= 1, `online: the slide and lean are predicted without rubber-banding (${corrections} corrections)`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  for (const p of [alice, bob]) {
+    livePages.delete(p);
+    await p.context().close();
+  }
+}
+
 async function onlineFlow(browser) {
   const open = async (name) => {
     const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -15525,7 +15704,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

@@ -7449,7 +7449,7 @@ export class Match {
       if (c.move.stance) s.sn = c.move.stance;
       if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
       if (c.move.sprint) s.sr = 1;
-      if (c.move.slide && c.alive) s.sd = 1;
+      if (c.move.slide && c.alive && !c.mount) s.sd = 1;
       const lean = this.leanOf(c);
       if (lean) s.ln = lean;
       if (c.move.chute) s.ch = c.move.chute;
