@@ -1,6 +1,6 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
 import { AimLatch, combatPrefs } from './combatPrefs.ts';
-import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -65,6 +65,31 @@ export function loadWheelKey(): string {
 export function saveWheelKey(code: string): void {
   try {
     localStorage.setItem(WHEEL_KEY_PREF, code);
+  } catch {
+    // Lasts for this page.
+  }
+}
+/**
+ * The lean (peek) keys, held (Options → Controls rebinds them). Q and E, the usual pair, already go back to your last
+ * weapon / open the wheel and use, so the defaults are two keys nothing else takes, one each side of the left hand:
+ * the key left of 1 (` on most layouts) leans left, Left Alt (under the thumb) leans right.
+ */
+const LEAN_KEYS_PREF = 'tiletrigger.leanKeys';
+export const DEFAULT_LEAN_KEYS: Readonly<{ left: string; right: string }> = { left: 'Backquote', right: 'AltLeft' };
+export function loadLeanKeys(): { left: string; right: string } {
+  try {
+    const k = JSON.parse(localStorage.getItem(LEAN_KEYS_PREF) ?? '{}') as { left?: unknown; right?: unknown };
+    const ok = (c: unknown): c is string => typeof c === 'string' && c.length > 0 && !RESERVED_KEYS.has(c);
+    const left = ok(k.left) ? k.left : DEFAULT_LEAN_KEYS.left;
+    const right = ok(k.right) && k.right !== left ? k.right : DEFAULT_LEAN_KEYS.right === left ? DEFAULT_LEAN_KEYS.left : DEFAULT_LEAN_KEYS.right;
+    return { left, right };
+  } catch {
+    return { ...DEFAULT_LEAN_KEYS };
+  }
+}
+export function saveLeanKeys(keys: { left: string; right: string }): void {
+  try {
+    localStorage.setItem(LEAN_KEYS_PREF, JSON.stringify(keys));
   } catch {
     // Lasts for this page.
   }
@@ -176,6 +201,8 @@ export class InputState {
   padActive = false;
   /** Weapon wheel: its key, whether it's open, and where it points (x right, y down; length up to 1). */
   wheelKey = loadWheelKey();
+  /** The lean keys (loadLeanKeys; read again when a match starts). */
+  leanKeys = loadLeanKeys();
   wheelOpen = false;
   /** Which wheel is open: the weapon wheel or (Fireteams) the order wheel. Only one at a time. */
   wheelKind: 'weapon' | 'order' = 'weapon';
@@ -210,7 +237,15 @@ export class InputState {
       },
       opts,
     );
-    window.addEventListener('keyup', (e) => this.keyUp(e.code), opts);
+    window.addEventListener(
+      'keyup',
+      (e) => {
+        // Alt let go on its own would bring up some browsers' menu bar (Left Alt leans right by default).
+        if (this.locked && (e.code === 'AltLeft' || e.code === 'AltRight')) e.preventDefault();
+        this.keyUp(e.code);
+      },
+      opts,
+    );
     window.addEventListener(
       'blur',
       () => {
@@ -766,6 +801,9 @@ export class InputState {
     if (this.useQueued) buttons |= BUTTON_USE;
     // E (or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
     if (this.keys.has('KeyE') || this.pad.use) buttons |= BUTTON_USE_HOLD;
+    // The lean keys, held (both: upright).
+    if (this.keys.has(this.leanKeys.left)) buttons |= BUTTON_LEAN_LEFT;
+    if (this.keys.has(this.leanKeys.right)) buttons |= BUTTON_LEAN_RIGHT;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
     this.jumpQueued = this.jumpNext;

@@ -48,7 +48,21 @@ export interface MotionState {
   straddle?: number;
   /** Seated: which way the seat faces, relative to the body's facing (radians, like moveAngle); the hips turn toward it. */
   seatFacing?: number;
+  /** Sliding (sprint, then crouch): crouched, leaning back on the move (shared sim/moves.ts SLIDE). */
+  sliding?: boolean;
+  /** Leaning (peek), in steps (+ right; LEAN_STEPS full): the spine rolls out to that side, the legs stay. */
+  lean?: number;
 }
+
+/** A full lean in steps (shared sim/moves.ts LEAN.steps). */
+const LEAN_STEPS = 10;
+/**
+ * The spine's roll at a full lean (rad). More than the hit shapes' own roll (sim/moves.ts LEAN.angle, 0.3, with a 12 cm
+ * shift at the hips that a skinned body can't make), so the drawn head ends where the hit head is: about 0.33 m out.
+ */
+const LEAN_SPINE_ROLL = 0.5;
+/** Sliding: the whole body tipped back (rad, negative is back), over the feet. */
+const SLIDE_TIP = -0.42;
 
 /**
  * Your own whole body seen from its eyes (full-body first person): the view
@@ -827,6 +841,7 @@ export class CharacterAnimator {
     else if (s.airborne) want = 'jump_air';
     else if (this.rolls) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
+    else if (s.sliding) want = 'crouch_idle';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
     else if (s.speed < (this.current === 'run' ? MOVE_STOP : MOVE_START)) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else want = 'run';
@@ -839,6 +854,14 @@ export class CharacterAnimator {
     this.lying = proneClips;
     this.prone += (tilt - this.prone) * Math.min(1, dt * 8);
     if (Math.abs(this.prone - tilt) < 1e-3) this.prone = tilt;
+    // Sliding: tipped back over the feet (quickly in, a little slower out); the spine brings the shoulders and the gun
+    // back onto the aim (pose()). Leaning: the spine rolls, eased.
+    const slideTarget = s.sliding && s.alive && !s.seated ? SLIDE_TIP : 0;
+    this.slideTip += (slideTarget - this.slideTip) * Math.min(1, dt * (slideTarget ? 14 : 8));
+    if (Math.abs(this.slideTip - slideTarget) < 1e-3) this.slideTip = slideTarget;
+    const leanTarget = s.alive && !s.seated && !s.celebrate ? Math.max(-1, Math.min(1, (s.lean ?? 0) / LEAN_STEPS)) : 0;
+    this.leanNow += (leanTarget - this.leanNow) * Math.min(1, dt * 16);
+    if (Math.abs(this.leanNow - leanTarget) < 1e-3) this.leanNow = leanTarget;
     // Into and out of a seat quickly (getting in is instant in the sim).
     const sitTarget = s.seated ? 1 : 0;
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
@@ -1555,6 +1578,10 @@ export class CharacterAnimator {
 
   /** Current forward tip of the body (0 standing, PRONE_TILT lying down). */
   private prone = 0;
+  /** The slide's backward tip (0 .. SLIDE_TIP) and the lean (-1 .. 1), eased. */
+  private slideTip = 0;
+  private leanNow = 0;
+  private appliedSlide = 0;
   private lying = false;
   /** 0..1: how far into the seated pose (MotionState.seated). */
   private sit = 0;
@@ -1573,17 +1600,20 @@ export class CharacterAnimator {
   private applied = 0;
 
   private applyProne(): void {
-    if (this.prone === this.applied && this.sit === this.appliedSit) return;
+    if (this.prone === this.applied && this.sit === this.appliedSit && this.slideTip === this.appliedSlide) return;
     this.applied = this.prone;
     this.appliedSit = this.sit;
+    this.appliedSlide = this.slideTip;
     const root = this.ch.root;
     this.rootBase ??= root.position.clone();
-    root.rotation.x = this.prone;
+    root.rotation.x = this.prone + this.slideTip;
     // Rotating about the feet would throw the body a metre forward; keep the hips over the feet and lay it on the ground.
     // Lifted a little so the chest rests on the floor instead of sinking into it.
     // Seated, the body drops onto the cushion (the feet point), the thighs over it and the shins hanging in front.
     const drop = ((this.hipHeight ?? HIP_HEIGHT) - SIT_CLEAR) * this.sit;
-    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone));
+    // Sliding, the hips drop toward the ground as the body tips back over the feet.
+    const slid = this.slideTip / SLIDE_TIP;
+    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop - 0.12 * slid, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone + this.slideTip));
   }
 
   /** Bend the legs over the seat (after the clips); measures the hip height first, while it can (not lying down). */
@@ -1677,6 +1707,7 @@ export class CharacterAnimator {
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
     const right = Vector3.TransformNormal(Vector3.Right(), Matrix.FromQuaternionToRef(rootRot, new Matrix()));
     const up = Vector3.Up();
+    const forward = Vector3.Cross(right, up).normalize();
     // The hips (and with them the legs) turn toward the motion; the spine above turns back by as
     // much (less the long gun's blade), so the shoulders stay square to the aim. Turns are about world axes (worldTurn).
     // Far off (animation LOD's coarse detail) the stride isn't warped: a few pixels of leg.
@@ -1700,11 +1731,14 @@ export class CharacterAnimator {
       // hunched (crouching on its ball), the low spine bends forward and the chest takes it back (the aim is kept).
       const hunch = i === 0 ? -this.rollLean.hunch : i === this.spine.length - 1 ? this.rollLean.hunch : 0;
       // About the world's right a positive turn tips the top forward: aiming up (and a roll's forward tip) leans back.
-      const pitch = -((this.pitch * (this.fp ? FP_BODY_PITCH : 1) + this.rollLean.fwd) * share + hunch);
+      // (A slide's backward tip is taken back the same way, so the gun stays on the aim.)
+      const pitch = -((this.pitch * (this.fp ? FP_BODY_PITCH : 1) + this.rollLean.fwd + this.slideTip) * share + hunch);
       // Both about world axes (worldTurn): the spine's joint frames are mirrored by the glTF import, and turning
       // about the up axis read through a rotation-only inverse wound the shoulders the same way as the hips (a
       // strafe turned the chest 140 degrees off the aim instead of keeping it square to the gun).
-      const q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
+      let q = worldTurn(parent, right, pitch).multiply(worldTurn(parent, up, -twist * share));
+      // The lean (peek): the spine rolls about the way the body faces, the top out to that side.
+      if (this.leanNow) q = worldTurn(parent, forward, -this.leanNow * LEAN_SPINE_ROLL * share).multiply(q);
       // In place (the joint keeps its own quaternion: see putRot).
       q.multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
     }

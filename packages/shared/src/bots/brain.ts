@@ -7,7 +7,8 @@ import { parkourAlong, parkourInput, type ParkourKind, type ParkourLink } from '
 import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
-import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
+import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, type PlayerInput } from '../sim/movement.ts';
+import { SLIDE, eyePoint } from '../sim/moves.ts';
 import { AMMO_BOX_REACH } from '../sim/resupply.ts';
 import { botFireMode } from './fireModePick.ts';
 import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
@@ -723,6 +724,14 @@ export class BotBrain {
   private threatFrom: Vec3 | null = null;
   // Cover and peeking.
   private cover: CoverSpot | null = null;
+  /**
+   * Slide and peek (sim/moves.ts): a peek round tall cover leans out (`leanSide`, pressed on `leanTick`); a sprint into
+   * cover under fire may end in a slide (crouch held until `slideUntil`; one try per cover spot, `slidFor`).
+   */
+  private leanSide: -1 | 1 = 1;
+  private leanTick = -1;
+  private slideUntil = -1;
+  private slidFor: CoverSpot | null = null;
   private nextCoverSearch = 0;
   private peekPhase: 'hide' | 'peek' = 'hide';
   private phaseUntil = 0;
@@ -1206,7 +1215,7 @@ export class BotBrain {
     return {
       tick: view.tick,
       // Where its rounds start: the sim fires from the eye, which scales with body size.
-      eye: { x: me.pos.x, y: me.pos.y + STANCES[stance].eye * (me.size ?? 1), z: me.pos.z },
+      eye: me.lean ? eyePoint(me.pos, me.yaw ?? 0, stance, me.lean, me.size ?? 1) : { x: me.pos.x, y: me.pos.y + STANCES[stance].eye * (me.size ?? 1), z: me.pos.z },
       speed: this.speed,
       airborne: false,
       stance,
@@ -1878,7 +1887,7 @@ export class BotBrain {
     const aimAtTarget = (t: CombatantView) => {
       aimedTarget = true;
       const ta = simProfile.on ? performance.now() : 0;
-      sol = this.aim.solve(ctx, { slot: t.slot, pos: this.aimPos(def, t), stance: this.aimStance(def, t), size: t.size ?? 1, box: t.box ?? null, yaw: t.yaw, hitScale: t.hitScale ?? 1, bodyStance: t.stance ?? 0 });
+      sol = this.aim.solve(ctx, { slot: t.slot, pos: this.aimPos(def, t), stance: this.aimStance(def, t), size: t.size ?? 1, box: t.box ?? null, yaw: t.yaw, hitScale: t.hitScale ?? 1, bodyStance: t.stance ?? 0, lean: t.lean ?? 0 });
       if (simProfile.on) simProfile.add('botAim', performance.now() - ta);
       this.turnToward(sol.yaw, sol.pitch);
       lookDone = true;
@@ -2599,6 +2608,8 @@ export class BotBrain {
     }
     // A parkour link's own presses only (no shot, scope, stance or stray hop while it runs and jumps).
     if (pk) buttons = (buttons & ~(BUTTON_JUMP | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_SPRINT | BUTTON_FIRE | BUTTON_ZOOM | BUTTON_ALT)) | pk.buttons;
+    // Peeking round tall cover this tick: lean out that way (sim/moves.ts; the match keeps it off walls).
+    else if (this.leanTick === tick) buttons |= this.leanSide > 0 ? BUTTON_LEAN_RIGHT : BUTTON_LEAN_LEFT;
     // Getting in: use when close enough to the planned mount.
     if (this.state === 'mount' && this.mountPlan) {
       const m = view.mounts?.find((x) => x.index === this.mountPlan!.index);
@@ -3094,7 +3105,18 @@ export class BotBrain {
         this.cover = null;
         return { moveYaw: null, sprint: false, stance: 0, moveScale: 1, shoot: true };
       }
+      // Sliding in: crouch held (the slide carries it on) until it ends or the spot is reached.
+      if (tick < this.slideUntil && this.slidFor === c) return { moveYaw, sprint: false, stance: 1, moveScale: 1, shoot: false };
       const sprint = d > 2.5 && (underFire || this.hurt(view) || this.state === 'retreat');
+      // The last few metres of a sprint into cover under fire: a slide (once per spot, if the stamina is there), as a
+      // player would; it lands crouched behind the cover, which is where the hide phase wants it.
+      if (sprint && underFire && me.sprinting && me.grounded && d > 2.6 && d < 5.5 && this.slidFor !== c && (me.stamina ?? 1) >= SLIDE.cost + 0.1) {
+        this.slidFor = c;
+        if (this.rng() < 0.4 + this.tactical * 0.4) {
+          this.slideUntil = tick + Math.round(TICK_RATE * SLIDE.maxSeconds);
+          return { moveYaw, sprint: false, stance: 1, moveScale: 1, shoot: false };
+        }
+      }
       return { moveYaw, sprint, stance: 0, moveScale: 1, shoot: !sprint };
     }
     // At cover: alternate hiding and peeking. Shorter peeks while under fire.
@@ -3128,8 +3150,12 @@ export class BotBrain {
       const tx = c.threat.x - c.pos.x;
       const tz = c.threat.z - c.pos.z;
       const l = hypot(tx, tz) || 1;
-      const lean = { x: c.pos.x + (tz / l) * c.peek * 1.1, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 1.1 };
+      // A shorter step out, and a lean (peek) the same way the rest of the 1.1 m the spot was judged at: the head and
+      // gun come out round the edge, as a player's do (its right, facing the threat, is the spot's +1 side).
+      const lean = { x: c.pos.x + (tz / l) * c.peek * 0.8, y: c.pos.y, z: c.pos.z - (tx / l) * c.peek * 0.8 };
       const moveYaw = horizontalDistance(me.pos, lean) > 0.3 ? Math.atan2(lean.x - me.pos.x, lean.z - me.pos.z) : null;
+      this.leanSide = c.peek;
+      this.leanTick = tick;
       return { moveYaw, sprint: false, stance: 0, moveScale: 0.8, shoot: true };
     }
     // Hide-only spot: step out to fight when the peek comes round.
@@ -4043,6 +4069,8 @@ export class BotBrain {
     myEye.x = me.pos.x;
     myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye * (me.size ?? 1);
     myEye.z = me.pos.z;
+    // Leaning, its eye is out round the corner (sim/moves.ts eyePoint), as the match has it.
+    if (me.lean) Object.assign(myEye, eyePoint(me.pos, me.yaw ?? 0, me.stance ?? 0, me.lean, me.size ?? 1));
     const fx = Math.sin(this.yaw);
     const fz = Math.cos(this.yaw);
     this.memory.mark(me.pos, tick);
@@ -4098,6 +4126,8 @@ export class BotBrain {
       theirEye.x = o.pos.x;
       theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye * (o.size ?? 1);
       theirEye.z = o.pos.z;
+      // Someone leaning round a corner shows their head there: seen there (fair both ways).
+      if (o.lean) Object.assign(theirEye, eyePoint(o.pos, o.yaw ?? 0, o.stance ?? 0, o.lean, o.size ?? 1));
       rays++;
       c.checked = true;
       let clear: boolean;

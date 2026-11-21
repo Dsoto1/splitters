@@ -105,7 +105,7 @@ import {
 } from '@tiletrigger/shared';
 import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
 import { weaponName } from '../game/profileCard.ts';
-import { DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadMousePrefs, loadWheelKey, saveMousePrefs, saveWheelKey } from '../game/input.ts';
+import { DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadLeanKeys, loadMousePrefs, loadWheelKey, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
@@ -3091,6 +3091,8 @@ export class FrontEnd {
       ['Jump (stands you up)', 'Space'],
       ['Sprint (uses stamina)', 'Shift'],
       ['Crouch / prone (toggle)', 'C / Z'],
+      ['Slide (crouch while sprinting; uses stamina)', 'Shift, then C'],
+      ['Lean left / right (peek; hold)', `${keyLabel(loadLeanKeys().left)} / ${keyLabel(loadLeanKeys().right)}`],
       ['Fire', 'Left mouse · F'],
       ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse · X'],
       ['Look (touchpad / keyboard)', 'Arrow keys'],
@@ -3141,7 +3143,8 @@ export class FrontEnd {
         e.stopImmediatePropagation();
         window.removeEventListener('keydown', take, true);
         if (e.code !== 'Escape') {
-          if (RESERVED_KEYS.has(e.code)) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+          const lean = loadLeanKeys();
+          if (RESERVED_KEYS.has(e.code) || e.code === lean.left || e.code === lean.right) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
           else saveWheelKey(e.code);
         }
         wheelKey.textContent = keyLabel(loadWheelKey());
@@ -3153,6 +3156,39 @@ export class FrontEnd {
       saveWheelKey(DEFAULT_WHEEL_KEY);
       wheelKey.textContent = keyLabel(DEFAULT_WHEEL_KEY);
       wheelNote.textContent = '';
+    });
+    // The lean (peek) keys: press the button, then the key (Esc keeps the old one). Not a key that does something else.
+    const leanNote = el('small', { class: 'key-bind-note' });
+    const leanButton = (side: 'left' | 'right') => {
+      const b = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadLeanKeys()[side]) });
+      b.dataset.lean = side;
+      b.addEventListener('click', () => {
+        b.textContent = 'Press a key…';
+        leanNote.textContent = '';
+        const take = (e: KeyboardEvent) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          window.removeEventListener('keydown', take, true);
+          const keys = loadLeanKeys();
+          const other = side === 'left' ? keys.right : keys.left;
+          if (e.code !== 'Escape') {
+            if (RESERVED_KEYS.has(e.code) || e.code === loadWheelKey() || e.code === other) leanNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+            else saveLeanKeys({ ...keys, [side]: e.code });
+          }
+          b.textContent = keyLabel(loadLeanKeys()[side]);
+        };
+        window.addEventListener('keydown', take, true);
+      });
+      return b;
+    };
+    const leanLeft = leanButton('left');
+    const leanRight = leanButton('right');
+    const leanReset = el('button', { type: 'button', class: 'link', textContent: `Default (${keyLabel(DEFAULT_LEAN_KEYS.left)} / ${keyLabel(DEFAULT_LEAN_KEYS.right)})` });
+    leanReset.addEventListener('click', () => {
+      saveLeanKeys({ ...DEFAULT_LEAN_KEYS });
+      leanLeft.textContent = keyLabel(DEFAULT_LEAN_KEYS.left);
+      leanRight.textContent = keyLabel(DEFAULT_LEAN_KEYS.right);
+      leanNote.textContent = '';
     });
     const crosshairs = el('div', { class: 'crosshair-pick' });
     const colours = el('div', { class: 'crosshair-pick colours' });
@@ -3226,6 +3262,7 @@ export class FrontEnd {
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
         row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
+        row('Lean (peek)', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, el('span', { textContent: 'Left' }), leanLeft, el('span', { textContent: 'Right' }), leanRight, leanReset), leanNote), 'Hold to lean round a corner: your head and gun move out to that side (and so does where you can be hit). Q and E already have jobs (last weapon and the wheel, use), so the defaults are ` (left of 1) and Left Alt. Pick any free keys.'),
         ...(isTouchDevice()
           ? [
               el('h3', { class: 'opt-sub', textContent: 'Touch' }),

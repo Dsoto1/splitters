@@ -73,7 +73,7 @@ const snapshot = (more: Partial<SnapshotMessage> = {}): SnapshotMessage => ({ t:
 const everything = (): SnapshotMessage =>
   snapshot({
     players: [
-      player(0, { vx: 1.5, vz: -2.25, fx: 1024 + 128, st: 'patrol', sn: 2, em: 1, sr: 1, cl: 3, ch: 2, dr: 1, zl: [2, 14.5, -6], zm: 1, dw: 1 }),
+      player(0, { vx: 1.5, vz: -2.25, fx: 1024 + 128, st: 'patrol', sn: 2, em: 1, sr: 1, cl: 3, ch: 2, dr: 1, zl: [2, 14.5, -6], zm: 1, dw: 1, sd: 1, ln: -7 }),
       player(1, { g: 0, alive: 0, hp: -12, ar: 0, st: 'attack', sn: 1, ch: 1 }),
       player(127, { st: 'patrol', p: [-0, 1e-9, 123456.789] }),
     ],
@@ -165,8 +165,31 @@ describe('the binary snapshot message', () => {
     for (const k of ['mt', 'ms', 'np', 'ab', 'fs', 'ld', 'md', 'pr', 'pw', 'dw', 'zn', 'me', 'sc', 'pk']) expect(seenTop.has(k), k).toBe(true);
   });
 
-  it('version 2: the scoped bit (zm, 32) and the reserved pair bit (dw, 64), each alone, both and neither', () => {
-    expect(SNAPSHOT_BINARY_VERSION).toBe(2);
+  it('version 3: a slide bit (sd, 128) and a lean byte (ln, mask 256), as a version 2 record otherwise', () => {
+    expect(SNAPSHOT_BINARY_VERSION).toBe(3);
+    const buf = (more: Partial<PlayerSnapshot>) => new Uint8Array(new SnapshotBinaryEncoder().encode(snapshot({ players: [player(0, more)] }))!);
+    const at = 32 + 2 + 2;
+    expect(buf({ sd: 1 })[at + 1]! & 128).toBe(128);
+    expect(buf({})[at + 1]! & 128).toBe(0);
+    const mask = (b: Uint8Array) => b[at + 2]! | (b[at + 3]! << 8);
+    expect(mask(buf({ ln: 10 })) & 256).toBe(256);
+    expect(mask(buf({})) & 256).toBe(0);
+    const pooled = new SnapshotBinaryDecoder({ ring: 2 });
+    for (const more of [{ sd: 1 }, { ln: -10 }, { ln: 3, sd: 1 }, {}, { ln: 10 }, {}] as Partial<PlayerSnapshot>[]) {
+      const msg = snapshot({ players: [player(0, more), player(1, { st: 'attack', sr: 1 })] });
+      expect(roundTrip(msg)).toEqual(msg);
+      const again = pooled.decode(new SnapshotBinaryEncoder().encode(msg)!)!;
+      expect(again.players[0]!.sd).toBe(more.sd);
+      expect(again.players[0]!.ln).toBe(more.ln);
+      pooled.commit();
+    }
+    for (const bad of [{ sd: 2 }, { ln: 1.5 }, { ln: 200 }]) {
+      const enc = new SnapshotBinaryEncoder();
+      expect(enc.encode(snapshot({ players: [player(0, bad as Partial<PlayerSnapshot>)] }))).toBeNull();
+    }
+  });
+
+  it('version 2 bits kept: the scoped bit (zm, 32) and the pair bit (dw, 64), each alone, both and neither', () => {
     const bitsOf = (more: Partial<PlayerSnapshot>) => {
       const buf = new SnapshotBinaryEncoder().encode(snapshot({ players: [player(0, more)] }))!;
       // The players start after the header (32 bytes), the strings' count (no bot state here: 2 bytes) and their own count (2).
@@ -279,22 +302,22 @@ describe('reading binary snapshots', () => {
     expect(new SnapshotBinaryDecoder().decode(padded.subarray(32, 32 + exact.length))).toEqual(expected(everything()));
   });
 
-  it('takes only its own version (2), and no player bit it does not know', () => {
+  it('takes only its own version (3), and no player field it does not know', () => {
     const dec = new SnapshotBinaryDecoder();
-    // Version 1 (before zm and dw) and a later one: refused before another byte is read.
-    for (const v of [1, 3]) {
+    // Versions 1 and 2 (before sd and ln) and a later one: refused before another byte is read.
+    for (const v of [1, 2, 4]) {
       const other = valid();
       new DataView(other.buffer).setUint16(4, v, true);
       expect(dec.decode(other)).toBeNull();
-      expect(dec.error).toBe(`binary snapshot version ${v} (this reads 2)`);
+      expect(dec.error).toBe(`binary snapshot version ${v} (this reads 3)`);
     }
-    // The one bit left (128) on a player's record: unknown, refused.
     const u8 = new Uint8Array(new SnapshotBinaryEncoder().encode(snapshot({ players: [player(0)] }))!);
     const bitsAt = 32 + 2 + 2 + 1;
     expect(dec.decode(u8)).not.toBeNull();
-    u8[bitsAt] = u8[bitsAt]! | 32 | 64;
-    expect(dec.decode(u8)!.players[0]).toMatchObject({ zm: 1, dw: 1 });
-    u8[bitsAt] = u8[bitsAt]! | 128;
+    u8[bitsAt] = u8[bitsAt]! | 32 | 64 | 128;
+    expect(dec.decode(u8)!.players[0]).toMatchObject({ zm: 1, dw: 1, sd: 1 });
+    // A mask bit past the lean (512): unknown, refused.
+    u8[bitsAt + 2] = u8[bitsAt + 2]! | 2;
     expect(dec.decode(u8)).toBeNull();
     expect(dec.error).toBe('unknown player fields');
   });

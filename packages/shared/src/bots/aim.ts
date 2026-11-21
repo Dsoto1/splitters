@@ -53,6 +53,8 @@ export interface AimTarget {
   yaw?: number;
   hitScale?: number;
   bodyStance?: Stance;
+  /** Leaning (peek), in steps (sim/moves.ts): its head and chest are out to that side. */
+  lean?: number;
 }
 
 /** Scratch body for aim points (at the origin: offsets from the feet). */
@@ -268,10 +270,11 @@ export class AimModel {
       aimBody.stance = target.bodyStance ?? 0;
       aimBody.scale = (target.hitScale ?? 1) * size;
       aimBody.box = box;
+      aimBody.lean = target.lean ?? 0;
       const s = shapesFor(box, aimBody.stance);
       // Over low cover only the head and shoulders show: the bottom of the head, where they meet.
       const high = ctx.tick < this.highUntil;
-      const p = this.head || high || !s.torso ? headPoint(aimBody) : bodyToWorld(aimBody, s.torso.x, (s.torso.a[0] + s.torso.b[0]) / 2, (s.torso.a[1] + s.torso.b[1]) / 2);
+      const p = this.head || high || !s.torso ? headPoint(aimBody) : bodyToWorld(aimBody, s.torso.x, (s.torso.a[0] + s.torso.b[0]) / 2, (s.torso.a[1] + s.torso.b[1]) / 2, true);
       if (high && !this.head && s.head) p.y -= s.head.r * 0.5 * aimBody.scale;
       ox = p.x;
       up = p.y;

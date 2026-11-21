@@ -63,6 +63,10 @@ export interface RemotePose {
   /** Dancing (emote). */
   emote?: boolean;
   sprinting?: boolean;
+  /** Sliding (PlayerSnapshot.sd). */
+  sliding?: boolean;
+  /** Leaning (peek), in steps, blended between snapshots (PlayerSnapshot.ln; + right, sim/moves.ts LEAN.steps full). */
+  lean?: number;
   /** Aiming through a magnified optic, as the host says (PlayerSnapshot.zm; hosts older than the field never say it). */
   scoped?: boolean;
   /** Under a parachute (1) or glider (2). */
@@ -245,6 +249,8 @@ export class Interpolator {
         grounded: pb.g === 1,
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
+        ...(pb.sd ? { sliding: true } : {}),
+        ...((from.ln ?? 0) || pb.ln ? { lean: (from.ln ?? 0) + ((pb.ln ?? 0) - (from.ln ?? 0)) * blend } : {}),
         ...(pb.zm ? { scoped: true } : {}),
         ...(pb.dw ? { pair: true } : {}),
         ...(pb.em ? { emote: true } : {}),

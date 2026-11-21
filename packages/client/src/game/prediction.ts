@@ -61,6 +61,7 @@ import {
   THROWABLES,
   PLAYER,
   eyeHeightOf,
+  eyePoint,
   PhysicsWorld,
   SPEED_BOOST,
   WEAPONS_BY_SLOT,
@@ -306,9 +307,10 @@ export class LocalPlayer {
     return { x: p.x + (c.x - p.x) * k, y: p.y + (c.y - p.y) * k, z: p.z + (c.z - p.z) * k };
   }
 
-  /** Where your eyes are (they drop when you crouch or go prone). */
+  /** Where your eyes are (they drop when you crouch or go prone, and lean out with a peek, as the host has them: eyePoint). */
   get eye(): Vec3 {
-    return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, this.scale), z: this.state.pos.z };
+    if (!this.state.lean) return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, this.scale), z: this.state.pos.z };
+    return eyePoint(this.state.pos, this.lastYaw, this.state.stance ?? 0, this.state.lean, this.scale);
   }
 
   get weapon(): WeaponDefinition | undefined {
@@ -790,6 +792,11 @@ export class LocalPlayer {
       ...(server.ch ? { chute: server.ch } : {}),
       ...(server.dr ? { drop: true } : {}),
       ...(server.zl ? { zip: server.zl[0], zs: server.zl[1], zv: server.zl[2] } : {}),
+      // The sprint (a slide starts from one), a slide under way, the stamina moves' cooldown and the lean (sim/moves.ts).
+      ...(server.sr ? { sprint: true } : {}),
+      ...(me?.mv?.[0] ? { slide: me.mv[0] } : {}),
+      ...(me?.mv?.[1] ? { moveCd: me.mv[1] } : {}),
+      ...(server.ln ? { lean: server.ln } : {}),
       ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
       // Double jumps already used and whether jump was held, so a replay doesn't jump again.
       ...(me?.cl && me.cl[4] & 3 ? { airJumps: me.cl[4] & 3 } : {}),

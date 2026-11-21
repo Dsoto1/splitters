@@ -2716,7 +2716,7 @@ export class GameView {
       // Show hitboxes (dev and test setting): the shapes the host tests shots against, over the body.
       if (this.showHitboxes && p.alive && !a.ragdoll) {
         const h = hitboxForSpec(want);
-        (a.hitbox ??= new BodyHitbox(this.scene)).show(a.root, h.box, (p.stance ?? 0) as Stance, h.scale);
+        (a.hitbox ??= new BodyHitbox(this.scene)).show(a.root, h.box, (p.stance ?? 0) as Stance, h.scale, p.lean ?? 0);
       } else a.hitbox?.hide();
       // Crowds: characters outside the view (with a margin for their shadows) are left out of drawing
       // and the shadow map, and animate only now and then.
@@ -2812,6 +2812,8 @@ export class GameView {
           celebrate: (celebrate || !!p.emote) && p.alive,
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
+          ...(p.sliding ? { sliding: true } : {}),
+          ...(p.lean ? { lean: p.lean } : {}),
           ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());

@@ -5,7 +5,7 @@ import { CreateCapsule } from '@babylonjs/core/Meshes/Builders/capsuleBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { HITBOX_MARGIN, MEASURED_HITBOXES, creatureSkinScale, lookHitbox, shapesFor, type HitShapes, type LookHitbox, type Stance } from '@tiletrigger/shared';
+import { HITBOX_MARGIN, LEAN, MEASURED_HITBOXES, leanPivot, creatureSkinScale, lookHitbox, shapesFor, type HitShapes, type LookHitbox, type Stance } from '@tiletrigger/shared';
 import type { AvatarSpec } from '../content/creatures.ts';
 export { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from './hitboxPrefs.ts';
 
@@ -54,22 +54,30 @@ function materials(scene: Scene): { core: Mats; pad: Mats } {
  * One stance's shapes as meshes under a node in the body's frame (x right, y up, z forward; unscaled metres): the
  * measured shapes, and round them a faint shell with the margin (HITBOX_MARGIN) that shots are tested against.
  */
-export function drawHitShapes(scene: Scene, s: HitShapes, name: string): TransformNode {
+export function drawHitShapes(scene: Scene, s: HitShapes, name: string, pivot = 0): TransformNode {
   const root = new TransformNode(name, scene);
+  // The head, torso and arms hang from a node at the hips, which a lean (peek) rolls and shifts (BodyHitbox.show).
+  const upper = new TransformNode(`${name}_upper`, scene);
+  upper.parent = root;
+  upper.position.y = pivot;
   const all = materials(scene);
-  drawLayer(scene, s, name, root, all.core, 0, 0);
-  drawLayer(scene, s, `${name}_pad`, root, all.pad, HITBOX_MARGIN.body, HITBOX_MARGIN.head);
+  drawLayer(scene, s, name, root, upper, pivot, all.core, 0, 0);
+  drawLayer(scene, s, `${name}_pad`, root, upper, pivot, all.pad, HITBOX_MARGIN.body, HITBOX_MARGIN.head);
   return root;
 }
 
-function drawLayer(scene: Scene, s: HitShapes, name: string, root: TransformNode, m: Mats, pad: number, padHead: number): void {
-  const capsule = (part: 'torso' | 'arms' | 'legs', a: Vector3, b: Vector3, r0: number, squash = 1) => {
+function drawLayer(scene: Scene, s: HitShapes, name: string, root: TransformNode, upper: TransformNode, pivot: number, m: Mats, pad: number, padHead: number): void {
+  const lift = new Vector3(0, pivot, 0);
+  const capsule = (part: 'torso' | 'arms' | 'legs', a0: Vector3, b0: Vector3, r0: number, squash = 1) => {
+    const up = part !== 'legs';
+    const a = up ? a0.subtract(lift) : a0;
+    const b = up ? b0.subtract(lift) : b0;
     const r = r0 + pad;
     const len = Vector3.Distance(a, b);
     const mesh = CreateCapsule(`${name}_${part}`, { radius: r, height: len + 2 * r, tessellation: 14, subdivisions: 2, capSubdivisions: 6 }, scene);
     mesh.material = m[part];
     mesh.isPickable = false;
-    mesh.parent = root;
+    mesh.parent = up ? upper : root;
     mesh.position.copyFrom(a.add(b).scale(0.5));
     const dir = len > 1e-6 ? b.subtract(a).normalize() : Vector3.Up();
     mesh.rotationQuaternion = new Quaternion();
@@ -81,8 +89,8 @@ function drawLayer(scene: Scene, s: HitShapes, name: string, root: TransformNode
     const h = CreateSphere(`${name}_head`, { diameter: (s.head.r + padHead) * 2, segments: 12 }, scene);
     h.material = m.head;
     h.isPickable = false;
-    h.parent = root;
-    h.position.set(s.head.x, s.head.y, s.head.z);
+    h.parent = upper;
+    h.position.set(s.head.x, s.head.y - pivot, s.head.z);
   }
   if (s.torso) {
     const t = s.torso;
@@ -98,16 +106,23 @@ export class BodyHitbox {
   private key = '';
   constructor(private readonly scene: Scene) {}
 
-  /** Show `box` in `stance` at `scale` under `parent` (placed at the feet, turned to the body's yaw). */
-  show(parent: TransformNode, box: LookHitbox, stance: Stance, scale: number): void {
+  /** Show `box` in `stance` at `scale` under `parent` (placed at the feet, turned to the body's yaw), leaning `lean` steps. */
+  show(parent: TransformNode, box: LookHitbox, stance: Stance, scale: number, lean = 0): void {
     const s = shapesFor(box, stance);
     const key = `${keyOf(box)}|${stance}`;
     if (key !== this.key) {
       this.node?.dispose();
-      this.node = drawHitShapes(this.scene, s, `hitbox_${parent.name}`);
+      this.node = drawHitShapes(this.scene, s, `hitbox_${parent.name}`, leanPivot(stance));
       this.key = key;
     }
     const n = this.node!;
+    // The lean as the host tests rounds against it (sim/hitbox.ts): rolled about the hips, shifted across.
+    const upper = n.getChildren()[0] as TransformNode | undefined;
+    if (upper) {
+      const f = Math.max(-1, Math.min(1, lean / LEAN.steps));
+      upper.rotation.z = -LEAN.angle * f;
+      upper.position.x = LEAN.shift * f;
+    }
     if (n.parent !== parent) n.parent = parent;
     n.setEnabled(true);
     n.scaling.setAll(scale);

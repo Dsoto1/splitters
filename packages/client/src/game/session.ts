@@ -156,6 +156,7 @@ import {
   AMMO_BOX_MODEL,
   isAmmoBoxPickup,
 } from '@tiletrigger/shared';
+import { LEAN, leanShift } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
@@ -163,7 +164,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
-import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
+import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, shakeScale, type AimMode, type ShakeLevel } from './combatPrefs.ts';
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
@@ -242,6 +243,8 @@ import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule
 
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
+/** The view's roll at a full lean (rad, about 4°; Camera shake scales it: lean view in session.ts leanView). */
+const LEAN_VIEW_ROLL = 0.07;
 /** How long a board that has just joined the loading screen stays before the countdown (ms). */
 const LOADING_BOARD_HOLD_MS = 1600;
 /** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
@@ -767,6 +770,28 @@ export class GameSession {
   private eyeOffset: number | null = null;
   /** First-person roll riding a zipline (eased in and out). */
   private zipRoll = 0;
+  /** The lean (peek), eased between ticks: how far the eye is out to the side (m, + right), and the view's roll. */
+  private leanSide = 0;
+  private leanRoll = 0;
+
+  /**
+   * The lean's sideways eye offset (eased; the eye's drop is in eyeOffset) and a gentle roll of the view with it. The
+   * roll is comfort, not aim: at most LEAN_VIEW_ROLL, eased in, scaled by Camera shake (Off: none) and none with the
+   * system's reduce-motion setting; the eye's move out to the side is the lean itself and always happens.
+   */
+  private leanView(local: LocalPlayer, dt: number): { side: number; roll: number } {
+    const lean = local.alive && !this.seat ? (local.state.lean ?? 0) : 0;
+    const stance = (local.state.stance ?? 0) as 0 | 1 | 2;
+    const side = leanShift(lean, stance, STANCES[stance].eye, local.scale).side;
+    const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : shakeScale();
+    const roll = -(lean / LEAN.steps) * LEAN_VIEW_ROLL * calm;
+    const k = Math.min(1, dt * 18);
+    this.leanSide += (side - this.leanSide) * k;
+    this.leanRoll += (roll - this.leanRoll) * Math.min(1, dt * 10);
+    if (Math.abs(this.leanSide) < 1e-4) this.leanSide = 0;
+    if (Math.abs(this.leanRoll) < 1e-4) this.leanRoll = 0;
+    return { side: this.leanSide, roll: this.leanRoll };
+  }
 
   /**
    * Riding a zipline the view banks with the ride: leaning into the line's
@@ -3793,7 +3818,9 @@ export class GameSession {
         const v = dt > 0 ? Math.hypot(drawn.x - this.drawnPos.x, drawn.z - this.drawnPos.z) / dt : 0;
         this.drawnSpeed += ((v > 20 ? 0 : v) - this.drawnSpeed) * Math.min(1, dt * 10);
         this.drawnPos = drawn;
-        const head = { x: drawn.x, y: drawn.y + this.eyeOffset, z: drawn.z };
+        // The lean moves the eye out to the side (as the host has it: sim/moves.ts eyePoint), about the view's own right.
+        const lean = this.leanView(local, dt);
+        const head = { x: drawn.x + Math.cos(this.input.yaw) * lean.side, y: drawn.y + this.eyeOffset, z: drawn.z - Math.sin(this.input.yaw) * lean.side };
         // Out of play: the kill cam, following someone, or the free camera (the sound goes where the camera is).
         const watching = out ? this.spectatorCamera(now, local, fov, picks) : null;
         if (watching) {
@@ -3812,7 +3839,7 @@ export class GameSession {
         } else {
           // First person: the view carries the weapon's mechanical recoil (it is where your rounds go).
           const aimed = local.aimAngles(this.input.yaw, this.input.pitch);
-          this.view.setCamera(head, aimed.yaw, aimed.pitch, fov, this.zipLean(local, dt, now));
+          this.view.setCamera(head, aimed.yaw, aimed.pitch, fov, this.zipLean(local, dt, now) + lean.roll);
           this.view.firstPersonEye = true;
         }
       }
@@ -3943,7 +3970,7 @@ export class GameSession {
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, sliding: !!local.state.slide, lean: local.state.lean ?? 0, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
     // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
     const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
     const self = bodyDrawn ? mine : undefined;

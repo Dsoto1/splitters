@@ -415,6 +415,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     const dx = moved.feet.x - state.pos.x;
     const dz = moved.feet.z - state.pos.z;
     const run = hypot(dx, dz);
+
     const grade = run > 1e-3 ? Math.max(-SLIDE.maxGrade, Math.min(SLIDE.maxGrade, -(moved.feet.y - state.pos.y) / run)) : 0;
     const top = slideStart ? slideFrom : Math.max(v, PLAYER.runSpeed * SLIDE.endSpeed);
     const next = Math.min(top, v + (PLAYER.gravity * g * SLIDE.slope * grade - SLIDE.decel) * dt);
