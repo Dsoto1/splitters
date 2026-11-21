@@ -29,8 +29,8 @@
     "fallback": "weapons/railgun.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#5fe0ff",
-    "hold": { "style": "long", "grip": [0, -0.06, -0.14], "support": [0, -0.02, 0.3], "shoulder": [0, 0.0, -0.56] },
-    "muzzleAt": [0, 0.02, 0.575],
+    "hold": { "style": "long", "grip": [0, -0.052, -0.122], "support": [0, -0.017, 0.26], "shoulder": [0, 0.0, -0.487] },
+    "muzzleAt": [0, 0.017, 0.5],
     "zoomFov": 0.5,
     "sound": "fire.railgun",
     "beam": true

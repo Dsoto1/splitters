@@ -43,10 +43,10 @@
     "model": "guns/hornet.glb",
     "held": { "medium": "guns/hornet.medium.glb", "high": "guns/hornet.high.glb" },
     "fallback": "weapons/pulse_pistol.glb",
-    "viewOffset": [0.2, -0.18, 0.46],
+    "viewOffset": [0.2, -0.18, 0.44],
     "tracer": "#ffd23a",
-    "hold": { "style": "pistol", "grip": [0, -0.08, -0.11], "support": [-0.02, -0.09, -0.1], "rake": 35 },
-    "muzzleAt": [0, 0.02, 0.2],
+    "hold": { "style": "pistol", "grip": [0, -0.056, -0.077], "support": [-0.02, -0.063, -0.07], "rake": 35 },
+    "muzzleAt": [0, 0.014, 0.14],
     "sound": "fire.swarm"
   },
   "notes": {
