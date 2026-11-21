@@ -87,12 +87,14 @@ describe('weapon categories', () => {
 });
 
 describe('a pickup random pickups never roll (`rolls: false`: the Pistol)', () => {
-  it('the Pistol has a pickup, last in the table (so no earlier roll moved), its weapon\'s name and category', () => {
+  it('the Pistol has a pickup, after every earlier one (so no earlier roll moved), its weapon\'s name and category', () => {
     const pistol = getItem('core.weapon_pistol')!;
     expect(pistol.effect).toEqual({ kind: 'weapon', weapon: 'core.pistol' });
     expect(pistol.displayName).toBe('Pistol');
     expect(pistol.rolls).toBe(false);
-    expect(CORE_ITEMS.indexOf(pistol)).toBe(CORE_ITEMS.length - 1);
+    // Last when it came (2026-11-20); only the weapons intake of 2026-11-18's pickups have come after it, at the end.
+    const after = CORE_ITEMS.slice(CORE_ITEMS.indexOf(pistol) + 1).map((i) => i.id);
+    expect(after).toEqual(['core.weapon_desert_carbine', 'core.weapon_twin_rifle', 'core.weapon_compact_carbine', 'core.weapon_woodland_smg', 'core.weapon_amarillo', 'core.weapon_nova6', 'core.weapon_lever_action', 'core.weapon_runebreaker', 'core.weapon_flintlock_pistol', 'core.weapon_crossbow', 'core.weapon_blaster_x42', 'core.weapon_laser_blaster', 'core.weapon_hornet']);
     expect(itemCategory(pistol)).toBe('pistol');
     // Only the Pistol is marked: every other weapon pickup rolls as before.
     expect(CORE_ITEMS.filter((i) => i.rolls === false).map((i) => i.id)).toEqual(['core.weapon_pistol']);

@@ -7,16 +7,16 @@ import { SIGHT_TOLERANCE_DEG, STOCK_AHEAD, UNFITTED_OVER, aimPlacement, blendPla
  * The weapons that aim down their own drawn sights, by name. A new gun joins this list when the sight fit finds its
  * sights (tools/content/sight-fit.mjs), after a look at it on the sight sheet (`?mode=sights`).
  */
-const FITTED = ['core.auto_shotgun', 'core.burst_rifle', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.shotgun', 'core.smg'];
+const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg'];
 /** Of those, the ones whose fit was corrected by hand (content/sight-fit.json `corrections`, each with its reason). */
 const CORRECTED: string[] = [];
 /**
  * The hand-held guns that aim without a fit, by name: their models have no usable sights (content/sight-fit.json
  * `excluded`, each with its reason), so they keep the placement every gun had before.
  */
-const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.bubble_blaster', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.spear', 'core.swarm'];
+const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.hornet', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.spear', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
 /** The rest never aim down sights in the hand (mounted, melee and tools), or aim through a scope or an optic. */
-const BY_NATURE = ['core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.grapple', 'core.knife', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.railgun', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.speeder_guns', 'core.tank_cannon'];
+const BY_NATURE = ['core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.crossbow', 'core.grapple', 'core.knife', 'core.lever_action', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.nova6', 'core.railgun', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.speeder_guns', 'core.tank_cannon'];
 
 describe('sights that line up (docs/GUNPLAY_SPEC.md §15)', () => {
   it('every weapon has a sight fit or a stated reason for none', () => {

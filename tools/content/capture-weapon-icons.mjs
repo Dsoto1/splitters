@@ -26,7 +26,8 @@ const only = process.argv.slice(3);
 const fileOf = (model) => `${model.replace(/\.[a-z0-9]+$/i, '').replace(/[^A-Za-z0-9_.-]/g, '_')}.webp`;
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// CHROMIUM=<path> uses that browser build (as grip-sheet.mjs).
+const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
