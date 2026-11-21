@@ -1024,7 +1024,7 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
     }
   });
 
-  it('rows of mess tables: three lanes along the hall for bots, a cross aisle where asked, tables that collide and chairs that do not', { timeout: 480_000 }, () => {
+  it('rows of mess tables: four rows, three aisles between them for bots, a cross aisle where asked, tables that collide and chairs that do not', { timeout: 480_000 }, () => {
     for (const floor of ['level', 'sunk']) for (const { rotation, mirror } of TURNS) {
       const y = floor === 'sunk' ? -0.5 : 0;
       const { at, local, yaw } = frame(rotation, mirror);
@@ -1034,20 +1034,22 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
         // floor for the navmesh to keep: with Steps up at the west end the row's west tables are left out and the lanes
         // meet there, as they do in a hall.)
         const { physics, nav } = world(one(BAY, rotation, mirror, { floor, aisle: 'arcade', furniture, ...(floor === 'sunk' ? { end: 'steps' } : {}) }));
-        // (The lane by the north wall passes the pier, and the lectern and bell where they stand: the least room it has.)
-        for (const z of [1.43, 5.73, 10.03]) {
+        // (Four rows evenly spaced: the three aisles between them are the lanes.)
+        for (const z of [3.26, 6.07, 8.88]) {
           const [from, to]: P3[] = floor === 'sunk' ? [[-2.6, y, z], [3.1, y, z]] : [[-3.2, y, z], [3.4, y, z]];
           const path = nav.findPath(at(from!), at(to!));
           expect(path, `${where}, ${furniture}: the lane at z ${z}`).toBeTruthy();
           expect(Math.hypot(path!.at(-1)!.x - at(to!).x, path!.at(-1)!.z - at(to!).z), `${where}, ${furniture}: the lane at z ${z} arrives`).toBeLessThan(0.6);
           expect(length(path!), `${where}, ${furniture}: the lane at z ${z} is straight`).toBeLessThan(7.6);
         }
-        const across = nav.findPath(at([0, y, 1.43]), at([0, y, 10.03]));
-        if (furniture === 'rows_gap') expect(length(across!), `${where}: across the hall by the cross aisle`).toBeLessThan(9.5);
+        const across = nav.findPath(at([0, y, 3.26]), at([0, y, 8.88]));
+        // (Bots keep to the aisles between the rows: the side aisle behind the arcade is theirs only where it has no
+        // small tables, a bay with a way in on its south side; players walk into it anywhere. The whole hall's walk has it.)
+        if (furniture === 'rows_gap') expect(length(across!), `${where}: across the hall by the cross aisle`).toBeLessThan(6.5);
         // A table stops a walk across the rows; a chair does not (a player brushes through to the table's edge).
-        const stopped = local(walk(physics, at([furniture === 'rows_gap' ? 3.05 : 1.95, y + 0.05, 1.43]), yaw(0), 100).pos);
-        expect(stopped.z, `${where}, ${furniture}: stopped by the first table (z ${stopped.z.toFixed(2)})`).toBeLessThan(2.45);
-        expect(stopped.z, `${where}, ${furniture}: walked through its chairs`).toBeGreaterThan(1.9);
+        const stopped = local(walk(physics, at([furniture === 'rows_gap' ? 3.05 : 1.95, y + 0.05, 3.26]), yaw(0), 100).pos);
+        expect(stopped.z, `${where}, ${furniture}: stopped by the second row's table (z ${stopped.z.toFixed(2)})`).toBeLessThan(4.28);
+        expect(stopped.z, `${where}, ${furniture}: walked through its chairs`).toBeGreaterThan(3.7);
         nav.destroy();
       }
     }
@@ -1060,11 +1062,11 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
       const where = `${end}, ${floor} floor, turned ${rotation}${mirror ? ' mirrored' : ''}`;
       const map = one(BAY, rotation, mirror, { floor, aisle: 'arcade', furniture: 'rows', end, ...(floor === 'sunk' ? {} : {}) });
       const { physics, nav } = world(map);
-      // Nobody walks out west; the cross way before the end wall joins the three lanes (the row's west tables are left out).
-      expect(local(walk(physics, at([-1.5, y + 0.05, 5.73]), yaw(-Math.PI / 2), 120).pos).x, `${where}: the end is closed`).toBeGreaterThan(-3.6);
-      const cross = nav.findPath(at([-1.4, y, 1.43]), at([-1.4, y, 10.03]));
+      // Nobody walks out west; the cross way before the end wall joins the three aisles (the row's west tables are left out).
+      expect(local(walk(physics, at([-1.5, y + 0.05, 8.88]), yaw(-Math.PI / 2), 120).pos).x, `${where}: the end is closed`).toBeGreaterThan(-3.6);
+      const cross = nav.findPath(at([-1.4, y, 3.26]), at([-1.4, y, 8.88]));
       expect(cross, `${where}: across before the end wall`).toBeTruthy();
-      expect(length(cross!), `${where}: across before the end wall, straight`).toBeLessThan(10.5);
+      expect(length(cross!), `${where}: across before the end wall, straight`).toBeLessThan(7.5);
       // Every prop of the end stands inside the bay, east of the wall's face.
       const wallFace = -3.5;
       for (const e of map.entities) if (e.kind === 'prop' && /fireplace|panel_window|drink_station/.test(e.model)) expect(local(v(e.position as P3)).x, `${where}: ${e.model}`).toBeGreaterThan(wallFace);
@@ -1120,7 +1122,7 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
       const where = `grid ${grid.spacing}`;
       const { physics, nav } = world(map);
       const floor = -0.5;
-      const middle = v([32, floor, 5.7]);
+      const middle = v([32, floor, 6.07]);
       const go = (a: Vec3, b: Vec3, max: number, what: string) => {
         const path = nav.findPath(a, b);
         expect(path, `${where}: ${what}`).toBeTruthy();
@@ -1130,21 +1132,21 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
       go(v([32, 0, 17]), middle, 13, 'from the court in at the north door');
       go(middle, v([32, 0, 17]), 13, 'and out again');
       go(v([32, 0, -9]), middle, 17, 'from the street in at the south door, through the aisle and an arch');
-      for (const z of [1.43, 5.73, 10.03]) go(v([21.5, floor, z]), v([45, floor, z]), 25, `the lane at z ${z}, end to end`);
-      go(v([24, floor, 1.43]), v([22, floor, -2.2]), 8, 'from the lane by the arcade into the side aisle through an arch');
+      for (const z of [3.26, 6.07, 8.88]) go(v([21.5, floor, z]), v([45, floor, z]), 25, `the aisle at z ${z}, end to end`);
+      go(v([32, floor, 3.26]), v([30, floor, -2.2]), 9, 'from the cross aisle into the side aisle through an arch');
       go(v([45, floor, 5.73]), v([51, floor, 8]), 18, "round the line to the servers' side");
       go(middle, v([58, floor, 1]), 34, 'into the kitchen');
       go(v([58, floor, 1]), v([64, 0, 4]), 9, "out at the kitchen's back door to the east stair's lobby");
       go(middle, v([56, 4, 4]), 70, 'from the hall to the floor above by the east stair');
       go(v([56, 8, 4]), middle, 90, 'and down from the top floor into the hall');
       // The west end is closed by the fireplace wall: the west stair is reached round outside.
-      expect(length(nav.findPath(v([8, 0, 8]), v([21.5, floor, 5.73]))!), `${where}: the west lobby is not on the hall`).toBeGreaterThan(40);
+      expect(length(nav.findPath(v([8, 0, 8]), v([21.5, floor, 6.07]))!), `${where}: the west lobby is not on the hall`).toBeGreaterThan(40);
       nav.destroy();
       // A player walks in at the north door and stands on the sunk floor; 4 m of room over every lane.
       const inside = walk(physics, v([32, 0.1, 14]), Math.PI, 110);
       expect(inside.pos.z, `${where}: walked in`).toBeLessThan(9);
       expect(inside.pos.y).toBeCloseTo(-0.5, 1);
-      for (const x of [22, 30, 38, 45, 50, 58]) for (const z of [1.43, 5.73, 10.03]) expect(physics.headroom({ x, y: floor, z }, 3.95, 0.3), `${where}: 4 m clear at (${x}, ${z})`).toBe(true);
+      for (const x of [22, 30, 38, 45, 50, 58]) for (const z of [3.26, 6.07, 8.88]) expect(physics.headroom({ x, y: floor, z }, 3.95, 0.3), `${where}: 4 m clear at (${x}, ${z})`).toBe(true);
       for (const x of [22, 30, 38]) expect(physics.headroom({ x, y: floor, z: -2 }, 3.95, 0.3), `${where}: the aisle at ${x}`).toBe(true);
     }
     // What it is made of: seven lights (one a bay and the hearth's), the kit's models.

@@ -35,11 +35,12 @@ What that gives, against the sketch:
   doorway is behind the line. Coming in from DeKoven (x 40) the line is to the left and the kitchen behind it.
 - **Main hall: four rows, two tables a row with a gap.** The rows run from x 24 to x 36 (three tables) and from x 44
   to x 52 (two tables), with the cross aisle at x 38 to 42 between them, on the lobby door. Tables are 3.9 m; a row is
-  0.76 m wide; the four rows stand in two pairs, with lanes of 2 m beside the arcade, down the middle and along the
-  north wall (what bots need).
+  0.76 m wide; the four rows are evenly spaced with three aisles of 2 m between them (what bots need), the middle
+  aisle on the fireplace.
 - **Second seating area past the rows, behind pillars with small arches.** The arcade runs the length of cells 3 to 6
   at z -88, 4 m from the south wall; small tables turned the other way stand in the aisle, two a bay (none in cell 5
-  if it keeps its south door).
+  if it keeps its south door). Bots do not go into the aisle's bays between the small tables (too narrow for them):
+  put no pickup there.
 - **Drink stations on the far (west) end wall by the clock tower; the fireplace there too** (photos 6 and 7 show the
   fireplace, the portrait and the two tall windows on that wall): the fireplace in the middle of the main hall's end,
   a drink station before the panelling either side of it.

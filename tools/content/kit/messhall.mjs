@@ -333,7 +333,7 @@ export function drinkStationMesh(seed, size, g, look, level) {
   }
   if (level === 0) {
     // Door lines on the cabinet's front.
-    for (let i = 1; i < 4; i++) face(m, -X + (w * i) / 4 - 0.008, 0.12, -X + (w * i) / 4 + 0.008, ch - 0.08, d / 2 + 0.002, scale3(body, 0.5));
+    for (let i = 1; i < 4; i++) face(m, -X + (w * i) / 4 - 0.008, 0.12, -X + (w * i) / 4 + 0.008, ch - 0.08, d / 2 + 0.0006, scale3(body, 0.5));
   }
   // The fountain head: a dark box with a lit-looking front band (plain colour), taps and a drip tray.
   const fx0 = -X + 0.08;
@@ -461,8 +461,8 @@ export function chandelierMesh(seed, size, g, look, level) {
   const seg = level === 0 ? 16 : level === 1 ? 10 : 6;
   const ringY = g.ring ?? 0.42;
   // The bowl: a shallow pale dish, lighter towards its rim.
-  const br = R * 0.78;
-  lathe(m, [[0.02, 0], [br * 0.55, 0.05], [br * 0.9, 0.17], [br, 0.3]], seg, (p) => scale3(bowl, 0.86 + 0.14 * (p[1] / 0.3)));
+  const br = R * 0.66;
+  lathe(m, [[0.02, 0.14], [br * 0.6, 0.17], [br * 0.92, 0.24], [br, 0.3]], seg, (p) => scale3(bowl, 0.9 + 0.1 * ((p[1] - 0.14) / 0.16)));
   if (level >= 2) {
     cyl(m, 1, 0, 0, 0.3, ringY + 0.1, R - 0.01, seg, iron);
     return m;
@@ -646,7 +646,7 @@ export function fireplaceMesh(seed, size, g, look, level) {
 
 /**
  * A bay of dark wood panelling for a wall (back −z), with a tall window over it: a wainscot of framed panels to
- * `wainscot` m with a cap rail, and (`window: true`) a tall window set in a stone surround above the rail: pale panes
+ * `wainscot` m with a cap rail, and (`window: true`) a tall window set in a stone surround from `sill` up (above the rail unless given): pale panes
  * between dark bars, a banner of two colours let into its middle (plain colours: it does not glow or see through).
  * `look`: `wood`, `stone`, `glass`, `bars`, `banner` (two hex, comma-separated). Collides as nothing.
  */
@@ -681,11 +681,12 @@ export function panelWindowMesh(seed, size, g, look, level) {
   const bars = hex(look.bars ?? '#2a2622');
   const banner = (look.banner ?? '#4b2a84,#d9a520').split(',').map((c) => hex(c.trim()));
   const ww = g.width ?? 1.5;
-  const y0 = wy + 0.08;
+  // (Its sill may be below the cap rail: the window then stands in the panelling, as a hall's tall end windows do.)
+  const y0 = g.sill ?? wy + 0.08;
   const y1 = h;
   const s = 0.14;
-  box(m, [-ww / 2 - s, y0, back], [ww / 2 + s, y1, back + 0.07], stone, ['nz', 'ny']);
-  const gz = back + 0.073;
+  box(m, [-ww / 2 - s, y0, back], [ww / 2 + s, y1, back + 0.13], stone, ['nz', 'ny']);
+  const gz = back + 0.133;
   face(m, -ww / 2, y0 + s, ww / 2, y1 - s, gz, glass);
   if (level >= 2) return m;
   const bw = ww * 0.42;

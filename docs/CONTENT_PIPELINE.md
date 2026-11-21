@@ -1043,8 +1043,8 @@ centre is refused on the ground (a height grid has no room under a floor), so th
 of its own cell (`bore.cut`, as the Basement Room) and brings the ground round it down to its doorways' level
 (`bore.open` at the level: what a plain Room's slab does by itself; a bored piece's floors pull no ground). It brings
 no steps: a doorway arrives half a metre over the floor. Needs nothing built below it.
-Props: `kit.roof.timber_bay` (8 m of a timber ceiling for a hall 16 m across: beams across the hall at the bay's
-middle and ends, joists, boards; hung, collides as nothing), `kit.wall.arcade` (8 m: two round arches 3 m across
+Props: `kit.roof.timber_bay` (8 m of a flat timber ceiling for a hall 16 m across: beams across the hall at the bay's
+middle and ends, joists, boards; variants brown and dark; hung, collides as nothing), `kit.wall.arcade` (8 m: two round arches 3 m across
 between coursed piers, half a pier at each end, so it is its own mirror image and a row ends in a respond; collides as
 its piers and the stone over each arch stepped along the curve; its foot goes 0.45 m under a floor or on a sunk one),
 `kit.table.mess` and `kit.table.mess_small` (a mess table with its chairs as one prop: collides as the table, the
@@ -1052,10 +1052,10 @@ chairs do not), `kit.shop.serving_line` (tray rail, hot wells, sneeze guard), `k
 `kit.table.lectern`, `kit.monument.bell_stand`, `kit.lamp.chandelier_bowl` (hung on chains, no light of its own),
 `kit.board.flags` (a row of four hanging flags: colour fields of our own picked by the seed, three variants),
 `kit.wall.fireplace` (a stone fireplace with a gilt frame over it: a faceless portrait or a landscape, both ours; a
-cold hearth), `kit.wall.panel_window` (dark panelling with a tall window over it, drawn on a solid wall; variant plain),
+cold hearth), `kit.wall.panel_window` (dark panelling with a tall narrow window standing in it, drawn on a solid wall; variant plain),
 `kit.door.walk_in` (a walk-in cooler's door, a still prop).
 Set pieces: the **Refectory Bay** gained seven options, each starting at the bay as it was (so placements made before
-keep their look): **Floor** (Level, Sunk 0.5 m: Sunk Rooms, a footing under each long wall whose top is the doorways'
+keep their look): **Floor** (Level, Sunk 0.5 m: Sunk Rooms with a polished reddish-brown floor, a footing under each long wall whose top is the doorways'
 threshold, a step of 0.25 m inside every doorway, furniture half a metre lower: a floor-standing part is listed once a
 floor), **Ceiling** (Plain, Timber beams), **Side aisle** (None, Arcade south: 4 m from the south wall), **Furniture**
 (Two tables with benches, Rows of mess tables, Rows with a cross aisle, Rows with a podium, None), **Chandelier** (Iron

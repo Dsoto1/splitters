@@ -180,21 +180,21 @@
       "variants": [
         {
           "index": 0,
-          "name": "dark",
+          "name": "brown",
           "seed": 37001,
           "look": {
-            "wood": "#3d2a1c",
-            "boards": "#59402b",
+            "wood": "#4a321f",
+            "boards": "#7a5536",
             "stone": "#b8b0a0"
           }
         },
         {
           "index": 1,
-          "name": "oak",
+          "name": "dark",
           "seed": 37002,
           "look": {
-            "wood": "#5c3f26",
-            "boards": "#7a5a3a",
+            "wood": "#2f2017",
+            "boards": "#4a3323",
             "stone": "#b8b0a0"
           }
         }
