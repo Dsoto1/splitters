@@ -287,3 +287,7 @@ beside that mass):
 So: on the Stair End Bay pieces, a generic option that opens the space under the stair's upper flight where there
 is standing height and puts a wider double door in that wall in place of the single one; set on St. John's where
 that door is a main way through, the bays at the ends of the skyway (the bridge) first. Taken into step 7c.
+
+**Dorm rooms (owner, same day, about 21:20 UTC):** "ever dorm room had a small mirror cabinet above their sinks".
+A small mirrored cabinet on the wall above each dorm room's sink, in the dorm bay pieces themselves (so every dorm
+room gets it). Taken into step 7c. The owner also added the day's photos to the Drive references folder.
