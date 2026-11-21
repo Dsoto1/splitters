@@ -111,6 +111,8 @@ export function facetRoofMesh(seed, size, g, look, level) {
     // The underside: a pale panel, and rafters running up it.
     const d = 0.12;
     emit([at(k, kick - d, fup, -1), at(k, kick - d, fup, 1), at(k, apoAt(top) , top - d, 1), at(k, apoAt(top), top - d, -1)], inn, panel);
+    // (Between the wall's top and the panel's foot, behind the flared eave: a plate, so no sky shows from inside.)
+    emit([at(k, kick - 0.2, 0.002, -1), at(k, kick - 0.2, 0.002, 1), at(k, kick - d, fup, 1), at(k, kick - d, fup, -1)], inn, scale3(rafter, 1.1));
     if (level < 2) {
       const yr = fup + (top - fup) * 0.86;
       for (const u of level === 0 ? [-0.6, -0.2, 0.2, 0.6, 0.97] : [0, 0.97]) {

@@ -1058,7 +1058,7 @@ blocks behind its band, our crest on its crown, and a panelled porch recessed 3 
 door on in), **Library End Bay (two storeys, spiral stair)**, **Library Faceted End (spire, spiral stair)** (the
 octagon's whole square: the hall's last bay, with the same Arch porch option west or east, and the faceted end),
 **Small Stucco Wing (steps)** (blocks, no tile: 5 × 6 m on a concrete base, three steps and a black handrail up to a
-red door under its half-timbered gable). The upper storeys are clad in Slate Shingles tinted red-brown (a wall of one
+red door under its half-timbered gable). The upper storeys are hung with Clay Roof Tiles as shingles (a wall of one
 material shows it on both faces, so the upper rooms' walls are shingled inside too). A roof prop's eaves may overhang a
 set piece's footprint: a prop that collides as nothing and stands a storey or more over the piece's lowest floor may
 reach 0.75 m past it (`map/setPieceCheck.ts`, `EAVE`). The roofs collide as nothing (nobody reaches them; a grenade

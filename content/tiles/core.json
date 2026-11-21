@@ -596,10 +596,25 @@
       "displayName": "Faceted Hall End",
       "blurb": "The many-sided end of a hall 16 m across, two storeys: three faces of an octagon and the hall's side walls carried round to them; a floor at each storey; open to the sky (a roof prop goes on it)",
       "footprint": [2,1,2],
-      "floors": [0],
+      "floors": [],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"S","level":1,"cell":[0,0]},{"side":"S","level":1,"cell":[1,0]}],
       "edgeDefault": "open",
       "extraFloors": [
+        {"box":[-3.9,-0.5,-4.0,11.9,0,-0.7]},
+        {"box":[-3.614,-0.5,-0.7,11.614,0,-0.4]},
+        {"box":[-3.314,-0.5,-0.4,11.314,0,-0.1]},
+        {"box":[-3.014,-0.5,-0.1,11.014,0,0.2]},
+        {"box":[-2.714,-0.5,0.2,10.714,0,0.5]},
+        {"box":[-2.414,-0.5,0.5,10.414,0,0.8]},
+        {"box":[-2.114,-0.5,0.8,10.114,0,1.1]},
+        {"box":[-1.814,-0.5,1.1,9.814,0,1.4]},
+        {"box":[-1.514,-0.5,1.4,9.514,0,1.7]},
+        {"box":[-1.214,-0.5,1.7,9.214,0,2.0]},
+        {"box":[-0.914,-0.5,2.0,8.914,0,2.3]},
+        {"box":[-0.614,-0.5,2.3,8.614,0,2.6]},
+        {"box":[-0.314,-0.5,2.6,8.314,0,2.9]},
+        {"box":[-0.014,-0.5,2.9,8.014,0,3.2]},
+        {"box":[0.286,-0.5,3.2,7.714,0,3.5]},
         {"box":[-3.9,3.5,-4.0,11.9,4,-0.7]},
         {"box":[-3.614,3.5,-0.7,11.614,4,-0.4]},
         {"box":[-3.314,3.5,-0.4,11.314,4,-0.1]},
@@ -638,7 +653,7 @@
         {"box":[-5.045,7.75,1.647,1.682,8.0,1.717],"kind":"trim","yaw":-0.785},
         {"box":[6.318,7.75,1.647,13.045,8.0,1.717],"kind":"trim","yaw":0.785}
       ],
-      "notes": {"design":"St. John's step 8b (Memorial Hall, the library, as the owner's photo shows it: a many-sided two-storey end under a faceted spire, fieldstone below and dark shingle above; docs/map-briefs/st_johns). Half an octagon 16 m across its flats, its centre the middle of the tile's south side (where the hall joins it): the hall's side walls go on 3.3 m, then a diagonal face each side and the north face, each 6.6 m long and 0.5 m thick, 8 m high. The ground storey's walls are wall (they take the walls' paint), the upper storey's are solid (the solids' paint), so the two storeys can be two materials; a band course (trim) runs round the outside at each storey's top. The ground floor is the cells' own (it shows as paving in the two outer corners); the upper floor is rows of boxes inside the faces. No roof: the upper storey is open to whatever roof is put on it (the Faceted Spire, kit.roof.spire_faceted, at 8 m). Windows are props set in its walls (the walls are solid). Made by a script from these dimensions; the numbers are the data."}
+      "notes": {"design":"St. John's step 8b (Memorial Hall, the library, as the owner's photo shows it: a many-sided two-storey end under a faceted spire, fieldstone below and dark shingle above; docs/map-briefs/st_johns). Half an octagon 16 m across its flats, its centre the middle of the tile's south side (where the hall joins it): the hall's side walls go on 3.3 m, then a diagonal face each side and the north face, each 6.6 m long and 0.5 m thick, 8 m high. The ground storey's walls are wall (they take the walls' paint), the upper storey's are solid (the solids' paint), so the two storeys can be two materials; a band course (trim) runs round the outside at each storey's top. Both floors are rows of boxes inside the faces (the cells' two outer corners are open ground). No roof: the upper storey is open to whatever roof is put on it (the Faceted Spire, kit.roof.spire_faceted, at 8 m). Windows are props set in its walls (the walls are solid). Made by a script from these dimensions; the numbers are the data."}
     },
     {
       "id": "core.hall_end_faceted_stair",
@@ -646,10 +661,25 @@
       "displayName": "Faceted Hall End (spiral stair)",
       "blurb": "The many-sided end of a hall 16 m across, two storeys: three faces of an octagon and the hall's side walls carried round to them; a spiral stair in a round stone drum in its middle, in from the hall on the ground floor and out towards it on the floor above; open to the sky (a roof prop goes on it)",
       "footprint": [2,1,2],
-      "floors": [0],
+      "floors": [],
       "ports": [{"side":"S","level":0,"cell":[0,0]},{"side":"S","level":0,"cell":[1,0]},{"side":"S","level":1,"cell":[0,0]},{"side":"S","level":1,"cell":[1,0]}],
       "edgeDefault": "open",
       "extraFloors": [
+        {"box":[-3.9,-0.5,-4.0,11.9,0,-0.7]},
+        {"box":[-3.614,-0.5,-0.7,11.614,0,-0.4]},
+        {"box":[-3.314,-0.5,-0.4,11.314,0,-0.1]},
+        {"box":[-3.014,-0.5,-0.1,11.014,0,0.2]},
+        {"box":[-2.714,-0.5,0.2,10.714,0,0.5]},
+        {"box":[-2.414,-0.5,0.5,10.414,0,0.8]},
+        {"box":[-2.114,-0.5,0.8,10.114,0,1.1]},
+        {"box":[-1.814,-0.5,1.1,9.814,0,1.4]},
+        {"box":[-1.514,-0.5,1.4,9.514,0,1.7]},
+        {"box":[-1.214,-0.5,1.7,9.214,0,2.0]},
+        {"box":[-0.914,-0.5,2.0,8.914,0,2.3]},
+        {"box":[-0.614,-0.5,2.3,8.614,0,2.6]},
+        {"box":[-0.314,-0.5,2.6,8.314,0,2.9]},
+        {"box":[-0.014,-0.5,2.9,8.014,0,3.2]},
+        {"box":[0.286,-0.5,3.2,7.714,0,3.5]},
         {"box":[-3.9,3.5,-4.0,11.9,4,-2.8]},
         {"box":[-3.9,3.5,-2.8,2.647,4,-2.5]},
         {"box":[5.353,3.5,-2.8,11.9,4,-2.5]},
@@ -722,7 +752,7 @@
         {"spiral":{"centre":[4.0,0.25],"r":[0.15,3.05],"turns":[2.875,-4],"steps":16,"height":4,"slab":0.35,"solid":[1,14]}},
         {"spiral":{"centre":[4.0,0.25],"r":[0.15,3.05],"turns":[2.875,-0.5417],"steps":1,"height":4,"slab":0.35}}
       ],
-      "notes": {"design":"St. John's step 8b (Memorial Hall, the library, as the owner's photo shows it: a many-sided two-storey end under a faceted spire, fieldstone below and dark shingle above; docs/map-briefs/st_johns). Half an octagon 16 m across its flats, its centre the middle of the tile's south side (where the hall joins it): the hall's side walls go on 3.3 m, then a diagonal face each side and the north face, each 6.6 m long and 0.5 m thick, 8 m high. The ground storey's walls are wall (they take the walls' paint), the upper storey's are solid (the solids' paint), so the two storeys can be two materials; a band course (trim) runs round the outside at each storey's top. The ground floor is the cells' own (it shows as paving in the two outer corners); the upper floor is rows of boxes inside the faces; the Spiral Stair's shaft, treads and landing stand in the middle turned to face the hall (16 steps of 0.25 m in one turn, 6.5 m across; its door 2.2 m wide facing south on both floors), the shaft a parapet 1.1 m high on the upper floor, and the upper floor is cut round it. No roof: the upper storey is open to whatever roof is put on it (the Faceted Spire, kit.roof.spire_faceted, at 8 m). Windows are props set in its walls (the walls are solid). Made by a script from these dimensions; the numbers are the data."}
+      "notes": {"design":"St. John's step 8b (Memorial Hall, the library, as the owner's photo shows it: a many-sided two-storey end under a faceted spire, fieldstone below and dark shingle above; docs/map-briefs/st_johns). Half an octagon 16 m across its flats, its centre the middle of the tile's south side (where the hall joins it): the hall's side walls go on 3.3 m, then a diagonal face each side and the north face, each 6.6 m long and 0.5 m thick, 8 m high. The ground storey's walls are wall (they take the walls' paint), the upper storey's are solid (the solids' paint), so the two storeys can be two materials; a band course (trim) runs round the outside at each storey's top. Both floors are rows of boxes inside the faces (the cells' two outer corners are open ground); the Spiral Stair's shaft, treads and landing stand in the middle turned to face the hall (16 steps of 0.25 m in one turn, 6.5 m across; its door 2.2 m wide facing south on both floors), the shaft a parapet 1.1 m high on the upper floor, and the upper floor is cut round it. No roof: the upper storey is open to whatever roof is put on it (the Faceted Spire, kit.roof.spire_faceted, at 8 m). Windows are props set in its walls (the walls are solid). Made by a script from these dimensions; the numbers are the data."}
     },
     {
       "id": "core.ramp",
