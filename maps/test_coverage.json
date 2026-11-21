@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_6ngpviznc24alpiy",
-      "revision": 47,
-      "contentHash": "sha256:4c0bec67372830e33411f172c434c1c07ff0575f5a4e3e36c9c67451f96cb969",
+      "versionId": "v_efrwwkldic6yfbxe",
+      "revision": 48,
+      "contentHash": "sha256:9abe085bde178ac05a388431825505a34bb57d285b1513940c8f004f01c8ee59",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T02:57:14.624Z"
+      "releasedAt": "2026-11-21T07:13:36.375Z"
     },
     "testOnly": true
   },
@@ -7159,6 +7159,47 @@
       "overrides": {
         "options": {
           "walls": "main_south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3rzat5hi4r",
+      "piece": "setpiece.stair_end_bay_roof",
+      "x": -10,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_war667jlcq",
+      "piece": "setpiece.stair_down_bay",
+      "x": -7,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_3cmndxtpjz",
+      "piece": "setpiece.admin_entry_bay",
+      "x": -2,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_fdaiyj9oal",
+      "piece": "setpiece.admin_bay",
+      "x": 1,
+      "y": -47,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "solid"
         }
       }
     }
