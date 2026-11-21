@@ -1,5 +1,5 @@
 {
-  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171); editorux split in four (2026-11-09) in the shares its parts took of it on run 42671626152 (394, 325, 340 and 290 of 1,337 s); editorenv +10 for Phase 5's sky and weather checks (a TEST start), an estimate until CI measures it; community (2026-11-10) estimated at 110 s, like lobby. CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest. physicsfx split 2026-11-20: physicsfx 300 (its own checks, about 5 min on CI since grips auto-fit), beams 330, tracers 400 (the Ranger, first person too), tracers2 and tracers3 320 (the Otter, the Knight), from the CI runs of 2026-11-19 (the tracers about 1,030 s for all three builds). flashing split 2026-11-20 from its ~1,380 s on CI run 44700870108 (per-moment times): in five (e2e/run.mjs FLASHING_PARTS), each its moments' times plus 20 s a scene and 40 s for a scene's first moment (its warm-up, as arc and shelves show): flashing 311, flashing2 335, flashing3 323, flashing4 336, flashing5 315, estimates until CI measures them.",
+  "source": "CI run 41898017163 (check/ci-speed, 4 Nov 2026): every flow but coverage from its E2E_TIMINGS (hostpage: its failed run); map parts at 60 s a map (run 41851112171); editorux split in four (2026-11-09) in the shares its parts took of it on run 42671626152 (394, 325, 340 and 290 of 1,337 s); editorenv +10 for Phase 5's sky and weather checks (a TEST start), an estimate until CI measures it; community (2026-11-10) estimated at 110 s, like lobby. CI refreshes it: each run merges its timings into the e2e-timings artifact (tools/ci/timings.mjs), and the next plan starts from the newest. physicsfx split 2026-11-20: physicsfx 300 (its own checks, about 5 min on CI since grips auto-fit), beams 330, tracers 400 (the Ranger, first person too), tracers2 and tracers3 320 (the Otter, the Knight), from the CI runs of 2026-11-19 (the tracers about 1,030 s for all three builds). flashing split 2026-11-20 from its ~1,380 s on CI run 44700870108 (per-moment times): in five (e2e/run.mjs FLASHING_PARTS), each its moments' times plus 20 s a scene and 40 s for a scene's first moment (its warm-up, as arc and shelves show): flashing 311 (361 with pairtp, 2026-11-20, an estimate), flashing2 335, flashing3 323, flashing4 336, flashing5 315, estimates until CI measures them.",
   "startup": 40,
   "perMap": 60,
   "flows": {
@@ -51,7 +51,7 @@
     "characters4": 260,
     "coverage": 120,
     "environment": 150,
-    "flashing": 311,
+    "flashing": 361,
     "flashing2": 335,
     "flashing3": 323,
     "flashing4": 336,

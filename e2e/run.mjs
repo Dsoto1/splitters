@@ -106,7 +106,8 @@ async function holdBots(page) {
   await sim(page, (m) => {
     for (const c of m.combatants()) {
       if (!c.bot || c.queue.held) continue;
-      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: 0 })));
+      // (A flow may make a held bot fire, `queue.fire` its buttons, facing `queue.yaw`: the flicker check's `pairtp`.)
+      c.queue.push = (...inputs) => Array.prototype.push.apply(c.queue, inputs.map((i) => ({ ...i, forward: 0, right: 0, buttons: c.queue.fire ?? 0, ...(c.queue.yaw !== undefined ? { yaw: c.queue.yaw } : {}) })));
       c.queue.held = true;
     }
   });
@@ -12217,7 +12218,7 @@ const flashingFlow = (part) => async (browser) => {
  * 310-340 s each.
  */
 const FLASHING_PARTS = {
-  flashing: { night: ['arc', 'fence', 'blast', 'cookoff'] },
+  flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
@@ -12560,6 +12561,39 @@ async function flashingScene(browser, scene, names) {
       self.__pairPin = setInterval(() => w.off && (w.off.mag = w.def.magazine), 1000 / 60);
       return true;
     }, on);
+  /**
+   * The first bot's pair of machine pistols (kept full each tick), both triggers held, half turned to you; or
+   * its second gun taken away and its triggers let go. Give yourself the machine pistol first (its weapon code).
+   */
+  const botPairOf = (on) =>
+    sim(page, (m, me, on) => {
+      clearInterval(self.__botPairPin);
+      const b = m.combatants().find((c) => c.bot);
+      const code = [...me.weapons.entries()].find(([, w]) => w.def.id === 'core.machine_pistol')?.[0];
+      if (!b || code === undefined) return false;
+      if (!on) {
+        b.queue.fire = 0;
+        const w = b.weapons.get(code);
+        return w ? delete w.off : true;
+      }
+      const def = me.weapons.get(code).def;
+      if (!b.weapons.has(code)) b.weapons.set(code, { def, mag: def.magazine, reserve: def.reserveMax, alt: 0 });
+      b.current = code;
+      b.raiseTicks = 0;
+      const w = b.weapons.get(code);
+      if (!w.off) m.makePair(b, w, def.magazine);
+      self.__botPairPin = setInterval(() => {
+        w.mag = def.magazine;
+        if (w.off) w.off.mag = def.magazine;
+        w.reserve = def.reserveMax;
+      }, 1000 / 60);
+      b.queue.fire = 2 | 32;
+      // (Turned a little toward you, close: both muzzles and their flashes large in view (side on at 3 m and half
+      // turned at 2.5 m, they changed only 0.2 % of the picture on CI, under the check's 0.3 %), the rounds going
+      // about a metre wide of you.)
+      b.queue.yaw = Math.PI / 4;
+      return true;
+    }, on);
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
   const setFlashing = (on) =>
     page.evaluate((on) => {
@@ -12692,6 +12726,30 @@ async function flashingScene(browser, scene, names) {
       // Off: every round of both guns flashes. On: both hands still flash, in turn, about half the rounds left out
       // (one gun's worth drawn: 20 a second over the 2.3 s the triggers are held).
       sees: (on, s) => s.shown && s.right > 5 && s.left > 5 && (on ? s.skipped > 10 && s.right + s.left <= 50 && Math.abs(s.right + s.left - s.skipped) <= 6 : s.skipped === 0),
+    },
+    {
+      // Dual wielding seen by everyone else (step 4): another player's pair, a flash at each gun's muzzle. With the
+      // setting on their pair shares one flash too (view.ts remoteFlash, PairFlashGate), as yours does in `pair`.
+      name: 'pairtp',
+      label: "another player's pair of machine pistols 1.3 m in front, turned a little your way, both triggers held, in the dark room",
+      weapon: 'core.machine_pistol',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.35, -26.8]),
+      bots: [[0, 0, -26.8]],
+      before: async () => {
+        await botPairOf(true);
+        for (let i = 0; i < 12 && !(await page.evaluate(() => [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) >= 1))); i++) await step(5);
+        await page.evaluate(() => (window.__pairTpFlashes = { ...window.__cs.view.remotePairFlashes }));
+      },
+      after: () => botPairOf(false),
+      seen: () =>
+        page.evaluate(() => {
+          const f = window.__cs.view.remotePairFlashes;
+          const b = window.__pairTpFlashes;
+          return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, shown: [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) > 0) };
+        }),
+      // Off: both guns flash. On: both still flash, in turn, and rounds are left out.
+      sees: (on, s) => s.shown && s.right > 3 && s.left > 3 && (on ? s.skipped > 3 : s.skipped === 0),
     },
     {
       name: 'jackpot',
@@ -14488,6 +14546,128 @@ async function hostpageFlow(browser) {
 }
 
 /** Host game: one browser hosts its offline match with a code, a second joins by link through a hub's broker. */
+/**
+ * Dual wielding over the network (step 4): the host takes a pair of machine pistols, stands 3 m in front of the
+ * friend facing them and holds both triggers; the friend, whose match comes over the host's compressed stream, must
+ * see the host's character with the second gun up (the snapshot's `dw`), a flash at each gun's own muzzle (the
+ * shots' `off`), the two muzzles a hand's width apart, the right gun's on the host's right; then the second gun put
+ * away (the fire-mode key's toggle) goes from the host's left hand.
+ */
+async function hostPairSeen(host, friend) {
+  const fslot = await friend.evaluate(() => window.__cs.slot);
+  const hslot = await host.evaluate(() => window.__cs.slot);
+  // (Bots are about: held still, and the host kept alive from here, or a death takes the pair and gives a new loadout.)
+  await holdBots(host);
+  await sim(host, (m, me) => {
+    clearInterval(self.__hostAlive);
+    self.__hostAlive = setInterval(() => me.alive && (me.health = me.maxHealth), 20);
+  });
+  await host.waitForFunction(() => window.__cs.local.alive, null, { timeout: T(15000) }).catch(() => {});
+  await host.evaluate(() => window.__give('core.machine_pistol'));
+  // (Until the host's own client holds it, its inputs still ask for the gun it had.)
+  await host.waitForFunction(() => window.__cs.local.weapon?.id === 'core.machine_pistol', null, { timeout: T(15000) }).catch(() => {});
+  const placed = await sim(host, (m, me, fslot) => {
+    const f = m.combatants().find((c) => c.slot === fslot);
+    const w = me.weapons.get(me.current);
+    if (!f || !w || w.def.id !== 'core.machine_pistol') return `no ${!f ? 'friend' : 'machine pistol'} (holding ${w?.def.id})`;
+    if (!w.off) m.makePair(me, w, w.def.magazine);
+    // 3 m from the friend, in the first of 16 directions with open floor and a clear line between them.
+    const p = f.move.pos;
+    let at = null;
+    for (let i = 0; i < 16 && !at; i++) {
+      const yaw = (i / 16) * Math.PI * 2;
+      const d = { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) };
+      // (From outside the friend's own body.)
+      const eye = { x: p.x + d.x * 0.6, y: p.y + 1.2, z: p.z + d.z * 0.6 };
+      if (m.physics.raycastHit(eye, d, 3)) continue;
+      const to = { x: p.x + d.x * 3, y: p.y + 1.2, z: p.z + d.z * 3 };
+      const floor = m.physics.raycastHit(to, { x: 0, y: -1, z: 0 }, 2);
+      if (floor && floor.dist > 0.9 && floor.dist < 1.6) at = { x: to.x, y: to.y - floor.dist, z: to.z, yaw };
+    }
+    if (!at) return 'no open floor 3 m from the friend';
+    Object.assign(me.move.pos, { x: at.x, y: at.y + 0.05, z: at.z });
+    clearInterval(self.__hostPairPin);
+    self.__hostPairPin = setInterval(() => {
+      w.mag = w.def.magazine;
+      if (w.off) w.off.mag = w.def.magazine;
+      w.reserve = w.def.reserveMax;
+    }, 1000 / 60);
+    return w.off ? at.yaw : 'makePair made none';
+  }, fslot).catch((e) => String(e));
+  const yaw = typeof placed === 'number' ? placed : 0;
+  // Each turned to face the other.
+  await friend.evaluate((yaw) => Object.assign(window.__cs.input, { yaw, pitch: -0.05 }), yaw);
+  await host.evaluate((yaw) => {
+    window.__cs.input.yaw = yaw + Math.PI;
+    window.__cs.input.pitch = 0;
+  }, yaw);
+  // (Coming up: it rises over 0.3 s of frames, and two software-rendered pages draw only a few frames a second.)
+  const up = typeof placed === 'number' && (await friend.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.pair?.up ?? 0) > 0.3, hslot, { timeout: T(60000), polling: 250 }).then(() => true, () => false));
+  const why = up
+    ? ''
+    : JSON.stringify({
+        friend: await friend.evaluate((s) => {
+          const a = window.__cs.view.avatars.get(s);
+          return a ? { alive: window.__cs.local.alive, weapon: a.weaponSlot, muzzle: !!a.muzzle, pair: a.pair ? { up: a.pair.up, on: a.pair.on, muzzle: !!a.pair.muzzle } : null, culled: !!a.culled, anim: a.anim?.constructor?.name, at: [a.root.position.x, a.root.position.z].map((v) => +v.toFixed(1)), me: [window.__cs.local.state.pos.x, window.__cs.local.state.pos.z].map((v) => +v.toFixed(1)) } : { none: [...window.__cs.view.avatars.keys()] };
+        }, hslot),
+        fslot,
+        host: await sim(host, (m, me, fslot) => ({ pos: [me.move.pos.x, me.move.pos.z].map((v) => +v.toFixed(1)), friendPos: (({ x, z }) => [x, z].map((v) => +v.toFixed(1)))(m.combatants().find((c) => c.slot === fslot)?.move.pos ?? {}), slot: me.slot, current: me.current, off: !!me.weapons.get(me.current)?.off, away: !!me.weapons.get(me.current)?.off?.away }), fslot).catch((e) => String(e)),
+        fps: await Promise.all([friend, host].map((pg) => pg.evaluate(() => new Promise((r) => { let n = 0; const t0 = performance.now(); const f = () => (++n, performance.now() - t0 < 2000 ? requestAnimationFrame(f) : r(n / 2)); requestAnimationFrame(f); setTimeout(() => r(n / 2), 4000); })))),
+        hslot,
+      });
+  check(up, `the friend sees the host's pair: the second gun coming up in the host's left hand (snapshot dw${typeof placed === 'number' ? '' : `; the host got no pair: ${placed}`}${why ? `; ${why}` : ''})`);
+  if (!up) {
+    await sim(host, () => [self.__hostPairPin, self.__hostAlive].forEach(clearInterval));
+    return;
+  }
+  // Reduce flashing off on the friend's page for this (every round of both guns flashes; on, the shared flash takes
+  // turns: the flicker check's `pairtp`); the host playing (not paused in its menu), both triggers held.
+  const setFlashing = (on) =>
+    friend.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (!box || box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  await setFlashing(false);
+  await playWithoutMouse(host);
+  const before = await friend.evaluate(() => ({ ...window.__cs.view.remotePairFlashes }));
+  await host.evaluate(() => (window.__autoInput = { buttons: 2 | 32 }));
+  await friend
+    .waitForFunction((b) => {
+      const f = window.__cs.view.remotePairFlashes;
+      return f.right - b.right > 3 && f.left - b.left > 3;
+    }, before, { timeout: T(15000), polling: 250 })
+    .catch(() => {});
+  const seen = await friend.evaluate(
+    ({ s, b }) => {
+      const v = window.__cs.view;
+      const f = v.remotePairFlashes;
+      const r = v.muzzleOf(s, false);
+      const l = v.muzzleOf(s, true);
+      const a = v.avatars.get(s);
+      // The host's right, as the friend sees it: the host faces the friend, so it is the friend's left.
+      const yaw = a.root.rotation?.y ?? 0;
+      const right = { x: Math.cos(yaw), z: -Math.sin(yaw) };
+      const side = r && l ? (r.x - l.x) * right.x + (r.z - l.z) * right.z : null;
+      return { right: f.right - b.right, left: f.left - b.left, skipped: f.skipped - b.skipped, apart: r && l ? Math.hypot(r.x - l.x, r.y - l.y, r.z - l.z) : 0, side };
+    },
+    { s: hslot, b: before },
+  );
+  await host.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  await setFlashing(true);
+  check(seen.right > 3 && seen.left > 3, `each of the host's guns flashes at its own muzzle for the friend (shot.off; right ${seen.right}, left ${seen.left}, left out ${seen.skipped})`);
+  check(seen.apart > 0.15 && seen.apart < 1.2 && seen.side > 0.1, `the host's two muzzles are a pair's width apart, the first gun's on their right (${seen.apart.toFixed(2)} m, ${seen.side?.toFixed(2)} m to the right)`);
+  // The second gun put away (the fire-mode key on the host's page: one gun in hand): it goes from the host's left
+  // hand for the friend.
+  await sim(host, () => clearInterval(self.__hostPairPin));
+  await host.evaluate(() => (window.__cs.input.fireModeQueued = true));
+  const gone = await friend.waitForFunction((s) => !window.__cs.view.avatars.get(s)?.pair, hslot, { timeout: T(10000), polling: 250 }).then(() => true, () => false);
+  check(gone, "the host's second gun put away goes from their hand for the friend");
+  await host.evaluate(() => delete window.__autoInput);
+  await sim(host, () => clearInterval(self.__hostAlive));
+}
+
 async function hostgameFlow(browser) {
   // The broker is a community hub's, as in a real game (a bare PeerJS broker never let the friend in on CI).
   const PEER_PORT = await pickPort('E2E_PEER_PORT', 9077);
@@ -14552,6 +14732,7 @@ async function hostgameFlow(browser) {
     });
     const alive = await friend.evaluate(() => window.__cs.local.alive);
     check(moved > 1 && !!onHost, `the friend moves and the host's match follows (${moved.toFixed(1)} m${alive ? '' : ', friend down'})`);
+    await hostPairSeen(host, friend);
     // The host's stream to a friend is compressed: a few KB/s, not the ~40 KB/s of raw snapshots.
     const bytes = () => friend.evaluate(() => window.__cs.transport.bytesIn);
     const b0 = await bytes();

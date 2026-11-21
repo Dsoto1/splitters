@@ -9,7 +9,7 @@ import { getWeapon, type WeaponDefinition } from '@tiletrigger/shared';
 import type { AudioSystem, PlayOptions } from '../src/audio/audio.ts';
 import { SessionAudio } from '../src/game/sessionAudio.ts';
 import type { LocalPlayer } from '../src/game/prediction.ts';
-import { MIRROR_X, PAIR_AWAY_DROP, PAIR_LOWER_SECONDS, PAIR_PAN, PAIR_POSE, PairFlashGate, casingSide, easeUp, gunPan, mirrored, pairPlace, pairReloadDip, reloadDipAmount, shotGun, stepPairUp } from '../src/game/pairView.ts';
+import { MIRROR_X, PAIR_AWAY_DROP, PAIR_HOLD_3P, bothGunsFired, PAIR_LOWER_SECONDS, PAIR_PAN, PAIR_POSE, PairFlashGate, casingSide, easeUp, gunPan, mirrored, pairHold3p, pairPlace, pairReloadDip, reloadDipAmount, shotGun, stepPairUp } from '../src/game/pairView.ts';
 
 const MP = getWeapon('core.machine_pistol');
 
@@ -249,5 +249,59 @@ describe('Reduce flashing: a pair shares one flash', () => {
     expect(gate.allow({ tick: 2, gun: 'left', interval: 3, paired: true, calm: true })).toBe(true);
     gate.reset();
     expect(gate.allow({ tick: 3, gun: 'left', interval: 3, paired: true, calm: true })).toBe(true);
+  });
+});
+
+describe('the pair in third person (step 4)', () => {
+  it('holds each gun out in front at a little under arm\'s length, below the shoulder, about shoulder width apart', () => {
+    const h = pairHold3p(0);
+    expect(h).toEqual({ ...PAIR_HOLD_3P, pitch: 0, roll: 0 });
+    // Within the arm's reach with a bend at the elbow (the IK can reach it), out in front of the body.
+    const reach = Math.hypot(h.ahead, h.down, h.out);
+    expect(reach).toBeGreaterThan(0.6);
+    expect(reach).toBeLessThan(0.95);
+    // In a little from each shoulder, never across the middle (the two guns stay apart).
+    expect(h.out).toBeLessThanOrEqual(0);
+    expect(h.out).toBeGreaterThan(-0.2);
+  });
+
+  it('a gun being reloaded, or the second gun not yet up, is drawn back, lower, tipped up and rolled outward', () => {
+    const up = pairHold3p(0);
+    const dipped = pairHold3p(1);
+    expect(dipped.ahead).toBeLessThan(up.ahead);
+    expect(dipped.down).toBeGreaterThan(up.down);
+    expect(dipped.pitch).toBeGreaterThan(0.5);
+    expect(dipped.roll).toBeGreaterThan(0.2);
+    // Eased both ways, and out of range is clamped.
+    expect(pairHold3p(0.5).pitch).toBeCloseTo(dipped.pitch / 2, 5);
+    expect(pairHold3p(2)).toEqual(dipped);
+    expect(pairHold3p(-1)).toEqual(up);
+  });
+});
+
+describe("other players' pair flashes (step 4)", () => {
+  it('finds the shooters whose two guns both fired in a message', () => {
+    const events: { e: string; s: number; off?: 1 }[] = [
+      { e: 'shot', s: 3 },
+      { e: 'shot', s: 3, off: 1 },
+      { e: 'shot', s: 4 },
+      { e: 'shot', s: 5, off: 1 },
+      { e: 'kill', s: 3 },
+    ];
+    const both = bothGunsFired(events);
+    expect([...both]).toEqual([3]);
+  });
+
+  it('with Reduce flashing on, a pair whose rounds arrive a message at a time still flashes from both hands, no faster than one gun', () => {
+    // A machine pistol pair (every 3 ticks each), both guns' rounds arriving together in snapshots every 2 ticks,
+    // the right gun's listed first.
+    const gate = new PairFlashGate();
+    const drawn: { tick: number; gun: 'left' | 'right' }[] = [];
+    for (let tick = 0; tick < 600; tick += 2) {
+      for (const gun of ['right', 'left'] as const) if (gate.allow({ tick, gun, interval: 3, paired: true, calm: true, together: true })) drawn.push({ tick, gun });
+    }
+    expect(drawn.filter((d) => d.gun === 'left').length).toBeGreaterThan(drawn.length / 3);
+    expect(drawn.filter((d) => d.gun === 'right').length).toBeGreaterThan(drawn.length / 3);
+    for (let i = 1; i < drawn.length; i++) expect(drawn[i]!.tick - drawn[i - 1]!.tick).toBeGreaterThanOrEqual(3);
   });
 });

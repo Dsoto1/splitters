@@ -2106,13 +2106,19 @@ For bows/energy weapons.
 
 ## Akimbo / Dual Wield
 
-**Status: steps 1 to 3 landed: the data and the rule, then play (the match, prediction, the HUD's two counts, the
-snapshot's fields), then the pair in first person with its sounds. It is still off in normal play:** `AKIMBO_READY`
-stays false until everyone else sees the second gun too (step 4), so no pair is ever made, nothing new is sent and a
-match plays bit for bit as before; the Match Setup switch stays hidden with it. To try it: `?akimbo=1` (below).
+**Status: steps 1 to 4 built: the data and the rule, play (the match, prediction, the HUD's two counts, the
+snapshot's fields), the pair in first person with its sounds, and the pair in third person for everyone else. On in
+normal play since step 4:** `AKIMBO_READY` is true, so a person who picks up a second of an eligible gun they hold
+makes a pair in any match whose rule allows it (on by default), and Match Setup, a dedicated server's rules and
+docs/HOSTING.md offer the switch. Tuning (step 5) waits for the owner to play it.
 
 Owner's decision (2026-11-19): one-handed guns (pistols, machine pistols, small SMGs) and sawn-off or short
 shotguns can be paired; melee pairs later; never rifles. A host can turn it off; it is on by default.
+
+Owner's answers on step 3's two questions (2026-11-20): **the same-tick double kick stays as it is** ("1a, let me test
+first": both triggers on one tick take both rounds' kick on the one aim, the Sawed-Off pair about 9.6° against 3.4°
+for one gun; the owner plays it before anything changes), and **the pair's first-person pose stays** 2 cm wider and
+2 cm higher than the one gun ("2a", `PAIR_POSE`).
 
 ### The design in brief
 
@@ -2168,9 +2174,10 @@ In code: `akimboOf(def)` beside `gunplayOf` (`packages/shared/src/sim/gunplay.ts
 3. **The pair in first person (landed, off by default).** The second gun in your left hand with its arm, each
    gun's own kick, flash, case, muzzle and reload dip, the raise and the putting away, the sounds, Reduce flashing.
    "As built: the pair in first person" below.
-4. **Third person, then on.** Everyone else (and you in third person) sees the second gun: the public `dw` on a
-   character, its left hand's gun, flash and tracers. Then `AKIMBO_READY` true, which makes pairs in normal matches
-   and shows the switch and the server rule (and their row in docs/HOSTING.md).
+4. **Third person, then on (landed).** Everyone else (and you in third person) sees the second gun: the public `dw`
+   on a character, its left hand's gun, flash and tracers. Then `AKIMBO_READY` true, which makes pairs in normal
+   matches and shows the switch and the server rule (and their row in docs/HOSTING.md). "As built: the pair in third
+   person" below.
 5. **Tuning and more pairs.** The numbers above played and adjusted; small SMGs and whatever else the owner adds;
    melee pairs.
 
@@ -2181,13 +2188,13 @@ come from `akimboOf` through five small helpers in `gunplay.ts` (`akimboCone`, `
 `akimboRaise`, `akimboMove`).
 
 - **On or off.** A match makes pairs only when dual wielding is in play (`akimboReady()` in `rules.ts`: the
-  constant `AKIMBO_READY`, false; tests turn it on with `setAkimboReady`; a match can be told either way with
+  constant `AKIMBO_READY`, true since step 4; tests turn it on with `setAkimboReady`; a match can be told either way with
   `MatchOptions.akimbo`) and its rule allows (`MatchRules.akimbo`). Off, nothing below exists: a second gun is
   ammunition, the second trigger and the fire-mode key do what they did, and no new field is sent.
 - **`?akimbo=1`** turns it on for this browser's own matches (Play offline, MapMaker Test, the host's page of Host
   game), where test mode is honoured: a dev server, a test-hooks build, or a page served from this machine
-  (`testMode.ts` `allowedHere`). In first person the pair is drawn and heard; in third person, and to everyone
-  else, it is still one gun.
+  (`testMode.ts` `allowedHere`). Since step 4 it is on in every match whose rule allows it, so the switch is no longer
+  needed to try it.
 - **Making a pair.** A person (never a bot) who walks over a pickup of an eligible gun they hold, or takes a drop of
   one, holds a pair. A pickup's second gun has a full magazine and the pickup still gives its ammunition (a pair is
   made even with a full reserve); a drop's second gun has the drop's magazine, its reserve tops yours up and the
@@ -2288,8 +2295,49 @@ the view does exactly what it did (the second gun's nodes are not even made unti
   `flashing`).
 - **Full body first person.** Your own character still holds the first gun (its left arm hangs at its side, as with
   a one-handed weapon); the left gun's arm is the mirrored one from the arms-only view.
-- **Not yet (step 4).** Third person and everyone else: one gun, one flash at the right hand, the second gun's
-  tracers from the same muzzle.
+- **Third person and everyone else:** step 4, below.
+
+### As built: the pair in third person (step 4, 2026-11-20)
+
+The client only (`game/characterAnimator.ts` `holdPair`, `pairPose`, `placePair`; `game/view.ts` `setAvatarPair`,
+`remoteFlash`; the numbers in `game/pairView.ts`, tested in `pairView.test.ts`); the wire is step 2's (`dw`,
+`shot.off`).
+
+- **Who.** A character whose snapshot says `dw` (another player, or a bot a test pairs), and your own character in
+  third person while a pair is in hand (from prediction), holding the first gun already; a capsule stand-in or a
+  creature draws one gun. An older host sends no `dw`: one gun, as before.
+- **Two real guns, not a mirror.** The second gun is a second copy of the same model in the left hand (in a crowd a
+  GPU instance like the first), not mirrored as first person's is: a pair of guns in someone's hands reads as two of
+  the same gun, so both throw their cases to the right.
+- **The hold.** Each gun in one hand out in front at the aim, at a little under arm's length (`PAIR_HOLD_3P`, shares
+  of the arm's reach from each shoulder: 0.86 ahead, 0.2 down, 0.06 in), level with the aim and turned with it
+  (pitch and the third-person aim's turn). Both arms are solved onto their grips and the hands closed on them by
+  first person's one-gun-a-hand hold (`gripOne`: the hand turned onto the grip, a pistol's knuckles down its raked
+  grip, the fingers round it, the thumb along the frame), the left hand worked out in a mirror. Same for every
+  family: the Machine Pistol and the Sawed-Off are held by their pistol grip and wrist, stocks free in front.
+- **Up, down, reload.** The second gun comes up over 0.3 s once its model is in (others' raise is theirs: the snapshot
+  says only that the pair is out) and goes down as fast as first person's when the pair ends, then is gone; a switch
+  takes it at once with the first. Your own reload in third person dips the gun whose turn it is (drawn back, lower,
+  tipped up and rolled out: `pairHold3p`); others' reloads aren't sent, so theirs aren't drawn (as for one gun).
+- **While an action has the hands** (a punch, a throw, a flinch) each gun rides in its hand, as one gun does.
+- **Far off.** The same hold at every distance (the near and the low-detail meshes share the skeleton); the coarse
+  animation detail's cached arms are not used for a pair (a pair's grip is worked out each evaluation), and both guns
+  are drawn between evaluations with the skin (`blendGun`).
+- **Flashes, tracers, cases.** Each gun has its own muzzle (`muzzleOf(slot, off)`): a round's tracer, a beam and its
+  flash leave the gun that fired it (`shot.off`); a Pulse Pistol pair's steady beams under Reduce flashing are one
+  per gun. Your own cases in third person leave the drawn gun that fired (before, they left the hidden first-person
+  gun, near the camera). Others' guns throw no cases, as with one gun.
+- **Reduce flashing** (docs/LOOK.md): one shared flash per character (`PairFlashGate`), as your own first-person
+  pair: never two at once, never more often than one gun's rounds. Others' rounds come a snapshot at a time, so
+  both guns' rounds in one message are `together` (`bothGunsFired`) and the flash takes turns between the hands.
+  Your own pair asks the gate once a round for first and third person alike. Its moment: `pairtp` (e2e `flashing`).
+- **Over the network.** e2e `hostgame` gives the host a pair of machine pistols 3 m in front of the friend (who
+  plays over the host's compressed stream) and holds both triggers: the friend sees the second gun up, a flash at
+  each gun's own muzzle, the two muzzles apart with the first gun on the host's right, and the second gun gone when
+  it is put away.
+- **Not done.** Others' reload, raise timing and putting away are not on the wire (step 2 sent only `dw`): their
+  reload is not drawn (as for one gun: no one's reload is sent); no third-person sprint pose for a pair (none for one
+  gun either).
 
 ## Underbarrel Attachments
 

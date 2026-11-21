@@ -218,12 +218,12 @@ export const SCORE_LIMIT_MAX = 5000;
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
 
 /**
- * Dual wielding is built in steps (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): play is in the match since step 2,
- * but the second gun is not drawn until step 3, so this stays false: no pair is ever made in a normal match, and
- * Match Setup, the dedicated server's rules and every rules summary leave the rule out. The step that draws the
- * second gun sets it true.
+ * Dual wielding is built in steps (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): play since step 2, the second gun
+ * drawn in first person since step 3 and in third person, for everyone else, since step 4, which set this true: a
+ * pair is made in any match whose rule allows it (MatchRules.akimbo, on by default), and Match Setup, the dedicated
+ * server's rules and the rules summaries offer the rule. False hides it all again (no pair is ever made).
  */
-export const AKIMBO_READY: boolean = false;
+export const AKIMBO_READY: boolean = true;
 
 let akimboOn: boolean = AKIMBO_READY;
 /**

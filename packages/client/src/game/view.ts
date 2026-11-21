@@ -113,6 +113,7 @@ import {
   AMMO_BOX_KIT_SCALE,
   AMMO_BOX_MODEL,
   indoorProps,
+  TICK_RATE,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -238,6 +239,30 @@ const SHIELD_GLOW = new Color3(0.35, 0.7, 1);
 /** How much of SHIELD_GLOW the body takes at most (a faint tint, the body still reads). */
 const SHIELD_GLOW_PEAK = 0.08;
 
+/** A gun's muzzle and flash on a character (the first gun's are the avatar's own fields). */
+interface GunFx {
+  muzzle?: { node: TransformNode; local: Vector3 };
+  flashUntil?: number;
+  flash?: Mesh;
+  flashRig?: MuzzleFlashRig;
+}
+
+/** The second gun of a pair as a character holds it (Avatar.pair). */
+interface AvatarPair extends GunFx {
+  /** The weapon code it is a second gun of (its model loads for it). */
+  code: number;
+  /** How far up it is (0..1), eased over PAIR_UP_3P; and the time of the last step. */
+  up: number;
+  at: number;
+  /** The snapshot still says it is out (going down while false, then gone). */
+  on: boolean;
+  /** With Reduce flashing on, the pair shares one flash (pairView.ts PairFlashGate). */
+  gate: PairFlashGate;
+}
+
+/** Seconds another player's second gun takes to come up in their hand (third person; the match's raise is theirs). */
+const PAIR_UP_3P = 0.3;
+
 interface Avatar {
   /** What it bleeds (its look's `blood`; null: the map's), kept by its body after death. */
   blood?: BloodKind | null;
@@ -288,6 +313,11 @@ interface Avatar {
   flash?: Mesh;
   /** The pack's muzzle flash for their gun (muzzleFlash.ts); `flash` is the plain star used before it loads and for the railgun. */
   flashRig?: MuzzleFlashRig;
+  /**
+   * Dual wielding (step 4): the pair's second gun in their left hand (PlayerSnapshot.dw; your own from prediction in
+   * third person), with its own muzzle and flash; setAvatarPair.
+   */
+  pair?: AvatarPair;
   /** Climbing out of a hatch or burrow: rises from below the floor from this time. */
   emergeAt?: number;
   /** Team leader's crown (rules.leaders), made on first need. */
@@ -1312,6 +1342,7 @@ export class GameView {
     this.dropCanopy(a);
     a.flash?.setEnabled(false);
     a.flashRig?.hide();
+    this.dropAvatarPair(a);
     this.corpses.push({ a, slot, born: performance.now() });
     while (this.corpses.length > (this.keepBodies ? MAX_CORPSES_KEPT : MAX_CORPSES)) this.retireAvatar(this.corpses.shift()!.a);
   }
@@ -1356,8 +1387,10 @@ export class GameView {
   }
 
   /** World position of a remote player's muzzle, or null when their gun isn't drawn (or not yet in their hands). */
-  muzzleOf(slot: number): Vec3 | null {
-    const m = this.avatars.get(slot)?.muzzle;
+  muzzleOf(slot: number, off = false): Vec3 | null {
+    const a = this.avatars.get(slot);
+    // (`off`: the second gun of their pair, while it is in their hand; else the gun they held.)
+    const m = off && a?.pair?.muzzle && a.pair.up > 0 ? a.pair.muzzle : a?.muzzle;
     if (!m || m.node.isDisposed() || !m.node.isEnabled(false)) return null;
     m.node.computeWorldMatrix(true);
     const p = Vector3.TransformCoordinates(m.local, m.node.getWorldMatrix());
@@ -1372,8 +1405,8 @@ export class GameView {
   muzzleAnchor(o: { local?: boolean; slot?: number; off?: boolean }): MuzzleAnchor | null {
     const slot = o.slot !== undefined && o.slot >= 0 ? o.slot : null;
     // Yours in third person: your drawn character's gun (not while it's hidden for first person, or scoped in).
-    if (o.local) return () => this.localMuzzle(o.off) ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot));
-    return slot === null ? null : () => this.muzzleOf(slot);
+    if (o.local) return () => this.localMuzzle(o.off) ?? (slot === null || (this.avatars.get(slot)?.hiddenSelf ?? true) ? null : this.muzzleOf(slot, o.off));
+    return slot === null ? null : () => this.muzzleOf(slot, o.off);
   }
 
   /**
@@ -1389,7 +1422,7 @@ export class GameView {
       const anchor = this.muzzleAnchor(o);
       const from = anchor?.() ?? o.muzzle ?? { x: o.eye.x, y: o.eye.y - 0.08, z: o.eye.z };
       // Reduce flashing: a fast-firing beam (the Arc Caster, lasers) holds one steady beam instead of one per shot.
-      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? (o.off ? 'me2' : 'me') : (o.slot ?? 'other')}`, [from, o.to], o.def.view.tracer, undefined, anchor);
+      if (reduceFlashing() && o.def.fireIntervalTicks <= 15) this.steadyArcs.hit(`beam:${o.local ? (o.off ? 'me2' : 'me') : `${o.slot ?? 'other'}${o.off ? ':2' : ''}`}`, [from, o.to], o.def.view.tracer, undefined, anchor);
       else this.addShot(o.def, from, o.to, o.color, undefined, anchor);
       this.landRound(o);
       return;
@@ -1539,16 +1572,27 @@ export class GameView {
   }
 
   /** A brief muzzle flash on a remote player's gun: the pack's flash for that weapon (muzzleFlash.ts), else the plain star. */
-  remoteFlash(slot: number, def?: WeaponDefinition, alt = false): void {
+  remoteFlash(slot: number, def?: WeaponDefinition, alt = false, off = false, gated = false, together = false): void {
     const a = this.avatars.get(slot);
     if (!a?.muzzle) return;
+    // A pair's second gun flashes at its own muzzle; with Reduce flashing on the pair shares one flash (PairFlashGate:
+    // never both at once, never more often than one gun's rounds). `gated`: the caller's gate already chose (yours).
+    const pair = a.pair?.muzzle && a.pair.up > 0 ? a.pair : null;
+    // (Their rounds come a snapshot at a time: the tick is this page's clock's, and both guns' rounds in one message
+    // are `together`, so the flash takes turns between the guns.)
+    if (pair && def && !gated && !pair.gate.allow({ tick: Math.round(performance.now() / (1000 / TICK_RATE)), gun: off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: true, calm: reduceFlashing(), together })) {
+      this.remotePairFlashes.skipped++;
+      return;
+    }
+    if (pair) this.remotePairFlashes[off ? 'left' : 'right']++;
+    const set: GunFx = off && pair ? pair : a;
     const barrel = alt ? def?.view.altShot : undefined;
     const fx = barrel ? { id: barrel.flash.effect, scale: barrel.flash.scale ?? 0.2 } : def ? muzzleEffectFor(def) : null;
-    if (barrel?.smoke) {
+    if (barrel?.smoke && set.muzzle) {
       // The cloud hangs where they fired, rolling out along the barrel.
-      a.muzzle.node.computeWorldMatrix(true);
-      const m = a.muzzle.node.getWorldMatrix();
-      const at = Vector3.TransformCoordinates(a.muzzle.local, m);
+      set.muzzle.node.computeWorldMatrix(true);
+      const m = set.muzzle.node.getWorldMatrix();
+      const at = Vector3.TransformCoordinates(set.muzzle.local, m);
       const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
       this.muzzleSmoke(at, fwd, barrel.smoke);
       this.smokeClouds.remote++;
@@ -1556,25 +1600,28 @@ export class GameView {
     // The pack's flash only near the camera, on a few guns at a time (each rig is a dozen meshes);
     // further off, or in a crowd, the plain star does.
     const near = Vector3.DistanceSquared(a.root.position, this.camera.globalPosition) < REMOTE_FLASH_RANGE * REMOTE_FLASH_RANGE;
-    if (fx && near && MuzzleFlashRig.ready() && (a.flashRig || this.remoteRigs < MAX_REMOTE_RIGS)) {
-      if (!a.flashRig) {
-        a.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig`);
+    if (fx && near && MuzzleFlashRig.ready() && (set.flashRig || this.remoteRigs < MAX_REMOTE_RIGS)) {
+      if (!set.flashRig) {
+        set.flashRig = new MuzzleFlashRig(this.scene, `${a.root.name}_flashRig${set === a ? '' : '2'}`);
         this.remoteRigs++;
       }
       // A little bigger than your own: it's seen from further off. Reduce flashing: smaller and dimmer.
       const calm = reduceFlashing();
-      if (a.flashRig.fire(fx.id, fx.scale * 1.25 * (calm ? SAFE_MUZZLE.scale : 1), calm ? SAFE_MUZZLE.opacity : 1)) {
-        this.placeRemoteFlash(a);
+      if (set.flashRig.fire(fx.id, fx.scale * 1.25 * (calm ? SAFE_MUZZLE.scale : 1), calm ? SAFE_MUZZLE.opacity : 1)) {
+        this.placeRemoteFlash(set);
         return;
       }
     }
-    a.flash ??= this.createFlash(a.root.name);
-    a.flashUntil = performance.now() + 55;
-    kickFlash(a.flash, reduceFlashing() ? SAFE_MUZZLE.scale : 1, reduceFlashing() ? SAFE_MUZZLE.opacity : 1);
+    set.flash ??= this.createFlash(`${a.root.name}${set === a ? '' : '_2'}`);
+    set.flashUntil = performance.now() + 55;
+    kickFlash(set.flash, reduceFlashing() ? SAFE_MUZZLE.scale : 1, reduceFlashing() ? SAFE_MUZZLE.opacity : 1);
   }
 
+  /** Other players' pairs' flashes (tests, the flicker check): drawn per gun, and left out by the shared flash's gate. */
+  readonly remotePairFlashes = { right: 0, left: 0, skipped: 0 };
+
   /** Put a remote flash rig at the muzzle, pointing down the barrel. */
-  private placeRemoteFlash(a: Avatar): void {
+  private placeRemoteFlash(a: GunFx): void {
     if (!a.flashRig || !a.muzzle) return;
     a.muzzle.node.computeWorldMatrix(true);
     const m = a.muzzle.node.getWorldMatrix();
@@ -2118,14 +2165,21 @@ export class GameView {
    */
   kick(def: WeaponDefinition, alt = false, slot?: number, gun?: { off: boolean; tick: number; paired: boolean; together?: boolean }): void {
     const barrel = alt ? def.view.altShot : undefined;
-    // Third person: the flash is on your character's gun as drawn (followMuzzles keeps it there), as everyone sees it.
-    if (slot !== undefined && !this.viewRoot.isEnabled(false) && (def.kind !== 'melee' || alt) && !def.view.beam) {
-      const a = this.avatars.get(slot);
-      if (a?.muzzle && !a.hiddenSelf) this.remoteFlash(slot, def, alt);
-    }
-    this.kickShot = !!barrel;
     // Reduce flashing: your own flash is smaller and dimmer (in the dark it was the brightest thing on screen).
     const calm = reduceFlashing();
+    // Reduce flashing with a pair: the two guns share one flash, no brighter and no more often than one gun's
+    // (pairView.ts PairFlashGate), asked once a round and kept for first and third person alike; the round whose flash
+    // is left out still kicks, sounds and throws its case.
+    let gateSays: boolean | undefined;
+    const flashes = () => (gateSays ??= !gun || this.flashGate.allow({ tick: gun.tick, gun: gun.off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: gun.paired, calm, together: !!gun.together }));
+    // Third person: the flash is on your character's gun as drawn (followMuzzles keeps it there), as everyone sees it
+    // (a pair's second gun's on the gun in your left hand).
+    const thirdPerson = slot !== undefined && !this.viewRoot.isEnabled(false);
+    if (thirdPerson && (def.kind !== 'melee' || alt) && !def.view.beam) {
+      const a = this.avatars.get(slot);
+      if (a?.muzzle && !a.hiddenSelf && (barrel || def.kind === 'melee' || flashes())) this.remoteFlash(slot, def, alt, !!gun?.off, true);
+    }
+    this.kickShot = !!barrel;
     const size = calm ? SAFE_MUZZLE.scale : 1;
     const opacity = calm ? SAFE_MUZZLE.opacity : 1;
     if (barrel) {
@@ -2158,9 +2212,7 @@ export class GameView {
       return;
     }
     if (def.kind === 'melee' || def.view.beam) return;
-    // Reduce flashing with a pair: the two guns share one flash, no brighter and no more often than one gun's
-    // (pairView.ts PairFlashGate); the round whose flash is left out still kicks, sounds and throws its case.
-    if (gun && !this.flashGate.allow({ tick: gun.tick, gun: gun.off ? 'left' : 'right', interval: def.fireIntervalTicks, paired: gun.paired, calm, together: !!gun.together })) this.ownFlashes.skipped++;
+    if (!flashes()) this.ownFlashes.skipped++;
     else {
       this.ownFlashes[left ? 'left' : 'right']++;
       const fx = muzzleEffectFor(def);
@@ -2175,7 +2227,14 @@ export class GameView {
         if (this.starFlash) kickFlash(this.flash, star, opacity);
       }
     }
-    if (def.kind === 'hitscan' && def.ammo) this.ejectCasing(def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1, left);
+    if (def.kind === 'hitscan' && def.ammo) {
+      const size = def.pellets > 1 ? 1.6 : def.damage >= 60 ? 1.4 : 1;
+      // Third person: out of your character's gun as drawn (a pair's second gun's for its rounds), out of its right side.
+      const drawn = thirdPerson ? this.avatars.get(slot) : undefined;
+      const fromGun = drawn && !drawn.hiddenSelf ? (gun?.off && drawn.pair?.muzzle && drawn.pair.up > 0 ? drawn.pair.muzzle : drawn.muzzle) : undefined;
+      if (fromGun) this.ejectCasingFrom(fromGun, size, !!gun?.off);
+      else if (!thirdPerson) this.ejectCasing(size, left);
+    }
   }
 
   /**
@@ -2203,7 +2262,26 @@ export class GameView {
     this.ownCasings[casingSide(left ? 'left' : 'right') < 0 ? 'left' : 'right']++;
     root.computeWorldMatrix(true);
     const m = root.getWorldMatrix();
-    const at = Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m);
+    this.throwCasing(Vector3.TransformCoordinates(new Vector3(0.04, 0.05, this.muzzleZ * 0.35), m), m, size);
+  }
+
+  /**
+   * Third person: a spent case out of your character's gun as drawn, `muzzle` its gun and muzzle point (a pair's
+   * second gun for its rounds): from its ejection port, a little behind the muzzle, out of the gun's right side. A
+   * pair's guns are the same gun in either hand (not mirrored, as first person's are), so both throw to the right.
+   */
+  private ejectCasingFrom(muzzle: { node: TransformNode; local: Vector3 }, size: number, left: boolean): void {
+    if (!this.physics || muzzle.node.isDisposed()) return;
+    this.ownCasings[left ? 'left3p' : 'right3p']++;
+    muzzle.node.computeWorldMatrix(true);
+    const m = muzzle.node.getWorldMatrix();
+    const at = Vector3.TransformCoordinates(new Vector3(muzzle.local.x + 0.02, muzzle.local.y, muzzle.local.z * 0.35), m);
+    this.throwCasing(at, m, size);
+  }
+
+  /** A spent case thrown from `at` out of the right side of a gun whose frame is `m`, rattling on the floor. */
+  private throwCasing(at: Vector3, m: Matrix, size: number): void {
+    if (!this.physics) return;
     const right = Vector3.TransformNormal(new Vector3(1, 0, 0), m).normalize();
     const up = Vector3.TransformNormal(new Vector3(0, 1, 0), m).normalize();
     const back = Vector3.TransformNormal(new Vector3(0, 0, -1), m).normalize();
@@ -2345,7 +2423,7 @@ export class GameView {
   }
 
   /** Spent cases thrown from your own guns so far, by the side they went (tests). */
-  readonly ownCasings = { right: 0, left: 0 };
+  readonly ownCasings = { right: 0, left: 0, right3p: 0, left3p: 0 };
 
   /**
    * Position the viewmodel: offset, bob while moving, recoil, and dips for raising/reloading. `pair`: a pair is in
@@ -2739,6 +2817,7 @@ export class GameView {
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      this.setAvatarPair(a, p, now);
       // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
       // (Not a cloaked one: its shell fades with it, an aura would give it away.)
       if (p.status && p.alive && !a.culled && eye && !(p.status & FX_CLOAK)) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
@@ -3061,11 +3140,67 @@ export class GameView {
     return [...this.avatars.values()].filter((a) => !a.hiddenSelf && a.anim instanceof CreatureAnimator && a.anim.ch.kind === kind).length;
   }
 
+  /**
+   * Dual wielding in third person (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield", step 4): a character holding a pair
+   * (RemotePose.pair: the snapshot's `dw`, or your own in third person) gets a second copy of the gun in its left hand
+   * (CharacterAnimator.holdPair), coming up over PAIR_UP_3P and going down as fast when the pair is put away, with its
+   * own muzzle and flash. Only a character holding the first gun already (a capsule stand-in, or a crowd's far
+   * character still loading its gun, draws one gun). Your own reload dips the gun whose turn it is (`pairDip`).
+   */
+  private setAvatarPair(a: Avatar, p: RemotePose, now: number): void {
+    const anim = a.anim instanceof CharacterAnimator ? a.anim : null;
+    const want = !!p.pair && p.alive && !a.unarmed && !!anim && !!a.muzzle && a.weaponSlot === p.weapon && p.weapon > 0;
+    let pair = a.pair;
+    if (!pair && !want) return;
+    if (pair && pair.code !== p.weapon) {
+      this.dropAvatarPair(a);
+      pair = undefined;
+      if (!want) return;
+    }
+    if (!pair) {
+      const def = weaponByCode(p.weapon);
+      if (!def || !anim) return;
+      pair = a.pair = { code: p.weapon, up: 0, at: now, on: true, gate: new PairFlashGate() };
+      const made = pair;
+      void (this.crowd ? this.models.instantiateWhole(def.view.model, `held2_${p.weapon}`) : this.models.instantiate(def.view.model, `held2_${p.weapon}`)).then((node) => {
+        if (a.pair !== made || a.root.isDisposed() || a.anim !== anim) return node.dispose();
+        castSmall(node);
+        made.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
+        if (!this.crowd) attachOptic(this.scene, node, def, false);
+        anim.holdPair(node);
+      });
+    }
+    pair.on = want;
+    const dt = Math.min(0.1, Math.max(0, (now - pair.at) / 1000));
+    pair.at = now;
+    // Up once its model is in; down at once when it ends (as quick as first person's PAIR_LOWER_SECONDS), then gone.
+    pair.up = pair.muzzle ? stepPairUp(pair.up, want, dt, PAIR_UP_3P) : 0;
+    if (!want && pair.up <= 0) return this.dropAvatarPair(a);
+    anim?.pairPose(easeUp(pair.up), p.pairDip?.[0] ?? 0, p.pairDip?.[1] ?? 0);
+  }
+
+  /** A character's pair ends: the second gun, its muzzle and its flash go. */
+  private dropAvatarPair(a: Avatar): void {
+    const pair = a.pair;
+    if (!pair) return;
+    a.pair = undefined;
+    pair.flash?.material?.dispose();
+    pair.flash?.dispose();
+    if (pair.flashRig) {
+      pair.flashRig.dispose();
+      this.remoteRigs--;
+    }
+    if (a.anim instanceof CharacterAnimator && a.anim.pairWeapon === pair.muzzle?.node) a.anim.holdPair(null);
+    else pair.muzzle?.node.dispose();
+  }
+
   private setAvatarWeapon(a: Avatar, slot: number): void {
     a.weaponSlot = slot;
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
     a.muzzle = undefined;
+    // (The second gun of a pair goes with the first: hold drops it.)
+    this.dropAvatarPair(a);
     a.anim?.hold(null);
     // Unarmed (hostages, zombies): nothing in hand.
     const def = slot > 0 && !a.unarmed ? weaponByCode(slot) : undefined;
@@ -3323,6 +3458,7 @@ export class GameView {
       a.flashRig = undefined;
       this.remoteRigs--;
     }
+    this.dropAvatarPair(a);
     a.ragdoll?.dispose();
     a.ragdoll = undefined;
     this.dropCanopy(a);
@@ -3353,6 +3489,7 @@ export class GameView {
       a.flashRig.dispose();
       this.remoteRigs--;
     }
+    this.dropAvatarPair(a);
     a.ragdoll?.dispose();
     if (a.anim instanceof CharacterAnimator && this.keepBody(a.specKey, a.anim)) a.anim = undefined;
     a.anim?.dispose();
@@ -4770,14 +4907,20 @@ export class GameView {
     }
     this.steadyArcs.update(now);
     for (const a of this.avatars.values()) {
-      if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
-      if (!a.flash) continue;
-      const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
-      a.flash.setEnabled(on);
-      if (on && a.muzzle) {
-        a.muzzle.node.computeWorldMatrix(true);
-        a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
-      }
+      this.followFlash(a, now);
+      if (a.pair) this.followFlash(a.pair, now);
+    }
+  }
+
+  /** A character's gun's flash kept on its muzzle as drawn this frame (followMuzzles). */
+  private followFlash(a: GunFx, now: number): void {
+    if (a.flashRig?.update(now)) this.placeRemoteFlash(a);
+    if (!a.flash) return;
+    const on = now < (a.flashUntil ?? 0) && !!a.muzzle;
+    a.flash.setEnabled(on);
+    if (on && a.muzzle) {
+      a.muzzle.node.computeWorldMatrix(true);
+      a.flash.position.copyFrom(Vector3.TransformCoordinates(a.muzzle.local, a.muzzle.node.getWorldMatrix()));
     }
   }
 

@@ -234,7 +234,7 @@ import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
 import { opticOf } from './optics.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
-import { gunPan, reloadDipAmount, shotGun } from './pairView.ts';
+import { bothGunsFired, gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
@@ -584,6 +584,19 @@ export class GameSession {
     this.view.localStrike(kind, this.jabNext);
     if (kind === 'punch') this.jabNext = !this.jabNext;
     this.sfx.localStrike();
+  }
+
+  /**
+   * Your own pair in third person (dual wielding): how far into its reload dip each gun is (the gun you held, the
+   * second), as first person dips them: one hand reloads at a time, so only the gun whose turn it is goes down.
+   */
+  private ownPairDip(local: LocalPlayer): readonly [number, number] | undefined {
+    const weapon = local.weapon;
+    if (!local.paired || !weapon) return undefined;
+    const [turn1, turn2] = local.pairReloading();
+    const first = turn1 ? reloadDipAmount(local.reloadTicks, local.reload?.total ?? weapon.reloadTicks) : 0;
+    const second = turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0;
+    return first || second ? [first, second] : undefined;
   }
 
   /** A remote player's next punch: jab and cross in turn. */
@@ -2377,6 +2390,8 @@ export class GameSession {
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;
         const posesNow = () => (poses ??= this.interp.sample());
+        // Dual wielding: the shooters whose two guns both fired in this message (their flashes take turns: remoteFlash).
+        const pairedShots = bothGunsFired(msg.ev);
         for (const ev of msg.ev) {
           // Random characters: this life's look (the roster has the one they had when it was sent).
           if (ev.e === 'spawn' && this.rouletteHud) {
@@ -2412,7 +2427,7 @@ export class GameSession {
             const def = CORE_WEAPONS[ev.w];
             const mine = ev.s === this.slot;
             const eye = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
-            const muzzle = mine ? null : this.view.muzzleOf(ev.s);
+            const muzzle = mine ? null : this.view.muzzleOf(ev.s, !!ev.off);
             const color = def?.view.tracer ?? '#ffd36b';
             const strength = Math.min(2.5, Math.max(0.6, ((ev.alt ? def?.alt?.damage : undefined) ?? def?.damage ?? 20) / 25));
             if (def?.grapple) {
@@ -2436,7 +2451,7 @@ export class GameSession {
                   const len = Math.hypot(d.x, d.y, d.z) || 1;
                   const physics = this.local.physics;
                   const flight = traceBullet(eye, { x: d.x / len, y: d.y / len, z: d.z / len }, { speed: ev.v, gravity: ev.g ?? 0, drag: this.dragOf(def) }, def?.range ?? 300, (o, dir, l) => physics.raycastHit(o, dir, l)?.dist ?? null);
-                  this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false });
+                  this.view.shotVisual({ eye, muzzle, to: flight.end, color, victim: null, zone: 0, strength, def, speed: ev.v, land: false, ...(ev.off ? { off: true } : {}) });
                 }
                 return;
               }
@@ -2464,7 +2479,7 @@ export class GameSession {
                 if (victim !== null) window.setTimeout(() => this.view.landRound({ eye, to, victim, zone, strength }), Math.max(0, (dist / (ev.v ?? BULLET_SPEED)) * 1000 - 40));
                 return;
               }
-              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}) });
+              this.view.shotVisual({ eye, muzzle, to, color, victim, zone, strength, def, slot: ev.s, ...(ev.v ? { speed: ev.v } : {}), ...(ev.off ? { off: true } : {}) });
             });
             // Rounds that went through a surface or glanced off it leave their mark there too.
             for (const p of ev.pn ?? []) this.view.landRound({ eye, to: { x: p[0], y: p[1], z: p[2] }, victim: null, zone: 0, strength });
@@ -2472,7 +2487,7 @@ export class GameSession {
               this.hitFeedback(ev.hit, ev.z, !!ev.ar);
             } else {
               this.view.avatarAction(ev.s, 'shoot');
-              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt);
+              if (def && (def.kind !== 'melee' || ev.alt)) this.view.remoteFlash(ev.s, def, !!ev.alt, !!ev.off, false, pairedShots.has(ev.s));
             }
           } else if (ev.e === 'impact') {
             // A bullet that was in flight landed.
@@ -3928,7 +3943,7 @@ export class GameSession {
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0) });
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
     // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
     const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
     const self = bodyDrawn ? mine : undefined;

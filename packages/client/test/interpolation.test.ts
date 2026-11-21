@@ -87,4 +87,13 @@ describe('snapshot interpolation', () => {
   it('is exact when snapshots arrive on time', () => {
     for (const v of frameSpeeds(0)) expect(v).toBeCloseTo(SPEED, 6);
   });
+
+  it('carries the snapshot\'s pair (dw) onto the pose: a gun in each hand; absent, one gun', () => {
+    const interp = new Interpolator();
+    interp.push(0, [{ ...snap(0), dw: 1 } as PlayerSnapshot, { ...snap(0), s: 2 } as PlayerSnapshot], [], undefined, 0);
+    interp.push(2, [{ ...snap(2), dw: 1 } as PlayerSnapshot, { ...snap(2), s: 2 } as PlayerSnapshot], [], undefined, 33);
+    const poses = interp.sample(400);
+    expect(poses.find((p) => p.slot === 1)?.pair).toBe(true);
+    expect(poses.find((p) => p.slot === 2)?.pair).toBeUndefined();
+  });
 });

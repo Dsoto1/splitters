@@ -11,6 +11,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { GripTune, ModelPoint, WeaponHold } from '@tiletrigger/shared';
 import type { CharacterInstance, Clip } from '../content/characters.ts';
 import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
+import { pairHold3p } from './pairView.ts';
 import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
@@ -400,6 +401,16 @@ export class CharacterAnimator {
   private readonly hand?: TransformNode;
   private weapon: TransformNode | null = null;
   private grip: WeaponHold | null = null;
+  /**
+   * Dual wielding: the pair's second gun, in the left hand (holdPair; null with one gun). Owned as `weapon` is, held
+   * by the same `grip` one-handed; hidden until first placed.
+   */
+  private weapon2: TransformNode | null = null;
+  private unplaced2 = false;
+  /** The pair's second gun's rise (0 down .. 1 up) and each gun's reload dip (0..1), from the view (pairPose). */
+  private readonly pair = { up: 1, dipR: 0, dipL: 0 };
+  /** Each gun of a pair relative to its hand, from the last frame both were gripped (as `inHand` for one gun). */
+  private readonly inHands = { r: { pos: Vector3.Zero(), rot: Quaternion.Identity(), valid: false }, l: { pos: Vector3.Zero(), rot: Quaternion.Identity(), valid: false } };
   /** The weapon was just put in hand and not yet placed there: hidden until it is (see hold). */
   private unplaced = false;
   private readonly arms: { r: Arm; l: Arm } | null;
@@ -544,6 +555,8 @@ export class CharacterAnimator {
   private readonly skinPoses = new Map<Skeleton, { prev: Float32Array; last: Float32Array; prevAt: number; at: number; eval: number; shown: number }>();
   /** The held gun's place in the root at its last two recorded evaluations. */
   private readonly gunPose = { node: null as TransformNode | null, prevPos: new Vector3(), prevRot: new Quaternion(), lastPos: new Vector3(), lastRot: new Quaternion(), prevAt: -1e9, at: -1e9, eval: -1 };
+  /** The pair's second gun's, likewise. */
+  private readonly gunPose2 = { node: null as TransformNode | null, prevPos: new Vector3(), prevRot: new Quaternion(), lastPos: new Vector3(), lastRot: new Quaternion(), prevAt: -1e9, at: -1e9, eval: -1 };
 
   /**
    * Smoothing off and its recorded poses dropped: on every path that stops stepAt being called (a death, a ragdoll, a
@@ -557,6 +570,7 @@ export class CharacterAnimator {
     this.blend.on = false;
     this.skinPoses.clear();
     this.gunPose.node = null;
+    this.gunPose2.node = null;
   }
 
   /** Whether the frames between evaluations are smoothed now (tests). */
@@ -607,9 +621,12 @@ export class CharacterAnimator {
 
   /** The held gun with the skin (blendSkin): recorded after an evaluation's grip, drawn between its last two places. */
   private blendGun(evaluated: boolean): void {
-    const w = this.weapon;
-    const g = this.gunPose;
-    if (!w || this.unplaced || !w.rotationQuaternion) {
+    this.blendNode(this.weapon, this.unplaced, this.gunPose, evaluated);
+    this.blendNode(this.weapon2, this.unplaced2, this.gunPose2, evaluated);
+  }
+
+  private blendNode(w: TransformNode | null, unplaced: boolean, g: typeof this.gunPose, evaluated: boolean): void {
+    if (!w || unplaced || !w.rotationQuaternion) {
       g.node = null;
       return;
     }
@@ -641,6 +658,8 @@ export class CharacterAnimator {
   /** Carry a weapon model, held as `grip` describes (null to empty the hands). */
   hold(weapon: TransformNode | null, grip: WeaponHold | null = null): void {
     this.weapon?.dispose();
+    // (A new weapon in hand: a pair's second gun goes with the first; the view gives a new pair its own.)
+    this.holdPair(null);
     this.weapon = weapon;
     this.grip = weapon ? grip : null;
     this.external = null;
@@ -659,12 +678,46 @@ export class CharacterAnimator {
   }
 
   /**
+   * Dual wielding in third person (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield", step 4): the second gun of a pair of
+   * the weapon in hand (`hold`'s), in the left hand; null puts it away (both hands back on the one gun). Each gun is
+   * then held in one hand, out in front at arm's length (pairView.ts pairHold3p); the animator owns the node.
+   */
+  holdPair(weapon: TransformNode | null): void {
+    if (weapon === this.weapon2) return;
+    this.weapon2?.dispose();
+    this.weapon2 = weapon;
+    this.inHands.r.valid = this.inHands.l.valid = false;
+    this.inHand.valid = false;
+    this.armPose = null;
+    this.gunPose2.node = null;
+    this.unplaced2 = false;
+    if (!weapon) return;
+    weapon.parent = this.ch.root;
+    weapon.rotationQuaternion ??= Quaternion.Identity();
+    this.unplaced2 = true;
+    weapon.setEnabled(false);
+  }
+
+  /** The pair's second gun as held now (tests, the view's muzzle and flash). */
+  get pairWeapon(): TransformNode | null {
+    return this.weapon2;
+  }
+
+  /** A pair's pose this frame: the second gun's rise (0..1) and each gun's reload dip (0..1; pairView.ts reloadDipAmount). */
+  pairPose(up: number, dipR: number, dipL: number): void {
+    this.pair.up = up;
+    this.pair.dipR = dipR;
+    this.pair.dipL = dipL;
+  }
+
+  /**
    * Put the hands on a weapon that is positioned by someone else (the
    * first-person viewmodel): the weapon is not moved or owned, only gripped.
    */
   gripExternal(weapon: TransformNode | null, grip: WeaponHold | null, solo = false): void {
     this.weapon?.dispose();
     this.weapon = null;
+    this.holdPair(null);
     if (weapon && grip && this.external?.node === weapon && this.external.from === grip && this.external.solo === solo) return;
     // `solo` (one gun of a pair, dual wielding): the shooting hand alone, as it holds the gun two-handed; the other
     // hand has its own gun.
@@ -840,7 +893,8 @@ export class CharacterAnimator {
     // Hands on the weapon unless an action needs them; long guns turn the shoulders into the stock.
     const ikTarget = this.handsOff || (this.grip?.style === 'melee' && !this.external) ? 0 : 1;
     this.ik += Math.sign(ikTarget - this.ik) * Math.min(Math.abs(ikTarget - this.ik), dt * 6);
-    const bladeTarget = this.grip?.style === 'long' && !s.celebrate ? longGunBlade(this.grip) * this.ik : 0;
+    // (A pair, a gun in each hand, is held square to the aim: no stock to turn into.)
+    const bladeTarget = this.grip?.style === 'long' && !this.weapon2 && !s.celebrate ? longGunBlade(this.grip) * this.ik : 0;
     this.blade += (bladeTarget - this.blade) * Math.min(1, dt * 8);
     // Clips the state machine started while asleep wait too.
     if (this.dormant) {
@@ -1362,6 +1416,7 @@ export class CharacterAnimator {
     this.overlay = null;
     this.handsOff = false;
     this.weapon?.setEnabled(false);
+    this.weapon2?.setEnabled(false);
     // A cheap ragdoll moves only the pelvis, chest and head: the limbs take the death's final, limp pose.
     if (limbs === 'limp') this.holdDeathPose([...this.ch.joints.keys()].filter((n) => LIMB.test(n)));
   }
@@ -1383,6 +1438,7 @@ export class CharacterAnimator {
     this.overlay = null;
     this.handsOff = false;
     this.weapon?.setEnabled(false);
+    this.weapon2?.setEnabled(false);
     this.holdDeathPose(null);
   }
 
@@ -1582,6 +1638,7 @@ export class CharacterAnimator {
       d.start(false, 1.1);
     }
     this.weapon?.setEnabled(false);
+    this.weapon2?.setEnabled(false);
   }
 
   private revive(): void {
@@ -1597,6 +1654,7 @@ export class CharacterAnimator {
     this.play('aim_idle', 1);
     this.aimUpper?.start(true);
     this.weapon?.setEnabled(!this.unplaced);
+    this.weapon2?.setEnabled(!this.unplaced2);
   }
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
@@ -1660,7 +1718,8 @@ export class CharacterAnimator {
       for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) arm.hand.scaling.setAll(FP_HAND_SCALE);
       this.fp.place?.();
     }
-    if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
+    if (this.weapon && this.weapon2 && this.grip && this.grip.style !== 'melee' && this.arms && this.skelRoot) this.placePair(root, rootRot, this.weapon, this.weapon2, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
+    else if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) {
       // (The left arm of a pair is this body in a mirror, view.ts `pairRoot`: the gun's right side is then the world's left.)
       viewMirrored = this.external.solo && ((root.parent as TransformNode | null)?.getWorldMatrix().determinant() ?? 1) < 0;
@@ -1946,6 +2005,144 @@ export class CharacterAnimator {
     }
   }
 
+  /**
+   * A pair in third person (dual wielding, step 4): each gun held in one hand out in front at the aim, the right gun
+   * by the right hand and the second by the left, each the mirror of the other (pairView.ts pairHold3p: where a grip
+   * goes from its shoulder, by the arm's reach). Both arms are solved onto their grips and the hands closed on them
+   * as first person's one-gun-a-hand hold does (gripOne), the left hand worked out in a mirror (`viewMirrored`: the
+   * gun's right side is the hand's far side). The second gun comes up from its lowered place as `pair.up` rises, and
+   * a gun being reloaded dips toward the chest, tipped up (`pair.dipR`, `pair.dipL`). While an action has the hands
+   * elsewhere (`ik` < 1) each gun rides in its hand.
+   */
+  private placePair(root: TransformNode, rootRot: Quaternion, weapon: TransformNode, weapon2: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace): void {
+    this.settleHand(arms.r);
+    this.settleHand(arms.l);
+    const scale = root.absoluteScaling.x;
+    const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
+    const pos = (n: TransformNode) => {
+      n.computeWorldMatrix(true);
+      return n.getAbsolutePosition().clone();
+    };
+    const toRoot = root.getWorldMatrix().clone().invert();
+    const invRoot = Quaternion.Inverse(rootRot);
+    const ahead = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
+    const upA = new Vector3(0, 1, 0).applyRotationQuaternion(aim);
+    const rightA = new Vector3(1, 0, 0).applyRotationQuaternion(aim);
+    // Square the shoulders to the aim: the aim clip (a long gun's pose) holds the chest turned, the left shoulder
+    // forward; with a gun in each hand that put the left gun ahead of the right and both off to one side.
+    this.squareShoulders(arms, rightA);
+    const outward = pos(arms.r.upper).subtract(pos(arms.l.upper)).normalize();
+    const w = this.ik;
+    const sides = [
+      { arm: arms.r, gun: weapon, side: 1 as const, dip: this.pair.dipR, kept: this.inHands.r },
+      { arm: arms.l, gun: weapon2, side: -1 as const, dip: Math.max(this.pair.dipL, 1 - this.pair.up), kept: this.inHands.l },
+    ];
+    for (const { arm, gun, side, dip, kept } of sides) {
+      const shoulder = pos(arm.upper);
+      const reach = armReach(arm.upper, arm.lower, arm.hand, arm.palm);
+      const h = pairHold3p(dip);
+      // Where the grip goes (world), and the gun turned with the aim (tipped up and rolled outward by a dip).
+      const at = shoulder.add(ahead.scale(h.ahead * reach)).add(upA.scale(-h.down * reach)).add(rightA.scale(side * h.out * reach));
+      const rot = aim.multiply(Quaternion.RotationAxis(Vector3.Forward(), -side * h.roll)).multiply(Quaternion.RotationAxis(Vector3.Right(), -h.pitch));
+      const gripped = { rot, pos: at.subtract(new Vector3(grip.grip[0], grip.grip[1], grip.grip[2]).scale(scale).applyRotationQuaternion(rot)) };
+      gun.position.copyFrom(Vector3.TransformCoordinates(gripped.pos, toRoot));
+      gun.rotationQuaternion = invRoot.multiply(gripped.rot);
+      gun.computeWorldMatrix(true);
+      if (w > 0) {
+        const pole = shoulder.add(outward.scale(side * 0.35 * scale)).add(new Vector3(0, -0.3 * scale, 0));
+        viewMirrored = side < 0;
+        try {
+          this.gripOne(space, arm, gun, grip, scale, w, pole);
+        } finally {
+          viewMirrored = false;
+        }
+      }
+      // The gun rides in its hand while the hands are off (an action), from where the last full grip had it.
+      const hand = handFrame(arm);
+      if (w >= 0.999) {
+        const inv = Quaternion.Inverse(hand.rot);
+        kept.rot = inv.multiply(gripped.rot);
+        kept.pos = gripped.pos.subtract(hand.pos).scale(1 / scale).applyRotationQuaternion(inv);
+        kept.valid = true;
+      }
+      if (w < 0.999 && kept.valid) {
+        const carried = { rot: hand.rot.multiply(kept.rot), pos: hand.pos.add(kept.pos.scale(scale).applyRotationQuaternion(hand.rot)) };
+        gun.position.copyFrom(Vector3.TransformCoordinates(Vector3.Lerp(carried.pos, gripped.pos, w), toRoot));
+        gun.rotationQuaternion = invRoot.multiply(Quaternion.Slerp(carried.rot, gripped.rot, w));
+      }
+    }
+    if (this.unplaced) {
+      this.unplaced = false;
+      weapon.setEnabled(true);
+    }
+    if (this.unplaced2) {
+      this.unplaced2 = false;
+      weapon2.setEnabled(true);
+    }
+  }
+
+  /**
+   * Turn the chest (the top of the spine, about the up axis) until the shoulder line runs square to the aim (`right`:
+   * the aim's right in the world), for a pair. The turn's sense is checked against the result (the joints' frames are
+   * mirrored by the import), as the first-person collarbones are.
+   */
+  private squareShoulders(arms: { r: Arm; l: Arm }, right: Vector3): void {
+    const top = this.spine[this.spine.length - 1];
+    const parent = top?.parent as TransformNode | null | undefined;
+    if (!top?.rotationQuaternion || !parent) return;
+    const flatRight = new Vector3(right.x, 0, right.z);
+    if (flatRight.lengthSquared() < 1e-8) return;
+    flatRight.normalize();
+    const refresh = () => {
+      top.computeWorldMatrix(true);
+      for (const arm of [arms.r, arms.l]) {
+        (arm.upper.parent as TransformNode | null)?.computeWorldMatrix(true);
+        refreshArm(arm);
+      }
+    };
+    const off = () => {
+      const line = arms.r.upper.getAbsolutePosition().subtract(arms.l.upper.getAbsolutePosition());
+      line.y = 0;
+      if (line.lengthSquared() < 1e-8) return 0;
+      line.normalize();
+      return Math.atan2(Vector3.Cross(line, flatRight).y, Vector3.Dot(line, flatRight));
+    };
+    refresh();
+    const before = off();
+    if (Math.abs(before) < 0.01) return;
+    worldTurn(parent, Vector3.Up(), before).multiplyToRef(top.rotationQuaternion, top.rotationQuaternion);
+    refresh();
+    if (Math.abs(off()) > Math.abs(before)) {
+      worldTurn(parent, Vector3.Up(), -2 * before).multiplyToRef(top.rotationQuaternion, top.rotationQuaternion);
+      refresh();
+    }
+  }
+
+  /**
+   * One hand onto one gun of a pair (as gripPlaced holds a gun in first person, `solo`): the hand turned onto the
+   * grip, a pistol's knuckles down its raked grip, the arm solved so the palm is there (the elbow toward `pole`), the
+   * fingers closed round it and the thumb laid along the frame. The caller sets `viewMirrored` for the left hand.
+   */
+  private gripOne(space: SkeletonSpace, arm: Arm, weapon: TransformNode, grip: WeaponHold, scale: number, w: number, pole: Vector3): void {
+    const world = weapon.getWorldMatrix();
+    const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
+    gripHand(space, arm, world, 'grip', w, true);
+    const pistol = grip.style === 'pistol';
+    const gun = gunAxes(world);
+    if (pistol) alignKnuckles(space, arm, rakedLine(gun, grip.rake ?? PISTOL.rake), w);
+    const unit = Vector3.TransformNormal(new Vector3(0, 0, 1), world).length();
+    const off = (p: ModelPoint, by: readonly number[]) =>
+      point(p).add(gun.right.scale(by[0]! * unit)).add(gun.up.scale(by[1]! * unit)).add(gun.ahead.scale(by[2]! * unit));
+    let gripAt = palmOnGrip(arm, point(grip.grip), scale);
+    if (pistol) {
+      const lead = Math.max(0, handLength(arm) / unit - PISTOL.handRef) * PISTOL.handLead;
+      gripAt = seated(arm, gripAt, off(grip.grip, [PISTOL.knuckles[0]!, PISTOL.knuckles[1]!, PISTOL.knuckles[2]! + lead]));
+    }
+    solveArm(space, arm, gripAt, pole, w);
+    closeHand(space, arm, w, point(grip.grip), pistol ? { at: off(grip.grip, PISTOL.wrap), out: gun.right.scale(-1) } : undefined);
+    if (pistol) pointThumb(space, arm, gunDir(gun, PISTOL.thumbR), w);
+  }
+
   /** The arms' joints as the last full grip left them (animation LOD's `coarse` detail), for this grip. */
   private armPose: { grip: WeaponHold; joints: TransformNode[]; rots: Quaternion[] } | null = null;
   /** Coarse evaluations so far (every COARSE_FULL_EVERY-th works the grip out in full). */
@@ -2208,6 +2405,7 @@ export class CharacterAnimator {
     this.clipGait?.fwdUpper?.dispose();
     this.clipGait?.runUpper?.dispose();
     this.weapon?.dispose();
+    this.weapon2?.dispose();
     this.ch.dispose();
   }
 }

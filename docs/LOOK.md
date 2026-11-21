@@ -130,6 +130,7 @@ What flickered, and what the setting does to each:
 | Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii) and drawn smaller there (`blastSize`: half size within 0.6 radii, full beyond 3.6 radii, so the camera is never inside a fireball whose sheets sweep across the whole view: four grenades 3-5 m off read up to 7 transitions a second at full size, none at half), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials; additive pieces are scaled down, pieces drawn over the scene (smoke, debris, cut-out fireballs) only have their bright parts capped, at 0.3 + 0.7 × gain, so smoke keeps its grey), no white flash ball |
 | Muzzle flashes (yours and others') | as the pack draws them | 75 % size, 45 % opacity (`SAFE_MUZZLE`) |
 | A pair's muzzle flashes (dual wielding, your own two guns in first person; `pairView.ts` `PairFlashGate`) | every round of both guns flashes | the two guns share one flash, each at `SAFE_MUZZLE`: never two at once, never more often than one gun's rounds come (a round's flash is left out when either gun flashed within the gun's firing interval; both triggers on one tick take turns). Its moment: `pair` |
+| Someone else's pair's muzzle flashes (dual wielding in third person: another player's two guns, or yours in third person; `view.ts` `remoteFlash`) | every round of both guns flashes at its own gun's muzzle | the same shared flash per character (`PairFlashGate`, one per character): both guns' rounds arriving in one snapshot take turns, never two at once, never more often than one gun's rounds. Its moment: `pairtp` |
 | Map lights logic drives (`blink`, `light_blink`, `light_flash`, colour changes) | hard on/off up to 10 times a second; "Flash" flares to 2.5 × | a smooth pulse at most once a second between 55 % and full (`blinkLevel`); "Flash" flares to 1.35 ×; level and colour ease (off to full in about 0.4 s) |
 | Candles that gutter | random drops near dark | a slow, slight sway |
 | Small blinking indicators (a mine's light, a thrown mine, a sticky grenade, the bomb, a laser trap's warning) | blink 1-12 times a second | a gentle pulse at most once a second; the laser warning shows its beams faint and steady |
@@ -156,7 +157,7 @@ the scenes its moments need:
 
 | Flow | Night scene | Day scene |
 |---|---|---|
-| `flashing` | arc, fence, blast, cookoff | |
+| `flashing` | arc, fence, blast, cookoff, pairtp | |
 | `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
 | `flashing3` | rain, snow, loot, fixtures, status | |
 | `flashing4` | blood, alarm | lowhealth, scope |
