@@ -65,7 +65,8 @@ Already done from the owner's earlier ask: **the real buildable area.**
      reset): it counts only what the command touches; a set-piece, theme or set-piece-definition edit recounts the
      parts (as played, from the cached expansion); a settings edit re-measures the file without its items (the
      file's size is exact: `serializeMap`'s bytes, per item cached). The draw estimate is a draw per different
-     untinted prop model, per tinted prop, per species variant and per liquid, against 80 + 24 + 32 (owner's call).
+     untinted prop model, per tinted prop, per species variant and per liquid, against 136: 80 + 24 + 32, the budgets behind those rows when it was set (owner's call);
+     it kept that scale when the prop model budget went to 120 (2026-11-21, docs/MAP_BUDGETS.md).
      UI `client/src/editor/budgetBar.ts`: a pill beside the level strip (OK / Near at 80 % / Over, colour and word),
      naming the worst budget; its name selects what it counts (`budgetCulprits`); the arrow lists every row. Test
      `shared/test/budgetCounters.test.ts` (counters = full count after commands, a batch, a stroke, every undo and

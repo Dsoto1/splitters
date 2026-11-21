@@ -16,7 +16,7 @@ the map format (8,192 entities since map format v48, 4,096 before; terrain 161 �
 | Playable footprint | 400 m across | Bot navigation, network relevance and draw distance are tuned for this. Terrain tops out at 320 m. |
 | Tiles | 1,500 | Merged into a few meshes; mostly a navmesh build-time cost. |
 | Props | 1,500 | Untinted props are GPU instances (one draw call per model), so the cost is mostly in the variety of models (next row). |
-| Different prop models | 80 | Each model is a download (≈20–100 KB) and one draw call per part. |
+| Different prop models | 120 | Each model is a download (≈20–100 KB) and one draw call per part. 120 since 2026-11-21 (80 before; the owner's call): see "120 different prop models" below. |
 | Solid free blocks | 3,000 | Merged into the level's meshes by material, like tiles (a castle hall is a few hundred blocks); the cost is mostly the navmesh build when the map loads. |
 | Breakable / crumbling / trapdoor blocks | 150 | Each is simulated every tick and its state is sent to players. |
 | Bodies of liquid | 32 | Each is a see-through surface (transparency is expensive). |
@@ -190,7 +190,7 @@ budgets above:
 - **Water in the middle**: a lake or a canyon nobody can cross makes every
   route go round it; give it two crossings or more so bots spread out.
 - **Props**: instanced, so the count matters less than the number of
-  different models (80) and tints (each tint is its own material).
+  different models (120) and tints (each tint is its own material).
 - **Measure**: `pnpm bench:96:maps` (server, 96 bots, 60 s a map) and
   `node tools/perf/client-perf.mjs <map>` after `pnpm build` (headless
   Chromium, 96 players offline: draw calls, meshes, triangles, shadow casters).
