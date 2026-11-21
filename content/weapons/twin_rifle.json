@@ -1,0 +1,39 @@
+{
+  "id": "core.twin_rifle",
+  "code": 51,
+  "displayName": "Twin-Shot Rifle",
+  "category": "rifle",
+  "kind": "hitscan",
+  "slot": 3,
+  "family": "rifle",
+  "fireMode": "burst",
+  "damage": 24,
+  "spread": 0.0012,
+  "fireIntervalTicks": 18,
+  "range": 300,
+  "magazine": 30,
+  "reserveMax": 150,
+  "pickupAmmo": 60,
+  "reloadTicks": 100,
+  "reload": { "type": "magazine", "tactical": 80, "empty": 100, "out": 0.3, "in": 0.7 },
+  "ammo": "rifle",
+  "burst": { "count": 2, "intervalTicks": 3 },
+  "falloff": { "start": 30, "end": 80, "min": 0.65, "curve": "smooth" },
+  "kick": { "pitch": [0.006, 0.022], "yaw": [0.004, -0.006], "variance": 0.002 },
+  "botDesirability": 0.66,
+  "botRange": [5, 40],
+  "view": {
+    "model": "guns/scoped_tactical.glb",
+    "held": { "medium": "guns/scoped_tactical.medium.glb", "high": "guns/scoped_tactical.high.glb" },
+    "fallback": "weapons/burst_rifle.glb",
+    "viewOffset": [0.2, -0.2, 0.52],
+    "tracer": "#ffd36b",
+    "hold": { "style": "long", "grip": [0, -0.04, -0.175], "support": [0, 0.02, 0.17], "shoulder": [0, 0.03, -0.38] },
+    "muzzleAt": [0, 0.045, 0.39],
+    "sound": "fire.rifle"
+  },
+  "notes": {
+    "design": "Every pull is a double tap: two rounds 3 ticks apart (the second jumps up), then 15 ticks to the next pull. Two pulls and a round kill a body (0.6 s); two head hits in one pull. Rewards a steady first round and the timing of the next pull, not holding the trigger.",
+    "model": "The Meshy community Scoped Tactical Rifle (CC0); its red dot is a plain sight for now (the sights pass fits it). The kit burst rifle is the fallback."
+  }
+}

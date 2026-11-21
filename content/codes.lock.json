@@ -49,7 +49,20 @@
     "core.medi_beam": 46,
     "core.revolver": 47,
     "core.battle_axe": 48,
-    "core.battle_rifle": 49
+    "core.battle_rifle": 49,
+    "core.desert_carbine": 50,
+    "core.twin_rifle": 51,
+    "core.compact_carbine": 52,
+    "core.woodland_smg": 53,
+    "core.amarillo": 54,
+    "core.nova6": 55,
+    "core.lever_action": 56,
+    "core.runebreaker": 57,
+    "core.flintlock_pistol": 58,
+    "core.crossbow": 59,
+    "core.blaster_x42": 60,
+    "core.laser_blaster": 61,
+    "core.hornet": 62
   },
   "throwables": {
     "frag": 0,

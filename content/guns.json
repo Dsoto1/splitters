@@ -1,6 +1,26 @@
 {
   "$comment": "Weapon models built by tools/content/prepare-guns.mjs from pack downloads kept out of the repo (see docs/CONTENT_PIPELINE.md). `forward`: the source's barrel axis; `length`: metres along the barrel once built. The weapons keep the models they used before as `fallback` (packages/shared/src/sim/weapons.ts). Meshy community entries (`meshy` packs) name their download folder in `download` and their model in `label` (see prepare-guns.mjs). Meshy textured GLB downloads (`glb` packs) are named in each entry's `glb`.",
   "packs": {
+    "meshy-community-drive-1118": {
+      "title": "Meshy community models (weapons, a shield, a grenade and a slime: textured GLB downloads from the owner's Drive folder \"weapons and stuff\", 2026-11-18)",
+      "creator": "Meshy community (authors not recorded; CC0 per the owner, 2026-11-18)",
+      "url": "https://www.meshy.ai (community post URLs pending from the owner)",
+      "license": "CC0-1.0",
+      "licenseFile": "assets-src/meshy-community/License.txt",
+      "retrieved": "2026-11-18",
+      "meshy": true,
+      "glb": true
+    },
+    "meshy-owned-drive-1118": {
+      "title": "Tile Trigger originals (made with Meshy): the Futuristic Baseball Bat (textured GLB download from the owner's Drive, 2026-11-18)",
+      "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-18)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-11-18",
+      "meshy": true,
+      "glb": true
+    },
     "styloo-guns": {
       "title": "Guns Asset Pack",
       "creator": "Styloo",
@@ -1254,6 +1274,330 @@
         { "y": -0.95, "x": [1.83, 1.97], "z": [-0.32, 0.02], "uvAt": [1.5, -0.2] },
         { "y": 0.29, "x": [-0.47, 0.14], "z": [3.8, 3.89], "uvAt": [-0.2, 3.7] },
         { "y": 0.29, "x": [-0.47, -0.3], "z": [3.775, 3.8], "uvAt": [-0.2, 3.7] }
+      ]
+    },
+    {
+      "out": "guns/desert_m4.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Desert_M4_Carbine_1118133929_texture.glb",
+      "label": "Desert M4 Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Desert Carbine",
+      "forward": "-x",
+      "length": 0.84,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/scoped_tactical.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Scoped_Tactical_Rifle_1118134546_texture.glb",
+      "label": "Scoped Tactical Rifle (Meshy Community download, owner's Drive, 2026-11-18): the Twin-Shot Rifle",
+      "forward": "-x",
+      "length": 0.78,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/compact_carbine.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Compact_Tactical_Carb_1118134132_texture.glb",
+      "label": "Compact Tactical Carbine (Meshy Community download, owner's Drive, 2026-11-18): the PDW",
+      "forward": "-x",
+      "length": 0.66,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/wooden_smg.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Wooden_SMG_Design_1118134059_texture.glb",
+      "label": "Wooden SMG Design (Meshy Community download, owner's Drive, 2026-11-18): the Woodland SMG",
+      "forward": "-x",
+      "length": 0.74,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/amarillo.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Amarillo_Carbine_1118134334_texture.glb",
+      "label": "Amarillo Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Amarillo",
+      "forward": "-x",
+      "length": 0.64,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/nova6.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Nova_6_Scoped_Carbine_1118134254_texture.glb",
+      "label": "Nova 6 Scoped Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Nova 6",
+      "forward": "-x",
+      "length": 0.86,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/lever_action.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Scoped_Lever_Action_R_1118133806_texture.glb",
+      "label": "Scoped Lever-Action Rifle (Meshy Community download, owner's Drive, 2026-11-18): the Lever-Action",
+      "forward": "-x",
+      "length": 1.02,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/runebreaker.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Runebreaker_Revolver_1118134519_texture.glb",
+      "label": "Runebreaker Revolver (Meshy Community download, owner's Drive, 2026-11-18): the Runebreaker",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/flintlock_pistol.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Ornate_Flintlock_Pist_1118134049_texture.glb",
+      "label": "Ornate Flintlock Pistol (Meshy Community download, owner's Drive, 2026-11-18): the Flintlock Pistol",
+      "forward": "-x",
+      "length": 0.56,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/crossbow.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_break_action_crossbow_1118133706_image-to-3d-texture.glb",
+      "label": "Break-Action Crossbow (Meshy Community download, owner's Drive, 2026-11-18): the Crossbow",
+      "forward": "-x",
+      "length": 0.86,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/neon_pulse.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Neon_Pulse_Rifle_1117160052_texture.glb",
+      "label": "Neon Pulse Rifle (Meshy Community download, owner's Drive, 2026-11-18): the Laser Rifle",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/blaster_x42.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Blaster_X_42_1118134602_texture.glb",
+      "label": "Blaster X-42 (Meshy Community download, owner's Drive, 2026-11-18): the Blaster X-42",
+      "forward": "-x",
+      "length": 0.72,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/laser_blaster.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Laser_Blaster_Gun_1118140001_texture.glb",
+      "label": "Laser Blaster Gun (Meshy Community download, owner's Drive, 2026-11-18): the Laser Blaster",
+      "forward": "-x",
+      "length": 0.25,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/hornet.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Hornet_Carbine_1118134423_texture.glb",
+      "label": "Hornet Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Hornet",
+      "forward": "-x",
+      "length": 0.46,
+      "triangles": 10000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/rustworn.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Rustworn_Pulse_Carbin_1118134220_texture.glb",
+      "label": "Rustworn Pulse Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Flak Cannon",
+      "forward": "-x",
+      "length": 0.5,
+      "triangles": 10000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/arcstorm.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Arcstorm_Carbine_1118134234_texture.glb",
+      "label": "Arcstorm Carbine (Meshy Community download, owner's Drive, 2026-11-18): the Arc Caster",
+      "forward": "-x",
+      "length": 0.62,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/coppercoil.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Coppercoil_Sentinel_1118134752_texture.glb",
+      "label": "Coppercoil Sentinel (Meshy Community download, owner's Drive, 2026-11-18): the Railgun",
+      "forward": "-x",
+      "length": 1.15,
+      "triangles": 12000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/heart_taser.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Heart_Taser_1118135943_texture.glb",
+      "label": "Heart Taser (Meshy Community download, owner's Drive, 2026-11-18): the Heart Taser",
+      "forward": "-x",
+      "length": 0.23,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
       ]
     }
   ]

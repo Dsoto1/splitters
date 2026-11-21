@@ -1,0 +1,36 @@
+{
+  "id": "core.woodland_smg",
+  "code": 53,
+  "displayName": "Woodland SMG",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 7,
+  "family": "smg",
+  "damage": 22,
+  "spread": 0.006,
+  "fireIntervalTicks": 7,
+  "range": 150,
+  "magazine": 25,
+  "reserveMax": 150,
+  "pickupAmmo": 50,
+  "reloadTicks": 84,
+  "reload": { "type": "magazine", "tactical": 66, "empty": 84, "out": 0.3, "in": 0.7 },
+  "ammo": "light",
+  "kick": { "pitch": [0.009, 0.011, 0.013, 0.015], "yaw": [0.002, 0.004, -0.003, -0.005] },
+  "botDesirability": 0.6,
+  "botRange": [2, 20],
+  "view": {
+    "model": "guns/wooden_smg.glb",
+    "held": { "medium": "guns/wooden_smg.medium.glb", "high": "guns/wooden_smg.high.glb" },
+    "fallback": "weapons/smg.glb",
+    "viewOffset": [0.2, -0.2, 0.5],
+    "tracer": "#ffe9a8",
+    "hold": { "style": "long", "grip": [0, -0.03, -0.29], "support": [0, 0.035, 0.13], "shoulder": [0, 0.05, -0.36] },
+    "muzzleAt": [0, 0.04, 0.37],
+    "sound": "fire.smg"
+  },
+  "notes": {
+    "design": "The heavy SMG: slow (514 rpm) and hard-hitting (22 a round, five to a body, 0.47 s), each round kicking higher than the last. Pull it down and it wins close fights; spray and it climbs off the target.",
+    "model": "The Meshy community Wooden SMG Design (CC0), held by its rear grip with the top of the receiver at the shoulder; the kit SMG is the fallback."
+  }
+}

@@ -24,13 +24,15 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
  * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Gravity
  * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
  * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
- * Box Kit in flight (its crate, small).
+ * Box Kit in flight (its crate, small); `arrow` the Crossbow's bolt (a shaft, steel head and fletching, stuck where it
+ * lands); `blasterBolt` the Blaster X-42's round (a short orange streak, steady: no flicker under Reduce flashing);
+ * `stinger` the Hornet's homing dart (yellow and black).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
-  'ammoBox',
+  'ammoBox', 'arrow', 'blasterBolt', 'stinger',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -275,7 +277,7 @@ export interface WeaponPresentation {
   sound?: string;
   /** Hitscan drawn as a solid beam instead of tracers (lasers, rails). */
   beam?: boolean;
-  /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts). */
+  /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts); `none` for no flash (a bow). */
   muzzle?: { effect: string; scale?: number };
   /** Where the muzzle is on the model (default: the front of its bounds, a little above the middle). */
   muzzleAt?: ModelPoint;

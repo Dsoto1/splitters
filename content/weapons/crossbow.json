@@ -1,0 +1,50 @@
+{
+  "id": "core.crossbow",
+  "code": 59,
+  "displayName": "Crossbow",
+  "category": "sniper",
+  "kind": "projectile",
+  "slot": 5,
+  "fireMode": "semi",
+  "spread": 0.001,
+  "fireIntervalTicks": 40,
+  "range": 0,
+  "magazine": 1,
+  "reserveMax": 15,
+  "pickupAmmo": 5,
+  "reloadTicks": 62,
+  "raiseTicks": 20,
+  "projectile": {
+    "speed": 75,
+    "gravity": 7,
+    "fuseSeconds": 20,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "arrow",
+    "impactDamage": 100,
+    "sticky": "world"
+  },
+  "ammo": "sniper",
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "kick": { "pitch": [0.02], "yaw": [0.003, -0.003], "variance": 0.002, "delay": 4, "settle": 8, "rate": 0.12, "visual": 0.5 },
+  "botDesirability": 0.55,
+  "botRange": [6, 45],
+  "view": {
+    "model": "guns/crossbow.glb",
+    "held": { "medium": "guns/crossbow.medium.glb", "high": "guns/crossbow.high.glb" },
+    "fallback": "weapons/marksman.glb",
+    "viewOffset": [0.2, -0.2, 0.55],
+    "tracer": "#e8e2d0",
+    "hold": { "style": "long", "grip": [0, -0.02, -0.12], "support": [0, -0.01, 0.2], "shoulder": [0, -0.02, -0.42] },
+    "muzzleAt": [0, 0.05, 0.43],
+    "zoomFov": 0.75,
+    "muzzle": { "effect": "none" },
+    "sound": "fire.nail"
+  },
+  "notes": {
+    "design": "A bolt you can watch fly: 100 on a hit (an unarmoured player down in one), but it flies at 75 m/s and drops, so past 20 m you lead and lift. No flash, no tracer line: the bolt itself is all anyone sees. One bolt, then a 1 s reload. The Medieval set's precision weapon.",
+    "model": "The Meshy community Break-Action Crossbow (CC0); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback."
+  }
+}

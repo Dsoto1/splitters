@@ -82,6 +82,19 @@
     { "id": "core.weapon_battle_axe", "effect": { "kind": "weapon", "weapon": "core.battle_axe" }, "respawnSeconds": 20, "botValue": 0.5 },
     { "id": "core.smoke_grenades", "displayName": "Smoke Grenades", "effect": { "kind": "throwable", "throwable": "smoke", "count": 2 }, "respawnSeconds": 25, "botValue": 0.35 },
     { "id": "core.ammo_box_kit", "displayName": "Ammo Box Kit", "effect": { "kind": "throwable", "throwable": "ammo_box", "count": 1 }, "respawnSeconds": 45, "botValue": 0.3 },
-    { "id": "core.weapon_pistol", "effect": { "kind": "weapon", "weapon": "core.pistol" }, "respawnSeconds": 15, "rolls": false }
+    { "id": "core.weapon_pistol", "effect": { "kind": "weapon", "weapon": "core.pistol" }, "respawnSeconds": 15, "rolls": false },
+    { "id": "core.weapon_desert_carbine", "effect": { "kind": "weapon", "weapon": "core.desert_carbine" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_twin_rifle", "effect": { "kind": "weapon", "weapon": "core.twin_rifle" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_compact_carbine", "effect": { "kind": "weapon", "weapon": "core.compact_carbine" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_woodland_smg", "effect": { "kind": "weapon", "weapon": "core.woodland_smg" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_amarillo", "effect": { "kind": "weapon", "weapon": "core.amarillo" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_nova6", "effect": { "kind": "weapon", "weapon": "core.nova6" }, "respawnSeconds": 25 },
+    { "id": "core.weapon_lever_action", "effect": { "kind": "weapon", "weapon": "core.lever_action" }, "respawnSeconds": 25 },
+    { "id": "core.weapon_runebreaker", "effect": { "kind": "weapon", "weapon": "core.runebreaker" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_flintlock_pistol", "effect": { "kind": "weapon", "weapon": "core.flintlock_pistol" }, "respawnSeconds": 15 },
+    { "id": "core.weapon_crossbow", "effect": { "kind": "weapon", "weapon": "core.crossbow" }, "respawnSeconds": 25 },
+    { "id": "core.weapon_blaster_x42", "effect": { "kind": "weapon", "weapon": "core.blaster_x42" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_laser_blaster", "effect": { "kind": "weapon", "weapon": "core.laser_blaster" }, "respawnSeconds": 15 },
+    { "id": "core.weapon_hornet", "effect": { "kind": "weapon", "weapon": "core.hornet" }, "respawnSeconds": 20 }
   ]
 }

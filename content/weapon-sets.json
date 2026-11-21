@@ -12,7 +12,7 @@
       "blurb": "Real-world guns: everyone spawns with a knife, a pistol and an assault rifle; sniper-role bots carry a marksman rifle.",
       "spawn": ["core.knife", "core.pistol", "core.rifle"],
       "sniper": "core.marksman",
-      "weapons": ["core.rifle", "core.burst_rifle", "core.battle_rifle", "core.smg", "core.machine_pistol", "core.lmg", "core.shotgun", "core.auto_shotgun", "core.sawed_off", "core.sniper", "core.marksman", "core.launcher", "core.rockets", "core.pistol", "core.revolver", "core.hand_cannon"],
+      "weapons": ["core.rifle", "core.burst_rifle", "core.battle_rifle", "core.desert_carbine", "core.twin_rifle", "core.smg", "core.machine_pistol", "core.compact_carbine", "core.woodland_smg", "core.amarillo", "core.lmg", "core.shotgun", "core.auto_shotgun", "core.sawed_off", "core.sniper", "core.marksman", "core.lever_action", "core.launcher", "core.rockets", "core.pistol", "core.revolver", "core.hand_cannon"],
       "throwables": ["frag", "mine", "smoke"]
     },
     {
@@ -21,7 +21,7 @@
       "blurb": "Energy weapons: everyone spawns with a knife, a pulse pistol and a plasma rifle; sniper-role bots carry the railgun.",
       "spawn": ["core.knife", "core.pulse_pistol", "core.plasma"],
       "sniper": "core.railgun",
-      "weapons": ["core.plasma", "core.laser_rifle", "core.railgun", "core.pulse_pistol", "core.arc_caster", "core.disc_launcher", "core.swarm", "core.guided"],
+      "weapons": ["core.plasma", "core.laser_rifle", "core.blaster_x42", "core.nova6", "core.railgun", "core.pulse_pistol", "core.laser_blaster", "core.arc_caster", "core.disc_launcher", "core.swarm", "core.guided"],
       "throwables": ["sticky", "vortex", "smoke"]
     },
     {
@@ -29,7 +29,7 @@
       "name": "Medieval",
       "blurb": "Blades and spears: everyone spawns with a knife and a throwing spear; every weapon pickup is a spear or a battle axe.",
       "spawn": ["core.knife", "core.spear"],
-      "weapons": ["core.spear", "core.battle_axe", "core.knife"],
+      "weapons": ["core.spear", "core.battle_axe", "core.crossbow", "core.flintlock_pistol", "core.knife"],
       "throwables": ["incendiary", "holy"]
     },
     {
@@ -38,7 +38,7 @@
       "blurb": "The oddballs: a knife, a pistol and a random oddball every life, a sheep to throw, and every pickup something strange.",
       "spawn": ["core.knife", "core.pistol"],
       "randomGun": true,
-      "weapons": ["core.swarm", "core.singularity", "core.freeze_ray", "core.goo_gun", "core.bubble_blaster", "core.oil_slicker", "core.flare_gun", "core.nailgun", "core.flak", "core.blast_rockets", "core.gilded_pistol"],
+      "weapons": ["core.swarm", "core.singularity", "core.freeze_ray", "core.goo_gun", "core.bubble_blaster", "core.oil_slicker", "core.flare_gun", "core.nailgun", "core.flak", "core.blast_rockets", "core.gilded_pistol", "core.hornet", "core.runebreaker"],
       "throwables": ["sheep", "holy", "cluster"]
     },
     {

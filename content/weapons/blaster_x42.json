@@ -1,0 +1,53 @@
+{
+  "id": "core.blaster_x42",
+  "code": 60,
+  "displayName": "Blaster X-42",
+  "category": "rifle",
+  "kind": "projectile",
+  "slot": 9,
+  "spread": 0.006,
+  "fireIntervalTicks": 6,
+  "range": 0,
+  "magazine": 36,
+  "reserveMax": 144,
+  "pickupAmmo": 48,
+  "reloadTicks": 84,
+  "projectile": {
+    "speed": 110,
+    "gravity": 0,
+    "fuseSeconds": 1.6,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "blasterBolt",
+    "impactDamage": 21
+  },
+  "ammo": "cells",
+  "recoil": { "bloom": 0.004, "maxBloom": 0.025, "recover": 0.002 },
+  "kick": {
+    "pitch": [0.008],
+    "yaw": [0.002, -0.002],
+    "variance": 0.002,
+    "delay": 4,
+    "settle": 10,
+    "rate": 0.25,
+    "visual": 0.5
+  },
+  "botDesirability": 0.66,
+  "botRange": [3, 35],
+  "view": {
+    "model": "guns/blaster_x42.glb",
+    "held": { "medium": "guns/blaster_x42.medium.glb", "high": "guns/blaster_x42.high.glb" },
+    "fallback": "weapons/plasma.glb",
+    "viewOffset": [0.2, -0.2, 0.52],
+    "tracer": "#ff8a1e",
+    "hold": { "style": "long", "grip": [0, -0.06, -0.17], "support": [0, -0.01, 0.2], "shoulder": [0, 0.02, -0.35] },
+    "muzzleAt": [0, 0.04, 0.36],
+    "sound": "fire.plasma"
+  },
+  "notes": {
+    "design": "The Sci-fi set's automatic: bright orange bolts at 600 rpm, 21 each (five to a body, 0.4 s), fast (110 m/s) but not instant, so a moving target past 15 m needs a little lead; no splash and no drop. The Plasma Rifle lobs slower, splashing balls; the Laser Rifle burns without ammo.",
+    "model": "The Meshy community Blaster X-42 (CC0); the kit plasma rifle is the fallback."
+  }
+}
