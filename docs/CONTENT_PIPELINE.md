@@ -990,6 +990,26 @@ walls gained **Main entrance north** and **Main entrance south** (the Twin arche
 opposite). The bay's banner hangs on the south wall for every choice but Main entrance south: its `when` lists the
 choices it is in for (below, "Options"). Data only: no entities, no new models.
 
+**DeKoven's pieces** (St. John's step 7b; data only, no map format change). Tiles (`content/tiles/core.json`):
+**Basement Stairwell** (`core.stairwell_basement`) and **Basement Room** (`core.room_basement`): the Stairwell and the
+Room with the ground's surface cut out of their own cell (`bore.cut`, as a tunnel piece's; `sky`, so no portal is
+offered), for rooms under a building. Why: under a building the ground as played lies 2 cm under the ground floor's
+slab, within reach (`settle.ts` `FLOOR_REACH`, 3 m) of anything with a top in the room below; where a point of the
+ground's grid falls on a partition or a wainscot the ground steps down it and lies across the basement (St. John's 2.5 m
+grid does, on the Admin Bay's corridor wall), and across a stair's flights in any case (a basement floor is 4 m down).
+Cut ground to floors would dig the whole basement out and leave a ditch along the outside walls. Close a basement's
+outside walls: a Basement Room's side left open into the ground is reported like a tunnel's (`tunnel.mouth_buried`).
+Set pieces: **Stair End Bay (3 floors, roof stair)** (`setpiece.stair_end_bay_roof`, academy: a third Stairwell over the
+first, out north at 12 m onto the roof over the lobby's side under a stair head with its own ceiling and roof; four
+levels); **Basement Stair Bay** (`setpiece.stair_down_bay`, academy: placed at the ground floor, it claims the level
+below; the hall runs through on the ground floor past the Basement Stairwell's landing, a waiting room north, a lobby
+below with the basement hall's mouth east; option Over the stair: a roof, or left for the floor above); **Admin Entry
+Bay (Reception)** (`setpiece.admin_entry_bay`, campus: the Admin Bay's south half a reception hall under a Round arch,
+stone walls, our Crest Roundel in the corridor floor, the Crest Shield opposite the way in, a Trophy Case, an Honours
+Board, a Desk and Office Chair; option Offices). The **Admin Bay** gained Outer walls (Twin sash windows, or Solid: no
+windows, no facade, Basement Rooms) and East end (Open, Closed: a hall's last bay). Walks in every turn:
+`setPiecesAcademy.test.ts` (and "DeKoven Hall's shape", on a 2 m and a 2.5 m ground grid), `setPiecesCampus.test.ts`.
+
 **The campus kit** (`tools/content/kit/campus.mjs`, set pieces `content/setpieces/campus.json`; St. John's steps 7-10,
 built ahead of the halls: DeKoven, Memorial Hall, the chapel, the gym and pool). All generated in code, no downloads,
 no real school's crest or flag; nothing glows, flickers or moves (the stained glass is plain vertex colour).
