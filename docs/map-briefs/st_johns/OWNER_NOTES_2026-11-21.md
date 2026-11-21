@@ -297,3 +297,8 @@ works". Ground storey: photo 10's alcoves (bookcases standing out from the walls
 each), under the upper floor. Upper storey: photo 11's freestanding double-sided rows either side of a red runner,
 under the open timber roof. The owner sent photos 10 and 11 again as "interior of library": they are the interior
 spec.
+
+**Dorm rooms, a footlocker (owner, same day, about 22:00 UTC, with a product picture of a trunk):** "each dorm room
+should also have one black chest with grey edging at the foot of each bunk". A black rectangular trunk, about
+0.8 x 0.42 x 0.42 m, silver-grey metal edging along the lid seam and corners, three chrome latches on the front;
+one at the foot of each bunk, in the dorm bay pieces themselves. Taken into step 7c.
