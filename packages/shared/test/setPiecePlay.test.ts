@@ -53,6 +53,7 @@ const OPEN_SIDED = [
   // The campus family (setPiecesCampus.test.ts walks them): bays and ends whose halls run out of an open side, and the
   // round porch (an open tile round its round room).
   'setpiece.admin_bay',
+  'setpiece.admin_entry_bay',
   'setpiece.chapel_bay',
   'setpiece.chapel_chancel',
   'setpiece.chapel_narthex',
@@ -111,10 +112,13 @@ const OPEN_SIDED = [
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
   'setpiece.shop_unit',
+  // The Basement Stair Bay (setPiecesAcademy.test.ts): the hall runs through between walls of its own, as the stair ends'.
+  'setpiece.stair_down_bay',
   'setpiece.stair_end_bay',
   'setpiece.stair_end_bay_3',
   'setpiece.stair_end_bay_arched',
   'setpiece.stair_end_bay_bridge',
+  'setpiece.stair_end_bay_roof',
   'setpiece.sunken_arena',
   'setpiece.temple_pylon',
   'setpiece.twin_stair_overlook',

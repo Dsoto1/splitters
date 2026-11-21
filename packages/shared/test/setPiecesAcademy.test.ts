@@ -103,6 +103,18 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     chains: [[[-7, 0, 8], [0, 0, 7], [3, 0, 4]], [[0, 0, 7], [-2.5, 4, 3], [3, 4, 4], [2.5, 8, 5], [0, 8, 0], [3, 8, 4]]],
     climbs: [{ from: [-1.75, 0.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }, { from: [1.75, 4.02, 5.4], yaw: 0, ticks: 150, up: 2 }],
   },
+  // St. John's step 7b: the three-floor bay with its stair on up to the roof (out north onto the roof over the lobby's
+  // side, 12 m up), and on east along a hall's roof.
+  'setpiece.stair_end_bay_roof': {
+    chains: [[[-7, 0, 8], [0, 0, 7], [3, 0, 4]], [[0, 0, 7], [-2.5, 4, 3], [3, 4, 4], [2.5, 8, 5], [3, 8, 4], [-2.5, 12, 3], [0, 12, 8]]],
+    climbs: [{ from: [-1.75, 0.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }, { from: [1.75, 4.02, 5.4], yaw: 0, ticks: 150, up: 2 }, { from: [-1.75, 8.02, 2.6], yaw: Math.PI, ticks: 150, up: 2 }],
+  },
+  // St. John's step 7b: the hall through on the ground floor (west mouth to east mouth past the stair's landing), down
+  // the stair to the basement lobby and to the basement hall's mouth (beyond it is the basement it serves), the waiting room.
+  'setpiece.stair_down_bay': {
+    chains: [[[-7, 0, 4], [0, 0, 4.6], [7, 0, 4]], [[0, 0, 4.6], [0, 0, 9]], [[3, 0, 4], [-2.5, 0, 3], [0, -4, 7], [3, -4, 4]]],
+    climbs: [{ from: [-1.75, -3.98, 2.6], yaw: Math.PI, ticks: 150, up: 2 }],
+  },
   'setpiece.dorm_office_bay': {
     // Along the hall past the stair on both floors; up the stair; into the bathrooms and the office on both floors.
     chains: [
@@ -418,6 +430,75 @@ describe('the clock tower has room to stand in (owner, 2026-11-19: the first bui
     // A player stands up all the way round: from the door, every tread's middle has standing room for the capsule.
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
     for (const t of treads) expect(physics.headroom({ x: (t.min[0] + t.max[0]) / 2, y: t.max[1] + 0.3, z: (t.min[2] + t.max[2]) / 2 }, PLAYER.height), `standing on the step at ${t.max[1]} m`).toBe(true);
+  });
+});
+
+/**
+ * DeKoven Hall's shape (St. John's step 7b), its corridor north to south along x 4: the mess hall's bay with doors both
+ * sides (y -2), the south Stair End Bay (3 floors) turned so its lobby door is on the mess hall's north door, four
+ * bays a floor (ground: Admin Bays, the Admin Entry Bay, the Basement Stair Bay; first floor Admin Bays; top floor
+ * Dorm Bays; basement Admin Bays with solid walls), and the north Stair End Bay with the roof stair between two Round
+ * Corner Turrets.
+ */
+function dekoven(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
+  const out: SetPiecePlacement[] = [
+    at('mess', 'setpiece.refectory_bay', 0, -2, 0, 0, { walls: 'doors' }),
+    at('south', 'setpiece.stair_end_bay_3', 1, 0, 0, 3),
+    at('north', 'setpiece.stair_end_bay_roof', 0, 5, 0, 1),
+    at('turret_w', 'setpiece.corner_turret_round', -1, 5, 0, 3),
+    at('turret_e', 'setpiece.corner_turret_round', 2, 5, 0, 2),
+    at('ground1', 'setpiece.admin_bay', 0, 1, 0, 1),
+    at('ground2', 'setpiece.admin_bay', 0, 2, 0, 1, { hall: 'plain', offices: 'shut' }),
+    at('ground3', 'setpiece.admin_entry_bay', 0, 3, 0, 1),
+    at('ground4', 'setpiece.stair_down_bay', 0, 4, 0, 1, { top: 'open' }),
+  ];
+  for (const y of [1, 2, 3]) out.push(at(`base${y}`, 'setpiece.admin_bay', 0, y, -1, 1, { hall: 'plain', offices: y === 2 ? 'open' : 'shut', walls: 'solid' }));
+  for (const y of [1, 2, 3, 4]) {
+    out.push(at(`first${y}`, 'setpiece.admin_bay', 0, y, 1, 1, { hall: y === 1 ? 'display' : 'plain', offices: y % 2 ? 'open' : 'shut' }));
+    out.push(at(`top${y}`, y % 2 ? 'setpiece.dorm_bay' : 'setpiece.dorm_bay_closed', 0, y, 2, 1, { roomDoors: 'slim' }));
+  }
+  return out;
+}
+
+describe("a three-floor office hall with a basement and a roof perch, joined to a mess hall (DeKoven Hall's shape)", () => {
+  it('every floor end to end, both stairs, the basement, the roof, the reception, and the mess hall to the 2nd floor through the lobby', { timeout: 300_000 }, () => {
+    const map = mapOf(dekoven());
+    const nav = navOf(map);
+    const hallMiddle = (y: number): Vec3 => v([4, y, 20]);
+    // Every floor's corridor from its south end to its north end (the ground floor through the Basement Stair Bay).
+    for (const y of [0, 4, 8]) expect(miss(nav, v([4, y, 5]), v([4, y, 35])), `the hall at ${y} m, end to end`).toBeLessThan(1.2);
+    // Both stairs to every floor: from the south lobby (the mess hall's side) and from the north lobby (the road's side).
+    for (const y of [4, 8]) {
+      expect(miss(nav, v([0, 0, 0]), hallMiddle(y)), `south stair to ${y} m`).toBeLessThan(1.2);
+      expect(miss(nav, v([8, 0, 40]), hallMiddle(y)), `north stair to ${y} m`).toBeLessThan(1.2);
+    }
+    // The owner's route: from the mess hall through its north door into the lobby, up the stair to the 2nd floor; and back.
+    const up = nav.findPath(v([0, 0, -12]), v([4, 4, 12]))!;
+    expect(up, 'mess hall to the 2nd floor').toBeTruthy();
+    const length = (path: Vec3[]) => path.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - path[i - 1]!.x, p.z - path[i - 1]!.z) : 0), 0);
+    expect(Math.hypot(up.at(-1)!.x - 4, up.at(-1)!.y - 4, up.at(-1)!.z - 12)).toBeLessThan(1.2);
+    // (Through the lobby and up the south stair, not round by the reception and the north stair: under 60 m.)
+    expect(length(up), 'the route goes through the lobby door').toBeLessThan(60);
+    expect(up.some((p) => Math.abs(p.z + 4) < 1.2 && Math.abs(p.x) < 1.6), 'it crosses the lobby door on the mess hall wall').toBe(true);
+    expect(miss(nav, v([4, 4, 12]), v([0, 0, -12])), 'and back down into the mess hall').toBeLessThan(1.2);
+    // In at the north door and at the reception's arch (west); the crest's bay to the corridor.
+    expect(miss(nav, v([8, 0, 47]), hallMiddle(0)), 'in at the north door').toBeLessThan(1.2);
+    expect(miss(nav, v([-7, 0, 24]), hallMiddle(0)), 'in at the reception').toBeLessThan(1.2);
+    // The basement: down the Basement Stair Bay, along its hall to the far end, into its open office.
+    expect(miss(nav, hallMiddle(0), v([4, -4, 6])), 'down to the basement and along it').toBeLessThan(1.2);
+    expect(miss(nav, v([4, -4, 30]), v([4, 0, 12])), 'up from the basement').toBeLessThan(1.2);
+    // Offices and rooms: a ground-floor office, a first-floor one, a top-floor room.
+    expect(miss(nav, hallMiddle(0), v([-2.6, 0, 5.8])), 'a ground-floor office').toBeLessThan(1.2);
+    expect(miss(nav, hallMiddle(4), v([-2.6, 4, 5.8])), 'a first-floor office').toBeLessThan(1.2);
+    // The roof: up the north stair onto the roof, along the hall's roof to its south end (the perch), and down again.
+    expect(miss(nav, v([8, 0, 40]), v([8, 12, 40])), 'onto the roof by the stair head').toBeLessThan(1.2);
+    expect(miss(nav, v([0, 0, -12]), v([4, 12, 10])), 'from the mess hall to the roof').toBeLessThan(1.2);
+    expect(miss(nav, v([4, 12, 10]), hallMiddle(0)), 'and down from the roof').toBeLessThan(1.2);
+    nav.destroy();
+    // A player walks from the mess hall through both doorways into the lobby, and up the roof stair's last flight.
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    expect(walk(physics, v([0, 0.05, -7]), 0, 140).pos.z, 'walked north out of the mess hall into the lobby').toBeGreaterThan(-2.5);
   });
 });
 

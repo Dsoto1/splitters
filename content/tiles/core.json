@@ -461,6 +461,25 @@
       "notes": {"design":"Two flights side by side (no stairwell gap), joined by a landing at 2 m."}
     },
     {
+      "id": "core.stairwell_basement",
+      "category": "Vertical",
+      "displayName": "Basement Stairwell",
+      "blurb": "The Stairwell for a stair down below ground: place it a level down; the ground over it is cut out, so the stair is clear up to the floor above",
+      "cells": [[0,0,0],[0,0,1]],
+      "floors": [0],
+      "ports": [{"side":"W","level":0},{"side":"W","level":1}],
+      "extraFloors": [
+        {"box":[-4,3.5,-1.5,-1.9,4,4]}
+      ],
+      "solids": [
+        {"flight":{"axis":"x","dir":1,"from":-1.9,"across":[-3.5,0],"steps":8,"base":0,"run":0.45}},
+        {"box":[1.7,0,-3.5,3.5,2,3.5]},
+        {"flight":{"axis":"x","dir":-1,"from":1.7,"across":[0,3.5],"steps":8,"base":2,"run":0.45}}
+      ],
+      "bore": {"cut":[[-4,0.3,-4,4,7.5,4]],"sky":true},
+      "notes": {"design":"St. John's step 7b (DeKoven's basement: the Basement Stair Bay). The Stairwell, cell for cell, with the ground's surface cut out of its cell (map/groundBore.ts: a cut box from just over its floor to 3.5 m over the floor above). A basement 4 m down is deeper than the ground is lowered under floors (3 m: settle.ts FLOOR_REACH), so under a plain Stairwell the ground would lie across the flights; and Cut ground to floors would dig a pit that slopes into the rooms beside it. Its floors pull no ground down (a bored piece's never do) and nothing else of the ground changes: the rooms round it keep theirs. Open to the sky as bores go (`sky`): it is a way out itself, so no portal is offered on it."}
+    },
+    {
       "id": "core.hall_tall",
       "category": "Rooms",
       "displayName": "Tall Hall",

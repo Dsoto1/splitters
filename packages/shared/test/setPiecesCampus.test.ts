@@ -78,6 +78,13 @@ const WALKS: Record<string, Walk[]> = {
       chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [-0.2, 0, -2.8], [0, 0, 4]], [[0, 0, 4], [2.3, 0, 7.0], [2.2, 0, 10.6], [-0.2, 0, 10.8], [0, 0, 4]]],
     })),
     { options: { offices: 'shut' }, chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [0, 0, 4]]], shut: { from: [0, 0, 4], to: [[2.2, 0, 10.6]] } },
+    // A basement's bay: solid outer walls, the same walks.
+    { options: { walls: 'solid' }, chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [-0.2, 0, -2.8], [0, 0, 4]]] },
+  ],
+  // DeKoven's reception (step 7b): along the hall over the crest; in at the south arch past the desk; the north office.
+  'setpiece.admin_entry_bay': [
+    { chains: [hall(), [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.3, 0, 7.0], [2.2, 0, 10.6], [-0.2, 0, 10.8], [0, 0, 4]], [[0, 0, 4], [-2.4, 0, -1.5]]] },
+    { options: { offices: 'shut' }, chains: [hall(), [[0, 0, -7], [0, 0, 4]]], shut: { from: [0, 0, 4], to: [[2.2, 0, 10.6]] } },
   ],
   // Memorial Hall (step 8): along the reading room between the tables; in at the south door's arch; a closed end.
   'setpiece.library_bay': [
