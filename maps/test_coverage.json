@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_efrwwkldic6yfbxe",
-      "revision": 48,
-      "contentHash": "sha256:9abe085bde178ac05a388431825505a34bb57d285b1513940c8f004f01c8ee59",
+      "versionId": "v_53nsq33vcs5xrlfn",
+      "revision": 49,
+      "contentHash": "sha256:134c5a4bc8ff9817d54645d184ad08ef52acd324f43df2d5e3b3d76a862913fa",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T07:13:36.375Z"
+      "releasedAt": "2026-11-21T21:30:12.447Z"
     },
     "testOnly": true
   },
@@ -6788,7 +6788,12 @@
       "z": 0,
       "rotation": 0,
       "mirror": false,
-      "pack": "collegiate"
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "rails": "metal"
+        }
+      }
     },
     {
       "id": "setpiece_vp01t56m3m",
@@ -7202,6 +7207,24 @@
           "walls": "solid"
         }
       }
+    },
+    {
+      "id": "setpiece_355f1a3zqq",
+      "piece": "setpiece.entrance_porch",
+      "x": -2,
+      "y": -58,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_bwssm7a0qy",
+      "piece": "setpiece.gate_tower_front",
+      "x": 4,
+      "y": -58,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }
