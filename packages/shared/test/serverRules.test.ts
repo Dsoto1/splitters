@@ -20,6 +20,7 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['ff', 'half', 'core.tdm', { friendlyFire: 'half' }, ['friendlyFire']],
   ['mix', true, 'core.tdm', { mixPickups: true }, ['mixPickups']],
   ['drops', false, 'core.tdm', { dropWeapons: false }, ['dropWeapons']],
+  ['akimbo', false, 'core.tdm', { akimbo: false }, ['akimbo']],
   ['set', 'military', 'core.tdm', { weaponSet: 'military' }, ['weaponSet']],
   ['style', 'arena', 'core.tdm', { botStyle: 'arena' }, ['botStyle']],
   ['cast', 'soldiers', 'core.tdm', { botCast: ['soldiers'] }, ['botCast']],
