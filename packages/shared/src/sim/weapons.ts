@@ -26,13 +26,13 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
  * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
  * Box Kit in flight (its crate, small); `arrow` the Crossbow's bolt (a shaft, steel head and fletching, stuck where it
  * lands); `blasterBolt` the Blaster X-42's round (a short orange streak, steady: no flicker under Reduce flashing);
- * `stinger` the Hornet's homing dart (yellow and black).
+ * `stinger` the Hornet's homing dart (yellow and black); `slime` the Heart Taser's healing slime (its model).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
-  'ammoBox', 'arrow', 'blasterBolt', 'stinger',
+  'ammoBox', 'arrow', 'blasterBolt', 'stinger', 'slime',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -190,6 +190,12 @@ export interface ProjectileSpec {
   sticky?: 'world' | 'any';
   /** Steers toward the nearest enemy ahead within `range` (m), turning up to `turnRate` rad/s. */
   homing?: { turnRate: number; range: number };
+  /**
+   * A friendly shot (the Heart Taser's slime): it heals the first teammate it touches by this much (never above their
+   * full health) and passes harmlessly through everyone else; with `homing` it turns toward the nearest hurt teammate
+   * ahead instead of an enemy. It never damages anyone.
+   */
+  heal?: number;
   /** Slows down over time (share of speed lost per second). */
   drag?: number;
   /** Leaves a hazard where it bursts. */
@@ -439,6 +445,11 @@ export interface WeaponDefinition {
   ammo?: AmmoType;
   /** A medical tool: each use heals the teammate you aim at (or yourself) by this much instead of hurting. */
   heal?: number;
+  /**
+   * A shield (the Space Shield): while it is in hand, a hit from an attacker within `arc` degrees of where you face
+   * loses `block` of its damage (0..1). Blasts and hazards with no attacker, and hits from behind, get through.
+   */
+  guard?: { block: number; arc: number };
   /** A grapple: fired at a surface within `range`, it yanks you toward the hook point at about `speed` m/s. */
   grapple?: { speed: number };
   alt?: AltFire;

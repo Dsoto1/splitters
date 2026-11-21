@@ -1,0 +1,32 @@
+{
+  "id": "core.katana",
+  "code": 63,
+  "displayName": "Katana",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "damage": 70,
+  "fireIntervalTicks": 34,
+  "range": 2.6,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 14,
+  "botDesirability": 0.4,
+  "botRange": [0, 2.4],
+  "view": {
+    "model": "guns/katana.glb",
+    "held": { "medium": "guns/katana.medium.glb", "high": "guns/katana.high.glb" },
+    "fallback": "weapons/knife.glb",
+    "viewOffset": [0.26, -0.28, 0.42],
+    "tracer": "#ffffff",
+    "sound": "fire.knife",
+    "hold": { "style": "melee", "grip": [0, 0, -0.38] }
+  },
+  "notes": {
+    "design": "The long blade: 70 a cut, two to a body, at a 2.6 m reach (the knife's 2.2), a cut every 0.57 s. Reach and a two-hit kill against the Scimitar's speed.",
+    "model": "The Meshy community Dragon Katana 3D (CC0; weapons intake of 2026-11-18), 1 m long; the knife is the fallback."
+  }
+}

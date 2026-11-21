@@ -95,6 +95,11 @@
     { "id": "core.weapon_crossbow", "effect": { "kind": "weapon", "weapon": "core.crossbow" }, "respawnSeconds": 25 },
     { "id": "core.weapon_blaster_x42", "effect": { "kind": "weapon", "weapon": "core.blaster_x42" }, "respawnSeconds": 20 },
     { "id": "core.weapon_laser_blaster", "effect": { "kind": "weapon", "weapon": "core.laser_blaster" }, "respawnSeconds": 15 },
-    { "id": "core.weapon_hornet", "effect": { "kind": "weapon", "weapon": "core.hornet" }, "respawnSeconds": 20 }
+    { "id": "core.weapon_hornet", "effect": { "kind": "weapon", "weapon": "core.hornet" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_katana", "effect": { "kind": "weapon", "weapon": "core.katana" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_scimitar", "effect": { "kind": "weapon", "weapon": "core.scimitar" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_baseball_bat", "effect": { "kind": "weapon", "weapon": "core.baseball_bat" }, "respawnSeconds": 20 },
+    { "id": "core.weapon_space_shield", "effect": { "kind": "weapon", "weapon": "core.space_shield" }, "respawnSeconds": 25 },
+    { "id": "core.weapon_heart_taser", "effect": { "kind": "weapon", "weapon": "core.heart_taser" }, "respawnSeconds": 25 }
   ]
 }

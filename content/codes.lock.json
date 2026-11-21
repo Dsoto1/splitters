@@ -62,7 +62,12 @@
     "core.crossbow": 59,
     "core.blaster_x42": 60,
     "core.laser_blaster": 61,
-    "core.hornet": 62
+    "core.hornet": 62,
+    "core.katana": 63,
+    "core.scimitar": 64,
+    "core.baseball_bat": 65,
+    "core.space_shield": 66,
+    "core.heart_taser": 67
   },
   "throwables": {
     "frag": 0,

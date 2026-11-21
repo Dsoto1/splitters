@@ -103,4 +103,9 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.weapon_blaster_x42', displayName: 'Blaster X-42', effect: { kind: 'weapon', weapon: 'core.blaster_x42' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
   { id: 'core.weapon_laser_blaster', displayName: 'Laser Blaster', effect: { kind: 'weapon', weapon: 'core.laser_blaster' }, respawnSeconds: 15, botValue: 0.675 },
   { id: 'core.weapon_hornet', displayName: 'Hornet', effect: { kind: 'weapon', weapon: 'core.hornet' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
+  { id: 'core.weapon_katana', displayName: 'Katana', effect: { kind: 'weapon', weapon: 'core.katana' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
+  { id: 'core.weapon_scimitar', displayName: 'Scimitar', effect: { kind: 'weapon', weapon: 'core.scimitar' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
+  { id: 'core.weapon_baseball_bat', displayName: 'Baseball Bat', effect: { kind: 'weapon', weapon: 'core.baseball_bat' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
+  { id: 'core.weapon_space_shield', displayName: 'Space Shield', effect: { kind: 'weapon', weapon: 'core.space_shield' }, respawnSeconds: 25, botValue: 0.7583333333333334 },
+  { id: 'core.weapon_heart_taser', displayName: 'Heart Taser', effect: { kind: 'weapon', weapon: 'core.heart_taser' }, respawnSeconds: 25, botValue: 0.7583333333333334 },
 ];

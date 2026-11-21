@@ -52,7 +52,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 /** How far a sheep's body sits above its position: its legs (0.24 m, centred 0.28 below the fleece) end at the ground. */
 export const SHEEP_LIFT = 0.4;
 
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'flareShot', 'arrow', 'blasterBolt', 'stinger']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'flareShot', 'arrow', 'blasterBolt', 'stinger', 'slime']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -113,6 +113,10 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       }
       break;
     }
+    case 'slime':
+      // The Heart Taser's slime before its model loads (view.ts slimeProjectile): a soft pink blob.
+      add(CreateSphere(`slime_${id}`, { diameter: 0.16, segments: 6 }, scene)).material = mat(scene, '#ff8fc8', 0.25);
+      break;
     case 'stinger': {
       // The Hornet's dart: a yellow body banded black, a dark point in front.
       const body = add(CreateCylinder(`stinger_${id}`, { diameter: 0.05, height: 0.14, tessellation: 6 }, scene));

@@ -14,9 +14,9 @@ const CORRECTED: string[] = [];
  * The hand-held guns that aim without a fit, by name: their models have no usable sights (content/sight-fit.json
  * `excluded`, each with its reason), so they keep the placement every gun had before.
  */
-const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.hornet', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.spear', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
+const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
 /** The rest never aim down sights in the hand (mounted, melee and tools), or aim through a scope or an optic. */
-const BY_NATURE = ['core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.crossbow', 'core.grapple', 'core.knife', 'core.lever_action', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.nova6', 'core.railgun', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.speeder_guns', 'core.tank_cannon'];
+const BY_NATURE = ['core.baseball_bat', 'core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.crossbow', 'core.grapple', 'core.katana', 'core.knife', 'core.lever_action', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.nova6', 'core.railgun', 'core.scimitar', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.space_shield', 'core.speeder_guns', 'core.spear', 'core.tank_cannon'];
 
 describe('sights that line up (docs/GUNPLAY_SPEC.md §15)', () => {
   it('every weapon has a sight fit or a stated reason for none', () => {

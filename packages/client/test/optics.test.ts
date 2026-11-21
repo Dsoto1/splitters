@@ -20,7 +20,7 @@ const CARRIES: Record<OpticKindId, string[]> = {
   sniper: ['core.railgun', 'core.sniper'],
 };
 /** The hand-held guns that keep the aim they had (no sights, no optic), each with its reason in content/optics.json `none`. */
-const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.blaster_x42', 'core.desert_carbine', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.spear', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
+const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.blaster_x42', 'core.desert_carbine', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
 /**
  * Every weapon's aimed magnification over the hip view. A zoom is a feel and balance number: the optics pass changed
  * none of them (the sights' 0.72 of the hip field of view is 1.52x), and a change here is the owner's to approve.

@@ -3759,6 +3759,7 @@ export class GameView {
 
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
     if (look === 'spear') return this.spearProjectile(id);
+    if (look === 'slime') return this.slimeProjectile(id);
     const kind = THROWN_KINDS.get(look);
     const thrown = kind ? throwableModel(kind, this.setLook) : null;
     if (thrown) return this.thrownProjectile(id, look, thrown);
@@ -3877,6 +3878,21 @@ export class GameView {
       const tip = model.getHierarchyBoundingVectors(true).max.z;
       model.parent = node;
       model.position.z = SPEAR_TIP_AHEAD - tip;
+      for (const m of shapes) m.setEnabled(false);
+    }, () => undefined);
+    return node;
+  }
+
+  /**
+   * The Heart Taser's healing slime in flight: its model (the Meshy community slime, guns/slime.glb), a soft pink blob
+   * until it loads. Steady, no glow or flicker (Reduce flashing has nothing to calm).
+   */
+  private slimeProjectile(id: number): TransformNode {
+    const node = createArsenalProjectile(this.scene, id, 'slime');
+    const shapes = node.getChildMeshes();
+    void this.models.instantiate('guns/slime.glb', `slimeModel_${id}`, true).then((model) => {
+      if (node.isDisposed()) return model.dispose();
+      model.parent = node;
       for (const m of shapes) m.setEnabled(false);
     }, () => undefined);
     return node;

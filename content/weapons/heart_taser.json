@@ -1,0 +1,56 @@
+{
+  "id": "core.heart_taser",
+  "code": 67,
+  "displayName": "Heart Taser",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 2,
+  "fireMode": "semi",
+  "spread": 0.004,
+  "fireIntervalTicks": 30,
+  "range": 0,
+  "magazine": 4,
+  "reserveMax": 16,
+  "pickupAmmo": 8,
+  "reloadTicks": 90,
+  "projectile": {
+    "speed": 20,
+    "gravity": 3,
+    "fuseSeconds": 3,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "slime",
+    "heal": 25,
+    "homing": { "turnRate": 3.5, "range": 25 }
+  },
+  "ammo": "cells",
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "kick": {
+    "pitch": [0.008],
+    "yaw": [0.002, -0.002],
+    "variance": 0.002,
+    "delay": 3,
+    "settle": 10,
+    "rate": 0.3,
+    "visual": 0.4
+  },
+  "botDesirability": 0,
+  "botRange": [0, 0],
+  "view": {
+    "model": "guns/heart_taser.glb",
+    "held": { "medium": "guns/heart_taser.medium.glb", "high": "guns/heart_taser.high.glb" },
+    "fallback": "weapons/pulse_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#ff8fc8",
+    "hold": { "style": "pistol", "grip": [0, -0.04, -0.085], "support": [-0.02, -0.05, -0.075], "rake": 25 },
+    "muzzleAt": [0, 0.04, 0.115],
+    "muzzle": { "effect": "none" },
+    "sound": "fire.goo"
+  },
+  "notes": {
+    "design": "A support sidearm: it fires a small slime that turns toward the nearest hurt teammate ahead (25 m) and heals them 25; it passes harmlessly through enemies and never hurts anyone. Four slimes, then a reload. Bots don't carry it (they would fire it at enemies).",
+    "model": "The Meshy community Heart Taser (CC0; weapons intake of 2026-11-18); the slime in flight is the Meshy community slime (guns/slime.glb). The kit pulse pistol is the fallback."
+  }
+}

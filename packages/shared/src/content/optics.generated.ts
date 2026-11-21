@@ -88,6 +88,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
 
 /** The weapons without one, and why: they keep the aim they had (or never aim: mounted, melee, tools). */
 export const OPTIC_NONE: Readonly<Record<string, string>> = {
+  'core.baseball_bat': 'melee or a tool: no aiming down sights',
   'core.battle_axe': 'melee or a tool: no aiming down sights',
   'core.blast_rockets': 'a tube launcher: aimed over the tube',
   'core.blaster_x42': 'its own scope has no sights under it: keeps its aim over the top of the gun until the sights pass gives it its optic (weapons intake 11-18)',
@@ -98,7 +99,9 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.gilded_pistol': 'a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it',
   'core.grapple': 'melee or a tool: no aiming down sights',
   'core.guided': 'a tube launcher: the rocket is steered after the shot, not aimed through a sight',
+  'core.heart_taser': 'fires a slime that finds a hurt teammate by itself: no sight to line up',
   'core.hornet': 'an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home',
+  'core.katana': 'melee or a tool: no aiming down sights',
   'core.knife': 'melee or a tool: no aiming down sights',
   'core.launcher': 'a grenade launcher: its rounds are lobbed, a sight on the bore would point over the target',
   'core.lmg': 'a rotary gun fired from the hip: its top is a housing and a crank',
@@ -108,10 +111,12 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.mount_rockets': 'mounted: never held in the hand',
   'core.oil_slicker': 'sprays a lobbed stream: a sight on the bore would point over where it lands',
   'core.rockets': 'a tube launcher: aimed over the tube, as launchers are',
+  'core.scimitar': 'melee or a tool: no aiming down sights',
   'core.sentry_arc': 'mounted: never held in the hand',
   'core.sentry_gun': 'mounted: never held in the hand',
   'core.singularity': 'an oddity with an organic shell: nowhere flat to stand a sight, and the shot is slow',
-  'core.spear': 'a thrown spear: no sights',
+  'core.space_shield': 'melee or a tool: no aiming down sights',
+  'core.spear': 'melee or a tool: no aiming down sights',
   'core.speeder_guns': 'mounted: never held in the hand',
   'core.swarm': 'a launcher whose rockets home: no sight to line up',
   'core.tank_cannon': 'mounted: never held in the hand',

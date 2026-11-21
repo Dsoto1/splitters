@@ -4223,37 +4223,44 @@
     "id": "core.spear",
     "displayName": "Spear",
     "category": "melee",
-    "kind": "projectile",
+    "kind": "melee",
     "slot": 1,
     "fireMode": "semi",
+    "damage": 60,
     "fireIntervalTicks": 30,
-    "range": 60,
+    "range": 2.9,
     "magazine": 1,
     "reserveMax": 0,
     "pickupAmmo": 0,
     "reloadTicks": 0,
     "raiseTicks": 12,
-    "projectile": {
-     "speed": 30,
-     "gravity": 9,
-     "fuseSeconds": 90,
-     "splashRadius": 0,
-     "splashDamage": 0,
-     "splashEdgeDamage": 0,
-     "selfDamageScale": 0,
-     "visual": "spear",
-     "impactDamage": 250,
-     "sticky": "world",
-     "retrievable": true
+    "alt": {
+     "label": "Throw",
+     "ammo": "shared",
+     "cost": 1,
+     "fireIntervalTicks": 30,
+     "kind": "projectile",
+     "projectile": {
+      "speed": 30,
+      "gravity": 9,
+      "fuseSeconds": 90,
+      "splashRadius": 0,
+      "splashDamage": 0,
+      "splashEdgeDamage": 0,
+      "selfDamageScale": 0,
+      "visual": "spear",
+      "impactDamage": 250,
+      "sticky": "world",
+      "retrievable": true
+     }
     },
     "botDesirability": 0.6,
-    "damage": 0,
+    "botRange": [
+     0,
+     2.8
+    ],
     "pellets": 1,
     "spread": 0,
-    "botRange": [
-     3,
-     30
-    ],
     "view": {
      "model": "guns/spear.glb",
      "fallback": "procedural/spear",
@@ -4289,7 +4296,7 @@
     "falloff": null,
     "handling": {
      "move": 1,
-     "sprintExit": 6
+     "sprintExit": 0
     },
     "head": 2,
     "legs": 0.75,
@@ -6947,6 +6954,435 @@
     "legs": 0.75,
     "arms": 0.9
    }
+  },
+  {
+   "code": 63,
+   "id": "core.katana",
+   "def": {
+    "id": "core.katana",
+    "displayName": "Katana",
+    "category": "melee",
+    "kind": "melee",
+    "slot": 1,
+    "fireMode": "semi",
+    "damage": 70,
+    "fireIntervalTicks": 34,
+    "range": 2.6,
+    "magazine": 0,
+    "reserveMax": 0,
+    "pickupAmmo": 0,
+    "reloadTicks": 0,
+    "raiseTicks": 14,
+    "botDesirability": 0.4,
+    "botRange": [
+     0,
+     2.4
+    ],
+    "pellets": 1,
+    "spread": 0,
+    "view": {
+     "model": "guns/katana.glb",
+     "held": {
+      "medium": "guns/katana.medium.glb",
+      "high": "guns/katana.high.glb"
+     },
+     "fallback": "weapons/knife.glb",
+     "viewOffset": [
+      0.26,
+      -0.28,
+      0.42
+     ],
+     "tracer": "#ffffff",
+     "sound": "fire.knife",
+     "hold": {
+      "style": "melee",
+      "grip": [
+       0,
+       0,
+       -0.38
+      ]
+     }
+    }
+   },
+   "gunplay": {
+    "family": null,
+    "ballistic": null,
+    "accuracy": null,
+    "kick": null,
+    "reload": {
+     "type": "magazine",
+     "tactical": 0,
+     "empty": 0,
+     "out": 0.35,
+     "in": 1
+    },
+    "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
+    "head": 2,
+    "legs": 0.75,
+    "arms": 0.9
+   }
+  },
+  {
+   "code": 64,
+   "id": "core.scimitar",
+   "def": {
+    "id": "core.scimitar",
+    "displayName": "Scimitar",
+    "category": "melee",
+    "kind": "melee",
+    "slot": 1,
+    "fireMode": "semi",
+    "damage": 36,
+    "fireIntervalTicks": 16,
+    "range": 2.3,
+    "magazine": 0,
+    "reserveMax": 0,
+    "pickupAmmo": 0,
+    "reloadTicks": 0,
+    "raiseTicks": 10,
+    "handling": {
+     "move": 1.05
+    },
+    "botDesirability": 0.4,
+    "botRange": [
+     0,
+     2.2
+    ],
+    "pellets": 1,
+    "spread": 0,
+    "view": {
+     "model": "guns/scimitar.glb",
+     "held": {
+      "medium": "guns/scimitar.medium.glb",
+      "high": "guns/scimitar.high.glb"
+     },
+     "fallback": "weapons/knife.glb",
+     "viewOffset": [
+      0.26,
+      -0.28,
+      0.42
+     ],
+     "tracer": "#ffffff",
+     "sound": "fire.knife",
+     "hold": {
+      "style": "melee",
+      "grip": [
+       0,
+       0,
+       -0.33
+      ]
+     }
+    }
+   },
+   "gunplay": {
+    "family": null,
+    "ballistic": null,
+    "accuracy": null,
+    "kick": null,
+    "reload": {
+     "type": "magazine",
+     "tactical": 0,
+     "empty": 0,
+     "out": 0.35,
+     "in": 1
+    },
+    "falloff": null,
+    "handling": {
+     "move": 1.05,
+     "sprintExit": 0
+    },
+    "head": 2,
+    "legs": 0.75,
+    "arms": 0.9
+   }
+  },
+  {
+   "code": 65,
+   "id": "core.baseball_bat",
+   "def": {
+    "id": "core.baseball_bat",
+    "displayName": "Baseball Bat",
+    "category": "melee",
+    "kind": "melee",
+    "slot": 1,
+    "fireMode": "semi",
+    "damage": 45,
+    "fireIntervalTicks": 42,
+    "range": 2.5,
+    "magazine": 0,
+    "reserveMax": 0,
+    "pickupAmmo": 0,
+    "reloadTicks": 0,
+    "raiseTicks": 14,
+    "knockback": 14,
+    "botDesirability": 0.4,
+    "botRange": [
+     0,
+     2.4
+    ],
+    "pellets": 1,
+    "spread": 0,
+    "view": {
+     "model": "guns/baseball_bat.glb",
+     "held": {
+      "medium": "guns/baseball_bat.medium.glb",
+      "high": "guns/baseball_bat.high.glb"
+     },
+     "fallback": "weapons/knife.glb",
+     "viewOffset": [
+      0.26,
+      -0.3,
+      0.42
+     ],
+     "tracer": "#ffffff",
+     "sound": "fire.knife",
+     "hold": {
+      "style": "melee",
+      "grip": [
+       0,
+       0,
+       -0.32
+      ]
+     }
+    }
+   },
+   "gunplay": {
+    "family": null,
+    "ballistic": null,
+    "accuracy": null,
+    "kick": null,
+    "reload": {
+     "type": "magazine",
+     "tactical": 0,
+     "empty": 0,
+     "out": 0.35,
+     "in": 1
+    },
+    "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 0
+    },
+    "head": 2,
+    "legs": 0.75,
+    "arms": 0.9
+   }
+  },
+  {
+   "code": 66,
+   "id": "core.space_shield",
+   "def": {
+    "id": "core.space_shield",
+    "displayName": "Space Shield",
+    "category": "melee",
+    "kind": "melee",
+    "slot": 1,
+    "fireMode": "semi",
+    "damage": 30,
+    "fireIntervalTicks": 36,
+    "range": 2.1,
+    "magazine": 0,
+    "reserveMax": 0,
+    "pickupAmmo": 0,
+    "reloadTicks": 0,
+    "raiseTicks": 16,
+    "knockback": 8,
+    "guard": {
+     "block": 0.6,
+     "arc": 120
+    },
+    "handling": {
+     "move": 0.92
+    },
+    "botDesirability": 0.3,
+    "botRange": [
+     0,
+     2
+    ],
+    "pellets": 1,
+    "spread": 0,
+    "view": {
+     "model": "guns/space_shield.glb",
+     "held": {
+      "medium": "guns/space_shield.medium.glb",
+      "high": "guns/space_shield.high.glb"
+     },
+     "fallback": "weapons/knife.glb",
+     "viewOffset": [
+      0.34,
+      -0.46,
+      0.7
+     ],
+     "tracer": "#ffd36b",
+     "sound": "fire.knife",
+     "hold": {
+      "style": "melee",
+      "grip": [
+       0,
+       0,
+       -0.07
+      ]
+     }
+    }
+   },
+   "gunplay": {
+    "family": null,
+    "ballistic": null,
+    "accuracy": null,
+    "kick": null,
+    "reload": {
+     "type": "magazine",
+     "tactical": 0,
+     "empty": 0,
+     "out": 0.35,
+     "in": 1
+    },
+    "falloff": null,
+    "handling": {
+     "move": 0.92,
+     "sprintExit": 0
+    },
+    "head": 2,
+    "legs": 0.75,
+    "arms": 0.9
+   }
+  },
+  {
+   "code": 67,
+   "id": "core.heart_taser",
+   "def": {
+    "id": "core.heart_taser",
+    "displayName": "Heart Taser",
+    "category": "special",
+    "kind": "projectile",
+    "slot": 2,
+    "fireMode": "semi",
+    "spread": 0.004,
+    "fireIntervalTicks": 30,
+    "range": 0,
+    "magazine": 4,
+    "reserveMax": 16,
+    "pickupAmmo": 8,
+    "reloadTicks": 90,
+    "projectile": {
+     "speed": 20,
+     "gravity": 3,
+     "fuseSeconds": 3,
+     "splashRadius": 0,
+     "splashDamage": 0,
+     "splashEdgeDamage": 0,
+     "selfDamageScale": 0,
+     "visual": "slime",
+     "heal": 25,
+     "homing": {
+      "turnRate": 3.5,
+      "range": 25
+     }
+    },
+    "ammo": "cells",
+    "recoil": {
+     "bloom": 0,
+     "maxBloom": 0,
+     "recover": 0
+    },
+    "kick": {
+     "pitch": [
+      0.008
+     ],
+     "yaw": [
+      0.002,
+      -0.002
+     ],
+     "variance": 0.002,
+     "delay": 3,
+     "settle": 10,
+     "rate": 0.3,
+     "visual": 0.4
+    },
+    "botDesirability": 0,
+    "botRange": [
+     0,
+     0
+    ],
+    "damage": 0,
+    "pellets": 1,
+    "raiseTicks": 20,
+    "view": {
+     "model": "guns/heart_taser.glb",
+     "held": {
+      "medium": "guns/heart_taser.medium.glb",
+      "high": "guns/heart_taser.high.glb"
+     },
+     "fallback": "weapons/pulse_pistol.glb",
+     "viewOffset": [
+      0.2,
+      -0.18,
+      0.42
+     ],
+     "tracer": "#ff8fc8",
+     "hold": {
+      "style": "pistol",
+      "grip": [
+       0,
+       -0.04,
+       -0.085
+      ],
+      "support": [
+       -0.02,
+       -0.05,
+       -0.075
+      ],
+      "rake": 25
+     },
+     "muzzleAt": [
+      0,
+      0.04,
+      0.115
+     ],
+     "muzzle": {
+      "effect": "none"
+     },
+     "sound": "fire.goo"
+    }
+   },
+   "gunplay": {
+    "family": null,
+    "ballistic": null,
+    "accuracy": null,
+    "kick": {
+     "pitch": [
+      0.008
+     ],
+     "yaw": [
+      0.002,
+      -0.002
+     ],
+     "variance": 0.002,
+     "delay": 3,
+     "settle": 10,
+     "rate": 0.3,
+     "visual": 0.4
+    },
+    "reload": {
+     "type": "magazine",
+     "tactical": 90,
+     "empty": 90,
+     "out": 0.35,
+     "in": 1
+    },
+    "falloff": null,
+    "handling": {
+     "move": 1,
+     "sprintExit": 6
+    },
+    "head": 2,
+    "legs": 0.75,
+    "arms": 0.9
+   }
   }
  ],
  "bySlot": [
@@ -6957,6 +7393,10 @@
   "core.builder",
   "core.medi_beam",
   "core.battle_axe",
+  "core.katana",
+  "core.scimitar",
+  "core.baseball_bat",
+  "core.space_shield",
   "core.pistol",
   "core.pulse_pistol",
   "core.hand_cannon",
@@ -6967,6 +7407,7 @@
   "core.flintlock_pistol",
   "core.laser_blaster",
   "core.hornet",
+  "core.heart_taser",
   "core.rifle",
   "core.burst_rifle",
   "core.laser_rifle",
@@ -7150,7 +7591,8 @@
      }
     },
     "view": {
-     "model": "guns/toxic_splash.glb"
+     "model": "guns/pinecone_grenade.glb",
+     "fallback": "guns/toxic_splash.glb"
     }
    }
   },

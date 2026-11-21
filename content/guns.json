@@ -1581,6 +1581,123 @@
         0.2,
         12
       ]
+    },
+    {
+      "out": "guns/heart_taser.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Heart_Taser_1118135943_texture.glb",
+      "label": "Heart Taser (Meshy Community download, owner's Drive, 2026-11-18): the Heart Taser",
+      "forward": "-x",
+      "length": 0.23,
+      "triangles": 8000,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/slime.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_slime_1118135825_texture.glb",
+      "label": "slime (Meshy Community download, owner's Drive, 2026-11-18): the Heart Taser's healing slime in flight",
+      "forward": "+z",
+      "height": 0.2,
+      "triangles": 3000,
+      "normalSize": 256,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/katana.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Dragon_Katana_3D_1118134854_image-to-3d-texture.glb",
+      "label": "Dragon Katana 3D (Meshy Community download, owner's Drive, 2026-11-18): the Katana",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 8000,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/scimitar.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_Scimitar_Sword_1118134838_texture.glb",
+      "label": "Scimitar Sword (Meshy Community download, owner's Drive, 2026-11-18): the Scimitar",
+      "forward": "+y",
+      "length": 0.9,
+      "roll": 90,
+      "triangles": 6000,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.25,
+        12
+      ],
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/space_shield.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_space_shield_stylize_1118135457_texture.glb",
+      "label": "space shield stylize (Meshy Community download, owner's Drive, 2026-11-18): the Space Shield",
+      "forward": "+z",
+      "height": 0.45,
+      "triangles": 8000,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/pinecone_grenade.glb",
+      "pack": "meshy-community-drive-1118",
+      "glb": "Meshy_AI_A_stylized_PBR_3D_gam_1118135848_texture.glb",
+      "label": "A stylized PBR 3D gam… (Meshy Community download, owner's Drive, 2026-11-18; a pinecone-shaped grenade with glowing green seams): the Gas Grenade",
+      "forward": "+z",
+      "height": 0.13,
+      "triangles": 3000,
+      "normalSize": 256,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/baseball_bat.glb",
+      "pack": "meshy-owned-drive-1118",
+      "glb": "Meshy_AI_futuristic_baseball_b_1118135029_image-to-3d-texture.glb",
+      "label": "futuristic baseball bat (the owner's own Meshy model, owner's Drive, 2026-11-18): the Baseball Bat",
+      "forward": "+y",
+      "length": 0.86,
+      "triangles": 8000,
+      "maxError": 0.03,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
     }
   ]
 }
