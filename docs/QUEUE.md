@@ -224,6 +224,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-21 · B · Slim dorm doors 1.2 m → 1.5 m wide (owner: "slightly wider"), at the source: kit.door.oak_slim/_ajar/_open and every academy doorway, plus St. John's copied Welles stair door through MapMaker (`check/fixes-20261120b` at bf830d99, run 44848023139).
 - 2026-11-20 · B · Third-person long-gun grips for every character (support hand on the handguard measured from each gun, support shoulder forward, stock nearer the chest, fingers closed to their curl without tearing; new e2e flow characters4 checks 237 holds) (`check/grips-fix` at b86e380d, run 44816073539).
 - 2026-11-20: the Pistol pickup in MapMaker (Weapons group; never rolled by random pickups; a second Pistol gives ammo until dual wielding is on, then makes the pair) (`check/train-20261120-140256` at 07516dbc, run 44749760283).
 - 2026-11-20: the flicker check split into five flows, `flashing` to `flashing5` (each under 6 min on CI, so a retry fits a shard; `FLASHING_PARTS` in e2e/run.mjs; docs/LOOK.md "The flicker check") (`check/flashing-split` at 3f7a76a5, run 44739082577).
