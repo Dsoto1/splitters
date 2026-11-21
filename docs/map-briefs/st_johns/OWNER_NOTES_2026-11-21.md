@@ -302,3 +302,7 @@ spec.
 should also have one black chest with grey edging at the foot of each bunk". A black rectangular trunk, about
 0.8 x 0.42 x 0.42 m, silver-grey metal edging along the lid seam and corners, three chrome latches on the front;
 one at the foot of each bunk, in the dorm bay pieces themselves. Taken into step 7c.
+
+**Dorm rooms, the desks (owner, same day):** "the desks themselves do not need to be separated, they can be flush
+next to one another and moved back to the corner". The two desks side by side, touching, as one run in a corner
+of the room, chairs pulled in, the middle of the floor clear. Taken into step 7c.
