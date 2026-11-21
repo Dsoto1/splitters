@@ -123,3 +123,58 @@ So the open points above are settled:
   turned the other way (their long side up and down), in a row of their own: five drawn, in groups, plus one more.
 - **Between the two areas:** "the room has pillars with small arches dividing these spaces": a row of piers with
   small arches separates the main hall from the second seating area.
+
+## Four more photos (same day, about 12:30 UTC), described
+
+The owner: "image showing doors and walls with the wooden trim, thats what the walls and area looked like in the
+office/admin area of dekoven. Added another chapel image". Two of the four are of the mess hall.
+
+**Photo 6 (the mess hall, empty, looking down its length).** A long, high room. Walls of rough squared limestone
+with wide stone piers along both long sides; on the left side the piers carry round arches opening into a side
+aisle with windows beyond (the second seating area behind "pillars with small arches"). The ceiling is dark
+timber: heavy beams across the room, joists and boards between them, well above head height (about a storey and a
+half). Round iron chandeliers with pale glass bowls hang from the beams on chains, with a few ceiling fans. Rows
+of national flags hang from the beams on both sides, angled out over the tables. Long tables with pale wood tops
+run the length of the room in rows, each with dark chairs both sides and a small black napkin holder; a wider gap
+runs down the middle. At the far end wall: a stone fireplace with a framed portrait above it, between two tall
+windows, and dark wood panelling to about door height. On the right in the foreground: a wooden lectern (the
+podium) against a stone pier, and a brass bell on a low black stand. The floor is polished brown tile or stained
+concrete.
+
+**Photo 7 (the same hall in use, from a balcony or stair landing at one end, looking down).** Confirms the layout:
+long tables in rows down the room with a centre aisle, a further row against the right wall, the arched stone
+piers on the left with the side aisle behind them, the far end wall with the fireplace, the portrait above it and
+two tall windows with flags of stained glass or banners in them, dark wood wainscot each side. The same pale-bowl
+chandeliers on chains; a large national flag hangs on a pier on the left. The view is from about a storey up, so
+the hall has a raised landing or gallery at this end (the stair down from DeKoven's 2nd floor comes in here).
+
+**Photo 8 (DeKoven's office / admin corridor).** A corridor with a dark grey-green floor. Walls: warm brown wood
+wainscot of vertical boards to about 1.1 m with a moulded cap, pale cream plaster above, and a wood picture rail /
+frieze board under a varnished wood plank ceiling with a concealed warm light strip along the top of the wall.
+Wood posts stand at intervals. On the left, an office front: a half-height panelled partition with a band of
+ribbed (reeded) glass panes above it in wood frames, and an open doorway. Then two wood doors in plain wood
+casings: a five-panel door with a small reeded-glass light at the top, and a wider door faced with boards laid in
+a concentric diamond (chevron) pattern, a small name plate above it. Framed certificates and pictures hang on the
+plaster between the doors. Low brass floor stands (rope-barrier bases) by the partition.
+
+**Photo 9 (the chapel, its front and one long side).** Pale squared limestone throughout. The front is a tall
+gabled wall with a very large pointed-arch window filled with stone tracery, flanked by an octagonal crenellated
+stair turret on the right that rises above the roof, with slit windows, and a matching smaller one on the left.
+At ground level a deep pointed-arch porch with bright red double doors, a lantern on each side, and a crenellated
+parapet over the porch. Stepped buttresses stand at the corners. The long side has a row of tall pointed-arch
+windows between stepped buttresses under a crenellated parapet, and along its foot a low one-storey aisle or
+cloister with a sloped roof. A low stone retaining wall with planting runs along the front; a paved forecourt, a
+dark stone marker and a red bench on the lawn. (A small building number plate is fixed by the porch; not ours to
+copy.)
+
+What these add to the list:
+
+- **Mess hall look:** timber beam ceiling well over a storey high; stone piers with round arches down one long side
+  opening to the side seating aisle; a fireplace with a portrait and two tall windows on the end wall; wood
+  panelling on that wall; iron chandeliers with pale bowls; flags hung from the beams; long pale tables with dark
+  chairs; a lectern and a bell stand; a raised landing at the DeKoven end.
+- **DeKoven's office floor look:** wood wainscot with cream plaster above, wood plank ceiling, wood posts, office
+  fronts with reeded glass over a low panelled partition, a five-panel door with a small reeded light and a
+  diamond-boarded door, framed pictures.
+- **Chapel (step 9):** the great traceried west window, the two octagonal turrets, the red double doors in a deep
+  arched porch with lanterns, buttressed long sides with tall pointed windows, the low side aisle.
