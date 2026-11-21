@@ -178,3 +178,51 @@ What these add to the list:
   diamond-boarded door, framed pictures.
 - **Chapel (step 9):** the great traceried west window, the two octagonal turrets, the red double doors in a deep
   arched porch with lanterns, buttressed long sides with tall pointed windows, the low side aisle.
+
+## The library and the gym (same day, about 13:00 UTC): the owner's direction and four more photos
+
+> for the library/memorial hall i think it should have 2 levels and be designed like this style. spiral stairs to
+> go up/down? smaller aesthetic windows. added gym front and another interior. does the gym also have the weight
+> rooms and office?
+
+**Memorial Hall (the library), step 8: two levels, in the style of photos 10 and 11, spiral stairs between them,
+smaller decorative windows.** (This changes the plan's "one tall storey" for Memorial Hall, PLAN §3.3; the two
+library photos are of old college libraries shown for style, not of the school.)
+
+**Photo 10 (style: an old library, bookcase alcoves).** A long room under a low-pitched roof painted in bold dark
+and pale stripes that follow the rafters. Down one side, tall dark oak bookcases stand out from the wall at right
+angles, making alcoves; each press is about 3 m high with a moulded cornice and small carved finials, five or six
+shelves of leather-bound books, and a sloped reading ledge at desk height. In each alcove a dark oak bench with a
+high panelled end. At the far end a wide window of many small leaded lights in stone mullions, in three tiers. A
+large globe on a turned wooden stand in the middle of the floor; worn red patterned rugs on dark boards; small
+iron lanterns hang from the roof.
+
+**Photo 11 (style: an open timber roof over bookcases).** A long hall with white plaster walls and an open timber
+roof: big arch-braced trusses with curved braces springing from carved corbels low on the walls, close-set rafters
+and purlins making a grid against white panels, and a strip of small roof lights along the ridge. A painted shield
+on the first truss (ours would be our own crest, never the school's or a college's). Freestanding oak bookcases
+about 2.2 m high, double-sided, stand in two rows at right angles to the long walls with a red carpet runner down
+the centre aisle to a small pointed-arch door in the end wall. Pale wood floor.
+
+**Photo 12 (the gym's front, outside).** A broad front under a shallow curved (barrel) roof with a dark metal
+fascia following the curve. The wall is in bands: squared pale limestone at the ends and round the entrance, a
+panel of red brick beside it, and big dark-framed window walls in the middle, the upper ones under the curve
+filled with red and purple banners or coloured glazing. The entrance is a tall round-arched recess lined in red
+brick with doors and side lights inside it. At the right corner stands a round limestone tower a storey above the
+eaves, with a ring of slatted openings (louvres) under a low dark metal dome, and one small window. Shrubs and a
+small blue spruce along the foot; a walk to the entrance. (A building number plate is fixed to the front; not
+ours to copy.)
+
+**Photo 13 (the gym's court, inside).** A wide hall under a curved roof carried on big curved laminated timber
+arches springing from the side walls, with timber decking between them. Brick side walls with a band of glass
+block high along each side; a great glazed lunette fills the end wall under the curve. A polished maple court
+with red and black painted markings and a dark centre area; basketball hoops hang from the roof on folding steel
+frames, with more side hoops along the walls; a four-sided red scoreboard hangs over centre court. A large
+national flag on the end wall above a red padded wainscot. (The school's team name and mascot are painted on the
+wall and floor: ours would be our own name and mark, never the school's.)
+
+**The owner's question, "does the gym also have the weight rooms and office?"** Not in our map or plan today: the
+old gym is one shell with the court and the pool, and the plan's step 10 has the court bays, an entrance end with
+a balcony, and the pool wing (PLAN §3.2 `setpiece.gym_bay` / `gym_entrance`, §3.3 "Gym and pool"); no weight room
+and no office. Whether the real hall has them was not determined. Proposed for step 10: a weight room and a
+coach's office in the entrance end, under the balcony, one each side of the lobby.
