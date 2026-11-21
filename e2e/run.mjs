@@ -12562,7 +12562,7 @@ async function flashingScene(browser, scene, names) {
       return true;
     }, on);
   /**
-   * The first bot's pair of machine pistols (kept full each tick), both triggers held, side on to you (facing +x); or
+   * The first bot's pair of machine pistols (kept full each tick), both triggers held, half turned to you; or
    * its second gun taken away and its triggers let go. Give yourself the machine pistol first (its weapon code).
    */
   const botPairOf = (on) =>
@@ -12588,7 +12588,8 @@ async function flashingScene(browser, scene, names) {
         w.reserve = def.reserveMax;
       }, 1000 / 60);
       b.queue.fire = 2 | 32;
-      b.queue.yaw = Math.PI / 2;
+      // (Half turned toward you: both muzzles and their flashes in view, the rounds going wide of you.)
+      b.queue.yaw = Math.PI / 4;
       return true;
     }, on);
   // The setting as the pause menu's Settings switch changes it (the menu itself stays shut).
@@ -12728,11 +12729,11 @@ async function flashingScene(browser, scene, names) {
       // Dual wielding seen by everyone else (step 4): another player's pair, a flash at each gun's muzzle. With the
       // setting on their pair shares one flash too (view.ts remoteFlash, PairFlashGate), as yours does in `pair`.
       name: 'pairtp',
-      label: "another player's pair of machine pistols 3 m in front, side on, both triggers held, in the dark room",
+      label: "another player's pair of machine pistols 2.5 m in front, half turned your way, both triggers held, in the dark room",
       weapon: 'core.machine_pistol',
       me: [0, 0, -25.5],
-      look: aim([0, 0, -25.5], [0, 1.2, -28.5]),
-      bots: [[0, 0, -28.5]],
+      look: aim([0, 0, -25.5], [0, 1.2, -28]),
+      bots: [[0, 0, -28]],
       before: async () => {
         await botPairOf(true);
         for (let i = 0; i < 12 && !(await page.evaluate(() => [...window.__cs.view.avatars.values()].some((a) => (a.pair?.up ?? 0) >= 1))); i++) await step(5);
