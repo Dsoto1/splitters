@@ -109,7 +109,7 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
   def.parts.forEach((part, i) => {
     for (const [k, v] of Object.entries(part.when ?? {})) {
       if (!choiceSets.has(k)) out.push(`parts[${i}].when: ${k} is not one of the piece's options`);
-      else if (!choiceSets.get(k)!.has(v)) out.push(`parts[${i}].when: ${k} has no choice "${v}"`);
+      else for (const one of typeof v === 'string' ? [v] : v) if (!choiceSets.get(k)!.has(one)) out.push(`parts[${i}].when: ${k} has no choice "${one}"`);
     }
   });
   for (const m of def.markers ?? []) {

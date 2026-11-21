@@ -140,6 +140,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // valid as is. The bump is for the other direction: an older build refuses a v48 map outright (it could hold more
   // entities than that build's schema takes) instead of failing on its entity count.
   [47, (doc) => ({ ...doc })],
+  // v48 -> v49: a wall style `arch_twin` (Twin arches: two round arches on a middle pier, St. John's step 7a) and a set
+  // piece part's `when` naming several choices of an option (a list). v48 data is valid as is. The bump is for the
+  // other direction: an older build refuses a v49 map outright instead of failing on a style it has never heard of.
+  [48, (doc) => ({ ...doc })],
 ]);
 
 /**

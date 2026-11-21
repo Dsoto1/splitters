@@ -421,6 +421,80 @@ describe('the clock tower has room to stand in (owner, 2026-11-19: the first bui
   });
 });
 
+describe("a mess hall's main entrance: Twin arches (St. John's step 7a, map format v49)", () => {
+  it('the style is two round arches 2.8 m wide on a 0.6 m pier, one storey, no glass', () => {
+    expect(EDGE_SHAPES.arch_twin!.openings).toEqual([[-3.1, -0.3, 0, 3.2], [0.3, 3.1, 0, 3.2]]);
+    const segs = edgeSegments('arch_twin', 4, 3.5);
+    // The middle pier and the end piers stand floor to ceiling; each crown is 3.2 m up; nothing rises past the storey.
+    expect(segs).toContainEqual([-0.3, 0.3, 0, 3.5, 0.5]);
+    expect(segs).toContainEqual([-4, -3.1, 0, 3.5, 0.5]);
+    expect(segs).toContainEqual([3.1, 4, 0, 3.5, 0.5]);
+    expect(segs).toContainEqual([-1.94, -1.46, 3.2, 3.5, 0.5]);
+    expect(Math.max(...segs.map((g) => g[3]))).toBe(3.5);
+    // The stone over each opening never dips below its semicircle (centre 1.7 m from the middle, radius 1.4, springing 1.8).
+    for (const [u0, u1, y0] of segs) {
+      if (y0 === 0) continue;
+      const c = u0 < 0 ? -1.7 : 1.7;
+      const inner = Math.min(Math.abs(u0 - c), Math.abs(u1 - c));
+      expect(y0, `the step over ${u0}..${u1}`).toBeGreaterThanOrEqual(Math.min(3.2, 1.8 + Math.sqrt(Math.max(0, 1.4 * 1.4 - inner * inner))) - 0.011);
+    }
+    // Voussoirs on both arches, imposts on the three piers; the two rings meet over the middle pier and don't overlap.
+    const trim = edgeTrimBoxes('arch_twin', 4, 3.5, true);
+    expect(trim.filter((t) => t.tilt !== undefined || (t.y1 > 3.2 && t.y0 > 2.9 && t.y1 - t.y0 > 0.4)).length).toBeGreaterThan(30);
+    expect(trim.filter((t) => t.y0 === 1.65 && t.y1 === 1.8).length).toBe(6);
+  });
+  for (const [choice, north] of [['main_north', true], ['main_south', false]] as const) {
+    it(`${choice}: bots path in through either arch; a player walks through each and is stopped by the pier; the window stays opposite`, { timeout: 240_000 }, () => {
+      const def = library.pieces.get('setpiece.refectory_bay')!;
+      for (const rotation of ROTATIONS) for (const mirror of [false, true]) {
+        const map = withPiece('setpiece.refectory_bay', rotation, mirror, { walls: choice });
+        const at = (p: P3) => place(v(p), rotation, mirror, mirrorWidth(def));
+        const where = `${choice} turned ${rotation}${mirror ? ' mirrored' : ''}`;
+        const wall = north ? 12 : -4;
+        const out = north ? 1 : -1;
+        const nav = navOf(map);
+        for (const x of [-1.7, 1.7]) {
+          expect(miss(nav, at([x, 0, wall + out * 3]), at([-3, 0, 4])), `${where}: from outside the arch at x ${x} to the hall's middle`).toBeLessThan(1.2);
+          // Straight through: the path stays in that arch's lane (no detour round the piece).
+          const path = nav.findPath(at([x, 0, wall + out * 3]), at([x, 0, wall - out * 1.6]))!;
+          expect(path, `${where}: a path through the arch at x ${x}`).toBeTruthy();
+          let length = 0;
+          for (let i = 1; i < path.length; i++) length += Math.hypot(path[i]!.x - path[i - 1]!.x, path[i]!.z - path[i - 1]!.z);
+          expect(length, `${where}: the path through the arch at x ${x} is the straight one`).toBeLessThan(6);
+        }
+        nav.destroy();
+        const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+        const yaw = placeYaw(north ? Math.PI : 0, rotation, mirror);
+        const local = (p: Vec3) => {
+          // Back into the piece's frame: undo the turn, then the mirror.
+          const [x, z] = rotateXZ(p.x, p.z, ((4 - rotation) % 4) as Rotation);
+          return { x: mirror ? mirrorWidth(def) * 8 - x : x, z };
+        };
+        for (const x of [-1.7, 1.7]) {
+          const end = local(walk(physics, at([x, 0, wall + out * 2]), yaw, 70).pos);
+          expect((end.z - wall) * out, `${where}: walked in through the arch at x ${x} (ended z ${end.z.toFixed(2)})`).toBeLessThan(-0.6);
+        }
+        const stopped = local(walk(physics, at([0, 0, wall + out * 2]), yaw, 70).pos);
+        expect((stopped.z - wall) * out, `${where}: the middle pier stops a walk`).toBeGreaterThan(0.2);
+        // The other long wall keeps its arched window, glazed; the banner hangs on the south wall unless that is the entrance.
+        expect(windowPanes(map).length, `${where}: one window pane`).toBe(1);
+        expect(map.entities.filter((e) => e.kind === 'prop' && e.model === 'prop.dg_banner').length, `${where}: banner`).toBe(north ? 1 : 0);
+      }
+    });
+  }
+  it('a part\'s `when` may list several choices: in for each of them, out for the rest; a choice the option lacks is refused', () => {
+    const def = library.pieces.get('setpiece.refectory_bay')!;
+    const banner = def.parts.findIndex((p) => p.kind === 'prop' && p.model === 'prop.dg_banner');
+    expect(Array.isArray(def.parts[banner]!.when!.walls)).toBe(true);
+    for (const c of def.options![0]!.choices) {
+      const { entities } = setPieceParts({ id: 'p_1', piece: def.id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { walls: c.value } } }, def, 'core.castle', library);
+      expect(entities.some((e) => e.id === `sp_p_1_${banner}`), c.value).toBe(c.value !== 'main_south');
+    }
+    const bad = { ...def, parts: def.parts.map((p, i) => (i === banner ? { ...p, when: { walls: ['windows', 'nowhere'] } } : p)) };
+    expect(checkSetPieceDefinition(bad as typeof def).join('; ')).toMatch(/walls has no choice "nowhere"/);
+  });
+});
+
 describe('the wall styles the bays are built with', () => {
   it('a sash window is 1.2 m wide from 0.9 to 3 m, glazed; the twin has one each side, 2 m from the middle', () => {
     expect(EDGE_SHAPES.window_sash!.openings).toEqual([[-0.6, 0.6, 0.9, 3]]);

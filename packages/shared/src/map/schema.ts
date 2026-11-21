@@ -1142,8 +1142,11 @@ export const SetPieceOption = z.object({
   choices: z.array(z.object({ value: SetPieceOptionValue, label: z.string().min(1).max(60), blurb: z.string().max(240).optional() })).min(2).max(8),
 });
 export type SetPieceOption = z.infer<typeof SetPieceOption>;
-/** Which options a part is in for: `{ "doors": "slim" }` (absent: always). */
-const PartWhen = z.record(SetPieceOptionName, SetPieceOptionValue).optional();
+/**
+ * Which options a part is in for: `{ "doors": "slim" }` (absent: always). A list names every choice the part is in for
+ * (`{ "walls": ["windows", "door_north"] }`: a banner on a wall that some choices open), map format v49.
+ */
+const PartWhen = z.record(SetPieceOptionName, z.union([SetPieceOptionValue, z.array(SetPieceOptionValue).min(1).max(8)])).optional();
 
 /** A part's value taken from a role: `{ "role": "stone" }`. */
 const MaterialRef = z.object({ role: z.enum(SET_PIECE_MATERIAL_ROLES) });

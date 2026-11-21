@@ -925,7 +925,8 @@ export class SetPieceTools {
       // A part only one choice of an option has: named with it, and greyed while that choice is off.
       const when = Object.entries(part.when ?? {}).map(([k, v]) => {
         const o = def.options?.find((x) => x.name === k);
-        return `${o?.label ?? k}: ${o?.choices.find((c) => c.value === v)?.label ?? v}`;
+        const name = (one: string) => o?.choices.find((c) => c.value === one)?.label ?? one;
+        return `${o?.label ?? k}: ${typeof v === 'string' ? name(v) : v.length > 2 ? `${v.length} choices` : v.map(name).join(' or ')}`;
       });
       const live = partInPlay(part, placementOptions(p, def));
       if (!live) lab.className = 'off';

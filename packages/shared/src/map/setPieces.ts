@@ -333,10 +333,11 @@ export function placementOptions(p: Pick<SetPiecePlacement, 'overrides'>, def: P
   return out;
 }
 
-/** Whether a part is in the piece with these options (its `when` all met; a part without one always is). */
-export function partInPlay(part: { when?: Record<string, string> }, options: Readonly<Record<string, string>>): boolean {
+/** Whether a part is in the piece with these options (its `when` all met: the value, or one of a list; a part without one always is). */
+export function partInPlay(part: { when?: Record<string, string | readonly string[]> }, options: Readonly<Record<string, string>>): boolean {
   if (!part.when) return true;
-  for (const [k, v] of Object.entries(part.when)) if (options[k] !== v) return false;
+  // A list: the part is in for any of those choices.
+  for (const [k, v] of Object.entries(part.when)) if (typeof v === 'string' ? options[k] !== v : !v.includes(options[k]!)) return false;
   return true;
 }
 
