@@ -1091,6 +1091,188 @@
    },
    "category": "pistol",
    "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_desert_carbine",
+    "displayName": "Desert Carbine",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.desert_carbine"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_twin_rifle",
+    "displayName": "Twin-Shot Rifle",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.twin_rifle"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_compact_carbine",
+    "displayName": "Compact Carbine",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.compact_carbine"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_woodland_smg",
+    "displayName": "Woodland SMG",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.woodland_smg"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_amarillo",
+    "displayName": "Amarillo",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.amarillo"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "smg",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_nova6",
+    "displayName": "Nova 6",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.nova6"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_lever_action",
+    "displayName": "Lever-Action",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.lever_action"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "sniper",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_runebreaker",
+    "displayName": "Runebreaker",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.runebreaker"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "shotgun",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_flintlock_pistol",
+    "displayName": "Flintlock Pistol",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.flintlock_pistol"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "pistol",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_crossbow",
+    "displayName": "Crossbow",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.crossbow"
+    },
+    "respawnSeconds": 25,
+    "botValue": 0.7583333333333334
+   },
+   "category": "sniper",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_blaster_x42",
+    "displayName": "Blaster X-42",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.blaster_x42"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "rifle",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_laser_blaster",
+    "displayName": "Laser Blaster",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.laser_blaster"
+    },
+    "respawnSeconds": 15,
+    "botValue": 0.675
+   },
+   "category": "pistol",
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.weapon_hornet",
+    "displayName": "Hornet",
+    "effect": {
+     "kind": "weapon",
+     "weapon": "core.hornet"
+    },
+    "respawnSeconds": 20,
+    "botValue": 0.7166666666666667
+   },
+   "category": "special",
+   "found": true
   }
  ],
  "rules": {
@@ -1104,31 +1286,43 @@
   "pistol": [
    "core.weapon_pulse_pistol",
    "core.weapon_hand_cannon",
-   "core.weapon_revolver"
+   "core.weapon_revolver",
+   "core.weapon_flintlock_pistol",
+   "core.weapon_laser_blaster"
   ],
   "smg": [
    "core.weapon_smg",
    "core.weapon_machine_pistol",
    "core.weapon_lmg",
-   "core.weapon_nailgun"
+   "core.weapon_nailgun",
+   "core.weapon_compact_carbine",
+   "core.weapon_woodland_smg",
+   "core.weapon_amarillo"
   ],
   "rifle": [
    "core.weapon_rifle",
    "core.weapon_plasma",
    "core.weapon_burst_rifle",
    "core.weapon_battle_rifle",
-   "core.weapon_laser_rifle"
+   "core.weapon_laser_rifle",
+   "core.weapon_desert_carbine",
+   "core.weapon_twin_rifle",
+   "core.weapon_nova6",
+   "core.weapon_blaster_x42"
   ],
   "shotgun": [
    "core.weapon_shotgun",
    "core.weapon_sawed_off",
    "core.weapon_auto_shotgun",
-   "core.weapon_flak"
+   "core.weapon_flak",
+   "core.weapon_runebreaker"
   ],
   "sniper": [
    "core.weapon_sniper",
    "core.weapon_marksman",
-   "core.weapon_railgun"
+   "core.weapon_railgun",
+   "core.weapon_lever_action",
+   "core.weapon_crossbow"
   ],
   "explosive": [
    "core.weapon_launcher",
@@ -1151,7 +1345,8 @@
    "core.weapon_singularity",
    "core.weapon_arc_caster",
    "core.weapon_flamethrower",
-   "core.weapon_freeze_ray"
+   "core.weapon_freeze_ray",
+   "core.weapon_hornet"
   ]
  }
 }
