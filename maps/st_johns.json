@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_qltqu2gi2vvdd5l4",
-      "revision": 37,
-      "contentHash": "sha256:e898edf734723c727909f71e53bdbd9e5b3fca2b9a670c625229ce3bc773e1ae",
+      "versionId": "v_qtiexl44tw5pqhfk",
+      "revision": 38,
+      "contentHash": "sha256:a3761499ad42ec997711b99ba1defdfa56e7886d37c7acebfe5f5bc18b7c36d6",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T06:29:29.208Z"
+      "releasedAt": "2026-11-21T06:44:31.298Z"
     }
   },
   "classicStructure": {
@@ -32980,7 +32980,8 @@
         "options": {
           "hall": "plain",
           "offices": "shut",
-          "walls": "solid"
+          "walls": "solid",
+          "end": "east"
         }
       }
     },

@@ -78,6 +78,8 @@ const WALKS: Record<string, Walk[]> = {
       chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [-0.2, 0, -2.8], [0, 0, 4]], [[0, 0, 4], [2.3, 0, 7.0], [2.2, 0, 10.6], [-0.2, 0, 10.8], [0, 0, 4]]],
     })),
     { options: { offices: 'shut' }, chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [0, 0, 4]]], shut: { from: [0, 0, 4], to: [[2.2, 0, 10.6]] } },
+    // A closed east end: in from the west only; past the wall only by going round outside.
+    { options: { end: 'east', hall: 'plain' }, chains: [[[-3, 0, 4], [1.5, 0, 4]]], closed: { from: [0, 0, 4], to: [6, 0, 4], min: 30 } },
     // A basement's bay: solid outer walls, the same walks.
     { options: { walls: 'solid' }, chains: [hall(), [[0, 0, 4], [2.3, 0, 1.0], [2.2, 0, -2.6], [-0.2, 0, -2.8], [0, 0, 4]]] },
   ],
