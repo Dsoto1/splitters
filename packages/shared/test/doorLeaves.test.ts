@@ -47,7 +47,7 @@ const dir = (x: number, z: number, rotation: Rotation): Vec3 => ({ ...at(x, 0, z
 
 describe('open doors collide as their leaf', () => {
   it('the catalogue: the open doors have one box, the leaf (7 cm thick, floor to its top), off to the hinge side', () => {
-    for (const [id, w] of [['kit.door.oak_open', 2], ['kit.door.painted_open', 2], ['kit.door.oak_slim_open', 1.2]] as const) {
+    for (const [id, w] of [['kit.door.oak_open', 2], ['kit.door.painted_open', 2], ['kit.door.oak_slim_open', 1.5]] as const) {
       const def = getProp(id)!;
       expect(def.collision, id).not.toBeNull();
       expect(def.boxes, id).toHaveLength(1);
@@ -64,7 +64,7 @@ describe('open doors collide as their leaf', () => {
     // Shut: the frame's slab. Ajar (owner, 2026-11-19, "2b"): the slab, and its leaf at 25° (a seventh number, the box's
     // own turn), from the hinge 0.8 m into the room.
     expect(getProp('kit.door.oak')!.collision).toEqual([2, 2.6, 0.16]);
-    for (const [id, w] of [['kit.door.oak_ajar', 2], ['kit.door.oak_slim_ajar', 1.2]] as const) {
+    for (const [id, w] of [['kit.door.oak_ajar', 2], ['kit.door.oak_slim_ajar', 1.5]] as const) {
       const boxes = getProp(id)!.boxes!;
       expect(boxes[0], id).toEqual([-w / 2, 0, -0.08, w / 2, 2.6, 0.08]);
       expect(boxes, id).toHaveLength(2);
@@ -98,8 +98,8 @@ describe('open doors collide as their leaf', () => {
 
   it('a Dorm Bay: rounds and bodies stop at the open leaf; the doorway beside it is clear (every turn, wide and slim)', { timeout: 60_000 }, () => {
     for (const roomDoors of ['wide', 'slim'] as const) {
-      // The north-west room's door at x −2; its leaf on the +x jamb: x −1.15 (wide) or −1.55 (slim), into the room (+z).
-      const leafX = roomDoors === 'wide' ? -1.076 : -1.476;
+      // The north-west room's door at x −2; its leaf on the +x jamb: x −1.08 (wide) or −1.33 (slim), into the room (+z).
+      const leafX = roomDoors === 'wide' ? -1.076 : -1.326;
       for (const rotation of ROTATIONS) {
         const map = mapOf([bay(rotation, roomDoors)]);
         const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));

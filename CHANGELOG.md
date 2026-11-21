@@ -8,6 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Dual wielding.** Pick up a second Machine Pistol, Pulse Pistol, Sawed-Off or Pistol to hold one in each hand: each gun fires and reloads on its own trigger, and everyone sees both guns, their flashes and tracers; a host can turn it off in Match Setup.
+- **St. John's dorm room doors are a little wider.** The slim room doors and their doorways are 1.5 m instead of 1.2 m, in every dorm hall and the stair-end upper door; bots still walk through them.
 - **Characters hold long guns properly in third person and Character Select.** The support hand sits on the handguard instead of behind the magazine or under the gun, the stock comes in to the shoulder, and fingers close round the gun without folding into the palm.
 - **A Pistol pickup in MapMaker.** Maps can place a Pistol (palette, Weapons); it lies only where it is placed (random pickups never roll it); walking over it with your own Pistol makes a pair.
 - **Grenades going off right in front of you no longer flicker with Reduce flashing on.** A blast close to the camera is drawn smaller as well as dimmer, so you see the fireball in front of you instead of standing inside it.

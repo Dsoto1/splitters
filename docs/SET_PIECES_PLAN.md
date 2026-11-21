@@ -733,12 +733,12 @@ should move the frame in").
 
 **Room doors** (set piece options, map format v42; CONTENT_PIPELINE.md, "Set pieces"): Dorm Bay, Dorm Bay (two rooms
 shut), Dorm Corner Bay, Dorm Entry Bay, Dorm Office Bay and the Hall Centre offer Wide (2 m, as built before: the
-default) and Slim. Slim swaps each room doorway's two piers (in the closet-deep walls) for piers 0.4 m wider, so the
-doorway is 1.2 m and the wall the same number of blocks; the office bay's 0.12 m walls get a jamb 0.4 m wide either side
-of each door instead. The door is the Slim Oak Door (1.2 m, the same leaves; shut, ajar and open where the wide one
-was). **Bots:** 1.2 m is narrower than the navmesh keeps open (0.8 m off walls closes anything under about 1.8 m), so the
+default) and Slim. Slim swaps each room doorway's two piers (in the closet-deep walls) for piers 0.25 m wider, so the
+doorway is 1.5 m and the wall the same number of blocks; the office bay's 0.12 m walls get a jamb 0.25 m wide either side
+of each door instead. The door is the Slim Oak Door (1.5 m since 2026-11-20, 1.2 m before; the same leaves; shut, ajar and open where the wide one
+was). **Bots:** 1.5 m is still narrower than the navmesh keeps open (0.8 m off walls closes anything under about 1.8 m), so the
 open slim door is a passage (`sim/passages.ts`): a walking link each way through its frame, 1.6 m either side. Shut
-rooms stay shut. `slimDoors.test.ts`: the doorway is 1.2 m between the piers; without the links the rooms are off the
+rooms stay shut. `slimDoors.test.ts`: the doorway is 1.5 m between the piers; without the links the rooms are off the
 navmesh and with them every open room is reached and left in every turn; a body that follows the route's corners as
 bots do (0.45 m) walks in and out; bots in a match ordered to Hold in a room get into it. The academy walks
 (`setPiecesAcademy.test.ts`) run every piece with the slim doors too.
