@@ -235,3 +235,26 @@ entrance sits under the tall roof facing the walk. A black lamp post with a sing
 on the left, on the lawn, a small bronze sculpture on a low stone plinth in a mulched bed; mature trees shade the
 court; the grey stone halls show behind on the left. (This matches the plan's "tall red cone over an arched
 entrance on the side facing the grounds" and the brick path from the court to the library's door, PLAN §3.3.)
+
+## The gym's entrance end (same day): the owner answers the weight room question
+
+> here is view from basketball court as if im leaving and going out entrance. see that hallway? we have weight and
+> ROTC style workout equipment in the room on the right. Above you can see empty space, that is more equipment and
+> storage but also wrestling mats and windows seen from the exterior shot. I am pretty sure the left room is an
+> office and there are bathrooms somewhere.
+
+**Photo 15 (the gym's entrance end, seen from the court; small copy).** The end wall of the court is a one-storey
+brick wall about 3 m high, right across the hall, with an open mezzanine above it behind a rail, under the curved
+roof. In the middle of the brick wall a wide opening leads into a short lit hallway running straight to the
+entrance doors, with a doorway on each side of it. A single door stands in the brick wall at the far left.
+Banners hang along the top of the brick wall and a row of small flags on the right-hand part. The court's maple
+floor runs up to the wall. (The school's team banner and a sponsor's sign are on the wall and beam: ours would
+carry our own name and mark.)
+
+**So the entrance end, for step 10 (replaces the proposal above):**
+- A central hallway from the court to the front doors.
+- **Right of the hallway (leaving the court):** the weight room, with weights and ROTC-style workout equipment.
+- **Left of the hallway:** an office (the owner is fairly sure).
+- **Above both, open to the court behind a rail:** a mezzanine with more equipment and storage and the wrestling
+  mats, lit by the big front windows seen in photo 12.
+- **Bathrooms** somewhere in this end (place not remembered).
