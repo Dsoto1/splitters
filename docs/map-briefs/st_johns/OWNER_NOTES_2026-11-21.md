@@ -291,3 +291,9 @@ that door is a main way through, the bays at the ends of the skyway (the bridge)
 **Dorm rooms (owner, same day, about 21:20 UTC):** "ever dorm room had a small mirror cabinet above their sinks".
 A small mirrored cabinet on the wall above each dorm room's sink, in the dorm bay pieces themselves (so every dorm
 room gets it). Taken into step 7c. The owner also added the day's photos to the Drive references folder.
+
+**Memorial Hall's two storeys, decided (owner, same day, about 21:40 UTC):** "alcoves on ground floor, rows upstairs
+works". Ground storey: photo 10's alcoves (bookcases standing out from the walls, a bench and reading ledge in
+each), under the upper floor. Upper storey: photo 11's freestanding double-sided rows either side of a red runner,
+under the open timber roof. The owner sent photos 10 and 11 again as "interior of library": they are the interior
+spec.
