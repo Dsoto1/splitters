@@ -49,3 +49,8 @@ Their download file names are recorded in content/props.lock.json,
 content/meshy.lock.json and content/guns.lock.json. The raw downloads are not kept in the repo.
 
 Provenance: Meshy, owned.
+- The Futuristic Baseball Bat (weapon core.baseball_bat, pack meshy-owned-drive-1118
+  in content/guns.json): the download "futuristic baseball b…" (2026-11-18, from
+  the owner's Drive folder "weapons and stuff"); the owner, 2026-11-18: the bat is
+  their own. Built by tools/content/prepare-guns.mjs (guns/baseball_bat.glb and its
+  held copies).

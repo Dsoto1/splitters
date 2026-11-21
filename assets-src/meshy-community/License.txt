@@ -129,6 +129,13 @@ name as on the download; each ships three copies as above):
 - "Arcstorm Carbine"  -> guns/arcstorm.glb (the Arc Caster)
 - "Coppercoil Sentinel"  -> guns/coppercoil.glb (the Railgun)
 - "Rustworn Pulse Carbin…"  -> guns/rustworn.glb (the Flak Cannon)
+- "Heart Taser"  -> guns/heart_taser.glb (the Heart Taser)
+- "slime"  -> guns/slime.glb (the Heart Taser's slime in flight; one copy)
+- "Dragon Katana 3D"  -> guns/katana.glb (the Katana)
+- "Scimitar Sword"  -> guns/scimitar.glb (the Scimitar)
+- "space shield stylize"  -> guns/space_shield.glb (the Space Shield)
+- "A stylized PBR 3D gam…" (a pinecone-shaped grenade)  -> guns/pinecone_grenade.glb
+  (the Gas Grenade; one copy)
 
 Screened for marks: the Laser Blaster's "DANGER" and "OK" panel stencils are
 generic warnings, not names or brands, and read as a few pixels at 512 px; no

@@ -223,7 +223,7 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 The owner's Drive folder `weapons and stuff` (24 Meshy models, 2026-11-18; QUEUE "Weapons intake 11-18"). All Meshy
 community CC0 (owner, 2026-11-18) but the Futuristic Baseball Bat (the owner's own: Meshy, owned). This first batch is
 the guns; the melee weapons, the Space Shield, the Heart Taser and its slime, the grenade and the spear's poke and throw
-come in a second batch (`wip/weapons-1118b`). Built by `tools/content/prepare-guns.mjs` (pack `meshy-community-drive-1118`
+come in a second batch (`wip/weapons-1118b`, below). Built by `tools/content/prepare-guns.mjs` (pack `meshy-community-drive-1118`
 in content/guns.json: 8-12k triangles, a fifth of that from 12 m, the download's own metal and roughness, `held` copies
 for your own hands at Medium and High), holds read off gridded side and top views of each built model and checked on
 the grip sheet (`tools/content/grip-sheet.mjs`) on three characters; sight fits and optics as below. No sounds came
@@ -269,6 +269,23 @@ content/sight-fit.json and content/optics.json: the Desert Carbine and Twin-Shot
 sights are not on the bore), the Blaster X-42 (its own scope, no sights under it), the Woodland SMG (its rear block stands
 in the line) and the Hornet (no line along its top). The Laser Rifle, Arc Caster and Flak Cannon keep their red dot or
 holographic sight, mounted on the new models by `tools/content/optics.mjs`.
+
+**Batch 2 (`wip/weapons-1118b`): melee, the shield, the Heart Taser, the grenade, the spear.**
+
+| Download | Weapon | Slot · set | Why pick it up |
+|---|---|---|---|
+| Dragon Katana 3D | **Katana** (`core.katana`) | 1 · Medieval | The long blade: 70 a cut (two to a body) at 2.6 m reach, a cut every 0.57 s |
+| Scimitar Sword | **Scimitar** (`core.scimitar`) | 1 · Medieval | The quick blade: 36 every 0.27 s (three to a body, 0.53 s), and you run a little faster (1.05) |
+| futuristic baseball bat (the owner's own: Meshy, owned) | **Baseball Bat** (`core.baseball_bat`) | 1 · Chaos | The home run: 45 and a 14 m/s shove along the swing, off ledges and into hazards |
+| space shield stylize | **Space Shield** (`core.space_shield`) | 1 · Sci-fi | Held up, it takes 60 % of hits from attackers within 60° of where you face (`guard`); a bash for 30 that shoves; you move at 0.92 |
+| Heart Taser, and slime | **Heart Taser** (`core.heart_taser`) | 2 · (pickups) | A support sidearm: its slime turns toward the nearest hurt teammate ahead (25 m) and heals them 25; it passes through enemies and never hurts anyone (`projectile.heal`). Bots don't carry it |
+| "A stylized PBR 3D gam…" (a pinecone-shaped grenade with glowing green seams) | the Gas Grenade's model (Toxic Splash is its fallback) | — | — |
+
+**The Spear's two attacks** (owner, 2026-11-18). Fire is a poke: a plain melee strike (60, two to a body, 2.9 m reach)
+and the spear stays in your hands. Right mouse throws it (as before: one hit kills, it sticks where it lands). A thrown
+spear leaves nothing to poke with (`inHand` in sim/weapons.ts: a melee weapon you carry one of; the first-person view
+shows empty hands) until you walk over it, or any lying spear, which puts it back in your hands ready to poke or throw.
+Bots poke within reach and throw at a target a few steps beyond it, up to 22 m (they lead and lift for the drop).
 
 **Pictures** (lane B's scratchpad `weapons1118/shots/`): the raw downloads, gridded views of every built model, the
 grip sheets (Ranger, Iron Knight; third and first person) and the contact sheet.

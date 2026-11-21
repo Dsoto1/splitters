@@ -7,6 +7,10 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Spear pokes and throws.** Fire pokes (you keep the spear); right mouse throws it; walk over a thrown or dropped spear to have it back in your hands.
+- **Katana, Scimitar, Baseball Bat and Space Shield.** A long two-hit blade, a quick three-hit blade you run faster with, a bat that knocks people flying, and a shield that takes most of a hit from the front.
+- **Heart Taser.** A sidearm whose slime flies to the nearest hurt teammate and heals them 25; it never hurts anyone.
+- **The Gas Grenade has a new model**, a pinecone-shaped grenade.
 - **Thirteen new guns.** Desert Carbine, Twin-Shot Rifle (a double tap every pull), Compact Carbine, Woodland SMG, Amarillo (1,800 rpm), Nova 6 (energy marksman), Lever-Action, Runebreaker (a six-shot revolving shotgun), Flintlock Pistol, Crossbow (a bolt you watch fly), Blaster X-42, Laser Blaster (never reloads, overheats) and Hornet (homing stingers): each has a pickup and lies in its weapon sets (Military, Sci-fi, Medieval, Chaos); docs/ARSENAL.md, "Weapons intake of 2026-11-18".
 - **New looks for four weapons.** The Laser Rifle (its beam now cyan), Arc Caster, Railgun and Flak Cannon have new models; they fire as before.
 - **Medieval weapon set: crossbows and flintlock pistols.** Its rifle and sniper pickups roll a crossbow, its pistol pickups a flintlock pistol.
