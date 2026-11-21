@@ -218,6 +218,61 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 - **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
   is in the repo or the Drive.
 
+## Weapons intake of 2026-11-18: thirteen new guns, four new models
+
+The owner's Drive folder `weapons and stuff` (24 Meshy models, 2026-11-18; QUEUE "Weapons intake 11-18"). All Meshy
+community CC0 (owner, 2026-11-18) but the Futuristic Baseball Bat (the owner's own: Meshy, owned). This first batch is
+the guns; the melee weapons, the Space Shield, the Heart Taser and its slime, the grenade and the spear's poke and throw
+come in a second batch (`wip/weapons-1118b`). Built by `tools/content/prepare-guns.mjs` (pack `meshy-community-drive-1118`
+in content/guns.json: 8-12k triangles, a fifth of that from 12 m, the download's own metal and roughness, `held` copies
+for your own hands at Medium and High), holds read off gridded side and top views of each built model and checked on
+the grip sheet (`tools/content/grip-sheet.mjs`) on three characters; sight fits and optics as below. No sounds came
+with the folder: each gun uses one of ours (content/sounds.json), named in its file.
+
+GUNPLAY_DIRECTION's rule against statistically similar guns shaped what became a weapon: five of the downloads became
+the models of weapons that were still on kit or code models (each keeps the old one as its fallback, and fires as
+before); the other thirteen are new weapons, each with a reason to pick it up.
+
+| Download | Weapon | Slot · set | Why pick it up |
+|---|---|---|---|
+| Desert M4 Carbine | **Desert Carbine** (`core.desert_carbine`) | 3 · Military | Moves and leaves a sprint like an SMG, 720 rpm, 6 to a body (0.42 s), but half damage by 45 m |
+| Scoped Tactical Rifle | **Twin-Shot Rifle** (`core.twin_rifle`) | 3 · Military | Every pull a double tap (2 rounds, 3 ticks apart, the second jumps): two pulls and a round kill (0.6 s) to 50 m |
+| Compact Tactical Carbine | **Compact Carbine** (`core.compact_carbine`) | 7 · Military | The SMG that reaches: 40 rounds, full damage to 22 m, U switches to a low-kick Single |
+| Wooden SMG Design | **Woodland SMG** (`core.woodland_smg`) | 7 · Military | The heavy SMG: 514 rpm, 22 a round (5 to a body, 0.47 s), each round kicking higher |
+| Amarillo Carbine | **Amarillo** (`core.amarillo`) | 7 · Military | The bullet hose: 1,800 rpm, no climb, 40 rounds gone in 1.3 s, a quick reload; fades past 10 m |
+| Nova 6 Scoped Carbine | **Nova 6** (`core.nova6`) | 3 · Sci-fi | Energy marksman: quick semi-auto (4 to a body, 2 to the head), no drop, no lead; a 2.4x scope |
+| Scoped Lever-Action Rifle | **Lever-Action** (`core.lever_action`) | 5 · Military | Spec §13's Lever Action: 60 a round (two to a body, one to the head), the lever between shots, loaded round by round |
+| Runebreaker Revolver | **Runebreaker** (`core.runebreaker`) | 4 · Chaos | A six-shot revolving shotgun: a lighter blast than the pump (no one-shot kill) that comes again in a quarter second |
+| Ornate Flintlock Pistol | **Flintlock Pistol** (`core.flintlock_pistol`) | 2 · Medieval | One slow lead ball (210 m/s, falls fast): a body kill inside 8 m, always to the head, a shove; then 1.6 s to reload |
+| Break-Action Crossbow | **Crossbow** (`core.crossbow`) | 5 · Medieval | A bolt you watch fly (75 m/s, drops): 100 on a hit, no flash or tracer line; a 2.3x scope |
+| Blaster X-42 | **Blaster X-42** (`core.blaster_x42`) | 9 · Sci-fi | Orange bolts at 600 rpm (5 to a body, 0.4 s), fast (110 m/s) but not instant, no splash |
+| Laser Blaster Gun | **Laser Blaster** (`core.laser_blaster`) | 2 · Sci-fi | A sidearm that never reloads: instant blue shots, 5 to a body; nine quick ones overheat it |
+| Hornet Carbine | **Hornet** (`core.hornet`) | 2 · Chaos | Stingers that turn toward the nearest enemy ahead (22 m): easy hits, a short poison, slow kills |
+| Neon Pulse Rifle | the Laser Rifle's model; its beam cyan to match (was red) | 3 | — |
+| Arcstorm Carbine | the Arc Caster's model | 9 | — |
+| Coppercoil Sentinel | the Railgun's model | 5 | — |
+| Rustworn Pulse Carbine | the Flak Cannon's model | 4 | — |
+
+Times are body kills at 10 m, Standard, ideal aim (`pnpm gun-report`). Each new gun has a weapon pickup
+(content/pickups.json, at the end: earlier rolls unmoved) and lies in its sets (content/weapon-sets.json): Medieval
+now rolls a crossbow for a rifle or sniper pickup and a flintlock pistol for a pistol, and its one main gun (what a
+mode's own gun falls back to) is the Crossbow. New projectile looks drawn in code (`PROJECTILE_VISUALS`, added last):
+`arrow` (the Crossbow's bolt), `blasterBolt` (a steady orange streak) and `stinger` (the Hornet's dart); none of them
+flickers, so Reduce flashing needs nothing new (no new kind of bright moment: the Laser Blaster's and Nova 6's beams are
+the Laser Rifle's kind, drawn by the same code and calmed the same way). A weapon's `view.muzzle` may be `none` (the
+Crossbow: no flash).
+
+**Sights.** `tools/content/sight-fit.mjs` fitted the iron sights of the Amarillo, Compact Carbine, Flintlock Pistol,
+Laser Blaster and Runebreaker; the Nova 6, Lever-Action and Crossbow aim through a scope (`view.zoomFov`, the 2-3x kind);
+five keep the plain aim over the top of the gun until the sights pass fits them, each with its reason in
+content/sight-fit.json and content/optics.json: the Desert Carbine and Twin-Shot Rifle (their own holographic and red-dot
+sights are not on the bore), the Blaster X-42 (its own scope, no sights under it), the Woodland SMG (its rear block stands
+in the line) and the Hornet (no line along its top). The Laser Rifle, Arc Caster and Flak Cannon keep their red dot or
+holographic sight, mounted on the new models by `tools/content/optics.mjs`.
+
+**Pictures** (lane B's scratchpad `weapons1118/shots/`): the raw downloads, gridded views of every built model, the
+grip sheets (Ranger, Iron Knight; third and first person) and the contact sheet.
+
 ## Weapons intake of 2026-11-06: new models, sharper textures, smoke
 
 The owner: "Added a bunch of new weapons, all Meshy community"; the 3DModelsCC0 kit "has good ones too, not sure we

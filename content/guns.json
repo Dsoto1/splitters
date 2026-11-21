@@ -1581,24 +1581,6 @@
         0.2,
         12
       ]
-    },
-    {
-      "out": "guns/heart_taser.glb",
-      "pack": "meshy-community-drive-1118",
-      "glb": "Meshy_AI_Heart_Taser_1118135943_texture.glb",
-      "label": "Heart Taser (Meshy Community download, owner's Drive, 2026-11-18): the Heart Taser",
-      "forward": "-x",
-      "length": 0.23,
-      "triangles": 8000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
     }
   ]
 }
