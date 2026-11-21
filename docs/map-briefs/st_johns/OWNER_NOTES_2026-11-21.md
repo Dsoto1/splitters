@@ -262,3 +262,12 @@ carry our own name and mark.)
 **Memorial Hall's plan shape (owner, same day):** "the shape of the library is almost rectangle/oval from above if
 that makes sense?" Read as an oblong with rounded ends or corners (a long body, not a round tower with a wing);
 to confirm with the owner against a mock-up before it is built.
+
+**Memorial Hall, the owner again (same day, about 20:40 UTC, after seeing the step 8 hall on main):** "clearly the
+memorial notes and reference images were lost in translation"; "you should have both internal and external
+references including my notes on it being 2 stories, with the 2nd seeing the beams visible like in the ref image.
+etc. the drive has a folder of st. johns refs". So: two storeys; the **second** storey is open to the roof with
+its timber beams and trusses in view (photo 11's trusses, photo 10's striped rafters); the ground storey has the
+upper floor over it. Both the interior references (photos 10, 11) and the exterior one (photo 14) bind the build,
+with every library picture in the owner's Drive (the St. John's references of 2026-11-12 and the folder `screens`;
+fetched per container into a scratch folder, never committed).
