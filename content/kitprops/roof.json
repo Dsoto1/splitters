@@ -127,6 +127,78 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.roof.timber_bay",
+      "displayName": "Timber Ceiling Bay",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): one 8 m bay of a timber ceiling for a hall 16 m across: heavy beams across the hall on stone corbels at its middle and its ends (half of an end's beam is the next bay's), joists along it every 0.8 m, boards over them facing down. 0.7 m from the corbels' foot to the boards: place its foot 0.7 m under the ceiling. Collides as nothing."
+      },
+      "size": [
+        8,
+        0.7,
+        16
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "timberceiling",
+        "beams": [
+          -4,
+          0,
+          4
+        ],
+        "beam": [
+          0.36,
+          0.42
+        ],
+        "joist": [
+          0.12,
+          0.2
+        ],
+        "pitch": 0.8,
+        "corbel": [
+          0.3,
+          0.2
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 30
+        },
+        {
+          "distance": 80
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "dark",
+          "seed": 37001,
+          "look": {
+            "wood": "#3d2a1c",
+            "boards": "#59402b",
+            "stone": "#b8b0a0"
+          }
+        },
+        {
+          "index": 1,
+          "name": "oak",
+          "seed": 37002,
+          "look": {
+            "wood": "#5c3f26",
+            "boards": "#7a5a3a",
+            "stone": "#b8b0a0"
+          }
+        }
+      ]
     }
   ]
 }

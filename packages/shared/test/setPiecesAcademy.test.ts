@@ -25,6 +25,7 @@ import {
   serializeMap,
   setPieceParts,
   stepMovement,
+  validateMap,
   windowPanes,
   type MapDocument,
   type MoveState,
@@ -42,9 +43,9 @@ const library = builtInSetPieces();
 const ROTATIONS = [0, 1, 2, 3] as Rotation[];
 type P3 = [number, number, number];
 
-function mapOf(placements: SetPiecePlacement[], spacing = 2): MapDocument {
+function mapOf(placements: SetPiecePlacement[], spacing = 2, raise = 0): MapDocument {
   const map = makeMap([{ id: 'home', tile: 'core.room', x: -20, y: -20, z: 0, rotation: 0 }], [[-160, 0, -160]]);
-  const r = loadMap(serializeMap({ ...map, setPieces: placements, terrain: newTerrain(200, spacing, [0, 0], 'grass') }));
+  const r = loadMap(serializeMap({ ...map, setPieces: placements, terrain: { ...newTerrain(200, spacing, [0, 0], 'grass'), baseY: raise } }));
   if (!r.ok) throw new Error(r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '));
   return r.map;
 }
@@ -85,7 +86,7 @@ const byWindow = (cx: number, north: boolean, y = 0): P3 => [cx + (north ? -0.25
  * Each piece's ways through, in its own frame (anchor cell's centre on its floor = 0, 0, 0; +z north; the hall's
  * middle is z = 4): every point is reached from the one before it. `shut`: places nobody reaches from `from`.
  */
-const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; climbs?: { from: P3; yaw: number; ticks: number; up: number }[] }> = {
+const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; climbs?: { from: P3; yaw: number; ticks: number; up: number }[]; options?: string[] }> = {
   'setpiece.dorm_bay': {
     // Along the hall; into each of the four rooms, on between the second desk and the bunk to the window, and out again.
     chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], ...[-2, 2].flatMap((cx) => [true, false].map((north): P3[] => [[0, 0, 4], roomFloor(cx, north), byWindow(cx, north), [0, 0, 4]]))],
@@ -169,8 +170,19 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]]],
   },
   // St. John's step 6 (Welles): the mess hall bay. Along its middle and both sides past the tables and benches.
+  // (With each choice of its Long walls here; the step 7d options, which move the floor, the furniture and the west
+  // end, have their own walks below: "a mess hall's kit".)
   'setpiece.refectory_bay': {
     chains: [[[-3, 0, 4], [3.5, 0, 4]], [[-2.6, 0, -2.4], [3.5, 0, -2.4]], [[-2.6, 0, 10.4], [3.5, 0, 10.4]]],
+    options: ['walls'],
+  },
+  // St. John's step 7d: the serving bay (from the hall's side round the line's south end to the servers' side) and the
+  // kitchen (from its doorway's side round the prep counter to the ranges), on a level floor and a sunk one.
+  'setpiece.refectory_servery': {
+    chains: [[[-3, 0, 4], [-2.5, 0, -1.5], [2.8, 0, -1.5], [2.8, 0, 8]]],
+  },
+  'setpiece.refectory_kitchen': {
+    chains: [[[-2.4, 0, 4], [1.4, 0, 1], [1.4, 0, 9.5], [-2.4, 0, 9.5]]],
   },
   // The clock tower: in at its door and up the stair round its core to the belfry gallery along the south wall.
   'setpiece.clock_tower': {
@@ -191,12 +203,12 @@ describe('the dormitory bays: every way through, every room, every stair, in eve
   it('lists every piece of the family', () => {
     expect([...library.pieces.values()].filter((d) => d.family === 'academy').map((d) => d.id).sort()).toEqual(Object.keys(WALKS).sort());
   });
-  for (const [id, { chains, shut, climbs }] of Object.entries(WALKS)) {
+  for (const [id, { chains, shut, climbs, options: walked }] of Object.entries(WALKS)) {
     it(`${id}: bots path along each chain; players climb; shut rooms stay shut`, { timeout: 240_000 }, () => {
       const def = library.pieces.get(id)!;
       const W = mirrorWidth(def);
       // (And with each choice of its options: the slim room doors, sim/passages.ts.)
-      const choices: (Record<string, string> | undefined)[] = [undefined, ...(def.options ?? []).flatMap((o) => o.choices.slice(1).map((c) => ({ [o.name]: c.value })))];
+      const choices: (Record<string, string> | undefined)[] = [undefined, ...(def.options ?? []).filter((o) => !walked || walked.includes(o.name)).flatMap((o) => o.choices.slice(1).map((c) => ({ [o.name]: c.value })))];
       for (const options of choices) for (const rotation of ROTATIONS) {
         for (const mirror of def.mirror === 'free' ? [false, true] : [false]) {
           const map = withPiece(id, rotation, mirror, options);
@@ -785,5 +797,325 @@ describe('what the bays are made of, and what they cost', () => {
     expect(part.position[0] + getProp('kit.bed.bunk')!.size[0] / 2).toBeGreaterThan(3.9);
     const moved = { ...def, parts: def.parts.map((p, i) => (i === bunk && p.kind === 'prop' ? { ...p, position: [p.position[0] + 0.2, p.position[1], p.position[2]] as P3 } : p)) };
     expect(checkSetPieceDefinition(moved, { packs: library.packs }).join(' ')).toMatch(/kit\.bed\.bunk reaches outside the footprint/);
+  });
+});
+
+// ---------------------------------------------------------------- the mess hall's kit (St. John's step 7d)
+
+/** The Welles shape with the mess hall as the owner drew it: fireplace and drinks west, four bays of rows, the line, the kitchen east. */
+function messHall(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
+  const look = { floor: 'sunk', ceiling: 'timber', aisle: 'arcade', lights: 'bowls', flags: 'hung' };
+  return [
+    at('end_w', 'setpiece.stair_end_bay_3', 1, 0, 0, 0),
+    at('end_e', 'setpiece.stair_end_bay_3', 8, 1, 0, 2),
+    at('mess_2', 'setpiece.refectory_bay', 2, 0, 0, 0, { ...look, furniture: 'rows', end: 'fire_drinks' }),
+    at('mess_3', 'setpiece.refectory_bay', 3, 0, 0, 0, { ...look, furniture: 'rows_podium' }),
+    at('mess_4', 'setpiece.refectory_bay', 4, 0, 0, 0, { ...look, furniture: 'rows_gap', walls: 'doors' }),
+    at('mess_5', 'setpiece.refectory_bay', 5, 0, 0, 0, { ...look, furniture: 'rows' }),
+    at('serve', 'setpiece.refectory_servery', 6, 0, 0, 0, { floor: 'sunk', ceiling: 'timber' }),
+    at('kitchen', 'setpiece.refectory_kitchen', 7, 0, 0, 0, { floor: 'sunk', end: 'door' }),
+    ...[2, 3, 4, 5, 6, 7].flatMap((x) => [at(`class_${x}`, 'setpiece.classroom_bay', x, 0, 1), at(`dorm_${x}`, 'setpiece.dorm_bay_closed', x, 0, 2, 0, { roomDoors: 'slim' })]),
+  ];
+}
+
+describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line and the kitchen (St. John's step 7d)", () => {
+  const BAY = 'setpiece.refectory_bay';
+  const TURNS = ROTATIONS.flatMap((rotation) => [false, true].map((mirror) => ({ rotation, mirror })));
+  /** The piece on a 2 m ground grid at the floors' height and on a 2.5 m one 4 cm over them (St. John's own). */
+  const GRIDS = [{ spacing: 2, raise: 0 }, { spacing: 2.5, raise: 0.04 }];
+  const one = (piece: string, rotation: Rotation, mirror: boolean, options: Record<string, string>, grid = GRIDS[0]!): MapDocument => mapOf([{ id: 'piece', piece, x: 0, y: 0, z: 0, rotation, mirror, pack: 'collegiate', overrides: { options } }], grid.spacing, grid.raise);
+  const frame = (rotation: Rotation, mirror: boolean) => ({
+    at: (p: P3) => place(v(p), rotation, mirror, 0),
+    /** Back into the piece's frame: undo the turn, then the mirror. */
+    local: (p: Vec3) => {
+      const [x, z] = rotateXZ(p.x, p.z, ((4 - rotation) % 4) as Rotation);
+      return { x: mirror ? -x : x, y: p.y, z };
+    },
+    yaw: (yaw: number) => placeYaw(yaw, rotation, mirror),
+  });
+  const length = (path: Vec3[]) => path.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - path[i - 1]!.x, p.z - path[i - 1]!.z) : 0), 0);
+  const world = (map: MapDocument) => {
+    const geometry = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geometry, mapTerrainMesh(map));
+    return { physics, nav: NavWorld.build(geometry, mapTerrainMesh(map), navLinks(map.entities, physics)) };
+  };
+
+  it('the Sunk Room is a Room with its slab half a metre down and the ground cut out of its cell', () => {
+    for (const grid of GRIDS) {
+      const map = one(BAY, 0, false, { floor: 'sunk', furniture: 'none' }, grid);
+      expect(map.classicStructure.tiles.filter((t) => t.id.startsWith('sp_piece')).map((t) => t.tile)).toEqual(['core.room_sunk', 'core.room_sunk']);
+      const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+      // The floor is at -0.5 all over the bay (a ray down from head height), nothing of the ground lies over it, and
+      // there are 4 m from it to the ceiling.
+      for (const x of [-3, -1.3, 0.2, 1.9, 3.4]) for (const z of [-2.6, -0.9, 0.8, 2.4, 4, 5.7, 7.5, 9.2, 10.6]) {
+        const hit = physics.raycastHit({ x, y: 1.5, z }, { x: 0, y: -1, z: 0 }, 5);
+        expect(hit?.dist, `grid ${grid.spacing}: the floor under (${x}, ${z})`).toBeCloseTo(2, 2);
+        expect(physics.headroom({ x, y: -0.5, z }, 3.95, 0.3), `grid ${grid.spacing}: 4 m clear over (${x}, ${z})`).toBe(true);
+      }
+      // Outside the long walls the ground is at the doorways' level, not the sunk floor's (no ditch along the hall).
+      const ground = mapTerrainMesh(map)!;
+      expect(ground).toBeTruthy();
+      for (const z of [-4.6, 12.6]) for (const x of [-3, 0, 3]) {
+        const hit = physics.raycastHit({ x, y: 2, z }, { x: 0, y: -1, z: 0 }, 5);
+        expect(2 - hit!.dist, `grid ${grid.spacing}: the ground outside at (${x}, ${z})`).toBeGreaterThan(-0.12);
+        expect(2 - hit!.dist).toBeLessThan(0.06);
+      }
+    }
+  });
+
+  for (const [choice, ways] of [['door_south', [[0, false]]], ['door_north', [[0, true]]], ['doors', [[0, false], [0, true]]], ['main_south', [[-1.7, false], [1.7, false]]], ['main_north', [[-1.7, true], [1.7, true]]]] as const) {
+    it(`sunk floor, ${choice}: bots and players go in and out through every doorway over its step, in every turn, on both ground grids`, { timeout: 480_000 }, () => {
+      for (const grid of GRIDS) for (const { rotation, mirror } of TURNS) {
+        const { at, local, yaw } = frame(rotation, mirror);
+        const where = `${choice} turned ${rotation}${mirror ? ' mirrored' : ''}, grid ${grid.spacing}`;
+        const { physics, nav } = world(one(BAY, rotation, mirror, { floor: 'sunk', walls: choice, furniture: 'none' }, grid));
+        for (const [x, north] of ways) {
+          const wall = north ? 12 : -4;
+          const out = north ? 1 : -1;
+          const outside: P3 = [x, 0, wall + out * 3];
+          const inside: P3 = [x, -0.5, wall - out * 4];
+          // Bots: in over the step and out again, straight through the doorway (7 m apart).
+          for (const [a, b] of [[outside, inside], [inside, outside]]) {
+            const path = nav.findPath(at(a!), at(b!));
+            expect(path, `${where}: a path ${a} → ${b}`).toBeTruthy();
+            const end = path!.at(-1)!;
+            expect(Math.hypot(end.x - at(b!).x, end.y - b![1], end.z - at(b!).z), `${where}: ${a} → ${b} arrives`).toBeLessThan(0.6);
+            expect(length(path!), `${where}: ${a} → ${b} is the straight way`).toBeLessThan(8.5);
+          }
+          // A player walks in (down two steps of 0.25 m onto the sunk floor) and out again (up onto the ground).
+          const down = walk(physics, at([x, 0.1, wall + out * 2]), yaw(north ? Math.PI : 0), 110);
+          expect((local(down.pos).z - wall) * out, `${where}: walked in at x ${x}`).toBeLessThan(-2);
+          expect(down.pos.y, `${where}: stands on the sunk floor`).toBeCloseTo(-0.5, 1);
+          const up = walk(physics, at([x, -0.45, wall - out * 3]), yaw(north ? 0 : Math.PI), 130);
+          expect((local(up.pos).z - wall) * out, `${where}: walked out at x ${x}`).toBeGreaterThan(1);
+          expect(up.pos.y, `${where}: stands on the ground outside`).toBeGreaterThan(-0.15);
+        }
+        nav.destroy();
+      }
+    });
+  }
+
+  it('sunk floor, west end Steps up: one step across the end, walked both ways; without it the end is a half-metre drop bots do not climb', { timeout: 240_000 }, () => {
+    for (const grid of GRIDS) for (const { rotation, mirror } of TURNS) {
+      const { at, local, yaw } = frame(rotation, mirror);
+      const where = `turned ${rotation}${mirror ? ' mirrored' : ''}, grid ${grid.spacing}`;
+      const { physics, nav } = world(one(BAY, rotation, mirror, { floor: 'sunk', end: 'steps', furniture: 'none' }, grid));
+      for (const z of [-1, 4, 9]) {
+        expect(miss(nav, at([-7, 0, z]), at([0, -0.5, z])), `${where}: in at the west end, z ${z}`).toBeLessThan(0.6);
+        expect(miss(nav, at([0, -0.5, z]), at([-7, 0, z])), `${where}: out at the west end, z ${z}`).toBeLessThan(0.6);
+        expect(length(nav.findPath(at([0, -0.5, z]), at([-7, 0, z]))!), `${where}: straight out`).toBeLessThan(8.5);
+        const up = walk(physics, at([-1, -0.45, z]), yaw(-Math.PI / 2), 120);
+        expect(local(up.pos).x, `${where}: walked up and out west at z ${z}`).toBeLessThan(-5);
+      }
+      // The east end has no step: from the ground beyond it nobody climbs back... but everybody may drop in.
+      const back = nav.findPath(at([0, -0.5, 4]), at([7, 0, 4]));
+      expect(!back || length(back) > 12 || Math.hypot(back.at(-1)!.x - at([7, 0, 4]).x, back.at(-1)!.z - at([7, 0, 4]).z) > 1.2, `${where}: no climb out of the open east end`).toBe(true);
+      nav.destroy();
+    }
+  });
+
+  it('every floor-standing part stands on its floor, every hung part hangs from the ceiling, whatever the choices', () => {
+    const HUNG: Record<string, number> = { 'kit.roof.timber_bay': 2.8, 'kit.lamp.chandelier_bowl': 1.9, 'kit.board.flags': 1.78, 'prop.hm_chandelier': 2.5, 'prop.dg_banner': 0.9, 'kit.wall.arcade': -0.45 };
+    for (const id of [BAY, 'setpiece.refectory_servery', 'setpiece.refectory_kitchen']) {
+      const def = library.pieces.get(id)!;
+      expect(checkSetPieceDefinition(def, { packs: library.packs })).toEqual([]);
+      const others = def.options!.filter((o) => o.name !== 'floor');
+      // Each choice of each option alone, and the fullest hall's, on both floors.
+      const sets: Record<string, string>[] = [{}, ...others.flatMap((o) => o.choices.slice(1).map((c) => ({ [o.name]: c.value }))), ...(id === BAY ? [{ ceiling: 'timber', aisle: 'arcade', lights: 'bowls', flags: 'hung', furniture: 'rows_podium', end: 'fire_drinks' }, { aisle: 'arcade', furniture: 'rows_gap', end: 'fireplace' }, { aisle: 'arcade', furniture: 'rows', end: 'drinks', walls: 'doors' }] : [])];
+      for (const set of sets) for (const [floor, y] of [['level', 0], ['sunk', -0.5]] as const) {
+        const where = `${id} ${JSON.stringify({ ...set, floor })}`;
+        const { tiles, entities } = setPieceParts({ id: 'p_1', piece: id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { ...set, floor } } }, def, 'core.castle', library);
+        expect(tiles.map((t) => t.tile), where).toEqual(floor === 'sunk' ? ['core.room_sunk', 'core.room_sunk'] : ['core.room', 'core.room']);
+        const seen = new Set<string>();
+        for (const e of entities) {
+          if (e.kind === 'prop') {
+            const size = getProp(e.model)!.size;
+            const top = e.position[1] + size[1] * (e.scale ?? 1);
+            if (HUNG[e.model] !== undefined) expect(e.position[1], `${where}: ${e.model} hangs`).toBeCloseTo(HUNG[e.model]!, 3);
+            else expect(e.position[1], `${where}: ${e.model} stands on the floor`).toBe(y);
+            expect(top, `${where}: ${e.model} stays under the ceiling`).toBeLessThanOrEqual(3.5 + 1e-6);
+            // No twin: the same model twice in one place would be a level part and a sunk part both in play.
+            const key = `${e.model}@${e.position[0].toFixed(2)},${e.position[2].toFixed(2)}`;
+            expect(seen.has(key), `${where}: ${key} twice`).toBe(false);
+            seen.add(key);
+          }
+          if (e.kind === 'block') {
+            const bottom = e.position[1];
+            // A block stands on the floor, on the level's own floor (a wall, a pier, a fireplace of the long walls) or is a lintel.
+            expect(bottom === y || bottom === 0 || /Lintel|Mantel|Firebox|Chimney/.test(e.name ?? ''), `${where}: block ${e.name} at ${bottom}`).toBe(true);
+            expect(bottom + e.size[1], `${where}: block ${e.name} stays under the ceiling`).toBeLessThanOrEqual(3.5 + 1e-6);
+          }
+        }
+        // One steady light a bay (two with the hearth's): nothing here flickers (a light part has no effect to flicker with).
+        expect(entities.filter((e) => e.kind === 'light').length, `${where}: lights`).toBe(set.end === 'fireplace' || set.end === 'fire_drinks' ? 2 : 1);
+      }
+    }
+  });
+
+  it('the arcade: bots and players pass through each arch, a pier stops a walk, the stone over an arch is solid; in every turn, on both floors', { timeout: 480_000 }, () => {
+    for (const floor of ['level', 'sunk']) for (const { rotation, mirror } of TURNS) {
+      const y = floor === 'sunk' ? -0.5 : 0;
+      const { at, local, yaw } = frame(rotation, mirror);
+      const where = `${floor} floor, turned ${rotation}${mirror ? ' mirrored' : ''}`;
+      const { physics, nav } = world(one(BAY, rotation, mirror, { floor, aisle: 'arcade', furniture: 'none', end: 'wall' }));
+      for (const x of [-2, 2]) {
+        // Through the arch at x from the main hall into the aisle and back: the straight way (5 m), not round the end.
+        for (const [a, b] of [[[x, y, 3], [x, y, -2]], [[x, y, -2], [x, y, 3]]] as P3[][]) {
+          const path = nav.findPath(at(a!), at(b!));
+          expect(path, `${where}: a path through the arch at x ${x}`).toBeTruthy();
+          expect(Math.hypot(path!.at(-1)!.x - at(b!).x, path!.at(-1)!.z - at(b!).z), `${where}: arrives through the arch at x ${x}`).toBeLessThan(0.6);
+          expect(length(path!), `${where}: straight through the arch at x ${x}`).toBeLessThan(6);
+        }
+        expect(local(walk(physics, at([x, y + 0.05, 2.5]), yaw(Math.PI), 100).pos).z, `${where}: walked south through the arch at x ${x}`).toBeLessThan(-1.5);
+      }
+      for (const x of [-3.9, 0, 3.9]) expect(local(walk(physics, at([x, y + 0.05, 2.5]), yaw(Math.PI), 100).pos).z, `${where}: the pier at x ${x} stops a walk`).toBeGreaterThan(0.6);
+      // Over the arch's crown and over a pier the wall is solid up to the ceiling; under the crown it is open.
+      const eye = (x: number, h: number) => physics.raycastHit(at([x, h, 3]), { x: at([0, 0, -1]).x - at([0, 0, 0]).x, y: 0, z: at([0, 0, -1]).z - at([0, 0, 0]).z }, 5.5)?.dist;
+      expect(eye(-2, 3.2), `${where}: stone over the crown`).toBeCloseTo(2.7, 1);
+      expect(eye(-2, y + 1.5) ?? 9, `${where}: open under the crown`).toBeGreaterThan(5);
+      expect(eye(0, y + 1), `${where}: the pier`).toBeCloseTo(2.6, 1);
+      nav.destroy();
+    }
+  });
+
+  it('rows of mess tables: three lanes along the hall for bots, a cross aisle where asked, tables that collide and chairs that do not', { timeout: 480_000 }, () => {
+    for (const floor of ['level', 'sunk']) for (const { rotation, mirror } of TURNS) {
+      const y = floor === 'sunk' ? -0.5 : 0;
+      const { at, local, yaw } = frame(rotation, mirror);
+      const where = `${floor} floor, turned ${rotation}${mirror ? ' mirrored' : ''}`;
+      for (const furniture of ['rows', 'rows_gap', 'rows_podium']) {
+        // (A sunk bay alone ends in a half-metre drop each way, and a lane cut off between two rows is too small a
+        // floor for the navmesh to keep: with Steps up at the west end the row's west tables are left out and the lanes
+        // meet there, as they do in a hall.)
+        const { physics, nav } = world(one(BAY, rotation, mirror, { floor, aisle: 'arcade', furniture, ...(floor === 'sunk' ? { end: 'steps' } : {}) }));
+        // (The lane by the north wall passes the pier, and the lectern and bell where they stand: the least room it has.)
+        for (const z of [1.43, 5.73, 10.03]) {
+          const [from, to]: P3[] = floor === 'sunk' ? [[-2.6, y, z], [3.1, y, z]] : [[-3.2, y, z], [3.4, y, z]];
+          const path = nav.findPath(at(from!), at(to!));
+          expect(path, `${where}, ${furniture}: the lane at z ${z}`).toBeTruthy();
+          expect(Math.hypot(path!.at(-1)!.x - at(to!).x, path!.at(-1)!.z - at(to!).z), `${where}, ${furniture}: the lane at z ${z} arrives`).toBeLessThan(0.6);
+          expect(length(path!), `${where}, ${furniture}: the lane at z ${z} is straight`).toBeLessThan(7.6);
+        }
+        const across = nav.findPath(at([0, y, 1.43]), at([0, y, 10.03]));
+        if (furniture === 'rows_gap') expect(length(across!), `${where}: across the hall by the cross aisle`).toBeLessThan(9.5);
+        // A table stops a walk across the rows; a chair does not (a player brushes through to the table's edge).
+        const stopped = local(walk(physics, at([furniture === 'rows_gap' ? 3.05 : 1.95, y + 0.05, 1.43]), yaw(0), 100).pos);
+        expect(stopped.z, `${where}, ${furniture}: stopped by the first table (z ${stopped.z.toFixed(2)})`).toBeLessThan(2.45);
+        expect(stopped.z, `${where}, ${furniture}: walked through its chairs`).toBeGreaterThan(1.9);
+        nav.destroy();
+      }
+    }
+  });
+
+  it('the west end: a wall, the fireplace wall and the drink stations close it; their pieces stand against it clear of the lanes', { timeout: 480_000 }, () => {
+    for (const end of ['wall', 'fireplace', 'drinks', 'fire_drinks']) for (const floor of ['level', 'sunk']) for (const { rotation, mirror } of TURNS.filter((t) => end === 'fire_drinks' || !t.mirror)) {
+      const y = floor === 'sunk' ? -0.5 : 0;
+      const { at, local, yaw } = frame(rotation, mirror);
+      const where = `${end}, ${floor} floor, turned ${rotation}${mirror ? ' mirrored' : ''}`;
+      const map = one(BAY, rotation, mirror, { floor, aisle: 'arcade', furniture: 'rows', end, ...(floor === 'sunk' ? {} : {}) });
+      const { physics, nav } = world(map);
+      // Nobody walks out west; the cross way before the end wall joins the three lanes (the row's west tables are left out).
+      expect(local(walk(physics, at([-1.5, y + 0.05, 5.73]), yaw(-Math.PI / 2), 120).pos).x, `${where}: the end is closed`).toBeGreaterThan(-3.6);
+      const cross = nav.findPath(at([-1.4, y, 1.43]), at([-1.4, y, 10.03]));
+      expect(cross, `${where}: across before the end wall`).toBeTruthy();
+      expect(length(cross!), `${where}: across before the end wall, straight`).toBeLessThan(10.5);
+      // Every prop of the end stands inside the bay, east of the wall's face.
+      const wallFace = -3.5;
+      for (const e of map.entities) if (e.kind === 'prop' && /fireplace|panel_window|drink_station/.test(e.model)) expect(local(v(e.position as P3)).x, `${where}: ${e.model}`).toBeGreaterThan(wallFace);
+      nav.destroy();
+    }
+  });
+
+  it('the serving line and the kitchen: round the line to the servers\' side, through the kitchen\'s doorway, out at its back door; in every turn, on both floors', { timeout: 480_000 }, () => {
+    for (const floor of ['level', 'sunk']) for (const { rotation, mirror } of TURNS) {
+      const y = floor === 'sunk' ? -0.5 : 0;
+      const where = `${floor} floor, turned ${rotation}${mirror ? ' mirrored' : ''}`;
+      // Two bays end to end along the pieces' own x: the serving bay, then the kitchen east of it (west of it, mirrored).
+      const [dx, dz] = rotateXZ(mirror ? -1 : 1, 0, rotation);
+      const base = { rotation, mirror, pack: 'collegiate' as const };
+      const map = mapOf([
+        { ...base, id: 'serve', piece: 'setpiece.refectory_servery', x: 0, y: 0, z: 0, overrides: { options: { floor } } },
+        { ...base, id: 'kitchen', piece: 'setpiece.refectory_kitchen', x: dx, y: dz, z: 0, overrides: { options: { floor, end: 'door' } } },
+      ]);
+      const { at, local, yaw } = frame(rotation, mirror);
+      const { physics, nav } = world(map);
+      const hallSide: P3 = [-2.5, y, 5];
+      const behind: P3 = [2.8, y, 8];
+      const kitchen: P3 = [8, y, 1];
+      const beyond: P3 = [14.5, 0, 4];
+      const there = (a: P3, b: P3, max: number, what: string) => {
+        const path = nav.findPath(at(a), at(b));
+        expect(path, `${where}: ${what}`).toBeTruthy();
+        expect(Math.hypot(path!.at(-1)!.x - at(b).x, path!.at(-1)!.y - b[1], path!.at(-1)!.z - at(b).z), `${where}: ${what} arrives`).toBeLessThan(0.6);
+        expect(length(path!), `${where}: ${what} (${length(path!).toFixed(1)} m)`).toBeLessThan(max);
+      };
+      there(hallSide, behind, 18, 'round the south end of the line to the servers\' side');
+      there(behind, kitchen, 13, 'from behind the line through the kitchen\'s doorway');
+      there(hallSide, kitchen, 19, 'from the hall into the kitchen');
+      there(kitchen, beyond, 12, 'out at the kitchen\'s back door');
+      there(beyond, hallSide, 25, 'in at the back door and through to the hall');
+      // The counters stop a walk east across the line; a player walks through the kitchen's doorway and out at the back door.
+      expect(local(walk(physics, at([-2.5, y + 0.05, 8]), yaw(Math.PI / 2), 100).pos).x, `${where}: the line stops a walk`).toBeLessThan(0.2);
+      expect(local(walk(physics, at([2.5, y + 0.05, 4]), yaw(Math.PI / 2), 80).pos).x, `${where}: walked into the kitchen`).toBeGreaterThan(5);
+      expect(local(walk(physics, at([9, y + 0.05, 4]), yaw(Math.PI / 2), 120).pos).x, `${where}: walked out at the back door`).toBeGreaterThan(12.5);
+      nav.destroy();
+      // With the East end a wall, the kitchen is closed there.
+      if (!mirror && floor === 'sunk') {
+        const closed = world(mapOf([{ ...base, id: 'kitchen', piece: 'setpiece.refectory_kitchen', x: 0, y: 0, z: 0, overrides: { options: { floor, end: 'wall' } } }]));
+        expect(local(walk(closed.physics, at([1, y + 0.05, 4]), yaw(Math.PI / 2), 120).pos).x, `${where}: the end wall`).toBeLessThan(3.4);
+        closed.nav.destroy();
+      }
+    }
+  });
+
+  it("the whole hall as the owner drew it, under two floors, on both ground grids: every way in, every lane, the aisle, the line, the kitchen", { timeout: 480_000 }, () => {
+    for (const grid of GRIDS) {
+      const map = mapOf(messHall(), grid.spacing, grid.raise);
+      const where = `grid ${grid.spacing}`;
+      const { physics, nav } = world(map);
+      const floor = -0.5;
+      const middle = v([32, floor, 5.7]);
+      const go = (a: Vec3, b: Vec3, max: number, what: string) => {
+        const path = nav.findPath(a, b);
+        expect(path, `${where}: ${what}`).toBeTruthy();
+        expect(Math.hypot(path!.at(-1)!.x - b.x, path!.at(-1)!.y - b.y, path!.at(-1)!.z - b.z), `${where}: ${what} arrives`).toBeLessThan(0.6);
+        expect(length(path!), `${where}: ${what} (${length(path!).toFixed(1)} m)`).toBeLessThan(max);
+      };
+      go(v([32, 0, 17]), middle, 13, 'from the court in at the north door');
+      go(middle, v([32, 0, 17]), 13, 'and out again');
+      go(v([32, 0, -9]), middle, 17, 'from the street in at the south door, through the aisle and an arch');
+      for (const z of [1.43, 5.73, 10.03]) go(v([21.5, floor, z]), v([45, floor, z]), 25, `the lane at z ${z}, end to end`);
+      go(v([24, floor, 1.43]), v([22, floor, -2.2]), 8, 'from the lane by the arcade into the side aisle through an arch');
+      go(v([45, floor, 5.73]), v([51, floor, 8]), 18, "round the line to the servers' side");
+      go(middle, v([58, floor, 1]), 34, 'into the kitchen');
+      go(v([58, floor, 1]), v([64, 0, 4]), 9, "out at the kitchen's back door to the east stair's lobby");
+      go(middle, v([56, 4, 4]), 70, 'from the hall to the floor above by the east stair');
+      go(v([56, 8, 4]), middle, 90, 'and down from the top floor into the hall');
+      // The west end is closed by the fireplace wall: the west stair is reached round outside.
+      expect(length(nav.findPath(v([8, 0, 8]), v([21.5, floor, 5.73]))!), `${where}: the west lobby is not on the hall`).toBeGreaterThan(40);
+      nav.destroy();
+      // A player walks in at the north door and stands on the sunk floor; 4 m of room over every lane.
+      const inside = walk(physics, v([32, 0.1, 14]), Math.PI, 110);
+      expect(inside.pos.z, `${where}: walked in`).toBeLessThan(9);
+      expect(inside.pos.y).toBeCloseTo(-0.5, 1);
+      for (const x of [22, 30, 38, 45, 50, 58]) for (const z of [1.43, 5.73, 10.03]) expect(physics.headroom({ x, y: floor, z }, 3.95, 0.3), `${where}: 4 m clear at (${x}, ${z})`).toBe(true);
+      for (const x of [22, 30, 38]) expect(physics.headroom({ x, y: floor, z: -2 }, 3.95, 0.3), `${where}: the aisle at ${x}`).toBe(true);
+    }
+    // What it is made of: seven lights (one a bay and the hearth's), the kit's models.
+    const map = mapOf(messHall());
+    const mine = map.entities.filter((e) => /^sp_(mess_|serve|kitchen)/.test(e.id));
+    expect(mine.filter((e) => e.kind === 'light')).toHaveLength(7);
+    expect([...new Set(mine.flatMap((e) => (e.kind === 'prop' ? [e.model] : [])))].sort()).toEqual(['kit.appliance.fridge', 'kit.appliance.stove', 'kit.board.flags', 'kit.cabinet.kitchen', 'kit.door.walk_in', 'kit.lamp.chandelier_bowl', 'kit.monument.bell_stand', 'kit.roof.timber_bay', 'kit.shelf.end', 'kit.shop.drink_station', 'kit.shop.serving_line', 'kit.table.lectern', 'kit.table.mess', 'kit.table.mess_small', 'kit.wall.arcade', 'kit.wall.fireplace', 'kit.wall.panel_window', 'prop.dg_banner']);
+    expect(validateMap(map).filter((i) => i.severity === 'error')).toEqual([]);
+    expect(validateMap(map).filter((i) => /^tunnel\./.test(i.code))).toEqual([]);
+  });
+
+  it('every new option starts at the bay as it was: a placement made before step 7d expands as before', () => {
+    const def = library.pieces.get(BAY)!;
+    expect(def.options!.map((o) => `${o.name}:${o.choices[0]!.value}`)).toEqual(['walls:windows', 'floor:level', 'ceiling:plain', 'aisle:none', 'furniture:benches', 'lights:iron', 'flags:none', 'end:open']);
+    const { tiles, entities } = setPieceParts({ id: 'p_1', piece: BAY, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }, def, 'core.castle', library);
+    // The same parts by index as before the kit (ids are `sp_<placement>_<part index>`: 0-1 the tiles, 12-22 the rest).
+    expect([...tiles.map((t) => t.id), ...entities.map((e) => e.id)].map((id) => Number(id.split('_').at(-1))).sort((a, b) => a - b)).toEqual([0, 1, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
   });
 });

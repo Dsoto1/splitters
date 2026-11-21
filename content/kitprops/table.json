@@ -894,6 +894,190 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.table.mess",
+      "displayName": "Mess Table (with chairs)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): a mess hall table 3.9 m long and 0.76 m wide, a pale top on dark steel legs, five dark chairs pushed in along each long side and two napkin holders: one prop where there would be eleven. Collides as the table; the chairs, pushed in, do not. Variant bare: no chairs."
+      },
+      "size": [
+        3.9,
+        0.9,
+        1.46
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "messtable",
+        "table": [
+          3.9,
+          0.76,
+          0.76
+        ],
+        "seats": 5,
+        "tuck": 0.5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "maple",
+          "seed": 37041,
+          "look": {
+            "top": "#cdb98f",
+            "edge": "#6b5a44",
+            "steel": "#2b2c30",
+            "chair": "#26272b",
+            "holder": "#17181a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "bare",
+          "seed": 37042,
+          "look": {
+            "top": "#cdb98f",
+            "edge": "#6b5a44",
+            "steel": "#2b2c30",
+            "chair": "#26272b",
+            "holder": "#17181a"
+          },
+          "set": {
+            "chairs": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.mess_small",
+      "displayName": "Mess Table, small (with chairs)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): the Mess Table 1.8 m long with two chairs a side. Collides as the table. Variant bare: no chairs."
+      },
+      "size": [
+        1.8,
+        0.9,
+        1.46
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "messtable",
+        "table": [
+          1.8,
+          0.76,
+          0.76
+        ],
+        "seats": 2,
+        "tuck": 0.5
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "maple",
+          "seed": 37051,
+          "look": {
+            "top": "#cdb98f",
+            "edge": "#6b5a44",
+            "steel": "#2b2c30",
+            "chair": "#26272b",
+            "holder": "#17181a"
+          }
+        },
+        {
+          "index": 1,
+          "name": "bare",
+          "seed": 37052,
+          "look": {
+            "top": "#cdb98f",
+            "edge": "#6b5a44",
+            "steel": "#2b2c30",
+            "chair": "#26272b",
+            "holder": "#17181a"
+          },
+          "set": {
+            "chairs": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.table.lectern",
+      "displayName": "Lectern",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): a slim wooden lectern 1.2 m high and 0.46 m deep: a plinth, a panelled column, a sloped reading top with a lip (the speaker stands on -z). Collides as its box."
+      },
+      "size": [
+        0.7,
+        1.2,
+        0.46
+      ],
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "lectern"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 37061,
+          "look": {
+            "wood": "#6a4326",
+            "trim": "#4a2d18"
+          }
+        },
+        {
+          "index": 1,
+          "name": "dark",
+          "seed": 37062,
+          "look": {
+            "wood": "#4a2f1c",
+            "trim": "#2f1d10"
+          }
+        }
+      ]
     }
   ]
 }

@@ -109,6 +109,9 @@ const OPEN_SIDED = [
   'setpiece.ramp_junction',
   // The mess hall bay (setPiecesAcademy.test.ts): the hall runs on out of each end, as the classroom bays'.
   'setpiece.refectory_bay',
+  // The serving bay and the kitchen (setPiecesAcademy.test.ts, "a mess hall's kit"): bays of the same hall.
+  'setpiece.refectory_kitchen',
+  'setpiece.refectory_servery',
   'setpiece.sea_wall',
   'setpiece.sea_wall_breach',
   'setpiece.shop_unit',

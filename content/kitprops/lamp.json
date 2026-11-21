@@ -87,6 +87,51 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.lamp.chandelier_bowl",
+      "displayName": "Chandelier with Bowl",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): a round iron chandelier 1.3 m across hung on three chains from a ceiling rose 1.6 m over its foot: an iron ring with eight small shades, a wide pale bowl under it. Plain colours: it does not glow, flicker or swing (a set piece's light gives the light). Its top is the ceiling: place its foot 1.6 m under it. Collides as nothing."
+      },
+      "size": [
+        1.3,
+        1.6,
+        1.3
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "chandelier",
+        "ring": 0.42
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 20
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "iron",
+          "seed": 37101,
+          "look": {
+            "iron": "#1c1d20",
+            "bowl": "#f2ead2",
+            "shade": "#efe2bd"
+          }
+        }
+      ]
     }
   ]
 }
