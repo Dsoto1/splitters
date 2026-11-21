@@ -60,7 +60,7 @@ const LEAN_STEPS = 10;
  * The spine's roll at a full lean (rad). More than the hit shapes' own roll (sim/moves.ts LEAN.angle, 0.3, with a 12 cm
  * shift at the hips that a skinned body can't make), so the drawn head ends where the hit head is: about 0.33 m out.
  */
-const LEAN_SPINE_ROLL = 0.5;
+const LEAN_SPINE_ROLL = 0.65;
 /** Sliding: the whole body tipped back (rad, negative is back), over the feet. */
 const SLIDE_TIP = -0.42;
 

@@ -1453,7 +1453,7 @@ comes closer pulls it in at once.
   Options → Camera shake scales that roll (Off: none) and the system's reduce-motion setting removes it. No flash, no
   fade: the slide's camera is the crouch's own eased drop.
 
-**Drawn.** In third person and for everyone else, the body leans (the spine rolls 0.5 rad, more than the hit shapes'
+**Drawn.** In third person and for everyone else, the body leans (the spine rolls 0.65 rad, more than the hit shapes'
 roll because a skinned spine can't shift at the hips; the drawn head lands where the hit head is) and slides (the
 crouch pose tipped back 0.42 rad over the feet, the spine bringing the gun back onto the aim). The snapshot says
 `sd` (sliding) and `ln` (lean steps); docs/MULTIPLAYER_PROTOCOL.md section 25.

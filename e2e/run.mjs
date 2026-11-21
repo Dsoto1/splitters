@@ -13996,6 +13996,12 @@ async function slidepeekFlow(browser) {
     if (pics) await page.screenshot({ path: `${pics}/${name}.png` });
   };
   const errors = [];
+  // (SLIDEPEEK_ONLINE_ONLY=1: the dedicated-server part alone, when working on it.)
+  if (!process.env.SLIDEPEEK_ONLINE_ONLY) await slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, LEAN_R });
+  await slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, LEAN_R });
+}
+
+async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, LEAN_R }) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   livePages.add(page);
   page.on('pageerror', (e) => errors.push(e.message));
@@ -14103,10 +14109,12 @@ async function slidepeekFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   livePages.delete(page);
+}
 
+async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R }) {
   // Two players on a dedicated server: Alice leans and slides, Bob sees it (drawn from the network's snapshots).
   const port = await pickPort('E2E_SLIDEPEEK_PORT', 7797);
-  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/m4_outpost.json', import.meta.url)) });
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/void_yard.json', import.meta.url)) });
   await sleep(4000);
   const join = async (name) => {
     const p = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
@@ -14132,10 +14140,18 @@ async function slidepeekFlow(browser) {
     await bob.evaluate((y) => Object.assign(window.__cs.input, { yaw: y, pitch: -0.05 }), yawAB + Math.PI);
     return Math.hypot(b.x - a.x, b.z - a.z);
   };
+  // Walk toward each other until close (the yard's blocks may stand between their spawns).
+  for (let i = 0; i < 40 && (await faceEachOther()) > 7; i++) {
+    for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
+    await sleep(250);
+  }
+  for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
+  await sleep(300);
   await faceEachOther();
   await alice.evaluate((b) => (window.__autoInput = { forward: 0, buttons: b }), LEAN_R);
   const seenLean = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.leanNow ?? 0) > 0.9, aliceSlot, { timeout: T(15000) }).then(() => true, () => false);
-  check(seenLean, 'over the network: Bob sees Alice lean');
+  const why = async () => JSON.stringify({ alice: await alice.evaluate(() => ({ lean: window.__cs.local.state.lean, slide: window.__cs.local.state.slide, pos: window.__cs.local.state.pos, alive: window.__cs.local.alive })), bob: await bob.evaluate((s) => ({ drawn: window.__cs.view.avatars.get(s)?.anim?.leanNow, slide: window.__cs.view.avatars.get(s)?.anim?.slideTip, pos: window.__cs.local.state.pos }), aliceSlot) });
+  check(seenLean, `over the network: Bob sees Alice lean ${seenLean ? '' : await why()}`);
   await sleep(300);
   await pic(bob, '10-network-lean-seen-by-other-player');
   await pic(alice, '11-network-lean-alice-first-person');
@@ -14148,7 +14164,7 @@ async function slidepeekFlow(browser) {
   check(sprinted, 'online: Alice sprints');
   await alice.evaluate((b) => (window.__autoInput = { forward: 1, buttons: b }), SPRINT | CROUCH);
   const aliceSlid = await alice.waitForFunction(() => (window.__cs.local.state.slide ?? 0) > 0, null, { timeout: T(5000) }).then(() => true, () => false);
-  check(aliceSlid, 'online: Alice slides (predicted)');
+  check(aliceSlid, `online: Alice slides (predicted) ${aliceSlid ? '' : await why()}`);
   const seenSlide2 = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.slideTip ?? 0) < -0.2, aliceSlot, { timeout: T(8000), polling: 'raf' }).then(() => true, () => false);
   check(seenSlide2, 'over the network: Bob sees Alice slide');
   await pic(bob, '12-network-slide-seen-by-other-player');

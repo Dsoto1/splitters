@@ -44,7 +44,7 @@ export function mapPartOf(id, ids) {
 /** Maps a flow opens by name (besides the tour), so a change to one runs those flows. */
 const MAP_USERS = {
   m3_vault: ['vault'],
-  m4_outpost: ['outpost', 'slidepeek'],
+  m4_outpost: ['outpost'],
   sandgate: ['sandgate', 'lobby', 'zombies', 'fireteams'],
   citadel: ['citadel'],
   canyon: ['canyon', 'scenery', 'physicsfx', 'arsenal', 'vehicles'],
