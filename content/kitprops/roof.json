@@ -288,12 +288,12 @@
       "category": "Gothic",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's step 8b; the owner's photo: the library's stucco wing under a steep roof with a swept, kicked-out eave and a little half-timber in its gable): a ridge roof 8 m long over a room 8 m across (9.4 m over its swept eaves), the ridge 5.2 m over the eaves, a half-timbered gable wall at each end; panels inside, no trusses. Place its foot on the walls' top. Variant `plain`: a boarded gable. Collides as nothing."
+        "1": "First version (St. John's step 8b; the owner's photo: the library's small stucco wing under a steep roof with a swept, kicked-out eave and a little half-timber in its gable): a ridge roof 6 m long over a wing 5 m across (6.2 m over its swept eaves), the ridge 3.5 m over the eaves, a half-timbered gable wall on +z; its −z end is open (it goes against a taller building's wall); panels inside, no trusses. Place its foot on the walls' top. Variant `plain`: a boarded gable. Collides as nothing."
       },
       "size": [
-        9.4,
-        5.6,
-        8
+        6.2,
+        4.0,
+        6.0
       ],
       "collide": "none",
       "bounds": "within",
@@ -302,14 +302,14 @@
       "generator": {
         "kind": "ridgeroof",
         "spring": 0,
-        "rise": 5.2,
+        "rise": 3.5,
         "flare": [
-          1.7,
-          0.8
+          1.2,
+          0.55
         ],
-        "overhang": 0.7,
-        "rafters": 8,
-        "gable": "both",
+        "overhang": 0.6,
+        "rafters": 6,
+        "gable": "front",
         "timber": true
       },
       "lods": [
