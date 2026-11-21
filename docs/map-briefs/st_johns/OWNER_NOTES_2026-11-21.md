@@ -258,3 +258,7 @@ carry our own name and mark.)
 - **Above both, open to the court behind a rail:** a mezzanine with more equipment and storage and the wrestling
   mats, lit by the big front windows seen in photo 12.
 - **Bathrooms** somewhere in this end (place not remembered).
+
+**Memorial Hall's plan shape (owner, same day):** "the shape of the library is almost rectangle/oval from above if
+that makes sense?" Read as an oblong with rounded ends or corners (a long body, not a round tower with a wing);
+to confirm with the owner against a mock-up before it is built.
