@@ -2000,7 +2000,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     reload: { type: 'magazine', tactical: 80, empty: 100, out: 0.3, in: 0.7 },
     ammo: 'rifle',
     burst: { count: 2, intervalTicks: 3 },
-    falloff: { start: 30, end: 80, min: 0.65, curve: 'smooth' },
+    falloff: { start: 25, end: 70, min: 0.6, curve: 'smooth' },
     kick: { pitch: [0.006, 0.022], yaw: [0.004, -0.006], variance: 0.002 },
     botDesirability: 0.66,
     botRange: [5, 40],
@@ -2089,7 +2089,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
-  // design: The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Twelve rounds to a body, 0.37 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.
+  // design: The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Thirteen rounds to a body, 0.4 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.
   // model: The Meshy community Amarillo Carbine (CC0); the kit SMG is the fallback.
   'core.amarillo': {
     id: 'core.amarillo',
@@ -2098,7 +2098,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     kind: 'hitscan',
     slot: 7,
     family: 'smg',
-    damage: 9,
+    damage: 8,
     spread: 0.007,
     fireIntervalTicks: 2,
     range: 120,
@@ -2126,7 +2126,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
-  // design: The energy marksman: quick semi-automatic (360 rpm cap), 28 a shot, four to a body (0.5 s), two to the head; light-speed bolts, so no drop and no lead, where the Marksman Rifle's rounds fly and fall. A light 0.8 zoom.
+  // design: The energy marksman: quick semi-automatic (360 rpm cap), 28 a shot, four to a body (0.5 s), two to the head; light-speed bolts, so no drop and no lead, where the Marksman Rifle's rounds fly and fall. A 2.4x scope (zoom 0.65).
   // ballistic: null: an energy weapon, hitscan (no flight time or drop).
   // model: The Meshy community Nova 6 Scoped Carbine (CC0), its yellow cells kept; the kit marksman rifle is the fallback.
   'core.nova6': {
@@ -2162,7 +2162,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffd84a',
       hold: { style: 'long', grip: [0, -0.06, -0.175], support: [0, -0.02, 0.2], shoulder: [0, 0.03, -0.42] },
       muzzleAt: [0, 0.06, 0.43],
-      zoomFov: 0.8,
+      zoomFov: 0.65,
       beam: true,
       sound: 'fire.pulse',
     },
@@ -2241,7 +2241,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.shotgun',
     },
   },
-  // design: One heavy lead ball, then a reload (1.6 s): 80 to the body, a kill to the head, a shove. The ball is slow (210 m/s) and drops, so past 20 m you lead and lob it. The Medieval set's sidearm; the Gilded Pistol stays the rare one-shot kill.
+  // design: One heavy lead ball, then a reload (1.6 s): a body kill inside 8 m (100), half that by 40 m, always a kill to the head, and a shove. The ball is slow (210 m/s) and drops, so past 20 m you lead and lob it. The Medieval set's sidearm; the Gilded Pistol stays the rare one-shot kill.
   // ballistic: A round ball: slow, falling fast, losing speed (and damage, by impact speed) quickly.
   // model: The Meshy community Ornate Flintlock Pistol (CC0), a long horse pistol, built 0.56 m long; the Gilded Pistol's kit model is the fallback.
   'core.flintlock_pistol': {
@@ -2252,7 +2252,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     slot: 2,
     family: 'revolver',
     fireMode: 'semi',
-    damage: 80,
+    damage: 100,
     spread: 0.003,
     fireIntervalTicks: 30,
     range: 120,
@@ -2264,7 +2264,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     ammo: 'light',
     ballistic: { velocity: 210, drag: 0.9, gravityScale: 1.6, tracerEvery: 1 },
     accuracy: { base: 0.003 },
-    falloff: { start: 15, end: 50, min: 0.55, curve: 'smooth' },
+    falloff: { start: 8, end: 40, min: 0.5, curve: 'smooth' },
     kick: { pitch: [0.11], yaw: [0.014, -0.01], visual: 1.4 },
     knockback: 5,
     botDesirability: 0.55,
@@ -2326,7 +2326,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#e8e2d0',
       hold: { style: 'long', grip: [0, -0.02, -0.12], support: [0, -0.01, 0.2], shoulder: [0, -0.02, -0.42] },
       muzzleAt: [0, 0.05, 0.43],
-      zoomFov: 0.75,
+      zoomFov: 0.7,
       muzzle: { effect: 'none' },
       sound: 'fire.nail',
     },

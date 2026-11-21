@@ -33,7 +33,7 @@ export const WEAPON_SET_DEFS: Readonly<Record<(typeof WEAPON_SET_IDS)[number], W
   medieval: {
     id: 'medieval',
     name: 'Medieval',
-    blurb: 'Blades and spears: everyone spawns with a knife and a throwing spear; every weapon pickup is a spear or a battle axe.',
+    blurb: 'Blades, spears and bolts: everyone spawns with a knife and a throwing spear; weapon pickups are spears, battle axes, crossbows and flintlock pistols.',
     spawn: ['core.knife', 'core.spear'],
     weapons: ['core.spear', 'core.battle_axe', 'core.crossbow', 'core.flintlock_pistol', 'core.knife'],
     throwables: ['incendiary', 'holy'],
