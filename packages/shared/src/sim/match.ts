@@ -114,7 +114,7 @@ import {
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, inHand, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -3404,8 +3404,10 @@ export class Match {
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
-        if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
-        else if (spendRound(held)) {
+        if (def.magazine > 0 && roundsReady(held) === 0) {
+          if (inHand(held.def)) c.semiLatch = true;
+          else this.startReload(c);
+        } else if (inHand(held.def) ? held.mag > 0 : spendRound(held)) {
           c.fireCooldown = firing.interval;
           c.semiLatch = firing.mode !== 'auto';
           this.fire(c, paired ? pairTrigger(def, firing, paired, false) : primaryTrigger(def, firing), input.viewTick ?? 0);
@@ -3449,7 +3451,7 @@ export class Match {
       // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
       if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
         if (def.kind === 'melee' && !getWeapon(def.id).heal) {
-          if (ready && spendRound(held)) {
+          if (ready && (inHand(held.def) ? held.mag > 0 : spendRound(held))) {
             c.fireCooldown = def.fireIntervalTicks;
             this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
             fired = true;

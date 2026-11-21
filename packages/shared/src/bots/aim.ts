@@ -1,7 +1,7 @@
 import { bodyToWorld, headPoint, shapesFor, type HitBody, type LookHitbox } from '../sim/hitbox.ts';
 import { angleDelta, clamp, lookAngles, type Vec3, hypot } from '../math.ts';
 import { PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../sim/constants.ts';
-import type { WeaponDefinition } from '../sim/weapons.ts';
+import { inHand, type WeaponDefinition } from '../sim/weapons.ts';
 import { BULLET_GRAVITY, NEAR_INSTANT_M, gunplayOf } from '../sim/gunplay.ts';
 import type { BotDifficulty, BotProfile } from './profile.ts';
 
@@ -278,7 +278,8 @@ export class AimModel {
       oz = p.z;
     }
     let lead = skill.lagSeconds * skill.prediction;
-    const proj = ctx.weapon?.projectile;
+    // A spear's throw (its second trigger: inHand) flies like any projectile; its poke is at arm's length.
+    const proj = ctx.weapon ? (inHand(ctx.weapon) ? ctx.weapon.alt?.projectile : ctx.weapon.projectile) : undefined;
     const dist = hypot(seen.x - ctx.eye.x, seen.y + up - ctx.eye.y, seen.z - ctx.eye.z);
     // Projectiles: lead a moving target a little (never the full flight time).
     if (proj && proj.speed > 0) lead += (dist / proj.speed) * (0.35 + 0.5 * skill.prediction);

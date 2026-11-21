@@ -9701,7 +9701,13 @@ async function arsenalFlow(browser) {
   await face(6);
   await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.spear' && me.raiseTicks === 0 && me.fireCooldown === 0, null, 3);
   const spearHeld = await page.waitForFunction(() => window.__cs.view.scene.meshes.some((x) => x.name.startsWith('view_core.spear') && x.isEnabled() && x.getTotalVertices() > 1000), null, { timeout: T(20000) }).then(() => true, () => false);
+  // Fire pokes (owner, 2026-11-18): a melee strike, the spear stays in hand; right mouse (32) throws it.
   await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+  const poked = await meWait(page, (m, me) => me.fireCooldown > 0 && me.weapons.get(me.current)?.mag === 1 && !m.projectiles.some((p) => p.spec.visual === 'spear'), null, 10);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(poked, 'fire pokes with the Spear and keeps it in hand (no spear thrown)');
+  await meWait(page, (m, me) => me.fireCooldown === 0, null, 3);
+  await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
   const spearOut = await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear'), null, T(10000));
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));

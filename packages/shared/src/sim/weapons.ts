@@ -309,6 +309,19 @@ export function heldModel(def: WeaponDefinition, quality: 'low' | 'medium' | 'hi
   return def.view.held[quality];
 }
 
+/**
+ * A melee weapon you carry one of (the Spear: a magazine of 1, thrown by its second trigger): it strikes only while it
+ * is in your hands, and a strike keeps it. Thrown, there is nothing to strike with until you pick it (or another) up.
+ */
+export function inHand(def: Pick<WeaponDefinition, 'kind' | 'magazine'>): boolean {
+  return def.kind === 'melee' && def.magazine > 0;
+}
+
+/** What a weapon throws or fires as a projectile: its own, else its second trigger's (the Spear's throw). */
+export function thrownSpec(def: Pick<WeaponDefinition, 'projectile' | 'alt'>): ProjectileSpec | undefined {
+  return def.projectile ?? def.alt?.projectile;
+}
+
 /** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */
 export type ModelPoint = [number, number, number];
 

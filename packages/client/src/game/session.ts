@@ -155,6 +155,8 @@ import {
   propBreakLook,
   AMMO_BOX_MODEL,
   isAmmoBoxPickup,
+  inHand,
+  weaponCode,
 } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
@@ -3838,7 +3840,9 @@ export class GameSession {
       const [turn1, turn2] = pairSpec ? local.pairReloading() : [true, false];
       const reloadFrac = weapon && local.reloadTicks > 0 && turn1 ? Math.min(1, local.reloadTicks / 10, ((local.reload?.total ?? weapon.reloadTicks) - local.reloadTicks) / 10) : 0;
       const pairView = weapon && pairSpec ? { raise: akimboRaise(weapon, pairSpec) / TICK_RATE, reload: turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0 } : null;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
+      // A thrown spear has left your hands (inHand: nothing to draw until it is picked up again).
+      const thrownAway = !!weapon && inHand(weapon) && local.inventory.get(weaponCode(weapon))?.[0] === 0;
+      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: thrownAway || zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
       this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
