@@ -980,6 +980,16 @@ Step 5b: `kit.board.pennants` (Pennant String: a 7 m string of triangular pennan
 
 **The mess hall and the clock tower** (St. John's step 6). `kit.sign.clock_face` (Clock Face, `tools/content/kit/school.mjs` `clockface`; family type `sign`): a 2.6 m tower clock face, a round dial in a moulded ring, twelve hour marks (the quarters longer), the hour and minute hands fixed at ten past ten and a boss; its back on −z, hung with its foot at the height given; collides as nothing; variants cream (black hands, stone ring) and black (gilt marks and hands). No numerals or maker's name; nothing moves, glows or blinks. The tile **Clock Tower** (`gothic.clock_tower`, `map/packTiles2.ts`, in the Gothic Estate pack): a square stone tower, 1 cell and 6 levels (24 m): a door south, a stair of 0.25 m steps switching back round a solid stone core (2.4 m flights east and west, full-width landings north and south) to a belfry gallery 17.5 m up along the south wall, paired openings on all four sides with sills a metre up (a perch), a plain stage under the belfry for clock faces, string courses, a roof at 21.8 m with a crenellated parapet and pinnacles; tile boxes only, painted by the placement's surfaces. The set pieces **Clock Tower** (`setpiece.clock_tower`: the tile in its pack's stone and trim, four Clock Faces centred 15.3 m up, a light on the stair; option Clock faces: cream, black, none) and **Refectory Bay** (`setpiece.refectory_bay`: 8 m of a mess hall 16 m across, 1 × 2 cells with no wall between them, dressed stone walls, a beamed timber ceiling, a stone pier at the bay's west end against each long wall, two Long Tables with Benches either side, a Chandelier with one light, a Banner; option Long walls: Arched windows (default), a round-arched door south, north or both, or a solid wall with a fireplace of blocks (a cold hearth) north or south).
 
+**The mess hall's main entrance** (St. John's step 7a). The wall style **Twin arches** (`arch_twin`,
+`content/tiles/edges.json`; map format v49 names it): two round arches side by side in one side of a cell, each 2.8 m
+wide, a semicircle springing at 1.8 m to its crown at 3.2 m, on a middle pier 0.6 m wide, the end piers 0.9 m; one
+storey, so it goes under any floor (not a tall style). Collision steps over each curve as the Round arch's; nine
+voussoirs and a keystone a ring, the two rings meeting over the middle pier, impost blocks on the three piers; no facade
+(the arches dress themselves, as the Round arch). Bots have a 1.2 m lane through each arch. The Refectory Bay's Long
+walls gained **Main entrance north** and **Main entrance south** (the Twin arches in that wall, an arched window
+opposite). The bay's banner hangs on the south wall for every choice but Main entrance south: its `when` lists the
+choices it is in for (below, "Options"). Data only: no entities, no new models.
+
 **The campus kit** (`tools/content/kit/campus.mjs`, set pieces `content/setpieces/campus.json`; St. John's steps 7-10,
 built ahead of the halls: DeKoven, Memorial Hall, the chapel, the gym and pool). All generated in code, no downloads,
 no real school's crest or flag; nothing glows, flickers or moves (the stained glass is plain vertex colour).
@@ -1197,7 +1207,8 @@ and paving: floor, roof: roof, wood and metal: solids).
 **Options** (map format v42): a piece may list `options`, each a `name` (camelCase), a `label` and two to eight
 `choices` (`value`, `label`, `blurb`); the first choice is the default. A part with `when` (`{ "roomDoors": "slim" }`)
 is in the piece only while every option it names has that value, so a choice swaps parts in and out (`map/setPieces.ts`
-`placementOptions`, `partInPlay`); a placement sets one in `overrides.options` (MapMaker's set piece inspector,
+`placementOptions`, `partInPlay`); a `when` value may be a list (`{ "walls": ["windows", "door_north"] }`, map format v49): the part is in for
+any of those choices (what stays for most choices and goes for one: the Refectory Bay's banner); a placement sets one in `overrides.options` (MapMaker's set piece inspector,
 Options). Parts that differ by a choice go at the end of the list like any new part, and a part's first-choice twin
 gets `when` for the first choice. The content check expands each choice of each option in every turn and pack; a
 placement naming a choice the piece doesn't offer is a warning and plays as the first. The academy's dorm pieces offer
