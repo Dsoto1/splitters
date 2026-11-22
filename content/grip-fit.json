@@ -1380,45 +1380,47 @@
    },
    "grip": {
     "gripLong": [
-     0.004,
-     -0.034,
-     -0.002
+     -0.009,
+     0.014,
+     -0.017
     ],
     "supportLong": [
-     0.03,
-     -0.024,
+     -0.017,
+     -0.002,
      0
     ],
     "gripPistol": [
-     0.005,
-     -0.006,
-     0.019
+     0.01,
+     0.001,
+     -0.013
     ],
     "supportPistol": [
-     0.036,
-     -0.029,
-     -0.025
+     0.088,
+     0.006,
+     0.078
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.75,
-     "eL": 0.5,
+     "eR": 0.05,
+     "eL": 0.3,
      "flags": [],
      "outlier": false,
-     "auto": 1.05,
-     "none": 5.973
+     "auto": 0.23,
+     "none": 3.285
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.35,
-     "eL": 1.1,
-     "flags": [],
-     "outlier": false,
-     "auto": 2.01,
-     "none": 6.192
+     "eR": 2.65,
+     "eL": 2.6,
+     "flags": [
+      "through"
+     ],
+     "outlier": true,
+     "auto": 7.21,
+     "none": 9.733
     }
    }
   },

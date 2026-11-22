@@ -245,7 +245,7 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
     Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
     rhino juggernaut), Zero Ringtail (raccoon hacker), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
     samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
-    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Bonnie Haymaker (boxer bunny) and
+    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Buster Haymaker (boxer bunny) and
     Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp").
   Two of the batch became the models of characters already on the roster (owner, 2026-11-22) and left it: Tinker
   Goblina's GoblinaRigged is **Goblina**'s model, the Sunset Gunslinger's is **Dusty Ranger**'s (both keep their name,

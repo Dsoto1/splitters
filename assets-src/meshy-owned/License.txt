@@ -103,5 +103,5 @@ Provenance: Meshy, owned.
   - "synthwave eel dj 15k" (2026-11-22)  -> character meshy_synthwaveeel (look DJ Volta Coilwave)
   - "tasmanian devil 15k" (2026-11-22)  -> character meshy_tasmaniandevil (look Rowdy Gnashwell)
   - "hare courier game ready" (2026-11-22)  -> character meshy_harecourier (look Pip Quickfoot)
-  - "brawler boxer bunny 15k" (2026-11-22)  -> character meshy_boxerbunny (look Bonnie Haymaker)
+  - "brawler boxer bunny 15k" (2026-11-22)  -> character meshy_boxerbunny (look Buster Haymaker)
   - "cheetah pimp 15k" (2026-11-22)  -> character meshy_cheetah (look Duke Dashwood)

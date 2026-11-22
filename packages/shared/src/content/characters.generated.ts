@@ -190,7 +190,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.synthwaveeel', name: 'DJ Volta Coilwave', body: 'male', head: '', parts: ['meshy_synthwaveeel'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
   { id: 'core.tasmaniandevil', name: 'Rowdy Gnashwell', body: 'male', head: '', parts: ['meshy_tasmaniandevil'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
   { id: 'core.harecourier', name: 'Pip Quickfoot', body: 'male', head: '', parts: ['meshy_harecourier'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
-  { id: 'core.boxerbunny', name: 'Bonnie Haymaker', body: 'female', head: '', parts: ['meshy_boxerbunny'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_f' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
+  { id: 'core.boxerbunny', name: 'Buster Haymaker', body: 'male', head: '', parts: ['meshy_boxerbunny'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
   { id: 'core.cheetah', name: 'Duke Dashwood', body: 'male', head: '', parts: ['meshy_cheetah'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'cat' },
 ];
 
