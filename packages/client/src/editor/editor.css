@@ -710,6 +710,9 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-grid-plan th { color: var(--muted); font-weight: normal; }
 .ed-grid #ed-grid-why { min-height: 2.8em; }
 .ed-grid #ed-grid-why.err { color: var(--error); }
+.ed-grid #ed-resize-why { min-height: 2.8em; }
+.ed-grid #ed-resize-why.err { color: var(--error); }
+#ed-resize-dialog .ed-dialog-field input[type='number'] { width: 6em; }
 .ed-mirror fieldset { border: 1px solid rgba(142, 162, 192, 0.28); border-radius: 6px; margin: 0 0 12px; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px; }
 .ed-mirror legend { color: var(--muted); padding: 0 4px; }
 .ed-mirror .ed-mirror-at { flex-wrap: wrap; }

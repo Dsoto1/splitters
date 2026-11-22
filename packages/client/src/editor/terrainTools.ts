@@ -25,6 +25,7 @@ import {
 } from '@tiletrigger/shared';
 import { materialThumbnail } from '../materials/patterns.ts';
 import { openChangeGridDialog } from './changeGridDialog.ts';
+import { openResizeTerrainDialog } from './resizeTerrainDialog.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $ } from './editorDom.ts';
 import { groundThemeLabel } from './editorParts.ts';
@@ -314,6 +315,17 @@ export class TerrainTools {
           if (!this.app.run(label, cmd)) return;
           this.setTerrainBrush(this.terrainBrush);
           this.app.toast(`${label}${moved ? `; ${moved} things on the ground moved with it` : ''} · Ctrl+Z undoes it`);
+        },
+        root: $('editor'),
+      }),
+    );
+    $('ed-tr-resize').addEventListener('click', () =>
+      openResizeTerrainDialog({
+        doc: () => this.app.doc,
+        apply: (label, cmd, cut) => {
+          if (!this.app.run(label, cmd)) return;
+          this.setTerrainBrush(this.terrainBrush);
+          this.app.toast(`${label}${cut ? `; ${cut} things on the cut-off ground went with it` : ''} · Ctrl+Z undoes it`);
         },
         root: $('editor'),
       }),
