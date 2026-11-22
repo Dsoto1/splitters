@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-9` · 4df81945 · 45068550616 (St. John's: library 8b and mess hall 7d placed, the corner's answers but (6); **perf over the lines, the lead's call first**: library from the grounds +11 %, inside views over 250 (PLAN 4o); also fixes main's stale sniper list in the e2e editor flow)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
