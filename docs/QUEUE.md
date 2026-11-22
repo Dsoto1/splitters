@@ -74,6 +74,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - L · B · **Shingle Point layout from the owner's reference picture** (owner's map notes, 2026-11-05): the grand cliff stair, four casemates with cave mouths, a seawall terrace, the village with a round fort; only the asset refresh was done (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 - M · B · No Man's Field (still Kenney kits) and Rockfall Canyon onto the generated environment (owner's map notes, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 - S · B · Iron Coast B/C defence balance ("leave for now") and an eye-level menu card for Step Temple (owner, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
+- `wip/weapon-wheel-cats` · d2f37cbe · run 45063964904 (the weapon wheel by category with an outer arc, keys 1-8 by category and rebindable, the number-key bug; a helper of the splitters lead)
 
 ## Bugs
 - **Fixes go to lane A from now on** (owner, 2026-11-17); the two already running in lane B (Dropship deck, character pass) finish there.
