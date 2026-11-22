@@ -197,8 +197,8 @@
         { "distance": 40 }
       ],
       "variants": [
-        { "index": 0, "name": "black", "seed": 4501, "look": { "iron": "#1b1c1e", "rust": "#3a2a20", "stone": "#7b786f", "rusty": 0.06 } },
-        { "index": 1, "name": "steel", "seed": 4502, "look": { "iron": "#5c6066", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.05 } }
+        { "index": 0, "name": "black", "seed": 4421, "look": { "iron": "#1b1c1e", "rust": "#3a2a20", "stone": "#7b786f", "rusty": 0.06 } },
+        { "index": 1, "name": "steel", "seed": 4422, "look": { "iron": "#5c6066", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.05 } }
       ]
     }
   ]

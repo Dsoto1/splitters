@@ -18,6 +18,11 @@ const EDGE = 1e-6;
  * stained-glass window drawn on both faces of the wall it is set in, its outer face a hair proud of the wall's).
  */
 const FACE = 0.05;
+/**
+ * How far under its lowest level's floor a part may reach: a sunk floor's footings, steps and furniture (the Sunk
+ * Room's slab is half a metre down, `core.room_sunk`; St. John's step 7d).
+ */
+const SUNK = 1;
 
 /** What is wrong with a definition (empty: nothing). `packs`: the role packs it may name. */
 export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?: ReadonlyMap<string, SetPieceRolePack>; catalog?: TileCatalog } = {}): string[] {
@@ -31,7 +36,7 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
   const inCell = (x: number, y: number, z: number) => cells.has(`${x},${y}`) && z >= l0 && z <= l1;
   /** Whether a point in metres (piece frame) is over the footprint, within its levels. */
   const inside = (px: number, py: number, pz: number, edge = EDGE) => {
-    if (py < l0 * levelHeight - EDGE || py > (l1 + 1) * levelHeight + EDGE) return false;
+    if (py < l0 * levelHeight - SUNK - EDGE || py > (l1 + 1) * levelHeight + EDGE) return false;
     const near = (v: number) => [Math.floor((v + cellSize / 2 + edge) / cellSize), Math.floor((v + cellSize / 2 - edge) / cellSize)];
     return near(px).some((cx) => near(pz).some((cy) => cells.has(`${cx},${cy}`)));
   };

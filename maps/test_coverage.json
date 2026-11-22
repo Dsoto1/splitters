@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_53nsq33vcs5xrlfn",
-      "revision": 49,
-      "contentHash": "sha256:134c5a4bc8ff9817d54645d184ad08ef52acd324f43df2d5e3b3d76a862913fa",
+      "versionId": "v_76ylb7eled2tem46",
+      "revision": 51,
+      "contentHash": "sha256:315502b89f745067c3d33946bb1c6686522660ee90fab65fa530d08e12ceaa8d",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T21:30:12.447Z"
+      "releasedAt": "2026-11-22T02:32:09.812Z"
     },
     "testOnly": true
   },
@@ -1376,6 +1376,14 @@
         "z": -1,
         "rotation": 1,
         "family": "mine"
+      },
+      {
+        "id": "tile_5t4ryl0hrl",
+        "tile": "core.room_sunk",
+        "x": 4,
+        "y": -60,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -7209,16 +7217,120 @@
       }
     },
     {
-      "id": "setpiece_355f1a3zqq",
+      "id": "setpiece_rrksg9346i",
+      "piece": "setpiece.refectory_bay",
+      "x": -6,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "ceiling": "timber",
+          "aisle": "arcade",
+          "furniture": "rows_podium",
+          "lights": "bowls",
+          "flags": "hung",
+          "end": "fire_drinks"
+        }
+      }
+    },
+    {
+      "id": "setpiece_xm9c6s2ers",
+      "piece": "setpiece.refectory_bay",
+      "x": -5,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "doors",
+          "floor": "sunk",
+          "ceiling": "timber",
+          "aisle": "arcade",
+          "furniture": "rows_gap",
+          "lights": "bowls",
+          "flags": "hung"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3vd0kc5zqi",
+      "piece": "setpiece.refectory_servery",
+      "x": -4,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "ceiling": "timber"
+        }
+      }
+    },
+    {
+      "id": "setpiece_n030z8vyxy",
+      "piece": "setpiece.refectory_kitchen",
+      "x": -3,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "end": "door"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9t8yhc8gue",
+      "piece": "setpiece.refectory_bay",
+      "x": -1,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "aisle": "arcade",
+          "furniture": "rows",
+          "end": "drinks",
+          "ceiling": "timber_piers"
+        }
+      }
+    },
+    {
+      "id": "setpiece_f51jqcw9at",
+      "piece": "setpiece.refectory_bay",
+      "x": 1,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "main_north",
+          "floor": "sunk",
+          "furniture": "none",
+          "end": "steps"
+        }
+      }
+    },
+    {
+      "id": "setpiece_qbsu1ic5bp",
       "piece": "setpiece.entrance_porch",
-      "x": -2,
+      "x": 8,
       "y": -58,
       "z": 0,
       "rotation": 0,
       "mirror": false
     },
     {
-      "id": "setpiece_bwssm7a0qy",
+      "id": "setpiece_nfw1kb94w6",
       "piece": "setpiece.gate_tower_front",
       "x": 4,
       "y": -58,

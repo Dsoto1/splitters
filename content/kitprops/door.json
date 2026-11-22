@@ -758,6 +758,50 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.door.walk_in",
+      "displayName": "Walk-in Cooler Door",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): the door of a walk-in cooler for a kitchen wall: a steel frame, an insulated leaf with a kick plate, three strap hinges, a lever latch, a small dial over it. A still prop: it does not open. Collides as nothing (the wall behind it does)."
+      },
+      "size": [
+        1.5,
+        2.3,
+        0.14
+      ],
+      "bounds": "within",
+      "collide": "none",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "walkindoor"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "steel",
+          "seed": 37121,
+          "look": {
+            "steel": "#b4b9bd",
+            "frame": "#8d9296",
+            "dark": "#2a2c2f"
+          }
+        }
+      ]
     }
   ]
 }

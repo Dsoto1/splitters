@@ -554,6 +554,124 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.shop.serving_line",
+      "displayName": "Serving Line",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): 3.6 m of a cafeteria serving counter: a counter 0.9 m high with four hot wells of food in its top, a tray rail of three tubes along the diners' side (-z), a sneeze guard on posts with a shelf over it (a pale pane, plain colour). Collides as the counter with its rail, and the guard."
+      },
+      "size": [
+        3.6,
+        1.5,
+        1.1
+      ],
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "servingline",
+        "counter": 0.9,
+        "rail": 0.3,
+        "wells": 4
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "steel",
+          "seed": 37071,
+          "look": {
+            "body": "#8f9499",
+            "top": "#c5c9cc",
+            "rail": "#b9bdc1",
+            "guard": "#cfe0e4",
+            "food": "#b5552d,#d9b23f,#5d8a3c,#8a5a36"
+          }
+        },
+        {
+          "index": 1,
+          "name": "wood",
+          "seed": 37072,
+          "look": {
+            "body": "#6b4a2c",
+            "top": "#c5c9cc",
+            "rail": "#b9bdc1",
+            "guard": "#cfe0e4",
+            "food": "#8a5a36,#5d8a3c,#d9b23f,#b5552d"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.shop.drink_station",
+      "displayName": "Drink Station",
+      "category": "Shop",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): a drink station for a wall, 2.4 m: a cabinet with a steel top; on it a fountain head with six taps over a drip tray, two dispensers of juice, a coffee urn, stacks of cups. No maker's name or writing. Collides as the cabinet and what stands on it."
+      },
+      "size": [
+        2.4,
+        1.75,
+        0.7
+      ],
+      "bounds": "within",
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "drinkstation",
+        "counter": 0.92
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 37081,
+          "look": {
+            "body": "#5b4532",
+            "top": "#c5c9cc",
+            "machine": "#2f3236",
+            "juice": "#e08a2c,#b8323a",
+            "cup": "#eeeae0"
+          }
+        },
+        {
+          "index": 1,
+          "name": "steel",
+          "seed": 37082,
+          "look": {
+            "body": "#8f9499",
+            "top": "#c5c9cc",
+            "machine": "#2f3236",
+            "juice": "#d9c23f,#7a2f5a",
+            "cup": "#eeeae0"
+          }
+        }
+      ]
     }
   ]
 }
