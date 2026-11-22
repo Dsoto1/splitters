@@ -38,7 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/slide-peek` · a1ff10ab · 45015057940 (slide and peek, revived 2026-11-22; re-checked with main 0e02c47b merged, green on attempt 1; binary snapshot version 3, `PROTOCOL_VERSION` stays 5)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -231,6 +230,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** slide and peek (`wip/slide-peek`, green a1ff10ab, run 45015057940): slide (sprint, then crouch) and lean/peek (` and Left Alt, rebindable), first and third person, bots, network; binary snapshot v3. Landed alone by the splitters lead.
 - **2026-11-22** the small batch (`wip/small-1122`, green 2414d1ba): map files to 3 MiB, switch team, moving jump pads, MapMaker working-level grid, Terrain → Resize, the Gas Mask Engineer retired. Train check/train-20261122-091128 (807d896), landed by the splitters lead.
 - **2026-11-22** the owner's 29 new characters of 11-21/22 (`wip/chars-1122`, green 43883739), all Experimental; nine pistol support grips listed in content/grip-fit.json for hand tuning. Same train.
 - **2026-11-22** the weapons intake 11-18, both batches (`wip/weapons-1118b`, green 84274ac2, run 44984729319): 13 new guns, four remade models, Katana, Scimitar, Baseball Bat, Space Shield, Heart Taser, gas grenade model, the Spear's poke and throw, crossbows and flintlocks in Medieval. Landed alone by the splitters lead.
