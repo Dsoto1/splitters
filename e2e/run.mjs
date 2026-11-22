@@ -8750,8 +8750,10 @@ async function weaponsetsFlow(browser) {
   await openWeapons(page);
   const offered = await setupState(page);
   check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
-  const MILITARY = ['core.rifle', 'core.burst_rifle', 'core.battle_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'];
-  const SCIFI = ['core.plasma', 'core.laser_rifle', 'core.railgun', 'core.pulse_pistol', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided'];
+  // The sets' weapon lists, from the content the game builds them from (a set that gains a weapon needs no edit here).
+  const setWeapons = (id) => JSON.parse(readFileSync(fileURLToPath(new URL('../content/weapon-sets.json', import.meta.url)), 'utf8')).sets.find((s) => s.id === id).weapons;
+  const MILITARY = setWeapons('military');
+  const SCIFI = setWeapons('scifi');
   await page.click('#arcade-start');
   await started(page);
   const kit = await sim(page, (m, me, ids) => ({
