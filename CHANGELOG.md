@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **MapMaker: the level you're editing has a green grid.** The other levels with something on them show a fainter blue grid, and the level list highlights the working level in the same green.
 - **Jump pads look alive.** Their chevrons glide over the plate the way the pad throws you and soft rings rise off it, at a steady brightness (slower with Reduce flashing on).
 - **Switch team during a match.** Pause menu → Switch team, a team's Join on the scoreboard, or O: you move at your next respawn (the next round in Elimination, Bomb and Hostage), with no death counted; refused if it would leave the teams uneven, unless a bot can move the other way.
 - **Maps can be 3 MB** (2 MB before). Hosts, the hub, joiners and publishing all take a map file up to 3 MB, so a map of 8,192 things placed by hand fits as MapMaker saves it.

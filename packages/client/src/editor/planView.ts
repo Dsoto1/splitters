@@ -252,7 +252,7 @@ export class PlanView {
       const b = P(t.x1, t.z0);
       g.save();
       g.lineWidth = (t.current ? 2 : 1) * u;
-      // White, not the level grid's cyan: the tiles stand out from the grid lines.
+      // White, not the level grid's green: the tiles stand out from the grid lines.
       g.strokeStyle = sel.has(t.id) ? '#ffb03b' : t.current ? 'rgba(255, 255, 255, 0.95)' : 'rgba(200, 210, 230, 0.45)';
       if (!t.current) g.setLineDash([4 * u, 4 * u]);
       g.strokeRect(a.x, a.y, b.x - a.x, b.y - a.y);

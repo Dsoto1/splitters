@@ -263,7 +263,8 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
   background: rgba(18, 24, 39, 0.94); border: 1px solid rgba(0, 209, 255, 0.28); border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 #ed-levels .lv-head { font: 600 10px var(--font-display); text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); }
-#ed-levels .lv-current { font: 700 16px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; color: var(--cyan); margin-bottom: 2px; }
+#ed-levels { --level-green: #3ee08a; }
+#ed-levels .lv-current { font: 700 16px var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; color: var(--level-green); margin-bottom: 2px; }
 #ed-levels .lv-list { display: flex; flex-direction: column; gap: 2px; max-height: 26vh; overflow-y: auto; }
 #ed-levels button { padding: 4px 6px; font-size: 11px; }
 #ed-levels .lv-step { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
@@ -271,7 +272,8 @@ button.danger { border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 .lv-btn { display: flex; align-items: center; justify-content: space-between; text-transform: none; letter-spacing: 0.02em; color: var(--muted); background: transparent; border-color: transparent; }
 .lv-btn.used { color: var(--text); }
 .lv-btn small { color: var(--muted); font: 500 10px var(--font-body); }
-.lv-btn.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); color: #fff; box-shadow: inset 3px 0 0 var(--cyan); }
+/* The level being edited: the same green as its grid in the view (buildAreaVisuals.ts GRID_ACTIVE). */
+.lv-btn.on { border-color: var(--level-green); background: rgba(62, 224, 138, 0.16); color: #fff; box-shadow: inset 3px 0 0 var(--level-green); }
 #ed-levels .lv-all { margin-bottom: 3px; text-transform: none; letter-spacing: 0.02em; }
 #ed-levels .lv-all[aria-pressed='true'] { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); color: #fff; }
 #ed-level-name-bottom { color: var(--cyan); }

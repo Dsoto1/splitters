@@ -587,6 +587,9 @@ MapMaker draws the build area on the level being edited
   rebuilt only when its centre moves 4 cells, so it stays cheap.
   **Full grid** (View → Full grid) draws every cell of the whole build area instead,
   on demand. Grid off hides either; the outlines stay.
+  The level being edited is drawn **green** (the level list's highlight is the same green); the other levels with
+  something on them that are shown (below it, and above it with Show all levels, H) get a fainter **blue** grid at
+  their own height (owner, 2026-11-16), so the working level reads at a glance. One line system for all of them.
 - **The playable boundary** (orange, at the level and 6 m up with corner posts):
   the map's **Boundary** (Map settings → Gameplay), or, when it has none, its terrain's
   edge. A faint copy shows through hills and buildings.
