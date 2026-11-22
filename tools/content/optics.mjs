@@ -39,6 +39,8 @@ const SCALE = [0.85, 1.2];
 const FLAT = 0.006;
 /** Cell of the top profile (m). */
 const CELL = 0.002;
+/** The eye's distance behind a 2x optic's eyepiece (m): the client's DEFAULT_RELIEF (game/opticView.ts). */
+const EYE_RELIEF = 0.12;
 
 /** Scope feel's numbers (content/optics.json `feel`) and the range each may take. */
 export const FEEL_KEYS = [
@@ -144,6 +146,38 @@ export function blockedAt(tris, mount, glass) {
   const from = mount.at[2] + ((glass.foot ?? glass.length) * mount.scale) / 2;
   const sill = mount.at[1] + (glass.rise - glass.half[1] * 0.5) * mount.scale;
   for (let i = Math.max(0, Math.ceil((from - min[2]) / CELL)); i < n; i++) if (top[i] > sill + CELL) return true;
+  return false;
+}
+
+/**
+ * Whether the gun behind a housing at `mount` stands in the lower half of its window as the eye (model z `eyeZ`, on the
+ * glass's line) sees it: the lines from the eye to the window above its lowest 15 % must pass over the gun between them.
+ */
+export function blockedBehind(tris, mount, glass, eyeZ, magnified = false) {
+  const [min, max] = boundsOf(tris);
+  const { top, n } = topProfile(tris, mount.at[0], glass.half[0] * mount.scale * 0.6, min, max);
+  const centre = mount.at[1] + glass.rise * mount.scale;
+  if (magnified) {
+    // A 2x optic is looked through from its eyepiece (the tube's rear end), at the client's relief (game/opticView.ts
+    // DEFAULT_RELIEF): nothing of the gun may stand over the eyepiece's lowest 15 % between the eye and the tube's rings.
+    const eyepiece = mount.at[2] - (glass.length * mount.scale) / 2;
+    const floor = centre - glass.half[1] * mount.scale * 0.7;
+    const to = mount.at[2] - ((glass.foot ?? glass.length) * mount.scale) / 2;
+    for (let i = 0; i < n; i++) {
+      const z = min[2] + i * CELL;
+      if (z >= eyepiece - EYE_RELIEF && z < to && top[i] > floor) return true;
+    }
+    return false;
+  }
+  // (Behind the housing the gun is near the eye and reads large: only the window's lowest 15 % may be covered.)
+  const sill = mount.at[1] + (glass.rise - glass.half[1] * 0.7) * mount.scale;
+  const to = mount.at[2] - ((glass.foot ?? glass.length) * mount.scale) / 2;
+  for (let i = 0; i < n; i++) {
+    const z = min[2] + i * CELL;
+    if (z >= to || z <= eyeZ) continue;
+    const y = centre + ((sill - centre) * (z - eyeZ)) / (mount.at[2] - eyeZ);
+    if (top[i] > y) return true;
+  }
   return false;
 }
 
@@ -272,6 +306,7 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
         const mount = shared;
         if (!first && !hand?.at && blockedAt(tris, mount, k.glass)) problems.push(`${at}: the gun stands in a ${id}'s window at its mount (${JSON.stringify(mount.at)}, where the first built optic it may carry stands): give it a \`mount\` ({ at, reason }) read off the model, or leave the ${id} out of \`allowed\``);
         const line = mountedLine(w, min, mount, k.glass);
+        if (!hand?.at && blockedBehind(tris, mount, k.glass, line.eye[2], k.housing === MAGNIFIED_BUILT)) problems.push(`${at}: the gun behind a ${id} stands in its window as the eye sees it (mount ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model, or leave the ${id} out of \`allowed\``);
         if (firstHit(tris, line.eye, [line.glass[0], line.glass[1], max[2] + 1]) !== null) problems.push(`${at}: the gun stands in the line from the eye through a ${id}'s glass (mount ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model`);
       }
     }

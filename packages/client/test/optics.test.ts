@@ -29,7 +29,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.rifle': ['irons', 'reddot', 'holo', 'x2'],
   'core.smg': ['irons', 'reddot', 'holo', 'x2'],
   'core.compact_carbine': ['irons', 'reddot', 'holo', 'x2'],
-  'core.amarillo': ['irons', 'holo', 'x2'],
+  'core.amarillo': ['irons', 'x2'],
   'core.burst_rifle': ['irons', 'x2'],
   'core.laser_rifle': ['reddot', 'holo', 'x2'],
   'core.shotgun': ['irons', 'reddot', 'holo'],

@@ -111,6 +111,10 @@ describe('optics by gun: the table and the mounts', () => {
     file.weapons['core.burst_rifle'].allowed = ['irons', 'x2', 'reddot'];
     const { problems, weapons } = await buildOptics(file);
     expect(problems.some((p) => /core\.burst_rifle: the gun stands in a reddot's window at its mount/.test(p))).toBe(true);
+    // The gun behind a housing counts too: the Amarillo's rear block stands in a holographic sight's window.
+    file.weapons['core.amarillo'] = { default: 'irons', allowed: ['irons', 'holo', 'x2'] };
+    const behind = await buildOptics(file);
+    expect(behind.problems.some((p) => /core\.amarillo: the gun behind a holo stands in its window/.test(p))).toBe(true);
     // And as it is, the 2x optic's mount is the one the table keeps.
     expect((await buildOptics()).weapons['core.burst_rifle'].mount).toEqual(weapons['core.burst_rifle'].mount);
   });

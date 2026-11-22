@@ -44,7 +44,11 @@
     "core.goo_gun": { "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.rifle": { "default": "irons", "allowed": ["irons", "reddot", "holo", "x2"] },
     "core.burst_rifle": { "default": "irons", "allowed": ["irons", "x2"] },
-    "core.amarillo": { "default": "irons", "allowed": ["irons", "holo", "x2"] },
+    "core.amarillo": {
+      "default": "irons",
+      "allowed": ["irons", "x2"],
+      "mount": { "at": [0, 0.0914, 0.126], "reason": "the rear block over the receiver (z -0.16 to -0.11, 2.7 cm over the top) stands in front of a 2x optic's eyepiece anywhere behind it: the optic goes on the flat top ahead of the block (y 0.088-0.091 from z -0.10 to 0.16), as the tool first found it for a red dot" }
+    },
     "core.compact_carbine": { "default": "irons", "allowed": ["irons", "reddot", "holo", "x2"] },
     "core.flintlock_pistol": { "default": "irons", "allowed": ["irons"] },
     "core.laser_blaster": { "default": "irons", "allowed": ["irons", "reddot"] },
