@@ -38,7 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/sonniss-1` · 4965688b · 45056358622 (the Sonniss sound pass: recorded everyday guns, reloads, melee, explosions, impacts, breaks, doors, footsteps, falls, weather, splash, heartbeat and alarm; new bullet flyby and jump pad launch; gun alternates in the Weapon Manager; docs/AUDIO.md)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -236,6 +235,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** the Sonniss sound pass (`wip/sonniss-1`, green 4965688b; train check/train-20261122-190344 at 12583b4, run 45058592850): 34 sounds replaced with recorded Sonniss GDC picks, bullet flyby and jump pad launch added, 18 gun alternates for the Weapon Manager; sounds 154 KB smaller. Landed by the splitters lead.
 - **2026-11-22** characters 11-22 follow-ups (`wip/chars-1122b`, green 47789474, run 45054643857): owner-made licences, Juice, Goblina and Dusty Ranger model swaps, the Chrono Crew collection, Santa to Legends, fun names for the last intake, 12 new Experimental characters. Landed alone by the splitters lead.
 - **2026-11-22** train check/train-20261122-172541 (e8ca8ad, run 45049402477), landed by the splitters lead: weapon icons re-taken (`wip/weapon-icons`); fix batch 2026-11-22: St. John's wall crest z-fighting fixed at the piece, the coplanar kit-layer check (`wip/fix-tpose-1122`; the T-pose diagnostic follows on `wip/fix-tpose-2`).
 - **2026-11-22** player profiles phases 2-4 (`wip/profiles-2`, green bc7579d4, run 45040189739): emblems and titles, other players' cards, career Modes/Weapons/History tabs, host-vouched stats, optic picks on the account. **The owner redeploys the hub** (no AWS change). Landed alone by the splitters lead.
