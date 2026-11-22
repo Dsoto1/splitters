@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import * as npcs from '../npcs.mjs';
 import * as roulette from '../roulette.mjs';
-import { CLIP_SETS_DIR, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, gripFitOf, gripFitSource, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
+import { CLIP_SETS_DIR, COLLECTIONS, MANIFEST_DIR, QUEUE_FILE, TIERS, armsOf, buildSpec, gripFitOf, gripFitSource, clipSetProblems, looksProblems, looksSource, manifestProblems, readClipSets, readManifests, stubFromQueue } from '../character-manifests.mjs';
 
 describe('character manifests', () => {
   const list = readManifests();
@@ -175,6 +175,16 @@ describe('character manifests', () => {
     // Absent = core: an explicit core writes the same look as none.
     expect(line({ ...good, tier: 'core' })).toBe(line(good));
     expect(line(good)).not.toMatch(/tier:/);
+  });
+
+  it('carry a Character Select collection (the Chrono Crew): a known one reaches the generated look, anything else is a problem', () => {
+    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
+    expect(COLLECTIONS).toEqual(['chrono']);
+    expect(manifestProblems({ ...good, collection: 'chrono' }, 'meshy_cat.json')).toEqual([]);
+    for (const collection of ['Chrono', 'crew', '', null, 1]) expect(manifestProblems({ ...good, collection }, 'meshy_cat.json').join('\n')).toMatch(/collection: a Character Select collection/);
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    expect(line({ ...good, collection: 'chrono' })).toMatch(/group: 'animals', collection: 'chrono'/);
+    expect(line(good)).not.toMatch(/collection:/);
   });
 
   it('an experimental character named by an NPC role or by Roulette is a problem', () => {

@@ -1,0 +1,38 @@
+{
+  "id": "meshy_rhinojuggernaut",
+  "kind": "character",
+  "use": "player",
+  "order": 184,
+  "name": "Brutus Hornbeck",
+  "look": "core.rhinojuggernaut",
+  "group": "animals",
+  "tier": "experimental",
+  "blood": "red",
+  "nameTheme": "critter",
+  "bio": "Doors are a suggestion. Walls are a slightly firmer suggestion.",
+  "body": "male",
+  "size": "large",
+  "notes": "Drive intake of 2026-11-22, afternoon (\"armored rhino juggernaut 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"). Its armour's huge shoulder plates put the shoulders wide and high: on the shared long-gun hold the support hand fell 11 cm short of a rifle's handguard (e2e characters4) and the stock sat at its snout, so `hold` brings the gun 15 cm in toward its middle, where the support hand reaches the handguard on every long gun (2026-11-22; tried on the grip page: 10 cm in was not enough on the rifle, back, forward or down alone no help).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-22",
+    "url": null,
+    "file": "^Meshy_AI_armored_rhino_juggernaut_15k_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "hold": {
+      "out": -0.15
+    }
+  }
+}

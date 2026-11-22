@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CORE_LOOKS, INSIGNIA_IDS, INSIGNIA_SHAPES, SOLDIER_RANKS, nameRank, soldierInsignia } from '../src/index.ts';
+import { CORE_LOOKS, INSIGNIA_IDS, INSIGNIA_SHAPES, SOLDIER_RANKS, nameRank, rankGroup, soldierInsignia } from '../src/index.ts';
 import { NAME_THEMES, botNameFor } from '../src/match.ts';
 import { WHOLE_BODY_LOOKS } from '../src/content/characters.generated.ts';
 
@@ -69,10 +69,11 @@ describe('Army bots go by rank', () => {
 });
 
 describe('Soldiers & Spies branches (owner, 2026-11-17)', () => {
-  it('keeps Santa in Agency and makes the Operatives Agency', () => {
+  it('makes the Operatives Agency; Santa, Agency until 2026-11-22, is in Legends now (owner) and wears its mark', () => {
     const santa = CORE_LOOKS.find((l) => l.name === 'Santa')!;
-    expect(santa.group).toBe('soldiers');
-    expect(santa.branch).toBe('agency');
+    expect(santa.group).toBe('legends');
+    expect(santa.branch).toBeUndefined();
+    expect(rankGroup(santa.id)).toBe('legends');
     // Crimson Operative (held back for now, playing as Stealth Operative) is Agency too; the retired Operative preset's
     // own entry (looks.ts) says so, though it plays as Grunt '68.
     expect(WHOLE_BODY_LOOKS.find((l) => l.id === 'core.crimsonop')!.branch).toBe('agency');

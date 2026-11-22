@@ -81,6 +81,8 @@ export interface CharacterLook {
   group?: CharacterGroup;
   /** Soldiers & Spies only: Army or Agency (CHARACTER_BRANCHES; `branch` in its manifest). */
   branch?: CharacterBranch;
+  /** A Character Select collection it is listed in instead of its group's section (CHARACTER_COLLECTIONS; `collection` in its manifest). */
+  collection?: CharacterCollection;
   /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
   sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
@@ -153,6 +155,17 @@ export const isCharacterBranch = (x: unknown): x is CharacterBranch => CHARACTER
 export type BloodKind = 'red' | 'green' | 'blue' | 'oil' | 'bone' | 'spirit' | 'stone';
 export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_GROUPS.some((g) => g.id === x);
 
+/**
+ * Character Select's collections: a set of characters with a section of its own, placed after the group named by
+ * `after` (owner, 2026-11-22: "Chrono Crew", the time crew). A collection is only Character Select's: its characters
+ * keep their `group` for everything else (bot types, rank marks, Roulette, NPC casts), and they are listed in it
+ * whatever their tier (an experimental one stays out of automatic picks, but not out of its collection's section).
+ * `collection` in a manifest; the checker's list (COLLECTIONS in character-manifests.mjs) matches this one.
+ */
+export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
+export type CharacterCollection = (typeof CHARACTER_COLLECTIONS)[number]['id'];
+export const isCharacterCollection = (x: unknown): x is CharacterCollection => CHARACTER_COLLECTIONS.some((c) => c.id === x);
+
 /** Character Select's section for the experimental tier (after the groups, before Yours), and Yours (your designs). */
 export const EXPERIMENTAL_SECTION = 'experimental';
 export const MINE_SECTION = 'mine';
@@ -164,8 +177,17 @@ export const MINE_SECTION = 'mine';
  */
 export function characterSections<T extends { name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
   const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name));
-  const groups = [...CHARACTER_GROUPS.map((g) => ({ id: g.id as string, label: g.label as string, looks: byName(g.id) })), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
+  const after = (g: string) => CHARACTER_COLLECTIONS.filter((c) => c.after === g).map((c) => ({ id: c.id as string, label: c.label as string, looks: byName(c.id) }));
+  const groups = [...CHARACTER_GROUPS.flatMap((g) => [{ id: g.id as string, label: g.label as string, looks: byName(g.id) }, ...after(g.id)]), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
   return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
+}
+
+/**
+ * The Character Select section a built-in look sits in: its collection's (CHARACTER_COLLECTIONS, whatever its tier),
+ * else Experimental for an experimental one (it leaves its group's section, as an experimental map does), else its group.
+ */
+export function characterSectionOf(l: Pick<CharacterLook, 'group' | 'collection' | 'tier'>): string | undefined {
+  return l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : l.group);
 }
 
 /** Where a piece of gear goes; one per slot. */
@@ -282,6 +304,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-21 ("remove gas mask engineer character from game"): removed, files and all (its model, first-person
   // arms and portrait); saved choices and bot sets play Grunt '68, a kept Army soldier.
   'core.gasmaskengineer': 'core.grunt68',
+  // Owner, 2026-11-22: two of the 2026-11-21/22 intake became the models of characters already on the roster, and their
+  // own entries went (models, arms, portraits and manifests): Tinker Goblina's GoblinaRigged model is Goblina's now,
+  // the Sunset Gunslinger's model Dusty Ranger's. Saved choices and bot sets play the look that kept the model.
+  'core.goblinatinker': 'core.grizzelda',
+  'core.sunsetgunslinger': 'core.dustycolt',
 };
 
 /**

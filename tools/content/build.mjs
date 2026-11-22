@@ -24,6 +24,7 @@ import { lockProblems, readLock } from './lockfile.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { loadSurfaces } from './surfaces.mjs';
 import { ownerAudioEntries } from './owner-audio.mjs';
+import { SONNISS_LOCK, specHash, specOf, studioOf } from './sonniss-audio.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const MANIFEST = join(ROOT, 'content/models.json');
@@ -233,6 +234,35 @@ for (const entry of manifest.models) {
 // check needs no audio tools. Synthesised sounds have no files.
 const sounds = JSON.parse(readFileSync(SOUND_MANIFEST, 'utf8'));
 const soundFiles = new Set();
+// Recorded sounds from the Sonniss GDC bundles (tools/content/sonniss-audio.mjs): cut, levelled and encoded from the
+// bundles' files, which stay outside the repo; its lock records each file, and this holds the shipped files to it.
+const sonnissLock = existsSync(SONNISS_LOCK) ? readLock(SONNISS_LOCK) : { files: [] };
+function processedSound(out, id, variant, pack) {
+  const file = `sounds/${out}`;
+  if (pack.license !== 'LicenseRef-Sonniss-GDC') problems.push(`${file}: licence ${pack.license} is not an approved tier for a processed pack`);
+  const f = sonnissLock.files.find((x) => x.file === file);
+  const spec = specOf(variant, sounds.processing);
+  const rebuild = `run ONLY=${id} node tools/content/sonniss-audio.mjs <the sfx folder>`;
+  if (!f) return void problems.push(`${file}: not built (${rebuild})`);
+  if (f.source !== `${pack.drive}/${variant.file}` || f.spec !== specHash(spec)) problems.push(`${file}: content/sounds.json changed since it was built (${rebuild})`);
+  const path = join(SOUND_DIR, out);
+  if (!existsSync(path)) return void problems.push(`${file}: missing (${rebuild})`);
+  const data = readFileSync(path);
+  if (createHash('sha256').update(data).digest('hex').slice(0, 16) !== f.sha256) problems.push(`${file}: differs from content/sonniss.lock.json`);
+  if (data.byteLength > sounds.budgets.maxBytes) problems.push(`${file}: ${data.byteLength} bytes exceeds budget ${sounds.budgets.maxBytes}`);
+  ledger.assets.push({
+    file,
+    sha256: f.sha256,
+    bytes: data.byteLength,
+    source: `${variant.pack}/${variant.file}`,
+    title: pack.title,
+    creator: studioOf(variant.file) ?? pack.creator,
+    url: pack.url,
+    license: pack.license,
+    licenseFile: pack.licenseFile,
+    modifications: [`cut to ${spec.length} s from ${spec.start} s`, ...(spec.channels === 1 ? ['folded to mono'] : []), `faded, peak set to ${spec.peak} dBFS`, `encoded to Ogg Opus, ${spec.kbps} kbps`],
+  });
+}
 for (const [id, sound] of Object.entries(sounds.sounds)) {
   if (sound.synth) continue;
   sound.variants.forEach((variant, i) => {
@@ -241,6 +271,7 @@ for (const [id, sound] of Object.entries(sounds.sounds)) {
     const pack = sounds.packs[variant.pack];
     if (!pack) return void problems.push(`sounds/${out}: unknown pack ${variant.pack}`);
     if (!existsSync(join(ROOT, pack.licenseFile))) problems.push(`sounds/${out}: licence file missing (${pack.licenseFile})`);
+    if (pack.processed) return void processedSound(out, id, variant, pack);
     if (!/^CC0-1\.0$|^CC-BY-(3|4)\.0$/.test(pack.license)) problems.push(`sounds/${out}: licence ${pack.license} is not an approved tier`);
     const src = join(ROOT, 'assets-src', variant.pack, variant.file);
     if (!existsSync(src)) return void problems.push(`sounds/${out}: source missing (${variant.pack}/${variant.file})`);
@@ -269,6 +300,7 @@ for (const [id, sound] of Object.entries(sounds.sounds)) {
   });
 }
 // Files left behind by renamed or removed sounds.
+for (const f of sonnissLock.files) if (!soundFiles.has(f.file.replace(/^sounds\//, ''))) problems.push(`${f.file}: in content/sonniss.lock.json but not content/sounds.json (run node tools/content/sonniss-audio.mjs <the sfx folder>)`);
 for (const f of existsSync(SOUND_DIR) ? readdirSync(SOUND_DIR) : []) {
   if (soundFiles.has(f)) continue;
   if (check) problems.push(`sounds/${f}: not in content/sounds.json (run pnpm content:build)`);
