@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, NPC_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, GROUPS } from '../../../tools/content/character-manifests.mjs';
 
@@ -91,5 +91,12 @@ describe("Character Select's groups", () => {
     for (const id of ['core.unclebao', 'core.rustymech']) expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
     expect(RETIRED_LOOKS['core.unclebao']).toBe('core.oldtimer');
     expect(RETIRED_LOOKS['core.rustymech']).toBe('core.t350');
+  });
+
+  it('the Gas Mask Engineer is gone (owner, 2026-11-21): a saved choice or bot set plays Grunt \'68', () => {
+    expect(CORE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
+    expect(RETIRED_LOOKS['core.gasmaskengineer']).toBe('core.grunt68');
+    expect(validLookId('core.gasmaskengineer')).toBe('core.grunt68');
+    expect(PICKABLE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
   });
 });

@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Gas Mask Engineer is retired.** He's gone from Character Select, random characters and the bots; a saved choice or bot set that named him plays Grunt '68.
 - **MapMaker: Terrain → Resize…** Grow or shrink the terrain at any edge (or all of them) without removing it: sculpting, paint and plants stay where they are, new ground continues the edge, and what's on cut-off ground is listed first.
 - **MapMaker: the level you're editing has a green grid.** The other levels with something on them show a fainter blue grid, and the level list highlights the working level in the same green.
 - **Jump pads look alive.** Their chevrons glide over the plate the way the pad throws you and soft rings rise off it, at a steady brightness (slower with Reduce flashing on).

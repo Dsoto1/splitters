@@ -72,7 +72,6 @@ export const ROULETTE_DATA = {
     'core.zombiesoldier2': 'core.smg',
     'core.undeadsoldier': 'core.burst_rifle',
     'core.orangeengineer': 'core.nailgun',
-    'core.gasmaskengineer': 'core.flamethrower',
     'core.crtrobot': 'core.laser_rifle',
     'core.rollerbot': 'core.launcher',
     'core.mummybot': 'core.flak',
