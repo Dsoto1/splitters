@@ -24,13 +24,15 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
  * How a projectile looks on the client (index sent in snapshots: new ones go last). `vortexNade` is the Gravity
  * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
  * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
- * Box Kit in flight (its crate, small).
+ * Box Kit in flight (its crate, small); `arrow` the Crossbow's bolt (a shaft, steel head and fletching, stuck where it
+ * lands); `blasterBolt` the Blaster X-42's round (a short orange streak, steady: no flicker under Reduce flashing);
+ * `stinger` the Hornet's homing dart (yellow and black); `slime` the Heart Taser's healing slime (its model).
  */
 export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
-  'ammoBox',
+  'ammoBox', 'arrow', 'blasterBolt', 'stinger', 'slime',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -188,6 +190,12 @@ export interface ProjectileSpec {
   sticky?: 'world' | 'any';
   /** Steers toward the nearest enemy ahead within `range` (m), turning up to `turnRate` rad/s. */
   homing?: { turnRate: number; range: number };
+  /**
+   * A friendly shot (the Heart Taser's slime): it heals the first teammate it touches by this much (never above their
+   * full health) and passes harmlessly through everyone else; with `homing` it turns toward the nearest hurt teammate
+   * ahead instead of an enemy. It never damages anyone.
+   */
+  heal?: number;
   /** Slows down over time (share of speed lost per second). */
   drag?: number;
   /** Leaves a hazard where it bursts. */
@@ -275,7 +283,7 @@ export interface WeaponPresentation {
   sound?: string;
   /** Hitscan drawn as a solid beam instead of tracers (lasers, rails). */
   beam?: boolean;
-  /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts). */
+  /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts); `none` for no flash (a bow). */
   muzzle?: { effect: string; scale?: number };
   /** Where the muzzle is on the model (default: the front of its bounds, a little above the middle). */
   muzzleAt?: ModelPoint;
@@ -305,6 +313,19 @@ export interface WeaponPresentation {
 export function heldModel(def: WeaponDefinition, quality: 'low' | 'medium' | 'high'): string | null {
   if (quality === 'low' || !def.view.held) return null;
   return def.view.held[quality];
+}
+
+/**
+ * A melee weapon you carry one of (the Spear: a magazine of 1, thrown by its second trigger): it strikes only while it
+ * is in your hands, and a strike keeps it. Thrown, there is nothing to strike with until you pick it (or another) up.
+ */
+export function inHand(def: Pick<WeaponDefinition, 'kind' | 'magazine'>): boolean {
+  return def.kind === 'melee' && def.magazine > 0;
+}
+
+/** What a weapon throws or fires as a projectile: its own, else its second trigger's (the Spear's throw). */
+export function thrownSpec(def: Pick<WeaponDefinition, 'projectile' | 'alt'>): ProjectileSpec | undefined {
+  return def.projectile ?? def.alt?.projectile;
 }
 
 /** A point on a weapon model, in model space (metres; +Z along the barrel, +Y up, +X right). */
@@ -424,6 +445,11 @@ export interface WeaponDefinition {
   ammo?: AmmoType;
   /** A medical tool: each use heals the teammate you aim at (or yourself) by this much instead of hurting. */
   heal?: number;
+  /**
+   * A shield (the Space Shield): while it is in hand, a hit from an attacker within `arc` degrees of where you face
+   * loses `block` of its damage (0..1). Blasts and hazards with no attacker, and hits from behind, get through.
+   */
+  guard?: { block: number; arc: number };
   /** A grapple: fired at a surface within `range`, it yanks you toward the hook point at about `speed` m/s. */
   grapple?: { speed: number };
   alt?: AltFire;

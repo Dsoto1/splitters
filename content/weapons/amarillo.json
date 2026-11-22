@@ -1,0 +1,38 @@
+{
+  "id": "core.amarillo",
+  "code": 54,
+  "displayName": "Amarillo",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 7,
+  "family": "smg",
+  "damage": 8,
+  "spread": 0.007,
+  "fireIntervalTicks": 2,
+  "range": 120,
+  "magazine": 40,
+  "reserveMax": 200,
+  "pickupAmmo": 80,
+  "reloadTicks": 54,
+  "reload": { "type": "magazine", "tactical": 42, "empty": 54, "out": 0.3, "in": 0.7 },
+  "ammo": "light",
+  "accuracy": { "perShot": 0.004, "max": 0.11, "recovery": 50 },
+  "kick": { "pitch": [0.002, 0.002, 0.003], "yaw": [0.002, -0.002, 0.003, -0.003], "visual": 0.3 },
+  "falloff": { "start": 10, "end": 28, "min": 0.35, "curve": "steep" },
+  "botDesirability": 0.58,
+  "botRange": [1, 14],
+  "view": {
+    "model": "guns/amarillo.glb",
+    "held": { "medium": "guns/amarillo.medium.glb", "high": "guns/amarillo.high.glb" },
+    "fallback": "weapons/smg.glb",
+    "viewOffset": [0.2, -0.2, 0.5],
+    "tracer": "#fff07a",
+    "hold": { "style": "long", "grip": [0, -0.03, -0.13], "support": [0, 0.04, 0.12], "shoulder": [0, 0.02, -0.31] },
+    "muzzleAt": [0, 0.05, 0.32],
+    "sound": "fire.smg"
+  },
+  "notes": {
+    "design": "The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Thirteen rounds to a body, 0.4 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.",
+    "model": "The Meshy community Amarillo Carbine (CC0); the kit SMG is the fallback."
+  }
+}

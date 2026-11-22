@@ -8,6 +8,7 @@ import {
   PLAYER,
   PhysicsWorld,
   buildMapDecor,
+  boxCorners,
   buildMapGeometry,
   builtInSetPieces,
   checkSetPieceDefinition,
@@ -196,6 +197,15 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
   'setpiece.corner_tower_square': {
     // In at the door, up the ladder to the lookout and down again.
     chains: [[[1.2, 0, -7], [1.2, 0, -2.6], [1.2, 11.8, -0.6], [1.2, 0, -7]]],
+  },
+  // St. John's step 7c: the porch (in under its arch to its back, where the hall's doorway is) and the gate tower's
+  // front (under the landing; up each outside stair to the landing and across it; down the other).
+  'setpiece.entrance_porch': {
+    chains: [[[0, 0, -3], [0, 0, 2.2], [0, 0, 3.5]]],
+  },
+  'setpiece.gate_tower_front': {
+    chains: [[[0, 0, -3], [0, 0, 2.2], [0, 0, 3.5]], [[10.8, 0, -1], [10.8, 0, 2], [0, 4, 2], [-10.8, 0, 2], [0, 4, 2], [10.8, 0, 2]]],
+    climbs: [{ from: [9.4, 0.3, 2], yaw: -Math.PI / 2, ticks: 100, up: 3.6 }, { from: [-9.4, 0.3, 2], yaw: Math.PI / 2, ticks: 100, up: 3.6 }],
   },
 };
 
@@ -518,6 +528,137 @@ describe("a three-floor office hall with a basement and a roof perch, joined to 
     // No ground lies in the basement: over its corridor and offices the ground as played is cut away or above the ceiling.
     for (const z of [10, 16, 24]) for (const x of [-1, 3.6, 4.4, 9]) expect(physics.headroom({ x, y: -3.7, z }, PLAYER.height), `${grid}: standing room in the basement at (${x}, ${z})`).toBe(true);
   }
+});
+
+/**
+ * The corner where the two halls meet, as the owner corrected it (St. John's step 7c), in DeKoven's frame above: the
+ * main entrance is an Entrance Porch on the stair lobby's court side (west); the corridors join the mess hall wing's
+ * dorm halls round the corner on the 2nd and the 3rd floor (the Stair End Bay's upper doors, a Dorm Entry Bay with its
+ * side left open on each floor); the mess hall has a door by the clock tower; the reception has a Gate Tower Front,
+ * its landing's door into the 2nd floor's corridor (an Admin Entry Bay with a Room doorway).
+ */
+function corner(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
+  const out = dekoven().filter((p) => !['mess', 'south', 'first3'].includes(p.id));
+  out.push(at('south', 'setpiece.stair_end_bay_3', 1, 0, 0, 3, { lobbySide: 'door', upperDoor: 'end', topDoor: 'end', rails: 'metal' }));
+  out.push(at('first3', 'setpiece.admin_entry_bay', 0, 3, 1, 1, { wayIn: 'door' }));
+  out.push(at('porch', 'setpiece.entrance_porch', -1, 0, 0, 1), at('gate', 'setpiece.gate_tower_front', -1, 3, 0, 1));
+  // The mess hall wing along x, cells -2 to 3 between its two stair ends, the clock tower by its west end.
+  out.push(at('end_w', 'setpiece.stair_end_bay_3', -3, -2, 0, 0), at('end_e', 'setpiece.stair_end_bay_3', 4, -1, 0, 2), at('tower', 'setpiece.clock_tower', -3, 0, 0, 2));
+  for (let x = -2; x <= 3; x++) {
+    out.push(at(`mess_${x}`, 'setpiece.refectory_bay', x, -2, 0, 0, x === -2 ? { walls: 'door_north' } : x === 0 ? { walls: 'doors' } : undefined));
+    for (const z of [1, 2]) {
+      // The bay the corridor comes into: cell 0 on the 2nd floor (the stair's door is beside the hall's mouth), cell 1 on the 3rd.
+      if (x === z - 1) out.push(at(`join_${z}`, 'setpiece.dorm_entry_bay', x, -1, z, 2, { roomDoors: 'slim', wayIn: 'open' }));
+      else out.push(at(`dorm_${x}_${z}`, (x + z) % 2 ? 'setpiece.dorm_bay' : 'setpiece.dorm_bay_closed', x, -2, z, 0, { roomDoors: 'slim' }));
+    }
+  }
+  return out;
+}
+
+describe("two halls joined at a corner: the porch, the corridors round the corner on two floors, the gate tower's landing (the DeKoven and Welles corner, St. John's step 7c)", () => {
+  it('court to mess hall through the porch, the porch to the 2nd floor, the corridors into the dorm halls on the 2nd and 3rd floor, the clock tower door, each outside stair to the landing and the corridor', { timeout: 300_000 }, () => {
+    const map = mapOf(corner());
+    const nav = navOf(map);
+    const length = (path: Vec3[]) => path.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - path[i - 1]!.x, p.z - path[i - 1]!.z) : 0), 0);
+    const route = (a: P3, b: P3, what: string, most: number, by?: (p: Vec3) => boolean): void => {
+      const path = nav.findPath(v(a), v(b));
+      expect(path, what).toBeTruthy();
+      expect(Math.hypot(path!.at(-1)!.x - b[0], path!.at(-1)!.y - b[1], path!.at(-1)!.z - b[2]), `${what}: arrives`).toBeLessThan(1.2);
+      expect(length(path!), `${what}: ${length(path!).toFixed(1)} m`).toBeLessThan(most);
+      // (The way it goes: points every half metre along the path, a straight run has no corner to test.)
+      const along: Vec3[] = [];
+      path!.forEach((p, i) => {
+        const q = path![i - 1] ?? p;
+        const n = Math.ceil(Math.hypot(p.x - q.x, p.z - q.z) / 0.5) || 1;
+        for (let k = 1; k <= n; k++) along.push({ x: q.x + ((p.x - q.x) * k) / n, y: q.y + ((p.y - q.y) * k) / n, z: q.z + ((p.z - q.z) * k) / n });
+      });
+      if (by) expect(along.some(by), `${what}: the way it goes`).toBe(true);
+    };
+    const near = (x: number, y: number, z: number, r = 1.8) => (p: Vec3) => Math.hypot(p.x - x, p.z - z) < r && Math.abs(p.y - y) < 1.5;
+    // The porch (west of the lobby, its arch at x -7.25): from the court into the mess hall, and up to the 2nd floor.
+    // (The mess hall is reached from inside the porch: from further out the door by the clock tower is as near.)
+    route([-14, 0, 0], [1, 0, 0.5], 'court, porch, lobby', 18, near(-7.25, 0, 0));
+    route([-6, 0, 0], [0, 0, -12], 'porch, lobby, mess hall', 20, near(0, 0, -4));
+    route([-14, 0, 0], [4, 4, 12], 'court, porch, stair, 2nd floor corridor', 60, near(-7.25, 0, 0));
+    // Round the corner: each corridor into the mess hall wing's dorm hall (its middle is z -12), to both of its ends,
+    // through the stair bay's door on that floor (x 2.7 on the 2nd floor, x 8 on the 3rd; both in the wall at z -4).
+    for (const [y, doorX] of [[4, 2.7], [8, 8]] as const) {
+      route([4, y, 20], [-18, y, -12], `the corridor at ${y} m to the dorm hall's west end`, 75, near(doorX, y, -4, 1.6));
+      route([4, y, 20], [26, y, -12], `the corridor at ${y} m to the dorm hall's east end`, 75, near(doorX, y, -4, 1.6));
+      route([-18, y, -12], [4, y, 36], `the dorm hall at ${y} m to the corridor's north end`, 90, near(doorX, y, -4, 1.6));
+    }
+    // The clock tower (its door north, at z 4) and the mess hall's door beside it (x -16, in the wall at z -4).
+    route([-24, 0, 7], [-16, 0, -12], "the clock tower's door to the mess hall", 34, near(-16, 0, -4));
+    // The gate tower's front: under the landing into the reception; up each outside stair, across the landing and
+    // through its door into the 2nd floor's corridor (not round by an inside stair).
+    route([-14, 0, 24], [4, 0, 20], 'court, under the landing, reception, corridor', 30, near(-6, 0, 24));
+    for (const [z, name] of [[13, 'south'], [35, 'north']] as const) {
+      route([-12, 0, z], [4, 4, 24], `court, the ${name} outside stair, landing, 2nd floor corridor`, 34, near(-6, 4, 24, 2.4));
+    }
+    route([4, 4, 24], [-12, 0, 13], 'and down again from the corridor to the court', 34, near(-6, 4, 24, 2.4));
+    nav.destroy();
+    // Players: through the porch and its doorway into the lobby; up the south outside stair; across the landing through
+    // the door; through the 3rd floor's door from the landing room into the dorm wing.
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    expect(walk(physics, v([-12, 0.05, 0]), Math.PI / 2, 220).pos.x, 'walked east through the porch into the lobby').toBeGreaterThan(-3);
+    expect(walk(physics, v([-6, 0.3, 14.2]), 0, 105).pos.y, 'walked north up the south outside stair').toBeGreaterThan(3.6);
+    expect(walk(physics, v([-6, 4.05, 24]), Math.PI / 2, 160).pos.x, 'walked east off the landing into the 2nd floor').toBeGreaterThan(-3);
+    expect(walk(physics, v([8, 8.05, -1]), Math.PI, 160).pos.z, "walked south through the 3rd floor's door").toBeLessThan(-5.5);
+    // The landing's parapet and the stairs' parapets hold: nobody walks off the landing's front or a stair's side.
+    expect(walk(physics, v([-6, 4.05, 24]), -Math.PI / 2, 160).pos.y, "stopped by the landing's parapet").toBeGreaterThan(3.9);
+    expect(walk(physics, v([-6, 2.3, 17.6]), -Math.PI / 2, 120).pos.y, "stopped by the stair's parapet").toBeGreaterThan(1.9);
+  });
+
+  it('the pointed arches: the ring stands proud of the wall on both faces, the wall behind it never dips into the opening, nothing is rolled past 45 degrees', () => {
+    for (const [id, a, s, c, zFront] of [['setpiece.entrance_porch', 1.6, 1.7, 0.7, 0.5], ['setpiece.gate_tower_front', 1.7, 1.15, 0.7, 0]] as const) {
+      const def = library.pieces.get(id)!;
+      const { entities } = setPieceParts({ id: 'p_arch', piece: id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }, def, 'core.castle', library);
+      const blocks = entities.flatMap((e) => (e.kind === 'block' ? [e] : []));
+      const ring = blocks.filter((e) => /^Arch ring/.test(e.name ?? ''));
+      expect(ring.length, id).toBe(9);
+      for (const e of ring) {
+        expect(Math.abs(e.roll ?? 0), `${id}: ${e.name}`).toBeLessThanOrEqual(Math.PI / 4 + 1e-6);
+        expect(e.position[2] - e.size[2] / 2, `${id}: proud of the front`).toBeLessThan(zFront - 0.03);
+        expect(e.position[2] + e.size[2] / 2, `${id}: proud of the back`).toBeGreaterThan(zFront + 0.5 + 0.03);
+        // (Under the landing's top, 4 m: nothing of the ring shows through its floor.)
+        if (id === 'setpiece.gate_tower_front') expect(Math.max(...boxCorners({ min: [e.position[0] - e.size[0] / 2, e.position[1], e.position[2] - e.size[2] / 2], max: [e.position[0] + e.size[0] / 2, e.position[1] + e.size[1], e.position[2] + e.size[2] / 2], roll: e.roll }).map((c) => c[1])), `${e.name}: under the landing`).toBeLessThan(4);
+      }
+      // The stone over the arch: each block's foot is on or over the opening's curve at its inner edge.
+      const R = a + c;
+      const over = blocks.filter((e) => /over the arch/.test(e.name ?? ''));
+      expect(over.length, id).toBeGreaterThanOrEqual(3);
+      for (const e of over) {
+        const inner = Math.max(0, Math.abs(e.position[0]) - e.size[0] / 2);
+        expect(e.position[1], `${id}: ${e.name} at x ${e.position[0]}`).toBeGreaterThanOrEqual(s + Math.sqrt(R * R - (inner + c) * (inner + c)) - 0.001);
+      }
+    }
+  });
+
+  it('black metal stair rails: every stair bay swaps each wooden rail for a Stair Railing in the same place; the railing stops a walk as the rail did', () => {
+    const ids = ['setpiece.stair_end_bay', 'setpiece.stair_end_bay_3', 'setpiece.stair_end_bay_arched', 'setpiece.stair_end_bay_bridge', 'setpiece.stair_end_bay_roof', 'setpiece.stair_down_bay', 'setpiece.hall_centre'];
+    for (const id of ids) {
+      const def = library.pieces.get(id)!;
+      const parts = (rails: string) => setPieceParts({ id: 'p_rails', piece: id, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { rails } } }, def, 'core.castle', library).entities;
+      const wood = parts('wood').filter((e) => e.kind === 'block' && e.name === 'Stair rail');
+      const metal = parts('metal');
+      expect(wood.length, id).toBeGreaterThan(0);
+      expect(metal.filter((e) => e.kind === 'block' && e.name === 'Stair rail'), id).toHaveLength(0);
+      const railings = metal.filter((e) => e.kind === 'prop' && e.model === 'kit.fence.stair_rail');
+      expect(railings.map((e) => e.position), id).toEqual(wood.map((e) => e.position));
+    }
+    const rail = getProp('kit.fence.stair_rail')!;
+    expect(rail.size).toEqual([3.5, 1, 0.1]);
+    expect(rail.boxes!.length).toBeGreaterThan(20);
+    // On the 2nd floor's landing of a three-floor bay: walking at the rail over the first flight (z 1.95) from the north.
+    for (const rails of ['wood', 'metal']) {
+      const map = withPiece('setpiece.stair_end_bay_3', 0, false, { rails });
+      const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+      const end = walk(physics, v([-1.75, 4.05, 3.4]), Math.PI, 120);
+      expect(end.pos.z, `${rails}: stopped at the rail`).toBeGreaterThan(1.95);
+      expect(end.pos.y, `${rails}: still on the landing`).toBeGreaterThan(3.9);
+    }
+  });
 });
 
 /**

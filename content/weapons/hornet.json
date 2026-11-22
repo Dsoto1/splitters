@@ -1,0 +1,56 @@
+{
+  "id": "core.hornet",
+  "code": 62,
+  "displayName": "Hornet",
+  "category": "special",
+  "kind": "projectile",
+  "slot": 2,
+  "fireMode": "semi",
+  "spread": 0.01,
+  "fireIntervalTicks": 12,
+  "range": 0,
+  "magazine": 10,
+  "reserveMax": 60,
+  "pickupAmmo": 20,
+  "reloadTicks": 80,
+  "projectile": {
+    "speed": 32,
+    "gravity": 0,
+    "fuseSeconds": 2.2,
+    "splashRadius": 0,
+    "splashDamage": 0,
+    "splashEdgeDamage": 0,
+    "selfDamageScale": 0,
+    "visual": "stinger",
+    "impactDamage": 16,
+    "homing": { "turnRate": 3.2, "range": 22 },
+    "status": { "kind": "poison", "seconds": 2 }
+  },
+  "ammo": "cells",
+  "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
+  "kick": {
+    "pitch": [0.012],
+    "yaw": [0.003, -0.003],
+    "variance": 0.003,
+    "delay": 3,
+    "settle": 10,
+    "rate": 0.3,
+    "visual": 0.5
+  },
+  "botDesirability": 0.55,
+  "botRange": [3, 22],
+  "view": {
+    "model": "guns/hornet.glb",
+    "held": { "medium": "guns/hornet.medium.glb", "high": "guns/hornet.high.glb" },
+    "fallback": "weapons/pulse_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.44],
+    "tracer": "#ffd23a",
+    "hold": { "style": "pistol", "grip": [0, -0.056, -0.077], "support": [-0.02, -0.063, -0.07], "rake": 35 },
+    "muzzleAt": [0, 0.014, 0.14],
+    "sound": "fire.swarm"
+  },
+  "notes": {
+    "design": "Stingers that find their mark: slow (32 m/s) darts that turn toward the nearest enemy ahead within 22 m, 16 a hit and a short poison. Easy to land, slow to kill (six hits); strafing players outrun them up close. A Chaos-set oddball.",
+    "model": "The Meshy community Hornet Carbine (CC0), a chunky sci-fi handgun with mandibles at the muzzle; the kit pulse pistol is the fallback. Its stingers in flight are drawn in code (`stinger`)."
+  }
+}

@@ -36,6 +36,11 @@
     "core.goo_gun": { "default": "irons", "allowed": ["irons"] },
     "core.rifle": { "default": "irons", "allowed": ["irons"] },
     "core.burst_rifle": { "default": "irons", "allowed": ["irons"] },
+    "core.amarillo": { "default": "irons", "allowed": ["irons"] },
+    "core.compact_carbine": { "default": "irons", "allowed": ["irons"] },
+    "core.flintlock_pistol": { "default": "irons", "allowed": ["irons"] },
+    "core.laser_blaster": { "default": "irons", "allowed": ["irons"] },
+    "core.runebreaker": { "default": "irons", "allowed": ["irons"] },
     "core.laser_rifle": { "default": "reddot", "allowed": ["reddot", "holo"] },
     "core.bubble_blaster": { "default": "reddot", "allowed": ["reddot", "holo"] },
     "core.sawed_off": { "default": "reddot", "allowed": ["reddot"] },
@@ -51,7 +56,10 @@
     "core.battle_rifle": { "default": "scope", "allowed": ["scope"] },
     "core.marksman": { "default": "scope", "allowed": ["scope"], "steps": [1, 0.45] },
     "core.sniper": { "default": "sniper", "allowed": ["sniper"] },
-    "core.railgun": { "default": "sniper", "allowed": ["sniper"] }
+    "core.railgun": { "default": "sniper", "allowed": ["sniper"] },
+    "core.nova6": { "default": "scope", "allowed": ["scope"] },
+    "core.lever_action": { "default": "scope", "allowed": ["scope"] },
+    "core.crossbow": { "default": "scope", "allowed": ["scope"] }
   },
   "none": {
     "core.rockets": "a tube launcher: aimed over the tube, as launchers are",
@@ -59,12 +67,17 @@
     "core.blast_rockets": "a tube launcher: aimed over the tube",
     "core.launcher": "a grenade launcher: its rounds are lobbed, a sight on the bore would point over the target",
     "core.swarm": "a launcher whose rockets home: no sight to line up",
+    "core.heart_taser": "fires a slime that finds a hurt teammate by itself: no sight to line up",
     "core.oil_slicker": "sprays a lobbed stream: a sight on the bore would point over where it lands",
     "core.flamethrower": "a stream weapon, aimed by its flame",
     "core.lmg": "a rotary gun fired from the hip: its top is a housing and a crank",
     "core.singularity": "an oddity with an organic shell: nowhere flat to stand a sight, and the shot is slow",
     "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
     "core.gilded_pistol": "a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it",
-    "core.spear": "a thrown spear: no sights"
+    "core.blaster_x42": "its own scope has no sights under it: keeps its aim over the top of the gun until the sights pass gives it its optic (weapons intake 11-18)",
+    "core.desert_carbine": "its own holographic sight is not on the bore: keeps its aim until the sights pass fits it (weapons intake 11-18)",
+    "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home",
+    "core.twin_rifle": "its own red dot is not yet fitted: keeps its aim until the sights pass fits it (weapons intake 11-18)",
+    "core.woodland_smg": "its rear sight block stands in the line: keeps its aim until the sights pass corrects it (weapons intake 11-18)"
   }
 }

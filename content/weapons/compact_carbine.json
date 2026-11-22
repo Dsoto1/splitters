@@ -1,0 +1,46 @@
+{
+  "id": "core.compact_carbine",
+  "code": 52,
+  "displayName": "Compact Carbine",
+  "category": "smg",
+  "kind": "hitscan",
+  "slot": 7,
+  "family": "smg",
+  "damage": 13,
+  "spread": 0.005,
+  "fireIntervalTicks": 4,
+  "range": 200,
+  "magazine": 40,
+  "reserveMax": 200,
+  "pickupAmmo": 80,
+  "reloadTicks": 76,
+  "reload": { "type": "magazine", "tactical": 60, "empty": 76, "out": 0.3, "in": 0.7 },
+  "ammo": "light",
+  "fireModes": [
+    { "mode": "auto", "label": "Auto" },
+    {
+      "mode": "semi",
+      "label": "Single",
+      "fireIntervalTicks": 6,
+      "kick": { "pitch": [0.004], "yaw": [0.001, -0.001] }
+    }
+  ],
+  "falloff": { "start": 22, "end": 55, "min": 0.5, "curve": "smooth" },
+  "accuracy": { "perShot": 0.005, "max": 0.07 },
+  "botDesirability": 0.62,
+  "botRange": [2, 30],
+  "view": {
+    "model": "guns/compact_carbine.glb",
+    "held": { "medium": "guns/compact_carbine.medium.glb", "high": "guns/compact_carbine.high.glb" },
+    "fallback": "weapons/smg.glb",
+    "viewOffset": [0.2, -0.2, 0.5],
+    "tracer": "#ffe9a8",
+    "hold": { "style": "long", "grip": [0, -0.03, -0.07], "support": [0, 0.06, 0.18], "shoulder": [0, 0.0, -0.32] },
+    "muzzleAt": [0, 0.065, 0.33],
+    "sound": "fire.smg"
+  },
+  "notes": {
+    "design": "The SMG that reaches: lighter rounds (13) but a 40-round magazine and half again the SMG's reach (full damage to 22 m); U switches to Single, a quick, low-kick tap for the middle distance. Body kill up close 8 rounds, 0.47 s.",
+    "model": "The Meshy community Compact Tactical Carbine (CC0); the kit SMG is the fallback."
+  }
+}

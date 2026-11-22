@@ -115,7 +115,7 @@ import {
 } from './gunplay.ts';
 import { clampFireMode, firingOf, type Firing } from './fireModes.ts';
 import { GLASS, glassAt } from './glass.ts';
-import { OIL_TRACTION, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
+import { OIL_TRACTION, inHand, PROJECTILE_VISUALS, STREAM_VISUALS, SMOKE, THROWABLES, THROWABLE_DEFS, ZONE_KINDS, getWeapon, smokeBlocks, smokeRadius, zoneContains, rayCapsule, rayTarget, PROJECTILE_THICKNESS, weaponByCode, weaponCode, resolveHitscan, throwableWeaponId, type HitZone, UNARMED, unarmedStrike, type AltFire, type ProjectileSpec, type SmokeCloud, type StatusHit, type ThrowableKind, type WeaponDefinition, type ZoneKind, type ZoneSpec } from './weapons.ts';
 import { IMPACT, blastKnockback, blastThrow, hitImpact, impactSpeed, newImpact, stepImpact, stoppingPower, type ImpactState } from './impact.ts';
 
 /** At most this many queued inputs are applied per player per tick, which caps speed hacks. */
@@ -3405,8 +3405,10 @@ export class Match {
           } else c.burstLeft = 0;
         }
       } else if (fireDown && ready && !c.semiLatch && (!def.windupTicks || c.windup >= def.windupTicks)) {
-        if (def.magazine > 0 && roundsReady(held) === 0) this.startReload(c);
-        else if (spendRound(held)) {
+        if (def.magazine > 0 && roundsReady(held) === 0) {
+          if (inHand(held.def)) c.semiLatch = true;
+          else this.startReload(c);
+        } else if (inHand(held.def) ? held.mag > 0 : spendRound(held)) {
           c.fireCooldown = firing.interval;
           c.semiLatch = firing.mode !== 'auto';
           this.fire(c, paired ? pairTrigger(def, firing, paired, false) : primaryTrigger(def, firing), input.viewTick ?? 0);
@@ -3450,7 +3452,7 @@ export class Match {
       // Quick melee: the held melee weapon swings; with a gun in hand, a punch or a kick (no lockout of the gun).
       if (pressed & BUTTON_MELEE && !c.mount && !frozen && !fired) {
         if (def.kind === 'melee' && !getWeapon(def.id).heal) {
-          if (ready && spendRound(held)) {
+          if (ready && (inHand(held.def) ? held.mag > 0 : spendRound(held))) {
             c.fireCooldown = def.fireIntervalTicks;
             this.fire(c, primaryTrigger(def), input.viewTick ?? 0);
             fired = true;
@@ -4112,7 +4114,7 @@ export class Match {
         if (this.walk(p, owner ?? null)) keep.push(p);
         continue;
       }
-      if (spec.homing && owner) this.steer(p, owner, spec.homing);
+      if (spec.homing && owner) this.steer(p, owner, spec.homing, !!spec.heal);
       if (spec.guided && owner?.alive) this.guide(p, owner, spec.guided.turnRate);
       if (spec.drag) p.vel = scale(p.vel, Math.max(0, 1 - spec.drag * TICK_DT));
       p.vel = { x: p.vel.x, y: p.vel.y - spec.gravity * TICK_DT, z: p.vel.z };
@@ -4139,7 +4141,10 @@ export class Match {
       for (const c of this.actors()) {
         // Your own discs never hit you.
         if (!c.alive || (c === owner && (p.age < OWNER_GRACE_TICKS || spec.disc))) continue;
-        if (owner && c !== owner && !this.canHurt(owner, c)) continue;
+        // A healing slime touches only teammates (not its owner); everything else harms only those it can hurt.
+        if (spec.heal) {
+          if (!owner || c === owner || this.hostile(owner, c)) continue;
+        } else if (owner && c !== owner && !this.canHurt(owner, c)) continue;
         const d = rayTarget(p.pos, dir, this.shotBody(c), len, PROJECTILE_THICKNESS);
         if (d !== null && d <= len && (hitDist === null || d < hitDist)) {
           hitDist = d;
@@ -4210,6 +4215,13 @@ export class Match {
           }
           if (--p.ticksLeft <= 0 || (spec.maxBounces !== undefined && p.bounces > spec.maxBounces)) this.explode(p, p.pos);
           else keep.push(p);
+          continue;
+        }
+        if (victim && spec.heal) {
+          const n = Math.min(spec.heal, victim.maxHealth - victim.health);
+          victim.health += n;
+          if (owner) this.pendingEvents.push({ e: 'heal', s: owner.slot, t: victim.slot, n });
+          this.explode(p, at);
           continue;
         }
         if (victim && spec.disc) {
@@ -4860,13 +4872,14 @@ export class Match {
   }
 
   /** Swarm missiles turn toward the nearest enemy ahead of them that they can see. */
-  private steer(p: Projectile, owner: Combatant, homing: NonNullable<ProjectileSpec['homing']>): void {
+  /** Turn a homing shot toward the nearest enemy ahead (a healing one: the nearest hurt teammate). */
+  private steer(p: Projectile, owner: Combatant, homing: NonNullable<ProjectileSpec['homing']>, friendly = false): void {
     const speed = hypot(p.vel.x, p.vel.y, p.vel.z) || 1;
     const fwd = scale(p.vel, 1 / speed);
     let best: Vec3 | null = null;
     let bestD = homing.range;
     for (const c of this.actors()) {
-      if (!c.alive || c === owner || !this.hostile(owner, c)) continue;
+      if (!c.alive || c === owner || this.hostile(owner, c) !== !friendly || (friendly && c.health >= c.maxHealth)) continue;
       const to = sub(chest(c.move.pos), p.pos);
       const d = hypot(to.x, to.y, to.z);
       if (d > bestD || dot(to, fwd) < d * 0.3) continue;
@@ -6479,6 +6492,9 @@ export class Match {
     // Character stats: the attacker's damage dealt (melee strength for a melee hit), the victim's armor.
     else if (attacker && attacker !== victim) amount *= isMeleeWeapon(weapon) ? attacker.stats.melee : attacker.stats.damage;
     if (victim.stats.armor > 0) amount *= 1 - victim.stats.armor;
+    // A shield in hand (`guard`, the Space Shield) takes part of a hit from in front.
+    const guard = victim.weapons.get(victim.current)?.def.guard;
+    if (guard && attacker && attacker !== victim && facingWithin(victim, attacker.move.pos, guard.arc)) amount *= 1 - guard.block;
     let dmg = attacker && attacker !== victim && attacker.damageTicks > 0 ? amount * DAMAGE_BOOST : amount;
     const hit = dmg;
     if (victim.armor > 0) {
@@ -8503,6 +8519,16 @@ function pairTrigger(def: WeaponDefinition, firing: Firing, akimbo: AkimboSpec, 
 }
 
 /** Use one round (or add heat) for a shot; false when the weapon can't fire. */
+/** Whether `at` lies within `arc` degrees (the whole arc, centred on the facing) of where `c` faces, across the ground. */
+function facingWithin(c: Combatant, at: Vec3, arc: number): boolean {
+  const dx = at.x - c.move.pos.x;
+  const dz = at.z - c.move.pos.z;
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-6) return true;
+  const f = viewDirection(c.yaw, 0);
+  return (f.x * dx + f.z * dz) / len >= Math.cos(((arc / 2) * Math.PI) / 180);
+}
+
 function spendRound(w: WeaponState): boolean {
   // Limited mounted ammunition (the Tank's shells): none aboard, no shot; heat (if any) still paces it.
   if (w.shells !== undefined) {

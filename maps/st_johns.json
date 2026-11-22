@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_q3hkd7cfrjqyjl3b",
-      "revision": 41,
-      "contentHash": "sha256:cc98eb11d90c76da0e34d69adb2cbb83067da91d8897ae9a5fe11023f2b02be1",
+      "versionId": "v_hm2y73vn6tikkzy7",
+      "revision": 42,
+      "contentHash": "sha256:7dd7895dd90cdccd133c93c3a406c758f3bb4ac3d33cb9bf2794852831e90f81",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T12:22:33.168Z"
+      "releasedAt": "2026-11-21T21:25:52.159Z"
     }
   },
   "classicStructure": {
@@ -28318,1253 +28318,6 @@
     "style": "invisible",
     "height": 8
   },
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "forest",
-    "ground": "grass",
-    "haze": 0.4,
-    "mist": 0.2
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
-  "weaponSet": "military",
-  "dependencies": [],
-  "setPieces": [
-    {
-      "id": "setpiece_khjt0z69qh",
-      "piece": "setpiece.carriageway_1",
-      "x": 1,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_on330x7tqt",
-      "piece": "setpiece.stair_end_bay_arched",
-      "x": 5,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_qxfg57rgtu",
-      "piece": "setpiece.corner_tower_square",
-      "x": 4,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_gnormrx3xx",
-      "piece": "setpiece.dorm_corner_bay",
-      "x": 6,
-      "y": 4,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_g9sbbpnwrm",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 3,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_tb0jpttlgd",
-      "piece": "setpiece.dorm_entry_bay",
-      "x": 6,
-      "y": 2,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_ki80jn7ntk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 6,
-      "y": 1,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_2ls5ymrezs",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 6,
-      "y": 3,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4brurges11",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 1,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_c35wf9iphd",
-      "piece": "setpiece.dorm_corner_bay",
-      "x": 6,
-      "y": 4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_x6k4wkf6iv",
-      "piece": "setpiece.dorm_bay",
-      "x": 6,
-      "y": 2,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "pack": "collegiate",
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4tw978dgz3",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": -17,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        }
-      }
-    },
-    {
-      "id": "setpiece_58q7mf5eb8",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": -10,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        }
-      }
-    },
-    {
-      "id": "setpiece_3459ewaolt",
-      "piece": "setpiece.hall_centre",
-      "x": -13,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_zzt4gpx8uz",
-      "piece": "setpiece.dorm_bay",
-      "x": -16,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_7mfvzrvurk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -15,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_qafubgr7py",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -12,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_cr7rogzi50",
-      "piece": "setpiece.dorm_bay",
-      "x": -11,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_u2ewet59uc",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -16,
-      "y": -9,
-      "z": 1,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_jc0zvl1blx",
-      "piece": "setpiece.dorm_bay",
-      "x": -15,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4z3im1onkr",
-      "piece": "setpiece.dorm_bay",
-      "x": -12,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_r9njdxq9rt",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -11,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_95teh77rdu",
-      "piece": "setpiece.dorm_bay",
-      "x": -16,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_8ko5gz8jen",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -15,
-      "y": -9,
-      "z": 2,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_lmojxl69zk",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": -12,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_z50uwvld7g",
-      "piece": "setpiece.dorm_bay",
-      "x": -11,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_red"
-        },
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_uh8juorp1c",
-      "piece": "setpiece.corner_turret_round",
-      "x": -15,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": true
-    },
-    {
-      "id": "setpiece_emzzmg1o44",
-      "piece": "setpiece.corner_turret_round",
-      "x": -12,
-      "y": -8,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_e43xh5zvfu",
-      "piece": "setpiece.corner_turret_round",
-      "x": -18,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "top": "red"
-        }
-      }
-    },
-    {
-      "id": "setpiece_f6epumzmbr",
-      "piece": "setpiece.stair_end_bay",
-      "x": 7,
-      "y": 0,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "pack": "collegiate"
-    },
-    {
-      "id": "setpiece_w2p496421w",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": -5,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_7urz05z2la",
-      "piece": "setpiece.classroom_bay",
-      "x": -4,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "pennants": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_qcan2p1sny",
-      "piece": "setpiece.classroom_bay",
-      "x": -3,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_09gm2dvodk",
-      "piece": "setpiece.classroom_bay",
-      "x": -1,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_9r2a7ls4yz",
-      "piece": "setpiece.classroom_bay",
-      "x": -4,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_baztjd0j6a",
-      "piece": "setpiece.classroom_bay",
-      "x": -3,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "pennants": "north"
-        }
-      }
-    },
-    {
-      "id": "setpiece_6jgr7yymo2",
-      "piece": "setpiece.classroom_bay",
-      "x": -2,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_4oexne37n8",
-      "piece": "setpiece.classroom_bay",
-      "x": -1,
-      "y": -10,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "pennants": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_u3afzkzz6y",
-      "piece": "setpiece.classroom_bay",
-      "x": -4,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_w3q2c4ep3m",
-      "piece": "setpiece.classroom_bay",
-      "x": -3,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_btma7axgtp",
-      "piece": "setpiece.classroom_bay",
-      "x": -2,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "pennants": "north"
-        }
-      }
-    },
-    {
-      "id": "setpiece_kljjy1wder",
-      "piece": "setpiece.classroom_bay",
-      "x": -1,
-      "y": -10,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_2nh2c4huvp",
-      "piece": "setpiece.corner_tower_square",
-      "x": -6,
-      "y": -10,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_opus_incertum",
-            "tint": null
-          }
-        }
-      }
-    },
-    {
-      "id": "setpiece_a3c0dpzi2u",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": 0,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "facade": "collegiate_fieldstone"
-        },
-        "options": {
-          "upperDoor": "end"
-        }
-      }
-    },
-    {
-      "id": "setpiece_9b80ywk7n9",
-      "piece": "setpiece.classroom_entry_bay",
-      "x": -2,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "collegiate_fieldstone"
-        }
-      }
-    },
-    {
-      "id": "setpiece_6yo07jalgv",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": 9,
-      "y": -10,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_8zgwaep49q",
-      "piece": "setpiece.refectory_bay",
-      "x": 3,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_on14jx8cor",
-      "piece": "setpiece.refectory_bay",
-      "x": 4,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "walls": "main_north"
-        }
-      }
-    },
-    {
-      "id": "setpiece_7j8uomeg8s",
-      "piece": "setpiece.refectory_bay",
-      "x": 5,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "walls": "doors"
-        }
-      }
-    },
-    {
-      "id": "setpiece_wqaqvgkrko",
-      "piece": "setpiece.refectory_bay",
-      "x": 6,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_swcuia16jz",
-      "piece": "setpiece.refectory_bay",
-      "x": 7,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "walls": "fire_south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_9igcntaxz3",
-      "piece": "setpiece.refectory_bay",
-      "x": 8,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_8vj5g30fls",
-      "piece": "setpiece.classroom_bay",
-      "x": 3,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_3bnirql5fq",
-      "piece": "setpiece.classroom_bay",
-      "x": 4,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "pennants": "north"
-        }
-      }
-    },
-    {
-      "id": "setpiece_tf2d831c55",
-      "piece": "setpiece.classroom_bay",
-      "x": 5,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_94hl0pw5t7",
-      "piece": "setpiece.classroom_bay",
-      "x": 6,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_pevisg8u7t",
-      "piece": "setpiece.classroom_bay",
-      "x": 7,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "pennants": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_zhhkhfyu06",
-      "piece": "setpiece.classroom_bay",
-      "x": 8,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_x4lwi8vb3u",
-      "piece": "setpiece.dorm_bay",
-      "x": 3,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_rpbkojdwi4",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 4,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_3biz4ld4au",
-      "piece": "setpiece.dorm_bay",
-      "x": 5,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_8xokkofu66",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 6,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_cgze69nvws",
-      "piece": "setpiece.dorm_bay",
-      "x": 7,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_u1764v8rzg",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 8,
-      "y": -11,
-      "z": 2,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_nfl38c0amd",
-      "piece": "setpiece.clock_tower",
-      "x": 2,
-      "y": -9,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ag9260atkh",
-      "piece": "setpiece.stair_end_bay_3",
-      "x": 6,
-      "y": -9,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_xcgqnhf6qe",
-      "piece": "setpiece.stair_end_bay_roof",
-      "x": 5,
-      "y": -4,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_jeyv5h9diq",
-      "piece": "setpiece.corner_turret_round",
-      "x": 4,
-      "y": -4,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_7zliuyad5d",
-      "piece": "setpiece.corner_turret_round",
-      "x": 7,
-      "y": -4,
-      "z": 0,
-      "rotation": 2,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_ka6c1w4v2q",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -8,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_crm2m21nqd",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -7,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "offices": "shut"
-        }
-      }
-    },
-    {
-      "id": "setpiece_9cshnpy6uq",
-      "piece": "setpiece.admin_entry_bay",
-      "x": 5,
-      "y": -6,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_7vevd6fa7q",
-      "piece": "setpiece.stair_down_bay",
-      "x": 5,
-      "y": -5,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "top": "open"
-        }
-      }
-    },
-    {
-      "id": "setpiece_p14lhym3jh",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -8,
-      "z": -1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain",
-          "offices": "shut",
-          "walls": "solid",
-          "end": "east"
-        }
-      }
-    },
-    {
-      "id": "setpiece_epag2eq99f",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -7,
-      "z": -1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain",
-          "walls": "solid"
-        }
-      }
-    },
-    {
-      "id": "setpiece_brqcimfk71",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -6,
-      "z": -1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain",
-          "offices": "shut",
-          "walls": "solid"
-        }
-      }
-    },
-    {
-      "id": "setpiece_hvniykvsk4",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -8,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain"
-        }
-      }
-    },
-    {
-      "id": "setpiece_w8iuxq0kyb",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -7,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain",
-          "offices": "shut"
-        }
-      }
-    },
-    {
-      "id": "setpiece_76hrp514kv",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -6,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_fy2ntlhscm",
-      "piece": "setpiece.admin_bay",
-      "x": 5,
-      "y": -5,
-      "z": 1,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "hall": "plain",
-          "offices": "shut"
-        }
-      }
-    },
-    {
-      "id": "setpiece_bx7cnnhsfm",
-      "piece": "setpiece.dorm_bay",
-      "x": 5,
-      "y": -8,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_kqiotkal2j",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 5,
-      "y": -7,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_jw5b5qa4h6",
-      "piece": "setpiece.dorm_bay",
-      "x": 5,
-      "y": -6,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_e0vy881cwa",
-      "piece": "setpiece.dorm_bay_closed",
-      "x": 5,
-      "y": -5,
-      "z": 2,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "roomDoors": "slim"
-        }
-      }
-    },
-    {
-      "id": "setpiece_gpou671dud",
-      "piece": "setpiece.library_bay",
-      "x": -6,
-      "y": -7,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south",
-          "end": "east"
-        }
-      }
-    },
-    {
-      "id": "setpiece_xty73etsfn",
-      "piece": "setpiece.library_bay",
-      "x": -5,
-      "y": -6,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_6pftsqkqnk",
-      "piece": "setpiece.library_bay",
-      "x": -5,
-      "y": -5,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south",
-          "end": "east"
-        }
-      }
-    },
-    {
-      "id": "setpiece_bhyn08o9jf",
-      "piece": "setpiece.library_porch",
-      "x": -4,
-      "y": -6,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          }
-        }
-      }
-    }
-  ],
   "paths": [
     {
       "id": "osm_21644223_0",
@@ -31498,6 +30251,1307 @@
       "width": 3,
       "style": "brick",
       "lay": true
+    }
+  ],
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.4,
+    "mist": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "weaponSet": "military",
+  "dependencies": [],
+  "setPieces": [
+    {
+      "id": "setpiece_khjt0z69qh",
+      "piece": "setpiece.carriageway_1",
+      "x": 1,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_on330x7tqt",
+      "piece": "setpiece.stair_end_bay_arched",
+      "x": 5,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_qxfg57rgtu",
+      "piece": "setpiece.corner_tower_square",
+      "x": 4,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_gnormrx3xx",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": 6,
+      "y": 4,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_g9sbbpnwrm",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 3,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_tb0jpttlgd",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": 6,
+      "y": 2,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_ki80jn7ntk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 6,
+      "y": 1,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_2ls5ymrezs",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 6,
+      "y": 3,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4brurges11",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 1,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_c35wf9iphd",
+      "piece": "setpiece.dorm_corner_bay",
+      "x": 6,
+      "y": 4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_x6k4wkf6iv",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": 2,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4tw978dgz3",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -17,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_58q7mf5eb8",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -10,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3459ewaolt",
+      "piece": "setpiece.hall_centre",
+      "x": -13,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_zzt4gpx8uz",
+      "piece": "setpiece.dorm_bay",
+      "x": -16,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_7mfvzrvurk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -15,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_qafubgr7py",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -12,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_cr7rogzi50",
+      "piece": "setpiece.dorm_bay",
+      "x": -11,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_u2ewet59uc",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -16,
+      "y": -9,
+      "z": 1,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_jc0zvl1blx",
+      "piece": "setpiece.dorm_bay",
+      "x": -15,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4z3im1onkr",
+      "piece": "setpiece.dorm_bay",
+      "x": -12,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_r9njdxq9rt",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -11,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_95teh77rdu",
+      "piece": "setpiece.dorm_bay",
+      "x": -16,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_8ko5gz8jen",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -15,
+      "y": -9,
+      "z": 2,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_lmojxl69zk",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": -12,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_z50uwvld7g",
+      "piece": "setpiece.dorm_bay",
+      "x": -11,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_red"
+        },
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_uh8juorp1c",
+      "piece": "setpiece.corner_turret_round",
+      "x": -15,
+      "y": -8,
+      "z": 0,
+      "rotation": 2,
+      "mirror": true
+    },
+    {
+      "id": "setpiece_emzzmg1o44",
+      "piece": "setpiece.corner_turret_round",
+      "x": -12,
+      "y": -8,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_e43xh5zvfu",
+      "piece": "setpiece.corner_turret_round",
+      "x": -18,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "top": "red"
+        }
+      }
+    },
+    {
+      "id": "setpiece_f6epumzmbr",
+      "piece": "setpiece.stair_end_bay",
+      "x": 7,
+      "y": 0,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "pack": "collegiate"
+    },
+    {
+      "id": "setpiece_w2p496421w",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": -5,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_7urz05z2la",
+      "piece": "setpiece.classroom_bay",
+      "x": -4,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_qcan2p1sny",
+      "piece": "setpiece.classroom_bay",
+      "x": -3,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_09gm2dvodk",
+      "piece": "setpiece.classroom_bay",
+      "x": -1,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9r2a7ls4yz",
+      "piece": "setpiece.classroom_bay",
+      "x": -4,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_baztjd0j6a",
+      "piece": "setpiece.classroom_bay",
+      "x": -3,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_6jgr7yymo2",
+      "piece": "setpiece.classroom_bay",
+      "x": -2,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4oexne37n8",
+      "piece": "setpiece.classroom_bay",
+      "x": -1,
+      "y": -10,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_u3afzkzz6y",
+      "piece": "setpiece.classroom_bay",
+      "x": -4,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_w3q2c4ep3m",
+      "piece": "setpiece.classroom_bay",
+      "x": -3,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_btma7axgtp",
+      "piece": "setpiece.classroom_bay",
+      "x": -2,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "pennants": "north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_kljjy1wder",
+      "piece": "setpiece.classroom_bay",
+      "x": -1,
+      "y": -10,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_2nh2c4huvp",
+      "piece": "setpiece.corner_tower_square",
+      "x": -6,
+      "y": -10,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_opus_incertum",
+            "tint": null
+          }
+        }
+      }
+    },
+    {
+      "id": "setpiece_a3c0dpzi2u",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": 0,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "upperDoor": "end"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9b80ywk7n9",
+      "piece": "setpiece.classroom_entry_bay",
+      "x": -2,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          },
+          "facade": "collegiate_fieldstone"
+        }
+      }
+    },
+    {
+      "id": "setpiece_6yo07jalgv",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": 9,
+      "y": -10,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_8zgwaep49q",
+      "piece": "setpiece.refectory_bay",
+      "x": 3,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "door_north"
+        }
+      }
+    },
+    {
+      "id": "setpiece_on14jx8cor",
+      "piece": "setpiece.refectory_bay",
+      "x": 4,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_7j8uomeg8s",
+      "piece": "setpiece.refectory_bay",
+      "x": 5,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "doors"
+        }
+      }
+    },
+    {
+      "id": "setpiece_wqaqvgkrko",
+      "piece": "setpiece.refectory_bay",
+      "x": 6,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_swcuia16jz",
+      "piece": "setpiece.refectory_bay",
+      "x": 7,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "walls": "fire_south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9igcntaxz3",
+      "piece": "setpiece.refectory_bay",
+      "x": 8,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_pevisg8u7t",
+      "piece": "setpiece.classroom_bay",
+      "x": 7,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "pennants": "south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_zhhkhfyu06",
+      "piece": "setpiece.classroom_bay",
+      "x": 8,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_x4lwi8vb3u",
+      "piece": "setpiece.dorm_bay",
+      "x": 3,
+      "y": -11,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_rpbkojdwi4",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 4,
+      "y": -11,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_3biz4ld4au",
+      "piece": "setpiece.dorm_bay",
+      "x": 5,
+      "y": -11,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_cgze69nvws",
+      "piece": "setpiece.dorm_bay",
+      "x": 7,
+      "y": -11,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_u1764v8rzg",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 8,
+      "y": -11,
+      "z": 2,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_nfl38c0amd",
+      "piece": "setpiece.clock_tower",
+      "x": 2,
+      "y": -9,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ag9260atkh",
+      "piece": "setpiece.stair_end_bay_3",
+      "x": 6,
+      "y": -9,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "lobbySide": "door",
+          "upperDoor": "end",
+          "topDoor": "end",
+          "rails": "metal"
+        }
+      }
+    },
+    {
+      "id": "setpiece_xcgqnhf6qe",
+      "piece": "setpiece.stair_end_bay_roof",
+      "x": 5,
+      "y": -4,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "rails": "metal"
+        }
+      }
+    },
+    {
+      "id": "setpiece_jeyv5h9diq",
+      "piece": "setpiece.corner_turret_round",
+      "x": 4,
+      "y": -4,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_7zliuyad5d",
+      "piece": "setpiece.corner_turret_round",
+      "x": 7,
+      "y": -4,
+      "z": 0,
+      "rotation": 2,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_ka6c1w4v2q",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -8,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_crm2m21nqd",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -7,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "offices": "shut"
+        }
+      }
+    },
+    {
+      "id": "setpiece_9cshnpy6uq",
+      "piece": "setpiece.admin_entry_bay",
+      "x": 5,
+      "y": -6,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_7vevd6fa7q",
+      "piece": "setpiece.stair_down_bay",
+      "x": 5,
+      "y": -5,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "top": "open",
+          "rails": "metal"
+        }
+      }
+    },
+    {
+      "id": "setpiece_p14lhym3jh",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -8,
+      "z": -1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain",
+          "offices": "shut",
+          "walls": "solid",
+          "end": "east"
+        }
+      }
+    },
+    {
+      "id": "setpiece_epag2eq99f",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -7,
+      "z": -1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain",
+          "walls": "solid"
+        }
+      }
+    },
+    {
+      "id": "setpiece_brqcimfk71",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -6,
+      "z": -1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain",
+          "offices": "shut",
+          "walls": "solid"
+        }
+      }
+    },
+    {
+      "id": "setpiece_hvniykvsk4",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -8,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain"
+        }
+      }
+    },
+    {
+      "id": "setpiece_w8iuxq0kyb",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -7,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain",
+          "offices": "shut"
+        }
+      }
+    },
+    {
+      "id": "setpiece_fy2ntlhscm",
+      "piece": "setpiece.admin_bay",
+      "x": 5,
+      "y": -5,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "hall": "plain",
+          "offices": "shut"
+        }
+      }
+    },
+    {
+      "id": "setpiece_bx7cnnhsfm",
+      "piece": "setpiece.dorm_bay",
+      "x": 5,
+      "y": -8,
+      "z": 2,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_kqiotkal2j",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 5,
+      "y": -7,
+      "z": 2,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_jw5b5qa4h6",
+      "piece": "setpiece.dorm_bay",
+      "x": 5,
+      "y": -6,
+      "z": 2,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_e0vy881cwa",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 5,
+      "y": -5,
+      "z": 2,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_gpou671dud",
+      "piece": "setpiece.library_bay",
+      "x": -6,
+      "y": -7,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          },
+          "facade": "none"
+        },
+        "options": {
+          "door": "south",
+          "end": "east"
+        }
+      }
+    },
+    {
+      "id": "setpiece_xty73etsfn",
+      "piece": "setpiece.library_bay",
+      "x": -5,
+      "y": -6,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          },
+          "facade": "none"
+        },
+        "options": {
+          "door": "south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_6pftsqkqnk",
+      "piece": "setpiece.library_bay",
+      "x": -5,
+      "y": -5,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          },
+          "facade": "none"
+        },
+        "options": {
+          "door": "south",
+          "end": "east"
+        }
+      }
+    },
+    {
+      "id": "setpiece_bhyn08o9jf",
+      "piece": "setpiece.library_porch",
+      "x": -4,
+      "y": -6,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          }
+        }
+      }
+    },
+    {
+      "id": "setpiece_5kz9fhe0dz",
+      "piece": "setpiece.entrance_porch",
+      "x": 4,
+      "y": -9,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_zjiys3awcv",
+      "piece": "setpiece.dorm_bay",
+      "x": 3,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_5zc9plm57c",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 4,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_jskflel3oh",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": 5,
+      "y": -10,
+      "z": 1,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim",
+          "wayIn": "open"
+        }
+      }
+    },
+    {
+      "id": "setpiece_4uqoyi7df4",
+      "piece": "setpiece.dorm_bay",
+      "x": 6,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_0yc4cexu1k",
+      "piece": "setpiece.dorm_entry_bay",
+      "x": 6,
+      "y": -10,
+      "z": 2,
+      "rotation": 2,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim",
+          "wayIn": "open"
+        }
+      }
+    },
+    {
+      "id": "setpiece_a44lnoce82",
+      "piece": "setpiece.admin_entry_bay",
+      "x": 5,
+      "y": -6,
+      "z": 1,
+      "rotation": 1,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "wayIn": "door"
+        }
+      }
+    },
+    {
+      "id": "setpiece_ufo503jzxy",
+      "piece": "setpiece.gate_tower_front",
+      "x": 4,
+      "y": -6,
+      "z": 0,
+      "rotation": 1,
+      "mirror": false
     }
   ]
 }

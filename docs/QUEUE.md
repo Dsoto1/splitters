@@ -229,6 +229,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** the weapons intake 11-18, both batches (`wip/weapons-1118b`, green 84274ac2, run 44984729319): 13 new guns, four remade models, Katana, Scimitar, Baseball Bat, Space Shield, Heart Taser, gas grenade model, the Spear's poke and throw, crossbows and flintlocks in Medieval. Landed alone by the splitters lead.
+- 2026-11-22 · F · St. John's step 7c, the DeKoven–Welles corner corrected (`check/stjohns-7c` at 8313cd7ca, run 44978559995; landed alone by the lead).
 - 2026-11-22 · F · St. John's step 7d kit, the mess hall's pieces built ahead, not yet placed (`check/stjohns-7d-kit` at 0f46b7484, run 44973046188; landed alone by the lead).
 - 2026-11-21 · F · Different prop models a map 80 → 120 (owner: "Raise per map prop limit"); on St. John's 74 vs 120 models: draws +14 %, +0.93 MB gzipped, load about +4 % (`check/prop-models-120` at 00a96b46, run 44899643122).
 - 2026-11-21 · F · St. John's step 7b: DeKoven rebuilt and joined to Welles (the stair from DeKoven's 2nd floor to the mess hall's entrance), new generic pieces (stair bay to the roof, stair-down bay, admin entry bay, basement room and stairwell tiles, Admin Bay options) (`check/stjohns-7b` at 4c73c9fa, run 44885411126).

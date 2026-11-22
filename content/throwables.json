@@ -97,7 +97,7 @@
         "bounce": 0.4,
         "zone": { "kind": "toxic", "radius": 4.5, "seconds": 9 }
       },
-      "view": { "model": "guns/toxic_splash.glb" }
+      "view": { "model": "guns/pinecone_grenade.glb", "fallback": "guns/toxic_splash.glb" }
     },
     {
       "kind": "vortex",

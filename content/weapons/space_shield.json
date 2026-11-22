@@ -1,0 +1,35 @@
+{
+  "id": "core.space_shield",
+  "code": 66,
+  "displayName": "Space Shield",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "damage": 30,
+  "fireIntervalTicks": 36,
+  "range": 2.1,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 16,
+  "knockback": 8,
+  "guard": { "block": 0.6, "arc": 120 },
+  "handling": { "move": 0.92 },
+  "botDesirability": 0.3,
+  "botRange": [0, 2],
+  "view": {
+    "model": "guns/space_shield.glb",
+    "held": { "medium": "guns/space_shield.medium.glb", "high": "guns/space_shield.high.glb" },
+    "fallback": "weapons/knife.glb",
+    "viewOffset": [0.34, -0.46, 0.7],
+    "tracer": "#ffd36b",
+    "sound": "fire.knife",
+    "hold": { "style": "melee", "grip": [0, 0, -0.07] }
+  },
+  "notes": {
+    "design": "Hold it up and walk in: while it is in hand, hits from attackers within 60 degrees of where you face lose 60 % (blasts with no attacker and hits from the side or behind get through); a bash for 30 that shoves (8 m/s). You move a little slower (0.92). Switch to a gun to shoot back.",
+    "model": "The Meshy community space shield (CC0; weapons intake of 2026-11-18), 0.74 m wide, its handle toward you; the knife is the fallback."
+  }
+}

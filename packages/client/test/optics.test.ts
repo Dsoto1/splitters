@@ -13,14 +13,14 @@ import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
  * made here too, after a look at the gun on the sight sheet (`?mode=sights`).
  */
 const CARRIES: Record<OpticKindId, string[]> = {
-  irons: ['core.auto_shotgun', 'core.burst_rifle', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.shotgun', 'core.smg'],
+  irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg'],
   reddot: ['core.bubble_blaster', 'core.laser_rifle', 'core.sawed_off'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
-  scope: ['core.battle_rifle', 'core.marksman'],
+  scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
 };
 /** The hand-held guns that keep the aim they had (no sights, no optic), each with its reason in content/optics.json `none`. */
-const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.spear', 'core.swarm'];
+const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.blaster_x42', 'core.desert_carbine', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
 /**
  * Every weapon's aimed magnification over the hip view. A zoom is a feel and balance number: the optics pass changed
  * none of them (the sights' 0.72 of the hip field of view is 1.52x), and a change here is the owner's to approve.
@@ -30,6 +30,10 @@ const ZOOM: Record<string, number> = {
   ...Object.fromEntries([...CARRIES.irons, ...CARRIES.reddot, ...CARRIES.holo].map((id) => [id, SIGHTS])),
   'core.battle_rifle': 3.5,
   'core.marksman': Math.tan(1.35 / 2) / Math.tan(0.7 / 2),
+  // The weapons intake of 2026-11-18's scopes (new guns: their zoom is their own, not a change).
+  'core.nova6': Math.tan(1.35 / 2) / Math.tan(0.65 / 2),
+  'core.lever_action': Math.tan(1.35 / 2) / Math.tan(0.6 / 2),
+  'core.crossbow': Math.tan(1.35 / 2) / Math.tan(0.7 / 2),
   'core.sniper': Math.tan(1.35 / 2) / Math.tan(0.4 / 2),
   'core.railgun': Math.tan(1.35 / 2) / Math.tan(0.5 / 2),
 };

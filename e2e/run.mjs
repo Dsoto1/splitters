@@ -8750,8 +8750,10 @@ async function weaponsetsFlow(browser) {
   await openWeapons(page);
   const offered = await setupState(page);
   check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
-  const MILITARY = ['core.rifle', 'core.burst_rifle', 'core.battle_rifle', 'core.smg', 'core.machine_pistol', 'core.lmg', 'core.shotgun', 'core.auto_shotgun', 'core.sawed_off', 'core.sniper', 'core.marksman', 'core.launcher', 'core.rockets', 'core.pistol', 'core.revolver', 'core.hand_cannon'];
-  const SCIFI = ['core.plasma', 'core.laser_rifle', 'core.railgun', 'core.pulse_pistol', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided'];
+  // The sets' weapon lists, from the content the game builds them from (a set that gains a weapon needs no edit here).
+  const setWeapons = (id) => JSON.parse(readFileSync(fileURLToPath(new URL('../content/weapon-sets.json', import.meta.url)), 'utf8')).sets.find((s) => s.id === id).weapons;
+  const MILITARY = setWeapons('military');
+  const SCIFI = setWeapons('scifi');
   await page.click('#arcade-start');
   await started(page);
   const kit = await sim(page, (m, me, ids) => ({
@@ -9701,11 +9703,19 @@ async function arsenalFlow(browser) {
   await face(6);
   await meWait(page, (m, me) => me.weapons.get(me.current)?.def.id === 'core.spear' && me.raiseTicks === 0 && me.fireCooldown === 0, null, 3);
   const spearHeld = await page.waitForFunction(() => window.__cs.view.scene.meshes.some((x) => x.name.startsWith('view_core.spear') && x.isEnabled() && x.getTotalVertices() > 1000), null, { timeout: T(20000) }).then(() => true, () => false);
+  // Fire pokes (owner, 2026-11-18): a melee strike, the spear stays in hand; right mouse (32) throws it.
   await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+  const poked = await meWait(page, (m, me) => me.fireCooldown > 0 && me.weapons.get(me.current)?.mag === 1 && !m.projectiles.some((p) => p.spec.visual === 'spear'), null, 10);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  check(poked, 'fire pokes with the Spear and keeps it in hand (no spear thrown)');
+  await meWait(page, (m, me) => me.fireCooldown === 0, null, 3);
+  await page.evaluate(() => (window.__autoInput = { buttons: 32 }));
   const spearOut = await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear'), null, T(10000));
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/spear-thrown.png` }).catch(() => {});
   await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
   const spearStuck = spearOut && await simWait(page, (m) => m.projectiles.some((p) => p.spec.visual === 'spear' && p.stuck), null, T(10000));
   const spearDrawn = await page.waitForFunction(() => window.__cs.view.spearModelsDrawn() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/spear-stuck.png` }).catch(() => {});
   check(spearHeld && spearOut && spearStuck && spearDrawn, `the Spear is held as its model, and thrown it flies and sticks as that model (held ${spearHeld}, thrown ${spearOut}, stuck ${spearStuck}, drawn ${spearDrawn})`);
   // A thrown sheep is drawn as its skinned model at its size (content/throwables.json, fit 0.7 m in its bind pose; its
   // walk clip crouches it to about 0.42), not 7 mm tall (a 0.01 armature, once sized as if its scale were not drawn).

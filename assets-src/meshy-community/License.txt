@@ -106,6 +106,41 @@ The five guns ship three copies each (everyone's, and sharper ones for the gun i
 your own hands at Medium and High graphics: guns/<name>.medium.glb and
 .high.glb), all from the same download.
 
+Weapons from the owner's Drive folder "weapons and stuff" of 2026-11-18 (pack
+meshy-community-drive-1118 in content/guns.json, built by
+tools/content/prepare-guns.mjs from the textured GLB downloads; Meshy Community
+CC0 per the owner, 2026-11-18, authors and post URLs pending from the owner;
+name as on the download; each ships three copies as above):
+
+- "Desert M4 Carbine"  -> guns/desert_m4.glb (the Desert Carbine)
+- "Scoped Tactical Rifle"  -> guns/scoped_tactical.glb (the Twin-Shot Rifle)
+- "Compact Tactical Carb…"  -> guns/compact_carbine.glb (the Compact Carbine)
+- "Wooden SMG Design"  -> guns/wooden_smg.glb (the Woodland SMG)
+- "Amarillo Carbine"  -> guns/amarillo.glb (the Amarillo)
+- "Nova 6 Scoped Carbine"  -> guns/nova6.glb (the Nova 6)
+- "Scoped Lever Action R…"  -> guns/lever_action.glb (the Lever-Action)
+- "Runebreaker Revolver"  -> guns/runebreaker.glb (the Runebreaker)
+- "Ornate Flintlock Pist…"  -> guns/flintlock_pistol.glb (the Flintlock Pistol)
+- "break action crossbow"  -> guns/crossbow.glb (the Crossbow)
+- "Blaster X 42"  -> guns/blaster_x42.glb (the Blaster X-42)
+- "Laser Blaster Gun"  -> guns/laser_blaster.glb (the Laser Blaster)
+- "Hornet Carbine"  -> guns/hornet.glb (the Hornet)
+- "Neon Pulse Rifle"  -> guns/neon_pulse.glb (the Laser Rifle)
+- "Arcstorm Carbine"  -> guns/arcstorm.glb (the Arc Caster)
+- "Coppercoil Sentinel"  -> guns/coppercoil.glb (the Railgun)
+- "Rustworn Pulse Carbin…"  -> guns/rustworn.glb (the Flak Cannon)
+- "Heart Taser"  -> guns/heart_taser.glb (the Heart Taser)
+- "slime"  -> guns/slime.glb (the Heart Taser's slime in flight; one copy)
+- "Dragon Katana 3D"  -> guns/katana.glb (the Katana)
+- "Scimitar Sword"  -> guns/scimitar.glb (the Scimitar)
+- "space shield stylize"  -> guns/space_shield.glb (the Space Shield)
+- "A stylized PBR 3D gam…" (a pinecone-shaped grenade)  -> guns/pinecone_grenade.glb
+  (the Gas Grenade; one copy)
+
+Screened for marks: the Laser Blaster's "DANGER" and "OK" panel stencils are
+generic warnings, not names or brands, and read as a few pixels at 512 px; no
+download carries a logo, badge or brand.
+
 Props (built by tools/content/prepare-props.mjs from the textured GLB downloads):
 
 - Crates and cargo (pack meshy-community-cargo, downloads of 2026-10-29/30):

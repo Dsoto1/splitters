@@ -1,0 +1,42 @@
+{
+  "id": "core.nova6",
+  "code": 55,
+  "displayName": "Nova 6",
+  "category": "rifle",
+  "kind": "hitscan",
+  "slot": 3,
+  "family": "marksman",
+  "fireMode": "semi",
+  "damage": 28,
+  "spread": 0.001,
+  "fireIntervalTicks": 10,
+  "range": 260,
+  "magazine": 20,
+  "reserveMax": 100,
+  "pickupAmmo": 40,
+  "reloadTicks": 92,
+  "reload": { "type": "magazine", "tactical": 74, "empty": 92, "out": 0.3, "in": 0.7 },
+  "ammo": "cells",
+  "ballistic": null,
+  "falloff": { "start": 40, "end": 120, "min": 0.7, "curve": "smooth" },
+  "kick": { "pitch": [0.018], "yaw": [0.003, -0.003], "visual": 0.6 },
+  "botDesirability": 0.62,
+  "botRange": [8, 70],
+  "view": {
+    "model": "guns/nova6.glb",
+    "held": { "medium": "guns/nova6.medium.glb", "high": "guns/nova6.high.glb" },
+    "fallback": "weapons/marksman.glb",
+    "viewOffset": [0.21, -0.21, 0.55],
+    "tracer": "#ffd84a",
+    "hold": { "style": "long", "grip": [0, -0.06, -0.175], "support": [0, -0.02, 0.2], "shoulder": [0, 0.03, -0.42] },
+    "muzzleAt": [0, 0.06, 0.43],
+    "zoomFov": 0.65,
+    "beam": true,
+    "sound": "fire.pulse"
+  },
+  "notes": {
+    "design": "The energy marksman: quick semi-automatic (360 rpm cap), 28 a shot, four to a body (0.5 s), two to the head; light-speed bolts, so no drop and no lead, where the Marksman Rifle's rounds fly and fall. A 2.4x scope (zoom 0.65).",
+    "ballistic": "null: an energy weapon, hitscan (no flight time or drop).",
+    "model": "The Meshy community Nova 6 Scoped Carbine (CC0), its yellow cells kept; the kit marksman rifle is the fallback."
+  }
+}
