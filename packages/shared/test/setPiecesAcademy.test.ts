@@ -559,7 +559,7 @@ describe("a library of two storeys with a faceted end (Memorial Hall's shape)", 
       // A player walks west from the grounds under the arch, through the porch and its door into the library.
       expect(walk(physics, v([20, 0.05, 8]), -Math.PI / 2, 260).pos.x, `${grid}: walked in under the arch`).toBeLessThan(7.5);
       // Standing room on both storeys (no ground in the hall; nothing of the roof in the upper storey's way).
-      for (const [x, z] of [[3.6, -2], [3, 2], [4.5, 5.5], [3, 10], [5, 10], [-1.2, 14], [9.2, 14]]) {
+      for (const [x, z] of [[3.6, -2], [3, 2], [4.5, 5.5], [3, 10], [5, 10], [-1.2, 14], [9.2, 14]] as [number, number][]) {
         expect(physics.headroom({ x, y: 0.3, z }, PLAYER.height), `${grid}: standing room at (${x}, ${z})`).toBe(true);
         expect(physics.headroom({ x, y: 4.3, z }, PLAYER.height), `${grid}: standing room upstairs at (${x}, ${z})`).toBe(true);
       }
