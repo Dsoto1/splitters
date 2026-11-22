@@ -1876,7 +1876,7 @@ html.touch #weapon-wheel .ww-slice-tag kbd { display: none; }
 /* (The ammo of the one pointed at shows in the middle: the arc stays one icon and a name per weapon.) */
 #weapon-wheel .ww-ring.ww-cats .ww-item small { display: none; }
 #weapon-wheel .ww-ring.ww-cats .ww-item.held { border-color: rgba(0, 209, 255, 0.55); }
-#weapon-wheel .ww-ring.ww-cats .ww-item.on { background: rgba(0, 90, 115, 0.92); border-color: var(--cyan); }
+#weapon-wheel .ww-ring.ww-cats .ww-item.on { transform: translate(-50%, -50%); background: rgba(0, 90, 115, 0.92); border-color: var(--cyan); }
 #weapon-wheel .ww-ring.ww-cats .ww-centre { width: 34%; }
 #weapon-wheel .ww-ring.ww-cats .ww-centre b { font-size: clamp(11px, 2.3vmin, 17px); }
 #order-wheel .ww-ring { box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35); }
