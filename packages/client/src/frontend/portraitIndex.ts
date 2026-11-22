@@ -145,7 +145,6 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.pruitt': 'core.pruitt.webp?v=7d078a31a7',
   'core.punkin': 'core.punkin.webp?v=9cd76a044a',
   'core.purplehero': 'core.purplehero.webp?v=4afa2b3524',
-  'core.raccoonhacker': 'core.raccoonhacker.webp?v=09433a93b8',
   'core.racer': 'core.racer.webp?v=806ff38eed',
   'core.ranger': 'core.ranger.webp?v=540b7adcce',
   'core.rattles': 'core.rattles.webp?v=d642a4ba8e',

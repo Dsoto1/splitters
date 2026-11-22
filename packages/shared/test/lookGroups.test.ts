@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS } from '../../../tools/content/character-manifests.mjs';
 
@@ -130,5 +130,13 @@ describe("Character Select's groups", () => {
     }
     expect(getLook('core.grizzelda').name).toBe('Goblina');
     expect(getLook('core.dustycolt').name).toBe('Dusty Ranger');
+  });
+
+  it('Zero Ringtail is gone (owner, 2026-11-22): its model is Bandit\'s', () => {
+    expect(CORE_LOOKS.some((l) => l.id === 'core.raccoonhacker')).toBe(false);
+    expect(RETIRED_LOOKS['core.raccoonhacker']).toBe('core.bandit');
+    expect(validLookId('core.raccoonhacker')).toBe('core.bandit');
+    expect(getLook('core.bandit').name).toBe('Bandit');
+    expect(characterTier(getLook('core.bandit'))).toBe('core');
   });
 });

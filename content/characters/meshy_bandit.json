@@ -11,36 +11,24 @@
   "bio": "Steals your ammo, your cover and, if you blink, your lunch.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\": the download, cut to 200k triangles, sent as a data URI; the task in source.meshy.rig). Queue note: raccoon. Was held back: a squat raccoon with a long tail that the found landmarks did not fit. The model-fidelity rebuild (2026-10-31) had no rigged GLB at hand and fell back to landmarks found on the mesh (legs fused, head turned); rebuilt 2026-11-01 from the recorded rig task (fetched again, no new credits).",
+  "notes": "Owner, 2026-11-22: Zero Ringtail's model (\"raccoon hacker game ready\", built that afternoon as meshy_raccoonhacker) replaces Bandit's (\"a raccoon warrior in T-pose\", Meshy Community CC0, rigged by Meshy's rigging API, built 2026-10-29); Bandit keeps its name, look ID, roster place and tier, and the separate Zero Ringtail is gone (saved choices and bot sets that named it play this look: RETIRED_LOOKS). Its files are the ones built for Zero Ringtail, renamed (rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\").",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf",
-    "community": {
-      "model": "a raccoon warrior in T-pose"
-    },
-    "file": "^Meshy_AI_a_raccon_warrior_in_T_\\d+_(image-to-3d-)?texture\\.glb$",
-    "modelUrl": "upload",
-    "meshy": {
-      "rig": "01a189ff-cdbc-7656-8229-2f291554135f"
-    }
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-22",
+    "url": null,
+    "file": "^Meshy_AI_raccoon_hacker_game_ready_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 15000,
-    "feet": true,
-    "headShare": 0.18,
-    "handsShare": 0.08,
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
     "normalSize": 1024,
-    "lod": 0.22,
-    "hold": {
-      "forward": 0.06,
-      "down": 0.12,
-      "out": 0.12
-    }
+    "lod": 0.25,
+    "feet": true
   }
 }
