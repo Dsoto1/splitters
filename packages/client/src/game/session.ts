@@ -218,6 +218,7 @@ import { statusColor } from './arsenalVisuals.ts';
 import { InputState, keyLabel, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
+import { WeaponRequest } from './weaponRequest.ts';
 import { CategoryPicks, WHEEL_CATEGORIES, type WheelCategory, byCategory, categoryKeyPick } from './wheelCategories.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 import { CoachHud } from './coachHud.ts';
@@ -531,8 +532,8 @@ export class GameSession {
   private pickupItems = new Map<string, string>();
   /** Weapons the fallen dropped, lying now (snapshot `dw`). */
   private drops: readonly [number, string, number, number, number, number][] = [];
-  /** Weapon slot the player asked for (0 = no request). */
-  private wantWeapon = 0;
+  /** The weapon the player asked for, until the host has switched to it (weaponRequest.ts). */
+  private readonly weaponAsk = new WeaponRequest();
   /** Ground hazards from the latest snapshot, and your own status effects. */
   private zones: ZoneSnapshot[] = [];
   /** Turrets, sentries and vehicles, and your seat in one: [mount entity index, seat, gun heat %]. */
@@ -2550,7 +2551,7 @@ export class GameSession {
             // looked; otherwise level); every later one level.
             this.input.pitch = this.livedBefore ? 0 : me.pitch;
             this.livedBefore = true;
-            this.wantWeapon = 0;
+            this.weaponAsk.clear();
           }
           this.trackVehicle(msg.me?.vp);
           // Once a frame (the newest snapshot's, at the frame's start), unless the player lived or died: then now, as the
@@ -2563,7 +2564,9 @@ export class GameSession {
           this.damageNumbers.take(msg.me?.dd, performance.now());
           // A switch the server has made is done: stop asking for it, or every input would take back the server's
           // own switches (a better gun picked up, a thrown spear caught, `__give`).
-          if (this.wantWeapon && me.w === this.wantWeapon) this.wantWeapon = 0;
+          // (Only once the host has read an input that asked for it: a snapshot from before then still shows the
+          // weapon you had, which may be the one asked for when you step out and straight back.)
+          this.weaponAsk.snapshot(me.w, msg.ack);
         }
         this.botStates = msg.players.filter((p) => p.st).map((p) => `  ${this.hud.name(p.s).padEnd(14)} ${p.st}`);
         let poses: ReturnType<Interpolator['sample']> | undefined;
@@ -3452,13 +3455,13 @@ export class GameSession {
         if (p !== null) picks.set(cat, p);
       }
       this.wheel.keyLabels = this.input.categoryKeys.map(keyLabel);
-      this.wheel.show(wheelEntries(owned, local.inventory, this.wantWeapon || local.held), picks);
+      this.wheel.show(wheelEntries(owned, local.inventory, this.switchingFrom(local)), picks);
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
     const closed = input.takeWheelClose();
     if (closed === null && ((input.wheelOpen && input.wheelKind === 'weapon') || !this.wheel.shown)) return;
     const pick = this.wheel.hide();
-    if (closed && pick && local.inventory.has(pick) && pick !== (this.wantWeapon || local.held)) this.requestWeapon(pick);
+    if (closed && pick && local.inventory.has(pick) && pick !== this.switchingFrom(local)) this.requestWeapon(pick);
   }
 
   /**
@@ -3524,10 +3527,15 @@ export class GameSession {
   /** Who is alive, by slot, as the last snapshot had them (the squad HUD's cards). */
   private readonly alive = new Map<number, boolean>();
 
+  /** The weapon in hand, or the one asked for and still held (the base a key, the wheel or scrolling steps on from). */
+  private switchingFrom(local: LocalPlayer): number {
+    return this.weaponAsk.current(local.held, (c) => local.inventory.has(c));
+  }
+
   private requestWeapon(slot: number): void {
-    const current = this.wantWeapon || this.local?.held || 0;
+    const current = this.local ? this.switchingFrom(this.local) : 0;
     if (slot !== current) this.lastWeapon = current;
-    this.wantWeapon = slot;
+    this.weaponAsk.ask(slot);
   }
 
   /**
@@ -3745,7 +3753,7 @@ export class GameSession {
       // the mouse wheel steps through everything owned.
       const key = this.input.takeSlotRequest();
       if (key) {
-        const next = categoryKeyPick(key, local.ownedCodes(), this.wantWeapon || local.held, this.categoryPicks);
+        const next = categoryKeyPick(key, local.ownedCodes(), this.switchingFrom(local), this.categoryPicks);
         if (next) this.requestWeapon(next);
       }
       // U: the held weapon's next fire mode (spec §36), with the selector's click; the mode rides in the next input.
@@ -3761,7 +3769,7 @@ export class GameSession {
       if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = stepZoom(this.zoomLevel, wheel, zoomSteps(local.weapon));
       else if (wheel) {
         const owned = local.ownedCodes();
-        const i = owned.indexOf(this.wantWeapon || local.held);
+        const i = owned.indexOf(this.switchingFrom(local));
         const next = owned[(((i + wheel) % owned.length) + owned.length) % owned.length];
         if (next) this.requestWeapon(next);
       }
@@ -3826,7 +3834,8 @@ export class GameSession {
         const meleeNow = (sample.buttons & BUTTON_MELEE) !== 0;
         if (meleeNow && !this.meleeHeld && local.alive && !this.seat) this.localStrike(local.weapon, sample.forward, now);
         this.meleeHeld = meleeNow;
-        const { input: cmd, shot: shot1, shot2, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.wantWeapon, viewTick);
+        const { input: cmd, shot: shot1, shot2, absorbed } = local.tick(sample, this.input.yaw, this.input.pitch, this.weaponAsk.want, viewTick);
+        this.weaponAsk.sent(cmd.seq);
         if (local.portalTurn) {
           // Through a portal: you face the way you came out.
           this.input.yaw += local.portalTurn;

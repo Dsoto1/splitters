@@ -90,3 +90,42 @@ describe('pointing the category wheel', () => {
     expect(categoryAim(...at(angles[4]!, 1), slices, 2)).toEqual({ slice: 2, item: 4 });
   });
 });
+
+describe('the switch request (the number-key bug)', async () => {
+  const { WeaponRequest } = await import('../src/game/weaponRequest.ts');
+  const pistol = code('core.pistol');
+  const cannon = code('core.hand_cannon');
+  const revolver = code('core.revolver');
+
+  it('a quick second press is not dropped by a snapshot from before the host read it', () => {
+    // Pistol in hand. Key 1 → Hand Cannon (inputs 1-2 carry it), key 1 again at once → back to the Pistol (input 3 on).
+    const r = new WeaponRequest();
+    r.ask(cannon);
+    r.sent(1);
+    r.sent(2);
+    r.ask(pistol);
+    r.sent(3);
+    // The host's snapshot from before input 1: the Pistol still in hand. The old rule ("that weapon in hand: done")
+    // dropped the request here, and inputs 1-2 then switched to the Hand Cannon and stayed: the press was lost.
+    r.snapshot(pistol, 0);
+    expect(r.want).toBe(pistol);
+    // Inputs 1-2 switch to the Hand Cannon: still asking.
+    r.snapshot(cannon, 2);
+    expect(r.want).toBe(pistol);
+    // Input 3 read and the Pistol in hand: done.
+    r.snapshot(pistol, 3);
+    expect(r.want).toBe(0);
+  });
+
+  it('a request for a weapon you no longer hold is dropped, so keys step on from the one in hand', () => {
+    const r = new WeaponRequest();
+    r.ask(revolver);
+    // (Lost with a life the page never saw end.) The old code kept it, and every key then counted from a weapon not
+    // in its slot: always the slot's first (the Pistol, the AK).
+    expect(r.current(cannon, (c) => c !== revolver)).toBe(cannon);
+    expect(r.want).toBe(0);
+    const owned = [pistol, cannon, revolver, code('core.rifle')];
+    const picks = new CategoryPicks();
+    expect(categoryKeyPick(1, owned, r.current(cannon, () => true), picks)).toBe(revolver);
+  });
+});

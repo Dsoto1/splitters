@@ -216,7 +216,7 @@ const SLICE_ANGLE = (Math.PI * 2) / WHEEL_CATEGORIES.length;
 /** Where the slice `k`'s outer arc puts each of its `n` weapons: `pick` sits in line with the slice, the rest either side. */
 export function arcAngles(k: number, n: number, pick: number): number[] {
   // One weapon a step (about one item's width out on the arc), closer when a big slice would go most of the way round.
-  const step = Math.min(0.34, (Math.PI * 1.6) / Math.max(1, n - 1));
+  const step = Math.min(0.42, (Math.PI * 1.6) / Math.max(1, n - 1));
   return Array.from({ length: n }, (_, i) => k * SLICE_ANGLE + (i - pick) * step);
 }
 
