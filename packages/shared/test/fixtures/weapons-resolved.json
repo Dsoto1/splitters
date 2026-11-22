@@ -401,6 +401,10 @@
       0.6
      ],
      "tracer": "#ffb38a",
+     "cycle": {
+      "sound": "fire.shotgun.pump",
+      "at": 0.3
+     },
      "hold": {
       "style": "long",
       "grip": [
