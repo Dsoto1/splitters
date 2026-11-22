@@ -206,6 +206,9 @@ export class SessionAudio {
     if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15, delay });
     // (`pan`: a pair's guns sound a little to their own side, pairView.ts gunPan; one gun's stays in the middle.)
     else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), pan ? { delay, pan } : { delay });
+    // A pump gun's pump, worked after the shot (its `view.cycle`).
+    const cycle = def.view.cycle;
+    if (cycle) this.audio.play(cycle.sound as SoundId, pan ? { delay: delay + cycle.at, pan } : { delay: delay + cycle.at });
   }
 
   /** A moment of play read off movement (gameplayFxWatch.ts): a jump pad throwing someone sounds its launch. */
@@ -413,6 +416,8 @@ export class SessionAudio {
         const own = ev.alt ? getWeapon(ev.w).view.altShot : undefined;
         if (!mine && own) this.audio.play(own.sound as SoundId, { at: tuple(ev.from), rate: own.rate ?? 1, gain: 1.15 });
         else if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
+        const cycle = getWeapon(ev.w).view.cycle;
+        if (!mine && cycle) this.audio.play(cycle.sound as SoundId, { at: tuple(ev.from), delay: cycle.at });
         // A round that passes close by your head (not yours, not one that hit you) whizzes past: one per shot.
         const ear = mine ? undefined : poseOf(me);
         if (ear) {

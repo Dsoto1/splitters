@@ -81,7 +81,7 @@ export function schemas(root = ROOT, families = []) {
   const hold = obj({ style: en(['pistol', 'long', 'melee']), grip: vec3, 'support?': vec3, 'shoulder?': vec3, 'rake?': num });
   const flash = obj({ effect: str, 'scale?': num });
   const view = obj({
-    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'beam?': bool,
+    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'cycle?': obj({ sound: str, at: num }), 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
     'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
@@ -295,6 +295,9 @@ export function build(content, root = ROOT) {
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);
     if (def.view.reloadSound && !sounds.has(def.view.reloadSound)) problems.push(`${file}: sound ${def.view.reloadSound} is not in content/sounds.json`);
+    if (def.view.cycle && !sounds.has(def.view.cycle.sound)) problems.push(`${file}: sound ${def.view.cycle.sound} is not in content/sounds.json`);
+    // The pump or bolt is done before the next shot can come (60 ticks a second).
+    if (def.view.cycle && (def.view.cycle.at < 0 || def.view.cycle.at >= def.fireIntervalTicks / 60)) problems.push(`${file}: view.cycle.at starts the pump within the fire interval (0 to ${(def.fireIntervalTicks / 60).toFixed(2)} s)`);
     // Hidden by the owner (the Weapon Manager): the game's base kit can't be, or players would spawn without it.
     if (def.hidden !== undefined && def.hidden !== true) problems.push(`${file}: hidden is true or left out`);
     if (def.hidden) for (const why of hideBlockers(def.id, root)) problems.push(`${file}: can't be hidden: ${why}`);
