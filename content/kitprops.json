@@ -36,7 +36,8 @@
     "street",
     "table",
     "tool",
-    "wall"
+    "wall",
+    "library"
   ],
   "pack": {
     "id": "tiletrigger-kitprops",
@@ -613,6 +614,51 @@
         100,
         30,
         20
+      ],
+      "facetroof": [
+        700,
+        400,
+        120
+      ],
+      "ridgeroof": [
+        900,
+        500,
+        60
+      ],
+      "press": [
+        1100,
+        420,
+        220
+      ],
+      "globe": [
+        700,
+        300,
+        80
+      ],
+      "rug": [
+        80,
+        30,
+        12
+      ],
+      "lantern": [
+        140,
+        80,
+        30
+      ],
+      "leaded": [
+        260,
+        100,
+        60
+      ],
+      "parabolaarch": [
+        240,
+        120,
+        60
+      ],
+      "bird": [
+        400,
+        200,
+        110
       ]
     }
   },

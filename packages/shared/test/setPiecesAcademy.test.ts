@@ -662,46 +662,60 @@ describe("two halls joined at a corner: the porch, the corridors round the corne
 });
 
 /**
- * Memorial Hall's shape (St. John's step 8, the library): three Library Bays north to south (x 0 and 1, y 0 to 2), the
- * south one turned 90 with its East end closed (the hall's south wall), the others turned 270, the north one's East
- * end closed (the north wall), the middle one's South door a Round arch (it faces east), and the Library Porch east of
- * it, turned 270 so its way out faces east, to the grounds.
+ * Memorial Hall's shape (St. John's step 8b, the library to the owner's direction: two storeys, a faceted end under a
+ * spire, an arch in its wall with a porch recessed behind it, a small stucco wing): the hall runs north (x 0 and 1,
+ * y 0 to 2). South, the Library End Bay (two storeys, spiral stair) turned 270 (its closed end south, its stair in the
+ * east cell); north of it the Library Faceted End (its bay at y 1 with the Arch porch east, the faceted end and its
+ * stair at y 2); the Small Stucco Wing north of the faceted end's west half (its steps and door north).
  */
 function memorialHall(): SetPiecePlacement[] {
   const at = (id: string, piece: string, x: number, y: number, rotation: Rotation, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z: 0, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
   return [
-    at('south', 'setpiece.library_bay', 0, 0, 1, { end: 'east' }),
-    at('middle', 'setpiece.library_bay', 1, 1, 3, { door: 'south' }),
-    at('north', 'setpiece.library_bay', 1, 2, 3, { end: 'east' }),
-    at('porch', 'setpiece.library_porch', 2, 1, 3),
+    at('south', 'setpiece.library_end_bay_2', 1, 0, 3),
+    at('north', 'setpiece.library_faceted_end', 0, 1, 0, { door: 'east' }),
+    at('wing', 'setpiece.gable_wing', 0, 3, 0),
   ];
 }
 
-describe("a library of one tall room with a round porch (Memorial Hall's shape)", () => {
-  it('in at the porch from the grounds, the reading room end to end and round its tables, both ends closed, a player walks in', { timeout: 240_000 }, () => {
+describe("a library of two storeys with a faceted end (Memorial Hall's shape)", () => {
+  it('in under the arch and through the porch, both storeys end to end, up and down each spiral stair, into the alcoves, standing room upstairs, a player walks in', { timeout: 480_000 }, () => {
     for (const spacing of [2, 2.5]) {
       const map = mapOf(memorialHall(), spacing);
       const nav = navOf(map);
       const grid = `ground grid ${spacing} m`;
       const length = (path: Vec3[] | null) => (path ? path.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - path[i - 1]!.x, p.z - path[i - 1]!.z) : 0), 0) : Infinity);
-      // From the grounds east of the porch, through it, into the reading room: the short way (about 18 m).
-      const inAtPorch = nav.findPath(v([22, 0, 8]), v([4, 0, 8]));
-      expect(length(inAtPorch), `${grid}: in at the porch`).toBeLessThan(24);
-      expect(miss(nav, v([22, 0, 8]), v([16, 0, 8])), `${grid}: into the porch`).toBeLessThan(1.2);
-      // The room end to end down both aisles (the tables stand along the middle), and across it between two tables.
-      for (const x of [0.5, 7.5]) expect(miss(nav, v([x, 0, -2.5]), v([x, 0, 18.5])), `${grid}: the aisle at x ${x}`).toBeLessThan(1.2);
-      expect(miss(nav, v([0.5, 0, 4]), v([7.5, 0, 4])), `${grid}: across the room between the bays`).toBeLessThan(1.2);
-      // Both ends are walls: to a point just outside either, only by the porch and round the hall.
-      expect(length(nav.findPath(v([4, 0, 18.5]), v([4, 0, 23]))), `${grid}: the north end is closed`).toBeGreaterThan(30);
-      expect(length(nav.findPath(v([4, 0, -2.5]), v([4, 0, -7]))), `${grid}: the south end is closed`).toBeGreaterThan(30);
-      // The west wall has no door.
-      expect(length(nav.findPath(v([-2.5, 0, 8]), v([-7, 0, 8]))), `${grid}: the west wall is closed`).toBeGreaterThan(30);
+      const to = (a: P3, b: P3, what: string, far = 1.2) => expect(miss(nav, v(a), v(b)), `${grid}: ${what}`).toBeLessThan(far);
+      // From the grounds east of the hall, under the arch in its wall, through the porch and its door: the short way.
+      expect(length(nav.findPath(v([20, 0, 8]), v([4, 0, 10.5]))), `${grid}: in under the arch`).toBeLessThan(22);
+      to([20, 0, 8], [10, 0, 8], 'into the porch');
+      // The ground storey end to end: from the south wall to the passages either side of the north stair's drum.
+      to([0, 0, -2], [-1.2, 0, 14], 'the ground storey, south end to the west passage round the drum');
+      to([0, 0, -2], [9.2, 0, 14], 'the ground storey, south end to the east passage round the drum');
+      // The alcoves between the bookcase presses (west and east walls of the middle bay, north wall... of the south bay).
+      to([4, 0, 10.5], [-2.2, 0, 8.6], 'the west alcove of the middle bay');
+      to([4, 0, 10.5], [-2.2, 0, 4.6], 'the west alcove at the bays\' joint');
+      to([4, 0, 10.5], [-2.2, 0, 0.9], 'the west alcove of the south bay');
+      // Up each stair and down again: the short way (one turn of 16 steps), from its door below to its door above.
+      for (const [name, low, high] of [['north', [4, 0, 11], [4, 4, 11]], ['south', [3.5, 0, 0], [3.5, 4, 0]]] as [string, P3, P3][]) {
+        expect(length(nav.findPath(v(low), v(high))), `${grid}: up the ${name} stair`).toBeLessThan(26);
+        expect(length(nav.findPath(v(high), v(low))), `${grid}: down the ${name} stair`).toBeLessThan(26);
+      }
+      // The upper storey end to end, down the runner and between the rows; and it is reached from the ground.
+      to([0, 4, -2], [4, 4, 11], 'the upper storey, south end to the north stair\'s door');
+      to([4, 4, 8], [-2.4, 4, 8], 'the upper storey, behind the west row of bookcases');
+      to([4, 4, 8], [10.4, 4, 8], 'the upper storey, behind the east row');
+      to([20, 0, 8], [4, 4, 6], 'the grounds to the upper storey');
+      // The wing is a room of its own: up its steps and in at its north door.
+      to([-0.5, 0, 31], [-0.5, 0.6, 23], 'into the wing');
       nav.destroy();
-      // A player walks west from the grounds through the porch's two doorways and the hall's arch.
       const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
-      expect(walk(physics, v([22, 0.05, 8]), -Math.PI / 2, 200).pos.x, `${grid}: walked in through the porch`).toBeLessThan(10.5);
-      // Standing room all through the tall room (no ground in it), under an 8 m roof.
-      for (const z of [-2, 4, 12, 18]) for (const x of [-2.5, 0.5, 7.5, 10.5]) expect(physics.headroom({ x, y: 0.3, z }, PLAYER.height), `${grid}: standing room at (${x}, ${z})`).toBe(true);
+      // A player walks west from the grounds under the arch, through the porch and its door into the library.
+      expect(walk(physics, v([20, 0.05, 8]), -Math.PI / 2, 260).pos.x, `${grid}: walked in under the arch`).toBeLessThan(7.5);
+      // Standing room on both storeys (no ground in the hall; nothing of the roof in the upper storey's way).
+      for (const [x, z] of [[3.6, -2], [3, 2], [4.5, 5.5], [3, 10], [5, 10], [-1.2, 14], [9.2, 14]] as [number, number][]) {
+        expect(physics.headroom({ x, y: 0.3, z }, PLAYER.height), `${grid}: standing room at (${x}, ${z})`).toBe(true);
+        expect(physics.headroom({ x, y: 4.3, z }, PLAYER.height), `${grid}: standing room upstairs at (${x}, ${z})`).toBe(true);
+      }
     }
   });
 });

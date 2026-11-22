@@ -38,6 +38,9 @@ const prop = (over: Partial<PropEntity> = {}): PropEntity => ({ kind: 'prop', id
 /** Families with no collision: the cones replace props that had none (kit props part 10); the dome kit's trims are mouldings on a wall. */
 const NO_COLLISION = new Set([
   'kit.sign.cone', 'kit.sign.cone_slim',
+  // St. John's step 8b (tools/content/kit/library.mjs): roofs set on walls, windows drawn on a wall, an arch in a wall
+  // that is stepped behind it, a lantern hung overhead, rugs lying on the floor.
+  'kit.roof.spire_faceted', 'kit.roof.ridge_bay', 'kit.roof.gable_swept', 'kit.window.leaded', 'kit.window.leaded_band', 'kit.wall.arch_parabola', 'kit.lamp.lantern_hanging', 'kit.library.rug', 'kit.library.runner',
   // St. John's steps 7-10 (tools/content/kit/campus.mjs): drawn on a wall or a floor, or hung high (the wall, floor or
   // water does the colliding).
   'kit.window.stained', 'kit.window.rose', 'kit.sign.crest_floor', 'kit.sign.crest_wall', 'kit.sign.honours', 'kit.roof.vault_bay', 'kit.sport.court_lines', 'kit.sport.hoop_wall', 'kit.sport.pool_lanes',
