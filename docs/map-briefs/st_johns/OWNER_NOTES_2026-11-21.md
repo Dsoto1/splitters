@@ -317,3 +317,7 @@ Asked after the step 7d kit's pictures (`wip/stjohns-7d-kit`):
 4. Bots not entering the side aisle's table bays: **ok for now**.
 5. The lengthways views' +12 % draws: **accepted**.
 6. The south door at cell 5 that faces an arcade pier: **keep for now**.
+
+## 2026-11-22, later: approvals
+
+After the library's third mock-up and the mess hall's piers picture: **"all looks good. we can have splitters session take lead"**. Read as: the library (step 8b) as shown in the third mock-up is approved for the map; the mess hall keeps a pier under every beam with twin sash windows on those bays; the lead moves to the "splitters" session.
