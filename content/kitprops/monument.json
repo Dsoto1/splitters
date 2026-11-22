@@ -240,6 +240,47 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.monument.bell_stand",
+      "displayName": "Bell on a Stand",
+      "category": "Decor",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 7d, the mess hall's pieces; OWNER_NOTES_2026-11-21): a brass bell 0.4 m across hung in a low black stand of two A-frames and a top bar, 1.3 m high. It does not ring or swing. Collides as its box."
+      },
+      "size": [
+        0.7,
+        1.3,
+        0.7
+      ],
+      "surface": "metal",
+      "detail": "painted_metal",
+      "generator": {
+        "kind": "bellstand"
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "brass",
+          "seed": 37091,
+          "look": {
+            "iron": "#1a1b1d",
+            "brass": "#b98f3a"
+          }
+        }
+      ]
     }
   ]
 }

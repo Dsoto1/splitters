@@ -679,7 +679,7 @@ with one desk a room: 110 collision boxes and 28 props a bay.
 blocks, 660 props of 9 models, 20 lights, no doors, 2,000 collision boxes (1,360 of them furniture), 2,600 trim boxes,
 80 glass panes. What it draws: tiles, blocks and trim merge by surface style (8 styles: the count does not grow with
 the bays); untinted props are GPU instances, one draw per model part and level of detail (9 models); glass panes are
-batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop models 80, lights
+batched; the lights are clustered. Against MAP_BUDGETS: tiles 1,500, blocks 3,000, props 1,500, prop models 120 (80 when this was written), lights
 256, active pieces 300. St. John's needs about 35 bays (140 rooms): 70 tiles, 490 blocks, about 1,150 props, 35
 lights and 3,500 collision boxes, before the blocks and props it removes are taken off (the map has 733 props and
 3,915 collision boxes today: the props budget is the one to watch; `overrides.hide` drops a room's second desk and

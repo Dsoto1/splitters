@@ -60,6 +60,12 @@ const NO_COLLISION = new Set([
   'kit.board.pennants',
   // St. John's step 6: the tower's clock face hangs on its wall, thinner than the wall's dressing.
   'kit.sign.clock_face',
+  // St. John's step 7d (the mess hall's kit): hung pieces and pieces drawn on a wall's face.
+  'kit.roof.timber_bay',
+  'kit.lamp.chandelier_bowl',
+  'kit.board.flags',
+  'kit.wall.panel_window',
+  'kit.door.walk_in',
 ]);
 
 describe('kit families', () => {

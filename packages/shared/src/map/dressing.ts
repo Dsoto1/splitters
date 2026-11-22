@@ -25,6 +25,7 @@ import { getProp } from '../content/props.ts';
 import { SIDE_DIRS, SIDES, seededRandom, type EdgeShape, type Side } from './catalog.ts';
 import { boxBounds, buildMapGeometry, buildOccupancy, cellKey, cellSlab, edgeSegments, resolveEdge, rotateXZ, type WorldBox } from './geometry.ts';
 import type { MapDocument } from './schema.ts';
+import { MAP_BUDGETS } from './validate.ts';
 import { EDGE_SHAPES } from '../content/edgeStyles.generated.ts';
 
 // ---------------------------------------------------------------- room types
@@ -1214,7 +1215,7 @@ export function dressMapRoom(map: MapDocument, cell: readonly [number, number, n
 }
 
 /** The map's prop models so far and the budget of different models (MAP_BUDGETS.md), for `DressOptions.models`. */
-export function modelBudget(map: MapDocument, limit = 80): { used: Set<string>; limit: number } {
+export function modelBudget(map: MapDocument, limit: number = MAP_BUDGETS.propModels): { used: Set<string>; limit: number } {
   return { used: new Set(map.entities.flatMap((e) => (e.kind === 'prop' ? [e.model] : []))), limit };
 }
 

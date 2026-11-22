@@ -16,7 +16,7 @@ the map format (8,192 entities since map format v48, 4,096 before; terrain 161 �
 | Playable footprint | 400 m across | Bot navigation, network relevance and draw distance are tuned for this. Terrain tops out at 320 m. |
 | Tiles | 1,500 | Merged into a few meshes; mostly a navmesh build-time cost. |
 | Props | 1,500 | Untinted props are GPU instances (one draw call per model), so the cost is mostly in the variety of models (next row). |
-| Different prop models | 80 | Each model is a download (≈20–100 KB) and one draw call per part. |
+| Different prop models | 120 | Each model is a download (≈20–100 KB) and one draw call per part. 120 since 2026-11-21 (80 before; the owner's call): see "120 different prop models" below. |
 | Solid free blocks | 3,000 | Merged into the level's meshes by material, like tiles (a castle hall is a few hundred blocks); the cost is mostly the navmesh build when the map loads. |
 | Breakable / crumbling / trapdoor blocks | 150 | Each is simulated every tick and its state is sent to players. |
 | Bodies of liquid | 32 | Each is a see-through surface (transparency is expensive). |
@@ -46,6 +46,49 @@ Suggested sizes by player count:
 | Arena / skirmish | 2–6 | 40–100 m | 50–300 tiles, up to 300 props |
 | Standard | 4–12 | 100–200 m | 200–800 tiles or a 160 m terrain, up to 800 props |
 | Large (vehicles) | 8–24 | 200–400 m | 240–320 m terrain, up to 1,500 props, 4–10 vehicles |
+
+### 120 different prop models (2026-11-21)
+
+The budget of different prop models a map went from 80 to 120 (the owner's call: "Raise per map prop limit").
+`MAP_BUDGETS.propModels` in `map/validate.ts` is the one number: the validator's `budget.prop_models` warning,
+MapMaker's Models row (amber from 96, red past 120) and Dress room's model limit (`modelBudget`) read it.
+
+- **No map format step.** The budget is a warning and always was: `budgetIssues` only makes warnings, and `loadMap`
+  refuses a map on errors alone, so a build from before the change loads, hosts, joins and publishes a map of 81-120
+  models and says "budget 80" in MapMaker's warnings and `pnpm validate-map` (which fails on errors only). What an
+  older build does do: its quality gate "Within its budgets" (`map/qualityGates.ts`, `pnpm quality-gates`) fails a core
+  map past 80, as it does for any row.
+- **The draw estimate did not move.** MapMaker's Draws row (a draw per different untinted prop model, tinted prop,
+  species variant and liquid) keeps its scale of 136 (`DRAW_ESTIMATE_BUDGET`; it was 80 + 24 + 32). It is the
+  performance bar, and the models cost what they cost (below), so the 40 more models are not 40 more draws for free: a
+  map of 120 models is amber on Draws by them alone and goes over with 17 tints, variants and liquids on top. St.
+  John's at 120 models would read 131 of 136.
+
+**Measured** (2026-11-21, St. John's, 74 models, against a throwaway copy with 46 more props, each a model the map
+doesn't have, from across the catalogue, one beside a prop already there, west to east: 120 on MapMaker's row, 119
+as played, since three are retired props that play as their replacements. `tools/perf/client-perf.mjs`'s still mode
+at 1280 × 720, Medium, no weapon, its four views and two more at eye height; headless Chromium on SwiftShader, load
+4-5, each side twice, alternating, in one sitting):
+
+| | 74 models | 119-120 models | |
+|---|---|---|---|
+| Draw calls, overview SW / NE | 426 / 434 | 509 / 506 | +83 / +72 |
+| Draw calls, eye height (four views) | 357, 485, 442, 458 | 399, 557, 486, 521 | +42 to +72 |
+| Draw calls, mean of the six | 434 | 496 | +62 (14 %) |
+| Meshes in the scene / materials | 2,418-2,524 / 537-544 | 2,594-2,700 / 616-623 | +176 / +79 |
+| Triangles drawn, mean | 1.288 M | 1.296 M | +0.6 % |
+| Prop model files fetched | 81, 4.44 MB | 126, 6.22 MB | 45 files, 1.78 MB (0.93 MB gzipped; 3-276 KB each, 39 KB on average) |
+| Page opened to playing (cold cache) | 67.8 s, 69.8 s | 71.0 s, 72.0 s | about +3 s (4 %); the two runs of a side are 1-2 s apart |
+| Match made (physics, navmesh) | 4.45 s, 4.30 s | 4.77 s, 4.65 s | +0.3 s, near the spread |
+| `loadMap` (node, warm, six each) | 267-357 ms | 269-348 ms | none |
+| Map file (MapMaker) / as played, gzipped | 763 KB / 55 KB | 775 KB / 56 KB | +12 KB / +1 KB |
+
+The counts were the same in both runs of a side, view for view. So a model costs what the row says: its file (here
+39 KB on average, 1.8 MB for the 46) and one to two draws when it is in view (62 more draws for 45 more models, with
+the shadow pass and levels of detail in that), almost no triangles, and no measurable time in `loadMap` or the match
+build. The load time is this machine's (software rendering, shaders compiled on the CPU): read the 4 %, not the
+seconds. Not measured: frame time (SwiftShader), a real GPU, a phone, a slow connection (1.8 MB more is about 1.5 s
+at 10 Mbit/s), a joiner over WebRTC (the welcome grows by the map's 1 KB, the models come from the site).
 
 ### Entity cap (map format v48)
 
@@ -190,7 +233,7 @@ budgets above:
 - **Water in the middle**: a lake or a canyon nobody can cross makes every
   route go round it; give it two crossings or more so bots spread out.
 - **Props**: instanced, so the count matters less than the number of
-  different models (80) and tints (each tint is its own material).
+  different models (120) and tints (each tint is its own material).
 - **Measure**: `pnpm bench:96:maps` (server, 96 bots, 60 s a map) and
   `node tools/perf/client-perf.mjs <map>` after `pnpm build` (headless
   Chromium, 96 players offline: draw calls, meshes, triangles, shadow casters).

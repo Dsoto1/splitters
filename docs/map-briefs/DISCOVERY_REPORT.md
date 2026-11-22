@@ -38,7 +38,7 @@ repo root. Check a name against the code before relying on it: the code wins.
 | Materials / themes | `packages/shared/src/map/materials.ts`, `map/surfaces.ts` |
 | World geometry (collision boxes) | `packages/shared/src/map/geometry.ts` `buildMapGeometry(map)` → `WorldBox[]` |
 | Settling | `packages/shared/src/map/settle.ts`: `terrainUnderFloors` (terrain lowered under floors on every load and edit), `settledPropY` |
-| Budgets | `packages/shared/src/map/budgets.ts`, `docs/MAP_BUDGETS.md` (400 m, 1,500 tiles, 1,500 props, 80 prop models, 3,000 blocks, 32 liquids, 256 lights) |
+| Budgets | `packages/shared/src/map/budgets.ts`, `docs/MAP_BUDGETS.md` (400 m, 1,500 tiles, 1,500 props, 120 prop models (80 before 2026-11-21), 3,000 blocks, 32 liquids, 256 lights) |
 | Retired maps (not offered anywhere) | `packages/shared/src/map/retired.ts` |
 
 ## Terrain
