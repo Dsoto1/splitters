@@ -321,3 +321,16 @@ Asked after the step 7d kit's pictures (`wip/stjohns-7d-kit`):
 ## 2026-11-22, later: approvals
 
 After the library's third mock-up and the mess hall's piers picture: **"all looks good. we can have splitters session take lead"**. Read as: the library (step 8b) as shown in the third mock-up is approved for the map; the mess hall keeps a pier under every beam with twin sash windows on those bays; the lead moves to the "splitters" session.
+
+## The corner (step 7c): the owner's answers (2026-11-22)
+
+Asked after 7c's pictures; the owner: "1. yes 2. enough 3. accept 4. yes 5. yes 6. fold."
+
+1. Welles's 2nd floor, cells 7 and 8: **yes**, convert the two Classroom Bays to dorm bays too.
+2. The door beside the clock tower into the mess hall: **enough**; the tower need not open straight into the hall.
+3. The gate tower's outside stairs each stand in front of one ground-floor window: **accept**.
+4. The mess hall's door bays show a flat tan panel to the court: **yes**, clad them in the wall's stone (a kit change).
+5. Black metal stair rails on every other hall's stairs: **yes** (Welles east (9, -10) and west (re-placed as a piece), Stangeland / Cord (-5, -10) and (0, -9), Scott Johnston / Hazelwood (-17, -10), (-10, -9) and the Hall Centre (-13, -9), Smythe (5, 4) and (7, 0)).
+6. Mirror cabinet and footlocker: **fold** the mirror into the sink prop and the footlocker into a bunk variant, so no props are added (not a higher prop budget).
+
+Then: "try and wrap things up here" (the Splitters FABLE 5.2 session finishes what is in flight and hands the rest to the lead).
