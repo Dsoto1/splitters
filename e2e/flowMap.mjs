@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -219,7 +219,9 @@ const RULES = [
   [/^packages\/client\/src\/game\/rouletteHud\.ts$/, ['roulette', ...FLASHING_FLOWS], ['client']],
   [/^packages\/client\/src\/game\/(flagVisuals|modeHud)\.ts$/, ['ctf', 'forts', 'breakthrough', 'zombies', 'teams', 'classes', ...FLASHING_FLOWS], ['client']],
   [/^packages\/client\/src\/game\/(rankBook|rankGlow|ranksSetting|insigniaSvg|insigniaMesh)\.ts$/, ['teams', ...FLASHING_FLOWS], ['client']],
-  [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party'], ['client']],
+  [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party', 'profiles'], ['client']],
+  // Player profiles (docs/PLAYER_PROFILES_PLAN.md): cards, emblems, your career on Profile.
+  [/^packages\/client\/src\/(careerStats|profile|game\/(playerCard|profileCard|emblemSvg|careerTally))\.ts$/, ['profiles', 'fireteams'], ['client']],
   [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', ...FLASHING_FLOWS], ['client']],
   // Where the first-person gun sits aiming down its sights (the sight fit).
   [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual'], ['client']],

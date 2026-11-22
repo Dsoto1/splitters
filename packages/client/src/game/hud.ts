@@ -16,6 +16,7 @@ import { reduceFlashing } from './reduceFlashing.ts';
 import { EYE_BOX, eyeBoxShade, stepScopeFade } from './scopeFeel.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
+import { emblemSvg } from './emblemSvg.ts';
 import { RankBook } from './rankBook.ts';
 import { ranksOn } from './ranksSetting.ts';
 import { isTouchDevice } from '../touchDevice.ts';
@@ -78,6 +79,7 @@ export class Hud {
   private readonly banner = $('banner');
   private readonly scoreboard = $('scoreboard');
   private readonly board = new ScoreBoard(this.scoreboard, { maxWidth: 1240, sizeSelf: true });
+  private readonly boardRows = (this.board.onRow = (slot, row) => this.onPlayerCard?.(slot, row));
   private pauseBoard: ScoreBoard | null = null;
   /** Scoreboard facts from snapshots: who is alive, team leaders, online pings. */
   private alive = new Map<number, boolean>();
@@ -348,7 +350,8 @@ export class Hud {
   /** A name in the kill feed: the badge (with the switch on) and the name as shown. */
   private feedName(slot: number | null): string {
     const ins = slot === null ? null : this.insignia(slot);
-    return `${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}`;
+    const p = slot === null ? undefined : this.roster.get(slot);
+    return `${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}${p && !p.bot ? emblemSvg(p.em) : ''}`;
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -1345,6 +1348,12 @@ export class Hud {
     this.board.setExtra(card?.el ?? null);
   }
   private card: { el: HTMLElement; refresh(final: boolean): void } | null = null;
+  /** A scoreboard row was clicked (the pause menu's Match tab, the end-of-match board): that player's card (session: game/playerCard.ts). */
+  onPlayerCard: ((slot: number, row: HTMLElement) => void) | null = null;
+  /** The roster entry of a slot (the player card reads who they are). */
+  rosterOf(slot: number): RosterEntry | undefined {
+    return this.roster.get(slot);
+  }
   private boardOpen = false;
 
   /** The pause menu's Match tab: the same board, in the menu's width (`final`: the match is over, so where it goes next too). */
@@ -1352,6 +1361,7 @@ export class Hud {
     if (this.pauseBoard?.root !== box) {
       this.pauseBoard = new ScoreBoard(box, { maxWidth: 560, sizeSelf: false });
       this.pauseBoard.onJoin = (team) => this.onJoinTeam?.(team);
+      this.pauseBoard.onRow = (slot, row) => this.onPlayerCard?.(slot, row);
     }
     this.pauseBoard.render(this.boardData(scores, localSlot, final));
   }
@@ -1373,6 +1383,7 @@ export class Hud {
         slot: s.s,
         name: this.name(s.s),
         ins: this.insignia(s.s),
+        em: p && !p.bot ? (p.em ?? null) : null,
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),

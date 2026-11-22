@@ -455,6 +455,14 @@ export class LocalTransport implements Transport {
   /** Signed-in friends and how long they played (the end-of-match report on a community map: communityPlays.ts). */
   readonly plays = new PlayTracker();
 
+  /** Signed-in friends playing now: their slot, account and since when (ms): the host's end-of-match vouch. */
+  accountSlots(): { slot: number; sub: string; from: number }[] {
+    return this.plays.stays().flatMap((s) => {
+      const slot = this.links.get(s.id)?.slot;
+      return slot === null || slot === undefined ? [] : [{ slot, sub: s.sub, from: s.from }];
+    });
+  }
+
   /** Let a friend into this match (Host game). Links arriving while the match loads wait for it (a map change brings everyone back at once). */
   accept(link: RemoteLink): void {
     // Test mode is offline only (MatchHost refuses too).

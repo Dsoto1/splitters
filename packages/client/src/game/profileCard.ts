@@ -1,4 +1,5 @@
-import { CLASS_DEFS, CORE_WEAPONS, careerAccuracy, careerKd, careerWinRate, favouriteWeapon, type Career } from '@tiletrigger/shared';
+import { CLASS_DEFS, CORE_WEAPONS, careerAccuracy, careerKd, careerWinRate, favouriteWeapon, titleName, type Career } from '@tiletrigger/shared';
+import { emblemSvg } from './emblemSvg.ts';
 
 /** What your profile card shows (docs/PLAYER_PROFILES_PLAN.md, Phase 1): who you are, and your career so far. */
 export interface ProfileCardData {
@@ -13,6 +14,9 @@ export interface ProfileCardData {
   career: Career;
   /** Where the career is kept: on your account, or in this browser (a guest). */
   where: 'account' | 'browser';
+  /** Your emblem (shared content/emblems.ts) and title (content/titles.ts), or null. */
+  emblem?: string | null;
+  title?: string | null;
 }
 
 /** This match so far (game/careerTally.ts). */
@@ -35,9 +39,10 @@ export const className = (id: string | null): string => (id ? ((CLASS_DEFS as Re
 export function cardLines(d: ProfileCardData, m: MatchLine | null, final: boolean): { who: string; sub: string; match: string; career: string } {
   const c = d.career;
   const cls = className(d.favClass);
+  const title = titleName(d.title);
   return {
     who: d.name,
-    sub: `${d.character}${cls ? ` · ★ ${cls}` : ''}`,
+    sub: `${title ? `${title} · ` : ''}${d.character}${cls ? ` · ★ ${cls}` : ''}`,
     match: m ? `${final ? 'This match' : 'So far'}: ${m.kills} K · ${m.deaths} D · ${pct(careerAccuracy(m))} accuracy` : '',
     career: c.matches
       ? `Career: ${c.matches} ${c.matches === 1 ? 'match' : 'matches'} · ${c.wins} ${c.wins === 1 ? 'win' : 'wins'} (${pct(careerWinRate(c))}) · K/D ${careerKd(c).toFixed(2)} · ${pct(careerAccuracy(c))} accuracy · ${weaponName(favouriteWeapon(c))}`
@@ -83,11 +88,11 @@ export class ProfileCard {
 
   update(d: ProfileCardData, m: MatchLine | null, final: boolean): void {
     const l = cardLines(d, m, final);
-    const key = `${l.who}|${l.sub}|${l.match}|${l.career}|${d.verified}|${d.where}`;
+    const key = `${l.who}|${l.sub}|${l.match}|${l.career}|${d.verified}|${d.where}|${d.emblem ?? ''}`;
     if (key === this.key) return;
     this.key = key;
     const tag = d.verified ? '<i class="acct in">✓</i>' : '<i class="acct guest">GUEST</i>';
     const where = d.where === 'browser' ? '<small class="pc-where">kept in this browser</small>' : '';
-    this.text.innerHTML = `<div class="pc-who"><b>${escapeHtml(l.who)}</b>${tag}<span>${escapeHtml(l.sub)}</span></div>${l.match ? `<div class="pc-match">${escapeHtml(l.match)}</div>` : ''}<div class="pc-career">${escapeHtml(l.career)}${where}</div>`;
+    this.text.innerHTML = `<div class="pc-who">${emblemSvg(d.emblem)}<b>${escapeHtml(l.who)}</b>${tag}<span>${escapeHtml(l.sub)}</span></div>${l.match ? `<div class="pc-match">${escapeHtml(l.match)}</div>` : ''}<div class="pc-career">${escapeHtml(l.career)}${where}</div>`;
   }
 }
