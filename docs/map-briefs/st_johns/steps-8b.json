@@ -13,6 +13,7 @@
     {"group": "clear", "op": "delete", "id": "block_1795"},
     {"group": "clear", "op": "delete", "id": "block_1796"},
     {"group": "clear", "op": "delete", "id": "prop_2765", "what": "the oak that stood in front of the hall's north end, seen from the walk"},
+    {"group": "clear", "op": "move", "id": "prop_street_065", "to": [-56.2, null, -29.5], "what": "the oak north-west of the hall, 2.5 m west and 4 m north, clear of the wing's roof"},
     {"group": "hall", "op": "place", "piece": "setpiece.library_end_bay_2", "x": -5, "y": -7, "rot": 3, "roles": {"stone": "core.pbr_collegiate_rubble"}, "what": "the hall's south end: its closed end south, its spiral stair in the east cell"},
     {"group": "hall", "op": "place", "piece": "setpiece.library_faceted_end", "x": -6, "y": -6, "rot": 0, "options": {"door": "east"}, "roles": {"stone": "core.pbr_collegiate_rubble"}, "what": "the hall's bay with the arch in its east wall and the porch recessed behind it, and the faceted end under the spire, north"},
     {"group": "hall", "op": "place", "piece": "setpiece.gable_wing", "x": -6, "y": -4, "rot": 0, "what": "the small stucco wing against the faceted end's north face, west of its windows; its gable, door and steps north"},
