@@ -21,9 +21,9 @@
 import type { MapDocument, PickupEntity } from '../map/schema.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS } from '../content/weaponSets.generated.ts';
 import { CORE_ITEMS, getItem, type ItemDefinition } from './items.ts';
-import { categoryItems, dealFrom, itemCategory, pickupPool } from './pickupRoll.ts';
+import { categoryItems, dealFrom, itemCategory, pickupPool, rollable } from './pickupRoll.ts';
 import { restrictedWeapons, type MatchRules } from './rules.ts';
-import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CATEGORIES, getWeapon, type ThrowableKind, type WeaponCategory, type WeaponDefinition } from './weapons.ts';
+import { CORE_WEAPONS, THROWABLES, THROWABLE_DEFS, WEAPON_CATEGORIES, getWeapon, isWeaponHidden, type ThrowableKind, type WeaponCategory, type WeaponDefinition } from './weapons.ts';
 
 export { WEAPON_SET_DEFS, WEAPON_SET_IDS };
 export type WeaponSetId = (typeof WEAPON_SET_IDS)[number];
@@ -84,21 +84,22 @@ function weaponItem(id: string): ItemDefinition | undefined {
 }
 
 let anyPickup: readonly WeaponDefinition[] | undefined;
-/** Every weapon a pickup can hold (a category and a pickup item), in weapon order: Mixed bag's "all". */
+/** Every weapon a pickup can hold (a category and a pickup item, not hidden by the owner), in weapon order: Mixed bag's "all". */
 export function pickupWeapons(): readonly WeaponDefinition[] {
-  return (anyPickup ??= Object.values(CORE_WEAPONS).filter((w) => !!w.category && w.slot >= 1 && !!weaponItem(w.id)));
+  return (anyPickup ??= Object.values(CORE_WEAPONS).filter((w) => !!w.category && w.slot >= 1 && !w.hidden && !!weaponItem(w.id)));
 }
 
 const members = new Map<string, ReadonlySet<string>>();
 /**
- * The weapons of a set: its list (Mixed bag: every weapon a pickup can hold), its spawn and its sniper gun. Null for a
- * set that leaves weapons as placed (Standard: anything goes).
+ * The weapons of a set: its list (Mixed bag: every weapon a pickup can hold) less any the owner hid (the Weapon
+ * Manager), its spawn and its sniper gun (never hidden: tools/content/weapons.mjs refuses). Null for a set that leaves
+ * weapons as placed (Standard: anything goes).
  */
 export function setWeaponIds(set: WeaponSetDef): ReadonlySet<string> | null {
   if (set.weapons === undefined) return null;
   let ids = members.get(set.id);
   if (!ids) {
-    const list = set.weapons === 'all' ? pickupWeapons().map((w) => w.id) : set.weapons;
+    const list = set.weapons === 'all' ? pickupWeapons().map((w) => w.id) : set.weapons.filter((id) => !isWeaponHidden(id));
     members.set(set.id, (ids = new Set([...list, ...(set.spawn ?? []), ...(set.sniper ? [set.sniper] : [])])));
   }
   return ids;
@@ -163,7 +164,7 @@ export function setCategoryPool(set: WeaponSetDef, category: WeaponCategory): re
   let pool = pools.get(key);
   if (!pool) {
     const ids = setWeaponIds(set);
-    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && i.rolls !== false && (!ids || ids.has(i.effect.weapon));
+    const inSet = (i: ItemDefinition) => i.effect.kind === 'weapon' && rollable(i) && (!ids || ids.has(i.effect.weapon));
     const has = (c: WeaponCategory) => categoryItems(c).some(inSet);
     const cats = new Set(nearCategories(category, has));
     pools.set(key, (pool = CORE_ITEMS.filter((i) => inSet(i) && cats.has(itemCategory(i)!))));

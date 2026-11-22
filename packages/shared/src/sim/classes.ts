@@ -15,8 +15,17 @@ import { PLAYER, TICK_RATE } from './constants.ts';
 import type { Combatant } from './match.ts';
 import { BUTTON_ALT, BUTTON_FIRE, BUTTON_THROW, type PlayerInput } from './inputs.ts';
 import { restrictedWeapons, type MatchRules } from './rules.ts';
-import { getWeapon, weaponCode, type ThrowableKind } from './weapons.ts';
+import { getWeapon, isWeaponHidden, weaponCode, type ThrowableKind } from './weapons.ts';
 import { ABILITIES, CLASS_ABILITIES, CLASS_DEFS, CLASS_IDS } from '../content/weapons.generated.ts';
+
+/**
+ * A class's loadout less any weapon the owner hid (the Weapon Manager, `hidden`); all of it when every one is hidden,
+ * so a class never spawns empty-handed.
+ */
+export function classWeapons(weapons: readonly string[]): readonly string[] {
+  const shown = weapons.filter((w) => !isWeaponHidden(w));
+  return shown.length ? shown : weapons;
+}
 
 /**
  * The classes are data: content/classes.json (their codes: the class screen and snapshots send a class's index in
@@ -176,7 +185,7 @@ export class ClassPlay {
     // A Mechanic whose sentry still stands has no kit until it goes down.
     if (def.ability === 'sentry' && this.host.sentryOf(c.slot)) c.cls.charge = 0;
     c.weapons = new Map();
-    for (const w of def.weapons) {
+    for (const w of classWeapons(def.weapons)) {
       const wd = getWeapon(w);
       c.weapons.set(weaponCode(wd), { def: wd, mag: wd.magazine, reserve: wd.reserveMax, alt: wd.alt?.ammo === 'own' ? (wd.alt.max ?? 0) : 0 });
       c.current = weaponCode(wd);

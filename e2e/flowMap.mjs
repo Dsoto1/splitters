@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -135,6 +135,8 @@ const RULES = [
   [/^(package\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|tsconfig\.base\.json|vitest\.config\.ts)$/, FULL, UNIT_ALL],
   [/^\.github\//, FULL, UNIT_ALL],
   [/^e2e\//, FULL, ['tools']],
+  // The Weapon Manager's change set and its repo tool (unit-tested; the flow checks a copied set with it).
+  [/^tools\/content\/(apply-weapon-edits|weapon-edits-format|json-keep-format)\.(mjs|d\.mts)$/, ['weaponmanager'], ['content', 'client']],
   [/^tools\/(ci|content)\//, FULL, UNIT_ALL],
   // Content manifests (content/*.json, tools/content builds from them; `pnpm content:check`, which the check job
   // always runs, holds them to the built files). What the runtime reads is the build output (public/models,
@@ -191,6 +193,8 @@ const RULES = [
   [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
   // The grip page and its audit (the grip checks drive it).
   [/^packages\/client\/src\/tools\/(gripSheet|gripAudit|gripInside)\.ts$/, [...CHARACTER_FLOWS], ['client']],
+  // The weapon tuning page and the owner's Weapon Manager on it (?mode=weapons).
+  [/^packages\/client\/src\/tools\/weapon(Tuning|TuningData|Compare|Manager|ManagerData)\.ts$/, ['weaponmanager'], ['client']],
   [/^packages\/client\/src\/tools\//, NONE, ['client']],
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],

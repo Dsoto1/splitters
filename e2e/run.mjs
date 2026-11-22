@@ -14841,6 +14841,109 @@ async function hostpageLiveChecks(page, controlPort, token) {
 }
 
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
+/**
+ * The owner's Weapon Manager (`?mode=weapons`, Manage; docs/FEATURES.md, "Weapon Manager"): rename, hide, pick a
+ * sound (with its preview), edit a stat (kept in range, the comparison live), add a note, Send → Copy, and the copied
+ * change set is the one the repo tool takes (tools/content/apply-weapon-edits.mjs, checked without writing). The
+ * edits stay in the browser across a reload; Reset everything clears them; the list is one column on a phone.
+ */
+async function weaponmanagerFlow(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // Copy goes to the clipboard: kept on the page here, so the check reads exactly what was copied.
+  await context.addInitScript(() => {
+    try {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t) => void (window.__copied = t) } });
+    } catch {
+      // A browser that won't let the page replace it: the textarea is checked instead.
+    }
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => void d.accept());
+  await page.goto(`${CLIENT}/?mode=weapons&test=1`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.querySelectorAll('#weapon-tuning main canvas').length > 0, null, { timeout: T(60000) });
+  check(true, 'the weapon tuning page opens on Compare');
+  await page.click('#wt-tab-manage');
+  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
+  const cards = await page.evaluate(() => ({ n: document.querySelectorAll('#wm-list .wm-card').length, pics: document.querySelectorAll('#wm-list .wm-card .wm-pic img').length, url: location.search }));
+  check(listed && cards.pics > 20 && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+
+  await page.click('#wm-list .wm-card[data-id="core.smg"]');
+  await page.waitForSelector('#wm-editor #wm-name', { timeout: T(10000) });
+  await page.fill('#wm-name', 'E2E Buzzsaw');
+  await page.click('#wm-hide');
+  const hidden = await page.waitForFunction(() => document.querySelector('#wm-hide')?.textContent === 'Unhide' && !!document.querySelector('#wm-editor .wm-head .wm-badge.hidden'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(hidden, 'Hide marks it Hidden, with an Unhide button');
+  const blocked = await page.evaluate(() => window.__weaponManager.edits());
+  check(blocked['core.smg']?.name === 'E2E Buzzsaw' && blocked['core.smg']?.hidden === true, `rename and hide are kept as edits (${JSON.stringify(blocked['core.smg'])})`);
+
+  await page.click('#wm-editor [data-pick="fire"]');
+  await page.waitForSelector('#wm-picker [data-use="fire.rifle"]', { timeout: T(5000) });
+  await page.click('#wm-picker [data-play="fire.rifle"]');
+  const played = await page.waitForFunction(() => window.__weaponManager.played() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
+  check(played, 'the sound picker plays a sound from the game\'s library');
+  await page.click('#wm-picker [data-use="fire.rifle"]');
+  const picked = await page.waitForFunction(() => !document.getElementById('wm-picker') && window.__weaponManager.edits()['core.smg']?.sounds?.fire === 'fire.rifle', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(picked, 'Use picks it as the fire sound');
+
+  await page.fill('#wm-editor [data-stat="damage"]', '19');
+  await page.press('#wm-editor [data-stat="damage"]', 'Tab');
+  const live = await page.waitForFunction(() => /your edit/.test(document.getElementById('wm-compare')?.textContent ?? '') && document.querySelectorAll('#wm-compare canvas').length >= 3 && /in the game: 15/.test(document.querySelector('#wm-editor [data-stat="damage"]')?.parentElement?.textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(live, 'a stat edit shows the game\'s value beside it and the live comparison (the game\'s weapon and the edit)');
+  await page.fill('#wm-editor [data-stat="handling.move"]', '150');
+  await page.press('#wm-editor [data-stat="handling.move"]', 'Tab');
+  const kept = await page.waitForFunction(() => window.__weaponManager.edits()['core.smg']?.stats?.['handling.move'] === 1.1, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(kept, 'a stat out of range is kept within it (move speed 150 % → 110 %)');
+  await page.fill('#wm-editor #wm-note', 'make this louder');
+  await page.click('#wm-editor #wm-done');
+  const card = await page.waitForFunction(() => {
+    const c = document.querySelector('#wm-list .wm-card[data-id="core.smg"]');
+    return !document.getElementById('wm-editor') && !!c?.querySelector('.wm-badge.edited') && !!c?.querySelector('.wm-badge.hidden') && /E2E Buzzsaw/.test(c.textContent);
+  }, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(card, 'the list shows the weapon renamed, Edited and Hidden');
+
+  await page.click('#wm-send');
+  await page.waitForSelector('#wm-send-dialog #wm-copy', { timeout: T(5000) });
+  await page.click('#wm-send-dialog #wm-copy');
+  await page.waitForFunction(() => /Copied|Select/.test(document.getElementById('wm-copied')?.textContent ?? ''), null, { timeout: T(5000) }).catch(() => {});
+  const text = await page.evaluate(() => window.__copied ?? document.getElementById('wm-json')?.value ?? '');
+  let cs = null;
+  try {
+    cs = JSON.parse(text);
+  } catch {
+    cs = null;
+  }
+  const smg = cs?.weapons?.['core.smg'];
+  check(
+    cs?.format === 'tiletrigger.weapon-edits' && cs.version === 1 && smg?.name === 'E2E Buzzsaw' && smg.hidden === true && smg.sounds?.fire === 'fire.rifle' && smg.stats?.damage === 19 && smg.stats?.['handling.move'] === 1.1 && smg.note === 'make this louder' && smg.was?.name === 'Submachine Gun' && smg.was?.stats?.damage === 15,
+    `Send → Copy gives the change set (${text.slice(0, 400)})`,
+  );
+  if (cs) {
+    const { applyChangeSet } = await import('../tools/content/apply-weapon-edits.mjs');
+    const r = applyChangeSet(cs, { write: false });
+    check(r.problems.length === 0 && r.summary.some((l) => /E2E Buzzsaw.*hidden.*fire\.rifle.*Damage 15 → 19/.test(l)), `the repo tool takes it (checked, nothing written): ${JSON.stringify(r.problems.length ? r.problems : r.summary)}`);
+  }
+  await page.click('#wm-send-dialog #wm-send-close');
+
+  // Kept in this browser until sent: a reload brings them back.
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const kept2 = await page.waitForFunction(() => window.__weaponManager?.edits()['core.smg']?.name === 'E2E Buzzsaw' && !!document.querySelector('#wm-list .wm-card[data-id="core.smg"] .wm-badge.edited'), null, { timeout: T(60000) }).then(() => true, () => false);
+  check(kept2, 'the edits are still there after a reload (Manage reopens from the address)');
+
+  // A phone: one column, nothing wider than the screen.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phone = await page.waitForFunction(() => getComputedStyle(document.getElementById('wm-list')).gridTemplateColumns.split(' ').length === 1 && document.documentElement.scrollWidth <= 390, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(phone, `on a phone the list is one column, no sideways scroll (${await page.evaluate(() => `${getComputedStyle(document.getElementById('wm-list')).gridTemplateColumns} · ${document.documentElement.scrollWidth}px`)})`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.click('#wm-reset-all');
+  const reset = await page.waitForFunction(() => Object.keys(window.__weaponManager.edits()).length === 0 && !document.querySelector('#wm-list .wm-badge.edited') && document.getElementById('wm-send').disabled, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(reset, 'Reset everything puts every weapon back as it is in the game');
+  check(errors.length === 0, `no page errors on the Weapon Manager${errors.length ? `: ${errors.slice(0, 3).join(' | ')}` : ''}`);
+  await context.close();
+}
+
 async function hostpageFlow(browser) {
   const HUB_PORT = await pickPort('E2E_HOSTPAGE_HUB_PORT', 9080);
   const CONTROL_PORT = await pickPort('E2E_HOSTPAGE_CONTROL_PORT', 7802);
@@ -15941,7 +16044,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
