@@ -14012,7 +14012,7 @@ async function slidepeekFlow(browser) {
 async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, LEAN_R }) {
   // (Pictures: at twice the pixels and on High graphics.)
   const pics = !!process.env.SLIDEPEEK_PICS;
-  const context = await browser.newContext({ viewport: pics ? { width: 960, height: 540 } : { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
+  const context = await browser.newContext({ viewport: pics ? { width: 640, height: 360 } : { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
   if (pics) await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'high'));
   const page = await context.newPage();
   livePages.add(page);
@@ -14072,9 +14072,12 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
         n: 0,
         slid: 0,
         before: null,
+        trace: '',
         get buttons() {
           const st = window.__cs.local.state;
           this.slid = Math.max(this.slid, st.slide ?? 0);
+          // (What each tick started from, for a failure: s sprinting, g on the ground, the stance, the slide's tick.)
+          if (this.n < 80) this.trace += `${st.sprint ? 's' : '-'}${st.grounded ? 'g' : '-'}${st.stance ?? 0}${st.slide ?? 0} `;
           this.n++;
           if (this.n === n) this.before = st.stamina ?? 1;
           return this.n > n ? S | C : S;
@@ -14093,20 +14096,21 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
   const look = (yaw, pitch = 0) => page.evaluate(([y, p]) => Object.assign(window.__cs.input, { yaw: y, pitch: p }), [yaw, pitch]);
   // An open run down the yard, facing +z (the bot out of the way).
   await place(bot, { x: 14, y: 0, z: 14 }, 0);
-  await place(me, { x: 0, y: 0, z: -14 }, 0);
+  // (On the yard's floor, in front of the low cover at z -14: placed on that block, you ran off its edge and were still in
+  // the air at the crouch, so no slide. Sprinting 0.4 s from here, the slide ends well short of the yard's far edge.)
+  await place(me, { x: 0, y: 0, z: -12 }, 0);
   await look(0, -0.05);
-  // (Sprinting 0.4 s from the yard's back, a slide ends well short of its far edge.)
+  await meWait(page, (m, me) => me.move.grounded && Math.abs(me.move.pos.z + 12) < 0.1, null, 1);
+  // (The page's own prediction there too, before the run starts: it replays the inputs from where it has you.)
+  await page.waitForFunction(() => window.__cs.local.state.grounded && Math.abs(window.__cs.local.state.pos.z + 12) < 0.1, null, { timeout: T(20000) }).catch(() => {});
   await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
   await slideAfter(24);
   check(await meWait(page, (m, me) => me.move.sprint || (me.move.slide ?? 0) > 0, null, 2), 'sprinting');
-  // (Mid-slide for the picture: the page's own slide under way.)
-  const midSlide = await page.waitForFunction(() => (window.__cs.local.state.slide ?? 0) >= 6, null, { timeout: T(20000), polling: 'raf' }).then(() => true, () => false);
-  if (midSlide) await pic(page, '01-first-person-mid-slide');
   const slid = await meWait(page, (m, me) => (self.__slid ?? 0) >= 30 && !me.move.slide, null, 3);
-  const own = await page.evaluate(() => ({ slid: window.__autoInput.slid, before: window.__autoInput.before }));
+  const own = await page.evaluate(() => ({ slid: window.__autoInput.slid, before: window.__autoInput.before, trace: window.__autoInput.trace }));
   const after = await sim(page, () => ({ slid: self.__slid, stamina: self.__slidStamina ?? 1 }));
   check(slid, `sprint, then crouch: a slide in the match (${after.slid} ticks)`);
-  check(own.slid >= 30, `the slide is predicted on the page (${own.slid} ticks)`);
+  check(own.slid >= 30, `the slide is predicted on the page (${own.slid} ticks)${own.slid >= 30 ? '' : `: ${own.trace}`}`);
   // (The match's stamina as the slide got under way, against the page's the tick before the crouch.)
   check(own.before !== null && own.before - after.stamina >= 0.19, `the slide took its stamina (${own.before?.toFixed(3)} → ${after.stamina.toFixed(3)})`);
   check(await meWait(page, (m, me) => !me.move.slide && me.move.stance === 1, null, 2), 'the slide ends in a crouch');
@@ -14133,18 +14137,6 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
     await pic(page, `0${name === 'right' ? 4 : 5}-third-person-own-lean-${name}`);
   }
   await drive(0, 0);
-  // Third person: your own body slides (seen from behind).
-  if (pics) {
-    await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
-    await place(me, { x: 0, y: 0, z: -14 }, 0);
-    await look(0, -0.05);
-    await slideAfter(24);
-    await page.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.slideTip ?? 0) < -0.3, me, { timeout: T(20000), polling: 'raf' }).catch(() => {});
-    await pic(page, '05b-third-person-own-slide');
-    await meWait(page, (m, me) => (self.__slid ?? 0) >= 30 && !me.move.slide, null, 3);
-    await sim(page, () => clearInterval(self.__slidLatch));
-    await drive(0, 0);
-  }
   await page.keyboard.press('KeyH');
   await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
   // A bot (another body, drawn from the snapshots) slides and leans: from the side and from the front.
@@ -14174,14 +14166,53 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
       c.move = { ...c.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 };
       Object.assign(c.queue, { fwd: 1, btn: a.sprint, slid: 0, crouchAt: m.tick + 24 });
     }, { s: bot, sprint: SPRINT });
-    const sliding = await botPose({});
-    if (sliding) await pic(page, `${view === 'side' ? '07' : '09'}-bot-slide-${view}`);
+    await botPose({});
     await simWait(page, (m, me, a) => (m.combatants().find((c) => c.slot === a).queue.slid ?? 0) >= 30, bot, T(20000));
     const botSlid = await sim(page, (m, me, a) => m.combatants().find((c) => c.slot === a).queue.slid ?? 0, bot);
     const tip = await page.evaluate(() => window.__tip);
     check(botSlid >= 30 && tip < -0.3, `another body is drawn sliding (${view}; it slid ${botSlid} ticks, drawn tipped back ${(-tip).toFixed(2)} rad)`);
     await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a).queue, { fwd: 0, btn: 0, crouchAt: undefined }), bot);
     await sleep(400);
+  }
+  // Pictures of a slide (SLIDEPEEK_PICS only; the checks above are done): a slide lasts 0.75 s and a picture on High at
+  // twice the pixels takes longer than that to draw in software, so the body is held mid-slide where the picture
+  // wants it (its slide's tick count, crouch and momentum put back every few milliseconds where the match runs).
+  if (pics) {
+    const holdSlide = (slot, pos, yaw) =>
+      sim(page, (m, me, a) => {
+        const c = m.combatants().find((x) => x.slot === a.slot);
+        clearInterval(self.__slideHold);
+        self.__slideHold = setInterval(() => (c.move = { ...c.move, pos: { ...a.pos }, velY: 0, grounded: true, stance: 1, slide: 10, vx: Math.sin(a.yaw) * 6, vz: Math.cos(a.yaw) * 6 }), 4);
+      }, { slot, pos, yaw });
+    const letGo = () => sim(page, () => clearInterval(self.__slideHold));
+    const held = (s) => page.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.slideTip ?? 0) < -0.3, s, { timeout: T(20000), polling: 'raf' }).then(() => true, () => false);
+    // Your own: first person (the eye down at a crouch's, the view moving on), then third person from behind.
+    await place(bot, { x: 12, y: 0, z: 2 }, 0);
+    await look(0, -0.05);
+    await drive(1, SPRINT | CROUCH);
+    await holdSlide(me, { x: 0, y: 0, z: -9 }, 0);
+    await page.waitForFunction(() => (window.__cs.local.state.slide ?? 0) > 0, null, { timeout: T(20000), polling: 'raf' }).catch(() => {});
+    await sleep(500);
+    await pic(page, '01-first-person-slide');
+    await page.keyboard.press('KeyH');
+    await held(me);
+    await sleep(500);
+    await pic(page, '05b-third-person-own-slide');
+    await page.keyboard.press('KeyH');
+    await letGo();
+    await drive(0, 0);
+    // Another body, 4 m off: from the side and from the front (clear of the yard's floor pickups at (±3, -6) and (0, -10)).
+    await place(me, { x: -3, y: 0, z: -12.5 }, 0);
+    await look(0, -0.12);
+    for (const [view, yaw, at] of [['side', Math.PI / 2, { x: -3.6, y: 0, z: -8.5 }], ['front', Math.PI, { x: -3, y: 0, z: -8.5 }]]) {
+      await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a.s).queue, { fwd: 1, btn: a.b, crouchAt: undefined, yaw: a.yaw }), { s: bot, b: SPRINT | CROUCH, yaw });
+      await holdSlide(bot, at, yaw);
+      await held(bot);
+      await sleep(500);
+      await pic(page, `${view === 'side' ? '07' : '09'}-bot-slide-${view}`);
+      await letGo();
+      await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a).queue, { fwd: 0, btn: 0 }), bot);
+    }
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -14265,18 +14296,20 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
       n: 0,
       sprinted: false,
       slid: 0,
+      trace: '',
       get buttons() {
         const st = window.__cs.local.state;
         if (st.sprint) this.sprinted = true;
         this.slid = Math.max(this.slid, st.slide ?? 0);
+        if (this.n < 60) this.trace += `${st.sprint ? 's' : '-'}${st.grounded ? 'g' : '-'}${st.stance ?? 0}${st.slide ?? 0}${st.winded ? 'w' : ''}${st.moveCd ? 'c' : ''} `;
         return ++this.n > 24 ? S | C : S;
       },
     };
   }, [SPRINT, CROUCH]);
   const aliceSlid = await alice.waitForFunction(() => window.__autoInput.slid >= 30, null, { timeout: T(20000) }).then(() => true, () => false);
-  const aliceRun = await alice.evaluate(() => ({ sprinted: window.__autoInput.sprinted, slid: window.__autoInput.slid }));
+  const aliceRun = await alice.evaluate(() => ({ sprinted: window.__autoInput.sprinted, slid: window.__autoInput.slid, trace: window.__autoInput.trace, stamina: window.__cs.local.state.stamina, yaw: window.__cs.input.yaw }));
   check(aliceRun.sprinted, 'online: Alice sprints');
-  check(aliceSlid, `online: Alice slides (predicted: ${aliceRun.slid} ticks) ${aliceSlid ? '' : await why()}`);
+  check(aliceSlid, `online: Alice slides (predicted: ${aliceRun.slid} ticks) ${aliceSlid ? '' : `${await why()} ${JSON.stringify(aliceRun)}`}`);
   const seenSlide2 = await bob.waitForFunction(() => window.__tip < -0.2, null, { timeout: T(8000) }).then(() => true, () => false);
   check(seenSlide2, `over the network: Bob sees Alice slide (drawn tipped back ${(-(await bob.evaluate(() => window.__tip))).toFixed(2)} rad)`);
   await pic(bob, '12-network-slide-seen-by-other-player');
