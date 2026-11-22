@@ -1851,6 +1851,29 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 :is(#weapon-wheel, #order-wheel) .ww-centre b { font: italic 700 clamp(13px, 3.4vmin, 20px)/1.1 var(--font-display); text-transform: uppercase; color: var(--cyan); }
 :is(#weapon-wheel, #order-wheel) .ww-centre small { color: var(--muted); font: 600 clamp(11px, 2.6vmin, 15px) var(--font-display); }
 :is(#weapon-wheel, #order-wheel) .ww-dot { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); pointer-events: none; }
+/* The weapon wheel by category (weaponWheel.ts CategoryWheel): eight slices, the open one's weapons on an outer arc. */
+#weapon-wheel .ww-ring.ww-cats { width: min(96vmin, 680px); background: radial-gradient(circle, rgba(18, 24, 39, 0.3) 0 19%, rgba(18, 24, 39, 0.55) 20% 57%, rgba(18, 24, 39, 0.35) 58% 70%, rgba(18, 24, 39, 0) 71%); box-shadow: none; }
+#weapon-wheel .ww-slices { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#weapon-wheel .ww-slice { fill: rgba(18, 24, 39, 0.82); stroke: rgba(0, 209, 255, 0.22); stroke-width: 0.006; transition: fill 0.08s; }
+#weapon-wheel .ww-slice.held { stroke: rgba(0, 209, 255, 0.6); }
+#weapon-wheel .ww-slice.on { fill: rgba(0, 120, 150, 0.55); stroke: var(--cyan); stroke-width: 0.01; }
+#weapon-wheel .ww-slice.empty { fill: rgba(18, 24, 39, 0.4); stroke: rgba(255, 255, 255, 0.06); }
+#weapon-wheel .ww-slice-tag { position: absolute; transform: translate(-50%, -50%); width: 17%; display: flex; flex-direction: column; align-items: center; gap: 1px; text-align: center; color: var(--text); pointer-events: none; }
+#weapon-wheel .ww-slice-tag .ww-icon { width: 100%; height: clamp(18px, 6vmin, 40px); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6)); }
+#weapon-wheel .ww-slice-tag b { font: 700 clamp(9px, 2.2vmin, 13px)/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; }
+#weapon-wheel .ww-slice-tag small { font: 600 clamp(9px, 2vmin, 12px) var(--font-display); color: var(--muted); font-variant-numeric: tabular-nums; }
+#weapon-wheel .ww-slice-tag kbd { font: 700 clamp(9px, 1.9vmin, 11px)/1 var(--font-display); padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: var(--muted); }
+#weapon-wheel .ww-slice-tag.on b, #weapon-wheel .ww-slice-tag.on kbd { color: var(--cyan); }
+#weapon-wheel .ww-slice-tag.empty { opacity: 0.35; }
+#weapon-wheel .ww-arc { position: absolute; inset: 0; pointer-events: none; display: none; }
+#weapon-wheel .ww-arc.open { display: block; }
+#weapon-wheel .ww-ring.ww-cats .ww-item { width: 16%; background: rgba(18, 24, 39, 0.88); border-color: rgba(255, 255, 255, 0.08); }
+#weapon-wheel .ww-ring.ww-cats .ww-item .ww-icon { height: clamp(22px, 6.5vmin, 46px); }
+#weapon-wheel .ww-ring.ww-cats .ww-item b { font-size: clamp(9px, 2vmin, 13px); overflow-wrap: anywhere; }
+#weapon-wheel .ww-ring.ww-cats .ww-item small { font-size: clamp(9px, 1.9vmin, 12px); }
+#weapon-wheel .ww-ring.ww-cats .ww-item.held { border-color: rgba(0, 209, 255, 0.55); }
+#weapon-wheel .ww-ring.ww-cats .ww-item.on { background: rgba(0, 90, 115, 0.92); border-color: var(--cyan); }
+#weapon-wheel .ww-ring.ww-cats .ww-centre { width: 34%; }
 #order-wheel .ww-ring { box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35); }
 #order-wheel .ww-item { width: 30%; }
 #order-wheel .ww-item.held { border-color: rgba(255, 179, 71, 0.55); }
@@ -1967,6 +1990,9 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 }
 /* Options → Controls: a key you can rebind (the weapon wheel). */
 .key-bind-row { display: flex; align-items: center; gap: 8px; }
+.key-bind-grid { display: grid; grid-template-columns: repeat(2, minmax(0, auto) auto); align-items: center; gap: 6px 10px; }
+.key-bind-grid > span { font-size: 0.85em; color: var(--muted); }
+.key-bind-grid .key-bind { min-width: 56px; }
 .key-bind { min-width: 120px; font: 700 14px var(--font-display); }
 .key-bind-note { color: var(--warning); }
 /* A phone sideways (and other short windows, ~412 px tall): the home screen's buttons all fit above the footer. */

@@ -120,7 +120,8 @@ import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, set
 import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
-import { DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadLeanKeys, loadMousePrefs, loadWheelKey, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
+import { DEFAULT_CATEGORY_KEYS, DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, categoryKeyAllowed, keyLabel, loadCategoryKeys, loadLeanKeys, loadMousePrefs, loadWheelKey, saveCategoryKeys, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
+import { WHEEL_CATEGORIES, WHEEL_CATEGORY_LABELS } from '../game/wheelCategories.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
@@ -3288,7 +3289,7 @@ export class FrontEnd {
       ['Fire mode (Battle Rifle: single or 3-round burst)', 'U'],
       ['Use · get in or out of a vehicle', 'E'],
       ['Third person · in a vehicle: cockpit or chase camera', 'H'],
-      ['Weapons (Q tap: your last weapon)', '1–9 · Wheel · Q'],
+      ['Weapons by category (again: the next in it) · next / previous · last (Q tap)', `${keyLabel(loadCategoryKeys()[0]!)}–${keyLabel(loadCategoryKeys()[7]!)} · Wheel · Q`],
       ['Scores', 'Tab'],
       ['Fullscreen', 'F11 · Alt+Enter'],
       ['Controller: move / look', 'Left stick / right stick'],
@@ -3328,7 +3329,7 @@ export class FrontEnd {
         window.removeEventListener('keydown', take, true);
         if (e.code !== 'Escape') {
           const lean = loadLeanKeys();
-          if (RESERVED_KEYS.has(e.code) || e.code === lean.left || e.code === lean.right) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+          if (RESERVED_KEYS.has(e.code) || e.code === lean.left || e.code === lean.right || loadCategoryKeys().includes(e.code)) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
           else saveWheelKey(e.code);
         }
         wheelKey.textContent = keyLabel(loadWheelKey());
@@ -3356,7 +3357,7 @@ export class FrontEnd {
           const keys = loadLeanKeys();
           const other = side === 'left' ? keys.right : keys.left;
           if (e.code !== 'Escape') {
-            if (RESERVED_KEYS.has(e.code) || e.code === loadWheelKey() || e.code === other) leanNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+            if (RESERVED_KEYS.has(e.code) || e.code === loadWheelKey() || e.code === other || loadCategoryKeys().includes(e.code)) leanNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
             else saveLeanKeys({ ...keys, [side]: e.code });
           }
           b.textContent = keyLabel(loadLeanKeys()[side]);
@@ -3374,6 +3375,43 @@ export class FrontEnd {
       leanRight.textContent = keyLabel(DEFAULT_LEAN_KEYS.right);
       leanNote.textContent = '';
     });
+    // The weapon category keys (1-8: the wheel's slices in order): press a category's button, then its key. A key
+    // another category has swaps the two; one with another job in play is refused (Esc keeps the old one).
+    const catNote = el('small', { class: 'key-bind-note' });
+    const catButtons = WHEEL_CATEGORIES.map((cat, i) => {
+      const b = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadCategoryKeys()[i]!), title: WHEEL_CATEGORY_LABELS[cat] });
+      b.dataset.category = cat;
+      b.addEventListener('click', () => {
+        b.textContent = 'Press a key…';
+        catNote.textContent = '';
+        const take = (e: KeyboardEvent) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          window.removeEventListener('keydown', take, true);
+          const keys = loadCategoryKeys();
+          if (e.code !== 'Escape') {
+            const lean = loadLeanKeys();
+            if (!categoryKeyAllowed(e.code) || e.code === loadWheelKey() || e.code === lean.left || e.code === lean.right) catNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
+            else {
+              const other = keys.indexOf(e.code);
+              if (other >= 0) keys[other] = keys[i]!;
+              keys[i] = e.code;
+              saveCategoryKeys(keys);
+            }
+          }
+          catButtons.forEach((x, j) => (x.textContent = keyLabel(loadCategoryKeys()[j]!)));
+        };
+        window.addEventListener('keydown', take, true);
+      });
+      return b;
+    });
+    const catReset = el('button', { type: 'button', class: 'link', textContent: 'Default (1–8)' });
+    catReset.addEventListener('click', () => {
+      saveCategoryKeys(DEFAULT_CATEGORY_KEYS);
+      catButtons.forEach((x, j) => (x.textContent = keyLabel(DEFAULT_CATEGORY_KEYS[j]!)));
+      catNote.textContent = '';
+    });
+    const catGrid = el('span', { class: 'key-bind-grid' }, ...WHEEL_CATEGORIES.flatMap((cat, i) => [el('span', { textContent: WHEEL_CATEGORY_LABELS[cat] }), catButtons[i]!]));
     const crosshairs = el('div', { class: 'crosshair-pick' });
     const colours = el('div', { class: 'crosshair-pick colours' });
     const renderPick = () => {
@@ -3445,7 +3483,8 @@ export class FrontEnd {
         row('Vehicle steering', steer, 'Look to steer: cars, buggies and hovercraft turn toward where you look (A / D still steer too), and the view stays where you point it. Classic: A and D steer and the view turns with the vehicle. Applies from your next match.'),
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
         row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
-        row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open a wheel of the weapons you carry, point with the mouse and let go to switch (a click picks too). A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
+        row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open the weapon wheel: eight category slices (Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets). Point at a slice and its weapons open on an outer arc; let go to switch (a click picks too). A quick flick to a slice brings back the one you used last in it. A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
+        row('Weapon categories', el('span', { class: 'opt-stack' }, catGrid, el('span', { class: 'key-bind-row' }, catReset), catNote), 'One key per slice of the weapon wheel, in its order: it takes out the weapon you used last in that category, and again goes on to the next one you hold in it.'),
         row('Lean (peek)', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, el('span', { textContent: 'Left' }), leanLeft, el('span', { textContent: 'Right' }), leanRight, leanReset), leanNote), 'Hold to lean round a corner: your head and gun move out to that side (and so does where you can be hit). Q and E already have jobs (last weapon and the wheel, use), so the defaults are ` (left of 1) and Left Alt. Pick any free keys.'),
         ...(isTouchDevice()
           ? [

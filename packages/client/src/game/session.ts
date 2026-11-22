@@ -215,9 +215,10 @@ import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
 import { sendPlayReport } from '../communityMaps.ts';
 import { statusColor } from './arsenalVisuals.ts';
-import { InputState, saveMousePrefs } from './input.ts';
+import { InputState, keyLabel, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
-import { WeaponWheel, wheelEntries } from './weaponWheel.ts';
+import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
+import { CategoryPicks, WHEEL_CATEGORIES, type WheelCategory, byCategory, categoryKeyPick } from './wheelCategories.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 import { CoachHud } from './coachHud.ts';
 import { TipBook, type TipId } from './tips.ts';
@@ -364,8 +365,12 @@ export class GameSession {
   private readonly damageNumbers = new DamageNumbers(document.getElementById('damage-numbers')!);
   private readonly spray = new SprayReadout(document.getElementById('spray-readout')!);
   private readonly input: InputState;
-  /** The weapon wheel (hold Q, hold a controller's Y, or the Weapons button on a phone). */
-  private readonly wheel = new WeaponWheel(document.getElementById('hud')!);
+  /** The weapon wheel by category (hold Q, hold a controller's Y, or the Weapons button on a phone). */
+  private readonly wheel = new CategoryWheel(document.getElementById('hud')!);
+  /** Each weapon category's last pick (the wheel's quick flick and the category keys come back to it). */
+  private readonly categoryPicks = new CategoryPicks();
+  /** The weapon last told to categoryPicks. */
+  private notedHeld = 0;
   /** Fireteams: the order wheel (hold B, hold a controller's d-pad up, or the Orders button on a phone). */
   private readonly orderWheel = new WeaponWheel(document.getElementById('hud')!, 'order-wheel');
   /** Fireteams' squad HUD: your squad's portraits, health and order; its minimap markers and colour (Part 2). */
@@ -3439,7 +3444,15 @@ export class GameSession {
     input.canOpenWheel = local.alive && !this.seat && !building && local.inventory.size > 0;
     if (input.wheelOpen && input.wheelKind === 'weapon' && !input.canOpenWheel) input.closeWheel(false);
     if (input.wheelOpen && input.wheelKind === 'weapon') {
-      this.wheel.show(wheelEntries(local.ownedCodes(), local.inventory, this.wantWeapon || local.held));
+      const owned = local.ownedCodes();
+      const groups = byCategory(owned);
+      const picks = new Map<WheelCategory, number>();
+      for (const cat of WHEEL_CATEGORIES) {
+        const p = this.categoryPicks.pick(cat, groups.get(cat)!);
+        if (p !== null) picks.set(cat, p);
+      }
+      this.wheel.keyLabels = this.input.categoryKeys.map(keyLabel);
+      this.wheel.show(wheelEntries(owned, local.inventory, this.wantWeapon || local.held), picks);
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
     const closed = input.takeWheelClose();
@@ -3726,12 +3739,13 @@ export class GameSession {
       if (steps) this.forts!.cycle(steps);
     }
     if (local) {
-      // Weapon selection: a number key picks that slot (again to cycle the weapons in it); the wheel steps through everything owned.
+      // Each slice of the wheel remembers the weapon you used last in it, however you came to hold it.
+      if (local.held && local.held !== this.notedHeld && local.inventory.has(local.held)) this.categoryPicks.note((this.notedHeld = local.held));
+      // Weapon selection: a category key (1-8) brings back that category's last pick (again: the next weapon in it);
+      // the mouse wheel steps through everything owned.
       const key = this.input.takeSlotRequest();
       if (key) {
-        const inSlot = local.ownedCodes().filter((code) => weaponByCode(code)?.slot === key);
-        const i = inSlot.indexOf(this.wantWeapon || local.held);
-        const next = inSlot[(i + 1) % inSlot.length];
+        const next = categoryKeyPick(key, local.ownedCodes(), this.wantWeapon || local.held, this.categoryPicks);
         if (next) this.requestWeapon(next);
       }
       // U: the held weapon's next fire mode (spec §36), with the selector's click; the mode rides in the next input.
