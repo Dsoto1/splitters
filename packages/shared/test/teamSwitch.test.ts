@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, TICK_RATE, initPhysics, parseClientMessage, type Combatant, type GameEvent } from '../src/index.ts';
-import { BotFiller, Match, TEAM_SWITCH_COOLDOWN_SECONDS, initNavigation } from '../src/match.ts';
+import { DEFAULT_RULES, TICK_RATE, initPhysics, parseClientMessage, type GameEvent } from '../src/index.ts';
+import { BotFiller, Match, TEAM_SWITCH_COOLDOWN_SECONDS, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
 beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
