@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).
 - **Pick the optic on your guns.** Profile → Favourite loadout → Optics (or Pause → Settings → Optic for the gun in hand): many guns can carry their own sights, a red dot, a holographic sight or a new 2× optic; others see the optic you picked on your gun, and snipers keep their scopes.
 - **Toggle aim lets go when you sprint.** With Aim set to Toggle, Shift (L3 on a controller, Sprint on touch) drops the sights and sprints; with a scope or optic in hand Shift still holds your breath, and a reload keeps your aim.
 - **Camera shake covers the zipline too.** Off / Reduced now also calms the view's roll and sway on a zipline, like the lean's.
