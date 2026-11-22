@@ -213,11 +213,19 @@ const CAT_DEAD = 0.25;
 const CAT_OUTER = 0.72;
 const SLICE_ANGLE = (Math.PI * 2) / WHEEL_CATEGORIES.length;
 
-/** Where the slice `k`'s outer arc puts each of its `n` weapons: `pick` sits in line with the slice, the rest either side. */
+/**
+ * Where the slice `k`'s outer arc puts each of its `n` weapons: `pick` sits in line with the slice, the ones after it
+ * clockwise and the ones before it the other way (in the slice's order, round from the pick), so the arc stays
+ * centred on its slice whichever weapon is the pick.
+ */
 export function arcAngles(k: number, n: number, pick: number): number[] {
   // One weapon a step (about one item's width out on the arc), closer when a big slice would go most of the way round.
   const step = Math.min(0.42, (Math.PI * 1.6) / Math.max(1, n - 1));
-  return Array.from({ length: n }, (_, i) => k * SLICE_ANGLE + (i - pick) * step);
+  return Array.from({ length: n }, (_, i) => {
+    let off = (i - pick + n) % n;
+    if (off > (n - 1) / 2) off -= n;
+    return k * SLICE_ANGLE + off * step;
+  });
 }
 
 /** Angle clockwise from the top, 0..2π. */

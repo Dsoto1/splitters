@@ -1875,6 +1875,7 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 #weapon-wheel .ww-ring.ww-cats .ww-item.held { border-color: rgba(0, 209, 255, 0.55); }
 #weapon-wheel .ww-ring.ww-cats .ww-item.on { background: rgba(0, 90, 115, 0.92); border-color: var(--cyan); }
 #weapon-wheel .ww-ring.ww-cats .ww-centre { width: 34%; }
+#weapon-wheel .ww-ring.ww-cats .ww-centre b { font-size: clamp(11px, 2.3vmin, 17px); }
 #order-wheel .ww-ring { box-shadow: 0 0 0 1px rgba(255, 179, 71, 0.35); }
 #order-wheel .ww-item { width: 30%; }
 #order-wheel .ww-item.held { border-color: rgba(255, 179, 71, 0.55); }
