@@ -10,22 +10,28 @@
  */
 import type { PickupEntity } from '../map/schema.ts';
 import { CORE_ITEMS, getItem, type ItemDefinition } from './items.ts';
-import { CORE_WEAPONS, type WeaponCategory } from './weapons.ts';
+import { CORE_WEAPONS, isWeaponHidden, type WeaponCategory } from './weapons.ts';
 
 /** The weapon category of an item (a weapon pickup of a weapon that has one), else null. */
 export function itemCategory(item: ItemDefinition | undefined): WeaponCategory | null {
   return item?.effect.kind === 'weapon' ? (CORE_WEAPONS[item.effect.weapon]?.category ?? null) : null;
 }
 
+/**
+ * Whether random pickups, the host's mix-up and weapon sets may roll an item: not one marked `rolls: false` (the
+ * Pistol), nor a weapon the owner hid (the Weapon Manager; placed on a map it still lies there as placed).
+ */
+export const rollable = (item: ItemDefinition): boolean => item.rolls !== false && !(item.effect.kind === 'weapon' && isWeaponHidden(item.effect.weapon));
+
 const pools = new Map<WeaponCategory, readonly ItemDefinition[]>();
 
 /**
  * Every weapon pickup item of a category that random pickups roll, in item order (the pool a random pickup rolls
- * from); a pickup marked `rolls: false` (the Pistol) is never in one.
+ * from); a pickup marked `rolls: false` (the Pistol), or of a weapon the owner hid (`hidden`), is never in one.
  */
 export function categoryItems(category: WeaponCategory): readonly ItemDefinition[] {
   let pool = pools.get(category);
-  if (!pool) pools.set(category, (pool = CORE_ITEMS.filter((i) => i.rolls !== false && itemCategory(i) === category)));
+  if (!pool) pools.set(category, (pool = CORE_ITEMS.filter((i) => rollable(i) && itemCategory(i) === category)));
   return pool;
 }
 

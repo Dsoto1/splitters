@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook } from '@tiletrigger/shared';
+import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook, weaponByCode } from '@tiletrigger/shared';
 import { gunPan } from './pairView.ts';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
@@ -273,10 +273,12 @@ export class SessionAudio {
       if (local.held !== this.prevHeld && this.prevHeld !== 0) this.audio.play('weapon.raise');
       // A pair's reloads sound from their own hands (the second gun's a little left, the first's a little right).
       const pan = local.paired ? { pan: gunPan(true, 'right') } : {};
-      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play('reload.start', pan);
+      // A weapon's own reload sound (its `view.reloadSound`, the Weapon Manager), else every weapon's.
+      const reload = (weaponByCode(local.held)?.view.reloadSound ?? 'reload.start') as SoundId;
+      if (local.reloadTicks > 0 && this.prevReload === 0) this.audio.play(reload, pan);
       if (local.reloadTicks === 0 && this.prevReload > 0 && local.held === this.prevHeld) this.audio.play('reload.end', pan);
       const second = local.paired ? local.reloadTicks2 : 0;
-      if (second > 0 && this.prevReload2 === 0) this.audio.play('reload.start', { pan: gunPan(true, 'left') });
+      if (second > 0 && this.prevReload2 === 0) this.audio.play(reload, { pan: gunPan(true, 'left') });
       if (second === 0 && this.prevReload2 > 0 && local.paired && local.held === this.prevHeld) this.audio.play('reload.end', { pan: gunPan(true, 'left') });
     }
     this.prevHeld = local.alive ? local.held : 0;

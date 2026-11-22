@@ -1,5 +1,6 @@
 import {
   CORE_ITEMS,
+  isWeaponHidden,
   CORE_PROPS,
   coreCatalog,
   coreMaterials,
@@ -165,6 +166,8 @@ export class PaletteBuilder {
     const hintGrid = this.app.palette.group($('ed-entities'), 'gameplay:bothints', 'Bot hints', { note: 'Spots for bots on top of what they work out: chokepoints, sniper, camp and staging spots, jump links (Y). Shown in MapMaker only.' });
     this.app.hints.fillPalette(hintGrid, (el, key, name, tags) => this.app.palette.register(el, { key, name, tags }));
     for (const item of CORE_ITEMS) {
+      // A weapon the owner hid (the Weapon Manager) leaves the palette; maps that place it still have it (Hidden in the inspector).
+      if (item.effect.kind === 'weapon' && isWeaponHidden(item.effect.weapon)) continue;
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `pickup:${item.id}`;
