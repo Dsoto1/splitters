@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_efrwwkldic6yfbxe",
-      "revision": 48,
-      "contentHash": "sha256:9abe085bde178ac05a388431825505a34bb57d285b1513940c8f004f01c8ee59",
+      "versionId": "v_6iehdnchhmv6ldbe",
+      "revision": 49,
+      "contentHash": "sha256:10946f21e75511a85d2e6f62e0db075a9eb84cab0e6ec97140283ee0049dfde3",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T07:13:36.375Z"
+      "releasedAt": "2026-11-22T01:45:37.709Z"
     },
     "testOnly": true
   },
@@ -1376,6 +1376,14 @@
         "z": -1,
         "rotation": 1,
         "family": "mine"
+      },
+      {
+        "id": "tile_2nhn8z79s6",
+        "tile": "core.hall_end_faceted",
+        "x": 1,
+        "y": -60,
+        "z": 0,
+        "rotation": 0
       }
     ]
   },
@@ -7202,6 +7210,52 @@
           "walls": "solid"
         }
       }
+    },
+    {
+      "id": "setpiece_45qt160g8j",
+      "piece": "setpiece.library_bay_2",
+      "x": -12,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "door": "south"
+        }
+      }
+    },
+    {
+      "id": "setpiece_5ihee77099",
+      "piece": "setpiece.library_end_bay_2",
+      "x": -9,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_9j2koh9ber",
+      "piece": "setpiece.library_faceted_end",
+      "x": -6,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "door": "east"
+        }
+      }
+    },
+    {
+      "id": "setpiece_96nevvzo3f",
+      "piece": "setpiece.gable_wing",
+      "x": -2,
+      "y": -60,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }
