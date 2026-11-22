@@ -226,8 +226,8 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
   `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
   `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
-- **Experimental now (2026-11-22):** the owner's Drive batch of 2026-11-21/22 and the twelve of 2026-11-22's
-  afternoon, rigged Meshy downloads built as the 2026-11-14 batch was (the download's own rig, its clips unused;
+- **Experimental now (2026-11-22):** the owner's Drive batch of 2026-11-21/22, eleven of the twelve of 2026-11-22's
+  afternoon and four of its evening, rigged Meshy downloads built as the 2026-11-14 batch was (the download's own rig, its clips unused;
   those over the 1.8 MB character budget rebaked, `surface: rebake` at 12k triangles; grip offsets from the auto-fit).
   All Meshy, owned (the owner's own, 2026-11-22) but Juice (Meshy Community). Names are personal names (see
   "Names" under Adding a Meshy character); the batch's first labels are in each manifest's notes. Their groups once
@@ -243,13 +243,19 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
     Burrows (Agent Badger), Coach Hank Shelton (Coach Tortoise), Rio Neonwing (Cyber Flamingo), Juice (Box Duck,
     named by the owner), Chad Croakley (Gym Bro Frog), Dr. Hugo Hue (Doc Chameleon), Ollie Hootman (Owl Sniper),
     Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
-    rhino juggernaut), Zero Ringtail (raccoon hacker), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
+    rhino juggernaut), Zero Ringtail (raccoon hacker; Bandit's model since the evening, below), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
     samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
     eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Buster Haymaker (boxer bunny) and
-    Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp").
+    Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp"). From the owner's third batch of 2026-11-22 (the Drive uploads after 15:00):
+    Sterling Purrcival (tuxedo cat), Rufus Boomwell (baboon) and Chester Knuckleby (chimpanzee).
+  - Horrors & Creatures, from the third batch: Ignatius Slagg (the magma juggernaut; bleeds stone).
   Two of the batch became the models of characters already on the roster (owner, 2026-11-22) and left it: Tinker
   Goblina's GoblinaRigged is **Goblina**'s model, the Sunset Gunslinger's is **Dusty Ranger**'s (both keep their name,
-  roster place and Core tier; `RETIRED_LOOKS` sends saved choices and bot sets of the two to them). The Drive's
+  roster place and Core tier; `RETIRED_LOOKS` sends saved choices and bot sets of the two to them). The third batch
+  (owner, 2026-11-22) swapped three more models, each keeping its id, name, roster place and tier: "shiba inu 15k"
+  is **Shiba**'s model and "salamander 15k" the **Salamander Warlord**'s (the old community models no longer ship),
+  and Zero Ringtail's raccoon hacker is **Bandit**'s (its built files renamed to Bandit's; Zero Ringtail left the
+  roster, `RETIRED_LOOKS` sends `core.raccoonhacker` to `core.bandit`). All three are Meshy, owned now. The Drive's
   "veteran time crew rigged" is the same model as "veteran time crew 15k" (built from the latter); the afternoon's
   re-uploads of characters already in the game were not reprocessed (owner).
 - **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
@@ -851,7 +857,7 @@ community models under CC0. Models from the owner's Drive are Meshy Community
 CC0 unless the owner says they made them (owner, 2026-11-06); only those, and
 ones we generate through the Meshy API with the owner's approval, are owned.
 The owner's Drive characters of 2026-11-21/22 and those of 2026-11-22's
-afternoon are their own (owner, 2026-11-22), all but Juice. Each is one manifest,
+afternoon and evening are their own (owner, 2026-11-22), all but Juice. Each is one manifest,
 `content/characters/<id>.json`, and nothing else: the tools read every
 manifest, so adding a character needs no code. Raw downloads never enter the
 repo; they live in a downloads dir outside it.
