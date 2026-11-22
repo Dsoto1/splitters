@@ -375,9 +375,10 @@ export function pressMesh(seed, size, g, look, level) {
     const bz1 = D / 2;
     const bz0 = bz1 - 0.44;
     const c = scale3(wood, 1.08);
-    box(m, [bx0, 0.4, bz0], [bx1, 0.46, bz1], c, []);
-    box(m, [bx0 + 0.05, 0, bz1 - 0.06], [bx1 - 0.05, 0.4, bz1], scale3(c, 0.85), ['ny', 'py']);
-    box(m, [bx0 + 0.05, 0.46, bz1 - 0.05], [bx1 - 0.05, 0.86, bz1], scale3(c, 0.95), ['ny']);
+    // (The seat runs into both end boards, and it, the back and the front board stop 1 cm inside the end boards' edges, so no face lies in another's plane.)
+    box(m, [bx0 + 0.03, 0.4, bz0 + 0.01], [bx1 - 0.035, 0.46, bz1 - 0.01], c, ['nx', 'px']);
+    box(m, [bx0 + 0.05, 0, bz1 - 0.06], [bx1 - 0.05, 0.4, bz1 - 0.01], scale3(c, 0.85), ['ny', 'py']);
+    box(m, [bx0 + 0.05, 0.46, bz1 - 0.05], [bx1 - 0.05, 0.86, bz1 - 0.01], scale3(c, 0.95), ['ny']);
     box(m, [bx0, 0, bz0], [bx0 + 0.06, 0.8, bz1], scale3(c, 0.9), ['ny']);
     box(m, [bx1 - 0.07, 0, bz0 - 0.04], [bx1, 1.25, bz1], scale3(c, 0.9), ['ny']);
     if (level === 0) quadN(m, [bx1 + 0.01, 0.2, bz0 + 0.05], [bx1 + 0.01, 0.2, bz1 - 0.06], [bx1 + 0.01, 1.1, bz1 - 0.06], [bx1 + 0.01, 1.1, bz0 + 0.05], [1, 0, 0], scale3(c, 1.15));
@@ -441,7 +442,8 @@ export function globeMesh(seed, size, g, look, level) {
     bar(m, [c * (rr - 0.06), 0.012, s * (rr - 0.06)], [c * (rr - 0.09), ring - 0.03, s * (rr - 0.09)], 0.07, wood);
     if (level === 0 && k < 2) bar(m, [c * (rr - 0.06), 0.22, s * (rr - 0.06)], [-c * (rr - 0.06), 0.22, -s * (rr - 0.06)], 0.05, scale3(wood, 0.9));
   }
-  if (level === 2) box(m, [-rr * 0.6, 0, -rr * 0.6], [rr * 0.6, ring, rr * 0.6], wood, ['ny', 'py']);
+  // (Narrower than the far globe's six faces, which stand 0.36 m out: the stand's faces must not lie in their planes.)
+  if (level === 2) box(m, [-rr * 0.5, 0, -rr * 0.5], [rr * 0.5, ring, rr * 0.5], wood, ['ny', 'py']);
   if (level === 0) lathe(m, [[0.03, cy + R - 0.01], [0.035, h - 0.02], [0.01, h]], 6, () => brass);
   if (level === 0) m.boxes = [[-rr * 0.8, 0, -rr * 0.8, rr * 0.8, h, rr * 0.8]];
   return m;
