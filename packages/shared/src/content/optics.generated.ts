@@ -3,11 +3,11 @@
 // first person, not with the menu.
 
 /** The optic kinds (content/optics.json `kinds`). */
-export type OpticKindId = 'irons' | 'reddot' | 'holo' | 'scope' | 'sniper';
+export type OpticKindId = 'irons' | 'reddot' | 'holo' | 'scope' | 'sniper' | 'x2';
 /** What an optic's aim mark is: none (iron sights), a dot or a ring and dot on its glass, a chevron or a fine crosshair with holdover marks. */
 export type OpticReticle = 'none' | 'dot' | 'ring' | 'chevron' | 'fine';
-/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame), the model's own scope tube, or the full-screen scope. */
-export type OpticHousing = 'none' | 'tube' | 'frame' | 'model' | 'overlay';
+/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame, a magnifying tube), the model's own scope tube, or the full-screen scope. */
+export type OpticHousing = 'none' | 'tube' | 'frame' | 'magtube' | 'model' | 'overlay';
 
 export interface OpticKind {
   name: string;
@@ -17,10 +17,12 @@ export interface OpticKind {
   adsFov?: number;
   /** A magnified optic: the least and most magnification over the hip view it covers (each weapon's own is `WeaponOptics.mag`). */
   mag?: readonly [number, number];
+  /** A magnified optic built in code (`magtube`): its zoom over the hip view, the same on every gun that carries it. */
+  power?: number;
   /** A magnified optic's zoom steps on the wheel: shares of the weapon's aimed field of view, the first 1 (a weapon may give its own). */
   steps?: readonly number[];
-  /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length. */
-  glass?: { rise: number; half: readonly [number, number]; length: number };
+  /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length, and its foot's (default: the length). */
+  glass?: { rise: number; half: readonly [number, number]; length: number; foot?: number };
   /** Its mark's sizes: tangents of the angle at the eye. */
   mark?: { dot: number; ring?: number };
 }
@@ -31,12 +33,15 @@ export const OPTIC_KINDS: Readonly<Record<OpticKindId, OpticKind>> = {
   holo: { name: 'Holographic sight', reticle: 'ring', housing: 'frame', adsFov: 0.72, glass: { rise: 0.036, half: [0.021, 0.016], length: 0.07 }, mark: { dot: 0.0016, ring: 0.022 } },
   scope: { name: '2-3x optic', reticle: 'chevron', housing: 'model', mag: [2, 3.6], steps: [1] },
   sniper: { name: 'Sniper scope', reticle: 'fine', housing: 'overlay', mag: [3, 10], steps: [1, 0.45] },
+  x2: { name: '2× optic', reticle: 'chevron', housing: 'magtube', power: 2, steps: [1], glass: { rise: 0.04, half: [0.0115, 0.0115], length: 0.11, foot: 0.06 } },
 };
 
 /**
- * A weapon's optics: the one it carries and those it may carry (the loadout's choice comes later). `mag`: its own
+ * A weapon's optics: the one it carries by default and those a player may pick for it in their loadout (Profile →
+ * Favourite loadout → Optics; docs/GUNPLAY_SPEC.md §15, "Optic choice"). `mag`: its own
  * magnification over the hip view (from its weapon file's `view.zoomFov` or `view.optic`). `mount`: where a
- * housing built in code stands (model space as `view.muzzleAt`: the middle of its foot on the gun's top) and its size.
+ * housing built in code stands (model space as `view.muzzleAt`: the middle of its foot on the gun's top) and its size:
+ * every built housing the gun may carry stands there.
  */
 export interface WeaponOptics {
   default: OpticKindId;
@@ -51,38 +56,38 @@ export interface WeaponOptics {
 
 /** Per hand-held gun that carries an optic (iron sights included). */
 export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
-  'core.amarillo': { default: 'irons', allowed: ['irons'] },
+  'core.amarillo': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.0914, 0.126], scale: 0.85 } },
   'core.arc_caster': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.22251, -0.034], scale: 0.85 } },
   'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
-  'core.auto_shotgun': { default: 'irons', allowed: ['irons'] },
+  'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2 } },
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
   'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85 } },
-  'core.burst_rifle': { default: 'irons', allowed: ['irons'] },
-  'core.compact_carbine': { default: 'irons', allowed: ['irons'] },
+  'core.burst_rifle': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.09648, -0.119], scale: 1.15 } },
+  'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88 } },
   'core.crossbow': { default: 'scope', allowed: ['scope'], mag: 2.19 },
   'core.disc_launcher': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
   'core.flak': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.15935, -0.088], scale: 0.85 } },
   'core.flintlock_pistol': { default: 'irons', allowed: ['irons'] },
-  'core.freeze_ray': { default: 'irons', allowed: ['irons'] },
-  'core.goo_gun': { default: 'irons', allowed: ['irons'] },
-  'core.hand_cannon': { default: 'irons', allowed: ['irons'] },
-  'core.laser_blaster': { default: 'irons', allowed: ['irons'] },
-  'core.laser_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.13375, -0.08], scale: 1.2 } },
+  'core.freeze_ray': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.10203, -0.085], scale: 0.85 } },
+  'core.goo_gun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09629, -0.11], scale: 0.85 } },
+  'core.hand_cannon': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.0857, -0.069], scale: 0.85 } },
+  'core.laser_blaster': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.09152, -0.028], scale: 0.85 } },
+  'core.laser_rifle': { default: 'reddot', allowed: ['reddot', 'holo', 'x2'], mount: { at: [0, 0.13375, -0.08], scale: 1.2 } },
   'core.lever_action': { default: 'scope', allowed: ['scope'], mag: 2.59 },
-  'core.machine_pistol': { default: 'irons', allowed: ['irons'] },
+  'core.machine_pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.1144, -0.129], scale: 0.85 } },
   'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19, steps: [1, 0.45] },
-  'core.nailgun': { default: 'irons', allowed: ['irons'] },
+  'core.nailgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.17032, -0.118], scale: 0.93 } },
   'core.nova6': { default: 'scope', allowed: ['scope'], mag: 2.38 },
-  'core.pistol': { default: 'irons', allowed: ['irons'] },
+  'core.pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07574, -0.05335], scale: 0.85 } },
   'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, -0.058], half: [0.0222, 0.0138] } },
-  'core.pulse_pistol': { default: 'irons', allowed: ['irons'] },
+  'core.pulse_pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07068, -0.016], scale: 0.85 } },
   'core.railgun': { default: 'sniper', allowed: ['sniper'], mag: 3.13 },
-  'core.revolver': { default: 'irons', allowed: ['irons'] },
-  'core.rifle': { default: 'irons', allowed: ['irons'] },
-  'core.runebreaker': { default: 'irons', allowed: ['irons'] },
+  'core.revolver': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07897, -0.049], scale: 0.85 } },
+  'core.rifle': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.10786, -0.149], scale: 1.17 } },
+  'core.runebreaker': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.14223, -0.07], scale: 1.2 } },
   'core.sawed_off': { default: 'reddot', allowed: ['reddot'], mount: { at: [0, 0.0716, -0.087], scale: 0.85 } },
-  'core.shotgun': { default: 'irons', allowed: ['irons'] },
-  'core.smg': { default: 'irons', allowed: ['irons'] },
+  'core.shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09878, -0.127], scale: 1.2 } },
+  'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16 } },
   'core.sniper': { default: 'sniper', allowed: ['sniper'], mag: 3.95 },
 };
 

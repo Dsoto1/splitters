@@ -27,7 +27,11 @@ export const OPTICS_TS = join(ROOT, 'packages/shared/src/content/optics.generate
 /** The hip's vertical field of view (radians): the client's DEFAULT_FOV (view.ts; the client's optics test holds them equal). */
 export const HIP_FOV = 1.35;
 export const RETICLES = ['none', 'dot', 'ring', 'chevron', 'fine'];
-export const HOUSINGS = ['none', 'tube', 'frame', 'model', 'overlay'];
+export const HOUSINGS = ['none', 'tube', 'frame', 'magtube', 'model', 'overlay'];
+/** Housings built in code on the gun's top (client game/opticHousing.ts): the red dot's tube, the holographic frame, the 2x optic's tube. */
+export const BUILT = ['tube', 'frame', 'magtube'];
+/** A housing built in code that magnifies: its view is the model optic's frame (client game/opticView.ts), its zoom the kind's `power`. */
+export const MAGNIFIED_BUILT = 'magtube';
 /** A gun this long (m) carries a housing at scale 1; shorter and longer guns scale theirs, within SCALE. */
 const SCALE_LENGTH = 0.75;
 const SCALE = [0.85, 1.2];
@@ -35,6 +39,8 @@ const SCALE = [0.85, 1.2];
 const FLAT = 0.006;
 /** Cell of the top profile (m). */
 const CELL = 0.002;
+/** The eye's distance behind a 2x optic's eyepiece (m): the client's DEFAULT_RELIEF (game/opticView.ts). */
+const EYE_RELIEF = 0.12;
 
 /** Scope feel's numbers (content/optics.json `feel`) and the range each may take. */
 export const FEEL_KEYS = [
@@ -98,7 +104,7 @@ export function fitMount(tris, { grip, muzzle, glass }) {
   const [min, max] = boundsOf(tris);
   const scale = round(clamp((max[2] - min[2]) / SCALE_LENGTH, SCALE[0], SCALE[1]), 100);
   const cx = 0;
-  const foot = glass.length * scale;
+  const foot = (glass.foot ?? glass.length) * scale;
   const { top, n, zOf } = topProfile(tris, cx, glass.half[0] * scale * 0.6, min, max);
   // The highest and lowest of the top over a stretch (`whole`: null when part of it has no gun under it).
   const span = (z0, z1, whole = true) => {
@@ -130,6 +136,51 @@ export function fitMount(tris, { grip, muzzle, glass }) {
   return best;
 }
 
+/**
+ * Whether the gun stands in the lower half of a housing's window at `mount` (one mount serves every housing a gun may
+ * carry: those after the first are checked where the first stands).
+ */
+export function blockedAt(tris, mount, glass) {
+  const [min, max] = boundsOf(tris);
+  const { top, n } = topProfile(tris, mount.at[0], glass.half[0] * mount.scale * 0.6, min, max);
+  const from = mount.at[2] + ((glass.foot ?? glass.length) * mount.scale) / 2;
+  const sill = mount.at[1] + (glass.rise - glass.half[1] * 0.5) * mount.scale;
+  for (let i = Math.max(0, Math.ceil((from - min[2]) / CELL)); i < n; i++) if (top[i] > sill + CELL) return true;
+  return false;
+}
+
+/**
+ * Whether the gun behind a housing at `mount` stands in the lower half of its window as the eye (model z `eyeZ`, on the
+ * glass's line) sees it: the lines from the eye to the window above its lowest 15 % must pass over the gun between them.
+ */
+export function blockedBehind(tris, mount, glass, eyeZ, magnified = false) {
+  const [min, max] = boundsOf(tris);
+  const { top, n } = topProfile(tris, mount.at[0], glass.half[0] * mount.scale * 0.6, min, max);
+  const centre = mount.at[1] + glass.rise * mount.scale;
+  if (magnified) {
+    // A 2x optic is looked through from its eyepiece (the tube's rear end), at the client's relief (game/opticView.ts
+    // DEFAULT_RELIEF): nothing of the gun may stand over the eyepiece's lowest 15 % between the eye and the tube's rings.
+    const eyepiece = mount.at[2] - (glass.length * mount.scale) / 2;
+    const floor = centre - glass.half[1] * mount.scale * 0.7;
+    const to = mount.at[2] - ((glass.foot ?? glass.length) * mount.scale) / 2;
+    for (let i = 0; i < n; i++) {
+      const z = min[2] + i * CELL;
+      if (z >= eyepiece - EYE_RELIEF && z < to && top[i] > floor) return true;
+    }
+    return false;
+  }
+  // (Behind the housing the gun is near the eye and reads large: only the window's lowest 15 % may be covered.)
+  const sill = mount.at[1] + (glass.rise - glass.half[1] * 0.7) * mount.scale;
+  const to = mount.at[2] - ((glass.foot ?? glass.length) * mount.scale) / 2;
+  for (let i = 0; i < n; i++) {
+    const z = min[2] + i * CELL;
+    if (z >= to || z <= eyeZ) continue;
+    const y = centre + ((sill - centre) * (z - eyeZ)) / (mount.at[2] - eyeZ);
+    if (top[i] > y) return true;
+  }
+  return false;
+}
+
 /** The eye point and the glass's middle of a mounted optic (model space), as the client places them (game/optics.ts). */
 export function mountedLine(w, min, mount, glass) {
   const y = mount.at[1] + glass.rise * mount.scale;
@@ -150,14 +201,18 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
     if (typeof k.name !== 'string' || !k.name) problems.push(`${at} needs a name`);
     if (!RETICLES.includes(k.reticle)) problems.push(`${at}: reticle ${k.reticle} is not one of ${RETICLES.join(', ')}`);
     if (!HOUSINGS.includes(k.housing)) problems.push(`${at}: housing ${k.housing} is not one of ${HOUSINGS.join(', ')}`);
-    const built = k.housing === 'tube' || k.housing === 'frame';
-    const magnified = k.housing === 'model' || k.housing === 'overlay';
-    if (magnified ? !(Array.isArray(k.mag) && k.mag.length === 2 && k.mag[0] >= 1 && k.mag[1] > k.mag[0]) || k.adsFov !== undefined : !(k.adsFov > 0.3 && k.adsFov <= 1) || k.mag !== undefined)
-      problems.push(`${at}: ${magnified ? 'a magnified optic gives `mag` [least, most]' : 'sights at 1x give `adsFov` (a share of the hip field of view)'}, and only that`);
-    if (built && !(k.glass && k.glass.rise > 0 && Array.isArray(k.glass.half) && k.glass.half[0] > 0 && k.glass.half[1] > 0 && k.glass.length > 0 && k.glass.rise > k.glass.half[1])) problems.push(`${at}: a housing built in code needs glass { rise, half: [w, h], length }, the window clear of its foot`);
-    if (built && !(k.mark && k.mark.dot > 0 && k.mark.dot < 0.006 && (k.reticle !== 'ring' || (k.mark.ring > k.mark.dot && k.mark.ring < 0.05)))) problems.push(`${at}: its reticle needs mark { dot${k.reticle === 'ring' ? ', ring' : ''} } (tangents of the angle at the eye; a dot under 0.006)`);
+    const built = BUILT.includes(k.housing);
+    const own = k.housing === 'model' || k.housing === 'overlay';
+    const power = k.housing === MAGNIFIED_BUILT;
+    const magnified = own || power;
+    if (own ? !(Array.isArray(k.mag) && k.mag.length === 2 && k.mag[0] >= 1 && k.mag[1] > k.mag[0]) || k.adsFov !== undefined || k.power !== undefined : power ? !(k.power >= 1.5 && k.power <= 4) || k.adsFov !== undefined || k.mag !== undefined : !(k.adsFov > 0.3 && k.adsFov <= 1) || k.mag !== undefined || k.power !== undefined)
+      problems.push(`${at}: ${own ? 'a magnified optic gives `mag` [least, most]' : power ? 'a magnified optic built in code gives `power` (its zoom over the hip view, 1.5-4)' : 'sights at 1x give `adsFov` (a share of the hip field of view)'}, and only that`);
+    if (built && !(k.glass && k.glass.rise > 0 && Array.isArray(k.glass.half) && k.glass.half[0] > 0 && k.glass.half[1] > 0 && k.glass.length > 0 && k.glass.rise > k.glass.half[1] && (k.glass.foot === undefined || (k.glass.foot > 0 && k.glass.foot <= k.glass.length)))) problems.push(`${at}: a housing built in code needs glass { rise, half: [w, h], length, foot? }, the window clear of its foot`);
+    if (built && !power && !(k.mark && k.mark.dot > 0 && k.mark.dot < 0.006 && (k.reticle !== 'ring' || (k.mark.ring > k.mark.dot && k.mark.ring < 0.05)))) problems.push(`${at}: its reticle needs mark { dot${k.reticle === 'ring' ? ', ring' : ''} } (tangents of the angle at the eye; a dot under 0.006)`);
+    if (power && (k.mark || (k.reticle !== 'chevron' && k.reticle !== 'fine'))) problems.push(`${at}: a magnified optic built in code draws the HUD's reticle (chevron or fine) with holdover marks: no mark on a glass`);
     if (!built && (k.glass || k.mark)) problems.push(`${at}: only a housing built in code has glass and a mark`);
     if (magnified ? !stepsOk(k.steps) : k.steps !== undefined) problems.push(`${at}: ${magnified ? 'a magnified optic gives `steps`: its zoom steps as shares of the aimed field of view, the first 1, each smaller than the last, none under 0.2' : 'only a magnified optic has zoom steps'}`);
+    if (power && (k.steps?.length ?? 0) > 1) problems.push(`${at}: a magnified optic built in code has one zoom: \`steps\` [1]`);
   }
   const feel = file.feel ?? {};
   for (const [key, lo, hi] of FEEL_KEYS) if (!(feel[key] >= lo && feel[key] <= hi)) problems.push(`content/optics.json: feel.${key} must be a number from ${lo} to ${hi}`);
@@ -191,6 +246,8 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
     const row = { default: entry.default, allowed: [...allowed] };
     let tris = null;
     let bounds = null;
+    /** The mount every built housing of this gun stands on (found once). */
+    let shared = null;
     for (const id of allowed) {
       const k = kinds[id];
       if (!k) {
@@ -198,7 +255,7 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
         continue;
       }
       if (k.housing === 'none' && !fits[w.id]) problems.push(`${at}: iron sights need a sight fit, and this gun has none (content/sight-fit.json)`);
-      if (k.housing !== 'none' && k.housing !== 'model' && k.housing !== 'overlay' && (w.view?.zoomFov || w.view?.optic)) problems.push(`${at}: it has a scope or an optic of its own in its weapon file, so it cannot also carry a ${id}`);
+      if (BUILT.includes(k.housing) && (w.view?.zoomFov || w.view?.optic)) problems.push(`${at}: it has a scope or an optic of its own in its weapon file, so it cannot also carry a ${id}`);
       if (k.housing === 'model' || k.housing === 'overlay') {
         const own = w.view?.zoomFov ? magOf(w.view.zoomFov) : w.view?.optic?.mag;
         if (!own) problems.push(`${at}: a ${id} needs the weapon's own zoom (\`view.zoomFov\`, or \`view.optic\` for the model's own tube)`);
@@ -214,7 +271,7 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
           if (w.view?.optic && (w.view.optic.reticle ?? 'duplex') !== k.reticle) problems.push(`${at}: its weapon file's view.optic.reticle (${w.view.optic.reticle ?? 'duplex'}) is not the ${id}'s (${k.reticle})`);
         }
       }
-      if ((k.housing === 'tube' || k.housing === 'frame') && entry.window) {
+      if (BUILT.includes(k.housing) && k.housing !== MAGNIFIED_BUILT && entry.window) {
         // The model's own open sight: no housing is built, the glass goes in its window.
         const win = entry.window;
         if (typeof win.reason !== 'string' || win.reason.length < 8 || !Array.isArray(win.at) || win.at.length !== 3 || !Array.isArray(win.half) || !(win.half[0] > 0 && win.half[1] > 0)) problems.push(`${at}: a \`window\` needs \`at\` [x, y, z], \`half\` [w, h] and its reason`);
@@ -225,22 +282,32 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
           if (allowed.length > 1) problems.push(`${at}: a gun with a sight window of its own carries that optic only`);
           row.window = { at: win.at.map((v) => round(v)), half: win.half.map((v) => round(v)) };
         }
-      } else if ((k.housing === 'tube' || k.housing === 'frame') && k.glass && /\.glb$/.test(w.view?.model ?? '')) {
+      } else if (BUILT.includes(k.housing) && k.glass && /\.glb$/.test(w.view?.model ?? '')) {
         tris ??= await modelTriangles(join(MODELS, w.view.model));
         bounds ??= boundsOf(tris);
         const [min, max] = bounds;
         const hand = entry.mount;
         if (hand && (typeof hand.reason !== 'string' || hand.reason.length < 8 || !Array.isArray(hand.at) || hand.at.length !== 3)) problems.push(`${at}: a hand-set mount needs \`at\` [x, y, z] and its reason`);
-        const mount = hand?.at ? { at: hand.at, scale: hand.scale ?? round(clamp((max[2] - min[2]) / SCALE_LENGTH, SCALE[0], SCALE[1]), 100) } : fitMount(tris, { grip: w.view.hold?.grip ?? [0, 0, min[2] + (max[2] - min[2]) * 0.3], muzzle: w.view.muzzleAt ?? [0, 0, max[2]], glass: k.glass });
-        if (!mount) {
-          problems.push(`${at}: no flat stretch on its top to stand a ${id} on: give it a \`mount\` ({ at, reason }) read off the model, or another optic`);
-          continue;
+        // One mount serves every housing the gun may carry: the first built one's (its default when that is built),
+        // found for that housing; the others are checked standing where it stands.
+        const first = !shared;
+        if (first) {
+          const primary = kinds[[entry.default, ...allowed].find((a) => BUILT.includes(kinds[a]?.housing)) ?? id];
+          shared = hand?.at ? { at: hand.at, scale: hand.scale ?? round(clamp((max[2] - min[2]) / SCALE_LENGTH, SCALE[0], SCALE[1]), 100) } : fitMount(tris, { grip: w.view.hold?.grip ?? [0, 0, min[2] + (max[2] - min[2]) * 0.3], muzzle: w.view.muzzleAt ?? [0, 0, max[2]], glass: primary.glass });
+          if (!shared) {
+            problems.push(`${at}: no flat stretch on its top to stand a ${id} on: give it a \`mount\` ({ at, reason }) read off the model, or another optic`);
+            shared = { failed: true };
+            continue;
+          }
+          if (shared.blocked) problems.push(`${at}: the gun stands in a ${id}'s window wherever it is mounted (best: ${JSON.stringify(shared.at)}): give it a \`mount\` ({ at, reason }) read off the model, or another optic`);
+          row.mount = { at: shared.at.map((v) => round(v)), scale: shared.scale, ...(hand?.at ? { set: true } : {}) };
         }
-        if (mount.blocked) problems.push(`${at}: the gun stands in a ${id}'s window wherever it is mounted (best: ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model, or another optic`);
+        if (shared.failed) continue;
+        const mount = shared;
+        if (!first && !hand?.at && blockedAt(tris, mount, k.glass)) problems.push(`${at}: the gun stands in a ${id}'s window at its mount (${JSON.stringify(mount.at)}, where the first built optic it may carry stands): give it a \`mount\` ({ at, reason }) read off the model, or leave the ${id} out of \`allowed\``);
         const line = mountedLine(w, min, mount, k.glass);
+        if (!hand?.at && blockedBehind(tris, mount, k.glass, line.eye[2], k.housing === MAGNIFIED_BUILT)) problems.push(`${at}: the gun behind a ${id} stands in its window as the eye sees it (mount ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model, or leave the ${id} out of \`allowed\``);
         if (firstHit(tris, line.eye, [line.glass[0], line.glass[1], max[2] + 1]) !== null) problems.push(`${at}: the gun stands in the line from the eye through a ${id}'s glass (mount ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model`);
-        // One mount serves every housing the gun may carry: the default's.
-        if (id === entry.default || !row.mount) row.mount = { at: mount.at.map((v) => round(v)), scale: mount.scale, ...(hand?.at ? { set: true } : {}) };
       }
     }
     out[w.id] = row;
@@ -262,8 +329,9 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
     const parts = [`name: ${q(k.name)}`, `reticle: ${q(k.reticle)}`, `housing: ${q(k.housing)}`];
     if (k.adsFov !== undefined) parts.push(`adsFov: ${k.adsFov}`);
     if (k.mag) parts.push(`mag: ${list(k.mag)}`);
+    if (k.power) parts.push(`power: ${k.power}`);
     if (k.steps) parts.push(`steps: ${list(k.steps)}`);
-    if (k.glass) parts.push(`glass: { rise: ${k.glass.rise}, half: ${list(k.glass.half)}, length: ${k.glass.length} }`);
+    if (k.glass) parts.push(`glass: { rise: ${k.glass.rise}, half: ${list(k.glass.half)}, length: ${k.glass.length}${k.glass.foot ? `, foot: ${k.glass.foot}` : ''} }`);
     if (k.mark) parts.push(`mark: { dot: ${k.mark.dot}${k.mark.ring ? `, ring: ${k.mark.ring}` : ''} }`);
     return `  ${id}: { ${parts.join(', ')} },`;
   });
@@ -289,7 +357,7 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
 export type OpticKindId = ${Object.keys(kinds).map(q).join(' | ')};
 /** What an optic's aim mark is: none (iron sights), a dot or a ring and dot on its glass, a chevron or a fine crosshair with holdover marks. */
 export type OpticReticle = ${RETICLES.map(q).join(' | ')};
-/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame), the model's own scope tube, or the full-screen scope. */
+/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame, a magnifying tube), the model's own scope tube, or the full-screen scope. */
 export type OpticHousing = ${HOUSINGS.map(q).join(' | ')};
 
 export interface OpticKind {
@@ -300,10 +368,12 @@ export interface OpticKind {
   adsFov?: number;
   /** A magnified optic: the least and most magnification over the hip view it covers (each weapon's own is \`WeaponOptics.mag\`). */
   mag?: readonly [number, number];
+  /** A magnified optic built in code (\`magtube\`): its zoom over the hip view, the same on every gun that carries it. */
+  power?: number;
   /** A magnified optic's zoom steps on the wheel: shares of the weapon's aimed field of view, the first 1 (a weapon may give its own). */
   steps?: readonly number[];
-  /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length. */
-  glass?: { rise: number; half: readonly [number, number]; length: number };
+  /** A housing built in code (metres at scale 1): the window's middle over the mount, its half width and height, the housing's length, and its foot's (default: the length). */
+  glass?: { rise: number; half: readonly [number, number]; length: number; foot?: number };
   /** Its mark's sizes: tangents of the angle at the eye. */
   mark?: { dot: number; ring?: number };
 }
@@ -313,9 +383,11 @@ ${kindLines.join('\n')}
 };
 
 /**
- * A weapon's optics: the one it carries and those it may carry (the loadout's choice comes later). \`mag\`: its own
+ * A weapon's optics: the one it carries by default and those a player may pick for it in their loadout (Profile →
+ * Favourite loadout → Optics; docs/GUNPLAY_SPEC.md §15, "Optic choice"). \`mag\`: its own
  * magnification over the hip view (from its weapon file's \`view.zoomFov\` or \`view.optic\`). \`mount\`: where a
- * housing built in code stands (model space as \`view.muzzleAt\`: the middle of its foot on the gun's top) and its size.
+ * housing built in code stands (model space as \`view.muzzleAt\`: the middle of its foot on the gun's top) and its size:
+ * every built housing the gun may carry stands there.
  */
 export interface WeaponOptics {
   default: OpticKindId;

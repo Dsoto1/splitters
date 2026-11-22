@@ -171,6 +171,11 @@ export class InputState {
    * trigger, a press and release of it between two ticks still fires, and on touch the Fire button pulls both.
    */
   pairTrigger = false;
+  /**
+   * Set by the session: the weapon in hand has a scope or optic, so Shift (a controller's sprint) holds your breath
+   * through it rather than sprinting, and doesn't let a toggled aim go (sprintPressed).
+   */
+  breathScope = false;
   /** The aim button went down since the last tick sampled (pairTrigger). */
   private altTap = false;
   /** Middle mouse (or V): the held weapon's second trigger. */
@@ -363,6 +368,7 @@ export class InputState {
       this.crouchOn = false;
     }
     if ((e.code === 'Space' || e.code === 'ShiftLeft') && !e.repeat) this.crouchOn = this.proneOn = false;
+    if (e.code === 'ShiftLeft' && !e.repeat) this.sprintPressed();
     // Hold G to aim a throw (the arc shows), let go to throw.
     if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
     // B opens the quick-message menu; N dances.
@@ -546,6 +552,16 @@ export class InputState {
   /** Whether you aimed at the last read (touch's Aim button lights with it). */
   aimShown = false;
 
+  /**
+   * Sprint pressed (Shift, a controller's L3, touch's Sprint): a toggled aim lets go so you break into a sprint, as in
+   * most shooters (held aim still wins while the button is down). Not with a scope or optic in hand, where Shift holds
+   * your breath, nor for a melee weapon's heavy swing (always held). A reload keeps a toggled aim: the sights come back
+   * up when it ends.
+   */
+  private sprintPressed(): void {
+    if (!this.breathScope && !this.altTrigger) this.aimLatch.cancel();
+  }
+
   /** Let a toggled aim go: a weapon change, death, a vehicle (the session calls it). */
   cancelAim(): void {
     this.aimLatch.cancel();
@@ -630,7 +646,10 @@ export class InputState {
       p.prev = down;
       return;
     }
-    if (pressed(PAD.l3)) p.sprint = !p.sprint;
+    if (pressed(PAD.l3)) {
+      p.sprint = !p.sprint;
+      if (p.sprint) this.sprintPressed();
+    }
     if (!lx && !ly) p.sprint = false;
     if (pressed(PAD.a)) {
       this.jumpQueued = true;

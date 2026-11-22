@@ -13,7 +13,7 @@ import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector4 } from '@babylonjs/core/Maths/math.vector';
 import type { WeaponDefinition } from '@tiletrigger/shared';
-import { MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, RING_TICK, glassCentre, glassHalf, hasGlass, opticOf, ringWidth, type CarriedOptic } from './optics.ts';
+import { MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, RING_TICK, builtHousing, glassCentre, glassHalf, hasGlass, opticOf, ringWidth, type CarriedOptic } from './optics.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
 
 /**
@@ -168,6 +168,53 @@ function tubeParts(scene: Scene, o: CarriedOptic): Mesh[] {
   return parts;
 }
 
+/**
+ * The 2x optic's tube (the `magtube` housing, scale 1, its foot's middle at the origin, +Z the barrel): a foot and two
+ * rings on it, a long tube whose rear end is the eyepiece (its clear radius the glass's: the view looks through it,
+ * opticView.ts) with a wider eyepiece bell, a larger objective bell at the front, and a turret on top. The view's
+ * depth-only disc at the eyepiece keeps the tube's inside out of the picture.
+ */
+function scopeParts(scene: Scene, o: CarriedOptic): Mesh[] {
+  const g = o.kind.glass!;
+  const r = g.half[1];
+  const wall = r + 0.0028;
+  const foot = g.foot ?? g.length;
+  const parts: Mesh[] = [];
+  parts.push(box(scene, 0.026, 0.006, foot * 0.92, 0, 0, 0));
+  for (const z of [-foot * 0.32, foot * 0.32]) {
+    parts.push(box(scene, 0.014, g.rise - wall - 0.004, 0.012, 0, 0.005, z));
+    const ring = CreateTorus('opticPart', { diameter: wall * 2 + 0.003, thickness: 0.004, tessellation: 24 }, scene);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(0, g.rise, z);
+    parts.push(ring);
+  }
+  const tube = CreateCylinder('opticPart', { height: g.length * 0.62, diameter: wall * 2, tessellation: 28, cap: Mesh.NO_CAP, sideOrientation: Mesh.DOUBLESIDE }, scene);
+  tube.rotation.x = Math.PI / 2;
+  tube.position.set(0, g.rise, 0);
+  parts.push(tube);
+  // The eyepiece bell (rear) and the objective bell (front): short cones out from the tube.
+  const bell = (z: number, len: number, near: number, far: number) => {
+    const c = CreateCylinder('opticPart', { height: len, diameterTop: far * 2, diameterBottom: near * 2, tessellation: 28, cap: Mesh.NO_CAP, sideOrientation: Mesh.DOUBLESIDE }, scene);
+    c.rotation.x = Math.PI / 2;
+    c.position.set(0, g.rise, z);
+    return c;
+  };
+  const rear = g.length * 0.19;
+  parts.push(bell(-g.length * 0.31 - rear / 2, rear, wall * 1.12, wall));
+  const front = g.length * 0.19;
+  parts.push(bell(g.length * 0.31 + front / 2, front, wall, wall * 1.3));
+  for (const [z, d] of [[-g.length / 2, wall * 1.12], [g.length / 2, wall * 1.3]] as const) {
+    const rim = CreateTorus('opticPart', { diameter: d * 2, thickness: 0.003, tessellation: 28 }, scene);
+    rim.rotation.x = Math.PI / 2;
+    rim.position.set(0, g.rise, z);
+    parts.push(rim);
+  }
+  const top = CreateCylinder('opticPart', { height: 0.01, diameter: 0.016, tessellation: 14 }, scene);
+  top.position.set(0, g.rise + wall + 0.004, 0.002);
+  parts.push(top);
+  return parts;
+}
+
 /** A holographic sight's frame: a long low body, and at its front a hooded window: two posts and a top bar. */
 function frameParts(scene: Scene, o: CarriedOptic): Mesh[] {
   const g = o.kind.glass!;
@@ -190,11 +237,11 @@ function frameParts(scene: Scene, o: CarriedOptic): Mesh[] {
 
 /**
  * Build `def`'s optic on its model `gun` (a node in the model's own space), or nothing when it carries none built in
- * code. `own`: your own first-person gun, which gets the glass and its mark and is drawn in the gun's rendering
+ * code (`optic`: the one it carries, by default its own; a player's pick is optics.ts opticFor). `own`: your own first-person gun, which gets the glass and its mark and is drawn in the gun's rendering
  * group; everyone else's copy is the housing alone. Returns the housing's root (disposed with the gun).
  */
 export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinition, own: boolean, optic: CarriedOptic | null = opticOf(def)): TransformNode | null {
-  if (!hasGlass(optic)) return null;
+  if (!builtHousing(optic)) return null;
   if (!own && optic.window) return null;
   const root = new TransformNode(`optic_${def.id}`, scene);
   root.parent = gun;
@@ -203,7 +250,7 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
   if (mount) {
     root.position.set(mount.at[0], mount.at[1], mount.at[2]);
     root.scaling.setAll(mount.scale);
-    const parts = optic.kind.housing === 'tube' ? tubeParts(scene, optic) : frameParts(scene, optic);
+    const parts = optic.kind.housing === 'tube' ? tubeParts(scene, optic) : optic.kind.housing === 'magtube' ? scopeParts(scene, optic) : frameParts(scene, optic);
     const body = Mesh.MergeMeshes(parts, true, true)!;
     body.name = 'opticBody';
     body.material = bodyMaterial(scene);
@@ -211,7 +258,8 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
     body.isPickable = false;
     if (own) body.renderingGroupId = 1;
   }
-  if (own) {
+  // The 2x optic has no glass of its own: its eyepiece is looked through (the view's mask) and its reticle is the HUD's.
+  if (own && hasGlass(optic)) {
     const [hw, hh] = glassHalf(optic);
     const c = glassCentre(optic);
     const round = !!mount && optic.kind.housing === 'tube';

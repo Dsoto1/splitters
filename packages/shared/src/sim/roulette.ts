@@ -18,6 +18,7 @@ import { RANDOM_LOOK_POOL, lookMix } from './randomLooks.ts';
 import type { MatchRules } from './rules.ts';
 import { matchStats } from './characterStats.ts';
 import { inSetOr, type WeaponSetDef } from './weaponSets.ts';
+import { isWeaponHidden } from './weapons.ts';
 
 // ------------------------------------------------------------------ data
 
@@ -70,9 +71,10 @@ export function signatureOf(look: string): string {
 /** The weapon a life spawns holding: the signature (a jackpot's better one), as the weapon set allows (else its main gun); null where weapons are fixed. */
 export function signatureWeapon(look: string, jackpot: boolean, set: WeaponSetDef | null): string | null {
   if (!set) return null;
-  const sig = signatureOf(look);
+  // A weapon the owner hid (the Weapon Manager) is nobody's signature: the plain one, else the rifle.
+  const sig = isWeaponHidden(signatureOf(look)) ? 'core.rifle' : signatureOf(look);
   const better = jackpot ? JACKPOT_WEAPONS[sig] : undefined;
-  const id = better ?? sig;
+  const id = better && !isWeaponHidden(better) ? better : sig;
   return inSetOr(set, id);
 }
 

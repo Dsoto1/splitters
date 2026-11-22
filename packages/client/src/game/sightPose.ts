@@ -1,7 +1,7 @@
 import type { WeaponDefinition } from '@tiletrigger/shared';
 import { SIGHT_FITS, type SightFit } from '@tiletrigger/shared/sightFit';
 import { DEFAULT_RELIEF } from './opticView.ts';
-import { HIP_FOV, glassCentre, hasGlass, ironsPicture, opticOf, pictureScale, type CarriedOptic } from './optics.ts';
+import { HIP_FOV, eyepieceOf, glassCentre, hasGlass, ironsPicture, opticOf, pictureScale, type CarriedOptic } from './optics.ts';
 
 /**
  * Where the first-person gun sits aiming down the sights (docs/GUNPLAY_SPEC.md §15, "Sights that line up"; owner,
@@ -13,7 +13,7 @@ import { HIP_FOV, glassCentre, hasGlass, ironsPicture, opticOf, pictureScale, ty
  * aim, §5), seen through the aperture or over the notch as the fit's `rear` says. Only the placement at full aim
  * changes: the blend, the field of view, the bob, the kick and the sway are the view's own, as before.
  *
- * A gun with an optic in its model (`view.optic`) brings its eyepiece to the eye (opticView.ts); a gun that carries a
+ * A gun with an optic in its model (`view.optic`), or a 2x optic built on its top, brings its eyepiece to the eye (opticView.ts); a gun that carries a
  * red dot or a holographic sight (optics.ts, a housing built in code on its top) is moved so the eye looks along the
  * barrel through the middle of its glass; and a gun with neither sights nor an optic keeps the placement every gun
  * had before: centred, the top of its bounds just under the eye line, pushed forward until its stock is out of view.
@@ -89,7 +89,8 @@ export function glassPlacement(def: WeaponDefinition, optic: CarriedOptic, bound
  * and the optics (the sight sheet's "before" picture). `carried`: the optic it carries (default: its own).
  */
 export function aimPlacement(def: WeaponDefinition, bounds: GunBounds, fitted = true, carried: CarriedOptic | null = opticOf(def)): GunPlacement {
-  const optic = def.view.optic;
+  // (A 2x optic built on the gun's top is looked through as the model's own tube is: optics.ts eyepieceOf.)
+  const optic = fitted || def.view.optic ? eyepieceOf(def, carried) : undefined;
   if (optic) return { x: -optic.eye[0], y: -optic.eye[1], z: (optic.relief ?? DEFAULT_RELIEF) - optic.eye[2], pitch: 0, yaw: 0 };
   if (fitted && hasGlass(carried)) return glassPlacement(def, carried, bounds);
   const fit = fitted ? SIGHT_FITS[def.id] : undefined;
@@ -102,7 +103,7 @@ export function aimPlacement(def: WeaponDefinition, bounds: GunBounds, fitted = 
  * model's optic (its own frame, opticView.ts) and a gun with neither sights nor an optic. `at`: its placement at full aim.
  */
 export function sightPicture(def: WeaponDefinition, at: GunPlacement, carried: CarriedOptic | null = opticOf(def)): number {
-  if (def.view.optic || def.view.zoomFov) return 1;
+  if (eyepieceOf(def, carried) || def.view.zoomFov) return 1;
   if (hasGlass(carried)) return pictureScale(carried, glassCentre(carried)[2] + at.z, HIP_FOV * ADS_FOV);
   const fit = SIGHT_FITS[def.id];
   return fit && carried?.kind.housing === 'none' ? ironsPicture(placed(fit.rear, at)[2]) : 1;

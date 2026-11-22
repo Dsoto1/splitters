@@ -3,7 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { emptyCareer, regionForTimeZone, usernameProblem, type MatchSummary } from '@tiletrigger/shared';
-import { ProfileStore } from '../src/profiles.ts';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { ProfileStore, profileHandler } from '../src/profiles.ts';
 import { TicketSigner, verifyTicket } from '../src/tickets.ts';
 
 const cleanup: (() => void)[] = [];
@@ -20,7 +22,7 @@ describe('profiles', () => {
   it('gives each account a unique username (whatever the case) and a region, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer() });
+    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {} });
     expect(store.update('a', { username: 'Toshi_92', region: 'na-east' })).toMatchObject({ username: 'Toshi_92', region: 'na-east' });
     // Taken, whatever the case; but the owner may change its own case.
     expect(store.problem('b', 'toshi_92')).toBe('that name is taken');
@@ -101,5 +103,96 @@ describe('profiles', () => {
     expect(() => store.importCareer('a', { ...guest, kills: 3 * 501 })).toThrow(/range/);
     expect(store.importCareer('a', guest)).toMatchObject({ matches: 3, kills: 20 });
     expect(() => store.importCareer('a', guest)).toThrow(/already/);
+  });
+
+  it('keeps an emblem and an earned title, and shows a public card by username', () => {
+    const dir = temp();
+    const store = new ProfileStore(dir);
+    store.update('a', { username: 'Toshi_92', favClass: 'medic' });
+    expect(store.update('a', { emblem: 'bolt.3' }).emblem).toBe('bolt.3');
+    expect(() => store.update('a', { emblem: 'unicorn.1' })).toThrow(/emblem/);
+    expect(() => store.update('a', { emblem: 'bolt.99' })).toThrow(/emblem/);
+    // A title only once the career has earned it.
+    expect(() => store.update('a', { title: 'recruit' })).toThrow(/not earned/);
+    expect(() => store.update('a', { title: 'emperor' })).toThrow(/unknown title/);
+    store.addMatch('a', match());
+    expect(store.update('a', { title: 'recruit' }).title).toBe('recruit');
+    expect(() => store.update('a', { title: 'veteran' })).toThrow(/not earned/);
+    const card = store.card('toshi_92');
+    expect(card).toMatchObject({ username: 'Toshi_92', emblem: 'bolt.3', title: 'recruit', favClass: 'medic', career: { matches: 1, kills: 12 } });
+    // Public fields only: no account id, no region.
+    expect(Object.keys(card!).sort()).toEqual(['career', 'emblem', 'favClass', 'title', 'username', 'vouched']);
+    expect(store.card('nobody')).toBeNull();
+    expect(store.update('a', { emblem: null }).emblem).toBeNull();
+    store.flush();
+    expect(new ProfileStore(dir).get('a')).toMatchObject({ title: 'recruit', emblem: null });
+  });
+
+  it('serves a public card to anyone, without sign-in', async () => {
+    const store = new ProfileStore(temp());
+    store.update('a', { username: 'Toshi_92', emblem: 'star.2' });
+    const handle = profileHandler(store, { verify: null, trustProxy: false });
+    const server = createServer((req, res) => void handle(req, res, () => ((res.statusCode = 404), res.end())));
+    await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
+    cleanup.push(() => server.close());
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api/v1/profile`;
+    const ok = await fetch(`${base}/card?u=TOSHI_92`);
+    expect(ok.status).toBe(200);
+    expect(await ok.json()).toMatchObject({ username: 'Toshi_92', emblem: 'star.2' });
+    expect((await fetch(`${base}/card?u=nobody`)).status).toBe(404);
+    // The rest still needs sign-in (here: none set up).
+    expect((await fetch(base)).status).toBe(404);
+  });
+
+  it("Phase 3: a match's history line keeps its time when it's believable, else the hub's", () => {
+    const store = new ProfileStore(temp());
+    const now = Math.floor(Date.now() / 1000);
+    store.addMatch('a', match({ at: now - 3600, map: 'Sky Islands', weaponRounds: { 'core.rifle': [100, 30] } }));
+    store.addMatch('a', match({ at: now + 86_400 }));
+    const c = store.addMatch('a', match({ at: 5 }));
+    expect(c.history.map((h) => h.at - now)).toEqual([expect.closeTo(0, -1), expect.closeTo(0, -1), -3600]);
+    expect(c.history[2]!.map).toBe('Sky Islands');
+    expect(c.modes['core.tdm']?.matches ?? Object.values(c.modes)[0]!.matches).toBe(3);
+    expect(c.weaponRounds['core.rifle']).toEqual([100, 30]);
+  });
+
+  it('Phase 4: counts a host\'s standings only for accounts it gave a ticket for that game, never the host, never faster than play', () => {
+    const store = new ProfileStore(temp());
+    let t = 1_000_000_000;
+    store.now = () => t;
+    store.ticketIssued('ABCD', 'p1');
+    store.ticketIssued('ABCD', 'host');
+    t += 10 * 60_000;
+    const line = (sub: string, o: object = {}) => ({ sub, result: 'win', kills: 7, deaths: 3, seconds: 300, ...o });
+    expect(store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1'), line('host'), line('p2'), line('p1')] })).toEqual({ counted: 1 });
+    expect(store.get('p1').vouched).toEqual({ matches: 1, wins: 1, kills: 7, deaths: 3, seconds: 300 });
+    expect(store.get('host').vouched.matches).toBe(0);
+    expect(store.get('p2').vouched.matches).toBe(0);
+    // Another match at once: no time has passed for it.
+    expect(store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1')] }).counted).toBe(0);
+    t += 6 * 60_000;
+    expect(store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1', { result: 'loss' })] }).counted).toBe(1);
+    // Another game's code: no ticket for it.
+    expect(store.vouch('host', { code: 'WXYZ', mode: 'core.tdm', lines: [line('p1')] }).counted).toBe(0);
+    // Hours later the hub has forgotten the ticket.
+    t += 7 * 3600_000;
+    expect(store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1')] }).counted).toBe(0);
+    expect(() => store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1', { kills: 501 })] })).toThrow(/range/);
+    expect(() => store.vouch('host', { code: 'ABCD', mode: 'core.tdm', lines: [line('p1', { seconds: 5 })] })).toThrow(/short/);
+    expect(store.get('p1').vouched).toMatchObject({ matches: 2, wins: 1 });
+    store.update('p1', { username: 'Toshi_92' });
+    expect(store.card('toshi_92')?.vouched.matches).toBe(2);
+  });
+
+  it('keeps optic picks with the account (owner, 2026-11-22, "3a")', () => {
+    const store = new ProfileStore(temp());
+    expect(store.get('a').optics).toEqual({});
+    expect(store.update('a', { optics: { 'core.rifle': 'holo' } }).optics).toEqual({ 'core.rifle': 'holo' });
+    expect(() => store.update('a', { optics: { 'core.rifle': '<img>' } })).toThrow(/optic/);
+    expect(() => store.update('a', { optics: ['holo'] })).toThrow(/optic/);
+    expect(store.update('a', { optics: {} }).optics).toEqual({});
+    // Not on the public card.
+    store.update('a', { username: 'Toshi_92', optics: { 'core.rifle': 'holo' } });
+    expect(store.card('toshi_92')).not.toHaveProperty('optics');
   });
 });
