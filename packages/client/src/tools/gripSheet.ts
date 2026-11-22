@@ -25,6 +25,7 @@ import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { FirstPersonBodyRig, fitFirstPersonBody } from '../game/firstPersonBody.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
+import { firstPersonHold, isLongMelee, meleePlacement } from '../game/meleeView.ts';
 import { auditGrip } from './gripAudit.ts';
 import { setPalmRule, skinHandFrame } from '../game/handProbe.ts';
 import type { CharacterInstance, HandData } from '../content/characters.ts';
@@ -121,9 +122,37 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     while (frames < until) await new Promise((r) => setTimeout(r, 10));
   };
 
+  /**
+   * First person (arms or full body): the posed viewmodel's root and weapon, and its model's front end (a long melee
+   * weapon is placed by its grip: game/meleeView.ts, as the game places it; `__grips.fpSwing` / `fpDraw` move it).
+   */
+  let fpView: { root: TransformNode; weapon: string; tipZ: number } | null = null;
+  let fpSwingAt: number | null = null;
+  let fpRaise = 0;
+  const placeView = (root: TransformNode, weapon: string, tipZ: number) => {
+    const def = getWeapon(weapon);
+    fpView = { root, weapon, tipZ };
+    if (!isLongMelee(def)) {
+      const [vx, vy, vz] = def.view.viewOffset;
+      root.position.set(vx, vy, vz);
+      return def.view.hold;
+    }
+    const p = meleePlacement(def, { tipZ, swing: fpSwingAt, raise: fpRaise });
+    root.position.set(p.x, p.y, p.z);
+    root.rotation.set(p.pitch, p.yaw, p.roll);
+    return firstPersonHold(def, tipZ);
+  };
+
+  /** Re-place the first-person view after a swing or draw change (`fpSwing`, `fpDraw`). */
+  const replace = async () => {
+    if (fpView) placeView(fpView.root, fpView.weapon, fpView.tipZ);
+    await settle(4);
+  };
+
   /** Show `look` holding `weapon` from `view`; resolves once the pose has settled and is on screen. */
   async function pose(look: string, weapon: string, view: GripView): Promise<void> {
     held = null;
+    fpView = null;
     heldWeapon = weapon;
     marker?.dot.dispose();
     marker?.line.dispose();
@@ -147,13 +176,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const viewRoot = new TransformNode('grip_view', scene);
       viewRoot.parent = eye;
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
+      const hold = placeView(viewRoot, weapon, node.getHierarchyBoundingVectors(true).max.z);
       node.parent = viewRoot;
       held = node;
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      const [vx, vy, vz] = def.view.viewOffset;
-      viewRoot.position.set(vx, vy, vz);
       const anim = new CharacterAnimator(scene, ch);
-      anim.gripExternal(node, def.view.hold);
+      anim.gripExternal(node, hold);
       const r = new FirstPersonBodyRig(scene, ch, anim, holder);
       rig = r;
       current = {
@@ -210,11 +238,10 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const ch = await characters.create({ look: armsLookFor(look), armsOnly: true }, 'grip_arms');
       fitFirstPersonArms(ch, root);
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
+      const hold = placeView(viewRoot, weapon, node.getHierarchyBoundingVectors(true).max.z);
       node.parent = viewRoot;
-      const [vx, vy, vz] = def.view.viewOffset;
-      viewRoot.position.set(vx, vy, vz);
       const anim = new CharacterAnimator(scene, ch);
-      anim.gripExternal(node, def.view.hold);
+      anim.gripExternal(node, hold);
       current = {
         anim,
         dispose: () => {
@@ -385,6 +412,36 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       marker = { dot, line };
       await settle(2);
       return [at.x, at.y, at.z];
+    },
+    /**
+     * First person, a long melee weapon (game/meleeView.ts): hold it `u` (0..1) of the way through its swing (null:
+     * at rest), or `raise` of its draw still to go (1: just switched to), as the game places it; redrawn.
+     */
+    fpSwing: async (u: number | null) => {
+      fpSwingAt = u;
+      await replace();
+    },
+    fpDraw: async (raise: number) => {
+      fpRaise = raise;
+      await replace();
+    },
+    /**
+     * First person: where each hand joint is on screen (normalised device coordinates: -1..1 across and up, inside the
+     * view when both are within) and how far ahead of the eye (m); the e2e checks that both hands show.
+     */
+    handsOnScreen: () => {
+      const arms = (current?.anim as unknown as { arms?: { r: { hand: TransformNode }; l: { hand: TransformNode } } } | undefined)?.arms;
+      const cam = scene.activeCamera;
+      if (!arms || !cam || cam !== eye) return null;
+      const m = cam.getViewMatrix().multiply(cam.getProjectionMatrix());
+      const v = cam.getViewMatrix();
+      const at = (n: TransformNode) => {
+        n.computeWorldMatrix(true);
+        const p = n.getAbsolutePosition();
+        const s = Vector3.TransformCoordinates(p, m);
+        return { x: s.x, y: s.y, ahead: Vector3.TransformCoordinates(p, v).z };
+      };
+      return { r: at(arms.r.hand), l: at(arms.l.hand) };
     },
     /** The posed character's measured hands (length, width, thickness in model m; null: the rig's own). */
     hands: () => {
