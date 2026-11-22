@@ -40,6 +40,27 @@ const tuple = (p: readonly number[]): Vec3 => ({ x: p[0]!, y: p[1]!, z: p[2]! })
 /** How often an arc sentry's locked arc is heard (ms): its hits come ten a second. */
 const ARC_SOUND_MS = 300;
 
+/** A round passing within this of your head (metres) whizzes by. */
+const FLYBY_NEAR = 1.6;
+/** ...and only once it is this far from the gun (the report covers a round that close). */
+const FLYBY_FROM_GUN = 4;
+
+/**
+ * Where a round from `from` to `to` passes closest to `ear`, when that is near enough to whizz by (FLYBY_NEAR) and far
+ * enough from the gun (FLYBY_FROM_GUN) and short of where it struck; else null.
+ */
+export function flybyPoint(from: Vec3, to: Vec3, ear: Vec3): Vec3 | null {
+  const dx = to.x - from.x, dy = to.y - from.y, dz = to.z - from.z;
+  const len2 = dx * dx + dy * dy + dz * dz;
+  if (len2 < 1e-6) return null;
+  const t = ((ear.x - from.x) * dx + (ear.y - from.y) * dy + (ear.z - from.z) * dz) / len2;
+  if (t <= 0 || t >= 1) return null;
+  const p = { x: from.x + dx * t, y: from.y + dy * t, z: from.z + dz * t };
+  if (Math.hypot(p.x - ear.x, p.y - ear.y, p.z - ear.z) > FLYBY_NEAR) return null;
+  if (Math.sqrt(len2) * t < FLYBY_FROM_GUN) return null;
+  return p;
+}
+
 export class SessionAudio {
   private readonly pickupAt = new Map<string, Vec3>();
   private entities: MapDocument['entities'] = [];
@@ -185,6 +206,11 @@ export class SessionAudio {
     if (own) this.audio.play(own.sound as SoundId, { rate: own.rate ?? 1, gain: 1.15, delay });
     // (`pan`: a pair's guns sound a little to their own side, pairView.ts gunPan; one gun's stays in the middle.)
     else this.audio.play(alt && def.alt?.kind === 'projectile' && def.alt.ammo === 'own' ? 'fire.launcher' : fireSound(def.id), pan ? { delay, pan } : { delay });
+  }
+
+  /** A moment of play read off movement (gameplayFxWatch.ts): a jump pad throwing someone sounds its launch. */
+  gameplayMoment(key: string, at: Vec3): void {
+    if (key === 'pad') this.audio.play('pad.launch', { at });
   }
 
   /** Your own punch or kick: a swish as you throw it. */
@@ -387,6 +413,18 @@ export class SessionAudio {
         const own = ev.alt ? getWeapon(ev.w).view.altShot : undefined;
         if (!mine && own) this.audio.play(own.sound as SoundId, { at: tuple(ev.from), rate: own.rate ?? 1, gain: 1.15 });
         else if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
+        // A round that passes close by your head (not yours, not one that hit you) whizzes past: one per shot.
+        const ear = mine ? undefined : poseOf(me);
+        if (ear) {
+          for (let i = 0; i < ev.to.length; i++) {
+            if (ev.hit[i] === me) continue;
+            const by = flybyPoint(tuple(ev.from), tuple(ev.to[i]!), ear);
+            if (by) {
+              this.audio.play('bullet.flyby', { at: by });
+              break;
+            }
+          }
+        }
         let impacts = 0;
         // Bodies: one meaty hit per victim (a shotgun blast is one big hit, not nine little ones), heavier for big damage.
         const def = getWeapon(ev.w);

@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Recorded sound effects.** Pistols, rifles, SMGs, shotguns, snipers and heavy guns, reloads, melee swings, explosions, bullet impacts, breaking glass, walls and crates, doors, footsteps, falls, rain and wind now use studio recordings (the Sonniss GDC bundles); bullets whizz past your head and jump pads sound their launch, and the Weapon Manager offers two other recordings for each gun.
 - **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).
 - **St. John's wall crest no longer shimmers.** Its gold border lay on the board's face and flickered as you moved; every layer of the crest now stands clear of the one under it.
 - **Emblems and titles.** Pick an emblem (16 shapes, 12 colours) and a title your career has earned on Profile; your emblem shows by your name on the scoreboard, in the kill feed and on your card.
