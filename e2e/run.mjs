@@ -12492,7 +12492,15 @@ async function lootRingContrast(page, step, ids) {
     }
     return out;
   }, ids);
-  return { rings };
+  // (Where the view was and what drew it, so a failure says whether the rings or the camera moved.)
+  const view = await page.evaluate(() => {
+    const v = window.__cs.view;
+    const e = v.cameraPosition();
+    const st = window.__cs.local?.state;
+    const c = v.scene.getEngine().getRenderingCanvas();
+    return { eye: [+e.x.toFixed(2), +e.y.toFixed(2), +e.z.toFixed(2)], canvas: [c.width, c.height], stance: st?.stance ?? 0, lean: st?.lean ?? 0, slide: st?.slide ?? 0 };
+  });
+  return { rings, view };
 }
 
 /** A scene (the night scene, or `scene`) made and the moments of it `names` lists played. */
@@ -14002,7 +14010,11 @@ async function slidepeekFlow(browser) {
 }
 
 async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, LEAN_R }) {
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  // (Pictures: at twice the pixels and on High graphics.)
+  const pics = !!process.env.SLIDEPEEK_PICS;
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
+  if (pics) await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'high'));
+  const page = await context.newPage();
   livePages.add(page);
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`${CLIENT}/?offline=void_yard&test=1&god=1&bots=2&name=Tester`);
@@ -14070,6 +14082,20 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
     await pic(page, `0${name === 'right' ? 4 : 5}-third-person-own-lean-${name}`);
   }
   await drive(0, 0);
+  // Third person: your own body slides (seen from behind).
+  if (pics) {
+    await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
+    await place(me, { x: 0, y: 0, z: -14 }, 0);
+    await look(0, -0.05);
+    await drive(1, SPRINT);
+    await meWait(page, (m, me) => me.move.sprint, null, 2);
+    await sleep(300);
+    await drive(1, SPRINT | CROUCH);
+    await page.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.slideTip ?? 0) < -0.3, me, { timeout: T(8000), polling: 'raf' }).catch(() => {});
+    await pic(page, '05b-third-person-own-slide');
+    await drive(0, 0);
+    await meWait(page, (m, me) => !me.move.slide, null, 2);
+  }
   await page.keyboard.press('KeyH');
   await sim(page, (m, me) => void (me.move = { ...me.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 }));
   // A bot (another body, drawn from the snapshots) slides and leans: from the side and from the front.
