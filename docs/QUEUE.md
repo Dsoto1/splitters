@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/small-1122` · 2414d1ba · 44992120961 (the owner's small batch of 11-22: map cap 3 MiB, switch team, moving jump pads, green level grid, Terrain Resize, Gas Mask Engineer retired)
-- `wip/chars-1122` · 43883739 · 44997522223 (the owner's 29 new characters of 2026-11-21/22, experimental; full suite, attempt 1)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -113,6 +111,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
 ## Features
+- M · A · **First-person pose for long melee weapons** (owner, 2026-11-22: "Queue a pose pass"): the Katana, Scimitar, Baseball Bat and Battle Axe show only the blade in first person, the hands below the frame; pose them so the hands show. Pictures first and last.
 - S · B · **Map file cap 2 MiB → 3 MiB** (owner, 2026-11-18, "Raise to 3 MB", after the 8,192 entity cap): MapMaker's indented file is about 290-330 bytes an entity, so a hand-placed map passed 2 MiB near 5,600 entities. Raise the raw JSON cap everywhere a map arrives (hub, Host Service, browser host, joiner, publishing; MULTIPLAYER_REVIEW.md budgets table, MAP_BUDGETS.md "Entity cap"), update the test that pins it, and measure a 3 MiB map's join time. After `wip/entity-cap` lands. Also left over from it: `content/setpieces/academy.json` blurbs still say "at most 4,096". **Built 2026-11-22 on `wip/small-1122`, green, Ready to land.**
 - S–M · A · **Entity cap 4,096 → 8,192 a map** (owner, 2026-11-18, "Raise to 8,192"; for St. John's steps 7-10 and the island direction): the schema's played-entity cap (`schema.ts`, `SET_PIECE_PLAYED_MAX`), validate-map, MapMaker's counter, hub / Host Service / browser host / joiner checks, docs (MAP_BUDGETS.md, SET_PIECES_PLAN.md, MULTIPLAYER_REVIEW.md); map format bump (next free after painting-5's v47, so v48 unless taken); keep the 2 MiB JSON cap; measure a near-cap map's load, join and frame time (perf tools) on Medium. Prop, block and light budgets unchanged. Lane A, next free helper.
 - S–M · B · **Process tooling** (owner, 2026-11-18, "a"; next free lane B helper, before UI 5 / environment 5; `wip/process-tools`): (1) HANDOFF slimmed: history older than a few days moves to `docs/history/<YYYY-MM>.md`, HANDOFF keeps current claims, recent landings and rules; (2) `train.mjs --ready` lists branches with a green check run not yet on main, and a train takes those (QUEUE's Ready to land becomes generated or goes); (3) trains resolve HANDOFF/QUEUE conflicts by keeping main's copy, and stop only on code conflicts; (4) e2e runs default to 127.0.0.1 and free ports of their own; a `tools/dev/cleanup.mjs` that removes finished worktrees, old builds and caches; (6) a daily flake list from CI's FLAKY marks for lane A's fix batch. Also (5) the lead sends the owner one numbered question digest a day (urgent ones at once), and (7)/(8) CLAUDE.md: one-line changelog entries, pictures checked before sending.
@@ -231,6 +230,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** the small batch (`wip/small-1122`, green 2414d1ba): map files to 3 MiB, switch team, moving jump pads, MapMaker working-level grid, Terrain → Resize, the Gas Mask Engineer retired. Train check/train-20261122-091128 (807d896), landed by the splitters lead.
+- **2026-11-22** the owner's 29 new characters of 11-21/22 (`wip/chars-1122`, green 43883739), all Experimental; nine pistol support grips listed in content/grip-fit.json for hand tuning. Same train.
 - **2026-11-22** the weapons intake 11-18, both batches (`wip/weapons-1118b`, green 84274ac2, run 44984729319): 13 new guns, four remade models, Katana, Scimitar, Baseball Bat, Space Shield, Heart Taser, gas grenade model, the Spear's poke and throw, crossbows and flintlocks in Medieval. Landed alone by the splitters lead.
 - 2026-11-22 · F · St. John's step 7c, the DeKoven–Welles corner corrected (`check/stjohns-7c` at 8313cd7ca, run 44978559995; landed alone by the lead).
 - 2026-11-22 · F · St. John's step 7d kit, the mess hall's pieces built ahead, not yet placed (`check/stjohns-7d-kit` at 0f46b7484, run 44973046188; landed alone by the lead).
