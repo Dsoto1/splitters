@@ -129,7 +129,7 @@ describe('hitbox audit: shapes match each model (posed as the game draws it stan
   // A look whose model carries a lot outside any fair hit shape, held to its own cover (measured, with why). Inspector
   // Bigotes (2026-11-11): 60% inside, the rest of it a sombrero some 0.9 m across and its coat's gear; a head sphere
   // wide enough for the brim would be three times anyone else's. Its shapes' top, bottom and head centre pass as measured.
-  // Gym Bro Axolotl (2026-11-22, experimental): 83% inside, the rest its six feathery gills fanned out round the head
+  // Axel Gainz, the gym bro axolotl (2026-11-22, experimental): 83% inside, the rest its six feathery gills fanned out round the head
   // (wider than the shoulders); a head sphere wide enough for them would cover the air round it.
   const OWN_COVER = { 'core.inspector': 0.55, 'core.axolotl': 0.8 };
   it('every look and creature', { timeout: 240_000 }, async () => {

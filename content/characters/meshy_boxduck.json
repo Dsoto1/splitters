@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 174,
-  "name": "Box Duck",
+  "name": "Juice",
   "look": "core.boxduck",
   "group": "animals",
   "tier": "experimental",
@@ -11,7 +11,7 @@
   "nameTheme": "critter",
   "bio": "Nobody knows what is inside the box. Nobody asks.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-21/22 (\"gere com as imagens abaixo por favor\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-06: Drive models are Meshy Community CC0 unless the owner says they made them).",
+  "notes": "Drive intake of 2026-11-21/22 (\"gere com as imagens abaixo por favor\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Named Juice by the owner (2026-11-22, \"4 juice\"; \"Box Duck\" until then). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-22: \"I did not make Juice, it was community\"; no post link on record, so no CC BY 4.0 notice to credit; if its post says CC BY 4.0, credit it).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",

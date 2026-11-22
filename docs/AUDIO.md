@@ -1,12 +1,13 @@
 # Audio
 
-**Status:** first audio pass (October 2026). Every shipped sound is either **CC0** (Kenney, and a few Freesound recordings by named authors) or **synthesised by our own code**. The one exception is **the owner's own music and announcer** (2026-11-18): tracks and lines the owner made themself through Artlist, which the owner cleared for the game (owner, 2026-11-17: shipped inside the game only, never as separate downloads; [`AUDIO_MUSIC_ANNOUNCER_PLAN.md`](AUDIO_MUSIC_ANNOUNCER_PLAN.md)). Artlist's stock catalog stays excluded; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md).
+**Status:** first audio pass (October 2026), then the Sonniss pass (2026-11-22). Every shipped sound is **CC0** (Kenney, and a few Freesound recordings by named authors), **synthesised by our own code**, or **recorded, from the Sonniss GDC Game Audio Bundles** (royalty free, no credit needed; [below](#recorded-sounds-from-the-sonniss-bundles)). The one exception is **the owner's own music and announcer** (2026-11-18): tracks and lines the owner made themself through Artlist, which the owner cleared for the game (owner, 2026-11-17: shipped inside the game only, never as separate downloads; [`AUDIO_MUSIC_ANNOUNCER_PLAN.md`](AUDIO_MUSIC_ANNOUNCER_PLAN.md)). Artlist's stock catalog stays excluded; see [`ASSET_SOURCES.md`](ASSET_SOURCES.md).
 
 ## Where sounds come from
 
 | Group | Source | Sounds |
 |---|---|---|
-| Weapon fire | **In-house synthesiser** (`packages/client/src/audio/synth.ts`) | pistol, rifle, shotgun (with pump), sniper (with echo and bolt), grenade launcher "foomp", knife swing, dry-fire click |
+| Weapon fire | **Sonniss recordings** (everyday guns) and the **in-house synthesiser** (`packages/client/src/audio/synth.ts`) | recorded: pistol, rifle, SMG, shotgun, sniper, heavy, revolver, the melee swing, dry fire, reloads and the weapon switch; synthesised: the launchers, rockets and every sci-fi gun (plasma, pulse, laser, railgun, arc, freeze, vortex, disc, bubble, goo, flame, flare, nail) |
+| Recorded (Sonniss) | Sonniss GDC bundles 2015-2020, 2026 | explosions and their debris, vehicle crashes, bullet impacts on stone, wood, metal, soft ground and glass, glass, wall and crate breaks, deaths (body falls), landing, footsteps, doors, rain and wind, splashes, the low-health heartbeat, the alarm cue, and two new ones: `bullet.flyby` (a round passing within 1.6 m of your head) and `pad.launch` (a jump pad throwing someone) |
 | Explosions | Kenney Sci-Fi Sounds (CC0) | low-frequency boom plus a debris crunch layer; a vehicle blowing up adds `explosion.vehicle` (the same booms pitched down) and a metal crash |
 | Vehicle crashes | Kenney Impact Sounds (CC0) | `vehicle.crash`: heavy metal and plate impacts for rams and run-overs, louder the harder the hit |
 | Weather | synthesised (`rain` and `wind` recipes) | `weather.rain` (a hiss of high noise with a patter of drop ticks) and `weather.wind` (low noise swelling in gusts, a faint whistle): 2.4 s copies faded at both ends, one every 1.2 s while it rains or blows, unpositioned, louder with the weather (`game/weatherAudio.ts`); under a roof the rain is quieter. Our own code (no recordings), so no licence to record |
@@ -24,7 +25,59 @@
 
 The synthesiser is ordinary signal processing written by us, in the same spirit as the procedural map materials. Each weapon is a recipe of layers (supersonic crack, filtered noise body, low "thump" sweep, room tail, mechanical clicks, echoes), rendered at load time with fixed seeds, so it always sounds the same. It is a stand-in for recorded gunshots: when we get CC0 recordings (Sonniss GDC bundles, Freesound CC0, our own foley), switch that sound's entry in `content/sounds.json` from `synth` to file variants. No code changes.
 
-The cloud development environment could not reach Freesound, OpenGameArt, itch.io creator pages or Sonniss when this pass was made, which is why recorded gunshots aren't in yet.
+The cloud development environment could not reach Freesound, OpenGameArt, itch.io creator pages or Sonniss when the first pass was made; the owner put the Sonniss bundles in their Drive instead (below).
+
+## Recorded sounds from the Sonniss bundles
+
+The owner's Drive `sounds/sfx/` holds a selection from the Sonniss GDC Game Audio Bundles (folders `GDC 2015` to `GDC 2019` and `GDC 2020-2026/{2020,2026}`, about 640 files; approved 2026-11-06, CLAUDE.md "Content rules"). They are royalty free and need no credit; the bundles' files themselves may never be passed on, so none enter the repo.
+
+- **Picking (2026-11-22):** for each sound, the best fit on what it is (a close, clean, off-axis mic for gunshots; on-gun and far mics rejected), length and how it sits beside the sound it replaces, plus two alternates. Weak placeholders were replaced first (the synthesised everyday guns, the generic Kenney impacts and footsteps); the sci-fi guns, hit markers, kill confirm, Freesound flesh hits, UI chimes, pickups and the owner's announcer and music were kept.
+- **Processing:** `node tools/content/sonniss-audio.mjs <folder holding the Drive's sfx folder>` reads each variant of `content/sounds.json` whose pack is `processed` (`sonniss-gdc-<year>`): `file` is the original under the pack's `drive` folder, `start` and `length` the part kept (one shot: the last of a burst, so its tail rings out; the next shot's start for single shots). It cuts that part, folds it to mono (`stereo` for the weather beds), compresses it when `punch` is set (a recording too thin beside the synthesised gun it replaces), fades it (3 ms in, `fade` out; `window` for the weather beds: a sine-squared fade over each half, so the copies laid every 1.2 s stay steady), sets its peak to `processing.peakDb` (-1 dBFS, plus the variant's `level`) and encodes Ogg Opus (48 kbps mono, 64 kbps stereo) to `packages/client/public/sounds/<id>_<n>.ogg`. `content/sonniss.lock.json` records each file with a hash of its cut; `pnpm content:check` holds the shipped files to the lock and the manifest (a changed cut that was never rebuilt fails) and to the 128 KB budget, and `pnpm content:build` writes provenance (the studio as creator, the bundle as title, licence `LicenseRef-Sonniss-GDC`, its note in `content/licenses/sonniss-gdc.txt`). `ONLY=<id,id>` rebuilds just those sounds.
+- **Levels:** each pick's `gain` was set so its loudest 50 ms match the sound it replaced at that sound's gain (capped at 1.3; the recorded guns sit a little under the synthesiser's, which was dense). Ranges, jitter and voice caps are unchanged.
+- **Alternates for the Weapon Manager:** the guns' and reloads' alternates ship as their own sounds (`fire.rifle.b`, `fire.rifle.c`, ...; about 5 KB each), so the Manager's sound picker offers them under "Weapon fire" and "Reload and handling". The rest are listed below only (the impacts on stone, metal and wood carry their first alternate as a second variant).
+- **Size:** `public/sounds` went from 932 KB (79 files) to 778 KB (102 files): Opus mono is a fraction of the Kenney packs' stereo Vorbis.
+- **Listening:** the helper's audition page (each sound now, the pick and the alternates) was made for the owner; it is not shipped.
+
+| Sound | Was | Pick | Alternates |
+|---|---|---|---|
+| `fire.pistol` | synth `pistol` | Pole Position Production: Glock_18_1m_left_off_axis_MKH416_clean_Six_shots_x_1 | Pole Position Production: Beretta_93R_9mm_1m_left_on_ground_DPA4062_clean_Triple_shots_x_1 (`fire.pistol.b`); Pole Position Production: HK_VP70_9mm_1m_in_front_RE20_clean_Double_shots_x_1 (`fire.pistol.c`) |
+| `fire.rifle` | synth `rifle` | Pole Position Production: HK_416_5.56mm_1m_left_off_axis_MKH416_clean_Six_shots_x_2 | Pole Position Production: Heckler_&_Koch_G36C_5.56mm_1m_left_off_axis_MKH416_clean_Six_shots_x_1 (`fire.rifle.b`); Pole Position Production: AKM_7.62x39mm_1m_left_on_ground_DPA4062_clean_Triple_shots_x_1 (`fire.rifle.c`) |
+| `fire.smg` | synth `smg` | Pole Position Production: HK_MP7_4.6mm_1m_left_off_axis_MKH416_clean_Four_shots_x_1 | Pole Position Production: HK_MP5_9mm_2m_behind_clean_Double_shots_x_1 (`fire.smg.b`); Pole Position Production: FN_P90_5.7mm_1m_left_on_ground_DPA4062_clean_Double_shots_x_1 (`fire.smg.c`) |
+| `fire.shotgun` | synth `shotgun` | TS Sound: Shotgun_Fire_Slug_01 | TS Sound: Shotgun_Fire_Round Eject_01 (`fire.shotgun.b`); Pole Position Production: M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1 (`fire.shotgun.c`) |
+| `fire.sniper` | synth `sniper` | Pole Position Production: Barrett_M98B_.338_Lapua_2m_right_MKH60_clean_Single_shots_x_17 | Pole Position: K98k, Firing, t2, MKH416 (`fire.sniper.b`); Pole Position: M38, Firing, t2, BP4027 (`fire.sniper.c`) |
+| `fire.heavy` | synth `sniper` | Pole Position Production: HK_G3_7.62x51mm_1m_left_off_axis_MKH418_clean_Triple_Shots_x_1 | Pole Position Production: FN_FAL_7.62x51mm_1.5m_behind_right_clean_2_shots (`fire.heavy.b`); Pole Position Production: M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1 (`fire.heavy.c`) |
+| `fire.revolver` | synth `sniper` | Olivier Girardot: Hand Gun 6 | Pole Position: P38, Firing, t1, 2m, Behind, LS5 (`fire.revolver.b`); Pole Position: TT33, Firing, t1, Inside Car, Omni, CMC6 (`fire.revolver.c`) |
+| `reload.start` | Kenney | Pole Position Production: Heckler_&_Koch_G36C_5.56mm_foley_close_up_MKH60_mag_in_&_out | Pole Position: P38, Handling, Removing Magazine, 1m, Right, MKH8060 (`reload.start.b`); Pole Position: MP 40, Handling, Cocking, MKH416 (`reload.start.c`) |
+| `reload.end` | Kenney | Pole Position Production: Heckler_&_Koch_G36C_5.56mm_foley_close_up_MKH60_mag_in_&_out | Gamemaster Audio: gun_semi_auto_rifle_cock_02 (`reload.end.b`); Pole Position: K98k, Handling, Various, t2, 1m, Right, MKH8060 (`reload.end.c`) |
+| `dryfire` | synth `dryfire` | Pole Position: M1911A1, Handling, Dry Fire, MKH416 | Pole Position Production: Steyr_TMP_9mm_foley_distant_MKH418S_S_cocking_&_dry_fire; David Dumais Audio: Cocking_11 |
+| `weapon.raise` | Kenney | SoundMorph: Mechanism - AssaultRifle_PickUp_004 | Pole Position: MG 42, Handling, Top Cover Up, 1m, Right, MKH8060; Pole Position: PPSh41, Handling, Pulling Back Bolt, MKH416 |
+| `fire.knife` | synth `swing` | knife: Whoosh_Swing_Fishing Pole_Full_Fienup_CLASSIC_001 | SmartSoundFX: WHOOSH AIR Steady Smooth_02; David Dumais Audio: METLFric_SWING SCRAPE Swift Melee Weapon Swing With A Long Blade 14_DDUMAIS_MWP2 |
+| `knife.hit` | Kenney | stab: Stab_Punch_Hit_136 | Articulated Sounds: GORE Impact stab dagger in bodyparts flesh; knife: gore - large metal blade wet stab slash and remove from flesh - hard - 1 |
+| `explosion` | Kenney | Bluezone: Bluezone_BC0271_explosion_outdoors_large_005 | explosions&impacts: Bluezone-BC0214-beep-mine-explosion-002; Double Trouble Audio: TAJ - Tank Battle Cannon Fire [XY Stereo]-001 |
+| `explosion.debris` | Kenney | Bluezone: Bluezone_BC0271_debris_falling_rock_dust_002 | PMSFX: PM_SB_DESIGNED_IMPACT_116 Impact brick rock dirt gravel designed multi LFE; Matt Script: Brick_bricks_shuffle_impact_several_many_moving_laying_cement_hit_fall_10 |
+| `vehicle.crash` | Kenney | SoundBits: Metal_Hit_Crash_090 | SoundBits: Metal_Hit_Crash_199; SmartSoundFX: IMPACT METAL Short Slam_03 |
+| `impact.world` | Kenney | Olivier Girardot: Bullet rock Impact 4 | Olivier Girardot: Bullet Impact 16 - Light Version (second variant); PMSFX: PM_SB_SOURCE_16 Impact brick rock dirt gravel single hit |
+| `impact.wood` | Kenney | Antisample: Wood_Impact_Wood_Sawdust_5 | Double Trouble Audio: Impacts Soft - Short, Crack (second variant); Double Trouble Audio: Impacts Hard - Short Wobbly Tail 01 |
+| `impact.metal` | Kenney | 3maze: metal_hit_004 | SmartSoundFX: IMPACT METAL Scratchy Short Punch_03 (second variant); Impact: sci-fi metal impact, steel bulkhead hit, low 01 |
+| `impact.soft` | Kenney | PMSFX: PM_BBI_Bullet_Impact_Dirt_3 | SoundBits: Misc_Hits_118; Shapeforms: IMPACT_LOW_THUD_10 |
+| `impact.glass` | Kenney | PMSFX: PM_BBI_Bullet_Impact_Glass_1 | 3maze: glass_bottle_smash_005; glass: Glass_Break_WineBottle_702T_Fienup_004 |
+| `break.glass` | Kenney | glass: Glass_Break_ChampagneBottle_D50_Fienup_003 | 3maze: glass_bottle_smash_005; Epic Stock Media: GLASMvmt_Whoosh Glass Crystal Fragments Sharp Shards Dry 05_ESM_EMWI |
+| `break.wall` | Kenney | PMSFX: PM_SB_DESIGNED_IMPACT_48 Impact brick rock dirt gravel designed multi LFE | PMSFX: PM_SB_DESIGNED_IMPACT_116 Impact brick rock dirt gravel designed multi LFE; Matt Script: Brick_bricks_shuffle_impact_several_many_moving_laying_cement_hit_fall_10 |
+| `break.crate` | Kenney | Matt Script: wood_breaking_cracking_snapping_breaking_peeling_bones_break_snap_crack_13 | Matt Script: impact_wood_debris_fall_hit_02; Double Trouble Audio: Impacts Hard - Short Wobbly Tail 01 |
+| `death` | Kenney | Red Libraries: RL_bodyfall_Concrete_Generic_Feet_Mid_Mono_Med_Impact_02 | Red Libraries: RL_bodyfall_Dirt_M4_Close_Stereo_Hard_Impact_10; The Chris Alan: Hand-to-Hand Combat - Body Hits - Body Slam Floor 08 |
+| `land` | Kenney | Tovusound: 289_Foley_Footsteps_Rocks_Sneaker_Jump_Land_On_Two_Feet_Close | Levan Nadashvili: FS Concrete Soldier Crouch N02; Red Libraries: RL_bodyfall_Wood_Rustic_M2_Distant_Mono_Soft_Impact_07 |
+| `footstep` | Kenney | Tovusound: 015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close | Levan Nadashvili: FS Concrete Soldier Crouch N02; Levan Nadashvili: FS Ground Civilian Walk N03 |
+| `door.open` | Kenney | SoundMorph: Door - Sci-Fi - 04 | doors: door_SpaceShip_hatchway_04; The Sound Keeper: door-industrial open close office 03 |
+| `door.close` | Kenney | 3maze: door_big_close_001 | 344 Audio: Exterior Metal Door Gate Close, Rattle 2; Doors: door_close_003 |
+| `bullet.flyby` | none (new) | PMSFX: PM_BBI_Bullet_Passby_Whizzby_Airy_5 | - |
+| `pad.launch` | none (new) | David Dumais Audio: Magic_Spells_CastShort_Push14 | PMSFX: PM_NANOTECH_ONESHOT_56 Robotic, Robot, Cyber, Tech, Nano, Micro, Movement, Mechanical, Servo, On; sci-fi weapons: Utilities-Mine or System activation-13 |
+| `weather.rain` | synth `rain` | Borg Sound – Rain Indoor Ambiences: Rain EXT_Porch, Soft rain | Ivo Vicic: 01 Rain urban_gentle 1_MS STEREO; Double Trouble Audio: RATH - Rain on Plastic Outside Loop |
+| `weather.wind` | synth `wind` | Hzandbits: Wind,Ext,Breeze,Treeline,Whoosh,Noise,Constant | Hzandbits: Wind,Ext,Alley,Whoosh,Fluctuating slightly,Wire flapping; Olivier Girardot: Desert Soundscape - Wind - Loop |
+| `water.splash` | synth `splash` | Bluezone: Bluezone_BC0256_water_splash_small_008 | Bluezone: Bluezone_BC0256_water_splash_008; Articulated Sounds: LIQUID HIT Lake, Branch, Splash, Lake, Seaweed in Water, Small, CU 04 |
+| `ui.heartbeat` | synth `heartbeat` | heartbeat and breathing: SW002_Stethoscope_Chest_Heart_Heartbeat_Blood_Flow_A | - |
+| `cue.alarm` | synth `alarm` | alarms_radio: Bluezone-BC0226-alarm-effect-009 | - |
+
+Not done in this pass: footsteps by surface (materials have no `surface` yet; the Drive has concrete, metal, wood, grass, dirt and snow steps for it), grenade bounces (the game sends no bounce event), recorded engine loops (`vehicle.engine` stays synthesised: it is pitched with speed, which a recording does badly without loop points) and ambience beds (no per-map bed exists to put them in). The portal folder of the 2017 bundle turned out to be doors, so portals stay silent.
 
 ## How it fits together
 
@@ -47,6 +100,6 @@ The cloud development environment could not reach Freesound, OpenGameArt, itch.i
 
 ## Known gaps
 
-- **Gunshots are synthesised placeholders** until recorded CC0 gunshots are imported.
+- **The sci-fi guns and launchers are synthesised** (the everyday guns are recorded since the Sonniss pass).
 - **Ogg Vorbis** files may not decode on older Safari versions. Those sounds are skipped and the game keeps running. Add an AAC/MP3 copy in the build if Safari matters before then.
-- No occlusion (sounds pass through walls), reverb zones, ambience or per-material footsteps yet. Remote reloads aren't audible because snapshots don't carry them.
+- No occlusion (sounds pass through walls), reverb zones, ambience beds, grenade bounces or per-material footsteps yet. Remote reloads aren't audible because snapshots don't carry them.
