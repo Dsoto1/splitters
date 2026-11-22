@@ -13459,6 +13459,22 @@ async function drawnHands(page) {
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
   check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
+  // Long melee weapons in first person (game/meleeView.ts; owner, 2026-11-22: only the blade showed, the hands below
+  // the frame): held by the grip with both hands, at rest both hand joints are on screen, both palms on their points
+  // and the shooting hand drawn round the handle, arms only and full body.
+  const meleeMisses = [];
+  for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
+    for (const view of ['first', 'body']) {
+      await page.evaluate(([w, v]) => window.__grips.pose('core.ranger', w, v), [weapon, view]);
+      const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
+      const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
+      if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {
+        const at = (h) => (h ? `${h.x.toFixed(2)},${h.y.toFixed(2)}` : '-');
+        meleeMisses.push(`${weapon} ${view}: hands at ${at(on?.r)} / ${at(on?.l)}, palms ${miss ? `${(miss.r * 100).toFixed(0)}/${(miss.l * 100).toFixed(0)} cm` : '-'}, ${fmtHand(d)}`);
+      }
+    }
+  }
+  check(meleeMisses.length === 0, `long melee weapons show both hands in first person, on the handle (${meleeMisses.join('; ') || 'Katana, Scimitar, Baseball Bat, Battle Axe and Spear, arms only and full body'})`);
 }
 
 /**

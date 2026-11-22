@@ -471,7 +471,7 @@ style and points on the model, in model space (+Z barrel, +Y up):
 |---|---|---|
 | `pistol` | Points along the aim, its `grip` in the right hand where the clip puts it (at the palm, by the middle of the hand's width) | Left palm IK'd to `support` |
 | `long` | Points along the aim, its `shoulder` point (the butt) in the right shoulder pocket; the shoulders turn into the stock | Right palm IK'd to `grip`, left to `support` |
-| `melee` | Carried in the right hand | — |
+| `melee` | Carried in the right hand (first person: a long one is held two-handed by its grip, "Long melee in first person") | — |
 
 How the hands close on the weapon:
 - Two-bone arm IK runs in the skeleton's own space, because the glTF import
@@ -552,6 +552,33 @@ loaded for third person, `hiddenSelf`) from its eyes, `FirstPersonBodyRig` in `g
   body is hidden with the gun.
 - **Check:** `?mode=grips`, `__grips.pose(look, weapon, 'body')`, then `__grips.look(pitch, { speed, stance,
   drop })` (game pitch: + looks up) and `__grips.miss()`; the `characters` e2e flow checks palms in this view.
+
+### Long melee in first person (owner, 2026-11-22)
+
+The owner: the Katana, Scimitar, Baseball Bat and Battle Axe "show only the blade in first person, the hands below the
+frame". Placed by `viewOffset` like a gun, a long weapon's grip sat at the eye's depth, out of view. `game/meleeView.ts`,
+one rule for every long melee weapon, nothing per weapon:
+- **Which:** a melee weapon whose `hold.grip` is 0.2 m or more behind its model's middle (`LONG_MELEE_GRIP`; the knife's
+  is 0.1, the tools' less). Its measured length (the model's front end, from the viewmodel's bounds) picks a blade, bat
+  or axe, or a **polearm** (over 1.2 m ahead of the grip, `POLE_REACH`: the Spear).
+- **Placement:** by the grip, not `viewOffset`: the grip goes low in the lower right of the view and the weapon is
+  turned about it. A blade stands raised about 40 degrees and leaning in (the middle of the view stays clear); a polearm
+  points ahead along the aim.
+- **Hands:** two-handed in first person (`firstPersonHold`): the shooting hand on `grip`, the support hand a hand's
+  width and a little (10 cm, kept 1.5 cm inside the pommel) behind it toward the pommel, or 30 cm ahead of it along a polearm's shaft; held as a long gun's hands
+  are (the support hand cups from below). Both views (arms only and full body).
+- **Swing** (a pose curve over the strike in `meleePlacement`, at most 0.5 s): a blade winds up over the shoulder and cuts down and
+  across to the lower left, then comes back; a polearm draws back and thrusts. The old jab (the weapon nosing down,
+  away from the eye) is gone for these. Nothing flashes: only the weapon moves (Reduce flashing).
+- **Draw:** the match's raise brings it up from low on the right shoulder. A switch away is instant, as for every weapon
+  (no put-away pose: switching stays fast).
+- **The Battle Axe's barrel:** its alt shot brings it level to the aim with a gun's kick, so it fires where you look.
+- **Third person** is unchanged: the weapon rides in the right hand (`style: melee`).
+- **Checks:** `packages/client/test/meleeView.test.ts` (both hand points inside the view at rest for any length; the
+  swing and draw return to rest); the `characters2` e2e flow (`drawnHands`): for each long melee weapon, arms only and
+  full body, both hand joints on screen (`__grips.handsOnScreen()`), both palms within 2 cm of their points and the
+  shooting hand drawn round the handle. On the grip page `__grips.fpSwing(u)` and `__grips.fpDraw(raise)` hold a
+  swing or draw for pictures.
 
 ### First-person arms (Arms only, and full body's fallback)
 
