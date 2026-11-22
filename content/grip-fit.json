@@ -6669,44 +6669,47 @@
    "grip": {
     "gripLong": [
      0.004,
-     -0.034,
-     -0.002
+     0.022,
+     0.046
     ],
     "supportLong": [
-     0.03,
-     -0.024,
+     0.09,
+     -0.046,
      0
     ],
     "gripPistol": [
-     0.005,
-     -0.006,
-     0.02
+     0.025,
+     -0.037,
+     0.032
     ],
     "supportPistol": [
-     0.036,
-     -0.029,
-     -0.025
+     0.09,
+     -0.001,
+     0.09
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.841,
-     "eL": 0.5,
+     "eR": 0.05,
+     "eL": 6.501,
      "flags": [],
-     "outlier": false,
-     "auto": 1.141,
-     "none": 5.873
+     "outlier": true,
+     "auto": 3.951,
+     "none": 9.524
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.45,
-     "eL": 1.1,
-     "flags": [],
-     "outlier": false,
-     "auto": 2.11,
-     "none": 6.192
+     "eR": 1.741,
+     "eL": 28.543,
+     "flags": [
+      "open",
+      "off"
+     ],
+     "outlier": true,
+     "auto": 24.867,
+     "none": 29.989
     }
    }
   },
