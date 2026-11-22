@@ -38,7 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/slide-peek` · a73f1dd4 · 44995091679 (slide and peek, revived 2026-11-22; binary snapshot version 3, `PROTOCOL_VERSION` stays 5)
+- `wip/slide-peek` · a1ff10ab · 45015057940 (slide and peek, revived 2026-11-22; re-checked with main 0e02c47b merged, green on attempt 1; binary snapshot version 3, `PROTOCOL_VERSION` stays 5)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
