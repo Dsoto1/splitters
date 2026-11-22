@@ -51,7 +51,7 @@ export interface WeaponOptics {
   steps?: readonly number[];
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
-  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
+  window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
 
 /** Per hand-held gun that carries an optic (iron sights included). */
@@ -61,10 +61,12 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
   'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2 } },
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
+  'core.blaster_x42': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.149, -0.192], half: [0.026, 0.026], round: true } },
   'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85 } },
   'core.burst_rifle': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.09648, -0.119], scale: 1.15 } },
   'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88 } },
   'core.crossbow': { default: 'scope', allowed: ['scope'], mag: 2.19 },
+  'core.desert_carbine': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [-0.003, 0.124, -0.126], half: [0.016, 0.013] } },
   'core.disc_launcher': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
   'core.flak': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.15935, -0.088], scale: 0.85 } },
   'core.flintlock_pistol': { default: 'irons', allowed: ['irons'] },
@@ -89,6 +91,8 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09878, -0.127], scale: 1.2 } },
   'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16 } },
   'core.sniper': { default: 'sniper', allowed: ['sniper'], mag: 3.95 },
+  'core.twin_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.127, -0.108], half: [0.015, 0.015], round: true } },
+  'core.woodland_smg': { default: 'reddot', allowed: ['reddot', 'irons', 'holo', 'x2'], mount: { at: [0, 0.10268, -0.032], scale: 0.99 } },
 };
 
 /** The weapons without one, and why: they keep the aim they had (or never aim: mounted, melee, tools). */
@@ -96,9 +100,7 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.baseball_bat': 'melee or a tool: no aiming down sights',
   'core.battle_axe': 'melee or a tool: no aiming down sights',
   'core.blast_rockets': 'a tube launcher: aimed over the tube',
-  'core.blaster_x42': 'its own scope has no sights under it: keeps its aim over the top of the gun until the sights pass gives it its optic (weapons intake 11-18)',
   'core.builder': 'melee or a tool: no aiming down sights',
-  'core.desert_carbine': 'its own holographic sight is not on the bore: keeps its aim until the sights pass fits it (weapons intake 11-18)',
   'core.flamethrower': 'a stream weapon, aimed by its flame',
   'core.flare_gun': 'a flare pistol, drawn broken open: fired from the hand',
   'core.gilded_pistol': 'a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it',
@@ -125,8 +127,6 @@ export const OPTIC_NONE: Readonly<Record<string, string>> = {
   'core.speeder_guns': 'mounted: never held in the hand',
   'core.swarm': 'a launcher whose rockets home: no sight to line up',
   'core.tank_cannon': 'mounted: never held in the hand',
-  'core.twin_rifle': 'its own red dot is not yet fitted: keeps its aim until the sights pass fits it (weapons intake 11-18)',
-  'core.woodland_smg': 'its rear sight block stands in the line: keeps its aim until the sights pass corrects it (weapons intake 11-18)',
 };
 
 /**

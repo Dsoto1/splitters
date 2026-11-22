@@ -46,6 +46,15 @@ describe('sight fit: finding a gun\'s sights on its model', () => {
     near(fit.front[1], 0.062);
   });
 
+  it('a post in a hood wider than the band read across the gun is still the front sight (the Woodland SMG, 2026-11-22)', () => {
+    // A ring 3 cm wide (walls at ±12-15 mm, a top bar from 0.075 to 0.078) round a post 6 mm deep, a plain rear block.
+    const hood = [box([-0.015, -0.012], [0.05, 0.078], [0.246, 0.256]), box([0.012, 0.015], [0.05, 0.078], [0.246, 0.256]), box([-0.015, 0.015], [0.075, 0.078], [0.246, 0.256]), box([-0.001, 0.001], [0.05, 0.062], [0.25, 0.256])];
+    const fit = fitSights(gun(box([-0.006, 0.006], [0.05, 0.06], [-0.2, -0.19]), ...hood), HOLD);
+    expect(fit.hood).toBe(true);
+    near(fit.front[1], 0.062);
+    expect(fit.kind).toBe('post');
+  });
+
   it('a ring the front sight cannot be seen through is not an aperture', () => {
     // The same plate, its hole far below the line to the post's top: the gun's body is behind it.
     const ring = [box([-0.006, -0.0015], [0.05, 0.07], [-0.2, -0.198]), box([0.0015, 0.006], [0.05, 0.07], [-0.2, -0.198]), box([-0.0015, 0.0015], [0.05, 0.064], [-0.2, -0.198]), box([-0.0015, 0.0015], [0.067, 0.07], [-0.2, -0.198])];

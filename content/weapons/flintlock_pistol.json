@@ -30,7 +30,7 @@
     "fallback": "weapons/gilded_pistol.glb",
     "viewOffset": [0.2, -0.18, 0.46],
     "tracer": "#ffe0a0",
-    "hold": { "style": "pistol", "grip": [0, -0.012, -0.15], "support": [-0.02, -0.022, -0.14], "rake": 30 },
+    "hold": { "style": "pistol", "grip": [0, -0.045, -0.23], "support": [-0.02, -0.055, -0.22], "rake": 30 },
     "muzzleAt": [0, 0.03, 0.28],
     "muzzle": { "effect": "wide_flash_02", "scale": 0.3 },
     "sound": "fire.heavy"

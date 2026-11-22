@@ -37,6 +37,7 @@ export const SIGHT_FITS: Readonly<Record<string, SightFit>> = {
   'core.runebreaker': { eye: [-0.01138, 0.15197, -0.7], rear: [-0.01138, 0.15075, 0.0288], front: [-0.01138, 0.15001, 0.468], kind: 'post' },
   'core.shotgun': { eye: [0, 0.09637, -0.725], rear: [0, 0.09986, -0.1366], front: [0, 0.10363, 0.5006], kind: 'bead' },
   'core.smg': { eye: [0.00013, 0.09971, -0.635], rear: [0, 0.09957, -0.0382], front: [-0.0001, 0.09946, 0.4182], kind: 'notch' },
+  'core.woodland_smg': { eye: [-0.00815, 0.10116, -0.57], rear: [-0.00815, 0.10407, -0.058], front: [-0.00815, 0.10628, 0.33], kind: 'post' },
 };
 
 /** The weapons without a sight fit, and why (they keep the placement they had: view.ts). */
@@ -47,11 +48,11 @@ export const SIGHT_EXCLUDED: Readonly<Record<string, string>> = {
   'core.battle_axe': 'melee or a tool: no aiming down sights',
   'core.battle_rifle': 'optic: the eye goes to the eyepiece of the model\'s own scope (view.optic)',
   'core.blast_rockets': 'a tube launcher: no sights, its top line starts on the stock',
-  'core.blaster_x42': 'its own scope sits over the receiver with no sights under it: aims with the top of the gun until the sights pass gives it its optic (weapons intake 11-18)',
+  'core.blaster_x42': 'its own scope sits over the receiver with no sights under it: aims through the scope, its window in content/optics.json',
   'core.bubble_blaster': 'no sights on the model: a flat-topped kit gun',
   'core.builder': 'melee or a tool: no aiming down sights',
   'core.crossbow': 'scope: the view is the scope overlay, the gun is hidden',
-  'core.desert_carbine': 'its own holographic sight stands lower than the front post, so the line runs off the bore: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)',
+  'core.desert_carbine': 'its sights are its own holographic sight and a front post with no rear sight: aims through the holographic sight, its window in content/optics.json',
   'core.disc_launcher': 'no sights on the model: a flat-topped disc launcher',
   'core.flak': 'no sights on the model: a flat-topped kit gun',
   'core.flamethrower': 'no sights on the model: its top line starts on the stock',
@@ -88,6 +89,5 @@ export const SIGHT_EXCLUDED: Readonly<Record<string, string>> = {
   'core.speeder_guns': 'mounted: never held in the hand',
   'core.swarm': 'no sights on the model: a flat-topped kit launcher',
   'core.tank_cannon': 'mounted: never held in the hand',
-  'core.twin_rifle': 'its own red dot is the only sight, with no posts: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)',
-  'core.woodland_smg': 'its rear sight block stands in the line to the front post: aims with the top of the gun until the sights pass corrects it (weapons intake 11-18)',
+  'core.twin_rifle': 'its own red dot is the only sight, with no posts: aims through it, its window in content/optics.json',
 };

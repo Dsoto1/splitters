@@ -262,7 +262,8 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
   if (own && hasGlass(optic)) {
     const [hw, hh] = glassHalf(optic);
     const c = glassCentre(optic);
-    const round = !!mount && optic.kind.housing === 'tube';
+    // Round: a red dot's tube, or a model's own round eyepiece (its `window.round`).
+    const round = (!!mount && optic.kind.housing === 'tube') || !!optic.window?.round;
     const glass = round ? CreateDisc('opticGlass', { radius: hh, tessellation: 40, sideOrientation: Mesh.DOUBLESIDE }, scene) : CreatePlane('opticGlass', { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
     glass.material = glassMaterial(scene, optic);
     // On the gun itself (not under the housing's scale): the window's middle, a little ahead of a built housing's.
@@ -276,7 +277,7 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
       // drawn first in the gun's rendering group while aimed (CLIP_NAME: view.ts, the sight sheet), so nothing of the
       // gun behind the opening is drawn there: loose scraps of a model inside its own sight box stay out of the
       // sight picture, and the world shows through as it should.
-      const clip = CreatePlane(CLIP_NAME, { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
+      const clip = round ? CreateDisc(CLIP_NAME, { radius: hh, tessellation: 40, sideOrientation: Mesh.DOUBLESIDE }, scene) : CreatePlane(CLIP_NAME, { width: hw * 2, height: hh * 2, sideOrientation: Mesh.DOUBLESIDE }, scene);
       clip.material = clipMaterial(scene);
       clip.parent = gun;
       clip.position.set(c[0], c[1], c[2] + 0.0015);

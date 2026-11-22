@@ -71,9 +71,18 @@ export interface SightAudit {
   reticle: number | null;
   /** A glass's window: its half-height as a share of the screen's, and how much larger the gun is drawn for it. */
   window: number | null;
+  /**
+   * The nearest the drawn hands and arms come to the aim (degrees; null: none within ARMS_SEARCH_DEG). Under
+   * ARMS_CLEAR_DEG they are in the sight picture (owner, 2026-11-22: the Flintlock Pistol's fists filled the aim).
+   */
+  arms: number | null;
   picture: number;
   pass: boolean;
 }
+
+/** How far round the aim the audit looks for the arms (degrees), and how near them it allows (the sight picture's own size). */
+export const ARMS_SEARCH_DEG = 8;
+export const ARMS_CLEAR_DEG = 3;
 
 const statusOf = (def: WeaponDefinition): SightStatus => (def.view.optic ? 'optic' : def.view.zoomFov ? 'scope' : hasGlass(opticOf(def)) ? 'glass' : SIGHT_FITS[def.id] ? 'fitted' : def.kind === 'melee' || def.slot === 0 ? 'none' : 'unfitted');
 /** The sheet's ballistics for holdover marks: the official default. */
@@ -368,6 +377,9 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
         if (d !== null) nearest = Math.min(nearest, d * Math.cos((u * Math.PI) / 180) * Math.cos((r * Math.PI) / 180));
       }
     }
+    // The hands and arms: the frame drawn with them and without, the nearest changed pixel to the middle (rays would
+    // meet the skinned arms in their rest pose, not as drawn).
+    const arms = state.arms && shown.arms?.isEnabled() ? await armsOffset(shown.arms) : null;
     const placedError = fit ? sightError(fit, aim) : null;
     const round = (v: number | null) => (v === null ? null : Math.round(v * 1000) / 1000);
     // The reticle against the aim: a glass's mark as drawn, a scope's or an optic's as laid out.
@@ -376,9 +388,13 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     const window = glass ? (glassHalf(glass)[1] * picture) / (glassCentre(glass)[2] + aim.z) / Math.tan(eye.fov / 2) : null;
     const sightsPass = !!fit && placedError! <= SIGHT_TOLERANCE_DEG && drawn !== null && Math.abs(drawn) <= SIGHT_TOLERANCE_DEG && Math.abs(drawnAcross ?? 0) <= SIGHT_TOLERANCE_DEG;
     // A glass: its mark on the aim, and nothing of the gun on the aim through it. A scope: its reticle on the aim.
-    const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (!glass || castAt(meshes, 0, 0) === null);
-    const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && (scoped === scopeEl || nearest > eye.minZ || !!eyepieceOf(def, shown.optic));
-    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), window: round(window), picture: Math.round(picture * 100) / 100, pass };
+    // (Through a model's own sight window, what lies behind the window is clipped: its lens does not count.)
+    const onAim = castAt(meshes, 0, 0);
+    const clipAt = glass?.window ? placed(glass.window.at, aim)[2] : Infinity;
+    const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (!glass || onAim === null || onAim >= clipAt - 0.002);
+    const armsPass = arms === null || arms >= ARMS_CLEAR_DEG || !!scoped;
+    const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && armsPass && (scoped === scopeEl || nearest > eye.minZ || !!eyepieceOf(def, shown.optic));
+    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), window: round(window), arms, picture: Math.round(picture * 100) / 100, pass };
   }
 
   /**
@@ -415,6 +431,32 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     }
     if (!sum) return null;
     return (Math.atan((Math.hypot(sx / sum, sy / sum) * 2 * Math.tan(eye.fov / 2)) / h) * 180) / Math.PI;
+  }
+
+  /** How near the drawn arms come to the view's middle (degrees; null: not within ARMS_SEARCH_DEG): drawn with and without them. */
+  async function armsOffset(arms: TransformNode): Promise<number | null> {
+    const [w, h] = [engine.getRenderWidth(), engine.getRenderHeight()];
+    const px = Math.tan((ARMS_SEARCH_DEG * Math.PI) / 180) / Math.tan(eye.fov / 2) * (h / 2);
+    const half = Math.min(Math.floor(h / 2), Math.ceil(px));
+    const [x0, y0] = [Math.floor(w / 2) - half, Math.floor(h / 2) - half];
+    const grab = async (on: boolean) => {
+      arms.setEnabled(on);
+      scene.render();
+      return new Uint8Array((await engine.readPixels(x0, y0, half * 2, half * 2)).buffer.slice(0));
+    };
+    const off = await grab(false);
+    const on = await grab(true);
+    let best = Infinity;
+    for (let j = 0; j < half * 2; j++) {
+      for (let i = 0; i < half * 2; i++) {
+        const k = (j * half * 2 + i) * 4;
+        if (Math.abs(on[k]! - off[k]!) + Math.abs(on[k + 1]! - off[k + 1]!) + Math.abs(on[k + 2]! - off[k + 2]!) < 24) continue;
+        best = Math.min(best, Math.hypot(x0 + i + 0.5 - w / 2, y0 + j + 0.5 - h / 2));
+      }
+    }
+    if (!Number.isFinite(best)) return null;
+    const deg = (Math.atan((best * 2 * Math.tan(eye.fov / 2)) / h) * 180) / Math.PI;
+    return deg <= ARMS_SEARCH_DEG ? Math.round(deg * 100) / 100 : null;
   }
 
   /** How far a scope's or an optic's reticle is from the view's middle as laid out (degrees): its drawing's origin (every reticle's aim point) on the page. */

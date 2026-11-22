@@ -25,7 +25,7 @@ export const AMMO_LABELS: Record<AmmoType, string> = {
  * Grenade's own look (id `vortex`) (the Singularity Cannon keeps `vortex`); `smoke` the Smoke Grenade; `flareShot` the Airstrike
  * Flare's shot (a flare-gun round that marks the strike, not the Flare Gun's own burning `flare`); `ammoBox` the Ammo
  * Box Kit in flight (its crate, small); `arrow` the Crossbow's bolt (a shaft, steel head and fletching, stuck where it
- * lands); `blasterBolt` the Blaster X-42's round (a short orange streak, steady: no flicker under Reduce flashing);
+ * lands); `blasterBolt` the Blaster X-42's round (an orange energy streak with a round head, unlit like the beams, steady: no flicker under Reduce flashing);
  * `stinger` the Hornet's homing dart (yellow and black); `slime` the Heart Taser's healing slime (its model).
  */
 export const PROJECTILE_VISUALS = [
