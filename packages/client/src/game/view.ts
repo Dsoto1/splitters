@@ -167,6 +167,7 @@ import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
 import { ANIM_LOD_FAR, ANIM_LOD_NEAR, CROWD_KEEP, SHOT_OVERLAY_REACH, animStep, animStepByShare, byNumber, crowdStep, rankIn } from './animLod.ts';
 import { BODY_POOL_PER_LOOK, bodyPoolStats, bodyPoolTotal } from './bodyPool.ts';
+import { POSE_CHECK_EVERY_MS, PoseWatch, poseCheckOn, recordPoseReport, type PoseSample } from './poseCheck.ts';
 import { perfOn } from './perfSwitches.ts';
 import { sliced } from './sliced.ts';
 import { FrameSpread } from './frameSpread.ts';
@@ -344,6 +345,12 @@ interface Avatar {
   hiddenSelf?: boolean;
   /** Its hit shapes drawn over it (the Show hitboxes dev setting). */
   hitbox?: BodyHitbox;
+  /** The pose check (poseCheck.ts): its body was taken from the body pool; when it was last seen spawn; alive then. */
+  fromPool?: boolean;
+  spawnedAt?: number;
+  alive?: boolean;
+  /** The pose check: when its body was put in it (built bodies: when the model came in). */
+  bodyAt?: number;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -2744,6 +2751,8 @@ export class GameView {
         continue;
       }
       // A fresh death hands the body to a ragdoll (when the effects world and the skeleton are ready).
+      if (p.alive && !a.wasAlive) a.spawnedAt = now;
+      a.alive = p.alive;
       if (p.alive) a.diedAt = a.diedFrame = undefined;
       else if (a.wasAlive && a.diedAt === undefined) {
         a.diedAt = now;
@@ -2981,6 +2990,96 @@ export class GameView {
       }
     }
     this.drawTags();
+    if (now - this.poseCheckAt >= POSE_CHECK_EVERY_MS) {
+      this.poseCheckAt = now;
+      if (poseCheckOn()) this.checkPoses(now);
+    }
+  }
+
+  /** The pose check (poseCheck.ts): this match's watcher and when it last looked. */
+  private readonly poseWatch = new PoseWatch();
+  private poseCheckAt = 0;
+  /** The pose check's report: a player's name, the slot the spectator camera follows (-1: none) and the match (the session sets them). */
+  poseCheckName: (slot: number) => string = (slot) => `slot ${slot}`;
+  poseCheckWatched: () => number = () => -1;
+  poseCheckCamera: () => string = () => '';
+  poseCheckMatch = '';
+
+  /**
+   * The pose check: every third-person character body drawn now (the living and the dead, not your own hidden one), on
+   * screen or not, handed to the watcher; it reports one drawn in its bind pose or never posed for more than a moment.
+   */
+  private checkPoses(now: number): void {
+    const cam = this.scene.activeCamera;
+    if (!cam) return;
+    const planes = Frustum.GetPlanes(cam.getTransformationMatrix());
+    const samples: PoseSample[] = [];
+    const add = (a: Avatar, corpse: boolean) => {
+      const anim = a.anim;
+      if (!(anim instanceof CharacterAnimator) || a.hiddenSelf || this.fpBody?.a === a) return;
+      const at = anim.ch.root.getAbsolutePosition();
+      const visible = a.root.isEnabled() && anim.ch.root.isEnabled() && !a.culled && (a.shown ?? 1) > 0.2 && inView(planes, at.x, at.y + 0.9, at.z, 1);
+      const alive = !corpse && !!a.alive;
+      const bind = visible ? anim.drawnBindPose() : null;
+      samples.push({
+        key: a,
+        visible,
+        alive,
+        bind: bind ? bind.arms : null,
+        poses: anim.poses,
+        details: () => this.poseDetails(a, anim, corpse, now, bind),
+      });
+    };
+    for (const a of this.avatars.values()) add(a, false);
+    for (const c of this.corpses) add(c.a, true);
+    for (const r of this.poseWatch.observe(now, samples)) recordPoseReport(r);
+  }
+
+  /** What a pose check report says of a body (only built when one is written). */
+  private poseDetails(a: Avatar, anim: CharacterAnimator, corpse: boolean, now: number, bind: { arms: boolean; legs: boolean } | null): Record<string, unknown> {
+    let spec: AvatarSpec = {};
+    try {
+      spec = JSON.parse(a.specKey) as AvatarSpec;
+    } catch {
+      // (A key is always a spec's JSON.)
+    }
+    const cam = this.scene.activeCamera;
+    const at = anim.ch.root.getAbsolutePosition();
+    // The detail level drawn: whether its meshes with a low-detail copy draw that copy from the camera now.
+    let lod: 'near' | 'far' | 'none' = 'none';
+    for (const m of anim.ch.meshes) {
+      if (!(m instanceof MeshClass) || !m.getLODLevels().length || !cam) continue;
+      lod = m.getLOD(cam) === m ? 'near' : 'far';
+      break;
+    }
+    const watched = this.poseCheckWatched();
+    const state = corpse || !a.alive ? 'dead' : a.spawnedAt !== undefined && now - a.spawnedAt < 3000 ? 'spawning' : 'alive';
+    return {
+      who: this.poseCheckName(a.slot),
+      slot: a.slot,
+      look: spec.look ?? null,
+      body: anim.ch.body,
+      character: anim.ch.root.name,
+      npc: !!spec.npc,
+      state,
+      spectated: watched === a.slot,
+      camera: this.poseCheckCamera(),
+      match: this.poseCheckMatch,
+      fromPool: !!a.fromPool,
+      lives: anim.lives,
+      lod,
+      bindLegs: bind?.legs ?? null,
+      gun: !!a.weaponNode,
+      weaponSlot: a.weaponSlot,
+      awaitingPose: !!a.awaitingPose,
+      ragdoll: !!a.ragdoll,
+      sinceSpawnMs: a.spawnedAt !== undefined ? Math.round(now - a.spawnedAt) : null,
+      sinceDeathMs: a.diedAt !== undefined ? Math.round(now - a.diedAt) : null,
+      sinceBodyMs: a.bodyAt !== undefined ? Math.round(now - a.bodyAt) : null,
+      distance: cam ? Math.round(Vector3.Distance(cam.globalPosition, at) * 10) / 10 : null,
+      position: [Math.round(at.x * 10) / 10, Math.round(at.y * 10) / 10, Math.round(at.z * 10) / 10],
+      animator: anim.poseState(),
+    };
   }
 
   /**
@@ -3379,6 +3478,9 @@ export class GameView {
       kept.ch.root.parent = root;
       kept.ch.root.setEnabled(true);
       kept.setDormant(false);
+      kept.lives++;
+      a.fromPool = true;
+      a.bodyAt = performance.now();
       a.anim = kept;
       placeholder.setEnabled(false);
       return a;
@@ -3392,6 +3494,7 @@ export class GameView {
       const anim = new CharacterAnimator(this.scene, ch);
       // Bodies of one look share the first one's torso measurement.
       anim.torsoLook = specKey;
+      a.bodyAt = performance.now();
       a.anim = anim;
       if (a.culled) a.anim.setDormant(true);
       placeholder.setEnabled(false);

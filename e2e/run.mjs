@@ -13628,6 +13628,9 @@ async function farBodies(browser) {
   const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  // The pose check (game/poseCheck.ts; off in test runs unless turned on): a crowd's far, culled, dying and pooled
+  // bodies, none of them drawn in its bind pose or left unposed.
+  await page.addInitScript(() => (window.__poseCheck = true));
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=26&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing', null, { timeout: T(120000) });
   await fight(page).catch(() => {});
@@ -13768,6 +13771,8 @@ async function farBodies(browser) {
   const drawnHeights = r2.heights.map((h) => `${h.look} ${h.dist} m ${h.drawn}/${h.full} m`).join(', ');
   const short = r2.heights.filter((h) => h.full > 0 && h.drawn < h.full * 0.9);
   check(r2.heights.some((h) => h.look === 'core.hyena') && short.length === 0 && r2.failed.length === 0 && shared.length === 0, `far copies stand as tall as their full bodies in the same pose, on the same skeleton, Hyena Warrior's among them (drawn far / full detail, lowest of the frames: ${drawnHeights || 'none measured'}; short: ${short.map((h) => h.look).join(', ') || 'none'}; on a skeleton of their own: ${[...new Set(shared)].join(', ') || 'none'})`);
+  const pose = await page.evaluate(() => ({ reports: window.__poseReports ?? null, stats: window.__poseCheckStats ?? null }));
+  check(pose.stats?.checks > 0 && pose.stats.onScreen > 0 && Array.isArray(pose.reports) && pose.reports.length === 0, `the pose check looked (${JSON.stringify(pose.stats)}) and saw no body in its bind pose or unposed (${JSON.stringify(pose.reports)})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

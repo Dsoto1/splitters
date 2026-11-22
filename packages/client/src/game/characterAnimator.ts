@@ -14,6 +14,7 @@ import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { pairHold3p } from './pairView.ts';
 import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
+import { rigidAlike } from './poseCheck.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { guardOf } from './guardUnderside.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
@@ -1689,15 +1690,91 @@ export class CharacterAnimator {
 
   /** Bend the spine for aim pitch and counter-twist the hip turn, then put the weapon in the hands. */
   private afterAnimations(): void {
-    if (this.dead || this.dormant || !this.spine.length) return;
+    if (this.dead || this.dormant) return;
     // Not evaluated this frame (animation LOD): the bones still hold last evaluation's aim and grip (the gun drawn
     // between its last two places while smoothed).
     if (this.gate.skip) {
-      if (this.blend.on) this.blendGun(false);
+      if (this.blend.on && this.spine.length) this.blendGun(false);
       return;
     }
+    this.poseCount++;
+    if (!this.spine.length) return;
     this.pose();
     if (this.blend.on) this.blendGun(true);
+  }
+
+  /** Evaluated poses applied so far (the after-clip work of an awake, living evaluation): the pose check (poseCheck.ts). */
+  private poseCount = 0;
+  get poses(): number {
+    return this.poseCount;
+  }
+
+  /** How many avatars this body has stood in (1: built for this one; more: taken back from the body pool). */
+  lives = 1;
+
+  /** The pose check's bones, per skeleton: their places in its skin matrices, chest first (found on first use). */
+  private bindProbe: { sk: Skeleton; arms: number[]; legs: number[] }[] | null = null;
+
+  /**
+   * Whether the skin as last drawn is the bind pose (the T-pose), from its skin matrices: the upper and lower arms
+   * turned as the chest is (and, for `legs`, the thighs and calves as the pelvis), which no clip's pose does. Null:
+   * no skeleton or no matrices yet. A few matrix entries per call; the pose check calls it a few times a second.
+   */
+  drawnBindPose(): { arms: boolean; legs: boolean } | null {
+    if (!this.bindProbe) {
+      this.bindProbe = [];
+      const sks = new Set<Skeleton>();
+      for (const m of this.ch.meshes) if (m.skeleton) sks.add(m.skeleton);
+      for (const sk of sks) {
+        const slot = (name: string): number => {
+          const j = this.ch.joints.get(name);
+          if (!j) return -1;
+          const i = sk.bones.findIndex((b) => b.getTransformNode() === j);
+          if (i < 0) return -1;
+          const own = (sk.bones[i] as unknown as { _index: number | null })._index;
+          return own === null || own === undefined ? i : own;
+        };
+        const arms = ['spine_03', 'upperarm_l', 'upperarm_r', 'lowerarm_l', 'lowerarm_r'].map(slot);
+        const legs = ['pelvis', 'thigh_l', 'thigh_r', 'calf_l', 'calf_r'].map(slot);
+        if (arms[0]! >= 0 && arms.filter((x) => x >= 0).length >= 3) this.bindProbe.push({ sk, arms, legs });
+      }
+    }
+    let out: { arms: boolean; legs: boolean } | null = null;
+    for (const p of this.bindProbe) {
+      const raw = p.sk as unknown as { _transformMatrices: Float32Array | null; needInitialSkinMatrix: boolean };
+      let m: Float32Array | null = raw._transformMatrices;
+      if (raw.needInitialSkinMatrix) m = (this.ch.meshes.find((x) => x.skeleton === p.sk) as unknown as { _bonesTransformMatrices?: Float32Array } | undefined)?._bonesTransformMatrices ?? null;
+      if (!m) continue;
+      const arms = rigidAlike(m, p.arms);
+      if (arms === null) continue;
+      const legs = rigidAlike(m, p.legs) ?? false;
+      // Any skeleton of the body drawn so is enough to show (its parts and gear share one, as a rule).
+      if (!out || (arms && !out.arms)) out = { arms, legs };
+    }
+    return out;
+  }
+
+  /** The animator's state for a pose check report (poseCheck.ts): plain values only. */
+  poseState(): Record<string, unknown> {
+    const playing: string[] = [];
+    for (const [c, g] of this.ch.clips) if (g.isPlaying) playing.push(`${c}:${g.weight.toFixed(2)}`);
+    if (this.aimUpper?.isPlaying) playing.push(`aim_upper:${this.aimUpper.weight.toFixed(2)}`);
+    return {
+      clip: this.current,
+      playing,
+      dead: this.dead,
+      dormant: this.dormant,
+      frozen: this.frozenPose,
+      gateShut: this.gate.skip,
+      smoothing: this.blend.on,
+      posed: this.posedOnce,
+      poses: this.poseCount,
+      armed: this.armed,
+      gunShown: !!this.weapon && this.weapon.isEnabled(),
+      slept: this.slept.size,
+      parked: this.parked.size,
+      firstPerson: !!this.fp,
+    };
   }
 
   /** The after-clip work of an evaluation: aim pitch and twist on the spine, the reactions, the weapon in the hands. */
