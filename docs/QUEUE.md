@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/combat-a11y` · 6e83f6b5 · run 45022997489 (combat accessibility, the rest: toggle aim on sprint, every camera-shake source, older haptics, the pause menu's Accessibility group)
 - `wip/melee-fp-pose` · e3e420c1 · run 45026049251 (first-person pose for long melee weapons: Katana, Scimitar, Baseball Bat, Battle Axe and Spear held two-handed by the grip, hands in view; touches `game/view.ts` as combat-a11y does, different functions)
+- `wip/weapon-manager` · 3988778d · run 45027085530 (the owner's Weapon Manager on `?mode=weapons` → Manage, and `tools/content/apply-weapon-edits.mjs`; touches shared pickup/set/class/Roulette code for hidden weapons, `game/sessionAudio.ts` (a weapon's reload sound) and MapMaker's palette and inspector)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
