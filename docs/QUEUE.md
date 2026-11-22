@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/sonniss-1` · 4965688b · 45056358622 (the Sonniss sound pass: recorded everyday guns, reloads, melee, explosions, impacts, breaks, doors, footsteps, falls, weather, splash, heartbeat and alarm; new bullet flyby and jump pad launch; gun alternates in the Weapon Manager; docs/AUDIO.md)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -229,7 +230,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Parked
 - **Parked (owner, 2026-11-19, "A" on the lead's list of gaps):** (6) long-term goals: challenges ("10 spear kills") and cosmetic unlocks, no leaderboards; (7) other languages (all text is English, in the code); (8) settings that follow the account across devices.
-- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): waits until the owner puts them in Drive (arriving since 2026-11-18 01:14 UTC in `sounds/sfx/GDC 2016/` and `sounds/sfx/GDC 2017/`, e.g. Gunshots and bullets, Ambiance, heartbeat and breathing; starts once the owner says the upload is done) (gunshots, impacts and flybys, footsteps by surface, ambience, vehicles and explosions, UI, voices). Then: pick 2-4 variants each, process (trim, level, compress), map to `content/sounds.json`, provenance with the Sonniss licence text. Not used: the Epidemic Sound files the owner added and is removing (the Pro plan doesn't cover apps and games).
+- M · B · **Recorded sound effects from the Sonniss GDC bundles** (owner, 2026-11-17): **pass 1 built 2026-11-22 on `wip/sonniss-1`, green, Ready to land** (docs/AUDIO.md, "Recorded sounds from the Sonniss bundles"). Left for later: footsteps by surface (with the surface-types data; the Drive has concrete, metal, wood, grass, dirt and snow steps), grenade bounces (needs a bounce event), recorded engine loops, ambience beds, the shotgun's pump after each shot, and the licence text from a bundle's own licence file (the owner to add it to the Drive; `content/licenses/sonniss-gdc.txt` holds a summary until then).
 - L · B · A full weapon release: Stormvolt Blaster plus any other new guns (new weapon types are paused by the owner).
 - S · B · Sound pass 2 (paused by the owner).
 - ? · B · Packed inputs to cut upload bandwidth.
