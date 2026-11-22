@@ -1865,6 +1865,9 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 #weapon-wheel .ww-slice-tag kbd { font: 700 clamp(9px, 1.9vmin, 11px)/1 var(--font-display); padding: 2px 5px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); color: var(--muted); }
 #weapon-wheel .ww-slice-tag.on b, #weapon-wheel .ww-slice-tag.on kbd { color: var(--cyan); }
 #weapon-wheel .ww-slice-tag.empty { opacity: 0.35; }
+/* Phones and tablets: no number keys to show, and a smaller ring: the slices keep their icon, name and count. */
+html.touch #weapon-wheel .ww-slice-tag kbd { display: none; }
+@media (max-height: 520px) { #weapon-wheel .ww-slice-tag .ww-icon { height: clamp(16px, 5vmin, 30px); } #weapon-wheel .ww-slice-tag b { font-size: clamp(8px, 2vmin, 11px); } }
 #weapon-wheel .ww-arc { position: absolute; inset: 0; pointer-events: none; display: none; }
 #weapon-wheel .ww-arc.open { display: block; }
 #weapon-wheel .ww-ring.ww-cats .ww-item { width: 15%; background: rgba(18, 24, 39, 0.88); border-color: rgba(255, 255, 255, 0.08); }
