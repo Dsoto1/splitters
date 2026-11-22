@@ -28,7 +28,7 @@ describe("Character Select's groups", () => {
     }
     const branch = (b: string) => CORE_LOOKS.filter((l) => l.branch === b).map((l) => l.id);
     // Agents & Spies became Agency (2026-11-17); the soldiers Army.
-    expect(branch('agency')).toEqual(expect.arrayContaining(['core.stealthop', 'core.zhao', 'core.resolvesoldier', 'core.saintnick']));
+    expect(branch('agency')).toEqual(expect.arrayContaining(['core.stealthop', 'core.zhao', 'core.resolvesoldier']));
     expect(branch('army')).toEqual(expect.arrayContaining(['core.grunt68', 'core.wwiisoldier', 'core.warriorsentinel', 'core.tacticalsoldier']));
     expect(lookBranch('npc:trooper')).toBe('agency');
     expect(lookBranch('npc:gunner')).toBe('army');

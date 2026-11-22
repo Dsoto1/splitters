@@ -89,7 +89,8 @@ describe('character tiers', () => {
   it('Character Select: an Experimental section before Yours, only when someone is in it', () => {
     const entry = (l: CharacterLook) => ({ id: l.id, name: l.name, group: characterSectionOf(l)! });
     const mine = { id: 'm1', name: 'Mine', group: 'mine' };
-    const without = characterSections([...CORE_TIER.map(entry), mine]);
+    // (An experimental character in a collection sits in the collection's section, so it belongs with the core tier here.)
+    const without = characterSections([...CORE_LOOKS.filter((l) => characterTier(l) === 'core' || l.collection).map(entry), mine]);
     expect(without.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
     expect(without.at(-1)!.id).toBe('mine');
     const withOne = characterSections([...ROSTER.map(entry), mine]);
