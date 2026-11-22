@@ -1,5 +1,5 @@
 {
-  "$comment": "Game sounds. File variants come from CC0 packs in assets-src and are copied to packages/client/public/sounds by `pnpm content:build`; `synth` sounds are rendered at load time by our own synthesiser (packages/client/src/audio/synth.ts). gain: linear volume. range: near | mid | far (how far the sound carries). jitter: random playback-rate spread. rate: base playback rate. See docs/AUDIO.md.",
+  "$comment": "Game sounds. File variants come from CC0 packs in assets-src (copied to packages/client/public/sounds by `pnpm content:build`) or, for `processed` packs (the Sonniss GDC bundles), are cut and encoded from the owner's bundle files by tools/content/sonniss-audio.mjs (start, length, stereo, punch, window, level; content/sonniss.lock.json); `synth` sounds are rendered at load time by our own synthesiser (packages/client/src/audio/synth.ts). gain: linear volume. range: near | mid | far (how far the sound carries). jitter: random playback-rate spread. rate: base playback rate. See docs/AUDIO.md.",
   "packs": {
     "kenney-sci-fi-sounds": {
       "title": "Sci-Fi Sounds 1.0",
