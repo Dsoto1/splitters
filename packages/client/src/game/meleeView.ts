@@ -52,7 +52,7 @@ interface Key {
  * so both hands and the length of the blade show and the middle of the view stays clear. The swing: wind up (back
  * over the shoulder), cut down and across to the lower left, come back.
  */
-const BLADE_REST: Key = { at: 0, hand: [0.16, -0.19, 0.4], pitch: -0.82, yaw: -0.28, roll: -0.35 };
+const BLADE_REST: Key = { at: 0, hand: [0.15, -0.13, 0.42], pitch: -0.72, yaw: -0.28, roll: -0.35 };
 const BLADE_SWING: readonly Key[] = [
   BLADE_REST,
   { at: 0.2, hand: [0.21, -0.13, 0.34], pitch: -1.25, yaw: -0.05, roll: -0.55 },

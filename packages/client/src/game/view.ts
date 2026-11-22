@@ -173,6 +173,7 @@ import { FrameSpread } from './frameSpread.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
+import { firstPersonHold, isLongMelee, meleePlacement, swingSeconds } from './meleeView.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
@@ -608,7 +609,11 @@ export class GameView {
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
-  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number }>();
+  /** First-person holds of long melee weapons (meleeView.ts firstPersonHold), one object per weapon and length, so a re-grip is a no-op. */
+  private readonly fpHolds = new Map<string, WeaponHold>();
+  /** Your own long melee swing in first person: when it started (ms; meleeView.ts), null: none. */
+  private swingAt: number | null = null;
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
@@ -1893,8 +1898,19 @@ export class GameView {
   /** The shown gun's sight-window clip (opticHousing.ts CLIP_NAME), found with `aimAt`. */
   private aimClip: AbstractMesh | null = null;
 
+  /** The hold the first-person hands take on `def`'s viewmodel: a long melee weapon's two-handed one (meleeView.ts), else its own. */
+  private heldHold(def: WeaponDefinition): WeaponHold {
+    if (!isLongMelee(def)) return def.view.hold;
+    const tipZ = this.viewmodels.get(def.id)?.tipZ;
+    const key = `${def.id} ${tipZ ?? ''}`;
+    let hold = this.fpHolds.get(key);
+    if (!hold) this.fpHolds.set(key, (hold = firstPersonHold(def, tipZ)));
+    return hold;
+  }
+
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
+    this.swingAt = null;
     this.viewWeapon = def?.id;
     const load = ++this.viewLoad;
     // Guns you've held are kept (hidden), so switching back is instant: building one each switch hitched the frame,
@@ -1902,13 +1918,13 @@ export class GameView {
     this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
-    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
+    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number }) => {
       ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
       this.aimAt = null;
       v.node.setEnabled(true);
       this.viewmodel = v.node;
-      this.fpArms?.anim?.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
-      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
+      this.fpArms?.anim?.gripExternal(v.node, this.heldHold(def), this.soloFor(def.id));
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, this.heldHold(def), this.soloFor(def.id));
     };
     const kept = this.viewmodels.get(def.id);
     if (kept) return show(kept);
@@ -1922,7 +1938,7 @@ export class GameView {
       const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
       // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
       attachOptic(this.scene, node, def, true);
-      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z, tipZ: bounds.max.z };
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
@@ -2025,8 +2041,8 @@ export class GameView {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     const node = def ? (this.viewmodel ?? null) : null;
     node?.setEnabled(true);
-    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
-    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
+    this.fpArms?.anim?.gripExternal(node, def ? this.heldHold(def) : null, this.soloFor(def?.id));
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def ? this.heldHold(def) : null, this.soloFor(def?.id));
   }
 
   /**
@@ -2049,8 +2065,8 @@ export class GameView {
           this.viewmodel = node;
           // Its optic's parts are the new copy's: found again with the aim's placement.
           this.aimAt = null;
-          this.fpArms?.anim?.gripExternal(node, def.view.hold, this.soloFor(def.id));
-          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold, this.soloFor(def.id));
+          this.fpArms?.anim?.gripExternal(node, this.heldHold(def), this.soloFor(def.id));
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, this.heldHold(def), this.soloFor(def.id));
         }
         // (A second gun made from the old copy is made again from this one, so the two look alike.)
         this.dropSecond(def.id);
@@ -2114,7 +2130,7 @@ export class GameView {
         m.receiveShadows = false;
       }
       arms.anim = new CharacterAnimator(this.scene, ch);
-      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
+      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, this.heldHold(getWeapon(this.viewWeapon)), this.soloFor(this.viewWeapon));
     });
   }
 
@@ -2201,6 +2217,7 @@ export class GameView {
     // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
     const visual = gunplayOf(def).kick?.visual;
     const left = !!gun?.off && this.pairShown();
+    if (isLongMelee(def) && !left) this.swingAt = performance.now();
     const amount = def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45;
     if (left) this.kickAmount2 = Math.min(1, this.kickAmount2 + amount);
     else this.kickAmount = Math.min(1, this.kickAmount + amount);
@@ -2389,8 +2406,8 @@ export class GameView {
     if (solo !== this.pairSolo) {
       this.pairSolo = solo;
       if (def && this.viewmodel && !this.throwHold?.node) {
-        this.fpArms?.anim?.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
-        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+        this.fpArms?.anim?.gripExternal(this.viewmodel, this.heldHold(def), this.soloFor(def.id));
+        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, this.heldHold(def), this.soloFor(def.id));
       }
     }
     const arms2 = this.fpArms2;
@@ -2487,6 +2504,21 @@ export class GameView {
       z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
     this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + tip, aim.yaw + (melee ? kick * 0.5 : 0), roll);
+    if (isLongMelee(def) && up === 0) {
+      // A long melee weapon (meleeView.ts): placed by its grip so both hands show, raised at rest, swung on a pose
+      // curve, drawn up from the shoulder; its barrel going off (the Battle Axe) brings it level to the aim with a
+      // gun's kick. The walk's bob as any weapon's.
+      const since = this.swingAt === null ? null : (performance.now() - this.swingAt) / 1000 / swingSeconds(def);
+      if (since !== null && since >= 1) this.swingAt = null;
+      const shot = this.kickShot ? kick : 0;
+      const p = meleePlacement(def, { tipZ: this.viewmodels.get(def.id)?.tipZ, swing: since !== null && since < 1 ? since : null, raise: o.raise, level: Math.min(1, shot * 1.5) });
+      this.viewRoot.position.set(
+        p.x + Math.sin(this.bobPhase) * 0.012 * bob,
+        p.y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob,
+        p.z - shot * 0.06 * heavy,
+      );
+      this.viewRoot.rotation.set(p.pitch - shot * 0.12 * heavy, p.yaw, p.roll);
+    }
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -3084,7 +3116,7 @@ export class GameView {
       a.weaponNode = undefined;
       fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
       this.fpBody = fp;
-      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, this.heldHold(getWeapon(this.viewWeapon)), this.soloFor(this.viewWeapon));
       // Your own arms aren't needed while the body holds the gun.
       this.fpArms?.root.setEnabled(false);
     }
