@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { KINDS, ROOT, budgetProblems, build, load, sizesOf, validate } from '../kitprops.mjs';
 import { domeDims } from '../kit/dome.mjs';
+import { coplanarLayers } from '../kit/coplanar.mjs';
 
 const sha = (b) => createHash('sha256').update(b).digest('hex').slice(0, 16);
 
@@ -229,6 +230,38 @@ describe('kit-prop generator', () => {
     // Crimson has no trim: the same triangles as before the trim slot existed (the shipped files did not change).
     expect(tris(fam.variants[0].look, 0)).toBe(tris(plain, 0));
     void trim;
+  });
+
+  // Z-fighting (owner, 2026-11-22: St. John's wall crest shimmered, its gold border on the board's face): no two
+  // differently coloured faces in one plane, facing the same way and overlapping. The families below had such layers
+  // when the check came in (docs/QUEUE.md, "Coplanar kit layers"); fixing one takes it off the list, and no family
+  // may join it.
+  const COPLANAR_KNOWN = new Set(['kit.bed.bunk', 'kit.board.chalk', 'kit.board.notice', 'kit.board.pennants', 'kit.cabinet.trophy', 'kit.console.panel', 'kit.container.shipping', 'kit.crate.framed', 'kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open', 'kit.door.oak_slim', 'kit.door.oak_slim_ajar', 'kit.door.oak_slim_open', 'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.rail', 'kit.fence.site_panel', 'kit.machine.window', 'kit.monument.island_bed', 'kit.pipe.coolant', 'kit.pipe.junction', 'kit.pipe.valve', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shop.bakery_stand', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.produce_stand', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.two_seat', 'kit.sport.volleyball_net', 'kit.stall.market', 'kit.street.bike_rack', 'kit.street.bus_stop', 'kit.table.school_desks', 'kit.wall.fireplace', 'kit.wall.panel_window', 'kit.wall.stone_broken']);
+  it('no family draws coplanar layers of different colours (z-fighting), beyond the known list', () => {
+    const now = new Set();
+    for (const f of families) {
+      for (const v of f.variants) {
+        const g = { ...f.generator, ...(v.set ?? {}) };
+        f.lods.forEach((_, level) => {
+          if (now.has(f.id)) return;
+          const m = KINDS[g.kind](v.seed, f.size, g, v.look, level);
+          if (coplanarLayers(m, { limit: 1 }).length) now.add(f.id);
+        });
+      }
+    }
+    expect([...now].filter((id) => !COPLANAR_KNOWN.has(id)), 'new coplanar layers').toEqual([]);
+    expect([...COPLANAR_KNOWN].filter((id) => !now.has(id)), 'fixed: take these off COPLANAR_KNOWN').toEqual([]);
+  }, 60000);
+
+  it('the wall crest\'s layers stand off the board and each other at its smallest placed size (half: the academy porch)', () => {
+    const f = families.find((x) => x.id === 'kit.sign.crest_wall');
+    for (const v of f.variants) {
+      f.lods.forEach((_, level) => {
+        const m = KINDS[f.generator.kind](v.seed, f.size, f.generator, v.look, level);
+        // 2 mm apart at half size: 4 mm in the model.
+        expect(coplanarLayers(m, { eps: 0.004, limit: 1 }), `${v.name} level ${level}`).toEqual([]);
+      });
+    }
   });
 
   it('never uses Math.random (seeded streams only)', () => {

@@ -358,7 +358,11 @@ there are.
    one's numbers also changes `packages/shared/test/fixtures/weapons-resolved.json` (rewrite it with
    `UPDATE_WEAPON_FIXTURE=1 pnpm vitest run packages/shared/test/weaponsData.test.ts` and read the diff: only the
    weapon you meant to change may move). A new weapon is added to the fixture the same way.
-10. **Pictures:** its icon comes from the "Capture portraits" workflow (`tools/content/capture-weapon-icons.mjs`).
+10. **Pictures:** its icon comes from the "Capture portraits" workflow (`tools/content/capture-weapon-icons.mjs`);
+   a weapon given a new model needs it too. For a few, against a served build: `node tools/content/capture-weapon-icons.mjs
+   http://localhost:4799 guns/<model>.glb` (CHROMIUM=<path> for another browser build); it also drops icons of models no
+   weapon uses any more. The unit test `packages/client/test/weaponIcons.test.ts` fails while a weapon has none (the
+   Weapon Manager would show "no picture", and the kill feed would build the model mid-match).
 
 A throwable or class is added the same way in its file, with the next code: their codes run 0, 1, 2... without
 gaps (clients read them by position). A class ability is code first (`sim/classes.ts`), then its numbers go in
