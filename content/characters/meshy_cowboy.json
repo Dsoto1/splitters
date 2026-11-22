@@ -10,27 +10,24 @@
   "nameTheme": "cowboy",
   "bio": "Rode into the arena on a horse that has since left without him.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: cowboy.",
+  "notes": "Owner, 2026-11-22: the Sunset Gunslinger model replaces Dusty Ranger's (\"T Pose Cowboy\", Meshy Community CC0, built 2026-10-29); Dusty Ranger keeps its name and roster place, and the separate Sunset Gunslinger is gone (saved choices and bot sets that named it play this look: RETIRED_LOOKS). Built from the Drive download \"Gunslinger at Sunset\" (rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"; recorded as Meshy Community CC0 until then).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea",
-    "community": {
-      "model": "T Pose Cowboy"
-    },
-    "file": "^Meshy_AI_T_Pose_Cowboy_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-21",
+    "url": null,
+    "file": "^Meshy_AI_Gunslinger_at_Sunset_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
-    "roughness": 0.7
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true,
-    "cloth": true,
-    "hands": {
-      "curl": 1
-    }
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

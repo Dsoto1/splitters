@@ -126,6 +126,7 @@ const RULES = [
   [/^tools\/perf\//, NONE, []],
   // The read-only asset inventory (docs/map-briefs/urban/ASSET_AUDIT.md): it reads the registries and writes a document.
   [/^tools\/content\/asset-inventory\.mjs$/, NONE, []],
+  [/^tools\/content\/sonniss-audio\.mjs$/, ['offline'], ['content']],
   // Screenshot baselines.
   [/^e2e\/baselines\//, ['visual'], []],
   [/^e2e\/timings\.json$/, NONE, []],
@@ -164,6 +165,8 @@ const RULES = [
   // The owner's music and announcer (tools/content/owner-audio.mjs encodes them): the offline flow loads the lines
   // and plays the menu's music.
   [/^content\/owner-audio(\.lock)?\.json$/, ['offline'], ['client', 'content']],
+  // The Sonniss recordings (tools/content/sonniss-audio.mjs cuts and encodes them; their licence note): the offline flow loads every sound.
+  [/^content\/(sonniss\.lock\.json|licenses\/sonniss-gdc\.txt)$/, ['offline'], ['client', 'content']],
   [/^(content|assets-src)\//, FULL, UNIT_ALL],
   // A character's built files: its models (body, first-person arms) and its portrait.
   [CHARACTER_BUILT, CHARACTER_BUILT_FLOWS, CHARACTER_UNITS],
