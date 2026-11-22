@@ -94,10 +94,36 @@ export function saveLeanKeys(keys: { left: string; right: string }): void {
     // Lasts for this page.
   }
 }
+/**
+ * The weapon category keys (owner, 2026-11-22; Options → Controls rebinds them): key n picks the wheel's slice n
+ * (wheelCategories.ts WHEEL_CATEGORIES: Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets),
+ * again goes on to the next weapon you hold in it. Defaults 1-8 on the number row.
+ */
+const CATEGORY_KEYS_PREF = 'tiletrigger.categoryKeys';
+export const CATEGORY_KEY_COUNT = 8;
+export const DEFAULT_CATEGORY_KEYS: readonly string[] = Array.from({ length: CATEGORY_KEY_COUNT }, (_, i) => `Digit${i + 1}`);
+/** A key a category can take: a number key, or any key the game doesn't use for something else. */
+export const categoryKeyAllowed = (code: string): boolean => /^(Digit|Numpad)\d$/.test(code) || (code.length > 0 && !RESERVED_KEYS.has(code));
+export function loadCategoryKeys(): string[] {
+  try {
+    const k = JSON.parse(localStorage.getItem(CATEGORY_KEYS_PREF) ?? 'null') as unknown;
+    if (Array.isArray(k) && k.length === CATEGORY_KEY_COUNT && k.every((c) => typeof c === 'string' && categoryKeyAllowed(c)) && new Set(k).size === k.length) return k as string[];
+  } catch {
+    // Private windows: the defaults.
+  }
+  return [...DEFAULT_CATEGORY_KEYS];
+}
+export function saveCategoryKeys(keys: readonly string[]): void {
+  try {
+    localStorage.setItem(CATEGORY_KEYS_PREF, JSON.stringify(keys));
+  } catch {
+    // Lasts for this page.
+  }
+}
 /** "KeyQ" → "Q", "Backquote" → "`": how a key code reads in the menus. */
 export function keyLabel(code: string): string {
   const named: Record<string, string> = { Backquote: '`', CapsLock: 'Caps Lock', AltLeft: 'Left Alt', AltRight: 'Right Alt', ControlLeft: 'Left Ctrl', ControlRight: 'Right Ctrl', ShiftRight: 'Right Shift', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Backslash: '\\', Slash: '/', Period: '.', Minus: '-', Equal: '=' };
-  return named[code] ?? code.replace(/^Key/, '').replace(/^Numpad/, 'Num ');
+  return named[code] ?? code.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num ');
 }
 /** Held this long, the wheel key (or a controller's Y) opens the wheel; a shorter press is a tap. */
 export const WHEEL_HOLD_MS = 180;
@@ -182,8 +208,10 @@ export class InputState {
   private altDown = false;
   /** A side mouse button (or Y): quick melee. */
   private meleeDown = false;
-  /** Weapon slot requested with number keys (0 = none pending). */
+  /** Weapon category requested with its key (1-based, in the wheel's order; 0 = none pending). */
   private slotRequest = 0;
+  /** The weapon category keys (Options → Controls), key n for the wheel's slice n. */
+  categoryKeys: string[] = loadCategoryKeys();
   /** The fire mode key was pressed (sim/fireModes.ts). */
   private fireModeQueued = false;
   /** Mouse wheel steps since last read (+ = next weapon). */
@@ -402,7 +430,11 @@ export class InputState {
     } else if (digit && this.msgMenu) {
       if (Number(digit[1]) <= QUICK_MESSAGES.length) this.sayQueued = Number(digit[1]);
       this.msgMenu = false;
-    } else if (digit) this.slotRequest = Number(digit[1]);
+    } else {
+      // A weapon category's key (1-8 by default). Not on a key's repeat: holding it doesn't spin through the slice.
+      const n = this.categoryKeys.indexOf(e.code);
+      if (n >= 0 && !e.repeat) this.slotRequest = n + 1;
+    }
   }
 
   private keyUp(code: string): void {
@@ -723,7 +755,7 @@ export class InputState {
     return s;
   }
 
-  /** Consume a pending number-key weapon request. */
+  /** Consume a pending weapon category request (its key's number, 1-based; Fort Wars' builder: the piece). */
   takeSlotRequest(): number {
     const s = this.slotRequest;
     this.slotRequest = 0;

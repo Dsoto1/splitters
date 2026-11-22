@@ -6131,6 +6131,90 @@ async function offlineFlow(browser) {
   await page.context().close();
   await musicChecks(browser);
   await spectateChecks(browser);
+  await weaponKeysChecks(browser);
+}
+
+/**
+ * Weapon switching by category (owner, 2026-11-22): with a stack of guns picked up, the category keys (1-8, the wheel's
+ * slices in order) reach every weapon (again: the next in the category; away from it, the one used last there), Q's
+ * tap and the mouse wheel still switch, and the wheel's slices and outer arc pick by pointing. The old slot keys only
+ * ever reached the first weapon of a slot from elsewhere (the Pistol, the AK). Pictures: weapon-keys-wheel*.png.
+ */
+async function weaponKeysChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?offline&test=1&god=1`);
+  await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__give, null, { timeout: T(60000) });
+  await holdBots(page);
+  await playWithoutMouse(page);
+  const guns = ['core.hand_cannon', 'core.revolver', 'core.rifle', 'core.battle_rifle', 'core.desert_carbine', 'core.shotgun', 'core.lmg', 'core.laser_rifle'];
+  await page.evaluate((ids) => { for (const id of ids) window.__give(id); }, guns);
+  await page.waitForFunction((n) => window.__cs.local.inventory.size >= n, guns.length + 1, { timeout: T(10000) }).catch(() => {});
+  const held = () => page.evaluate(() => window.__cs.local.weapon?.id ?? null);
+  // A key, then the weapon it switched to (once the page has taken the key and the switch is in hand).
+  const press = async (key) => {
+    const was = await held();
+    await page.keyboard.press(key);
+    await page.waitForFunction((w) => window.__cs.local.weapon?.id !== w, was, { timeout: T(4000) }).catch(() => {});
+    return held();
+  };
+  const pistols = [await press('Digit1'), await press('Digit1'), await press('Digit1')];
+  check(new Set(pistols).size === 3 && pistols.every((p) => ['core.pistol', 'core.hand_cannon', 'core.revolver'].includes(p)), `key 1 takes out a pistol and again goes on through all three held (${pistols.join(', ')})`);
+  const rifles = [await press('Digit3'), await press('Digit3'), await press('Digit3')];
+  check(new Set(rifles).size === 3 && rifles.every((p) => ['core.rifle', 'core.battle_rifle', 'core.desert_carbine'].includes(p)), `key 3 goes through every rifle held, not only the AK (${rifles.join(', ')})`);
+  const heavy = await press('Digit6');
+  const energy = await press('Digit7');
+  const shotgun = await press('Digit4');
+  check(heavy === 'core.lmg' && energy === 'core.laser_rifle' && shotgun === 'core.shotgun', `keys 6, 7 and 4: Heavy, Energy, Shotguns (${heavy}, ${energy}, ${shotgun})`);
+  const back = await press('Digit3');
+  check(back === rifles[2], `key 3 again brings back the rifle used last (${back}; last ${rifles[2]})`);
+  const last = await press('KeyQ');
+  check(last === 'core.shotgun', `a tap of Q still goes back to your last weapon (${last})`);
+  const was = await held();
+  await page.mouse.wheel(0, 120);
+  await page.waitForFunction((w) => window.__cs.local.weapon?.id !== w, was, { timeout: T(4000) }).catch(() => {});
+  check((await held()) !== was, `the mouse wheel still steps to the next weapon (${was} → ${await held()})`);
+  // The wheel: hold Q; eight slices (one per key), the empty ones dimmed.
+  const open = async () => {
+    await page.keyboard.down('KeyQ');
+    return page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
+  };
+  check(await open(), 'holding Q opens the weapon wheel');
+  const slices = await page.$$eval('#weapon-wheel .ww-slice-tag', (ts) => ts.map((t) => ({ cat: t.dataset.cat, empty: t.classList.contains('empty'), kbd: t.querySelector('kbd')?.textContent })));
+  check(slices.map((x) => x.cat).join() === 'pistol,smg,rifle,shotgun,sniper,heavy,energy,melee' && slices.map((x) => x.kbd).join('') === '12345678' && slices.find((x) => x.cat === 'smg')?.empty && !slices.find((x) => x.cat === 'rifle')?.empty, `the wheel has eight category slices with their keys, empty ones dimmed (${JSON.stringify(slices)})`);
+  // Point at the Shotguns slice (fourth, lower right) part way out, and let go: its pick.
+  await page.evaluate(() => window.__cs.input.aimWheel(Math.sin((3 * Math.PI) / 4) * 0.5, -Math.cos((3 * Math.PI) / 4) * 0.5));
+  await page.waitForFunction(() => document.querySelector('#weapon-wheel .ww-arc.open')?.dataset.cat === 'shotgun', null, { timeout: T(4000) }).catch(() => {});
+  await page.keyboard.up('KeyQ');
+  await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden && window.__cs.local.weapon?.id === 'core.shotgun', null, { timeout: T(4000) }).catch(() => {});
+  check((await held()) === 'core.shotgun', `pointing at a slice and letting go switches to it (${await held()})`);
+  // Rifles: a flick straight out keeps the slice's last pick in line; round the outer arc picks another.
+  await open();
+  await page.evaluate(() => window.__cs.input.aimWheel(1, 0));
+  await page.waitForFunction(() => document.querySelectorAll('#weapon-wheel .ww-arc.open .ww-item').length === 3, null, { timeout: T(4000) }).catch(() => {});
+  const arc = await page.evaluate(() => {
+    const ring = document.querySelector('#weapon-wheel .ww-ring').getBoundingClientRect();
+    const cx = ring.left + ring.width / 2;
+    const cy = ring.top + ring.height / 2;
+    return [...document.querySelectorAll('#weapon-wheel .ww-arc.open .ww-item')].map((it) => {
+      const r = it.getBoundingClientRect();
+      return { code: Number(it.dataset.code), on: it.classList.contains('on'), name: it.querySelector('b')?.textContent, x: r.left + r.width / 2 - cx, y: r.top + r.height / 2 - cy, w: r.width, h: r.height };
+    });
+  });
+  const pickedOut = await page.evaluate(() => window.__cs.wheel.picked);
+  const other = arc.find((i) => !i.on);
+  check(arc.length === 3 && arc.filter((i) => i.on).length === 1 && arc.every((i) => i.name && i.w > 50), `pointing at Rifles opens its three on an outer arc, named, the last pick in line (${JSON.stringify(arc.map(({ name, on, w }) => ({ name, on, w: Math.round(w) })))})`);
+  await page.screenshot({ path: `${ARTIFACTS}/weapon-keys-wheel.png` });
+  if (other) await page.evaluate(({ x, y }) => window.__cs.input.aimWheel(x / Math.hypot(x, y), y / Math.hypot(x, y)), other);
+  await page.waitForFunction((c) => window.__cs.wheel.picked === c, other?.code, { timeout: T(4000) }).catch(() => {});
+  await page.keyboard.up('KeyQ');
+  await page.waitForFunction((c) => window.__cs.local.held === c, other?.code, { timeout: T(4000) }).catch(() => {});
+  check(!!other && pickedOut !== other.code && (await page.evaluate(() => window.__cs.local.held)) === other.code, `round the arc and let go: that rifle (${other?.name})`);
+  check(errors.length === 0, `no page errors switching weapons (${errors.join('; ')})`);
+  livePages.delete(page);
+  await page.context().close();
 }
 
 /**
@@ -6378,38 +6462,44 @@ async function mobileFlow(browser) {
   // Crouch: hold the middle (and again to stand).
   check(await holdUntil(pad.x, pad.y, 5, () => window.__cs.input.crouchOn, 5000), 'holding the pad middle crouches');
   await holdUntil(pad.x, pad.y, 6, () => !window.__cs.input.crouchOn, 5000);
-  // The weapon wheel: the Weapons button opens it; a tap on a weapon switches.
+  // The weapon wheel (by category): the Weapons button opens it; a tap on a slice switches to its weapon.
   const wb = await centre('#touch-ui .tc-wheel');
   await touch('touchStart', [{ x: wb.x, y: wb.y, id: 7 }]);
   await touch('touchEnd', []);
-  const opened = await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length > 1, null, { timeout: T(5000) }).then(() => true, () => false);
-  const items = await page.$$eval('#weapon-wheel .ww-item', (is) => is.map((i) => ({ code: Number(i.dataset.code), held: i.classList.contains('held'), icon: !!i.querySelector('img'), text: i.textContent })));
-  check(opened && items.some((i) => i.held) && items.every((i) => i.icon), `Weapons opens the wheel with each weapon's icon, name and ammo (${items.map((i) => i.text).join(' | ')})`);
+  const opened = await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-slice-tag').length === 8, null, { timeout: T(5000) }).then(() => true, () => false);
+  const tags = await page.$$eval('#weapon-wheel .ww-slice-tag', (ts) => ts.map((t) => ({ cat: t.dataset.cat, held: t.classList.contains('held'), empty: t.classList.contains('empty'), icon: !!t.querySelector('img'), text: t.textContent })));
+  check(opened && tags.some((t) => t.held) && tags.filter((t) => !t.empty).every((t) => t.icon), `Weapons opens the wheel: eight category slices, each with its pick's icon (${tags.map((t) => t.text).join(' | ')})`);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel.png` });
-  const other = items.find((i) => !i.held);
-  if (other) {
-    const it = await centre(`#weapon-wheel .ww-item[data-code="${other.code}"]`);
+  const otherTag = tags.find((t) => !t.held && !t.empty);
+  if (otherTag) {
+    const it = await centre(`#weapon-wheel .ww-slice-tag[data-cat="${otherTag.cat}"]`);
+    const was = await page.evaluate(() => window.__cs.local.held);
     await touch('touchStart', [{ x: it.x, y: it.y, id: 8 }]);
     await touch('touchEnd', []);
-    const switched = await page.waitForFunction((c) => window.__cs.local.held === c && document.getElementById('weapon-wheel').hidden, other.code, { timeout: T(5000) }).then(() => true, () => false);
-    check(switched, 'tapping a weapon on the wheel switches to it and closes the wheel');
+    const switched = await page.waitForFunction((w) => window.__cs.local.held !== w && document.getElementById('weapon-wheel').hidden, was, { timeout: T(5000) }).then(() => true, () => false);
+    check(switched, `tapping a slice on the wheel switches to its weapon and closes the wheel (${otherTag.cat})`);
+    const now = await page.evaluate(() => window.__cs.local.held);
     // Weapons again, then Weapons once more (outside the ring): it closes without switching.
     await touch('touchStart', [{ x: wb.x, y: wb.y, id: 10 }]);
     await touch('touchEnd', []);
     await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
     await touch('touchStart', [{ x: wb.x, y: wb.y, id: 11 }]);
     await touch('touchEnd', []);
-    const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, other.code, { timeout: T(5000) }).then(() => true, () => false);
+    const kept = await page.waitForFunction((c) => document.getElementById('weapon-wheel').hidden && window.__cs.local.held === c, now, { timeout: T(5000) }).then(() => true, () => false);
     check(kept, 'a tap outside the wheel closes it and keeps your weapon');
   }
-  // A big arsenal: the wheel shrinks its items to fit the ring (names, then ammo, move to the middle); none overlap.
-  const many = ['core.rifle', 'core.shotgun', 'core.smg', 'core.sniper', 'core.lmg', 'core.rockets', 'core.launcher', 'core.marksman', 'core.burst_rifle', 'core.hand_cannon', 'core.flamethrower', 'core.railgun', 'core.plasma', 'core.knife', 'core.sawed_off', 'core.auto_shotgun', 'core.disc_launcher', 'core.laser_rifle'];
+  // A big arsenal: a finger on Rifles opens its weapons on the outer arc, readable and apart; sliding onto one and
+  // letting go takes it.
+  const many = ['core.rifle', 'core.shotgun', 'core.smg', 'core.sniper', 'core.lmg', 'core.rockets', 'core.launcher', 'core.marksman', 'core.burst_rifle', 'core.hand_cannon', 'core.flamethrower', 'core.railgun', 'core.plasma', 'core.knife', 'core.sawed_off', 'core.auto_shotgun', 'core.disc_launcher', 'core.laser_rifle', 'core.battle_rifle', 'core.desert_carbine', 'core.twin_rifle'];
   await page.evaluate((ids) => { for (const id of ids) window.__give?.(id); }, many);
-  await page.waitForFunction(() => window.__cs.local.inventory.size >= 14, null, { timeout: T(5000) }).catch(() => {});
+  await page.waitForFunction(() => window.__cs.local.inventory.size >= 18, null, { timeout: T(5000) }).catch(() => {});
   await touch('touchStart', [{ x: wb.x, y: wb.y, id: 12 }]);
   await touch('touchEnd', []);
-  await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden && document.querySelectorAll('#weapon-wheel .ww-item').length >= 14, null, { timeout: T(5000) }).catch(() => {});
-  const crowd = await page.$$eval('#weapon-wheel .ww-item', (is) => {
+  await page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
+  const rifleTag = await centre('#weapon-wheel .ww-slice-tag[data-cat="rifle"]');
+  await touch('touchStart', [{ x: rifleTag.x, y: rifleTag.y, id: 14 }]);
+  await page.waitForFunction(() => document.querySelector('#weapon-wheel .ww-arc.open')?.dataset.cat === 'rifle', null, { timeout: T(5000) }).catch(() => {});
+  const crowd = await page.$$eval('#weapon-wheel .ww-arc.open .ww-item', (is) => {
     const r = is.map((i) => i.getBoundingClientRect());
     let overlaps = 0;
     for (let a = 0; a < r.length; a++) for (let b = a + 1; b < r.length; b++) {
@@ -6417,12 +6507,17 @@ async function mobileFlow(browser) {
       const h = Math.min(r[a].bottom, r[b].bottom) - Math.max(r[a].top, r[b].top);
       if (w > 2 && h > 2) overlaps++;
     }
-    return { n: r.length, overlaps };
+    const inView = r.every((x) => x.left >= -1 && x.top >= -1 && x.right <= innerWidth + 1 && x.bottom <= innerHeight + 1);
+    return { n: r.length, overlaps, inView, named: is.every((i) => i.querySelector('b')?.textContent), items: is.map((i, k) => ({ code: Number(i.dataset.code), on: i.classList.contains('on'), x: r[k].left + r[k].width / 2, y: r[k].top + r[k].height / 2 })) };
   });
   await page.screenshot({ path: `${ARTIFACTS}/mobile-wheel-many.png` });
-  check(crowd.n >= 14 && crowd.overlaps === 0, `with a big arsenal the wheel's weapons all fit without overlapping (${crowd.n} weapons, ${crowd.overlaps} overlaps)`);
-  await touch('touchStart', [{ x: wb.x, y: wb.y, id: 13 }]);
-  await touch('touchEnd', []);
+  check(crowd.n >= 5 && crowd.overlaps === 0 && crowd.inView && crowd.named, `with a big arsenal a slice's weapons fit on the outer arc, named, without overlapping (${crowd.n} rifles, ${crowd.overlaps} overlaps, in view ${crowd.inView})`);
+  const target = crowd.items.find((i) => !i.on);
+  if (target) {
+    await touch('touchMove', [{ x: target.x, y: target.y, id: 14 }]);
+    await touch('touchEnd', []);
+    check(await page.waitForFunction((c) => window.__cs.local.held === c && document.getElementById('weapon-wheel').hidden, target.code, { timeout: T(5000) }).then(() => true, () => false), 'sliding onto a weapon on the arc and letting go switches to it');
+  } else await touch('touchEnd', []);
   await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).catch(() => {});
   // Held upright: the turn-sideways prompt.
   await page.setViewportSize({ width: phone.viewport.width, height: phone.viewport.height });
@@ -13813,7 +13908,7 @@ async function gripsInPlay(browser) {
   await step('spawn', async () => {});
   await page.evaluate(() => window.__give('core.rifle'));
   await step('switch to the rifle (number key)', () => page.keyboard.press('Digit3'));
-  await step('back to the pistol (number key)', () => page.keyboard.press('Digit2'));
+  await step('back to the pistol (number key)', () => page.keyboard.press('Digit1'));
   await step('mouse wheel', () => page.mouse.wheel(0, 120));
   await step('wheel back', () => page.mouse.wheel(0, -120));
   await step('rifle again', () => page.keyboard.press('Digit3'));
@@ -13976,8 +14071,9 @@ async function gripsInPlay(browser) {
   check(bots.length > 0 && badBots.length <= Math.floor(bots.length / 4), `bots' hands are drawn on their guns near and far (${bots.length - badBots.length} of ${bots.length}; off: ${badBots.map((b) => `${b.slot} at ${b.dist} m: ${b.r === null ? '-' : (b.r * 100).toFixed(0)} cm`).join(', ') || 'none'})`);
   // The grapple's rope leaves the launcher's muzzle (it used to start under the eye, out of your chest).
   await page.evaluate(() => window.__give('core.grapple'));
+  // (Key 8: Melee & gadgets, the grapple's category; again goes on through it.)
   for (let i = 0; i < 4 && (await page.evaluate(() => window.__cs.view.viewWeapon)) !== 'core.grapple'; i++) {
-    await page.keyboard.press('Digit1');
+    await page.keyboard.press('Digit8');
     await sleep(600);
   }
   await sleep(500);
