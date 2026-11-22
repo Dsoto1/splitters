@@ -609,7 +609,7 @@ export class GameView {
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
-  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number }>();
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number; rearZ: number }>();
   /** First-person holds of long melee weapons (meleeView.ts firstPersonHold), one object per weapon and length, so a re-grip is a no-op. */
   private readonly fpHolds = new Map<string, WeaponHold>();
   /** Your own long melee swing in first person: when it started (ms; meleeView.ts), null: none. */
@@ -1901,10 +1901,10 @@ export class GameView {
   /** The hold the first-person hands take on `def`'s viewmodel: a long melee weapon's two-handed one (meleeView.ts), else its own. */
   private heldHold(def: WeaponDefinition): WeaponHold {
     if (!isLongMelee(def)) return def.view.hold;
-    const tipZ = this.viewmodels.get(def.id)?.tipZ;
-    const key = `${def.id} ${tipZ ?? ''}`;
+    const v = this.viewmodels.get(def.id);
+    const key = `${def.id} ${v?.tipZ ?? ''} ${v?.rearZ ?? ''}`;
     let hold = this.fpHolds.get(key);
-    if (!hold) this.fpHolds.set(key, (hold = firstPersonHold(def, tipZ)));
+    if (!hold) this.fpHolds.set(key, (hold = firstPersonHold(def, v?.tipZ, v?.rearZ)));
     return hold;
   }
 
@@ -1918,7 +1918,7 @@ export class GameView {
     this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
-    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number }) => {
+    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number; rearZ: number }) => {
       ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
       this.aimAt = null;
       v.node.setEnabled(true);
@@ -1938,7 +1938,7 @@ export class GameView {
       const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
       // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
       attachOptic(this.scene, node, def, true);
-      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z, tipZ: bounds.max.z };
+      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z, tipZ: bounds.max.z, rearZ: bounds.min.z };
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);

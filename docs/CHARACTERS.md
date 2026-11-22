@@ -565,7 +565,7 @@ one rule for every long melee weapon, nothing per weapon:
   turned about it. A blade stands raised about 40 degrees and leaning in (the middle of the view stays clear); a polearm
   points ahead along the aim.
 - **Hands:** two-handed in first person (`firstPersonHold`): the shooting hand on `grip`, the support hand a hand's
-  width (8.5 cm) behind it toward the pommel, or 30 cm ahead of it along a polearm's shaft; held as a long gun's hands
+  width and a little (10 cm, kept 1.5 cm inside the pommel) behind it toward the pommel, or 30 cm ahead of it along a polearm's shaft; held as a long gun's hands
   are (the support hand cups from below). Both views (arms only and full body).
 - **Swing** (a pose curve over the strike in `meleePlacement`, at most 0.5 s): a blade winds up over the shoulder and cuts down and
   across to the lower left, then comes back; a polearm draws back and thrusts. The old jab (the weapon nosing down,

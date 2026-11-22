@@ -9,7 +9,7 @@ import { TICK_RATE, type ModelPoint, type WeaponDefinition, type WeaponHold } fr
  * viewmodel is placed by its grip, not by `viewOffset`. The grip goes to a fixed place in the lower right of the view,
  * where the hands show, and the weapon is turned from there: a blade, bat or axe stands raised and leaning in (a
  * ready stance), a polearm (one reaching further than POLE_REACH ahead of the hand: the Spear) points ahead along the
- * aim. Both hands hold it in first person: the support hand goes a hand's width behind the grip (toward the pommel),
+ * aim. Both hands hold it in first person: the support hand goes about a hand's width behind the grip (toward the pommel, inside its end),
  * a polearm's ahead of it along the shaft. The same rule for every long melee weapon, from its grip and measured
  * length, none per weapon. Third person is unchanged (the weapon rides in the right hand, `hold.style` melee).
  *
@@ -22,8 +22,13 @@ import { TICK_RATE, type ModelPoint, type WeaponDefinition, type WeaponHold } fr
 export const LONG_MELEE_GRIP = 0.2;
 /** Reach (model m, from the grip to the far end) past which a long melee weapon is a polearm, held level and thrust. */
 export const POLE_REACH = 1.2;
-/** How far (model m) behind the grip the support hand goes on a blade, bat or axe (about a hand's width), and ahead of it on a polearm. */
-export const SUPPORT_BACK = 0.085;
+/**
+ * How far (model m) behind the grip the support hand goes on a blade, bat or axe (a hand's width and a little, so the
+ * two hands read apart, as on a two-handed katana grip), kept SUPPORT_END_GAP inside the model's rear end (the pommel)
+ * when that was measured; and ahead of the grip on a polearm.
+ */
+export const SUPPORT_BACK = 0.1;
+export const SUPPORT_END_GAP = 0.015;
 export const POLE_SUPPORT_AHEAD = 0.3;
 /** Seconds the swing's pose curve lasts at most (a slower weapon's swing still ends here; a quicker one sooner). */
 export const SWING_SECONDS = 0.5;
@@ -52,7 +57,7 @@ interface Key {
  * so both hands and the length of the blade show and the middle of the view stays clear. The swing: wind up (back
  * over the shoulder), cut down and across to the lower left, come back.
  */
-const BLADE_REST: Key = { at: 0, hand: [0.15, -0.13, 0.42], pitch: -0.72, yaw: -0.28, roll: -0.35 };
+const BLADE_REST: Key = { at: 0, hand: [0.15, -0.11, 0.42], pitch: -0.72, yaw: -0.28, roll: -0.35 };
 const BLADE_SWING: readonly Key[] = [
   BLADE_REST,
   { at: 0.2, hand: [0.21, -0.13, 0.34], pitch: -1.25, yaw: -0.05, roll: -0.55 },
@@ -86,12 +91,13 @@ export function isPolearm(def: WeaponDefinition, tipZ?: number): boolean {
  * The hold first person uses: a long melee weapon two-handed (the shooting hand on its grip, the support hand behind
  * it along the handle, held as a long gun's hands are); any other weapon its own hold.
  */
-export function firstPersonHold(def: WeaponDefinition, tipZ?: number): WeaponHold {
+export function firstPersonHold(def: WeaponDefinition, tipZ?: number, rearZ?: number): WeaponHold {
   const hold = def.view.hold;
   if (!isLongMelee(def)) return hold;
   const g = hold.grip;
   // (A polearm's support hand leads, ahead of the grip along the shaft: the shooting hand drives the thrust from behind.)
-  const support: ModelPoint = isPolearm(def, tipZ) ? [g[0], g[1], g[2] + POLE_SUPPORT_AHEAD] : [g[0], g[1], g[2] - SUPPORT_BACK];
+  const back = rearZ === undefined ? SUPPORT_BACK : Math.max(0, Math.min(SUPPORT_BACK, g[2] - rearZ - SUPPORT_END_GAP));
+  const support: ModelPoint = isPolearm(def, tipZ) ? [g[0], g[1], g[2] + POLE_SUPPORT_AHEAD] : [g[0], g[1], g[2] - back];
   return { style: 'long', grip: g, support };
 }
 

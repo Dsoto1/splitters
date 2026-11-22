@@ -34,6 +34,11 @@ describe('long melee weapons in first person', () => {
       expect(fp.support![2]).toBeLessThan(d.view.hold.grip[2]);
       expect(firstPersonHold(d, d.view.hold.grip[2] + POLE_REACH + 0.5).support![2]).toBeGreaterThan(d.view.hold.grip[2]);
     }
+    // Kept inside the pommel: a short handle behind the grip moves the support hand in (1.5 cm from the end).
+    const axe = CORE_WEAPONS['core.battle_axe']!;
+    const g = axe.view.hold.grip[2];
+    expect(firstPersonHold(axe, 0.4, g - 0.2).support![2]).toBeCloseTo(g - 0.1, 9);
+    expect(firstPersonHold(axe, 0.4, g - 0.08).support![2]).toBeCloseTo(g - 0.065, 9);
     const knife = CORE_WEAPONS['core.knife']!;
     expect(firstPersonHold(knife)).toBe(knife.view.hold);
   });

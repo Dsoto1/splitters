@@ -126,12 +126,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
    * First person (arms or full body): the posed viewmodel's root and weapon, and its model's front end (a long melee
    * weapon is placed by its grip: game/meleeView.ts, as the game places it; `__grips.fpSwing` / `fpDraw` move it).
    */
-  let fpView: { root: TransformNode; weapon: string; tipZ: number } | null = null;
+  let fpView: { root: TransformNode; weapon: string; tipZ: number; rearZ: number } | null = null;
   let fpSwingAt: number | null = null;
   let fpRaise = 0;
-  const placeView = (root: TransformNode, weapon: string, tipZ: number) => {
+  const placeView = (root: TransformNode, weapon: string, tipZ: number, rearZ: number) => {
     const def = getWeapon(weapon);
-    fpView = { root, weapon, tipZ };
+    fpView = { root, weapon, tipZ, rearZ };
     if (!isLongMelee(def)) {
       const [vx, vy, vz] = def.view.viewOffset;
       root.position.set(vx, vy, vz);
@@ -140,12 +140,12 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     const p = meleePlacement(def, { tipZ, swing: fpSwingAt, raise: fpRaise });
     root.position.set(p.x, p.y, p.z);
     root.rotation.set(p.pitch, p.yaw, p.roll);
-    return firstPersonHold(def, tipZ);
+    return firstPersonHold(def, tipZ, rearZ);
   };
 
   /** Re-place the first-person view after a swing or draw change (`fpSwing`, `fpDraw`). */
   const replace = async () => {
-    if (fpView) placeView(fpView.root, fpView.weapon, fpView.tipZ);
+    if (fpView) placeView(fpView.root, fpView.weapon, fpView.tipZ, fpView.rearZ);
     await settle(4);
   };
 
@@ -176,7 +176,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const viewRoot = new TransformNode('grip_view', scene);
       viewRoot.parent = eye;
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
-      const hold = placeView(viewRoot, weapon, node.getHierarchyBoundingVectors(true).max.z);
+      const bounds = node.getHierarchyBoundingVectors(true);
+      const hold = placeView(viewRoot, weapon, bounds.max.z, bounds.min.z);
       node.parent = viewRoot;
       held = node;
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
@@ -238,7 +239,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const ch = await characters.create({ look: armsLookFor(look), armsOnly: true }, 'grip_arms');
       fitFirstPersonArms(ch, root);
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
-      const hold = placeView(viewRoot, weapon, node.getHierarchyBoundingVectors(true).max.z);
+      const bounds = node.getHierarchyBoundingVectors(true);
+      const hold = placeView(viewRoot, weapon, bounds.max.z, bounds.min.z);
       node.parent = viewRoot;
       const anim = new CharacterAnimator(scene, ch);
       anim.gripExternal(node, hold);
