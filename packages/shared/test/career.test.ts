@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMatch, careerAccuracy, careerKd, careerProblem, careerWinRate, emptyCareer, favouriteWeapon, matchProblem, readCareer, CAREER_WEAPONS, type MatchSummary } from '../src/index.ts';
+import { addMatch, careerAccuracy, careerKd, careerProblem, careerWinRate, emptyCareer, favouriteWeapon, matchProblem, readCareer, cleanMapName, cleanSummary, CAREER_WEAPONS, HISTORY_MAX, type MatchSummary } from '../src/index.ts';
 
 const match = (o: Partial<MatchSummary> = {}): MatchSummary => ({ mode: 'core.tdm', result: 'win', kills: 10, deaths: 4, shots: 200, hits: 50, headshots: 2, bestStreak: 5, seconds: 300, weaponKills: { 'core.rifle': 8, 'core.pistol': 2 }, ...o });
 
@@ -47,5 +47,33 @@ describe('career stats', () => {
     expect(careerProblem(emptyCareer())).toMatch(/no matches/);
     expect(careerProblem({ ...ok, kills: 2 * 500 + 1 })).toMatch(/range/);
     expect(careerProblem({ ...ok, seconds: 10 })).toMatch(/range/);
+  });
+
+  it('Phase 3: keeps the career by mode, rounds by gun and the last matches', () => {
+    let c = emptyCareer();
+    c = addMatch(c, match({ map: 'Phase 0 Arena', weaponRounds: { 'core.rifle': [150, 40], 'core.pistol': [50, 10] }, at: 1000 }));
+    c = addMatch(c, match({ mode: 'core.ctf', result: 'loss', kills: 2, weaponKills: { 'core.rifle': 2 }, map: 'Bunker <Cross>', weaponRounds: { 'core.rifle': [100, 30] } }), 2000);
+    expect(c.modes['core.tdm']).toEqual({ matches: 1, wins: 1, kills: 10, deaths: 4, shots: 200, hits: 50, seconds: 300 });
+    expect(c.modes['core.ctf']).toMatchObject({ matches: 1, wins: 0, kills: 2 });
+    expect(c.weaponRounds['core.rifle']).toEqual([250, 70]);
+    expect(c.history.map((h) => [h.at, h.map, h.mode, h.result])).toEqual([[2000, 'Bunker Cross', 'core.ctf', 'loss'], [1000, 'Phase 0 Arena', 'core.tdm', 'win']]);
+    for (let i = 0; i < HISTORY_MAX + 5; i++) c = addMatch(c, match(), 3000 + i);
+    expect(c.history.length).toBe(HISTORY_MAX);
+    expect(c.history[0]!.at).toBe(3000 + HISTORY_MAX + 4);
+    // Read back from storage as it was; a guest's career with all of it moves onto an account.
+    expect(readCareer(JSON.parse(JSON.stringify(c)))).toEqual(c);
+    expect(careerProblem(c)).toBeNull();
+    expect(careerProblem({ ...c, modes: { 'core.tdm': { ...c.modes['core.tdm']!, kills: c.kills + 1 } } })).toMatch(/modes/);
+    // An older career reads with none of it.
+    expect(readCareer({ matches: 2, kills: 3 })).toMatchObject({ modes: {}, weaponRounds: {}, history: [] });
+  });
+
+  it("Phase 3: refuses a gun's rounds that no match makes", () => {
+    expect(matchProblem(match({ weaponRounds: { 'core.rifle': [300, 10] } }))).toMatch(/more than shots/);
+    expect(matchProblem(match({ weaponRounds: { 'core.rifle': [10, 11] } }))).toMatch(/bad weapon rounds/);
+    expect(matchProblem(match({ weaponRounds: { 'core.rifle': [10, 1.5] as [number, number] } }))).toMatch(/bad weapon rounds/);
+    expect(matchProblem(match({ map: 3 as unknown as string }))).toMatch(/map/);
+    expect(cleanSummary(match({ map: '  Sky\u0000 <Islands>  ' })).map).toBe('Sky Islands');
+    expect(cleanMapName('x'.repeat(80)).length).toBe(40);
   });
 });

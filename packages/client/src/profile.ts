@@ -1,4 +1,4 @@
-import { emptyCareer, isRegion, readCareer, regionForTimeZone, type Profile, type Region } from '@tiletrigger/shared';
+import { readVouched, opticShape, cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region, type VouchReport } from '@tiletrigger/shared';
 import { accessToken, currentAccount } from './account.ts';
 import { hubApi } from './publishedMaps.ts';
 
@@ -19,6 +19,10 @@ function readProfile(v: unknown): Profile {
     region: isRegion(o.region) ? o.region : null,
     favClass: typeof o.favClass === 'string' ? o.favClass : null,
     career: readCareer(o.career) ?? emptyCareer(),
+    emblem: cleanEmblemCode(o.emblem),
+    title: isTitleId(o.title) ? o.title : null,
+    vouched: readVouched(o.vouched),
+    optics: opticShape(o.optics, true) ?? {},
   };
 }
 
@@ -57,7 +61,16 @@ export function cachedProfile(): Profile | null {
   return cache && who && cache.sub === who.sub ? cache.profile : null;
 }
 
-export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null }): Promise<Profile> {
+/**
+ * A host's end-of-match standings for the signed-in friends in its match (Phase 4; shared net/vouch.ts): the hub adds
+ * each line to that player's host-counted record. Best effort: an older hub (404), offline, signed out: nothing.
+ */
+export function sendVouch(report: VouchReport): void {
+  if (!report.lines.length || !currentAccount()) return;
+  void call('profile/vouch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(report), keepalive: true }).catch(() => undefined);
+}
+
+export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null; emblem?: string | null; title?: string | null; optics?: Record<string, string> }): Promise<Profile> {
   const who = currentAccount();
   const res = await call('profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
   const profile = readProfile(await res.json());
@@ -100,4 +113,30 @@ export function myRegion(): Region {
 export async function setRegion(r: Region): Promise<void> {
   saveLocalRegion(r);
   if (currentAccount()) await saveProfile({ region: r });
+}
+
+/** Other players' cards (GET profile/card?u=, no sign-in needed), asked once per name a page; a few minutes at most. */
+const cards = new Map<string, { at: number; card: Promise<PublicCard | null> }>();
+const CARD_FRESH_MS = 5 * 60_000;
+
+/**
+ * A signed-in player's public card from the hub (docs/PLAYER_PROFILES_PLAN.md, Phase 2), or null: no hub, a hub
+ * without cards (an older one answers 404), no such player, offline. The scoreboard's card then shows what the match
+ * knows of them.
+ */
+export function loadCard(username: string): Promise<PublicCard | null> {
+  const key = username.toLowerCase();
+  const had = cards.get(key);
+  if (had && performance.now() - had.at < CARD_FRESH_MS) return had.card;
+  const url = hubApi(`profile/card?u=${encodeURIComponent(username)}`);
+  const card = url
+    ? fetch(url, { signal: AbortSignal.timeout(15_000) })
+        .then(async (r) => (r.ok ? readPublicCard(await r.json()) : null))
+        .catch(() => null)
+    : Promise.resolve(null);
+  cards.set(key, { at: performance.now(), card });
+  // A card that couldn't be had is asked again next time (the hub may be back).
+  void card.then((c) => c === null && cards.get(key)?.card === card && cards.delete(key));
+  if (cards.size > 200) cards.delete(cards.keys().next().value!);
+  return card;
 }

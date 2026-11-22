@@ -50,6 +50,23 @@ export function setMyOptic(weapon: string, kind: string | null, defaultKind?: st
   for (const cb of listeners) cb(next);
 }
 
+/**
+ * Take a whole list as yours (your account's picks, read as you sign in: careerStats.ts syncOptics). Listeners are told
+ * unless `quiet`.
+ */
+export function replaceMyOptics(op: Readonly<Record<string, string>>, quiet = false): void {
+  const next: Record<string, string> = {};
+  for (const [k, v] of Object.entries(op).slice(0, MAX)) if (/^[a-z][a-z0-9_.-]{0,47}$/.test(k) && /^[a-z0-9]{1,12}$/.test(v)) next[k] = v;
+  cache = next;
+  try {
+    if (Object.keys(next).length) localStorage.setItem(KEY, JSON.stringify(next));
+    else localStorage.removeItem(KEY);
+  } catch {
+    // Storage blocked: this page only.
+  }
+  if (!quiet) for (const cb of listeners) cb(next);
+}
+
 /** Told of every change (the session sends it to the host); returns the unsubscribe. */
 export function onOpticsChange(cb: (op: Readonly<Record<string, string>>) => void): () => void {
   listeners.add(cb);

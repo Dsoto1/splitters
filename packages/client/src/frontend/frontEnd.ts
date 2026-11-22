@@ -86,6 +86,9 @@ import {
   WEAPON_CATEGORIES,
   partInfo,
   type GameMode,
+  type Career,
+  vouchedLine,
+  emptyVouched,
   type LobbyListing,
   type MapDocument,
   type MatchRules,
@@ -104,8 +107,17 @@ import {
   careerKd,
   careerWinRate,
   favouriteWeapon,
+  EMBLEM_COLORS,
+  EMBLEM_COLOR_NAMES,
+  EMBLEM_IDS,
+  EMBLEM_LABELS,
+  emblemCode,
+  readEmblem,
+  earnedTitles,
+  TITLES,
 } from '@tiletrigger/shared';
-import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
+import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
+import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
 import { DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadLeanKeys, loadMousePrefs, loadWheelKey, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
@@ -325,6 +337,8 @@ export interface FrontEndHooks {
 }
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options' | 'profile';
+/** Profile's career tabs (player profiles, Phase 3). */
+type CareerTab = 'overview' | 'modes' | 'weapons' | 'history';
 
 const MODE_LABEL = MODE_LABELS;
 const BASE_RULES = DEFAULT_RULES;
@@ -2873,7 +2887,7 @@ export class FrontEnd {
       );
     });
     const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, this.opticsPicker());
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.careerSection(kicker, !!who), loadout, region, foot));
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.emblemSection(kicker), this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.
@@ -2940,9 +2954,67 @@ export class FrontEnd {
     return hubSetting() ? panel(form, communityPanel(kicker)) : panel(form);
   }
 
+  /**
+   * Profile's emblem and title (docs/PLAYER_PROFILES_PLAN.md, Phase 2): an emblem (one of our shapes, in a colour)
+   * beside your name on the scoreboard, in the kill feed and on your card; a title your career has earned on your card.
+   * Kept in this browser, and on your account when signed in.
+   */
+  private emblemSection(kicker: (text: string) => HTMLElement): HTMLElement {
+    const note = el('small', { class: 'hint', id: 'profile-emblem-note', textContent: 'Beside your name on the scoreboard, in the kill feed and on your card.' });
+    const saved = (p: Promise<void>) =>
+      p.then(
+        () => (note.textContent = 'Saved.'),
+        (e: Error) => (note.textContent = `Saved in this browser; not on your account: ${e.message}`),
+      );
+    const cur = readEmblem(myEmblem());
+    let color = cur?.color ?? 6;
+    const shapes = el('div', { class: 'prof-emblems', id: 'profile-emblems', ariaLabel: 'Emblem' });
+    const draw = () => {
+      const now = readEmblem(myEmblem());
+      const none = el('button', { type: 'button', class: `prof-emblem none${now ? '' : ' on'}`, title: 'No emblem', textContent: '–' });
+      none.dataset.emblem = '';
+      none.addEventListener('click', () => (saved(setEmblem(null)), draw()));
+      const buttons = EMBLEM_IDS.map((id) => {
+        const b = el('button', { type: 'button', class: `prof-emblem${now?.id === id ? ' on' : ''}`, title: EMBLEM_LABELS[id] });
+        b.dataset.emblem = id;
+        b.innerHTML = emblemSvg(emblemCode({ id, color }));
+        b.addEventListener('click', () => (saved(setEmblem(emblemCode({ id, color }))), draw()));
+        return b;
+      });
+      shapes.replaceChildren(none, ...buttons);
+      colors.replaceChildren(
+        ...EMBLEM_COLORS.map((c, i) => {
+          const b = el('button', { type: 'button', class: `prof-swatch${i === color ? ' on' : ''}`, title: EMBLEM_COLOR_NAMES[i] });
+          b.style.background = c;
+          b.dataset.color = String(i);
+          b.addEventListener('click', () => {
+            color = i;
+            const e = readEmblem(myEmblem());
+            if (e) saved(setEmblem(emblemCode({ id: e.id, color })));
+            draw();
+          });
+          return b;
+        }),
+      );
+    };
+    const colors = el('div', { class: 'prof-swatches', id: 'profile-emblem-colors', ariaLabel: 'Emblem colour' });
+    draw();
+    // Titles: the ones your career has earned; the rest say how.
+    const career = myCareer().career;
+    const earned = new Set(earnedTitles(career));
+    const titles = el(
+      'select',
+      { id: 'profile-title' },
+      el('option', { value: '', textContent: earned.size ? 'None' : 'None yet: play a match to the end' }),
+      ...TITLES.map((t) => el('option', { value: t.id, textContent: earned.has(t.id) ? t.name : `${t.name} (${t.how})`, disabled: !earned.has(t.id), selected: t.id === myTitle() })),
+    );
+    titles.addEventListener('change', () => void saved(setTitle(titles.value || null)));
+    return el('section', { class: 'prof-sec prof-emblem-sec', id: 'profile-emblem' }, kicker('Emblem and title'), shapes, colors, el('label', {}, 'Title', titles), note);
+  }
+
   /** Profile's career stats (careerStats.ts): matches, wins, kills, deaths, K/D, accuracy, headshots, best streak, time, favourite weapon. */
   private careerSection(kicker: (text: string) => HTMLElement, signedIn: boolean): HTMLElement {
-    const { career: c, where } = myCareer();
+    const { career: c, where, local } = myCareerDetail();
     const pct = (v: number | null) => (v === null ? '–' : `${Math.round(v)}%`);
     const hours = c.seconds >= 3600 ? `${(c.seconds / 3600).toFixed(1)} h` : `${Math.round(c.seconds / 60)} min`;
     const fav = favouriteWeapon(c);
@@ -2977,7 +3049,87 @@ export class FrontEnd {
               ? 'Kept in this browser. Sign in and it moves onto your account (once).'
               : 'Play a match to the end and it counts here. Kept in this browser; sign in to keep it on your account.',
     });
-    return el('section', { class: 'prof-sec prof-career' }, kicker('Career'), grid, favRow, note);
+    // Phase 3: Overview (the totals), Modes, Weapons, History; tabs, the one picked remembered for this page.
+    const overview = el('div', { class: 'prof-tab-body', id: 'profile-career-overview' }, grid, favRow);
+    const bodies: Record<CareerTab, HTMLElement> = { overview, modes: this.careerModes(c), weapons: this.careerWeapons(c), history: this.careerHistory(c) };
+    const labels: Record<CareerTab, string> = { overview: 'Overview', modes: 'Modes', weapons: 'Weapons', history: 'History' };
+    const tabs = el('div', { class: 'prof-tabs', id: 'profile-career-tabs', role: 'tablist' });
+    const pick = (t: CareerTab) => {
+      this.careerTab = t;
+      for (const [k, b] of Object.entries(bodies)) b.hidden = k !== t;
+      for (const b of tabs.children) (b as HTMLElement).classList.toggle('on', (b as HTMLElement).dataset.tab === t);
+    };
+    for (const t of Object.keys(labels) as CareerTab[]) {
+      const b = el('button', { type: 'button', textContent: labels[t] });
+      b.dataset.tab = t;
+      b.setAttribute('role', 'tab');
+      b.addEventListener('click', () => pick(t));
+      tabs.append(b);
+    }
+    pick(this.careerTab);
+    // Phase 4: what other people's hosts counted for you (signed in; a hub from before it sends none).
+    const vouched = signedIn ? vouchedLine(cachedProfile()?.vouched ?? emptyVouched()) : '';
+    const vouchNote = vouched ? [el('small', { class: 'hint prof-vouched', id: 'profile-vouched', title: "Matches other players hosted, counted by their game rather than yours", textContent: vouched })] : [];
+    const localNote = local ? [el('small', { class: 'hint', id: 'profile-career-local', textContent: 'Modes, weapons and history: from this browser until the game server keeps them.' })] : [];
+    return el('section', { class: 'prof-sec prof-career' }, kicker('Career'), tabs, ...Object.values(bodies), note, ...vouchNote, ...localNote);
+  }
+  private careerTab: CareerTab = 'overview';
+
+  /** Career by mode (Phase 3): matches, wins, K/D, accuracy, time; most played first. */
+  private careerModes(c: Career): HTMLElement {
+    const rows = Object.entries(c.modes).sort((a, b) => b[1].matches - a[1].matches || (a[0] < b[0] ? -1 : 1));
+    const box = el('div', { class: 'prof-tab-body', id: 'profile-career-modes' });
+    if (!rows.length) return (box.append(el('p', { class: 'hint', textContent: 'Each mode you play to the end shows here.' })), box);
+    const pct = (v: number | null) => (v === null ? '–' : `${Math.round(v)}%`);
+    const time = (s: number) => (s >= 3600 ? `${(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
+    const table = el('table', { class: 'prof-table' }, el('thead', {}, el('tr', {}, ...['Mode', 'Matches', 'Wins', 'K/D', 'Accuracy', 'Played'].map((h) => el('th', { textContent: h })))));
+    const body = el('tbody', {});
+    for (const [id, l] of rows) {
+      const tr = el('tr', {}, el('td', { textContent: MODE_LABELS[id as GameMode] ?? id }), el('td', { textContent: String(l.matches) }), el('td', { textContent: `${l.wins} · ${pct(careerWinRate(l))}` }), el('td', { textContent: careerKd(l).toFixed(2) }), el('td', { textContent: pct(careerAccuracy(l)) }), el('td', { textContent: time(l.seconds) }));
+      tr.dataset.mode = id;
+      body.append(tr);
+    }
+    table.append(body);
+    box.append(table);
+    return box;
+  }
+
+  /** Career by weapon (Phase 3): kills, and accuracy for guns; most kills first. */
+  private careerWeapons(c: Career): HTMLElement {
+    const ids = [...new Set([...Object.keys(c.weaponKills), ...Object.keys(c.weaponRounds)])].sort((a, b) => (c.weaponKills[b] ?? 0) - (c.weaponKills[a] ?? 0) || (c.weaponRounds[b]?.[0] ?? 0) - (c.weaponRounds[a]?.[0] ?? 0) || (a < b ? -1 : 1));
+    const box = el('div', { class: 'prof-tab-body', id: 'profile-career-weapons' });
+    if (!ids.length) return (box.append(el('p', { class: 'hint', textContent: 'Your kills and accuracy with each weapon show here.' })), box);
+    const table = el('table', { class: 'prof-table' }, el('thead', {}, el('tr', {}, ...['Weapon', 'Kills', 'Accuracy', 'Rounds'].map((h) => el('th', { textContent: h })))));
+    const body = el('tbody', {});
+    for (const id of ids) {
+      const r = c.weaponRounds[id];
+      const icon = weaponIcon(id, 'wicon');
+      const tr = el('tr', {}, el('td', {}, el('span', { class: 'prof-weapon' }, ...(icon ? [icon] : []), el('span', { textContent: weaponName(id) }))), el('td', { textContent: String(c.weaponKills[id] ?? 0) }), el('td', { textContent: r ? `${Math.round((r[1] / r[0]) * 100)}%` : '–' }), el('td', { textContent: r ? String(r[0]) : '–' }));
+      tr.dataset.weapon = id;
+      body.append(tr);
+    }
+    table.append(body);
+    box.append(table);
+    return box;
+  }
+
+  /** The last matches (Phase 3): result, map, mode, K/D, when. */
+  private careerHistory(c: Career): HTMLElement {
+    const box = el('div', { class: 'prof-tab-body', id: 'profile-career-history' });
+    if (!c.history.length) return (box.append(el('p', { class: 'hint', textContent: 'Your last 20 matches show here.' })), box);
+    const now = Date.now() / 1000;
+    const ago = (at: number) => {
+      const s = Math.max(0, now - at);
+      return !at ? '' : s < 3600 ? `${Math.max(1, Math.round(s / 60))} min ago` : s < 86_400 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86_400)} d ago`;
+    };
+    const result = { win: 'Win', loss: 'Loss', draw: 'Draw', none: '–' } as const;
+    const list = el('ol', { class: 'prof-history' });
+    for (const h of c.history) {
+      const li = el('li', { class: `ph-${h.result}` }, el('b', { class: 'ph-result', textContent: result[h.result] }), el('span', { class: 'ph-map', textContent: h.map || 'A map' }), el('span', { class: 'ph-mode', textContent: MODE_LABELS[h.mode as GameMode] ?? h.mode }), el('span', { class: 'ph-kd', textContent: `${h.kills} K · ${h.deaths} D` }), el('small', { class: 'ph-when', textContent: ago(h.at) }));
+      list.append(li);
+    }
+    box.append(list);
+    return box;
   }
 
   private options(): HTMLElement {
