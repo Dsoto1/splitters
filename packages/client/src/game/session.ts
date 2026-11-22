@@ -166,7 +166,8 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
-import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, shakeScale, type AimMode, type ShakeLevel } from './combatPrefs.ts';
+import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
+import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake } from './cameraShake.ts';
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
@@ -788,7 +789,7 @@ export class GameSession {
     const lean = local.alive && !this.seat ? (local.state.lean ?? 0) : 0;
     const stance = (local.state.stance ?? 0) as 0 | 1 | 2;
     const side = leanShift(lean, stance, STANCES[stance].eye, local.scale).side;
-    const calm = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : shakeScale();
+    const calm = rollScale();
     const roll = -(lean / LEAN.steps) * LEAN_VIEW_ROLL * calm;
     const k = Math.min(1, dt * 18);
     this.leanSide += (side - this.leanSide) * k;
@@ -813,6 +814,8 @@ export class GameSession {
       const across = (Math.cos(this.input.yaw) * line.dir.x - Math.sin(this.input.yaw) * line.dir.z) * Math.sign(v || 1);
       target = -across * 0.12 * k + Math.sin(now / 1000 * 1.9) * 0.025 * k;
     }
+    // Comfort, not aim: Camera shake scales the roll and its sway on the cable (cameraShake.ts; Off: none).
+    target *= rollScale();
     this.zipRoll += (target - this.zipRoll) * Math.min(1, dt * 4);
     return Math.abs(this.zipRoll) < 1e-4 ? 0 : this.zipRoll;
   }
@@ -2651,19 +2654,19 @@ export class GameSession {
             this.view.blast(at, ev.r);
             // Blasts shake the camera of anyone near: a vehicle going up is felt from much further away.
             const cam = this.view.cameraPosition();
-            const reach = ev.r * (ev.m !== undefined ? 6 : 3.5);
+            const reach = blastReach(ev.r, ev.m !== undefined);
             const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / reach;
             if (near > 0) {
-              this.view.shake(near * (ev.m !== undefined ? 0.95 : 0.6));
+              this.view.shake(blastShake(near, ev.m !== undefined));
               rumble(blastRumble(near), this.input.padActive);
             }
           } else if (ev.e === 'crash') {
             const at = { x: ev.p[0], y: ev.p[1], z: ev.p[2] };
             this.view.impacts.sparkBurst(at, Math.round(6 + ev.n * 18), 2 + ev.n * 5);
             const cam = this.view.cameraPosition();
-            const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / 12;
+            const near = 1 - Math.hypot(cam.x - at.x, cam.y - at.y, cam.z - at.z) / CRASH_REACH;
             if (near > 0) {
-              this.view.shake(near * ev.n * 0.6);
+              this.view.shake(crashShake(near, ev.n));
               rumble(blastRumble(near * ev.n * 0.6), this.input.padActive);
             }
           } else if (ev.e === 'hold') {
@@ -3790,7 +3793,8 @@ export class GameSession {
           // Only big single kicks (revolver, rifles that slam, shotguns) shake the camera, and briefly: automatics would blur your target.
           // A second trigger shakes only by its own kick (the Battle Axe's blunderbuss); a swing never does.
           const visual = shot.alt ? (shot.def.alt?.kick?.visual ?? 0) : shot.def.kind === 'melee' ? 0 : (gunplayOf(shot.def).kick?.visual ?? 0);
-          if (visual >= 0.8) this.view.shake(Math.min(0.25, visual * 0.15));
+          const jolt = shotShake(visual);
+          if (jolt > 0) this.view.shake(jolt);
           // Controller vibration (Options → Accessibility): a buzz a round for automatics, a thump for heavy shots.
           if (shot.def.kind !== 'melee' || shot.alt) rumble(fireRumble(visual || 0.4, shot.def.fireIntervalTicks <= 8), this.input.padActive);
         }
@@ -3924,7 +3928,7 @@ export class GameSession {
           this.view.firstPersonEye = true;
         }
       }
-      // A toggled aim (Options → Accessibility) lets go on a weapon change, death or getting in a vehicle.
+      // A toggled aim (Options → Accessibility) lets go on a weapon change, death or getting in a vehicle (and on a sprint: input.ts).
       const aimState = `${local.alive ? local.held : -1}:${this.seat ? 1 : 0}`;
       if (aimState !== this.aimState) {
         this.aimState = aimState;
@@ -3997,6 +4001,8 @@ export class GameSession {
       // aiming, so no toggled aim), and touch's Fire pulls both.
       this.input.pairTrigger = local.alive && !handsBusy && local.paired;
       this.input.altTrigger = this.input.pairTrigger || (!!local.weapon?.alt && local.weapon.kind === 'melee');
+      // A scope or optic in hand: Shift holds your breath through it, so it doesn't let a toggled aim go.
+      this.input.breathScope = !!local.weapon?.view.zoomFov || !!local.weapon?.view.optic;
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());

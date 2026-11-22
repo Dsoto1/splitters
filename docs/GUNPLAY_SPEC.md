@@ -1998,11 +1998,13 @@ Support:
 - Color-independent armor/shield indicators.
 
 As built (2026-11-17, Options → Accessibility and the pause menu; client `game/combatPrefs.ts`, `game/rumble.ts`):
-**Aim** Hold / Toggle (a toggled aim lets go on a weapon change, death, a vehicle or leaving play; works with every
+**Aim** Hold / Toggle (a toggled aim lets go on a sprint (not with a scope or optic in hand: Shift holds the breath
+there), a weapon change, death, a vehicle or leaving play, and stays through a reload; works with every
 scope and the Battle Rifle's optic; touch's Aim button always toggles); **Camera shake** Off / Reduced (0.35) / Full
-for the view's own movement: heavy-shot shake, the hit kick (§23), blasts and crashes (mechanical recoil stays: it is
+for the view's own movement, every source in `game/cameraShake.ts`: heavy-shot shake, the hit kick (§23), blasts and
+crashes, the lean and zipline roll (mechanical recoil stays: it is
 where the rounds go, §29; Reduce flashing keeps its calmer kick on top); **Controller vibration** on/off and strength
-(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` for firing (a buzz a round for automatics, a
+(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` (else `hapticActuators`) for firing (a buzz a round for automatics, a
 thump for heavy shots), hits taken and blasts and crashes near you; hidden where the browser can't rumble a
 controller. Saved in this browser (`tiletrigger.combat`).
 
@@ -2131,6 +2133,16 @@ with the recovery between them, spread cones at 25 m against a body (hip, sights
 damage and time to kill over distance (a crosshair and values on hover), and drop with the holdover angles, all under a
 chosen ballistics rule and health. Deep link: `?mode=weapons&w=core.smg,core.revolver&ballistics=advanced&hp=100`.
 Not yet shown: penetration energy, the reload timeline, velocity over distance.
+
+**The Weapon Manager (2026-11-22, owner: "manage the weapons we have in game… rename, suggest things, removal,
+selecting sound").** The page's Manage tab (`&view=manage`, client `tools/weaponManager.ts`; the comparisons are shared
+from `tools/weaponCompare.ts`) lists every weapon and edits its name, hidden state, category, description, sounds,
+sets and stats (each in its range, the game's value beside it, the comparisons above drawn for the game's weapon and
+the edit side by side) and takes notes. It writes nothing: **Send changes** makes a versioned JSON change set
+(`tools/content/weapon-edits-format.mjs`) that `node tools/content/apply-weapon-edits.mjs <file>` checks and writes
+into the weapon content data in the repo; a session lands it. Hidden weapons (`"hidden": true`) leave random pickups,
+sets, class loadouts, Roulette and MapMaker's palette; placed on a map they still spawn. The flow for the owner, step
+by step: docs/FEATURES.md, "Weapon Manager".
 
 ---
 

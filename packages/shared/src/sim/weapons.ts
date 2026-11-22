@@ -281,6 +281,8 @@ export interface WeaponPresentation {
   hold: WeaponHold;
   /** Sound to fire (default `fire.<weapon name>`). */
   sound?: string;
+  /** Sound a reload starts with (default `reload.start`, every weapon's). */
+  reloadSound?: string;
   /** Hitscan drawn as a solid beam instead of tracers (lasers, rails). */
   beam?: boolean;
   /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts); `none` for no flash (a bow). */
@@ -422,6 +424,11 @@ export interface WeaponDefinition {
   kind: WeaponKind;
   /** What random weapon pickups roll it as (absent: tools, mode-only weapons and mounted guns, which never roll). */
   category?: WeaponCategory;
+  /**
+   * Hidden by the owner (the Weapon Manager, docs/FEATURES.md "Weapon Manager"): random pickups, weapon sets, class
+   * loadouts, Roulette's signatures and MapMaker's palette leave it out; a map that places it still spawns it there.
+   */
+  hidden?: boolean;
   /** Inventory slot and number key, 1..9. */
   slot: number;
   /** Damage per hit (per pellet for multi-pellet weapons). */
@@ -571,6 +578,12 @@ export function getWeapon(id: string): WeaponDefinition {
   if (!w) throw new Error(`unknown weapon ${id}`);
   return w;
 }
+
+/**
+ * Whether the owner hid a weapon (`hidden` in its content file, the Weapon Manager): random pickups, weapon sets,
+ * class loadouts, Roulette's signatures and MapMaker's palette leave it out; placed on a map it still spawns.
+ */
+export const isWeaponHidden = (id: string): boolean => CORE_WEAPONS[id]?.hidden === true;
 
 /** Weapons ordered by slot (then definition order), for switching and HUD. */
 export const WEAPONS_BY_SLOT: readonly WeaponDefinition[] = Object.values(CORE_WEAPONS)

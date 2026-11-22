@@ -1,8 +1,9 @@
 /**
  * Controller vibration (Options → Accessibility: Controller vibration and its strength; combatPrefs.ts): a short
- * rumble through the Gamepad API's `vibrationActuator` where the browser has it (Chromium browsers; not every
- * browser can), for firing, taking hits and blasts near you. Only a controller that is in use rumbles, and only while
- * the setting is on; the strength scales every effect.
+ * rumble through the Gamepad API's `vibrationActuator` where the browser has it (Chromium browsers), or a pulse of
+ * the older `hapticActuators` (Firefox, where enabled); not every browser can, and one that can't or refuses simply
+ * doesn't rumble. For firing, taking hits and blasts near you. Only a controller that is in use rumbles, and only
+ * while the setting is on; the strength scales every effect.
  */
 import { combatPrefs } from './combatPrefs.ts';
 
@@ -10,10 +11,17 @@ interface Actuator {
   playEffect?: (type: string, params: { duration: number; startDelay?: number; strongMagnitude: number; weakMagnitude: number }) => Promise<unknown>;
 }
 
+/** The older haptics (one motor, `pulse(value, ms)`). */
+interface Haptic {
+  pulse?: (value: number, duration: number) => Promise<unknown>;
+}
+
+type Pad = { connected?: boolean; mapping?: string; vibrationActuator?: Actuator; hapticActuators?: readonly Haptic[] };
+
 /** Whether this browser can vibrate a controller at all (the setting is hidden where it can't). */
 export function vibrationSupported(): boolean {
   try {
-    return typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype;
+    return typeof Gamepad !== 'undefined' && ('vibrationActuator' in Gamepad.prototype || 'hapticActuators' in Gamepad.prototype);
   } catch {
     return false;
   }
@@ -55,13 +63,20 @@ export function scaledRumble(e: RumbleEffect, prefs = combatPrefs()): RumbleEffe
   return { duration: Math.round(e.duration), strong, weak };
 }
 
-/** The controller in use, if it can vibrate. */
-function activePad(): Actuator | null {
-  const pads = typeof navigator !== 'undefined' ? navigator.getGamepads?.() ?? [] : [];
+/** The controller in use, if it can vibrate, and how: the dual-rumble actuator, or else the older single pulse. */
+function activePad(): { dual: Actuator } | { pulse: Haptic } | null {
+  let pads: readonly (Pad | null)[] = [];
+  try {
+    pads = typeof navigator !== 'undefined' ? ((navigator.getGamepads?.() ?? []) as unknown as readonly (Pad | null)[]) : [];
+  } catch {
+    return null;
+  }
   for (const g of pads) {
     if (!g?.connected || g.mapping !== 'standard') continue;
-    const a = (g as unknown as { vibrationActuator?: Actuator }).vibrationActuator;
-    if (a?.playEffect) return a;
+    const a = g.vibrationActuator;
+    if (a?.playEffect) return { dual: a };
+    const h = g.hapticActuators?.[0];
+    if (h?.pulse) return { pulse: h };
   }
   return null;
 }
@@ -74,5 +89,12 @@ export function rumble(e: RumbleEffect, padActive: boolean): void {
   const pad = activePad();
   if (!pad) return;
   // A new effect replaces the one playing; a browser that refuses just doesn't rumble.
-  pad.playEffect!('dual-rumble', { duration: s.duration, startDelay: 0, strongMagnitude: s.strong, weakMagnitude: s.weak })?.catch?.(() => {});
+  try {
+    const done = 'dual' in pad
+      ? pad.dual.playEffect!('dual-rumble', { duration: s.duration, startDelay: 0, strongMagnitude: s.strong, weakMagnitude: s.weak })
+      : pad.pulse.pulse!(Math.max(s.strong, s.weak), s.duration);
+    done?.catch?.(() => {});
+  } catch {
+    // Unsupported here after all: no rumble.
+  }
 }

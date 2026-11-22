@@ -8,6 +8,12 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Pick the optic on your guns.** Profile → Favourite loadout → Optics (or Pause → Settings → Optic for the gun in hand): many guns can carry their own sights, a red dot, a holographic sight or a new 2× optic; others see the optic you picked on your gun, and snipers keep their scopes.
+- **Toggle aim lets go when you sprint.** With Aim set to Toggle, Shift (L3 on a controller, Sprint on touch) drops the sights and sprints; with a scope or optic in hand Shift still holds your breath, and a reload keeps your aim.
+- **Camera shake covers the zipline too.** Off / Reduced now also calms the view's roll and sway on a zipline, like the lean's.
+- **The pause menu has an Accessibility group:** Reduce flashing, Camera shake, Aim and controller Vibration together, as in Options.
+- **Controller vibration in more browsers:** where a browser only has the older single-motor haptics, the controller pulses instead.
+- **Long melee weapons show your hands in first person.** The Katana, Scimitar, Baseball Bat, Battle Axe and Spear are held in both hands where you can see them, raised at the ready (the Spear level), with a cut across the view (the Spear a thrust) and a draw up from the shoulder; third person is unchanged.
+- **Weapon Manager (for the owner).** The weapon tuning page (`?mode=weapons`) has a Manage tab: rename, hide or unhide, pick sounds from the game's library, edit sets, stats and descriptions with the comparisons live, and leave notes; Send changes makes a change file a session applies in the repo (docs/FEATURES.md, "Weapon Manager").
 - **Slide.** Sprint, then crouch: a short slide that keeps your speed, slows over about three quarters of a second and ends crouched. It costs stamina like a sprint (none in the air, a short cooldown, a little longer downhill); bots slide into cover too.
 - **Peek (lean).** Hold ` or Left Alt (rebind in Options → Controls; Q and E were taken) to lean round a corner: your head, gun and where you can be hit move out together, lag compensation included. Everyone sees the lean, in first and third person; bots peek from cover with it.
 - **The Gas Mask Engineer is retired.** He's gone from Character Select, random characters and the bots; a saved choice or bot set that named him plays Grunt '68.
