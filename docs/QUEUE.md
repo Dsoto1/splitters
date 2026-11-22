@@ -38,9 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/combat-a11y` · 6e83f6b5 · run 45022997489 (combat accessibility, the rest: toggle aim on sprint, every camera-shake source, older haptics, the pause menu's Accessibility group)
-- `wip/melee-fp-pose` · e3e420c1 · run 45026049251 (first-person pose for long melee weapons: Katana, Scimitar, Baseball Bat, Battle Axe and Spear held two-handed by the grip, hands in view; touches `game/view.ts` as combat-a11y does, different functions)
-- `wip/weapon-manager` · 3988778d · run 45027085530 (the owner's Weapon Manager on `?mode=weapons` → Manage, and `tools/content/apply-weapon-edits.mjs`; touches shared pickup/set/class/Roulette code for hidden weapons, `game/sessionAudio.ts` (a weapon's reload sound) and MapMaker's palette and inspector)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -237,6 +234,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** train check/train-20261122-145854 (a7a22b8, run 45035743971), landed by the splitters lead: combat accessibility, the rest (`wip/combat-a11y`); first-person pose for long melee weapons (`wip/melee-fp-pose`); the owner's Weapon Manager (`wip/weapon-manager`).
 - **2026-11-22** slide and peek (`wip/slide-peek`, green a1ff10ab, run 45015057940): slide (sprint, then crouch) and lean/peek (` and Left Alt, rebindable), first and third person, bots, network; binary snapshot v3. Landed alone by the splitters lead.
 - **2026-11-22** the small batch (`wip/small-1122`, green 2414d1ba): map files to 3 MiB, switch team, moving jump pads, MapMaker working-level grid, Terrain → Resize, the Gas Mask Engineer retired. Train check/train-20261122-091128 (807d896), landed by the splitters lead.
 - **2026-11-22** the owner's 29 new characters of 11-21/22 (`wip/chars-1122`, green 43883739), all Experimental; nine pistol support grips listed in content/grip-fit.json for hand tuning. Same train.
