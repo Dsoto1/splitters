@@ -2,6 +2,7 @@
  "order": [
   "core.room",
   "core.room_basement",
+  "core.room_sunk",
   "core.room_pillar",
   "core.corridor",
   "core.corner",
@@ -466,6 +467,76 @@
       -4,
       4,
       7.5,
+      4
+     ]
+    ],
+    "sky": true
+   }
+  },
+  {
+   "id": "core.room_sunk",
+   "category": "Rooms",
+   "displayName": "Sunk Room",
+   "blurb": "A Room with its floor half a metre below its doorways (a hall you step down into); the ground is cut out of its cell. Bring steps to its doorways (a Refectory Bay's Floor option does)",
+   "cells": [
+    [
+     0,
+     0,
+     0
+    ]
+   ],
+   "floors": [],
+   "ports": [
+    {
+     "side": "N",
+     "level": 0
+    },
+    {
+     "side": "E",
+     "level": 0
+    },
+    {
+     "side": "S",
+     "level": 0
+    },
+    {
+     "side": "W",
+     "level": 0
+    }
+   ],
+   "configurable": true,
+   "extraFloors": [
+    {
+     "min": [
+      -4,
+      -1,
+      -4
+     ],
+     "max": [
+      4,
+      -0.5,
+      4
+     ]
+    }
+   ],
+   "bore": {
+    "cut": [
+     [
+      -4,
+      -0.95,
+      -4,
+      4,
+      3.9,
+      4
+     ]
+    ],
+    "open": [
+     [
+      -4,
+      0,
+      -4,
+      4,
+      3.9,
       4
      ]
     ],

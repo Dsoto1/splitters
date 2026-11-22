@@ -262,3 +262,75 @@ carry our own name and mark.)
 **Memorial Hall's plan shape (owner, same day):** "the shape of the library is almost rectangle/oval from above if
 that makes sense?" Read as an oblong with rounded ends or corners (a long body, not a round tower with a wing);
 to confirm with the owner against a mock-up before it is built.
+
+**Memorial Hall, the owner again (same day, about 20:40 UTC, after seeing the step 8 hall on main):** "clearly the
+memorial notes and reference images were lost in translation"; "you should have both internal and external
+references including my notes on it being 2 stories, with the 2nd seeing the beams visible like in the ref image.
+etc. the drive has a folder of st. johns refs". So: two storeys; the **second** storey is open to the roof with
+its timber beams and trusses in view (photo 11's trusses, photo 10's striped rafters); the ground storey has the
+upper floor over it. Both the interior references (photos 10, 11) and the exterior one (photo 14) bind the build,
+with every library picture in the owner's Drive (the St. John's references of 2026-11-12 and the folder `screens`;
+fetched per container into a scratch folder, never committed).
+
+## The stair lobbies' door (same day, about 21:00 UTC), and the references folder
+
+The owner's references folder on Drive is shared now: folder id `1uVRNvRRIccYEOz3REQw1lU1QGfUlFjHg` (the 2026-11-12
+set and what was added since; fetched into a scratch folder with an index, never committed).
+
+With a screenshot from the live game (free camera in a stair end bay's lobby on St. John's: rubble walls, terrazzo
+floor, the stair rising on the right over a solid plastered mass, a single oak door ajar in the far wall, squeezed
+beside that mass):
+
+> this door and stair. the under stair could be removed to make room for a larger double door to fit there. it
+> would work well where this is found elsewhere, like across the skyway.
+
+So: on the Stair End Bay pieces, a generic option that opens the space under the stair's upper flight where there
+is standing height and puts a wider double door in that wall in place of the single one; set on St. John's where
+that door is a main way through, the bays at the ends of the skyway (the bridge) first. Taken into step 7c.
+
+**Dorm rooms (owner, same day, about 21:20 UTC):** "ever dorm room had a small mirror cabinet above their sinks".
+A small mirrored cabinet on the wall above each dorm room's sink, in the dorm bay pieces themselves (so every dorm
+room gets it). Taken into step 7c. The owner also added the day's photos to the Drive references folder.
+
+**Memorial Hall's two storeys, decided (owner, same day, about 21:40 UTC):** "alcoves on ground floor, rows upstairs
+works". Ground storey: photo 10's alcoves (bookcases standing out from the walls, a bench and reading ledge in
+each), under the upper floor. Upper storey: photo 11's freestanding double-sided rows either side of a red runner,
+under the open timber roof. The owner sent photos 10 and 11 again as "interior of library": they are the interior
+spec.
+
+**Dorm rooms, a footlocker (owner, same day, about 22:00 UTC, with a product picture of a trunk):** "each dorm room
+should also have one black chest with grey edging at the foot of each bunk". A black rectangular trunk, about
+0.8 x 0.42 x 0.42 m, silver-grey metal edging along the lid seam and corners, three chrome latches on the front;
+one at the foot of each bunk, in the dorm bay pieces themselves. Taken into step 7c.
+
+**Dorm rooms, the desks (owner, same day):** "the desks themselves do not need to be separated, they can be flush
+next to one another and moved back to the corner". The two desks side by side, touching, as one run in a corner
+of the room, chairs pulled in, the middle of the floor clear. Taken into step 7c.
+
+## Mess hall kit: the owner's answers (2026-11-22)
+
+Asked after the step 7d kit's pictures (`wip/stjohns-7d-kit`):
+
+1. Height: **keep 4 m** (Welles keeps both dorm floors; the two-level hall is not wanted now).
+2. Clock tower way in: **a north door beside the fireplace end** (cell 3); the fireplace wall closes the west end.
+3. Window-side piers: **yes**, a square stone pier with a capital under every beam, as in the photos.
+4. Bots not entering the side aisle's table bays: **ok for now**.
+5. The lengthways views' +12 % draws: **accepted**.
+6. The south door at cell 5 that faces an arcade pier: **keep for now**.
+
+## 2026-11-22, later: approvals
+
+After the library's third mock-up and the mess hall's piers picture: **"all looks good. we can have splitters session take lead"**. Read as: the library (step 8b) as shown in the third mock-up is approved for the map; the mess hall keeps a pier under every beam with twin sash windows on those bays; the lead moves to the "splitters" session.
+
+## The corner (step 7c): the owner's answers (2026-11-22)
+
+Asked after 7c's pictures; the owner: "1. yes 2. enough 3. accept 4. yes 5. yes 6. fold."
+
+1. Welles's 2nd floor, cells 7 and 8: **yes**, convert the two Classroom Bays to dorm bays too.
+2. The door beside the clock tower into the mess hall: **enough**; the tower need not open straight into the hall.
+3. The gate tower's outside stairs each stand in front of one ground-floor window: **accept**.
+4. The mess hall's door bays show a flat tan panel to the court: **yes**, clad them in the wall's stone (a kit change).
+5. Black metal stair rails on every other hall's stairs: **yes** (Welles east (9, -10) and west (re-placed as a piece), Stangeland / Cord (-5, -10) and (0, -9), Scott Johnston / Hazelwood (-17, -10), (-10, -9) and the Hall Centre (-13, -9), Smythe (5, 4) and (7, 0)).
+6. Mirror cabinet and footlocker: **fold** the mirror into the sink prop and the footlocker into a bunk variant, so no props are added (not a higher prop budget).
+
+Then: "try and wrap things up here" (the Splitters FABLE 5.2 session finishes what is in flight and hands the rest to the lead).

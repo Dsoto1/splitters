@@ -1,0 +1,97 @@
+{
+  "$comment": "St. John's step 7d kit: what was done to maps/test_coverage.json in MapMaker, in order, so it can be replayed on a later version of the map (a Playwright driver clicks these: the Set pieces tab's card, R to turn, the level strip, a click on the cell, then the set piece inspector's Options, one option a selection; the Tiles tab's card and a click for the tile; Export). Cells are the map's grid (x east, y north); every piece on the ground, unturned, not mirrored. A mess hall in little along row -60: the fireplace end with drink stations, a bay with doors and a cross aisle, the serving bay and the kitchen, all on a sunk floor; then a bay on a level floor with the arcade and drink stations, a sunk bay with Steps up and the twin arches, and a Sunk Room by itself.",
+  "steps": [
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_bay",
+      "x": -6,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "floor": "sunk",
+        "ceiling": "timber",
+        "aisle": "arcade",
+        "furniture": "rows_podium",
+        "lights": "bowls",
+        "flags": "hung",
+        "end": "fire_drinks"
+      }
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_bay",
+      "x": -5,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "walls": "doors",
+        "floor": "sunk",
+        "ceiling": "timber",
+        "aisle": "arcade",
+        "furniture": "rows_gap",
+        "lights": "bowls",
+        "flags": "hung"
+      }
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_servery",
+      "x": -4,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "floor": "sunk",
+        "ceiling": "timber"
+      }
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_kitchen",
+      "x": -3,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "floor": "sunk",
+        "end": "door"
+      }
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_bay",
+      "x": -1,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "aisle": "arcade",
+        "furniture": "rows",
+        "end": "drinks"
+      }
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.refectory_bay",
+      "x": 1,
+      "y": -60,
+      "rot": 0,
+      "options": {
+        "walls": "main_north",
+        "floor": "sunk",
+        "furniture": "none",
+        "end": "steps"
+      }
+    },
+    {
+      "op": "tile",
+      "tile": "core.room_sunk",
+      "x": 4,
+      "y": -60
+    },
+    {
+      "op": "option",
+      "id": "setpiece_9t8yhc8gue",
+      "name": "ceiling",
+      "value": "timber_piers",
+      "$comment": "The bay placed by step 5 (at -1, -60): its id as MapMaker gave it; on a replay take the id step 5 prints."
+    }
+  ]
+}
