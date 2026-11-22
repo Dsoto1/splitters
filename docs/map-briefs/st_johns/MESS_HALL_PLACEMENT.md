@@ -16,12 +16,12 @@ west Stair End Bay; DeKoven's lobby door is in the north wall at x 40 (cell 5).
 
 ## The six bays
 
-Every bay: **Floor Sunk 0.5 m**. The four hall bays also: **Ceiling Timber beams, Side aisle Arcade south, Chandelier
-Two with pale bowls, Flags Hung along both sides**. Options not named stay as they are.
+Every bay: **Floor Sunk 0.5 m**. The four hall bays also: **Ceiling Timber beams on piers, Side aisle Arcade south,
+Chandelier Two with pale bowls, Flags Hung along both sides**. Options not named stay as they are.
 
 | Cell | Today (id) | Becomes | Options to set (besides the above) |
 |---|---|---|---|
-| (3, -11) | Refectory Bay `setpiece_8zgwaep49q` | the same placement | Furniture **Rows of mess tables**; West end **Fireplace and drink stations** |
+| (3, -11) | Refectory Bay `setpiece_8zgwaep49q` | the same placement | Long walls **A door north** (the clock tower's way in: a round arch in the court wall at x 24, with its step down); Furniture **Rows with a cross aisle** (so no table stands in the door); West end **Fireplace and drink stations** |
 | (4, -11) | Refectory Bay `setpiece_on14jx8cor`, Main entrance north until 7c moves it | the same placement | Furniture **Rows with a podium** (the lectern and bell on the north wall, the middle of the hall as drawn); Long walls as 7c leaves them (Arched windows once the entrance has moved) |
 | (5, -11) | Refectory Bay `setpiece_7j8uomeg8s`, Doors both sides | the same placement | Furniture **Rows with a cross aisle** (the aisle runs from DeKoven's lobby door to the street door); Long walls: see "The south door" below |
 | (6, -11) | Refectory Bay `setpiece_wqaqvgkrko` | the same placement | Furniture **Rows of mess tables** |
@@ -46,19 +46,29 @@ What that gives, against the sketch:
   a drink station before the panelling either side of it.
 - **Podium against the north wall about the middle of the hall:** in cell 4, by its pier.
 
+## The owner's answers (2026-11-22)
+
+1. **Height:** keep 4 m (the sunk floor and the timber ceiling; no two-level hall).
+2. **The clock tower's way in:** a north door in cell 3, beside the fireplace end; the fireplace wall closes the west
+   end. In the table above. Walked in a test as it will be placed (the bay with A door north, the sunk floor, the
+   fireplace and drink stations, the cross aisle, piers): bots and a player in and out over the step, on both ground
+   grids.
+3. **Window-side piers:** yes: a square stone pier with a plain capital under every beam. That is **Ceiling: Timber
+   beams on piers**: on the north side a pier every 4 m (at each bay's ends and its middle), 0.45 m deep, the old wall
+   pier's face, so the aisles and the north row's chairs are where they were. A pier under the middle beam stands
+   where a bay's one arched window is, so in these bays **the court side's window becomes two sash windows**, one
+   either side of the pier (cells 4 and 6; a bay with a door or fireplace north has no middle pier: cells 3 and 5).
+   Welles's court front changes with it: say if the arched windows should stay and the middle pier go instead.
+4. **Bots not entering the side aisle's table bays:** fine for now.
+5. **The lengthways views' +12 % draws:** accepted.
+6. **The south door at cell 5 facing a pier:** keep for now (Long walls stays Doors both sides).
+
 ## Things to settle when placing
 
-- **The west end and the clock tower.** The fireplace wall closes the hall's west end, so the west Stair End Bay's
-  mouth no longer opens into the hall (its stair is still reached from its own lobby door). 7c gives the clock tower
-  "a way into the mess hall": if that way is through the west Stair End Bay, the fireplace wall shuts it. Then either
-  (a) give cell 3 Long walls **A door north** (a round arch in the court wall at x 24, 8 m from the tower's door; the
-  furniture there becomes Rows with a cross aisle), or (b) keep the west end open with West end **Steps up** and put
-  the fireplace on a long wall (Long walls Fireplace north or south: the older block fireplace, no portrait). (a) is
-  recommended: it keeps the photos' end wall.
-- **The south door (cell 5).** With the arcade, a round-arched south door faces the arcade's middle pier 3.5 m inside
-  (walked round either side). Long walls **Main entrance south** (the twin arches) lines up with the arcade's two
-  arches instead and changes the street front; or the south door goes (Long walls A door north) and Exeter Street is
-  reached by the stairs' lobbies. Owner's call; the walk tests pass with any of the three.
+- **The west end.** The fireplace wall closes the hall's west end, so the west Stair End Bay's mouth no longer opens
+  into the hall (its stair is still reached from its own lobby door); the way in from the clock tower's side is cell
+  3's north door (answer 2). If 7c built a way from the tower through the west Stair End Bay, it ends at the wall.
+- **Cell 4's lectern and bell** stand before the west sash window with piers on (where the old pier's side was).
 - **The two pickups in the hall** stand on the old floor: `pickup_2876` (burst rifle) at (44, 0, -84) would be in a
   table, and half a metre over the sunk floor: move it (the inspector's X / Height / Z) to (40, -0.5, -82.3), the
   cross aisle; `pickup_2877` (health) at (66, 0, -84) to (66, -0.5, -84), the kitchen floor.

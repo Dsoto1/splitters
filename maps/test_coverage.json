@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_x3bws34lxz2xkztq",
-      "revision": 49,
-      "contentHash": "sha256:48660709fd9c12132e957d00a438545aa1b0f086d36a1eab54b77454b9203f7a",
+      "versionId": "v_zrecfzlo6mjrdjwg",
+      "revision": 50,
+      "contentHash": "sha256:02240425eb27f645b33b42f2f3a4c2abeb192c7830144f6e6a99c4d03d7116f2",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T20:09:45.733Z"
+      "releasedAt": "2026-11-22T00:37:01.179Z"
     },
     "testOnly": true
   },
@@ -7293,7 +7293,8 @@
         "options": {
           "aisle": "arcade",
           "furniture": "rows",
-          "end": "drinks"
+          "end": "drinks",
+          "ceiling": "timber_piers"
         }
       }
     },

@@ -988,7 +988,7 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
           if (e.kind === 'block') {
             const bottom = e.position[1];
             // A block stands on the floor, on the level's own floor (a wall, a pier, a fireplace of the long walls) or is a lintel.
-            expect(bottom === y || bottom === 0 || /Lintel|Mantel|Firebox|Chimney/.test(e.name ?? ''), `${where}: block ${e.name} at ${bottom}`).toBe(true);
+            expect(bottom === y || bottom === 0 || /Lintel|Mantel|Firebox|Chimney|Capital/.test(e.name ?? ''), `${where}: block ${e.name} at ${bottom}`).toBe(true);
             expect(bottom + e.size[1], `${where}: block ${e.name} stays under the ceiling`).toBeLessThanOrEqual(3.5 + 1e-6);
           }
         }
@@ -1158,9 +1158,60 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
     expect(validateMap(map).filter((i) => /^tunnel\./.test(i.code))).toEqual([]);
   });
 
+  it('timber beams on piers: a pier with a capital under every beam on the north side, twin sashes between them, the aisles and the north door as they were', { timeout: 480_000 }, () => {
+    const def = library.pieces.get(BAY)!;
+    const parts = (options: Record<string, string>) => setPieceParts({ id: 'p_1', piece: BAY, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options } }, def, 'core.castle', library);
+    const blocks = (options: Record<string, string>, name: string) => parts(options).entities.filter((e) => e.kind === 'block' && e.name === name);
+    // Three piers a bay where the north wall has its window (half a pier at each end, a whole one in the middle), each
+    // 0.45 m deep with its capital's top under the beams (3.06 m); two where it has a way in or the fireplace.
+    for (const floor of ['level', 'sunk']) {
+      const piers = blocks({ ceiling: 'timber_piers', floor }, 'Beam pier');
+      expect(piers.map((e) => (e.kind === 'block' ? [e.position[0], e.size[0]] : [])).sort((a, b) => a[0]! - b[0]!)).toEqual([[-3.75, 0.5], [0, 1], [3.75, 0.5]]);
+      for (const e of [...piers, ...blocks({ ceiling: 'timber_piers', floor }, 'Capital')]) if (e.kind === 'block') expect(e.position[2] - e.size[2] / 2, 'no nearer the tables than the old wall pier').toBeGreaterThanOrEqual(10.95 - 1e-9);
+      for (const e of blocks({ ceiling: 'timber_piers', floor }, 'Capital')) if (e.kind === 'block') expect(e.position[1] + e.size[1]).toBeCloseTo(3.06, 6);
+      expect(blocks({ ceiling: 'timber_piers', floor }, 'Pier').map((e) => e.position[2]), 'the old north wall pier is left out').toEqual([-3.4]);
+      expect(blocks({ ceiling: 'timber_piers', floor }, 'Pier foot')).toHaveLength(floor === 'sunk' ? 4 : 0);
+      for (const walls of ['door_north', 'doors', 'main_north', 'fire_north']) expect(blocks({ ceiling: 'timber_piers', floor, walls }, 'Beam pier'), walls).toHaveLength(2);
+      const north = parts({ ceiling: 'timber_piers', floor }).tiles.find((t) => t.y === 1)!;
+      expect(north.edges?.['0,0,0:N']).toBe('windows_sash');
+      expect(parts({ ceiling: 'timber', floor }).tiles.find((t) => t.y === 1)!.edges?.['0,0,0:N']).toBe('window_arched');
+      expect(parts({ ceiling: 'timber_piers', floor }).entities.some((e) => e.kind === 'prop' && e.model === 'kit.roof.timber_bay')).toBe(true);
+    }
+    // In every turn: the three aisles between the rows as before, the middle pier solid, two panes of glass north.
+    for (const { rotation, mirror } of TURNS) {
+      const { at, local, yaw } = frame(rotation, mirror);
+      const where = `turned ${rotation}${mirror ? ' mirrored' : ''}`;
+      const map = one(BAY, rotation, mirror, { floor: 'sunk', ceiling: 'timber_piers', aisle: 'arcade', furniture: 'rows', end: 'steps' });
+      const { physics, nav } = world(map);
+      for (const z of [3.26, 6.07, 8.88]) {
+        const path = nav.findPath(at([-2.6, -0.5, z]), at([3.1, -0.5, z]));
+        expect(path && length(path), `${where}: the aisle at z ${z}`).toBeLessThan(6.6);
+      }
+      expect(local(walk(physics, at([-2, -0.45, 6.07]), yaw(0), 20).pos).z, `${where}: (a walk north starts)`).toBeGreaterThan(6.2);
+      const hit = physics.raycastHit(at([0, 1, 8.9]), { x: at([0, 0, 1]).x - at([0, 0, 0]).x, y: 0, z: at([0, 0, 1]).z - at([0, 0, 0]).z }, 4);
+      expect(hit?.dist, `${where}: the middle pier's face at z 11.05`).toBeCloseTo(2.15, 1);
+      expect(windowPanes(map).filter((w) => w.id.includes(':0,0,0:N')).length, `${where}: two sashes north`).toBe(2);
+      nav.destroy();
+    }
+    // The west bay of St. John's hall as it will be placed: the fireplace end, a door north with its step, the cross aisle.
+    for (const grid of GRIDS) {
+      const { physics, nav } = world(one(BAY, 0, false, { walls: 'door_north', floor: 'sunk', ceiling: 'timber_piers', aisle: 'arcade', furniture: 'rows_gap', end: 'fire_drinks', lights: 'bowls', flags: 'hung' }, grid));
+      for (const [a, b] of [[[0, 0, 15], [0, -0.5, 6.07]], [[0, -0.5, 6.07], [0, 0, 15]]] as P3[][]) {
+        const path = nav.findPath(v(a!), v(b!));
+        expect(path, `grid ${grid.spacing}: ${a} → ${b}`).toBeTruthy();
+        expect(Math.hypot(path!.at(-1)!.x - b![0], path!.at(-1)!.y - b![1], path!.at(-1)!.z - b![2]), `grid ${grid.spacing}: ${a} → ${b} arrives`).toBeLessThan(0.6);
+        expect(length(path!), `grid ${grid.spacing}: ${a} → ${b} straight`).toBeLessThan(10.5);
+      }
+      const down = walk(physics, v([0, 0.1, 14]), Math.PI, 110);
+      expect(down.pos.z, `grid ${grid.spacing}: walked in at the north door`).toBeLessThan(10);
+      expect(down.pos.y).toBeCloseTo(-0.5, 1);
+      nav.destroy();
+    }
+  });
+
   it('every new option starts at the bay as it was: a placement made before step 7d expands as before', () => {
     const def = library.pieces.get(BAY)!;
-    expect(def.options!.map((o) => `${o.name}:${o.choices[0]!.value}`)).toEqual(['walls:windows', 'floor:level', 'ceiling:plain', 'aisle:none', 'furniture:benches', 'lights:iron', 'flags:none', 'end:open']);
+    expect(def.options!.map((o) => `${o.name}:${o.choices[0]!.value}`), 'first choices').toEqual(['walls:windows', 'floor:level', 'ceiling:plain', 'aisle:none', 'furniture:benches', 'lights:iron', 'flags:none', 'end:open']);
     const { tiles, entities } = setPieceParts({ id: 'p_1', piece: BAY, x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }, def, 'core.castle', library);
     // The same parts by index as before the kit (ids are `sp_<placement>_<part index>`: 0-1 the tiles, 12-22 the rest).
     expect([...tiles.map((t) => t.id), ...entities.map((e) => e.id)].map((id) => Number(id.split('_').at(-1))).sort((a, b) => a - b)).toEqual([0, 1, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);

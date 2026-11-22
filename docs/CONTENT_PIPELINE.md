@@ -1057,7 +1057,8 @@ cold hearth), `kit.wall.panel_window` (dark panelling with a tall narrow window 
 Set pieces: the **Refectory Bay** gained seven options, each starting at the bay as it was (so placements made before
 keep their look): **Floor** (Level, Sunk 0.5 m: Sunk Rooms with a polished reddish-brown floor, a footing under each long wall whose top is the doorways'
 threshold, a step of 0.25 m inside every doorway, furniture half a metre lower: a floor-standing part is listed once a
-floor), **Ceiling** (Plain, Timber beams), **Side aisle** (None, Arcade south: 4 m from the south wall), **Furniture**
+floor), **Ceiling** (Plain, Timber beams, Timber beams on piers: on the north side a stone pier with a capital under every
+beam, blocks; the north window becomes Twin sash windows either side of the middle pier), **Side aisle** (None, Arcade south: 4 m from the south wall), **Furniture**
 (Two tables with benches, Rows of mess tables, Rows with a cross aisle, Rows with a podium, None), **Chandelier** (Iron
 ring, Two with pale bowls), **Flags** (None, Hung along both sides), **West end** (Open, Steps up, End wall, Fireplace
 wall, Drink stations, Fireplace and drink stations). New: **Refectory Serving Bay** (`setpiece.refectory_servery`: the
