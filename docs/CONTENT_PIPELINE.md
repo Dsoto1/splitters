@@ -342,9 +342,13 @@ there are.
    Damage is per pellet. `projectile` for anything that flies (its fields are in `ProjectileSpec`, sim/weapons.ts),
    `heat` for a weapon without ammunition, `alt` for a second trigger.
 6. **Presentation:** `view.model` and `view.fallback` must exist under `packages/client/public/models` (or be a
-   `procedural/` model), `view.sound` in `content/sounds.json` (default `fire.<name>`). Holds (`view.hold`) are set
-   with the grip tool, not by hand or in the Workbench.
+   `procedural/` model), `view.sound` in `content/sounds.json` (default `fire.<name>`), `view.reloadSound` too
+   (default `reload.start`, every weapon's). Holds (`view.hold`) are set with the grip tool, not by hand or in the
+   Workbench. `"hidden": true` hides a weapon (the owner's Weapon Manager; docs/FEATURES.md, "Weapon Manager"): out
+   of random pickups, sets, class loadouts, Roulette and MapMaker's palette, still spawning where a map places it;
+   the generator refuses it on a mode's starting weapon, a set's spawn or sniper gun and the rifle.
 7. **Notes:** put the design intent in `notes` (`design`, `model`, or the field it explains), not in code comments.
+   `notes.description` is the one-line description the Weapon Manager shows and edits.
 8. **Generate and check:** `pnpm content:weapons` (`node tools/content/weapons.mjs`) checks the schema (an unknown
    field is an error), the references (ammo types, models, sounds, slots 0-9, codes; classes naming real weapons,
    throwables and abilities) and writes `packages/shared/src/content/weapons.generated.ts`,

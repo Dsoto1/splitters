@@ -2082,6 +2082,16 @@ damage and time to kill over distance (a crosshair and values on hover), and dro
 chosen ballistics rule and health. Deep link: `?mode=weapons&w=core.smg,core.revolver&ballistics=advanced&hp=100`.
 Not yet shown: penetration energy, the reload timeline, velocity over distance.
 
+**The Weapon Manager (2026-11-22, owner: "manage the weapons we have in game… rename, suggest things, removal,
+selecting sound").** The page's Manage tab (`&view=manage`, client `tools/weaponManager.ts`; the comparisons are shared
+from `tools/weaponCompare.ts`) lists every weapon and edits its name, hidden state, category, description, sounds,
+sets and stats (each in its range, the game's value beside it, the comparisons above drawn for the game's weapon and
+the edit side by side) and takes notes. It writes nothing: **Send changes** makes a versioned JSON change set
+(`tools/content/weapon-edits-format.mjs`) that `node tools/content/apply-weapon-edits.mjs <file>` checks and writes
+into the weapon content data in the repo; a session lands it. Hidden weapons (`"hidden": true`) leave random pickups,
+sets, class loadouts, Roulette and MapMaker's palette; placed on a map they still spawn. The flow for the owner, step
+by step: docs/FEATURES.md, "Weapon Manager".
+
 ---
 
 # 46. Feel Validation
