@@ -56,11 +56,12 @@ export function plainPiece(text: string): Uint8Array {
 
 /**
  * The most one message may inflate to: the welcome carries the whole map
- * (at most MAP_MAX_BYTES, 2 MiB) plus rules and scenario state. A stream
+ * (at most RESOURCE_BUDGETS.mapBytes, 3 MiB, as played; about a third more
+ * with its defaults filled in) plus rules and scenario state. A stream
  * that inflates past it (a "zip bomb", or a broken host) is refused before
  * it can fill the tab's memory.
  */
-export const MAX_INFLATED_MESSAGE = 4 * 1024 * 1024;
+export const MAX_INFLATED_MESSAGE = 6 * 1024 * 1024;
 
 export class Unzipper {
   private readonly inflate = new Inflate({ raw: true });

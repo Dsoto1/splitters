@@ -103,7 +103,7 @@ Spies into **Soldiers & Spies** (`soldiers`); Steel Guardian moved to Machines, 
 The Hollow Pilgrim and Scary Larry to Horrors & Creatures. The retired ids still read (`CHARACTER_GROUP_ALIASES`;
 in a bot-characters setting `CAST_ID_ALIASES`: `agents` is Agency, the same characters as before, `creatures` is
 `horror`), so saved setups, maps and host.json files that name them keep working.
-Retired looks (Capt. Nova, Bamboo, Uncle Bao, the Rusty Mech and the earlier ones in `RETIRED_LOOKS`) sort as the
+Retired looks (Capt. Nova, Bamboo, Uncle Bao, the Rusty Mech, the Gas Mask Engineer and the earlier ones in `RETIRED_LOOKS`) sort as the
 look they play.
 
 **Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
@@ -171,7 +171,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 
 | Group (`id`) | Who |
 |---|---|
-| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Gas Mask Engineer, Grunt '68, Kenji, Pemberton, Santa, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
+| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Santa, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
 | Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Sun Warrior, The Purple Comet |
@@ -214,6 +214,14 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
   `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
   `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
+- **Experimental now (2026-11-22):** the owner's Drive batch of 2026-11-21/22, 29 rigged Meshy Community downloads
+  built as the 2026-11-14 batch was (the download's own rig, its clips unused; seventeen rebaked to keep under the
+  1.8 MB character budget; grip offsets from the auto-fit). Their groups once promoted: Legends (Frost Valkyrie, Sun
+  Priest, Celestial Knight, Mystic), Horrors & Creatures (Abyssal Hunter, Tinker Goblina), Everyday Folk (Sunset
+  Gunslinger), Outer Space (the time crew: Crew Alchemist, Cyborg, Demolitions, Gunslinger, Mechanic, Medic,
+  Phase-Shifter, Recon, Veteran, and the Time Traveler) and Animalia (Ace Squirrel, Penguin King, Gym Bro Axolotl,
+  Agent Badger, Coach Tortoise, Cyber Flamingo, Box Duck, Gym Bro Frog, Doc Chameleon, Owl Sniper, Wacky Shark, Zen
+  Capybara). The Drive's "veteran time crew rigged" is the same model as "veteran time crew 15k" (built from the latter).
 - **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
   `pnpm quality-gates` prints the characters after the maps and exits 1 on a failing core character
   (`--characters`: only them; `content/characterGates.ts`, facts read by `packages/server/src/tools/characterFacts.ts`;
@@ -271,7 +279,7 @@ white-grey; 133 characters on the roster):
 
 | Kind | How many | Who |
 |---|---|---|
-| **Red** (`red`) | 100 | Anoobys, Astronaut Explorer, Azure Sentinel, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Gas Mask Engineer, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
+| **Red** (`red`) | 99 | Anoobys, Astronaut Explorer, Azure Sentinel, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
 | **Green** (`green`) | 5 | *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *The Visitor* |
 | **Blue** (`blue`) | 6 | *Alien Biker*, *Octo Buddy*, *Reef Wanderer*, *Ricochet*, *Space Marine*, *Spud Marshal* |
 | **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |

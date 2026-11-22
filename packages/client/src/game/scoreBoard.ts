@@ -59,6 +59,8 @@ export interface BoardGroup {
   rows: BoardRow[];
   /** Fireteams: the team's squads, best first; `rows` then has them all in this order. */
   squads?: BoardSquad[];
+  /** Switch team: you may move to this team ('join'), or your switch to it waits for your next spawn ('pending'). */
+  join?: 'join' | 'pending';
 }
 
 /** A Fireteams squad's part of its team's list. */
@@ -186,6 +188,8 @@ interface GroupEls {
   el: HTMLElement;
   name: HTMLElement | null;
   score: HTMLElement | null;
+  /** Switch team: the header's Join button (teams only). */
+  join: HTMLButtonElement | null;
   list: HTMLElement;
   hd: HTMLElement;
 }
@@ -199,6 +203,8 @@ export class ScoreBoard {
   /** Fireteams' squad lines, by `team:squad`. */
   private squadEls = new Map<string, SquadEls>();
   private shape = '';
+  /** Switch team: a team header's Join button was clicked (the pause menu's board; the Tab board shows the key). */
+  onJoin: ((team: number) => void) | null = null;
   /** Which optional cells the rows have (set with the layout). */
   private cells = { rank: false, cls: false, obj: false, ping: false, pts: false };
 
@@ -241,6 +247,12 @@ export class ScoreBoard {
         const score = String(g.score);
         if (ge.score!.textContent !== score) ge.score!.textContent = score;
         ge.score!.classList.toggle('lead', g.lead && data.groups.length > 1);
+        const join = ge.join!;
+        join.hidden = !g.join;
+        const label = g.join === 'pending' ? 'Joining' : 'Join';
+        if (join.textContent !== label) join.textContent = label;
+        join.classList.toggle('pending', g.join === 'pending');
+        join.title = g.join === 'pending' ? `You move to ${g.name} at your next respawn (O or click to stay)` : `Switch to ${g.name} at your next respawn (O)`;
       });
     }
     // Rows: patch each, then put each list in order.
@@ -331,6 +343,7 @@ export class ScoreBoard {
       el.dataset.group = g?.id ?? `col${i}`;
       let name: HTMLElement | null = null;
       let score: HTMLElement | null = null;
+      let join: HTMLButtonElement | null = null;
       if (g && i === layout.tall) {
         // The big team: the last column, as tall as the small teams' rows.
         el.style.gridColumn = String(layout.cols);
@@ -341,7 +354,12 @@ export class ScoreBoard {
         const top = make('header', 'sb-ghead');
         name = make('span', 'sb-gname');
         score = make('b', 'sb-gscore');
-        top.append(name, score);
+        join = make('button', 'sb-join') as HTMLButtonElement;
+        join.type = 'button';
+        join.hidden = true;
+        join.dataset.team = String(i);
+        join.addEventListener('click', () => this.onJoin?.(i));
+        top.append(name, join, score);
         el.append(top);
       }
       const list = make('div', 'sb-list');
@@ -362,7 +380,7 @@ export class ScoreBoard {
       list.append(hd);
       el.append(list);
       this.body.append(el);
-      this.groups.push({ el, name, score, list, hd });
+      this.groups.push({ el, name, score, join, list, hd });
     }
     this.root.append(this.head, this.note, this.body);
     if (this.extra) this.root.append(this.extra);

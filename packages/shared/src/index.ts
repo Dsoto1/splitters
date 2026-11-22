@@ -158,6 +158,7 @@ export * from './editor/groundCut.ts';
 export * from './editor/tunnelRun.ts';
 export * from './editor/templates.ts';
 export * from './editor/changeGrid.ts';
+export * from './editor/resizeTerrain.ts';
 export * from './editor/heatmap.ts';
 export * from './editor/botTestSummary.ts';
 export * from './editor/spawnExposure.ts';

@@ -149,6 +149,38 @@ CC0 per the owner; post URL pending from the owner:
 
 - "stylized alien biker" (2026-11-01; rebuilt 2026-11-05 from the re-rigged download "stylized alien biker rigged")  -> character meshy_alienbiker (look Alien Biker)
 
+The owner's Drive batch of 2026-11-21/22 (rigged and animated Meshy downloads, `…_animated_mixamo_All_animation.glb`; Meshy Community, CC0 per the owner; experimental until the owner looks them over):
+
+- "FrostValkyrieRigged" (2026-11-22)  -> character meshy_frostvalkyrie (look Frost Valkyrie)
+- "SunPriestRigged" (2026-11-22)  -> character meshy_sunpriest (look Sun Priest)
+- "AbyssalHunterRigged" (2026-11-22)  -> character meshy_abyssalhunter (look Abyssal Hunter)
+- "CelestialKnightRigged" (2026-11-22)  -> character meshy_celestialknight (look Celestial Knight)
+- "MysticTPoseRigged" (2026-11-22)  -> character meshy_mystic (look Mystic)
+- "GoblinaRigged" (2026-11-21)  -> character meshy_goblinatinker (look Tinker Goblina)
+- "Gunslinger at Sunset" (2026-11-21)  -> character meshy_sunsetgunslinger (look Sunset Gunslinger)
+- "ace pilot squirrel 15k" (2026-11-22)  -> character meshy_acesquirrel (look Ace Squirrel)
+- "angry penguin king rigged" (2026-11-21)  -> character meshy_penguinking (look Penguin King)
+- "axolotl gym bro rigged" (2026-11-21)  -> character meshy_axolotl (look Gym Bro Axolotl)
+- "badger agent tpose rigged" (2026-11-22)  -> character meshy_badgeragent (look Agent Badger)
+- "coach tortoise 15k" (2026-11-22)  -> character meshy_coachtortoise (look Coach Tortoise)
+- "crew alchemist rigged" (2026-11-22)  -> character meshy_crewalchemist (look Crew Alchemist)
+- "crew blonde cyborg rigged" (2026-11-21)  -> character meshy_crewcyborg (look Crew Cyborg)
+- "crew demolitions rigged" (2026-11-22)  -> character meshy_crewdemolitions (look Crew Demolitions)
+- "crew gunslinger rigged" (2026-11-21)  -> character meshy_crewgunslinger (look Crew Gunslinger)
+- "crew mechanic rigged" (2026-11-21)  -> character meshy_crewmechanic (look Crew Mechanic)
+- "crew medic rigged" (2026-11-22)  -> character meshy_crewmedic (look Crew Medic)
+- "crew phase shifted rigged" (2026-11-21)  -> character meshy_crewphase (look Crew Phase-Shifter)
+- "crew recon specialist rigged" (2026-11-21)  -> character meshy_crewrecon (look Crew Recon)
+- "cyberpunk flamingo 15k" (2026-11-22)  -> character meshy_flamingo (look Cyber Flamingo)
+- "gere com as imagens abaixo por favor" (2026-11-21)  -> character meshy_boxduck (look Box Duck)
+- "gym bro frog rigged" (2026-11-21)  -> character meshy_gymfrog (look Gym Bro Frog)
+- "mad scientist chameleon 15k" (2026-11-22)  -> character meshy_chameleon (look Doc Chameleon)
+- "owl sniper game ready" (2026-11-22)  -> character meshy_owlsniper (look Owl Sniper)
+- "time traveler rigged" (2026-11-21)  -> character meshy_timetraveler (look Time Traveler)
+- "veteran time crew 15k" (2026-11-21)  -> character meshy_veterancrew (look Crew Veteran)
+- "wacky shark rigged" (2026-11-21)  -> character meshy_wackyshark (look Wacky Shark)
+- "zen master capybara rigged" (2026-11-22)  -> character meshy_zencapybara (look Zen Capybara)
+
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
 

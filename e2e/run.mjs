@@ -4544,7 +4544,7 @@ async function editorTerrainGridChecks(browser) {
   await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
   await page.selectOption('#ed-grid-spacing', '1');
   const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
-  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 3 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
   await page.selectOption('#ed-grid-spacing', '1.5');
   const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
   check(/whole number of 1\.5 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);
@@ -5877,7 +5877,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (an experimental character would sit under its own section, before yours; today none is) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (experimental characters under their own, before yours: the owner's batch of 2026-11-21/22) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -5886,7 +5886,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,legends,animals,machines,horror,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {

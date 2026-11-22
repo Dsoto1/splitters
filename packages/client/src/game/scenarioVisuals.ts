@@ -17,7 +17,7 @@ import { CreateTube } from '@babylonjs/core/Meshes/Builders/tubeBuilder';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { RawTexture } from '@babylonjs/core/Materials/Textures/rawTexture';
 import type { Material } from '@babylonjs/core/Materials/material';
-import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { PointLight } from '@babylonjs/core/Lights/pointLight';
 import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
 import '@babylonjs/core/Lights/Clustered/clusteredLightingSceneComponent';
@@ -63,7 +63,8 @@ import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
 import { WaterVisuals } from './waterVisuals.ts';
 import { loadGraphicsQuality } from './atmosphere.ts';
 import { SAFE_LIGHT, blinkLevel, ease, reduceFlashing } from './reduceFlashing.ts';
-import { PAD_FX_RANGE, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, portalCover, portalFit } from './fixtureFx.ts';
+import { PAD_FX_RANGE, PAD_MOTION, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, padChevrons, padRings, portalCover, portalFit } from './fixtureFx.ts';
+import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 
 /** How each liquid looks: colour, glow, surface and depth opacity, shine and how fast it flows. */
 export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: number; depthAlpha: number; shine: number; flow: number }> = {
@@ -136,7 +137,9 @@ export class ScenarioVisuals {
   /** The visuals that animate from a state (index, visual), gathered on the first apply after a build: apply walks only these. */
   private animated: { i: number; v: Visual }[] | null = null;
   /** Jump pads in the game (their meshes are merged; game/fixtureFx.ts): where each stands and its lift's level now. */
-  private pads: { id: string; at: { x: number; y: number; z: number }; level: number }[] = [];
+  private pads: { id: string; at: { x: number; y: number; z: number }; level: number; world: Matrix }[] = [];
+  /** Jump pads' motion (fixtureFx.ts padChevrons, padRings): every pad's gliding chevrons and rising rings, two thin-instanced meshes. */
+  private padMotion: { chev: Mesh; ring: Mesh; chevBuf: Float32Array; ringBuf: Float32Array } | null = null;
   private readonly mats = new Map<string, StandardMaterial>();
   private last = performance.now();
 
@@ -195,8 +198,9 @@ export class ScenarioVisuals {
       if (!this.opts.editor && !v.update && !v.batch && STILL_KINDS.has(e.kind)) for (const m of v.root.getChildMeshes()) if (m instanceof Mesh) still.push(m);
       this.visuals.set(i, v);
       // The lift stands on the plate, under the chevrons' tops (they show through it).
-      if (e.kind === 'pad' && !this.opts.editor) this.pads.push({ id: `pad:${e.id}`, at: { x: e.position[0], y: e.position[1] + 0.13, z: e.position[2] }, level: 0 });
+      if (e.kind === 'pad' && !this.opts.editor) this.pads.push({ id: `pad:${e.id}`, at: { x: e.position[0], y: e.position[1] + 0.13, z: e.position[2] }, level: 0, world: v.root.computeWorldMatrix(true).clone() });
     });
+    if (this.pads.length) this.makePadMotion();
     this.mergeFixtures(fixtures);
     this.mergeStill(still);
     this.batchDestructibles([...this.visuals.values()].filter((v) => v.batch));
@@ -411,7 +415,9 @@ export class ScenarioVisuals {
       const s = states.get(i);
       if (s) v.update!(s[0], s[1], now, dt);
     }
-    // Jump pads: a column of light rising off each (map.lasting `pad`); the plate, ring and chevrons stay as they are.
+    // Jump pads: their chevrons glide and rings rise (motion at one brightness, with Reduce flashing on too: slower).
+    if (this.padMotion) this.movePads(now / 1000, reduceFlashing());
+    // Jump pads: a column of light rising off each (map.lasting `pad`); the plate and its ring stay as they are.
     if (this.lasting && this.pads.length) {
       const calm = reduceFlashing();
       for (const p of this.pads) {
@@ -427,6 +433,9 @@ export class ScenarioVisuals {
     this.visuals.clear();
     this.animated = null;
     this.pads = [];
+    this.padMotion?.chev.dispose();
+    this.padMotion?.ring.dispose();
+    this.padMotion = null;
     for (const m of this.merged) m.dispose();
     this.merged = [];
     for (const m of this.batches) m.dispose();
@@ -1432,7 +1441,8 @@ export class ScenarioVisuals {
     core.parent = root;
     core.position.y = 0.08;
     core.material = this.mat('padCore', '#1a2a3a', { emissive: 0.2 });
-    for (const [i, z] of [0.1, 0.45].entries()) {
+    // In the game the chevrons move (makePadMotion); MapMaker draws two still ones.
+    for (const [i, z] of (this.opts.editor ? [0.1, 0.45] : []).entries()) {
       // Two chevrons pointing the way the pad throws you (+Z in its frame: movement.ts mapPads): each bar leans in to
       // meet the other at the front. (They leaned out, so the arrows pointed backwards: the owner, 2026-11-12.)
       const a = this.box(`${name}_chev${i}a`, root, [0.12, 0.05, 0.5], [-0.17, 0.18, z], this.mat('padGlow', '#36d6ff', { emissive: 1 }));
@@ -1441,6 +1451,68 @@ export class ScenarioVisuals {
       b.rotation.y = -0.7;
     }
     return { root };
+  }
+
+  /**
+   * Every jump pad's moving chevrons and rings: one chevron bar and one ring mesh, thin-instanced over all the pads
+   * (two draws whatever the number of pads), placed each frame by movePads.
+   */
+  private makePadMotion(): void {
+    const chev = CreateBox('pad_chevrons', { width: 0.12, height: 0.05, depth: 0.5 }, this.scene);
+    chev.material = this.mat('padGlow', '#36d6ff', { emissive: 1 });
+    const ring = CreateTorus('pad_rings', { diameter: 2, thickness: 0.05, tessellation: 40 }, this.scene);
+    // Softer than the plate's glow (nothing bright: docs/LOOK.md, "Reduce flashing"), and see-through.
+    ring.material = this.mat('padRing', '#36d6ff', { emissive: 0.55, alpha: 0.45 });
+    const chevBuf = new Float32Array(this.pads.length * PAD_MOTION.chevrons * 2 * 16);
+    const ringBuf = new Float32Array(this.pads.length * PAD_MOTION.rings * 16);
+    for (const m of [chev, ring]) {
+      m.isPickable = false;
+      // The instances move every frame: the meshes are always drawn (two draws), never culled on stale bounds.
+      m.alwaysSelectAsActiveMesh = true;
+    }
+    chev.thinInstanceSetBuffer('matrix', chevBuf, 16, false);
+    ring.thinInstanceSetBuffer('matrix', ringBuf, 16, false);
+    this.padMotion = { chev, ring, chevBuf, ringBuf };
+    this.movePads(0, reduceFlashing());
+  }
+
+  private readonly padScale = new Vector3();
+  private readonly padPos = new Vector3();
+  private readonly padTurn = new Quaternion();
+  private readonly padLocal = new Matrix();
+  private readonly padOut = new Matrix();
+
+  /** Place every pad's chevrons and rings for `t` seconds (fixtureFx.ts): in each pad's frame, then its place. */
+  private movePads(t: number, calm: boolean): void {
+    const pm = this.padMotion!;
+    const chevrons = padChevrons(t, calm);
+    const rings = padRings(t, calm);
+    const put = (buf: Float32Array, at: number, world: Matrix) => {
+      Matrix.ComposeToRef(this.padScale, this.padTurn, this.padPos, this.padLocal);
+      this.padLocal.multiplyToRef(world, this.padOut);
+      this.padOut.copyToArray(buf, at * 16);
+    };
+    let c = 0;
+    let r = 0;
+    for (const pad of this.pads) {
+      for (const ch of chevrons) {
+        for (const side of [-1, 1]) {
+          // Each bar leans in to meet the other at the front (as MapMaker's still chevrons), grown by `s`.
+          this.padScale.set(ch.s, 1, ch.s);
+          Quaternion.RotationYawPitchRollToRef(-side * 0.7, 0, 0, this.padTurn);
+          this.padPos.set(side * 0.17 * ch.s, 0.18, ch.z);
+          put(pm.chevBuf, c++, pad.world);
+        }
+      }
+      for (const ring of rings) {
+        this.padScale.set(ring.r * ring.s, ring.s, ring.r * ring.s);
+        this.padTurn.set(0, 0, 0, 1);
+        this.padPos.set(0, ring.y, 0);
+        put(pm.ringBuf, r++, pad.world);
+      }
+    }
+    pm.chev.thinInstanceBufferUpdated('matrix');
+    pm.ring.thinInstanceBufferUpdated('matrix');
   }
 
   /** Faction colours for encounter markers (MapMaker). */

@@ -507,6 +507,10 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'spectate', on });
   }
 
+  sendTeam(i?: number): void {
+    this.toHost({ k: 'team', ...(i === undefined ? {} : { i }) });
+  }
+
   sendVote(i: number): void {
     this.toHost({ k: 'vote', i });
   }

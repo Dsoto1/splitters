@@ -332,7 +332,7 @@ export class MatchHost {
     if (!cp && this.opts.spectate) bots.spectate(me.slot, control.fill);
     this.onMatch?.(match, me, mod);
 
-    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1 });
+    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1, ts: 1 });
     this.sink.local({ t: 'roster', players: match.roster() });
     this.sink.local({ t: 'host', state: control.state() });
     // A vote carried over from the old host: on screen here at once (closed: the page travels to its winner).
@@ -396,6 +396,11 @@ export class MatchHost {
         next += tickMs;
         if (match.tick % 30 === 0) this.sendFacts();
         if (this.botDebugOn && match.tick % BOT_DEBUG_EVERY === 0) this.sendBotDebug(match);
+        // A team switch took effect: everyone's roster says the new team.
+        if (match.teamMoved !== this.teamMoved) {
+          this.teamMoved = match.teamMoved;
+          this.rosterToAll();
+        }
         // A new bot set swaps in a bot every quarter second (every screen builds the new characters in turn).
         const bots = this.bots;
         if (bots?.settling && match.tick % Math.round(TICK_RATE / 4) === 0 && this.control && bots.stage(this.control.fill)) {
@@ -538,6 +543,14 @@ export class MatchHost {
     }
     this.announce({ t: 'notice', text: `${me.name} ${on ? 'is spectating' : 'joined the game'}` }, true);
     this.rosterToAll();
+  }
+
+  /** Team switches seen (Match.teamMoved): the roster goes out again when it moves. */
+  private teamMoved = 0;
+
+  /** This browser's own player asks to switch team at their next spawn (Match.switchTeam; a msg event answers). */
+  switchTeam(i?: number): void {
+    if (this.match && this.me) this.match.switchTeam(this.me.slot, i);
   }
 
   /** A friend spectates by choice, or joins play again. */
@@ -769,7 +782,7 @@ export class MatchHost {
       if (msg.rx !== undefined) player.rankPoints = msg.rx;
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
-      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1 } satisfies ServerMessage));
+      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1, ts: 1 } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
       // Between matches: the vote as it stands.
@@ -784,6 +797,7 @@ export class MatchHost {
       }
     }
     else if (msg.t === 'spectate' && r.slot !== null) this.friendSpectates(r as Remote & { slot: number }, msg.on);
+    else if (msg.t === 'team' && r.slot !== null) match.switchTeam(r.slot, msg.i);
     else if (msg.t === 'vote' && r.slot !== null) this.castVote(r.slot, msg.i);
     else if (msg.t === 'ready' && r.slot !== null) {
       r.loaded = true;
@@ -1061,6 +1075,8 @@ export type ToSimHost =
   | { k: 'ready' }
   /** The page's own player spectates by choice (on) or joins play again. */
   | { k: 'spectate'; on: boolean }
+  /** The page's own player switches team at their next spawn (i: the team; absent: the next; -1: stay). */
+  | { k: 'team'; i?: number }
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
   /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
   | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
@@ -1160,6 +1176,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.ready();
     case 'spectate':
       return host.spectate(m.on);
+    case 'team':
+      return host.switchTeam(m.i);
     case 'cmd': {
       const error = host.command(m.cmd);
       // A refused command: the host's panel shows why (as a dedicated server would tell it).

@@ -1457,7 +1457,7 @@ comes closer pulls it in at once.
 roll because a skinned spine can't shift at the hips; the drawn head lands where the hit head is) and slides (the
 crouch pose tipped back 0.42 rad over the feet, the spine bringing the shoulders back onto the aim and the hands placing
 the gun on the aim with the tip taken out, `characterAnimator.ts aimFrame`: without that the drawn gun pointed 24° up). The snapshot says
-`sd` (sliding) and `ln` (lean steps); docs/MULTIPLAYER_PROTOCOL.md section 25.
+`sd` (sliding) and `ln` (lean steps); docs/MULTIPLAYER_PROTOCOL.md section 26.
 
 **Bots** (docs/BOTS.md, "Slide and peek"): a bot sprinting the last few metres into cover under fire may slide into it
 (once per spot, with the stamina for it); a bot peeking round tall cover steps out less and leans the rest of the way.

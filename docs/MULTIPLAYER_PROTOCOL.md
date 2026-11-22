@@ -281,7 +281,7 @@ and a WSS subscription; closing the dashboard changes nothing on the host.
 ## 10. Map data (Phase 3 boundary)
 
 `GET /api/v1/maps/{mapId}/versions/{versionId}` → the canonical map JSON
-(≤ 2 MiB, `Content-Type: application/json`, `ETag: "<contentHash>"`), cached
+(≤ 3 MiB, `Content-Type: application/json`, `ETag: "<contentHash>"`), cached
 immutably. Clients and hosts check `sha256(canonical JSON) == contentHash`,
 then `loadMap`, then that every asset ID exists in their catalog. Publishing
 (`POST /api/v1/maps`, signed-in, 10/day per account) validates schema,
@@ -313,7 +313,7 @@ doesn't exist yet: gameplay connections allow 100 messages/s (burst 200)
 because a client sends 60 inputs a second; the PeerJS broker allows 20/s
 (burst 100) per socket and 16 KB frames; `/lobby/games` reads are 120/min
 per address (the game browser refreshes every 10 s and households share an
-address). Map data (section 10): 2 MiB before parsing is enforced by
+address). Map data (section 10): 3 MiB (`RESOURCE_BUDGETS.mapBytes`; 2 MiB before 2026-11-22) before parsing is enforced by
 `loadMap` everywhere; content hashes are `sha256:` over the canonical JSON
 with the picture, `updatedAt` and the `release` block left out
 (`shared/src/map/identity.ts`).
@@ -673,7 +673,7 @@ takes its own version only and refuses the rest, and a writer writes only when t
 |---|---|
 | 1 | the first layout (November 2026) |
 | 2 | two more player bits: 32 `zm` (aiming through a magnified optic, section 23) and 64 `dw` (dual wielding, a pair is drawn: section 24; reserved with this version, written since dual wielding step 2 with no change of version). No byte added: both go in the record's bits byte. A version 1 record is a valid version 2 record with neither bit |
-| 3 | slide and peek (section 25): player bit 128 `sd` (sliding), and mask bit 256 `ln` (the lean in steps, an i8 after `zl`). A version 2 record is a valid version 3 record with neither; a version 2 reader refuses both (bit 128 and mask bit 256 were unknown to it), and the page and worker are built together |
+| 3 | slide and peek (section 26): player bit 128 `sd` (sliding), and mask bit 256 `ln` (the lean in steps, an i8 after `zl`). A version 2 record is a valid version 3 record with neither; a version 2 reader refuses both (bit 128 and mask bit 256 were unknown to it), and the page and worker are built together |
 
 **Layout** (little-endian; version 3). Every message is whole in itself: nothing depends on an earlier one.
 
@@ -804,7 +804,29 @@ player with a pair in hand, and `BUTTON_SPRINT` with `BUTTON_ALT`, before it mov
 `me` goes whole with every snapshot, so `ow`, `rl2` and `rd2` are gone the snapshot after their cause. Host handoff's
 checkpoint does not carry second guns: after a handoff a pair is one gun again.
 
-## 25. Slide and peek (November 2026)
+## 25. Switch team (November 2026)
+
+Owner, 2026-11-17 ("a"). **Optional fields only; `PROTOCOL_VERSION` stays 5.** The host decides; every host runs
+the same `Match.switchTeam` (`sim/match.ts`): the dedicated server and Host Service (`server/src/server.ts`), a
+browser host and offline matches (`game/matchHost.ts`).
+
+| Field | Where | |
+|---|---|---|
+| `ts: 1` | `welcome` | The host takes `team` messages. Absent from older hosts: the client offers no Switch team |
+| `{ t: 'team', i? }` | `ClientMessage` | Switch to team `i` (index into the match's teams, 0-7; absent: the next one round; -1: call off a waiting switch) at the sender's next spawn. An older host ignores it |
+| `tm` | `PrivateState` (`me`) | The team (index) the player moves to at their next spawn, while that waits |
+| `msg` event with `s` | events | The host's answer, for the sender only: "Switching to Blue when you next respawn", "Staying on Red", "Wait 6 s to switch team again", "Blue has more players: switching would leave the teams uneven", "You're on Blue now" |
+
+The rules (`Match.switchTeam`): team modes only, people only (not a bot playing an away player's place); the move is
+made at the player's next spawn (a death they take as usual, or the next round in Elimination, Bomb and Hostage, where
+the dead wait for it) and counts no death; asking again, or for your own team, calls it off; 10 s between asks
+(`TEAM_SWITCH_COOLDOWN_SECONDS`); a team's leader (Leaders) can't. It is refused when the teams, counted with every
+switch still waiting and against their sizes (uneven team sizes), would be further apart than one player (or than
+they are now), unless a random bot on the team joined can move the other way: that bot moves at its own next spawn.
+Team Deathmatch's score keeps the kills a player made for the team they left (`teamBank`). The roster goes to everyone
+again when a switch takes effect (`Match.teamMoved`). Host handoff's checkpoint carries no waiting switch.
+
+## 26. Slide and peek (November 2026)
 
 docs/GUNPLAY_SPEC.md section 27, "Slide and peek". **`PROTOCOL_VERSION` stays 5**: two input bits an older host masks
 off and optional fields an older client ignores. **`SNAPSHOT_BINARY_VERSION` 2 → 3** (the local match's binary player

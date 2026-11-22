@@ -279,6 +279,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // choices and bot sets play the nearest kept look: Uncle Bao the Old Timer, the Rusty Mech T-TreeFitty (a large robot).
   'core.unclebao': 'core.oldtimer',
   'core.rustymech': 'core.t350',
+  // Owner, 2026-11-21 ("remove gas mask engineer character from game"): removed, files and all (its model, first-person
+  // arms and portrait); saved choices and bot sets play Grunt '68, a kept Army soldier.
+  'core.gasmaskengineer': 'core.grunt68',
 };
 
 /**

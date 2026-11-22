@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, w
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
-import { KeyedLimiter, isMapId, isRetiredMap, loadMap, mapContentHash, playableModes, publishedRelease, serializeMap, validateMap, type MapDocument, type PublishedRelease } from '@tiletrigger/shared';
+import { KeyedLimiter, RESOURCE_BUDGETS, isMapId, isRetiredMap, loadMap, mapContentHash, playableModes, publishedRelease, serializeMap, validateMap, type MapDocument, type PublishedRelease } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 import type { VerifiedUser } from './auth.ts';
 
@@ -28,10 +28,10 @@ import type { VerifiedUser } from './auth.ts';
 
 /** Versions kept per map. */
 export const KEEP_VERSIONS = 50;
-/** Largest map accepted (uncompressed); our biggest is about 2 MB. */
+/** Largest map accepted (uncompressed); the map budget (RESOURCE_BUDGETS.mapBytes, 3 MiB) refuses past that anyway. */
 export const MAX_MAP_BYTES = 8 * 1024 * 1024;
-/** Largest request body (the page sends it gzipped). */
-export const MAX_BODY_BYTES = 2 * 1024 * 1024;
+/** Largest request body (the page sends it gzipped; a browser that can't sends the map as it is). */
+export const MAX_BODY_BYTES = RESOURCE_BUDGETS.mapBytes;
 
 export interface PublishedEntry {
   id: string;

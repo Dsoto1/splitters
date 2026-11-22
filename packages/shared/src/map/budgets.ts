@@ -14,8 +14,8 @@ import type { EventType, LogicAction, LogicRule } from './logic.ts';
  */
 export const RESOURCE_BUDGETS = {
   // ---- checked before / while loading
-  /** Raw map JSON, checked before parsing wherever a map arrives. */
-  mapBytes: 2 * 1024 * 1024,
+  /** Raw map JSON, checked before parsing wherever a map arrives (3 MiB since 2026-11-22; 2 MiB before). */
+  mapBytes: 3 * 1024 * 1024,
   /** Entities in the file and in the map as played (also the schema's cap; 4,096 before map format v48). */
   entities: MAP_MAX_ENTITIES,
   /** Vehicles, mounted guns and airplanes. */

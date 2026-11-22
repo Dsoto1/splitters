@@ -359,6 +359,11 @@ export class Hud {
     this.teams = teams;
   }
 
+  /** Switch team: whether you may (the host supports it, you play on a team), and the team your switch waits for (-1: none). */
+  switchTeam = { can: false, pending: -1 };
+  /** Switch team: the pause menu board's Join was clicked (team index). */
+  onJoinTeam: ((team: number) => void) | null = null;
+
   /** Fireteams (Part 3): the snapshot's squads (`fs`; null: the variant is off), for the scoreboard's squads. */
   setSquads(fs: readonly (readonly number[])[] | null): void {
     this.squadsRaw = fs;
@@ -540,6 +545,12 @@ export class Hud {
     if (!p) return `Player ${slot + 1}`;
     // Ranks & badges on: the title before the name; off: plain, an Army bot's rank left off ("Sgt. Dunmore" → "Dunmore").
     return this.rank(slot)?.name ?? (p.bot && lookBranch(p.look) === 'army' ? nameWithoutRank(p.name) : p.name);
+  }
+
+  /** The team a player is on, as the roster has it (team modes), else null. */
+  rosterTeam(slot: number): Faction | null {
+    const id = this.roster.get(slot)?.team;
+    return (id && this.teams?.find((t) => t.id === id)) || null;
   }
 
   /** The name a player joined with, as the roster has it (no rank title): for listings, not for show. */
@@ -1338,7 +1349,10 @@ export class Hud {
 
   /** The pause menu's Match tab: the same board, in the menu's width (`final`: the match is over, so where it goes next too). */
   renderPauseScores(box: HTMLElement, scores: readonly ScoreEntry[], localSlot: number, final = false): void {
-    if (this.pauseBoard?.root !== box) this.pauseBoard = new ScoreBoard(box, { maxWidth: 560, sizeSelf: false });
+    if (this.pauseBoard?.root !== box) {
+      this.pauseBoard = new ScoreBoard(box, { maxWidth: 560, sizeSelf: false });
+      this.pauseBoard.onJoin = (team) => this.onJoinTeam?.(team);
+    }
     this.pauseBoard.render(this.boardData(scores, localSlot, final));
   }
 
@@ -1386,6 +1400,8 @@ export class Hud {
     }
     const totals = this.teamTotals(scores);
     const top = Math.max(...this.teams.map((t) => totals.get(t.id) ?? 0));
+    const mine = this.roster.get(localSlot)?.team;
+    const joinable = this.switchTeam.can && !final && !!mine;
     const groups = this.teams.map((t, i) => {
       const rows = sorted.filter((s) => this.roster.get(s.s)?.team === t.id).map(row);
       const sq = squads ? squadGroups(rows, squads, i, localSlot, this.honours, (slot) => this.name(slot)) : null;
@@ -1397,6 +1413,7 @@ export class Hud {
         lead: top > 0 && (totals.get(t.id) ?? 0) === top,
         rows: sq ? sq.flatMap((q) => q.rows) : rows,
         ...(sq ? { squads: sq } : {}),
+        ...(joinable && t.id !== mine ? { join: this.switchTeam.pending === i ? ('pending' as const) : ('join' as const) } : {}),
       };
     });
     return { head, note, kind: 'teams', groups, ...flags };

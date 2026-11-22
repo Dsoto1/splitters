@@ -11,8 +11,17 @@ import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTextur
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { BUILD_LEVELS, buildLimitRect, playableRect, terrainHeightAt, type AreaRect, type MapDocument, type TerrainData, type Vec3 } from '@tiletrigger/shared';
 
-/** The level grid's selection cyan, the playable boundary's orange (as before), the build limit's white. */
-const GRID = Color3.FromHexString('#00d1ff');
+/**
+ * The grid of the level being edited in green (owner, 2026-11-16: the working level reads at a glance; the level
+ * list's highlight is the same green), the other levels' grids in a fainter blue; the playable boundary's orange (as
+ * before), the build limit's white.
+ */
+export const GRID_ACTIVE = '#3ee08a';
+export const GRID_OTHER = '#4a8dff';
+const GRID = Color3.FromHexString(GRID_ACTIVE);
+const GRID_BLUE = Color3.FromHexString(GRID_OTHER);
+/** The other levels' grids, against the working level's. */
+const OTHER_ALPHA = 0.45;
 const BOUNDARY = new Color3(1, 0.55, 0.1);
 const LIMIT = Color3.FromHexString('#eef3f8');
 /** Every 4th line is a major one, drawn stronger. */
@@ -42,6 +51,8 @@ export class BuildAreaVisuals {
   private readonly gridRoot: TransformNode;
   private grid?: LinesMesh;
   private gridKey = '';
+  /** The other levels with something on them that are drawn (below the working one; above too with Show all levels). */
+  private others: number[] = [];
   private outlines: Mesh[] = [];
   private outlineKey = '';
   private full = false;
@@ -86,6 +97,14 @@ export class BuildAreaVisuals {
     if (play) this.boundaryOutline(play, y);
   }
 
+  /** The other levels whose grids are drawn in blue (those with something on them that are shown), besides the working one. */
+  setOtherLevels(levels: readonly number[]): void {
+    const o = [...levels].sort((x, y) => x - y);
+    if (o.join(',') === this.others.join(',')) return;
+    this.others = o;
+    this.gridKey = '';
+  }
+
   setGridVisible(on: boolean): void {
     this.gridRoot.setEnabled(on);
   }
@@ -121,16 +140,32 @@ export class BuildAreaVisuals {
     const snapC = (v: number) => Math.max(-lim, Math.min(lim, Math.round(v / cs / STEP) * STEP));
     const gx = snapC(cx);
     const gz = snapC(cz);
-    const key = this.full ? `full|${cs}|${y}|${lim}` : `${gx},${gz}|${radius}|${cs}|${y}|${lim}`;
+    const key = `${this.full ? `full|${cs}|${y}|${lim}` : `${gx},${gz}|${radius}|${cs}|${y}|${lim}`}|${this.others.join(',')}`;
     if (key === this.gridKey) return;
     this.gridKey = key;
     this.grid?.dispose();
-    this.grid = this.full ? this.fullGrid(y) : this.localGrid(gx, gz, radius, y);
+    // One line system: the other levels' blue grids under the working level's green one.
+    const lines: Vector3[][] = [];
+    const colors: Color4[][] = [];
+    for (const l of this.others) {
+      const ly = l * this.levelHeight;
+      if (this.full) this.fullGrid(ly, GRID_BLUE, OTHER_ALPHA, lines, colors);
+      else this.localGrid(gx, gz, radius, ly, GRID_BLUE, OTHER_ALPHA, lines, colors);
+    }
+    if (this.full) this.fullGrid(y, GRID, 1, lines, colors);
+    else this.localGrid(gx, gz, radius, y, GRID, 1, lines, colors);
+    this.grid = CreateLineSystem('grid', { lines, colors, useVertexAlpha: true }, this.scene);
+    this.grid.isPickable = false;
     this.grid.parent = this.gridRoot;
   }
 
-  /** Lines at cell edges ((i - 0.5) × cellSize), every 4th a major one, alpha fading out from the centre. */
-  private localGrid(gx: number, gz: number, radius: number, y: number): LinesMesh {
+  /** What the grid shows now, for tests: the working level's colour and the other levels drawn. */
+  gridState(): { active: string; others: number[] } {
+    return { active: GRID_ACTIVE, others: [...this.others] };
+  }
+
+  /** Lines at cell edges ((i - 0.5) × cellSize), every 4th a major one, alpha fading out from the centre (× `k`), in `col`. */
+  private localGrid(gx: number, gz: number, radius: number, y: number, col: Color3, k0: number, lines: Vector3[][], colors: Color4[][]): void {
     const cs = this.cellSize;
     const lim = this.limit.max[0] / cs + 0.5;
     const lo = (c: number) => Math.max(c - radius, -lim + 1);
@@ -140,10 +175,8 @@ export class BuildAreaVisuals {
     const alphaAt = (x: number, z: number, major: boolean) => {
       const d = Math.hypot(x - gx * cs, z - gz * cs);
       const k = Math.max(0, Math.min(1, 1 - (d - fadeFrom) / (fadeTo - fadeFrom)));
-      return k * k * (major ? 0.85 : 0.4);
+      return k * k * (major ? 0.85 : 0.4) * k0;
     };
-    const lines: Vector3[][] = [];
-    const colors: Color4[][] = [];
     const yy = y + 0.03;
     for (const along of [0, 1]) {
       const [a, b] = along ? [gz, gx] : [gx, gz];
@@ -156,34 +189,26 @@ export class BuildAreaVisuals {
           const w = (j - 0.5) * cs;
           const [x, z] = along ? [w, v] : [v, w];
           pts.push(new Vector3(x, yy, z));
-          cols.push(new Color4(GRID.r, GRID.g, GRID.b, alphaAt(x, z, major)));
+          cols.push(new Color4(col.r, col.g, col.b, alphaAt(x, z, major)));
         }
         lines.push(pts);
         colors.push(cols);
       }
     }
-    const mesh = CreateLineSystem('grid', { lines, colors, useVertexAlpha: true }, this.scene);
-    mesh.isPickable = false;
-    return mesh;
   }
 
-  /** Every cell across the build area: minor lines faint, majors stronger (no fade). */
-  private fullGrid(y: number): LinesMesh {
+  /** Every cell across the build area: minor lines faint, majors stronger (no fade), × `k`, in `col`. */
+  private fullGrid(y: number, col: Color3, k: number, lines: Vector3[][], colors: Color4[][]): void {
     const cs = this.cellSize;
     const n = Math.round(this.limit.max[0] / cs - 0.5);
     const e = (n + 0.5) * cs;
-    const lines: Vector3[][] = [];
-    const colors: Color4[][] = [];
     const yy = y + 0.03;
     for (let i = -n; i <= n + 1; i++) {
       const v = (i - 0.5) * cs;
-      const c = new Color4(GRID.r, GRID.g, GRID.b, i % MAJOR === 0 ? 0.5 : 0.16);
+      const c = new Color4(col.r, col.g, col.b, (i % MAJOR === 0 ? 0.5 : 0.16) * k);
       lines.push([new Vector3(v, yy, -e), new Vector3(v, yy, e)], [new Vector3(-e, yy, v), new Vector3(e, yy, v)]);
       colors.push([c, c], [c, c]);
     }
-    const mesh = CreateLineSystem('grid', { lines, colors, useVertexAlpha: true }, this.scene);
-    mesh.isPickable = false;
-    return mesh;
   }
 
   /** Height to draw at over (x, z): the level, or the ground where it rises above it. */

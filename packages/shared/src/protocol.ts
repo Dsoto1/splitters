@@ -44,7 +44,13 @@ export type ClientMessage =
    * Spectate by choice (`on`), or join play again (off): hosts whose welcome said `spectate` act on it;
    * others ignore it. The roster marks spectators (`sp`).
    */
-  | { t: 'spectate'; on: boolean };
+  | { t: 'spectate'; on: boolean }
+  /**
+   * Switch team (Match.switchTeam): to team `i` (an index into the match's teams; absent: the next one round; -1
+   * cancels a waiting switch) at the sender's next spawn. Hosts whose welcome said `ts` act on it; others ignore it.
+   * The host answers with a `msg` event for the sender, and their private state's `tm` while the switch waits.
+   */
+  | { t: 'team'; i?: number };
 
 /** Bot skills and styles a host can switch to mid-match. */
 export const HOST_BOT_SKILLS = ['easy', 'normal', 'hard'] as const;
@@ -212,12 +218,12 @@ export interface PlayerSnapshot {
   dw?: 1;
   /**
    * Sliding (sprint, then crouch: sim/moves.ts SLIDE): drawn as a slide. Absent otherwise, and from hosts older than the
-   * field (docs/MULTIPLAYER_PROTOCOL.md section 25).
+   * field (docs/MULTIPLAYER_PROTOCOL.md section 26).
    */
   sd?: 1;
   /**
    * Leaning (peek), in steps: -10 full left .. 10 full right (sim/moves.ts LEAN.steps); absent upright. The head, gun and
-   * hit shapes are out to that side (section 25).
+   * hit shapes are out to that side (section 26).
    */
   ln?: number;
 }
@@ -226,6 +232,8 @@ export interface PlayerSnapshot {
 export interface PrivateState {
   /** Owned weapons as [weapon code, magazine, reserve, second-trigger rounds, heat % (heat weapons; 100+ = overheated)]. */
   inv: [number, number, number, number, number?][];
+  /** Switch team: the team (index) this player moves to at their next spawn, while that waits. */
+  tm?: number;
   /** Movement multiplier from status effects (slow, chill, frozen) ×1000, when not 1000. */
   ms?: number;
   /**
@@ -630,6 +638,8 @@ export type ServerMessage =
       dedicated?: boolean;
       /** The host lets players spectate by choice (ClientMessage spectate); absent from older hosts. */
       spectate?: 1;
+      /** The host lets players switch team mid-match (ClientMessage team); absent from older hosts. */
+      ts?: 1;
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }

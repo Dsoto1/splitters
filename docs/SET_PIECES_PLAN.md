@@ -110,7 +110,7 @@ docs/CONTENT_PIPELINE.md, "Set pieces". What the design settled while it was bui
   itself (`tileMirrorAxis`: its cells, ports, default edges and parts are their own mirror image), so a piece with one
   that isn't (stairs) says `mirror: "none"`; no mirrored twins were needed for Phase 1.
 - **Budgets:** the file's caps count what it stores (a placement is one `setPieces` entry, at most 1024). The map as
-  played (hand-placed pieces and parts together) holds at most 4096 tiles, 8192 entities (4096 before map format v48) and 2 MB of JSON, the
+  played (hand-placed pieces and parts together) holds at most 4096 tiles, 8192 entities (4096 before map format v48) and 3 MB of JSON (2 MB before 2026-11-22), the
   schema's own caps: it is what a joining player's welcome carries and every client loads it again. Validation and
   the budgets see the expanded map; issues on a part name its placement.
 - **New kit pieces** (usable by any map, not only set pieces): the edge style **`arch_segmental`** (a 5 m shallow

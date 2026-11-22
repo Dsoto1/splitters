@@ -368,6 +368,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   const travelRules = (): MatchRules => (managed ? match.rules : control.nextRules());
   const firstMatch = forMatch(baseRules, map, Math.min(opts.botFill, MAX_PLAYER_SLOTS));
   let match = new Match(map, firstMatch.rules, opts.seed ?? Date.now() % 100000, { startGate: opts.startGate ?? true });
+  /** Team switches seen (Match.teamMoved): the roster goes out again when it moves. */
+  let teamMoved = 0;
   for (const issue of validateNavigation(map, match.nav, match.physics)) console.warn(`[map] ${issue.severity}: ${issue.message}`);
   const botFill = firstMatch.fill;
   let motd = opts.motd?.trim().slice(0, 200) || null;
@@ -676,6 +678,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           sc: match.scenario.fullState(),
           dedicated: true,
           spectate: 1,
+          ts: 1,
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
@@ -708,6 +711,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           notice(msg.on ? `${name} is spectating` : `${name} joined the game`);
           broadcast({ t: 'roster', players: match.roster() });
         }
+      } else if (msg.t === 'team' && client.slot !== null) {
+        // Switch team at the next spawn (the match checks the teams stay even; a msg event tells the player).
+        match.switchTeam(client.slot, msg.i);
       } else if (msg.t === 'vote' && client.slot !== null) {
         // People vote (bots don't); a later vote replaces an earlier one.
         if (vote?.cast(client.slot, msg.i)) broadcast({ t: 'vote', v: vote.state(match.tick) });
@@ -921,6 +927,11 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         if (!travel && !planVote()) planRotation(ev);
         const top = [...match.combatants()].filter((c) => c.kind !== 'npc').sort((a, b) => b.kills - a.kills)[0];
         event(`match over on ${map.metadata.name}: ${ev.team ? `team ${ev.team} wins` : ev.winner !== null ? `${match.slots[ev.winner]?.name ?? 'someone'} wins` : 'a draw'}${top ? ` (top: ${top.name}, ${top.kills} kills)` : ''}`);
+      }
+      // A team switch took effect: everyone's roster says the new team.
+      if (match.teamMoved !== teamMoved) {
+        teamMoved = match.teamMoved;
+        broadcast({ t: 'roster', players: match.roster() });
       }
       // A new bot set swaps in a bot every quarter second (every screen builds the new characters in turn).
       if (bots.settling && match.tick % Math.round(TICK_RATE / 4) === 0 && bots.stage(control.fill)) {

@@ -35,7 +35,7 @@ export async function isOwner(): Promise<boolean> {
   }
 }
 
-/** The map's text, gzipped when the browser can (a big map is ~2 MB of JSON, ~200 kB gzipped). */
+/** The map's text, gzipped when the browser can (a big map is up to 3 MB of JSON, ~200 kB gzipped). */
 async function body(map: MapDocument): Promise<{ data: BodyInit; gzip: boolean }> {
   const text = serializeMap(map);
   if (typeof CompressionStream === 'undefined') return { data: text, gzip: false };

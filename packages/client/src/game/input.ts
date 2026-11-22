@@ -49,7 +49,7 @@ export const DEFAULT_WHEEL_KEY = 'KeyQ';
 export const FIRE_MODE_KEY = 'KeyU';
 /** Keys the game already uses for something else (a wheel there would fight them). Q isn't here: a tap keeps its quick switch. */
 export const RESERVED_KEYS: ReadonlySet<string> = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma', 'KeyU',
+  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma', 'KeyU', 'KeyO',
   'Tab', 'Escape', 'Enter', 'F3', 'F5', 'F11', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'MetaLeft', 'MetaRight',
   ...Array.from({ length: 10 }, (_, i) => `Digit${i}`),
 ]);
