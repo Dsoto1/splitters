@@ -306,3 +306,18 @@ one at the foot of each bunk, in the dorm bay pieces themselves. Taken into step
 **Dorm rooms, the desks (owner, same day):** "the desks themselves do not need to be separated, they can be flush
 next to one another and moved back to the corner". The two desks side by side, touching, as one run in a corner
 of the room, chairs pulled in, the middle of the floor clear. Taken into step 7c.
+
+## Mess hall kit: the owner's answers (2026-11-22)
+
+Asked after the step 7d kit's pictures (`wip/stjohns-7d-kit`):
+
+1. Height: **keep 4 m** (Welles keeps both dorm floors; the two-level hall is not wanted now).
+2. Clock tower way in: **a north door beside the fireplace end** (cell 3); the fireplace wall closes the west end.
+3. Window-side piers: **yes**, a square stone pier with a capital under every beam, as in the photos.
+4. Bots not entering the side aisle's table bays: **ok for now**.
+5. The lengthways views' +12 % draws: **accepted**.
+6. The south door at cell 5 that faces an arcade pier: **keep for now**.
+
+## 2026-11-22, later: approvals
+
+After the library's third mock-up and the mess hall's piers picture: **"all looks good. we can have splitters session take lead"**. Read as: the library (step 8b) as shown in the third mock-up is approved for the map; the mess hall keeps a pier under every beam with twin sash windows on those bays; the lead moves to the "splitters" session.
