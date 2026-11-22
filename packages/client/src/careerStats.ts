@@ -42,7 +42,25 @@ export function myCareer(): { career: Career; where: 'account' | 'browser' } {
   const p = currentAccount() ? cachedProfile() : null;
   if (!p) return { career: localCareer(), where: 'browser' };
   // Matches still waiting for the hub count already (the hub adds them when it can).
-  return { career: pendingFor(currentAccount()!.sub).reduce(addMatch, p.career), where: 'account' };
+  return { career: pendingFor(currentAccount()!.sub).reduce((c, m) => addMatch(c, m), p.career), where: 'account' };
+}
+
+/**
+ * Your career with its Phase 3 detail (modes, guns, history). Signed in, the hub keeps them; a hub from before them
+ * keeps only the totals, so then the detail comes from this browser's copy of the matches played here signed in
+ * (`tiletrigger.career.mirror`, by account) and `local` says so.
+ */
+export function myCareerDetail(): { career: Career; where: 'account' | 'browser'; local: boolean } {
+  const mine = myCareer();
+  if (mine.where === 'browser' || mine.career.history.length) return { ...mine, local: false };
+  const m = mirrorFor(currentAccount()!.sub);
+  return m.matches ? { career: { ...mine.career, modes: m.modes, weaponRounds: m.weaponRounds, history: m.history }, where: 'account', local: true } : { ...mine, local: false };
+}
+
+const MIRROR_KEY = 'tiletrigger.career.mirror';
+function mirrorFor(sub: string): Career {
+  const v = read(MIRROR_KEY) as { sub?: unknown; career?: unknown } | null;
+  return (v?.sub === sub ? readCareer(v.career) : null) ?? emptyCareer();
 }
 
 type Pending = { sub: string; matches: MatchSummary[] };
@@ -88,6 +106,7 @@ function sendPending(sub: string): Promise<void> {
 export function recordMatch(m: MatchSummary): void {
   const who = currentAccount();
   if (!who) return write(CAREER_KEY, addMatch(localCareer(), m));
+  write(MIRROR_KEY, { sub: who.sub, career: addMatch(mirrorFor(who.sub), m) });
   setPending(who.sub, [...pendingFor(who.sub), m]);
   void sendPending(who.sub);
 }

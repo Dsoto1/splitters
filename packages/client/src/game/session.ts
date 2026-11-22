@@ -158,6 +158,8 @@ import {
   inHand,
   weaponCode,
   NPC_LOOKS as CARD_NPC_LOOKS,
+  MATCH_LIMITS,
+  MATCH_MIN_SECONDS,
   getLook as cardLook,
 } from '@tiletrigger/shared';
 import { LEAN, leanShift } from '@tiletrigger/shared';
@@ -203,10 +205,10 @@ import type { MinimapBlip } from './minimap.ts';
 import { SQUAD_COLOR, SquadHud } from './squadHud.ts';
 import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
-import { CareerTally } from './careerTally.ts';
+import { CareerTally, matchResult } from './careerTally.ts';
 import { ProfileCard, type ProfileCardData } from './profileCard.ts';
 import { PlayerCardView, type PlayerCardSubject } from './playerCard.ts';
-import { loadCard } from '../profile.ts';
+import { loadCard, sendVouch } from '../profile.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
@@ -2112,6 +2114,26 @@ export class GameSession {
     void sendPlayReport(report, () => serializeMap(map), closing);
   }
 
+  /**
+   * Phase 4 of player profiles: this browser hosts a listed game and is signed in, so at the match's end it tells the
+   * hub what it counted for every signed-in friend still in it (their account proven by their ticket): result, kills,
+   * deaths and time in this match. The hub keeps a line only for accounts it gave a ticket for this game's code.
+   */
+  private vouchForFriends(ev: Extract<GameEvent, { e: 'round_end' }>): void {
+    const local = this.opts.transport instanceof LocalTransport ? this.opts.transport : null;
+    const code = this.peerHost?.code;
+    if (!local || !code || !currentAccount() || !this.careerTally) return;
+    const now = Date.now();
+    const roundFrom = now - (performance.now() - this.careerTally.startedAt);
+    const lines = local.accountSlots().flatMap(({ slot, sub, from }) => {
+      const s = this.scores.find((x) => x.s === slot);
+      const seconds = Math.round((now - Math.max(from, roundFrom)) / 1000);
+      if (!s || seconds < MATCH_MIN_SECONDS) return [];
+      return [{ sub, result: matchResult(ev, slot, this.hud.team(slot)?.id ?? null), kills: s.k, deaths: s.d, seconds: Math.min(seconds, MATCH_LIMITS.seconds) }];
+    });
+    sendVouch({ code, mode: this.rules?.mode ?? 'core.deathmatch', lines });
+  }
+
   /** What another player's card shows of `slot` (playerCard.ts): their scoreboard line and roster entry; null when they're gone. */
   private cardSubject(slot: number): PlayerCardSubject | null {
     const p = this.hud.rosterOf(slot);
@@ -2717,13 +2739,15 @@ export class GameSession {
             this.winner = ev.team !== undefined ? (this.hud.teamById(ev.team)?.name ?? null) : ev.winner === null ? null : this.hud.name(ev.winner);
             this.outcome = ev.outcome ?? null;
             // Your career: this match, summed in (not while spectating; a match you were in under half a minute doesn't count).
-            const summary = this.careerTally?.finish(ev, this.rules?.mode ?? 'core.deathmatch', this.hud.team(this.slot)?.id ?? null, performance.now());
+            const summary = this.careerTally?.finish(ev, this.rules?.mode ?? 'core.deathmatch', this.hud.team(this.slot)?.id ?? null, performance.now(), this.map?.metadata.name ?? '');
             if (summary && !this.spectator) {
               // Your rank points this match (content/ranks.ts), carried with your career.
               const mine = this.scores.find((x) => x.s === this.slot);
               const points = mine ? matchRankPoints(mine) : 0;
               this.opts.career?.record(points ? { ...summary, points } : summary);
             }
+            // Hosting online: vouch for the signed-in friends in the match (player profiles, Phase 4).
+            this.vouchForFriends(ev);
           } else if (ev.e === 'round_start') {
             this.careerTally?.reset(performance.now());
             this.outcome = null;

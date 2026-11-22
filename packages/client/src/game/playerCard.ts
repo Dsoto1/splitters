@@ -6,7 +6,7 @@
  * career stays in their own browser, so their card is the match's only; so is anyone's when the hub can't be reached
  * or doesn't have cards yet (an older hub).
  */
-import { careerAccuracy, careerKd, careerWinRate, favouriteWeapon, titleName, type Career, type PublicCard } from '@tiletrigger/shared';
+import { careerAccuracy, careerKd, careerWinRate, favouriteWeapon, titleName, vouchedLine, type Career, type PublicCard } from '@tiletrigger/shared';
 import { emblemSvg } from './emblemSvg.ts';
 import { className, weaponName } from './profileCard.ts';
 
@@ -39,7 +39,7 @@ export function careerHeadline(c: Career): string {
 }
 
 /** The card's text lines (tests read them; the DOM is built from them). `hub`: the hub's card, null when none, undefined while it loads. */
-export function playerCardLines(p: PlayerCardSubject, hub: PublicCard | null | undefined): { tag: string; sub: string; match: string; career: string } {
+export function playerCardLines(p: PlayerCardSubject, hub: PublicCard | null | undefined): { tag: string; sub: string; match: string; career: string; vouched: string } {
   const title = titleName(hub?.title ?? p.title);
   const fav = hub?.favClass ? className(hub.favClass) : '';
   const tag = p.kind === 'acct' || (p.kind === 'you' && p.username) ? '✓' : p.kind === 'bot' ? 'BOT' : p.kind === 'you' ? 'YOU' : 'GUEST';
@@ -60,6 +60,8 @@ export function playerCardLines(p: PlayerCardSubject, hub: PublicCard | null | u
     sub: [title, p.character, p.cls ? p.cls : fav ? `★ ${fav}` : ''].filter(Boolean).join(' · '),
     match: `This match: ${p.kills} K · ${p.deaths} D`,
     career,
+    // Phase 4: what other people's hosts counted for them.
+    vouched: hub && p.kind === 'acct' ? vouchedLine(hub.vouched) : '',
   };
 }
 
@@ -160,7 +162,7 @@ export class PlayerCardView {
     const l = playerCardLines(p, this.hub);
     const tagCls = l.tag === '✓' ? 'acct in' : l.tag === 'GUEST' ? 'acct guest' : 'acct pick';
     this.el.dataset.kind = p.kind;
-    this.text.innerHTML = `<div class="plc-who">${emblemSvg(this.hub?.emblem ?? p.emblem)}<b>${escapeHtml(p.name)}</b><i class="${tagCls}">${l.tag}</i></div>${l.sub ? `<div class="plc-sub">${escapeHtml(l.sub)}</div>` : ''}<div class="plc-match">${escapeHtml(l.match)}</div><div class="plc-career">${escapeHtml(l.career)}</div>`;
+    this.text.innerHTML = `<div class="plc-who">${emblemSvg(this.hub?.emblem ?? p.emblem)}<b>${escapeHtml(p.name)}</b><i class="${tagCls}">${l.tag}</i></div>${l.sub ? `<div class="plc-sub">${escapeHtml(l.sub)}</div>` : ''}<div class="plc-match">${escapeHtml(l.match)}</div><div class="plc-career">${escapeHtml(l.career)}</div>${l.vouched ? `<div class="plc-vouched">${escapeHtml(l.vouched)}</div>` : ''}`;
   }
 
   /** Beside the row (right of it, else left), kept on screen. */

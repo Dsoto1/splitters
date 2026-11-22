@@ -1,4 +1,5 @@
 import { readCareer, type Career } from './career.ts';
+import { readVouched, type Vouched } from './vouch.ts';
 import { cleanEmblemCode } from '../content/emblems.ts';
 import { isTitleId } from '../content/titles.ts';
 import { claimsOfficial } from './lobby.ts';
@@ -80,6 +81,8 @@ export interface Profile {
   emblem: string | null;
   /** The title you wear (content/titles.ts: one your career has earned), or null. */
   title: string | null;
+  /** Phase 4: what other people's hosts counted for you (net/vouch.ts). */
+  vouched: Vouched;
 }
 
 /**
@@ -92,6 +95,8 @@ export interface PublicCard {
   title: string | null;
   favClass: string | null;
   career: Career;
+  /** Phase 4: what other people's hosts counted (an older hub sends none: empty). */
+  vouched: Vouched;
 }
 
 /** A card as the hub sent it, or null when it isn't one (an older hub, anything else). */
@@ -101,7 +106,7 @@ export function readPublicCard(v: unknown): PublicCard | null {
   if (typeof o.username !== 'string' || usernameProblem(o.username)) return null;
   const career = readCareer(o.career);
   if (!career) return null;
-  return { username: o.username, emblem: cleanEmblemCode(o.emblem), title: isTitleId(o.title) ? o.title : null, favClass: isFavClassId(o.favClass) ? o.favClass : null, career };
+  return { username: o.username, emblem: cleanEmblemCode(o.emblem), title: isTitleId(o.title) ? o.title : null, favClass: isFavClassId(o.favClass) ? o.favClass : null, career, vouched: readVouched(o.vouched) };
 }
 
 /** A class id as a profile keeps it (the class list itself is content: sim/classes.ts checks it is one). */

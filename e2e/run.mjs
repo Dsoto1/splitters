@@ -14022,7 +14022,12 @@ async function profilesFlow(browser) {
   await context.addInitScript(() => {
     if (sessionStorage.getItem('profiles-seeded')) return;
     sessionStorage.setItem('profiles-seeded', '1');
-    localStorage.setItem('tiletrigger.career', JSON.stringify({ matches: 30, wins: 12, kills: 240, deaths: 150, shots: 4000, hits: 1300, headshots: 40, bestStreak: 7, seconds: 9000, weaponKills: { 'core.rifle': 120, 'core.shotgun': 40 } }));
+    const now = Math.floor(Date.now() / 1000);
+    localStorage.setItem('tiletrigger.career', JSON.stringify({ matches: 30, wins: 12, kills: 240, deaths: 150, shots: 4000, hits: 1300, headshots: 40, bestStreak: 7, seconds: 9000, weaponKills: { 'core.rifle': 120, 'core.shotgun': 40 },
+      // Phase 3: by mode, rounds by gun, the last matches.
+      modes: { 'core.deathmatch': { matches: 18, wins: 7, kills: 150, deaths: 90, shots: 2500, hits: 800, seconds: 5400 }, 'core.ctf': { matches: 8, wins: 4, kills: 60, deaths: 40, shots: 1000, hits: 330, seconds: 2400 }, 'core.koth': { matches: 4, wins: 1, kills: 30, deaths: 20, shots: 500, hits: 170, seconds: 1200 } },
+      weaponRounds: { 'core.rifle': [2600, 900], 'core.shotgun': [900, 300] },
+      history: [{ at: now - 3600, map: 'Sandgate', mode: 'core.ctf', result: 'win', kills: 9, deaths: 4 }, { at: now - 7200, map: 'Twin Spires', mode: 'core.koth', result: 'loss', kills: 5, deaths: 7 }, { at: now - 90_000, map: 'Citadel', mode: 'core.deathmatch', result: 'draw', kills: 12, deaths: 12 }] }));
     localStorage.setItem('tiletrigger.emblem', JSON.stringify('bolt.6'));
     localStorage.setItem('tiletrigger.title', JSON.stringify('regular'));
   });
@@ -14123,6 +14128,27 @@ async function profilesFlow(browser) {
   await page.mouse.click(5, 5);
   const closed = await page.evaluate(() => document.getElementById('player-card')?.hidden);
   check(closed === true, 'a click outside closes the card');
+  // Phase 3: back on Profile, the match is the newest in History; Modes and Weapons.
+  await page.goto(`${CLIENT}/?test=1&hub=127.0.0.1:9`);
+  await page.waitForSelector('#profile-badge');
+  await page.click('#profile-badge');
+  await page.waitForSelector('#profile-career-tabs');
+  const tab = async (t) => {
+    await page.click(`#profile-career-tabs button[data-tab="${t}"]`);
+    await page.evaluate((x) => document.getElementById(`profile-career-${x}`)?.scrollIntoView({ block: 'center' }), t);
+  };
+  await tab('history');
+  const history = await page.evaluate(() => [...document.querySelectorAll('#profile-career-history li')].map((li) => li.textContent));
+  check(history.length === 4 && /Phase 0 Arena/.test(history[0]) && /Deathmatch/.test(history[0]) && /1 K · 0 D/.test(history[0]) && /Sandgate/.test(history[1]), `History: the match just played first, then the earlier ones (${JSON.stringify(history)})`);
+  await pic(page, 'profile-history');
+  await tab('modes');
+  const modes = await page.evaluate(() => [...document.querySelectorAll('#profile-career-modes tbody tr')].map((tr) => [tr.dataset.mode, tr.children[1].textContent]));
+  check(modes.length === 3 && modes[0][0] === 'core.deathmatch' && modes[0][1] === '19', `Modes: by mode, most played first, this match counted (${JSON.stringify(modes)})`);
+  await pic(page, 'profile-modes');
+  await tab('weapons');
+  const weapons = await page.evaluate(() => [...document.querySelectorAll('#profile-career-weapons tbody tr')].map((tr) => [tr.dataset.weapon, tr.children[1].textContent, tr.children[2].textContent]));
+  check(weapons.length >= 2 && weapons[0][0] === 'core.rifle' && weapons[0][2] === '35%', `Weapons: kills and accuracy by gun (${JSON.stringify(weapons)})`);
+  await pic(page, 'profile-weapons');
   check(errors.length === 0, `no page errors (${errors.join(' | ')})`);
   livePages.delete(page);
   await context.close();

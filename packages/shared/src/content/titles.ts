@@ -15,6 +15,7 @@ export interface TitleDef {
 }
 
 const maxWeapon = (c: Career): number => Math.max(0, ...Object.values(c.weaponKills));
+const modeWins = (c: Career): number => Object.values(c.modes ?? {}).filter((m) => m.wins > 0).length;
 
 export const TITLES: readonly TitleDef[] = [
   { id: 'recruit', name: 'Recruit', how: 'Play a match to the end', earned: (c) => c.matches >= 1 },
@@ -27,6 +28,7 @@ export const TITLES: readonly TitleDef[] = [
   { id: 'survivor', name: 'Survivor', how: 'K/D of 2 or better over 25 matches', earned: (c) => c.matches >= 25 && careerKd(c) >= 2 },
   { id: 'centurion', name: 'Centurion', how: '1,000 kills', earned: (c) => c.kills >= 1000 },
   { id: 'specialist', name: 'Specialist', how: '250 kills with one weapon', earned: (c) => maxWeapon(c) >= 250 },
+  { id: 'allrounder', name: 'All-Rounder', how: 'A win in 5 different modes', earned: (c) => modeWins(c) >= 5 },
   { id: 'marathoner', name: 'Marathoner', how: '24 hours played', earned: (c) => c.seconds >= 24 * 3600 },
 ];
 

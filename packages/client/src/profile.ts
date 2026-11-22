@@ -1,4 +1,4 @@
-import { cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
+import { readVouched, cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region, type VouchReport } from '@tiletrigger/shared';
 import { accessToken, currentAccount } from './account.ts';
 import { hubApi } from './publishedMaps.ts';
 
@@ -21,6 +21,7 @@ function readProfile(v: unknown): Profile {
     career: readCareer(o.career) ?? emptyCareer(),
     emblem: cleanEmblemCode(o.emblem),
     title: isTitleId(o.title) ? o.title : null,
+    vouched: readVouched(o.vouched),
   };
 }
 
@@ -57,6 +58,15 @@ export async function loadProfile(): Promise<Profile | null> {
 export function cachedProfile(): Profile | null {
   const who = currentAccount();
   return cache && who && cache.sub === who.sub ? cache.profile : null;
+}
+
+/**
+ * A host's end-of-match standings for the signed-in friends in its match (Phase 4; shared net/vouch.ts): the hub adds
+ * each line to that player's host-counted record. Best effort: an older hub (404), offline, signed out: nothing.
+ */
+export function sendVouch(report: VouchReport): void {
+  if (!report.lines.length || !currentAccount()) return;
+  void call('profile/vouch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(report), keepalive: true }).catch(() => undefined);
 }
 
 export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null; emblem?: string | null; title?: string | null }): Promise<Profile> {
