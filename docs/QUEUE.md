@@ -40,7 +40,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-7d-kit` · 0f46b7484 (`check/stjohns-7d-kit`) · run 44973046188 (the mess hall's pieces; lane F, 2026-11-22). Shares `content/setpieces/academy.json`, `setPiecesAcademy.test.ts`, `maps/test_coverage.json` and generated tables with `wip/stjohns-7c` (red, being fixed): whichever lands second merges the other and re-checks.
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
@@ -226,6 +225,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-22 · F · St. John's step 7d kit, the mess hall's pieces built ahead, not yet placed (`check/stjohns-7d-kit` at 0f46b7484, run 44973046188; landed alone by the lead).
 - 2026-11-21 · F · Different prop models a map 80 → 120 (owner: "Raise per map prop limit"); on St. John's 74 vs 120 models: draws +14 %, +0.93 MB gzipped, load about +4 % (`check/prop-models-120` at 00a96b46, run 44899643122).
 - 2026-11-21 · F · St. John's step 7b: DeKoven rebuilt and joined to Welles (the stair from DeKoven's 2nd floor to the mess hall's entrance), new generic pieces (stair bay to the roof, stair-down bay, admin entry bay, basement room and stairwell tiles, Admin Bay options) (`check/stjohns-7b` at 4c73c9fa, run 44885411126).
 - 2026-11-21 · F · St. John's step 7a: the mess hall's double-arched main entrance (new wall style Twin arches, two Refectory Bay choices; map format v49) (`check/stjohns-7` at 30396b4e, run 44868885032).
