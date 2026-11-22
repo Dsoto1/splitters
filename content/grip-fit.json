@@ -751,6 +751,57 @@
     }
    }
   },
+  "meshy_baboon": {
+   "hash": "86f4b03dc45a99dd",
+   "arms": {
+    "skin": "#352e2c",
+    "cloth": "#382f2b",
+    "trim": "#4f453c"
+   },
+   "grip": {
+    "gripLong": [
+     0.006,
+     0.003,
+     -0.022
+    ],
+    "supportLong": [
+     -0.011,
+     -0.017,
+     0
+    ],
+    "gripPistol": [
+     0.016,
+     0.001,
+     -0.014
+    ],
+    "supportPistol": [
+     0.013,
+     0.003,
+     0.014
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.05,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.05,
+     "none": 3.456
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 0.75,
+     "eL": 1.914,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.898,
+     "none": 3.633
+    }
+   }
+  },
   "meshy_badgeragent": {
    "hash": "b1e50aed3865e803",
    "arms": {
@@ -1935,6 +1986,57 @@
      "outlier": false,
      "auto": 1.04,
      "none": 2.546
+    }
+   }
+  },
+  "meshy_chimpanzee": {
+   "hash": "5965d6a5e4b6c337",
+   "arms": {
+    "skin": "#6f594e",
+    "cloth": "#312c29",
+    "trim": "#1e1b19"
+   },
+   "grip": {
+    "gripLong": [
+     -0.007,
+     0.031,
+     0.008
+    ],
+    "supportLong": [
+     -0.009,
+     -0.009,
+     0
+    ],
+    "gripPistol": [
+     0.009,
+     -0.013,
+     0.001
+    ],
+    "supportPistol": [
+     -0.025,
+     0.01,
+     -0.004
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.15,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.15,
+     "none": 3.99
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.85,
+     "eL": 1.7,
+     "flags": [],
+     "outlier": false,
+     "auto": 2.87,
+     "none": 5.629
     }
    }
   },
@@ -5055,6 +5157,59 @@
     }
    }
   },
+  "meshy_magmajuggernaut": {
+   "hash": "bcc6bfd8e2e914ef",
+   "arms": {
+    "skin": "#422a27",
+    "cloth": "#72352b",
+    "trim": "#47211b"
+   },
+   "grip": {
+    "gripLong": [
+     -0.009,
+     0.033,
+     0.013
+    ],
+    "supportLong": [
+     -0.006,
+     0.001,
+     0
+    ],
+    "gripPistol": [
+     0.007,
+     -0.013,
+     0.005
+    ],
+    "supportPistol": [
+     0.09,
+     -0.012,
+     0.09
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.15,
+     "eL": 0.3,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.33,
+     "none": 4.419
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.05,
+     "eL": 15.12,
+     "flags": [
+      "off"
+     ],
+     "outlier": true,
+     "auto": 13.122,
+     "none": 14.831
+    }
+   }
+  },
   "meshy_mantisshrimp": {
    "hash": "35da0dc846153826",
    "arms": {
@@ -6908,56 +7063,55 @@
    }
   },
   "meshy_salamander": {
-   "hash": null,
+   "hash": "38d0054ef576cc8c",
    "arms": {
-    "skin": "#5e5444",
-    "cloth": "#645645",
-    "trim": "#736553"
+    "skin": "#222120",
+    "cloth": "#222323",
+    "trim": "#151616"
    },
    "grip": {
     "gripLong": [
-     -0.02,
-     -0.017,
-     -0.013
+     0.006,
+     0.008,
+     0.024
     ],
     "supportLong": [
-     0.007,
-     0.006,
+     0.021,
+     -0.038,
      0
     ],
     "gripPistol": [
-     0.011,
+     0.001,
      -0.017,
-     -0.004
+     0.024
     ],
     "supportPistol": [
-     0.09,
-     0.003,
-     0.084
+     0.008,
+     -0.021,
+     -0.007
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 1.7,
-     "eL": 2,
+     "eR": 0.112,
+     "eL": 0.3,
      "flags": [],
      "outlier": false,
-     "auto": 2.9,
-     "none": 8.253
+     "auto": 0.292,
+     "none": 5.399
     },
     "pistol": {
      "pick": "auto",
-     "eR": 2.924,
-     "eL": 3.635,
+     "eR": 0.05,
+     "eL": 0,
      "flags": [
-      "open",
-      "through"
+      "palm"
      ],
      "outlier": true,
-     "auto": 11.105,
-     "none": 12.898
+     "auto": 3.05,
+     "none": 7.455
     }
    }
   },
@@ -7176,32 +7330,32 @@
    }
   },
   "meshy_shiba": {
-   "hash": null,
+   "hash": "25a3e3774ad4fcca",
    "arms": {
-    "skin": "#fbe4c0",
-    "cloth": "#f9e3bd",
-    "trim": "#e7a257"
+    "skin": "#cdad99",
+    "cloth": "#2b312a",
+    "trim": "#1b1e1a"
    },
    "grip": {
     "gripLong": [
-     -0.016,
-     -0.017,
-     -0.016
+     0,
+     -0.023,
+     -0.014
     ],
     "supportLong": [
-     -0.008,
-     0.022,
+     -0.019,
+     -0.023,
      0
     ],
     "gripPistol": [
-     0.007,
-     0.001,
-     -0.002
+     0.011,
+     -0.004,
+     0.001
     ],
     "supportPistol": [
-     -0.007,
-     0.028,
-     -0.023
+     -0.017,
+     0.002,
+     -0.025
     ]
    },
    "keep": [],
@@ -7209,22 +7363,20 @@
     "long": {
      "pick": "auto",
      "eR": 0.05,
-     "eL": 0.4,
-     "flags": [
-      "palm"
-     ],
-     "outlier": true,
-     "auto": 3.29,
-     "none": 7.799
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.05,
+     "none": 4.923
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.55,
-     "eL": 1.7,
+     "eR": 2.35,
+     "eL": 0.6,
      "flags": [],
      "outlier": false,
-     "auto": 2.57,
-     "none": 4.255
+     "auto": 2.71,
+     "none": 5.085
     }
    }
   },
@@ -8720,6 +8872,57 @@
      "outlier": false,
      "auto": 1.87,
      "none": 4.352
+    }
+   }
+  },
+  "meshy_tuxedocat": {
+   "hash": "37914b10f75f2fde",
+   "arms": {
+    "skin": "#dedddc",
+    "cloth": "#191a1d",
+    "trim": "#101012"
+   },
+   "grip": {
+    "gripLong": [
+     -0.002,
+     0.026,
+     0.01
+    ],
+    "supportLong": [
+     -0.022,
+     -0.009,
+     0
+    ],
+    "gripPistol": [
+     -0.003,
+     -0.013,
+     0.003
+    ],
+    "supportPistol": [
+     -0.031,
+     0.007,
+     0.018
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.25,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.25,
+     "none": 4.516
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 0.85,
+     "eL": 1.1,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.51,
+     "none": 4.62
     }
    }
   },
