@@ -72,7 +72,7 @@
 "maps/silo_complex.json":{"faces":"a3571ddcc2fcf182","ground":null},
 "maps/sky_islands.json":{"faces":"6fe6b0cf41b7c021","ground":null},
 "maps/skyward.json":{"faces":"290e17b984c5460b","ground":null},
-"maps/st_johns.json":{"faces":"3c858b84cc0292c7","ground":"912da6076ec8087c"},
+"maps/st_johns.json":{"faces":"cce67089243fd574","ground":"912da6076ec8087c"},
 "maps/step_temple.json":{"faces":"ba597090b85eff46","ground":"5137cbb1a5c914b9"},
 "maps/sunken_kingdom.json":{"faces":"02d43a6e6f5710f9","ground":"8ea0e53df75de934"},
 "maps/sunstone_crag.json":{"faces":"c0708b26dad45332","ground":"a8f6bfa6a265a3f9"},

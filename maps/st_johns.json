@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_hm2y73vn6tikkzy7",
-      "revision": 42,
-      "contentHash": "sha256:7dd7895dd90cdccd133c93c3a406c758f3bb4ac3d33cb9bf2794852831e90f81",
+      "versionId": "v_bh7rkharje2affsg",
+      "revision": 59,
+      "contentHash": "sha256:26ce458384865cee3302bcf6991adcae2f0accb8169dfb190bacca161447b131",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-21T21:25:52.159Z"
+      "releasedAt": "2026-11-22T15:18:21.573Z"
     }
   },
   "classicStructure": {
@@ -5392,160 +5392,6 @@
       "yaw": 0,
       "material": "core.cobble",
       "tint": "#d9d5cb",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1790",
-      "position": [
-        -44,
-        8.01,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        15.648,
-        0.9000000000000004,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1791",
-      "position": [
-        -44,
-        8.91,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        13.248,
-        0.8999999999999995,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1792",
-      "position": [
-        -44,
-        9.81,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        10.925,
-        0.9000000000000004,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1793",
-      "position": [
-        -44,
-        10.71,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        8.678,
-        0.9000000000000004,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1794",
-      "position": [
-        -44,
-        11.61,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        6.43,
-        0.9000000000000004,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1795",
-      "position": [
-        -44,
-        12.51,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        4.19,
-        0.8999999999999986,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "block_1796",
-      "position": [
-        -44,
-        13.41,
-        -48
-      ],
-      "kind": "block",
-      "size": [
-        2.095,
-        0.9000000000000004,
-        24.385
-      ],
-      "yaw": 0,
-      "material": "core.pbr_roof",
-      "tint": "#5b4436",
       "behaviour": "solid",
       "trigger": "step",
       "delaySeconds": 0.8,
@@ -21464,20 +21310,6 @@
       "tint": null
     },
     {
-      "id": "prop_2765",
-      "position": [
-        -28.025,
-        -0.35,
-        -29.151
-      ],
-      "kind": "prop",
-      "model": "env.broadleaf.oak",
-      "yaw": 66.3,
-      "scale": 0.62,
-      "solid": true,
-      "tint": null
-    },
-    {
       "id": "prop_2766",
       "position": [
         23.387,
@@ -22905,9 +22737,9 @@
     {
       "id": "pickup_2876",
       "position": [
-        44,
-        0,
-        -84
+        40,
+        -0.5,
+        -82.3
       ],
       "kind": "pickup",
       "item": "core.weapon_burst_rifle",
@@ -22917,7 +22749,7 @@
       "id": "pickup_2877",
       "position": [
         66,
-        0,
+        -0.5,
         -84
       ],
       "kind": "pickup",
@@ -25919,9 +25751,9 @@
     {
       "id": "prop_street_065",
       "position": [
-        -53.71,
-        0.04,
-        -33.46
+        -56.2,
+        0.58,
+        -29.5
       ],
       "kind": "prop",
       "model": "env.broadleaf.oak",
@@ -27738,29 +27570,6 @@
       "health": 120
     },
     {
-      "id": "sp_setpiece_g830vbnlk5_12",
-      "position": [
-        14.25,
-        4,
-        -86.05
-      ],
-      "name": "Stair rail",
-      "kind": "block",
-      "size": [
-        3.5,
-        1,
-        0.1
-      ],
-      "yaw": 0,
-      "material": "core.oak_beam",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
       "id": "sp_setpiece_g830vbnlk5_13",
       "position": [
         18.75,
@@ -27799,29 +27608,6 @@
       ],
       "yaw": 0,
       "material": "core.pbr_plaster_white",
-      "tint": null,
-      "behaviour": "solid",
-      "trigger": "step",
-      "delaySeconds": 0.8,
-      "respawnSeconds": 8,
-      "health": 120
-    },
-    {
-      "id": "sp_setpiece_g830vbnlk5_15",
-      "position": [
-        17.75,
-        8,
-        -81.95
-      ],
-      "name": "Stair rail",
-      "kind": "block",
-      "size": [
-        3.5,
-        1,
-        0.1
-      ],
-      "yaw": 0,
-      "material": "core.oak_beam",
       "tint": null,
       "behaviour": "solid",
       "trigger": "step",
@@ -28025,6 +27811,62 @@
       "kind": "prop",
       "model": "kit.door.oak_slim_open",
       "yaw": 1.5707963267948966,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_0afpuevjj3",
+      "kind": "prop",
+      "position": [
+        -25.3,
+        -0.16,
+        -41
+      ],
+      "model": "kit.monument.bird",
+      "yaw": 0.349,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_y34pvnl3x3",
+      "kind": "prop",
+      "position": [
+        -32.5,
+        -0.11,
+        -31
+      ],
+      "model": "kit.monument.marker",
+      "yaw": 0.524,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_anu8d0py4g",
+      "kind": "prop",
+      "position": [
+        14.25,
+        4,
+        -86.05
+      ],
+      "model": "kit.fence.stair_rail",
+      "yaw": 0,
+      "scale": 1,
+      "solid": true,
+      "tint": null
+    },
+    {
+      "id": "prop_fhn15cf0m0",
+      "kind": "prop",
+      "position": [
+        17.75,
+        8,
+        -81.95
+      ],
+      "model": "kit.fence.stair_rail",
+      "yaw": 0,
       "scale": 1,
       "solid": true,
       "tint": null
@@ -28318,6 +28160,23 @@
     "style": "invisible",
     "height": 8
   },
+  "backdrop": {
+    "sky": "clear",
+    "scenery": "forest",
+    "ground": "grass",
+    "haze": 0.4,
+    "mist": 0.2
+  },
+  "physics": null,
+  "blood": null,
+  "teamSetup": {
+    "sizes": [
+      12,
+      12
+    ]
+  },
+  "weaponSet": "military",
+  "dependencies": [],
   "paths": [
     {
       "id": "osm_21644223_0",
@@ -29677,7 +29536,7 @@
         "road"
       ],
       "width": 3,
-      "style": "cobble",
+      "style": "brick",
       "lay": true
     },
     {
@@ -30253,23 +30112,6 @@
       "lay": true
     }
   ],
-  "backdrop": {
-    "sky": "clear",
-    "scenery": "forest",
-    "ground": "grass",
-    "haze": 0.4,
-    "mist": 0.2
-  },
-  "physics": null,
-  "blood": null,
-  "teamSetup": {
-    "sizes": [
-      12,
-      12
-    ]
-  },
-  "weaponSet": "military",
-  "dependencies": [],
   "setPieces": [
     {
       "id": "setpiece_khjt0z69qh",
@@ -30288,7 +30130,12 @@
       "z": 0,
       "rotation": 0,
       "mirror": false,
-      "pack": "collegiate"
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "rails": "metal"
+        }
+      }
     },
     {
       "id": "setpiece_qxfg57rgtu",
@@ -30431,6 +30278,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_red"
+        },
+        "options": {
+          "rails": "metal"
         }
       }
     },
@@ -30445,6 +30295,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_red"
+        },
+        "options": {
+          "rails": "metal"
         }
       }
     },
@@ -30461,7 +30314,8 @@
           "facade": "collegiate_red"
         },
         "options": {
-          "roomDoors": "slim"
+          "roomDoors": "slim",
+          "rails": "metal"
         }
       }
     },
@@ -30709,7 +30563,12 @@
       "z": 0,
       "rotation": 3,
       "mirror": false,
-      "pack": "collegiate"
+      "pack": "collegiate",
+      "overrides": {
+        "options": {
+          "rails": "metal"
+        }
+      }
     },
     {
       "id": "setpiece_w2p496421w",
@@ -30722,6 +30581,9 @@
       "overrides": {
         "roles": {
           "facade": "collegiate_fieldstone"
+        },
+        "options": {
+          "rails": "metal"
         }
       }
     },
@@ -30921,7 +30783,8 @@
           "facade": "collegiate_fieldstone"
         },
         "options": {
-          "upperDoor": "end"
+          "upperDoor": "end",
+          "rails": "metal"
         }
       }
     },
@@ -30950,7 +30813,12 @@
       "y": -10,
       "z": 0,
       "rotation": 2,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "rails": "metal"
+        }
+      }
     },
     {
       "id": "setpiece_8zgwaep49q",
@@ -30962,7 +30830,14 @@
       "mirror": false,
       "overrides": {
         "options": {
-          "walls": "door_north"
+          "walls": "door_north",
+          "floor": "sunk",
+          "ceiling": "timber_piers",
+          "aisle": "arcade",
+          "lights": "bowls",
+          "flags": "hung",
+          "furniture": "rows_gap",
+          "end": "fire_drinks"
         }
       }
     },
@@ -30973,7 +30848,17 @@
       "y": -11,
       "z": 0,
       "rotation": 0,
-      "mirror": false
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "ceiling": "timber_piers",
+          "aisle": "arcade",
+          "lights": "bowls",
+          "flags": "hung",
+          "furniture": "rows_podium"
+        }
+      }
     },
     {
       "id": "setpiece_7j8uomeg8s",
@@ -30985,7 +30870,13 @@
       "mirror": false,
       "overrides": {
         "options": {
-          "walls": "doors"
+          "walls": "doors",
+          "floor": "sunk",
+          "ceiling": "timber_piers",
+          "aisle": "arcade",
+          "lights": "bowls",
+          "flags": "hung",
+          "furniture": "rows_gap"
         }
       }
     },
@@ -30996,53 +30887,17 @@
       "y": -11,
       "z": 0,
       "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_swcuia16jz",
-      "piece": "setpiece.refectory_bay",
-      "x": 7,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
       "mirror": false,
       "overrides": {
         "options": {
-          "walls": "fire_south"
+          "floor": "sunk",
+          "ceiling": "timber_piers",
+          "aisle": "arcade",
+          "lights": "bowls",
+          "flags": "hung",
+          "furniture": "rows"
         }
       }
-    },
-    {
-      "id": "setpiece_9igcntaxz3",
-      "piece": "setpiece.refectory_bay",
-      "x": 8,
-      "y": -11,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
-    },
-    {
-      "id": "setpiece_pevisg8u7t",
-      "piece": "setpiece.classroom_bay",
-      "x": 7,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false,
-      "overrides": {
-        "options": {
-          "pennants": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_zhhkhfyu06",
-      "piece": "setpiece.classroom_bay",
-      "x": 8,
-      "y": -11,
-      "z": 1,
-      "rotation": 0,
-      "mirror": false
     },
     {
       "id": "setpiece_x4lwi8vb3u",
@@ -31368,88 +31223,6 @@
       }
     },
     {
-      "id": "setpiece_gpou671dud",
-      "piece": "setpiece.library_bay",
-      "x": -6,
-      "y": -7,
-      "z": 0,
-      "rotation": 1,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south",
-          "end": "east"
-        }
-      }
-    },
-    {
-      "id": "setpiece_xty73etsfn",
-      "piece": "setpiece.library_bay",
-      "x": -5,
-      "y": -6,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south"
-        }
-      }
-    },
-    {
-      "id": "setpiece_6pftsqkqnk",
-      "piece": "setpiece.library_bay",
-      "x": -5,
-      "y": -5,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          },
-          "facade": "none"
-        },
-        "options": {
-          "door": "south",
-          "end": "east"
-        }
-      }
-    },
-    {
-      "id": "setpiece_bhyn08o9jf",
-      "piece": "setpiece.library_porch",
-      "x": -4,
-      "y": -6,
-      "z": 0,
-      "rotation": 3,
-      "mirror": false,
-      "overrides": {
-        "roles": {
-          "stone": {
-            "material": "core.pbr_collegiate_rubble",
-            "tint": null
-          }
-        }
-      }
-    },
-    {
       "id": "setpiece_5kz9fhe0dz",
       "piece": "setpiece.entrance_porch",
       "x": 4,
@@ -31552,6 +31325,110 @@
       "z": 0,
       "rotation": 1,
       "mirror": false
+    },
+    {
+      "id": "setpiece_xpokxcprvk",
+      "piece": "setpiece.library_end_bay_2",
+      "x": -5,
+      "y": -7,
+      "z": 0,
+      "rotation": 3,
+      "mirror": false,
+      "overrides": {
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          }
+        }
+      }
+    },
+    {
+      "id": "setpiece_vfhl9ttdxg",
+      "piece": "setpiece.library_faceted_end",
+      "x": -6,
+      "y": -6,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "door": "east"
+        },
+        "roles": {
+          "stone": {
+            "material": "core.pbr_collegiate_rubble",
+            "tint": null
+          }
+        }
+      }
+    },
+    {
+      "id": "setpiece_ablwo96cea",
+      "piece": "setpiece.gable_wing",
+      "x": -6,
+      "y": -4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_opnil3iust",
+      "piece": "setpiece.refectory_servery",
+      "x": 7,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "ceiling": "timber"
+        }
+      }
+    },
+    {
+      "id": "setpiece_gdvtd7lork",
+      "piece": "setpiece.refectory_kitchen",
+      "x": 8,
+      "y": -11,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "floor": "sunk",
+          "end": "door"
+        }
+      }
+    },
+    {
+      "id": "setpiece_son82tuda0",
+      "piece": "setpiece.dorm_bay",
+      "x": 7,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
+    },
+    {
+      "id": "setpiece_0nw3y6zku9",
+      "piece": "setpiece.dorm_bay_closed",
+      "x": 8,
+      "y": -11,
+      "z": 1,
+      "rotation": 0,
+      "mirror": false,
+      "overrides": {
+        "options": {
+          "roomDoors": "slim"
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,153 @@
+{
+ "$comment": "St. John's: the owner's six answers on the corner (2026-11-22, OWNER_NOTES_2026-11-21 'The corner (step 7c): the owner's answers'), the map's part: (1) Welles's 2nd floor cells 7 and 8 to dorm bays; (5) Black metal rails on every other hall's stairs. (4) the door bays clad in stone and (6) the folded mirror and footlocker are kit changes; (2) and (3) need nothing. The ordered MapMaker steps as a Playwright driver replays them (as steps-7d.json). Ids are the map's on main at e0d36370d.",
+ "steps": [
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "setpiece_pevisg8u7t",
+   "why": "Welles 2nd floor, cell 7: the Classroom Bay (owner, 2026-11-22: 'yes', dorm bays)"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "setpiece_zhhkhfyu06",
+   "why": "cell 8: the Classroom Bay"
+  },
+  {
+   "group": "1",
+   "op": "place",
+   "piece": "setpiece.dorm_bay",
+   "x": 7,
+   "y": -11,
+   "level": 1,
+   "rot": 0,
+   "options": {
+    "roomDoors": "slim"
+   },
+   "why": "as the 3rd floor's cell 7"
+  },
+  {
+   "group": "1",
+   "op": "place",
+   "piece": "setpiece.dorm_bay_closed",
+   "x": 8,
+   "y": -11,
+   "level": 1,
+   "rot": 0,
+   "options": {
+    "roomDoors": "slim"
+   },
+   "why": "as the 3rd floor's cell 8"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_6yo07jalgv",
+   "name": "rails",
+   "value": "metal",
+   "why": "Welles east (9, -10): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_w2p496421w",
+   "name": "rails",
+   "value": "metal",
+   "why": "Stangeland / Cord (-5, -10): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_a3c0dpzi2u",
+   "name": "rails",
+   "value": "metal",
+   "why": "Stangeland / Cord (0, -9), the bridge's west end: Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_4tw978dgz3",
+   "name": "rails",
+   "value": "metal",
+   "why": "Scott Johnston / Hazelwood (-17, -10): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_58q7mf5eb8",
+   "name": "rails",
+   "value": "metal",
+   "why": "Scott Johnston / Hazelwood (-10, -9): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_3459ewaolt",
+   "name": "rails",
+   "value": "metal",
+   "why": "the Hall Centre (-13, -9): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_on330x7tqt",
+   "name": "rails",
+   "value": "metal",
+   "why": "Smythe (5, 4): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "option",
+   "id": "setpiece_f6epumzmbr",
+   "name": "rails",
+   "value": "metal",
+   "why": "Smythe (7, 0): Black metal stair rails (owner: 'yes')"
+  },
+  {
+   "group": "5",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_12",
+   "why": "Welles's west stair (its parts hand-placed since the clock tower's trim fix, so no option): the wooden rail over the first flight"
+  },
+  {
+   "group": "5",
+   "op": "prop",
+   "prop": "kit.fence.stair_rail",
+   "near": [
+    26,
+    0,
+    -64
+   ],
+   "to": [
+    14.25,
+    4,
+    -86.05
+   ],
+   "yaw": 0,
+   "why": "a Stair Railing where it was, as the Stair End Bay's Black metal choice places it"
+  },
+  {
+   "group": "5",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_15",
+   "why": "its rail over the second flight"
+  },
+  {
+   "group": "5",
+   "op": "prop",
+   "prop": "kit.fence.stair_rail",
+   "near": [
+    26,
+    0,
+    -64
+   ],
+   "to": [
+    17.75,
+    8,
+    -81.95
+   ],
+   "yaw": 0,
+   "why": "a Stair Railing there"
+  }
+ ]
+}
