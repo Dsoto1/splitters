@@ -2374,6 +2374,11 @@ export class GameSession {
         this.voteHud?.dispose();
         this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
         this.showInvite();
+        // The pose check's reports (poseCheck.ts) name the player, the match and whether the spectator camera follows them.
+        this.view.poseCheckName = (slot) => this.hud.name(slot);
+        this.view.poseCheckWatched = () => (this.outOfPlay && !this.specCam.free ? this.specCam.following : -1);
+        this.view.poseCheckCamera = () => (!this.outOfPlay ? (this.thirdPerson ? 'third person' : 'first person') : this.specCam.free ? 'free camera' : this.specCam.killCam() ? 'kill cam' : 'following');
+        this.view.poseCheckMatch = `${loaded.map.metadata.name}, ${msg.rules.mode}`;
         if (rouletteOn(msg.rules)) {
           // Roulette: its HUD, outlines in the team's colour (its Teams variant) and a jackpot's glow, warmed up at loading.
           this.rouletteHud = new RouletteHud(this.hud, this.input, loaded.map, () => this.rules, () => this.slot, this.opts.portraitOf);
