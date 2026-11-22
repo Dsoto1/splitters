@@ -39,10 +39,11 @@ export type Edits = Record<string, WeaponEdit>;
 export const STORAGE_KEY = 'tt.weaponManager.v1';
 
 /** Each weapon's short description: `notes.description` in its content file (none yet for most). */
-const NOTES = import.meta.glob<Record<string, string> | undefined>('../../../../content/weapons/*.json', { eager: true, import: 'notes' });
+const FILES = import.meta.glob<{ notes?: Record<string, string> }>('../../../../content/weapons/*.json', { eager: true, import: 'default' });
 const DESCRIPTIONS: Record<string, string> = {};
 const DESIGN: Record<string, string> = {};
-for (const [path, notes] of Object.entries(NOTES)) {
+for (const [path, file] of Object.entries(FILES)) {
+  const notes = file.notes;
   const id = `core.${path.replace(/^.*\//, '').replace(/\.json$/, '')}`;
   if (notes?.description) DESCRIPTIONS[id] = notes.description;
   if (notes?.design) DESIGN[id] = notes.design;

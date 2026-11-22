@@ -47,7 +47,7 @@ const CSS = `
 #weapon-tuning .wm-btn[aria-pressed=true] { background: #2a3540; }
 #wm-root .wm-filter { display: inline-flex; gap: 4px; }
 #wm-root .wm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 10px; }
-#wm-root .wm-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 4px 12px; background: var(--wt-surface); border: 1px solid var(--wt-line); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
+#wm-root .wm-card { text-transform: none; font-style: normal; letter-spacing: normal; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 4px 12px; background: var(--wt-surface); border: 1px solid var(--wt-line); border-radius: 10px; padding: 10px 12px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
 #wm-root .wm-card:hover, #wm-root .wm-card:focus-visible { border-color: #4b5763; outline: none; }
 #wm-root .wm-card.is-hidden { opacity: 0.7; border-style: dashed; }
 #weapon-tuning .wm-pic { width: 96px; height: 42px; display: grid; place-items: center; background: #14181b; border-radius: 6px; overflow: hidden; color: var(--wt-muted); font-size: 11px; }
@@ -71,14 +71,15 @@ const CSS = `
 #weapon-tuning .wm-field > span { color: var(--wt-ink2); font-size: 13px; }
 #weapon-tuning .wm-field input[type=text], #weapon-tuning textarea, #weapon-tuning .wm-field select { width: 100%; }
 #weapon-tuning textarea { background: var(--wt-surface); color: var(--wt-ink); border: 1px solid var(--wt-line); border-radius: 6px; padding: 6px 8px; font: inherit; resize: vertical; min-height: 56px; }
-#weapon-tuning .wm-stats { display: grid; grid-template-columns: minmax(110px, 1.2fr) 96px minmax(40px, 0.5fr) minmax(90px, 1fr) 28px; gap: 6px 10px; align-items: center; font-size: 13px; }
-#weapon-tuning .wm-stats .k { color: var(--wt-ink2); }
-#weapon-tuning .wm-stats input { width: 96px; }
-#weapon-tuning .wm-stats .u { color: var(--wt-muted); font-size: 12px; }
-#weapon-tuning .wm-stats .was { color: var(--wt-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-#weapon-tuning .wm-stats .was.changed { color: #e8c872; }
-#weapon-tuning .wm-stats .wm-x, #weapon-tuning .wm-x { background: none; border: 0; color: var(--wt-muted); cursor: pointer; font-size: 15px; padding: 0; }
-#weapon-tuning .wm-stats .wm-x:hover { color: var(--wt-ink); }
+#weapon-tuning .wm-stats { display: grid; gap: 6px; font-size: 13px; }
+#weapon-tuning .wm-stat { display: grid; grid-template-columns: minmax(110px, 1.2fr) 96px minmax(40px, 0.5fr) minmax(90px, 1fr) 28px; gap: 2px 10px; align-items: center; }
+#weapon-tuning .wm-stat .k { color: var(--wt-ink2); }
+#weapon-tuning .wm-stat input { width: 96px; }
+#weapon-tuning .wm-stat .u { color: var(--wt-muted); font-size: 12px; }
+#weapon-tuning .wm-stat .was { color: var(--wt-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+#weapon-tuning .wm-stat .was.changed { color: #e8c872; }
+#weapon-tuning .wm-x { background: none; border: 0; color: var(--wt-muted); cursor: pointer; font-size: 15px; padding: 0; }
+#weapon-tuning .wm-x:hover { color: var(--wt-ink); }
 #weapon-tuning .wm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 6px 0; border-bottom: 1px solid var(--wt-grid); }
 #weapon-tuning .wm-row .grow { flex: 1 1 160px; min-width: 0; }
 #weapon-tuning .wm-row .id { color: var(--wt-muted); font-size: 12px; }
@@ -95,10 +96,13 @@ const CSS = `
 @media (max-width: 720px) {
   #wm-root .wm-list { grid-template-columns: minmax(0, 1fr); }
   #weapon-tuning .wm-field { grid-template-columns: minmax(0, 1fr); gap: 2px; }
-  #weapon-tuning .wm-stats { grid-template-columns: minmax(0, 1fr) 84px 28px; }
-  #weapon-tuning .wm-stats input { width: 84px; }
-  #weapon-tuning .wm-stats .u { display: none; }
-  #weapon-tuning .wm-stats .was { grid-column: 1 / -1; margin-top: -4px; }
+  #weapon-tuning .wm-stat { grid-template-columns: minmax(0, 1fr) 84px 24px; }
+  #weapon-tuning .wm-stat input { width: 84px; grid-column: 2; grid-row: 1; }
+  #weapon-tuning .wm-stat .k { grid-column: 1; grid-row: 1; }
+  #weapon-tuning .wm-stat > :last-child { grid-column: 3; grid-row: 1; }
+  #weapon-tuning .wm-stat .u { display: none; }
+  #weapon-tuning .wm-stat .was { grid-column: 1 / -1; grid-row: 2; }
+  #weapon-tuning .wm-head .wm-pic { display: none; }
   #weapon-tuning .wm-compare .cols { grid-template-columns: minmax(0, 1fr); }
   #weapon-tuning .wm-sheet { padding: 0 12px 40px; border-left: 0; }
 }
@@ -113,7 +117,7 @@ function shown(f: StatField, v: unknown): string {
   if (v === undefined || v === null) return '–';
   if (Array.isArray(v)) return `${(v as number[]).map((x) => fmt(x * (f.scale ?? 1), 1)).join(', ')}`;
   const n = (v as number) * (f.scale ?? 1);
-  return fmt(n, f.int ? 0 : Math.abs(n) < 10 ? 2 : 1);
+  return n.toLocaleString('en', { maximumFractionDigits: f.int ? 0 : Math.abs(n) < 10 ? 3 : 1 });
 }
 
 /** The short stats line under a weapon in the list. */
@@ -287,7 +291,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
       const scale = kickScale(e);
       box.innerHTML = `
         <div class="wm-head"><div class="wm-pic"></div><h2>${esc(def.displayName)}${def.hidden ? ' <span class="wm-badge hidden">Hidden</span>' : ''}</h2>
-          <button type="button" class="wm-btn" id="wm-reset-one"${edits[id] ? '' : ' disabled'}>Reset this weapon</button>
+          <button type="button" class="wm-btn" id="wm-reset-one"${edits[id] ? '' : ' disabled'} title="Back to how it is in the game">Reset</button>
           <button type="button" class="wm-btn wm-primary" id="wm-done">Done</button></div>
         <section><h2>Name and role</h2>
           <label class="wm-field"><span>Name</span><input type="text" id="wm-name" maxlength="${TEXT_LIMITS.name}" value="${esc(def.displayName)}"></label>
@@ -332,12 +336,12 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
                 const now = e.stats?.[f.path] ?? was;
                 const changed = e.stats?.[f.path] !== undefined;
                 const step = f.int ? 1 : f.scale === 1000 ? 0.1 : (f.max - f.min) * (f.scale ?? 1) > 50 ? 1 : 0.01;
-                return `<span class="k">${esc(f.label)}</span><input type="number" data-stat="${f.path}" aria-label="${esc(f.label)}" min="${+(f.min * (f.scale ?? 1)).toFixed(4)}" max="${+(f.max * (f.scale ?? 1)).toFixed(4)}" step="${step}" value="${now === undefined ? '' : +((now as number) * (f.scale ?? 1)).toFixed(4)}"><span class="u">${esc(f.unit)}</span><span class="was${changed ? ' changed' : ''}">${changed ? `in the game: ${shown(f, was)}` : `range ${shown(f, f.min)}–${shown(f, f.max)}`}</span>${changed ? `<button type="button" class="wm-x" data-unstat="${f.path}" title="Back to the game's" aria-label="Back to the game's ${esc(f.label)}">↺</button>` : '<span></span>'}`;
+                return `<div class="wm-stat"><span class="k">${esc(f.label)}</span><input type="number" data-stat="${f.path}" aria-label="${esc(f.label)}" min="${+(f.min * (f.scale ?? 1)).toFixed(4)}" max="${+(f.max * (f.scale ?? 1)).toFixed(4)}" step="${step}" value="${now === undefined ? '' : +((now as number) * (f.scale ?? 1)).toFixed(4)}"><span class="u">${esc(f.unit)}</span><span class="was${changed ? ' changed' : ''}">${changed ? `in the game: ${shown(f, was)}` : `range ${shown(f, f.min)}–${shown(f, f.max)}`}</span>${changed ? `<button type="button" class="wm-x" data-unstat="${f.path}" title="Back to the game's" aria-label="Back to the game's ${esc(f.label)}">↺</button>` : '<span></span>'}</div>`;
               })
               .join('')}
             ${
               hasKick
-                ? `<span class="k">Recoil (kick ×)</span><input type="number" data-kick aria-label="Recoil multiplier" min="0.25" max="${maxKickScale().toFixed(2)}" step="0.05" value="${scale.toFixed(2)}"><span class="u">×</span><span class="was${scale !== 1 ? ' changed' : ''}">${scale !== 1 ? `in the game: ×1.00 (first round up ${fmt((currentStat(base, 'kick.pitch') as number[])[0]! * 1000, 1)} mrad)` : 'scales every round\'s kick, up and sideways'}</span>${scale !== 1 ? '<button type="button" class="wm-x" data-unkick title="Back to the game\'s" aria-label="Back to the game\'s recoil">↺</button>' : '<span></span>'}`
+                ? `<div class="wm-stat"><span class="k">Recoil (kick ×)</span><input type="number" data-kick aria-label="Recoil multiplier" min="0.25" max="${maxKickScale().toFixed(2)}" step="0.05" value="${scale.toFixed(2)}"><span class="u">×</span><span class="was${scale !== 1 ? ' changed' : ''}">${scale !== 1 ? `in the game: ×1.00 (first round up ${fmt((currentStat(base, 'kick.pitch') as number[])[0]! * 1000, 1)} mrad)` : 'scales every round\'s kick, up and sideways'}</span>${scale !== 1 ? '<button type="button" class="wm-x" data-unkick title="Back to the game\'s" aria-label="Back to the game\'s recoil">↺</button>' : '<span></span>'}</div>`
                 : ''
             }
           </div>

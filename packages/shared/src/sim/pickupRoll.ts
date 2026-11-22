@@ -23,6 +23,9 @@ export function itemCategory(item: ItemDefinition | undefined): WeaponCategory |
  */
 export const rollable = (item: ItemDefinition): boolean => item.rolls !== false && !(item.effect.kind === 'weapon' && isWeaponHidden(item.effect.weapon));
 
+/** The pickup items MapMaker's palette offers: all but weapons the owner hid (a map that places one keeps it). */
+export const paletteItems = (): ItemDefinition[] => CORE_ITEMS.filter((i) => !(i.effect.kind === 'weapon' && isWeaponHidden(i.effect.weapon)));
+
 const pools = new Map<WeaponCategory, readonly ItemDefinition[]>();
 
 /**

@@ -35,19 +35,19 @@ export const EDIT_KEYS = ['name', 'hidden', 'category', 'description', 'sounds',
  * generator's own checks (handling 0.85-1.1 and 0-18 ticks) are the same here.
  */
 export const STAT_FIELDS = [
-  { path: 'damage', label: 'Damage', unit: 'a hit', min: 0.1, max: 1000, when: () => true },
+  { path: 'damage', label: 'Damage', unit: 'a hit', min: 0, max: 1000, when: () => true },
   { path: 'pellets', label: 'Pellets', unit: 'a shot', min: 1, max: 32, int: true, when: (w) => w.pellets > 1 },
   { path: 'fireIntervalTicks', label: 'Fire interval', unit: 'ticks', min: 1, max: 240, int: true, when: () => true },
   { path: 'magazine', label: 'Magazine', unit: 'rounds', min: 1, max: 500, int: true, when: (w) => w.magazine > 0 },
   { path: 'reserveMax', label: 'Reserve', unit: 'rounds', min: 0, max: 2000, int: true, when: (w) => w.magazine > 0 },
-  { path: 'reloadTicks', label: 'Reload', unit: 'ticks', min: 1, max: 600, int: true, when: (w) => w.magazine > 0 && !w.reloadType },
+  { path: 'reloadTicks', label: 'Reload', unit: 'ticks', min: 0, max: 600, int: true, when: (w) => w.magazine > 0 && !w.reloadType },
   { path: 'reload.tactical', label: 'Reload (rounds left)', unit: 'ticks', min: 1, max: 600, int: true, when: (w) => w.reloadType === 'magazine' },
   { path: 'reload.empty', label: 'Reload (empty)', unit: 'ticks', min: 1, max: 600, int: true, when: (w) => w.reloadType === 'magazine' },
   { path: 'reload.start', label: 'Reload start', unit: 'ticks', min: 0, max: 300, int: true, when: (w) => w.reloadType === 'shell' },
   { path: 'reload.each', label: 'Reload a shell', unit: 'ticks', min: 1, max: 300, int: true, when: (w) => w.reloadType === 'shell' },
   { path: 'reload.end', label: 'Reload end', unit: 'ticks', min: 0, max: 300, int: true, when: (w) => w.reloadType === 'shell' },
   { path: 'raiseTicks', label: 'Draw', unit: 'ticks', min: 0, max: 120, int: true, when: () => true },
-  { path: 'range', label: 'Range', unit: 'm', min: 1, max: 2000, when: () => true },
+  { path: 'range', label: 'Range', unit: 'm', min: 0, max: 2000, when: (w) => w.kind !== 'projectile' },
   { path: 'falloff.start', label: 'Falloff starts', unit: 'm', min: 0, max: 2000, when: (w) => w.hasFalloff },
   { path: 'falloff.end', label: 'Falloff ends', unit: 'm', min: 0, max: 2000, when: (w) => w.hasFalloff },
   { path: 'falloff.min', label: 'Damage at the end', unit: '%', scale: 100, min: 0, max: 1, when: (w) => w.hasFalloff },
@@ -96,7 +96,7 @@ export const getPath = (o, path) => path.split('.').reduce((v, k) => (v && typeo
 export function isEmptyEdit(e) {
   if (!e) return true;
   return (
-    e.name === undefined && e.hidden === undefined && e.category === undefined && e.description === undefined && !e.note &&
+    e.name === undefined && e.hidden === undefined && e.category === undefined && e.description === undefined && !e.note?.trim() &&
     !Object.keys(e.sounds ?? {}).length && !Object.keys(e.sets ?? {}).length && !Object.keys(e.stats ?? {}).length
   );
 }
