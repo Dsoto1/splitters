@@ -33,7 +33,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - **Lead: the "splitters" session (owner, 2026-11-22).** Lane F (the "Splitters FABLE 5.2" session) finishes St. John's 7c, then 8b; the lead lands them.
-- **The lead's helpers, owner's picks of 2026-11-22:** `wip/weapons-1118` (+1118b) revived (red since 11-21: merge main, root-cause); `wip/slide-peek` revived (red e2e 11/14 since 11-21); `wip/small-1122` (3 MiB map files and the academy blurbs, team switch, jump pad motion, active-level grid, terrain Resize, retire the Gas Mask Engineer, saved environment mixes if time). Next: player profiles phases 2-4 and the loadout optic choice.
+- **The lead's helpers, owner's picks of 2026-11-22:** `wip/weapons-1118` (+1118b) revived (red since 11-21: merge main, root-cause); `wip/slide-peek` revived (red e2e 11/14 since 11-21); `wip/small-1122` (3 MiB map files and the academy blurbs, team switch, jump pad motion, active-level grid, terrain Resize, retire the Gas Mask Engineer, saved environment mixes if time). Next, as helpers free up (owner, 2026-11-22): **the owner's new characters** (about 30 rigged and animated Meshy characters added to Drive 2026-11-21/22: the crew set, Frost Valkyrie, Sun Priest, Abyssal Hunter, Celestial Knight, Mystic, Goblina, the animal characters and others; the character pipeline, with pictures before landing), then **the Sonniss sound pass** once the owner says the upload is done (still uploading, 2026-11-22), then player profiles phases 2-4 and the loadout optic choice.
 - **QUEUE triage (lead, 2026-11-22):** of the entries below, 39 are done on main and 5 are stale (notes marked built/landed by lanes A and B); they are being cleared as items are next touched. The lead's triage list: all of Bugs except prop pop points 3 and 5 is done; Features done: entity cap, process tooling, character follow-ups, grips auto-fit, music and announcer, blood by character, far looks 1-2, body pool, small shadow casters, environment 4-5, MapMaker UI 3-5, tunnel kit 5-8, material surfaces, painting 1-5, gun handling and tuning screen, ranks and badges, Match Setup pickers.
 
 ## Ready to land
@@ -229,6 +229,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-22 · F · St. John's step 7c, the DeKoven–Welles corner corrected (`check/stjohns-7c` at 8313cd7ca, run 44978559995; landed alone by the lead).
 - 2026-11-22 · F · St. John's step 7d kit, the mess hall's pieces built ahead, not yet placed (`check/stjohns-7d-kit` at 0f46b7484, run 44973046188; landed alone by the lead).
 - 2026-11-21 · F · Different prop models a map 80 → 120 (owner: "Raise per map prop limit"); on St. John's 74 vs 120 models: draws +14 %, +0.93 MB gzipped, load about +4 % (`check/prop-models-120` at 00a96b46, run 44899643122).
 - 2026-11-21 · F · St. John's step 7b: DeKoven rebuilt and joined to Welles (the stair from DeKoven's 2nd floor to the mess hall's entrance), new generic pieces (stair bay to the roof, stair-down bay, admin entry bay, basement room and stairwell tiles, Admin Bay options) (`check/stjohns-7b` at 4c73c9fa, run 44885411126).

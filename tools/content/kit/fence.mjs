@@ -181,8 +181,9 @@ export function fenceMesh(seed, size, g, look, level) {
 /**
  * Iron railings: square bars with spear points between two rails, a post at each end with a cap, on a stone kerb.
  * Settings `g`: `bar` (bar width, m), `pitch` (bar spacing), `post` (post width), `kerb` (kerb height; 0 for none),
- * `broken` (a share of the bars missing or bent out of line, 0–1; the bent ones lean across the depth). `look`:
- * `iron`, `rust`, `stone` (hex), `rusty` (0–1), `grime`.
+ * `broken` (a share of the bars missing or bent out of line, 0–1; the bent ones lean across the depth), `handrail`
+ * (a stair or landing railing: the bars stop under a flat handrail the piece's depth wide along its top, the posts end
+ * flat, no spear points). `look`: `iron`, `rust`, `stone` (hex), `rusty` (0–1), `grime`.
  */
 export function railingMesh(seed, size, g, look, level) {
   const f = frame(size);
@@ -202,32 +203,38 @@ export function railingMesh(seed, size, g, look, level) {
   const kd = Math.min(T, 0.2) / 2;
   if (kerb > 0) f.bx(m, -L / 2, 0, -kd, L / 2, kerb, kd, stoneTone, ['ny']);
   const pw = g.post;
-  const postTop = h - (level === 0 ? pw * 1.1 : 0);
+  // A handrail (g.handrail): a flat bar HAND thick along the top, the piece's depth wide; bars and posts stop under it.
+  const HAND = g.handrail ? 0.04 : 0;
+  const postTop = HAND ? h - HAND : h - (level === 0 ? pw * 1.1 : 0);
   for (const s of [-1, 1]) {
     const u = s * (L / 2 - pw / 2);
-    f.bx(m, u - pw / 2, kerb, -pw / 2, u + pw / 2, postTop, pw / 2, metal, level === 0 ? ['ny', 'py'] : ['ny']);
-    if (level === 0) point(m, f, u, postTop, 0, pw / 2, pw * 1.1, metal);
+    // (Under a handrail a post's top is never seen: left out at every level.)
+    f.bx(m, u - pw / 2, kerb, -pw / 2, u + pw / 2, postTop, pw / 2, metal, level === 0 || HAND ? ['ny', 'py'] : ['ny']);
+    if (level === 0 && !HAND) point(m, f, u, postTop, 0, pw / 2, pw * 1.1, metal);
   }
   const railT = g.bar * 1.3;
   const yLow = kerb + (h - kerb) * 0.1;
-  const yHigh = h * 0.8;
+  const yHigh = HAND ? h - HAND / 2 : h * 0.8;
+  // The top rail's half thickness and half depth (the handrail is the piece's depth wide and runs over the posts).
+  const [topT, topD, topFrom, topTo] = HAND ? [HAND / 2, T / 2, -L / 2, L / 2] : [railT / 2, railT / 2, -L / 2 + pw, null];
   // Collision: the kerb, the posts, the rails and each standing bar (rounds pass between the bars; you don't).
   m.boxes = f.solids;
   if (kerb > 0) f.solid(-L / 2, 0, -kd, L / 2, kerb, kd);
   for (const s of [-1, 1]) f.solid(s * (L / 2 - pw), kerb, -pw / 2, (s * L) / 2, h, pw / 2);
   // Where the fence is broken the top rail stops short of one end.
   const gapFrom = broken > 0 ? L / 2 - pw - (L - pw * 2) * Math.min(0.5, broken) : L / 2 - pw;
-  if (level < 2) f.bx(m, -L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2, metal);
-  f.bx(m, -L / 2 + pw, yHigh - railT / 2, -railT / 2, gapFrom, yHigh + railT / 2, railT / 2, metal);
+  // (A handrail's low rail is drawn near only: from further off each level is lighter than the one before.)
+  if (level < (HAND ? 1 : 2)) f.bx(m, -L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2, metal);
+  f.bx(m, topFrom, yHigh - topT, -topD, topTo ?? gapFrom, yHigh + topT, topD, metal);
   f.solid(-L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2);
-  f.solid(-L / 2 + pw, yHigh - railT / 2, -railT / 2, gapFrom, yHigh + railT / 2, railT / 2);
+  f.solid(topFrom, yHigh - topT, -topD, topTo ?? gapFrom, yHigh + topT, topD);
   {
     const span = L - pw * 2;
     const count = Math.max(3, Math.round(span / g.pitch));
     for (let i = 0; i < count; i++) {
       const u = -L / 2 + pw + (span * (i + 0.5)) / count;
       // (Past the gap the bars are gone or bent, differently in each variant: nothing to stop a round there.)
-      if (u <= gapFrom) f.solid(u - g.bar / 2, yLow, -g.bar / 2, u + g.bar / 2, h - g.bar * 3, g.bar / 2);
+      if (u <= gapFrom) f.solid(u - g.bar / 2, yLow, -g.bar / 2, u + g.bar / 2, HAND ? h - HAND : h - g.bar * 3, g.bar / 2);
     }
   }
   if (broken > 0) {
@@ -248,7 +255,7 @@ export function railingMesh(seed, size, g, look, level) {
     const u = -L / 2 + pw + (span * (i + 0.5)) / count;
     const past = u > gapFrom;
     if (past && r.next() < 0.45) continue; // gone
-    const tip = level === 0 ? g.bar * 3 : 0;
+    const tip = level === 0 && !HAND ? g.bar * 3 : 0;
     if (past) {
       // Bent out of line: the bar leans across the depth from its foot on the low rail, shorter than the rest.
       const leanTo = (r.next() < 0.5 ? -1 : 1) * (T / 2 - a) * r.range(0.45, 0.9);
@@ -260,7 +267,7 @@ export function railingMesh(seed, size, g, look, level) {
       quadN(m, a1[0], a1[1], a1[2], a1[3], f.D(0, 1, 0), metal);
       continue;
     }
-    const top = h - tip - (i % 2 ? g.bar * 1.5 : 0);
+    const top = HAND ? h - HAND : h - tip - (i % 2 ? g.bar * 1.5 : 0);
     f.bx(m, u - a, yLow, -a, u + a, top, a, metal, tip ? ['ny', 'py'] : ['ny']);
     if (tip) point(m, f, u, top, 0, a * 1.7, tip, metal);
   }
