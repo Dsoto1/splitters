@@ -38,7 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/weapons-1118b` · 84274ac2 · 44984729319 (the weapons intake 11-18, both batches: 13 new guns, four remade models, Katana, Scimitar, Baseball Bat, Space Shield, Heart Taser, the gas grenade's model, the Spear's poke and throw; holds `wip/weapons-1118`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -230,6 +229,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** the weapons intake 11-18, both batches (`wip/weapons-1118b`, green 84274ac2, run 44984729319): 13 new guns, four remade models, Katana, Scimitar, Baseball Bat, Space Shield, Heart Taser, gas grenade model, the Spear's poke and throw, crossbows and flintlocks in Medieval. Landed alone by the splitters lead.
 - 2026-11-22 · F · St. John's step 7c, the DeKoven–Welles corner corrected (`check/stjohns-7c` at 8313cd7ca, run 44978559995; landed alone by the lead).
 - 2026-11-22 · F · St. John's step 7d kit, the mess hall's pieces built ahead, not yet placed (`check/stjohns-7d-kit` at 0f46b7484, run 44973046188; landed alone by the lead).
 - 2026-11-21 · F · Different prop models a map 80 → 120 (owner: "Raise per map prop limit"); on St. John's 74 vs 120 models: draws +14 %, +0.93 MB gzipped, load about +4 % (`check/prop-models-120` at 00a96b46, run 44899643122).
