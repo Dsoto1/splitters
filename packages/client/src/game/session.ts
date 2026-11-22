@@ -238,7 +238,7 @@ import { SessionAudio } from './sessionAudio.ts';
 import { topScorer } from '../audio/announcer.ts';
 import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
-import { impactSoundId, impactStyle } from './fxMap.ts';
+import { footstepSoundId, impactSoundId, impactStyle } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
@@ -1193,6 +1193,11 @@ export class GameSession {
     this.sfx.worldImpact = (from, to) => {
       const struck = this.view.surfaceStruck(from, to);
       return impactSoundId(struck ? impactStyle(struck).sound : 'hard');
+    };
+    // Footsteps sound like what's underfoot (the surface's recorded steps: concrete, metal, wood, grass, dirt, gravel, snow).
+    this.sfx.stepSound = (at) => {
+      const under = this.view.surfaceUnder(at);
+      return under ? footstepSoundId(under) : 'footstep';
     };
     this.sfx.blockPresent = (i) => this.scenario?.present(i) ?? true;
     this.view.scenario.liquids.fx.onSplash = (at) => this.sfx.splash(at);

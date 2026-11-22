@@ -3,19 +3,21 @@ Sonniss GDC Game Audio Bundles: the licence the sounds are used under
 
 Sounds in packages/client/public/sounds whose provenance pack is `sonniss-gdc-<year>` were cut, levelled and
 re-encoded from files of the Sonniss "GDC Game Audio Bundle" of that year (https://sonniss.com/gameaudiogdc),
-which the owner downloaded and placed in their Google Drive (sounds/sfx/GDC <year>/). Approved by the owner
-for Tile Trigger on 2026-11-06 (CLAUDE.md, "Content rules").
+the free bundles Sonniss gives away each year for GDC. The owner downloaded them and placed them in their Google
+Drive (sounds/sfx/GDC <year>/). Approved by the owner for Tile Trigger on 2026-11-06 (CLAUDE.md, "Content rules").
 
-The bundles' terms, as Sonniss publishes them for every GDC bundle (a summary; the bundle's own licence file
-is the authority, and its text replaces this summary once the owner adds it to the Drive folder):
+The licence: the Sonniss GDC Game Audio Bundle licence, the same for every yearly free bundle. The owner confirmed
+it on 2026-11-22: royalty free, use it however you like, no credit needed.
+
+This file states those terms in our own words; it is not the licence's verbatim text. In short:
 
 - The sounds may be used free of charge and royalty free, in commercial and non-commercial projects
   (games, films, music, apps and websites), on any number of projects, for as long as you like.
-- No attribution is required.
+- No attribution or credit is required.
 - The sounds may be edited, processed and combined with other material.
 - The sound files themselves may not be given away, sold or redistributed on their own or as part of a
   sound library, sample pack or similar collection, nor offered for download apart from the project.
 
 How Tile Trigger keeps to it: only processed copies ship, inside the game (cut to one shot or moment, folded to
-mono, levelled and encoded to Ogg Opus by tools/content/sonniss-audio.mjs); the bundles' own files never enter
-the repository, and the game never lists or offers its sound files for download on their own.
+mono, compressed where needed, levelled and encoded to Ogg Opus by tools/content/sonniss-audio.mjs); the bundles'
+own files never enter the repository, and the game never lists or offers its sound files for download on their own.

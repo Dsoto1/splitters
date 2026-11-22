@@ -90,7 +90,8 @@ describe('materials generator (tools/content/materials.mjs)', () => {
   it('resolves a scanned texture as the plain pattern in its own colour, in the old key order', () => {
     const { out } = materials.build(content);
     const lava = out.materials.find((m) => m.def.id === 'core.pbr_lava').def;
-    expect(Object.keys(lava)).toEqual(['id', 'displayName', 'category', 'pattern', 'base', 'accent', 'scale', 'shine', 'emissive', 'texture']);
+    // (its surface type and the class it keeps came with footsteps by surface, 2026-11-22: after the old keys)
+    expect(Object.keys(lava)).toEqual(['id', 'displayName', 'category', 'pattern', 'base', 'accent', 'scale', 'shine', 'emissive', 'texture', 'surface', 'ballistic']);
     expect(lava).toMatchObject({ pattern: 'plain', accent: lava.base, texture: 'Lava004' });
   });
 });

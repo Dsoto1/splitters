@@ -82,9 +82,15 @@ describe('surface types: nothing changed but the intended fixes', () => {
     expect(Object.keys(before.props).sort()).toEqual(PACK_PROPS.map((p) => p.id).sort());
   });
 
-  it('every library material keeps its ballistic class and its impact effect (none names a surface yet)', () => {
-    const changed = CORE_MATERIALS.filter((m) => surfaceMaterial(m.id) !== before.materials[m.id]!.ballistic || materialSurface(m.id) !== OLD_EFFECT[before.materials[m.id]!.effect]).map((m) => m.id);
+  it('every library material keeps its ballistic class (a surface whose class differs keeps the old one as its `ballistic`)', () => {
+    const changed = CORE_MATERIALS.filter((m) => surfaceMaterial(m.id) !== before.materials[m.id]!.ballistic).map((m) => m.id);
     expect(changed).toEqual([]);
+  });
+
+  it('a material with a surface draws and sounds like it (footsteps by surface, 2026-11-22); one without keeps its old effect', () => {
+    for (const m of CORE_MATERIALS) expect(materialSurface(m.id), m.id).toBe(m.surface ?? OLD_EFFECT[before.materials[m.id]!.effect]);
+    // tools/content/material-surfaces.mjs placed every one; a new material should get its surface too.
+    expect(CORE_MATERIALS.filter((m) => !m.surface).map((m) => m.id)).toEqual([]);
   });
 
   it('props change ballistic class only where INTENDED says, exactly as it says', () => {

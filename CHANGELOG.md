@@ -7,6 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Footsteps sound like what you walk on.** Concrete, metal, wood, grass, dirt, gravel and snow each have their own recorded steps, yours and other players'; bullets hitting a painted floor or wall sound like its material too.
+- **The pump shotgun pumps.** A recorded pump follows each shot, done before the next one can come; you hear other players' too.
+- **The recorded guns hit harder.** Pistols, rifles, SMGs and shotguns are about 4 dB louder and more compressed, the heavy guns a little louder; still under explosions, and none of them clip.
 - **Weapon wheel by category; number keys by category.** The wheel is eight slices (Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets) whose weapons open on an outer arc with names, each slice remembering your last pick; keys 1-8 pick the same categories (again: the next in it), rebindable in Options → Controls, and no longer land only on the Pistol or the AK.
 - **Recorded sound effects.** Pistols, rifles, SMGs, shotguns, snipers and heavy guns, reloads, melee swings, explosions, bullet impacts, breaking glass, walls and crates, doors, footsteps, falls, rain and wind now use studio recordings (the Sonniss GDC bundles); bullets whizz past your head and jump pads sound their launch, and the Weapon Manager offers two other recordings for each gun.
 - **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).

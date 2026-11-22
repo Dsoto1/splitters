@@ -164,6 +164,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       fallback: 'weapons/shotgun.glb',
       viewOffset: [0.2, -0.2, 0.6],
       tracer: '#ffb38a',
+      cycle: { sound: 'fire.shotgun.pump', at: 0.3 },
       hold: { style: 'long', grip: [0, 0.015, -0.205], support: [0, 0.035, 0.22], shoulder: [0, -0.03, -0.52] },
       muzzleAt: [0, 0.083, 0.52],
     },

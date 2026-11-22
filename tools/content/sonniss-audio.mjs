@@ -3,9 +3,9 @@
 //   node tools/content/sonniss-audio.mjs <folder holding the owner's Drive `sfx` folder: GDC 2016/, GDC 2017/, ...>
 // Every variant in content/sounds.json whose pack is `processed` (a Sonniss bundle) names its original file
 // (`file`, under the pack's `drive` folder) and the part to keep (`start` and `length` in seconds). That part is cut out,
-// folded to mono (`stereo: true` keeps two channels), compressed when `punch` is set, faded in over 3 ms and out over `fade` seconds
+// folded to mono (`stereo: true` keeps two channels), compressed when `punch` is set (`"gun"`: GUN_PUNCH, harder), faded in over 3 ms and out over `fade` seconds
 // (`window: true`: a sine-squared fade over each half, for weather beds), its peak set to
-// the manifest's level (plus the variant's `level`, in dB) and encoded to Ogg Opus at
+// the manifest's level (plus the variant's `level`, in dB; a gun's decoded peak also held under `gunCeilingDb`) and encoded to Ogg Opus at
 // packages/client/public/sounds/<id>_<n>.ogg. content/sonniss.lock.json records what was written; `pnpm content:build`
 // reads it for content/provenance.json and `pnpm content:check` holds the shipped files to it and to the manifest.
 // The bundles' own files never go in the repo (the licence forbids passing them on). Needs ffmpeg with libopus.
@@ -46,7 +46,7 @@ export function specOf(v, processing) {
     ...(v.window ? { window: true } : {}),
     peak: processing.peakDb + (v.level ?? 0),
     channels: v.stereo ? 2 : 1,
-    ...(v.punch ? { punch: true } : {}),
+    ...(v.punch === 'gun' ? { punch: 'gun', ceiling: processing.gunCeilingDb } : v.punch ? { punch: true } : {}),
     kbps: v.stereo ? processing.stereoKbps : processing.monoKbps,
   };
 }
@@ -72,6 +72,20 @@ function ffmpeg(args) {
 
 /** `punch`: a fast compressor that brings a recording's body up to its peak (gunshots and blasts read as loud as the synthesiser's). */
 export const PUNCH = 'acompressor=threshold=-26dB:ratio=6:attack=0.3:release=90:makeup=1';
+/**
+ * `punch: "gun"` (the recorded guns, owner 2026-11-22: louder, more compression): the cut is first brought to a 0 dBFS
+ * peak so the threshold means the same for every recording, then a compressor lifts the body (-20 dB, 3:1, 1 ms attack
+ * so the crack's front gets through, 100 ms release, +9.5 dB makeup) and a look-ahead limiter catches the crack (6 dB
+ * into a 0 dBFS ceiling, 0.5 ms attack). About 2 to 4.5 dB more loudness at the same peak. The peak is then set as for
+ * every sound, so nothing clips.
+ */
+export const GUN_PUNCH = 'acompressor=threshold=-20dB:ratio=3:attack=1:release=100:makeup=3,alimiter=level_in=2:limit=1:attack=0.5:release=25:level=disabled';
+
+/** The peak (dBFS) of `src` through `chain`. */
+function peakOf(src, chain) {
+  const stats = ffmpeg(['-i', src, '-af', `${chain},volumedetect`, '-f', 'null', '-']);
+  return Number(/max_volume:\s*(-?[\d.]+) dB/.exec(stats)?.[1] ?? 0);
+}
 
 function encode(src, out, spec) {
   const cut = `atrim=start=${spec.start}:duration=${spec.length},asetpts=N/SR/TB`;
@@ -81,11 +95,22 @@ function encode(src, out, spec) {
   // Mono sources have no c1: fold only what has two channels.
   const probe = spawnSync('ffprobe', ['-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=channels', '-of', 'csv=p=0', src], { encoding: 'utf8' });
   const srcChannels = Number(probe.stdout.trim()) || 1;
-  const chain = `${cut}${srcChannels > 1 ? mix : ''}${spec.punch ? `,${PUNCH}` : ''}${fades}`;
-  const stats = ffmpeg(['-i', src, '-af', `${chain},volumedetect`, '-f', 'null', '-']);
-  const max = Number(/max_volume:\s*(-?[\d.]+) dB/.exec(stats)?.[1] ?? 0);
-  const gain = Math.round((spec.peak - max) * 100) / 100;
-  ffmpeg(['-y', '-fflags', '+bitexact', '-i', src, '-map', '0:a:0', '-vn', '-af', `${chain},volume=${gain}dB`, '-ar', '48000', '-ac', String(spec.channels), '-c:a', 'libopus', '-b:a', `${spec.kbps}k`, '-vbr', 'on', '-application', 'audio', '-map_metadata', '-1', '-flags:a', '+bitexact', out]);
+  const folded = `${cut}${srcChannels > 1 ? mix : ''}`;
+  // A gun's cut starts at a 0 dBFS peak (GUN_PUNCH's threshold is relative to it).
+  const pre = spec.punch === 'gun' ? `,volume=${(-peakOf(src, folded)).toFixed(2)}dB,${GUN_PUNCH}` : spec.punch ? `,${PUNCH}` : '';
+  const chain = `${folded}${pre}${fades}`;
+  const max = peakOf(src, chain);
+  let gain = Math.round((spec.peak - max) * 100) / 100;
+  const write = () => ffmpeg(['-y', '-fflags', '+bitexact', '-i', src, '-map', '0:a:0', '-vn', '-af', `${chain},volume=${gain}dB`, '-ar', '48000', '-ac', String(spec.channels), '-c:a', 'libopus', '-b:a', `${spec.kbps}k`, '-vbr', 'on', '-application', 'audio', '-map_metadata', '-1', '-flags:a', '+bitexact', out]);
+  write();
+  // `ceiling` (the guns, limited hard): Opus can overshoot a limited crack by a dB or two, so the decoded file's peak is
+  // held under the ceiling, lowering the level by the overshoot until it is.
+  for (let i = 0; spec.ceiling !== undefined && i < 4; i++) {
+    const over = peakOf(out, 'anull') - spec.ceiling;
+    if (over <= 0) break;
+    gain = Math.round((gain - over - 0.05) * 100) / 100;
+    write();
+  }
   const d = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', out], { encoding: 'utf8' });
   return { duration: Math.round(Number(d.stdout.trim()) * 1000) / 1000, gain };
 }

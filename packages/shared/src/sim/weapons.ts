@@ -283,6 +283,11 @@ export interface WeaponPresentation {
   sound?: string;
   /** Sound a reload starts with (default `reload.start`, every weapon's). */
   reloadSound?: string;
+  /**
+   * A pump or bolt worked after each shot (the pump shotgun's recorded pump): its sound and when it starts, in seconds
+   * after the shot, inside the gun's own fire interval. Heard by everyone, from the gun.
+   */
+  cycle?: { sound: string; at: number };
   /** Hitscan drawn as a solid beam instead of tracers (lasers, rails). */
   beam?: boolean;
   /** Muzzle flash: an effect of public/vfx/muzzle_flash.json and its size (default: by family, client game/muzzleFlash.ts); `none` for no flash (a bow). */

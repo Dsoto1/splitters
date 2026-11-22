@@ -30,7 +30,7 @@ const { str, en, arr, obj, map } = shape;
 export const DECALS = ['hole', 'none'];
 export const DEBRIS = ['dust', 'splinters', 'chips', 'leaves', 'sparks'];
 export const SOUNDS = ['hard', 'wood', 'metal', 'soft', 'glass', 'water', 'none'];
-export const FOOTSTEPS = ['hard', 'wood', 'metal', 'soft', 'foliage', 'sand', 'gravel', 'snow', 'water'];
+export const FOOTSTEPS = ['hard', 'wood', 'metal', 'grass', 'dirt', 'soft', 'foliage', 'sand', 'gravel', 'snow', 'water'];
 const ID = /^[a-z][a-z0-9_]*$/;
 const COLOUR = /^#[0-9a-f]{6}$/;
 

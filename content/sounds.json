@@ -149,12 +149,13 @@
   },
   "processing": {
     "peakDb": -1,
+    "gunCeilingDb": -0.5,
     "monoKbps": 48,
     "stereoKbps": 64
   },
   "sounds": {
     "fire.pistol": {
-      "gain": 1.3,
+      "gain": 1.08,
       "range": "far",
       "jitter": 0.05,
       "variants": [
@@ -163,12 +164,12 @@
           "file": "Gunshots and bullets/Pole Position Production - Glock 18c/Glock_18_1m_left_off_axis_MKH416_clean_Six_shots_x_1.wav",
           "start": 1.341,
           "length": 0.364,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.rifle": {
-      "gain": 0.83,
+      "gain": 1.05,
       "range": "far",
       "jitter": 0.04,
       "variants": [
@@ -176,12 +177,13 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch HK416 5.56mm/HK_416_5.56mm_1m_left_off_axis_MKH416_clean_Six_shots_x_2.wav",
           "start": 7.241,
-          "length": 0.45
+          "length": 0.45,
+          "punch": "gun"
         }
       ]
     },
     "fire.shotgun": {
-      "gain": 1.3,
+      "gain": 1.16,
       "range": "far",
       "jitter": 0.04,
       "variants": [
@@ -190,12 +192,12 @@
           "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Fire_Slug_01.wav",
           "start": 0.051,
           "length": 0.9,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.sniper": {
-      "gain": 1.08,
+      "gain": 0.91,
       "range": "far",
       "jitter": 0.03,
       "variants": [
@@ -204,14 +206,14 @@
           "file": "Gunshots and bullets/Pole Position Production - Barrett M98B .338 Lapua/Barrett_M98B_.338_Lapua_2m_right_MKH60_clean_Single_shots_x_17.wav",
           "start": 0.0,
           "length": 1.089,
-          "punch": true
+          "punch": "gun"
         },
         {
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - Barrett M98B .338 Lapua/Barrett_M98B_.338_Lapua_2m_right_MKH60_clean_Single_shots_x_17.wav",
           "start": 3.0,
           "length": 1.4,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -471,6 +473,180 @@
           "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/015_Foley_Footsteps_Asphalt_Boot_Walk_Fast_Run_Jog_Close.wav",
           "start": 0.961,
           "length": 0.279
+        }
+      ]
+    },
+    "footstep.metal": {
+      "gain": 0.28,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 0.0,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 0.705,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 1.425,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 3.01,
+          "length": 0.34
+        }
+      ]
+    },
+    "footstep.wood": {
+      "gain": 0.18,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Wood Civilian Crouch N03.wav",
+          "start": 0.0,
+          "length": 0.45
+        },
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Wood Civilian Crouch N05.wav",
+          "start": 0.0,
+          "length": 0.45
+        }
+      ]
+    },
+    "footstep.grass": {
+      "gain": 0.37,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.335,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.655,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.97,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 1.615,
+          "length": 0.27
+        }
+      ]
+    },
+    "footstep.dirt": {
+      "gain": 0.29,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Ground Civilian Walk N03.wav",
+          "start": 0.0,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Ground Civilian Walk N05.wav",
+          "start": 0.0,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Single_Step_Footstep_19.wav",
+          "start": 0.06,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Single_Step_Footstep_46.wav",
+          "start": 0.0,
+          "length": 0.4
+        }
+      ]
+    },
+    "footstep.gravel": {
+      "gain": 0.3,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 0.665,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 2.405,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 2.97,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 4.195,
+          "length": 0.38
+        }
+      ]
+    },
+    "footstep.snow": {
+      "gain": 0.22,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_013.wav",
+          "start": 0.02,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_light_008.wav",
+          "start": 0.05,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_run_004.wav",
+          "start": 0.0,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_deep_008.wav",
+          "start": 0.07,
+          "length": 0.42
         }
       ]
     },
@@ -885,7 +1061,7 @@
       ]
     },
     "fire.smg": {
-      "gain": 0.71,
+      "gain": 0.92,
       "range": "far",
       "jitter": 0.06,
       "variants": [
@@ -893,7 +1069,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch MP7 4.6mm/HK_MP7_4.6mm_1m_left_off_axis_MKH416_clean_Four_shots_x_1.wav",
           "start": 0.626,
-          "length": 0.32
+          "length": 0.32,
+          "punch": "gun"
         }
       ]
     },
@@ -960,7 +1137,7 @@
           "file": "Olivier Girardot - Hand Guns Sound Effects Pack/Hand Gun 6.wav",
           "start": 0.0,
           "length": 0.644,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -974,7 +1151,7 @@
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch G3 7.62x51mm/HK_G3_7.62x51mm_1m_left_off_axis_MKH418_clean_Triple_Shots_x_1.wav",
           "start": 0.026,
           "length": 1.0,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -1221,12 +1398,12 @@
           "file": "Gunshots and bullets/Pole Position Production - Beretta 93R 9mm/Beretta_93R_9mm_1m_left_on_ground_DPA4062_clean_Triple_shots_x_1.wav",
           "start": 0.551,
           "length": 0.499,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.pistol.c": {
-      "gain": 1.3,
+      "gain": 1.23,
       "range": "far",
       "jitter": 0.05,
       "variants": [
@@ -1235,12 +1412,12 @@
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch VP70 9mm/HK_VP70_9mm_1m_in_front_RE20_clean_Double_shots_x_1.wav",
           "start": 0.956,
           "length": 0.5,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.rifle.b": {
-      "gain": 0.67,
+      "gain": 0.95,
       "range": "far",
       "jitter": 0.04,
       "variants": [
@@ -1248,7 +1425,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - Heckler & Koch G36C 5.56mm/Heckler_&_Koch_G36C_5.56mm_1m_left_off_axis_MKH416_clean_Six_shots_x_1.wav",
           "start": 1.226,
-          "length": 0.45
+          "length": 0.45,
+          "punch": "gun"
         }
       ]
     },
@@ -1262,12 +1440,12 @@
           "file": "Gunshots and bullets/Pole Position Production - AKM 7.62x39mm/AKM_7.62x39mm_1m_left_on_ground_DPA4062_clean_Triple_shots_x_1.wav",
           "start": 0.566,
           "length": 0.45,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.smg.b": {
-      "gain": 0.77,
+      "gain": 1.3,
       "range": "far",
       "jitter": 0.06,
       "variants": [
@@ -1275,12 +1453,13 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch MP5 9mm/HK_MP5_9mm_2m_behind_clean_Double_shots_x_1.wav",
           "start": 0.291,
-          "length": 0.219
+          "length": 0.219,
+          "punch": "gun"
         }
       ]
     },
     "fire.smg.c": {
-      "gain": 0.79,
+      "gain": 1.05,
       "range": "far",
       "jitter": 0.06,
       "variants": [
@@ -1289,12 +1468,12 @@
           "file": "Gunshots and bullets/Pole Position Production - FN P90 5.7mm/FN_P90_5.7mm_1m_left_on_ground_DPA4062_clean_Double_shots_x_1.wav",
           "start": 0.331,
           "length": 0.32,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.shotgun.b": {
-      "gain": 1.3,
+      "gain": 1.23,
       "range": "far",
       "jitter": 0.04,
       "variants": [
@@ -1303,12 +1482,12 @@
           "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Fire_Round Eject_01.wav",
           "start": 0.0,
           "length": 0.9,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.shotgun.c": {
-      "gain": 0.87,
+      "gain": 0.81,
       "range": "far",
       "jitter": 0.04,
       "variants": [
@@ -1317,7 +1496,20 @@
           "file": "Gunshots and bullets/Pole Position Production - M1918 Browning Automatic Rifle .30cal/M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1.wav",
           "start": 0.511,
           "length": 0.9,
-          "punch": true
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.shotgun.pump": {
+      "gain": 1.0,
+      "range": "mid",
+      "jitter": 0.03,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Quick Pump_01.wav",
+          "start": 0.04,
+          "length": 0.45
         }
       ]
     },
@@ -1331,7 +1523,7 @@
           "file": "Pole Position - Mauser Karabiner 98 kurz K98k bolt-action rifle/K98k, Firing, t2, MKH416.wav",
           "start": 0.336,
           "length": 0.239,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -1345,7 +1537,7 @@
           "file": "Pole Position - Mosin-Nagant M38 bolt-action rifle/M38, Firing, t2, BP4027.wav",
           "start": 1.646,
           "length": 0.634,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -1359,12 +1551,12 @@
           "file": "Gunshots and bullets/Pole Position Production - FN FAL 7.62x51mm/FN_FAL_7.62x51mm_1.5m_behind_right_clean_2_shots.wav",
           "start": 0.366,
           "length": 0.629,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
     "fire.heavy.c": {
-      "gain": 1.08,
+      "gain": 0.81,
       "range": "far",
       "jitter": 0.05,
       "variants": [
@@ -1372,7 +1564,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - M1918 Browning Automatic Rifle .30cal/M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1.wav",
           "start": 0.511,
-          "length": 1.0
+          "length": 1.0,
+          "punch": "gun"
         }
       ]
     },
@@ -1386,14 +1579,14 @@
           "file": "Pole Position - Walther P38 semi automatic pistol/P38, Firing, t1, 2m, Behind, LS5.wav",
           "start": 0.301,
           "length": 0.169,
-          "punch": true
+          "punch": "gun"
         },
         {
           "pack": "sonniss-gdc-2026",
           "file": "Pole Position - Walther P38 semi automatic pistol/P38, Firing, t1, 2m, Behind, LS5.wav",
           "start": 8.44,
           "length": 0.8,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },
@@ -1407,7 +1600,7 @@
           "file": "Pole Position - Tokarev TT-33 semi-automatic pistol/TT33, Firing, t1, Inside Car, Omni, CMC6.wav",
           "start": 1.181,
           "length": 0.429,
-          "punch": true
+          "punch": "gun"
         }
       ]
     },

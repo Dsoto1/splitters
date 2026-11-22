@@ -1,4 +1,4 @@
-import { SURFACE_TYPES, guessSurface, materialSurface, propSurface, type ImpactSound, type MapDocument, type SurfaceTypeId, type WeaponDefinition, type WorldBox } from '@tiletrigger/shared';
+import { SURFACE_TYPES, cellGround, faceSlot, guessSurface, materialSurface, propSurface, resolveSurface, type FootstepFamily, type ImpactSound, type MapDocument, type SurfaceTypeId, type TilePlacement, type Vec3, type WeaponDefinition, type WorldBox } from '@tiletrigger/shared';
 import { FX_MAP } from './fxMap.generated.ts';
 
 /**
@@ -72,6 +72,69 @@ export function surfaceOfBox(box: WorldBox | null | undefined, index: ReadonlyMa
 }
 
 const SURFACE_GUESS_FALLBACK = guessSurface('');
+
+/**
+ * What the map's surfaces are made of, made once per map: each placement's guess (surfaceIndex), the tiles by id (a
+ * tile's face is the material painted on it, or its theme's) and the terrain (each cell's ground).
+ */
+export interface SurfaceMap {
+  doc: Pick<MapDocument, 'classicStructure' | 'terrain'>;
+  tiles: ReadonlyMap<string, TilePlacement>;
+  index: ReadonlyMap<string, Surface>;
+}
+
+export function surfaceMap(doc: Pick<MapDocument, 'entities' | 'classicStructure' | 'terrain'>): SurfaceMap {
+  return { doc, tiles: new Map(doc.classicStructure.tiles.map((t) => [t.id, t])), index: surfaceIndex(doc) };
+}
+
+/** The ground (terrain cell) at x, z: its ground material's surface type; dirt off the terrain or with none. */
+export function terrainSurfaceAt(terrain: MapDocument['terrain'], x: number, z: number): Surface {
+  if (!terrain) return 'dirt';
+  const c = Math.floor((x - terrain.origin[0]) / terrain.spacing);
+  const r = Math.floor((z - terrain.origin[1]) / terrain.spacing);
+  if (c < 0 || r < 0 || c > terrain.cols - 2 || r > terrain.rows - 2) return 'dirt';
+  return materialSurface(cellGround(terrain, r * (terrain.cols - 1) + c));
+}
+
+/**
+ * The surface type of the face a ray met (footsteps and impacts; client only, looked up from the map, nothing sent):
+ * the terrain's ground under `at`, a free block's material, a tile face's material (its own paint, else the theme's for
+ * that slot: floors, walls, solids), else the placement's guess (props, set pieces).
+ */
+export function surfaceOfFace(box: WorldBox | null | undefined, normal: Vec3, at: Vec3, map: SurfaceMap | null): Surface {
+  if (!box) return map ? terrainSurfaceAt(map.doc.terrain, at.x, at.z) : 'dirt';
+  if (box.surface?.material) return materialSurface(box.surface.material);
+  const tile = map?.tiles.get(box.sourceId);
+  if (tile && map && (box.kind === 'floor' || box.kind === 'wall' || box.kind === 'solid' || box.kind === 'trim')) {
+    return materialSurface(resolveSurface(map.doc as MapDocument, tile, faceSlot(box, [normal.x, normal.y, normal.z])).material.id);
+  }
+  return map?.index.get(box.sourceId) ?? SURFACE_GUESS_FALLBACK;
+}
+
+/** The footsteps for a surface type's footstep family (content/surface-types.json; content/sounds.json footstep.*). */
+export function footstepSoundId(surface: Surface): 'footstep' | 'footstep.metal' | 'footstep.wood' | 'footstep.grass' | 'footstep.dirt' | 'footstep.gravel' | 'footstep.snow' {
+  const family: FootstepFamily | undefined = SURFACE_TYPES[surface]?.footstep;
+  switch (family) {
+    case 'metal':
+      return 'footstep.metal';
+    case 'wood':
+      return 'footstep.wood';
+    case 'grass':
+    case 'foliage':
+      return 'footstep.grass';
+    case 'dirt':
+    case 'soft':
+    case 'sand':
+      return 'footstep.dirt';
+    case 'gravel':
+      return 'footstep.gravel';
+    case 'snow':
+      return 'footstep.snow';
+    default:
+      // hard (concrete, stone, brick, tiles, glass), water, and anything with no family.
+      return 'footstep';
+  }
+}
 
 const impacts = FX_MAP.impacts as unknown as Record<string, Partial<Omit<ImpactStyle, 'hole' | 'sound'>> | number>;
 

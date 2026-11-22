@@ -81,7 +81,8 @@ describe('Style Pack 14 Urban & Civilian', () => {
       const m = coreMaterials.get(id)!;
       expect(m.texture, id).toBeUndefined();
       expect(m.emissive ?? false, id).toBe(false);
-      expect(m.surface, `${id}: surface types are not part of this work`).toBeUndefined();
+      // Their surface types came later, with every library material's (tools/content/material-surfaces.mjs, footsteps by surface).
+      expect(m.surface, id).toBeDefined();
     }
     expect(made.map((id) => coreMaterials.get(id)!.pattern)).toEqual(['parking_bays', 'tactile', 'graffiti', 'spalled_plaster']);
     // They come last in the library, so MapMaker's palette order is unchanged before them.

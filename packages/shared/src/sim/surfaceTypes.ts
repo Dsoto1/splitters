@@ -24,8 +24,8 @@ export type ImpactDecal = 'hole' | 'none';
 export type ImpactDebris = 'dust' | 'splinters' | 'chips' | 'leaves' | 'sparks';
 /** The impact sound's family (client: impact.world, impact.wood, impact.metal, impact.soft, impact.glass, water.splash). */
 export type ImpactSound = 'hard' | 'wood' | 'metal' | 'soft' | 'glass' | 'water' | 'none';
-/** Footstep family, for later (not played yet). */
-export type FootstepFamily = 'hard' | 'wood' | 'metal' | 'soft' | 'foliage' | 'sand' | 'gravel' | 'snow' | 'water';
+/** Footstep family: the recorded steps played on it (client game/fxMap.ts footstepSoundId; content/sounds.json footstep.<family>). */
+export type FootstepFamily = 'hard' | 'wood' | 'metal' | 'grass' | 'dirt' | 'soft' | 'foliage' | 'sand' | 'gravel' | 'snow' | 'water';
 
 export interface SurfaceTypeDefinition {
   readonly id: SurfaceTypeId;
