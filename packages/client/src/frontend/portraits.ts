@@ -35,8 +35,7 @@ export interface PortraitView {
 /** Looks whose face the default view hides or leaves off centre (tools/content/capture-portraits.mjs ships them). */
 const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // The Roster Board's thumbnail flags (owner, 2026-11-01): faces cut off, low in the frame or hidden.
-  // Bandit's ears and snout ran off the frame: wider, from a little below, so the snout shows past his paws.
-  'core.bandit': { from: [0.1, -0.1, 1], aim: [0, -0.03, 0], zoom: 1.5 },
+  // (Bandit had a wider view here for his old model's ears and snout; the raccoon hacker model of 2026-11-22 frames by default.)
   // Wide heads and long snouts (Boglurker's crocodile, a frog) filled the frame edge to edge.
   'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
   'core.croakley': { zoom: 1.4 },
