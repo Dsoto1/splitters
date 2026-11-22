@@ -1,5 +1,5 @@
 import {
-  CORE_ITEMS,
+  paletteItems,
   CORE_PROPS,
   coreCatalog,
   coreMaterials,
@@ -164,7 +164,8 @@ export class PaletteBuilder {
     // Bot hints (MapMaker overhaul Phase 4 item 3; botHintTool.ts), last in the Entities tab.
     const hintGrid = this.app.palette.group($('ed-entities'), 'gameplay:bothints', 'Bot hints', { note: 'Spots for bots on top of what they work out: chokepoints, sniper, camp and staging spots, jump links (Y). Shown in MapMaker only.' });
     this.app.hints.fillPalette(hintGrid, (el, key, name, tags) => this.app.palette.register(el, { key, name, tags }));
-    for (const item of CORE_ITEMS) {
+    // A weapon the owner hid (the Weapon Manager) leaves the palette; maps that place it still have it (Hidden in the inspector).
+    for (const item of paletteItems()) {
       const b = document.createElement('button');
       b.className = 'tile-btn';
       b.dataset.tool = `pickup:${item.id}`;

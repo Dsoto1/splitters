@@ -115,7 +115,7 @@ setup at no cost. Not measurable in the container (SwiftShader's depth is float 
 ## Reduce flashing (seizure safety)
 
 The owner dropped a planned flashbang ("I don't want to give people seizures", 2026-11-06) and asked for this setting.
-**Options → Accessibility → Reduce flashing**, also in the pause menu (Settings → Sound and screen): **on by default**,
+**Options → Accessibility → Reduce flashing**, also in the pause menu (Settings → Accessibility): **on by default**,
 saved as `tiletrigger.reduceFlashing` (`game/reduceFlashing.ts`), applied at once in a running match. Off, everything
 looks as it always did.
 
@@ -197,3 +197,18 @@ The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosen
 With the setting on every moment must pass; the same moments with it off are measured and reported as numbers only.
 The flow writes frame strips (every 4th frame) and the numbers to `e2e-artifacts/` (`flashing-<moment>-<on|off>.png`,
 `flashing-<night|day>-<the flow's first moment>.json`). A new effect that can fill a large part of the screen gets a moment here (CLAUDE.md, "Accessibility").
+
+## Camera shake, toggle aim and controller vibration (next to Reduce flashing)
+
+Three more settings sit beside Reduce flashing, in **Options → Accessibility** and the pause menu's **Settings →
+Accessibility**; saved in this browser (`tiletrigger.combat`, `game/combatPrefs.ts`) and applied at once in a running
+match (GUNPLAY_SPEC §42).
+
+| Setting | Default | What it covers |
+|---|---|---|
+| **Camera shake** Off / Reduced / Full | Full | Every movement of the view that isn't your own aim, all in `game/cameraShake.ts`: blasts and vehicle crashes near you, the jolt of a heavy round leaving the barrel (revolver, slamming rifles, shotguns; automatics never shake), the hit kick when you're struck (`hitKick.ts`), and the gentle roll as you lean or ride a zipline (that roll is also off with the system's reduce-motion setting). Reduced keeps 35 %, Off none. The weapon's mechanical recoil and a scope's sway move your real aim, so they stay (fairness). There is no landing jolt. A unit test fails if a new `view.shake` call doesn't take its amount from `cameraShake.ts`. |
+| **Aim** Hold / Toggle | Hold (Toggle on a phone or tablet) | Mouse, X, a controller's LT, touch's Aim. Toggle: one press aims, the next stops. It lets go when you sprint (Shift, L3, touch's Sprint; not with a scope or optic in hand, where Shift holds your breath), change weapons, get in a vehicle, die or leave play. A reload keeps it: the sights come back up when it ends (as in most shooters). A melee heavy swing and a pair's second trigger are always held. |
+| **Controller vibration** on / off, strength 10-100 % | On, 70 % | Light rumble on firing (a buzz a round for automatics, a thump for heavy shots), hits taken, and blasts and crashes near you; only a controller in use rumbles (`game/rumble.ts`). The Gamepad API's dual-rumble `vibrationActuator`, else the older `hapticActuators` pulse; where neither exists the row is hidden and nothing happens. |
+
+None of them adds light or flicker, so the flicker check is unchanged.
+

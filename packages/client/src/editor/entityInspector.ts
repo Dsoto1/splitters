@@ -10,6 +10,8 @@ import {
   BREAKTHROUGH_OBJECTIVES,
   categoryItems,
   CORE_ITEMS,
+  isWeaponHidden,
+  type ItemDefinition,
   CORE_PROPS,
   CORE_WEAPONS,
   coreMaterials,
@@ -187,7 +189,9 @@ export class EntityInspector {
         break;
       }
       case 'pickup': {
-        choose('Item', CORE_ITEMS.map((it) => [it.id, it.displayName] as const), e.item, (v) => ({ item: v, ...(e.random && itemCategory(getItem(v)) !== e.random ? { random: undefined } : {}) }));
+        // A weapon the owner hid (the Weapon Manager) is offered only where it is already placed, marked Hidden.
+        const hiddenItem = (it: ItemDefinition) => it.effect.kind === 'weapon' && isWeaponHidden(it.effect.weapon);
+        choose('Item', CORE_ITEMS.filter((it) => !hiddenItem(it) || it.id === e.item).map((it) => [it.id, hiddenItem(it) ? `${it.displayName} (Hidden)` : it.displayName] as const), e.item, (v) => ({ item: v, ...(e.random && itemCategory(getItem(v)) !== e.random ? { random: undefined } : {}) }));
         // Weapon pickups: a fixed weapon, or a random one of a category rolled each time it comes back.
         if (itemCategory(getItem(e.item)) || e.random) {
           const mode = document.createElement('select');
@@ -201,6 +205,8 @@ export class EntityInspector {
             update(c ? 'Random weapon pickup' : 'Fixed weapon pickup', { random: c ?? undefined, ...(item ? { item } : {}), ...(c ? { keepFixed: undefined } : {}) });
           });
           el.append(row('Weapon', mode));
+          const placed = getItem(e.item);
+          if (!e.random && placed && hiddenItem(placed)) el.append(small('Hidden: the owner took this weapon out of random pickups, weapon sets and the palette. Placed here it still spawns.'));
           if (e.random) el.append(small(`Rolls one of ${categoryItems(e.random).map((i) => i.displayName).join(', ')} each time it comes back.`));
           else {
             const keep = document.createElement('input');

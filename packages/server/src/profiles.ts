@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
-import { CLASS_IDS, HISTORY_AGE_DAYS, addVouched, readVouched, vouchProblem, type VouchReport, type Vouched, KeyedLimiter, addMatch, cleanEmblemCode, hasTitle, isTitleId, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
+import { CLASS_IDS, HISTORY_AGE_DAYS, opticShape, addVouched, readVouched, vouchProblem, type VouchReport, type Vouched, KeyedLimiter, addMatch, cleanEmblemCode, hasTitle, isTitleId, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 import type { VerifiedUser } from './auth.ts';
 
@@ -17,6 +17,8 @@ interface Stored {
   title?: string | null;
   /** Phase 4: what other people's hosts counted (net/vouch.ts). */
   vouched?: Vouched;
+  /** Optic picks per gun (the same list as hello.op; its shape checked here, which optic fits which gun the match checks). */
+  optics?: Record<string, string>;
 }
 
 /** How long the hub remembers the tickets it gave for a join code (a host's report comes at a match's end). */
@@ -60,7 +62,7 @@ export class ProfileStore {
 
   get(sub: string): Profile {
     const p = this.bySub.get(sub);
-    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer(), emblem: cleanEmblemCode(p?.emblem), title: p?.title && isTitleId(p.title) ? p.title : null, vouched: readVouched(p?.vouched) };
+    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer(), emblem: cleanEmblemCode(p?.emblem), title: p?.title && isTitleId(p.title) ? p.title : null, vouched: readVouched(p?.vouched), optics: opticShape(p?.optics, true) ?? {} };
   }
 
   /** A player's public card by username (any case), or null when no account has that name. */
@@ -135,7 +137,7 @@ export class ProfileStore {
   }
 
   /** Change what's given (`username`, `region`, `favClass`); throws with a message for the page. */
-  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown; emblem?: unknown; title?: unknown }): Profile {
+  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown; emblem?: unknown; title?: unknown; optics?: unknown }): Profile {
     const cur = this.bySub.get(sub) ?? { username: null, region: null, at: 0 };
     const next = { ...cur, at: Date.now() };
     if (patch.username !== undefined) {
@@ -156,6 +158,11 @@ export class ProfileStore {
     if (patch.emblem !== undefined) {
       if (patch.emblem !== null && !cleanEmblemCode(patch.emblem)) throw new Error('unknown emblem');
       next.emblem = patch.emblem === null ? null : cleanEmblemCode(patch.emblem);
+    }
+    if (patch.optics !== undefined) {
+      const op = opticShape(patch.optics, true);
+      if (!op) throw new Error('bad optic picks');
+      next.optics = op;
     }
     if (patch.title !== undefined) {
       if (patch.title !== null && !isTitleId(patch.title)) throw new Error('unknown title');

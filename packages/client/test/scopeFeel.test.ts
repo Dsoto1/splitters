@@ -22,7 +22,7 @@ describe('scope feel (docs/GUNPLAY_SPEC.md §15, "Scope feel")', () => {
     expect(mag(getWeapon('core.railgun').view.zoomFov! * 0.45)).toBeCloseTo(7.08, 2);
     expect(mag(getWeapon('core.marksman').view.zoomFov! * 0.45)).toBeCloseTo(5.04, 2);
     // Only magnified kinds have steps, and a gun's own steps belong to a magnified optic.
-    for (const k of Object.values(OPTIC_KINDS)) expect(!!k.steps, k.name).toBe(!!k.mag);
+    for (const k of Object.values(OPTIC_KINDS)) expect(!!k.steps, k.name).toBe(!!k.mag || !!k.power);
     for (const [id, w] of Object.entries(WEAPON_OPTICS)) if (w.steps) expect(w.mag, id).toBeGreaterThan(1);
   });
 

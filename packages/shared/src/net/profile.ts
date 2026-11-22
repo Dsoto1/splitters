@@ -83,6 +83,8 @@ export interface Profile {
   title: string | null;
   /** Phase 4: what other people's hosts counted for you (net/vouch.ts). */
   vouched: Vouched;
+  /** Your optic pick per gun (weapon ID → optic kind, only guns not on their default; sim/opticChoice.ts): kept with the account so every browser you sign in on uses them. */
+  optics: Record<string, string>;
 }
 
 /**

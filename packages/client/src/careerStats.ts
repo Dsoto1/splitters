@@ -1,5 +1,6 @@
 import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
+import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
 /**
@@ -130,7 +131,25 @@ export async function syncCareer(): Promise<void> {
     }
   }
   await sendPending(who.sub);
+  syncOptics();
 }
+
+/**
+ * Optic picks on the account (owner, 2026-11-22, "3a"): signed in, your account's picks are yours in this browser; an
+ * account with none takes this browser's. Every change after that is saved on the account too (an older hub keeps
+ * them in the browser only).
+ */
+export function syncOptics(): void {
+  const who = currentAccount();
+  const p = who ? cachedProfile() : null;
+  if (!p) return;
+  if (Object.keys(p.optics).length) replaceMyOptics(p.optics, true);
+  else if (Object.keys(myOptics()).length) void saveProfile({ optics: myOptics() }).catch(() => undefined);
+  stopOpticSave ??= onOpticsChange((op) => {
+    if (currentAccount()) void saveProfile({ optics: { ...op } }).catch(() => undefined);
+  });
+}
+let stopOpticSave: (() => void) | null = null;
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);

@@ -48,6 +48,10 @@ QUEUE Features, lane B (the owner's next priority after gun handling, 2026-11-18
 - **Shown**: on Profile (signed in) under the career, and on a signed-in player's card ("Counted by other hosts: N matches · W wins · K/D"). The self-counted career is unchanged; nothing reads either for matchmaking or rewards.
 - **Not yet**: the Host Service (dedicated host) doesn't vouch (it isn't signed in to an account); a host and a friend who collude can still inflate each other. Both fine for a casual game (MULTIPLAYER_DIRECTION §6).
 
+### Optic picks on the account (owner, 2026-11-22, "3a")
+
+- The loadout's optic picks (`opticPrefs.ts`, `hello.op`, MULTIPLAYER_PROTOCOL §27) are kept on the account too: `Profile.optics` (the same list; the hub checks its shape, the match which optic fits which gun), `PUT /api/v1/profile { optics }`. As you sign in (`careerStats.ts` syncOptics) the account's picks become this browser's; an account with none takes this browser's; every change after is saved to the account. Not on the public card.
+
 ## What the owner deploys for Phases 2-4
 
 Nothing on AWS changes: no new table, bucket, template, host or paid service. The hub's code changed (new routes on the existing `/api/v1/profile`: `GET card`, `POST vouch`; new fields in the same profiles file), so **redeploy the hub** as for any hub change (the update script that pulls the release, or `infra/deploy-multiplayer.sh`). Until then: emblems and titles still show in matches (they travel between browsers) and stay in each browser, other players' cards show the match's part only, history and per-mode stats come from each browser's own copy, and nothing is host-counted.

@@ -20,6 +20,8 @@ export interface Transport {
   sendTeam?(i?: number): void;
   /** Between matches: vote for the next map (option `i` of the open vote; hosts that don't know it ignore it). */
   sendVote?(i: number): void;
+  /** Your optic choices changed mid-match (opticPrefs.ts): the whole list (hosts that don't know it ignore it). */
+  sendOptics?(op: Record<string, string>): void;
   /** Deliver snapshots waiting merged (SnapshotCoalescer) now: the session calls it as a frame begins. */
   flush?(): void;
   /** Host commands and admin logins (dedicated servers; the host's own browser match runs them directly). */

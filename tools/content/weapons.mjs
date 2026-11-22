@@ -81,7 +81,7 @@ export function schemas(root = ROOT, families = []) {
   const hold = obj({ style: en(['pistol', 'long', 'melee']), grip: vec3, 'support?': vec3, 'shoulder?': vec3, 'rake?': num });
   const flash = obj({ effect: str, 'scale?': num });
   const view = obj({
-    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'beam?': bool,
+    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
     'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
@@ -93,7 +93,7 @@ export function schemas(root = ROOT, families = []) {
     'reload?': obj({ start: int, each: int, end: int }), 'kick?': obj(kick), 'falloff?': falloff, 'headshot?': num,
   });
   const weapon = obj({
-    id: str, code: int, displayName: str, 'category?': en(list('WEAPON_CATEGORIES')), kind: en(['hitscan', 'projectile', 'melee']), slot: int,
+    id: str, code: int, displayName: str, 'category?': en(list('WEAPON_CATEGORIES')), 'hidden?': bool, kind: en(['hitscan', 'projectile', 'melee']), slot: int,
     'family?': en(families), 'fireMode?': en(['auto', 'semi', 'burst']),
     damage: num, pellets: int, spread: num, fireIntervalTicks: int, range: num, magazine: int, reserveMax: int, pickupAmmo: int,
     reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num, 'guard?': obj({ block: num, arc: num }),
@@ -197,6 +197,26 @@ export function load(root = ROOT) {
 
 // ---------------------------------------------------------------- validate
 
+/**
+ * Why a weapon can't be hidden (the Weapon Manager's Hide, `hidden: true`), or none: everyone spawns with it in some
+ * mode (sim/rules.ts `startingWeapons`) or weapon set (`spawn`), sniper bots carry it (a set's `sniper`), or it is
+ * Roulette's last fallback (the rifle). Hidden weapons leave random pickups, sets' lists, class loadouts, Roulette's
+ * signatures and MapMaker's palette; these places would be left with nothing.
+ */
+export function hideBlockers(id, root = ROOT) {
+  const out = [];
+  const rules = readFileSync(join(root, 'packages/shared/src/sim/rules.ts'), 'utf8');
+  const starting = new Set([...rules.matchAll(/startingWeapons:\s*\[([^\]]*)\]/g)].flatMap((m) => [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1])));
+  if (starting.has(id)) out.push('a mode\'s starting weapon (sim/rules.ts)');
+  const sets = optJson(root, 'content/weapon-sets.json')?.sets ?? [];
+  for (const s of sets) {
+    if (s.spawn?.includes(id)) out.push(`weapon set ${s.id} spawns with it`);
+    if (s.sniper === id) out.push(`weapon set ${s.id}'s sniper gun`);
+  }
+  if (id === 'core.rifle') out.push("Roulette's fallback signature");
+  return [...new Set(out)];
+}
+
 const strip = ({ code: _c, notes: _n, $comment: _x, ...rest }) => rest;
 
 /**
@@ -274,6 +294,10 @@ export function build(content, root = ROOT) {
     const sound = def.view.sound ?? `fire.${name}`;
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);
+    if (def.view.reloadSound && !sounds.has(def.view.reloadSound)) problems.push(`${file}: sound ${def.view.reloadSound} is not in content/sounds.json`);
+    // Hidden by the owner (the Weapon Manager): the game's base kit can't be, or players would spawn without it.
+    if (def.hidden !== undefined && def.hidden !== true) problems.push(`${file}: hidden is true or left out`);
+    if (def.hidden) for (const why of hideBlockers(def.id, root)) problems.push(`${file}: can't be hidden: ${why}`);
     // Fire modes (spec §36): the first is the weapon's own trigger (its top-level fireMode), so readers that don't know modes see it.
     if (def.fireModes) {
       if (def.fireModes[0]?.mode !== (def.fireMode ?? 'auto')) problems.push(`${file}: fireModes[0] is the weapon's own trigger: its mode must be the weapon's fireMode (${def.fireMode ?? 'auto'})`);

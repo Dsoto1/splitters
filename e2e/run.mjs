@@ -5816,7 +5816,22 @@ async function offlineFlow(browser) {
   await page.selectOption('#opt-aim-mode', 'toggle');
   await page.selectOption('#opt-camera-shake', 'reduced');
   const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
-  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && ('vibrationActuator' in Gamepad.prototype || 'hapticActuators' in Gamepad.prototype) }));
+  if (vibration.row) await page.click('.opt-row:has-text("Controller vibration") .switch');
+  // Kept across a reload: the page reads them back into Options → Accessibility, next to Reduce flashing.
+  await page.reload();
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-options');
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const combatKept = await page.evaluate(() => ({
+    aim: document.getElementById('opt-aim-mode')?.value,
+    shake: document.getElementById('opt-camera-shake')?.value,
+    vibration: document.getElementById('opt-vibration')?.checked ?? null,
+    rows: [...document.querySelectorAll('.opt-row')].filter((r) => r.offsetParent).map((r) => r.querySelector('.opt-label, span, label')?.textContent?.trim() ?? ''),
+  }));
+  await page.screenshot({ path: `${ARTIFACTS}/options-accessibility.png` });
+  check(combatKept.aim === 'toggle' && combatKept.shake === 'reduced' && combatKept.vibration === (vibration.row ? false : null) && /Reduce flashing/.test(combatKept.rows.join('|')), `Accessibility: Aim, Camera shake and Controller vibration are kept across a reload, beside Reduce flashing (${JSON.stringify(combatKept)})`);
+  if (vibration.row) await page.click('.opt-row:has-text("Controller vibration") .switch');
   await page.selectOption('#opt-aim-mode', 'hold');
   await page.selectOption('#opt-camera-shake', 'full');
   check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
@@ -13444,6 +13459,22 @@ async function drawnHands(page) {
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
   check(spearMisses.length === 0, `the Spear's hand is drawn on its shaft, fingers along it (${spearMisses.join('; ') || 'all within 5 cm'})`);
+  // Long melee weapons in first person (game/meleeView.ts; owner, 2026-11-22: only the blade showed, the hands below
+  // the frame): held by the grip with both hands, at rest both hand joints are on screen, both palms on their points
+  // and the shooting hand drawn round the handle, arms only and full body.
+  const meleeMisses = [];
+  for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
+    for (const view of ['first', 'body']) {
+      await page.evaluate(([w, v]) => window.__grips.pose('core.ranger', w, v), [weapon, view]);
+      const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
+      const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
+      if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {
+        const at = (h) => (h ? `${h.x.toFixed(2)},${h.y.toFixed(2)}` : '-');
+        meleeMisses.push(`${weapon} ${view}: hands at ${at(on?.r)} / ${at(on?.l)}, palms ${miss ? `${(miss.r * 100).toFixed(0)}/${(miss.l * 100).toFixed(0)} cm` : '-'}, ${fmtHand(d)}`);
+      }
+    }
+  }
+  check(meleeMisses.length === 0, `long melee weapons show both hands in first person, on the handle (${meleeMisses.join('; ') || 'Katana, Scimitar, Baseball Bat, Battle Axe and Spear, arms only and full body'})`);
 }
 
 /**
@@ -13893,6 +13924,37 @@ async function gripsInPlay(browser) {
   check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
   const plainGun = await aimWith('core.rockets');
   check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
+  // Optic choice (GUNPLAY_SPEC §15, "Optic choice"): Settings → Optic puts a 2x optic on the Assault Rifle. It is built
+  // on the gun, the host hears of it (the roster's `op`), and aimed the eye is on its tube at twice the hip view.
+  await aimWith('core.rifle');
+  const pickX2 = await page.evaluate(() => {
+    window.__cs.opticPick();
+    const pick = document.getElementById('optic-pick');
+    const offered = [...pick.options].map((o) => o.value);
+    pick.value = 'x2';
+    pick.dispatchEvent(new Event('change'));
+    return { offered, row: !document.getElementById('optic-row').hidden };
+  });
+  await page.waitForFunction(() => window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op?.['core.rifle'] === 'x2' && window.__cs.view.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { zoom: true }));
+  // Through the 2x optic: the world at twice the hip view (1.35 rad), the HUD's optic over it.
+  const x2Fov = 2 * Math.atan(Math.tan(1.35 / 2) / 2);
+  await page.waitForFunction((f) => Math.abs(window.__cs.view.camera.fov - f) < 0.004, x2Fov, { timeout: T(20000) }).catch(() => {});
+  const x2 = await page.evaluate(() => {
+    const v = window.__cs.view;
+    return { held: v.viewWeapon, fov: +v.camera.fov.toFixed(3), housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), glass: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticGlass'), optic: !document.getElementById('optic').hidden, reticle: document.getElementById('optic').dataset.reticle, op: window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op ?? null };
+  });
+  await page.evaluate(() => (window.__autoInput = { zoom: false }));
+  check(pickX2.row && pickX2.offered.join() === 'irons,reddot,holo,x2' && x2.held === 'core.rifle' && x2.housing && !x2.glass && x2.optic && x2.reticle === 'chevron' && Math.abs(x2.fov - x2Fov) < 0.01 && x2.op?.['core.rifle'] === 'x2', `Settings → Optic puts a 2x optic on the Assault Rifle: built on the gun, on the roster, aimed through at 2x (${JSON.stringify({ ...pickX2, ...x2 })})`);
+  // Back to its own iron sights: no optic on it, nothing on the roster.
+  await page.evaluate(() => {
+    const pick = document.getElementById('optic-pick');
+    pick.value = 'irons';
+    pick.dispatchEvent(new Event('change'));
+  });
+  await page.waitForFunction(() => !window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op && window.__cs.view.viewmodel && !window.__cs.view.viewmodel.getChildMeshes().some((m) => m.name === 'opticBody'), null, { timeout: T(20000) }).catch(() => {});
+  const ironsAgain = await page.evaluate(() => ({ op: window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op ?? null, housing: !!window.__cs.view.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody') }));
+  check(!ironsAgain.op && !ironsAgain.housing, `and back to its iron sights (${JSON.stringify(ironsAgain)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.
@@ -14957,6 +15019,109 @@ async function hostpageLiveChecks(page, controlPort, token) {
 }
 
 /** The /host page: download offered only when no Host Service runs; with one, pair, Start, see it listed, Stop. */
+/**
+ * The owner's Weapon Manager (`?mode=weapons`, Manage; docs/FEATURES.md, "Weapon Manager"): rename, hide, pick a
+ * sound (with its preview), edit a stat (kept in range, the comparison live), add a note, Send → Copy, and the copied
+ * change set is the one the repo tool takes (tools/content/apply-weapon-edits.mjs, checked without writing). The
+ * edits stay in the browser across a reload; Reset everything clears them; the list is one column on a phone.
+ */
+async function weaponmanagerFlow(browser) {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  // Copy goes to the clipboard: kept on the page here, so the check reads exactly what was copied.
+  await context.addInitScript(() => {
+    try {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (t) => void (window.__copied = t) } });
+    } catch {
+      // A browser that won't let the page replace it: the textarea is checked instead.
+    }
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  page.on('dialog', (d) => void d.accept());
+  await page.goto(`${CLIENT}/?mode=weapons&test=1`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => document.querySelectorAll('#weapon-tuning main canvas').length > 0, null, { timeout: T(60000) });
+  check(true, 'the weapon tuning page opens on Compare');
+  await page.click('#wt-tab-manage');
+  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
+  const cards = await page.evaluate(() => ({ n: document.querySelectorAll('#wm-list .wm-card').length, pics: document.querySelectorAll('#wm-list .wm-card .wm-pic img').length, url: location.search }));
+  check(listed && cards.pics > 20 && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+
+  await page.click('#wm-list .wm-card[data-id="core.smg"]');
+  await page.waitForSelector('#wm-editor #wm-name', { timeout: T(10000) });
+  await page.fill('#wm-name', 'E2E Buzzsaw');
+  await page.click('#wm-hide');
+  const hidden = await page.waitForFunction(() => document.querySelector('#wm-hide')?.textContent === 'Unhide' && !!document.querySelector('#wm-editor .wm-head .wm-badge.hidden'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(hidden, 'Hide marks it Hidden, with an Unhide button');
+  const blocked = await page.evaluate(() => window.__weaponManager.edits());
+  check(blocked['core.smg']?.name === 'E2E Buzzsaw' && blocked['core.smg']?.hidden === true, `rename and hide are kept as edits (${JSON.stringify(blocked['core.smg'])})`);
+
+  await page.click('#wm-editor [data-pick="fire"]');
+  await page.waitForSelector('#wm-picker [data-use="fire.rifle"]', { timeout: T(5000) });
+  await page.click('#wm-picker [data-play="fire.rifle"]');
+  const played = await page.waitForFunction(() => window.__weaponManager.played() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
+  check(played, 'the sound picker plays a sound from the game\'s library');
+  await page.click('#wm-picker [data-use="fire.rifle"]');
+  const picked = await page.waitForFunction(() => !document.getElementById('wm-picker') && window.__weaponManager.edits()['core.smg']?.sounds?.fire === 'fire.rifle', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(picked, 'Use picks it as the fire sound');
+
+  await page.fill('#wm-editor [data-stat="damage"]', '19');
+  await page.press('#wm-editor [data-stat="damage"]', 'Tab');
+  const live = await page.waitForFunction(() => /your edit/.test(document.getElementById('wm-compare')?.textContent ?? '') && document.querySelectorAll('#wm-compare canvas').length >= 3 && /in the game: 15/.test(document.querySelector('#wm-editor [data-stat="damage"]')?.parentElement?.textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(live, 'a stat edit shows the game\'s value beside it and the live comparison (the game\'s weapon and the edit)');
+  await page.fill('#wm-editor [data-stat="handling.move"]', '150');
+  await page.press('#wm-editor [data-stat="handling.move"]', 'Tab');
+  const kept = await page.waitForFunction(() => window.__weaponManager.edits()['core.smg']?.stats?.['handling.move'] === 1.1, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(kept, 'a stat out of range is kept within it (move speed 150 % → 110 %)');
+  await page.fill('#wm-editor #wm-note', 'make this louder');
+  await page.click('#wm-editor #wm-done');
+  const card = await page.waitForFunction(() => {
+    const c = document.querySelector('#wm-list .wm-card[data-id="core.smg"]');
+    return !document.getElementById('wm-editor') && !!c?.querySelector('.wm-badge.edited') && !!c?.querySelector('.wm-badge.hidden') && /E2E Buzzsaw/.test(c.textContent);
+  }, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(card, 'the list shows the weapon renamed, Edited and Hidden');
+
+  await page.click('#wm-send');
+  await page.waitForSelector('#wm-send-dialog #wm-copy', { timeout: T(5000) });
+  await page.click('#wm-send-dialog #wm-copy');
+  await page.waitForFunction(() => /Copied|Select/.test(document.getElementById('wm-copied')?.textContent ?? ''), null, { timeout: T(5000) }).catch(() => {});
+  const text = await page.evaluate(() => window.__copied ?? document.getElementById('wm-json')?.value ?? '');
+  let cs = null;
+  try {
+    cs = JSON.parse(text);
+  } catch {
+    cs = null;
+  }
+  const smg = cs?.weapons?.['core.smg'];
+  check(
+    cs?.format === 'tiletrigger.weapon-edits' && cs.version === 1 && smg?.name === 'E2E Buzzsaw' && smg.hidden === true && smg.sounds?.fire === 'fire.rifle' && smg.stats?.damage === 19 && smg.stats?.['handling.move'] === 1.1 && smg.note === 'make this louder' && smg.was?.name === 'Submachine Gun' && smg.was?.stats?.damage === 15,
+    `Send → Copy gives the change set (${text.slice(0, 400)})`,
+  );
+  if (cs) {
+    const { applyChangeSet } = await import('../tools/content/apply-weapon-edits.mjs');
+    const r = applyChangeSet(cs, { write: false });
+    check(r.problems.length === 0 && r.summary.some((l) => /E2E Buzzsaw.*hidden.*fire\.rifle.*Damage 15 → 19/.test(l)), `the repo tool takes it (checked, nothing written): ${JSON.stringify(r.problems.length ? r.problems : r.summary)}`);
+  }
+  await page.click('#wm-send-dialog #wm-send-close');
+
+  // Kept in this browser until sent: a reload brings them back.
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const kept2 = await page.waitForFunction(() => window.__weaponManager?.edits()['core.smg']?.name === 'E2E Buzzsaw' && !!document.querySelector('#wm-list .wm-card[data-id="core.smg"] .wm-badge.edited'), null, { timeout: T(60000) }).then(() => true, () => false);
+  check(kept2, 'the edits are still there after a reload (Manage reopens from the address)');
+
+  // A phone: one column, nothing wider than the screen.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const phone = await page.waitForFunction(() => getComputedStyle(document.getElementById('wm-list')).gridTemplateColumns.split(' ').length === 1 && document.documentElement.scrollWidth <= 390, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(phone, `on a phone the list is one column, no sideways scroll (${await page.evaluate(() => `${getComputedStyle(document.getElementById('wm-list')).gridTemplateColumns} · ${document.documentElement.scrollWidth}px`)})`);
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.click('#wm-reset-all');
+  const reset = await page.waitForFunction(() => Object.keys(window.__weaponManager.edits()).length === 0 && !document.querySelector('#wm-list .wm-badge.edited') && document.getElementById('wm-send').disabled, null, { timeout: T(5000) }).then(() => true, () => false);
+  check(reset, 'Reset everything puts every weapon back as it is in the game');
+  check(errors.length === 0, `no page errors on the Weapon Manager${errors.length ? `: ${errors.slice(0, 3).join(' | ')}` : ''}`);
+  await context.close();
+}
+
 async function hostpageFlow(browser) {
   const HUB_PORT = await pickPort('E2E_HOSTPAGE_HUB_PORT', 9080);
   const CONTROL_PORT = await pickPort('E2E_HOSTPAGE_CONTROL_PORT', 7802);
@@ -15375,6 +15540,26 @@ async function hostcontrolsFlow(browser) {
     return { first, settings, back: open(), host: !tab('host').hidden };
   });
   check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  // Settings → Accessibility (combatPrefs.ts): Reduce flashing, Camera shake, Aim and (where a controller can rumble)
+  // Vibration together; a change saves at once and Options reads it back.
+  const access = await page.evaluate(() => {
+    const g = document.getElementById('pause-accessibility');
+    const ids = [...(g?.querySelectorAll('input, select') ?? [])].map((x) => x.id);
+    const shake = document.getElementById('camera-shake');
+    const aim = document.getElementById('aim-mode');
+    const before = { shake: shake.value, aim: aim.value };
+    shake.value = 'off';
+    shake.dispatchEvent(new Event('change'));
+    aim.value = 'toggle';
+    aim.dispatchEvent(new Event('change'));
+    const saved = JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}');
+    shake.value = before.shake;
+    shake.dispatchEvent(new Event('change'));
+    aim.value = before.aim;
+    aim.dispatchEvent(new Event('change'));
+    return { title: g?.querySelector('.pause-h')?.textContent, ids, before, saved, restored: JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}') };
+  });
+  check(access.title === 'Accessibility' && ['reduce-flashing', 'camera-shake', 'aim-mode', 'pad-vibration'].every((id) => access.ids.includes(id)) && access.before.shake === 'full' && access.before.aim === 'hold' && access.saved.shake === 'off' && access.saved.aim === 'toggle' && access.restored.shake === 'full', `the pause menu's Accessibility group: Reduce flashing, Camera shake, Aim, Vibration; a change saves at once (${JSON.stringify(access)})`);
   // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons. From the Host
   // tab (Resume in its foot) Back resumes, as Esc does; from Settings it goes back to Match.
   const clicks = await page.evaluate(() => {
@@ -16037,7 +16222,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, profiles: profilesFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

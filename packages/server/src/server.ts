@@ -660,6 +660,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         // Their emblem and title (player profiles, Phase 2): cosmetic, passed on in the roster.
         player.emblem = msg.em;
         player.title = msg.tt;
+        // Their optic choice per gun (sim/opticChoice.ts): on the roster, so everyone draws the optic they picked.
+        match.setOptics(player.slot, msg.op);
         player.account = !!proof?.name;
         event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         if (back) notice(`${name} is back`);
@@ -714,6 +716,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           notice(msg.on ? `${name} is spectating` : `${name} joined the game`);
           broadcast({ t: 'roster', players: match.roster() });
         }
+      } else if (msg.t === 'optics' && client.slot !== null) {
+        // New optic choices mid-match (pause menu → Settings → Optic): everyone draws them from the roster.
+        if (match.setOptics(client.slot, msg.op)) broadcast({ t: 'roster', players: match.roster() });
       } else if (msg.t === 'team' && client.slot !== null) {
         // Switch team at the next spawn (the match checks the teams stay even; a msg event tells the player).
         match.switchTeam(client.slot, msg.i);

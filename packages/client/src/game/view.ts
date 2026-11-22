@@ -135,6 +135,7 @@ import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlas
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
+import { addShake, shakeLeft } from './cameraShake.ts';
 import { SteadyArcs } from './steadyArcs.ts';
 import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
@@ -145,7 +146,6 @@ import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
-const SHAKE_MS = 650;
 /** How fast a vehicle's drawn turret and barrel follow their gunner's aim (rad/s; View.turnTurret). */
 const TURRET_TURN = 2.5;
 import { MapStyler } from '../mapMeshes.ts';
@@ -173,12 +173,14 @@ import { FrameSpread } from './frameSpread.ts';
 import { installAnimationPatches, trackAnimatedTargets } from './animPatches.ts';
 import { freezeStaticMaterials, selectLiveCandidates } from './meshSelection.ts';
 import { fitFirstPersonArms } from './firstPersonArms.ts';
+import { firstPersonHold, isLongMelee, meleePlacement, swingSeconds } from './meleeView.ts';
 import { FirstPersonBodyRig } from './firstPersonBody.ts';
 import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, renderRatio, type FirstPersonMode, type GraphicsQuality } from './graphicsSettings.ts';
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { MIRROR_X, PAIR_AWAY_DROP, PairFlashGate, casingSide, easeUp, pairPlace, pairReloadDip, stepPairUp } from './pairView.ts';
 import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
 import { CLIP_NAME, attachOptic } from './opticHousing.ts';
+import { eyepieceOf, opticFor, opticsVersion, type CarriedOptic } from './optics.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
 import { BodyHitbox, hitboxForSpec } from './hitboxOverlay.ts';
@@ -264,6 +266,11 @@ interface AvatarPair extends GunFx {
 const PAIR_UP_3P = 0.3;
 
 interface Avatar {
+  /** Its player's slot (the roster's optic choices are per slot). */
+  slot: number;
+  /** The optic its gun was built with (optics.ts opticFor: null, none) and the choices' version then (opticsVersion). */
+  optic?: string | null;
+  opticSeen?: number;
   /** What it bleeds (its look's `blood`; null: the map's), kept by its body after death. */
   blood?: BloodKind | null;
   /** Spawn protection's glow on the body now (0..1, eased), and the tenth it was last set at. */
@@ -580,7 +587,8 @@ export class GameView {
    */
   setOptic(o: { squash: number; blend: number } | null): void {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
-    const optic = def?.view.optic;
+    // The model's own tube, or a 2x optic built on the gun's top (optics.ts eyepieceOf).
+    const optic = def ? eyepieceOf(def, this.viewOptic) : undefined;
     const on = !!o && o.blend > 0 && !!optic;
     this.opticBlend = on ? o!.blend : 0;
     // Off the optic the gun's own sight picture sets the scale (updateViewmodel).
@@ -608,7 +616,15 @@ export class GameView {
   private readonly steadyEye = { pos: new Vector3(), yaw: 0, pitch: 0 };
   private viewLoad = 0;
   /** First-person guns built so far, by weapon ID, with their measurements (see setViewmodel). */
-  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }>();
+  private readonly viewmodels = new Map<string, { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number; rearZ: number; optic: CarriedOptic | null }>();
+  /** The optic the shown first-person gun carries (your loadout's pick: optics.ts opticFor). */
+  private viewOptic: CarriedOptic | null = null;
+  /** The optic choices' version the kept first-person guns were checked at (refreshOptics). */
+  private viewOpticsSeen = -1;
+  /** First-person holds of long melee weapons (meleeView.ts firstPersonHold), one object per weapon and length, so a re-grip is a no-op. */
+  private readonly fpHolds = new Map<string, WeaponHold>();
+  /** Your own long melee swing in first person: when it started (ms; meleeView.ts), null: none. */
+  private swingAt: number | null = null;
   /** Front of the loaded viewmodel along its forward axis, for the muzzle flash. */
   private muzzleZ = 0.2;
   /** Barrel height of the loaded viewmodel (the same estimate as remote guns: the bounds include the grip). */
@@ -1893,8 +1909,19 @@ export class GameView {
   /** The shown gun's sight-window clip (opticHousing.ts CLIP_NAME), found with `aimAt`. */
   private aimClip: AbstractMesh | null = null;
 
+  /** The hold the first-person hands take on `def`'s viewmodel: a long melee weapon's two-handed one (meleeView.ts), else its own. */
+  private heldHold(def: WeaponDefinition): WeaponHold {
+    if (!isLongMelee(def)) return def.view.hold;
+    const v = this.viewmodels.get(def.id);
+    const key = `${def.id} ${v?.tipZ ?? ''} ${v?.rearZ ?? ''}`;
+    let hold = this.fpHolds.get(key);
+    if (!hold) this.fpHolds.set(key, (hold = firstPersonHold(def, v?.tipZ, v?.rearZ)));
+    return hold;
+  }
+
   setViewmodel(def: WeaponDefinition | undefined): void {
     if (def?.id === this.viewWeapon) return;
+    this.swingAt = null;
     this.viewWeapon = def?.id;
     const load = ++this.viewLoad;
     // Guns you've held are kept (hidden), so switching back is instant: building one each switch hitched the frame,
@@ -1902,16 +1929,20 @@ export class GameView {
     this.viewmodel?.setEnabled(false);
     this.viewmodel = undefined;
     if (!def) return;
-    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number }) => {
+    const carried = opticFor(def);
+    const show = (v: { node: TransformNode; muzzleX: number; muzzleZ: number; muzzleY: number; sightTop: number; stockZ: number; tipZ: number; rearZ: number; optic: CarriedOptic | null }) => {
       ({ muzzleX: this.muzzleX, muzzleZ: this.muzzleZ, muzzleY: this.muzzleY, sightTop: this.sightTop, stockZ: this.stockZ } = v);
+      this.viewOptic = v.optic;
       this.aimAt = null;
       v.node.setEnabled(true);
       this.viewmodel = v.node;
-      this.fpArms?.anim?.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
-      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, def.view.hold, this.soloFor(def.id));
+      this.fpArms?.anim?.gripExternal(v.node, this.heldHold(def), this.soloFor(def.id));
+      if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(v.node, this.heldHold(def), this.soloFor(def.id));
     };
     const kept = this.viewmodels.get(def.id);
-    if (kept) return show(kept);
+    if (kept && kept.optic?.id === carried?.id) return show(kept);
+    // Kept with another optic (you picked another in your loadout): built again with this one.
+    if (kept) this.dropViewmodel(def.id);
     void this.models.instantiate(def.view.model, `view_${def.id}`).then((node) => {
       // Measure before parenting, in the model's own space.
       const bounds = node.getHierarchyBoundingVectors(true);
@@ -1921,8 +1952,10 @@ export class GameView {
       // The muzzle as drawn (muzzlePoint.ts): the weapon's `muzzleAt`, else the middle of the model's front-most geometry.
       const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
       // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
-      attachOptic(this.scene, node, def, true);
-      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z };
+      attachOptic(this.scene, node, def, true, carried);
+      const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z, tipZ: bounds.max.z, rearZ: bounds.min.z, optic: carried };
+      // (A gun built for an optic you have since changed is not kept: the next setViewmodel builds it again.)
+      if (this.viewmodels.has(def.id)) this.dropViewmodel(def.id);
       this.viewmodels.set(def.id, v);
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
@@ -1942,16 +1975,39 @@ export class GameView {
    * you carry keep theirs (docs/ARSENAL.md, "Texture tiers"). `carried`: weapon ids.
    */
   trimViewmodels(carried: ReadonlySet<string>): void {
-    for (const [id, v] of this.viewmodels) {
-      if (carried.has(id) || id === this.viewWeapon) continue;
-      if (this.viewmodel === v.node) this.viewmodel = undefined;
-      this.dropSecond(id);
-      v.node.dispose();
-      this.viewmodels.delete(id);
-      const path = this.viewmodelPaths.get(id);
-      this.viewmodelPaths.delete(id);
+    for (const id of [...this.viewmodels.keys()]) if (!carried.has(id) && id !== this.viewWeapon) this.dropViewmodel(id);
+  }
+
+  /** A kept first-person gun goes (with its second copy and its sharper maps). */
+  private dropViewmodel(id: string): void {
+    const v = this.viewmodels.get(id);
+    if (!v) return;
+    if (this.viewmodel === v.node) this.viewmodel = undefined;
+    this.dropSecond(id);
+    v.node.dispose();
+    this.viewmodels.delete(id);
+    const path = this.viewmodelPaths.get(id);
+    this.viewmodelPaths.delete(id);
+    const def = CORE_WEAPONS[id];
+    if (path && def?.view.held && path !== def.view.model) this.models.release(path);
+  }
+
+  /**
+   * Your optic choices changed (opticPrefs.ts, the loadout): kept first-person guns built with another optic go, and
+   * the gun in hand is built again with the one you picked. Cheap when nothing changed (a version check).
+   */
+  refreshOptics(): void {
+    if (this.viewOpticsSeen === opticsVersion()) return;
+    this.viewOpticsSeen = opticsVersion();
+    for (const [id, v] of [...this.viewmodels]) {
       const def = CORE_WEAPONS[id];
-      if (path && def?.view.held && path !== def.view.model) this.models.release(path);
+      if (!def || opticFor(def)?.id === v.optic?.id) continue;
+      const shown = id === this.viewWeapon;
+      this.dropViewmodel(id);
+      if (shown) {
+        this.viewWeapon = undefined;
+        this.setViewmodel(def);
+      }
     }
   }
 
@@ -2025,8 +2081,8 @@ export class GameView {
     const def = this.viewWeapon ? getWeapon(this.viewWeapon) : undefined;
     const node = def ? (this.viewmodel ?? null) : null;
     node?.setEnabled(true);
-    this.fpArms?.anim?.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
-    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def?.view.hold ?? null, this.soloFor(def?.id));
+    this.fpArms?.anim?.gripExternal(node, def ? this.heldHold(def) : null, this.soloFor(def?.id));
+    if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def ? this.heldHold(def) : null, this.soloFor(def?.id));
   }
 
   /**
@@ -2039,7 +2095,7 @@ export class GameView {
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-        attachOptic(this.scene, node, def, true);
+        attachOptic(this.scene, node, def, true, (v as { optic?: CarriedOptic | null }).optic ?? null);
         const old = v.node;
         // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
         takeOverViewmodel(old, node);
@@ -2049,8 +2105,8 @@ export class GameView {
           this.viewmodel = node;
           // Its optic's parts are the new copy's: found again with the aim's placement.
           this.aimAt = null;
-          this.fpArms?.anim?.gripExternal(node, def.view.hold, this.soloFor(def.id));
-          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, def.view.hold, this.soloFor(def.id));
+          this.fpArms?.anim?.gripExternal(node, this.heldHold(def), this.soloFor(def.id));
+          if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(node, this.heldHold(def), this.soloFor(def.id));
         }
         // (A second gun made from the old copy is made again from this one, so the two look alike.)
         this.dropSecond(def.id);
@@ -2114,7 +2170,7 @@ export class GameView {
         m.receiveShadows = false;
       }
       arms.anim = new CharacterAnimator(this.scene, ch);
-      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
+      if (this.viewmodel && this.viewWeapon) arms.anim.gripExternal(this.viewmodel, this.heldHold(getWeapon(this.viewWeapon)), this.soloFor(this.viewWeapon));
     });
   }
 
@@ -2201,6 +2257,7 @@ export class GameView {
     // Visual recoil (GUNPLAY_SPEC §29): the weapon's own kick strength when it has one; the camera's real climb is mechanical.
     const visual = gunplayOf(def).kick?.visual;
     const left = !!gun?.off && this.pairShown();
+    if (isLongMelee(def) && !left) this.swingAt = performance.now();
     const amount = def.kind === 'melee' ? 0.9 : visual !== undefined ? Math.min(1, visual * 0.75) : rail || def.pellets > 1 || def.projectile ? 1 : 0.45;
     if (left) this.kickAmount2 = Math.min(1, this.kickAmount2 + amount);
     else this.kickAmount = Math.min(1, this.kickAmount + amount);
@@ -2356,7 +2413,7 @@ export class GameView {
             if (this.viewmodels2.get(def.id) !== made || this.scene.isDisposed) return node.dispose();
             node.parent = root;
             for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-            attachOptic(this.scene, node, def, true);
+            attachOptic(this.scene, node, def, true, this.viewmodels.get(def.id)?.optic ?? opticFor(def));
             node.setEnabled(false);
             made.node = node;
           },
@@ -2389,8 +2446,8 @@ export class GameView {
     if (solo !== this.pairSolo) {
       this.pairSolo = solo;
       if (def && this.viewmodel && !this.throwHold?.node) {
-        this.fpArms?.anim?.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
-        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, def.view.hold, this.soloFor(def.id));
+        this.fpArms?.anim?.gripExternal(this.viewmodel, this.heldHold(def), this.soloFor(def.id));
+        if (this.fpBody?.a.anim instanceof CharacterAnimator) this.fpBody.a.anim.gripExternal(this.viewmodel, this.heldHold(def), this.soloFor(def.id));
       }
     }
     const arms2 = this.fpArms2;
@@ -2456,8 +2513,8 @@ export class GameView {
     // in front of it (opticView.ts); a gun without usable sights comes to the centre with its top just under the eye
     // line. Each far enough forward that the stock stays out of view.
     if (!this.aimAt) {
-      this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ });
-      this.aimPicture = sightPicture(def, this.aimAt);
+      this.aimAt = aimPlacement(def, { sightTop: this.sightTop, stockZ: this.stockZ }, true, this.viewOptic);
+      this.aimPicture = sightPicture(def, this.aimAt, this.viewOptic);
       this.aimClip = this.viewmodel?.getChildMeshes().find((m) => m.name === CLIP_NAME) ?? null;
     }
     // A sight window's clip (opticHousing.ts) is on once the gun is most of the way up.
@@ -2487,6 +2544,21 @@ export class GameView {
       z - kick * (melee ? -0.25 : 0.06 * heavy) * (1 - ads * 0.5),
     );
     this.viewRoot.rotation.set(aim.pitch - kick * (melee ? -0.6 : 0.12 * heavy) + tip, aim.yaw + (melee ? kick * 0.5 : 0), roll);
+    if (isLongMelee(def) && up === 0) {
+      // A long melee weapon (meleeView.ts): placed by its grip so both hands show, raised at rest, swung on a pose
+      // curve, drawn up from the shoulder; its barrel going off (the Battle Axe) brings it level to the aim with a
+      // gun's kick. The walk's bob as any weapon's.
+      const since = this.swingAt === null ? null : (performance.now() - this.swingAt) / 1000 / swingSeconds(def);
+      if (since !== null && since >= 1) this.swingAt = null;
+      const shot = this.kickShot ? kick : 0;
+      const p = meleePlacement(def, { tipZ: this.viewmodels.get(def.id)?.tipZ, swing: since !== null && since < 1 ? since : null, raise: o.raise, level: Math.min(1, shot * 1.5) });
+      this.viewRoot.position.set(
+        p.x + Math.sin(this.bobPhase) * 0.012 * bob,
+        p.y + Math.abs(Math.cos(this.bobPhase)) * 0.01 * bob,
+        p.z - shot * 0.06 * heavy,
+      );
+      this.viewRoot.rotation.set(p.pitch - shot * 0.12 * heavy, p.yaw, p.roll);
+    }
     // A punch or kick: the gun dips out of the way (aside for a punch) while the fist or boot comes in.
     const now = performance.now();
     const kicking = this.strikeMotion?.kind === 'kick';
@@ -2819,6 +2891,12 @@ export class GameView {
         if (reglow && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black());
       }
       if (p.weapon !== a.weaponSlot) this.setAvatarWeapon(a, p.weapon);
+      // Their optic choice changed (the roster's `op`): the gun in their hands is built again with the new one.
+      else if (a.opticSeen !== opticsVersion() && !this.crowd) {
+        a.opticSeen = opticsVersion();
+        const def = p.weapon > 0 ? weaponByCode(p.weapon) : undefined;
+        if (def && a.muzzle && (opticFor(def, a.slot)?.id ?? null) !== (a.optic ?? null)) this.setAvatarWeapon(a, p.weapon);
+      }
       this.setAvatarPair(a, p, now);
       // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
       // (Not a cloaked one: its shell fades with it, an aura would give it away.)
@@ -3084,7 +3162,7 @@ export class GameView {
       a.weaponNode = undefined;
       fp = { a, rig: new FirstPersonBodyRig(this.scene, anim.ch, anim, a.root), vel: { x: 0, z: 0 } };
       this.fpBody = fp;
-      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, getWeapon(this.viewWeapon).view.hold, this.soloFor(this.viewWeapon));
+      if (this.viewmodel && this.viewWeapon) anim.gripExternal(this.viewmodel, this.heldHold(getWeapon(this.viewWeapon)), this.soloFor(this.viewWeapon));
       // Your own arms aren't needed while the body holds the gun.
       this.fpArms?.root.setEnabled(false);
     }
@@ -3168,7 +3246,7 @@ export class GameView {
         if (a.pair !== made || a.root.isDisposed() || a.anim !== anim) return node.dispose();
         castSmall(node);
         made.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
-        if (!this.crowd) attachOptic(this.scene, node, def, false);
+        if (!this.crowd) attachOptic(this.scene, node, def, false, opticFor(def, a.slot));
         anim.holdPair(node);
       });
     }
@@ -3198,6 +3276,7 @@ export class GameView {
 
   private setAvatarWeapon(a: Avatar, slot: number): void {
     a.weaponSlot = slot;
+    a.opticSeen = opticsVersion();
     a.weaponNode?.dispose();
     a.weaponNode = undefined;
     a.muzzle = undefined;
@@ -3216,8 +3295,10 @@ export class GameView {
       castSmall(node);
       // The muzzle as drawn (muzzlePoint.ts), measured before it's put in a hand: the same point as your own copy's.
       a.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
-      // The optic it carries, as everyone sees it: the housing alone (crowds leave it off: a draw a gun).
-      if (!this.crowd) attachOptic(this.scene, node, def, false);
+      // The optic it carries, the one its player picked, as everyone sees it: the housing alone (crowds leave it off: a draw a gun).
+      const optic = opticFor(def, a.slot);
+      a.optic = optic?.id ?? null;
+      if (!this.crowd) attachOptic(this.scene, node, def, false, optic);
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;
@@ -3270,7 +3351,7 @@ export class GameView {
     const mat = solid(this.scene, `avatar_${slot}_mat`, spec.npc?.color ?? slotColor(slot));
     placeholder.material = mat;
     placeholder.isPickable = false;
-    const a: Avatar = { root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, blood: lookBlood(spec.look ?? (spec.creature ? `${NPC_LOOK_PREFIX}${spec.creature}` : undefined)), ...(spec.npc?.zombie ? { unarmed: true } : {}) };
+    const a: Avatar = { slot, root, placeholder, mat, weaponSlot: -1, specKey, vel: { x: 0, z: 0 }, blood: lookBlood(spec.look ?? (spec.creature ? `${NPC_LOOK_PREFIX}${spec.creature}` : undefined)), ...(spec.npc?.zombie ? { unarmed: true } : {}) };
     if (spec.creature) {
       void this.creatures.create(spec.creature, `creature_${slot}`).then((ch) => {
         if (root.isDisposed()) return ch.dispose();
@@ -4038,20 +4119,19 @@ export class GameView {
     this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing(), amount);
   }
 
-  // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
+  // Camera shake: kicks add up (to 1) and settle over SHAKE_MS (cameraShake.ts).
   private shakeAmount = 0;
   private shakeAt = 0;
 
   /** Shake the camera (0..1; explosions and crashes near you, a heavy round leaving the barrel), by the Camera shake setting. */
   shake(amount: number): void {
-    const k = shakeScale();
-    if (k <= 0) return;
-    this.shakeAmount = Math.min(k, this.currentShake() + amount * k);
+    // Every source's amount is in cameraShake.ts; Off keeps none (and drops what is still settling).
+    this.shakeAmount = addShake(this.currentShake(), amount);
     this.shakeAt = performance.now();
   }
 
   private currentShake(): number {
-    return this.shakeAmount * Math.max(0, 1 - (performance.now() - this.shakeAt) / SHAKE_MS);
+    return shakeLeft(this.shakeAmount, performance.now() - this.shakeAt);
   }
 
   /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */

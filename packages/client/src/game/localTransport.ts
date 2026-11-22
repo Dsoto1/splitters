@@ -11,6 +11,7 @@ import type { RemoteLink, Transport } from './transport.ts';
 import { checkTicket, helloTicket } from './ticketCheck.ts';
 import type { BotDebugFrame } from '@tiletrigger/shared/match';
 import { PlayTracker } from './communityPlays.ts';
+import { opticsHello } from '../opticPrefs.ts';
 
 export type { RemoteLink } from './transport.ts';
 
@@ -271,7 +272,7 @@ export class LocalTransport implements Transport {
     // `?akimbo=1` (a dev server, a test-hooks build or this machine only, as test mode): dual wielding in play in
     // this browser's own matches while it is being built (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield").
     const akimbo = typeof location !== 'undefined' && new URLSearchParams(location.search).get('akimbo') === '1' && allowedHere();
-    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...(akimbo ? { akimbo: true } : {}), ...this.opts }, hidden: document.hidden };
+    const start: ToSimHost = { k: 'start', map: this.map, opts: { selfKey: `pk:${playerKey()}`, maxPlayers: deviceMaxPlayers(), ...(opticsHello().op ? { optics: opticsHello().op } : {}), ...(drive === 'classic' || drive === 'rigid' || drive === 'own' ? { drive } : {}), ...(akimbo ? { akimbo: true } : {}), ...this.opts }, hidden: document.hidden };
     if (!(simThreadWanted() === 'worker' && this.startWorker(start))) this.startHere(start);
     if (this.onBotDebug) this.toHost({ k: 'botdebug', on: true });
   }
@@ -521,6 +522,10 @@ export class LocalTransport implements Transport {
 
   sendVote(i: number): void {
     this.toHost({ k: 'vote', i });
+  }
+
+  sendOptics(op: Record<string, string>): void {
+    this.toHost({ k: 'optics', op });
   }
 
   /** Between matches: open the vote on these maps (the page picked them from our suite). */

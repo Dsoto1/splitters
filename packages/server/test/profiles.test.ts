@@ -22,7 +22,7 @@ describe('profiles', () => {
   it('gives each account a unique username (whatever the case) and a region, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 } });
+    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {} });
     expect(store.update('a', { username: 'Toshi_92', region: 'na-east' })).toMatchObject({ username: 'Toshi_92', region: 'na-east' });
     // Taken, whatever the case; but the owner may change its own case.
     expect(store.problem('b', 'toshi_92')).toBe('that name is taken');
@@ -182,5 +182,17 @@ describe('profiles', () => {
     expect(store.get('p1').vouched).toMatchObject({ matches: 2, wins: 1 });
     store.update('p1', { username: 'Toshi_92' });
     expect(store.card('toshi_92')?.vouched.matches).toBe(2);
+  });
+
+  it('keeps optic picks with the account (owner, 2026-11-22, "3a")', () => {
+    const store = new ProfileStore(temp());
+    expect(store.get('a').optics).toEqual({});
+    expect(store.update('a', { optics: { 'core.rifle': 'holo' } }).optics).toEqual({ 'core.rifle': 'holo' });
+    expect(() => store.update('a', { optics: { 'core.rifle': '<img>' } })).toThrow(/optic/);
+    expect(() => store.update('a', { optics: ['holo'] })).toThrow(/optic/);
+    expect(store.update('a', { optics: {} }).optics).toEqual({});
+    // Not on the public card.
+    store.update('a', { username: 'Toshi_92', optics: { 'core.rifle': 'holo' } });
+    expect(store.card('toshi_92')).not.toHaveProperty('optics');
   });
 });

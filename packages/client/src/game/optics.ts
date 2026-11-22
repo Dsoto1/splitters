@@ -1,5 +1,7 @@
-import type { WeaponDefinition } from '@tiletrigger/shared';
+import type { OpticSpec, WeaponDefinition } from '@tiletrigger/shared';
 import { OPTIC_KINDS, OPTIC_NONE, WEAPON_OPTICS, type OpticKind, type OpticKindId } from '@tiletrigger/shared/optics';
+import { myOpticFor } from '../opticPrefs.ts';
+import { DEFAULT_RELIEF } from './opticView.ts';
 
 /**
  * Optics by gun (docs/GUNPLAY_SPEC.md §15, "Optics by gun"; owner, 2026-11-18: "real optics by gun: red dot or
@@ -16,7 +18,12 @@ import { OPTIC_KINDS, OPTIC_NONE, WEAPON_OPTICS, type OpticKind, type OpticKindI
  *    there while the gun bobs and kicks and is hidden where the window is not;
  *  - `scope`: the 2-3x optics: the model's own tube (`view.optic`, opticView.ts) or the scope overlay
  *    (`view.zoomFov`), with a chevron and holdover ticks;
- *  - `sniper`: the full-screen scope with a fine crosshair and holdover marks.
+ *  - `sniper`: the full-screen scope with a fine crosshair and holdover marks;
+ *  - `x2`: a 2x optic built in code on the gun's top (a `magtube`), looked through as the model's own tube is
+ *    (opticView.ts: its eyepiece comes to the eye, the world magnified by the kind's `power`), with a chevron and
+ *    holdover ticks.
+ * Which one a gun carries is its default, or the one the player picked for it in their loadout (opticPrefs.ts; others'
+ * from the roster's `op`: opticFor).
  * A weapon without one (`OPTIC_NONE`) keeps the aim it had: the gun's top under the eye and the HUD's aim dot.
  */
 
@@ -35,12 +42,77 @@ export interface CarriedOptic {
   window?: { at: readonly [number, number, number]; half: readonly [number, number] };
 }
 
-/** The optic `def` carries (`choice`: another of its allowed ones; the loadout's choice comes later), or null: none. */
-export function opticOf(def: Pick<WeaponDefinition, 'id'>, choice?: OpticKindId): CarriedOptic | null {
+/** The optic `def` carries (`choice`: another of its allowed ones, as a loadout picks; anything else: its default), or null: none. */
+export function opticOf(def: Pick<WeaponDefinition, 'id'>, choice?: string): CarriedOptic | null {
   const w = WEAPON_OPTICS[def.id];
   if (!w) return null;
-  const id = choice && w.allowed.includes(choice) ? choice : w.default;
-  return { id, kind: OPTIC_KINDS[id], ...(w.mag ? { mag: w.mag } : {}), ...(w.mount ? { mount: w.mount } : {}), ...(w.window ? { window: w.window } : {}) };
+  const id = choice && (w.allowed as readonly string[]).includes(choice) ? (choice as OpticKindId) : w.default;
+  const kind = OPTIC_KINDS[id];
+  // A gun's own zoom is its own optic's; a magnifying tube built in code brings the kind's.
+  const mag = kind.housing === 'magtube' ? kind.power : id === w.default ? w.mag : undefined;
+  return { id, kind, ...(mag ? { mag } : {}), ...(w.mount ? { mount: w.mount } : {}), ...(w.window ? { window: w.window } : {}) };
+}
+
+/** The optics a player may pick for a gun, its default first; one or none: there is no choice to make. */
+export function opticChoices(def: Pick<WeaponDefinition, 'id'>): { id: OpticKindId; name: string }[] {
+  const w = WEAPON_OPTICS[def.id];
+  if (!w || w.allowed.length < 2) return [];
+  return [w.default, ...w.allowed.filter((a) => a !== w.default)].map((id) => ({ id, name: OPTIC_KINDS[id].name }));
+}
+
+/** Each player's optic choices as the roster gives them (slot → weapon ID → kind), and your own slot. */
+const rosterOptics = new Map<number, Readonly<Record<string, string>>>();
+let ownSlot = -1;
+let opticsSeen = 0;
+
+/** The roster came (session.ts): everyone's choices. True when any changed. */
+export function setRosterOptics(players: readonly { slot: number; op?: Record<string, string> }[], own: number): boolean {
+  ownSlot = own;
+  let changed = players.length !== rosterOptics.size || players.some((p) => !rosterOptics.has(p.slot));
+  const next = new Map<number, Readonly<Record<string, string>>>();
+  for (const p of players) {
+    const op = p.op ?? {};
+    const was = rosterOptics.get(p.slot);
+    if (!was || Object.keys(was).length !== Object.keys(op).length || Object.keys(op).some((k) => was[k] !== op[k])) changed = true;
+    next.set(p.slot, op);
+  }
+  rosterOptics.clear();
+  for (const [k, v] of next) rosterOptics.set(k, v);
+  if (changed) opticsSeen++;
+  return changed;
+}
+
+/** Goes up whenever someone's optic choices change (the view rebuilds a gun whose optic is no longer the one drawn). */
+export const opticsVersion = (): number => opticsSeen;
+/** Your own choices changed (opticPrefs.ts): the view draws them from now on. */
+export function ownOpticsChanged(): void {
+  opticsSeen++;
+}
+
+/**
+ * The optic `def` carries in the hands of the player in `slot`: yours from your loadout (opticPrefs.ts, at once), anyone
+ * else's from the roster (bots and older hosts: none, so each gun's default). No slot: yours.
+ */
+export function opticFor(def: Pick<WeaponDefinition, 'id'>, slot?: number): CarriedOptic | null {
+  if (slot === undefined || slot === ownSlot) return opticOf(def, myOpticFor(def.id));
+  return opticOf(def, rosterOptics.get(slot)?.[def.id]);
+}
+
+/** A housing built in code on the gun's top: the red dot's tube, the holographic frame or the 2x optic's tube. */
+export function builtHousing(o: CarriedOptic | null): o is CarriedOptic & { kind: OpticKind & { glass: NonNullable<OpticKind['glass']> } } {
+  return !!o && (o.kind.housing === 'tube' || o.kind.housing === 'frame' || o.kind.housing === 'magtube') && (!!o.mount || !!o.window) && !!o.kind.glass;
+}
+
+/**
+ * The eyepiece a gun is looked through (opticView.ts): its model's own tube (`view.optic`), or the 2x optic built on its
+ * top: the tube's rear end on the line of its glass's middle, its clear radius the glass's, with the usual relief.
+ */
+export function eyepieceOf(def: Pick<WeaponDefinition, 'view'>, o: CarriedOptic | null): OpticSpec | undefined {
+  if (def.view.optic) return def.view.optic;
+  if (!o || o.kind.housing !== 'magtube' || !o.mount || !o.kind.glass || !o.mag) return undefined;
+  const g = o.kind.glass;
+  const m = o.mount;
+  return { mag: o.mag, eye: [m.at[0], m.at[1] + g.rise * m.scale, m.at[2] - (g.length * m.scale) / 2], radius: g.half[1] * m.scale, relief: DEFAULT_RELIEF, reticle: 'chevron' };
 }
 
 /** Why a weapon carries no optic (undefined: it carries one). */
