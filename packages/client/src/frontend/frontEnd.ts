@@ -2212,8 +2212,9 @@ export class FrontEnd {
   /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
   private roster(): { id: string; name: string; group: string; sortAs?: string }[] {
     return [
-      // An experimental character sits under Experimental, not with its group (the same rule as an experimental map).
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine'), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
+      // An experimental character sits under Experimental, not with its group (the same rule as an experimental map),
+      // unless it is in a collection (the Chrono Crew), which lists its own whatever their tier (characterSectionOf).
+      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
       ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];

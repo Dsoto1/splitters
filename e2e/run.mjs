@@ -5892,7 +5892,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (experimental characters under their own, before yours: the owner's batch of 2026-11-21/22) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (the Chrono Crew after Outer Space, owner 2026-11-22; experimental characters under their own, before yours) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -5901,7 +5901,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,legends,animals,machines,horror,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -15140,8 +15140,15 @@ async function weaponmanagerFlow(browser) {
   check(true, 'the weapon tuning page opens on Compare');
   await page.click('#wt-tab-manage');
   const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
-  const cards = await page.evaluate(() => ({ n: document.querySelectorAll('#wm-list .wm-card').length, pics: document.querySelectorAll('#wm-list .wm-card .wm-pic img').length, url: location.search }));
-  check(listed && cards.pics > 20 && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+  const cards = await page.evaluate(() => {
+    const all = [...document.querySelectorAll('#wm-list .wm-card')];
+    const without = all.filter((c) => !c.querySelector('.wm-pic img')).map((c) => c.dataset.id);
+    return { n: all.length, pics: all.length - without.length, without, url: location.search };
+  });
+  // Every weapon ships its icon (packages/client/test/weaponIcons.test.ts): none shows "no picture".
+  check(listed && cards.n > 40 && !cards.without.length && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+  const flare = await page.waitForFunction(() => (document.querySelector('#wm-list .wm-card[data-id="core.flare_gun"] .wm-pic img')?.naturalWidth ?? 0) > 0, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(flare, 'the Flare Gun\'s picture loads (its model changed; the icon was taken again)');
 
   await page.click('#wm-list .wm-card[data-id="core.smg"]');
   await page.waitForSelector('#wm-editor #wm-name', { timeout: T(10000) });

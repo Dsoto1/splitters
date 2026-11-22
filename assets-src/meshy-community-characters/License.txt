@@ -22,7 +22,7 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "Dapper Elegant Ghoul" (downloaded 2026-10-29, https://www.meshy.ai/posts/019c14f7-cdd5-7fbb-9343-126efa2c3e1f)  -> character meshy_bonesworth (look Count Bonesworth)
 - "Robot in T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37)  -> character meshy_botboy (look Botboy)
 - "T Pose Chef" (downloaded 2026-10-29, https://www.meshy.ai/posts/019d0dc6-1bdb-753f-a917-bb8a926fb471)  -> character meshy_chef (look Chef Basile)
-- "T Pose Cowboy" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea)  -> character meshy_cowboy (look Dusty Colt)
+- "T Pose Cowboy" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e8ebd-61b0-7b5c-a1da-ddfec14299ea)  -> character meshy_cowboy (look Dusty Colt, later Dusty Ranger) until 2026-11-22, when the owner's "Gunslinger at Sunset" replaced its model (no longer shipped)
 - "t pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e5197-9688-7ed6-b96e-65ce11181dfa)  -> character meshy_dale (look Dale)
 - "Medieval Knight Character" (downloaded 2026-10-29, https://www.meshy.ai/posts/019fb494-3125-767f-8d10-d78d88dcee73)  -> character meshy_galloway (look Sir Galloway)
 - "Elderly Man with Outstretched arms" (downloaded 2026-10-29, https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9)  -> character meshy_grandpa_chains (look Grandpa Chains)
@@ -39,7 +39,7 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "A highly realistic zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/01981b88-8b1d-7231-a7da-4f1885926e12)  -> character meshy_zombie_shambler (look Shambler)
 - "Regal Monarch in Velvet" (downloaded 2026-10-29, https://www.meshy.ai/posts/019eab72-7fbe-78d2-9936-e1d7328721a8)  -> character meshy_king (look King Aldric)
 - "Energetic anthro rabbit" (downloaded 2026-10-29, https://www.meshy.ai/posts/019ad7f4-7590-7ed4-abff-fb9bb6f1065a)  -> character meshy_brass_hare (look Brass Hare)
-- "Gloombraid Goblin Shaman" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626)  -> character meshy_grizzelda (look Grizzelda)
+- "Gloombraid Goblin Shaman" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e40b6-5e91-7d09-b4ef-eac45a40e626)  -> character meshy_grizzelda (look Grizzelda, later Goblina) until 2026-11-22, when the owner's "GoblinaRigged" replaced its model (no longer shipped)
 - "T Pose Santa" (downloaded 2026-10-29, https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226)  -> character meshy_santa (look Saint Nick)
 - "a raccoon warrior in T-pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf)  -> character meshy_bandit (look Bandit)
 - "An adorable teddy bear" (downloaded 2026-10-29, https://www.meshy.ai/posts/01994b60-9f84-7cb2-8db5-4d6c1efd598e)  -> character meshy_teddy (look Teddy)
@@ -149,37 +149,11 @@ CC0 per the owner; post URL pending from the owner:
 
 - "stylized alien biker" (2026-11-01; rebuilt 2026-11-05 from the re-rigged download "stylized alien biker rigged")  -> character meshy_alienbiker (look Alien Biker)
 
-The owner's Drive batch of 2026-11-21/22 (rigged and animated Meshy downloads, `…_animated_mixamo_All_animation.glb`; Meshy Community, CC0 per the owner; experimental until the owner looks them over):
+The owner's Drive batch of 2026-11-21/22: Juice is the one community model in it (owner, 2026-11-22: "I did not make
+Juice, it was community"; the rest are the owner's own, in assets-src/meshy-owned/License.txt). Meshy Community, CC0
+per the owner; no post link on record (if its post says CC BY 4.0, it is credited here):
 
-- "FrostValkyrieRigged" (2026-11-22)  -> character meshy_frostvalkyrie (look Frost Valkyrie)
-- "SunPriestRigged" (2026-11-22)  -> character meshy_sunpriest (look Sun Priest)
-- "AbyssalHunterRigged" (2026-11-22)  -> character meshy_abyssalhunter (look Abyssal Hunter)
-- "CelestialKnightRigged" (2026-11-22)  -> character meshy_celestialknight (look Celestial Knight)
-- "MysticTPoseRigged" (2026-11-22)  -> character meshy_mystic (look Mystic)
-- "GoblinaRigged" (2026-11-21)  -> character meshy_goblinatinker (look Tinker Goblina)
-- "Gunslinger at Sunset" (2026-11-21)  -> character meshy_sunsetgunslinger (look Sunset Gunslinger)
-- "ace pilot squirrel 15k" (2026-11-22)  -> character meshy_acesquirrel (look Ace Squirrel)
-- "angry penguin king rigged" (2026-11-21)  -> character meshy_penguinking (look Penguin King)
-- "axolotl gym bro rigged" (2026-11-21)  -> character meshy_axolotl (look Gym Bro Axolotl)
-- "badger agent tpose rigged" (2026-11-22)  -> character meshy_badgeragent (look Agent Badger)
-- "coach tortoise 15k" (2026-11-22)  -> character meshy_coachtortoise (look Coach Tortoise)
-- "crew alchemist rigged" (2026-11-22)  -> character meshy_crewalchemist (look Crew Alchemist)
-- "crew blonde cyborg rigged" (2026-11-21)  -> character meshy_crewcyborg (look Crew Cyborg)
-- "crew demolitions rigged" (2026-11-22)  -> character meshy_crewdemolitions (look Crew Demolitions)
-- "crew gunslinger rigged" (2026-11-21)  -> character meshy_crewgunslinger (look Crew Gunslinger)
-- "crew mechanic rigged" (2026-11-21)  -> character meshy_crewmechanic (look Crew Mechanic)
-- "crew medic rigged" (2026-11-22)  -> character meshy_crewmedic (look Crew Medic)
-- "crew phase shifted rigged" (2026-11-21)  -> character meshy_crewphase (look Crew Phase-Shifter)
-- "crew recon specialist rigged" (2026-11-21)  -> character meshy_crewrecon (look Crew Recon)
-- "cyberpunk flamingo 15k" (2026-11-22)  -> character meshy_flamingo (look Cyber Flamingo)
-- "gere com as imagens abaixo por favor" (2026-11-21)  -> character meshy_boxduck (look Box Duck)
-- "gym bro frog rigged" (2026-11-21)  -> character meshy_gymfrog (look Gym Bro Frog)
-- "mad scientist chameleon 15k" (2026-11-22)  -> character meshy_chameleon (look Doc Chameleon)
-- "owl sniper game ready" (2026-11-22)  -> character meshy_owlsniper (look Owl Sniper)
-- "time traveler rigged" (2026-11-21)  -> character meshy_timetraveler (look Time Traveler)
-- "veteran time crew 15k" (2026-11-21)  -> character meshy_veterancrew (look Crew Veteran)
-- "wacky shark rigged" (2026-11-21)  -> character meshy_wackyshark (look Wacky Shark)
-- "zen master capybara rigged" (2026-11-22)  -> character meshy_zencapybara (look Zen Capybara)
+- "gere com as imagens abaixo por favor" (2026-11-21)  -> character meshy_boxduck (look Juice; "Box Duck" until 2026-11-22)
 
 Looked at and not used (they closely resemble real people, so they fail the
 likeness screen):
