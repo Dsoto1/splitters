@@ -345,25 +345,25 @@ export function fitSights(tris, { grip, muzzle, x0 }) {
   // post's own middle across the gun (a blade a few millimetres wide), where it is not the plane's.
   let hood = false;
   {
-    // A hood wider than the band (its sides outside it) is open to the sides there: read it again wider.
-    let cs = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002);
-    let hole = enclosedHole(cs);
-    if (!hole) {
-      const wide = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002, HOOD_WIDE);
-      const ring = enclosedHole(wide);
-      if (ring) [cs, hole] = [wide, ring];
-    }
-    if (hole && hole.top > front[1] - 0.012 && Math.abs(hole.x - cx) < 0.003) {
-      const floor = hole.bottomAt(cs.col(cx));
-      if (floor < cs.h && floor > 0) {
-        const post = [cx, cs.y(floor) - FINE / 2, front[2]];
-        // Only when a post stands in the ring (its top above the ring's lowest point by a millimetre).
-        const lowest = Math.min(...Array.from({ length: cs.w }, (_, c) => hole.bottomAt(c)).filter((r) => r < cs.h));
-        if (floor - lowest >= 0.001 / FINE) {
-          front = post;
-          hood = true;
-        }
-      }
+    // The post's top in a hood's ring at `z`, read `wide` either side of the plane; null when there is none.
+    const postIn = (z, wide) => {
+      const ring = crossSection(tris, cx, z, front[1] - 0.03, front[1] + 0.002, wide);
+      const hole = enclosedHole(ring);
+      if (!(hole && hole.top > front[1] - 0.012 && Math.abs(hole.x - cx) < 0.003)) return null;
+      const floor = hole.bottomAt(ring.col(cx));
+      if (!(floor < ring.h && floor > 0)) return null;
+      // Only when a post stands in the ring (its top above the ring's lowest point by a millimetre).
+      const lowest = Math.min(...Array.from({ length: ring.w }, (_, c) => hole.bottomAt(c)).filter((r) => r < ring.h));
+      return floor - lowest >= 0.001 / FINE ? [cx, ring.y(floor) - FINE / 2, front[2]] : null;
+    };
+    const cs = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002);
+    // Where the line touches the hood's top, then (a hood wider than the band is open to the sides in it, and a post
+    // may stand further into the hood than the slice reaches) wider and a little further forward.
+    let post = postIn(front[2], WIDE);
+    for (const dz of [0, 0.004, 0.008]) for (const wide of [WIDE, HOOD_WIDE]) post ??= postIn(front[2] + dz, wide);
+    if (post) {
+      front = post;
+      hood = true;
     }
     if (!hood) {
       const tops = columnTops(cs);
@@ -569,6 +569,8 @@ export async function fitAll() {
   const excluded = {};
   const problems = [];
   const weapons = readWeapons();
+  const opticsFile = join(ROOT, 'content/optics.json');
+  const noOptic = new Set(existsSync(opticsFile) ? Object.keys(JSON.parse(readFileSync(opticsFile, 'utf8')).none ?? {}) : []);
   for (const w of weapons) {
     const own = builtInExclusion(w);
     const named = file.excluded?.[w.id];
@@ -582,6 +584,14 @@ export async function fitAll() {
       if (typeof named !== 'string' || named.length < 8) problems.push(`content/sight-fit.json: ${w.id}'s exclusion needs a reason`);
       if (correction) problems.push(`content/sight-fit.json: ${w.id} is both excluded and corrected`);
       excluded[w.id] = named;
+      // An exclusion is for a gun with no usable sights. One that aims with no optic (content/optics.json \`none\`)
+      // while the tool reads sights on it (a fit with no flags, or one only blocked) would be aimed over the top of
+      // its bounds with its own sights drawn off the aim (the Woodland SMG, 2026-11-22): fit it instead.
+      if (noOptic.has(w.id)) {
+        const auto = await fitWeapon(w, undefined);
+        if (auto && auto.kind !== 'top' && !auto.flags.some((f) => f === 'no-sights' || f === 'off-bore' || f === 'rear-on-stock'))
+          problems.push(`${w.id}: excluded in content/sight-fit.json and carries no optic, but the tool reads ${auto.kind} sights on it${auto.flags.length ? ` (${auto.flags.join(', ')})` : ''}: aimed without a fit its own sights are drawn off the aim. Fit it (a \`correction\` where the line is blocked) or give it an optic in content/optics.json (docs/GUNPLAY_SPEC.md §15)`);
+      }
       continue;
     }
     if (correction && (typeof correction.reason !== 'string' || correction.reason.length < 8)) problems.push(`content/sight-fit.json: ${w.id}'s correction needs a reason`);

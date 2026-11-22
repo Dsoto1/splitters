@@ -1,20 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon } from '@tiletrigger/shared';
 import { SIGHT_EXCLUDED, SIGHT_FITS } from '@tiletrigger/shared/sightFit';
-import { SIGHT_TOLERANCE_DEG, STOCK_AHEAD, UNFITTED_OVER, aimPlacement, blendPlacement, offAxis, placed, sightError, sightPlacement, unfittedPlacement } from '../src/game/sightPose.ts';
+import { WEAPON_OPTICS } from '@tiletrigger/shared/optics';
+import { hasGlass, opticOf } from '../src/game/optics.ts';
+import { HANDS_UNDER_AIM_DEG, SIGHT_TOLERANCE_DEG, STOCK_AHEAD, UNFITTED_OVER, aimPlacement, handsUnderAim, blendPlacement, offAxis, placed, sightError, sightPlacement, unfittedPlacement } from '../src/game/sightPose.ts';
 
 /**
  * The weapons that aim down their own drawn sights, by name. A new gun joins this list when the sight fit finds its
  * sights (tools/content/sight-fit.mjs), after a look at it on the sight sheet (`?mode=sights`).
  */
-const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg'];
+const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'];
 /** Of those, the ones whose fit was corrected by hand (content/sight-fit.json `corrections`, each with its reason). */
 const CORRECTED: string[] = [];
 /**
  * The hand-held guns that aim without a fit, by name: their models have no usable sights (content/sight-fit.json
  * `excluded`, each with its reason), so they keep the placement every gun had before.
  */
-const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
+const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.laser_rifle', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.swarm', 'core.twin_rifle'];
 /** The rest never aim down sights in the hand (mounted, melee and tools), or aim through a scope or an optic. */
 const BY_NATURE = ['core.baseball_bat', 'core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.crossbow', 'core.grapple', 'core.katana', 'core.knife', 'core.lever_action', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.nova6', 'core.railgun', 'core.scimitar', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.space_shield', 'core.speeder_guns', 'core.spear', 'core.tank_cannon'];
 
@@ -44,7 +46,8 @@ describe('sights that line up (docs/GUNPLAY_SPEC.md §15)', () => {
   it(`every fitted weapon's sights lie within ${SIGHT_TOLERANCE_DEG}° of the aim, the eye on its eye point`, () => {
     for (const id of FITTED) {
       const fit = SIGHT_FITS[id]!;
-      const at = aimPlacement(getWeapon(id), { sightTop: 0, stockZ: 0 });
+      // Aimed down its iron sights (a gun whose own optic is a glass, the Woodland SMG's red dot, offers them too).
+      const at = aimPlacement(getWeapon(id), { sightTop: 0, stockZ: 0 }, true, opticOf(getWeapon(id), 'irons'));
       // The eye point is the camera.
       const eye = placed(fit.eye, at);
       expect(Math.hypot(...eye), `${id}: the eye point`).toBeLessThan(1e-4);
@@ -59,6 +62,35 @@ describe('sights that line up (docs/GUNPLAY_SPEC.md §15)', () => {
       // The gun stays roughly along the view: the sight line is within 4° of the barrel.
       expect(Math.abs(at.pitch) + Math.abs(at.yaw), id).toBeLessThan((4 * Math.PI) / 180);
     }
+  });
+
+  it('the hands stay out of the sight picture: each hand\'s point far enough under the aim, for every optic a gun may carry', () => {
+    // Owner, 2026-11-22: aiming the Flintlock Pistol, its two fists filled the view (their points 9-10° under the aim).
+    // A gun aimed down its own drawn sights or through a glass on it, with each optic it may carry.
+    const bad: string[] = [];
+    let checked = 0;
+    for (const def of Object.values(CORE_WEAPONS)) {
+      const hold = def.view.hold;
+      if (!hold || hold.style === 'melee' || def.slot === 0 || def.kind === 'melee' || def.view.zoomFov || def.view.optic) continue;
+      const kinds = WEAPON_OPTICS[def.id]?.allowed ?? [];
+      for (const kind of kinds.length ? kinds : [null]) {
+        const optic = kind ? opticOf(def, kind) : null;
+        const irons = !!optic && optic.kind.housing === 'none';
+        if (!(irons && SIGHT_FITS[def.id]) && !hasGlass(optic)) continue;
+        // The stock's end is behind every point the hold names: the nearest the gun can sit (the most lenient).
+        const stockZ = Math.min(hold.grip[2], hold.support?.[2] ?? 0, hold.shoulder?.[2] ?? 0);
+        const at = aimPlacement(def, { sightTop: 0, stockZ }, true, optic);
+        const under = handsUnderAim(def, at);
+        const need = HANDS_UNDER_AIM_DEG[hold.style];
+        checked++;
+        for (const hand of ['grip', 'support'] as const) {
+          const a = under[hand];
+          if (a !== null && a < need[hand]) bad.push(`${def.id} (${kind ?? 'no optic'}): its ${hand} hand ${a.toFixed(1)}° under the aim, under ${need[hand]}°`);
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+    expect(bad, 'a hand drawn in the sight picture: move the hold point down the grip (content/weapons, view.hold) or check the fit on the sight sheet (?mode=sights)').toEqual([]);
   });
 
   it('before the fit the same sights were off the aim by more than the tolerance on every gun', () => {

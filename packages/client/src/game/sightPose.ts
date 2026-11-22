@@ -124,3 +124,26 @@ export function offAxis(p: Point): number {
 export function sightError(fit: SightFit, at: GunPlacement): number {
   return Math.max(offAxis(placed(fit.rear, at)), offAxis(placed(fit.front, at)));
 }
+
+/**
+ * How far under the aim each hand's point on the gun (`view.hold.grip` and `support`) sits at full aim (degrees under
+ * the view axis; the hands are drawn round those points, their tops several degrees higher). The sight picture needs
+ * them low enough that the drawn hands stay out of it (owner, 2026-11-22: the Flintlock Pistol's fists filled the aim):
+ * see HANDS_UNDER_AIM_DEG. null for a hand the hold has no point for.
+ */
+export function handsUnderAim(def: WeaponDefinition, at: GunPlacement): { grip: number | null; support: number | null } {
+  const under = (p: Point | undefined) => {
+    if (!p) return null;
+    const c = placed(p, at);
+    return (Math.atan2(-c[1], c[2]) * 180) / Math.PI;
+  };
+  return { grip: under(def.view.hold?.grip), support: under(def.view.hold?.support) };
+}
+
+/**
+ * The least a hand's point may sit under the aim at full aim (degrees). A handgun is held up in both hands right
+ * under its sights, the fists drawn up to about 11° above their points: under 14° they reach the sight picture (the
+ * Flintlock Pistol's were 9-10° under and rose over the aim; the Pistol's are 16-17° under). A long gun's shooting
+ * hand is behind the receiver and its support hand under the handguard, both hidden by the gun from the eye.
+ */
+export const HANDS_UNDER_AIM_DEG = { pistol: { grip: 14, support: 14 }, long: { grip: 8, support: 3 } } as const;
