@@ -308,11 +308,13 @@ function main() {
   if (check || !r.written.length) return;
   console.log(`wrote ${r.written.join(', ')}`);
   if (args.includes('--no-build')) {
-    console.log('next: pnpm content:rebuild (the weapon tables), then check and land it like any change');
+    console.log('next: pnpm content:rebuild (the weapon tables), the resolved-weapons fixture (UPDATE_WEAPON_FIXTURE=1 pnpm vitest run packages/shared/test/weaponsData.test.ts), then check and land it like any change');
     return;
   }
   for (const gen of ['weapons', 'pickups', 'weapon-sets', 'roulette']) execFileSync(process.execPath, [join(ROOT, 'tools/content', `${gen}.mjs`)], { cwd: ROOT, stdio: 'inherit' });
-  console.log('next: pnpm content:rebuild (checks everything), then `pnpm prepush` and a check run, like any change; a session lands it');
+  console.log('next: pnpm content:rebuild (checks everything); a stat or name change also moves the resolved-weapons fixture:');
+  console.log('  UPDATE_WEAPON_FIXTURE=1 pnpm vitest run packages/shared/test/weaponsData.test.ts (read its diff: only these weapons move)');
+  console.log('then `pnpm prepush` and a check run, like any change; a session lands it');
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
