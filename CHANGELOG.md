@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Jump pads look alive.** Their chevrons glide over the plate the way the pad throws you and soft rings rise off it, at a steady brightness (slower with Reduce flashing on).
 - **Switch team during a match.** Pause menu → Switch team, a team's Join on the scoreboard, or O: you move at your next respawn (the next round in Elimination, Bomb and Hostage), with no death counted; refused if it would leave the teams uneven, unless a bot can move the other way.
 - **Maps can be 3 MB** (2 MB before). Hosts, the hub, joiners and publishing all take a map file up to 3 MB, so a map of 8,192 things placed by hand fits as MapMaker saves it.
 - **MapMaker: pieces for a mess hall.** The Refectory Bay can have its floor sunk half a metre with a step at every doorway, a dark timber beam ceiling, a side aisle behind a row of stone arches, rows of mess tables with chairs, chandeliers with pale bowls, hanging flags, a lectern and bell, and an end wall with a fireplace, a picture, panelling and tall windows, or drink stations. New pieces: the Refectory Serving Bay (a serving line), the Refectory Kitchen, the Sunk Room tile, and thirteen props (Props: Mess Table, Serving Line, Drink Station, Lectern, Bell on a Stand, Chandelier with Bowl, Hanging Flags, Stone Arcade, Stone Fireplace with Picture, Panelled Wall Bay, Timber Ceiling Bay, Walk-in Cooler Door). Not yet on St. John's.
