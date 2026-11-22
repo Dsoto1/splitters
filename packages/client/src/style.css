@@ -809,6 +809,14 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .prof-stat small { color: var(--muted); font: 600 10px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
 .prof-fav-weapon { display: flex; align-items: center; gap: 4px; font-size: 14px; color: var(--muted); }
 .prof-fav-weapon b { color: var(--text); }
+.prof-emblems { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 5px; }
+.prof-emblem { display: flex; align-items: center; justify-content: center; height: 40px; padding: 3px; border: 1px solid var(--line); border-radius: 3px; background: rgba(255, 255, 255, 0.03); color: var(--muted); cursor: pointer; font: 700 16px var(--font-display); }
+.prof-emblem svg { width: 32px; height: 32px; }
+.prof-emblem:hover { border-color: var(--cyan); }
+.prof-emblem.on { border-color: var(--orange); background: rgba(255, 179, 71, 0.12); box-shadow: inset 0 0 0 1px var(--orange); }
+.prof-swatches { display: flex; flex-wrap: wrap; gap: 5px; margin: 6px 0 4px; }
+.prof-swatch { width: 22px; height: 22px; padding: 0; border: 2px solid rgba(10, 13, 22, 0.9); border-radius: 50%; cursor: pointer; }
+.prof-swatch.on { box-shadow: 0 0 0 2px var(--orange); }
 
 /* Character select */
 #menu .screen.characters { display: flex; flex-direction: column; }
@@ -1636,6 +1644,28 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 .sb-ins[hidden] { display: none; }
 .sb-ins svg { width: 100%; height: 100%; }
 .sb-row.dead .sb-ins { opacity: 0.45; }
+.sb-em { flex: none; display: inline-flex; width: 1.2em; height: 1.2em; margin-left: 5px; font-style: normal; }
+.sb-em[hidden] { display: none; }
+.sb-em svg { width: 100%; height: 100%; }
+/* Rows open the player's card (game/playerCard.ts) where the board takes clicks (the pause menu, the match's end). */
+.sb-row.sb-click { cursor: pointer; }
+.sb-row.sb-click:hover { background: rgba(0, 209, 255, 0.08); }
+/* Another player's card (game/playerCard.ts): beside the clicked row, above the boards. */
+#player-card { position: fixed; z-index: 60; display: flex; align-items: flex-start; gap: 10px; width: min(340px, calc(100vw - 16px)); padding: 10px 30px 10px 10px; background: rgba(18, 24, 39, 0.97); border: 1px solid var(--line); border-top: 3px solid var(--orange); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); font: 500 13px var(--font-display); color: var(--text); }
+#player-card[hidden] { display: none; }
+#player-card[data-kind='bot'] { border-top-color: var(--muted); }
+#player-card img { flex: none; width: 64px; height: 64px; border-radius: 3px; object-fit: cover; border: 2px solid var(--line); background: #121827; }
+#player-card img[hidden] { display: none; }
+#player-card .plc-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+#player-card .plc-who { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#player-card .plc-who b { font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase; overflow-wrap: anywhere; }
+#player-card .plc-who svg.emb { width: 22px; height: 22px; }
+#player-card .plc-sub, #player-card .plc-career { color: var(--muted); }
+#player-card .plc-match { color: var(--cyan); }
+#player-card .plc-close { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border: none; background: none; color: var(--muted); font-size: 18px; line-height: 1; cursor: pointer; }
+#player-card .plc-close:hover { color: var(--text); }
+#profile-card .pc-who svg.emb { width: 18px; height: 18px; }
+#feed svg.emb { width: 1.1em; height: 1.1em; margin-left: 4px; vertical-align: -0.2em; }
 .sb-nm.party::before { content: 'PARTY'; margin-right: 5px; padding: 0 3px; background: rgba(255, 179, 71, 0.16); color: var(--orange); font-size: 0.62em; letter-spacing: 0.08em; vertical-align: 0.15em; line-height: 1.2; }
 .sb-mark.leader { color: #ffd24a; font-size: 1em; text-shadow: 0 0 4px rgba(255, 210, 74, 0.6); }
 .sb-cls { color: var(--muted); font-size: 0.82em; letter-spacing: 0.05em; text-transform: uppercase; }

@@ -3,6 +3,8 @@ import { isMapId } from '../sim/playlist.ts';
 import { ROTATION_MAX } from '../sim/rotation.ts';
 import { isPartyTag } from './party.ts';
 import { readRankPoints } from './career.ts';
+import { cleanEmblemCode } from '../content/emblems.ts';
+import { isTitleId } from '../content/titles.ts';
 import { validateBotSet } from '../sim/botSet.ts';
 import { validBotCast } from '../content/botThemes.ts';
 import { SCORE_LIMIT_MAX, isGameMode, type GameMode } from '../sim/rules.ts';
@@ -36,7 +38,7 @@ export function parseClientMessage(text: string): ClientMessage | null {
   switch (o.t) {
     case 'hello':
       return typeof o.protocol === 'number' && typeof o.name === 'string'
-        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}), ...(isPartyTag(o.party) ? { party: o.party } : {}), ...(readRankPoints(o.rx) !== null ? { rx: o.rx as number } : {}) }
+        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}), ...(isPartyTag(o.party) ? { party: o.party } : {}), ...(readRankPoints(o.rx) !== null ? { rx: o.rx as number } : {}), ...(cleanEmblemCode(o.em) ? { em: cleanEmblemCode(o.em)! } : {}), ...(isTitleId(o.tt) ? { tt: o.tt } : {}) }
         : null;
     case 'vote':
       return typeof o.i === 'number' && Number.isInteger(o.i) && o.i >= 0 && o.i < 8 ? { t: 'vote', i: o.i } : null;

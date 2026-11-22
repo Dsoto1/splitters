@@ -17,6 +17,7 @@
  */
 import type { InsigniaId } from '@tiletrigger/shared';
 import { insigniaSvg } from './insigniaSvg.ts';
+import { emblemSvg } from './emblemSvg.ts';
 
 /** One player's line. Strings are shown as they are (already formatted). */
 export interface BoardRow {
@@ -24,6 +25,8 @@ export interface BoardRow {
   name: string;
   /** A soldier's rank badge, shown before the name (insignia.ts); none for everyone else. */
   ins?: InsigniaId | null;
+  /** A person's emblem (shared content/emblems.ts), shown after the name; none for bots and people without one. */
+  em?: string | null;
   bot: boolean;
   /** A person: a verified account (signed in, playing under their username), or a guest (shown only when others are playing). */
   who?: 'acct' | 'guest';
@@ -167,6 +170,7 @@ interface RowEls {
   mark: HTMLElement;
   ins: HTMLElement;
   name: HTMLElement;
+  em: HTMLElement;
   cls: HTMLElement;
   k: HTMLElement;
   d: HTMLElement;
@@ -205,6 +209,8 @@ export class ScoreBoard {
   private shape = '';
   /** Switch team: a team header's Join button was clicked (the pause menu's board; the Tab board shows the key). */
   onJoin: ((team: number) => void) | null = null;
+  /** A player's row was clicked: their card (game/playerCard.ts). Rows look clickable once it's set. */
+  onRow: ((slot: number, row: HTMLElement) => void) | null = null;
   /** Which optional cells the rows have (set with the layout). */
   private cells = { rank: false, cls: false, obj: false, ping: false, pts: false };
 
@@ -406,8 +412,14 @@ export class ScoreBoard {
       const ins = make('i', 'sb-ins');
       ins.hidden = true;
       const name = make('span', 'sb-nm');
-      nameCell.append(mark, ins, name);
-      e = { el, rank: rk, mark, ins, name, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), pts: make('span', 'sb-n sb-pts'), key: '' };
+      const em = make('i', 'sb-em');
+      em.hidden = true;
+      nameCell.append(mark, ins, name, em);
+      if (this.onRow) {
+        el.classList.add('sb-click');
+        el.addEventListener('click', () => this.onRow?.(r.slot, el));
+      }
+      e = { el, rank: rk, mark, ins, name, em, cls: make('span', 'sb-cls'), k: make('span', 'sb-n'), d: make('span', 'sb-n'), obj: make('span', 'sb-n'), ping: make('span', 'sb-n sb-ping'), pts: make('span', 'sb-n sb-pts'), key: '' };
       // Same cells as the header row.
       const f = this.cells;
       if (f.rank) el.append(rk);
@@ -419,7 +431,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.ins ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
+    const key = `${rank}|${r.ins ?? ''}|${r.em ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -440,6 +452,11 @@ export class ScoreBoard {
       e.ins.hidden = !r.ins;
     }
     e.ins.style.color = r.color;
+    if ((e.em.dataset.em ?? '') !== (r.em ?? '')) {
+      e.em.dataset.em = r.em ?? '';
+      e.em.innerHTML = emblemSvg(r.em);
+      e.em.hidden = !e.em.innerHTML;
+    }
     e.mark.style.color = r.leader ? '' : r.color;
     e.mark.classList.toggle('leader', r.leader);
     e.mark.title = r.leader ? 'Team leader' : r.squadLead ? 'Squad leader' : '';

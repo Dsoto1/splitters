@@ -102,8 +102,17 @@ import {
   careerKd,
   careerWinRate,
   favouriteWeapon,
+  EMBLEM_COLORS,
+  EMBLEM_COLOR_NAMES,
+  EMBLEM_IDS,
+  EMBLEM_LABELS,
+  emblemCode,
+  readEmblem,
+  earnedTitles,
+  TITLES,
 } from '@tiletrigger/shared';
-import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
+import { myCareer, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
+import { emblemSvg } from '../game/emblemSvg.ts';
 import { weaponName } from '../game/profileCard.ts';
 import { DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadLeanKeys, loadMousePrefs, loadWheelKey, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
@@ -2840,7 +2849,7 @@ export class FrontEnd {
       );
     });
     const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote);
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.careerSection(kicker, !!who), loadout, region, foot));
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.emblemSection(kicker), this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.
@@ -2905,6 +2914,64 @@ export class FrontEnd {
     foot.append(id);
     // Your community maps on the hub (and the owner's summary): communityUi.ts.
     return hubSetting() ? panel(form, communityPanel(kicker)) : panel(form);
+  }
+
+  /**
+   * Profile's emblem and title (docs/PLAYER_PROFILES_PLAN.md, Phase 2): an emblem (one of our shapes, in a colour)
+   * beside your name on the scoreboard, in the kill feed and on your card; a title your career has earned on your card.
+   * Kept in this browser, and on your account when signed in.
+   */
+  private emblemSection(kicker: (text: string) => HTMLElement): HTMLElement {
+    const note = el('small', { class: 'hint', id: 'profile-emblem-note', textContent: 'Beside your name on the scoreboard, in the kill feed and on your card.' });
+    const saved = (p: Promise<void>) =>
+      p.then(
+        () => (note.textContent = 'Saved.'),
+        (e: Error) => (note.textContent = `Saved in this browser; not on your account: ${e.message}`),
+      );
+    const cur = readEmblem(myEmblem());
+    let color = cur?.color ?? 6;
+    const shapes = el('div', { class: 'prof-emblems', id: 'profile-emblems', ariaLabel: 'Emblem' });
+    const draw = () => {
+      const now = readEmblem(myEmblem());
+      const none = el('button', { type: 'button', class: `prof-emblem none${now ? '' : ' on'}`, title: 'No emblem', textContent: '–' });
+      none.dataset.emblem = '';
+      none.addEventListener('click', () => (saved(setEmblem(null)), draw()));
+      const buttons = EMBLEM_IDS.map((id) => {
+        const b = el('button', { type: 'button', class: `prof-emblem${now?.id === id ? ' on' : ''}`, title: EMBLEM_LABELS[id] });
+        b.dataset.emblem = id;
+        b.innerHTML = emblemSvg(emblemCode({ id, color }));
+        b.addEventListener('click', () => (saved(setEmblem(emblemCode({ id, color }))), draw()));
+        return b;
+      });
+      shapes.replaceChildren(none, ...buttons);
+      colors.replaceChildren(
+        ...EMBLEM_COLORS.map((c, i) => {
+          const b = el('button', { type: 'button', class: `prof-swatch${i === color ? ' on' : ''}`, title: EMBLEM_COLOR_NAMES[i] });
+          b.style.background = c;
+          b.dataset.color = String(i);
+          b.addEventListener('click', () => {
+            color = i;
+            const e = readEmblem(myEmblem());
+            if (e) saved(setEmblem(emblemCode({ id: e.id, color })));
+            draw();
+          });
+          return b;
+        }),
+      );
+    };
+    const colors = el('div', { class: 'prof-swatches', id: 'profile-emblem-colors', ariaLabel: 'Emblem colour' });
+    draw();
+    // Titles: the ones your career has earned; the rest say how.
+    const career = myCareer().career;
+    const earned = new Set(earnedTitles(career));
+    const titles = el(
+      'select',
+      { id: 'profile-title' },
+      el('option', { value: '', textContent: earned.size ? 'None' : 'None yet: play a match to the end' }),
+      ...TITLES.map((t) => el('option', { value: t.id, textContent: earned.has(t.id) ? t.name : `${t.name} (${t.how})`, disabled: !earned.has(t.id), selected: t.id === myTitle() })),
+    );
+    titles.addEventListener('change', () => void saved(setTitle(titles.value || null)));
+    return el('section', { class: 'prof-sec prof-emblem-sec', id: 'profile-emblem' }, kicker('Emblem and title'), shapes, colors, el('label', {}, 'Title', titles), note);
   }
 
   /** Profile's career stats (careerStats.ts): matches, wins, kills, deaths, K/D, accuracy, headshots, best streak, time, favourite weapon. */

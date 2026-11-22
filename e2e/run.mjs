@@ -14007,6 +14007,114 @@ async function impGrips(browser) {
  * players on a dedicated server: one leans and slides, and the other sees it, drawn from the snapshots. SLIDEPEEK_PICS
  * (a folder): the pictures are kept there too.
  */
+/**
+ * Player profiles, Phases 2-4 (docs/PLAYER_PROFILES_PLAN.md): Profile's emblem and title pickers; your emblem in the
+ * roster, the kill feed and on the scoreboard; your card with your title; another player's card from a click on the
+ * end-of-match board (a signed-in player's career from the hub, which this flow stands in for with page.route).
+ * PROFILES_PICS=<dir>: pictures at twice the pixels.
+ */
+async function profilesFlow(browser) {
+  const pics = process.env.PROFILES_PICS;
+  const pic = async (page, name) => {
+    if (pics) await page.screenshot({ path: `${pics}/${name}.png`, timeout: 120_000 });
+  };
+  const context = await browser.newContext({ viewport: pics ? { width: 1024, height: 600 } : { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
+  await context.addInitScript(() => {
+    if (sessionStorage.getItem('profiles-seeded')) return;
+    sessionStorage.setItem('profiles-seeded', '1');
+    localStorage.setItem('tiletrigger.career', JSON.stringify({ matches: 30, wins: 12, kills: 240, deaths: 150, shots: 4000, hits: 1300, headshots: 40, bestStreak: 7, seconds: 9000, weaponKills: { 'core.rifle': 120, 'core.shotgun': 40 } }));
+    localStorage.setItem('tiletrigger.emblem', JSON.stringify('bolt.6'));
+    localStorage.setItem('tiletrigger.title', JSON.stringify('regular'));
+  });
+  // The hub's public cards (GET /api/v1/profile/card?u=): one signed-in player; everything else on the hub is away.
+  const hubCard = { username: 'Toshi_92', emblem: 'crown.2', title: 'veteran', favClass: 'medic', career: { matches: 120, wins: 61, kills: 900, deaths: 450, shots: 10000, hits: 3100, headshots: 120, bestStreak: 12, seconds: 40000, weaponKills: { 'core.rifle': 500 } } };
+  await context.route('http://127.0.0.1:9/**', (route) => {
+    const u = new URL(route.request().url());
+    if (u.pathname.endsWith('/api/v1/profile/card') && u.searchParams.get('u')?.toLowerCase() === 'toshi_92') return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(hubCard) });
+    return route.fulfill({ status: 404, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{"error":"not here"}' });
+  });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  if (process.env.PROFILES_DEBUG) page.on('request', (r) => r.url().includes(':9/') && console.log('REQ', r.url()));
+  // Profile: the emblem picker (bolt in cyan, from this browser), a new shape and colour; titles earned and not.
+  await page.goto(`${CLIENT}/?test=1&hub=127.0.0.1:9`);
+  await page.waitForSelector('#profile-badge');
+  await page.click('#profile-badge');
+  await page.waitForSelector('#profile-emblems');
+  const before = await page.evaluate(() => ({ on: document.querySelector('#profile-emblems .prof-emblem.on')?.dataset.emblem, shapes: document.querySelectorAll('#profile-emblems .prof-emblem svg.emb').length, title: document.getElementById('profile-title').value, veteran: document.querySelector('#profile-title option[value="veteran"]')?.disabled, regular: document.querySelector('#profile-title option[value="regular"]')?.disabled }));
+  check(before.on === 'bolt' && before.shapes >= 12 && before.title === 'regular' && before.veteran === true && before.regular === false, `Profile shows your emblem and the titles your career earned (${JSON.stringify(before)})`);
+  await page.click('#profile-emblems .prof-emblem[data-emblem="crown"]');
+  await page.click('#profile-emblem-colors .prof-swatch[data-color="2"]');
+  const picked = await page.evaluate(() => ({ em: JSON.parse(localStorage.getItem('tiletrigger.emblem')), on: document.querySelector('#profile-emblems .prof-emblem.on')?.dataset.emblem }));
+  check(picked.em === 'crown.2' && picked.on === 'crown', `picking a shape and a colour keeps the emblem (${JSON.stringify(picked)})`);
+  await page.evaluate(() => document.getElementById('profile-emblem')?.scrollIntoView({ block: 'center' }));
+  await pic(page, 'profile-emblem');
+  // A match: your emblem and title travel in the roster; your emblem shows in the kill feed.
+  await page.goto(`${CLIENT}/?offline=phase0_arena&test=1&god=1&bots=4&name=Tester&hub=127.0.0.1:9`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), null, { timeout: T(90000) });
+  await playWithoutMouse(page);
+  await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+  const mine = await page.waitForFunction(() => {
+    const p = window.__cs.hud.rosterOf(window.__cs.slot);
+    return p?.em ? { em: p.em, tt: p.tt } : null;
+  }, null, { timeout: T(10000) }).then((h) => h.jsonValue(), () => null);
+  check(mine?.em === 'crown.2' && mine?.tt === 'regular', `your emblem and title are on the roster (${JSON.stringify(mine)})`);
+  const foes = await sim(page, (m, me) => {
+    const bots = m.combatants().filter((c) => c.bot);
+    bots[0].shieldUntil = 0;
+    m.kill(bots[0], me, 'core.rifle');
+    return bots.map((b) => b.slot);
+  });
+  const feed = await page.waitForFunction(() => [...document.querySelectorAll('#feed svg.emb')].length > 0, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(feed, 'your emblem shows by your name in the kill feed');
+  // The end of the match: your card with your title and emblem; your row's emblem.
+  await page.evaluate(() => (window.__cs.career().startedAt -= 60_000));
+  await sim(page, (m) => {
+    m.endMatch();
+    m.phaseEndTick = m.tick + 60 * 120;
+  });
+  const board = await page.waitForFunction((slot) => {
+    const sb = document.getElementById('scoreboard');
+    const card = sb?.querySelector('#profile-card');
+    if (!sb || sb.hidden || !card || !/This match/.test(card.textContent)) return null;
+    return { card: card.textContent, cardEmblem: !!card.querySelector('svg.emb-crown'), rowEmblem: !!sb.querySelector(`.sb-row[data-slot="${slot}"] .sb-em svg.emb-crown`), clickable: sb.querySelectorAll('.sb-row.sb-click').length };
+  }, await page.evaluate(() => window.__cs.slot), { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
+  check(!!board && /Regular · /.test(board.card) && board.cardEmblem && board.rowEmblem && board.clickable >= 4, `the end board: your card wears your title and emblem, your row your emblem, rows open cards (${JSON.stringify(board)})`);
+  await pic(page, 'profile-card-board');
+  // Another player: a bot's place played by a signed-in person (as the roster would say it), their card from the hub.
+  const other = foes[1];
+  await page.evaluate((slot) => {
+    const p = window.__cs.hud.rosterOf(slot);
+    Object.assign(p, { name: 'Toshi_92', bot: false, acct: 1, em: 'crown.2', tt: 'veteran' });
+  }, other);
+  if (process.env.PROFILES_DEBUG) console.log('DBG at', await page.evaluate((slot) => { const r = document.querySelector(`#scoreboard .sb-row[data-slot="${slot}"]`); if (!r) return 'no row'; const b = r.getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height), e?.id, e?.className, e?.closest('.sb-row') === r]; }, foes[2]));
+  await page.click(`#scoreboard .sb-row[data-slot="${foes[2]}"]`);
+  const botCard = await page.waitForFunction(() => {
+    const c = document.getElementById('player-card');
+    return c && !c.hidden ? c.textContent : null;
+  }, null, { timeout: T(5000) }).then((h) => h.jsonValue(), () => null);
+  check(!!botCard && /BOT/.test(botCard) && /A bot: no career/.test(botCard), `a bot's card (${botCard})`);
+  // (A fresh board line for the signed-in player: the board redraws a few times a second.)
+  await page.waitForFunction((slot) => /Toshi_92/.test(document.querySelector(`#scoreboard .sb-row[data-slot="${slot}"]`)?.textContent ?? ''), other, { timeout: T(5000) }).catch(() => undefined);
+  await page.click(`#scoreboard .sb-row[data-slot="${other}"]`, { force: true });
+  if (process.env.PROFILES_DEBUG) console.log('DBG', await page.evaluate(() => fetch('http://127.0.0.1:9/api/v1/profile/card?u=Toshi_92').then((r) => r.status, (e) => String(e))));
+  const theirs = await page.waitForFunction(() => {
+    const c = document.getElementById('player-card');
+    return c && !c.hidden && /Career: 120 matches/.test(c.textContent) ? { text: c.textContent, emblem: !!c.querySelector('svg.emb-crown'), inView: c.getBoundingClientRect().right <= innerWidth && c.getBoundingClientRect().bottom <= innerHeight } : null;
+  }, null, { timeout: T(8000) }).then((h) => h.jsonValue(), () => page.evaluate(() => ({ failed: document.getElementById('player-card')?.textContent ?? 'none', hidden: document.getElementById('player-card')?.hidden })));
+  check(!!theirs && !theirs.failed && /Toshi_92/.test(theirs.text) && /✓/.test(theirs.text) && /Veteran/.test(theirs.text) && theirs.emblem && theirs.inView, `a signed-in player's card: their emblem, title and career from the hub (${JSON.stringify(theirs)})`);
+  await pic(page, 'player-card-other');
+  // Clicking outside closes it.
+  await page.mouse.click(5, 5);
+  const closed = await page.evaluate(() => document.getElementById('player-card')?.hidden);
+  check(closed === true, 'a click outside closes the card');
+  check(errors.length === 0, `no page errors (${errors.join(' | ')})`);
+  livePages.delete(page);
+  await context.close();
+}
+
 async function slidepeekFlow(browser) {
   const SPRINT = 128, CROUCH = 256, LEAN_L = 65536, LEAN_R = 131072;
   const pics = process.env.SLIDEPEEK_PICS;
@@ -15890,7 +15998,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, profiles: profilesFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

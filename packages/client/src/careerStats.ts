@@ -1,4 +1,4 @@
-import { addMatch, careerRankPoints, emptyCareer, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
+import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
@@ -14,6 +14,8 @@ import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from '
 const CAREER_KEY = 'tiletrigger.career';
 const PENDING_KEY = 'tiletrigger.career.pending';
 const FAV_CLASS_KEY = 'tiletrigger.favClass';
+const EMBLEM_KEY = 'tiletrigger.emblem';
+const TITLE_KEY = 'tiletrigger.title';
 export const PENDING_MAX = 20;
 
 function read(key: string): unknown {
@@ -126,4 +128,40 @@ export function myFavClass(): string | null {
 export async function setFavClass(id: string | null): Promise<void> {
   write(FAV_CLASS_KEY, id);
   if (currentAccount()) await saveProfile({ favClass: id });
+}
+
+/**
+ * Your emblem (shared content/emblems.ts, "<id>.<colour>"; Phase 2): your profile's when signed in and the hub keeps
+ * one, else this browser's; null for none. Sent as you join, so everyone's scoreboard and kill feed show it.
+ */
+export function myEmblem(): string | null {
+  const fromProfile = currentAccount() ? cachedProfile()?.emblem : null;
+  return fromProfile ?? cleanEmblemCode(read(EMBLEM_KEY));
+}
+
+/** Set (or clear) your emblem: here, and on your profile when signed in (an older hub keeps it here only). */
+export async function setEmblem(code: string | null): Promise<void> {
+  write(EMBLEM_KEY, cleanEmblemCode(code));
+  if (currentAccount()) await saveProfile({ emblem: cleanEmblemCode(code) });
+}
+
+/** Your title (shared content/titles.ts): one your career has earned, your profile's when signed in, else this browser's. */
+export function myTitle(): string | null {
+  const fromProfile = currentAccount() ? cachedProfile()?.title : null;
+  const v = fromProfile ?? read(TITLE_KEY);
+  return typeof v === 'string' && hasTitle(myCareer().career, v) ? v : null;
+}
+
+/** Wear a title (or none): only one your career has earned. */
+export async function setTitle(id: string | null): Promise<void> {
+  if (id !== null && !hasTitle(myCareer().career, id)) throw new Error('not earned yet');
+  write(TITLE_KEY, id);
+  if (currentAccount()) await saveProfile({ title: id });
+}
+
+/** Your emblem and title as a hello carries them (`em`, `tt`): only the ones you have. */
+export function emblemAndTitle(): { em?: string; tt?: string } {
+  const em = myEmblem();
+  const tt = myTitle();
+  return { ...(em ? { em } : {}), ...(tt ? { tt } : {}) };
 }

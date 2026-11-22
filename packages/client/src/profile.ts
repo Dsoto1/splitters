@@ -1,4 +1,4 @@
-import { emptyCareer, isRegion, readCareer, regionForTimeZone, type Profile, type Region } from '@tiletrigger/shared';
+import { cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
 import { accessToken, currentAccount } from './account.ts';
 import { hubApi } from './publishedMaps.ts';
 
@@ -19,6 +19,8 @@ function readProfile(v: unknown): Profile {
     region: isRegion(o.region) ? o.region : null,
     favClass: typeof o.favClass === 'string' ? o.favClass : null,
     career: readCareer(o.career) ?? emptyCareer(),
+    emblem: cleanEmblemCode(o.emblem),
+    title: isTitleId(o.title) ? o.title : null,
   };
 }
 
@@ -57,7 +59,7 @@ export function cachedProfile(): Profile | null {
   return cache && who && cache.sub === who.sub ? cache.profile : null;
 }
 
-export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null }): Promise<Profile> {
+export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null; emblem?: string | null; title?: string | null }): Promise<Profile> {
   const who = currentAccount();
   const res = await call('profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
   const profile = readProfile(await res.json());
@@ -100,4 +102,29 @@ export function myRegion(): Region {
 export async function setRegion(r: Region): Promise<void> {
   saveLocalRegion(r);
   if (currentAccount()) await saveProfile({ region: r });
+}
+
+/** Other players' cards (GET profile/card?u=, no sign-in needed), asked once per name a page; a few minutes at most. */
+const cards = new Map<string, { at: number; card: Promise<PublicCard | null> }>();
+const CARD_FRESH_MS = 5 * 60_000;
+
+/**
+ * A signed-in player's public card from the hub (docs/PLAYER_PROFILES_PLAN.md, Phase 2), or null: no hub, a hub
+ * without cards (an older one answers 404), no such player, offline. The scoreboard's card then shows what the match
+ * knows of them.
+ */
+export function loadCard(username: string): Promise<PublicCard | null> {
+  const key = username.toLowerCase();
+  const had = cards.get(key);
+  if (had && performance.now() - had.at < CARD_FRESH_MS) return had.card;
+  const url = hubApi(`profile/card?u=${encodeURIComponent(username)}`);
+  const card = url
+    ? fetch(url, { signal: AbortSignal.timeout(8000) }).then(
+        async (r) => (r.ok ? readPublicCard(await r.json()) : null),
+        () => null,
+      )
+    : Promise.resolve(null);
+  cards.set(key, { at: performance.now(), card });
+  if (cards.size > 200) cards.delete(cards.keys().next().value!);
+  return card;
 }

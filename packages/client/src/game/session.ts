@@ -157,6 +157,8 @@ import {
   isAmmoBoxPickup,
   inHand,
   weaponCode,
+  NPC_LOOKS as CARD_NPC_LOOKS,
+  getLook as cardLook,
 } from '@tiletrigger/shared';
 import { LEAN, leanShift } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
@@ -203,6 +205,8 @@ import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { CareerTally } from './careerTally.ts';
 import { ProfileCard, type ProfileCardData } from './profileCard.ts';
+import { PlayerCardView, type PlayerCardSubject } from './playerCard.ts';
+import { loadCard } from '../profile.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
@@ -404,6 +408,8 @@ export class GameSession {
   /** Your match for your career (careerTally.ts) and your profile card under the scoreboard (profileCard.ts): with `opts.career` only. */
   private careerTally: CareerTally | null = null;
   private profileCard: ProfileCard | null = null;
+  /** Another player's card, opened from a scoreboard row (playerCard.ts). */
+  private playerCard: PlayerCardView | null = null;
   /** The host lets players spectate by choice (welcome `spectate`). */
   private canSpectate = false;
   /** The host lets players switch team mid-match (welcome `ts`) and this is a team mode. */
@@ -2106,6 +2112,29 @@ export class GameSession {
     void sendPlayReport(report, () => serializeMap(map), closing);
   }
 
+  /** What another player's card shows of `slot` (playerCard.ts): their scoreboard line and roster entry; null when they're gone. */
+  private cardSubject(slot: number): PlayerCardSubject | null {
+    const p = this.hud.rosterOf(slot);
+    const row = this.hud.boardData(this.scores, this.slot, false).groups.flatMap((g) => g.rows).find((r) => r.slot === slot);
+    if (!p || !row) return null;
+    const you = slot === this.slot;
+    const mine = you ? this.opts.career?.card() : undefined;
+    const npc = CARD_NPC_LOOKS.find((l) => l.id === p.look);
+    return {
+      slot,
+      name: row.name,
+      username: p.acct ? p.name : null,
+      kind: you ? 'you' : p.bot ? 'bot' : p.acct ? 'acct' : 'guest',
+      character: mine?.character ?? npc?.name ?? cardLook(p.look).name,
+      emblem: you ? (mine?.emblem ?? p.em ?? null) : (p.em ?? null),
+      title: you ? (mine?.title ?? null) : (p.tt ?? null),
+      cls: row.cls,
+      kills: row.k,
+      deaths: row.d,
+      ...(mine ? { career: mine.career } : {}),
+    };
+  }
+
   exit(reason?: string, how?: 'lost' | 'rejected'): void {
     if (this.closed) return;
     this.closed = true;
@@ -2130,6 +2159,7 @@ export class GameSession {
     // The standings as they were (before the HUD goes), for a screen after the match (the host left).
     const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
     this.hostPanel.remove();
+    this.playerCard?.dispose();
     this.wheel.dispose();
     this.orderWheel.dispose();
     this.touch?.dispose();
@@ -2277,6 +2307,13 @@ export class GameSession {
           const tally = this.careerTally;
           this.hud.setProfileCard({ el: card.el, refresh: (final) => card.update(career.card(), this.spectator ? null : tally, final) });
         }
+        // Other players' cards: click a row on the pause menu's board or the end-of-match board (playerCard.ts).
+        this.playerCard ??= new PlayerCardView(this.opts.portraitOf, loadCard);
+        this.hud.onPlayerCard = (slot, row) => {
+          const p = this.cardSubject(slot);
+          const look = this.hud.rosterOf(slot)?.look;
+          if (p && look) this.playerCard?.show(p, look, row);
+        };
         // Between matches: the vote on the next map (hosts that have one send it; mapVoteHud.ts).
         this.voteHud?.dispose();
         this.voteHud = new MapVoteHud((i) => this.opts.transport.sendVote?.(i), (id) => this.opts.mapPicture?.(id) ?? null);
@@ -2361,6 +2398,12 @@ export class GameSession {
         if ((phaseWas === 'countdown') !== (msg.phase === 'countdown')) this.updatePause();
         this.timeLeft = msg.timeLeft;
         this.scores = msg.score;
+        const open = this.playerCard?.slot;
+        if (open !== null && open !== undefined) {
+          const p = this.cardSubject(open);
+          if (p) this.playerCard!.refresh(p);
+          else this.playerCard!.close();
+        }
         // Ranks & badges (rankBook.ts): everyone's rank from the new lines; a rank-up glows in the feed and over the head.
         this.hud.updateRanks(msg.score, this.slot);
         if (msg.phase === 'playing' && !this.spectator && !document.hidden) this.announceSnapshot(msg.timeLeft, msg.players);

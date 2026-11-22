@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
-import { CLASS_IDS, KeyedLimiter, addMatch, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type Region } from '@tiletrigger/shared';
+import { CLASS_IDS, KeyedLimiter, addMatch, cleanEmblemCode, hasTitle, isTitleId, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 import type { VerifiedUser } from './auth.ts';
 
@@ -12,6 +12,9 @@ interface Stored {
   at: number;
   favClass?: string | null;
   career?: Career;
+  /** Phase 2: the emblem ("<id>.<colour>") and the title the player wears. */
+  emblem?: string | null;
+  title?: string | null;
 }
 
 /**
@@ -44,7 +47,15 @@ export class ProfileStore {
 
   get(sub: string): Profile {
     const p = this.bySub.get(sub);
-    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer() };
+    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer(), emblem: cleanEmblemCode(p?.emblem), title: p?.title && isTitleId(p.title) ? p.title : null };
+  }
+
+  /** A player's public card by username (any case), or null when no account has that name. */
+  card(name: string): PublicCard | null {
+    const sub = this.byName.get(usernameKey(name.trim()));
+    const p = sub ? this.get(sub) : null;
+    if (!p?.username) return null;
+    return { username: p.username, emblem: p.emblem, title: p.title, favClass: p.favClass, career: p.career };
   }
 
   /** The username of this account, if it has one. */
@@ -61,7 +72,7 @@ export class ProfileStore {
   }
 
   /** Change what's given (`username`, `region`, `favClass`); throws with a message for the page. */
-  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown }): Profile {
+  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown; emblem?: unknown; title?: unknown }): Profile {
     const cur = this.bySub.get(sub) ?? { username: null, region: null, at: 0 };
     const next = { ...cur, at: Date.now() };
     if (patch.username !== undefined) {
@@ -78,6 +89,15 @@ export class ProfileStore {
     if (patch.favClass !== undefined) {
       if (patch.favClass !== null && !(CLASS_IDS as readonly unknown[]).includes(patch.favClass)) throw new Error('unknown class');
       next.favClass = patch.favClass as string | null;
+    }
+    if (patch.emblem !== undefined) {
+      if (patch.emblem !== null && !cleanEmblemCode(patch.emblem)) throw new Error('unknown emblem');
+      next.emblem = patch.emblem === null ? null : cleanEmblemCode(patch.emblem);
+    }
+    if (patch.title !== undefined) {
+      if (patch.title !== null && !isTitleId(patch.title)) throw new Error('unknown title');
+      if (patch.title !== null && !hasTitle(readCareer(cur.career) ?? emptyCareer(), patch.title)) throw new Error('that title is not earned yet');
+      next.title = patch.title as string | null;
     }
     if (cur.username && cur.username !== next.username) this.byName.delete(usernameKey(cur.username));
     if (next.username) this.byName.set(usernameKey(next.username), sub);
@@ -152,6 +172,8 @@ export class ProfileStore {
  *   PUT  /api/v1/profile                 also { favClass } (a class id, or null)
  *   POST /api/v1/profile/match           a match summary (shared/net/career.ts) → { career }, or { error }
  *   POST /api/v1/profile/career          a guest's career, moved once onto an account with none → { career }, or { error }
+ *   PUT  /api/v1/profile                 also { emblem } ("<id>.<colour>", or null) and { title } (an earned title id, or null)
+ *   GET  /api/v1/profile/card?u=<name>   anyone: that player's public card (PublicCard), or 404
  */
 export function profileHandler(store: ProfileStore, o: { verify: ((token: string) => Promise<VerifiedUser>) | null; trustProxy: boolean }) {
   const reads = new KeyedLimiter({ perMinute: 120, burst: 40 });
@@ -161,7 +183,7 @@ export function profileHandler(store: ProfileStore, o: { verify: ((token: string
   return async (req: IncomingMessage, res: ServerResponse, next: () => void): Promise<void> => {
     const url = new URL(req.url ?? '/', 'http://hub');
     const path = url.pathname.replace(/\/+$/, '');
-    const routes = ['/api/v1/profile', '/api/v1/profile/check', '/api/v1/profile/match', '/api/v1/profile/career'];
+    const routes = ['/api/v1/profile', '/api/v1/profile/check', '/api/v1/profile/match', '/api/v1/profile/career', '/api/v1/profile/card'];
     if (!routes.includes(path)) return next();
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, OPTIONS');
@@ -176,6 +198,12 @@ export function profileHandler(store: ProfileStore, o: { verify: ((token: string
     const ip = clientIp(req, o.trustProxy);
     const writing = req.method === 'PUT' || req.method === 'POST';
     if (!(writing ? writes : reads).allow(ip)) return send(429, { error: 'slow down' });
+    // Another player's card: public fields, no sign-in (a scoreboard row's card; the roster's ✓ proved the name).
+    if (path === '/api/v1/profile/card') {
+      if (req.method !== 'GET') return send(405, { error: 'method not allowed' });
+      const card = store.card(url.searchParams.get('u') ?? '');
+      return card ? send(200, card) : send(404, { error: 'no such player' });
+    }
     if (!o.verify) return send(404, { error: 'sign-in is not set up on this hub' });
     const m = /^Bearer ([A-Za-z0-9_.-]+)$/.exec(String(req.headers.authorization ?? ''));
     if (!m) return send(401, { error: 'sign in first' });
@@ -210,7 +238,7 @@ export function profileHandler(store: ProfileStore, o: { verify: ((token: string
     try {
       if (path === '/api/v1/profile/match') return matches.allow(user.sub) ? send(200, { career: store.addMatch(user.sub, body) }) : send(429, { error: 'slow down' });
       if (path === '/api/v1/profile/career') return send(200, { career: store.importCareer(user.sub, body) });
-      return send(200, store.update(user.sub, body as { username?: unknown; region?: unknown; favClass?: unknown }));
+      return send(200, store.update(user.sub, body as Record<string, unknown>));
     } catch (e) {
       return send(400, { error: (e as Error).message });
     }
