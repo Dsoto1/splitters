@@ -1,0 +1,39 @@
+{
+  "id": "core.runebreaker",
+  "code": 57,
+  "displayName": "Runebreaker",
+  "category": "shotgun",
+  "kind": "hitscan",
+  "slot": 4,
+  "family": "shotgun",
+  "fireMode": "semi",
+  "damage": 11,
+  "pellets": 9,
+  "spread": 0.06,
+  "fireIntervalTicks": 16,
+  "range": 36,
+  "magazine": 6,
+  "reserveMax": 36,
+  "pickupAmmo": 12,
+  "reloadTicks": 144,
+  "reload": { "type": "shell", "start": 14, "each": 20, "end": 10 },
+  "raiseTicks": 18,
+  "ammo": "shells",
+  "kick": { "pitch": [0.045], "yaw": [0.008, -0.006] },
+  "botDesirability": 0.62,
+  "botRange": [0, 9],
+  "view": {
+    "model": "guns/runebreaker.glb",
+    "held": { "medium": "guns/runebreaker.medium.glb", "high": "guns/runebreaker.high.glb" },
+    "fallback": "weapons/shotgun.glb",
+    "viewOffset": [0.2, -0.2, 0.6],
+    "tracer": "#ff9ab0",
+    "hold": { "style": "long", "grip": [0, -0.015, -0.19], "support": [0, 0.045, 0.14], "shoulder": [0, -0.04, -0.49] },
+    "muzzleAt": [0, 0.08, 0.5],
+    "sound": "fire.shotgun"
+  },
+  "notes": {
+    "design": "A six-shot revolving shotgun: a lighter blast than the pump (9 pellets of 11, so not a one-shot kill) that comes again in a quarter of a second, six times, then loads shell by shell. Two quick blasts beat one big one if you keep your aim.",
+    "model": "The Meshy community Runebreaker Revolver (CC0): a revolving long gun with shells on its stock; the kit shotgun is the fallback."
+  }
+}

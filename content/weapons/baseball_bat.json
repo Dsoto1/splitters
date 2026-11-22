@@ -1,0 +1,33 @@
+{
+  "id": "core.baseball_bat",
+  "code": 65,
+  "displayName": "Baseball Bat",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "damage": 45,
+  "fireIntervalTicks": 42,
+  "range": 2.5,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 14,
+  "knockback": 14,
+  "botDesirability": 0.4,
+  "botRange": [0, 2.4],
+  "view": {
+    "model": "guns/baseball_bat.glb",
+    "held": { "medium": "guns/baseball_bat.medium.glb", "high": "guns/baseball_bat.high.glb" },
+    "fallback": "weapons/knife.glb",
+    "viewOffset": [0.26, -0.3, 0.42],
+    "tracer": "#ffffff",
+    "sound": "fire.knife",
+    "hold": { "style": "melee", "grip": [0, 0, -0.32] }
+  },
+  "notes": {
+    "design": "The home run: a slow swing (0.7 s) for 45 that knocks the target flying (14 m/s along the swing, the Battle Axe's 6): off ledges, into hazards, out of the fight.",
+    "model": "The owner's own Futuristic Baseball Bat (Meshy, owned; weapons intake of 2026-11-18), 0.86 m; the knife is the fallback."
+  }
+}

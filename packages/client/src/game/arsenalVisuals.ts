@@ -6,6 +6,7 @@ import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Mesh as MeshClass, type Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
+import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
@@ -51,7 +52,7 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
 /** How far a sheep's body sits above its position: its legs (0.24 m, centred 0.28 below the fleece) end at the ground. */
 export const SHEEP_LIFT = 0.4;
 
-export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'flareShot']);
+export const ARSENAL_LOOKS: ReadonlySet<ProjectileVisual> = new Set(['bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt', 'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'flareShot', 'arrow', 'blasterBolt', 'stinger', 'slime']);
 
 export function createArsenalProjectile(scene: Scene, id: number, look: ProjectileVisual): TransformNode {
   const node = new TransformNode(`proj_${id}`, scene);
@@ -93,6 +94,51 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       head.rotation.x = Math.PI / 2;
       head.position.z = 0.4;
       head.material = mat(scene, '#a7adb4', 0.1);
+      break;
+    }
+    case 'arrow': {
+      // The Crossbow's bolt: a dark shaft along the flight, a steel head in front, three pale vanes at the back.
+      const shaft = add(CreateCylinder(`arrow_${id}`, { diameter: 0.018, height: 0.42, tessellation: 5 }, scene));
+      shaft.rotation.x = Math.PI / 2;
+      shaft.material = mat(scene, '#5a3d24');
+      const head = add(CreateCylinder(`arrowHead_${id}`, { diameterTop: 0, diameterBottom: 0.04, height: 0.08, tessellation: 4 }, scene));
+      head.rotation.x = Math.PI / 2;
+      head.position.z = 0.25;
+      head.material = mat(scene, '#b4bac2', 0.1);
+      for (let i = 0; i < 3; i++) {
+        const vane = add(CreateBox(`arrowVane_${id}_${i}`, { width: 0.002, height: 0.035, depth: 0.09 }, scene));
+        vane.position.z = -0.17;
+        vane.rotation.z = (i * 2 * Math.PI) / 3;
+        vane.material = mat(scene, '#e8e2d0');
+      }
+      break;
+    }
+    case 'slime':
+      // The Heart Taser's slime before its model loads (view.ts slimeProjectile): a soft pink blob.
+      add(CreateSphere(`slime_${id}`, { diameter: 0.16, segments: 6 }, scene)).material = mat(scene, '#ff8fc8', 0.25);
+      break;
+    case 'stinger': {
+      // The Hornet's dart: a yellow body banded black, a dark point in front.
+      const body = add(CreateCylinder(`stinger_${id}`, { diameter: 0.05, height: 0.14, tessellation: 6 }, scene));
+      body.rotation.x = Math.PI / 2;
+      body.material = mat(scene, '#ffd23a', 0.35);
+      const band = add(CreateCylinder(`stingerBand_${id}`, { diameter: 0.054, height: 0.03, tessellation: 6 }, scene));
+      band.rotation.x = Math.PI / 2;
+      band.material = mat(scene, '#1c1a14');
+      const tip = add(CreateCylinder(`stingerTip_${id}`, { diameterTop: 0, diameterBottom: 0.05, height: 0.07, tessellation: 6 }, scene));
+      tip.rotation.x = Math.PI / 2;
+      tip.position.z = 0.1;
+      tip.material = mat(scene, '#1c1a14');
+      break;
+    }
+    case 'blasterBolt': {
+      // The Blaster X-42's round: a short orange streak with a pale core. Steady light, no flicker (Reduce flashing).
+      const core = add(CreateCylinder(`blasterBolt_${id}`, { diameter: 0.035, height: 0.34, tessellation: 6 }, scene));
+      core.rotation.x = Math.PI / 2;
+      core.material = mat(scene, '#fff0d0', 1);
+      const glowSheath = add(CreateCylinder(`blasterBoltGlow_${id}`, { diameter: 0.09, height: 0.42, tessellation: 6 }, scene));
+      glowSheath.rotation.x = Math.PI / 2;
+      glowSheath.material = mat(scene, '#ff8a1e', 0.9, 0.45);
       break;
     }
     case 'nail': {
@@ -243,6 +289,9 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       node.rotation.x = 0.4;
       break;
     case 'nail':
+    case 'arrow':
+    case 'blasterBolt':
+    case 'stinger':
     case 'swarm':
     // A spear points along its flight and keeps its last heading where it sticks.
     case 'spear':

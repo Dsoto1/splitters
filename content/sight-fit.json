@@ -5,13 +5,17 @@
     "core.arc_caster": "no sights on the model: a flat-topped kit gun",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
     "core.blast_rockets": "a tube launcher: no sights, its top line starts on the stock",
+    "core.blaster_x42": "its own scope sits over the receiver with no sights under it: aims with the top of the gun until the sights pass gives it its optic (weapons intake 11-18)",
     "core.bubble_blaster": "no sights on the model: a flat-topped kit gun",
+    "core.desert_carbine": "its own holographic sight stands lower than the front post, so the line runs off the bore: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)",
     "core.disc_launcher": "no sights on the model: a flat-topped disc launcher",
     "core.flak": "no sights on the model: a flat-topped kit gun",
     "core.flamethrower": "no sights on the model: its top line starts on the stock",
     "core.flare_gun": "the model is drawn broken open, its barrel tipped up: no line along it",
     "core.gilded_pistol": "a flintlock: the cock stands on the centre plane over the barrel, blocking the line to the bead",
     "core.guided": "a tube launcher: no sights, its top line starts on the stock",
+    "core.heart_taser": "its slime finds a hurt teammate by itself: aims with the top of the gun (weapons intake 11-18)",
+    "core.hornet": "an organic sci-fi shell: the mandibles at the muzzle block a line along the top (weapons intake 11-18)",
     "core.laser_rifle": "no sights on the model: a flat-topped kit gun",
     "core.launcher": "a tube launcher: no rear sight, its top line starts on the stock",
     "core.lmg": "a rotary gun held at the hip: its top is a housing and a crank, not a sight line",
@@ -20,7 +24,8 @@
     "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
     "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
     "core.singularity": "no sights on the model: an organic shell with a sloping top",
-    "core.spear": "a thrown spear: no sights",
-    "core.swarm": "no sights on the model: a flat-topped kit launcher"
+    "core.swarm": "no sights on the model: a flat-topped kit launcher",
+    "core.twin_rifle": "its own red dot is the only sight, with no posts: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)",
+    "core.woodland_smg": "its rear sight block stands in the line to the front post: aims with the top of the gun until the sights pass corrects it (weapons intake 11-18)"
   }
 }

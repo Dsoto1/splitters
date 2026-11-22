@@ -1,0 +1,33 @@
+{
+  "id": "core.scimitar",
+  "code": 64,
+  "displayName": "Scimitar",
+  "category": "melee",
+  "kind": "melee",
+  "slot": 1,
+  "fireMode": "semi",
+  "damage": 36,
+  "fireIntervalTicks": 16,
+  "range": 2.3,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "raiseTicks": 10,
+  "handling": { "move": 1.05 },
+  "botDesirability": 0.4,
+  "botRange": [0, 2.2],
+  "view": {
+    "model": "guns/scimitar.glb",
+    "held": { "medium": "guns/scimitar.medium.glb", "high": "guns/scimitar.high.glb" },
+    "fallback": "weapons/knife.glb",
+    "viewOffset": [0.26, -0.28, 0.42],
+    "tracer": "#ffffff",
+    "sound": "fire.knife",
+    "hold": { "style": "melee", "grip": [0, 0, -0.33] }
+  },
+  "notes": {
+    "design": "The quick blade: light cuts (36) every 0.27 s, three to a body (0.53 s), and you run a little faster with it (1.05). Keep slashing on the move.",
+    "model": "The Meshy community Scimitar Sword (CC0; weapons intake of 2026-11-18), 0.9 m, stood on its edge (`roll`); the knife is the fallback."
+  }
+}

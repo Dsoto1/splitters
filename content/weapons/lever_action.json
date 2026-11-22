@@ -1,0 +1,40 @@
+{
+  "id": "core.lever_action",
+  "code": 56,
+  "displayName": "Lever-Action",
+  "category": "sniper",
+  "kind": "hitscan",
+  "slot": 5,
+  "family": "marksman",
+  "fireMode": "semi",
+  "damage": 60,
+  "spread": 0.0008,
+  "fireIntervalTicks": 34,
+  "range": 400,
+  "magazine": 7,
+  "reserveMax": 35,
+  "pickupAmmo": 14,
+  "reloadTicks": 168,
+  "reload": { "type": "shell", "start": 14, "each": 22, "end": 14 },
+  "raiseTicks": 22,
+  "ammo": "sniper",
+  "falloff": { "start": 50, "end": 140, "min": 0.75, "curve": "smooth" },
+  "kick": { "pitch": [0.05], "yaw": [0.006, -0.004], "visual": 1 },
+  "botDesirability": 0.6,
+  "botRange": [8, 80],
+  "view": {
+    "model": "guns/lever_action.glb",
+    "held": { "medium": "guns/lever_action.medium.glb", "high": "guns/lever_action.high.glb" },
+    "fallback": "weapons/marksman.glb",
+    "viewOffset": [0.2, -0.2, 0.62],
+    "tracer": "#ffe0a0",
+    "hold": { "style": "long", "grip": [0, -0.025, -0.2], "support": [0, 0.035, 0.15], "shoulder": [0, -0.03, -0.5] },
+    "muzzleAt": [0, 0.065, 0.51],
+    "zoomFov": 0.6,
+    "sound": "fire.sniper"
+  },
+  "notes": {
+    "design": "The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).",
+    "model": "The Meshy community Scoped Lever-Action Rifle (CC0); the kit marksman rifle is the fallback."
+  }
+}

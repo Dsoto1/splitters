@@ -1,0 +1,45 @@
+{
+  "id": "core.laser_blaster",
+  "code": 61,
+  "displayName": "Laser Blaster",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "fireMode": "semi",
+  "damage": 20,
+  "spread": 0.002,
+  "fireIntervalTicks": 8,
+  "range": 80,
+  "magazine": 0,
+  "reserveMax": 0,
+  "pickupAmmo": 0,
+  "reloadTicks": 0,
+  "heat": { "perShot": 0.11, "coolPerTick": 0.012 },
+  "recoil": { "bloom": 0.003, "maxBloom": 0.015, "recover": 0.002 },
+  "kick": {
+    "pitch": [0.01],
+    "yaw": [0.002, -0.002],
+    "variance": 0.002,
+    "delay": 3,
+    "settle": 12,
+    "rate": 0.3,
+    "visual": 0.45
+  },
+  "botDesirability": 0.5,
+  "botRange": [2, 28],
+  "view": {
+    "model": "guns/laser_blaster.glb",
+    "held": { "medium": "guns/laser_blaster.medium.glb", "high": "guns/laser_blaster.high.glb" },
+    "fallback": "weapons/pulse_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.42],
+    "tracer": "#46c8ff",
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.08], "support": [-0.02, -0.04, -0.07], "rake": 25 },
+    "muzzleAt": [0, 0.0, 0.125],
+    "beam": true,
+    "sound": "fire.laser"
+  },
+  "notes": {
+    "design": "A sidearm that never reloads: blue laser shots (20, five to a body, 0.53 s), instant, but every shot heats it; nine quick shots overheat it and it locks until it cools. Pace your trigger and it never runs dry.",
+    "model": "The Meshy community Laser Blaster Gun (CC0); the kit pulse pistol is the fallback."
+  }
+}

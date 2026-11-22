@@ -16,17 +16,18 @@
   "botRange": [3, 40],
   "heat": { "perShot": 0.022, "coolPerTick": 0.01 },
   "view": {
-    "model": "weapons/laser_rifle.glb",
-    "viewOffset": [0.21, -0.31, 0.52],
-    "tracer": "#ff3b4a",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.06, -0.08],
-      "support": [0, -0.012, 0.328],
-      "shoulder": [0, 0.078, -0.455]
-    },
+    "model": "guns/neon_pulse.glb",
+    "held": { "medium": "guns/neon_pulse.medium.glb", "high": "guns/neon_pulse.high.glb" },
+    "fallback": "weapons/laser_rifle.glb",
+    "viewOffset": [0.21, -0.21, 0.55],
+    "tracer": "#3ef0ff",
+    "hold": { "style": "long", "grip": [0, -0.06, -0.08], "support": [0, 0.01, 0.25], "shoulder": [0, 0.03, -0.49] },
+    "muzzleAt": [0, 0.07, 0.5],
     "sound": "fire.laser",
     "beam": true
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 3: rifles." }
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 3: rifles.",
+    "model": "The Meshy community Neon Pulse Rifle (CC0; weapons intake of 2026-11-18), its cyan glow matched by a cyan beam (was red); the kit laser rifle is the fallback."
+  }
 }

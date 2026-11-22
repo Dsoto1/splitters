@@ -10,7 +10,7 @@ import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, type PlayerInput } from '../sim/movement.ts';
 import { AMMO_BOX_REACH } from '../sim/resupply.ts';
 import { botFireMode } from './fireModePick.ts';
-import { THROWABLE_DEFS, getWeapon, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
+import { THROWABLE_DEFS, getWeapon, inHand, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
 import type { PhysicsWorld } from '../sim/physics.ts';
 import { segmentHitsAabb, type Aabb } from '../sim/scenarioDefs.ts';
 import { AimModel, type AimContext, type AimSolution, type AimTarget } from './aim.ts';
@@ -2514,6 +2514,17 @@ export class BotBrain {
       }
       const near = !!target && horizontalDistance(me.pos, target.pos) < barrelReach(barrel) + 4;
       if (barrel.reload && !view.reloading && held.reserve > 0 && (held.alt ?? 0) < (barrel.max ?? 1) && (!target || (!near && !loaded))) buttons |= BUTTON_RELOAD;
+    }
+    // A spear (inHand): poke within reach; a target a few steps beyond, and the spear in hand, gets it thrown (its
+    // second trigger; aim.ts lifts and leads for the throw). Picking it up again is the pickup goal's (lying spears).
+    const spear = held && inHand(held.def) && held.def.alt?.kind === 'projectile' ? held.def.alt : null;
+    if (held && spear && held.mag >= spear.cost) {
+      const s = sol as AimSolution | null;
+      const lined = !!s && Math.abs(angleDelta(this.yaw, s.yaw)) < s.halfAngle + 0.05 && Math.abs(this.pitch - s.pitch) < s.halfAngle + 0.08;
+      if (wantFire && s && reacted && lined && !sprint && s.dist > held.def.range + 1 && s.dist < SPEAR_THROW_REACH && !view.reloading) {
+        buttons |= BUTTON_ALT;
+        buttons &= ~BUTTON_FIRE;
+      }
     }
     // An oil slicker: puddles round the target first, then its igniter (the second trigger) sets them alight, about
     // once every three seconds of the fight (its puddles last far longer, so there is always some to light).
@@ -5022,6 +5033,8 @@ export function barrelReach(alt: AltFire): number {
   return Math.min(alt.range ?? 10, (alt.falloff?.end ?? 16) * 0.45);
 }
 
+/** How far a bot throws its spear (m): the throw drops 9 m/s², so past this it mostly misses. */
+const SPEAR_THROW_REACH = 22;
 /** weaponScore's weight on how much faster than the benchmark guns a gun kills at the distance (weaponBands.ts ttkEdge). */
 const EDGE_WEIGHT = 0.4;
 

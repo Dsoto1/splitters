@@ -52,6 +52,7 @@ describe('weapon sets generator (tools/content/weapon-sets.mjs)', () => {
     find(c, 'military').sniper = 'core.rifle';
     find(c, 'scifi').sniper = 'core.marksman';
     find(c, 'medieval').randomGun = true;
+    find(c, 'medieval').weapons = ['core.spear', 'core.battle_axe', 'core.knife']; // melee only: no main gun (the real set has the crossbow)
     find(c, 'chaos').throwables = ['sheep', 'pie'];
     find(c, 'standard').weapons = ['core.rifle'];
     const p = problems(c);

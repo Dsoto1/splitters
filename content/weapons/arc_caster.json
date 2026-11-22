@@ -18,17 +18,18 @@
   "heat": { "perShot": 0.08, "coolPerTick": 0.009 },
   "chain": { "jumps": 3, "range": 9, "falloff": 0.7 },
   "view": {
-    "model": "weapons/arc_caster.glb",
-    "viewOffset": [0.21, -0.21, 0.52],
+    "model": "guns/arcstorm.glb",
+    "held": { "medium": "guns/arcstorm.medium.glb", "high": "guns/arcstorm.high.glb" },
+    "fallback": "weapons/arc_caster.glb",
+    "viewOffset": [0.22, -0.23, 0.56],
     "tracer": "#9fd8ff",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.08, 0.07],
-      "support": [0, -0.081, 0.192],
-      "shoulder": [0, 0.012, -0.38]
-    },
+    "hold": { "style": "long", "grip": [0, -0.07, -0.1], "support": [0, -0.01, 0.16], "shoulder": [0, 0.07, -0.3] },
+    "muzzleAt": [0, 0.07, 0.31],
     "sound": "fire.arc",
     "beam": true
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
+  "notes": {
+    "group": "The extended arsenal: every one fires differently. 9: energy and chemical.",
+    "model": "The Meshy community Arcstorm Carbine (CC0; weapons intake of 2026-11-18), its cable and blue cell kept; the kit arc caster is the fallback."
+  }
 }

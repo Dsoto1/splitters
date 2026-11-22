@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BUTTON_FIRE, BUTTON_THROW, DEFAULT_DEATHMATCH_RULES, getItem, getWeapon, initPhysics, weaponCode, type GameEvent, type ThrowableKind } from '../src/index.ts';
+import { BUTTON_ALT, BUTTON_FIRE, BUTTON_THROW, DEFAULT_DEATHMATCH_RULES, getItem, getWeapon, initPhysics, weaponCode, type GameEvent, type ThrowableKind } from '../src/index.ts';
 import { Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -184,7 +184,8 @@ describe('spears only', () => {
       input(me, 0);
       match.step();
     }
-    input(me, BUTTON_FIRE);
+    // Right mouse throws it (owner, 2026-11-18; fire pokes).
+    input(me, BUTTON_ALT);
     match.step();
     for (let t = 0; t < 60; t++) {
       foe.move = { pos: { x: 12, y: 0, z: 8 }, velY: 0, grounded: true };
@@ -199,5 +200,52 @@ describe('spears only', () => {
     match.step();
     expect(me.weapons.get(spear)!.mag).toBe(1);
     expect(projectiles(match).some((p) => p.spec.visual === 'spear')).toBe(false);
+  });
+
+  it('fire pokes and keeps the spear; thrown, there is nothing to poke with until it is picked up', () => {
+    const match = new Match(yard(), { ...rules, weapons: 'spears', startingGrenades: 1 });
+    const me = match.addHuman('me')!;
+    const foe = match.addHuman('foe')!;
+    for (let i = 0; i < 3; i++) match.step();
+    const spear = weaponCode(getWeapon('core.spear'));
+    const place = () => {
+      me.move = { pos: { x: 4, y: 0, z: 8 }, velY: 0, grounded: true };
+      foe.move = { pos: { x: 6, y: 0, z: 8 }, velY: 0, grounded: true };
+    };
+    let seq = 0;
+    const input = (buttons: number) => match.queueInputs(me.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: Math.PI / 2, pitch: 0, buttons }]);
+    for (let t = 0; t < 20; t++) {
+      place();
+      input(0);
+      match.step();
+    }
+    // A poke 2 m away: 60 damage, no projectile, the spear still in hand.
+    place();
+    const full = foe.health;
+    input(BUTTON_FIRE);
+    match.step();
+    expect(foe.health).toBe(40);
+    expect(me.weapons.get(spear)!.mag).toBe(1);
+    expect(projectiles(match).some((p) => p.spec.visual === 'spear')).toBe(false);
+    // Throw it away (off to the side, away from the foe), then fire: nothing happens.
+    for (let t = 0; t < 40; t++) {
+      place();
+      input(0);
+      match.step();
+    }
+    match.queueInputs(me.slot, [{ seq: ++seq, forward: 0, right: 0, yaw: 0, pitch: 0.2, buttons: BUTTON_ALT }]);
+    match.step();
+    expect(me.weapons.get(spear)!.mag).toBe(0);
+    for (let t = 0; t < 40; t++) {
+      place();
+      input(0);
+      match.step();
+    }
+    const hp = foe.health;
+    place();
+    input(BUTTON_FIRE);
+    match.step();
+    expect(foe.health).toBe(hp);
+    expect(me.reloadTicks).toBe(0);
   });
 });

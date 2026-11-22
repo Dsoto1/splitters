@@ -1,0 +1,43 @@
+{
+  "id": "core.flintlock_pistol",
+  "code": 58,
+  "displayName": "Flintlock Pistol",
+  "category": "pistol",
+  "kind": "hitscan",
+  "slot": 2,
+  "family": "revolver",
+  "fireMode": "semi",
+  "damage": 100,
+  "spread": 0.003,
+  "fireIntervalTicks": 30,
+  "range": 120,
+  "magazine": 1,
+  "reserveMax": 12,
+  "pickupAmmo": 6,
+  "reloadTicks": 96,
+  "raiseTicks": 18,
+  "ammo": "light",
+  "ballistic": { "velocity": 210, "drag": 0.9, "gravityScale": 1.6, "tracerEvery": 1 },
+  "accuracy": { "base": 0.003 },
+  "falloff": { "start": 8, "end": 40, "min": 0.5, "curve": "smooth" },
+  "kick": { "pitch": [0.11], "yaw": [0.014, -0.01], "visual": 1.4 },
+  "knockback": 5,
+  "botDesirability": 0.55,
+  "botRange": [2, 22],
+  "view": {
+    "model": "guns/flintlock_pistol.glb",
+    "held": { "medium": "guns/flintlock_pistol.medium.glb", "high": "guns/flintlock_pistol.high.glb" },
+    "fallback": "weapons/gilded_pistol.glb",
+    "viewOffset": [0.2, -0.18, 0.46],
+    "tracer": "#ffe0a0",
+    "hold": { "style": "pistol", "grip": [0, -0.012, -0.15], "support": [-0.02, -0.022, -0.14], "rake": 30 },
+    "muzzleAt": [0, 0.03, 0.28],
+    "muzzle": { "effect": "wide_flash_02", "scale": 0.3 },
+    "sound": "fire.heavy"
+  },
+  "notes": {
+    "design": "One heavy lead ball, then a reload (1.6 s): a body kill inside 8 m (100), half that by 40 m, always a kill to the head, and a shove. The ball is slow (210 m/s) and drops, so past 20 m you lead and lob it. The Medieval set's sidearm; the Gilded Pistol stays the rare one-shot kill.",
+    "ballistic": "A round ball: slow, falling fast, losing speed (and damage, by impact speed) quickly.",
+    "model": "The Meshy community Ornate Flintlock Pistol (CC0), a long horse pistol, built 0.56 m long; the Gilded Pistol's kit model is the fallback."
+  }
+}

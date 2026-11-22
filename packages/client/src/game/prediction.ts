@@ -1,4 +1,5 @@
 import {
+  inHand,
   CLASS_DEFS,
   CLASS_IDS,
   BUTTON_ALT,
@@ -653,7 +654,9 @@ export class LocalPlayer {
     if (fireDown) {
       if (this.semiLatch || (def.windupTicks && this.windup < def.windupTicks)) return none;
       if (def.magazine > 0 && ready(ammo) === 0) {
-        if (!this.seatGun) this.startReload();
+        // As the server: a thrown spear leaves nothing to poke with (and nothing to reload).
+        if (inHand(def)) this.semiLatch = true;
+        else if (!this.seatGun) this.startReload();
         return none;
       }
       // A seat gun out of shells (as the server's spendRound) doesn't fire.
@@ -665,7 +668,8 @@ export class LocalPlayer {
         if (ammo[3] >= 100) return none;
         ammo[3] = Math.min(100, ammo[3] + def.heat.perShot * 100);
       }
-      if (def.magazine > 0) ammo[0]--;
+      // A spear's poke keeps the spear (inHand); a gun spends a round.
+      if (def.magazine > 0 && !inHand(def)) ammo[0]--;
       this.fireCooldown = firing.interval;
       this.semiLatch = firing.mode !== 'auto';
       if (firing.burst) {

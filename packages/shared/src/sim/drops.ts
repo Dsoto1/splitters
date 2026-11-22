@@ -6,7 +6,7 @@
  * what a pickup of one takes.
  */
 import { getItem, type ItemDefinition } from './items.ts';
-import type { WeaponDefinition } from './weapons.ts';
+import { thrownSpec, type WeaponDefinition } from './weapons.ts';
 
 /** A dropped weapon lies this long (s), then goes. */
 export const DROP_LIE_SECONDS = 30;
@@ -52,7 +52,7 @@ export function hasAmmo(w: DropAmmo): boolean {
  */
 export function droppable(w: DropAmmo, defaults: ReadonlySet<string>, allowed?: (def: WeaponDefinition) => boolean): boolean {
   const def = w.def;
-  return !!def.category && !def.projectile?.retrievable && !defaults.has(def.id) && (!allowed || allowed(def)) && !!dropItem(def) && hasAmmo(w);
+  return !!def.category && !thrownSpec(def)?.retrievable && !defaults.has(def.id) && (!allowed || allowed(def)) && !!dropItem(def) && hasAmmo(w);
 }
 
 /**

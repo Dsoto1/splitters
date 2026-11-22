@@ -471,6 +471,14 @@ async function build(src, entry, pack, place = null) {
     // The pitch applied after the turn: q = pitch * turn.
     rotation = [pw * x + px * w, pw * y - px * z, pw * z + px * y, pw * w - px * x];
   }
+  // `roll: degrees`: turned about its own length (+Z) after the turn: a blade lying flat in its download (the Scimitar)
+  // stood on its edge.
+  if (entry.roll) {
+    const h = (entry.roll * Math.PI) / 360;
+    const [rz, rw] = [Math.sin(h), Math.cos(h)];
+    const [x, y, z, w] = rotation;
+    rotation = [rw * x - rz * y, rw * y + rz * x, rw * z + rz * w, rw * w - rz * z];
+  }
   const root = doc.createNode('model').setRotation(rotation);
   for (const child of scene.listChildren()) {
     scene.removeChild(child);

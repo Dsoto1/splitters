@@ -61,7 +61,7 @@ export function schemas(root = ROOT, families = []) {
     'zone?': obj({ kind: en(list('ZONE_KINDS')), radius: num, seconds: num }), 'knockback?': num, 'status?': status,
     'ignites?': bool, 'guided?': obj({ turnRate: num }),
     'cluster?': obj({ count: int, speed: num, spec: lazy(() => projectile) }),
-    'walker?': obj({ speed: num }), 'retrievable?': bool,
+    'walker?': obj({ speed: num }), 'retrievable?': bool, 'heal?': num,
     'airstrike?': obj({ count: int, spacing: num, height: num, bomb: lazy(() => projectile) }),
     'cover?': obj({ half: vec3, health: num }), 'ammoBox?': bool, 'disc?': obj({ push: num, lift: num, 'split?': bool }),
   });
@@ -96,7 +96,7 @@ export function schemas(root = ROOT, families = []) {
     id: str, code: int, displayName: str, 'category?': en(list('WEAPON_CATEGORIES')), kind: en(['hitscan', 'projectile', 'melee']), slot: int,
     'family?': en(families), 'fireMode?': en(['auto', 'semi', 'burst']),
     damage: num, pellets: int, spread: num, fireIntervalTicks: int, range: num, magazine: int, reserveMax: int, pickupAmmo: int,
-    reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num,
+    reloadTicks: int, raiseTicks: int, 'projectile?': projectile, 'ammo?': en(list('AMMO_TYPES')), 'heal?': num, 'guard?': obj({ block: num, arc: num }),
     'grapple?': obj({ speed: num }), 'alt?': alt, 'burst?': obj({ count: int, intervalTicks: int }), 'windupTicks?': int,
     'fireModes?': arr(fireModeSpec, 2), 'windupResets?': bool, 'heat?': obj({ perShot: num, coolPerTick: num }), 'pierce?': int,
     'chain?': obj({ jumps: int, range: num, falloff: num }), 'status?': status, 'knockback?': num, 'stoppingPower?': num, 'vehicleDamage?': num,

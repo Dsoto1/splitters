@@ -3,30 +3,39 @@
   "code": 42,
   "displayName": "Spear",
   "category": "melee",
-  "kind": "projectile",
+  "kind": "melee",
   "slot": 1,
   "fireMode": "semi",
+  "damage": 60,
   "fireIntervalTicks": 30,
-  "range": 60,
+  "range": 2.9,
   "magazine": 1,
   "reserveMax": 0,
   "pickupAmmo": 0,
   "reloadTicks": 0,
   "raiseTicks": 12,
-  "projectile": {
-    "speed": 30,
-    "gravity": 9,
-    "fuseSeconds": 90,
-    "splashRadius": 0,
-    "splashDamage": 0,
-    "splashEdgeDamage": 0,
-    "selfDamageScale": 0,
-    "visual": "spear",
-    "impactDamage": 250,
-    "sticky": "world",
-    "retrievable": true
+  "alt": {
+    "label": "Throw",
+    "ammo": "shared",
+    "cost": 1,
+    "fireIntervalTicks": 30,
+    "kind": "projectile",
+    "projectile": {
+      "speed": 30,
+      "gravity": 9,
+      "fuseSeconds": 90,
+      "splashRadius": 0,
+      "splashDamage": 0,
+      "splashEdgeDamage": 0,
+      "selfDamageScale": 0,
+      "visual": "spear",
+      "impactDamage": 250,
+      "sticky": "world",
+      "retrievable": true
+    }
   },
   "botDesirability": 0.6,
+  "botRange": [0, 2.8],
   "view": {
     "model": "guns/spear.glb",
     "fallback": "procedural/spear",
@@ -36,7 +45,7 @@
     "hold": { "style": "pistol", "grip": [0, 0, -0.35] }
   },
   "notes": {
-    "design": "One hit kills; it sticks where it lands until someone picks it up.",
+    "design": "Two ways to use it (owner, 2026-11-18): fire pokes (60, a long 2.9 m reach, two to a body) and you keep the spear; right mouse throws it, one hit kills, and it sticks where it lands until someone picks it up, back into their hands ready to poke or throw. With no spear in hand there is nothing to poke with.",
     "model": "The owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback."
   }
 }

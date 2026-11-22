@@ -42,11 +42,11 @@ export interface ImpactStyle {
 
 const muzzle = FX_MAP.muzzle as Record<string, { effect: string; scale: number }>;
 
-/** The muzzle flash of a weapon (an effect of muzzle_flash.json and its size), or none (melee, beams, the railgun). */
+/** The muzzle flash of a weapon (an effect of muzzle_flash.json and its size), or none (melee, beams, the railgun, a weapon whose `view.muzzle` is `none`: the Crossbow). */
 export function muzzleEffectFor(def: WeaponDefinition): { id: string; scale: number } | null {
   if (def.kind === 'melee' || def.view.beam || def.id === 'core.railgun') return null;
   const own = def.view.muzzle;
-  if (own) return { id: own.effect, scale: own.scale ?? 0.2 };
+  if (own) return own.effect === 'none' ? null : { id: own.effect, scale: own.scale ?? 0.2 };
   const m = (def.family && muzzle[def.family]) || (def.projectile ? muzzle.projectile : !def.ammo ? null : def.pellets > 1 ? muzzle.pellets : def.damage >= 60 ? muzzle.heavy : muzzle.default);
   return m ? { id: m.effect, scale: m.scale } : null;
 }
