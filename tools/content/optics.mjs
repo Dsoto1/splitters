@@ -278,8 +278,14 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
         else {
           tris ??= await modelTriangles(join(MODELS, w.view.model));
           bounds ??= boundsOf(tris);
-          if (firstHit(tris, [win.at[0], win.at[1], bounds[0][2] - 1], [win.at[0], win.at[1], bounds[1][2] + 1]) !== null) problems.push(`${at}: the model stands in the line along the barrel through its window's middle (${JSON.stringify(win.at)})`);
-          if (allowed.length > 1) problems.push(`${at}: a gun with a sight window of its own carries that optic only`);
+          // The model's own glass (`lens`: the z range of a closed sight's lens and body, hidden by the window's clip
+          // while aimed) is left out of the line; nothing else may stand in it.
+          const lens = win.lens;
+          if (lens !== undefined && !(Array.isArray(lens) && lens.length === 2 && lens[0] < lens[1] && lens[0] >= win.at[2])) problems.push(`${at}: a window's \`lens\` is the z range [from, to] of the model's own glass, ahead of the window's \`at\``);
+          const clear = lens ? tris.filter((t) => !t.every((p) => p[2] >= lens[0] && p[2] <= lens[1] && Math.abs(p[0] - win.at[0]) <= win.half[0] * 1.6 && Math.abs(p[1] - win.at[1]) <= win.half[1] * 1.6)) : tris;
+          if (firstHit(clear, [win.at[0], win.at[1], bounds[0][2] - 1], [win.at[0], win.at[1], bounds[1][2] + 1]) !== null) problems.push(`${at}: the model stands in the line along the barrel through its window's middle (${JSON.stringify(win.at)})`);
+          // Every optic it may carry goes in that window: a 1x glass (a red dot's dot or a holographic ring), no housing.
+          if (allowed.some((a) => !BUILT.includes(kinds[a]?.housing) || kinds[a]?.housing === MAGNIFIED_BUILT)) problems.push(`${at}: a gun with a sight window of its own carries only 1x glass in it (red dot, holographic)`);
           row.window = { at: win.at.map((v) => round(v)), half: win.half.map((v) => round(v)) };
         }
       } else if (BUILT.includes(k.housing) && k.glass && /\.glb$/.test(w.view?.model ?? '')) {

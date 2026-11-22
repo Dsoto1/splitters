@@ -30,6 +30,9 @@ export const SIGHT_FIT_TS = join(ROOT, 'packages/shared/src/content/sightFit.gen
 export const NARROW = 0.0012;
 /** Half-width searched for a notch's ears and an aperture's ring (m). */
 export const WIDE = 0.009;
+const WIDE_DEFAULT = WIDE;
+/** Half-width searched for a front sight's hood when it is wider than WIDE (a ring round a post, up to 4.4 cm across). */
+export const HOOD_WIDE = 0.022;
 /** Half-depth of the slice across a sight (m): a rear sight's plate, a hood. */
 export const SLAB = 0.003;
 /** Cell of the top profile and of a sight's cross-section (m). */
@@ -140,7 +143,7 @@ function frontX(tris, min, max) {
  * The slice across the gun at `z` (± SLAB), as seen along the barrel: which cells of (x, y) hold geometry, within WIDE
  * of `x0` and from `lo` to `hi` in height.
  */
-function crossSection(tris, x0, z, lo, hi) {
+function crossSection(tris, x0, z, lo, hi, WIDE = WIDE_DEFAULT) {
   const near = tris.filter((t) => Math.max(t[0][2], t[1][2], t[2][2]) >= z - SLAB && Math.min(t[0][2], t[1][2], t[2][2]) <= z + SLAB && Math.max(t[0][0], t[1][0], t[2][0]) >= x0 - WIDE && Math.min(t[0][0], t[1][0], t[2][0]) <= x0 + WIDE);
   const w = Math.round((2 * WIDE) / FINE) + 1;
   const h = Math.max(1, Math.round((hi - lo) / FINE) + 1);
@@ -342,8 +345,14 @@ export function fitSights(tris, { grip, muzzle, x0 }) {
   // post's own middle across the gun (a blade a few millimetres wide), where it is not the plane's.
   let hood = false;
   {
-    const cs = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002);
-    const hole = enclosedHole(cs);
+    // A hood wider than the band (its sides outside it) is open to the sides there: read it again wider.
+    let cs = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002);
+    let hole = enclosedHole(cs);
+    if (!hole) {
+      const wide = crossSection(tris, cx, front[2], front[1] - 0.03, front[1] + 0.002, HOOD_WIDE);
+      const ring = enclosedHole(wide);
+      if (ring) [cs, hole] = [wide, ring];
+    }
     if (hole && hole.top > front[1] - 0.012 && Math.abs(hole.x - cx) < 0.003) {
       const floor = hole.bottomAt(cs.col(cx));
       if (floor < cs.h && floor > 0) {

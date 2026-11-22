@@ -71,7 +71,23 @@
     "core.railgun": { "default": "sniper", "allowed": ["sniper"] },
     "core.nova6": { "default": "scope", "allowed": ["scope"] },
     "core.lever_action": { "default": "scope", "allowed": ["scope"] },
-    "core.crossbow": { "default": "scope", "allowed": ["scope"] }
+    "core.crossbow": { "default": "scope", "allowed": ["scope"] },
+    "core.woodland_smg": { "default": "reddot", "allowed": ["reddot", "irons", "holo", "x2"] },
+    "core.desert_carbine": {
+      "default": "reddot",
+      "allowed": ["reddot", "holo"],
+      "window": { "at": [-0.003, 0.124, -0.126], "half": [0.016, 0.013], "lens": [-0.12, -0.06], "reason": "the model's own holographic sight (owner, 2026-11-22, \"2a\": a red dot by default): the hood's rear opening measured across the barrel (x -0.021 to 0.015, y 0.110 to 0.138 at z -0.12); its glass pane and body (z -0.12 to -0.06) are the lens, hidden by the window's clip while aimed. The front post (top y 0.114) stays under the window's middle" }
+    },
+    "core.twin_rifle": {
+      "default": "reddot",
+      "allowed": ["reddot", "holo"],
+      "window": { "at": [0, 0.127, -0.108], "half": [0.0135, 0.0135], "lens": [-0.106, 0.035], "reason": "the model's own red dot tube (no posts on the gun): its rear lens measured across the barrel (x -0.019 to 0.017, y 0.110 to 0.144 at z -0.104); the tube and its lenses (z -0.106 to 0.035) are the lens, hidden by the window's clip while aimed" }
+    },
+    "core.blaster_x42": {
+      "default": "reddot",
+      "allowed": ["reddot", "holo"],
+      "window": { "at": [0, 0.149, -0.192], "half": [0.022, 0.022], "lens": [-0.19, 0.03], "reason": "the model's own scope tube (no sights under it): its eyepiece measured across the barrel (x -0.03 to 0.03, y 0.118 to 0.18 at z -0.185), looked through at 1x with a red dot; the tube (z -0.19 to 0.03) is the lens, hidden by the window's clip while aimed" }
+    }
   },
   "none": {
     "core.rockets": "a tube launcher: aimed over the tube, as launchers are",
@@ -86,10 +102,6 @@
     "core.singularity": "an oddity with an organic shell: nowhere flat to stand a sight, and the shot is slow",
     "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
     "core.gilded_pistol": "a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it",
-    "core.blaster_x42": "its own scope has no sights under it: keeps its aim over the top of the gun until the sights pass gives it its optic (weapons intake 11-18)",
-    "core.desert_carbine": "its own holographic sight is not on the bore: keeps its aim until the sights pass fits it (weapons intake 11-18)",
-    "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home",
-    "core.twin_rifle": "its own red dot is not yet fitted: keeps its aim until the sights pass fits it (weapons intake 11-18)",
-    "core.woodland_smg": "its rear sight block stands in the line: keeps its aim until the sights pass corrects it (weapons intake 11-18)"
+    "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home"
   }
 }

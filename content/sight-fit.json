@@ -5,9 +5,9 @@
     "core.arc_caster": "no sights on the model: a flat-topped kit gun",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
     "core.blast_rockets": "a tube launcher: no sights, its top line starts on the stock",
-    "core.blaster_x42": "its own scope sits over the receiver with no sights under it: aims with the top of the gun until the sights pass gives it its optic (weapons intake 11-18)",
+    "core.blaster_x42": "its own scope sits over the receiver with no sights under it: aims through the scope, its window in content/optics.json",
     "core.bubble_blaster": "no sights on the model: a flat-topped kit gun",
-    "core.desert_carbine": "its own holographic sight stands lower than the front post, so the line runs off the bore: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)",
+    "core.desert_carbine": "its sights are its own holographic sight and a front post with no rear sight: aims through the holographic sight, its window in content/optics.json",
     "core.disc_launcher": "no sights on the model: a flat-topped disc launcher",
     "core.flak": "no sights on the model: a flat-topped kit gun",
     "core.flamethrower": "no sights on the model: its top line starts on the stock",
@@ -25,7 +25,6 @@
     "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
     "core.singularity": "no sights on the model: an organic shell with a sloping top",
     "core.swarm": "no sights on the model: a flat-topped kit launcher",
-    "core.twin_rifle": "its own red dot is the only sight, with no posts: aims with the top of the gun until the sights pass fits its optic (weapons intake 11-18)",
-    "core.woodland_smg": "its rear sight block stands in the line to the front post: aims with the top of the gun until the sights pass corrects it (weapons intake 11-18)"
+    "core.twin_rifle": "its own red dot is the only sight, with no posts: aims through it, its window in content/optics.json"
   }
 }
