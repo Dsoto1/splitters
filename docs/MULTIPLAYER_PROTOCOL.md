@@ -844,3 +844,31 @@ lean from `ln`, and replays them as the host steps them. **An older client** on 
 (it draws a sliding player crouched and moving fast) and is never sent a lean of its own (it cannot press the keys);
 a new client on an older host leans and slides only in its own prediction until the host's snapshot puts it back.
 
+## 27. Optic choice (November 2026)
+
+docs/GUNPLAY_SPEC.md section 15, "Optic choice". **Optional fields and one new message; `PROTOCOL_VERSION` stays 5 and
+`SNAPSHOT_BINARY_VERSION` stays 3.** A player's choice is a small map, weapon ID → optic kind (`content/optics.json`
+kinds: `irons`, `reddot`, `holo`, `x2`, ...), naming only guns that are not on their default; an empty or absent map is
+"every gun its default".
+
+| Field | Where | |
+|---|---|---|
+| `op: { [weapon]: kind }` | `hello` | The joining player's choices. Shape only at the door (`net/clientMessages.ts`: a plain object of at most 64 short IDs; anything else leaves `op` out, so the player joins on the defaults) |
+| `{ t: 'optics', op }` | `ClientMessage` | The choices changed mid-match (pause menu → Settings → Optic): the whole map again (`{}`: all defaults). An older host ignores it |
+| `op: { [weapon]: kind }` | `RosterEntry` | A person's choices as the host keeps them, for every client to draw. Absent for bots, for people on all defaults, and from older hosts |
+
+The host makes the map valid (`Match.setOptics`, `sim/opticChoice.ts` `cleanOpticChoices`: guns that have that kind
+among their `allowed`, not their default; unknown guns and kinds dropped) and keeps it on the player (a spectator's
+too, for when they play again). When it changes, the host sends the roster to everyone again (the dedicated server and
+Host Service, `server/src/server.ts`; a browser host and offline matches, `game/matchHost.ts`). Bots never have one:
+they carry each gun's default.
+
+The match reads it for one thing: **`PlayerSnapshot.zm`** (section 23) is set for a magnified optic in hand, which now
+includes the 2x optic a player picked (`sim/opticChoice.ts` `magnifiedOptic`). Nothing about a shot depends on it.
+
+**Older peers.** An older host ignores `op` and the `optics` message and sends no `op` in the roster: everyone, you
+included in others' eyes, carries each gun's default, while your own first-person gun still shows your pick (drawn from
+your own loadout) and `zm` is not set for your 2x. An older client ignores the roster's `op` and draws everyone's
+defaults. Host handoff's checkpoint carries no choices: after a handoff the next host has them again only from each
+player's `hello` when they rejoin (the new host's own from its loadout).
+

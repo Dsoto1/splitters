@@ -900,8 +900,8 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 | none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Singularity Cannon, Flare Gun, Gilded Pistol, Spear | 1.52× |
 
 - **The table** is `content/optics.json`: `kinds` (reticle, housing, aimed field of view: `adsFov` for 1× sights, a
-  `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: the loadout's
-  choice comes later; today every gun shows its default), `none` with reasons. `tools/content/optics.mjs` (run by
+  `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: those the loadout
+  may pick, below, "Optic choice"), `none` with reasons. `tools/content/optics.mjs` (run by
   `pnpm content:rebuild`, checked by `pnpm content:check`) checks it and writes
   `packages/shared/src/content/optics.generated.ts`, loaded with the match's view, not the menu. A zoom stays in the
   weapon file (`view.zoomFov`, `view.optic.mag`); the tool only checks it lies inside its kind's range.
@@ -1011,6 +1011,58 @@ limits, the glint's cone); `tools/content/test/optics.test.mjs` (the table's che
 
 **Left for later:** the Marksman and Sniper scopes are still the full-screen overlay with the gun hidden; their models
 carry scope tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead. The snapshot bit above.
+
+
+### Optic choice
+
+**Implementation note (2026-11-22; owner, 2026-11-18, the sights and scopes pass, step 4: "optic choice per weapon in the
+loadout (red dot, holographic or 2x), built on 1 and 2").** For a gun that may carry more than one optic, the player picks
+which in their loadout: **Profile → Favourite loadout → Optics** (every gun with a choice, its own optic first), or
+**Pause → Settings → Optic** for the gun in hand. The pick is kept per gun in this browser (client `opticPrefs.ts`), goes
+to the match as you join and when you change it (docs/MULTIPLAYER_PROTOCOL.md section 27), and everyone draws the optic
+you picked on your gun (the roster's `op`). **Nothing about a shot changes with it**: damage, spread (aiming tightens
+every gun's spread the same, through any optic), recoil and timing are the gun's own; no gun's own zoom changed. What
+changes is what you see: the sight picture, the reticle and, with the 2x optic, a narrower view.
+
+| Gun | Optics offered (its own first) |
+|---|---|
+| Assault Rifle, Submachine Gun, Compact Carbine | iron sights, red dot, holographic, 2x |
+| Burst Rifle, Amarillo | iron sights, 2x (their front sight, or the Amarillo's rear block, stands in a red dot's or a holographic sight's window) |
+| Laser Rifle | red dot, holographic, 2x |
+| Shotgun, Auto Shotgun, Runebreaker, Nailgun, Freeze Ray, Goo Gun | iron sights, red dot, holographic |
+| Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, Laser Blaster | iron sights, red dot |
+| Bubble Blaster | red dot, holographic |
+| Arc Caster, Flak Cannon, Disc Launcher, Arena Disc | holographic, red dot |
+| none: Sawed-Off (red dot), Plasma Rifle (its own sight box), Flintlock Pistol (irons) | |
+| none: snipers and every gun with a scope of its own (Battle Rifle, Marksman, Nova 6, Lever-Action, Crossbow, Sniper Rifle, Railgun) | they keep their scope |
+
+- **The 2x optic** (kind `x2`, housing `magtube`, `power` 2: twice the hip view, a little more than the sights' 1.52x)
+  is a tube built in code on the gun's top (`game/opticHousing.ts` `scopeParts`: a foot and two rings, the tube, an
+  eyepiece bell and a wider objective bell, a turret; no outside model), standing on the gun's mount. Aimed, it is looked
+  through as the Battle Rifle's own tube is (`opticView.ts`): the eyepiece (the tube's rear end, its clear radius the
+  glass's) comes to the eye at the usual relief (0.12 m), the world narrows to 2x, the HUD's `#optic` shades round the
+  glass and draws the **chevron** with the holdover marks of §5 for that view, and scope feel applies (sway, Shift
+  breath-hold, the eye box). `optics.ts` `eyepieceOf` gives the eyepiece (`OpticSpec`) from the mount, so every place
+  that looked through a model's own tube (`sightPose.ts`, `view.ts`, `session.ts`, the sight sheet) takes it the same
+  way. One zoom (`steps` [1]). It sets `PlayerSnapshot.zm` while up (a magnified optic), so others' clients know you
+  are scoped; it never glints (only sniper scopes do).
+- **One mount a gun.** Every built housing a gun may carry (red dot, holographic, 2x) stands on one mount, found by
+  `tools/content/optics.mjs` for the first of them in its list (its default when that is built) and checked for each:
+  nothing ahead of it in its window's lower half, nothing **behind** it in its window as the eye sees it (the gun
+  between the eye and the glass may cover only the lowest 15 %; for the 2x, nothing over the eyepiece's lowest 15 %
+  between the eye and the tube), and the line from the eye through its glass clear. A gun that fails for an optic does
+  not offer it, or gets a hand-set `mount` with its reason (the Amarillo's 2x: ahead of its rear block).
+- **Who carries what.** `opticOf(def, choice)` takes a pick only when the gun's `allowed` has it, else the default, so a
+  stale or foreign pick is harmless. `opticFor(def, slot)`: your own from your loadout at once, anyone else's from the
+  roster; bots carry each gun's default (bot sets have no loadouts), and so does everyone on a host older than the field.
+  Your own first-person gun is built again when you change its optic (`view.ts` `refreshOptics`), others' when the roster
+  says theirs changed; crowds (GPU-instanced guns) draw no housing, as before.
+- **Checks.** `packages/client/test/optics.test.ts` names every gun's choice and checks every offered optic (glass marks
+  on the aim, the 2x's eyepiece on the aim at its relief and 2x, its holdover marks); `packages/shared/test/opticChoice.test.ts`
+  the wire and the match (made valid, the roster, spectators, bots, `zm`); `tools/content/test/optics.test.mjs` the tool's
+  new checks; the `characters3` e2e flow picks the 2x for the Assault Rifle in the pause menu, aims through it and checks
+  the roster. The sight sheet (`?mode=sights`) shows any optic on any gun (`__sights.show(id, { optic })`) and its audit
+  passes for every offered pair.
 
 ---
 
