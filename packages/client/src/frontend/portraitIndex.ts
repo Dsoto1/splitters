@@ -64,7 +64,6 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.frost': 'core.frost.webp?v=70110d7db5',
   'core.frostviking': 'core.frostviking.webp?v=e09f0d5ead',
   'core.galloway': 'core.galloway.webp?v=2c1dd67b03',
-  'core.gasmaskengineer': 'core.gasmaskengineer.webp?v=0f0e80777c',
   'core.giggles': 'core.giggles.webp?v=68f7642c63',
   'core.goblin': 'core.goblin.webp?v=9bfd26aa6a',
   'core.goblingunslinger': 'core.goblingunslinger.webp?v=e440709911',

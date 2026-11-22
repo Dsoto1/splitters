@@ -2380,57 +2380,6 @@
     }
    }
   },
-  "meshy_gasmaskengineer": {
-   "hash": null,
-   "arms": {
-    "skin": "#2c2c2b",
-    "cloth": "#2b2927",
-    "trim": "#625f53"
-   },
-   "grip": {
-    "gripLong": [
-     -0.007,
-     -0.004,
-     -0.004
-    ],
-    "supportLong": [
-     0.004,
-     0.001,
-     0
-    ],
-    "gripPistol": [
-     -0.002,
-     0.001,
-     0.003
-    ],
-    "supportPistol": [
-     0.002,
-     0.001,
-     -0.013
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.05,
-     "eL": 0,
-     "flags": [],
-     "outlier": false,
-     "auto": 0.05,
-     "none": 0.94
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 1.45,
-     "eL": 1.1,
-     "flags": [],
-     "outlier": false,
-     "auto": 2.11,
-     "none": 2.993
-    }
-   }
-  },
   "meshy_giggles": {
    "hash": "409e0c9d514e37f0",
    "arms": {

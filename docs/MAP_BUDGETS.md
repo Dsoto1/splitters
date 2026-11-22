@@ -95,24 +95,34 @@ at 10 Mbit/s), a joiner over WebRTC (the welcome grows by the map's 1 KB, the mo
 A map holds at most **8,192 entities** (owner, 2026-11-18, for St. John's steps 7-10 and the island direction;
 4,096 before): `MAP_MAX_ENTITIES` in `map/mapKeys.ts` is the schema's cap, `RESOURCE_BUDGETS.entities` (the load
 budget and MapMaker's Entities counter) and `SET_PIECE_PLAYED_MAX.entities` (the map as played, set pieces' parts
-included). The tile cap (4,096), the prop (1,500), block (3,000) and light (256) budgets and the 2 MiB JSON cap are
-unchanged. v48 is an identity step in `migrate.ts`: nothing an older map says changes; an older build refuses a v48
+included). The tile cap (4,096), the prop (1,500), block (3,000) and light (256) budgets and the JSON cap were
+unchanged (the JSON cap went to 3 MiB on 2026-11-22, below). v48 is an identity step in `migrate.ts`: nothing an older map says changes; an older build refuses a v48
 map instead of failing on its entity count. Entity indices travel as JSON numbers (no bit widths in the protocol), so
 the net code needed no change; `entityCap.test.ts` loads an 8,192-entity map, refuses 8,193, and sends the last
 entity's state through the welcome and the snapshot stream.
 
-**Against the 2 MiB cap.** Compact JSON (the map as played, a joining player's welcome) costs about 150-215 bytes an
+**Against the 3 MiB cap** (owner, 2026-11-22: "Raise to 3 MB"; 2 MiB before). `RESOURCE_BUDGETS.mapBytes` is the raw
+JSON cap wherever a map arrives: `loadMap` before parsing (hub, Host Service, browser host, joiner, MapMaker's import),
+the as-played check in `validateMap`, the publish and Community Pick request bodies (`publish.ts`, `community.ts`), and
+MapMaker's Size counter and Change grid. A joiner inflates a welcome up to 6 MiB (`MAX_INFLATED_MESSAGE`, `peerZip.ts`;
+4 MiB before), room for a 3 MiB map as played with its defaults filled in. Compact JSON (the map as played, a joining player's welcome) costs about 150-215 bytes an
 entity; MapMaker's file is indented, a number array over several lines, about 290-330 bytes an entity. So:
 
 | Map | Entities | File (MapMaker) | As played (compact) |
 |---|---|---|---|
 | St. John's today | 3,872 as played | 1.04 MB | 1.0 MB (216 B an entity, 188 KB the rest) |
-| St. John's mix at the cap | 8,192 | over 2 MiB past ~5,600 entities placed by hand | ≈ 1.87 MiB (fits, 6 % spare) |
-| Made-up lean mix (`entityCapMap.ts`) | 8,192 | 2.3 MB (over) | 1.2 MB (welcome after defaults 1.6 MB) |
+| St. John's mix at the cap | 8,192 | ≈ 2.4-2.6 MiB placed by hand (fits; it was over 2 MiB past ~5,600) | ≈ 1.87 MiB (fits) |
+| Made-up lean mix (`entityCapMap.ts`) | 8,192 | 2.3 MB (fits; over the old 2 MiB) | 1.2 MB (welcome after defaults 1.6 MB) |
 
-An 8,192-entity map gets there through set pieces (their parts count as played, compact); a file of 8,192 things
-placed by hand is over the cap as MapMaker writes it today. If that's needed, the fix is in `serializeMap` (one
-entity a line, ~35 % smaller) rather than a bigger cap.
+At 3 MiB a file of 8,192 things placed by hand fits as MapMaker writes it (about 290-330 bytes an entity, up to
+≈ 2.6 MiB); at 2 MiB it got there only through set pieces. If more room is ever needed, the fix is in `serializeMap`
+(one entity a line, ~35 % smaller) rather than a bigger cap.
+
+**Join time at 3 MiB** (2026-11-22, `entityCap.test.ts`, "a map file near the 3 MiB cap"; this container, Node): the
+lean 8,192 mix with every ID at 64 characters is a 2.69 MiB file. The host's `loadMap` and match setup take about
+1.2 s; the welcome is 2.02 MiB as JSON and 68 KiB compressed on the wire; the joiner's inflate, parse and `loadMap`
+take about 0.3 s. The joiner's scene build after that is the map's own cost (entities and models, below), not the
+file's size.
 
 **Measured** (2026-11-18, this container under load ~20, so read the ratios; the made-up 160 m map, 4,096 vs 8,192,
 same footprint, twice as dense):

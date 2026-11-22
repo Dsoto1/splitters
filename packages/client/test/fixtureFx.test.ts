@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { FIXTURE_FX, PAD_FX_RANGE, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, portalCover, portalFit } from '../src/game/fixtureFx.ts';
+import { FIXTURE_FX, PAD_FX_RANGE, PAD_MOTION, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, padChevrons, padRings, portalCover, portalFit } from '../src/game/fixtureFx.ts';
 import { lastingFx } from '../src/game/fxMap.ts';
 import { SAFE_LIGHT } from '../src/game/reduceFlashing.ts';
 
@@ -65,5 +65,43 @@ describe("portals' and jump pads' pack effects (fixtureFx.ts)", () => {
     expect(portalCover(FIXTURE_FX.portal.level, false)).toBe(1);
     expect(portalCover(FIXTURE_FX.portal.calmLevel, true)).toBe(1);
     expect(portalCover(FIXTURE_FX.portal.level, true)).toBe(1);
+  });
+});
+
+describe('a jump pad that looks like it moves (padChevrons, padRings)', () => {
+  it('glides its chevrons forward over the plate and grows each in and away, in loops over a second long', () => {
+    expect(Math.min(PAD_MOTION.period, PAD_MOTION.calmPeriod, PAD_MOTION.ringPeriod, PAD_MOTION.calmRingPeriod)).toBeGreaterThan(1);
+    for (const calm of [false, true]) {
+      const period = calm ? PAD_MOTION.calmPeriod : PAD_MOTION.period;
+      const a = padChevrons(0.1, calm);
+      const b = padChevrons(0.2, calm);
+      expect(a).toHaveLength(PAD_MOTION.chevrons);
+      // Forward (+Z, the way the pad throws you) between two moments, within the plate.
+      a.forEach((c, k) => {
+        expect(c.z).toBeGreaterThanOrEqual(PAD_MOTION.from);
+        expect(c.z).toBeLessThanOrEqual(PAD_MOTION.to);
+        if (b[k]!.z > c.z) expect(b[k]!.z - c.z).toBeCloseTo(((PAD_MOTION.to - PAD_MOTION.from) * 0.1) / period, 5);
+      });
+      // A loop later it is back where it was; at the ends of the plate it is nothing (no pop in or out).
+      padChevrons(0.1 + period, calm).forEach((c, k) => expect(c.z).toBeCloseTo(a[k]!.z, 5));
+      expect(padChevrons(0, calm)[0]!.s).toBeCloseTo(0, 5);
+      expect(Math.max(...padChevrons(period / 2, calm).map((c) => c.s))).toBeCloseTo(1, 5);
+    }
+  });
+
+  it('raises its rings up the lift, narrowing, gone at the top', () => {
+    for (const calm of [false, true]) {
+      const period = calm ? PAD_MOTION.calmRingPeriod : PAD_MOTION.ringPeriod;
+      const low = padRings(0.05 * period, calm)[0]!;
+      const high = padRings(0.9 * period, calm)[0]!;
+      expect(high.y).toBeGreaterThan(low.y);
+      expect(high.r).toBeLessThan(low.r);
+      expect(padRings(0, calm)[0]!.s).toBeCloseTo(0, 5);
+      expect(padRings(0.999 * period, calm)[0]!.s).toBeLessThan(0.01);
+      for (const r of padRings(0.3, calm)) {
+        expect(r.y).toBeGreaterThanOrEqual(PAD_MOTION.ringFrom);
+        expect(r.y).toBeLessThanOrEqual(PAD_MOTION.ringTo);
+      }
+    }
   });
 });

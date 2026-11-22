@@ -50,6 +50,9 @@ export function parseClientMessage(text: string): ClientMessage | null {
       return { t: 'ready' };
     case 'spectate':
       return typeof o.on === 'boolean' ? { t: 'spectate', on: o.on } : null;
+    case 'team':
+      if (o.i === undefined) return { t: 'team' };
+      return typeof o.i === 'number' && Number.isInteger(o.i) && o.i >= -1 && o.i < 8 ? { t: 'team', i: o.i } : null;
     case 'standby':
       return typeof o.code === 'string' && /^[A-HJKMNP-Z2-9]{6}$/.test(o.code) ? { t: 'standby', code: o.code } : null;
     case 'ping':

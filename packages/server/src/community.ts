@@ -19,6 +19,7 @@ import {
   type PlayTally,
   type PromotionThresholds,
   KeyedLimiter,
+  RESOURCE_BUDGETS,
 } from '@tiletrigger/shared';
 import type { VerifiedUser } from './auth.ts';
 import { clientIp } from './clientIp.ts';
@@ -490,7 +491,7 @@ export interface CommunityOptions {
 
 /** Largest request body: a report (96 players) is a few KB; a map file up to MAX_PICK_BYTES, gzipped. */
 const MAX_JSON_BODY = 16 * 1024;
-const MAX_FILE_BODY = 2 * 1024 * 1024;
+const MAX_FILE_BODY = RESOURCE_BUDGETS.mapBytes;
 
 function body(req: IncomingMessage, max: number): Promise<Buffer> {
   return new Promise((resolve, reject) => {

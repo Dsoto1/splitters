@@ -587,6 +587,9 @@ MapMaker draws the build area on the level being edited
   rebuilt only when its centre moves 4 cells, so it stays cheap.
   **Full grid** (View → Full grid) draws every cell of the whole build area instead,
   on demand. Grid off hides either; the outlines stay.
+  The level being edited is drawn **green** (the level list's highlight is the same green); the other levels with
+  something on them that are shown (below it, and above it with Show all levels, H) get a fainter **blue** grid at
+  their own height (owner, 2026-11-16), so the working level reads at a glance. One line system for all of them.
 - **The playable boundary** (orange, at the level and 6 m up with corner posts):
   the map's **Boundary** (Map settings → Gameplay), or, when it has none, its terrain's
   edge. A faint copy shows through hills and buildings.
@@ -1495,7 +1498,7 @@ small and exact.
   Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
   380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows
   the grid, vertices and triangles now and after, and the map file against its
-  2 MB budget, and says when the size changes (a width that isn't a whole
+  3 MB budget, and says when the size changes (a width that isn't a whole
   number of the new cells grows or shrinks by under half a cell). Heights where
   old and new vertices meet stay exactly; between them **Smooth** (default)
   draws a cubic through the old heights, kept inside each old cell's corners,
@@ -1507,6 +1510,16 @@ small and exact.
   finer than 2 m grow plants in proportion to their area (as many to the
   square metre as a 2.5 m grid: owner, 2026-11-09). In the file the terrain's grids are written a
   grid row to a line, so a 321 × 321 terrain is about 1 MB.
+- **MapMaker, Terrain → Resize…** (`editor/resizeTerrain.ts`; owner, 2026-11-16: resizing without removing the
+  terrain first). Grows (more than 0) or shrinks (less than 0) each edge, north (+Z), south, east (+X) and west, or
+  every edge at once, in whole cells of the terrain's spacing; every sculpted height, painted cell and plant left
+  keeps its exact place. New ground continues the edge: **Flat** carries its heights straight out, **Eased** eases
+  them to the terrain's base height over the new strip; its paint and plants are the edge cells'. Ground cut off goes
+  with the things standing on it (their foot within 1.5 m of it), listed in the dialog before it runs. The map's
+  boundary follows: an edge that lay on the terrain's edge moves with it, and none is left outside the terrain (maps
+  without a boundary play to the terrain's edge, which the backdrop and minimap follow). The dialog shows the size,
+  vertices against the 321-a-side cap and the map file against its budget, as Change grid does. One undo step; a
+  terrain grown then shrunk back is the one it was (`terrainResize.test.ts`).
 - **MapMaker, Terrain → Real places (owner only, like Publish).** For a map of
   a real place. **Heights from a height grid file** reads an ESRI ASCII grid
   (`.asc`: `ncols`, `nrows`, `xllcorner`/`yllcorner` or `xllcenter`/`yllcenter`,

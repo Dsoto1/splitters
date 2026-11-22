@@ -944,12 +944,18 @@ export class EditorApp {
     return counts;
   }
 
+  /** The other levels' grids (blue; the working level's is green): every level with something on it that is shown. */
+  private drawOtherGrids(counts: ReadonlyMap<number, number> = this.levelContents()): void {
+    this.view.area.setOtherLevels([...counts.keys()].filter((l) => l !== this.level && (this.showAll || l < this.level)));
+  }
+
   /** What the level strip last showed (renderLevels). */
   private levelsShown = '';
 
   /** The level strip: every level in use plus the ones either side of the current one, top first. */
   private renderLevels(): void {
     const counts = this.levelContents();
+    this.drawOtherGrids(counts);
     const used = [...counts.keys(), this.level - 1, this.level, this.level + 1, 0];
     const hi = Math.min(16, Math.max(...used));
     const lo = Math.max(-16, Math.min(...used));
@@ -1040,6 +1046,7 @@ export class EditorApp {
   setShowAll(on: boolean, quiet = false): void {
     this.showAll = on;
     $('ed-showall').setAttribute('aria-pressed', String(on));
+    this.drawOtherGrids();
     if (!quiet) rememberShowAll(on);
     if (!quiet) this.toast(on ? 'Showing every level (the others ghosted)' : `Showing ${levelName(this.level)} and below`);
   }

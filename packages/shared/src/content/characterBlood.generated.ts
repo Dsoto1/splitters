@@ -82,7 +82,6 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.zombiesoldier2': 'bone',
   'core.undeadsoldier': 'bone',
   'core.orangeengineer': 'red',
-  'core.gasmaskengineer': 'red',
   'core.crtrobot': 'oil',
   'core.rollerbot': 'oil',
   'core.mummybot': 'bone',
