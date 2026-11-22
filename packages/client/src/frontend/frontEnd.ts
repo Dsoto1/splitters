@@ -3071,7 +3071,7 @@ export class FrontEnd {
     for (const id of ids) {
       const r = c.weaponRounds[id];
       const icon = weaponIcon(id, 'wicon');
-      const tr = el('tr', {}, el('td', { class: 'prof-weapon' }, ...(icon ? [icon] : []), el('span', { textContent: weaponName(id) })), el('td', { textContent: String(c.weaponKills[id] ?? 0) }), el('td', { textContent: r ? `${Math.round((r[1] / r[0]) * 100)}%` : '–' }), el('td', { textContent: r ? String(r[0]) : '–' }));
+      const tr = el('tr', {}, el('td', {}, el('span', { class: 'prof-weapon' }, ...(icon ? [icon] : []), el('span', { textContent: weaponName(id) }))), el('td', { textContent: String(c.weaponKills[id] ?? 0) }), el('td', { textContent: r ? `${Math.round((r[1] / r[0]) * 100)}%` : '–' }), el('td', { textContent: r ? String(r[0]) : '–' }));
       tr.dataset.weapon = id;
       body.append(tr);
     }
