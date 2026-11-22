@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/weapon-icons` · 8ae1152d · run 45044586246 (the Flare Gun's icon re-taken, 16 stale icons dropped, a unit test that every weapon has one; a helper of lane B's splitters22)
-- `wip/fix-tpose-1122` · 6cd3eab2 · 45045862880 (fix batch 2026-11-22: St. John's wall crest z-fighting + the coplanar kit check; the T-pose bot is not fixed yet, see HANDOFF)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -237,6 +235,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** train check/train-20261122-172541 (e8ca8ad, run 45049402477), landed by the splitters lead: weapon icons re-taken (`wip/weapon-icons`); fix batch 2026-11-22: St. John's wall crest z-fighting fixed at the piece, the coplanar kit-layer check (`wip/fix-tpose-1122`; the T-pose diagnostic follows on `wip/fix-tpose-2`).
 - **2026-11-22** player profiles phases 2-4 (`wip/profiles-2`, green bc7579d4, run 45040189739): emblems and titles, other players' cards, career Modes/Weapons/History tabs, host-vouched stats, optic picks on the account. **The owner redeploys the hub** (no AWS change). Landed alone by the splitters lead.
 - **2026-11-22** optic choice per gun (sights pass step 4; `wip/optic-choice`, green 6ccc0a6b, run 45033781694): Profile → Favourite loadout → Optics and Pause → Settings → Optic; 23 guns; the new 2× tube; picks in the browser (account sync with profiles 2-4). Landed alone by the splitters lead.
 - **2026-11-22** train check/train-20261122-145854 (a7a22b8, run 45035743971), landed by the splitters lead: combat accessibility, the rest (`wip/combat-a11y`); first-person pose for long melee weapons (`wip/melee-fp-pose`); the owner's Weapon Manager (`wip/weapon-manager`).
