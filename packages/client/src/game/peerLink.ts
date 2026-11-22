@@ -485,6 +485,10 @@ export class PeerTransport implements Transport {
     this.send({ t: 'spectate', on });
   }
 
+  sendTeam(i?: number): void {
+    this.send({ t: 'team', ...(i === undefined ? {} : { i }) });
+  }
+
   sendVote(i: number): void {
     this.send({ t: 'vote', i });
   }

@@ -16,6 +16,8 @@ export interface Transport {
   sendReady(): void;
   /** Spectate by choice (on) or join play again: only when the welcome said the host supports it (`spectate`). */
   sendSpectate?(on: boolean): void;
+  /** Switch team at your next spawn (team `i`; absent: the next; -1: stay): only when the welcome said the host supports it (`ts`). */
+  sendTeam?(i?: number): void;
   /** Between matches: vote for the next map (option `i` of the open vote; hosts that don't know it ignore it). */
   sendVote?(i: number): void;
   /** Deliver snapshots waiting merged (SnapshotCoalescer) now: the session calls it as a frame begins. */

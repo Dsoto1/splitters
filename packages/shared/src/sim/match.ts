@@ -155,6 +155,10 @@ function lyingItem(p: Projectile): ItemDefinition | undefined {
 /** Start gate: the longest a match waits for its players to load, and the countdown after. */
 export const START_WAIT_SECONDS = 30;
 export const COUNTDOWN_SECONDS = 3;
+/** Switch team (pause menu, Tab board, O): the shortest time between two asks by one player. */
+export const TEAM_SWITCH_COOLDOWN_SECONDS = 10;
+/** Modes where the dead wait for the next round: a team switch waits for it too. */
+const ROUND_MODES: ReadonlySet<string> = new Set(['core.elim', 'core.bomb', 'core.hostage']);
 /** Vehicle crashes: closing speed (m/s) below which nothing is hurt, and damage per m/s over it (split by weight). */
 /** Most ticks a driven rigid vehicle waits for its driver's next input before it goes on without (MountRt.driveWait): a lost packet's resend at 150 ms. */
 const DRIVE_WAIT_MAX = 12;
@@ -414,6 +418,8 @@ export interface Combatant {
    * hold runs out (null: idle but still connected).
    */
   away?: { name: string; key: string | null; why: 'afk' | 'dropped'; until: number | null; since?: number };
+  /** Switch team (Match.switchTeam): their kills when they joined the team they are on now; the team's score counts only those after it. */
+  teamBase?: number;
   /** A signed-in player playing under their username, checked by the host (account ticket): shown as a verified account. */
   account?: boolean;
   /**
@@ -1345,8 +1351,9 @@ export class Match {
   teamScores(): Map<string, number> {
     if (this.mode) return this.mode.teamScores();
     const out = new Map<string, number>((this.teams ?? []).map((t) => [t.id, 0]));
-    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills);
+    for (const c of this.combatants()) if (c.faction && out.has(c.faction)) out.set(c.faction, out.get(c.faction)! + c.kills - (c.teamBase ?? 0));
     for (const [team, n] of this.leaderBounty) if (out.has(team)) out.set(team, out.get(team)! + n);
+    for (const [team, n] of this.teamBank) if (out.has(team)) out.set(team, out.get(team)! + n);
     return out;
   }
 
@@ -1889,6 +1896,128 @@ export class Match {
     this.rolesFor = -1;
     this.leadGoals.delete(slot);
     this.squadLeads = null;
+    this.dropTeamMove(slot);
+  }
+
+  // ------------------------------------------------------------------ Switch team
+
+  /** Team switches waiting for the player's next spawn: slot -> the team they go to, and the bot moving the other way (if one keeps the teams even). */
+  private readonly teamMoves = new Map<number, { to: string; bot?: number }>();
+  /** Bots moving the other way for a player's switch: bot slot -> the team they go to. */
+  private readonly botMoves = new Map<number, string>();
+  /** When each player last asked to switch (tick). */
+  private readonly teamAsked = new Map<number, number>();
+  /** Counts team switches that took effect: hosts send everyone the roster again when it changes. */
+  teamMoved = 0;
+  /** Kills each team keeps from players who left it for another (Team Deathmatch's score). */
+  private readonly teamBank = new Map<string, number>();
+
+  /** The team a player moves to at their next spawn (an index into `teams`), or -1. */
+  pendingTeam(slot: number): number {
+    const m = this.teamMoves.get(slot);
+    return m && this.teams ? this.teams.findIndex((t) => t.id === m.to) : -1;
+  }
+
+  /**
+   * Switch team (pause menu, Tab board, O; docs/MULTIPLAYER_PROTOCOL.md "Switch team"): the player moves to team `to`
+   * (an index; undefined: the next team round) at their next spawn, which doesn't count as a death; in round modes
+   * the next round. Asking again while a switch waits (or `to` -1, or their own team) cancels it. A short cooldown
+   * between asks. Refused when it would leave the teams uneven, unless a bot on the other team can move the other
+   * way (at its own next spawn) to keep them even. The player is told how it went (a `msg` event). Returns whether a
+   * switch now waits.
+   */
+  switchTeam(slot: number, to?: number): boolean {
+    const c = this.slots[slot];
+    const teams = this.teams;
+    if (!c || c.kind !== 'human' || c.away || !teams || !c.faction || this.zombies) return false;
+    const tell = (text: string) => this.pendingEvents.push({ e: 'msg', text, secs: 3, s: slot });
+    const name = (id: string) => teams.find((t) => t.id === id)?.name ?? 'the other team';
+    const waiting = this.teamMoves.get(slot);
+    const from = teams.findIndex((t) => t.id === c.faction);
+    const target = to === undefined ? (from + 1) % teams.length : to;
+    if (waiting && (to === undefined || to < 0 || teams[target]?.id === waiting.to || target === from)) {
+      this.dropTeamMove(slot);
+      tell(`Staying on ${name(c.faction)}`);
+      return false;
+    }
+    if (target < 0 || target === from || !teams[target]) return false;
+    const last = this.teamAsked.get(slot);
+    if (last !== undefined && this.tick - last < TEAM_SWITCH_COOLDOWN_SECONDS * TICK_RATE) {
+      tell(`Wait ${Math.ceil((last + TEAM_SWITCH_COOLDOWN_SECONDS * TICK_RATE - this.tick) / TICK_RATE)} s to switch team again`);
+      return false;
+    }
+    if (this.isLeader(c)) {
+      tell("A team's leader can't switch team");
+      return false;
+    }
+    const dest = teams[target]!.id;
+    if (waiting) this.dropTeamMove(slot);
+    // Each team's size as it will be once the switches waiting now are done, against its target (uneven team sizes).
+    const targets = this.teamTargets();
+    const count = new Map(teams.map((t) => [t.id, 0]));
+    for (const o of this.combatants()) {
+      if (o.kind === 'npc' || !o.faction || !count.has(o.faction)) continue;
+      const t = this.teamMoves.get(o.slot)?.to ?? this.botMoves.get(o.slot) ?? o.faction;
+      count.set(t, (count.get(t) ?? 0) + 1);
+    }
+    const total = [...targets.values()].reduce((a, b) => a + b, 0) || 1;
+    const all = [...count.values()].reduce((a, b) => a + b, 0);
+    // A team's players over its share of everyone (even teams: over the average).
+    const over = (n: Map<string, number>, id: string) => n.get(id)! - (all * targets.get(id)!) / total;
+    const spread = (n: Map<string, number>) => Math.max(...teams.map((t) => over(n, t.id))) - Math.min(...teams.map((t) => over(n, t.id)));
+    const after = new Map(count);
+    after.set(c.faction, after.get(c.faction)! - 1);
+    after.set(dest, after.get(dest)! + 1);
+    let bot: Combatant | undefined;
+    if (spread(after) > Math.max(1, spread(count)) + 1e-9) {
+      // A bot on the team they go to moves the other way (a random bot: the host's own set bots keep their teams):
+      // the dead first (they move sooner), then the lowest scorer.
+      bot = this.combatants()
+        .filter((o) => o.kind === 'bot' && !o.away && o.faction === dest && !this.botMoves.has(o.slot) && !this.isLeader(o) && !o.botSet)
+        .sort((a, b) => Number(a.alive) - Number(b.alive) || a.kills - b.kills || b.slot - a.slot)[0];
+      if (!bot) {
+        tell(`${name(dest)} has more players: switching would leave the teams uneven`);
+        return false;
+      }
+    }
+    this.teamAsked.set(slot, this.tick);
+    this.teamMoves.set(slot, { to: dest, ...(bot ? { bot: bot.slot } : {}) });
+    if (bot) this.botMoves.set(bot.slot, c.faction);
+    // The dead (and waiting for a respawn) move at it; in round modes the next round.
+    const when = ROUND_MODES.has(this.rules.mode) ? 'at the next round' : c.alive ? 'when you next respawn' : 'at your respawn';
+    tell(`Switching to ${name(dest)} ${when}`);
+    return true;
+  }
+
+  /** A player's waiting switch is called off (they cancelled, left or spectate): the bot moving for it stays. */
+  private dropTeamMove(slot: number): void {
+    const m = this.teamMoves.get(slot);
+    if (m) {
+      this.teamMoves.delete(slot);
+      if (m.bot !== undefined) this.botMoves.delete(m.bot);
+    }
+    this.botMoves.delete(slot);
+  }
+
+  /** At a spawn: a player's (or a bot's) waiting switch takes effect. */
+  private applyTeamMove(c: Combatant): void {
+    const m = this.teamMoves.get(c.slot);
+    const to = m?.to ?? this.botMoves.get(c.slot);
+    if (to === undefined) return;
+    this.teamMoves.delete(c.slot);
+    this.botMoves.delete(c.slot);
+    if (!c.faction || to === c.faction || !this.teams?.some((t) => t.id === to)) return;
+    // The team they leave keeps the kills they made for it.
+    this.teamBank.set(c.faction, (this.teamBank.get(c.faction) ?? 0) + c.kills - (c.teamBase ?? 0));
+    c.teamBase = c.kills;
+    c.faction = to;
+    this.teamMoved++;
+    this.squadsDirty = true;
+    this.rolesFor = -1;
+    this.leadGoals.delete(c.slot);
+    this.squadLeads = null;
+    this.fireteams?.scores.leave(c.slot);
+    if (c.kind === 'human') this.pendingEvents.push({ e: 'msg', text: `You're on ${this.teams.find((t) => t.id === to)!.name} now`, secs: 3, s: c.slot });
   }
 
   /**
@@ -6792,6 +6921,7 @@ export class Match {
    * spawns beside a teammate out of the fight (squad spawn).
    */
   private spawn(c: Combatant): void {
+    if (this.teamMoves.size || this.botMoves.size) this.applyTeamMove(c);
     this.ensureSpawnCapacity();
     const relook = this.relookOnSpawn(c);
     const enemies: Vec3[] = [];
@@ -7756,6 +7886,7 @@ export class Match {
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
       ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),
       ...(c.hold ? { hu: [HOLD_KINDS.indexOf(c.hold.kind), Math.max(0, this.tick - c.hold.start), c.hold.ticks] as [number, number, number] } : {}),
+      ...(this.teamMoves.has(slot) ? { tm: this.pendingTeam(slot) } : {}),
     };
   }
 

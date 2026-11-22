@@ -1613,6 +1613,10 @@ html.touch #squad-hud { left: calc(240px + env(safe-area-inset-left)); bottom: a
 .sb-ghead { flex: none; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 8px 3px; }
 .sb-gname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--team); font: 700 15px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
 .sb-gscore { font: italic 700 24px/1 var(--font-display); color: var(--text); }
+.sb-join { margin-left: auto; align-self: center; padding: 2px 9px; border: 1px solid var(--team); border-radius: 999px; background: transparent; color: var(--team); font: 700 11px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+.sb-join:hover, .sb-join:focus-visible { background: color-mix(in srgb, var(--team) 18%, transparent); }
+.sb-join.pending { background: color-mix(in srgb, var(--team) 26%, transparent); color: var(--text); }
+.sb-join[hidden] { display: none; }
 .sb-gscore.lead::before { content: '▲ '; font-size: 0.5em; vertical-align: middle; color: var(--warning); }
 .sb-list { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
 .sb-ffa .sb-list, .sb-coop .sb-list, .sb-ffa .sb-group, .sb-coop .sb-group { overflow: visible; }

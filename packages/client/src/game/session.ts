@@ -401,6 +401,8 @@ export class GameSession {
   private profileCard: ProfileCard | null = null;
   /** The host lets players spectate by choice (welcome `spectate`). */
   private canSpectate = false;
+  /** The host lets players switch team mid-match (welcome `ts`) and this is a team mode. */
+  private canSwitchTeam = false;
   /** Out of play this frame: spectating, or dead in a running match. */
   private outOfPlay = false;
   /** The latest shot that hit you: who fired it and from where (the kill cam looks there when the killer isn't in view). */
@@ -841,6 +843,8 @@ export class GameSession {
     this.input.onToggle.set('KeyJ', () => {
       if (this.spectator) this.setSpectating(false);
     });
+    // O: switch team at your next respawn (again: stay).
+    this.input.onToggle.set('KeyO', () => this.switchTeam());
     this.input.onToggle.set('KeyH', () => {
       // In a vehicle H switches the driver between the cockpit and the chase camera; on foot, first and third person.
       const ride = this.seat && this.local?.alive ? this.mounts?.mounts.get(this.seat[0]) : undefined;
@@ -917,6 +921,8 @@ export class GameSession {
       },
       { signal },
     );
+    $('pause-team').addEventListener('click', () => this.switchTeam(), { signal });
+    this.hud.onJoinTeam = (team) => this.switchTeam(team);
     $('exitmatch').textContent = opts.exitLabel;
     this.pauseMenu = new PauseMenu(
       {
@@ -1370,8 +1376,38 @@ export class GameSession {
     const btn = $('pause-spectate') as HTMLButtonElement;
     btn.hidden = !this.canSpectate || !this.opts.transport.sendSpectate;
     btn.textContent = this.spectator ? 'Join game' : 'Spectate';
+    this.drawTeamButton();
     btn.title = this.spectator ? 'Back into the match (J)' : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
     ($('respawn-now') as HTMLButtonElement).hidden = this.spectator;
+  }
+
+  /** Whether you may switch team now: the host supports it, a team mode, playing (not spectating, not between matches). */
+  private teamSwitchOpen(): boolean {
+    return this.canSwitchTeam && !this.spectator && this.phase !== 'intermission' && !!this.opts.transport.sendTeam;
+  }
+
+  /**
+   * Switch team (pause menu, the boards' Join, O): to team `i`, else the next team round; asking again while a switch
+   * waits stays. The host answers with a message, and the snapshot's `tm` while it waits.
+   */
+  private switchTeam(i?: number): void {
+    if (!this.teamSwitchOpen()) return;
+    const waiting = this.hud.switchTeam.pending;
+    this.opts.transport.sendTeam!(waiting >= 0 && (i === undefined || i === waiting) ? -1 : i);
+  }
+
+  /** The pause menu's Switch team button: shown in team modes on hosts that support it; "Stay on …" while a switch waits. */
+  private drawTeamButton(): void {
+    const btn = $('pause-team') as HTMLButtonElement;
+    const open = this.teamSwitchOpen();
+    this.hud.switchTeam.can = open;
+    btn.hidden = !open;
+    if (!open) return;
+    const waiting = this.hud.switchTeam.pending;
+    const mine = this.hud.rosterTeam(this.slot);
+    const label = waiting >= 0 ? `Stay on ${mine?.name ?? 'your team'}` : 'Switch team';
+    if (btn.textContent !== label) btn.textContent = label;
+    btn.title = waiting >= 0 ? 'Call off your switch: stay on your team (O)' : 'Move to the other team at your next respawn; it is refused if it would leave the teams uneven (O)';
   }
 
   /** Ask the host to make you a spectator (on) or put you back in the game; the roster answers (`sp`). */
@@ -2166,6 +2202,9 @@ export class GameSession {
         const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
         this.teamIds = teams?.map((t) => t.id) ?? null;
         this.hud.setTeams(teams);
+        this.canSwitchTeam = msg.ts === 1 && (teams?.length ?? 0) > 1;
+        this.hud.switchTeam.pending = -1;
+        this.drawTeamButton();
         this.hud.setBoardMode(msg.rules.mode);
         this.hud.setModeLabel(msg.rules.mode === 'core.coop' ? 'Co-op Mission' : rouletteOn(msg.rules) && msg.rules.mode !== 'core.roulette' ? `Roulette: ${MODE_LABELS[msg.rules.mode]}` : (MODE_LABELS[msg.rules.mode] ?? 'Deathmatch'));
         this.hud.waitLabel = msg.rules.mode === 'core.zombies' ? 'Down: back at the next wave' : 'Respawning…';
@@ -2324,6 +2363,12 @@ export class GameSession {
         this.uav = msg.me?.uv ?? 0;
         this.jam = msg.me?.jm ?? 0;
         this.streak = msg.me?.ks ?? 0;
+        // Switch team: the team your switch waits for (the pause menu's button and the boards' Join follow it).
+        const tm = msg.me?.tm ?? -1;
+        if (tm !== this.hud.switchTeam.pending) {
+          this.hud.switchTeam.pending = tm;
+          this.drawTeamButton();
+        }
         // A hold to use (sim/holdUse.ts): its progress, run on between snapshots by the clock.
         this.holdUse = msg.me?.hu ? { kind: HOLD_KINDS[msg.me.hu[0]] ?? 'resupply', done: msg.me.hu[1], total: msg.me.hu[2], at: performance.now() } : null;
         if (this.local) this.local.zones = this.zones;
