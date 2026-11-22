@@ -54,3 +54,10 @@ It reads recent CI runs through `gh api` and counts each check that failed and t
 - **same sha**: a run failed and another run for the same commit succeeded.
 
 A failed job is named by its log: its e2e flows (`FLOW x FAIL`), else its unit tests (vitest's `FAIL file > test`), else the job. [docs/FLAKES.md](FLAKES.md) lists them most frequent first, with how they flaked, the last run seen and its first failed check. Lane A runs it each day and works the top of the list in its fix batch.
+
+## Performance lines for map steps (owner, 2026-11-22)
+
+- Outdoor and campus-wide views: a step that costs more than 10 % in draws or shadow casters against the same view
+  before it does not land until it is brought back.
+- Inside a single room: no percentage against the empty room; a fixed ceiling of 250 draws a view at Medium.
+- Whole map: the tracked totals (prop models, lights, entities) against their budgets.
