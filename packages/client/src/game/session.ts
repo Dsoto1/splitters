@@ -2408,7 +2408,10 @@ export class GameSession {
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.local.portals = mapPortals(loaded.map.entities);
         // Spawns, portals, jump pads and ziplines read off everyone's movement, for their effects (content/vfx.json map.gameplay).
-        this.fxWatch = new GameplayFxWatch(this.local.pads, this.local.portals, (key, at) => this.view.playGameplayFx(key, at));
+        this.fxWatch = new GameplayFxWatch(this.local.pads, this.local.portals, (key, at) => {
+          this.view.playGameplayFx(key, at);
+          this.sfx.gameplayMoment(key, at);
+        });
         this.scenario = new ScenarioState(loaded.map, physics);
         if (this.scenario.movers.defs.length) this.local.platforms = this.scenario;
         if (this.local.portals.length) this.local.portalOn = this.scenario.portalOn;
