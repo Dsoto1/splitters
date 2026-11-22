@@ -127,7 +127,7 @@ export class PlayerCardView {
       () => undefined,
     );
     if (p.kind === 'acct' && p.username) {
-      void this.loadCard(p.username).then((card) => {
+      void this.loadCard(p.username).catch(() => null).then((card) => {
         if (this.shown !== shown || !this.subject) return;
         this.hub = card && card.username.toLowerCase() === p.username!.toLowerCase() ? card : null;
         this.draw();

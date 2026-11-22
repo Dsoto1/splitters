@@ -7,6 +7,10 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Emblems and titles.** Pick an emblem (16 shapes, 12 colours) and a title your career has earned on Profile; your emblem shows by your name on the scoreboard, in the kill feed and on your card.
+- **Other players' cards.** Click a player on the pause menu's Match tab or the end-of-match board to see their card: emblem, title, character, this match, and a signed-in player's career.
+- **Match history and stats by mode and weapon.** Profile's Career has Modes, Weapons and History tabs: your last 20 matches, and your record in each mode and with each weapon.
+- **Host-counted stats.** When you play in someone else's online game signed in, their game tells the server how your match went; Profile and your card show what other hosts counted.
 - **Slide.** Sprint, then crouch: a short slide that keeps your speed, slows over about three quarters of a second and ends crouched. It costs stamina like a sprint (none in the air, a short cooldown, a little longer downhill); bots slide into cover too.
 - **Peek (lean).** Hold ` or Left Alt (rebind in Options → Controls; Q and E were taken) to lean round a corner: your head, gun and where you can be hit move out together, lag compensation included. Everyone sees the lean, in first and third person; bots peek from cover with it.
 - **The Gas Mask Engineer is retired.** He's gone from Character Select, random characters and the bots; a saved choice or bot set that named him plays Grunt '68.

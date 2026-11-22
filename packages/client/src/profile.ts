@@ -129,12 +129,13 @@ export function loadCard(username: string): Promise<PublicCard | null> {
   if (had && performance.now() - had.at < CARD_FRESH_MS) return had.card;
   const url = hubApi(`profile/card?u=${encodeURIComponent(username)}`);
   const card = url
-    ? fetch(url, { signal: AbortSignal.timeout(8000) }).then(
-        async (r) => (r.ok ? readPublicCard(await r.json()) : null),
-        () => null,
-      )
+    ? fetch(url, { signal: AbortSignal.timeout(15_000) })
+        .then(async (r) => (r.ok ? readPublicCard(await r.json()) : null))
+        .catch(() => null)
     : Promise.resolve(null);
   cards.set(key, { at: performance.now(), card });
+  // A card that couldn't be had is asked again next time (the hub may be back).
+  void card.then((c) => c === null && cards.get(key)?.card === card && cards.delete(key));
   if (cards.size > 200) cards.delete(cards.keys().next().value!);
   return card;
 }
