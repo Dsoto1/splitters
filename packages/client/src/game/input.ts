@@ -123,7 +123,7 @@ export function saveCategoryKeys(keys: readonly string[]): void {
 /** "KeyQ" → "Q", "Backquote" → "`": how a key code reads in the menus. */
 export function keyLabel(code: string): string {
   const named: Record<string, string> = { Backquote: '`', CapsLock: 'Caps Lock', AltLeft: 'Left Alt', AltRight: 'Right Alt', ControlLeft: 'Left Ctrl', ControlRight: 'Right Ctrl', ShiftRight: 'Right Shift', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Backslash: '\\', Slash: '/', Period: '.', Minus: '-', Equal: '=' };
-  return named[code] ?? code.replace(/^Key/, '').replace(/^Numpad/, 'Num ');
+  return named[code] ?? code.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num ');
 }
 /** Held this long, the wheel key (or a controller's Y) opens the wheel; a shorter press is a tap. */
 export const WHEEL_HOLD_MS = 180;

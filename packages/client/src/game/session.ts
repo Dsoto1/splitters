@@ -867,6 +867,7 @@ export class GameSession {
       opts.transport.botDebug((f) => v.update(f));
     }
     this.input = new InputState(opts.canvas);
+    this.hud.categoryKeys = this.input.categoryKeys.map(keyLabel);
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
     this.weatherSound = new WeatherAudio(opts.audio);
@@ -3454,7 +3455,7 @@ export class GameSession {
         const p = this.categoryPicks.pick(cat, groups.get(cat)!);
         if (p !== null) picks.set(cat, p);
       }
-      this.wheel.keyLabels = this.input.categoryKeys.map(keyLabel);
+      this.wheel.keyLabels = this.hud.categoryKeys = this.input.categoryKeys.map(keyLabel);
       this.wheel.show(wheelEntries(owned, local.inventory, this.switchingFrom(local)), picks);
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }

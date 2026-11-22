@@ -6148,6 +6148,7 @@ async function weaponKeysChecks(browser) {
   await page.goto(`${CLIENT}/?offline&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__give, null, { timeout: T(60000) });
   await holdBots(page);
+  await playWithoutMouse(page);
   const guns = ['core.hand_cannon', 'core.revolver', 'core.rifle', 'core.battle_rifle', 'core.desert_carbine', 'core.shotgun', 'core.lmg', 'core.laser_rifle'];
   await page.evaluate((ids) => { for (const id of ids) window.__give(id); }, guns);
   await page.waitForFunction((n) => window.__cs.local.inventory.size >= n, guns.length + 1, { timeout: T(10000) }).catch(() => {});
