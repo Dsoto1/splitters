@@ -21,6 +21,12 @@ export const POSE_CHECK_EVERY_MS = 250;
 export const BIND_HOLD_MS = 600;
 /** Alive and on screen this long (ms) without a single evaluated pose since it was shown or given to a player: a report. */
 export const UNPOSED_HOLD_MS = 1000;
+/**
+ * And for at least this many drawn frames (both reasons): on a slow page (a frame a second) a far character's animation
+ * steps every few frames (animLod.ts, up to every 12th, after waiting for its own phase), so time alone called bodies
+ * that were simply waiting for their next evaluation "never posed".
+ */
+export const HOLD_FRAMES = 30;
 /** Reports kept in this browser (newest last). */
 export const POSE_REPORTS_KEPT = 20;
 export const POSE_REPORTS_KEY = 'tt.poseReports';
@@ -55,9 +61,11 @@ export interface PoseReport {
 interface Track {
   /** When it was last seen not visible → visible, and its pose count then. */
   shownAt: number;
+  shownFrame: number;
   posesAtShow: number;
   /** Since when its skin has been the bind pose while visible (-1: not). */
   bindSince: number;
+  bindFrame: number;
   reported: boolean;
   seen: boolean;
 }
@@ -79,14 +87,15 @@ export class PoseWatch {
 
   constructor(private readonly limit = POSE_REPORTS_PER_MATCH) {}
 
-  observe(now: number, samples: Iterable<PoseSample>): PoseReport[] {
+  /** `frame`: the scene's drawn frames so far (a count that goes up by one a frame). */
+  observe(now: number, samples: Iterable<PoseSample>, frame = Infinity): PoseReport[] {
     const out: PoseReport[] = [];
     poseCheckStats.checks++;
     for (const t of this.tracks.values()) t.seen = false;
     for (const s of samples) {
       if (s.visible) poseCheckStats.onScreen++;
       let t = this.tracks.get(s.key);
-      if (!t) this.tracks.set(s.key, (t = { shownAt: -1, posesAtShow: s.poses, bindSince: -1, reported: false, seen: true }));
+      if (!t) this.tracks.set(s.key, (t = { shownAt: -1, shownFrame: 0, posesAtShow: s.poses, bindSince: -1, bindFrame: 0, reported: false, seen: true }));
       t.seen = true;
       if (!s.visible) {
         t.shownAt = -1;
@@ -95,25 +104,30 @@ export class PoseWatch {
       }
       if (t.shownAt < 0) {
         t.shownAt = now;
+        t.shownFrame = frame;
         t.posesAtShow = s.poses;
       }
       if (s.bind) {
-        if (t.bindSince < 0) t.bindSince = now;
+        if (t.bindSince < 0) {
+          t.bindSince = now;
+          t.bindFrame = frame;
+        }
       } else t.bindSince = -1;
       if (t.reported || this.written >= this.limit) continue;
       let reason: PoseReason | null = null;
       let since = 0;
-      if (t.bindSince >= 0 && now - t.bindSince >= BIND_HOLD_MS) {
+      if (t.bindSince >= 0 && now - t.bindSince >= BIND_HOLD_MS && !(frame - t.bindFrame < HOLD_FRAMES)) {
         reason = 'bind';
         since = t.bindSince;
-      } else if (s.alive && s.poses === t.posesAtShow && now - t.shownAt >= UNPOSED_HOLD_MS) {
+      } else if (s.alive && s.poses === t.posesAtShow && now - t.shownAt >= UNPOSED_HOLD_MS && !(frame - t.shownFrame < HOLD_FRAMES)) {
         reason = 'unposed';
         since = t.shownAt;
       }
       if (!reason) continue;
       t.reported = true;
       this.written++;
-      out.push({ reason, forMs: Math.round(now - since), at: new Date().toISOString(), ...s.details() });
+      const frames = reason === 'bind' ? frame - t.bindFrame : frame - t.shownFrame;
+      out.push({ reason, forMs: Math.round(now - since), ...(Number.isFinite(frames) ? { forFrames: frames } : {}), at: new Date().toISOString(), ...s.details() });
     }
     for (const [k, t] of this.tracks) if (!t.seen) this.tracks.delete(k);
     return out;

@@ -1754,6 +1754,29 @@ export class CharacterAnimator {
     return out;
   }
 
+  /**
+   * Each skeleton of the body for a pose check report: its bones, frames since it was last skinned, and its meshes (shown,
+   * their low-detail copies' skeletons the same or not), and whether its drawn matrices are the bind pose.
+   */
+  skinState(): Record<string, unknown>[] {
+    const rid = this.scene.getRenderId();
+    const sks = new Set<Skeleton>();
+    for (const m of this.ch.meshes) if (m.skeleton) sks.add(m.skeleton);
+    return [...sks].map((sk) => {
+      const probe = this.bindProbe?.find((p) => p.sk === sk);
+      const raw = sk as unknown as { _currentRenderId: number; _transformMatrices: Float32Array | null };
+      return {
+        name: sk.name,
+        bones: sk.bones.length,
+        skinnedAgo: rid - raw._currentRenderId,
+        bind: probe && raw._transformMatrices ? rigidAlike(raw._transformMatrices, probe.arms) : null,
+        meshes: this.ch.meshes
+          .filter((m) => m.skeleton === sk)
+          .map((m) => ({ name: m.name, on: m.isEnabled() && m.isVisible, lods: ((m as { getLODLevels?: () => { mesh: AbstractMesh | null }[] }).getLODLevels?.() ?? []).map((l) => (l.mesh ? (l.mesh.skeleton === sk ? 'same' : 'other') : 'none')) })),
+      };
+    });
+  }
+
   /** The animator's state for a pose check report (poseCheck.ts): plain values only. */
   poseState(): Record<string, unknown> {
     const playing: string[] = [];

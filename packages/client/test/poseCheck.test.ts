@@ -10,7 +10,7 @@ import { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import '@babylonjs/core/Animations/animatable';
 import { Matrix, Quaternion } from '@babylonjs/core/Maths/math.vector';
 import { CharacterAnimator } from '../src/game/characterAnimator.ts';
-import { BIND_HOLD_MS, PoseWatch, UNPOSED_HOLD_MS, poseCheckOn, rigidAlike, type PoseSample } from '../src/game/poseCheck.ts';
+import { BIND_HOLD_MS, HOLD_FRAMES, PoseWatch, UNPOSED_HOLD_MS, poseCheckOn, rigidAlike, type PoseSample } from '../src/game/poseCheck.ts';
 import type { CharacterInstance, Clip } from '../src/content/characters.ts';
 
 /** The pose check (poseCheck.ts): a body drawn in its bind pose (the T-pose), or never posed, is reported once. */
@@ -72,6 +72,16 @@ describe('PoseWatch', () => {
     let out: ReturnType<PoseWatch['observe']> = [];
     for (let t = 500, p = 5; t < 3000; t += 250, p++) out = out.concat(w.observe(t, [sample(body, { poses: p })]));
     expect(out).toEqual([]);
+  });
+
+  it('on a slow page waits for frames as well as time (a far body steps every few frames)', () => {
+    const w = new PoseWatch();
+    const body = {};
+    // A frame a second: 10 s is 10 frames, too few to call it never posed (or held in the bind pose).
+    for (let t = 0, f = 0; t <= 10000; t += 1000, f++) expect(w.observe(t, [sample(body, { poses: 2, bind: true })], f)).toEqual([]);
+    const r = w.observe(40000, [sample(body, { poses: 2, bind: true })], HOLD_FRAMES + 5);
+    expect(r).toHaveLength(1);
+    expect(r[0]!.forFrames).toBe(HOLD_FRAMES + 5);
   });
 
   it('writes at most its limit a match', () => {

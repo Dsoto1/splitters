@@ -3032,7 +3032,7 @@ export class GameView {
     };
     for (const a of this.avatars.values()) add(a, false);
     for (const c of this.corpses) add(c.a, true);
-    for (const r of this.poseWatch.observe(now, samples)) recordPoseReport(r);
+    for (const r of this.poseWatch.observe(now, samples, this.scene.getFrameId())) recordPoseReport(r);
   }
 
   /** What a pose check report says of a body (only built when one is written). */
@@ -3079,6 +3079,7 @@ export class GameView {
       distance: cam ? Math.round(Vector3.Distance(cam.globalPosition, at) * 10) / 10 : null,
       position: [Math.round(at.x * 10) / 10, Math.round(at.y * 10) / 10, Math.round(at.z * 10) / 10],
       animator: anim.poseState(),
+      skins: anim.skinState(),
     };
   }
 
