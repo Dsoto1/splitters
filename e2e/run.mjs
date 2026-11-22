@@ -15044,8 +15044,15 @@ async function weaponmanagerFlow(browser) {
   check(true, 'the weapon tuning page opens on Compare');
   await page.click('#wt-tab-manage');
   const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
-  const cards = await page.evaluate(() => ({ n: document.querySelectorAll('#wm-list .wm-card').length, pics: document.querySelectorAll('#wm-list .wm-card .wm-pic img').length, url: location.search }));
-  check(listed && cards.pics > 20 && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+  const cards = await page.evaluate(() => {
+    const all = [...document.querySelectorAll('#wm-list .wm-card')];
+    const without = all.filter((c) => !c.querySelector('.wm-pic img')).map((c) => c.dataset.id);
+    return { n: all.length, pics: all.length - without.length, without, url: location.search };
+  });
+  // Every weapon ships its icon (packages/client/test/weaponIcons.test.ts): none shows "no picture".
+  check(listed && cards.n > 40 && !cards.without.length && /view=manage/.test(cards.url), `Manage lists every weapon with its picture (${JSON.stringify(cards)})`);
+  const flare = await page.waitForFunction(() => (document.querySelector('#wm-list .wm-card[data-id="core.flare_gun"] .wm-pic img')?.naturalWidth ?? 0) > 0, null, { timeout: T(10000) }).then(() => true, () => false);
+  check(flare, 'the Flare Gun\'s picture loads (its model changed; the icon was taken again)');
 
   await page.click('#wm-list .wm-card[data-id="core.smg"]');
   await page.waitForSelector('#wm-editor #wm-name', { timeout: T(10000) });

@@ -9,6 +9,8 @@
 // Run against a built client being served (the "Capture portraits" workflow does all of this):
 //   pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-weapon-icons.mjs http://localhost:4799 [model paths…]
+// A weapon given a new model needs its icon taken again (packages/client/test/weaponIcons.test.ts checks that
+// every weapon has one): name its model path, e.g. guns/flare_gun.glb. CHROMIUM=<path> uses that browser build.
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -33,13 +35,18 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${base}/?test=1&name=Tester`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => window.__weaponIcons, null, { timeout: 120_000 });
-const models = (await page.evaluate(() => window.__weaponIcons.models())).filter((m) => !only.length || only.includes(m));
+const allModels = await page.evaluate(() => window.__weaponIcons.models());
+const unknown = only.filter((m) => !allModels.includes(m));
+if (unknown.length) console.warn(`no weapon uses ${unknown.join(', ')}`);
+const models = allModels.filter((m) => !only.length || only.includes(m));
 console.log(`${models.length} weapon models`);
 
 // The index: a full run starts it again (pictures of models that are gone are deleted); a partial run
-// (model paths on the command line) keeps the other entries as they were.
+// (model paths on the command line) keeps the other entries as they were, but drops models no weapon
+// uses any more (a weapon given a new model), as a full run would.
 const index = {};
-if (only.length) for (const m of readFileSync(INDEX, 'utf8').matchAll(/^ {2}'([^']+)': '([^']+)',$/gm)) index[m[1]] = m[2];
+if (only.length)
+  for (const m of readFileSync(INDEX, 'utf8').matchAll(/^ {2}'([^']+)': '([^']+)',$/gm)) if (allModels.includes(m[1])) index[m[1]] = m[2];
 const failed = [];
 for (const model of models) {
   const url = await page.evaluate((m) => window.__weaponIcons.render(m), model).catch((e) => {
@@ -54,7 +61,7 @@ for (const model of models) {
   console.log(`${model}: ${(webp.length / 1024).toFixed(1)} kB`);
 }
 await browser.close();
-if (!only.length) {
+{
   const keep = new Set(Object.values(index).map((v) => v.split('?')[0]));
   for (const f of readdirSync(OUT)) if (f.endsWith('.webp') && !keep.has(f)) rmSync(join(OUT, f));
 }
