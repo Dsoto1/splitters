@@ -40,6 +40,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-7d-kit` · 0f46b7484 (`check/stjohns-7d-kit`) · run 44973046188 (the mess hall's pieces; lane F, 2026-11-22). Shares `content/setpieces/academy.json`, `setPiecesAcademy.test.ts`, `maps/test_coverage.json` and generated tables with `wip/stjohns-7c` (red, being fixed): whichever lands second merges the other and re-checks.
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - S–M · B · **St. John's: Welles' mess hall floor sunk 0.5 m** (owner, 2026-11-18, after step 6): MapMaker's sunken floor can't be used at ground level, so this needs a new MapMaker tile or option (generic, for any map), then the mess hall floor re-placed through MapMaker. After `wip/stjohns-6` lands.
