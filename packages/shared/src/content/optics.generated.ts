@@ -33,7 +33,7 @@ export const OPTIC_KINDS: Readonly<Record<OpticKindId, OpticKind>> = {
   holo: { name: 'Holographic sight', reticle: 'ring', housing: 'frame', adsFov: 0.72, glass: { rise: 0.036, half: [0.021, 0.016], length: 0.07 }, mark: { dot: 0.0016, ring: 0.022 } },
   scope: { name: '2-3x optic', reticle: 'chevron', housing: 'model', mag: [2, 3.6], steps: [1] },
   sniper: { name: 'Sniper scope', reticle: 'fine', housing: 'overlay', mag: [3, 10], steps: [1, 0.45] },
-  x2: { name: '2× optic', reticle: 'chevron', housing: 'magtube', power: 2, steps: [1], glass: { rise: 0.04, half: [0.0135, 0.0135], length: 0.115, foot: 0.06 } },
+  x2: { name: '2× optic', reticle: 'chevron', housing: 'magtube', power: 2, steps: [1], glass: { rise: 0.04, half: [0.0115, 0.0115], length: 0.11, foot: 0.06 } },
 };
 
 /**

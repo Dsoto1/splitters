@@ -13893,6 +13893,37 @@ async function gripsInPlay(browser) {
   check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
   const plainGun = await aimWith('core.rockets');
   check(plainGun.held === 'core.rockets' && !plainGun.glass && plainGun.dot === '1' && plainGun.picture === 1, `the Rocket Launcher, with no optic, keeps the HUD's aim dot (${JSON.stringify(plainGun)})`);
+  // Optic choice (GUNPLAY_SPEC §15, "Optic choice"): Settings → Optic puts a 2x optic on the Assault Rifle. It is built
+  // on the gun, the host hears of it (the roster's `op`), and aimed the eye is on its tube at twice the hip view.
+  await aimWith('core.rifle');
+  const pickX2 = await page.evaluate(() => {
+    window.__cs.opticPick();
+    const pick = document.getElementById('optic-pick');
+    const offered = [...pick.options].map((o) => o.value);
+    pick.value = 'x2';
+    pick.dispatchEvent(new Event('change'));
+    return { offered, row: !document.getElementById('optic-row').hidden };
+  });
+  await page.waitForFunction(() => window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op?.['core.rifle'] === 'x2' && window.__cs.view.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), null, { timeout: T(20000) }).catch(() => {});
+  await page.evaluate(() => (window.__autoInput = { zoom: true }));
+  // Through the 2x optic: the world at twice the hip view (1.35 rad), the HUD's optic over it.
+  const x2Fov = 2 * Math.atan(Math.tan(1.35 / 2) / 2);
+  await page.waitForFunction((f) => Math.abs(window.__cs.view.camera.fov - f) < 0.004, x2Fov, { timeout: T(20000) }).catch(() => {});
+  const x2 = await page.evaluate(() => {
+    const v = window.__cs.view;
+    return { held: v.viewWeapon, fov: +v.camera.fov.toFixed(3), housing: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody'), glass: !!v.viewmodel?.getChildMeshes().some((m) => m.name === 'opticGlass'), optic: !document.getElementById('optic').hidden, reticle: document.getElementById('optic').dataset.reticle, op: window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op ?? null };
+  });
+  await page.evaluate(() => (window.__autoInput = { zoom: false }));
+  check(pickX2.row && pickX2.offered.join() === 'irons,reddot,holo,x2' && x2.held === 'core.rifle' && x2.housing && !x2.glass && x2.optic && x2.reticle === 'chevron' && Math.abs(x2.fov - x2Fov) < 0.01 && x2.op?.['core.rifle'] === 'x2', `Settings → Optic puts a 2x optic on the Assault Rifle: built on the gun, on the roster, aimed through at 2x (${JSON.stringify({ ...pickX2, ...x2 })})`);
+  // Back to its own iron sights: no optic on it, nothing on the roster.
+  await page.evaluate(() => {
+    const pick = document.getElementById('optic-pick');
+    pick.value = 'irons';
+    pick.dispatchEvent(new Event('change'));
+  });
+  await page.waitForFunction(() => !window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op && window.__cs.view.viewmodel && !window.__cs.view.viewmodel.getChildMeshes().some((m) => m.name === 'opticBody'), null, { timeout: T(20000) }).catch(() => {});
+  const ironsAgain = await page.evaluate(() => ({ op: window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.op ?? null, housing: !!window.__cs.view.viewmodel?.getChildMeshes().some((m) => m.name === 'opticBody') }));
+  check(!ironsAgain.op && !ironsAgain.housing, `and back to its iron sights (${JSON.stringify(ironsAgain)})`);
   // Bots near and far (animation LOD, the low-detail mesh past 18 m): their drawn hands on their guns. Only bots
   // in view are drawn (and so measured): turn round until several have been (a respawn can face a wall, and on a
   // slow page the bots may still be loading their guns), each measured as last seen.

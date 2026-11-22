@@ -27,7 +27,7 @@
       "housing": "magtube",
       "power": 2,
       "steps": [1],
-      "glass": { "rise": 0.04, "half": [0.0135, 0.0135], "length": 0.115, "foot": 0.06 }
+      "glass": { "rise": 0.04, "half": [0.0115, 0.0115], "length": 0.11, "foot": 0.06 }
     }
   },
   "weapons": {

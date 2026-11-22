@@ -329,7 +329,8 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     if (!shown) return null;
     const def = shown.def;
     const glass = state.fitted && hasGlass(shown.optic) ? shown.optic : null;
-    const fit = state.fitted && !glass ? SIGHT_FITS[def.id] : undefined;
+    // (Iron sights' fit only when the gun is aimed down them: not through a 2x optic built on its top.)
+    const fit = state.fitted && !glass && !eyepieceOf(def, shown.optic) ? SIGHT_FITS[def.id] : undefined;
     const aim = aimPlacement(def, shown.bounds, state.fitted, shown.optic);
     scene.render();
     const meshes = gunMeshes();

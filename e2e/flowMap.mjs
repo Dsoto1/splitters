@@ -220,7 +220,7 @@ const RULES = [
   // Where the first-person gun sits aiming down its sights (the sight fit).
   [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual'], ['client']],
   // The optics on the guns: their housings and glass, the reticles (steady: the flicker check).
-  [/^packages\/client\/src\/game\/(optics|opticHousing)\.ts$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual', ...FLASHING_FLOWS], ['client']],
+  [/^packages\/client\/src\/(game\/optics|game\/opticHousing|opticPrefs)\.ts$/, ['arsenal', 'offline', 'weaponsets', 'characters3', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual', ...FLASHING_FLOWS], ['client']],
   [/^packages\/client\/src\/game\/(arsenalVisuals|muzzleVisuals|muzzleAnchor|muzzlePoint|crosshair|throwArc|coverState)\.ts$/, ['arsenal', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', ...FLASHING_FLOWS], ['client']],
   // Reduce flashing (the setting, steady lightning, the hurt vignette): its check, and where else they show.
   // Weather (map format v34): MapMaker's preview and TEST (editorenv), its moments in the flicker check.

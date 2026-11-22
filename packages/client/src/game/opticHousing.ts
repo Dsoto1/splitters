@@ -200,11 +200,11 @@ function scopeParts(scene: Scene, o: CarriedOptic): Mesh[] {
     return c;
   };
   const rear = g.length * 0.19;
-  parts.push(bell(-g.length * 0.31 - rear / 2, rear, wall * 1.18, wall));
+  parts.push(bell(-g.length * 0.31 - rear / 2, rear, wall * 1.12, wall));
   const front = g.length * 0.19;
-  parts.push(bell(g.length * 0.31 + front / 2, front, wall, wall * 1.42));
-  for (const [z, d] of [[-g.length / 2, wall * 1.18], [g.length / 2, wall * 1.42]] as const) {
-    const rim = CreateTorus('opticPart', { diameter: d * 2, thickness: 0.0035, tessellation: 28 }, scene);
+  parts.push(bell(g.length * 0.31 + front / 2, front, wall, wall * 1.3));
+  for (const [z, d] of [[-g.length / 2, wall * 1.12], [g.length / 2, wall * 1.3]] as const) {
+    const rim = CreateTorus('opticPart', { diameter: d * 2, thickness: 0.003, tessellation: 28 }, scene);
     rim.rotation.x = Math.PI / 2;
     rim.position.set(0, g.rise, z);
     parts.push(rim);
