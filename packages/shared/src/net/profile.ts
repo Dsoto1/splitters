@@ -1,4 +1,7 @@
-import type { Career } from './career.ts';
+import { readCareer, type Career } from './career.ts';
+import { readVouched, type Vouched } from './vouch.ts';
+import { cleanEmblemCode } from '../content/emblems.ts';
+import { isTitleId } from '../content/titles.ts';
 import { claimsOfficial } from './lobby.ts';
 
 /**
@@ -74,6 +77,38 @@ export interface Profile {
   favClass: string | null;
   /** Career stats (net/career.ts), summed match by match. */
   career: Career;
+  /** Your emblem (content/emblems.ts: "<id>.<colour>"), or null for none. */
+  emblem: string | null;
+  /** The title you wear (content/titles.ts: one your career has earned), or null. */
+  title: string | null;
+  /** Phase 4: what other people's hosts counted for you (net/vouch.ts). */
+  vouched: Vouched;
+  /** Your optic pick per gun (weapon ID → optic kind, only guns not on their default; sim/opticChoice.ts): kept with the account so every browser you sign in on uses them. */
+  optics: Record<string, string>;
+}
+
+/**
+ * What anyone may see of a signed-in player (GET /api/v1/profile/card?u=<username>; docs/PLAYER_PROFILES_PLAN.md,
+ * Phase 2): another player's card, opened from the scoreboard. Public fields only: no account id, no region.
+ */
+export interface PublicCard {
+  username: string;
+  emblem: string | null;
+  title: string | null;
+  favClass: string | null;
+  career: Career;
+  /** Phase 4: what other people's hosts counted (an older hub sends none: empty). */
+  vouched: Vouched;
+}
+
+/** A card as the hub sent it, or null when it isn't one (an older hub, anything else). */
+export function readPublicCard(v: unknown): PublicCard | null {
+  if (typeof v !== 'object' || v === null) return null;
+  const o = v as Record<string, unknown>;
+  if (typeof o.username !== 'string' || usernameProblem(o.username)) return null;
+  const career = readCareer(o.career);
+  if (!career) return null;
+  return { username: o.username, emblem: cleanEmblemCode(o.emblem), title: isTitleId(o.title) ? o.title : null, favClass: isFavClassId(o.favClass) ? o.favClass : null, career, vouched: readVouched(o.vouched) };
 }
 
 /** A class id as a profile keeps it (the class list itself is content: sim/classes.ts checks it is one). */

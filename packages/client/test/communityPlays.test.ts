@@ -22,4 +22,14 @@ describe("a host's end-of-match report (community maps)", () => {
     // Reported once: the next report starts empty.
     expect(plays.report('ABC234', `sha256:${'a'.repeat(64)}`, null).players).toEqual([]);
   });
+
+  it("lists the signed-in friends still in, for the host's vouch (player profiles, Phase 4)", () => {
+    let t = 1000;
+    const p = new PlayTracker(() => t);
+    p.joined(1, 'sub-a');
+    t = 5000;
+    p.joined(2, 'sub-b');
+    p.left(1);
+    expect(p.stays()).toEqual([{ id: 2, sub: 'sub-b', from: 5000 }]);
+  });
 });

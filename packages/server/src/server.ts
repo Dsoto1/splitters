@@ -657,6 +657,9 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         client.who = who;
         // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
         if (msg.rx !== undefined) player.rankPoints = msg.rx;
+        // Their emblem and title (player profiles, Phase 2): cosmetic, passed on in the roster.
+        player.emblem = msg.em;
+        player.title = msg.tt;
         // Their optic choice per gun (sim/opticChoice.ts): on the roster, so everyone draws the optic they picked.
         match.setOptics(player.slot, msg.op);
         player.account = !!proof?.name;

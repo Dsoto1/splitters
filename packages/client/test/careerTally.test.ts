@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyCareer, type GameEvent } from '@tiletrigger/shared';
+import { emptyCareer, matchProblem, type GameEvent } from '@tiletrigger/shared';
 import { CareerTally } from '../src/game/careerTally.ts';
 import { cardLines } from '../src/game/profileCard.ts';
 
@@ -27,8 +27,10 @@ describe('career tally', () => {
     t.event(kill(ME, 7, 'core.rifle'));
     t.event(kill(ME, 4, 'core.fall')); // not a weapon: a kill, no weapon
     expect({ shots: t.shots, hits: t.hits, kills: t.kills, deaths: t.deaths, headshots: t.headshots, best: t.bestStreak }).toEqual({ shots: 8, hits: 5, kills: 4, deaths: 1, headshots: 1, best: 2 });
-    const s = t.finish({ e: 'round_end', winner: null, team: 'a' }, 'core.tdm', 'a', 120_000);
-    expect(s).toEqual({ mode: 'core.tdm', result: 'win', kills: 4, deaths: 1, shots: 8, hits: 5, headshots: 1, bestStreak: 2, seconds: 120, weaponKills: { 'core.rifle': 2, 'core.shotgun': 1 } });
+    const s = t.finish({ e: 'round_end', winner: null, team: 'a' }, 'core.tdm', 'a', 120_000, 'Phase 0 Arena');
+    // (Phase 3: the map, and rounds and hits by gun.)
+    expect(s).toEqual({ mode: 'core.tdm', result: 'win', kills: 4, deaths: 1, shots: 8, hits: 5, headshots: 1, bestStreak: 2, seconds: 120, weaponKills: { 'core.rifle': 2, 'core.shotgun': 1 }, map: 'Phase 0 Arena', weaponRounds: { 'core.rifle': [4, 2], 'core.shotgun': [4, 3] }, at: expect.any(Number) });
+    expect(matchProblem(s)).toBeNull();
     // Once per match.
     expect(t.finish({ e: 'round_end', winner: null, team: 'a' }, 'core.tdm', 'a', 130_000)).toBeNull();
     t.reset(200_000);

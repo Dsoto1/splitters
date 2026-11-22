@@ -76,7 +76,11 @@ const profiles = process.env.PROFILES_DIR ? new ProfileStore(process.env.PROFILE
 const verifyToken = cognito && jwks ? (t: string) => verifyCognitoToken(t, cognito, jwks) : null;
 // The game browser: a community map's creator is the first signed-in account to list it (the host sends its sign-in).
 const lobby = lobbyHandler(store, { trustProxy: proxied, ice, lan, isLive: (code) => broker.isLive(code), ...(verifyToken ? { whoIs: async (t: string) => ((u) => ({ sub: u.sub, username: profiles?.username(u.sub) ?? null }))(await verifyToken(t)) } : {}) });
-const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profiles?.username(sub) ?? null, community ? (sub, code) => community.ticketIssued(code, sub) : undefined);
+const account = accountHandler(cognito, proxied, jwks, tickets, (sub) => profiles?.username(sub) ?? null, (sub, code) => {
+  community?.ticketIssued(code, sub);
+  // Player profiles, Phase 4: a host's end-of-match report vouches only for accounts given a ticket for its code.
+  profiles?.ticketIssued(code, sub);
+});
 // Published maps (publish.ts): the owner's MapMaker publishes; everyone reads.
 const owners = new Set((process.env.OWNER_SUBS ?? '').split(/[\s,]+/).filter(Boolean));
 const published = process.env.PUBLISHED_MAPS_DIR ? new PublishedMaps(process.env.PUBLISHED_MAPS_DIR, builtIn, suite) : null;

@@ -344,6 +344,9 @@ export interface Spectator {
   party?: string;
   /** Their career rank points (Combatant.rankPoints). */
   rankPoints?: number;
+  /** Their emblem and title (Combatant.emblem, .title). */
+  emblem?: string;
+  title?: string;
   /** Their optic choices (Combatant.optics). */
   optics?: OpticChoices;
   kills: number;
@@ -432,6 +435,9 @@ export interface Combatant {
   party?: string;
   /** A person's career rank points as their browser sent them on joining (content/ranks.ts): only passed on in the roster (`rx`), cosmetic. */
   rankPoints?: number;
+  /** A person's emblem (content/emblems.ts) and title (content/titles.ts) as their browser sent them: only passed on in the roster (`em`, `tt`), cosmetic. */
+  emblem?: string;
+  title?: string;
   /**
    * A person's optic choice per gun (sim/opticChoice.ts; Match.setOptics, already made valid): passed on in the
    * roster (`op`) so every client draws it, and read for `zm` (a magnified optic's picture is up). People only.
@@ -2039,7 +2045,7 @@ export class Match {
   spectate(slot: number): boolean {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
-    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}), ...(c.optics ? { optics: c.optics } : {}) };
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}), ...(c.optics ? { optics: c.optics } : {}), ...(c.emblem ? { emblem: c.emblem } : {}), ...(c.title ? { title: c.title } : {}) };
     // Their client stays loaded: a spectator counts for the start gate as a player does.
     const loaded = this.readySlots.has(slot);
     this.remove(slot);
@@ -2065,6 +2071,8 @@ export class Match {
     if (s.account) c.account = true;
     if (s.party) c.party = s.party;
     if (s.rankPoints !== undefined) c.rankPoints = s.rankPoints;
+    if (s.emblem) c.emblem = s.emblem;
+    if (s.title) c.title = s.title;
     if (s.optics) c.optics = s.optics;
     // Their client has the match loaded already (the start gate needn't wait for them).
     this.readySlots.add(slot);
@@ -8005,10 +8013,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}), ...(c.optics && c.kind === 'human' ? { op: { ...c.optics } } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}), ...(c.optics && c.kind === 'human' ? { op: { ...c.optics } } : {}), ...(c.emblem && c.kind === 'human' ? { em: c.emblem } : {}), ...(c.title && c.kind === 'human' ? { tt: c.title } : {}) }));
     // Spectators by choice, last: on no team, marked `sp`.
     if (!this.spectators.size) return players;
-    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}), ...(s.optics ? { op: { ...s.optics } } : {}) }))];
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}), ...(s.optics ? { op: { ...s.optics } } : {}), ...(s.emblem ? { em: s.emblem } : {}), ...(s.title ? { tt: s.title } : {}) }))];
   }
 
   destroy(): void {

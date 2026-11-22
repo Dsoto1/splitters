@@ -80,6 +80,9 @@ export interface LocalMatchOptions {
   party?: string;
   /** This browser's player's career rank points (careerStats.ts myRankPoints): on the roster for the others' badges. */
   rankPoints?: number;
+  /** This browser's player's emblem and title (player profiles, Phase 2): on the roster for everyone's scoreboard and cards. */
+  emblem?: string;
+  title?: string;
   /** This browser's player's optic choices (opticPrefs.ts): on the roster, so friends draw the optic they picked. */
   optics?: Record<string, string>;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
@@ -316,6 +319,8 @@ export class MatchHost {
       me = match.addHuman(this.opts.name, this.opts.look)!;
       if (this.opts.party) me.party = this.opts.party;
       if (this.opts.rankPoints !== undefined) me.rankPoints = this.opts.rankPoints;
+      if (this.opts.emblem) me.emblem = this.opts.emblem;
+      if (this.opts.title) me.title = this.opts.title;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
       const at = this.opts.startAt;
       if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
@@ -789,6 +794,9 @@ export class MatchHost {
       r.slot = player.slot;
       // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
       if (msg.rx !== undefined) player.rankPoints = msg.rx;
+      // Their emblem and title (player profiles, Phase 2): cosmetic, passed on in the roster.
+      player.emblem = msg.em;
+      player.title = msg.tt;
       // Their optic choice per gun (sim/opticChoice.ts): on the roster, so everyone draws the optic they picked.
       match.setOptics(player.slot, msg.op);
       player.account = !!r.account?.name;

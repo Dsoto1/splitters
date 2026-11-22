@@ -18,6 +18,11 @@ export class PlayTracker {
     this.open.set(id, { sub, from: this.now() });
   }
 
+  /** Signed-in friends still in: their link, account and since when (ms; a host's vouch at a match's end, Phase 4 of player profiles). */
+  stays(): { id: number; sub: string; from: number }[] {
+    return [...this.open].map(([id, s]) => ({ id, sub: s.sub, from: s.from }));
+  }
+
   /** A friend's link closed. */
   left(id: number): void {
     const s = this.open.get(id);

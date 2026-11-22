@@ -9,7 +9,7 @@ import { makeJoinCode } from './joinCode.ts';
 import { netProbe } from './netProbe.ts';
 import { playerKey } from './playerKey.ts';
 import { myParty } from './party.ts';
-import { myRankPoints } from '../careerStats.ts';
+import { emblemAndTitle, myRankPoints } from '../careerStats.ts';
 import { opticsHello } from '../opticPrefs.ts';
 import { SnapshotCoalescer } from './snapshotMerge.ts';
 import { adminToken, rememberAdminToken } from './netTransport.ts';
@@ -355,7 +355,7 @@ export class PeerTransport implements Transport {
         this.linked = true;
         clearTimeout(timeout);
         const admin = adminToken(`code:${this.code}`);
-        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), rx: myRankPoints(), ...opticsHello(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
+        this.send({ t: 'hello', protocol: PROTOCOL_VERSION, name: this.name, look: this.look, pk: playerKey(), party: myParty(), rx: myRankPoints(), ...opticsHello(), ...emblemAndTitle(), ...(this.ticket ? { ticket: this.ticket } : {}), ...(admin ? { admin } : {}) });
         heardAt = performance.now();
         let tickAt = heardAt;
         this.pingTimer = window.setInterval(() => {

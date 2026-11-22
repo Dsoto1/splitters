@@ -8,6 +8,10 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).
+- **Emblems and titles.** Pick an emblem (16 shapes, 12 colours) and a title your career has earned on Profile; your emblem shows by your name on the scoreboard, in the kill feed and on your card.
+- **Other players' cards.** Click a player on the pause menu's Match tab or the end-of-match board to see their card: emblem, title, character, this match, and a signed-in player's career.
+- **Match history and stats by mode and weapon.** Profile's Career has Modes, Weapons and History tabs: your last 20 matches, and your record in each mode and with each weapon.
+- **Host-counted stats.** When you play in someone else's online game signed in, their game tells the server how your match went; Profile and your card show what other hosts counted.
 - **Pick the optic on your guns.** Profile → Favourite loadout → Optics (or Pause → Settings → Optic for the gun in hand): many guns can carry their own sights, a red dot, a holographic sight or a new 2× optic; others see the optic you picked on your gun, and snipers keep their scopes.
 - **Toggle aim lets go when you sprint.** With Aim set to Toggle, Shift (L3 on a controller, Sprint on touch) drops the sights and sprints; with a scope or optic in hand Shift still holds your breath, and a reload keeps your aim.
 - **Camera shake covers the zipline too.** Off / Reduced now also calms the view's roll and sway on a zipline, like the lean's.
