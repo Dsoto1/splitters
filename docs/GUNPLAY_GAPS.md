@@ -271,7 +271,10 @@ no latency and fly against the live world from the start.
 ### §42 Accessibility
 Crosshair and hitmarker styles, sensitivity, invert, aim assist toggle ✅;
 flash reduction (Reduce flashing), camera shake Off / Reduced / Full, toggle ADS, controller vibration on/off and
-strength ✅ (2026-11-17: Options → Accessibility and the pause menu).
+strength ✅ (2026-11-17: Options → Accessibility and the pause menu; 2026-11-22: a toggled aim lets go on a sprint,
+every shake source in `cameraShake.ts` with a test that none bypasses the setting, the zipline roll scaled too, the
+older `hapticActuators` as a fallback, the pause menu's own Accessibility group; LOOK.md "Camera shake, toggle aim and
+controller vibration").
 
 ### §43 MapMaker combat settings
 | Item | Before | Now |

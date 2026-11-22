@@ -171,7 +171,12 @@
                 <label class="pause-row" title="Look speed when aiming down the sights or scoped. 1.00×: the view moves on screen as in hip fire"><span>Zoom sensitivity</span> <input id="zoom-sens" type="range" min="0.2" max="3" step="0.05" /> <output id="zoom-sens-val"></output></label>
                 <label class="pause-row"><span>Invert look</span> <input id="mouse-invert" type="checkbox" /></label>
                 <label class="pause-row"><span>Aim assist</span> <input id="aim-assist" type="checkbox" /></label>
-                <label class="pause-row" title="Hold: aim down the sights while the aim button is held. Toggle: press once to aim, again to stop (a weapon change lets go)"><span>Aim</span> <select id="aim-mode"><option value="hold">Hold</option><option value="toggle">Toggle</option></select></label>
+              </div>
+              <div class="pause-group" id="pause-accessibility">
+                <h4 class="pause-h">Accessibility</h4>
+                <label class="pause-row" title="Lightning glows steadily, blasts and muzzle flashes are dimmer near you, blinking lights pulse gently and the hurt tint is a dull red. For players sensitive to flashing light (photosensitive epilepsy)."><span>Reduce flashing</span> <input id="reduce-flashing" type="checkbox" checked /></label>
+                <label class="pause-row" title="How much the view shakes on its own: heavy shots, being hit, blasts and crashes near you. the view's roll as you lean or ride a zipline. Your weapon's recoil still moves your aim"><span>Camera shake</span> <select id="camera-shake"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select></label>
+                <label class="pause-row" title="Hold: aim down the sights while the aim button is held. Toggle: press once to aim, again to stop (sprinting, a weapon change, a vehicle or dying lets go; through a scope Shift holds your breath)"><span>Aim</span> <select id="aim-mode"><option value="hold">Hold</option><option value="toggle">Toggle</option></select></label>
                 <div class="pause-row" id="pad-vibration-row" title="A controller rumbles when you fire, take a hit or a blast goes off near you" hidden><span>Vibration</span> <input id="pad-vibration" type="checkbox" aria-label="Controller vibration" /> <input id="pad-vibration-strength" type="range" min="0.1" max="1" step="0.1" aria-label="Vibration strength" /></div>
               </div>
               <div class="pause-group">
@@ -182,8 +187,6 @@
                 <label class="pause-row"><span>Blood</span> <input id="blood-toggle" type="checkbox" checked /></label>
                 <label class="pause-row" title="Off: plain names and the arrows over heads. On: everyone wears a rank title and a badge in their group's style (kill feed, scoreboards, over heads); ranks rise with points and kills and carry from match to match"><span>Ranks &amp; badges</span> <input id="ranks-toggle" type="checkbox" /></label>
                 <label class="pause-row"><span>Bodies</span> <select id="bodies-setting"><option value="stay">Stay all match</option><option value="fade">Fade after 30 s</option></select></label>
-                <label class="pause-row" title="Lightning glows steadily, blasts and muzzle flashes are dimmer near you, blinking lights pulse gently and the hurt tint is a dull red. For players sensitive to flashing light (photosensitive epilepsy)."><span>Reduce flashing</span> <input id="reduce-flashing" type="checkbox" checked /></label>
-                <label class="pause-row" title="How much the view shakes on its own: heavy shots, being hit, blasts and crashes near you. Your weapon's recoil still moves your aim"><span>Camera shake</span> <select id="camera-shake"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select></label>
                 <label class="pause-row" title="Lamps light the rooms around them. Off, they still glow but the sun and sky light everything: try it if dark squares show on lit walls"><span>Room lights</span> <input id="room-lights" type="checkbox" checked /></label>
               </div>
               <div class="pause-group">

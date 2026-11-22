@@ -135,6 +135,7 @@ import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlas
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
+import { addShake, shakeLeft } from './cameraShake.ts';
 import { SteadyArcs } from './steadyArcs.ts';
 import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
@@ -145,7 +146,6 @@ import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
 const DEBRIS_LIFE = 6;
-const SHAKE_MS = 650;
 /** How fast a vehicle's drawn turret and barrel follow their gunner's aim (rad/s; View.turnTurret). */
 const TURRET_TURN = 2.5;
 import { MapStyler } from '../mapMeshes.ts';
@@ -4038,20 +4038,19 @@ export class GameView {
     this.hitKickState = addKick(this.hitKickState, performance.now() / 1000, power, side, reduceFlashing(), amount);
   }
 
-  // Camera shake: kicks add up (to 1) and settle over SHAKE_MS.
+  // Camera shake: kicks add up (to 1) and settle over SHAKE_MS (cameraShake.ts).
   private shakeAmount = 0;
   private shakeAt = 0;
 
   /** Shake the camera (0..1; explosions and crashes near you, a heavy round leaving the barrel), by the Camera shake setting. */
   shake(amount: number): void {
-    const k = shakeScale();
-    if (k <= 0) return;
-    this.shakeAmount = Math.min(k, this.currentShake() + amount * k);
+    // Every source's amount is in cameraShake.ts; Off keeps none (and drops what is still settling).
+    this.shakeAmount = addShake(this.currentShake(), amount);
     this.shakeAt = performance.now();
   }
 
   private currentShake(): number {
-    return this.shakeAmount * Math.max(0, 1 - (performance.now() - this.shakeAt) / SHAKE_MS);
+    return shakeLeft(this.shakeAmount, performance.now() - this.shakeAt);
   }
 
   /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */

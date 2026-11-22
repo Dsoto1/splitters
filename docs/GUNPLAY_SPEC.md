@@ -1946,11 +1946,13 @@ Support:
 - Color-independent armor/shield indicators.
 
 As built (2026-11-17, Options → Accessibility and the pause menu; client `game/combatPrefs.ts`, `game/rumble.ts`):
-**Aim** Hold / Toggle (a toggled aim lets go on a weapon change, death, a vehicle or leaving play; works with every
+**Aim** Hold / Toggle (a toggled aim lets go on a sprint (not with a scope or optic in hand: Shift holds the breath
+there), a weapon change, death, a vehicle or leaving play, and stays through a reload; works with every
 scope and the Battle Rifle's optic; touch's Aim button always toggles); **Camera shake** Off / Reduced (0.35) / Full
-for the view's own movement: heavy-shot shake, the hit kick (§23), blasts and crashes (mechanical recoil stays: it is
+for the view's own movement, every source in `game/cameraShake.ts`: heavy-shot shake, the hit kick (§23), blasts and
+crashes, the lean and zipline roll (mechanical recoil stays: it is
 where the rounds go, §29; Reduce flashing keeps its calmer kick on top); **Controller vibration** on/off and strength
-(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` for firing (a buzz a round for automatics, a
+(10-100 %, 70 % by default) through the Gamepad API's `vibrationActuator` (else `hapticActuators`) for firing (a buzz a round for automatics, a
 thump for heavy shots), hits taken and blasts and crashes near you; hidden where the browser can't rumble a
 controller. Saved in this browser (`tiletrigger.combat`).
 

@@ -5816,7 +5816,22 @@ async function offlineFlow(browser) {
   await page.selectOption('#opt-aim-mode', 'toggle');
   await page.selectOption('#opt-camera-shake', 'reduced');
   const combatSaved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}'));
-  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && 'vibrationActuator' in Gamepad.prototype }));
+  const vibration = await page.evaluate(() => ({ row: !!document.getElementById('opt-vibration'), can: typeof Gamepad !== 'undefined' && ('vibrationActuator' in Gamepad.prototype || 'hapticActuators' in Gamepad.prototype) }));
+  if (vibration.row) await page.click('.opt-row:has-text("Controller vibration") .switch');
+  // Kept across a reload: the page reads them back into Options → Accessibility, next to Reduce flashing.
+  await page.reload();
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-options');
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const combatKept = await page.evaluate(() => ({
+    aim: document.getElementById('opt-aim-mode')?.value,
+    shake: document.getElementById('opt-camera-shake')?.value,
+    vibration: document.getElementById('opt-vibration')?.checked ?? null,
+    rows: [...document.querySelectorAll('.opt-row')].filter((r) => r.offsetParent).map((r) => r.querySelector('.opt-label, span, label')?.textContent?.trim() ?? ''),
+  }));
+  await page.screenshot({ path: `${ARTIFACTS}/options-accessibility.png` });
+  check(combatKept.aim === 'toggle' && combatKept.shake === 'reduced' && combatKept.vibration === (vibration.row ? false : null) && /Reduce flashing/.test(combatKept.rows.join('|')), `Accessibility: Aim, Camera shake and Controller vibration are kept across a reload, beside Reduce flashing (${JSON.stringify(combatKept)})`);
+  if (vibration.row) await page.click('.opt-row:has-text("Controller vibration") .switch');
   await page.selectOption('#opt-aim-mode', 'hold');
   await page.selectOption('#opt-camera-shake', 'full');
   check(combatDefault.aim === 'hold' && combatDefault.shake === 'full' && combatSaved.aim === 'toggle' && combatSaved.shake === 'reduced' && vibration.row === vibration.can, `Accessibility: Aim (hold) and Camera shake (full) save; Controller vibration shows only where the browser can rumble (${JSON.stringify({ combatDefault, combatSaved, vibration })})`);
@@ -15228,6 +15243,26 @@ async function hostcontrolsFlow(browser) {
     return { first, settings, back: open(), host: !tab('host').hidden };
   });
   check(menu.first === 'match' && menu.settings === 'settings' && menu.back === 'match' && menu.host, `pause menu tabs: Match first, Esc back to it, a Host tab for the host (${JSON.stringify(menu)})`);
+  // Settings → Accessibility (combatPrefs.ts): Reduce flashing, Camera shake, Aim and (where a controller can rumble)
+  // Vibration together; a change saves at once and Options reads it back.
+  const access = await page.evaluate(() => {
+    const g = document.getElementById('pause-accessibility');
+    const ids = [...(g?.querySelectorAll('input, select') ?? [])].map((x) => x.id);
+    const shake = document.getElementById('camera-shake');
+    const aim = document.getElementById('aim-mode');
+    const before = { shake: shake.value, aim: aim.value };
+    shake.value = 'off';
+    shake.dispatchEvent(new Event('change'));
+    aim.value = 'toggle';
+    aim.dispatchEvent(new Event('change'));
+    const saved = JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}');
+    shake.value = before.shake;
+    shake.dispatchEvent(new Event('change'));
+    aim.value = before.aim;
+    aim.dispatchEvent(new Event('change'));
+    return { title: g?.querySelector('.pause-h')?.textContent, ids, before, saved, restored: JSON.parse(localStorage.getItem('tiletrigger.combat') ?? '{}') };
+  });
+  check(access.title === 'Accessibility' && ['reduce-flashing', 'camera-shake', 'aim-mode', 'pad-vibration'].every((id) => access.ids.includes(id)) && access.before.shake === 'full' && access.before.aim === 'hold' && access.saved.shake === 'off' && access.saved.aim === 'toggle' && access.restored.shake === 'full', `the pause menu's Accessibility group: Reduce flashing, Camera shake, Aim, Vibration; a change saves at once (${JSON.stringify(access)})`);
   // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons. From the Host
   // tab (Resume in its foot) Back resumes, as Esc does; from Settings it goes back to Match.
   const clicks = await page.evaluate(() => {
