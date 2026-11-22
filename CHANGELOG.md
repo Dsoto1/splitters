@@ -8,6 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).
+- **St. John's wall crest no longer shimmers.** Its gold border lay on the board's face and flickered as you moved; every layer of the crest now stands clear of the one under it.
 - **Emblems and titles.** Pick an emblem (16 shapes, 12 colours) and a title your career has earned on Profile; your emblem shows by your name on the scoreboard, in the kill feed and on your card.
 - **Other players' cards.** Click a player on the pause menu's Match tab or the end-of-match board to see their card: emblem, title, character, this match, and a signed-in player's career.
 - **Match history and stats by mode and weapon.** Profile's Career has Modes, Weapons and History tabs: your last 20 matches, and your record in each mode and with each weapon.

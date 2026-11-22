@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/weapon-icons` · 8ae1152d · run 45044586246 (the Flare Gun's icon re-taken, 16 stale icons dropped, a unit test that every weapon has one; a helper of lane B's splitters22)
+- `wip/fix-tpose-1122` · 6cd3eab2 · 45045862880 (fix batch 2026-11-22: St. John's wall crest z-fighting + the coplanar kit check; the T-pose bot is not fixed yet, see HANDOFF)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -223,6 +224,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Lane B: Tileset 11's gable ceiling (owner: later) and a demo map for pack 14 (owner: not yet).
 
 ## Known issues and loose ends (found in HANDOFF, 2026-11-15)
+- S–M · A · **Coplanar kit layers** (found 2026-11-22 fixing St. John's wall crest, `wip/fix-tpose-1122`): 42 generated kit families draw differently coloured faces in one plane, facing the same way and overlapping (z-fighting candidates; some may be hidden inside solids). `tools/content/kit/coplanar.mjs` finds them and kitprops.test.mjs lists them in `COPLANAR_KNOWN` (no new family may join; fixing one takes it off). The list: bunk bed, chalk/notice/pennant boards, trophy case, console panel, shipping container, framed crate, all six oak doors, chain-link fence and gate, iron fence (and broken), rail fence, site panel, machine window, island bed, coolant pipe, pipe junction, valve, gondola shelves (2), bakery stand, cart, checkout, produce stand, warning sign, armchair, two-seat sofa, volleyball net, market stall, bike rack, bus stop, school desks, fireplace, panel window, broken stone wall. Fix each at the generator (stand the top layer a few mm off), like the crest.
 - ? · B · Mobile: the dark wall block on the owner's Galaxy S25+ (docs/MOBILE_AUDIT.md); if it still shows on Medium, the one-lamp-per-layer mode becomes Medium's default (owner said yes; confirm the reading).
 - S · B · Gunplay gaps from the audit (docs/GUNPLAY_AUDIT.md appendix A; the multi-client latency/loss test is done: `pnpm net-report`): bots pick weapons by a hand-set range (G4); Training Range lacks a damage readout on hit, dummies that don't shoot back, armoured targets, a trajectory view.
 - ? · B · The owner's playtest checklist (artifact 5LRzv2dDfPVrp4TU2d3rwW): no answers yet.

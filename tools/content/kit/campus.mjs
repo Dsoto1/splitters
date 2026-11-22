@@ -453,7 +453,9 @@ export function crestMesh(seed, size, g, look, level) {
   } else {
     want = [0, 0, 1];
     const back = -d / 2;
-    layer = (k) => back + 0.03 + k * 0.004;
+    // Every layer stands off the board's face (back + 0.03) and the one under it: the border once lay on the board's
+    // face and shimmered with it (owner, 2026-11-22). 5 mm steps (2.5 mm at the half size by the academy's porch).
+    layer = (k) => back + 0.03 + (k + 1) * 0.005;
     P = (u, v, k) => [u, v, layer(k)];
     box(m, [-w / 2, 0, back], [w / 2, h, back + 0.03], hex(look.board ?? '#3b2618'), ['nz']);
     S = { W: w * 0.82, H: h * 0.86, y0: h * 0.07, k: 0 };
