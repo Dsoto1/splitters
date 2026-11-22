@@ -13,6 +13,7 @@ import {
   castLooksFrom,
   characterGateReports,
   characterGates,
+  characterSectionOf,
   characterSections,
   characterTier,
   getLook,
@@ -86,7 +87,7 @@ describe('character tiers', () => {
   });
 
   it('Character Select: an Experimental section before Yours, only when someone is in it', () => {
-    const entry = (l: CharacterLook) => ({ id: l.id, name: l.name, group: characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : l.group! });
+    const entry = (l: CharacterLook) => ({ id: l.id, name: l.name, group: characterSectionOf(l)! });
     const mine = { id: 'm1', name: 'Mine', group: 'mine' };
     const without = characterSections([...CORE_TIER.map(entry), mine]);
     expect(without.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
@@ -96,7 +97,8 @@ describe('character tiers', () => {
     const exp = withOne.find((s) => s.id === EXPERIMENTAL_SECTION)!;
     expect(exp.label).toBe('Experimental');
     // (A section lists its looks by name.)
-    expect(exp.looks.map((l) => l.id).sort()).toEqual([trial.id, ...EXPERIMENTAL.map((l) => l.id)].sort());
+    // (Experimental characters in a collection, the Chrono Crew, are listed in its section instead.)
+    expect(exp.looks.map((l) => l.id).sort()).toEqual([trial.id, ...EXPERIMENTAL.filter((l) => !l.collection).map((l) => l.id)].sort());
     // It left its group's section.
     expect(withOne.find((s) => s.id === 'machines')!.looks.map((l) => l.id)).not.toContain(trial.id);
     // Yours is there even when empty (it holds "Design new").

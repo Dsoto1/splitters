@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
-import { BRANCHES, GROUPS } from '../../../tools/content/character-manifests.mjs';
+import { BRANCHES, COLLECTIONS, GROUPS } from '../../../tools/content/character-manifests.mjs';
 
 describe("Character Select's groups", () => {
   it('every selectable look has exactly one valid group', () => {
@@ -16,6 +16,7 @@ describe("Character Select's groups", () => {
   it('the manifest checker knows the same groups, in the same order', () => {
     expect(GROUPS).toEqual(CHARACTER_GROUPS.map((g) => g.id));
     expect(BRANCHES).toEqual(Object.fromEntries(CHARACTER_BRANCHES.map((b) => [b.id, b.group])));
+    expect(COLLECTIONS).toEqual(CHARACTER_COLLECTIONS.map((c) => c.id));
   });
 
   it('every look in Soldiers & Spies is Army or Agency, and no other look has a branch', () => {
@@ -98,5 +99,36 @@ describe("Character Select's groups", () => {
     expect(RETIRED_LOOKS['core.gasmaskengineer']).toBe('core.grunt68');
     expect(validLookId('core.gasmaskengineer')).toBe('core.grunt68');
     expect(PICKABLE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
+  });
+
+  it('the Chrono Crew (owner, 2026-11-22): a section of its own after Outer Space, whatever their tier; they stay in Outer Space for the rest', () => {
+    const crew = ['Vesper Quill', 'Nova Kade', 'Fuse Hollister', 'Dex Calloway', 'Gears Okafor', 'Doc Seraphine Vale', 'Flicker', 'Wren Halloway', 'Sarge Tobias Crane', 'Mags Petrov', 'Lyra Vantis'];
+    const inCrew = CORE_LOOKS.filter((l) => l.collection === 'chrono');
+    expect(inCrew.map((l) => l.name).sort()).toEqual([...crew].sort());
+    for (const l of inCrew) expect(l.group, l.id).toBe('space');
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine' }));
+    const sections = characterSections(roster);
+    const ids = sections.map((s) => s.id);
+    expect(ids.indexOf('chrono')).toBe(ids.indexOf('space') + 1);
+    expect(sections.find((s) => s.id === 'chrono')!.label).toBe('Chrono Crew');
+    expect(sections.find((s) => s.id === 'chrono')!.looks.map((l) => l.name).sort()).toEqual([...crew].sort());
+    // The Time Traveler stays with Outer Space (experimental for now, so under Experimental).
+    expect(characterSectionOf(getLook('core.timetraveler'))).toBe(EXPERIMENTAL_SECTION);
+    expect(getLook('core.timetraveler').group).toBe('space');
+  });
+
+  it('Santa is in Legends (owner, 2026-11-22)', () => {
+    expect(getLook('core.saintnick').group).toBe('legends');
+    expect(lookBranch('core.saintnick')).toBeFalsy();
+  });
+
+  it('Tinker Goblina and the Sunset Gunslinger are gone (owner, 2026-11-22): their models are Goblina\'s and Dusty Ranger\'s', () => {
+    for (const [gone, kept] of [['core.goblinatinker', 'core.grizzelda'], ['core.sunsetgunslinger', 'core.dustycolt']] as const) {
+      expect(CORE_LOOKS.some((l) => l.id === gone), gone).toBe(false);
+      expect(RETIRED_LOOKS[gone]).toBe(kept);
+      expect(validLookId(gone)).toBe(kept);
+    }
+    expect(getLook('core.grizzelda').name).toBe('Goblina');
+    expect(getLook('core.dustycolt').name).toBe('Dusty Ranger');
   });
 });

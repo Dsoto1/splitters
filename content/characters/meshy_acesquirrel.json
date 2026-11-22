@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 160,
-  "name": "Ace Squirrel",
+  "name": "Rocket Nutley",
   "look": "core.acesquirrel",
   "group": "animals",
   "tier": "experimental",
@@ -12,13 +12,10 @@
   "bio": "Flew forty missions on acorns alone.",
   "body": "male",
   "size": "small",
-  "notes": "Drive intake of 2026-11-21/22 (\"ace pilot squirrel 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-06: Drive models are Meshy Community CC0 unless the owner says they made them).",
+  "notes": "Drive intake of 2026-11-21/22 (\"ace pilot squirrel 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it); named \"Ace Squirrel\" until 2026-11-22 (owner: a personal name, not a label). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"; recorded as Meshy Community CC0 until then).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "ace pilot squirrel 15k"
-    },
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-22",
     "url": null,
     "file": "^Meshy_AI_ace_pilot_squirrel_15k_\\d+_animated_mixamo_All_animation\\.glb$"

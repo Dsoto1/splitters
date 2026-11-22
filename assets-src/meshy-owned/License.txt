@@ -54,3 +54,54 @@ Provenance: Meshy, owned.
   the owner's Drive folder "weapons and stuff"); the owner, 2026-11-18: the bat is
   their own. Built by tools/content/prepare-guns.mjs (guns/baseball_bat.glb and its
   held copies).
+
+- The owner's Drive characters of 2026-11-21/22 (rigged and animated Meshy downloads,
+  `…_animated_mixamo_All_animation.glb`, pack meshy-owned). The owner, 2026-11-22: "all the characters I added
+  yesterday and today are my own Meshy creations" (Juice, "I did not make Juice, it was community", stays in
+  assets-src/meshy-community-characters/License.txt). Recorded as Meshy Community CC0 from their intake
+  (wip/chars-1122) until then. Built by tools/content/prepare-meshy-characters.mjs.
+
+  - "FrostValkyrieRigged" (2026-11-22)  -> character meshy_frostvalkyrie (look Sigrun Frostmane; "Frost Valkyrie" until 2026-11-22)
+  - "SunPriestRigged" (2026-11-22)  -> character meshy_sunpriest (look Aurelio Dawnmantle; "Sun Priest" until 2026-11-22)
+  - "AbyssalHunterRigged" (2026-11-22)  -> character meshy_abyssalhunter (look Dredge Marrow; "Abyssal Hunter" until 2026-11-22)
+  - "CelestialKnightRigged" (2026-11-22)  -> character meshy_celestialknight (look Ser Castor Brightmoor; "Celestial Knight" until 2026-11-22)
+  - "MysticTPoseRigged" (2026-11-22)  -> character meshy_mystic (look Madame Zephyrine; "Mystic" until 2026-11-22)
+  - "GoblinaRigged" (2026-11-21)  -> character meshy_grizzelda (look Goblina; built as Tinker Goblina, meshy_goblinatinker, until 2026-11-22, when it became Goblina's model)
+  - "Gunslinger at Sunset" (2026-11-21)  -> character meshy_cowboy (look Dusty Ranger; built as Sunset Gunslinger, meshy_sunsetgunslinger, until 2026-11-22, when it became Dusty Ranger's model)
+  - "ace pilot squirrel 15k" (2026-11-22)  -> character meshy_acesquirrel (look Rocket Nutley; "Ace Squirrel" until 2026-11-22)
+  - "angry penguin king rigged" (2026-11-21)  -> character meshy_penguinking (look King Waddleston; "Penguin King" until 2026-11-22)
+  - "axolotl gym bro rigged" (2026-11-21)  -> character meshy_axolotl (look Axel Gainz; "Gym Bro Axolotl" until 2026-11-22)
+  - "badger agent tpose rigged" (2026-11-22)  -> character meshy_badgeragent (look Barnaby Burrows; "Agent Badger" until 2026-11-22)
+  - "coach tortoise 15k" (2026-11-22)  -> character meshy_coachtortoise (look Coach Hank Shelton; "Coach Tortoise" until 2026-11-22)
+  - "crew alchemist rigged" (2026-11-22)  -> character meshy_crewalchemist (look Vesper Quill; "Crew Alchemist" until 2026-11-22)
+  - "crew blonde cyborg rigged" (2026-11-21)  -> character meshy_crewcyborg (look Nova Kade; "Crew Cyborg" until 2026-11-22)
+  - "crew demolitions rigged" (2026-11-22)  -> character meshy_crewdemolitions (look Fuse Hollister; "Crew Demolitions" until 2026-11-22)
+  - "crew gunslinger rigged" (2026-11-21)  -> character meshy_crewgunslinger (look Dex Calloway; "Crew Gunslinger" until 2026-11-22)
+  - "crew mechanic rigged" (2026-11-21)  -> character meshy_crewmechanic (look Gears Okafor; "Crew Mechanic" until 2026-11-22)
+  - "crew medic rigged" (2026-11-22)  -> character meshy_crewmedic (look Doc Seraphine Vale; "Crew Medic" until 2026-11-22)
+  - "crew phase shifted rigged" (2026-11-21)  -> character meshy_crewphase (look Flicker; "Crew Phase-Shifter" until 2026-11-22)
+  - "crew recon specialist rigged" (2026-11-21)  -> character meshy_crewrecon (look Wren Halloway; "Crew Recon" until 2026-11-22)
+  - "cyberpunk flamingo 15k" (2026-11-22)  -> character meshy_flamingo (look Rio Neonwing; "Cyber Flamingo" until 2026-11-22)
+  - "gym bro frog rigged" (2026-11-21)  -> character meshy_gymfrog (look Chad Croakley; "Gym Bro Frog" until 2026-11-22)
+  - "mad scientist chameleon 15k" (2026-11-22)  -> character meshy_chameleon (look Dr. Hugo Hue; "Doc Chameleon" until 2026-11-22)
+  - "owl sniper game ready" (2026-11-22)  -> character meshy_owlsniper (look Ollie Hootman; "Owl Sniper" until 2026-11-22)
+  - "time traveler rigged" (2026-11-21)  -> character meshy_timetraveler (look Clio Everwhen; "Time Traveler" until 2026-11-22)
+  - "veteran time crew 15k" (2026-11-21)  -> character meshy_veterancrew (look Sarge Tobias Crane; "Crew Veteran" until 2026-11-22)
+  - "wacky shark rigged" (2026-11-21)  -> character meshy_wackyshark (look Chompers McFinn; "Wacky Shark" until 2026-11-22)
+  - "zen master capybara rigged" (2026-11-22)  -> character meshy_zencapybara (look Master Bodhi; "Zen Capybara" until 2026-11-22)
+
+- The owner's Drive characters uploaded 2026-11-22 in the afternoon (the same kind of download, pack meshy-owned;
+  Meshy, owned per the owner's word above). Built by tools/content/prepare-meshy-characters.mjs.
+
+  - "crew quartermaster rigged" (2026-11-22)  -> character meshy_crewquartermaster (look Mags Petrov)
+  - "crew chrono mage rigged" (2026-11-22)  -> character meshy_crewchronomage (look Lyra Vantis)
+  - "armored rhino juggernaut 15k" (2026-11-22)  -> character meshy_rhinojuggernaut (look Brutus Hornbeck)
+  - "raccoon hacker game ready" (2026-11-22)  -> character meshy_raccoonhacker (look Zero Ringtail)
+  - "graffiti raccoon 3d" (2026-11-22)  -> character meshy_graffitiraccoon (look Tag Malone)
+  - "mantis shrimp samurai 15k" (2026-11-22)  -> character meshy_mantisshrimp (look Ryo Snapclaw)
+  - "gladiator rooster 15k" (2026-11-22)  -> character meshy_gladiatorrooster (look Maximus Cluckworth)
+  - "synthwave eel dj 15k" (2026-11-22)  -> character meshy_synthwaveeel (look DJ Volta Coilwave)
+  - "tasmanian devil 15k" (2026-11-22)  -> character meshy_tasmaniandevil (look Rowdy Gnashwell)
+  - "hare courier game ready" (2026-11-22)  -> character meshy_harecourier (look Pip Quickfoot)
+  - "brawler boxer bunny 15k" (2026-11-22)  -> character meshy_boxerbunny (look Bonnie Haymaker)
+  - "cheetah pimp 15k" (2026-11-22)  -> character meshy_cheetah (look Duke Dashwood)

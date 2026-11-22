@@ -1,0 +1,35 @@
+{
+  "id": "meshy_raccoonhacker",
+  "kind": "character",
+  "use": "player",
+  "order": 185,
+  "name": "Zero Ringtail",
+  "look": "core.raccoonhacker",
+  "group": "animals",
+  "tier": "experimental",
+  "blood": "red",
+  "nameTheme": "raccoon",
+  "bio": "Already in your system. Also in your bins.",
+  "body": "male",
+  "size": "small",
+  "notes": "Drive intake of 2026-11-22, afternoon (\"raccoon hacker game ready\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\").",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-22",
+    "url": null,
+    "file": "^Meshy_AI_raccoon_hacker_game_ready_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
