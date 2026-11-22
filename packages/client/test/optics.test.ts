@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon, gunplayOf, holdoverMarks, flightTo } from '@tiletrigger/shared';
 import { OPTIC_KINDS, OPTIC_NONE, WEAPON_OPTICS, type OpticKindId } from '@tiletrigger/shared/optics';
 import { SIGHT_FITS } from '@tiletrigger/shared/sightFit';
-import { GLASS_SHARE, HIP_FOV, IRONS_DEPTH, IRONS_MAX, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, glassCentre, glassHalf, hasGlass, onMark, opticNone, opticOf, pictureScale } from '../src/game/optics.ts';
+import { GLASS_SHARE, HIP_FOV, IRONS_DEPTH, IRONS_MAX, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, builtHousing, eyepieceOf, glassCentre, glassHalf, hasGlass, onMark, opticChoices, opticFor, opticNone, opticOf, opticsVersion, pictureScale, setRosterOptics } from '../src/game/optics.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, offAxis, placed, sightPicture } from '../src/game/sightPose.ts';
 import { LENS_SHARE, opticFrame } from '../src/game/opticView.ts';
 import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
@@ -18,6 +18,37 @@ const CARRIES: Record<OpticKindId, string[]> = {
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
+  // Built for the loadout's choice (step 4): no gun carries it by default.
+  x2: [],
+};
+/**
+ * The choice each gun offers in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice"), its default first. Guns not named
+ * offer none: snipers, the guns with a scope or a sight box of their own, the flintlock, and the guns with no optic.
+ */
+const CHOICES: Record<string, OpticKindId[]> = {
+  'core.rifle': ['irons', 'reddot', 'holo', 'x2'],
+  'core.smg': ['irons', 'reddot', 'holo', 'x2'],
+  'core.compact_carbine': ['irons', 'reddot', 'holo', 'x2'],
+  'core.amarillo': ['irons', 'holo', 'x2'],
+  'core.burst_rifle': ['irons', 'x2'],
+  'core.laser_rifle': ['reddot', 'holo', 'x2'],
+  'core.shotgun': ['irons', 'reddot', 'holo'],
+  'core.auto_shotgun': ['irons', 'reddot', 'holo'],
+  'core.runebreaker': ['irons', 'reddot', 'holo'],
+  'core.nailgun': ['irons', 'reddot', 'holo'],
+  'core.freeze_ray': ['irons', 'reddot', 'holo'],
+  'core.goo_gun': ['irons', 'reddot', 'holo'],
+  'core.pistol': ['irons', 'reddot'],
+  'core.revolver': ['irons', 'reddot'],
+  'core.hand_cannon': ['irons', 'reddot'],
+  'core.pulse_pistol': ['irons', 'reddot'],
+  'core.machine_pistol': ['irons', 'reddot'],
+  'core.laser_blaster': ['irons', 'reddot'],
+  'core.bubble_blaster': ['reddot', 'holo'],
+  'core.arc_caster': ['holo', 'reddot'],
+  'core.flak': ['holo', 'reddot'],
+  'core.disc_launcher': ['holo', 'reddot'],
+  'core.arena_disc': ['holo', 'reddot'],
 };
 /** The hand-held guns that keep the aim they had (no sights, no optic), each with its reason in content/optics.json `none`. */
 const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.blaster_x42', 'core.desert_carbine', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.swarm', 'core.twin_rifle', 'core.woodland_smg'];
@@ -75,7 +106,7 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
         if (kind.housing === 'none') expect(SIGHT_FITS[id], `${id}: iron sights need a sight fit`).toBeDefined();
         if (kind.housing === 'overlay') expect(def.view.zoomFov, `${id}: a scope overlay needs view.zoomFov`).toBeGreaterThan(0);
         if (kind.housing === 'model') expect(!!def.view.optic || !!def.view.zoomFov, `${id}: a 2-3x optic needs the model's own (view.optic) or a scope (view.zoomFov)`).toBe(true);
-        if (kind.housing === 'tube' || kind.housing === 'frame') {
+        if (kind.housing === 'tube' || kind.housing === 'frame' || kind.housing === 'magtube') {
           expect(!!w.mount || !!w.window, `${id}: a ${k} needs a mount or the model's own window`).toBe(true);
           expect(def.view.zoomFov ?? def.view.optic, id).toBeUndefined();
         }
@@ -107,10 +138,11 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
 
   it(`a glass's mark is on the aim (within ${SIGHT_TOLERANCE_DEG}°), inside its window, at a usable size`, () => {
     const glassed = Object.keys(WEAPON_OPTICS).filter((id) => WEAPON_OPTICS[id]!.allowed.some((k) => OPTIC_KINDS[k].housing === 'tube' || OPTIC_KINDS[k].housing === 'frame'));
-    expect(glassed.sort()).toEqual([...CARRIES.reddot, ...CARRIES.holo].sort());
+    expect(glassed.sort()).toEqual([...new Set([...CARRIES.reddot, ...CARRIES.holo, ...Object.keys(CHOICES).filter((id) => CHOICES[id]!.some((k) => k === 'reddot' || k === 'holo'))])].sort());
     for (const id of glassed) {
       const def = getWeapon(id);
       for (const k of WEAPON_OPTICS[id]!.allowed) {
+        if (OPTIC_KINDS[k].housing !== 'tube' && OPTIC_KINDS[k].housing !== 'frame') continue;
         const o = opticOf(def, k)!;
         expect(hasGlass(o), `${id} ${k}`).toBe(true);
         const at = aimPlacement(def, BOUNDS, true, o);
@@ -214,3 +246,76 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
     expect(opticFrame(getWeapon('core.battle_rifle').view.optic!, HIP_FOV * ADS_FOV, HIP_FOV, 1).lens).toBeCloseTo(LENS_SHARE, 9);
   });
 });
+
+describe('optic choice in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice")', () => {
+  it('each gun offers the choice named here, its default first; the rest offer none', () => {
+    const offered = Object.fromEntries(Object.values(CORE_WEAPONS).map((d) => [d.id, opticChoices(d).map((c) => c.id)] as const).filter(([, c]) => c.length));
+    expect(offered).toEqual(CHOICES);
+    for (const [id, kinds] of Object.entries(CHOICES)) expect(kinds[0], `${id}: its default first`).toBe(WEAPON_OPTICS[id]!.default);
+    // Snipers and the guns with a scope of their own keep it: a pick for them is ignored.
+    for (const id of [...CARRIES.scope, ...CARRIES.sniper, 'core.plasma', 'core.flintlock_pistol']) {
+      expect(opticChoices(getWeapon(id)), id).toEqual([]);
+      for (const k of ['reddot', 'holo', 'x2', 'irons']) expect(opticOf(getWeapon(id), k)!.id, `${id} given ${k}`).toBe(WEAPON_OPTICS[id]!.default);
+    }
+    // Anything not allowed is the default; nonsense too.
+    expect(opticOf(getWeapon('core.burst_rifle'), 'reddot')!.id).toBe('irons');
+    expect(opticOf(getWeapon('core.rifle'), 'banana')!.id).toBe('irons');
+  });
+
+  it('the 2x optic: a tube on the gun\'s top, looked through at twice the hip view, the eyepiece on the aim', () => {
+    const x2 = OPTIC_KINDS.x2;
+    expect(x2.housing).toBe('magtube');
+    expect(x2.reticle).toBe('chevron');
+    expect(x2.power).toBe(2);
+    for (const id of Object.keys(CHOICES).filter((i) => CHOICES[i]!.includes('x2'))) {
+      const def = getWeapon(id);
+      const o = opticOf(def, 'x2')!;
+      expect(o.mag, id).toBe(2);
+      expect(hasGlass(o), `${id}: no glass of its own (the HUD draws its reticle)`).toBe(false);
+      expect(builtHousing(o), `${id}: built on its mount`).toBe(true);
+      const eye = eyepieceOf(def, o)!;
+      expect(eye, id).toBeDefined();
+      // The eyepiece is the tube's rear end, on its glass's line, at the usual relief in front of the eye.
+      const at = aimPlacement(def, BOUNDS, true, o);
+      const e = placed(eye.eye, at);
+      expect(offAxis([e[0], e[1], e[2] || 1e-9]), id).toBeLessThan(SIGHT_TOLERANCE_DEG);
+      expect(e[2], id).toBeCloseTo(eye.relief!, 9);
+      expect(sightPicture(def, at, o), `${id}: the optic's own frame, not the sight picture`).toBe(1);
+      // Through it the world is twice the hip view, and its glass fills the share every model tube's does.
+      const f = opticFrame(eye, HIP_FOV * ADS_FOV, HIP_FOV, 1);
+      expect(f.mag, id).toBeCloseTo(2, 9);
+      expect(f.lens, id).toBeCloseTo(LENS_SHARE, 9);
+      // Its own iron sights or red dot otherwise: no eyepiece.
+      expect(eyepieceOf(def, opticOf(def)), id).toBeUndefined();
+    }
+  });
+
+  it('holdover marks on the 2x optic follow the round, as on every magnified optic', () => {
+    const def = getWeapon('core.rifle');
+    const o = opticOf(def, 'x2')!;
+    const f = opticFrame(eyepieceOf(def, o)!, HIP_FOV * ADS_FOV, HIP_FOV, 1);
+    const tanHalf = Math.tan(f.worldFov / 2) * f.lens;
+    const b = gunplayOf(def).ballistic!;
+    for (const m of holdoverFor(def, {}, tanHalf, 3.6)) {
+      const dist = Number(m.label) * 100;
+      expect(m.y, `${dist} m`).toBeCloseTo((100 * (flightTo(b, dist, {}).drop / dist)) / tanHalf, 6);
+    }
+  });
+
+  it("each player's choice comes from the roster (yours from your loadout); bots and older hosts: every gun's default", () => {
+    const rifle = getWeapon('core.rifle');
+    expect(setRosterOptics([{ slot: 3, op: { 'core.rifle': 'holo' } }, { slot: 4 }, { slot: 5, op: { 'core.rifle': 'sniper' } }], 0)).toBe(true);
+    const v = opticsVersion();
+    expect(opticFor(rifle, 3)!.id).toBe('holo');
+    expect(opticFor(rifle, 4)!.id).toBe('irons');
+    expect(opticFor(rifle, 5)!.id, 'a kind it may not carry: its default').toBe('irons');
+    expect(opticFor(rifle, 9)!.id, 'nobody in the roster').toBe('irons');
+    // The same roster again changes nothing (the view rebuilds no gun).
+    expect(setRosterOptics([{ slot: 3, op: { 'core.rifle': 'holo' } }, { slot: 4 }, { slot: 5, op: { 'core.rifle': 'sniper' } }], 0)).toBe(false);
+    expect(opticsVersion()).toBe(v);
+    expect(setRosterOptics([{ slot: 3, op: { 'core.rifle': 'x2' } }, { slot: 4 }], 0)).toBe(true);
+    expect(opticsVersion()).toBe(v + 1);
+    expect(opticFor(rifle, 3)!.id).toBe('x2');
+  });
+});
+

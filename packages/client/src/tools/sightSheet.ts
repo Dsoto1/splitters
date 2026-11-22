@@ -24,7 +24,7 @@ import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
-import { glassCentre, glassHalf, hasGlass, opticNone, opticOf, type CarriedOptic } from '../game/optics.ts';
+import { eyepieceOf, glassCentre, glassHalf, hasGlass, opticNone, opticOf, type CarriedOptic } from '../game/optics.ts';
 import { CLIP_NAME, attachOptic, markAudit } from '../game/opticHousing.ts';
 import { opticFrame } from '../game/opticView.ts';
 import { holdoverFor } from '../game/holdover.ts';
@@ -202,9 +202,10 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       scopeEl.hidden = false;
       scopeEl.dataset.reticle = shown.optic?.kind.reticle ?? 'fine';
       drawHoldover(scopeMarks, holdoverFor(def, RULES, Math.tan(eye.fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))), 1);
-    } else if (aimed && def.view.optic) {
-      // The model's own optic (opticView.ts), the eye fully on it.
-      const f = opticFrame(def.view.optic, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, 1);
+    } else if (aimed && eyepieceOf(def, shown.optic)) {
+      // The model's own optic, or a 2x optic built on its top (opticView.ts), the eye fully on it.
+      const eyepiece = eyepieceOf(def, shown.optic)!;
+      const f = opticFrame(eyepiece, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, 1);
       eye.fov = f.worldFov;
       shown.frame.scaling.set(f.squash, f.squash, 1);
       shown.mask?.setEnabled(true);
@@ -212,7 +213,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       opticEl.hidden = false;
       opticEl.style.setProperty('--r', `${(f.lens * 50).toFixed(3)}vh`);
       opticEl.style.setProperty('--o', '1');
-      opticEl.dataset.reticle = shown.optic?.kind.reticle ?? def.view.optic.reticle ?? 'duplex';
+      opticEl.dataset.reticle = shown.optic?.kind.reticle ?? eyepiece.reticle ?? 'duplex';
       const marks = holdoverFor(def, RULES, Math.tan(f.worldFov / 2) * f.lens, 3.6);
       drawHoldover(opticMarks, marks, 1.4);
       opticEl.classList.toggle('holdover-on', marks.length > 0);
@@ -262,15 +263,16 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       attachOptic(scene, node, def, true, carried);
       // A model optic's glass: a depth-only disc, drawn first, keeps the tube behind it out of the view (view.ts setOptic).
       let mask: Mesh | null = null;
-      if (def.view.optic) {
-        mask = CreateDisc('sight_mask', { radius: def.view.optic.radius, tessellation: 48, sideOrientation: Mesh.DOUBLESIDE }, scene);
+      const eyepiece = eyepieceOf(def, carried);
+      if (eyepiece) {
+        mask = CreateDisc('sight_mask', { radius: eyepiece.radius, tessellation: 48, sideOrientation: Mesh.DOUBLESIDE }, scene);
         const mat = new StandardMaterial('sight_maskMat', scene);
         mat.disableColorWrite = true;
         mat.disableLighting = true;
         mask.material = mat;
         mask.renderingGroupId = 1;
         mask.parent = viewRoot;
-        mask.position.set(...def.view.optic.eye);
+        mask.position.set(...eyepiece.eye);
         mask.setEnabled(false);
       }
       let anim: CharacterAnimator | null = null;
@@ -374,7 +376,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     const sightsPass = !!fit && placedError! <= SIGHT_TOLERANCE_DEG && drawn !== null && Math.abs(drawn) <= SIGHT_TOLERANCE_DEG && Math.abs(drawnAcross ?? 0) <= SIGHT_TOLERANCE_DEG;
     // A glass: its mark on the aim, and nothing of the gun on the aim through it. A scope: its reticle on the aim.
     const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (!glass || castAt(meshes, 0, 0) === null);
-    const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && (scoped === scopeEl || nearest > eye.minZ || !!def.view.optic);
+    const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && (scoped === scopeEl || nearest > eye.minZ || !!eyepieceOf(def, shown.optic));
     return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), window: round(window), picture: Math.round(picture * 100) / 100, pass };
   }
 

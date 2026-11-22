@@ -90,4 +90,28 @@ describe('optics by gun: the table and the mounts', () => {
     expect(problems.some((p) => /feel\.breathSeconds must be a number from 0\.5 to 30/.test(p))).toBe(true);
     expect(problems.some((p) => /feel\.sway must be a number/.test(p))).toBe(true);
   });
+
+  it('the 2x optic is a magnifying tube built in code: its zoom is its `power`, its reticle the HUD\'s, one zoom', async () => {
+    const good = await buildOptics();
+    expect(good.kinds.x2).toMatchObject({ housing: 'magtube', power: 2, reticle: 'chevron', steps: [1] });
+    expect(good.weapons['core.rifle'].allowed).toContain('x2');
+    // Snipers and guns with a zoom of their own keep that optic only.
+    for (const id of ['core.sniper', 'core.railgun', 'core.marksman', 'core.battle_rifle']) expect(good.weapons[id].allowed).toHaveLength(1);
+    const file = readOpticsFile();
+    file.kinds.x2 = { ...file.kinds.x2, power: 9, steps: [1, 0.5], mark: { dot: 0.004 } };
+    const { problems } = await buildOptics(file);
+    expect(problems.some((p) => /kind x2: a magnified optic built in code gives `power`/.test(p))).toBe(true);
+    expect(problems.some((p) => /kind x2: a magnified optic built in code has one zoom/.test(p))).toBe(true);
+    expect(problems.some((p) => /kind x2: a magnified optic built in code draws the HUD's reticle/.test(p))).toBe(true);
+  });
+
+  it('every built housing a gun may carry stands on one mount, and must clear the gun there', async () => {
+    const file = readOpticsFile();
+    // The Burst Rifle's front sight stands in a red dot's window wherever one is mounted.
+    file.weapons['core.burst_rifle'].allowed = ['irons', 'x2', 'reddot'];
+    const { problems, weapons } = await buildOptics(file);
+    expect(problems.some((p) => /core\.burst_rifle: the gun stands in a reddot's window at its mount/.test(p))).toBe(true);
+    // And as it is, the 2x optic's mount is the one the table keeps.
+    expect((await buildOptics()).weapons['core.burst_rifle'].mount).toEqual(weapons['core.burst_rifle'].mount);
+  });
 });

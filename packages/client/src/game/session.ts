@@ -235,7 +235,8 @@ import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
 import { BODIES_PREF_KEY, DEFAULT_FOV, GameView, slotColor } from './view.ts';
 import { ADS_FOV } from './sightPose.ts';
-import { opticOf } from './optics.ts';
+import { eyepieceOf, opticChoices, opticFor, ownOpticsChanged, setRosterOptics } from './optics.ts';
+import { onOpticsChange, setMyOptic } from '../opticPrefs.ts';
 import { currentFrameCap, loadFirstPersonMode } from './graphicsSettings.ts';
 import { bothGunsFired, gunPan, reloadDipAmount, shotGun } from './pairView.ts';
 import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
@@ -912,6 +913,12 @@ export class GameSession {
     this.setUpCoach();
 
     const signal = this.abort.signal;
+    // Your optic choices changed (Profile, or the pause menu's Settings → Optic): drawn at once, and the host told.
+    const offOptics = onOpticsChange((op) => {
+      ownOpticsChanged();
+      this.opts.transport.sendOptics?.({ ...op });
+    });
+    signal.addEventListener('abort', offOptics);
     const lock = () => {
       opts.audio.unlock();
       if (this.touch) {
@@ -1298,7 +1305,7 @@ export class GameSession {
     for (const p of poses) {
       if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !p.scoped || !p.alive || riders?.has(p.slot)) continue;
       const def = weaponByCode(p.weapon);
-      if (!def || opticOf(def)?.id !== 'sniper') continue;
+      if (!def || opticFor(def, p.slot)?.id !== 'sniper') continue;
       sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });
     }
     this.view.glints.update(dt, this.view.cameraPosition(), this.fov, sources);
@@ -1396,6 +1403,30 @@ export class GameSession {
     }
     ($('pause-class') as HTMLButtonElement).hidden = !this.classesOn;
     this.drawSpectateButton();
+    this.drawOpticPick();
+  }
+
+  /** The gun whose optics the pause menu's Optic row lists now (drawOpticPick). */
+  private opticPickFor: string | null = null;
+
+  /**
+   * Settings → Optic: the optic on the gun in your hands, for a gun that may carry more than one (optics.ts
+   * opticChoices; docs/GUNPLAY_SPEC.md §15, "Optic choice"). A pick is kept for that gun, as the Profile's Optics
+   * list keeps it, drawn at once and sent to the host (the constructor's onOpticsChange).
+   */
+  private drawOpticPick(): void {
+    const row = $('optic-row');
+    const pick = $('optic-pick') as HTMLSelectElement;
+    const def = this.local?.alive ? this.local.weapon : undefined;
+    const choices = def ? opticChoices(def) : [];
+    row.hidden = !choices.length;
+    if (!def || !choices.length) return void (this.opticPickFor = null);
+    if (this.opticPickFor !== def.id) {
+      this.opticPickFor = def.id;
+      pick.replaceChildren(...choices.map((c, i) => Object.assign(document.createElement('option'), { value: c.id, textContent: i === 0 ? `${c.name} (its own)` : c.name })));
+      pick.onchange = () => setMyOptic(def.id, pick.value, choices[0]!.id);
+    }
+    pick.value = opticFor(def)?.id ?? choices[0]!.id;
   }
 
   /** The pause menu's Spectate / Join game button (only where the host supports it), and Respawn (not while spectating). */
@@ -2344,6 +2375,8 @@ export class GameSession {
         }
         if ((msg.players.find((p) => p.slot === this.slot)?.sp === 1) !== this.spectator) this.spectatorChanged(!this.spectator);
         this.looks = new Map(msg.players.map((p) => [p.slot, p.look]));
+        // Everyone's optic choice per gun (`op`): the guns in their hands are drawn with it (view.ts).
+        setRosterOptics(msg.players, this.slot);
         this.view.setLocalLook(this.looks.get(this.slot));
         if (this.local) this.local.scale = this.sizeOf(this.slot);
         for (const p of msg.players) this.view.characters.preload({ look: p.look });
@@ -3792,16 +3825,17 @@ export class GameSession {
       this.fov = zoomed ? wantFov : this.fov + (wantFov - this.fov) * Math.min(1, dt * 14);
       this.adsAmount += ((ads ? 1 : 0) - this.adsAmount) * Math.min(1, dt * 14);
       // A real optic (opticView.ts): once the sights are up, the eye comes onto the model's own scope.
-      const optic = ads && !this.thirdPerson ? weapon!.view.optic : undefined;
+      // (The model's own tube, or the 2x optic your loadout put on the gun's top: optics.ts eyepieceOf.)
+      const optic = ads && !this.thirdPerson ? eyepieceOf(weapon!, opticFor(weapon!)) : undefined;
       this.opticBlend = optic && this.adsAmount > 0.9 ? Math.min(1, this.opticBlend + dt / OPTIC_IN) : Math.max(0, this.opticBlend - dt / OPTIC_OUT);
       if (!optic && this.opticBlend > 0 && weapon !== this.opticWeapon) this.opticBlend = 0;
       if (optic) this.opticWeapon = weapon;
-      const opticSpec = this.opticWeapon?.view.optic;
+      const opticSpec = this.opticWeapon ? eyepieceOf(this.opticWeapon, opticFor(this.opticWeapon)) : undefined;
       const frame = opticSpec && this.opticBlend > 0 ? opticFrame(opticSpec, DEFAULT_FOV * ADS_FOV, DEFAULT_FOV, this.opticBlend) : null;
       if (frame) this.fov = frame.worldFov;
       this.view.setOptic(frame ? { squash: frame.squash, blend: this.opticBlend } : null);
       // Holdover marks (spec §5) on the optic's reticle: its glass's edge spans the world's half-angle times its share.
-      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticOf(this.opticWeapon!)?.kind.reticle ?? opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
+      this.hud.setOptic(frame ? { lens: frame.lens, blend: this.opticBlend, reticle: opticFor(this.opticWeapon!)?.kind.reticle ?? opticSpec!.reticle ?? 'duplex', marks: holdoverFor(this.opticWeapon!, local.rules, Math.tan(frame.worldFov / 2) * frame.lens, 3.6) } : null);
       // The optic sways and steadies like a scope once the eye is on it.
       this.scopedNow = zoomed || this.opticBlend > 0.5;
       const fov = this.fov;
@@ -3897,6 +3931,8 @@ export class GameSession {
         this.input.cancelAim();
       }
       this.view.setViewmodel(weapon);
+      // A gun built with an optic you have since changed in your loadout is built again (a version check, cheap).
+      this.view.refreshOptics();
       // Guns no longer carried free their first-person copies (and a held copy's video memory).
       if (local.inventory !== this.carriedInventory) {
         this.carriedInventory = local.inventory;
@@ -3916,9 +3952,9 @@ export class GameSession {
       const thrownAway = !!weapon && inHand(weapon) && local.inventory.get(weaponCode(weapon))?.[0] === 0;
       this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: thrownAway || zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
-      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticOf(weapon!)?.kind.reticle) || 'fine');
+      this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticFor(weapon!)?.kind.reticle) || 'fine');
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
-      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend), !!weapon && !opticOf(weapon));
+      this.hud.setAds(this.thirdPerson ? 0 : this.adsAmount * (1 - this.opticBlend), !!weapon && !opticFor(weapon));
       this.updateScopeSway(dt, this.scopedNow);
       this.updateEyeBox(dt, this.scopedNow && !this.thirdPerson, fov, local.alive ? local.aimAngles(this.input.yaw, this.input.pitch) : null);
       this.hud.setHealth(local.health, local.armor, local.alive);
