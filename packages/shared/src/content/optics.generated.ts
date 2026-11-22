@@ -51,7 +51,7 @@ export interface WeaponOptics {
   steps?: readonly number[];
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
-  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
+  window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
 
 /** Per hand-held gun that carries an optic (iron sights included). */
@@ -61,7 +61,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
   'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2 } },
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
-  'core.blaster_x42': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.149, -0.192], half: [0.022, 0.022] } },
+  'core.blaster_x42': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.149, -0.192], half: [0.026, 0.026], round: true } },
   'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85 } },
   'core.burst_rifle': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.09648, -0.119], scale: 1.15 } },
   'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88 } },
@@ -91,7 +91,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09878, -0.127], scale: 1.2 } },
   'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16 } },
   'core.sniper': { default: 'sniper', allowed: ['sniper'], mag: 3.95 },
-  'core.twin_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.127, -0.108], half: [0.0135, 0.0135] } },
+  'core.twin_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.127, -0.108], half: [0.015, 0.015], round: true } },
   'core.woodland_smg': { default: 'reddot', allowed: ['reddot', 'irons', 'holo', 'x2'], mount: { at: [0, 0.10268, -0.032], scale: 0.99 } },
 };
 

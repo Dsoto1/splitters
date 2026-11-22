@@ -877,6 +877,20 @@ are as they were. At the hip nothing changes.
   top edge on the centre column (the front sight's top) is from the aim, the blade's middle across, and the nearest
   drawn point to the eye.
 
+**The weapons intake's guns (2026-11-22; owner reports: the Woodland SMG's front post sat under the aim dot, the
+Flintlock Pistol's fists filled the aim).** The intake had excluded five guns "until the sights pass" and the checks let
+any exclusion with a reason through, so the Woodland SMG aimed over the top of its bounds (its front sight's hood) with
+the post 1.3° under the HUD's dot. Now:
+- the fit reads a front sight's hood wider than its band (a ring up to 4.4 cm across, its post a little further into
+  it): the Woodland SMG's post is its front sight, and it is fitted (it carries a red dot by default, irons on choice);
+- **an exclusion is refused** for a gun with no optic (`content/optics.json` `none`) whose sights the tool can read (a
+  fit with no flags, or one only `blocked`): fit it, with a correction where the line is blocked, or give it an optic;
+- **the hands stay out of the sight picture**: `sightPose.test.ts` holds each hand's point (`view.hold`) under the aim
+  at full aim for every optic a gun may carry (`HANDS_UNDER_AIM_DEG`: a handgun's 14°, its fists drawn some 11° above
+  their points; a long gun's shooting hand 8°, its support hand 3°, both behind the gun), and the sight sheet's audit
+  measures the drawn arms round the aim (`arms`, the frame drawn with them and without; under 3° fails). The Flintlock
+  Pistol's hold points moved down and back onto its butt (18.8° and 20.1° under the aim; they were 9.0° and 10.4°).
+
 **Adding a gun.** Run `node tools/content/sight-fit.mjs --report`. A gun whose sights it finds joins the table; look at
 it on the sight sheet, then add it to `FITTED` in `sightPose.test.ts`. When the tool reports `no-sights`, `off-bore`
 (the line is over 4° off the barrel), `rear-on-stock` or `blocked`, decide in `content/sight-fit.json`: a
@@ -899,6 +913,11 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
 | none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Singularity Cannon, Flare Gun, Gilded Pistol, Spear | 1.52× |
 
+- **A model's own sight** (`window`): the glass and its mark go in the model's opening, a clip hides what lies behind it
+  while aimed; `round` for a round eyepiece (the glass and the clip a disc), `lens` for a closed sight whose own glass and
+  body stand in the line (the z range the check along the barrel leaves out). Such a gun may offer a red dot or a
+  holographic mark in it (only the mark changes; nothing is built): the Desert Carbine's holographic sight, the
+  Twin-Shot Rifle's red dot tube and the Blaster X-42's scope tube carry a red dot by default (owner, 2026-11-22, "2a").
 - **The table** is `content/optics.json`: `kinds` (reticle, housing, aimed field of view: `adsFov` for 1× sights, a
   `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: those the loadout
   may pick, below, "Optic choice"), `none` with reasons. `tools/content/optics.mjs` (run by
@@ -1032,6 +1051,8 @@ changes is what you see: the sight picture, the reticle and, with the 2x optic, 
 | Shotgun, Auto Shotgun, Runebreaker, Nailgun, Freeze Ray, Goo Gun | iron sights, red dot, holographic |
 | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, Laser Blaster | iron sights, red dot |
 | Bubble Blaster | red dot, holographic |
+| Woodland SMG | red dot, iron sights, holographic, 2x (owner, 2026-11-22: a red dot by default) |
+| Desert Carbine, Twin-Shot Rifle, Blaster X-42 | red dot, holographic (in the model's own sight) |
 | Arc Caster, Flak Cannon, Disc Launcher, Arena Disc | holographic, red dot |
 | none: Sawed-Off (red dot), Plasma Rifle (its own sight box), Flintlock Pistol (irons) | |
 | none: snipers and every gun with a scope of its own (Battle Rifle, Marksman, Nova 6, Lever-Action, Crossbow, Sniper Rifle, Railgun) | they keep their scope |

@@ -286,7 +286,8 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
           if (firstHit(clear, [win.at[0], win.at[1], bounds[0][2] - 1], [win.at[0], win.at[1], bounds[1][2] + 1]) !== null) problems.push(`${at}: the model stands in the line along the barrel through its window's middle (${JSON.stringify(win.at)})`);
           // Every optic it may carry goes in that window: a 1x glass (a red dot's dot or a holographic ring), no housing.
           if (allowed.some((a) => !BUILT.includes(kinds[a]?.housing) || kinds[a]?.housing === MAGNIFIED_BUILT)) problems.push(`${at}: a gun with a sight window of its own carries only 1x glass in it (red dot, holographic)`);
-          row.window = { at: win.at.map((v) => round(v)), half: win.half.map((v) => round(v)) };
+          if (win.round !== undefined && win.round !== true) problems.push(`${at}: a window's \`round\` is true (a round eyepiece: the glass and its clip a disc of the half height) or left out`);
+          row.window = { at: win.at.map((v) => round(v)), half: win.half.map((v) => round(v)), ...(win.round ? { round: true } : {}) };
         }
       } else if (BUILT.includes(k.housing) && k.glass && /\.glb$/.test(w.view?.model ?? '')) {
         tris ??= await modelTriangles(join(MODELS, w.view.model));
@@ -349,7 +350,7 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
       if (w.mag) parts.push(`mag: ${w.mag}`);
       if (w.steps) parts.push(`steps: ${list(w.steps)}`);
       if (w.mount) parts.push(`mount: { at: ${list(w.mount.at)}, scale: ${w.mount.scale} }`);
-      if (w.window) parts.push(`window: { at: ${list(w.window.at)}, half: ${list(w.window.half)} }`);
+      if (w.window) parts.push(`window: { at: ${list(w.window.at)}, half: ${list(w.window.half)}${w.window.round ? ', round: true' : ''} }`);
       return `  ${q(id)}: { ${parts.join(', ')} },`;
     });
   const noneLines = Object.keys(none)
@@ -403,7 +404,7 @@ export interface WeaponOptics {
   steps?: readonly number[];
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
-  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
+  window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
 
 /** Per hand-held gun that carries an optic (iron sights included). */

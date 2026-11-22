@@ -48,6 +48,30 @@ function mat(scene: Scene, hex: string, emissive = 0, alpha = 1): StandardMateri
   return m;
 }
 
+/**
+ * An energy round's material, as the hitscan beams' (createBeam): unlit, its own colour, see-through by `alpha`. Shared
+ * per colour; its colour is steady (nothing here pulses), under full white so High's bloom leaves it a soft glow.
+ */
+function beamMat(scene: Scene, hex: string, alpha: number): StandardMaterial {
+  let byKey = materials.get(scene);
+  if (!byKey) materials.set(scene, (byKey = new Map()));
+  const key = `beam|${hex}|${alpha}`;
+  let m = byKey.get(key);
+  if (!m) {
+    m = new StandardMaterial(`arsenal_${key}`, scene);
+    m.diffuseColor = Color3.Black();
+    m.specularColor = Color3.Black();
+    m.emissiveColor = Color3.FromHexString(hex);
+    m.disableLighting = true;
+    if (alpha < 1) {
+      m.alpha = alpha;
+      m.backFaceCulling = false;
+    }
+    byKey.set(key, m);
+  }
+  return m;
+}
+
 /** Projectile looks this module draws; others are drawn by the view. */
 /** How far a sheep's body sits above its position: its legs (0.24 m, centred 0.28 below the fleece) end at the ground. */
 export const SHEEP_LIFT = 0.4;
@@ -132,13 +156,25 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
       break;
     }
     case 'blasterBolt': {
-      // The Blaster X-42's round: a short orange streak with a pale core. Steady light, no flicker (Reduce flashing).
-      const core = add(CreateCylinder(`blasterBolt_${id}`, { diameter: 0.035, height: 0.34, tessellation: 6 }, scene));
+      // The Blaster X-42's round, in the energy beams' family (createBeam: unlit, steady, no flicker under Reduce
+      // flashing), retinted the gun's orange: a long orange streak with a warm core and a round head, so it reads as
+      // an orange bolt from behind (your own shots) as well as from the side. It used to be a short lit cylinder with
+      // a pale core: from behind, a small pale-blue hexagon (owner, 2026-11-22: "wrong projectile look").
+      const streak = add(CreateCylinder(`blasterBolt_${id}`, { diameterTop: 0.05, diameterBottom: 0.02, height: 0.9, tessellation: 8 }, scene));
+      streak.rotation.x = Math.PI / 2;
+      streak.position.z = -0.4;
+      streak.material = beamMat(scene, '#ff7a12', 0.8);
+      const core = add(CreateCylinder(`blasterBoltCore_${id}`, { diameterTop: 0.024, diameterBottom: 0.008, height: 0.75, tessellation: 6 }, scene));
       core.rotation.x = Math.PI / 2;
-      core.material = mat(scene, '#fff0d0', 1);
-      const glowSheath = add(CreateCylinder(`blasterBoltGlow_${id}`, { diameter: 0.09, height: 0.42, tessellation: 6 }, scene));
-      glowSheath.rotation.x = Math.PI / 2;
-      glowSheath.material = mat(scene, '#ff8a1e', 0.9, 0.45);
+      core.position.z = -0.33;
+      core.material = beamMat(scene, '#ffc27a', 1);
+      // The streak grows out of the muzzle over its first 0.9 m (animateArsenalProjectile): never back into the gun or the eye.
+      const tail = new TransformNode(`blasterBoltTail_${id}`, scene);
+      tail.parent = node;
+      tail.scaling.z = 0.05;
+      streak.parent = tail;
+      core.parent = tail;
+      add(CreateSphere(`blasterBoltHead_${id}`, { diameter: 0.075, segments: 8 }, scene)).material = beamMat(scene, '#ffa040', 0.9);
       break;
     }
     case 'nail': {
@@ -288,9 +324,17 @@ export function animateArsenalProjectile(node: TransformNode, look: ProjectileVi
       node.rotation.y += 0.25;
       node.rotation.x = 0.4;
       break;
+    case 'blasterBolt': {
+      along();
+      // Its streak as long as the way it has come, up to its own 0.9 m.
+      const md = (node.metadata ??= {}) as { from?: Vector3 };
+      md.from ??= node.position.clone();
+      const tail = node.getChildren((c) => c.name.startsWith('blasterBoltTail_'), true)[0] as TransformNode | undefined;
+      if (tail) tail.scaling.z = Math.max(0.05, Math.min(1, Vector3.Distance(md.from, node.position) / 0.9));
+      break;
+    }
     case 'nail':
     case 'arrow':
-    case 'blasterBolt':
     case 'stinger':
     case 'swarm':
     // A spear points along its flight and keeps its last heading where it sticks.

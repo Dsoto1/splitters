@@ -39,7 +39,7 @@ export interface CarriedOptic {
   /** Where a housing built in code stands (model space) and its size. */
   mount?: { at: readonly [number, number, number]; scale: number };
   /** The model's own open sight instead: its window's middle and half width and height (no housing is built). */
-  window?: { at: readonly [number, number, number]; half: readonly [number, number] };
+  window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
 
 /** The optic `def` carries (`choice`: another of its allowed ones, as a loadout picks; anything else: its default), or null: none. */
