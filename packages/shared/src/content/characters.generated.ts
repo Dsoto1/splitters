@@ -192,6 +192,11 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.harecourier', name: 'Pip Quickfoot', body: 'male', head: '', parts: ['meshy_harecourier'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
   { id: 'core.boxerbunny', name: 'Buster Haymaker', body: 'male', head: '', parts: ['meshy_boxerbunny'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'critter' },
   { id: 'core.cheetah', name: 'Duke Dashwood', body: 'male', head: '', parts: ['meshy_cheetah'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'cat' },
+  { id: 'core.magmajuggernaut', name: 'Ignatius Slagg', body: 'male', head: '', parts: ['meshy_magmajuggernaut'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m' }, group: 'horror', tier: 'experimental', nameTheme: 'myth' },
+  { id: 'core.tuxedocat', name: 'Sterling Purrcival', body: 'male', head: '', parts: ['meshy_tuxedocat'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'cat' },
+  { id: 'core.firesalamander', name: 'Ziggy Spotswood', body: 'male', head: '', parts: ['meshy_firesalamander'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'frog' },
+  { id: 'core.baboon', name: 'Rufus Boomwell', body: 'male', head: '', parts: ['meshy_baboon'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'monkey' },
+  { id: 'core.chimpanzee', name: 'Chester Knuckleby', body: 'male', head: '', parts: ['meshy_chimpanzee'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', tier: 'experimental', nameTheme: 'monkey' },
 ];
 
 /** Whole-body characters made for NPCs only (`use: npc`): not on the roster; NPC_ROLE_SPECS can name them. */
@@ -387,4 +392,9 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.harecourier': 'Delivers anything anywhere, usually before you ordered it.',
   'core.boxerbunny': 'Floats like a butterfly, hops like a bunny, hits like a truck.',
   'core.cheetah': 'The fastest kingpin in town: collects before you finish the excuse.',
+  'core.magmajuggernaut': 'Walked out of a volcano and kept the heat. Mind the floor.',
+  'core.tuxedocat': 'Dressed for the gala, armed for the after-party.',
+  'core.firesalamander': 'Spots like warning signs. Most people read them too late.',
+  'core.baboon': 'Runs the troop, the loudest one in any room, and the last one standing.',
+  'core.chimpanzee': 'Opened the ammo crate before anyone found the key.',
 };

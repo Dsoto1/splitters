@@ -192,4 +192,9 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.harecourier': 'red',
   'core.boxerbunny': 'red',
   'core.cheetah': 'red',
+  'core.magmajuggernaut': 'stone',
+  'core.tuxedocat': 'red',
+  'core.firesalamander': 'red',
+  'core.baboon': 'red',
+  'core.chimpanzee': 'red',
 };

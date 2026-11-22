@@ -105,3 +105,13 @@ Provenance: Meshy, owned.
   - "hare courier game ready" (2026-11-22)  -> character meshy_harecourier (look Pip Quickfoot)
   - "brawler boxer bunny 15k" (2026-11-22)  -> character meshy_boxerbunny (look Buster Haymaker)
   - "cheetah pimp 15k" (2026-11-22)  -> character meshy_cheetah (look Duke Dashwood)
+
+- The owner's Drive characters uploaded 2026-11-22 after 15:00 (the same kind of download, pack meshy-owned;
+  Meshy, owned per the owner's word above). Built by tools/content/prepare-meshy-characters.mjs.
+
+  - "shiba inu 15k" (2026-11-22)  -> character meshy_shiba (look Shiba), its new model (the community "T Pose Shiba Inu" it replaced is no longer shipped)
+  - "MagmaJuggernaut3D" (2026-11-22)  -> character meshy_magmajuggernaut (look Ignatius Slagg)
+  - "male tuxedo cat 15k" (2026-11-22)  -> character meshy_tuxedocat (look Sterling Purrcival)
+  - "salamander 15k" (2026-11-22)  -> character meshy_firesalamander (look Ziggy Spotswood)
+  - "baboon 15k" (2026-11-22)  -> character meshy_baboon (look Rufus Boomwell)
+  - "chimpanzee 15k" (2026-11-22)  -> character meshy_chimpanzee (look Chester Knuckleby)

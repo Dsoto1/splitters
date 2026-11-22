@@ -33,7 +33,7 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "Iron Shadow Warrior" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9b1c-6097-7fac-86de-5a6141690531)  -> character meshy_ninja (look Shade)
 - "Low Poly T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8)  -> character meshy_ricochet (look Ricochet)
 - "White Rusty Mech" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab)  -> character meshy_rustmech (look Ivory Rustwalker)
-- "T Pose Shiba Inu" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76)  -> character meshy_shiba (look Shiba)
+- "T Pose Shiba Inu" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76)  -> character meshy_shiba (look Shiba) until 2026-11-22, when the owner's "shiba inu 15k" replaced its model (no longer shipped)
 - "T Pose Automaton" (downloaded 2026-10-29, https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47)  -> character meshy_t350 (look T-350)
 - "zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/019cd5f1-8fc5-793a-bfc3-6362a967a859)  -> character meshy_zombie_rotter (look Rotter)
 - "A highly realistic zombie" (downloaded 2026-10-29, https://www.meshy.ai/posts/01981b88-8b1d-7231-a7da-4f1885926e12)  -> character meshy_zombie_shambler (look Shambler)
