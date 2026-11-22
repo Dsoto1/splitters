@@ -183,7 +183,7 @@ const RULES = [
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
-  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|touchLayout|weaponWheel))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
+  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|touchLayout|weaponWheel|wheelCategories|weaponRequest))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
   // Phones' lamps (the tile mask, Room lights, the indoor fill on Low) and the kill feed's lines (docs/MOBILE_AUDIT.md).
   [/^packages\/client\/src\/game\/(clusteredLights|roomLights|indoorFill|feedLimit)\.ts$/, ['mobile', 'offline', ...FLASHING_FLOWS, 'setpieces'], ['client']],
   // (Every flow that opens Map settings: the coverage map's flow checks its Test map box there.)

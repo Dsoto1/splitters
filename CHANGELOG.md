@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Weapon wheel by category; number keys by category.** The wheel is eight slices (Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets) whose weapons open on an outer arc with names, each slice remembering your last pick; keys 1-8 pick the same categories (again: the next in it), rebindable in Options → Controls, and no longer land only on the Pistol or the AK.
 - **Recorded sound effects.** Pistols, rifles, SMGs, shotguns, snipers and heavy guns, reloads, melee swings, explosions, bullet impacts, breaking glass, walls and crates, doors, footsteps, falls, rain and wind now use studio recordings (the Sonniss GDC bundles); bullets whizz past your head and jump pads sound their launch, and the Weapon Manager offers two other recordings for each gun.
 - **The Flare Gun has its picture again** in the kill feed, the loadout, the weapon wheel and the Weapon Manager (it showed none after it got its new model).
 - **St. John's wall crest no longer shimmers.** Its gold border lay on the board's face and flickered as you moved; every layer of the crest now stands clear of the one under it.
