@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Footsteps sound like what you walk on.** Concrete, metal, wood, grass, dirt, gravel and snow each have their own recorded steps, yours and other players'; bullets hitting a painted floor or wall sound like its material too.
 - **The pump shotgun pumps.** A recorded pump follows each shot, done before the next one can come; you hear other players' too.
 - **The recorded guns hit harder.** Pistols, rifles, SMGs and shotguns are about 4 dB louder and more compressed, the heavy guns a little louder; still under explosions, and none of them clip.
 - **Recorded sound effects.** Pistols, rifles, SMGs, shotguns, snipers and heavy guns, reloads, melee swings, explosions, bullet impacts, breaking glass, walls and crates, doors, footsteps, falls, rain and wind now use studio recordings (the Sonniss GDC bundles); bullets whizz past your head and jump pads sound their launch, and the Weapon Manager offers two other recordings for each gun.

@@ -476,6 +476,180 @@
         }
       ]
     },
+    "footstep.metal": {
+      "gain": 0.28,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 0.0,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 0.705,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 1.425,
+          "length": 0.34
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/237_Foley_Footsteps_Metal_Boot_Walk_Normal_Close.wav",
+          "start": 3.01,
+          "length": 0.34
+        }
+      ]
+    },
+    "footstep.wood": {
+      "gain": 0.18,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Wood Civilian Crouch N03.wav",
+          "start": 0.0,
+          "length": 0.45
+        },
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Wood Civilian Crouch N05.wav",
+          "start": 0.0,
+          "length": 0.45
+        }
+      ]
+    },
+    "footstep.grass": {
+      "gain": 0.37,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.335,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.655,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 0.97,
+          "length": 0.27
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "Tovusound - Edward – Foleyart Collection Add-On Extended Footsteps/169_Foley_Footsteps_Grass_Sneaker_Walk_Fast_Run_Jog_Close.wav",
+          "start": 1.615,
+          "length": 0.27
+        }
+      ]
+    },
+    "footstep.dirt": {
+      "gain": 0.29,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Ground Civilian Walk N03.wav",
+          "start": 0.0,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "footsteps/Levan Nadashvili - Civilian Footsteps/FS Ground Civilian Walk N05.wav",
+          "start": 0.0,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Single_Step_Footstep_19.wav",
+          "start": 0.06,
+          "length": 0.4
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Single_Step_Footstep_46.wav",
+          "start": 0.0,
+          "length": 0.4
+        }
+      ]
+    },
+    "footstep.gravel": {
+      "gain": 0.3,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 0.665,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 2.405,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 2.97,
+          "length": 0.38
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - STEPS Dirt & Gravel/PM_SDNG_Stereo_Walk_Seamless_Loop_1.wav",
+          "start": 4.195,
+          "length": 0.38
+        }
+      ]
+    },
+    "footstep.snow": {
+      "gain": 0.22,
+      "range": "near",
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_013.wav",
+          "start": 0.02,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_light_008.wav",
+          "start": 0.05,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_run_004.wav",
+          "start": 0.0,
+          "length": 0.42
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Snow Footsteps/Bluezone_BC0264_snow_footsteps_walk_deep_008.wav",
+          "start": 0.07,
+          "length": 0.42
+        }
+      ]
+    },
     "land": {
       "gain": 1.12,
       "range": "near",

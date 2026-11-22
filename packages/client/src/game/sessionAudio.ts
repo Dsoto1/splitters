@@ -122,6 +122,12 @@ export class SessionAudio {
    */
   worldImpact: (from: Vec3, to: Vec3) => SoundId | null = () => 'impact.world';
 
+  /**
+   * The footstep for feet at `at`: the recorded steps of the surface under them (game/fxMap.ts footstepSoundId; the
+   * session asks the view what is underfoot, from the map on this machine, so nothing is sent). Default: the plain one.
+   */
+  stepSound: (at: Vec3) => SoundId = () => 'footstep';
+
   /** Whether a kill of this victim makes the wet splat: blood is shown (the map's setting and the player's) and the victim's blood is a liquid (not bone dust or a wisp). */
   bloodOn: (victim: number) => boolean = () => true;
 
@@ -255,7 +261,7 @@ export class SessionAudio {
       this.localStride += Math.hypot(s.pos.x - before.x, s.pos.z - before.z);
       if (this.localStride > STRIDE * speedScale) {
         this.localStride = 0;
-        this.audio.play('footstep', { gain: 0.7 });
+        this.audio.play(this.stepSound(s.pos), { gain: 0.7 });
       }
     } else {
       this.fallSpeed = -s.velY;
@@ -380,7 +386,8 @@ export class SessionAudio {
       prev.z = p.z;
       if (prev.acc > STRIDE) {
         prev.acc = 0;
-        this.audio.play('footstep', { at: { x: p.x, y: p.y, z: p.z } });
+        const at = { x: p.x, y: p.y, z: p.z };
+        this.audio.play(this.stepSound(at), { at });
       }
     }
   }

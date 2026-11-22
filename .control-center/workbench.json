@@ -309,7 +309,7 @@
         { "path": "impact.decal", "label": "Impact decal", "type": "select", "options": ["hole", "none"], "edit": true },
         { "path": "impact.debris", "label": "Impact debris (dust, splinters, chips, leaves, sparks; amounts and colours: content/vfx.json map.impacts)", "type": "list", "edit": true },
         { "path": "impact.sound", "label": "Impact sound family", "type": "select", "options": ["hard", "wood", "metal", "soft", "glass", "water", "none"], "edit": true },
-        { "path": "footstep", "label": "Footstep family (for later; not played yet)", "type": "select", "options": ["hard", "wood", "metal", "soft", "foliage", "sand", "gravel", "snow", "water"], "edit": true }
+        { "path": "footstep", "label": "Footstep family (the recorded steps played on it: content/sounds.json footstep.<family>; hard is footstep)", "type": "select", "options": ["hard", "wood", "metal", "grass", "dirt", "soft", "foliage", "sand", "gravel", "snow", "water"], "edit": true }
       ]
     },
     {

@@ -141,7 +141,7 @@ import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
-import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceIndex, surfaceOfBox, weaponImpact, type FxRef, type Surface } from './fxMap.ts';
+import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceMap, surfaceOfFace, weaponImpact, type FxRef, type Surface, type SurfaceMap } from './fxMap.ts';
 import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
 /** Seconds a physics debris chunk lies around before shrinking away. */
@@ -526,7 +526,7 @@ export class GameView {
   /** Fire props' open flames (content/props.json `flame`), drawn with Flame FX near the camera. */
   private propFlames: PropFlames;
   /** Each placement's surface (stone, metal, wood …) for where rounds land (fxMap.ts), made with the map. */
-  private surfaces: Map<string, Surface> | null = null;
+  private surfaces: SurfaceMap | null = null;
   private sunLight?: DirectionalLight;
   private zoneVisuals!: ZoneVisuals;
   private readonly viewRoot: TransformNode;
@@ -810,7 +810,7 @@ export class GameView {
     this.border.update(doc, boxes);
     this.city.setMap(doc);
     this.liquids = mapLiquids(doc.entities);
-    this.surfaces = surfaceIndex(doc);
+    this.surfaces = surfaceMap(doc);
     this.physics?.free();
     try {
       this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc), environmentShapes(doc));
@@ -1490,7 +1490,7 @@ export class GameView {
     if (wall) {
       // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
       // drawn as content/vfx.json map.impacts says): metal sparks, bark and wood splinters, foliage leaves.
-      const style = impactStyle(wall.surface ?? surfaceOfBox(wall.box, this.surfaces));
+      const style = impactStyle(wall.surface ?? surfaceOfFace(wall.box, wall.normal, wall.point, this.surfaces));
       this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), style);
       this.accent(style.accent, wall.point, wall.normal);
     }
@@ -1499,7 +1499,17 @@ export class GameView {
   /** The surface type a round from `from` landing at `to` struck in the level (null: nothing there, or a body). */
   surfaceStruck(from: Vec3, to: Vec3): Surface | null {
     const wall = this.impacts.surfaceHit(from, to);
-    return wall ? (wall.surface ?? surfaceOfBox(wall.box, this.surfaces)) : null;
+    return wall ? (wall.surface ?? surfaceOfFace(wall.box, wall.normal, wall.point, this.surfaces)) : null;
+  }
+
+  /**
+   * The surface type under feet at `at` (footsteps; looked up from the map on this machine, nothing is sent): the first
+   * level surface within a metre below, else null (in the air, or no map yet).
+   */
+  surfaceUnder(at: Vec3): Surface | null {
+    const hit = this.physics?.raycast({ x: at.x, y: at.y + 0.4, z: at.z }, { x: 0, y: -1, z: 0 }, 1.4);
+    if (!hit) return null;
+    return hit.surface ?? surfaceOfFace(hit.box, hit.normal, at, this.surfaces);
   }
 
   /** The accent of a surface hit somewhere other than the level (a round going into water). */

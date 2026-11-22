@@ -609,7 +609,7 @@ look is its model).
 
 | File | Holds |
 |---|---|
-| `content/surface-types.json` `types` | each type: `id`, `name`, `ballistic` (its class: `BALLISTIC_MATERIALS` / `MATERIAL_BALLISTICS` in `sim/gunplay.ts`, penetration resistance, ricochet, destruction), `impact` (`decal`: `hole` or `none`; `debris`: any of `dust`, `splinters`, `chips`, `leaves`, `sparks`; `sound`: `hard`, `wood`, `metal`, `soft`, `glass`, `water` or `none`) and optional `footstep` (a family for later; not played yet) |
+| `content/surface-types.json` `types` | each type: `id`, `name`, `ballistic` (its class: `BALLISTIC_MATERIALS` / `MATERIAL_BALLISTICS` in `sim/gunplay.ts`, penetration resistance, ricochet, destruction), `impact` (`decal`: `hole` or `none`; `debris`: any of `dust`, `splinters`, `chips`, `leaves`, `sparks`; `sound`: `hard`, `wood`, `metal`, `soft`, `glass`, `water` or `none`) and optional `footstep` (the family whose recorded steps play on it: `hard`, `wood`, `metal`, `grass`, `dirt`, `soft`, `foliage`, `sand`, `gravel`, `snow`, `water`; docs/AUDIO.md, "Footsteps by surface") |
 | `content/surface-types.json` `guess` | the legacy effect guess for entries with no `surface`: words per type (moved unchanged from content/vfx.json `map.surfaces`), else `fallback` |
 | `content/vfx.json` `map.impacts` | how each type's hit is drawn, keyed by type id: `sparks`, `dust` colour and `dustSize`, `chips` and `chip` colour (splinters, leaves, grit), the Binbun `accent` |
 | `content/props/<pack>.json` | `surface` on a prop, or at the file's top level for every prop of the pack (a prop's own wins) |
@@ -621,10 +621,12 @@ The types (2026-11-04): `concrete`, `stone`, `rock` (boulders, cliffs; stone cla
 `foliage`, pass-through), `metal`, `sheet_metal` (thin_metal), `glass`, `dirt`, `grass`, `sand`, `gravel`, `snow`
 (all soil), `water`, `flesh`, `fabric` and `plastic` (drywall), `armor`, `energy`.
 
+**Every library material names its surface** (2026-11-22, for footsteps by surface): `node tools/content/material-surfaces.mjs` derives one for each material that has none from words in its id and name (`RULES`, the first match: `ice` not inside lattice), else its category (`CATEGORY`), and lists any it can't place (none today); `--write` writes them, then `node tools/content/materials.mjs`. It never changes what the server does to a round: where the type's class differs from the class the material had (`packages/shared/test/fixtures/surface-classes-before.json`), the material keeps that class as `ballistic`. Correct a pick in the Workbench's Materials table or the file (MapMaker paints materials but doesn't edit the library). A tile face's surface is its material's (its paint, else its theme's for the slot), for footsteps and impacts alike.
+
 **Unset keeps today's behaviour.** A prop or material with no `surface` keeps the ballistic class `materialClass`
 guesses from its id and the effect the `guess` words give, exactly as before; nothing changes until a surface is set.
-Tile structure stays concrete to the server (effects guessed from the tile id and theme), terrain concrete to the
-server and dirt on the client. `packages/shared/test/surfaceTypes.test.ts` compares every material's and prop's class
+Tile structure stays concrete to the server (on the client a tile face takes its material's surface), terrain concrete to the
+server and its cell's ground on the client. `packages/shared/test/surfaceTypes.test.ts` compares every material's and prop's class
 and effect with `packages/shared/test/fixtures/surface-classes-before.json` (taken before surface types; never
 regenerated) and lists every intended change by id: setting a surface that changes a class means adding it there, on
 purpose.
