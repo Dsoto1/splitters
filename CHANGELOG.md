@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Weapon wheel by category; number keys by category.** The wheel is eight slices (Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets) whose weapons open on an outer arc with names, each slice remembering your last pick; keys 1-8 pick the same categories (again: the next in it), rebindable in Options → Controls, and no longer land only on the Pistol or the AK.
 - **Emblems and titles.** Pick an emblem (16 shapes, 12 colours) and a title your career has earned on Profile; your emblem shows by your name on the scoreboard, in the kill feed and on your card.
 - **Other players' cards.** Click a player on the pause menu's Match tab or the end-of-match board to see their card: emblem, title, character, this match, and a signed-in player's career.
 - **Match history and stats by mode and weapon.** Profile's Career has Modes, Weapons and History tabs: your last 20 matches, and your record in each mode and with each weapon.

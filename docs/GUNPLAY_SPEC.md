@@ -1196,6 +1196,36 @@ A player caught reloading a heavy weapon should often be rewarded for swapping t
 
 This creates meaningful sidearm gameplay.
 
+## 19.1 Choosing a weapon: categories, keys and the wheel (as built, owner 2026-11-22)
+
+With dozens of weapons on you (a pickup deathmatch, the Training Range), choosing is by **category**. Eight
+categories, in this order everywhere (the wheel clockwise from the top, the keys 1-8):
+**Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets**
+(`packages/client/src/game/wheelCategories.ts`). A weapon's category comes from its own data, never a list of names:
+melee weapons and tools (medkit, grapple, builder, medi-beam) → Melee & gadgets; energy cells or heat → Energy;
+explosives and the `lmg` family → Heavy; the other specials → Pistols if a sidearm (slot 2), else Heavy; otherwise its
+pickup `category`. A new weapon, or one whose category the Weapon Manager changes, lands in its slice with no code
+change. (`slot` stays in the data: pickups' auto-switch and bots still read it.)
+
+- **Category keys** (default 1-8; Options → Controls → Weapon categories rebinds them, a key another category has
+  swaps): away from the category, the key takes out the weapon you used last in it (its first, the first time);
+  again, the next one you hold in it, round to the first. Holding the key doesn't spin through it.
+- **The wheel** (hold Q, hold a controller's Y, the Weapons button on a phone): the eight slices, each with its key,
+  the icon of its last pick and how many you hold; empty slices dimmed and not pickable. Pointing at a slice opens its
+  weapons on an outer arc (icon and name; the middle shows the pointed one's ammo), laid out so the slice's last pick
+  sits in line with the slice: a quick flick to a slice and letting go brings it back, and moving round the arc picks
+  another. The mouse, the right stick and a finger point it the same way (`categoryAim`); letting go (a click, a lift)
+  switches.
+- **Unchanged:** the mouse wheel steps through everything held (in category order, as on the wheel; through a scope it steps the zoom); a
+  tap of Q goes back to your last weapon; Fort Wars' builder takes keys 1-8 as its pieces.
+- **On the wire** nothing changed: a switch is still the weapon code in the next inputs (`PlayerInput.weapon`), sent
+  until a snapshot both acknowledges an input that carried it and shows it in hand (`weaponRequest.ts`). Bots never
+  used the keys or the wheel.
+- **The number-key bug (2026-11-22):** the old keys picked a `slot` (2 pistols, 3 rifles…) and, from another slot,
+  always the slot's first weapon: the Pistol, the AK. A request was also dropped by any snapshot showing the asked-for
+  weapon in hand, even one from before the host read it (a quick press out and straight back was lost), and a request
+  for a weapon no longer held stayed, so every key counted from a weapon outside its slot and landed on the first.
+
 ---
 
 # 20. Aim Assist

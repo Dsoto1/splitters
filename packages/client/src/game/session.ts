@@ -219,7 +219,7 @@ import { InputState, keyLabel, saveMousePrefs } from './input.ts';
 import { TouchControls } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
 import { WeaponRequest } from './weaponRequest.ts';
-import { CategoryPicks, WHEEL_CATEGORIES, type WheelCategory, byCategory, categoryKeyPick } from './wheelCategories.ts';
+import { CategoryPicks, WHEEL_CATEGORIES, type WheelCategory, byCategory, categoryKeyPick, categoryOrder } from './wheelCategories.ts';
 import { isTouchDevice } from '../touchDevice.ts';
 import { CoachHud } from './coachHud.ts';
 import { TipBook, type TipId } from './tips.ts';
@@ -3768,7 +3768,7 @@ export class GameSession {
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
       if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = stepZoom(this.zoomLevel, wheel, zoomSteps(local.weapon));
       else if (wheel) {
-        const owned = local.ownedCodes();
+        const owned = categoryOrder(local.ownedCodes());
         const i = owned.indexOf(this.switchingFrom(local));
         const next = owned[(((i + wheel) % owned.length) + owned.length) % owned.length];
         if (next) this.requestWeapon(next);

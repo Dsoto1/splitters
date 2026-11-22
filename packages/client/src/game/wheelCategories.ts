@@ -86,3 +86,8 @@ export function categoryKeyPick(n: number, owned: readonly number[], current: nu
   const next = held[(i + 1) % held.length]!;
   return next === current ? null : next;
 }
+
+/** The weapons in the wheel's order: category by category (the mouse wheel steps through them in this order). */
+export function categoryOrder(codes: readonly number[]): number[] {
+  return [...byCategory(codes).values()].flat();
+}
