@@ -180,6 +180,26 @@
         { "index": 1, "name": "green", "seed": 12262, "look": { "iron": "#2f5a40", "rust": "#7a4526", "rusty": 0.12, "grime": 0.2, "feet": "#8d8a82" } },
         { "index": 2, "name": "rusty", "seed": 12263, "look": { "iron": "#7d6a58", "rust": "#7a4526", "rusty": 0.7, "grime": 0.2, "feet": "#8d8a82" } }
       ]
+    },
+    {
+      "id": "kit.fence.stair_rail",
+      "displayName": "Stair Railing",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": { "1": "First version (St. John's step 7c: the dormitory stairwells' black metal railings): a railing 3.5 m long and 1 m high for a stair or a landing's edge, slim square bars between a low rail and a flat handrail the piece's depth wide, a post at each end, no kerb and no points. The size of the Stair End Bays' wooden rail (their Stair rails option). It collides as its posts, rails and each bar." },
+      "size": [3.5, 1.0, 0.1],
+      "surface": "sheet_metal",
+      "detail": "metal",
+      "generator": { "kind": "railing", "bar": 0.02, "pitch": 0.125, "post": 0.06, "kerb": 0, "handrail": true },
+      "lods": [
+        { "distance": 0 },
+        { "distance": 14 },
+        { "distance": 40 }
+      ],
+      "variants": [
+        { "index": 0, "name": "black", "seed": 4421, "look": { "iron": "#1b1c1e", "rust": "#3a2a20", "stone": "#7b786f", "rusty": 0.06 } },
+        { "index": 1, "name": "steel", "seed": 4422, "look": { "iron": "#5c6066", "rust": "#5f3a26", "stone": "#7b786f", "rusty": 0.05 } }
+      ]
     }
   ]
 }

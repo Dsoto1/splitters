@@ -1011,6 +1011,31 @@ Board, a Desk and Office Chair; option Offices). The **Admin Bay** gained Outer 
 windows, no facade, Basement Rooms) and East end (Open, Closed: a hall's last bay). Walks in every turn:
 `setPiecesAcademy.test.ts` (and "DeKoven Hall's shape", on a 2 m and a 2.5 m ground grid), `setPiecesCampus.test.ts`.
 
+**The corner's pieces** (St. John's step 7c; data only, no map format change, one new prop model). Set pieces
+(`content/setpieces/academy.json`): **Entrance Porch (pointed arch)** (`setpiece.entrance_porch`, 1 cell, against a
+doorway on its north side: 5 m wide, 3.5 m out, a pointed arch 3.2 m wide between stepped buttresses, a stepped head,
+our Crest Shield either side, one light) and **Gate Tower Front (twin stairs)** (`setpiece.gate_tower_front`, 3 × 1
+cells against a three-floor hall: a landing 4 m up with a crenellated parapet over a pointed-arch way in, two mirrored
+outside stairs of fifteen solid steps along the wall, two eight-sided turrets on corbels from 7 m to 16.6 m, a raised
+battlement between them from 11.3 m). Both are blocks in the look's stone and trim on Platforms (so they wear the
+hall's own stone, and the ground comes down to their paving). **A pointed arch out of blocks:** each side is four
+dressed voussoirs laid along the chords of an arc struck from beyond the middle, rolled blocks (none past 45 degrees:
+a voussoir nearer upright is a tall block rolled the other way), 6 cm proud of both faces of the wall, with a keystone
+over the point; the wall over the opening is plain blocks stepped behind that ring, each one's foot on the opening's
+line at its inner edge. No wall style, so no map format number. **A facade stands out from its cell:** the Collegiate
+stone facade's face is 0.64 m outside the cell's side, its plinth 0.74 m and its buttresses up to 1.19 m (and they
+collide), 0.13 to 0.77 m in from each bay's ends: a piece built against a hall runs into that (the porch's side walls,
+the stairs' solid steps), and a stair beside a hall needs 2.2 m clear of the buttress, not of the cell's side (2.2 m
+from the cell's side lost the bots' way up). New options: the **Stair End Bays'** Stair rails (Wood, or Black
+metal: the new prop `kit.fence.stair_rail`, Stair Railing, 3.5 × 1 × 0.1 m, slim bars under a flat handrail, the
+railing generator's `handrail` setting; on all seven stair pieces), the **Stair End Bay (3 floors)**'s Lobby's side
+wall (Sash window, or Doorway: a 2 m oak doorway with a dark Oak Door standing open, the bench gone) and Top-floor
+door (None, or At the landing room: a 2 m oak doorway in the top floor's west wall), the **Dorm Entry Bay**'s Way in
+(Round arch, or Open: no wall on the entrance hall's outer side, for a door the piece beside it builds) and the
+**Admin Entry Bay**'s Way in (Round arch, or Room doorway: a first-floor way in off a landing). Two halls joined at a
+corner on an upper floor: the Stair End Bay's First-floor door or Top-floor door on one side, a Dorm Entry Bay turned
+to it with Way in: Open on the other. Walks: `setPiecesAcademy.test.ts` ("two halls joined at a corner").
+
 **The campus kit** (`tools/content/kit/campus.mjs`, set pieces `content/setpieces/campus.json`; St. John's steps 7-10,
 built ahead of the halls: DeKoven, Memorial Hall, the chapel, the gym and pool). All generated in code, no downloads,
 no real school's crest or flag; nothing glows, flickers or moves (the stained glass is plain vertex colour).

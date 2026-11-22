@@ -1,0 +1,32 @@
+{
+  "about": "St. John's step 7c: the MapMaker steps, in order, as the step's Playwright driver replayed them on maps/st_johns.json (PLAN_2026-11-12.md, 4l). Each step is one thing a person does in MapMaker: 'option' = select the placement (the Outliner's search, a click on its row) and choose in the set piece inspector's Options; 'delete' = select and Delete; 'place' = the Set pieces tab, R to turn, the level buttons, a click on the cell, then its Options; 'move' = the inspector's X / Height / Z. Cells are x, y on the grid (8 m), level 0 = the ground floor. 'prop' = the Props tab, a click in the open, then the inspector's X / Height / Z. Ids are the map's own as of main at 98184628 (with step 8); a placement made by an earlier step has a new id each run.",
+  "map": "maps/st_johns.json",
+  "steps": [
+    {"group": "A", "op": "option", "id": "setpiece_on14jx8cor", "name": "walls", "value": "windows", "why": "Welles's bay at cell (4, -11): the Twin arches of step 7a go back to arched windows"},
+    {"group": "A", "op": "option", "id": "setpiece_ag9260atkh", "name": "lobbySide", "value": "door", "why": "DeKoven's south stair bay (6, -9): a doorway in the lobby's court (west) wall"},
+    {"group": "A", "op": "place", "piece": "setpiece.entrance_porch", "x": 4, "y": -9, "level": 0, "rot": 1, "why": "the main entrance: the porch against that doorway, in the corner"},
+    {"group": "B", "op": "option", "id": "setpiece_ag9260atkh", "name": "upperDoor", "value": "end", "why": "the 2nd floor's door south into Welles (x 42.7)"},
+    {"group": "B", "op": "option", "id": "setpiece_ag9260atkh", "name": "topDoor", "value": "end", "why": "the 3rd floor's door south into Welles (x 48)"},
+    {"group": "B", "op": "delete", "id": "setpiece_8vj5g30fls", "why": "Welles 2nd floor, cell 3: the Classroom Bay"},
+    {"group": "B", "op": "delete", "id": "setpiece_3bnirql5fq", "why": "cell 4"},
+    {"group": "B", "op": "delete", "id": "setpiece_tf2d831c55", "why": "cell 5"},
+    {"group": "B", "op": "delete", "id": "setpiece_94hl0pw5t7", "why": "cell 6"},
+    {"group": "B", "op": "place", "piece": "setpiece.dorm_bay", "x": 3, "y": -11, "level": 1, "rot": 0, "options": {"roomDoors": "slim"}},
+    {"group": "B", "op": "place", "piece": "setpiece.dorm_bay_closed", "x": 4, "y": -11, "level": 1, "rot": 0, "options": {"roomDoors": "slim"}},
+    {"group": "B", "op": "place", "piece": "setpiece.dorm_entry_bay", "x": 5, "y": -10, "level": 1, "rot": 2, "options": {"roomDoors": "slim", "wayIn": "open"}, "why": "the two north rooms out: the passage from DeKoven's door to the dorm hall"},
+    {"group": "B", "op": "place", "piece": "setpiece.dorm_bay", "x": 6, "y": -11, "level": 1, "rot": 0, "options": {"roomDoors": "slim"}},
+    {"group": "B", "op": "delete", "id": "setpiece_8xokkofu66", "why": "Welles 3rd floor, cell 6: the Dorm Bay with its north rooms shut"},
+    {"group": "B", "op": "place", "piece": "setpiece.dorm_entry_bay", "x": 6, "y": -10, "level": 2, "rot": 2, "options": {"roomDoors": "slim", "wayIn": "open"}, "why": "the two north rooms out on the 3rd floor"},
+    {"group": "C", "op": "option", "id": "setpiece_8zgwaep49q", "name": "walls", "value": "door_north", "why": "the mess hall's bay at cell (3, -11), beside the clock tower: a door in the court-side wall"},
+    {"group": "D", "op": "delete", "id": "setpiece_76hrp514kv", "why": "DeKoven 2nd floor, row -6: the Admin Bay over the Reception"},
+    {"group": "D", "op": "place", "piece": "setpiece.admin_entry_bay", "x": 5, "y": -6, "level": 1, "rot": 1, "options": {"wayIn": "door"}, "why": "the landing's door into the 2nd floor's corridor"},
+    {"group": "D", "op": "place", "piece": "setpiece.gate_tower_front", "x": 4, "y": -6, "level": 0, "rot": 1, "why": "the gate tower's front against the Reception: landing, two mirrored stairs, turrets"},
+    {"group": "E", "op": "option", "id": "setpiece_ag9260atkh", "name": "rails", "value": "metal", "why": "DeKoven's south stair"},
+    {"group": "E", "op": "option", "id": "setpiece_xcgqnhf6qe", "name": "rails", "value": "metal", "why": "DeKoven's north stair (roof stair)"},
+    {"group": "E", "op": "option", "id": "setpiece_7vevd6fa7q", "name": "rails", "value": "metal", "why": "DeKoven's basement stair"},
+    {"group": "E", "op": "delete", "id": "sp_setpiece_g830vbnlk5_12", "why": "Welles's west stair (hand-placed parts since the slim door fix): its wooden rail over the first flight", "skip": true, "note": "not applied in step 7c: the driver could not select the newly placed prop from the Outliner (the delete worked); Welles's west stair keeps its wooden rails"},
+    {"group": "E", "op": "prop", "prop": "kit.fence.stair_rail", "near": [26, 0, -64], "to": [14.25, 4, -86.05], "why": "a Stair Railing in its place", "skip": true, "note": "not applied in step 7c: the driver could not select the newly placed prop from the Outliner (the delete worked); Welles's west stair keeps its wooden rails"},
+    {"group": "E", "op": "delete", "id": "sp_setpiece_g830vbnlk5_15", "why": "its rail over the second flight", "skip": true, "note": "not applied in step 7c: the driver could not select the newly placed prop from the Outliner (the delete worked); Welles's west stair keeps its wooden rails"},
+    {"group": "E", "op": "prop", "prop": "kit.fence.stair_rail", "near": [26, 0, -64], "to": [17.75, 8, -81.95], "why": "a Stair Railing in its place", "skip": true, "note": "not applied in step 7c: the driver could not select the newly placed prop from the Outliner (the delete worked); Welles's west stair keeps its wooden rails"}
+  ]
+}
