@@ -14037,7 +14037,6 @@ async function profilesFlow(browser) {
   livePages.add(page);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  if (process.env.PROFILES_DEBUG) page.on('request', (r) => r.url().includes(':9/') && console.log('REQ', r.url()));
   // Profile: the emblem picker (bolt in cyan, from this browser), a new shape and colour; titles earned and not.
   await page.goto(`${CLIENT}/?test=1&hub=127.0.0.1:9`);
   await page.waitForSelector('#profile-badge');
@@ -14089,22 +14088,36 @@ async function profilesFlow(browser) {
     const p = window.__cs.hud.rosterOf(slot);
     Object.assign(p, { name: 'Toshi_92', bot: false, acct: 1, em: 'crown.2', tt: 'veteran' });
   }, other);
-  if (process.env.PROFILES_DEBUG) console.log('DBG at', await page.evaluate((slot) => { const r = document.querySelector(`#scoreboard .sb-row[data-slot="${slot}"]`); if (!r) return 'no row'; const b = r.getBoundingClientRect(); const e = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height), e?.id, e?.className, e?.closest('.sb-row') === r]; }, foes[2]));
-  await page.click(`#scoreboard .sb-row[data-slot="${foes[2]}"]`);
-  const botCard = await page.waitForFunction(() => {
+  // (Clicks where the row is: the board redraws a few times a second on a slow software renderer.)
+  const clickRow = async (slot) => {
+    const at = await page.evaluate((x) => {
+      const r = document.querySelector(`#scoreboard .sb-row[data-slot="${x}"]`)?.getBoundingClientRect();
+      return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+    }, slot);
+    if (at) await page.mouse.click(at.x, at.y);
+  };
+  await clickRow(foes[2]);
+  // (Asked by evaluate in a loop: the page's frames come slowly here, and the card needs none to show.)
+  const poll = async (fn, arg, ms) => {
+    for (const until = Date.now() + T(ms); Date.now() < until; await sleep(150)) {
+      const v = await page.evaluate(fn, arg);
+      if (v) return v;
+    }
+    return null;
+  };
+  const botCard = await poll(() => {
     const c = document.getElementById('player-card');
     return c && !c.hidden ? c.textContent : null;
-  }, null, { timeout: T(5000) }).then((h) => h.jsonValue(), () => null);
+  }, null, 10000);
   check(!!botCard && /BOT/.test(botCard) && /A bot: no career/.test(botCard), `a bot's card (${botCard})`);
   // (A fresh board line for the signed-in player: the board redraws a few times a second.)
   await page.waitForFunction((slot) => /Toshi_92/.test(document.querySelector(`#scoreboard .sb-row[data-slot="${slot}"]`)?.textContent ?? ''), other, { timeout: T(5000) }).catch(() => undefined);
-  await page.click(`#scoreboard .sb-row[data-slot="${other}"]`, { force: true });
-  if (process.env.PROFILES_DEBUG) console.log('DBG', await page.evaluate(() => fetch('http://127.0.0.1:9/api/v1/profile/card?u=Toshi_92').then((r) => r.status, (e) => String(e))));
-  const theirs = await page.waitForFunction(() => {
+  await clickRow(other);
+  const theirs = await poll(() => {
     const c = document.getElementById('player-card');
     return c && !c.hidden && /Career: 120 matches/.test(c.textContent) ? { text: c.textContent, emblem: !!c.querySelector('svg.emb-crown'), inView: c.getBoundingClientRect().right <= innerWidth && c.getBoundingClientRect().bottom <= innerHeight } : null;
-  }, null, { timeout: T(8000) }).then((h) => h.jsonValue(), () => page.evaluate(() => ({ failed: document.getElementById('player-card')?.textContent ?? 'none', hidden: document.getElementById('player-card')?.hidden })));
-  check(!!theirs && !theirs.failed && /Toshi_92/.test(theirs.text) && /✓/.test(theirs.text) && /Veteran/.test(theirs.text) && theirs.emblem && theirs.inView, `a signed-in player's card: their emblem, title and career from the hub (${JSON.stringify(theirs)})`);
+  }, null, 12000);
+  check(!!theirs && /Toshi_92/.test(theirs.text) && /✓/.test(theirs.text) && /Veteran/.test(theirs.text) && theirs.emblem && theirs.inView, `a signed-in player's card: their emblem, title and career from the hub (${JSON.stringify(theirs)})`);
   await pic(page, 'player-card-other');
   // Clicking outside closes it.
   await page.mouse.click(5, 5);
