@@ -17,8 +17,8 @@
     {"group": "hall", "op": "place", "piece": "setpiece.library_faceted_end", "x": -6, "y": -6, "rot": 0, "options": {"door": "east"}, "roles": {"stone": "core.pbr_collegiate_rubble"}, "what": "the hall's bay with the arch in its east wall and the porch recessed behind it, and the faceted end under the spire, north"},
     {"group": "hall", "op": "place", "piece": "setpiece.gable_wing", "x": -6, "y": -4, "rot": 0, "what": "the small stucco wing against the faceted end's north face, west of its windows; its gable, door and steps north"},
     {"group": "walk", "op": "pathstyle", "id": "osm_992045162_17", "style": "brick", "what": "the walk that passes the arch (north-south, from the lawn to Stangeland / Cord) in brick, as the walk from the court"},
-    {"group": "lawn", "op": "prop", "prop": "kit.monument.bird", "to": [-25.3, null, -41], "yaw": 20, "what": "the bronze bird on its pedestal on the lawn east of the walk"},
-    {"group": "lawn", "op": "prop", "prop": "kit.monument.marker", "to": [-32.5, null, -31], "yaw": 30, "what": "a dark marker stone on the lawn west of the walk"}
+    {"group": "lawn", "op": "prop", "prop": "kit.monument.bird", "near": [-18, 0, -34], "to": [-25.3, null, -41], "yaw": 20, "what": "the bronze bird on its pedestal on the lawn east of the walk"},
+    {"group": "lawn", "op": "prop", "prop": "kit.monument.marker", "near": [-18, 0, -30], "to": [-32.5, null, -31], "yaw": 30, "what": "a dark marker stone on the lawn west of the walk"}
   ],
   "coverage": [
     {"op": "place", "piece": "setpiece.library_bay_2", "x": -12, "y": -60, "rot": 0, "options": {"door": "south"}, "what": "the coverage map (maps/test_coverage.json): one of each new piece, in a row south of the campus pieces"},

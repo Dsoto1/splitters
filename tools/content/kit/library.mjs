@@ -134,6 +134,12 @@ export function facetRoofMesh(seed, size, g, look, level) {
       }
     }
   }
+  // Where a ridge roof runs in (the plane z = 0): the hollow behind each side's flared eave is closed, both ways, so
+  // no sky shows through it from the hall or from under the spire.
+  if (under) for (const s of [-1, 1]) for (const dir of [-1, 1]) {
+    const z = dir * 0.004;
+    poly(m, [[s * (kick - 0.45), 0.002, z], [s * A, 0.002, z], [s * kick, fup, z], [s * (kick - 0.45), fup + 0.3, z]], [0, 0, dir], scale3(rafter, 1.1));
+  }
   // The cap.
   lathe(m, [[0.26, top - 0.12], [0.2, top + cap * 0.35], [0.07, top + cap * 0.6], [0.02, h]], level === 0 ? 8 : 4, () => trim);
   return m;
