@@ -208,7 +208,8 @@ export function railingMesh(seed, size, g, look, level) {
   const postTop = HAND ? h - HAND : h - (level === 0 ? pw * 1.1 : 0);
   for (const s of [-1, 1]) {
     const u = s * (L / 2 - pw / 2);
-    f.bx(m, u - pw / 2, kerb, -pw / 2, u + pw / 2, postTop, pw / 2, metal, level === 0 ? ['ny', 'py'] : ['ny']);
+    // (Under a handrail a post's top is never seen: left out at every level.)
+    f.bx(m, u - pw / 2, kerb, -pw / 2, u + pw / 2, postTop, pw / 2, metal, level === 0 || HAND ? ['ny', 'py'] : ['ny']);
     if (level === 0 && !HAND) point(m, f, u, postTop, 0, pw / 2, pw * 1.1, metal);
   }
   const railT = g.bar * 1.3;
@@ -222,7 +223,8 @@ export function railingMesh(seed, size, g, look, level) {
   for (const s of [-1, 1]) f.solid(s * (L / 2 - pw), kerb, -pw / 2, (s * L) / 2, h, pw / 2);
   // Where the fence is broken the top rail stops short of one end.
   const gapFrom = broken > 0 ? L / 2 - pw - (L - pw * 2) * Math.min(0.5, broken) : L / 2 - pw;
-  if (level < 2) f.bx(m, -L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2, metal);
+  // (A handrail's low rail is drawn near only: from further off each level is lighter than the one before.)
+  if (level < (HAND ? 1 : 2)) f.bx(m, -L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2, metal);
   f.bx(m, topFrom, yHigh - topT, -topD, topTo ?? gapFrom, yHigh + topT, topD, metal);
   f.solid(-L / 2 + pw, yLow - railT / 2, -railT / 2, L / 2 - pw, yLow + railT / 2, railT / 2);
   f.solid(topFrom, yHigh - topT, -topD, topTo ?? gapFrom, yHigh + topT, topD);
