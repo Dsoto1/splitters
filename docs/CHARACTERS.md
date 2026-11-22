@@ -376,6 +376,17 @@ sprint, strafe or locomotion transition clips (its 43 clips are carry, zombie,
 slide, ninja jump, sword, farming and idle variants), so locomotion stays on
 Library 1's walk, jog and sprint.
 
+### The pose check (owner, 2026-11-22)
+
+A third-person body standing in its bind pose (a T-pose) was seen once (St. John's, Team Deathmatch, spectating with the free camera: a green-hooded ranger, no gun, on a white ring) and couldn't be reproduced (`wip/fix-tpose-1122`). So the game watches for it quietly (`game/poseCheck.ts`): four times a second GameView hands it every third-person character body (the living and corpses; not your own hidden one), and a body that is on screen and
+
+- drawn in its bind pose for 0.6 s (its drawn skin matrices: the upper and lower arms turned exactly as the chest is, which no clip's pose does; `CharacterAnimator.drawnBindPose`), or
+- alive and never given an evaluated pose (`CharacterAnimator.poses`) for 1 s since it was shown or given to a player,
+
+is written down once per body per match (8 a match at most): who (name, slot, look, body, the character's node, NPC or not), its state (alive, spawning, dead), whether the spectator camera follows it and how you were watching (first or third person, following, kill cam, free camera), the match, whether the body came from the body pool and how many lives it has stood in, the detail level drawn, whether the legs are in the bind pose too, whether a gun is in its hands, the time since its spawn, death and body, its distance and place, and the animator's state (clip, playing clips and weights, dead, dormant, frozen, the LOD gate, smoothing, poses, armed).
+
+Where to read it: the browser console (`[pose-check]` warnings), `window.__poseReports` (this page), `localStorage['tt.poseReports']` (the last 20, across games), and the end of the performance report (Pause → Settings → Copy performance report: "pose check: …"). Nothing shows on screen. It is off in `?test=1` runs unless a test sets `window.__poseCheck = true`; the `characters3` flow (a 26-bot crowd: far, culled, dying and pooled bodies) turns it on and expects no report.
+
 ### Authored clip sets (clip retargeting)
 
 A rigged Meshy "All Animations" download carries its own clips on Mixamo-named
