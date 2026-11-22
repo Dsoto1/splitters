@@ -321,6 +321,8 @@ package has expired).
 
 Commands on the box (Lightsail console → **Connect**):
 
+**The owner's way (2026-11-22): for a site or hub update with no AWS change, tell the owner to use these on the box** (Lightsail console → Connect → `sudo tiletrigger-update`), not `infra/deploy-multiplayer.sh` from CloudShell; the CloudShell deploy is only for AWS changes (the stack, CloudFront, the cost guard, a new box).
+
 ```
 sudo tiletrigger-update                  # latest green main build
 sudo tiletrigger-update --release v0.3.0 # a release
