@@ -1,3 +1,4 @@
+import { WHEEL_CATEGORIES, WHEEL_CATEGORY_LABELS, type WheelCategory, wheelCategoryOf } from './wheelCategories.ts';
 import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, lookBranch, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
@@ -97,6 +98,8 @@ export class Hud {
   private readonly altEl = $('ammo-alt');
   private readonly throwEl = $('throwable');
   private readonly weaponBar = $('weapon-bar');
+  /** The weapon category keys as shown on the weapon bar (Options → Controls). */
+  categoryKeys: readonly string[] = ['1', '2', '3', '4', '5', '6', '7', '8'];
   private readonly powerups = $('powerups');
   private readonly pickupMsg = $('pickup-msg');
   private readonly scope = $('scope');
@@ -634,7 +637,6 @@ export class Hud {
     this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (hold G to aim, let go to throw)' : 'Grenades (hold G to aim, let go to throw)') : '';
   }
 
-  /** `owned` and `held` are weapon codes; the bar shows slots 1–9, with a pip per extra weapon carried in a slot. */
   /** Riding as a passenger or gunner: the seat's gun (heat) instead of your own. */
   /** Swap the crosshair for a gunner's reticle while on a mounted gun; `heat` (0-100) fills its ring. */
   setGunnerReticle(heat: number | null): void {
@@ -729,19 +731,19 @@ export class Hud {
     const key = `${alive}|${held}|${[...owned.keys()].join(',')}`;
     if (key === this.lastWeaponBar) return;
     this.lastWeaponBar = key;
-    const bySlot = new Map<number, string[]>();
+    // The weapon categories (the wheel's slices, keys 1-8 by default), with a pip per extra weapon held in one.
+    const byCat = new Map<WheelCategory, string[]>();
     for (const code of owned.keys()) {
       const w = weaponByCode(code);
-      if (w) bySlot.set(w.slot, [...(bySlot.get(w.slot) ?? []), w.displayName]);
+      if (w) byCat.set(wheelCategoryOf(w), [...(byCat.get(wheelCategoryOf(w)) ?? []), w.displayName]);
     }
+    const heldCat = def ? wheelCategoryOf(def) : null;
     this.weaponBar.innerHTML = alive
-      ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
-          .map((slot) => {
-            const names = bySlot.get(slot) ?? [];
-            const pips = names.length > 1 ? `<i>${'•'.repeat(Math.min(4, names.length))}</i>` : '';
-            return `<span class="${names.length ? 'owned' : ''} ${def?.slot === slot ? 'held' : ''}" title="${escapeHtml(names.join(', '))}">${slot}${pips}</span>`;
-          })
-          .join('')
+      ? WHEEL_CATEGORIES.map((cat, i) => {
+          const names = byCat.get(cat) ?? [];
+          const pips = names.length > 1 ? `<i>${'•'.repeat(Math.min(4, names.length))}</i>` : '';
+          return `<span class="${names.length ? 'owned' : ''} ${heldCat === cat ? 'held' : ''}" title="${escapeHtml(`${WHEEL_CATEGORY_LABELS[cat]}: ${names.join(', ') || 'none'}`)}">${escapeHtml(this.categoryKeys[i] ?? String(i + 1))}${pips}</span>`;
+        }).join('')
       : '';
   }
 
