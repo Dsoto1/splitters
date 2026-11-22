@@ -52,7 +52,7 @@ import {
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
-import { OPTIC_KINDS, WEAPON_OPTICS } from '../content/optics.generated.ts';
+import { chosenOptic, cleanOpticChoices, magnifiedOptic, sameOpticChoices, type OpticChoices } from './opticChoice.ts';
 import { lastHit, type LookHitbox } from './hitbox.ts';
 import { lookHitbox, npcHitbox } from './lookHitbox.ts';
 import { classStats, matchStats, type CharacterStats } from './characterStats.ts';
@@ -344,6 +344,8 @@ export interface Spectator {
   party?: string;
   /** Their career rank points (Combatant.rankPoints). */
   rankPoints?: number;
+  /** Their optic choices (Combatant.optics). */
+  optics?: OpticChoices;
   kills: number;
   deaths: number;
   selfKills: number;
@@ -430,6 +432,11 @@ export interface Combatant {
   party?: string;
   /** A person's career rank points as their browser sent them on joining (content/ranks.ts): only passed on in the roster (`rx`), cosmetic. */
   rankPoints?: number;
+  /**
+   * A person's optic choice per gun (sim/opticChoice.ts; Match.setOptics, already made valid): passed on in the
+   * roster (`op`) so every client draws it, and read for `zm` (a magnified optic's picture is up). People only.
+   */
+  optics?: OpticChoices;
   name: string;
   collider: RAPIER.Collider;
   move: MoveState;
@@ -2032,7 +2039,7 @@ export class Match {
   spectate(slot: number): boolean {
     const c = this.slots[slot];
     if (!c || c.kind !== 'human') return false;
-    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}) };
+    const s: Spectator = { name: c.name, look: c.look, kills: c.kills, deaths: c.deaths, selfKills: c.selfKills, objective: c.objective, since: this.tick, ...(c.account ? { account: true } : {}), ...(c.party ? { party: c.party } : {}), ...(c.rankPoints !== undefined ? { rankPoints: c.rankPoints } : {}), ...(c.optics ? { optics: c.optics } : {}) };
     // Their client stays loaded: a spectator counts for the start gate as a player does.
     const loaded = this.readySlots.has(slot);
     this.remove(slot);
@@ -2058,6 +2065,7 @@ export class Match {
     if (s.account) c.account = true;
     if (s.party) c.party = s.party;
     if (s.rankPoints !== undefined) c.rankPoints = s.rankPoints;
+    if (s.optics) c.optics = s.optics;
     // Their client has the match loaded already (the start gate needn't wait for them).
     this.readySlots.add(slot);
     this.resetIdle(slot);
@@ -7565,8 +7573,22 @@ export class Match {
       const seat = this.seatOf(c);
       if (!seat || seat.role === 'driver' || seat.weapon || this.mounts[c.mount.index]?.def.airplane) return false;
     }
-    const optics = WEAPON_OPTICS[heldWeapon(c).def.id];
-    return !!optics && OPTIC_KINDS[optics.default].mag !== undefined;
+    return magnifiedOptic(chosenOptic(heldWeapon(c).def.id, c.kind === 'human' ? c.optics : undefined));
+  }
+
+  /**
+   * A person's optic choices (the `hello`'s `op`, or the `optics` message mid-match; sim/opticChoice.ts), made valid
+   * here: guns that may carry that optic, not their default. True when they changed, so the host sends the roster
+   * again (`op`). A spectator's are kept for when they play. Not for bots (they carry the defaults).
+   */
+  setOptics(slot: number, raw: unknown): boolean {
+    const op = cleanOpticChoices(raw);
+    const c = this.slots[slot];
+    const holder = c && c.kind === 'human' ? c : this.spectators.get(slot);
+    if (!holder || sameOpticChoices(holder.optics, op)) return false;
+    if (op) holder.optics = op;
+    else delete holder.optics;
+    return true;
   }
 
   playerSnapshots(): PlayerSnapshot[] {
@@ -7983,10 +8005,10 @@ export class Match {
   }
 
   roster(): RosterEntry[] {
-    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}) }));
+    const players = this.combatants().map((c): RosterEntry => ({ slot: c.slot, name: c.name, bot: c.kind === 'bot', look: c.look, team: this.teams ? c.faction : null, ...(c.account && c.kind === 'human' ? { acct: 1 as const } : {}), ...(c.party && c.kind === 'human' ? { py: c.party } : {}), ...(c.rankPoints !== undefined && c.kind === 'human' ? { rx: c.rankPoints } : {}), ...(c.optics && c.kind === 'human' ? { op: { ...c.optics } } : {}) }));
     // Spectators by choice, last: on no team, marked `sp`.
     if (!this.spectators.size) return players;
-    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}) }))];
+    return [...players, ...[...this.spectators].map(([slot, s]): RosterEntry => ({ slot, name: s.name, bot: false, look: s.look, team: null, sp: 1, ...(s.account ? { acct: 1 as const } : {}), ...(s.party ? { py: s.party } : {}), ...(s.rankPoints !== undefined ? { rx: s.rankPoints } : {}), ...(s.optics ? { op: { ...s.optics } } : {}) }))];
   }
 
   destroy(): void {

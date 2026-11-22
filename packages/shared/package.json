@@ -10,7 +10,8 @@
     "./propContacts": "./src/content/propContacts.generated.ts",
     "./gripFit": "./src/content/gripFit.generated.ts",
     "./sightFit": "./src/content/sightFit.generated.ts",
-    "./optics": "./src/content/optics.generated.ts"
+    "./optics": "./src/content/optics.generated.ts",
+    "./opticChoice": "./src/sim/opticChoice.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

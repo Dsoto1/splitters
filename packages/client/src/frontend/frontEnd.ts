@@ -82,6 +82,8 @@ import {
   getLook,
   mapTeams,
   getWeapon,
+  CORE_WEAPONS,
+  WEAPON_CATEGORIES,
   partInfo,
   type GameMode,
   type LobbyListing,
@@ -104,6 +106,7 @@ import {
   favouriteWeapon,
 } from '@tiletrigger/shared';
 import { myCareer, myFavClass, setFavClass, syncCareer } from '../careerStats.ts';
+import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
 import { DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, keyLabel, loadLeanKeys, loadMousePrefs, loadWheelKey, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
@@ -2798,6 +2801,35 @@ export class FrontEnd {
   // ---------------------------------------------------------------- profile
 
   /**
+   * Profile → Favourite loadout → Optics (docs/GUNPLAY_SPEC.md §15, "Optic choice"): for each gun that may carry more
+   * than one optic, the one you want on it: its own (the default, first), a red dot, a holographic sight or a 2x optic.
+   * Kept in this browser (opticPrefs.ts) and sent as you join a match; the pause menu's Settings → Optic changes the gun
+   * in your hands. The optics table loads with the list (not with the menu).
+   */
+  private opticsPicker(): HTMLElement {
+    const note = el('small', { class: 'hint', textContent: 'The optic each gun carries when you pick it up. Others see it on your gun.' });
+    const list = el('div', { class: 'prof-optics', id: 'profile-optics' });
+    const box = el('div', { class: 'prof-optics-box' }, el('h5', { class: 'prof-sub', textContent: 'Optics' }), list, note);
+    void import('../game/optics.ts').then(({ opticChoices, opticFor }) => {
+      const guns = Object.values(CORE_WEAPONS).filter((d) => opticChoices(d).length).sort((a, b) => WEAPON_CATEGORIES.indexOf(a.category ?? 'special') - WEAPON_CATEGORIES.indexOf(b.category ?? 'special') || a.displayName.localeCompare(b.displayName));
+      list.replaceChildren(
+        ...guns.map((def) => {
+          const choices = opticChoices(def);
+          const pick = el('select', { id: `optic-${def.id.replace(/\W/g, '-')}`, title: `The optic on the ${def.displayName}` }, ...choices.map((c, i) => el('option', { value: c.id, textContent: i === 0 ? `${c.name} (default)` : c.name, selected: c.id === opticFor(def)?.id })));
+          pick.dataset.weapon = def.id;
+          pick.addEventListener('change', () => {
+            setMyOptic(def.id, pick.value, choices[0]!.id);
+            note.textContent = `Saved: the ${def.displayName} carries ${pick.selectedOptions[0]?.textContent?.replace(' (default)', '') ?? 'its default'}.`;
+          });
+          const icon = weaponIcon(def.id, 'wicon');
+          return el('label', { class: 'prof-optic' }, el('span', { class: 'prof-optic-gun' }, ...(icon ? [icon] : []), def.displayName), pick);
+        }),
+      );
+    }, () => list.replaceChildren(el('small', { class: 'hint', textContent: 'The optics list did not load: try again later.' })));
+    return box;
+  }
+
+  /**
    * Your profile, one panel: your character (Change character opens Character Select and comes back
    * here), you as a player (signed in: your username, your name in every match as a verified account,
    * kept on the game server, and Sign out; signed out: your guest name and Sign in), your region and
@@ -2839,7 +2871,7 @@ export class FrontEnd {
         (e: Error) => (favNote.textContent = `Saved in this browser; not on your account: ${e.message}`),
       );
     });
-    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote);
+    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, this.opticsPicker());
     const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {
@@ -3291,8 +3323,8 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
-        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; changing weapons, getting in a vehicle or dying lets go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
-        row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
+        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
+        row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
           ? [
               row('Controller vibration', toggle(vibration), 'A controller rumbles when you fire, take a hit or a blast goes off near you. Also in the pause menu.'),

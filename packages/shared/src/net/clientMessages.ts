@@ -36,8 +36,12 @@ export function parseClientMessage(text: string): ClientMessage | null {
   switch (o.t) {
     case 'hello':
       return typeof o.protocol === 'number' && typeof o.name === 'string'
-        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}), ...(isPartyTag(o.party) ? { party: o.party } : {}), ...(readRankPoints(o.rx) !== null ? { rx: o.rx as number } : {}) }
+        ? { t: 'hello', protocol: o.protocol, name: o.name, ...(typeof o.look === 'string' && o.look.length <= 64 ? { look: o.look } : {}), ...(typeof o.admin === 'string' && o.admin && o.admin.length <= 200 ? { admin: o.admin } : {}), ...(typeof o.pk === 'string' && /^p_[A-Za-z0-9_-]{8,32}$/.test(o.pk) ? { pk: o.pk } : {}), ...(typeof o.ticket === 'string' && o.ticket.length <= 1000 ? { ticket: o.ticket } : {}), ...(isPartyTag(o.party) ? { party: o.party } : {}), ...(readRankPoints(o.rx) !== null ? { rx: o.rx as number } : {}), ...(opticShape(o.op) ? { op: opticShape(o.op)! } : {}) }
         : null;
+    case 'optics': {
+      const op = o.op === undefined ? {} : opticShape(o.op, true);
+      return op ? { t: 'optics', op } : null;
+    }
     case 'vote':
       return typeof o.i === 'number' && Number.isInteger(o.i) && o.i >= 0 && o.i < 8 ? { t: 'vote', i: o.i } : null;
     case 'admin':
@@ -81,6 +85,25 @@ export function parseClientMessage(text: string): ClientMessage | null {
     default:
       return null;
   }
+}
+
+/** The most entries an optic choice list may name (sim/opticChoice.ts OPTIC_CHOICES_MAX; more is refused). */
+const OPTIC_ENTRIES = 64;
+/**
+ * An optic choice list's shape (weapon ID → optic kind): a plain object of short IDs, at most OPTIC_ENTRIES. Which
+ * guns may carry which optic the match checks (sim/opticChoice.ts cleanOpticChoices). Null: not a list (or, unless
+ * `empty`, an empty one).
+ */
+function opticShape(raw: unknown, empty = false): Record<string, string> | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
+  const entries = Object.entries(raw as Record<string, unknown>);
+  if (entries.length > OPTIC_ENTRIES || (!entries.length && !empty)) return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of entries) {
+    if (!/^[a-z][a-z0-9_.-]{0,47}$/.test(k) || typeof v !== 'string' || !/^[a-z0-9]{1,12}$/.test(v)) return null;
+    out[k] = v;
+  }
+  return out;
 }
 
 const count = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 1000;

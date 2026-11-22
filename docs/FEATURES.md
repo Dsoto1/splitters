@@ -67,6 +67,26 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 - Sentry Gun (also the Mechanic's sentry)
 - Arc Turret (the arc sentry's locked arc: docs/VEHICLES.md, "Arc Turret")
 
+### Weapon Manager (the owner's, `?mode=weapons` → Manage)
+An owner and team tool on the weapon tuning page (`?mode=weapons&view=manage`; client `tools/weaponManager.ts`, loaded only when opened, never in the menu's bundle). It changes nothing in the game by itself: it makes a change file, and a session applies it in the repo.
+
+**What it shows**, for every weapon: its picture, name, category and family, description (`notes.description` in its content file; the design note shows in grey where there is none yet), stats, sounds and weapon sets. Filters: All, Edited, Hidden; a search box. One column on a phone.
+
+**What the owner can do** (Edit on any weapon):
+1. **Rename** it (its display name; a name another weapon has is refused).
+2. **Hide** it, and **Unhide** with one click. A hidden weapon leaves random pickups and the host's mix-up, weapon sets' lists (Mixed bag's "all" too), class loadouts (a class never loses all its weapons), Roulette's signatures (the plain signature or the rifle instead) and MapMaker's palette. **A map that places it still spawns it there**, as placed (in a weapon set with its own list, a placed pickup swaps like any weapon outside the set), and MapMaker's inspector marks it "Hidden". The base kit can't be hidden: a mode's starting weapons, a set's spawn and sniper guns, the rifle (Roulette's fallback); the page says why.
+3. **Pick its sounds**: fire, alt-fire (weapons with a second-trigger shot) and reload, from the game's own sound library (`content/sounds.json`, in content provenance), with ▶ to hear each. No uploads.
+4. **Edit** its category, description and weapon sets (the sets with a list: Military, Sci-fi, Medieval, Chaos; a set's spawn and sniper guns stay).
+5. **Edit its stats** as the data has them: damage, pellets, fire interval, magazine, reserve, reload times, draw, range, falloff, headshot, spread, bullet or projectile speed, splash, move speed, sprint to fire, and recoil (a multiplier on every round's kick). Each value stays within its range (`STAT_FIELDS` in `tools/content/weapon-edits-format.mjs`); the game's value shows beside each edited one; the live comparison (stat bars, recoil path, spread cones, damage and time to kill) draws the game's weapon and the edit side by side.
+6. **Add a note** or suggestion ("make this louder", "needs a scope") for the team.
+7. **Reset** a weapon, or everything, to how it is in the game.
+
+**How a change reaches the game, in plain steps:**
+1. The edits stay in the owner's browser (this device only) until sent.
+2. **Send changes** shows what changed and the change file (JSON, versioned): **Download** it (put it in Google Drive) or **Copy** it (paste it to a session in chat).
+3. The session saves it and runs `node tools/content/apply-weapon-edits.mjs <file>` (`--check` to only check). It refuses the whole file if anything is wrong (unknown weapon or sound, a stat out of range, a newer version, hiding the base kit), warns where the repo changed since the page saw it, writes the edits into `content/weapons/<name>.json` and `content/weapon-sets.json` (untouched lines stay as they were), adds each note to docs/QUEUE.md under "Weapon notes from the owner", rebuilds the weapon, pickup, set and Roulette tables and prints a summary.
+4. The session runs `pnpm content:rebuild` (and rewrites the resolved-weapons fixture the tool names), checks and lands it like any change (a check run, then a train). Until it lands, the game is unchanged.
+
 ### Throwables
 
 | Throwable | Players get it from |
@@ -215,7 +235,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 | `?offline=<map>` | the only way into retired maps |
 | `?mode=editor`, `?mode=designer` | open MapMaker or the Character Designer directly |
 | `?mode=assets`, `?mode=characters` | asset and character viewers |
-| `?mode=weapons` | weapon tuning: up to three weapons side by side (stat bars, recoil path, spread cones, damage and time to kill over distance, drop and holdover); `&w=core.smg,core.revolver&ballistics=advanced&hp=100` |
+| `?mode=weapons` | weapon tuning: up to three weapons side by side (stat bars, recoil path, spread cones, damage and time to kill over distance, drop and holdover); `&w=core.smg,core.revolver&ballistics=advanced&hp=100`. Its Manage tab (`&view=manage`) is the owner's Weapon Manager (above) |
 | `?test=1`, `?god=1` | localhost only |
 | `?stats` | stats overlay |
 | `?sim=main` | runs the match on the page's main thread |
