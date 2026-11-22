@@ -14171,12 +14171,24 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
     const from = view === 'side' ? { x: -7, y: 0, z: -7 } : { x: 0.6, y: 0, z: -0.5 };
     await place(bot, from, yaw);
     await watchTip(page, bot);
+    // The match waits at the slide's 8th tick until this page has drawn the body sliding. (The slide lasts 0.75 s of
+    // match time, which runs on the worker's clock; a loaded runner drawing about a frame a second, with a body 8 m
+    // off posed only every 2nd or 3rd frame (animLod.ts), could pose it before the slide and again after: side-on it
+    // was never drawn tipped, though the match slid 42 ticks.) Snapshots go on carrying the slide while it waits.
+    await sim(page, (m, me, a) => {
+      const c = m.combatants().find((x) => x.slot === a);
+      const step = (m.__slideStep ??= m.step);
+      m.step = function () {
+        return (c.move.slide ?? 0) >= 8 ? [] : step.call(this);
+      };
+    }, bot);
     await sim(page, (m, me, a) => {
       const c = m.combatants().find((x) => x.slot === a.s);
       c.move = { ...c.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 };
       Object.assign(c.queue, { fwd: 1, btn: a.sprint, slid: 0, crouchAt: m.tick + 24 });
     }, { s: bot, sprint: SPRINT });
     await botPose({});
+    await sim(page, (m) => void (m.step = m.__slideStep));
     await simWait(page, (m, me, a) => (m.combatants().find((c) => c.slot === a).queue.slid ?? 0) >= 30, bot, T(20000));
     const botSlid = await sim(page, (m, me, a) => m.combatants().find((c) => c.slot === a).queue.slid ?? 0, bot);
     const tip = await page.evaluate(() => window.__tip);
@@ -14286,6 +14298,9 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
       const d = { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) };
       if (l.physics.moveRay({ x: p.x, y: p.y + 0.5, z: p.z }, d, 9) !== null) return false;
       for (let r = 1.5; r <= 9; r += 1.5) if (l.physics.moveRay({ x: p.x + d.x * r, y: p.y + 1, z: p.z + d.z * r }, { x: 0, y: -1, z: 0 }, 1.6) === null) return false;
+      // (And no jump pad on the way, with a body's width to spare: a run over the one in the yard launched her 10 m up
+      // before the crouch.)
+      for (let r = 0; r <= 9; r += 0.5) for (const pad of l.pads) if (Math.hypot(p.x + d.x * r - pad.pos.x, p.z + d.z * r - pad.pos.z) < 1.8 && Math.abs(p.y - pad.pos.y) < 1) return false;
       return true;
     };
     for (let i = 0; i <= 16; i++) {
