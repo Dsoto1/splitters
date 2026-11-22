@@ -712,7 +712,11 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-grid #ed-grid-why.err { color: var(--error); }
 .ed-grid #ed-resize-why { min-height: 2.8em; }
 .ed-grid #ed-resize-why.err { color: var(--error); }
-#ed-resize-dialog .ed-dialog-field input[type='number'] { width: 6em; }
+#ed-resize-dialog { max-height: 94vh; overflow-y: auto; }
+#ed-resize-dialog .ed-dialog-field input[type='number'] { width: 6em; flex: none; }
+#ed-resize-dialog .ed-resize-edges { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; }
+#ed-resize-dialog .ed-dialog-field > span { width: 6.5em; flex: none; }
+#ed-tr-edit .ed-tr-swap .ed-grow { flex: 1; }
 .ed-mirror fieldset { border: 1px solid rgba(142, 162, 192, 0.28); border-radius: 6px; margin: 0 0 12px; padding: 6px 10px 8px; display: flex; flex-direction: column; gap: 6px; }
 .ed-mirror legend { color: var(--muted); padding: 0 4px; }
 .ed-mirror .ed-mirror-at { flex-wrap: wrap; }

@@ -24,7 +24,7 @@ export function openResizeTerrainDialog(host: ResizeTerrainHost): void {
   const dialog = document.createElement('dialog');
   dialog.id = 'ed-resize-dialog';
   dialog.className = 'ed-grid';
-  const edgeRows = TERRAIN_EDGES.map((k) => `<label class="ed-dialog-field"><span>${LABELS[k]}</span><input id="ed-resize-${k}" type="number" step="${t.spacing}" value="0" inputmode="decimal"> m</label>`).join('');
+  const edgeRows = `<div class="ed-resize-edges">${TERRAIN_EDGES.map((k) => `<label class="ed-dialog-field"><span>${LABELS[k]}</span><input id="ed-resize-${k}" type="number" step="${t.spacing}" value="0" inputmode="decimal"> m</label>`).join('')}</div>`;
   dialog.innerHTML = `
     <h2>Resize terrain</h2>
     <p class="ed-note">Grow (more than 0) or shrink (less than 0) each edge, in ${t.spacing} m cells. Every sculpted height, painted ground and plant stays where it is; new ground continues the edge. One undo step.</p>
