@@ -1823,6 +1823,16 @@ export class CharacterAnimator {
    * keep their animated orientation and the fingers close. While an action has
    * the hands elsewhere, the weapon rides in the right hand.
    */
+  /**
+   * The aim's frame for the hands and the gun: the body's, turned by the aim's yaw and pitch. A slide's backward tip
+   * (the root tipped back over the feet, SLIDE_TIP) is taken out first, as the spine takes it back: the gun stays on
+   * the aim instead of pointing up by the tip.
+   */
+  private aimFrame(rootRot: Quaternion): Quaternion {
+    const base = this.slideTip ? rootRot.multiply(Quaternion.RotationAxis(Vector3.Right(), -this.slideTip)) : rootRot;
+    return base.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
+  }
+
   private placeWeapon(root: TransformNode, rootRot: Quaternion, weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace): void {
     // Far off (animation LOD's coarse detail, past ANIM_LOD_NEAR): no arm IK, hand turns or stock fitting. The arms take
     // back the pose of the last full grip relative to the shoulders (which the spine has already bent for the aim), the
@@ -1856,7 +1866,7 @@ export class CharacterAnimator {
       return;
     }
     const scale = root.absoluteScaling.x;
-    const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
+    const aim = this.aimFrame(rootRot);
     const point = (origin: Vector3, rot: Quaternion, p: ModelPoint) => origin.add(new Vector3(p[0], p[1], p[2]).scale(scale).applyRotationQuaternion(rot));
     const pos = (n: TransformNode) => {
       n.computeWorldMatrix(true);
@@ -2052,7 +2062,7 @@ export class CharacterAnimator {
     this.settleHand(arms.r);
     this.settleHand(arms.l);
     const scale = root.absoluteScaling.x;
-    const aim = rootRot.multiply(Quaternion.RotationAxis(Vector3.Up(), this.aimYaw)).multiply(Quaternion.RotationAxis(Vector3.Right(), -this.pitch));
+    const aim = this.aimFrame(rootRot);
     const pos = (n: TransformNode) => {
       n.computeWorldMatrix(true);
       return n.getAbsolutePosition().clone();

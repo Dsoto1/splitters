@@ -1455,7 +1455,8 @@ comes closer pulls it in at once.
 
 **Drawn.** In third person and for everyone else, the body leans (the spine rolls 0.65 rad, more than the hit shapes'
 roll because a skinned spine can't shift at the hips; the drawn head lands where the hit head is) and slides (the
-crouch pose tipped back 0.42 rad over the feet, the spine bringing the gun back onto the aim). The snapshot says
+crouch pose tipped back 0.42 rad over the feet, the spine bringing the shoulders back onto the aim and the hands placing
+the gun on the aim with the tip taken out, `characterAnimator.ts aimFrame`: without that the drawn gun pointed 24° up). The snapshot says
 `sd` (sliding) and `ln` (lean steps); docs/MULTIPLAYER_PROTOCOL.md section 25.
 
 **Bots** (docs/BOTS.md, "Slide and peek"): a bot sprinting the last few metres into cover under fire may slide into it
