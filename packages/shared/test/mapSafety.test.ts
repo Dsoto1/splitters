@@ -27,7 +27,8 @@ const act = (type: LogicRule['do'][number]['type'], extra: Partial<LogicRule['do
 const room = () => makeMap([{ id: 'room_a', tile: 'core.room', x: 0, y: 0, z: 0, rotation: 0 }], [[-2, 0, 0]]);
 
 describe('map data limits', () => {
-  it('refuses a map over 2 MiB before parsing it', () => {
+  it('refuses a map over 3 MiB before parsing it', () => {
+    expect(RESOURCE_BUDGETS.mapBytes).toBe(3 * 1024 * 1024);
     const big = JSON.stringify({ ...room(), metadata: { ...room().metadata, description: 'x'.repeat(RESOURCE_BUDGETS.mapBytes) } });
     const r = loadMap(big);
     expect(r.ok).toBe(false);

@@ -4544,7 +4544,7 @@ async function editorTerrainGridChecks(browser) {
   await page.waitForSelector('#ed-grid-dialog', { timeout: T(5000) });
   await page.selectOption('#ed-grid-spacing', '1');
   const preview = await page.evaluate(() => ({ after: document.getElementById('ed-grid-after').textContent, verts: document.getElementById('ed-grid-verts').textContent, size: document.getElementById('ed-grid-size').textContent, go: !document.getElementById('ed-grid-go').disabled }));
-  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 2 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
+  check(preview.after === '1 m · 161 × 161' && /^25,921 \(×/.test(preview.verts) && /of 3 MB$/.test(preview.size) && preview.go, `Change grid previews the new grid, its vertices and the file against its budget (${JSON.stringify(preview)}; was ${start.cols} × ${start.rows} at ${start.spacing} m)`);
   await page.selectOption('#ed-grid-spacing', '1.5');
   const odd = await page.evaluate(() => document.getElementById('ed-grid-why').textContent);
   check(/whole number of 1\.5 m cells/.test(odd), `a spacing that doesn't divide the terrain says it changes its size (${odd})`);

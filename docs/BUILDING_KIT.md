@@ -1495,7 +1495,7 @@ small and exact.
   Resamples the terrain to vertices 1, 1.25, 1.5, 2, 2.5, 3 or 4 m apart (a
   380 m map can go to 1.25 m: 305 × 257), in one undo step. The dialog shows
   the grid, vertices and triangles now and after, and the map file against its
-  2 MB budget, and says when the size changes (a width that isn't a whole
+  3 MB budget, and says when the size changes (a width that isn't a whole
   number of the new cells grows or shrinks by under half a cell). Heights where
   old and new vertices meet stay exactly; between them **Smooth** (default)
   draws a cubic through the old heights, kept inside each old cell's corners,

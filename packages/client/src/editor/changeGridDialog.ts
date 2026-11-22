@@ -4,7 +4,7 @@ import { GRID_SPACINGS, MAX_TERRAIN_VERTS, RESOURCE_BUDGETS, changeGridCommand, 
  * Terrain → Change grid… (map format v32; the command: shared editor/changeGrid.ts): the terrain resampled to vertices
  * a new distance apart, finer or coarser, heights, paint and plants together, one undo step. Before it runs the dialog
  * shows the new grid's vertex count against the 321-a-side cap, the triangles to collide, navigate and draw, and the
- * map file's size against its 2 MB budget.
+ * map file's size against its 3 MB budget.
  */
 export interface ChangeGridHost {
   doc(): MapDocument;

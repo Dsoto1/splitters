@@ -1309,7 +1309,7 @@ selection in MapMaker), so it plays anywhere.
    piece up; add a case for what is new about it. Look at it in the game (MapMaker
    → TEST): nothing floating, upside down, flickering or blocking an opening.
 
-The map as played (hand-placed pieces and parts together) holds at most 4096 tiles and 4096 entities and 2 MB of JSON,
+The map as played (hand-placed pieces and parts together) holds at most 4096 tiles and 8192 entities (4096 before map format v48) and 3 MB of JSON (2 MB before 2026-11-22),
 the schema's own caps: it is what a joining player's welcome carries and every client loads it again. The file's caps
 count what it stores (a placement is one entry, at most 1024).
 

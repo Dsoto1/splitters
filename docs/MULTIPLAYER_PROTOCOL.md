@@ -281,7 +281,7 @@ and a WSS subscription; closing the dashboard changes nothing on the host.
 ## 10. Map data (Phase 3 boundary)
 
 `GET /api/v1/maps/{mapId}/versions/{versionId}` → the canonical map JSON
-(≤ 2 MiB, `Content-Type: application/json`, `ETag: "<contentHash>"`), cached
+(≤ 3 MiB, `Content-Type: application/json`, `ETag: "<contentHash>"`), cached
 immutably. Clients and hosts check `sha256(canonical JSON) == contentHash`,
 then `loadMap`, then that every asset ID exists in their catalog. Publishing
 (`POST /api/v1/maps`, signed-in, 10/day per account) validates schema,
@@ -313,7 +313,7 @@ doesn't exist yet: gameplay connections allow 100 messages/s (burst 200)
 because a client sends 60 inputs a second; the PeerJS broker allows 20/s
 (burst 100) per socket and 16 KB frames; `/lobby/games` reads are 120/min
 per address (the game browser refreshes every 10 s and households share an
-address). Map data (section 10): 2 MiB before parsing is enforced by
+address). Map data (section 10): 3 MiB (`RESOURCE_BUDGETS.mapBytes`; 2 MiB before 2026-11-22) before parsing is enforced by
 `loadMap` everywhere; content hashes are `sha256:` over the canonical JSON
 with the picture, `updatedAt` and the `release` block left out
 (`shared/src/map/identity.ts`).

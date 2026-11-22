@@ -56,16 +56,49 @@ describe('the entity cap: 8,192 a map', () => {
     expect(doc).toEqual({ ...JSON.parse(JSON.stringify(v47)), formatVersion: MAP_FORMAT_VERSION });
   });
 
-  it('measures the map against the 2 MiB raw JSON cap (docs/MAP_BUDGETS.md)', () => {
+  it('measures the map against the 3 MiB raw JSON cap (docs/MAP_BUDGETS.md)', () => {
+    expect(RESOURCE_BUDGETS.mapBytes).toBe(3 * 1024 * 1024);
     const map = entityCapMap(8192);
     const compact = utf8Length(JSON.stringify(map));
     const file = utf8Length(serializeMap(map));
     // As played (a joining player's welcome, set pieces' parts) the map is compact JSON: ~155 bytes an entity here.
     expect(compact).toBeLessThan(RESOURCE_BUDGETS.mapBytes * 0.7);
-    // MapMaker's file is indented (~290 bytes an entity, a number array over several lines): an 8,192-entity file of
-    // hand-placed things is over the cap, so a map gets there through set pieces (counted as played). If this
-    // changes (serializeMap writes tighter), update MAP_BUDGETS.md's "Entity cap".
-    expect(file).toBeGreaterThan(RESOURCE_BUDGETS.mapBytes);
+    // MapMaker's file is indented (~290 bytes an entity, a number array over several lines): at 2 MiB an 8,192-entity
+    // file of hand-placed things was over the cap; at 3 MiB it fits (owner, 2026-11-22). If this changes, update
+    // MAP_BUDGETS.md's "Entity cap".
+    expect(file).toBeGreaterThan(2 * 1024 * 1024);
+    expect(file).toBeLessThan(RESOURCE_BUDGETS.mapBytes);
+  });
+
+  it('a map file near the 3 MiB cap loads and goes through a welcome (docs/MAP_BUDGETS.md, "Join time at 3 MiB")', () => {
+    // The lean 8,192 mix with every ID at its longest (64 characters): MapMaker's file just under the cap.
+    const base = entityCapMap(8192, 'entity_cap_near_3mib');
+    const map: MapDocument = { ...base, entities: base.entities.map((e, i) => ({ ...e, id: `${e.kind}_${i}_`.padEnd(64, 'x') }) as MapDocument['entities'][number]) };
+    const file = serializeMap(map);
+    expect(utf8Length(file)).toBeGreaterThan(2.5 * 1024 * 1024);
+    expect(utf8Length(file)).toBeLessThan(RESOURCE_BUDGETS.mapBytes);
+    const t0 = performance.now();
+    const loaded = loadMap(file);
+    expect(loaded.ok).toBe(true);
+    if (!loaded.ok) return;
+    const match = new Match(loaded.map, { ...rulesForMode(loaded.map, 'core.deathmatch'), scoreLimit: 0, timeLimitSeconds: 0 }, 7);
+    const t1 = performance.now();
+    const welcome = JSON.stringify({ t: 'welcome', map: match.map, sc: match.scenario.fullState() });
+    // The welcome fits what a joiner will inflate (peerZip's MAX_INFLATED_MESSAGE, 6 MiB).
+    expect(utf8Length(welcome)).toBeLessThan(6 * 1024 * 1024);
+    const zip = new Zipper();
+    const unzip = new Unzipper();
+    let text: string | null = null;
+    let sent = 0;
+    for (const piece of zip.pieces(welcome)) {
+      sent += piece.byteLength;
+      text = unzip.piece(piece) ?? text;
+    }
+    const again = loadMap((JSON.parse(text!) as { map: unknown }).map);
+    const t2 = performance.now();
+    expect(again.ok).toBe(true);
+    if (again.ok) expect(again.map.entities).toHaveLength(8192);
+    if (process.env.MAP_JOIN_TIMES) console.log(`file ${(utf8Length(file) / 1048576).toFixed(2)} MiB, welcome ${(utf8Length(welcome) / 1048576).toFixed(2)} MiB, sent ${(sent / 1024).toFixed(0)} KiB; host load + match ${(t1 - t0).toFixed(0)} ms, welcome + joiner load ${(t2 - t1).toFixed(0)} ms`);
   });
 
   it('a match on it: the welcome carries the map, snapshots name its last entities', () => {
