@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **29 new characters under Experimental** (Meshy Community, CC0): Frost Valkyrie, Sun Priest, Abyssal Hunter, Celestial Knight, Mystic, Tinker Goblina, Sunset Gunslinger, the time crew (Crew Alchemist, Cyborg, Demolitions, Gunslinger, Mechanic, Medic, Phase-Shifter, Recon and Veteran, and the Time Traveler) and the animals (Ace Squirrel, Penguin King, Gym Bro Axolotl, Agent Badger, Coach Tortoise, Cyber Flamingo, Box Duck, Gym Bro Frog, Doc Chameleon, Owl Sniper, Wacky Shark, Zen Capybara). Pick them in Character Select's Experimental section; bots, random picks and Roulette leave them alone until they join the roster.
 - **The Spear pokes and throws.** Fire pokes (you keep the spear); right mouse throws it; walk over a thrown or dropped spear to have it back in your hands.
 - **Katana, Scimitar, Baseball Bat and Space Shield.** A long two-hit blade, a quick three-hit blade you run faster with, a bat that knocks people flying, and a shield that takes most of a hit from the front.
 - **Heart Taser.** A sidearm whose slime flies to the nearest hurt teammate and heals them 25; it never hurts anyone.
