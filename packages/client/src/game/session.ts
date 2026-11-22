@@ -1423,7 +1423,7 @@ export class GameSession {
     if (!def || !choices.length) return void (this.opticPickFor = null);
     if (this.opticPickFor !== def.id) {
       this.opticPickFor = def.id;
-      pick.replaceChildren(...choices.map((c, i) => Object.assign(document.createElement('option'), { value: c.id, textContent: i === 0 ? `${c.name} (its own)` : c.name })));
+      pick.replaceChildren(...choices.map((c, i) => Object.assign(document.createElement('option'), { value: c.id, textContent: i === 0 ? `${c.name} (default)` : c.name })));
       pick.onchange = () => setMyOptic(def.id, pick.value, choices[0]!.id);
     }
     pick.value = opticFor(def)?.id ?? choices[0]!.id;

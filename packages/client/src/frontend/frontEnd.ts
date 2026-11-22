@@ -2815,11 +2815,11 @@ export class FrontEnd {
       list.replaceChildren(
         ...guns.map((def) => {
           const choices = opticChoices(def);
-          const pick = el('select', { id: `optic-${def.id.replace(/\W/g, '-')}`, title: `The optic on the ${def.displayName}` }, ...choices.map((c, i) => el('option', { value: c.id, textContent: i === 0 ? `${c.name} (its own)` : c.name, selected: c.id === opticFor(def)?.id })));
+          const pick = el('select', { id: `optic-${def.id.replace(/\W/g, '-')}`, title: `The optic on the ${def.displayName}` }, ...choices.map((c, i) => el('option', { value: c.id, textContent: i === 0 ? `${c.name} (default)` : c.name, selected: c.id === opticFor(def)?.id })));
           pick.dataset.weapon = def.id;
           pick.addEventListener('change', () => {
             setMyOptic(def.id, pick.value, choices[0]!.id);
-            note.textContent = `Saved: the ${def.displayName} carries ${pick.selectedOptions[0]?.textContent?.replace(' (its own)', '') ?? 'its own'}.`;
+            note.textContent = `Saved: the ${def.displayName} carries ${pick.selectedOptions[0]?.textContent?.replace(' (default)', '') ?? 'its default'}.`;
           });
           const icon = weaponIcon(def.id, 'wicon');
           return el('label', { class: 'prof-optic' }, el('span', { class: 'prof-optic-gun' }, ...(icon ? [icon] : []), def.displayName), pick);

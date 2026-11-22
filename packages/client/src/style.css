@@ -798,13 +798,13 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .profile-panel .hint { color: var(--muted); font-size: 13px; }
 .profile-panel label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font: 600 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
 .profile-panel #profile-save { align-self: flex-start; }
-/* Favourite loadout → Optics: one row a gun (its icon and name, its optic), two columns where there is room. */
+/* Favourite loadout → Optics: one row a gun (its icon and name, its optic). */
 .prof-optics-box { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
 .prof-sub { margin: 0; font: 700 12px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text, #e8eefc); }
-.prof-optics { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px 14px; }
+.prof-optics { display: grid; grid-template-columns: 1fr; gap: 5px; }
 .profile-panel label.prof-optic { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-body, inherit); color: inherit; min-width: 0; }
 .prof-optic-gun { display: flex; align-items: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.prof-optic select { flex: none; max-width: 52%; font-size: 12px; padding: 3px 4px; }
+.prof-optic select { flex: none; width: 200px; max-width: 58%; font-size: 12px; padding: 3px 4px; }
 .prof-signin { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid rgba(255, 179, 71, 0.45); border-radius: 3px; background: rgba(255, 179, 71, 0.06); font-size: 14px; }
 .prof-signin .cta { padding: 10px 24px; font-size: 15px; }
 .profile-panel button.link, .prof-foot a { padding: 0; color: var(--text); opacity: 0.8; background: none; border: 0; font: inherit; text-transform: none; letter-spacing: 0; text-decoration: underline; cursor: pointer; }
