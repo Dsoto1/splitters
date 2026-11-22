@@ -7,6 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. John's: the mess hall furnished as the owner remembers it.** You step down half a metre into Welles's mess hall, under a dark timber beam ceiling on stone piers: four rows of long tables with a cross aisle, stone arches down the street side with small tables behind them, the fireplace and drink stations at the clock tower end, a lectern and bell, chandeliers and flags, and the serving line and kitchen at the DeKoven end.
+- **St. John's: the corner's last answers.** Welles's 2nd floor is dorm rooms end to end, and every hall's stairs have black metal railings.
+- **MapMaker: a room's facade now dresses the wall round a Round arch or Twin arches**, as it does round windows, so a doorway no longer shows a bare panel in a stone front.
 - **Slide.** Sprint, then crouch: a short slide that keeps your speed, slows over about three quarters of a second and ends crouched. It costs stamina like a sprint (none in the air, a short cooldown, a little longer downhill); bots slide into cover too.
 - **Peek (lean).** Hold ` or Left Alt (rebind in Options → Controls; Q and E were taken) to lean round a corner: your head, gun and where you can be hit move out together, lag compensation included. Everyone sees the lean, in first and third person; bots peek from cover with it.
 - **The Gas Mask Engineer is retired.** He's gone from Character Select, random characters and the bots; a saved choice or bot set that named him plays Grunt '68.
