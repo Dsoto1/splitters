@@ -226,14 +226,32 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
   `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
   `content/roulette.json` may not name an experimental character (`pnpm content:check` says which).
-- **Experimental now (2026-11-22):** the owner's Drive batch of 2026-11-21/22, 29 rigged Meshy Community downloads
-  built as the 2026-11-14 batch was (the download's own rig, its clips unused; seventeen rebaked to keep under the
-  1.8 MB character budget; grip offsets from the auto-fit). Their groups once promoted: Legends (Frost Valkyrie, Sun
-  Priest, Celestial Knight, Mystic), Horrors & Creatures (Abyssal Hunter, Tinker Goblina), Everyday Folk (Sunset
-  Gunslinger), Outer Space (the time crew: Crew Alchemist, Cyborg, Demolitions, Gunslinger, Mechanic, Medic,
-  Phase-Shifter, Recon, Veteran, and the Time Traveler) and Animalia (Ace Squirrel, Penguin King, Gym Bro Axolotl,
-  Agent Badger, Coach Tortoise, Cyber Flamingo, Box Duck, Gym Bro Frog, Doc Chameleon, Owl Sniper, Wacky Shark, Zen
-  Capybara). The Drive's "veteran time crew rigged" is the same model as "veteran time crew 15k" (built from the latter).
+- **Experimental now (2026-11-22):** the owner's Drive batch of 2026-11-21/22 and the twelve of 2026-11-22's
+  afternoon, rigged Meshy downloads built as the 2026-11-14 batch was (the download's own rig, its clips unused;
+  those over the 1.8 MB character budget rebaked, `surface: rebake` at 12k triangles; grip offsets from the auto-fit).
+  All Meshy, owned (the owner's own, 2026-11-22) but Juice (Meshy Community). Names are personal names (see
+  "Names" under Adding a Meshy character); the batch's first labels are in each manifest's notes. Their groups once
+  promoted:
+  - Legends: Sigrun Frostmane (was Frost Valkyrie), Aurelio Dawnmantle (Sun Priest), Ser Castor Brightmoor
+    (Celestial Knight), Madame Zephyrine (Mystic).
+  - Horrors & Creatures: Dredge Marrow (Abyssal Hunter).
+  - Outer Space: Clio Everwhen (Time Traveler), and the **Chrono Crew** (their own section now, whatever their tier;
+    see "Collections"): Vesper Quill, Nova Kade, Fuse Hollister, Dex Calloway, Gears Okafor, Doc Seraphine Vale,
+    Flicker, Wren Halloway, Sarge Tobias Crane, and from the afternoon Mags Petrov (Quartermaster) and Lyra Vantis
+    (Chrono Mage).
+  - Animalia: Rocket Nutley (Ace Squirrel), King Waddleston (Penguin King), Axel Gainz (Gym Bro Axolotl), Barnaby
+    Burrows (Agent Badger), Coach Hank Shelton (Coach Tortoise), Rio Neonwing (Cyber Flamingo), Juice (Box Duck,
+    named by the owner), Chad Croakley (Gym Bro Frog), Dr. Hugo Hue (Doc Chameleon), Ollie Hootman (Owl Sniper),
+    Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
+    rhino juggernaut), Zero Ringtail (raccoon hacker), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
+    samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
+    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Bonnie Haymaker (boxer bunny) and
+    Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp").
+  Two of the batch became the models of characters already on the roster (owner, 2026-11-22) and left it: Tinker
+  Goblina's GoblinaRigged is **Goblina**'s model, the Sunset Gunslinger's is **Dusty Ranger**'s (both keep their name,
+  roster place and Core tier; `RETIRED_LOOKS` sends saved choices and bot sets of the two to them). The Drive's
+  "veteran time crew rigged" is the same model as "veteran time crew 15k" (built from the latter); the afternoon's
+  re-uploads of characters already in the game were not reprocessed (owner).
 - **Gates.** To be core a character passes every blocking gate; for an experimental one they only report.
   `pnpm quality-gates` prints the characters after the maps and exits 1 on a failing core character
   (`--characters`: only them; `content/characterGates.ts`, facts read by `packages/server/src/tools/characterFacts.ts`;
