@@ -26,7 +26,16 @@ export type ClientMessage =
    * server/src/tickets.ts), so a host knows the account without seeing the player's sign-in token.
    */
   /** `party`: the party tag this player came with (net/party.ts: from the invite link they followed, or their own). */
-  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string; rx?: number }
+  /**
+   * `op`: the optic this player picked for each gun that may carry more than one (weapon ID → optic kind, only those
+   * not the gun's default; sim/opticChoice.ts, docs/MULTIPLAYER_PROTOCOL.md section 27). Older hosts ignore it.
+   */
+  | { t: 'hello'; protocol: number; name: string; look?: string; admin?: string; pk?: string; ticket?: string; party?: string; rx?: number; op?: Record<string, string> }
+  /**
+   * The player changed their optic choices mid-match (pause menu → Settings → Optic): the whole list, as `hello`'s
+   * `op` (empty: every gun its default). The host keeps it and sends the roster again. Older hosts ignore it.
+   */
+  | { t: 'optics'; op: Record<string, string> }
   /** Between matches: this player's vote for the next map (index into the open vote's options; sim/mapVote.ts). Older hosts ignore it. */
   | { t: 'vote'; i: number }
   | { t: 'input'; inputs: PlayerInput[] }
@@ -504,6 +513,11 @@ export interface RosterEntry {
   py?: string;
   /** A person's career rank points as their browser sent them on joining (content/ranks.ts; Options → Ranks & badges). Absent: none sent (an older browser). */
   rx?: number;
+  /**
+   * A person's optic choices (sim/opticChoice.ts: weapon ID → optic kind, only guns not on their default), so every
+   * client draws the optic they picked. Absent: every gun its default (bots, people who picked none, older hosts).
+   */
+  op?: Record<string, string>;
 }
 
 export interface ServerStats {

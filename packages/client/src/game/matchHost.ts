@@ -80,6 +80,8 @@ export interface LocalMatchOptions {
   party?: string;
   /** This browser's player's career rank points (careerStats.ts myRankPoints): on the roster for the others' badges. */
   rankPoints?: number;
+  /** This browser's player's optic choices (opticPrefs.ts): on the roster, so friends draw the optic they picked. */
+  optics?: Record<string, string>;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
   /**
@@ -319,6 +321,8 @@ export class MatchHost {
       if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
     }
     me.account = !!this.opts.verified;
+    // Your optic choice per gun (a handed-on match too: the checkpoint carries none).
+    match.setOptics(me.slot, this.opts.optics);
     if (test?.god) me.invulnerable = true;
     // Load tests (?bots=96) start past the browser's cap; the host can't raise it further. A phone hosts fewer (opts.maxPlayers).
     const control = new HostControl(match, bots, fill, 'Host', Math.max(this.opts.maxPlayers ?? BROWSER_MAX_PLAYERS, fill));
@@ -553,6 +557,11 @@ export class MatchHost {
     if (this.match && this.me) this.match.switchTeam(this.me.slot, i);
   }
 
+  /** This browser's own player's optic choices changed (pause menu → Settings → Optic): everyone gets the roster again. */
+  setOptics(op: Record<string, string>): void {
+    if (this.match && this.me && this.match.setOptics(this.me.slot, op)) this.rosterToAll();
+  }
+
   /** A friend spectates by choice, or joins play again. */
   private friendSpectates(r: Remote & { slot: number }, on: boolean): void {
     const { match, bots, control } = this;
@@ -780,6 +789,8 @@ export class MatchHost {
       r.slot = player.slot;
       // Their career rank (content/ranks.ts): only passed on in the roster, for the badges.
       if (msg.rx !== undefined) player.rankPoints = msg.rx;
+      // Their optic choice per gun (sim/opticChoice.ts): on the roster, so everyone draws the optic they picked.
+      match.setOptics(player.slot, msg.op);
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
       this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1, ts: 1 } satisfies ServerMessage));
@@ -798,6 +809,9 @@ export class MatchHost {
     }
     else if (msg.t === 'spectate' && r.slot !== null) this.friendSpectates(r as Remote & { slot: number }, msg.on);
     else if (msg.t === 'team' && r.slot !== null) match.switchTeam(r.slot, msg.i);
+    else if (msg.t === 'optics' && r.slot !== null) {
+      if (match.setOptics(r.slot, msg.op)) this.rosterToAll();
+    }
     else if (msg.t === 'vote' && r.slot !== null) this.castVote(r.slot, msg.i);
     else if (msg.t === 'ready' && r.slot !== null) {
       r.loaded = true;
@@ -1077,6 +1091,8 @@ export type ToSimHost =
   | { k: 'spectate'; on: boolean }
   /** The page's own player switches team at their next spawn (i: the team; absent: the next; -1: stay). */
   | { k: 'team'; i?: number }
+  /** The page's own player's optic choices (opticPrefs.ts), changed mid-match. */
+  | { k: 'optics'; op: Record<string, string> }
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
   /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
   | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
@@ -1178,6 +1194,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.spectate(m.on);
     case 'team':
       return host.switchTeam(m.i);
+    case 'optics':
+      return host.setOptics(m.op);
     case 'cmd': {
       const error = host.command(m.cmd);
       // A refused command: the host's panel shows why (as a dedicated server would tell it).
