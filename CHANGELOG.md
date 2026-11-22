@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Long melee weapons show your hands in first person.** The Katana, Scimitar, Baseball Bat, Battle Axe and Spear are held in both hands where you can see them, raised at the ready (the Spear level), with a cut across the view (the Spear a thrust) and a draw up from the shoulder; third person is unchanged.
 - **Slide.** Sprint, then crouch: a short slide that keeps your speed, slows over about three quarters of a second and ends crouched. It costs stamina like a sprint (none in the air, a short cooldown, a little longer downhill); bots slide into cover too.
 - **Peek (lean).** Hold ` or Left Alt (rebind in Options → Controls; Q and E were taken) to lean round a corner: your head, gun and where you can be hit move out together, lag compensation included. Everyone sees the lean, in first and third person; bots peek from cover with it.
 - **The Gas Mask Engineer is retired.** He's gone from Character Select, random characters and the bots; a saved choice or bot set that named him plays Grunt '68.
