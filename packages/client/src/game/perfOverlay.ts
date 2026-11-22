@@ -1,3 +1,4 @@
+import { poseReportLines } from './poseCheck.ts';
 import { COUNT, SYS, perfProbe, type FrameSample } from './perfProbe.ts';
 import { currentFrameCap, loadGraphicsQuality, loadRenderScale } from './graphicsSettings.ts';
 import { memoryLine } from '../memoryReadout.ts';
@@ -260,6 +261,9 @@ export class PerfOverlay {
       `effects   ${count('effects')}`,
       `per frame ${(['animated', 'skinned', 'ragdolls', 'lasting', 'built'] as const).map((k) => `${k} ${perFrame(k)}`).join(', ')}`,
       `memory    ${memoryLine()}`,
+      '',
+      // A body drawn in a T-pose, from this or an earlier game (poseCheck.ts).
+      ...poseReportLines(),
     ].join('\n');
   }
 }

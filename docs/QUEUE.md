@@ -235,6 +235,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** the quiet pose check (`wip/fix-tpose-2`, green faf6cf96, run 45062916146): third-person bodies drawn in the bind pose or never posed are recorded (`[pose-check]` in the console, the performance report, `tt.poseReports`); the owner's T-pose cause not yet found. Landed alone by the splitters lead.
 - **2026-11-22** the Sonniss sound pass (`wip/sonniss-1`, green 4965688b; train check/train-20261122-190344 at 12583b4, run 45058592850): 34 sounds replaced with recorded Sonniss GDC picks, bullet flyby and jump pad launch added, 18 gun alternates for the Weapon Manager; sounds 154 KB smaller. Landed by the splitters lead.
 - **2026-11-22** characters 11-22 follow-ups (`wip/chars-1122b`, green 47789474, run 45054643857): owner-made licences, Juice, Goblina and Dusty Ranger model swaps, the Chrono Crew collection, Santa to Legends, fun names for the last intake, 12 new Experimental characters. Landed alone by the splitters lead.
 - **2026-11-22** train check/train-20261122-172541 (e8ca8ad, run 45049402477), landed by the splitters lead: weapon icons re-taken (`wip/weapon-icons`); fix batch 2026-11-22: St. John's wall crest z-fighting fixed at the piece, the coplanar kit-layer check (`wip/fix-tpose-1122`; the T-pose diagnostic follows on `wip/fix-tpose-2`).
