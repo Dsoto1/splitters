@@ -390,7 +390,9 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
       else if (w.view?.hold?.style === 'long') {
         tris ??= await modelTriangles(join(MODELS, w.view.model));
         bounds ??= boundsOf(tris);
-        const eye = fitEye(surfacePoints(tris), bounds[0], row.mount, ones.map((k) => k.glass), w.view.viewOffset[2]);
+        // (Only the triangles that can come within NEAR_BAND of an eye EYE_NEAREST or more behind the glass.)
+        const reach = row.mount.at[2] - EYE_NEAREST + NEAR_BAND;
+        const eye = fitEye(surfacePoints(tris.filter((t) => Math.min(t[0][2], t[1][2], t[2][2]) < reach)), bounds[0], row.mount, ones.map((k) => k.glass), w.view.viewOffset[2]);
         if (eye !== null) row.mount.eye = eye;
       }
     }

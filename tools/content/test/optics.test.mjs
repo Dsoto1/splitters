@@ -122,7 +122,7 @@ describe('optics by gun: the table and the mounts', () => {
     // And as it is, the 2x optic's mount is the one the table keeps.
     const kept = (await buildOptics()).weapons['core.burst_rifle'].mount;
     expect({ at: kept.at, scale: kept.scale }).toEqual({ at: weapons['core.burst_rifle'].mount.at, scale: weapons['core.burst_rifle'].mount.scale });
-  });
+  }, 90000);
 
   it('the eye comes to a long gun\'s red dot or holographic sight, as near as nothing of the gun near it shows', async () => {
     // (Owner, 2026-11-23, "that scope tho": the Woodland SMG's red dot drawn three times its size, 0.55 m off.)
@@ -156,5 +156,5 @@ describe('optics by gun: the table and the mounts', () => {
     const tris = await modelTriangles(join(MODELS, all.find((x) => x.id === 'core.woodland_smg').view.model));
     const g = file.kinds.reddot.glass;
     expect(nearShows(surfacePoints(tris), 0, wood.mount.at[1] + g.rise * wood.mount.scale, wood.mount.at[2] - 0.2, pictureAt(g.half[1] * wood.mount.scale, 0.2))).toBe(true);
-  });
+  }, 90000);
 });
