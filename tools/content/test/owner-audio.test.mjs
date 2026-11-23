@@ -16,7 +16,7 @@ describe('owner audio', () => {
     const manifest = JSON.parse(readFileSync(new URL('../../../content/owner-audio.json', import.meta.url), 'utf8'));
     const entries = ownerAudioEntries(manifest);
     expect(entries.filter((e) => e.kind === 'music').length).toBe(10);
-    expect(entries.filter((e) => e.kind === 'voice').length).toBe(39);
+    expect(entries.filter((e) => e.kind === 'voice').length).toBe(40);
     expect(new Set(entries.map((e) => e.file)).size).toBe(entries.length);
     expect(new Set(entries.map((e) => e.source)).size).toBe(entries.length);
   });

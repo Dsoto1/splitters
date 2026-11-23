@@ -8,6 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Roof parapets are solid.** The coping, merlons and pinnacles along a roof edge (St. John's halls and every other stone, concrete or adobe building) stop players and bullets; you can lie behind a merlon, and nobody walks or shoots through the battlement.
+- **The Laser Blaster fires a recorded laser blast** (the Laser Rifle keeps its synthesised beam); the announcer no longer says "That guy just blew up a dog".
 - **Recorded sci-fi guns and a fuller sound picker.** The plasma, pulse, railgun, arc, vortex, disc, goo, nail, grenade launcher and rocket sounds are recorded now, and the Weapon Manager's picker offers 56 more named gun, reload, sci-fi, energy and launcher sounds (and the old synthesised ones), loaded only when used (docs/AUDIO.md).
 - **Crossbow bolts (and nails, stingers, spears, rockets) no longer leave the gun sideways:** they were drawn across the shot for their first moments, and are now hidden until they point along their flight.
 - **Hands on guns cost less.** Fitting your own first-person hands and other players' hands onto their guns takes a fraction of the time it did, and they look exactly as before (big matches: about 6% of a frame back).

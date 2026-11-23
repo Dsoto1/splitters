@@ -6123,9 +6123,9 @@ async function offlineFlow(browser) {
   const played = await page.evaluate(() => window.__audio.stats.played);
   check(played > 0, `match events play sounds (${played} played)`);
   // The owner's announcer lines load after the game's sounds, and decode (Ogg Opus).
-  await page.waitForFunction(() => window.__audio.stats.voice + window.__audio.stats.voiceFailed >= 39, null, { timeout: T(30000) }).catch(() => {});
+  await page.waitForFunction(() => window.__audio.stats.voice + window.__audio.stats.voiceFailed >= 38, null, { timeout: T(30000) }).catch(() => {});
   const voice = await page.evaluate(() => ({ voice: window.__audio.stats.voice, failed: window.__audio.stats.voiceFailed }));
-  check(voice.voice === 39 && voice.failed === 0, `the announcer's 39 lines load and decode (${JSON.stringify(voice)})`);
+  check(voice.voice === 38 && voice.failed === 0, `the announcer's 38 lines (40 shipped, 2 switched off) load and decode (${JSON.stringify(voice)})`);
   // No music in a match (browser tests leave it off anyway; ?music=1 below turns it on).
   check((await page.evaluate(() => window.__music?.debug().tracks.length ?? 0)) === 0, 'no music plays in a match');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
