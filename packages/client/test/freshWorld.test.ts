@@ -5,8 +5,8 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { freshWorld, setFreshWorld } from '../src/game/freshWorld.ts';
-import { setGripFitFast, slideSupport } from '../src/game/characterAnimator.ts';
+import { freshWorld, setGripFit } from '../src/game/freshWorld.ts';
+import { slideSupport } from '../src/game/characterAnimator.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
 
 /**
@@ -118,7 +118,7 @@ describe('freshWorld', () => {
   it('switched off (?perfoff=gripfit) it is the forced compute', () => {
     const scene = new Scene(new NullEngine());
     const nodes = chain(scene, null, 8);
-    setFreshWorld(false);
+    setGripFit(false);
     try {
       let n = 0;
       const proto = TransformNode.prototype as unknown as { computeWorldMatrix: (...a: unknown[]) => unknown };
@@ -135,7 +135,7 @@ describe('freshWorld', () => {
       }
       expect(n).toBe(16);
     } finally {
-      setFreshWorld(null);
+      setGripFit(null);
     }
   });
 });
@@ -165,11 +165,11 @@ describe('slideSupport', () => {
       const shoulder = new Vector3(origin.x - 0.2, origin.y + 0.1, origin.z);
       const reach = 0.15 + r() * 0.4;
       const at = point(grip.support!);
-      setGripFitFast(false);
+      setGripFit(false);
       const each = slideSupport(arm, grip, grip.support!, at.clone(), shoulder, reach, point, 1);
-      setGripFitFast(true);
+      setGripFit(true);
       const once = slideSupport(arm, grip, grip.support!, at.clone(), shoulder, reach, point, 1);
-      setGripFitFast(null);
+      setGripFit(null);
       expect([once.x, once.y, once.z]).toEqual([each.x, each.y, each.z]);
     }
   });

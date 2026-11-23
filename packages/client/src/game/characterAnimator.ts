@@ -18,7 +18,7 @@ import { SYS, perfProbe } from './perfProbe.ts';
 import { rigidAlike } from './poseCheck.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { guardOf } from './guardUnderside.ts';
-import { freshWorld } from './freshWorld.ts';
+import { freshWorld, gripFitOn } from './freshWorld.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
@@ -2784,13 +2784,6 @@ function palmOnGripBy(arm: Arm, scale: number, cup = false): (gripPoint: Vector3
   };
 }
 
-/** `?perfoff=gripfit`: the support hand's slide in first person reads its hand afresh at every step, as before 2026-11-23. */
-let gripFitFast: boolean | null = null;
-/** Tests and the grip page: the slide's saving on or off (null: as the page's `?perfoff=` says). */
-export function setGripFitFast(on: boolean | null): void {
-  gripFitFast = on;
-}
-
 /**
  * First person: a support point out of the arm's reach (from the shoulder at `shoulder`) slides back along the handguard
  * toward the grip, a centimetre at a time, until the arm reaches it or it is SUPPORT_MIN_AHEAD ahead of the grip.
@@ -2800,7 +2793,8 @@ export function slideSupport(arm: Arm, grip: WeaponHold, support: ModelPoint, at
   const room = Math.max(0, support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
   const cup = grip.style === 'long';
   // (Nothing moves while it slides: the hand's offsets are read once, at its first step.)
-  const fast = gripFitFast ?? perfOn('gripfit');
+  // (`?perfoff=gripfit`: read afresh at every step, as before 2026-11-23.)
+  const fast = gripFitOn();
   let palmAt: ((p: Vector3) => Vector3) | null = null;
   let back = 0;
   while (back < room && Vector3.Distance(shoulder, at) > reach) {

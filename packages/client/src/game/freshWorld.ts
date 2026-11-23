@@ -19,7 +19,7 @@ import { perfOn } from './perfSwitches.ts';
  * matrix, a billboard, a mesh in the stale part) takes the forced compute as before. `?perfoff=gripfit` turns it off.
  */
 export function freshWorld(n: TransformNode): Matrix {
-  if (!(on ??= perfOn('gripfit'))) return n.computeWorldMatrix(true);
+  if (!gripFitOn()) return n.computeWorldMatrix(true);
   const chain = CHAIN;
   chain.length = 0;
   let p: unknown = n;
@@ -51,10 +51,18 @@ export function freshWorld(n: TransformNode): Matrix {
 }
 
 let on: boolean | null = null;
-/** Tests and measurements: the saving on or off in this page (null: as `?perfoff=` says). */
-export function setFreshWorld(v: boolean | null): void {
+/** Whether the hand fitting's savings are on (`?perfoff=gripfit` turns them off): this, and slideSupport's. */
+export function gripFitOn(): boolean {
+  return (on ??= perfOn('gripfit'));
+}
+/**
+ * Tests and measurements: the savings on or off in this page (null: as `?perfoff=` says). `window.__gripFit(on)` does
+ * the same from a page (tools: the same build measured both ways, turn about, in one page).
+ */
+export function setGripFit(v: boolean | null): void {
   on = v;
 }
+(globalThis as unknown as { __gripFit: typeof setGripFit }).__gripFit = setGripFit;
 
 /** Babylon's own bookkeeping, read here (the public `isSynchronized` asks the same of every ancestor again, each call). */
 type Inside = { _isDirty: boolean; _isSynchronized(): boolean; _parentUpdateId: number; _childUpdateId: number; _isWorldMatrixFrozen: boolean; _transformToBoneReferal: unknown };
