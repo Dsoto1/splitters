@@ -51,7 +51,7 @@ import { mergeItems, shownIndices } from './propMerge.ts';
  */
 
 /** Merged copies are grouped by squares of this many metres (culled per square, a mesh per material and level). */
-export const MERGE_CELL = 64;
+export const MERGE_CELL = 128;
 /**
  * A model merges only when its full-detail vertices times its copies on the map stay under this: merging copies their
  * geometry (thin instances share it), so many copies of a heavy model stay thin instances.
@@ -134,7 +134,7 @@ interface Copy {
   cell: Cell | null;
 }
 
-/** A square's merged copies (cast or quiet) and their meshes, one per level of detail and material. */
+/** A square's merged copies and their meshes, one per material (each holding every level of detail). */
 interface Cell {
   key: string;
   copies: Copy[];
@@ -359,9 +359,9 @@ export class PropBatches {
     for (const n of this.near.values()) this.fillNear(n, camera);
   }
 
-  /** A merged copy into the cell of its square (cast or quiet), out of the one it was in. */
+  /** A merged copy into the cell of its square, out of the one it was in (merged meshes cast nothing: cast or quiet alike). */
   private place(k: Copy): void {
-    const key = `${sectorKey(k, MERGE_CELL)}|${k.quiet ? 1 : 0}`;
+    const key = sectorKey(k, MERGE_CELL);
     if (k.cell?.key === key) {
       k.cell.stale = true;
       return;

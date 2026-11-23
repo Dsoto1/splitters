@@ -113,7 +113,7 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     const meshes = merged(s);
     // Square 0: the shared material (sink + mirror) and the crate's; square 1: the other sink.
     expect(meshes.length).toBe(3);
-    const both = meshes.find((m) => m.material === shared && m.name.endsWith('0:0|0'))!;
+    const both = meshes.find((m) => m.material === shared && m.name.endsWith('_0:0'))!;
     expect(both.getTotalVertices()).toBe(48);
     expect(both.getTotalIndices()).toBe(72);
     // The mirror's tint is in its vertex colours, placed 1.5 m up.
@@ -127,8 +127,8 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     // They cast nothing themselves: static shadow batches of each model do, merged into the shadow proxies.
     expect(meshes.every((m) => (m.metadata as { castsNoShadow?: boolean }).castsNoShadow)).toBe(true);
     const shadows = s.meshes.filter((m) => m.name.startsWith('static_shadow_')) as Mesh[];
-    // One per model and PROP_SECTOR square (the two sinks share one).
-    expect(shadows.length).toBe(3);
+    // One per model and PROP_SECTOR square (MERGE_CELL is as wide: the far sink is in the next one).
+    expect(shadows.length).toBe(4);
     expect(shadows.every((m) => m.layerMask === 0 && proxyable(m))).toBe(true);
   });
 
