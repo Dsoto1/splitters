@@ -461,6 +461,30 @@ class guessed from their id (`materialClass`). Two classes were added with it:
 Boulders and cliffs are `rock` (the stone class, as rocks already were) instead of concrete. Owner decision Q3 of
 PROCEDURAL_ENVIRONMENT_AUDIT.md; `packages/shared/test/surfaceTypes.test.ts` lists every prop whose class changed.
 
+### Implementation note: material classes fixed (owner, 2026-11-23)
+
+When library materials got surfaces (2026-11-22), 42 kept the class the id guess had given them as a `ballistic`
+override, so nothing changed then. Most were regex accidents. The owner's fixes, data only (`content/materials.json`):
+
+- **White Orbital Station / Industrial / sci-fi panels** (`pbr_white_panel`, `orbital_panel`, `scifi_panel`): `panel`
+  read as a glass pane. Now sheet metal (`thin_metal`): a 0.4 m panel wall stops the pistol, SMG, rifle and battle
+  rifle; the marksman and precision rifles punch through, weakened; grazing hits may ricochet (45%, as sheet metal).
+- **Bunker Concrete** (`pbr_bunker_panels`: Military walls, the set-piece stone role, the MapMaker barrier): glass, now
+  concrete. Full cover; the barrier (400 HP) takes 56 Assault Rifle hits instead of 8.
+- **Lights** (`light_strip`, `glow_trim`, `lamp_glow`, `beacon_red`): bulletproof `energy` (meant for force fields
+  only), now plastic (drywall): rounds pass, a wall behind still stops them. **Neon tubes** are surface `glass` (glass
+  chips and sound).
+- **Masonry**: the lighthouse wall (`light` in lighthouse: energy), carved temple stone (`car`: sheet metal, 45%
+  ricochet), painted hieroglyphs (`paint`: drywall) and the five sandstones (`sand`: soil) are all `stone`.
+- **Cleanups**: prefab cladding sheet metal (was heavy metal), wattle and the mashrabiya lattice thin wood (still
+  breakable screens), adobe soil (no ricochet off mud), planks labelled `thin_wood` (no change in play).
+- **Unchanged on purpose**: floor grates and walkways (thin metal), render on masonry, roads and floors as soil, and the
+  rest listed in CONTENT_PIPELINE.md, "Ballistic overrides that stay on purpose". Ice keeps its class; an ice surface
+  type comes later.
+
+`packages/shared/test/surfaceTypes.test.ts` (`INTENDED_MATERIALS`) lists each change by id;
+`packages/shared/test/materialBallistics.test.ts` shoots each through the server's rules.
+
 ---
 
 # 9. Environmental Damage

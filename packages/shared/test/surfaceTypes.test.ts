@@ -3,7 +3,8 @@
  * nothing it didn't mean to. fixtures/surface-classes-before.json holds every library material's and prop's ballistic
  * class (server) and impact effect (client) on origin/main before surface types existed; it is never regenerated.
  * The ONLY ballistic differences allowed are the owner's fixes (PROCEDURAL_ENVIRONMENT_AUDIT.md Q3, owner decisions
- * 2026-11-04), listed one by one in INTENDED below: a change to any other material or prop fails here.
+ * 2026-11-04, for props; the material ballistics fixes, owner 2026-11-23, for library materials), listed one by one in
+ * INTENDED and INTENDED_MATERIALS below: a change to any other material or prop fails here.
  */
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -73,6 +74,31 @@ const INTENDED: readonly [BallisticMaterial, BallisticMaterial, readonly string[
   ['concrete', 'stone', ['prop.boulder_round', 'prop.boulder_jagged', 'prop.boulder_flat', 'prop.cliff', 'prop.cliff_corner', 'prop.cliff_steps']],
 ];
 
+/**
+ * Every intended library-material change (owner, 2026-11-23, GUNPLAY_SPEC §8 "material classes fixed"): [before, after,
+ * material ids]. Each was a regex accident of materialClass (`panel` read as pane/glass, `light` in lighthouse as energy,
+ * `car` in carved as thin metal, `sand` in sandstone as soil) or a class its surface now gives better.
+ */
+const INTENDED_MATERIALS: readonly [BallisticMaterial, BallisticMaterial, readonly string[]][] = [
+  // White Orbital Station / Industrial / sci-fi panels: sheet metal, not glass.
+  ['glass', 'thin_metal', ['core.pbr_white_panel', 'core.orbital_panel', 'core.scifi_panel']],
+  // Bunker Concrete (Military walls, set-piece stone, MapMaker barrier): concrete, not glass.
+  ['glass', 'concrete', ['core.pbr_bunker_panels']],
+  // Lights: shoot-through plastic (drywall), not force fields; neon tubes are glass.
+  ['energy', 'drywall', ['core.light_strip', 'core.glow_trim', 'core.lamp_glow']],
+  ['concrete', 'drywall', ['core.beacon_red']],
+  ['energy', 'glass', ['core.neon_tube']],
+  // Masonry: the lighthouse wall, carved temple stone, painted hieroglyphs and the sandstones.
+  ['energy', 'stone', ['core.lighthouse_bands']],
+  ['thin_metal', 'stone', ['core.carved_stone']],
+  ['drywall', 'stone', ['core.hieroglyphs_painted']],
+  ['soil', 'stone', ['core.sandstone', 'core.sandstone_tiles', 'core.temple_sandstone', 'core.pbr_sandstone_blocks', 'core.pbr_rough_sandstone']],
+  // Prefab cladding is sheet metal; wattle and lattice are light screens; adobe is mud.
+  ['metal', 'thin_metal', ['core.prefab_red', 'core.prefab_white']],
+  ['wood', 'thin_wood', ['core.wattle', 'core.mashrabiya']],
+  ['stone', 'soil', ['core.pbr_adobe']],
+];
+
 /** The client's old effect words → the surface type that draws them now (stone was the old fallback). */
 const OLD_EFFECT: Record<string, string> = { stone: 'concrete', metal: 'metal', wood: 'wood', dirt: 'dirt' };
 
@@ -82,9 +108,16 @@ describe('surface types: nothing changed but the intended fixes', () => {
     expect(Object.keys(before.props).sort()).toEqual(PACK_PROPS.map((p) => p.id).sort());
   });
 
-  it('every library material keeps its ballistic class (a surface whose class differs keeps the old one as its `ballistic`)', () => {
-    const changed = CORE_MATERIALS.filter((m) => surfaceMaterial(m.id) !== before.materials[m.id]!.ballistic).map((m) => m.id);
-    expect(changed).toEqual([]);
+  it('library materials change ballistic class only where INTENDED_MATERIALS says (a surface whose class differs otherwise keeps the old one as its `ballistic`)', () => {
+    const got: Record<string, string> = {};
+    for (const m of CORE_MATERIALS) {
+      const was = before.materials[m.id]!.ballistic;
+      const now = surfaceMaterial(m.id);
+      if (was !== now) got[m.id] = `${was} -> ${now}`;
+    }
+    const want: Record<string, string> = {};
+    for (const [was, now, ids] of INTENDED_MATERIALS) for (const id of ids) want[id] = `${was} -> ${now}`;
+    expect(got).toEqual(want);
   });
 
   it('a material with a surface draws and sounds like it (footsteps by surface, 2026-11-22); one without keeps its old effect', () => {
