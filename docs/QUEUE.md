@@ -37,8 +37,8 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - **QUEUE triage (lead, 2026-11-22):** of the entries below, 39 are done on main and 5 are stale (notes marked built/landed by lanes A and B); they are being cleared as items are next touched. The lead's triage list: all of Bugs except prop pop points 3 and 5 is done; Features done: entity cap, process tooling, character follow-ups, grips auto-fit, music and announcer, blood by character, far looks 1-2, body pool, small shadow casters, environment 4-5, MapMaker UI 3-5, tunnel kit 5-8, material surfaces, painting 1-5, gun handling and tuning screen, ranks and badges, Match Setup pickers.
 
 ## Ready to land
-- `wip/stjohns-10` · 15a7fa7e · 45121247043 (St. John's step 10: the clock tower moved onto Welles's west stair, its winding stair landing on the 2nd and 3rd floor halls; a Dorm Bay End at (2, -11); the Carriageway walled on the tower's side; new kit: Clock Tower Stair "Hall floors", Dorm Bay End, Carriageway East side; nav 0 traps, islands unchanged; outdoor draws -2 to 0 %)
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-10` · 15a7fa7e · 45121247043 (St. John's step 10: the clock tower moved onto Welles's west stair, its winding stair landing on the 2nd and 3rd floor halls; a Dorm Bay End at (2, -11); the Carriageway walled on the tower's side; new kit: Clock Tower Stair "Hall floors", Dorm Bay End, Carriageway East side; nav 0 traps, islands unchanged; outdoor draws -2 to 0 %)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
