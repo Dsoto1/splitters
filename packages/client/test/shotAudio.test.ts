@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { TICK_DT } from '@tiletrigger/shared';
-import { voiceToSteal, type VoiceSlot } from '../src/audio/audio.ts';
+import { WORLD_TAIL_FROM, voiceToSteal, worldTail, type VoiceSlot } from '../src/audio/audio.ts';
 import { SHOT_SPREAD_MAX, shotDelay } from '../src/game/triggerLatch.ts';
 
 const MAX_PER_SOUND = 6;
@@ -105,5 +105,27 @@ describe('your own shots under a big match\'s sound', () => {
     // At 60 frames a second nothing waits.
     expect(shotDelay(0, 1 / 60)).toBe(0);
     expect(shotDelay(0, 1)).toBe(SHOT_SPREAD_MAX);
+  });
+});
+
+/**
+ * The slow guns' long reports (owner, 2026-11-23, docs/AUDIO.md "Slow guns ring out"): 1-1.5 s rings must not take the
+ * world's 40 voices in a big match, so a far world copy rings shorter (audio.ts worldTail).
+ */
+describe('long gun reports in a crowd', () => {
+  it('a far world copy rings shorter, a near one and short sounds whole, never under the floor', () => {
+    expect(worldTail(0.4, 200, 250)).toBe(0.4);
+    expect(worldTail(1.5, 0, 250)).toBe(1.5);
+    expect(worldTail(1.5, 125, 250)).toBeCloseTo(0.75, 5);
+    expect(worldTail(1.5, 240, 250)).toBe(WORLD_TAIL_FROM);
+    expect(worldTail(1.5, 10, 250)).toBeGreaterThan(1.4);
+  });
+
+  it('averaged over where the shooters stand, a 1.5 s report holds a world voice no longer than the old 0.9 s cuts', () => {
+    // Shooters spread evenly from 10 m to the far range's 250 m (a 64-bot match on St. John's).
+    const n = 1000;
+    let sum = 0;
+    for (let i = 0; i < n; i++) sum += worldTail(1.5, 10 + (240 * (i + 0.5)) / n, 250);
+    expect(sum / n).toBeLessThanOrEqual(0.9);
   });
 });

@@ -121,38 +121,38 @@ Not done in this pass: grenade bounces (the game sends no bounce event), recorde
 
 ### Slow guns ring out (2026-11-23)
 
-The owner ("do the sounds cut off short?", answer "1"): the recorded reports were cut to about 0.3-1.1 s, some ending on the next shot of a burst, while a real report rings for 1-2 s. **The rule now:** a gun slower than about 4 shots a second (its `fireIntervalTicks`; snipers, shotguns, revolvers and hand cannons, the bolt and lever guns), every launcher, and the single-shot or burst big sci-fi guns (railgun, vortex, disc) ring **1.0-1.5 s** where the source has a clean tail: one shot (the last of a burst) whose ring dies out before anything else is heard, cut with a long natural fade (`fade` 0.2-0.7 s, about the last third). Where the recording is dry (it dies in 0.3-0.5 s) the cut keeps what rings and no more; full-auto guns stay short (a long ring at 10 shots a second rings over itself). The same goes for these classes' picker alternates and the owner's Weapon Manager picks among them.
+The owner ("do the sounds cut off short?", answer "1"): the recorded reports were cut to about 0.2-1.1 s, some ending on the next shot of a burst, while a real report rings for 1-2 s. **The rule now:** the report of a gun slower than about 4 shots a second (its `fireIntervalTicks`: snipers, shotguns, revolvers and hand cannons, the bolt, lever and flintlock guns), of every launcher, and of the single-shot or burst big sci-fi guns (railgun, vortex, disc) rings **1.0-1.5 s** where the source has a clean tail: one shot (the last of a burst) whose ring dies out before anything else is heard, cut with a long natural fade (`fade` 0.2-0.7 s, about the last third). Where the recording is dry (its ring dies in 0.3-0.5 s) the cut keeps what rings and no more. Full-auto guns stay short. The same goes for these classes' picker alternates.
 
-- **Checked by eye and by numbers:** every new file's waveform (no second report, no step at the end), its decoded end (-46 dBFS or lower over its last 5 ms, inside the fade), the peaks as before (`gunCeilingDb` for the `punch: "gun"` cuts).
-- **Kept short:** `fire.nail` (the Crossbow's, shared with the 12-a-second Nailgun), `fire.goo` (the Heart Taser's, shared with the Goo Gun), `fire.rifle` (the Burst Rifle's, shared with the full-auto rifles), and the synthesised sounds. `fire.sniper`'s second variant (1.4 s) and `fire.vortex` (1.3 s) already rang that long. The revolver's own recording is only 0.81 s long: it now uses all of it.
-- **One cut fixed:** `fire.rockets.b` (tank battle cannon) held three cannon shots in its old 0.9 s; it now takes the take's last shot (3.81 s in) and its 1.3 s ring.
-- **Your own shots and the voice cap (6 voices of a sound):** at its fire rate each gun needs at most `ceil(length × shots a second)` voices: Pump Shotgun 2, Runebreaker 6 (3.75/s × 1.39 s), Auto Shotgun 6 (3.33/s × 1.51 s), Marksman 5, the launchers and rockets 2-3, Railgun 3, Arena Disc 4. The Sawed-off (4.29/s) needs 6 with `fire.shotgun` at 1.38 s (cut to that for it); a pair of Sawed-offs (8.57/s, dual wielding) cuts each report at 0.70 s, as it did before. No other own shot is cut.
-- **The world's voices (40) in a 64-bot match:** see the measurement below.
-- **Size:** 32 files, 149 KB → 219 KB (+2.2 KB each on average, the largest 9.2 KB, all far under the 128 KB budget); the defaults that load with the game (sniper, shotgun, revolver, grenade launcher, rockets, railgun, disc) +17 KB, the rest are picker sounds loaded only when used.
+- **A tail belongs to a sound file, so a sound shared by a slow and a fast gun is cut for the fast one:** a gun firing `r` shots a second needs `ceil(length × r)` voices of its sound, and past 6 (`MAX_VOICES_PER_SOUND`) your own oldest report is cut and a world copy from the same distance is dropped (a stutter). So a sound any full-auto gun uses stays under `6 / r` seconds. With the owner's second set of Weapon Manager picks (2026-11-23, `wip/weapon-edits-1123b`): `fire.heavy.b` (Flintlock, Gilded Pistol and the Woodland SMG at 8.57/s) 0.69 s (the dry FAL take rings to -50 dB by then, so the pistols lose nothing); `fire.launcher` (now the Sentry Gun's, 8.57/s) and `fire.launcher.b` (the Speeder Blasters', 8.57/s) 0.69 s, shorter than before; `fire.shotgun` and `fire.shotgun.b` (the Sawed-off's, 4.29/s) 1.38 s. Kept as they were: `fire.nail` (Crossbow, shared with the Nailgun at 12/s), `fire.goo` (Heart Taser, shared with the Goo Gun), `fire.rifle` (Burst Rifle), `fire.plasma` (now the Guided Rocket's too, shared with the plasma guns), and the synthesised sounds (the Grenade Launcher's is `fire.launcher.synth` now). Not changed here and over the limit already: the Mounted MG on `fire.heavy` (15/s × 1.0 s) and the Machine Pistol on `fire.heavy.l86` (20/s × 0.46 s) want short variants.
+- **Your own shots at their fire rates** (voices needed, of 6): Pump Shotgun 2, Runebreaker 6, Auto Shotgun 5, Sawed-off 6, Marksman 5, Sniper 2, Revolver 2, Hand Cannon 3, Lever Action 3, Flintlock 2, Woodland SMG 6, Sentry Gun and Speeder Blasters 6, the launchers and rockets 2-3, Hornet 4, Railgun 3, Arena Disc 4, Disc Launcher 2. None is cut; a pair of Sawed-offs (dual wielding, 8.57/s) cuts each report at 0.70 s, as it did before.
+- **The world's voices (40) in a 64-bot match:** three offline St. John's deathmatches at 64 (default weapons, the Mixed and the Chaos sets; 40-46 s each) were recorded (every `play` call: sound, distance, time) and replayed through `voiceToSteal` with the old and the new lengths. The slow guns were a small share of what was heard (default: the sniper, 215 shots; Mixed: about 140 slow-gun shots; Chaos: 67 shotgun shots) and `dropped` stayed the same: 2,858 → 2,857, 90 → 90, 2,104 → 2,104 (nearly all the bots' rifles past their 6 voices); the world voices in use on average 15.9 → 16.2, 21.3 → 21.8, 19.4 → 20.0. With 45 more slow-gun reports a second on top (as if every bot carried one) the longer tails did crowd it: dropped 3,047 → 3,221 (default) and 210 → 359 (Mixed), all 40 voices in use 22% → 36% and 18% → 29% of the time. **So a far world copy of a long report rings shorter:** `worldTail` (audio.ts) lets a world `fire.*` sound longer than 0.6 s ring `length × (1 - distance / cull)`, never under 0.6 s, fading over its last quarter; near shots and your own ring whole. With it the same stress drops 2,993 and 184 (under the old lengths' 3,047 and 210), all voices in use 21% and 14% of the time; caps unchanged. (The live counters could not be read: on the shared 4-core machine the page's audio clock stalled during a 64-bot match, so the recorded calls were replayed, spread evenly over each run as the page took them in clumps.)
+- **Checked by eye and by numbers:** every new file's waveform (no second report, no step at the end), its decoded end (-46 dBFS or lower over its last 5 ms, inside the fade), the peaks as before (`gunCeilingDb` for the `punch: "gun"` cuts). One old cut was wrong: `fire.rockets.b` (tank battle cannon) held three cannon shots in 0.9 s; it now takes the take's last shot (3.81 s in) and its ring. The revolver's own recording is only 0.81 s long: it uses all of it. `fire.sniper`'s second variant (1.4 s) and `fire.vortex` (1.3 s) already rang that long.
+- **Size:** 33 files, 154 KB → 218 KB (the largest 9.2 KB, all far under the 128 KB budget).
 
-| Sound | Used by | Was | Now | Source (the cut) |
+| Sound | Used by (with the owner's Weapon Manager picks of 2026-11-23) | Was | Now | Source (the cut) |
 |---|---|---|---|---|
 | `fire.sniper #0` | Sniper Rifle, Marksman | 1.10 s | 1.36 s | Barrett_M98B_.338_Lapua_2m_right_MKH60_clean_Single_shots_x_17 |
 | `fire.sniper.b` | picker | 0.25 s | 0.76 s | K98k, Firing, t2, MKH416 |
 | `fire.sniper.c` | picker | 0.64 s | 1.21 s | M38, Firing, t2, BP4027 |
-| `fire.shotgun` | Pump Shotgun, Runebreaker, Sawed-off | 0.91 s | 1.39 s | Shotgun_Fire_Slug_01 |
-| `fire.shotgun.b` | Auto Shotgun | 0.91 s | 1.51 s | Shotgun_Fire_Round Eject_01 |
+| `fire.shotgun` | Pump Shotgun, Runebreaker | 0.91 s | 1.39 s | Shotgun_Fire_Slug_01 |
+| `fire.shotgun.b` | Auto Shotgun, Sawed-off, Battle Axe (alt) | 0.91 s | 1.39 s | Shotgun_Fire_Round Eject_01 |
 | `fire.shotgun.c` | picker | 0.91 s | 1.31 s | M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1 |
 | `fire.revolver` | Revolver | 0.65 s | 0.81 s | Hand Gun 6 |
 | `fire.revolver.b #0` | picker | 0.18 s | 0.61 s | P38, Firing, t1, 2m, Behind, LS5 |
 | `fire.revolver.c` | picker | 0.44 s | 0.91 s | TT33, Firing, t1, Inside Car, Omni, CMC6 |
 | `fire.pistol.c` | Hand Cannon | 0.51 s | 1.11 s | HK_VP70_9mm_1m_in_front_RE20_clean_Double_shots_x_1 |
-| `fire.heavy.b` | Lever Action, Flintlock, Gilded Pistol | 0.64 s | 0.86 s | FN_FAL_7.62x51mm_1.5m_behind_right_clean_2_shots |
-| `fire.launcher` | Grenade Launcher | 0.81 s | 1.51 s | Automatic Cannon - MK44 - 03 - Single Shot with Report 03 |
-| `fire.launcher.b` | picker | 0.81 s | 1.21 s | Big Blast 4 |
-| `fire.launcher.c` | picker | 0.81 s | 1.14 s | Magic_Explosion_Short19 |
-| `fire.rockets` | Rocket Launcher, Blast Rockets, Guided, Tank Cannon, mounted rockets | 0.91 s | 1.51 s | Bluezone_BC0271_tank_artillery_cannon_shot_012 |
+| `fire.heavy.b` | Flintlock, Gilded Pistol, Woodland SMG | 0.64 s | 0.69 s | FN_FAL_7.62x51mm_1.5m_behind_right_clean_2_shots |
+| `fire.heavy.c` | Lever Action | 1.01 s | 1.31 s | M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1 |
+| `fire.launcher` | Sentry Gun | 0.81 s | 0.69 s | Automatic Cannon - MK44 - 03 - Single Shot with Report 03 |
+| `fire.launcher.b` | Speeder Blasters | 0.81 s | 0.69 s | Big Blast 4 |
+| `fire.launcher.c` | Rocket Launcher | 0.81 s | 1.14 s | Magic_Explosion_Short19 |
+| `fire.rockets` | Tank Cannon | 0.91 s | 1.51 s | Bluezone_BC0271_tank_artillery_cannon_shot_012 |
 | `fire.rockets.b` | picker | 0.91 s | 1.31 s | TAJ - Tank Battle Cannon Fire [XY Stereo]-001 |
 | `fire.rockets.c` | picker | 0.91 s | 1.31 s | Bluezone_BC0271_shell_trajectory_004 |
-| `fire.swarm.b` | picker | 0.51 s | 0.66 s | PM_AG_2_2_ABSTRACT_GUNS |
+| `fire.swarm.b` | Hornet | 0.51 s | 0.66 s | PM_AG_2_2_ABSTRACT_GUNS |
 | `fire.swarm.c` | picker | 0.61 s | 0.85 s | PM_AG_9_5_ABSTRACT_GUNS |
-| `fire.swarm.d` | picker | 0.61 s | 1.26 s | PM_SFG_VOL1_WEAPON_4_4_GUN_GUNSHOT_FUTURISTIC |
-| `fire.swarm.e` | picker | 0.54 s | 1.11 s | PM_SFG_VOL2_WEAPON_41_6_GUN_GUNSHOT_FUTURISTIC |
+| `fire.swarm.d` | Blast Rockets, Swarm | 0.61 s | 1.26 s | PM_SFG_VOL1_WEAPON_4_4_GUN_GUNSHOT_FUTURISTIC |
+| `fire.swarm.e` | Mounted Rockets | 0.54 s | 1.11 s | PM_SFG_VOL2_WEAPON_41_6_GUN_GUNSHOT_FUTURISTIC |
 | `fire.railgun` | Railgun | 1.11 s | 1.51 s | ELECMisc_Impact Electric Tonal Deep Movement Motion Hiss Glitch 01_ESM_EMWI |
 | `fire.railgun.b` | picker | 1.01 s | 1.31 s | HeavyGun_Experimental_3 |
 | `fire.railgun.c` | picker | 0.59 s | 0.81 s | PM_SFG_VOL2_WEAPON_15_5_GUN_GUNSHOT_FUTURISTIC |
@@ -161,9 +161,9 @@ The owner ("do the sounds cut off short?", answer "1"): the recorded reports wer
 | `fire.vortex.b` | picker | 1.04 s | 1.51 s | Bluezone_BC0233_transition_016 |
 | `fire.vortex.c` | picker | 1.31 s | 1.51 s | Bluezone_BC0257_impact_005 |
 | `fire.vortex.d` | picker | 1.31 s | 1.51 s | PM_SA_DESIGNED_58_Vacum |
-| `fire.disc` | Disc Launcher, Arena Disc | 0.51 s | 1.21 s | Impact Cut Sweep |
-| `fire.disc.b` | picker | 0.51 s | 1.21 s | FMW_Weapon_Layer_FX_24 |
-| `fire.disc.c` | picker | 0.51 s | 1.01 s | Hawk's Arrow Flies Bow and Arrow shoot 2 |
+| `fire.disc` | Disc Launcher | 0.51 s | 1.21 s | Impact Cut Sweep |
+| `fire.disc.b` | Arena Disc | 0.51 s | 1.21 s | FMW_Weapon_Layer_FX_24 |
+| `fire.disc.c` | Grapple | 0.51 s | 1.01 s | Hawk's Arrow Flies Bow and Arrow shoot 2 |
 
 ## How it fits together
 
