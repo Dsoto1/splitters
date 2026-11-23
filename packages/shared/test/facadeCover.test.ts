@@ -2,7 +2,7 @@
 // Pack facade's pieces were all drawn-only trim, so players walked through the Collegiate buttresses and plinths; the
 // ones that stand at least FACADE_COVER_PROUD out past the cladding and FACADE_COVER_HEIGHT tall now collide (map/
 // geometry.ts packFacadeBoxes), as collision only (never drawn twice). Thin dressing and the cladding stay walk-through,
-// and so does what stands over the roofline (roofs play as before).
+// but what stands over the roofline (a parapet's coping, merlons, pinnacles) collides too, proud or not.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FACADE_COVER_HEIGHT, FACADE_COVER_PROUD, PhysicsWorld, buildMapDecor, buildMapGeometry, initPhysics, isDrawnBox, type Facade, type MapDocument, type Vec3 } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
@@ -44,14 +44,38 @@ describe('facade trim deep enough to stand against collides', () => {
         expect(b.surface, facade).toBeDefined();
         expect(drawn.has(key(b)), `${facade}: a drawn piece`).toBe(true);
         expect(b.max[1] - b.min[1], facade).toBeGreaterThanOrEqual(FACADE_COVER_HEIGHT - 1e-6);
-        expect(b.max[1], `${facade}: under the roofline`).toBeLessThanOrEqual(4 + 1e-6);
+        // Under the roofline, or a roofline piece (starts within a hand of the top and ends over it).
+        const roofline = b.max[1] > 4 + 1e-6;
+        if (roofline) expect(b.min[1], `${facade}: roofline piece`).toBeGreaterThanOrEqual(4 - 0.12 - 1e-6);
         // Proud of the room's 8 m square by more than the cladding (0.08-0.16 m) and the proud margin.
         const out = Math.max(-4 - b.min[0], b.max[0] - 4, -4 - b.min[2], b.max[2] - 4);
-        expect(out, facade).toBeGreaterThanOrEqual(FACADE_COVER_PROUD + 0.08 - 1e-6);
+        if (!roofline) expect(out, facade).toBeGreaterThanOrEqual(FACADE_COVER_PROUD + 0.08 - 1e-6);
       }
       if ((['collegiate_stone', 'collegiate_red', 'gothic_stone', 'roman', 'temple'] as readonly Facade[]).includes(facade)) expect(boxes.length, facade).toBeGreaterThan(0);
-      // Clapboard's corner boards (4 cm), adobe's cladding: nothing to stand against.
-      if (facade === 'clapboard' || facade === 'adobe') expect(boxes, facade).toHaveLength(0);
+      // Clapboard's corner boards (4 cm), adobe's cladding: nothing to stand against below the roofline (adobe's stepped parapet is above it).
+      if (facade === 'clapboard' || facade === 'adobe') expect(boxes.filter((b) => b.max[1] <= 4 + 1e-6), facade).toHaveLength(0);
     }
+  });
+
+  it('Collegiate stone: the parapet stops rounds and a prone body on the roof edge, but not through a gap between merlons', () => {
+    const map = room('collegiate_stone');
+    const boxes = buildMapGeometry(map);
+    const physics = new PhysicsWorld(boxes, null);
+    // Merlons: over the coping (4.0-4.3 m), 4.3-4.75 m, 0.6 m wide every 1.2 m along the wall.
+    const merlons = buildMapDecor(map).filter((b) => b.kind === 'trim' && Math.abs(b.min[1] - 4.3) < 1e-3 && Math.abs(b.max[1] - 4.75) < 1e-3 && b.min[2] < -3.5 && b.max[0] - b.min[0] < 0.7);
+    expect(merlons.length).toBeGreaterThan(2);
+    const m = merlons[0]!;
+    const xm = (m.min[0] + m.max[0]) / 2;
+    const xg = (m.max[0] + merlons.map((b) => b.min[0]).filter((x) => x > m.max[0]).sort((a, b) => a - b)[0]!) / 2;
+    const dist = (x: number, y: number, fromInside: boolean) => physics.raycastWorld({ x, y, z: fromInside ? 0 : -12 }, { x: 0, y: 0, z: fromInside ? -1 : 1 }, 20);
+    // Prone eye height over the roof (4 m): a merlon is hit from both sides, a gap is not (the wall below stops at the roof).
+    expect(dist(xm, 4.42, false), 'from outside').not.toBeNull();
+    expect(dist(xm, 4.42, true), 'from inside').not.toBeNull();
+    expect(dist(xg, 4.42, false), 'gap').toBeNull();
+    // A prone player (0.8 m sphere) walking out over the wall top is stopped by the merlon and by the coping's step.
+    const c = physics.createPlayerCollider();
+    let pos = { x: xm, y: 4, z: -2 };
+    for (let i = 0; i < 60; i++) pos = physics.moveCharacter(c, pos, { x: 0, y: -0.05, z: -0.1 }, 0.8, 0.4).feet;
+    expect(pos.z, 'prone, stopped by the merlon').toBeGreaterThan(-4.1);
   });
 });
