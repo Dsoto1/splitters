@@ -1,5 +1,6 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { applyToneMapping } from '../game/graphicsSettings.ts';
+import { isMenuKey } from '../game/keyBindings.ts';
 import { Scene } from '@babylonjs/core/scene';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
@@ -230,8 +231,8 @@ export class CharacterDesigner {
   private onKey(e: KeyboardEvent): void {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
     const tabs = ['body', 'head', 'outfit', 'gear', 'colours'] as const;
-    if (e.key === 'q' || e.key === 'e') {
-      this.tab = tabs[(tabs.indexOf(this.tab) + (e.key === 'e' ? 1 : tabs.length - 1)) % tabs.length]!;
+    if (isMenuKey('menuPrev', e.code) || isMenuKey('menuNext', e.code)) {
+      this.tab = tabs[(tabs.indexOf(this.tab) + (isMenuKey('menuNext', e.code) ? 1 : tabs.length - 1)) % tabs.length]!;
       this.render();
     } else if (e.key === 'r') this.randomize();
     else if (e.key === 'Escape') this.done(null);

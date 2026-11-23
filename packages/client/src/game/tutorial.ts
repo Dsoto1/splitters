@@ -50,15 +50,15 @@ export interface StepDef {
 
 export const TUTORIAL_STEPS: readonly StepDef[] = [
   { id: 'look', title: 'Look around', kb: 'Move the [Mouse] to look around', touch: 'Drag on the right half of the screen to look around', goal: 2 },
-  { id: 'move', title: 'Move', kb: 'Walk with [W] [A] [S] [D]', touch: 'Walk with the pad, bottom left', goal: 5 },
-  { id: 'sprint', title: 'Sprint', kb: 'Hold [Shift] while you walk forward', touch: 'Push the pad forward past its rim to sprint', goal: 1.2 },
-  { id: 'crouch', title: 'Crouch', kb: 'Press [C] to crouch ([C] again stands up)', touch: "Hold the pad's middle to crouch", goal: 0.4 },
-  { id: 'shoot', title: 'Shoot', kb: '[Left click] to fire at the targets downrange', touch: 'Hold [Fire] to shoot at the targets downrange', goal: 3 },
-  { id: 'aim', title: 'Aim down the sights', kb: 'Hold [Right click] to aim, then fire', touch: 'Tap [Aim], then [Fire]', goal: 2 },
-  { id: 'reload', title: 'Reload', kb: 'Press [R] to reload', touch: 'Tap [Reload]', goal: 1 },
-  { id: 'switch', title: 'Switch weapon', kb: 'Press [1] or [2], or roll the [Mouse wheel]', touch: 'Tap [Weapons] and pick another', goal: 1 },
-  { id: 'throw', title: 'Throw a grenade', kb: 'Hold [G] to aim, let go to throw (more grenades lie by the spawn)', touch: 'Hold [Throw] to aim, let go to throw (more grenades lie by the spawn)', goal: 1 },
-  { id: 'drive', title: 'Drive', kb: 'Walk to the buggy (the marker), press [E] to get in and drive with [W] [A] [S] [D]', touch: 'Walk to the buggy (the marker), tap [Use] to get in and drive with the pad', goal: 15 },
+  { id: 'move', title: 'Move', kb: 'Walk with [@forward] [@left] [@back] [@right]', touch: 'Walk with the pad, bottom left', goal: 5 },
+  { id: 'sprint', title: 'Sprint', kb: 'Hold [@sprint] while you walk forward', touch: 'Push the pad forward past its rim to sprint', goal: 1.2 },
+  { id: 'crouch', title: 'Crouch', kb: 'Press [@crouch] to crouch ([@crouch] again stands up)', touch: "Hold the pad's middle to crouch", goal: 0.4 },
+  { id: 'shoot', title: 'Shoot', kb: '[@fire] to fire at the targets downrange', touch: 'Hold [Fire] to shoot at the targets downrange', goal: 3 },
+  { id: 'aim', title: 'Aim down the sights', kb: 'Hold [@aim] to aim, then fire', touch: 'Tap [Aim], then [Fire]', goal: 2 },
+  { id: 'reload', title: 'Reload', kb: 'Press [@reload] to reload', touch: 'Tap [Reload]', goal: 1 },
+  { id: 'switch', title: 'Switch weapon', kb: 'Press [@cat1] or [@cat2], or roll the [Mouse wheel]', touch: 'Tap [Weapons] and pick another', goal: 1 },
+  { id: 'throw', title: 'Throw a grenade', kb: 'Hold [@throw] to aim, let go to throw (more grenades lie by the spawn)', touch: 'Hold [Throw] to aim, let go to throw (more grenades lie by the spawn)', goal: 1 },
+  { id: 'drive', title: 'Drive', kb: 'Walk to the buggy (the marker), press [@use] to get in and drive with [@forward] [@left] [@back] [@right]', touch: 'Walk to the buggy (the marker), tap [Use] to get in and drive with the pad', goal: 15 },
 ];
 
 /** Radians between two angles, the short way round. */
