@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "serene_city",
     "name": "Serene City",
@@ -32,6 +32,32 @@
         2.6,
         11.8
       ]
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      },
+      {
+        "category": "environmental",
+        "tag": "underground"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ],
+    "release": {
+      "mapId": "m_kayba6lcrtjqmjy7",
+      "versionId": "v_fxdds5yz52b5uo3r",
+      "revision": 1,
+      "contentHash": "sha256:d08a3067e0f50111a52255a6a643a2de11015dc367fe699fa822c4a3029a7b23",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:57:24.567Z"
     }
   },
   "classicStructure": {
@@ -12464,10 +12490,6 @@
       "style": "asphalt",
       "lay": false,
       "race": {
-        "laps": 3,
-        "grid": 2,
-        "vehicle": "speeder",
-        "combat": false,
         "curbs": false,
         "ambient": 3,
         "ambientVehicle": "speeder",

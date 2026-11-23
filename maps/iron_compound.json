@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 50,
   "metadata": {
     "id": "iron_compound",
     "name": "Iron Compound",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_j5cjrurgoxoyqwtv",
-      "versionId": "v_cex3ztdjhmtjxsr7",
-      "revision": 2,
-      "contentHash": "sha256:eba69165989d53e4483d5858b8cad9db764f890fc82baac84896c79a6f61ef0e",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-11T02:52:24.752Z"
-    }
+      "versionId": "v_7ho5ucg7lgdxn47r",
+      "revision": 3,
+      "contentHash": "sha256:7b000338cebcf89637ba4fbc13ec4ace27a016977299ea0ccc75ee9e61e40dd6",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:33:52.676Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1529,8 +1539,8 @@
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_160",
@@ -1768,8 +1778,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_178",
@@ -1783,8 +1793,8 @@
       "yaw": 1.5707963267948966,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_179",

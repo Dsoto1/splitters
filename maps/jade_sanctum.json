@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "jade_sanctum",
     "name": "Jade Sanctum",
@@ -20,12 +20,26 @@
     ],
     "release": {
       "mapId": "m_z3bpasiq5c6jeb6p",
-      "versionId": "v_msp7mxc62mgclv3h",
-      "revision": 1,
-      "contentHash": "sha256:a365b7df4ed28ab0a80629431bdb909970c8cf232b96d7e7ba1de619b84a1d7f",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:04:17.510Z"
-    }
+      "versionId": "v_en554jpa3lkpvgmb",
+      "revision": 2,
+      "contentHash": "sha256:23e6bcb7d1d47721ceaa63e14cf1514bdeb8e18b75098954c0f31a655e9ad199",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:38:33.387Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2951,8 +2965,8 @@
       "yaw": 0.7,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_183",

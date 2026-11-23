@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "verdant_ziggurat",
     "name": "Verdant Ziggurat",
@@ -20,12 +20,22 @@
     ],
     "release": {
       "mapId": "m_frnmd4k4gnd6ttcs",
-      "versionId": "v_r4kyduuldnhzmzck",
-      "revision": 1,
-      "contentHash": "sha256:decc5c70fe7640b2ee1322a74b965f81ed0bd421cf9226ebc7e07f58deb9a03f",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:06:05.593Z"
-    }
+      "versionId": "v_ipxuai2pfl3pgl6v",
+      "revision": 2,
+      "contentHash": "sha256:ae210f44b1279c2b31dda2f835923bdf2e5da05262063ce96fcb85622d744423",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:17:31.151Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1730,8 +1740,8 @@
       "yaw": 0.5,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_089",
@@ -1745,8 +1755,8 @@
       "yaw": 1.4,
       "scale": 1.22,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_090",
@@ -3013,8 +3023,8 @@
       "yaw": 0.524,
       "scale": 1.22,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_je74016k41",
@@ -3028,8 +3038,8 @@
       "yaw": -0.262,
       "scale": 1.22,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_nl8jy5oyw4",
@@ -3043,8 +3053,8 @@
       "yaw": 0,
       "scale": 1.08,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_ekrqxstr16",

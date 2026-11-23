@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "sandsweep",
     "name": "Sandsweep Circuit",
@@ -18,12 +18,30 @@
     ],
     "release": {
       "mapId": "m_o42gqpw3ur6gmf5v",
-      "versionId": "v_5ky7pg6qwjpolgnc",
-      "revision": 4,
-      "contentHash": "sha256:62156bebf9795c6b12185f3725ea5fc8a311e472b12cad340f918ee18e165072",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:23:43.391Z"
-    }
+      "versionId": "v_umsonvjjgv2bgkfo",
+      "revision": 5,
+      "contentHash": "sha256:667dfb408928438c7750f76ac4377a50cd6cbd0ca239e91a94eefbe0d52c191e",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:56:21.209Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "dimensional",
+        "tag": "alien"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -524,8 +542,8 @@
       "yaw": 5.96,
       "scale": 2.992,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_039",
@@ -539,8 +557,8 @@
       "yaw": 1.72,
       "scale": 2.464,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_040",
@@ -554,8 +572,8 @@
       "yaw": 4.41,
       "scale": 4,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_041",
@@ -569,8 +587,8 @@
       "yaw": 1.72,
       "scale": 4,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_042",
@@ -584,8 +602,8 @@
       "yaw": 0.27,
       "scale": 3.41,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_043",
@@ -599,8 +617,8 @@
       "yaw": 3.9,
       "scale": 3.454,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_044",
@@ -614,8 +632,8 @@
       "yaw": 4.06,
       "scale": 4,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_045",
@@ -629,8 +647,8 @@
       "yaw": 0.92,
       "scale": 2.552,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_046",
@@ -644,8 +662,8 @@
       "yaw": 1.15,
       "scale": 2.266,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_047",
@@ -659,8 +677,8 @@
       "yaw": 4.11,
       "scale": 4,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_048",

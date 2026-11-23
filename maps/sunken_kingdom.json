@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "sunken_kingdom",
     "name": "Sunken Kingdom",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_e53hofcotjne4zfg",
-      "versionId": "v_sjtilqn3vzs2stxy",
-      "revision": 5,
-      "contentHash": "sha256:e5445f5bc3b7c2f2cd62c9d3f398b8a9e3c5aaba86455732b8421ea850995d72",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:19:39.479Z"
-    }
+      "versionId": "v_odhwyjicxzicod36",
+      "revision": 6,
+      "contentHash": "sha256:244376a92a639986ff3b1f8cf9a8fa211483096fca4c811cc87a1acad92dbfa0",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:02:13.038Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

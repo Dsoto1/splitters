@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 49,
+  "formatVersion": 50,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,13 +18,19 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_ea3mai3tsjq3pc6i",
-      "revision": 54,
-      "contentHash": "sha256:b019d2b4f4396c4e91b0ae87a7593b0658a1cd6ec6e490a46c5871fc6cf38dbc",
-      "schemaVersion": 49,
-      "releasedAt": "2026-11-23T03:45:35.937Z"
+      "versionId": "v_dy42jfvd7xukl62e",
+      "revision": 55,
+      "contentHash": "sha256:333fa7c83d604db8c27bfe41bd81387b1fc49941d7083d58cd6c503c5c98e9a1",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:06:21.697Z"
     },
-    "testOnly": true
+    "testOnly": true,
+    "categories": [
+      {
+        "category": "anomalous",
+        "tag": "experimental"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -6127,45 +6133,6 @@
   "blood": null,
   "teamSetup": null,
   "dependencies": [],
-  "lookDefs": [
-    {
-      "id": "my_coverage_rust",
-      "displayName": "Coverage rust",
-      "roles": {
-        "stone": {
-          "material": "core.pbr_brick_old",
-          "tint": null
-        },
-        "trim": {
-          "material": "core.pbr_concrete",
-          "tint": "#d6d2c8"
-        },
-        "floor": {
-          "material": "core.pbr_terrazzo",
-          "tint": null
-        },
-        "paving": {
-          "material": "core.pbr_hex_paving",
-          "tint": "#c4c0b8"
-        },
-        "roof": {
-          "material": "core.pbr_concrete_dark",
-          "tint": null
-        },
-        "wood": {
-          "material": "core.pbr_planks",
-          "tint": null
-        },
-        "metal": {
-          "material": "core.pbr_rusted_plate",
-          "tint": null
-        },
-        "facade": "brick",
-        "door": "oak",
-        "glass": "breakable"
-      }
-    }
-  ],
   "setPieces": [
     {
       "id": "setpiece_10e8y0g228",
@@ -7400,6 +7367,45 @@
       "z": 0,
       "rotation": 0,
       "mirror": false
+    }
+  ],
+  "lookDefs": [
+    {
+      "id": "my_coverage_rust",
+      "displayName": "Coverage rust",
+      "roles": {
+        "stone": {
+          "material": "core.pbr_brick_old",
+          "tint": null
+        },
+        "trim": {
+          "material": "core.pbr_concrete",
+          "tint": "#d6d2c8"
+        },
+        "floor": {
+          "material": "core.pbr_terrazzo",
+          "tint": null
+        },
+        "paving": {
+          "material": "core.pbr_hex_paving",
+          "tint": "#c4c0b8"
+        },
+        "roof": {
+          "material": "core.pbr_concrete_dark",
+          "tint": null
+        },
+        "wood": {
+          "material": "core.pbr_planks",
+          "tint": null
+        },
+        "metal": {
+          "material": "core.pbr_rusted_plate",
+          "tint": null
+        },
+        "facade": "brick",
+        "door": "oak",
+        "glass": "breakable"
+      }
     }
   ]
 }

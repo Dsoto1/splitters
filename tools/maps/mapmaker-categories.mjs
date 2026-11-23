@@ -20,7 +20,7 @@ const key = (p) => `${p.category}:${p.tag}`;
 
 const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 // One MapMaker for every map (Import replaces the map open): starting MapMaker afresh for each was minutes a map.
-const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, acceptDownloads: true });
+const ctx = await browser.newContext({ viewport: { width: 960, height: 600 }, acceptDownloads: true });
 const page = await ctx.newPage();
 page.on('dialog', (d) => d.accept());
 await page.goto(`${base}/?mode=editor&test=1`);

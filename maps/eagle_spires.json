@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "eagle_spires",
     "name": "Eagle Spires",
@@ -22,12 +22,22 @@
     ],
     "release": {
       "mapId": "m_gpezajcopcly3eaa",
-      "versionId": "v_xfzmrxfjxudh3rs5",
-      "revision": 2,
-      "contentHash": "sha256:7f4dc7f67b5ed5dc609f2856a857b4c8045cffebb7d6ec10602b0cb7ff232b21",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:05:11.451Z"
-    }
+      "versionId": "v_nhymo2oyc5lbicjj",
+      "revision": 3,
+      "contentHash": "sha256:a9c26c340b8d8e150407324a3b1530f13e8636227b1be806093e9871ee26e192",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:17:35.685Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "medieval"
+      },
+      {
+        "category": "environmental",
+        "tag": "mountain"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

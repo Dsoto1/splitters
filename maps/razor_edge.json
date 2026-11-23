@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "razor_edge",
     "name": "Razor Edge",
@@ -28,6 +28,28 @@
         6.03,
         -10.89
       ]
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ],
+    "release": {
+      "mapId": "m_k3dppybu2iknb45p",
+      "versionId": "v_j5rdcaf64z5jvvqu",
+      "revision": 1,
+      "contentHash": "sha256:554381a9c7bf55c2d0f14c2cd64c3507b34eb93b90a4e6c3c1177fd838296575",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:51:58.802Z"
     }
   },
   "classicStructure": {

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 26,
+  "formatVersion": 50,
   "metadata": {
     "id": "m3_vault",
     "name": "The Vault",
@@ -15,7 +15,25 @@
     },
     "supportedModes": [
       "core.deathmatch"
-    ]
+    ],
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      }
+    ],
+    "release": {
+      "mapId": "m_itlhrv2vmlmkiauh",
+      "versionId": "v_xwnth7v33vurdew3",
+      "revision": 1,
+      "contentHash": "sha256:d99f2becb2ee9df900bc1b260c45fff95feb83b34d88abc6640eb50b7440ea83",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:39:57.942Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

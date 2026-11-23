@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "serpent_gorge",
     "name": "Serpent Gorge",
@@ -21,12 +21,26 @@
     ],
     "release": {
       "mapId": "m_qthmd2jons2pxvpw",
-      "versionId": "v_jzqevcxsq52hphhl",
-      "revision": 2,
-      "contentHash": "sha256:88bb124db859d03e248e7e232765a20fa5910dde9fe72535832c9bf464ba02c6",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T13:31:57.293Z"
-    }
+      "versionId": "v_4dhpck5evbzhjpis",
+      "revision": 3,
+      "contentHash": "sha256:943fa7a84e0347a3ba409a251277d42cb783c2c578ed7105e8aea5a05d57b312",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:58:23.181Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 50,
   "metadata": {
     "id": "saltmarsh_harbor",
     "name": "Saltmarsh Harbor",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_qxyvyiqpuk3bopv2",
-      "versionId": "v_nq4qqoj6wzx52g6t",
-      "revision": 3,
-      "contentHash": "sha256:92c1689b88b6caafffb896a485126c033bd0281810828aaed56441866b1d476f",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:30:12.357Z"
-    }
+      "versionId": "v_olocxzt72vltdiws",
+      "revision": 4,
+      "contentHash": "sha256:4b5eee04cffa8778ccc330fa5839db30c805e00603bfc9c54ccaa33ef35c6d94",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:54:18.528Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "coastal"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

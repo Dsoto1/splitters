@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 17,
+  "formatVersion": 50,
   "metadata": {
     "id": "grid_rings",
     "name": "Grid Rings",
@@ -15,7 +15,29 @@
     },
     "supportedModes": [
       "core.discs"
-    ]
+    ],
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      },
+      {
+        "category": "anomalous",
+        "tag": "impossible"
+      }
+    ],
+    "release": {
+      "mapId": "m_xdwngpnsknakpcsy",
+      "versionId": "v_urttpe3fd42a6w2x",
+      "revision": 1,
+      "contentHash": "sha256:107e3184fdd51ec21bfb0027c423b5596f63d3e24ba4f5e1993f4fdaed451a06",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:29:11.850Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

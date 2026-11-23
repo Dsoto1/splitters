@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 20,
+  "formatVersion": 50,
   "metadata": {
     "id": "sushi_belt_sumo",
     "name": "Sushi Belt Sumo",
@@ -16,7 +16,25 @@
     "supportedModes": [
       "core.discs",
       "core.deathmatch"
-    ]
+    ],
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      }
+    ],
+    "release": {
+      "mapId": "m_trd3tameyopuj4fv",
+      "versionId": "v_26raxi4sv5rfqyfv",
+      "revision": 1,
+      "contentHash": "sha256:c90c3241f30df7e9d9af0e59b321a68116cb4a86a4c82672d14210114f1c0b21",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:03:12.768Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,
@@ -5405,7 +5423,6 @@
     "style": "invisible",
     "height": 20
   },
-  "track": null,
   "backdrop": {
     "sky": "night",
     "scenery": "city",

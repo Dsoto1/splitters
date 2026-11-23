@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 38,
+  "formatVersion": 50,
   "metadata": {
     "id": "pantry_raid",
     "name": "Pantry Raid",
@@ -20,12 +20,22 @@
     ],
     "release": {
       "mapId": "m_vx3sswecmzrnbp7e",
-      "versionId": "v_gmevveeakcyux6yh",
-      "revision": 5,
-      "contentHash": "sha256:32e3cfaeb13759f7b26fe17baa369ea27d920195c8b150f3270e886a213d7f1b",
-      "schemaVersion": 38,
-      "releasedAt": "2026-11-14T11:12:52.188Z"
-    }
+      "versionId": "v_5ynbp2hqrzfqg7gd",
+      "revision": 6,
+      "contentHash": "sha256:b93ba4681e0688b172c3404799da47e35d8599df015c3146078aa33af9356281",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:46:31.234Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "dimensional",
+        "tag": "alternate"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "reactor",
     "name": "Reactor",
@@ -19,12 +19,26 @@
     ],
     "release": {
       "mapId": "m_a7fc2to4zlzrovxr",
-      "versionId": "v_w5emacuxszolmfwf",
-      "revision": 1,
-      "contentHash": "sha256:0af04a3a15c8142061bc4681eefd61e9c814a3e9621a515b9ce9e948f689f438",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:17:21.639Z"
-    }
+      "versionId": "v_upokgysv5t56d3cx",
+      "revision": 2,
+      "contentHash": "sha256:0db3f1d85d56cf91c3679cf1c390fe1dfd346a068f203df358436362521866a1",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:52:31.703Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "halcyon_station",
     "name": "Halcyon Station",
@@ -20,12 +20,22 @@
     ],
     "release": {
       "mapId": "m_ta56aj7kp5e75s2e",
-      "versionId": "v_56ih6a4l7gmunxqg",
-      "revision": 2,
-      "contentHash": "sha256:244072e6b0958b6daac3d55b0846b2066a1f6775fd276ad794214b6012a912f4",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T15:12:10.728Z"
-    }
+      "versionId": "v_4hybjjtuibjdm2i6",
+      "revision": 3,
+      "contentHash": "sha256:0aaff4025c35b5c4e7aa2c295724beab3fa54df458f890969a01c1612291e05d",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:29:58.751Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "space"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

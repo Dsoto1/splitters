@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "gallows_yard",
     "name": "Gallows Yard",
@@ -19,12 +19,22 @@
     ],
     "release": {
       "mapId": "m_ncxwta5tcb4ewt7x",
-      "versionId": "v_mzp6eiapfcfnsasr",
-      "revision": 1,
-      "contentHash": "sha256:41955b03eba24656a67dc0f7a0ba01b508692fdf1c64102c48ebb752769834f8",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:38:44.482Z"
-    }
+      "versionId": "v_6bdtns6xt3knor5e",
+      "revision": 2,
+      "contentHash": "sha256:f045e5a175cb9b937f763ae0ff52b48fec24b8966a98880e81e5c1b562bb1af5",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:26:25.481Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "medieval"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1634,8 +1644,8 @@
       "yaw": 2.09,
       "scale": 0.88,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_145",
@@ -1719,8 +1729,8 @@
       "yaw": 3.16,
       "scale": 0.896,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_151",
@@ -1748,8 +1758,8 @@
       "yaw": 5.23,
       "scale": 0.829,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_153",
@@ -1805,8 +1815,8 @@
       "yaw": 4.36,
       "scale": 0.96,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_157",
@@ -1848,8 +1858,8 @@
       "yaw": 4.31,
       "scale": 0.851,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_160",
@@ -1863,8 +1873,8 @@
       "yaw": 2.79,
       "scale": 0.71,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_161",
@@ -1892,8 +1902,8 @@
       "yaw": 3.83,
       "scale": 0.725,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_163",
@@ -1907,8 +1917,8 @@
       "yaw": 1.38,
       "scale": 0.866,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_164",
@@ -1922,8 +1932,8 @@
       "yaw": 3.51,
       "scale": 0.72,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_165",
@@ -1965,8 +1975,8 @@
       "yaw": 2.32,
       "scale": 0.783,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_168",
@@ -1980,8 +1990,8 @@
       "yaw": 1.76,
       "scale": 1.152,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_169",
@@ -2009,8 +2019,8 @@
       "yaw": 2.02,
       "scale": 1.212,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_171",
@@ -2066,8 +2076,8 @@
       "yaw": 6.14,
       "scale": 1.092,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_175",
@@ -2109,8 +2119,8 @@
       "yaw": 3.1,
       "scale": 0.903,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_178",
@@ -2166,8 +2176,8 @@
       "yaw": 4.31,
       "scale": 1.2,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_182",
@@ -2195,8 +2205,8 @@
       "yaw": 0.88,
       "scale": 0.92,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_184",
@@ -2252,8 +2262,8 @@
       "yaw": 5.18,
       "scale": 0.86,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_188",
@@ -2267,8 +2277,8 @@
       "yaw": 6.03,
       "scale": 1.548,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_189",
@@ -2394,8 +2404,8 @@
       "yaw": 5.28,
       "scale": 0.877,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_198",
@@ -2409,8 +2419,8 @@
       "yaw": 4.67,
       "scale": 0.894,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_199",
@@ -2424,8 +2434,8 @@
       "yaw": 1.27,
       "scale": 0.972,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_200",
@@ -2439,8 +2449,8 @@
       "yaw": 0.47,
       "scale": 1.212,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_201",
