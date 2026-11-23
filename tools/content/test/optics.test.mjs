@@ -1,7 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { OPTICS_TS, buildOptics, fitMount, magOf, opticsSource, readOpticsFile } from '../optics.mjs';
-import { readWeapons } from '../sight-fit.mjs';
+import { EYE_NEAREST, OPTICS_TS, buildOptics, fitMount, magOf, nearShows, opticsSource, pictureAt, readOpticsFile, surfacePoints } from '../optics.mjs';
+import { modelTriangles, readWeapons } from '../sight-fit.mjs';
+
+const MODELS = join(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'), 'packages/client/public/models');
 
 /** A box as triangles: [x0, x1], [y0, y1], [z0, z1] (metres; +Z the barrel, +Y up). */
 function box([x0, x1], [y0, y1], [z0, z1]) {
@@ -116,6 +120,41 @@ describe('optics by gun: the table and the mounts', () => {
     const behind = await buildOptics(file);
     expect(behind.problems.some((p) => /core\.amarillo: the gun behind a holo stands in its window/.test(p))).toBe(true);
     // And as it is, the 2x optic's mount is the one the table keeps.
-    expect((await buildOptics()).weapons['core.burst_rifle'].mount).toEqual(weapons['core.burst_rifle'].mount);
+    const kept = (await buildOptics()).weapons['core.burst_rifle'].mount;
+    expect({ at: kept.at, scale: kept.scale }).toEqual({ at: weapons['core.burst_rifle'].mount.at, scale: weapons['core.burst_rifle'].mount.scale });
+  });
+
+  it('the eye comes to a long gun\'s red dot or holographic sight, as near as nothing of the gun near it shows', async () => {
+    // (Owner, 2026-11-23, "that scope tho": the Woodland SMG's red dot drawn three times its size, 0.55 m off.)
+    const { weapons } = await buildOptics();
+    const all = readWeapons();
+    const file = readOpticsFile();
+    let fitted = 0;
+    for (const [id, row] of Object.entries(weapons)) {
+      const w = all.find((x) => x.id === id);
+      const ones = row.allowed.filter((a) => ['tube', 'frame'].includes(file.kinds[a].housing));
+      if (!ones.length || row.window) continue;
+      if (w.view.hold?.style !== 'long') {
+        expect(row.mount.eye, `${id}: a handgun is held out`).toBeUndefined();
+        continue;
+      }
+      expect(row.mount.eye, id).toBeTypeOf('number');
+      const depth = row.mount.at[2] - row.mount.eye;
+      expect(depth, `${id}: the glass's distance from the eye`).toBeGreaterThanOrEqual(EYE_NEAREST - 1e-9);
+      const tris = await modelTriangles(join(MODELS, w.view.model));
+      const pts = surfacePoints(tris);
+      for (const k of ones) {
+        const g = file.kinds[k].glass;
+        const y = row.mount.at[1] + g.rise * row.mount.scale;
+        expect(nearShows(pts, row.mount.at[0], y, row.mount.eye, pictureAt(g.half[1] * row.mount.scale, depth)), `${id} ${k}: nothing near the eye shows`).toBe(false);
+      }
+      fitted++;
+    }
+    expect(fitted).toBeGreaterThan(12);
+    // Nearer than the fit, the Woodland SMG's receiver would show cut open by the near plane.
+    const wood = weapons['core.woodland_smg'];
+    const tris = await modelTriangles(join(MODELS, all.find((x) => x.id === 'core.woodland_smg').view.model));
+    const g = file.kinds.reddot.glass;
+    expect(nearShows(surfacePoints(tris), 0, wood.mount.at[1] + g.rise * wood.mount.scale, wood.mount.at[2] - 0.2, pictureAt(g.half[1] * wood.mount.scale, 0.2))).toBe(true);
   });
 });

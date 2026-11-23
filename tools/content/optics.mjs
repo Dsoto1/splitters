@@ -181,6 +181,70 @@ export function blockedBehind(tris, mount, glass, eyeZ, magnified = false) {
   return false;
 }
 
+/**
+ * Where the eye sits behind a 1x glass built on a long gun (owner, 2026-11-23, "that scope tho": a red dot drawn three
+ * times its size filled the middle of the screen, the gun's rear a big black shape under it). The gun used to stand
+ * wholly ahead of the eye (its rear end STOCK_AHEAD of it, as an unfitted gun), the glass 0.5-0.65 m off, so the view
+ * drew the gun up to PICTURE_MAX times larger about the aim to bring the window to GLASS_SHARE of the screen: the housing,
+ * its mount and the receiver behind it all grew with it. Now the eye comes to the glass, as it does to a real one: the
+ * glass as near as it may be (from EYE_NEAREST) while nothing of the gun within NEAR_BAND of the eye shows in the aimed
+ * view (the camera's near plane cuts what is nearer than 0.1 m: it must be out of the picture), the sight picture making
+ * up the rest of the window's size. Returns the eye's model z (the glass's line is the view's axis), or null when no
+ * place nearer than the gun's rear end STOCK_AHEAD works.
+ * `glasses`: each 1x built kind's { rise, half } (at scale 1) the gun may carry; the eye must suit all of them.
+ */
+export const EYE_NEAREST = 0.3;
+/** Points of the gun this near the eye (m, along the view) must be out of the aimed view: the near plane (0.1 m) and a margin for the kick. */
+export const NEAR_BAND = 0.16;
+/** The aimed view's vertical field of view (the hip's 1.35 × the sights' 0.72) and the narrowest screen it is drawn on. */
+const AIM_TAN = Math.tan((HIP_FOV * 0.72) / 2);
+const NARROW_ASPECT = 1.25;
+/** The client's sight picture (game/optics.ts GLASS_SHARE, PICTURE_MAX): the window's half-height brought to this share of the screen's. */
+const GLASS_SHARE = 0.13;
+const PICTURE_MAX = 2;
+const EYE_STEP = 0.005;
+
+/** Points over a model's triangles, `step` apart (m). */
+export function surfacePoints(tris, step = 0.004) {
+  const out = [];
+  for (const [A, B, C] of tris) {
+    const L = Math.max(Math.hypot(B[0] - A[0], B[1] - A[1], B[2] - A[2]), Math.hypot(C[0] - A[0], C[1] - A[1], C[2] - A[2]), Math.hypot(C[0] - B[0], C[1] - B[1], C[2] - B[2]));
+    const n = Math.min(200, Math.max(1, Math.ceil(L / step)));
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n - i; j++) {
+        const [u, v] = [i / n, j / n];
+        out.push([A[0] + (B[0] - A[0]) * u + (C[0] - A[0]) * v, A[1] + (B[1] - A[1]) * u + (C[1] - A[1]) * v, A[2] + (B[2] - A[2]) * u + (C[2] - A[2]) * v]);
+      }
+    }
+  }
+  return out;
+}
+
+/** The client's sight picture for a glass of half-height `hh` at `depth` (m): optics.ts pictureScale. */
+export const pictureAt = (hh, depth) => Math.max(1, Math.min(PICTURE_MAX, GLASS_SHARE / (hh / depth / AIM_TAN)));
+
+/** Whether any of `pts` near the eye (model z `eyeZ`, at `eyeX`, `eyeY`) shows in the aimed view drawn `picture` times larger. */
+export function nearShows(pts, eyeX, eyeY, eyeZ, picture) {
+  for (const p of pts) {
+    const d = p[2] - eyeZ;
+    if (d <= -0.03 || d >= NEAR_BAND) continue;
+    const dd = Math.max(d, 0.1);
+    if ((picture * Math.abs(p[1] - eyeY)) / dd < AIM_TAN * 1.02 && (picture * Math.abs(p[0] - eyeX)) / dd < AIM_TAN * NARROW_ASPECT) return true;
+  }
+  return false;
+}
+
+export function fitEye(pts, min, mount, glasses, viewOffsetZ) {
+  const glassZ = mount.at[2];
+  // The glass's depth as the gun stood before: its rear end STOCK_AHEAD of the eye (sight-fit.mjs aimDepth).
+  const far = glassZ + aimDepth(viewOffsetZ, min[2]);
+  for (let depth = EYE_NEAREST; depth < far - 1e-9; depth += EYE_STEP) {
+    const eyeZ = glassZ - depth;
+    if (glasses.every((g) => !nearShows(pts, mount.at[0], mount.at[1] + g.rise * mount.scale, eyeZ, pictureAt(g.half[1] * mount.scale, depth)))) return round(eyeZ);
+  }
+  return null;
+}
+
 /** The eye point and the glass's middle of a mounted optic (model space), as the client places them (game/optics.ts). */
 export function mountedLine(w, min, mount, glass) {
   const y = mount.at[1] + glass.rise * mount.scale;
@@ -317,11 +381,24 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
         if (firstHit(tris, line.eye, [line.glass[0], line.glass[1], max[2] + 1]) !== null) problems.push(`${at}: the gun stands in the line from the eye through a ${id}'s glass (mount ${JSON.stringify(mount.at)}): give it a \`mount\` ({ at, reason }) read off the model`);
       }
     }
+    // A long gun carrying a 1x glass on its top brings the eye to it (fitEye); a handgun is held out at arm's length.
+    const ones = allowed.map((a) => kinds[a]).filter((k) => k && BUILT.includes(k.housing) && k.housing !== MAGNIFIED_BUILT && k.glass);
+    if (row.mount && ones.length && !entry.window) {
+      const hand = entry.mount?.eye;
+      if (hand !== undefined && (typeof hand !== 'number' || typeof entry.mount.reason !== 'string')) problems.push(`content/optics.json: ${w.id}: a hand-set \`mount.eye\` is the eye's model z behind the glass, with the mount's reason`);
+      else if (hand !== undefined) row.mount.eye = round(hand);
+      else if (w.view?.hold?.style === 'long') {
+        tris ??= await modelTriangles(join(MODELS, w.view.model));
+        bounds ??= boundsOf(tris);
+        const eye = fitEye(surfacePoints(tris), bounds[0], row.mount, ones.map((k) => k.glass), w.view.viewOffset[2]);
+        if (eye !== null) row.mount.eye = eye;
+      }
+    }
     out[w.id] = row;
     const k = kinds[row.default];
     if (entry.steps !== undefined && !row.mag) problems.push(`${at}: only a magnified optic has zoom steps`);
     const zooms = row.mag && w.view?.zoomFov ? (row.steps ?? k?.steps ?? [1]).slice(1).map((s) => `${magOf(w.view.zoomFov * s).toFixed(2)}x`) : [];
-    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x${zooms.length ? `, ${zooms.join(', ')} on the wheel` : ''}` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}` : row.window ? `the model's own window ${JSON.stringify(row.window.at)}` : '-'} |`);
+    report.push(`| ${w.id} | ${k?.name ?? row.default} | ${row.mag ? `${row.mag.toFixed(2)}x${zooms.length ? `, ${zooms.join(', ')} on the wheel` : ''}` : k?.adsFov ? `${magOf(HIP_FOV * k.adsFov).toFixed(2)}x (sights)` : ''} | ${row.allowed.join(', ')} | ${row.mount ? `${JSON.stringify(row.mount.at)} x${row.mount.scale}${row.mount.set ? ' (set by hand)' : ''}${row.mount.eye !== undefined ? `, eye z ${row.mount.eye} (glass ${(row.mount.at[2] - row.mount.eye).toFixed(3)} m off)` : ''}` : row.window ? `the model's own window ${JSON.stringify(row.window.at)}` : '-'} |`);
   }
   for (const id of [...Object.keys(file.weapons ?? {}), ...Object.keys(file.none ?? {})]) if (!weapons.some((w) => w.id === id)) problems.push(`content/optics.json: no weapon ${id}`);
   return { kinds, weapons: out, none, feel, problems, report };
@@ -349,7 +426,7 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
       const parts = [`default: ${q(w.default)}`, `allowed: ${list(w.allowed.map(q))}`];
       if (w.mag) parts.push(`mag: ${w.mag}`);
       if (w.steps) parts.push(`steps: ${list(w.steps)}`);
-      if (w.mount) parts.push(`mount: { at: ${list(w.mount.at)}, scale: ${w.mount.scale} }`);
+      if (w.mount) parts.push(`mount: { at: ${list(w.mount.at)}, scale: ${w.mount.scale}${w.mount.eye !== undefined ? `, eye: ${w.mount.eye}` : ''} }`);
       if (w.window) parts.push(`window: { at: ${list(w.window.at)}, half: ${list(w.window.half)}${w.window.round ? ', round: true' : ''} }`);
       return `  ${q(id)}: { ${parts.join(', ')} },`;
     });
@@ -402,7 +479,8 @@ export interface WeaponOptics {
   mag?: number;
   /** Its own zoom steps, where they differ from its kind's. */
   steps?: readonly number[];
-  mount?: { at: readonly [number, number, number]; scale: number };
+  /** \`eye\`: on a long gun carrying a red dot or a holographic sight, the eye's model z behind the glass (the glass's line is the view's axis). */
+  mount?: { at: readonly [number, number, number]; scale: number; eye?: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
   window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
