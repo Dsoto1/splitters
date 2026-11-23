@@ -76,7 +76,8 @@ const HYPE_BEAT = 0.8;
 /** "Hail to the chief" at most once a minute. */
 const LEAD_GAP = 60;
 
-export const HYPE_LINES: readonly VoiceLine[] = ['this_is_wild', 'incredible', 'can_you_believe_it', 'i_freakin_love_it', 'did_you_see_that', 'give_me_more'];
+/** Hype, at random ("We ain't no botta, boi": the owner's upload of 2026-11-23, a hype line until the owner names a moment for it). */
+export const HYPE_LINES: readonly VoiceLine[] = ['this_is_wild', 'incredible', 'can_you_believe_it', 'i_freakin_love_it', 'did_you_see_that', 'give_me_more', 'botta_boi'];
 
 /**
  * One spree a life (owner, 2026-11-18: "keep track of my spree and keep going and not repeat"): a line at each of these

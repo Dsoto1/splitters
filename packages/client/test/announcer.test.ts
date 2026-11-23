@@ -32,7 +32,7 @@ function run(a: Announcer, from: number, to: number): void {
 describe('announcer', () => {
   it('ships a file for every line', () => {
     const lock = JSON.parse(readFileSync(fileURLToPath(new URL('../../../content/owner-audio.lock.json', import.meta.url)), 'utf8')) as { files: { file: string }[] };
-    expect(VOICE_LINES.length).toBe(39);
+    expect(VOICE_LINES.length).toBe(40);
     for (const id of VOICE_LINES) {
       expect(lock.files.some((f) => f.file === `voice/${id}.ogg`)).toBe(true);
       expect(existsSync(fileURLToPath(new URL(`../public/voice/${id}.ogg`, import.meta.url)))).toBe(true);

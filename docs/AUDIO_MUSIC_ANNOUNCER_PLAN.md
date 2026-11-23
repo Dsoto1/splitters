@@ -50,6 +50,7 @@ Rules:
 | Irate_now | You die 3 times in a row without a kill |
 | What_the_heck_is_Timmy_gonna_d | You are the last one alive on your team (Elimination, rounds) |
 | This_is_my_rifle_There_are_man | You finish a match as the top scorer |
+| We_aint_no_botta_boi | (Added 2026-11-23) a hype line, at random with the others, until the owner names a moment for it |
 
 Reduce flashing doesn't apply: these are sounds only.
 
@@ -69,3 +70,6 @@ Reduce flashing doesn't apply: these are sounds only.
   - Hail to the chief: you (free-for-all) or your team taking the lead outright, not in Co-op or Zombies.
   - The last one alive: Elimination and Bomb, once a round, while an enemy still stands.
 
+
+## The owner's upload of 2026-11-23
+The Drive's `sounds` root holds 40 lines named `<line>_Showtime_MiniMax_02_HD_<id>.mp3`. 39 are the lines already in the game: encoded again they decode to the same samples as the shipped files (same length and loudness), so nothing changed. The new one, "We ain't no botta, boi" (`botta_boi`), is processed the same way (silence trimmed, -16 LUFS, 48 kbps Opus, 14.7 KB) and joins the hype lines; no other moment was invented for it. Kenney's "You win", "You lose" and "Tie" stay: the owner's set has no line for them.
