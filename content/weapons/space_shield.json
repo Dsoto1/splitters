@@ -3,6 +3,7 @@
   "code": 66,
   "displayName": "Space Shield",
   "category": "melee",
+  "hidden": true,
   "kind": "melee",
   "slot": 1,
   "fireMode": "semi",
