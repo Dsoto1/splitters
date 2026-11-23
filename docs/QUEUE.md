@@ -38,9 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/gripfit-1123` · 58affe34 · 45214083698 (attempt 2: shard 2's runner was shut down mid-flow and the editor's 3 s TEST budget, a known flake, both green on the re-run)
 - `wip/draws-1123` · 69381198 · 45232566354 (fewer draws in big matches; both touch `game/perfSwitches.ts`'s switch list: keep both names)
-- `wip/sonniss-3b` · cc083aee · 45238582131 (Laser Blaster recorded; announcer lines can be switched off, botta boi and blew up a dog off but shipped; full suite)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -250,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-23** train check/train-20261123-191822 (19c6388, run 45247572035 green on the re-run of the known `fireteams` flake; landed by the splitters lead with docs-only main merged in): `wip/gripfit-1123` (lane B's grip fits) and `wip/sonniss-3b` (Laser Blaster recorded; the owner's announcer lines re-checked, "We ain't no botta, boi" and the blew-up-a-dog line shipped but switched off). `wip/draws-1123` conflicted with gripfit in `perfSwitches.ts`: back to its owner to merge main and re-check.
 - **2026-11-23** train check/train-20261123-185910 (8b4a092, green; landed by the splitters lead with docs-only main merged in): the crossbow bolt and other along-flight shots point the right way from their first frame (`wip/fix-bolt-1123`); roof parapets (coping, merlons, pinnacles) are solid to bodies and bullets (`wip/fix-parapet-1123`).
 - **2026-11-23** train check/train-20261123-160453 (d985916, run 45212457895), landed by the splitters lead: the owner's Weapon Manager edits (11 weapons' sounds, Space Shield hidden; `wip/weapon-edits-1123`) and Sonniss pass 3 (56 picker alternates with names, 10 sci-fi/launcher guns recorded, alternates lazy-loaded; `wip/sonniss-3`). Follow-ups on `wip/sonniss-3b`: Laser Blaster and Arc Caster recorded, the owner's ~40 announcer lines.
 - **2026-11-23** material ballistics fixes (`wip/ballistics-1123`, green cd8d784e, run 45170921887): white station/industrial panels sheet metal, Bunker Concrete concrete, lights shoot-through plastic and neon glass, lighthouse/carved/hieroglyph/sandstone stone, small cleanups; barrier kept at 400 HP. Landed alone by the splitters lead.
