@@ -631,6 +631,14 @@ and effect with `packages/shared/test/fixtures/surface-classes-before.json` (tak
 regenerated) and lists every intended change by id: setting a surface that changes a class means adding it there, on
 purpose.
 
+**Ballistic overrides that stay on purpose** (material ballistics fixes, owner 2026-11-23; GUNPLAY_SPEC §8): a
+material's `ballistic` is kept only where its surface is a skin over something heavier or a floor that should not
+bounce rounds: `whitewash`, `stucco`, `harbour_render` and `lighthouse_bands` (render on masonry: stone),
+`snowy_concrete` (snow on concrete), `sandbags`, the asphalts, `parking_bays`, `pbr_lava`, `pbr_ice` and `lake_ice`
+(soil: no ricochet off the ground), `grate` and `pbr_walkway` (thin metal; owner: unchanged), `pier_decking` (wood),
+`circuit` (concrete) and `tactile_paving` (stone). The other overrides the surface pass left (regex accidents such as
+`panel` read as glass) were removed; `surfaceTypes.test.ts` lists each by id in `INTENDED_MATERIALS`.
+
 #### How to add or change one
 
 1. **Name a prop's surface** with `"surface": "<type>"` in its entry in `content/props/<pack>.json` (or the pack's top

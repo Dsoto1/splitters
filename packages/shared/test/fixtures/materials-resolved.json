@@ -118,8 +118,7 @@
     "accent": "#a88f5e",
     "scale": 3,
     "shine": 0.05,
-    "surface": "stone",
-    "ballistic": "soil"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -130,11 +129,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "soil",
+   "ballistic": "stone",
    "terrain": "stone"
   },
   {
@@ -309,8 +307,7 @@
     "accent": "#7d5a2e",
     "scale": 2,
     "shine": 0.05,
-    "surface": "wood",
-    "ballistic": "thin_wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -321,8 +318,7 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
    "ballistic": "thin_wood",
@@ -637,8 +633,7 @@
     "accent": "#8b98a3",
     "scale": 2,
     "shine": 0.5,
-    "surface": "metal",
-    "ballistic": "glass"
+    "surface": "sheet_metal"
    },
    "keys": [
     "id",
@@ -649,11 +644,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "glass",
+   "ballistic": "thin_metal",
    "terrain": "snow"
   },
   {
@@ -696,8 +690,7 @@
     "scale": 2,
     "shine": 0.2,
     "emissive": true,
-    "surface": "plastic",
-    "ballistic": "energy"
+    "surface": "plastic"
    },
    "keys": [
     "id",
@@ -709,11 +702,10 @@
     "scale",
     "shine",
     "emissive",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "energy",
+   "ballistic": "drywall",
    "terrain": "dirt"
   },
   {
@@ -861,8 +853,7 @@
     "accent": "#c4ccd4",
     "scale": 2,
     "shine": 0.55,
-    "surface": "metal",
-    "ballistic": "glass"
+    "surface": "sheet_metal"
    },
    "keys": [
     "id",
@@ -873,11 +864,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "glass",
+   "ballistic": "thin_metal",
    "terrain": "snow"
   },
   {
@@ -891,8 +881,7 @@
     "scale": 1,
     "shine": 0.3,
     "emissive": true,
-    "surface": "plastic",
-    "ballistic": "energy"
+    "surface": "plastic"
    },
    "keys": [
     "id",
@@ -904,11 +893,10 @@
     "scale",
     "shine",
     "emissive",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "energy",
+   "ballistic": "drywall",
    "terrain": "dirt"
   },
   {
@@ -922,8 +910,7 @@
     "scale": 1,
     "shine": 0.3,
     "emissive": true,
-    "surface": "plastic",
-    "ballistic": "energy"
+    "surface": "glass"
    },
    "keys": [
     "id",
@@ -935,11 +922,10 @@
     "scale",
     "shine",
     "emissive",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "energy",
+   "ballistic": "glass",
    "terrain": "dirt"
   },
   {
@@ -979,8 +965,7 @@
     "accent": "#2a3a8a",
     "scale": 2.4,
     "shine": 0.05,
-    "surface": "stone",
-    "ballistic": "drywall"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -991,11 +976,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "drywall",
+   "ballistic": "stone",
    "terrain": "sand"
   },
   {
@@ -1224,8 +1208,7 @@
     "accent": "#5a4228",
     "scale": 2,
     "shine": 0.05,
-    "surface": "thin_wood",
-    "ballistic": "wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -1236,11 +1219,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "wood",
+   "ballistic": "thin_wood",
    "terrain": "dirt"
   },
   {
@@ -1446,8 +1428,7 @@
     "accent": "#e8e4dc",
     "scale": 4,
     "shine": 0.35,
-    "surface": "sheet_metal",
-    "ballistic": "metal"
+    "surface": "sheet_metal"
    },
    "keys": [
     "id",
@@ -1458,11 +1439,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "metal",
+   "ballistic": "thin_metal",
    "terrain": "dirt"
   },
   {
@@ -1475,8 +1455,7 @@
     "accent": "#8e989e",
     "scale": 4,
     "shine": 0.35,
-    "surface": "sheet_metal",
-    "ballistic": "metal"
+    "surface": "sheet_metal"
    },
    "keys": [
     "id",
@@ -1487,11 +1466,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "metal",
+   "ballistic": "thin_metal",
    "terrain": "snow"
   },
   {
@@ -1588,8 +1566,7 @@
     "scale": 1,
     "shine": 0.3,
     "emissive": true,
-    "surface": "plastic",
-    "ballistic": "concrete"
+    "surface": "plastic"
    },
    "keys": [
     "id",
@@ -1601,11 +1578,10 @@
     "scale",
     "shine",
     "emissive",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "concrete",
+   "ballistic": "drywall",
    "terrain": "dirt"
   },
   {
@@ -1866,7 +1842,7 @@
     "scale": 6,
     "shine": 0.05,
     "surface": "plaster",
-    "ballistic": "energy"
+    "ballistic": "stone"
    },
    "keys": [
     "id",
@@ -1881,7 +1857,7 @@
     "ballistic"
    ],
    "found": true,
-   "ballistic": "energy",
+   "ballistic": "stone",
    "terrain": "snow"
   },
   {
@@ -1922,8 +1898,7 @@
     "scale": 1,
     "shine": 0.3,
     "emissive": true,
-    "surface": "plastic",
-    "ballistic": "energy"
+    "surface": "plastic"
    },
    "keys": [
     "id",
@@ -1935,11 +1910,10 @@
     "scale",
     "shine",
     "emissive",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "energy",
+   "ballistic": "drywall",
    "terrain": "sand"
   },
   {
@@ -2089,8 +2063,7 @@
     "accent": "#a88a62",
     "scale": 2,
     "shine": 0.1,
-    "surface": "stone",
-    "ballistic": "soil"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -2101,11 +2074,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "soil",
+   "ballistic": "stone",
    "terrain": "sand"
   },
   {
@@ -2145,8 +2117,7 @@
     "accent": "#1a120c",
     "scale": 1,
     "shine": 0.05,
-    "surface": "thin_wood",
-    "ballistic": "wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -2157,11 +2128,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "wood",
+   "ballistic": "thin_wood",
    "terrain": "dirt"
   },
   {
@@ -2255,8 +2225,7 @@
     "accent": "#5e5846",
     "scale": 2.4,
     "shine": 0.05,
-    "surface": "stone",
-    "ballistic": "thin_metal"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -2267,11 +2236,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "thin_metal",
+   "ballistic": "stone",
    "terrain": "sand"
   },
   {
@@ -2365,8 +2333,7 @@
     "accent": "#4e5a30",
     "scale": 2,
     "shine": 0.05,
-    "surface": "wood",
-    "ballistic": "thin_wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -2377,8 +2344,7 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
    "ballistic": "thin_wood",
@@ -2394,8 +2360,7 @@
     "accent": "#8a7050",
     "scale": 3,
     "shine": 0.05,
-    "surface": "stone",
-    "ballistic": "soil"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -2406,11 +2371,10 @@
     "accent",
     "scale",
     "shine",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "soil",
+   "ballistic": "stone",
    "terrain": "stone"
   },
   {
@@ -2828,8 +2792,7 @@
     "scale": 2.5,
     "shine": 0.08,
     "texture": "Planks037A",
-    "surface": "wood",
-    "ballistic": "thin_wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -2841,8 +2804,7 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
    "ballistic": "thin_wood",
@@ -3033,8 +2995,7 @@
     "scale": 3,
     "shine": 0.5,
     "texture": "Metal049A",
-    "surface": "sheet_metal",
-    "ballistic": "glass"
+    "surface": "sheet_metal"
    },
    "keys": [
     "id",
@@ -3046,11 +3007,10 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "glass",
+   "ballistic": "thin_metal",
    "terrain": "snow"
   },
   {
@@ -3714,8 +3674,7 @@
     "scale": 4,
     "shine": 0.08,
     "texture": "Concrete031",
-    "surface": "concrete",
-    "ballistic": "glass"
+    "surface": "concrete"
    },
    "keys": [
     "id",
@@ -3727,11 +3686,10 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "glass",
+   "ballistic": "concrete",
    "terrain": "gravel"
   },
   {
@@ -3832,8 +3790,7 @@
     "scale": 2.5,
     "shine": 0.08,
     "texture": "Planks039",
-    "surface": "wood",
-    "ballistic": "thin_wood"
+    "surface": "thin_wood"
    },
    "keys": [
     "id",
@@ -3845,8 +3802,7 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
    "ballistic": "thin_wood",
@@ -3892,8 +3848,7 @@
     "scale": 3,
     "shine": 0.08,
     "texture": "Clay005",
-    "surface": "dirt",
-    "ballistic": "stone"
+    "surface": "dirt"
    },
    "keys": [
     "id",
@@ -3905,11 +3860,10 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "stone",
+   "ballistic": "soil",
    "terrain": "dirt"
   },
   {
@@ -4244,8 +4198,7 @@
     "scale": 3,
     "shine": 0.08,
     "texture": "Tiles142",
-    "surface": "stone",
-    "ballistic": "soil"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -4257,11 +4210,10 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "soil",
+   "ballistic": "stone",
    "terrain": "dirt"
   },
   {
@@ -4275,8 +4227,7 @@
     "scale": 2.5,
     "shine": 0.08,
     "texture": "Bricks083",
-    "surface": "stone",
-    "ballistic": "soil"
+    "surface": "stone"
    },
    "keys": [
     "id",
@@ -4288,11 +4239,10 @@
     "scale",
     "shine",
     "texture",
-    "surface",
-    "ballistic"
+    "surface"
    ],
    "found": true,
-   "ballistic": "soil",
+   "ballistic": "stone",
    "terrain": "sand"
   },
   {

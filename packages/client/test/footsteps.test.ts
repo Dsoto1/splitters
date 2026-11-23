@@ -31,7 +31,9 @@ describe('footsteps by surface', () => {
 
   it('every library material names its surface', () => {
     expect(CORE_MATERIALS.filter((m) => !m.surface).map((m) => m.id)).toEqual([]);
-    expect(materialSurface('core.oak_planks')).toBe('wood');
+    // Planks are thin wood (material ballistics fixes, 2026-11-23): the same wood footsteps.
+    expect(materialSurface('core.oak_planks')).toBe('thin_wood');
+    expect(footstepSoundId(materialSurface('core.oak_planks'))).toBe('footstep.wood');
     expect(materialSurface('core.pbr_grass')).toBe('grass');
     expect(materialSurface('core.steel_grating')).toBe('metal');
     expect(materialSurface('core.packed_snow')).toBe('snow');
@@ -42,7 +44,7 @@ describe('footsteps by surface', () => {
     doc.classicStructure.theme = 'core.prototype';
     doc.classicStructure.tiles = [{ id: 't1', tile: 'core.floor', surfaces: { floor: { material: 'core.oak_planks', tint: null } } } as unknown as MapDocument['classicStructure']['tiles'][number]];
     const map = surfaceMap(doc);
-    expect(surfaceOfFace(box({}), up, { x: 1, y: 0, z: 1 }, map)).toBe('wood');
+    expect(surfaceOfFace(box({}), up, { x: 1, y: 0, z: 1 }, map)).toBe('thin_wood');
     doc.classicStructure.tiles[0]!.surfaces = {};
     expect(surfaceOfFace(box({}), up, { x: 1, y: 0, z: 1 }, surfaceMap(doc))).toBe(materialSurface('core.proto_floor'));
     // A free block's own material wins.
