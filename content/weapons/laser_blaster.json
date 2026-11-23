@@ -36,7 +36,7 @@
     "hold": { "style": "pistol", "grip": [0, -0.03, -0.08], "support": [-0.02, -0.04, -0.07], "rake": 25 },
     "muzzleAt": [0, 0.0, 0.125],
     "beam": true,
-    "sound": "fire.laser"
+    "sound": "fire.laser.b"
   },
   "notes": {
     "design": "A sidearm that never reloads: blue laser shots (20, five to a body, 0.53 s), instant, but every shot heats it; nine quick shots overheat it and it locks until it cools. Pace your trigger and it never runs dry.",

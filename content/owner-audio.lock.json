@@ -15,6 +15,7 @@
     {"id":"blew_up_a_dog","kind":"voice","set":"announcer","file":"voice/blew_up_a_dog.ogg","source":"That_guy_just_blew_up_a_dog_so","sha256":"a23f772ed0e84acc","bytes":39034,"duration":6.3,"inputLufs":-18.4},
     {"id":"bomb_disarmed","kind":"voice","set":"announcer","file":"voice/bomb_disarmed.ogg","source":"The_bomb_has_been_disarmed","sha256":"f80948dfe1484f73","bytes":12730,"duration":1.78,"inputLufs":-18.3},
     {"id":"bomb_planted","kind":"voice","set":"announcer","file":"voice/bomb_planted.ogg","source":"The_bomb_has_been_planted","sha256":"492edb38881e074e","bytes":13749,"duration":1.95,"inputLufs":-19.1},
+    {"id":"botta_boi","kind":"voice","set":"announcer","file":"voice/botta_boi.ogg","source":"We_aint_no_botta_boi_Showtime_MiniMax_02_HD_01a1ea54-5f9b-7571-891c-340a14f351ac","sha256":"c5ed665fc0053959","bytes":14741,"duration":2.15,"inputLufs":-17.8},
     {"id":"brain_cave","kind":"voice","set":"announcer","file":"voice/brain_cave.ogg","source":"Brain_Cave","sha256":"b2993459a280ea54","bytes":8053,"duration":1.2,"inputLufs":-17.8},
     {"id":"can_you_believe_it","kind":"voice","set":"announcer","file":"voice/can_you_believe_it.ogg","source":"Can_you_believe_it","sha256":"7752ef2c531e564a","bytes":9057,"duration":1.21,"inputLufs":-17.7},
     {"id":"defenders_win","kind":"voice","set":"announcer","file":"voice/defenders_win.ogg","source":"Defenders_Win","sha256":"70c47d5f772d59df","bytes":8948,"duration":1.42,"inputLufs":-18.2},
