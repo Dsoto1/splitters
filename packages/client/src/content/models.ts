@@ -20,6 +20,8 @@ import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { GLB, versioned } from '../assetUrl.ts';
 import { applyPropSurfaces } from './propSurfaces.ts';
 import { lodWithHysteresis, propLodEdges } from '../game/propLod.ts';
+import { perfOn } from '../game/perfSwitches.ts';
+import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 
 /** Mount models (content/vehicles `fallback`) fall back to the ones they replaced when they fail to load. */
 const MOUNT_MODEL_FALLBACKS: Readonly<Record<string, string>> = Object.fromEntries(Object.values(MOUNT_DEFS).flatMap((d) => (d.fallback ? [[d.model, d.fallback]] : [])));
@@ -199,6 +201,23 @@ export class ModelLibrary {
     return mesh;
   }
 
+  /** One material per atlas kind (scene-wide): the first of its kind loaded stands for all of them. */
+  private readonly atlasKinds = new Map<string, Material>();
+
+  /**
+   * The material `mat` draws as: the one shared by its atlas kind (extras `atlas`, written by tools/content/prop-atlas.mjs;
+   * the generated kit families' materials, which carry their colours in their vertices already, by what they are:
+   * name, surface and factors), or itself.
+   */
+  private atlasMaterial(mat: Material | null): Material | null {
+    const key = mat ? atlasKind(mat) : null;
+    if (!key || !mat) return mat;
+    const shared = this.atlasKinds.get(key);
+    if (shared) return shared;
+    this.atlasKinds.set(key, mat);
+    return mat;
+  }
+
   /** The model's meshes merged per material (in the model's own space), parked out of sight as instance sources. */
   private async mergeModel(path: string): Promise<Mesh[] | null> {
     const container = await this.load(path);
@@ -209,10 +228,14 @@ export class ModelLibrary {
     const meshes = holder.getChildMeshes(false).filter((m): m is Mesh => m instanceof Mesh && m.getTotalVertices() > 0);
     const groups = new Map<Material | null, Mesh[]>();
     let ok = meshes.length > 0;
+    // A prop's materials of one atlas kind (tools/content/prop-atlas.mjs) are one material, shared by every model of
+    // the pack with that kind: one draw per kind, and props of the pack can merge where they stand together.
+    const atlas = /^(props|kit)\//.test(path) && perfOn('propatlas');
     for (const m of meshes) {
       if (m.skeleton || m.morphTargetManager || m.hasThinInstances || !m.getIndices()) ok = false;
-      let g = groups.get(m.material);
-      if (!g) groups.set(m.material, (g = []));
+      const material = atlas ? this.atlasMaterial(m.material) : m.material;
+      let g = groups.get(material);
+      if (!g) groups.set(material, (g = []));
       g.push(m);
     }
     // Faces' winding must agree within a merged mesh (the import mirrors the model, and marks which way its faces turn).
@@ -515,4 +538,21 @@ function proceduralModel(scene: Scene, path: string): AssetContainer {
     box('handle', [0.05, 0.03, 0.1], [0, 0.09, 0.05], dark);
   }
   return c;
+}
+
+/**
+ * A prop material's atlas kind (null: drawn on its own): extras `atlas` from the prop build (tools/content/prop-atlas.mjs),
+ * or, for an untextured PBR material whose colour is in its vertices (white albedo: the generated kit families), what it
+ * draws with.
+ */
+export function atlasKind(mat: Material): string | null {
+  const extras = (mat.metadata as { gltf?: { extras?: Record<string, unknown> } } | null)?.gltf?.extras;
+  if (typeof extras?.atlas === 'string') return extras.atlas;
+  if (!(mat instanceof PBRMaterial)) return null;
+  const textured = mat.bumpTexture || mat.metallicTexture || mat.emissiveTexture || mat.ambientTexture || mat.opacityTexture || mat.reflectivityTexture || (mat.albedoTexture && !(mat.albedoTexture.getSize().width === 1 && mat.albedoTexture.getSize().height === 1));
+  const a = mat.albedoColor;
+  if (textured || a.r !== 1 || a.g !== 1 || a.b !== 1) return null;
+  const e = mat.emissiveColor;
+  const { atlas: _atlas, ...rest } = extras ?? {};
+  return `kind:${mat.name}|${mat.alpha}|${mat.metallic}|${mat.roughness}|${e.r},${e.g},${e.b}|${mat.backFaceCulling}|${mat.transparencyMode}|${JSON.stringify(rest)}`;
 }
