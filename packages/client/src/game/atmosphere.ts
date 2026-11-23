@@ -19,6 +19,7 @@ import { buildShadowProxies, proxyable } from './shadowProxy.ts';
 import { underSmall } from './shadowFlags.ts';
 import { BOX_SLACK, ShadowCache, isStaticCaster } from './shadowCache.ts';
 import { perfOn } from './perfSwitches.ts';
+import { keepStillCasterBounds } from './shadowBounds.ts';
 import { SMALL_REACH_IN, castsInLayer, smallCasts } from './shadowCasters.ts';
 
 export * from './graphicsSettings.ts';
@@ -42,6 +43,10 @@ const MIN_TEXELS = 6;
  * stop past SMALL_REACH_OUT (a band, no flicker at the line); before, a hard line at 15 m.
  */
 export const SMALL_CASTER_REACH = perfOn('smallcasters') ? SMALL_REACH_IN : 15;
+/** `casterlist`: the still casters' share of the shadow list is sorted again at least this often (frames). */
+const STILL_LIST_FRAMES = 60;
+/** `casterlist`: and tested again by distance once the camera has moved this far (m), with this much more reach. */
+const STILL_LIST_SLACK = 1;
 /** Static casters are merged into shadow proxies once none has come for this long (ms): the level and props load in bursts. */
 const STATIC_SETTLE_MS = 500;
 
@@ -118,6 +123,10 @@ export class Atmosphere {
     // Static casters drawn only when a cascade moves (shadowCache.ts), the rest every frame on top.
     this.cache = map && perfOn('shadowcache') ? ShadowCache.attach(scene, s, csm) : null;
     const cache = this.cache;
+    const stillList = perfOn('casterlist');
+    const split = { list: null as readonly AbstractMesh[] | null, length: -1, frame: -1, still: [] as AbstractMesh[], moving: [] as AbstractMesh[], at: new Vector3(Number.NaN, 0, 0), near: [] as AbstractMesh[], nearMoving: [] as AbstractMesh[] };
+    // `casterbounds`: the cascades' depth range from the casters' box, the still casters' part kept (shadowCasters.ts).
+    if (csm && perfOn('casterbounds')) keepStillCasterBounds(csm, scene);
     if (map) {
       map.getCustomRenderList = (pass, list, length) => {
         if (!list) return null;
@@ -129,8 +138,45 @@ export class Atmosphere {
         nearMoving.length = 0;
         const c = this.camera.globalPosition;
         const off = this.shadowless;
-        for (let i = 0; i < length; i++) {
-          const m = list[i]!;
+        // `casterlist`: casters that never move (a frozen world matrix, one mesh, not small clutter) are sorted out of the
+        // list once (again when it changes, and every STILL_LIST_FRAMES frames) and tested again only when the camera has
+        // moved STILL_LIST_SLACK metres, with that much more reach; the rest are tested every frame as before.
+        let to = length;
+        let order: readonly AbstractMesh[] = list;
+        if (stillList) {
+          if (length !== split.length || list !== split.list || frame - split.frame >= STILL_LIST_FRAMES) {
+            split.list = list;
+            split.length = length;
+            split.frame = frame;
+            split.still.length = 0;
+            split.moving.length = 0;
+            for (let i = 0; i < length; i++) {
+              const m = list[i]!;
+              if (m.isWorldMatrixFrozen && !m.hasThinInstances && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster) split.still.push(m);
+              else split.moving.push(m);
+            }
+            split.at.set(Number.NaN, 0, 0);
+          }
+          if (!(Vector3.DistanceSquared(split.at, c) < STILL_LIST_SLACK * STILL_LIST_SLACK)) {
+            split.at.copyFrom(c);
+            split.near.length = 0;
+            split.nearMoving.length = 0;
+            for (const m of split.still) {
+              const b = m.getBoundingInfo().boundingSphere;
+              if (Vector3.Distance(b.centerWorld, c) - b.radiusWorld > reach + STILL_LIST_SLACK) continue;
+              const mask = (m.metadata as { shadowLayers?: number } | null)?.shadowLayers;
+              if (mask !== undefined && !(mask & layers)) continue;
+              split.near.push(m);
+              if (!(cache ? cache.isStatic(m) : isStaticCaster(m))) split.nearMoving.push(m);
+            }
+          }
+          for (const m of split.near) if (!m.isDisposed()) near.push(m);
+          for (const m of split.nearMoving) if (!m.isDisposed()) nearMoving.push(m);
+          order = split.moving;
+          to = split.moving.length;
+        }
+        for (let i = 0; i < to; i++) {
+          const m = order[i]!;
           const b = m.getBoundingInfo().boundingSphere;
           const d = Vector3.Distance(b.centerWorld, c) - b.radiusWorld;
           if (d > reach) continue;

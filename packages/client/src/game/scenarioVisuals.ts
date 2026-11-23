@@ -2,6 +2,9 @@ import type { Scene } from '@babylonjs/core/scene';
 import type { LastingFx } from './lastingFx.ts';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import '@babylonjs/core/Meshes/instancedMesh';
+import { perfOn } from './perfSwitches.ts';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -203,6 +206,15 @@ export class ScenarioVisuals {
     if (this.pads.length) this.makePadMotion();
     this.mergeFixtures(fixtures);
     this.mergeStill(still);
+    // Doors of one style are the same few merged parts at every doorway: each shape and material one GPU instance source.
+    if (!this.opts.editor && perfOn('doorinst')) {
+      const doors: TransformNode[] = [];
+      entities.forEach((e, i) => {
+        const v = this.visuals.get(i);
+        if (e.kind === 'door' && v) doors.push(v.root);
+      });
+      this.partSources.push(...instanceRigidParts(doors, this.scene));
+    }
     this.batchDestructibles([...this.visuals.values()].filter((v) => v.batch));
     this.animated = null;
   }
@@ -294,6 +306,9 @@ export class ScenarioVisuals {
       };
     }
   }
+
+  /** The doors' shared part shapes (instanceRigidParts), parked out of sight: their instances draw. */
+  private partSources: Mesh[] = [];
 
   /** Lights nothing changes (see build). */
   private fixedLights = new Set<string>();
@@ -438,6 +453,8 @@ export class ScenarioVisuals {
     this.padMotion = null;
     for (const m of this.merged) m.dispose();
     this.merged = [];
+    for (const m of this.partSources) m.dispose();
+    this.partSources = [];
     for (const m of this.batches) m.dispose();
     this.batches = [];
     this.glass.dispose();
@@ -2268,4 +2285,78 @@ export function mergeRigidParts(root: TransformNode): void {
     one.material = mat;
     one.isPickable = false;
   }
+}
+
+/**
+ * Doors of one style are the same merged parts at every doorway (mergeRigidParts: an oak door's frame, its dark and light
+ * planks and its iron; a portcullis's grille and stone): each was a draw of its own in the view and in the shadow map,
+ * 40-odd draws for Flavius Rule's 28 gates. Parts with the same shape and material, wherever they hang, become GPU
+ * instances of one source (parked out of sight), placed where the part was under the same node, so they swing and slide
+ * as before: one draw a shape and material for every door in view. Parts with their own material (a door's lamp) stay
+ * as they are. Returns the sources (the caller disposes them with the map). The game only; MapMaker keeps the parts.
+ */
+export function instanceRigidParts(roots: readonly TransformNode[], scene: Scene): Mesh[] {
+  const groups = new Map<string, Mesh[]>();
+  for (const root of roots) {
+    for (const m of root.getChildMeshes(false)) {
+      if (!(m instanceof Mesh) || m.isDisposed() || !m.material || m.skeleton || m.morphTargetManager || m.hasInstances || m.hasThinInstances) continue;
+      if (m.billboardMode !== Mesh.BILLBOARDMODE_NONE || !m.getTotalVertices() || m.subMeshes?.length !== 1) continue;
+      const key = partShapeKey(m);
+      if (!key) continue;
+      let list = groups.get(key);
+      if (!list) groups.set(key, (list = []));
+      list.push(m);
+    }
+  }
+  const sources: Mesh[] = [];
+  for (const list of groups.values()) {
+    if (list.length < 2) continue;
+    const first = list[0]!;
+    const src = new Mesh(`sc_part_${sources.length}_${first.name}`, scene);
+    VertexData.ExtractFromMesh(first, true, true).applyToMesh(src, false);
+    src.material = first.material;
+    src.sideOrientation = first.sideOrientation;
+    src.isPickable = false;
+    src.receiveShadows = first.receiveShadows;
+    // Parked out of sight: only its instances draw.
+    src.position.y = -10000;
+    src.freezeWorldMatrix();
+    for (const m of list) {
+      const inst = src.createInstance(m.name);
+      inst.parent = m.parent;
+      inst.position.copyFrom(m.position);
+      if (m.rotationQuaternion) inst.rotationQuaternion = m.rotationQuaternion.clone();
+      else inst.rotation.copyFrom(m.rotation);
+      inst.scaling.copyFrom(m.scaling);
+      inst.isPickable = false;
+      inst.isVisible = m.isVisible;
+      inst.setEnabled(m.isEnabled(false));
+      m.dispose();
+    }
+    sources.push(src);
+  }
+  return sources;
+}
+
+/** A part's shape and material as a key: the same vertices, normals, UVs and triangles (hashed) and the same material. */
+function partShapeKey(m: Mesh): string | null {
+  const pos = m.getVerticesData('position');
+  const idx = m.getIndices();
+  if (!pos || !idx) return null;
+  const norm = m.getVerticesData('normal');
+  const uv = m.getVerticesData('uv');
+  let h = 17;
+  const add = (a: ArrayLike<number> | null) => {
+    if (!a) {
+      h = Math.imul(h, 31) | 0;
+      return;
+    }
+    for (let k = 0; k < a.length; k++) h = (Math.imul(h, 31) + Math.round(a[k]! * 1000)) | 0;
+  };
+  add(pos);
+  add(norm);
+  add(uv);
+  add(idx);
+  const kinds = m.getVerticesDataKinds().sort().join(',');
+  return `${m.material!.uniqueId}|${m.sideOrientation}|${kinds}|${pos.length}|${idx.length}|${h}`;
 }
