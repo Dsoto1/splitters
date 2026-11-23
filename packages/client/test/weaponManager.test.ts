@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon, gunplayOf } from '@tiletrigger/shared';
 import { STAT_FIELDS, statProblems } from '../../../tools/content/weapon-edits-format.mjs';
 import { hideBlockers as repoBlockers } from '../../../tools/content/weapons.mjs';
-import { applicableStats, changeSet, currentSound, currentStat, editedDef, hideBlockers, infoOf, loadEdits, saveEdits, setsOf, soundGroups, STORAGE_KEY, tidy } from '../src/tools/weaponManagerData.ts';
+import { applicableStats, changeSet, currentSound, currentStat, editedDef, hideBlockers, infoOf, loadEdits, saveEdits, setsOf, soundGroups, soundLabel, STORAGE_KEY, tidy } from '../src/tools/weaponManagerData.ts';
 import { damageAt, recoilPath } from '../src/tools/weaponTuningData.ts';
 
 /** The Weapon Manager's state (tools/weaponManagerData.ts; docs/FEATURES.md, "Weapon Manager"). */
@@ -66,11 +66,21 @@ describe('weapon manager data', () => {
     expect(changeSet({ 'core.smg': { stats: { damage: 5000 } } }).problems.join()).toMatch(/outside/);
   });
 
-  it('the sound picker offers the whole library, weapon fire first', () => {
+  it('the sound picker offers the whole library, guns first, by readable names', () => {
     const g = soundGroups();
-    expect(g[0]!.label).toBe('Weapon fire');
-    expect(g[0]!.ids).toContain('fire.rifle');
+    const by = Object.fromEntries(g.map((x) => [x.label, x.ids]));
+    expect(g[0]!.label).toBe('Guns');
+    expect(by['Guns']).toContain('fire.rifle');
+    expect(by['Guns']).toContain('fire.rifle.famas');
+    expect(by['Sci-fi and energy']).toContain('fire.plasma');
+    expect(by['Launchers and rockets']).toContain('fire.rockets');
+    expect(by['Synthesised weapon sounds']).toContain('fire.plasma.synth');
+    expect(by['Reload and handling']).toContain('reload.revolver');
     expect(g.flatMap((x) => x.ids)).toContain('reload.start');
+    expect(soundLabel('fire.rifle')).toBe('Rifle: HK416 close');
+    // Every weapon sound (fire, reload, handling) has a name in the picker, not a raw id.
+    for (const id of [...by['Guns']!, ...by['Sci-fi and energy']!, ...by['Launchers and rockets']!, ...by['Synthesised weapon sounds']!, ...by['Reload and handling']!.filter((x) => x.startsWith('reload.'))])
+      expect(soundLabel(id), id).not.toBe(id);
   });
 
   it('edits are kept in storage, and broken or blocked storage is survived', () => {
