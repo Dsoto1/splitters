@@ -445,7 +445,7 @@ describe('the clock tower has room to stand in (owner, 2026-11-19: the first bui
     for (const x of [-1, 0, 1, 2.6]) expect(over(x, 0, -2.6), `ground at x ${x}`).toBeGreaterThanOrEqual(3.7 - 1e-6);
     // Every step and landing (the stair's slabs: 0.3 m thick inside the walls, off the core): over its middle and corners.
     const treads = boxes.filter((b) => Math.abs(b.max[1] - b.min[1] - 0.3) < 1e-6 && b.max[0] <= 3.41 && b.min[0] >= -3.41 && b.max[2] <= 3.41 && b.min[2] >= -3.41);
-    expect(treads.length).toBe(71);
+    expect(treads.length).toBe(70);
     for (const t of treads) {
       if (t.max[1] >= 17.5 - 1e-6) continue; // the belfry's floor: below
       for (const [fx, fz] of [[0.5, 0.5], [0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]]) {

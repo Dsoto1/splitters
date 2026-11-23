@@ -1,0 +1,246 @@
+{
+ "$comment": "St. John's step 10 (owner's answers 2026-11-22, all recs; QUEUE 'Clock tower and Welles stair'): Welles's west switchback stair out, the Clock Tower moved one cell south onto its lobby (2, -10) with its winding stair landing on Welles's 2nd and 3rd floors (Stair 'Hall floors'), the Carriageway's east side walled, the freed stair cell (2, -11) a Dorm Bay End on all three floors; (2, -9) is court again (the lawn under it, untouched). No pickups or spawns stood in the removed stair. The ordered MapMaker steps as the Playwright driver replays them (as steps-7e.json); `coverage`: the same for maps/test_coverage.json. Ids are the map's on main at 7e5468817.",
+ "steps": [
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_0",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the ground stairwell (2, -11) (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_1",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the lobby room (2, -10) (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_3",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the top landing room (2, -11) (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_4",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_5",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_6",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_7",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_8",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_9",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_10",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_11",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_13",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_14",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_16",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_17",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_18",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the lobby's door to the Carriageway (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_19",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the lobby's bench (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_20",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_21",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_22",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): its walls, landings, roof and lights (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_23",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the first floor's stairwell (2, -10) (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_24",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the first floor door's wall (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_25",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the first floor door's wall (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_26",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): over the first floor door (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "sp_setpiece_g830vbnlk5_27",
+   "why": "Welles's west switchback stair (the Stair End Bay exploded since step 6): the first floor door's oak door (owner, 2026-11-22: 'the tower's winding stair stays, Welles's switchback goes')"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "prop_anu8d0py4g",
+   "why": "its Stair Railing (step 9)"
+  },
+  {
+   "group": "1",
+   "op": "delete",
+   "id": "prop_fhn15cf0m0",
+   "why": "its Stair Railing (step 9)"
+  },
+  {
+   "group": "2",
+   "op": "delete",
+   "id": "setpiece_nfl38c0amd",
+   "why": "the Clock Tower at (2, -9), on the court (owner: it moves one cell south)"
+  },
+  {
+   "group": "2",
+   "op": "place",
+   "piece": "setpiece.clock_tower",
+   "x": 2,
+   "y": -10,
+   "level": 0,
+   "rot": 2,
+   "options": {
+    "stair": "floors"
+   },
+   "why": "the Clock Tower on Welles's stair lobby, turned half round as before (its door on the court, north); Stair 'Hall floors': landings at 4 and 8 m at its south-east corner (the tile's north-west), where Welles's hall comes in"
+  },
+  {
+   "group": "3",
+   "op": "option",
+   "id": "setpiece_khjt0z69qh",
+   "name": "east",
+   "value": "wall",
+   "why": "the Carriageway's east side walled: its doors opened onto the old lobby and first floor; the tower's stair runs along that wall now"
+  },
+  {
+   "group": "4",
+   "op": "place",
+   "piece": "setpiece.dorm_bay_end",
+   "x": 2,
+   "y": -11,
+   "level": 0,
+   "rot": 0,
+   "options": {
+    "roomDoors": "slim",
+    "end": "door"
+   },
+   "why": "the freed stair cell (2, -11) as a Dorm Bay End (owner: 'continues Welles's hall as a dorm-bay end'): the ground floor: the hall's end with its door out west to the lane by the Carriageway (Welles's ground floor beside it is the mess hall, closed at its west end)"
+  },
+  {
+   "group": "4",
+   "op": "place",
+   "piece": "setpiece.dorm_bay_end",
+   "x": 2,
+   "y": -11,
+   "level": 1,
+   "rot": 0,
+   "options": {
+    "roomDoors": "slim"
+   },
+   "why": "the freed stair cell (2, -11) as a Dorm Bay End (owner: 'continues Welles's hall as a dorm-bay end'): the 2nd floor: Welles's hall goes on into it and turns into the tower's landing at 4 m"
+  },
+  {
+   "group": "4",
+   "op": "place",
+   "piece": "setpiece.dorm_bay_end",
+   "x": 2,
+   "y": -11,
+   "level": 2,
+   "rot": 0,
+   "options": {
+    "roomDoors": "slim"
+   },
+   "why": "the freed stair cell (2, -11) as a Dorm Bay End (owner: 'continues Welles's hall as a dorm-bay end'): the 3rd floor: the same at 8 m"
+  }
+ ],
+ "coverage": [
+  {
+   "group": "c",
+   "op": "place",
+   "piece": "setpiece.dorm_bay_end",
+   "x": -1,
+   "y": -62,
+   "level": 0,
+   "rot": 0,
+   "why": "the coverage map: one of every set piece (the new Dorm Bay End), south of the mess hall's row"
+  }
+ ]
+}

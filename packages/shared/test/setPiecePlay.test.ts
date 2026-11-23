@@ -97,6 +97,7 @@ const OPEN_SIDED = [
   // The dormitory bays (setPiecesAcademy.test.ts): the hall runs out of each end between partitions, no doorway of a tile's.
   'setpiece.dorm_bay',
   'setpiece.dorm_bay_closed',
+  'setpiece.dorm_bay_end',
   'setpiece.dorm_corner_bay',
   'setpiece.dorm_entry_bay',
   // St. John's step 7c (setPiecesAcademy.test.ts walks them): both stand open against a hall's doorway on their north side.
