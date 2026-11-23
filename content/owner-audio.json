@@ -1,5 +1,5 @@
 {
-  "$comment": "The owner's own music and announcer (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md). Made by the owner through Artlist (music with Lyria 3 Pro, the voice with MiniMax Speech-02 HD); owned, shipped only inside the game, never listed or offered as separate downloads. `source`: the start of the owner's file name. tools/content/owner-audio.mjs <folder with the owner's files> trims silence, evens out loudness and encodes them (Ogg Opus) to packages/client/public/music and packages/client/public/voice, and records each in content/owner-audio.lock.json; `pnpm content:build` adds them to content/provenance.json and `pnpm content:check` holds the files to the lock. Never commit the owner's original files.",
+  "$comment": "The owner's own music and announcer (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md). Made by the owner through Artlist (music with Lyria 3 Pro, the voice with MiniMax Speech-02 HD); owned, shipped only inside the game, never listed or offered as separate downloads. `source`: the start of the owner's file name; `disabled: true` keeps a line shipped but never said or loaded (the owner, 2026-11-23; delete the flag to switch it back on). tools/content/owner-audio.mjs <folder with the owner's files> trims silence, evens out loudness and encodes them (Ogg Opus) to packages/client/public/music and packages/client/public/voice, and records each in content/owner-audio.lock.json; `pnpm content:build` adds them to content/provenance.json and `pnpm content:check` holds the files to the lock. Never commit the owner's original files.",
   "origin": {
     "title": "Tile Trigger originals (music and announcer)",
     "creator": "the owner (made by the owner through Artlist)",
@@ -53,7 +53,7 @@
     "eviscerator": { "source": "Eviscerator" },
     "never_stop": { "source": "Do_you_ever_stop_stopping" },
     "twist_his_eggplant": { "source": "Twist_his_eggplant" },
-    "blew_up_a_dog": { "source": "That_guy_just_blew_up_a_dog_so" },
+    "blew_up_a_dog": { "source": "That_guy_just_blew_up_a_dog_so", "disabled": true },
     "mr_boombastic": { "source": "Mr_Boombastic_Say_me_fantastic" },
     "later_gator": { "source": "Later_Gator" },
     "hail_to_the_cheet": { "source": "Hail_to_the_cheet" },
@@ -67,6 +67,6 @@
     "irate_now": { "source": "Irate_now" },
     "timmy": { "source": "What_the_heck_is_Timmy_gonna_d" },
     "this_is_my_rifle": { "source": "This_is_my_rifle_There_are_man" },
-    "botta_boi": { "source": "We_aint_no_botta_boi" }
+    "botta_boi": { "source": "We_aint_no_botta_boi", "disabled": true }
   }
 }

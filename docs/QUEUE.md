@@ -38,7 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/sonniss-3` · bb0c75fc · 45202974438 (Sonniss pass 3: picker filled, 10 sci-fi/launcher sounds recorded, picker-only sounds lazy; full suite)
+- `wip/gripfit-1123` · 58affe34 · 45214083698 (attempt 2: shard 2's runner was shut down mid-flow and the editor's 3 s TEST budget, a known flake, both green on the re-run)
 - `wip/sonniss-3b` · 66fbb8c4 · 45224593312 (after wip/sonniss-3: Laser Blaster recorded; the owner's new announcer line; full suite)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
@@ -248,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-23** train check/train-20261123-160453 (d985916, run 45212457895), landed by the splitters lead: the owner's Weapon Manager edits (11 weapons' sounds, Space Shield hidden; `wip/weapon-edits-1123`) and Sonniss pass 3 (56 picker alternates with names, 10 sci-fi/launcher guns recorded, alternates lazy-loaded; `wip/sonniss-3`). Follow-ups on `wip/sonniss-3b`: Laser Blaster and Arc Caster recorded, the owner's ~40 announcer lines.
 - **2026-11-23** material ballistics fixes (`wip/ballistics-1123`, green cd8d784e, run 45170921887): white station/industrial panels sheet metal, Bunker Concrete concrete, lights shoot-through plastic and neon glass, lighthouse/carved/hieroglyph/sandstone stone, small cleanups; barrier kept at 400 HP. Landed alone by the splitters lead.
 - St. John's step 10: the clock tower on Welles's west stair, the dorm-bay end, the Carriageway walled on the tower's side (`wip/stjohns-10`, green 15a7fa7e, run 45121247043)
 - **2026-11-23** train check/train-20261123-015517 (ffab1e8, run 45097260852), landed by the splitters lead: St. John's library (8b) and mess hall (sunk 0.5 m) placed, the owner's corner answers 1-5, the overage accepted (`wip/stjohns-9`); the third character batch: Ignatius Slagg, Sterling Purrcival, Rufus Boomwell, Chester Knuckleby; Shiba, Salamander Warlord and Bandit on new models, Zero Ringtail retired into Bandit (`wip/chars-1122c`).

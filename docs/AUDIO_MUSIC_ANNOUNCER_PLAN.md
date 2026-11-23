@@ -41,7 +41,7 @@ Rules:
 | Eviscerator | 10 kills without dying |
 | Do_you_ever_stop_stopping | 15 kills without dying |
 | Twist_his_eggplant | Melee kill |
-| That_guy_just_blew_up_a_dog_so | Explosive kill of an animal character (a look flagged as animal) |
+| That_guy_just_blew_up_a_dog_so | **Switched off (owner, 2026-11-23):** shipped, never said or loaded; an explosive kill of an animal character is silent |
 | Mr_Boombastic_Say_me_fantastic | A multi-kill (2+) where the kills are explosive |
 | Later_Gator | You end someone's streak of 5 or more |
 | Hail_to_the_cheet | You take first place (FFA) or your team takes the lead, at most once a minute |
@@ -50,7 +50,7 @@ Rules:
 | Irate_now | You die 3 times in a row without a kill |
 | What_the_heck_is_Timmy_gonna_d | You are the last one alive on your team (Elimination, rounds) |
 | This_is_my_rifle_There_are_man | You finish a match as the top scorer |
-| We_aint_no_botta_boi | (Added 2026-11-23) a hype line, at random with the others, until the owner names a moment for it |
+| We_aint_no_botta_boi | **Switched off (owner, 2026-11-23):** shipped, never said or loaded, until the owner names a moment for it |
 
 Reduce flashing doesn't apply: these are sounds only.
 
@@ -72,4 +72,6 @@ Reduce flashing doesn't apply: these are sounds only.
 
 
 ## The owner's upload of 2026-11-23
-The Drive's `sounds` root holds 40 lines named `<line>_Showtime_MiniMax_02_HD_<id>.mp3`. 39 are the lines already in the game: encoded again they decode to the same samples as the shipped files (same length and loudness), so nothing changed. The new one, "We ain't no botta, boi" (`botta_boi`), is processed the same way (silence trimmed, -16 LUFS, 48 kbps Opus, 14.7 KB) and joins the hype lines; no other moment was invented for it. Kenney's "You win", "You lose" and "Tie" stay: the owner's set has no line for them.
+The Drive's `sounds` root holds 40 lines named `<line>_Showtime_MiniMax_02_HD_<id>.mp3`. 39 are the lines already in the game: encoded again they decode to the same samples as the shipped files (same length and loudness), so nothing changed. The new one, "We ain't no botta, boi" (`botta_boi`), is processed the same way (silence trimmed, -16 LUFS, 48 kbps Opus, 14.7 KB). Kenney's "You win", "You lose" and "Tie" stay: the owner's set has no line for them.
+
+**Switched-off lines (owner, 2026-11-23):** a line with `"disabled": true` in `content/owner-audio.json` stays shipped (its file, lock and provenance) but the announcer never says it (`DISABLED_LINES` in `audio/announcer.ts`: `line()` drops it, a special kill whose line is off is silent) and never loads it in a match (`ACTIVE_LINES`). Off now: "We ain't no botta, boi" (`botta_boi`) and "That guy just blew up a dog" (`blew_up_a_dog`). Deleting the flag switches a line back on. Kenney's "You win", "You lose" and "Tie" stay until the owner records their own.
