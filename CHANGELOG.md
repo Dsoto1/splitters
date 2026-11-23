@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Slow guns ring out.** Snipers, shotguns, revolvers and the Hand Cannon, the lever and flintlock guns, launchers and rockets, the railgun, vortex and disc now let their report ring for up to 1.5 s instead of stopping short (and the tank cannon sound no longer has extra shots in it); full-auto guns are unchanged.
 - **Roof parapets are solid.** The coping, merlons and pinnacles along a roof edge (St. John's halls and every other stone, concrete or adobe building) stop players and bullets; you can lie behind a merlon, and nobody walks or shoots through the battlement.
 - **Recorded sci-fi guns and a fuller sound picker.** The plasma, pulse, railgun, arc, vortex, disc, goo, nail, grenade launcher and rocket sounds are recorded now, and the Weapon Manager's picker offers 56 more named gun, reload, sci-fi, energy and launcher sounds (and the old synthesised ones), loaded only when used (docs/AUDIO.md).
 - **Crossbow bolts (and nails, stingers, spears, rockets) no longer leave the gun sideways:** they were drawn across the shot for their first moments, and are now hidden until they point along their flight.

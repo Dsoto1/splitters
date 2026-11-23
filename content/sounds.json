@@ -194,7 +194,7 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Fire_Slug_01.wav",
           "start": 0.051,
-          "length": 1.4,
+          "length": 1.38,
           "fade": 0.6,
           "punch": "gun"
         }
