@@ -14,6 +14,17 @@ const BLAST_KILL_MS = 300;
 /** Shotgun pellets that each make an impact sound (the rest would only add mush). */
 const MAX_IMPACTS_PER_SHOT = 2;
 
+/** Every sound a weapon plays: its shot, its second trigger's, its reload and its pump or bolt. */
+export function weaponSoundIds(): Set<string> {
+  const out = new Set<string>();
+  for (const def of Object.values(CORE_WEAPONS)) {
+    out.add(def.view.sound ?? `fire.${def.id.replace(/^core\./, '')}`);
+    if (def.view.altShot?.sound) out.add(def.view.altShot.sound);
+    if (def.view.reloadSound) out.add(def.view.reloadSound);
+    if (def.view.cycle?.sound) out.add(def.view.cycle.sound);
+  }
+  return out;
+}
 const fireSound = (weaponId: string) => (CORE_WEAPONS[weaponId]?.view.sound ?? `fire.${weaponId.replace(/^core\./, '')}`) as SoundId;
 /** Engines: how often a copy starts (ms; each is 1.2 s, so two overlap), how many others are heard, and how far (m). */
 const ENGINE_REPEAT_MS = 600;
@@ -148,6 +159,9 @@ export class SessionAudio {
     );
     // Its lines load once the game's sounds are in, when the page is idle (never on the match's way in).
     if (typeof audio.onUnlock === 'function') loadVoiceLines(audio);
+    // The weapons' own sounds that are picker-only alternates (content/sounds.json `lazy`, the Weapon Manager's picks)
+    // load with the game's sounds; the rest of the picker's library never loads in a match.
+    if (typeof audio.want === 'function') audio.want(weaponSoundIds());
   }
 
   /** Every frame: the announcer says what's waiting once the last line is done. */

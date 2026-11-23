@@ -29,6 +29,7 @@
     "viewOffset": [0.2, -0.2, 0.6],
     "tracer": "#ff9ab0",
     "hold": { "style": "long", "grip": [0, -0.015, -0.19], "support": [0, 0.045, 0.14], "shoulder": [0, -0.04, -0.49] },
+    "reloadSound": "reload.end.b",
     "muzzleAt": [0, 0.08, 0.5],
     "sound": "fire.shotgun"
   },
