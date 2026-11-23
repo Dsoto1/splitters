@@ -3280,8 +3280,10 @@ export class FrontEnd {
     const padRows: [string, string][] = [
       ['Move / look', 'Left stick / right stick'],
       ['Fire / aim', 'RT / LT'],
-      ['Jump / crouch', 'A / B'],
+      ['Jump / crouch (tap) / prone (hold)', 'A / B / hold B'],
       ['Reload / next weapon', 'X / Y'],
+      ['Previous / next weapon', 'D-pad left / right'],
+      ['Lean (while aiming)', 'Hold LT + D-pad left / right'],
       ['Weapon wheel (right stick points, let go to switch)', 'Hold Y'],
       ['Use / throw', 'RB / hold LB'],
       ['Sprint / ping', 'L3 / D-pad up'],

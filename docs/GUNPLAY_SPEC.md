@@ -1567,6 +1567,9 @@ with Q the last weapon and E use). Options → Controls rebinds both, like every
 docs/CONTROLS.md); a player who had moved the old lean keys keeps them. Ten ticks to lean all the way (0.17 s), back the same. The upper body rolls
 about the hips by up to 0.3 rad (17°) and shifts 12 cm at the hips, so the eye moves about 0.33 m out standing
 (0.24 m crouched) and 3 cm down. No stamina. Not while sprinting or sliding, prone, in the air, swimming or seated.
+Controller (owner, 2026-11-23): D-pad left / right lean while LT aims (held or toggled), and are the previous / next weapon
+otherwise (docs/CONTROLS.md, "Controller"); the pad sets the same lean buttons as the keys.
+
 Never into a wall: a ray from the upright eye stops the lean 0.2 m short of anything to that side, and a wall that
 comes closer pulls it in at once.
 

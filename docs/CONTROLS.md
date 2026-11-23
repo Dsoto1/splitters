@@ -39,6 +39,36 @@ from it, and **Options → Controls** rebinds them.
 | | Previous / next tab, Filter maps | Q / E, F (menus only) |
 | Fixed | Pause, menu numbers, performance overlay, fullscreen | Esc, 1-9 in an open menu, F3, F11 · Alt+Enter |
 
+## Controller (fixed, `game/input.ts pollPad`; Options → Controls → Controller lists it)
+
+| Action | Button |
+|---|---|
+| Move / look | Left stick / right stick |
+| Fire / aim | RT / LT |
+| Jump (stands you up) | A |
+| Crouch (toggle) | Tap B |
+| Prone (toggle) | **Hold B** (0.4 s) |
+| Reload | X |
+| Next weapon / weapon wheel (right stick points) | Tap Y / hold Y |
+| Previous / next weapon | D-pad left / right (not aiming) |
+| **Lean left / right (held)** | **D-pad left / right while LT aims** (held or toggled) |
+| Use, get in or out (hold: resupply) | RB |
+| Throw (hold to aim) | LB |
+| Sprint | L3 |
+| Ping (Fireteams lead: hold for orders) | D-pad up |
+| Respawn / class screen | D-pad down |
+| Third person / vehicle camera | R3 |
+| Spectating | RB / LB next / previous player, Y camera (the d-pad is as before) |
+
+Lean and weapon switch share the d-pad, told apart by where the press began: pressed while aiming it leans for as long as
+it is held and the aim lasts (letting go of LT stops the lean and never switches a weapon); pressed without the aim it is a
+weapon switch, made when the d-pad is let go, unless the aim began meanwhile (d-pad first, then LT: nothing happens). Keys
+and pad combine (both sides: upright). B is told apart the same way: a tap crouches when let go, a hold of 0.4 s goes prone
+at once. In a vehicle B ducks at once.
+
+Free buttons for the actions the pad lacks (not built; the owner picks): Back / View (melee), LB + RB together (alt
+fire), hold R3 (fire mode). Start is the pause menu.
+
 ## How it works
 
 - **Two keys an action** (`Bindings`: action → `[key, alt]`). A slot holds a key code (`KeyQ`, `Space`), a mouse code
@@ -54,7 +84,7 @@ from it, and **Options → Controls** rebinds them.
   press the new key or mouse button or roll the wheel. Esc keeps the old key, Delete clears it. A key another action
   uses in the same place warns and offers **Swap** (the other action takes the old key), **Take it** (the other loses
   it) or Cancel. **Reset to defaults** puts every key back. Keyboard alone works; at phone width each row stacks.
-  Controllers and touch keep their own fixed layouts (listed under it).
+  Controllers and touch keep their own fixed layouts (the controller's is above).
 - **Kept** in this browser (`tiletrigger.keys`: only the actions changed from the defaults, so later defaults reach
   everyone who kept them) and, signed in, on the account (profile field `keys`, shared `net/profile.ts keysShape`; the
   hub's `PUT /api/v1/profile` checks the shape; `careerStats.ts syncKeys`, as optic picks are synced). An older hub keeps
@@ -69,6 +99,6 @@ from it, and **Options → Controls** rebinds them.
 ## Tests
 
 `packages/client/test/keyBindings.test.ts` (defaults, clashes, swap, the stored diff, the migration),
-`inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, vehicle keys, a live rebind); e2e `offline`
+`padInput.test.ts` (the d-pad lean and its edges, B crouch and prone), `inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, vehicle keys, a live rebind); e2e `offline`
 (`weaponKeysChecks`: X, Tab, Q/E lean; `controlsPageChecks`: the page, keyboard-only rebind, clash and swap, Reset, a
 mouse button, phone width; `CONTROLS_PICS=<dir>` takes its pictures).
