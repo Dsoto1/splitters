@@ -118,9 +118,10 @@
         { "arch": { "u": [-1.6, 1.6], "y": [1.4, 3], "count": 11, "band": 0.4, "key": 0.22 }, "outside": true }
       ],
       "openings": [[-1.6, 1.6, 0, 3]],
+      "facade": true,
       "dressing": { "kind": "door", "span": 3.2 },
       "notes": {
-        "design": "A Roman round arch 3.2 m wide: a semicircle springing at 1.4 m to its crown at 3 m, just under a vaulted ceiling's springing (3.02 m), so it goes in any wall a vault springs from. Its collision steps over the curve and never dips below it (10° steps, the stone at most 0.28 m over the curve near the springing, where the voussoirs cover it); eleven voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side), with impost blocks at the springing and a soffit under the steps. Arena galleries, vomitoria, tunnels, shopfronts (docs/SET_PIECES_PLAN.md, part 3). No facade: the arch dresses itself."
+        "design": "A Roman round arch 3.2 m wide: a semicircle springing at 1.4 m to its crown at 3 m, just under a vaulted ceiling's springing (3.02 m), so it goes in any wall a vault springs from. Its collision steps over the curve and never dips below it (10° steps, the stone at most 0.28 m over the curve near the springing, where the voussoirs cover it); eleven voussoirs and a keystone dress both faces (the outer one where nothing is built beyond the side), with impost blocks at the springing and a soffit under the steps. Arena galleries, vomitoria, tunnels, shopfronts (docs/SET_PIECES_PLAN.md, part 3). A facade dresses the wall round it (St. John's, owner 2026-11-22: the mess hall's door bays clad in the wall's stone), as round the Arched window; the arch keeps its own voussoirs."
       }
     },
     {
@@ -176,9 +177,10 @@
         { "arch": { "u": [0.3, 3.1], "y": [1.8, 3.2], "count": 9, "band": 0.3, "key": 0.2 }, "outside": true }
       ],
       "openings": [[-3.1, -0.3, 0, 3.2], [0.3, 3.1, 0, 3.2]],
+      "facade": true,
       "dressing": { "kind": "door", "span": 6.2 },
       "notes": {
-        "design": "Two round arches side by side on a middle pier: a main entrance in one side of a cell (St. John's step 7a, the mess hall's door from the court: docs/map-briefs/st_johns; map format v49). Each arch 2.8 m wide, a semicircle springing at 1.8 m to its crown at 3.2 m; the middle pier 0.6 m, the end piers 0.9 m, so a facade's buttresses stand clear. One storey: it goes under any floor (not a tall style). Collision steps over each curve and never dips below it (10° steps, as the Round arch); nine voussoirs and a keystone dress both faces of each arch (the outer one where nothing is built beyond the side), their 0.3 m bands meeting over the middle pier, with impost blocks at the springing on the three piers and a soffit under the steps. Each arch leaves bots a lane (2.8 m less 0.8 m either side). No facade: the arches dress themselves."
+        "design": "Two round arches side by side on a middle pier: a main entrance in one side of a cell (St. John's step 7a, the mess hall's door from the court: docs/map-briefs/st_johns; map format v49). Each arch 2.8 m wide, a semicircle springing at 1.8 m to its crown at 3.2 m; the middle pier 0.6 m, the end piers 0.9 m, so a facade's buttresses stand clear. One storey: it goes under any floor (not a tall style). Collision steps over each curve and never dips below it (10° steps, as the Round arch); nine voussoirs and a keystone dress both faces of each arch (the outer one where nothing is built beyond the side), their 0.3 m bands meeting over the middle pier, with impost blocks at the springing on the three piers and a soffit under the steps. Each arch leaves bots a lane (2.8 m less 0.8 m either side). A facade dresses the wall round them (St. John's, owner 2026-11-22), as round the Arched window; the arches keep their own voussoirs."
       }
     },
     {

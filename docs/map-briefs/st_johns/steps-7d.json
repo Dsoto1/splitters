@@ -1,0 +1,246 @@
+{
+ "$comment": "St. John's step 7d (the mess hall placed with the step 7d kit, MESS_HALL_PLACEMENT.md; the floor sunk 0.5 m, owner's decision): the ordered MapMaker steps as a Playwright driver replays them (Import; the Outliner's search and a click on the row; Delete; the set piece inspector's Options one a selection; the Set pieces tab with R and a click on the cell; the entity inspector's X / Height / Z; Export). Cells are 8 m; a piece's x, y are its anchor cell, rot its quarter turns, level its storey. Ids are the map's on main at e0d36370d.",
+ "steps": [
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "floor",
+   "value": "sunk",
+   "why": "cell 3, beside the clock tower: A door north kept; sunk floor, timber beams on piers, arcade south, bowls, flags; Rows with a cross aisle; West end Fireplace and drink stations"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "ceiling",
+   "value": "timber_piers"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "aisle",
+   "value": "arcade"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "lights",
+   "value": "bowls"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "flags",
+   "value": "hung"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "furniture",
+   "value": "rows_gap"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_8zgwaep49q",
+   "name": "end",
+   "value": "fire_drinks"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "floor",
+   "value": "sunk",
+   "why": "cell 4: Rows with a podium (the lectern and bell on the north wall)"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "ceiling",
+   "value": "timber_piers"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "aisle",
+   "value": "arcade"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "lights",
+   "value": "bowls"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "flags",
+   "value": "hung"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_on14jx8cor",
+   "name": "furniture",
+   "value": "rows_podium"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "floor",
+   "value": "sunk",
+   "why": "cell 5: Doors both sides kept (owner: keep the south door for now); Rows with a cross aisle on DeKoven's lobby door"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "ceiling",
+   "value": "timber_piers"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "aisle",
+   "value": "arcade"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "lights",
+   "value": "bowls"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "flags",
+   "value": "hung"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_7j8uomeg8s",
+   "name": "furniture",
+   "value": "rows_gap"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "floor",
+   "value": "sunk",
+   "why": "cell 6: Rows of mess tables"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "ceiling",
+   "value": "timber_piers"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "aisle",
+   "value": "arcade"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "lights",
+   "value": "bowls"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "flags",
+   "value": "hung"
+  },
+  {
+   "group": "hall",
+   "op": "option",
+   "id": "setpiece_wqaqvgkrko",
+   "name": "furniture",
+   "value": "rows"
+  },
+  {
+   "group": "line",
+   "op": "delete",
+   "id": "setpiece_swcuia16jz",
+   "why": "cell 7: the Refectory Bay (Fireplace south)"
+  },
+  {
+   "group": "line",
+   "op": "place",
+   "piece": "setpiece.refectory_servery",
+   "x": 7,
+   "y": -11,
+   "level": 0,
+   "rot": 0,
+   "options": {
+    "floor": "sunk",
+    "ceiling": "timber"
+   },
+   "why": "the serving line"
+  },
+  {
+   "group": "kitchen",
+   "op": "delete",
+   "id": "setpiece_9igcntaxz3",
+   "why": "cell 8: the Refectory Bay"
+  },
+  {
+   "group": "kitchen",
+   "op": "place",
+   "piece": "setpiece.refectory_kitchen",
+   "x": 8,
+   "y": -11,
+   "level": 0,
+   "rot": 0,
+   "options": {
+    "floor": "sunk",
+    "end": "door"
+   },
+   "why": "the kitchen, its back door onto the east Stair End Bay's mouth"
+  },
+  {
+   "group": "pickups",
+   "op": "move",
+   "id": "pickup_2876",
+   "to": [
+    40,
+    -0.5,
+    -82.3
+   ],
+   "why": "the burst rifle off the table rows, into the cross aisle on the sunk floor"
+  },
+  {
+   "group": "pickups",
+   "op": "move",
+   "id": "pickup_2877",
+   "to": [
+    66,
+    -0.5,
+    -84
+   ],
+   "why": "the health onto the kitchen's sunk floor"
+  }
+ ]
+}

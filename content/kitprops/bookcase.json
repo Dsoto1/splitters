@@ -227,6 +227,123 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.bookcase.press",
+      "displayName": "Bookcase Press with Bench",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: tall dark oak bookcases standing out from the wall at right angles, an alcove between each pair with a bench and a sloped reading ledge): a double-sided case 3 m long and high and 0.7 m thick under a moulded cornice with a finial at each end, five rows of leather-bound books a face, a sloped reading ledge along its +z face and a bench facing it, the bench's aisle end a high panel. Its −x end goes to the wall. Collides as the case's box and the bench's."
+      },
+      "size": [
+        3,
+        3,
+        2.1
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "press",
+        "case": 0.7,
+        "shelves": 5,
+        "ledge": "front",
+        "bench": true,
+        "finial": 0.16
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "dark_oak",
+          "seed": 41101,
+          "look": {
+            "wood": "#3d2a1c",
+            "books": "0.25",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 41102,
+          "look": {
+            "wood": "#4a3024",
+            "books": "0.4",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.bookcase.double",
+      "displayName": "Double-sided Bookcase",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: freestanding oak bookcases about 2.2 m high, double-sided, in rows either side of a centre aisle): a case 3.2 m long, 2.2 m high and 0.8 m through, books on both faces in four rows, a cornice and finials, panelled ends. Collides as its box."
+      },
+      "size": [
+        3.2,
+        2.2,
+        0.8
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "press",
+        "shelves": 4,
+        "finial": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 41111,
+          "look": {
+            "wood": "#6a4a2c",
+            "books": "0.7",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "dark_oak",
+          "seed": 41112,
+          "look": {
+            "wood": "#3d2a1c",
+            "books": "0.5",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        }
+      ]
     }
   ]
 }

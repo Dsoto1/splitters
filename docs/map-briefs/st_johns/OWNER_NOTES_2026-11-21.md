@@ -334,3 +334,12 @@ Asked after 7c's pictures; the owner: "1. yes 2. enough 3. accept 4. yes 5. yes 
 6. Mirror cabinet and footlocker: **fold** the mirror into the sink prop and the footlocker into a bunk variant, so no props are added (not a higher prop budget).
 
 Then: "try and wrap things up here" (the Splitters FABLE 5.2 session finishes what is in flight and hands the rest to the lead).
+
+## The clock tower and Welles's west stair (owner, 2026-11-22, relayed by the lead)
+
+"The clock tower should move back." Directly behind the clock tower (cell (2, -9), on the court) is Welles's west
+stairwell (cells (2, -10) and (2, -11): a Stair End Bay exploded to parts since the tower's trim fix). The owner: merge
+the two staircases into one shared stair, so that space frees up and the tower can move in; "this works better and
+removes redundant verticality". To be done through MapMaker with a step list, before steps 9-11, with pictures before
+and after (top-down, and from inside the merged stair) and inside the performance rules. Which stair survives, where
+the tower stands and how far it moves are asked of the owner first (they change routes): see PLAN 4o.

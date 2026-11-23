@@ -1104,6 +1104,40 @@ shelving, the walk-in door; Floor, East end Wall or Back door). A set piece part
 lowest floor (`map/setPieceCheck.ts`). Walks in every turn, mirrored and not, on a 2 m and a 2.5 m ground grid:
 `setPiecesAcademy.test.ts`, "a mess hall's kit".
 
+**The library kit** (`tools/content/kit/library.mjs`; St. John's step 8b, Memorial Hall to the owner's direction and
+photos: two storeys, a faceted end under a spire, an arch in its wall, alcoves below and rows of bookcases above under
+an open timber roof). All generated in code, no downloads, no real school's or college's mark; nothing glows, flickers
+or moves (a lantern's panes and a window's lights are plain vertex colour). Props: `kit.roof.spire_faceted` (a steep
+eight-sided shingle pyramid 17.4 m across its flared eave and 15 m high with a small copper cap, drawn inside too;
+variant `hall` is cut away on −z where a Ridge Roof Bay runs in under it, so the two roofs are one room inside),
+`kit.roof.ridge_bay` (an 8 m bay of a ridge roof over a hall 16 m across: shingle slopes with a flared eave, pale
+panels, rafters, purlins and two arch-braced trusses on stone corbels underneath; its eaves 1.8 m over its foot;
+variant `end` closes the gable on −z), `kit.roof.gable_swept` (a steep 6 m roof with swept eaves over a wing 5 m
+across, a half-timbered gable on +z, its −z end open against a taller wall), `kit.bookcase.press` (a double-sided case
+3 m long and high standing out from a wall, a sloped reading ledge and a bench with a high panelled end beside it:
+collides as the case and the bench), `kit.bookcase.double` (a freestanding double-sided case 3.2 × 2.2 × 0.8 m),
+`kit.window.leaded` and `kit.window.leaded_band` (a square window of dark leaded panes in a thick pale stone surround,
+1.5 m, and a wide cream-framed one, 3 × 1.3 m, drawn on both faces of the 0.5 m wall they are set in: windows to look
+at, not through, as the stained glass), `kit.wall.arch_parabola` (a pale smooth stone arch of a low parabola's shape,
+5.6 × 3.7 m, its opening 4.5 m wide at the ground; collides as nothing: the wall it stands in is stepped inside its
+band), `kit.lamp.lantern_hanging`, `kit.library.globe`, `kit.library.rug`, `kit.library.runner`, `kit.monument.bird`
+(a bronze bird on a stone pedestal). Tiles (`content/tiles/core.json`): `core.hall_end_faceted` and
+`core.hall_end_faceted_stair` (half an octagon 16 m across, two storeys, the hall on its south side; the ground
+storey's walls are `wall` and the upper storey's `solid`, so a set piece gives the two storeys two materials; the
+stair one has the Spiral Stair's drum, treads and landing in its middle, turned to face the hall, and the upper
+floor cut round it; no roof of its own). Set pieces (`content/setpieces/campus.json`): **Library Bay (two storeys)**
+(option Arch porch, south or north: the Parabolic Stone Arch in that wall of the ground storey, the wall stepped in
+blocks behind its band, our crest on its crown, and a panelled porch recessed 3 m into the hall behind it with a 2 m
+door on in), **Library End Bay (two storeys, spiral stair)**, **Library Faceted End (spire, spiral stair)** (the
+octagon's whole square: the hall's last bay, with the same Arch porch option west or east, and the faceted end),
+**Small Stucco Wing (steps)** (blocks, no tile: 5 × 6 m on a concrete base, three steps and a black handrail up to a
+red door under its half-timbered gable). The upper storeys are hung with Clay Roof Tiles as shingles (a wall of one
+material shows it on both faces, so the upper rooms' walls are shingled inside too). A roof prop's eaves may overhang a
+set piece's footprint: a prop that collides as nothing and stands a storey or more over the piece's lowest floor may
+reach 0.75 m past it (`map/setPieceCheck.ts`, `EAVE`). The roofs collide as nothing (nobody reaches them; a grenade
+thrown high leaves through them). Walked: `setPiecesCampus.test.ts` (every piece, every turn, each Arch porch) and
+`setPiecesAcademy.test.ts`, "Memorial Hall's shape" (on a 2 m and a 2.5 m ground grid). No map format change.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
