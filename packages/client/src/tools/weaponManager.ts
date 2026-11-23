@@ -18,6 +18,7 @@ import {
   saveEdits,
   setsOf,
   soundGroups,
+  soundLabel,
   soundSlots,
   tidy,
   weaponList,
@@ -165,7 +166,8 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
   async function play(id: string): Promise<void> {
     audio ??= new AudioSystem();
     audio.unlock();
-    await audio.load();
+    // The picker's alternates are lazy (content/sounds.json): each loads on its first press.
+    await audio.ensure(id);
     audio.play(id as SoundId);
   }
 
@@ -217,7 +219,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
         <div class="wm-body">
           <p class="wm-desc${desc ? '' : ' muted'}">${esc(desc || designNoteOf(base.id) || 'No description yet.')}</p>
           <div class="wm-line">${esc(statLine(def))}</div>
-          <div class="wm-line">Sounds: ${soundSlots(def).map((s) => esc(currentSound(def, s) ?? '')).join(', ')}</div>
+          <div class="wm-line">Sounds: ${soundSlots(def).map((s) => esc(soundLabel(currentSound(def, s) ?? ''))).join(', ')}</div>
           <div>${sets.map((m) => `<span class="wm-chip">${esc(m.name)}</span>`).join('') || '<span class="wm-line">In no weapon set list</span>'}${e?.note ? '<span class="wm-chip">Note</span>' : ''}</div>
         </div>`;
       const icon = weaponIcon(base.id, '');
@@ -318,7 +320,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
             .map((slot) => {
               const now = currentSound(def, slot)!;
               const was = currentSound(base, slot)!;
-              return `<div class="wm-row"><strong style="width:90px">${slot === 'fire' ? 'Fire' : slot === 'alt' ? 'Alt-fire' : 'Reload'}</strong><button type="button" class="wm-play" data-play="${esc(now)}" aria-label="Play ${esc(now)}">▶</button><span class="grow">${esc(now)}${now !== was ? ` <span class="was changed">(in the game: ${esc(was)})</span>` : ''}</span><button type="button" class="wm-btn wm-small" data-pick="${slot}">Change…</button>${now !== was ? `<button type="button" class="wm-x" data-unsound="${slot}" title="Back to the game's" aria-label="Back to the game's sound">↺</button>` : ''}</div>`;
+              return `<div class="wm-row"><strong style="width:90px">${slot === 'fire' ? 'Fire' : slot === 'alt' ? 'Alt-fire' : 'Reload'}</strong><button type="button" class="wm-play" data-play="${esc(now)}" aria-label="Play ${esc(now)}">▶</button><span class="grow" title="${esc(now)}">${esc(soundLabel(now))}${now !== was ? ` <span class="was changed">(in the game: ${esc(soundLabel(was))})</span>` : ''}</span><button type="button" class="wm-btn wm-small" data-pick="${slot}">Change…</button>${now !== was ? `<button type="button" class="wm-x" data-unsound="${slot}" title="Back to the game's" aria-label="Back to the game's sound">↺</button>` : ''}</div>`;
             })
             .join('')}
         </section>
@@ -478,10 +480,10 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
     const fill = (q: string) => {
       listEl.innerHTML = soundGroups()
         .map((g) => {
-          const ids = g.ids.filter((sid) => !q || sid.includes(q.toLowerCase()));
+          const ids = g.ids.filter((sid) => !q || sid.includes(q.toLowerCase()) || soundLabel(sid).toLowerCase().includes(q.toLowerCase()));
           if (!ids.length) return '';
           return `<section><h2>${esc(g.label)}</h2>${ids
-            .map((sid) => `<div class="wm-row" data-sound="${esc(sid)}"><button type="button" class="wm-play" data-play="${esc(sid)}" aria-label="Play ${esc(sid)}">▶</button><span class="grow">${esc(sid)}${sid === current ? ' <span class="wm-ok">(now)</span>' : ''}</span><button type="button" class="wm-btn wm-small" data-use="${esc(sid)}"${sid === current ? ' disabled' : ''}>Use</button></div>`)
+            .map((sid) => `<div class="wm-row" data-sound="${esc(sid)}"><button type="button" class="wm-play" data-play="${esc(sid)}" aria-label="Play ${esc(soundLabel(sid))}">▶</button><span class="grow" title="${esc(sid)}">${esc(soundLabel(sid))}${sid === current ? ' <span class="wm-ok">(now)</span>' : ''}</span><button type="button" class="wm-btn wm-small" data-use="${esc(sid)}"${sid === current ? ' disabled' : ''}>Use</button></div>`)
             .join('')}</section>`;
         })
         .join('');
@@ -563,6 +565,8 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
     edits: () => structuredClone(edits),
     changeSet: () => changeSet(edits, 'test').set,
     played: () => audio?.stats.played ?? 0,
+    /** Whether a sound is loaded (the picker's alternates load on their first press). */
+    loaded: (id: string) => audio?.isLoaded(id) ?? false,
     copied: () => copied,
   };
   renderList();
