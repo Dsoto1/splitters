@@ -309,6 +309,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // the Sunset Gunslinger's model Dusty Ranger's. Saved choices and bot sets play the look that kept the model.
   'core.goblinatinker': 'core.grizzelda',
   'core.sunsetgunslinger': 'core.dustycolt',
+  // Owner, 2026-11-22 (the raccoon question): Zero Ringtail's model (the raccoon hacker of that afternoon) is Bandit's now,
+  // and its own entry went (manifest and portrait; its built files renamed to Bandit's). Saved choices and bot sets play Bandit.
+  'core.raccoonhacker': 'core.bandit',
 };
 
 /**
