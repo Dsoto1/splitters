@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Roof parapets are solid.** The coping, merlons and pinnacles along a roof edge (St. John's halls and every other stone, concrete or adobe building) stop players and bullets; you can lie behind a merlon, and nobody walks or shoots through the battlement.
 - **Recorded sci-fi guns and a fuller sound picker.** The plasma, pulse, railgun, arc, vortex, disc, goo, nail, grenade launcher and rocket sounds are recorded now, and the Weapon Manager's picker offers 56 more named gun, reload, sci-fi, energy and launcher sounds (and the old synthesised ones), loaded only when used (docs/AUDIO.md).
 - **Crossbow bolts (and nails, stingers, spears, rockets) no longer leave the gun sideways:** they were drawn across the shot for their first moments, and are now hidden until they point along their flight.
 - **Station, industrial and bunker walls are real cover; lights no longer stop bullets.** White Orbital Station and Industrial panels shoot like sheet metal and Bunker Concrete like concrete (both were see-through as glass), light strips and glow trim let rounds through, neon tubes are glass, and temple, lighthouse and sandstone walls are stone (GUNPLAY_SPEC §8).
