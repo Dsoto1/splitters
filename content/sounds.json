@@ -2469,7 +2469,7 @@
         {
           "pack": "sonniss-gdc-2020",
           "file": "Articulated Sounds - Magic Elements vol.2/CHEMICAL ACID Sizzle, Burn, Short 02.wav",
-          "start": 0.0,
+          "start": 0.08,
           "length": 0.45,
           "punch": true
         }
@@ -2630,7 +2630,7 @@
       ]
     },
     "fire.freeze.d": {
-      "gain": 0.47,
+      "gain": 0.53,
       "range": "mid",
       "jitter": 0.05,
       "label": "Freeze: frost cast, long",
@@ -2639,13 +2639,13 @@
         {
           "pack": "sonniss-gdc-2020",
           "file": "David Dumais Audio - Ice & Frost Magic 1/Magic_Spells_CastLong_Frost03.wav",
-          "start": 0.001,
+          "start": 0.091,
           "length": 0.604
         }
       ]
     },
     "fire.flame.b": {
-      "gain": 0.37,
+      "gain": 0.33,
       "range": "mid",
       "jitter": 0.1,
       "label": "Flame: fire whoosh",
@@ -2654,13 +2654,13 @@
         {
           "pack": "sonniss-gdc-2020",
           "file": "Bluezone - Mountain Dweller - Orc Sound Effects/Bluezone_BC0261_mountain_dweller_texture_fire_whoosh_003.wav",
-          "start": 0.326,
+          "start": 0.526,
           "length": 0.504
         }
       ]
     },
     "fire.flame.c": {
-      "gain": 0.34,
+      "gain": 0.33,
       "range": "mid",
       "jitter": 0.1,
       "label": "Flame: deep fire growl",
@@ -2669,7 +2669,7 @@
         {
           "pack": "sonniss-gdc-2026",
           "file": "Epic Stock Media - Elemental Mutation Whooshes and Impacts/FIREWhsh_Whoosh Fire Deep Growl Monster Saturated Crisp 03_ESM_EMWI.wav",
-          "start": 0.196,
+          "start": 0.366,
           "length": 0.604
         }
       ]
@@ -2684,7 +2684,7 @@
         {
           "pack": "sonniss-gdc-2020",
           "file": "Bluezone - Splash/Bluezone_BC0256_water_splash_drop_006.wav",
-          "start": 0.0,
+          "start": 0.06,
           "length": 0.354,
           "punch": true
         }
