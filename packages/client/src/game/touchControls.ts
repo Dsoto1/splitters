@@ -13,7 +13,7 @@ const DEADZONE = 0.12;
 /**
  * On-screen controls for phones and tablets held sideways (touchDevice.ts).
  * Nothing here plays the game itself: every control is a key of the keyboard
- * (InputState.virtualKey), the pad is an analog stick beside WASD and a drag is
+ * (InputState.virtualAction), the pad is an analog stick beside WASD and a drag is
  * mouse look, so touch goes through the same input path as keyboard, mouse and
  * controller.
  *
@@ -87,22 +87,22 @@ export class TouchControls {
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
     this.watchBar.hidden = true;
-    const watchBtn = (label: string, title: string, code: string) => {
+    const watchBtn = (label: string, title: string, action: string) => {
       const b = btn('tc-wbtn', label, title);
       b.addEventListener(
         'pointerdown',
         (e) => {
           e.preventDefault();
           e.stopPropagation();
-          this.input.virtualKey(code, true);
-          this.input.virtualKey(code, false);
+          this.input.virtualAction(action, true);
+          this.input.virtualAction(action, false);
         },
         { signal },
       );
       return b;
     };
-    this.joinBtn = watchBtn('Join', 'Join the game', 'KeyJ');
-    this.watchBar.append(watchBtn('◀', 'Previous player', 'ArrowLeft'), watchBtn('Camera', 'Follow players or fly the free camera', 'Space'), watchBtn('▶', 'Next player', 'ArrowRight'), this.joinBtn);
+    this.joinBtn = watchBtn('Join', 'Join the game', 'joinGame');
+    this.watchBar.append(watchBtn('◀', 'Previous player', 'specPrev'), watchBtn('Camera', 'Follow players or fly the free camera', 'specCamera'), watchBtn('▶', 'Next player', 'specNext'), this.joinBtn);
     this.el.append(this.watchBar);
     this.rotate = div('');
     this.rotate.id = 'touch-rotate';
@@ -167,35 +167,35 @@ export class TouchControls {
       down: (e) => {
         fireDrag.start(e);
         fire.classList.add('on');
-        this.input.virtualKey('KeyF', true);
+        this.input.virtualAction('fire', true);
       },
       move: fireDrag.move,
       up: (e) => {
         fireDrag.end(e);
         fire.classList.remove('on');
-        this.input.virtualKey('KeyF', false);
+        this.input.virtualAction('fire', false);
       },
     });
-    /** A button that holds a key down while pressed. */
-    const holdKey = (b: HTMLElement, code: string) =>
+    /** A button that holds an action (keyBindings.ts) while pressed. */
+    const holdKey = (b: HTMLElement, action: string) =>
       track(b, {
         down: () => {
           b.classList.add('on');
-          this.input.virtualKey(code, true);
+          this.input.virtualAction(action, true);
         },
         up: () => {
           b.classList.remove('on');
-          this.input.virtualKey(code, false);
+          this.input.virtualAction(action, false);
         },
       });
-    holdKey(melee, 'KeyY');
-    holdKey(reload, 'KeyR');
-    holdKey(use, 'KeyE');
-    holdKey(thrw, 'KeyG');
-    // Aim holds X while pressed: the input's own latch makes it a toggle when Aim is set to Toggle (combatPrefs.ts).
+    holdKey(melee, 'melee');
+    holdKey(reload, 'reload');
+    holdKey(use, 'use');
+    holdKey(thrw, 'throw');
+    // Aim holds the aim action while pressed: the input's own latch makes it a toggle when Aim is set to Toggle (combatPrefs.ts).
     track(this.aimBtn, {
-      down: () => this.input.virtualKey('KeyX', true),
-      up: () => this.input.virtualKey('KeyX', false),
+      down: () => this.input.virtualAction('aim', true),
+      up: () => this.input.virtualAction('aim', false),
     });
     track(this.wheelBtn, {
       down: () => {
@@ -212,7 +212,7 @@ export class TouchControls {
       up: () => undefined,
     });
     track(pause, { down: () => this.hooks.pause(), up: () => undefined });
-    track(this.scoresBtn, { down: () => this.input.virtualKey('Tab', !this.input.held('Tab')), up: () => undefined });
+    track(this.scoresBtn, { down: () => this.input.toggleScoreboard(), up: () => undefined });
 
     // The pad: an analog stick drawn as a d-pad; its middle is jump (tap) and crouch (hold).
     let centre: { id: number; at: number; timer: number; long: boolean } | null = null;
@@ -232,7 +232,7 @@ export class TouchControls {
       const sprint = len > SPRINT_PAST && -y / len > 0.75;
       if (sprint !== sprinting) {
         sprinting = sprint;
-        this.input.virtualKey('ShiftLeft', sprint);
+        this.input.virtualAction('sprint', sprint);
         pad.classList.toggle('sprint', sprint);
       }
     };
@@ -258,8 +258,8 @@ export class TouchControls {
               requestAnimationFrame(() => {
                 if (centre !== c) return;
                 c.long = true;
-                this.input.virtualKey('KeyC', true);
-                this.input.virtualKey('KeyC', false);
+                this.input.virtualAction('crouch', true);
+                this.input.virtualAction('crouch', false);
                 navigator.vibrate?.(15);
               });
             }, LONG_PRESS_MS),
@@ -282,17 +282,18 @@ export class TouchControls {
           // lift can be handled after the hold timer ran, so a tap that crouched by mistake stands back up.
           const tap = e.timeStamp - centre.at < LONG_PRESS_MS;
           if (tap && centre.long) {
-            this.input.virtualKey('KeyC', true);
-            this.input.virtualKey('KeyC', false);
+            this.input.virtualAction('crouch', true);
+            this.input.virtualAction('crouch', false);
           }
           if (tap && centre.long && !this.input.crouchOn && !this.input.spectating) {
             // Crouched by mistake and stood back up: jump on the tick after (pressed now, it would only stand
             // you up from the crouch the mistake already put you in).
             this.input.jumpAfterStanding();
           } else if (tap) {
-            // A tap: jump (Space, so it also stands you up, or picks whom to watch while you're down).
-            this.input.virtualKey('Space', true);
-            this.input.virtualKey('Space', false);
+            // A tap: jump (it also stands you up), or while you're down switch the camera, as Space does.
+            const act = this.input.spectating ? 'specCamera' : 'jump';
+            this.input.virtualAction(act, true);
+            this.input.virtualAction(act, false);
           }
           endCentre();
         }
@@ -313,7 +314,7 @@ export class TouchControls {
     if (this.el.hidden === !on) return;
     this.el.hidden = !on;
     // Paused: the scoreboard a tap opened closes (the pause menu shows the scores).
-    if (!on && this.input.held('Tab')) this.input.virtualKey('Tab', false);
+    if (!on && this.input.scoreboardPinned) this.input.toggleScoreboard();
   }
 
   /** Out of play: the watching buttons (Join for spectators by choice); null hides them. */
@@ -325,7 +326,7 @@ export class TouchControls {
   /** Once a frame: the toggle buttons show their state. */
   update(): void {
     this.aimBtn.classList.toggle('on', this.input.aimShown && this.input.locked);
-    this.scoresBtn.classList.toggle('on', this.input.held('Tab'));
+    this.scoresBtn.classList.toggle('on', this.input.scoreboardPinned);
     this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');
     if (this.ordersBtn.hidden === this.input.ordersOn) this.ordersBtn.hidden = !this.input.ordersOn;
     this.ordersBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'order');

@@ -371,7 +371,6 @@ describe('input with a pair in hand', () => {
   async function make() {
     const { InputState } = await import('../src/game/input.ts');
     const input = new InputState(new EventTarget() as unknown as HTMLCanvasElement);
-    input.wheelKey = 'KeyQ';
     input.setTouchEngaged(true);
     return input;
   }
@@ -391,9 +390,9 @@ describe('input with a pair in hand', () => {
     expect(input.zooming).toBe(false);
     mouse('pointerup', 0);
     expect(input.sample().buttons & (BUTTON_ZOOM | BUTTON_ALT)).toBe(0);
-    key('keydown', 'KeyX');
+    key('keydown', 'Backquote');
     expect(input.sample().buttons & (BUTTON_ZOOM | BUTTON_ALT)).toBe(BUTTON_ALT);
-    key('keyup', 'KeyX');
+    key('keyup', 'Backquote');
     // The first trigger is its own.
     mouse('pointerdown', 1);
     expect(input.sample().buttons & (BUTTON_FIRE | BUTTON_ALT)).toBe(BUTTON_FIRE);
@@ -441,16 +440,16 @@ describe('input with a pair in hand', () => {
 
   it('touch: the Fire button pulls both triggers while paired, the first only with one gun', async () => {
     const input = await make();
-    input.virtualKey('KeyF', true);
+    input.virtualAction('fire', true);
     expect(input.sample().buttons & (BUTTON_FIRE | BUTTON_ALT)).toBe(BUTTON_FIRE);
     input.pairTrigger = input.altTrigger = true;
     expect(input.sample().buttons & (BUTTON_FIRE | BUTTON_ALT)).toBe(BUTTON_FIRE | BUTTON_ALT);
-    input.virtualKey('KeyF', false);
+    input.virtualAction('fire', false);
     expect(input.sample().buttons & (BUTTON_FIRE | BUTTON_ALT)).toBe(0);
     // The Aim button is the second trigger by itself.
-    input.virtualKey('KeyX', true);
+    input.virtualAction('aim', true);
     expect(input.sample().buttons & (BUTTON_FIRE | BUTTON_ALT)).toBe(BUTTON_ALT);
-    input.virtualKey('KeyX', false);
+    input.virtualAction('aim', false);
     input.dispose();
   });
 

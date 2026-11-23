@@ -115,20 +115,20 @@ describe('aim: hold or toggle', () => {
       expect(input.zooming).toBe(true);
       mouse('pointerup', 0);
       expect(input.zooming).toBe(false);
-      // Touch's Aim button holds X while pressed and follows the setting (docs/MOBILE_AUDIT.md, proposal 3): Toggle
+      // Touch's Aim button holds the aim action while pressed and follows the setting (docs/MOBILE_AUDIT.md, proposal 3): Toggle
       // latches on a tap and the next tap lets go; Hold aims only while the finger is down.
       saveCombatPrefs({ aim: 'toggle' });
       input.setTouchEngaged(true);
-      input.virtualKey('KeyX', true);
-      input.virtualKey('KeyX', false);
+      input.virtualAction('aim', true);
+      input.virtualAction('aim', false);
       expect(input.zooming).toBe(true);
-      input.virtualKey('KeyX', true);
-      input.virtualKey('KeyX', false);
+      input.virtualAction('aim', true);
+      input.virtualAction('aim', false);
       expect(input.zooming).toBe(false);
       saveCombatPrefs({ aim: 'hold' });
-      input.virtualKey('KeyX', true);
+      input.virtualAction('aim', true);
       expect(input.zooming).toBe(true);
-      input.virtualKey('KeyX', false);
+      input.virtualAction('aim', false);
       expect(input.zooming).toBe(false);
     } finally {
       input.dispose();
