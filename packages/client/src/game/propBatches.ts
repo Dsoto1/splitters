@@ -41,16 +41,16 @@ import { mergeItems, shownIndices } from './propMerge.ts';
  *
  * - **Merged** (`merge`, docs/PERF_PROPS_2026-11-23.md; `?perfoff=propmerge`): still copies that can't break, of models
  *   whose parts are opaque and small enough (MERGE_MODEL_VERTICES over the map's copies), are not thin instances: every
- *   such copy in a MERGE_CELL square is one mesh per material and level of detail with the others (game/propMerge.ts),
- *   whatever its model, so a sink and the mirror above it, drawn with their pack's shared atlas material
- *   (content/models.ts, `?perfoff=propatlas`), are one draw. Each copy still picks its own level of detail; a change
- *   rebuilds only the index list of the meshes it leaves and joins. Their tints are in their vertex colours. They cast
+ *   such copy in a MERGE_CELL square is one mesh per material with the others, every level of detail in it
+ *   (game/propMerge.ts), whatever its model, so a sink and the mirror above it, drawn with their pack's shared atlas
+ *   material (content/models.ts, `?perfoff=propatlas`), are one draw. Each copy still picks its own level of detail; a
+ *   change rebuilds only the index list of its square's meshes. Their tints are in their vertex colours. They cast
  *   through static shadow-only batches of their model at full detail, merged into the shadow proxies, as models with
  *   levels of detail already did. Models that can't merge keep their batches, or (fewer than PROP_BATCH_MIN copies)
  *   their GPU instances.
  */
 
-/** Merged copies are grouped by squares of this many metres (culled per square, a mesh per material and level). */
+/** Merged copies are grouped by squares of this many metres (culled per square, a mesh per material), as wide as the batches'. */
 export const MERGE_CELL = 128;
 /**
  * A model merges only when its full-detail vertices times its copies on the map stay under this: merging copies their
