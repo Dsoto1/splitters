@@ -14020,7 +14020,7 @@ async function gripsInPlay(browser) {
     return seen;
   };
   const dotGun = await aimWith('core.laser_rifle');
-  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.6 && dotGun.picture > 1.5 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim, the gun drawn larger, no HUD dot (${JSON.stringify(dotGun)})`);
+  check(dotGun.held === 'core.laser_rifle' && dotGun.glass && dotGun.housing && dotGun.off?.inside && dotGun.off.deg < 0.1 && dotGun.picture >= 1 && dotGun.picture <= 2 && dotGun.dot !== '1', `the Laser Rifle carries a red dot: its glass on the aim (the eye at the glass, the gun drawn at most 2x larger; GUNPLAY_SPEC §15, "The eye at a long gun's glass"), no HUD dot (${JSON.stringify(dotGun)})`);
   const ironsGun = await aimWith('core.pistol');
   check(ironsGun.held === 'core.pistol' && !ironsGun.glass && !ironsGun.housing && ironsGun.dot !== '1', `the Pistol aims down its iron sights with no HUD dot (${JSON.stringify(ironsGun)})`);
   const plainGun = await aimWith('core.rockets');
