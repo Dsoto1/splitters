@@ -173,7 +173,7 @@ const RULES = [
   [/^packages\/client\/public\/(music|voice)\//, ['offline'], ['client']],
   [/^packages\/client\/(public|index\.html|vite\.config\.ts|package\.json|tsconfig\.json)/, FULL, ['client']],
   [/^packages\/client\/src\/(main|engine|assetUrl|renamedStorage|style)\./, FULL, ['client']],
-  [/^packages\/client\/src\/game\/(session|hud|localTransport|matchHost|simWorker|input|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
+  [/^packages\/client\/src\/game\/(session|hud|localTransport|matchHost|simWorker|input|keyBindings|prediction|interpolation|snapshotMerge|characterAnimator|atmosphere|framePacer|cameraPose|transport)\.ts$/, FULL, ['client']],
   [/^packages\/client\/src\/(content|materials)\//, FULL, ['client']],
 
   // The match renderer: every flow that plays a match (all but the MapMaker UI, the host page and the WebGPU

@@ -6133,12 +6133,88 @@ async function offlineFlow(browser) {
   await musicChecks(browser);
   await spectateChecks(browser);
   await weaponKeysChecks(browser);
+  await controlsPageChecks(browser);
+}
+
+/**
+ * Options → Controls (owner, 2026-11-23; frontend/controlsPage.ts): every action by group; click a key and press
+ * another to rebind; a key in use warns and offers to swap; Reset to defaults; kept in this browser (keyBindings.ts);
+ * keyboard alone works, and the page fits a phone's width. Pictures: controls-desktop.png, controls-phone.png
+ * (CONTROLS_PICS=<dir>: at twice the pixels).
+ */
+async function controlsPageChecks(browser) {
+  const pics = process.env.CONTROLS_PICS;
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: pics ? 2 : 1 });
+  const page = await ctx.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-options');
+  await page.click('.opt-nav button[data-tab="controls"]');
+  await page.waitForSelector('.binds .bind-row');
+  const groups = await page.$$eval('.binds .bind-group h4', (hs) => hs.map((h) => h.textContent));
+  const key = (id) => page.$eval(`[data-bind="${id}"]`, (b) => b.textContent);
+  const defaults = { lean: [await key('leanLeft.0'), await key('leanRight.0')], use: await key('use.0'), last: await key('lastWeapon.0'), wheel: await key('weaponWheel.0') };
+  check(groups.join() === 'Move,Combat,Weapons,Comms,Vehicles,Spectate and free camera,Menus' && defaults.lean.join() === 'Q,E' && defaults.use === 'F' && defaults.last === 'X' && defaults.wheel === 'Tab', `Controls lists every group with the new defaults (${groups.join(', ')}; ${JSON.stringify(defaults)})`);
+  await page.locator('.binds').scrollIntoViewIfNeeded();
+  if (pics) await page.screenshot({ path: `${pics}/controls-desktop.png` });
+  // Rebind lean left to P with the keyboard alone: focus its key, Enter, then P.
+  await page.focus('[data-bind="leanLeft.0"]');
+  await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.querySelector('[data-bind="leanLeft.0"]')?.classList.contains('listening'), null, { timeout: T(3000) }).catch(() => {});
+  await page.keyboard.press('KeyP');
+  await page.waitForFunction(() => document.querySelector('[data-bind="leanLeft.0"]')?.textContent === 'P', null, { timeout: T(3000) }).catch(() => {});
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.keys') ?? '{}'));
+  const focused = await page.evaluate(() => document.activeElement?.dataset.bind);
+  check((await key('leanLeft.0')) === 'P' && stored.leanLeft === 'KeyP,' && focused === 'leanLeft.0', `Enter then P rebinds lean left, kept in this browser, the focus kept (${JSON.stringify(stored)}, ${focused})`);
+  // A key in use: R is Reload's. The page asks; Swap gives Reload lean left's old key.
+  await page.click('[data-bind="leanLeft.0"]');
+  await page.keyboard.press('KeyR');
+  const ask = await page.waitForSelector('.bind-row[data-action="leanLeft"] .bind-ask:not([hidden])', { timeout: T(3000) }).then((e) => e.textContent(), () => '');
+  if (pics) await page.screenshot({ path: `${pics}/controls-clash.png` });
+  await page.click('.bind-row[data-action="leanLeft"] .bind-ask button.primary');
+  await page.waitForFunction(() => document.querySelector('[data-bind="leanLeft.0"]')?.textContent === 'R', null, { timeout: T(3000) }).catch(() => {});
+  check(/R is already Reload/.test(ask ?? '') && (await key('leanLeft.0')) === 'R' && (await key('reload.0')) === 'P', `a key in use warns, and Swap trades the two (${ask}; reload ${await key('reload.0')})`);
+  // Esc keeps the old key; Reset to defaults puts everything back.
+  await page.click('[data-bind="use.0"]');
+  await page.keyboard.press('Escape');
+  const kept = await key('use.0');
+  const stillOptions = await page.evaluate(() => !!document.querySelector('.binds'));
+  await page.click('.binds-reset');
+  await page.waitForFunction(() => document.querySelector('[data-bind="leanLeft.0"]')?.textContent === 'Q', null, { timeout: T(3000) }).catch(() => {});
+  const after = { lean: await key('leanLeft.0'), reload: await key('reload.0'), stored: await page.evaluate(() => localStorage.getItem('tiletrigger.keys')) };
+  check(kept === 'F' && stillOptions && after.lean === 'Q' && after.reload === 'R' && after.stored === '{}', `Esc keeps the key (and stays on the page); Reset to defaults puts every key back (${kept}; ${JSON.stringify(after)})`);
+  // A mouse button binds too: the second fire key to the middle button.
+  await page.click('[data-bind="fire.1"]');
+  await page.mouse.click(640, 400, { button: 'middle' });
+  await page.waitForFunction(() => document.querySelector('[data-bind="fire.1"]')?.textContent !== 'Press a key…', null, { timeout: T(3000) }).catch(() => {});
+  const midAsk = await page.$eval('.bind-row[data-action="fire"] .bind-ask', (e) => (e.hidden ? '' : e.textContent));
+  check(/Middle mouse is already Second trigger/.test(midAsk), `a mouse button is a key like any other (the middle button is alt fire's: ${midAsk})`);
+  await page.click('.bind-row[data-action="fire"] .bind-ask .bind-cancel');
+  // A phone's width: one column, the keys under their names, nothing wider than the screen.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForFunction(() => window.innerWidth === 390, null, { timeout: T(3000) }).catch(() => {});
+  const fit = await page.evaluate(() => {
+    const body = document.querySelector('.opt-body');
+    const rows = [...document.querySelectorAll('.binds .bind-row')];
+    return { over: rows.filter((r) => r.getBoundingClientRect().right > window.innerWidth + 1).length, scroll: body.scrollWidth - body.clientWidth };
+  });
+  if (pics) {
+    await page.locator('[data-bind="leanLeft.0"]').scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${pics}/controls-phone.png` });
+  }
+  check(fit.over === 0 && fit.scroll <= 1, `the keys page fits a phone's width (${JSON.stringify(fit)})`);
+  check(errors.length === 0, `no page errors on the keys page (${errors.join('; ')})`);
+  livePages.delete(page);
+  await ctx.close();
 }
 
 /**
  * Weapon switching by category (owner, 2026-11-22): with a stack of guns picked up, the category keys (1-8, the wheel's
- * slices in order) reach every weapon (again: the next in the category; away from it, the one used last there), Q's
- * tap and the mouse wheel still switch, and the wheel's slices and outer arc pick by pointing. The old slot keys only
+ * slices in order) reach every weapon (again: the next in the category; away from it, the one used last there), X
+ * (the last weapon) and the mouse wheel still switch, and the wheel's slices and outer arc pick by pointing. The old slot keys only
  * ever reached the first weapon of a slot from elsewhere (the Pistol, the AK). Pictures: weapon-keys-wheel*.png.
  */
 async function weaponKeysChecks(browser) {
@@ -6171,24 +6247,24 @@ async function weaponKeysChecks(browser) {
   check(heavy === 'core.lmg' && energy === 'core.laser_rifle' && shotgun === 'core.shotgun', `keys 6, 7 and 4: Heavy, Energy, Shotguns (${heavy}, ${energy}, ${shotgun})`);
   const back = await press('Digit3');
   check(back === rifles[2], `key 3 again brings back the rifle used last (${back}; last ${rifles[2]})`);
-  const last = await press('KeyQ');
-  check(last === 'core.shotgun', `a tap of Q still goes back to your last weapon (${last})`);
+  const last = await press('KeyX');
+  check(last === 'core.shotgun', `X goes back to your last weapon (${last})`);
   const was = await held();
   await page.mouse.wheel(0, 120);
   await page.waitForFunction((w) => window.__cs.local.weapon?.id !== w, was, { timeout: T(4000) }).catch(() => {});
   check((await held()) !== was, `the mouse wheel still steps to the next weapon (${was} → ${await held()})`);
-  // The wheel: hold Q; eight slices (one per key), the empty ones dimmed.
+  // The wheel: hold Tab; eight slices (one per key), the empty ones dimmed.
   const open = async () => {
-    await page.keyboard.down('KeyQ');
+    await page.keyboard.down('Tab');
     return page.waitForFunction(() => !document.getElementById('weapon-wheel').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
   };
-  check(await open(), 'holding Q opens the weapon wheel');
+  check(await open(), 'holding Tab opens the weapon wheel');
   const slices = await page.$$eval('#weapon-wheel .ww-slice-tag', (ts) => ts.map((t) => ({ cat: t.dataset.cat, empty: t.classList.contains('empty'), kbd: t.querySelector('kbd')?.textContent })));
   check(slices.map((x) => x.cat).join() === 'pistol,smg,rifle,shotgun,sniper,heavy,energy,melee' && slices.map((x) => x.kbd).join('') === '12345678' && slices.find((x) => x.cat === 'smg')?.empty && !slices.find((x) => x.cat === 'rifle')?.empty, `the wheel has eight category slices with their keys, empty ones dimmed (${JSON.stringify(slices)})`);
   // Point at the Shotguns slice (fourth, lower right) part way out, and let go: its pick.
   await page.evaluate(() => window.__cs.input.aimWheel(Math.sin((3 * Math.PI) / 4) * 0.5, -Math.cos((3 * Math.PI) / 4) * 0.5));
   await page.waitForFunction(() => document.querySelector('#weapon-wheel .ww-arc.open')?.dataset.cat === 'shotgun', null, { timeout: T(4000) }).catch(() => {});
-  await page.keyboard.up('KeyQ');
+  await page.keyboard.up('Tab');
   await page.waitForFunction(() => document.getElementById('weapon-wheel').hidden && window.__cs.local.weapon?.id === 'core.shotgun', null, { timeout: T(4000) }).catch(() => {});
   check((await held()) === 'core.shotgun', `pointing at a slice and letting go switches to it (${await held()})`);
   // Rifles: a flick straight out keeps the slice's last pick in line; round the outer arc picks another.
@@ -6210,9 +6286,25 @@ async function weaponKeysChecks(browser) {
   await page.screenshot({ path: `${ARTIFACTS}/weapon-keys-wheel.png` });
   if (other) await page.evaluate(({ x, y }) => window.__cs.input.aimWheel(x / Math.hypot(x, y), y / Math.hypot(x, y)), other);
   await page.waitForFunction((c) => window.__cs.wheel.picked === c, other?.code, { timeout: T(4000) }).catch(() => {});
-  await page.keyboard.up('KeyQ');
+  await page.keyboard.up('Tab');
   await page.waitForFunction((c) => window.__cs.local.held === c, other?.code, { timeout: T(4000) }).catch(() => {});
   check(!!other && pickedOut !== other.code && (await page.evaluate(() => window.__cs.local.held)) === other.code, `round the arc and let go: that rifle (${other?.name})`);
+  // The owner's keys (2026-11-23): a tap of Tab shows the scoreboard and another hides it; Q and E, held, lean.
+  await page.keyboard.press('Tab');
+  const board = await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.getElementById('weapon-wheel').hidden, null, { timeout: T(4000) }).then(() => true, () => false);
+  await page.keyboard.press('Tab');
+  const boardGone = await page.waitForFunction(() => document.getElementById('scoreboard').hidden, null, { timeout: T(4000) }).then(() => true, () => false);
+  check(board && boardGone, `a tap of Tab shows the scoreboard, another hides it, and the wheel stays shut (${board}, ${boardGone})`);
+  const leanOf = () => page.evaluate(() => window.__cs.local.state.lean ?? 0);
+  await page.keyboard.down('KeyQ');
+  await page.waitForFunction(() => (window.__cs.local.state.lean ?? 0) < -0.5, null, { timeout: T(4000) }).catch(() => {});
+  const left = await leanOf();
+  await page.keyboard.up('KeyQ');
+  await page.keyboard.down('KeyE');
+  await page.waitForFunction(() => (window.__cs.local.state.lean ?? 0) > 0.5, null, { timeout: T(4000) }).catch(() => {});
+  const right = await leanOf();
+  await page.keyboard.up('KeyE');
+  check(left < -0.5 && right > 0.5, `Q held leans left and E held leans right (${left.toFixed(2)}, ${right.toFixed(2)})`);
   check(errors.length === 0, `no page errors switching weapons (${errors.join('; ')})`);
   livePages.delete(page);
   await page.context().close();
@@ -8224,7 +8316,7 @@ async function teamsFlow(browser) {
   await page.click('#arcade-start');
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
   // Every team's table fills in once the roster for all 24 has arrived.
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length >= 7 && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 24, null, { timeout: T(10500) }).catch(() => {});
   const board = await page.evaluate(() => ({
     many: document.getElementById('scoreboard').classList.contains('sb-tn'),
@@ -8232,7 +8324,7 @@ async function teamsFlow(browser) {
     cols: getComputedStyle(document.querySelector('#scoreboard .sb-body')).gridTemplateColumns.split(' ').length,
   }));
   const meSeen = await scoreboardMeVisible(page);
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   check(board.many && board.tables.length === 7, `the scoreboard shows seven teams (${board.tables.length})`);
   check(board.cols >= 3, `seven teams sit in a grid of columns (${board.cols} across)`);
   check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
@@ -8515,7 +8607,7 @@ async function botCastFlow(browser) {
   const ranked = bots.bots.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
   check(bots.bots.length === 15 && !wrong.length, `an Army-only match: every bot an Army soldier (${bots.bots.length} bots; ${wrong.map((b) => `${b.name}/${b.look}`).join(', ') || 'none wrong'})`);
   check(new Set(bots.names).size === bots.names.length && ranked.length >= 1, `soldier bots have names of their own, ranks among them (${bots.bots.map((b) => b.name).join(', ')})`);
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 16, null, { timeout: T(10500) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard.png` }).catch(() => {});
   // Ranks & badges (off by default): plain names (an Army bot's rank left off) and no badges.
@@ -8530,7 +8622,7 @@ async function botCastFlow(browser) {
   const armyTitle = badges.filter((b) => /^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. [A-Z]/.test(b.name));
   check(badges.length >= 16 && !bare.length && armyTitle.length >= 15, `with Ranks & badges on, the Tab board shows each player's rank badge and title (${badges.slice(0, 4).map((b) => `${b.ins}: ${b.name}`).join(', ')}…; without: ${bare.map((b) => b.name).join(', ') || 'none'})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/bot-cast-scoreboard-ranks.png` }).catch(() => {});
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -9054,7 +9146,7 @@ async function ctfFlow(browser) {
   check(after.ts.some((n) => n === 1) && after.left === '1', `bringing it home scores a capture (${JSON.stringify(after)})`);
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/ctf-captured.png`, timeout: T(60000) }).catch(() => {});
   // Tab: the two teams side by side, each its own column, your capture on your row.
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-group').length === 2 && document.querySelector('#scoreboard .sb-row.me'), null, { timeout: T(5000) }).catch(() => {});
   const cols = await scoreboardColumns(page);
   const meSeen = await scoreboardMeVisible(page);
@@ -9063,7 +9155,7 @@ async function ctfFlow(browser) {
     const at = [...(hd?.children ?? [])].findIndex((c) => c.textContent === 'Caps');
     return at < 0 ? null : document.querySelector('#scoreboard .sb-row.me')?.children[at]?.textContent;
   });
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   check(cols.length === 2 && cols[0].top === cols[1].top && cols[1].left >= cols[0].right, `two teams show as two side-by-side columns (${JSON.stringify(cols)})`);
   check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check(caps === '1', `the scoreboard's Caps column counts your capture (${caps})`);
@@ -10001,11 +10093,11 @@ async function zombiesFlow(browser) {
   const ZOMBIE = /^core\.(groaner|lurcher|rotter|shambler|zombiesoldier[12])$/;
   check(worn.looks.length > 0 && worn.looks.every((l) => ZOMBIE.test(l)) && worn.creatures === 0, `zombies wear the zombie characters (${[...new Set(worn.looks)].join(', ')}; ${worn.creatures} creature bodies)`);
   // Co-op: the scoreboard is one list of the squad.
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length === 4, null, { timeout: T(5000) }).catch(() => {});
   const coop = await page.evaluate(() => ({ coop: document.getElementById('scoreboard').classList.contains('sb-coop'), lists: document.querySelectorAll('#scoreboard .sb-group').length, rows: document.querySelectorAll('#scoreboard .sb-row[data-slot]').length }));
   const meSeen = await scoreboardMeVisible(page);
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   check(coop.coop && coop.lists === 1 && coop.rows === 4, `co-op shows the squad as one list (${JSON.stringify(coop)})`);
   check(meSeen.ok, `your row is visible on the scoreboard (${meSeen.why})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
@@ -10046,11 +10138,11 @@ async function classesFlow(browser) {
   });
   await page.waitForFunction(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name)), null, { timeout: T(10000) }).catch(() => {});
   check(await page.evaluate(() => window.__cs.view.scene.transformNodes.some((n) => /^mount_1\d{4}$/.test(n.name))), 'a Mechanic bot builds a sentry and it is drawn');
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   // CI's software renderer can take a moment to fill the board.
   await page.waitForFunction(() => /Bulwark/i.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(3000) }).catch(() => {});
   const board = await page.evaluate(() => document.getElementById('scoreboard')?.textContent ?? '');
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   check(/Bulwark/i.test(board), 'the scoreboard shows classes');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
@@ -15782,9 +15874,9 @@ async function hostcontrolsFlow(browser) {
   // Swapped in a bot at a time: the knight takes a random bot's place.
   const knight = await simWait(page, (m) => m.combatants().some((c) => c.kind === 'bot' && c.name === 'Sir Testalot' && c.look === 'core.knight' && c.bot.difficulty.id === 'easy') && m.combatants().length === 6, null, T(10000));
   check(knight, 'Apply brings the named bot into the match with its look and its own skill, the player count kept');
-  await page.keyboard.down('Tab');
+  await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   const listed = await page.waitForFunction(() => /Sir Testalot/.test(document.getElementById('pause-scores')?.textContent ?? '') || /Sir Testalot/.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
-  await page.keyboard.up('Tab');
+  await page.keyboard.press('Tab'); // and another hides it
   const sum = await page.evaluate(() => document.getElementById('hc-bots-sum')?.textContent);
   check(listed && /1 bot \+ random/.test(sum ?? ''), `the scoreboard lists the bot, and the panel says the set (${sum})`);
   // A rule that needs a restart is marked so, and Apply says it restarts: Apply & restart plays with it at once.

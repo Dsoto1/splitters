@@ -31,7 +31,7 @@ export function controlsPage(): HTMLElement {
   const draw = () => {
     stopCapture?.();
     const b = bindings();
-    const reset = el('button', { type: 'button', class: 'btn binds-reset', textContent: 'Reset to defaults' });
+    const reset = el('button', { type: 'button', class: 'binds-reset', textContent: 'Reset to defaults' });
     reset.addEventListener('click', () => {
       resetBindings();
       status.textContent = 'Every key is back to its default.';
@@ -131,9 +131,9 @@ export function controlsPage(): HTMLElement {
       btn.textContent = old;
       const names = others.map((o) => bindAction(o)!.label).join(', ');
       const oldCode = b[action]?.[slot] ?? '';
-      const swap = el('button', { type: 'button', class: 'btn small', textContent: oldCode ? `Swap (${names} gets ${keyLabel(oldCode)})` : 'Swap' });
-      const takeIt = el('button', { type: 'button', class: 'btn small ghost', textContent: `Take it (${names} loses it)` });
-      const cancel = el('button', { type: 'button', class: 'btn small ghost', textContent: 'Cancel' });
+      const swap = el('button', { type: 'button', class: 'primary', textContent: oldCode ? `Swap (${names} gets ${keyLabel(oldCode)})` : 'Swap' });
+      const takeIt = el('button', { type: 'button', class: 'bind-take', textContent: `Take it (${names} loses it)` });
+      const cancel = el('button', { type: 'button', class: 'bind-cancel', textContent: 'Cancel' });
       ask.replaceChildren(el('span', { textContent: `${keyLabel(code)} is already ${names}.` }), el('span', { class: 'bind-ask-buttons' }, swap, takeIt, cancel));
       ask.hidden = false;
       swap.addEventListener('click', () => {
