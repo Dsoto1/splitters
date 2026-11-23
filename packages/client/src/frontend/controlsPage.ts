@@ -76,7 +76,7 @@ export function controlsPage(): HTMLElement {
     const ask = el('div', { class: 'bind-ask', hidden: true, role: 'alert' });
     for (const slot of [0, 1] as const) {
       const code = b[action]?.[slot] ?? '';
-      const btn = el('button', { type: 'button', class: `key-bind${slot ? ' alt' : ''}${code ? '' : ' none'}`, textContent: code ? keyLabel(code) : slot ? 'Add' : '—' });
+      const btn = el('button', { type: 'button', class: `key-bind${slot ? ' alt' : ''}${code ? '' : ' none'}`, textContent: code ? keyLabel(code) : slot ? '+' : '—', title: code ? '' : slot ? 'Add a second key' : 'No key: click to set one' });
       btn.dataset.bind = `${action}.${slot}`;
       btn.setAttribute('aria-label', `${a.label}, ${slot ? 'second key' : 'key'}: ${code ? keyLabel(code) : 'none'}. Press to change.`);
       btn.addEventListener('click', () => capture(action, slot, btn, ask));

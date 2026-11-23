@@ -6193,7 +6193,7 @@ async function controlsPageChecks(browser) {
   const midAsk = await page.$eval('.bind-row[data-action="fire"] .bind-ask', (e) => (e.hidden ? '' : e.textContent));
   check(/Middle mouse is already Second trigger/.test(midAsk), `a mouse button is a key like any other (the middle button is alt fire's: ${midAsk})`);
   await page.click('.bind-row[data-action="fire"] .bind-ask .bind-cancel');
-  // A phone's width: one column, the keys under their names, nothing wider than the screen.
+  // A phone's width: one column, nothing wider than the screen.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.waitForFunction(() => window.innerWidth === 390, null, { timeout: T(3000) }).catch(() => {});
   const fit = await page.evaluate(() => {
@@ -10319,6 +10319,8 @@ async function vehiclesFlow(browser) {
   await page.waitForFunction(() => /Drive/.test(document.getElementById('prompt').textContent ?? ''), null, { timeout: T(8000) }).catch(() => {});
   const prompt = await page.evaluate(() => document.getElementById('prompt').textContent);
   check(/Drive the Troop Buggy/.test(prompt ?? ''), `the prompt offers the wheel (${prompt})`);
+  const useKey = await page.evaluate(() => document.querySelector('#prompt kbd')?.textContent);
+  check(useKey === 'F', `the prompt names the use key, F (Options → Controls; ${useKey})`);
   // It reads on sand, snow and sky (owner, 2026-11-07: "kinda dark, black font?"): white words, a light green key on
   // a dark cap, each with a dark outline; the key's letter stands out from its cap (its ink was the dark of every other kbd).
   const look = await page.evaluate(() => {
