@@ -683,7 +683,7 @@ export class Hud {
     }
     // Pips: one round for Single, the burst's count, a long bar for Auto; then the mode's name and its key.
     const pips = f.mode === 'auto' ? '<i class="auto"></i>' : '<i></i>'.repeat(f.burst?.count ?? 1);
-    this.fireModeEl.innerHTML = `<span class="pips">${pips}</span>${escapeHtml(f.label)}<kbd>U</kbd>`;
+    this.fireModeEl.innerHTML = `<span class="pips">${pips}</span>${escapeHtml(f.label)}<kbd>${escapeHtml(keyFor('fireMode'))}</kbd>`;
     // A short nudge on a switch (a size change only: nothing brightens, Reduce flashing or not).
     if (switched) {
       this.fireModeEl.classList.remove('switched');
