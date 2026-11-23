@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-9` · 4df81945 · 45068550616 (St. John's: library 8b and mess hall 7d placed, the corner's answers but (6); **perf over the lines, the lead's call first**: library from the grounds +11 %, inside views over 250 (PLAN 4o); also fixes main's stale sniper list in the e2e editor flow)
-- `wip/chars-1122c` · b80af867 · 45075165416 (the owner's third character batch of 2026-11-22: four new Experimental characters, Shiba, Salamander Warlord and Bandit models; Zero Ringtail retired to Bandit)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -239,6 +237,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-23** train check/train-20261123-015517 (ffab1e8, run 45097260852), landed by the splitters lead: St. John's library (8b) and mess hall (sunk 0.5 m) placed, the owner's corner answers 1-5, the overage accepted (`wip/stjohns-9`); the third character batch: Ignatius Slagg, Sterling Purrcival, Rufus Boomwell, Chester Knuckleby; Shiba, Salamander Warlord and Bandit on new models, Zero Ringtail retired into Bandit (`wip/chars-1122c`).
 - **2026-11-22** sound follow-ups (`wip/sonniss-2`, green 5e82ebfb; train check/train-20261122-222022 at 74f6b89, run 45077176768): louder, punchier recorded guns; the pump shotgun's pump; footsteps and tile impacts by surface (all 155 materials); the Sonniss licence note. Landed by the splitters lead.
 - **2026-11-22** sights for the intake guns (`wip/sights-intake`, green a2392894; train check/train-20261122-212322 at a79d998, run 45071852819): Woodland SMG irons fitted and a red dot default; Desert Carbine, Twin-Shot Rifle and Blaster X-42 aim through their own sights (red dot default); Flintlock Pistol hands off the aim; the Blaster X-42's orange bolt; checks for unfitted sights and hands over the aim. Landed by the splitters lead.
 - **2026-11-22** the weapon wheel by category and number keys 1-8 by category (`wip/weapon-wheel-cats`, green d2f37cbe; train check/train-20261122-203105 at 2fcb9cf, run 45066891588); the number-key switch bug fixed. Owner "1a 2a 3a": flare gun and gilded pistol in Pistols, railgun and Nova-6 in Energy, key 9 free. Landed by the splitters lead.
