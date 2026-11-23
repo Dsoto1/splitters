@@ -717,6 +717,38 @@ attribute), for the body, its low-detail copy (same material) and the
 first-person arms. Characters not rebuilt since (their download or rig task
 not at hand) keep the plain cut until they are; HANDOFF.md lists which.
 
+### Hand fitting: the same fit for less (owner, 2026-11-23, "start 2")
+
+The owner's profile of St. John's TDM at 63 players (M1 Pro, High, build ffab1e8) had the main thread about 100% busy
+and `CharacterAnimator.pose` at 4.2 s of 43.4 s; 2.7 s of it (6% of the frame) was `gripPlaced`, and 0.9 s
+`placeWeapon`. Read through the build's source map, `gripPlaced` is **your own** hands on the first-person gun (full
+body, or the arms), one call a frame; other characters are `placeWeapon`, and they already have a level of detail by
+size on screen (animation LOD: `full`, `cached` fingers, `coarse` arms past about 25 m, every few frames further out,
+none off screen). So the saving had to keep the fit exactly as it was, up close and far, and it does:
+
+- **The support hand's slide** (first person: a support point out of the arm's reach moves back along the handguard a
+  centimetre at a time until the arm reaches it) read the hand's palm side and fingers afresh at every step, up to forty
+  steps a frame, though nothing moves while it slides. They are read once (`slideSupport`): the same numbers.
+- **World matrices only where stale** (`game/freshWorld.ts`): Babylon's `computeWorldMatrix(true)` works out the whole
+  chain above a joint every call (15-20 matrices for a finger), and the fit reads joints a few hundred times a frame:
+  about 5,900 matrices for your own hands each frame. `freshWorld` works out only the stale part of the chain, top
+  down, by Babylon's own dirty flags, and gives the same numbers: 244 matrices a frame. Every forced compute in the
+  animator and `armReach` goes through it. A chain under a camera (arms only), a mesh or a frozen matrix in its stale
+  part takes the forced compute as before.
+
+Measured (headless, SwiftShader; relative only): your own first-person hands 7.5-8.8 ms → 1.9 ms a call in a 62-bot
+St. John's match, 5.1 → 0.9 ms on the grip page (-80 to -85%); other characters' `placeWeapon` -48% in the match,
+-82% on the grip page; `pose` as a whole -51%. Arms only (under the camera) is unchanged. On the owner's profile that is
+about 2.6 s of 43.4 s back (6% of the main thread). The overlay's `systems` line shows it as `hands` (of the clips).
+
+- **Switch:** `?perfoff=gripfit` (both), or `window.__gripFit(false)` in a page to measure both ways turn about.
+- **Checks:** `packages/client/test/freshWorld.test.ts` (3,000 random turns and reads against the forced compute, a
+  camera and a mesh in the chain, the slide with its hand read once and at every step); the `characters` e2e flows
+  compare every matrix `freshWorld` gives with the forced compute's (`window.__freshCheck`): the grip page in every
+  view, every character on the long guns in third person, and in play (your hands and the bots'). Pictures with the savings on
+  and off in the same frame, the clips held still (the grip page: two characters, a rifle, pistol and katana, third
+  person at 3, 12 and 30 m, first person full body and arms) are the same pixel for pixel.
+
 ## Tools
 
 - `?mode=characters`: viewer with every look and the male and female NPC
