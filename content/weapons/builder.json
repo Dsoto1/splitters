@@ -18,7 +18,7 @@
     "model": "procedural/builder",
     "viewOffset": [0.22, -0.2, 0.4],
     "tracer": "#ffffff",
-    "sound": "weapon.raise",
+    "sound": "land",
     "hold": { "style": "melee", "grip": [0, 0, -0.1] }
   },
   "notes": {

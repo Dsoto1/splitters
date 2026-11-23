@@ -21,7 +21,7 @@
     "viewOffset": [0, 0, 0],
     "tracer": "#8f7bff",
     "hold": { "style": "long", "grip": [0, 0, 0] },
-    "sound": "fire.arc",
+    "sound": "fire.arc.c",
     "beam": true
   },
   "notes": {

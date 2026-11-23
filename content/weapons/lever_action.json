@@ -31,7 +31,7 @@
     "hold": { "style": "long", "grip": [0, -0.025, -0.2], "support": [0, 0.035, 0.15], "shoulder": [0, -0.03, -0.5] },
     "muzzleAt": [0, 0.065, 0.51],
     "zoomFov": 0.6,
-    "sound": "fire.heavy.b"
+    "sound": "fire.heavy.c"
   },
   "notes": {
     "design": "The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).",

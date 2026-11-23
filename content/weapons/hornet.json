@@ -47,7 +47,7 @@
     "tracer": "#ffd23a",
     "hold": { "style": "pistol", "grip": [0, -0.056, -0.077], "support": [-0.02, -0.063, -0.07], "rake": 35 },
     "muzzleAt": [0, 0.014, 0.14],
-    "sound": "fire.swarm"
+    "sound": "fire.swarm.b"
   },
   "notes": {
     "design": "Stingers that find their mark: slow (32 m/s) darts that turn toward the nearest enemy ahead within 22 m, 16 a hit and a short poison. Easy to land, slow to kill (six hits); strafing players outrun them up close. A Chaos-set oddball.",
