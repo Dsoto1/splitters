@@ -14,6 +14,7 @@ import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { pairHold3p } from './pairView.ts';
 import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
+import { SYS, perfProbe } from './perfProbe.ts';
 import { rigidAlike } from './poseCheck.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { guardOf } from './guardUnderside.ts';
@@ -1853,6 +1854,14 @@ export class CharacterAnimator {
       for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) arm.hand.scaling.setAll(FP_HAND_SCALE);
       this.fp.place?.();
     }
+    // (The perf overlay's `hands`: the rest of the pose is the aim's spine and the reactions.)
+    const t0 = perfProbe.on ? performance.now() : 0;
+    this.placeHands(root, rootRot);
+    if (t0) perfProbe.add(SYS.hands, t0);
+  }
+
+  /** The gun placed and the hands closed on it (pose, after the spine's aim). */
+  private placeHands(root: TransformNode, rootRot: Quaternion): void {
     if (this.weapon && this.weapon2 && this.grip && this.grip.style !== 'melee' && this.arms && this.skelRoot) this.placePair(root, rootRot, this.weapon, this.weapon2, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) {
