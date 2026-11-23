@@ -105,6 +105,9 @@ shadows. Every saved draw is a mesh Babylon no longer binds and draws, in the vi
 version without the shadow cache's instance hash drew 207 a view but 17 more shadow draws every frame: the doors had left
 the static cache. Fixed before measuring the table.)
 
+Close views (High, 1280 × 720): an oak door 109 → 109 (one door in view) and from above 119 → 115; a portcullis from
+6 m 192 → 148 and from 44 m 207 → 167; a winch button 159 → 127.
+
 ### Flavius Rule, a crowd (64 bots, Medium; the camera's view of the crowd differs run to run)
 
 | Scenario | Doors and buttons' draws, main / shadow, before → after | All draws in that run, before → after |
@@ -136,7 +139,8 @@ Pictures of every still view, before and after, High: the scratchpad's `draws/sh
 (before | after | difference × 4). Flavius Rule: mean difference 0.1-0.9 / 255, at most 0.4 % of pixels over 24, all of it a spinning pickup and its
 ring (they turn with time) and swaying plants; the doors, gates, buttons and every shadow are the same. St. John's: 0.1-2.7 /
 255, the trees' leaves and the grass swaying in the wind (the eye view at the middle spawn, under an oak); nothing else.
-Close-ups of an oak door, a portcullis and a button (near, from above, and on Medium too): `draws/shots2/`.
+Close views of an oak door (near and from above) and towards a portcullis, High: `draws/shots2/` (mean 0.3-0.8 / 255,
+no pixel over 24 but a handful at a pickup's edge).
 
 ## What's left (would save more)
 
