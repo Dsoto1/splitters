@@ -144,6 +144,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // piece part's `when` naming several choices of an option (a list). v48 data is valid as is. The bump is for the
   // other direction: an older build refuses a v49 map outright instead of failing on a style it has never heard of.
   [48, (doc) => ({ ...doc })],
+  // v49 -> v50: optional `metadata.categories` (the map's categories and tags, map/categories.ts; Match Setup's
+  // category tabs). Absent = none: v49 data is valid as is. The bump is for the other direction: an older build would
+  // drop the tags without a word.
+  [49, (doc) => ({ ...doc })],
 ]);
 
 /**

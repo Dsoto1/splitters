@@ -50,7 +50,7 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
         const modes = playableModes(r.map);
         entries.push({
           key: file.slice(0, -'.json'.length),
-          metadata: { id: md.id, name: md.name, description: md.description, author: md.author, recommendedPlayers: md.recommendedPlayers, ...(md.thumbnail ? { thumbnail: md.thumbnail } : {}), ...(md.tier === 'experimental' ? { tier: md.tier } : {}) },
+          metadata: { id: md.id, name: md.name, description: md.description, author: md.author, recommendedPlayers: md.recommendedPlayers, ...(md.thumbnail ? { thumbnail: md.thumbnail } : {}), ...(md.tier === 'experimental' ? { tier: md.tier } : {}), ...(md.categories?.length ? { categories: md.categories } : {}) },
           modes,
           // The most players each mode takes (the next-map vote leaves out maps too small for the people in a match).
           caps: modes.map((mode) => mapPlayerCaps(r.map, mode).max),

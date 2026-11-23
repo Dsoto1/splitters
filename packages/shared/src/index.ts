@@ -23,6 +23,7 @@ export * from './map/weather.ts';
 export * from './map/dressing.ts';
 export * from './map/border.ts';
 export * from './map/inspirations.ts';
+export * from './map/categories.ts';
 export * from './map/retired.ts';
 export * from './map/migrate.ts';
 export * from './map/validate.ts';
