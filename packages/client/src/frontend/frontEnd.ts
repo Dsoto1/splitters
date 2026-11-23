@@ -1217,13 +1217,14 @@ export class FrontEnd {
     // The Community Picks tab: when the hub has any (players' maps that earned it by being played).
     const picks = this.maps.some((m) => m.group === PICK_GROUP);
     const mine = this.maps.some((m) => m.group === OWN_GROUP);
-    if ((this.mapTab === 'picks' && !picks) || (this.mapTab === 'mine' && !mine)) this.mapTab = 'all';
+    if (this.mapTab === 'picks' && !picks) this.mapTab = 'all';
     // (A mode no map here plays any more can't stay ticked.)
     this.browse.modes = this.browse.modes.filter((g) => used.includes(g));
     const tabs = el('div', { class: 'map-tabs', id: 'map-tabs', role: 'tablist' });
     const drawTabs = () =>
       tabs.replaceChildren(
-        ...MAP_TABS.filter(([t]) => (t !== 'picks' || picks) && (t !== 'mine' || mine)).map(([t, label]) => {
+        // My maps always shows (owner's mock-up, 2026-11-23); Community Picks when the hub has any.
+        ...MAP_TABS.filter(([t]) => t !== 'picks' || picks).map(([t, label]) => {
           const b = el('button', { type: 'button', class: `map-tab${t === this.mapTab ? ' on' : ''}${t === 'picks' ? ' picks' : ''}`, textContent: label, role: 'tab' });
           b.setAttribute('aria-selected', String(t === this.mapTab));
           b.dataset.tab = t;
@@ -1412,6 +1413,8 @@ export class FrontEnd {
           ? 'No Community Picks yet.'
           : tab === 'recent' && !recent.length
             ? 'No maps played yet: the ones you play show here, newest first.'
+            : tab === 'mine' && !mine
+              ? 'No maps of your own yet: the maps you save in MapMaker show here.'
             : tab === 'favs' && !favs.size
               ? 'No favourites yet: the star on a map card keeps it here.'
               : this.browse.modes.length

@@ -284,9 +284,9 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
 /* Match Setup's category tabs (frontend/mapCategoriesUi.ts): All dimensions and the owner's six, each with its count;
    the picked one's sub-tags as chips under them. */
 .map-cats { flex: none; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: thin; padding-bottom: 2px; }
-.map-cat { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 6px 6px; background: var(--surface-1); border-color: rgba(0, 209, 255, 0.25); text-transform: uppercase; }
+.map-cat { flex: 1 1 0; min-width: 88px; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 3px 6px; background: var(--surface-1); border-color: rgba(0, 209, 255, 0.25); text-transform: uppercase; }
 .map-cat .cat-icon { width: 22px; height: 22px; color: var(--cyan); }
-.map-cat .cat-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font: 700 12px var(--font-display); letter-spacing: 0.05em; white-space: nowrap; }
+.map-cat .cat-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font: 700 11px var(--font-display); letter-spacing: 0.02em; white-space: nowrap; }
 .map-cat .cat-n { position: absolute; top: 4px; right: 6px; color: var(--muted); font: 600 10px var(--font-display); letter-spacing: 0.02em; }
 .map-cat { position: relative; }
 .map-cat:hover { border-color: rgba(0, 209, 255, 0.6); }

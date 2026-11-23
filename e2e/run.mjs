@@ -5991,13 +5991,25 @@ async function offlineFlow(browser) {
     page.$$eval('.map-card', (cs) =>
       cs.map((c) => ({ map: c.dataset.map, pic: c.querySelector('.map-thumb.pic'), plan: c.querySelector('.map-thumb.plan canvas') })).map((x) => ({ map: x.map, img: !!x.pic?.querySelector('img'), loaded: !!x.pic?.querySelector('img')?.naturalWidth, plan: !!x.plan, inPic: !!x.pic?.querySelector('canvas, .map-thumb') })),
     );
-  await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].every((i) => i.complete), null, { timeout: T(20000) }).catch(() => {});
+  // Card pictures are small WebPs (maps/cards/<id>.webp) fetched lazily, as a card nears the view: the first row's
+  // load at once; every built-in map's is on the server and decodes.
+  await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].slice(0, 3).every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
   const all = await cards();
   // Built-in maps (maps/*.json; retired ones aren't listed) ship a picture.
   const { readdirSync } = await import('node:fs');
   const builtIn = new Set(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)));
-  const missing = all.filter((c) => builtIn.has(c.map) && !c.loaded).map((c) => c.map);
-  check(all.length > 20 && missing.length === 0, `every map card shows its picture (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
+  const pics = await page.evaluate(async () => {
+    const imgs = [...document.querySelectorAll('.map-card')].map((c) => ({ map: c.dataset.map, img: c.querySelector('.map-thumb.pic img') }));
+    const decodes = async (src) => {
+      const i = new Image();
+      i.src = src;
+      return i.decode().then(() => i.naturalWidth, () => 0);
+    };
+    return Promise.all(imgs.map(async ({ map, img }) => ({ map, lazy: img?.loading === 'lazy', src: img?.getAttribute('src') ?? '', width: img ? await decodes(img.src) : 0 })));
+  });
+  const missing = pics.filter((c) => builtIn.has(c.map) && !(c.width >= 480 && /maps\/cards\/[a-z0-9_]+\.webp$/.test(c.src) && c.lazy)).map((c) => c.map);
+  const firstShown = all.slice(0, 3).every((c) => c.loaded);
+  check(all.length > 20 && missing.length === 0 && firstShown, `every map card shows its picture: a small lazy WebP, the first ones in at once (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
   check(all.every((c) => c.plan && !c.inPic) && !(await page.$('.shot-top')), 'and its plan as a separate box, nothing composited into the picture');
   await page.evaluate(() => document.querySelector('.map-card')?.scrollIntoView());
   await until(() => planDrawn(page, '.map-card .map-thumb.plan canvas'), T(5000));
@@ -6028,6 +6040,20 @@ async function offlineFlow(browser) {
   const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
   await page.click('#map-tabs [data-tab="all"]');
+  // The category tabs (the owner's six; shared map/categories.ts, the tags in each map's file): a category lists its
+  // maps and shows its sub-tags; a sub-tag narrows to its own; Custom (your own and community maps) holds no built-in map.
+  const catTabs = await page.$$eval('#map-cats .map-cat', (b) => b.map((x) => x.dataset.cat));
+  await page.click('#map-cats [data-cat="temporal"]');
+  const temporal = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, count: Number(document.querySelector('#map-cats [data-cat="temporal"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, tags: [...document.querySelectorAll('#map-subtags .map-subtag')].map((b) => b.dataset.tag), shown: !document.getElementById('map-subtags').hidden }));
+  await page.click('#map-subtags [data-tag="medieval"]');
+  const medieval = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  await page.click('#map-cats [data-cat="custom"]');
+  const custom = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, empty: document.querySelector('#map-cards .map-empty')?.textContent ?? '' }));
+  await page.click('#map-cats [data-cat="all"]');
+  const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
+  check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
+  check(medieval.includes('citadel') && medieval.includes('market_town') && !medieval.includes('sandgate') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -6597,7 +6623,7 @@ async function mobileTouchLayout(browser) {
 
 /**
  * The menus on phones upright and sideways (docs/MOBILE_AUDIT.md, proposals 2 and 4): Quick Play's Pick a map opens
- * Match Setup's full-screen map picker (on a narrow screen), a card picks the map and closes it; Character Select keeps
+ * Match Setup on a narrow screen: the map grid first, the settings a sheet a card or the strip pulls up; Character Select keeps
  * the grid tall with the details as a sheet a tap pulls up, a search and Favourites only; nothing spills sideways.
  */
 async function mobileMenus(browser) {
@@ -6631,24 +6657,31 @@ async function mobileMenus(browser) {
       await page.waitForSelector('#match-setup', { timeout: T(10000) });
       const narrow = w <= 900;
       if (narrow) {
-        await page.waitForFunction(() => document.querySelector('.screen.play.picking') && document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
-        const pick = await page.evaluate(() => {
-          const b = document.getElementById('map-browse').getBoundingClientRect();
+        // A phone (owner, 2026-11-23): the map grid first, the settings a sheet along the bottom; down, a strip names the
+        // map and the setup beside Start.
+        await page.waitForFunction(() => document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
+        const grid = await page.evaluate(() => {
           const cards = [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.getBoundingClientRect());
           const cols = cards.filter((r) => Math.abs(r.top - cards[0].top) < 2).length;
-          return { full: b.left <= 1 && b.top <= 1 && b.right >= innerWidth - 1 && b.bottom >= innerHeight - 1, cols, cardW: Math.round(cards[0]?.width ?? 0), spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, rowsSeen: cards.filter((r) => r.top < innerHeight).length };
+          const strip = document.getElementById('setup-sheet-toggle').getBoundingClientRect();
+          const start = document.getElementById('setup-peek-start').getBoundingClientRect();
+          const inView = (r) => r.height > 0 && r.top >= 0 && r.bottom <= innerHeight + 1 && r.left >= 0 && r.right <= innerWidth + 1;
+          return { open: !!document.querySelector('.screen.play.sheet-open'), cols, rowsSeen: cards.filter((r) => r.top < innerHeight - 70).length, spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, strip: inView(strip) && strip.top > innerHeight - 100, start: inView(start), cats: !!document.getElementById('map-cats')?.offsetParent };
         });
-        check(pick.full && pick.cols >= 2 && !pick.spill && pick.rowsSeen > pick.cols, `${label}: Pick a map opens the map picker full screen, two or more cards a row, more than a row in view, nothing spilling (${JSON.stringify(pick)})`);
+        check(!grid.open && grid.cols >= 2 && !grid.spill && grid.rowsSeen > grid.cols && grid.strip && grid.start && grid.cats, `${label}: Pick a map shows the map grid first (two or more cards a row, the category tabs), the settings a strip along the bottom with Start (${JSON.stringify(grid)})`);
         const other = await page.$$eval('#map-cards .map-card:not(.on)', (cs) => cs[0]?.dataset.map);
         await page.tap(`#map-cards .map-card[data-map="${other}"]`);
-        const picked = await page.waitForFunction((k) => !document.querySelector('.screen.play.picking') && document.getElementById('arcade-map')?.value === k, other, { timeout: T(10000) }).then(() => true, () => false);
-        const button = await page.evaluate(() => ({ shown: !!document.getElementById('arcade-map-pick')?.offsetParent, text: document.querySelector('#arcade-map-pick b')?.textContent }));
-        check(picked && button.shown && !!button.text, `${label}: a card picks the map and closes the picker; the setup's map button names it (${other}, ${JSON.stringify(button)})`);
+        const up = () => page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top < innerHeight * 0.3 && document.getElementById('arcade-start').getBoundingClientRect().bottom <= innerHeight + 1, null, { timeout: T(5000) }).then(() => true, () => false);
+        const down = () => page.waitForFunction(() => !document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top > innerHeight - 100, null, { timeout: T(5000) }).then(() => true, () => false);
+        const picked = (await up()) && (await page.evaluate((k) => document.getElementById('arcade-map')?.value === k && document.getElementById('setup-sheet-toggle').getAttribute('aria-expanded') === 'true', other));
+        check(picked, `${label}: a card picks the map and pulls the settings sheet up, Start match in view (${other})`);
+        await page.tap('#setup-sheet-toggle');
+        const putAway = await down();
+        await page.tap('#setup-sheet-toggle');
+        const again = await up();
         await page.tap('#arcade-map-pick');
-        const reopened = await page.waitForFunction(() => !!document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
-        await page.tap('#map-pick-close');
-        const closed = await page.waitForFunction(() => !document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
-        check(reopened && closed, `${label}: the map button opens the picker again and Close shuts it (${reopened}, ${closed})`);
+        const toGrid = await down();
+        check(putAway && again && toGrid, `${label}: the strip puts the sheet away and pulls it up again; Change map goes back to the grid (${putAway}, ${again}, ${toGrid})`);
       } else {
         check(await page.isVisible('#map-cards .map-card'), `${label}: Pick a map opens Match Setup with the map cards beside it`);
       }
@@ -8642,10 +8675,13 @@ async function setupLayoutFlow(browser) {
   check(fixed.teams?.join() === '12,12' && fixed.fit === 'fits' && fixed.preset === 'pick' && fixed.who === 'You + 23 bots · 12v12', `"Use 12v12" sets the map's pick, and it fits (${JSON.stringify(fixed)})`);
   // Adding bots grows the teams (Even teams: both); past the limit it says whose limit it is.
   await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="32v32"]').click());
-  await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
+  // One size control (owner, 2026-11-23): the chips and Per team; with Even teams on the team boxes show who plays only.
+  const boxes = await page.evaluate(() => ({ steppers: document.querySelectorAll('#arcade-team-cards .stepper').length, who: [...document.querySelectorAll('#arcade-team-cards .team-who')].map((w) => w.textContent) }));
+  check(boxes.steppers === 0 && boxes.who.length === 2 && boxes.who.every((w) => /players?.*bots?/.test(w)), `with Even teams the team boxes show players and bots only, no size stepper of their own (${JSON.stringify(boxes)})`);
+  await page.evaluate(() => document.getElementById('arcade-per-team-plus').click());
   const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
-  await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
+  await page.evaluate(() => document.getElementById('arcade-per-team-minus').click());
   check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
   // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on), from the Presets tab.
   await setupTab(page, 'presets');

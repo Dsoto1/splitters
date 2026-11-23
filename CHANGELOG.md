@@ -7,6 +7,12 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Film…) narrow it further. Custom holds your own MapMaker maps and community maps, labelled "Community map".
+- **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
+- **Match Setup: lighter map cards.** Each card's picture is a small copy of the map's in-game shot, fetched as the card comes into view: the map list loads about a third as much.
+- **Match Setup: one team size control.** The size chips and Teams / Per team set the teams; the team boxes show who plays (players and bots), and get their own sizes only with Even teams off.
+- **Match Setup: glow only on the map you picked and Start match**, steady, and dimmer with Reduce flashing on.
+- **Match Setup on phones: the map grid first**, the settings a sheet that slides up from a strip along the bottom (the map, the setup and Start).
 - **Station, industrial and bunker walls are real cover; lights no longer stop bullets.** White Orbital Station and Industrial panels shoot like sheet metal and Bunker Concrete like concrete (both were see-through as glass), light strips and glow trim let rounds through, neon tubes are glass, and temple, lighthouse and sandstone walls are stone (GUNPLAY_SPEC §8).
 - **St. John's: the clock tower is Welles's stair now.** It stands one cell back, in Welles's west end, where Welles's own switchback stair was; its winding stair lands on Welles's 2nd and 3rd floor halls, and the court is open where the tower stood. The halls end in a dorm room beside it, and the ground floor there has a side door onto the lane. The Carriageway is walled on the tower's side.
 - **MapMaker: the Clock Tower's Stair option "Hall floors"** (landings level with a building's 2nd and 3rd floors, the hall's way in at its corner), a **Dorm Bay End** (a dorm hall's last cell beside a tower), and a **Carriageway** that can be walled on its east side.
