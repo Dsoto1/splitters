@@ -35,6 +35,7 @@ const SYSTEMS = [
   ['characters', 'characters (update + clips + skinning)'],
   ['charAnim', '  of which clips + aim'],
   ['charSkin', '  of which skinning'],
+  ['charHands', '  of which hands on guns (in clips + aim)'],
   ['effects', 'effects'],
   ['ragdolls', 'ragdolls + effects physics'],
   ['flames', 'prop flames'],
@@ -88,7 +89,7 @@ export function summarise(rec, worstN = 8) {
   }
   const worst = [...hitches].sort((a, b) => b.dt - a.dt).slice(0, worstN).map((h) => {
     const top = Object.entries(h.split ?? {})
-      .filter(([k]) => !['charAnim', 'charSkin', 'renderCull'].includes(k))
+      .filter(([k]) => !['charAnim', 'charSkin', 'charHands', 'renderCull'].includes(k))
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([k, v]) => `${k} ${v.toFixed(1)}`);

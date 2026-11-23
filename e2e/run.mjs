@@ -13325,6 +13325,15 @@ async function webgpuFlow() {
  * viewer, the palms on large guns (first person, full body) and third-person strafing; part 1 where the hands are
  * drawn; part 2 grips in a real match (gripsInPlay).
  */
+/**
+ * The hand fitting's world matrices (game/freshWorld.ts): every one it gave in this page the same as Babylon's forced
+ * compute makes, number for number. `window.__freshCheck` set before the page's scripts run turns the comparison on.
+ */
+async function freshChecked(page, where) {
+  const r = await page.evaluate(() => window.__freshCheck ?? null);
+  check(!!r && r.calls > 0 && r.differing === 0, `${where}: the hand fitting's world matrices are the forced compute's, number for number (${r ? `${r.calls} compared, ${r.differing} differing, worst ${r.worst}` : 'no check'})`);
+}
+
 async function charactersFlow(browser, part = 0) {
   if (part === 3) return supportHands(browser);
   if (part === 2) {
@@ -13335,9 +13344,11 @@ async function charactersFlow(browser, part = 0) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   if (part === 1) {
+    await page.addInitScript(() => (window.__freshCheck = true));
     await page.goto(`${CLIENT}/?mode=grips&test=1`);
     await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
     await drawnHands(page);
+    await freshChecked(page, 'the grip page, every view');
     check(errors.length === 0, `no page errors (${errors.join('; ')})`);
     await page.context().close();
     return;
@@ -13454,6 +13465,7 @@ async function supportHands(browser) {
   const page = await (await browser.newContext({ viewport: { width: 96, height: 96 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => (window.__freshCheck = true));
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const looks = await page.evaluate(() => window.__grips.looks().map((l) => l.id));
@@ -13478,6 +13490,7 @@ async function supportHands(browser) {
     }
   }
   check(held >= 200 && off.length === 0, `every character's support hand is drawn on the long guns' handguards, third person (${held} holds; ${off.join('; ') || 'all on'})`);
+  await freshChecked(page, 'every character holding long guns, third person');
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
@@ -13895,6 +13908,7 @@ async function gripsInPlay(browser) {
     }
     return d;
   };
+  await page.addInitScript(() => (window.__freshCheck = true));
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=12&look=core.dapper&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__cs.view.gripReport().local, null, { timeout: T(120000) });
   await fight(page).catch(() => {});
@@ -14086,6 +14100,7 @@ async function gripsInPlay(browser) {
   await page.waitForFunction(() => window.__cs.view.lastRope, null, { timeout: T(5000) }).catch(() => {});
   const rope = await page.evaluate(() => window.__cs.view.lastRope);
   check(!!rope?.muzzle, `the grapple's rope starts at the launcher's muzzle (${JSON.stringify(rope)})`);
+  await freshChecked(page, 'in play, your own hands and the bots');
   check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
   await page.context().close();
 
