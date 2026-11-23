@@ -233,7 +233,12 @@ Two options for finding where a view's draws come from:
   real count; the most in one frame, a static-cache redraw, in brackets) and the casters column, over 40 frames.
   `PERF_WALK=<metres>` then walks the camera that far ahead at 0.1 m a frame and prints the same over the walk: a
   still view never moves a cascade, so it hides the static shadow cache's redraws (docs/PERF_SHADOW_CASTERS_2026-11-17.md).
-  On SwiftShader the milliseconds are for comparing two runs on the same machine, not real hardware.
+  On SwiftShader the milliseconds are for comparing two runs on the same machine, not real hardware. The same line ends
+  with three per-frame chores' own time (the shadow list, the cascades' casters' box, the light container's readiness and
+  how often it was asked: docs/PERF_DRAWS_2026-11-23.md).
+- `tools/perf/perf96.mjs` takes `PERF_QUERY` (e.g. `perfoff=doorinst`), `PERF_SIZE` (480x270 draws more frames on
+  SwiftShader), `PERF_MIN_FRAMES`, `CHROMIUM` and `PERF_BREAKDOWN=1`: a crowd scenario's draws a frame by pass, by kind
+  (characters, held guns, props, the level, effects, the first-person view) and by mesh.
 
 ```
 PERF_STILL=1 PERF_GRAPHICS=high PERF_BREAKDOWN=1 node tools/perf/client-perf.mjs st_johns

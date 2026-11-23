@@ -336,21 +336,50 @@ async function measureStill(id, ctx, page, errors) {
         const dir = { x: Math.sin(pose.yaw), z: Math.cos(pose.yaw) };
         const nextFrame = () => new Promise((r) => { const f = scene.getFrameId(); const t = setInterval(() => { if (scene.getFrameId() > f) { clearInterval(t); r(); } }, 5); });
         await nextFrame();
+        // The CPU spent a frame in three of the renderer's per-frame chores (docs/PERF_DRAWS_2026-11-23.md): the shadow
+        // map's list of casters (atmosphere.ts), the cascades' box round the casters, and the light container's
+        // readiness, asked for every lit draw (`?perfoff=casterlist,casterbounds,lightready` for the old paths).
+        const hot = { list: [0, 0], box: [0, 0], ready: [0, 0] };
+        const undo = [];
+        const wrap = (obj, key, slot) => {
+          if (!obj || typeof obj[key] !== 'function') return;
+          const had = Object.prototype.hasOwnProperty.call(obj, key);
+          const fn = obj[key];
+          obj[key] = function (...a) {
+            const t = performance.now();
+            try {
+              return fn.apply(this, a);
+            } finally {
+              hot[slot][0] += performance.now() - t;
+              hot[slot][1]++;
+            }
+          };
+          undo.push(() => (had ? (obj[key] = fn) : delete obj[key]));
+        };
+        for (const l of scene.lights) {
+          const sg = l.getShadowGenerator?.();
+          if (sg) {
+            wrap(sg.getShadowMap(), 'getCustomRenderList', 'list');
+            wrap(sg, '_computeShadowCastersBoundingInfo', 'box');
+          }
+          if (l.getClassName?.() === 'ClusteredLightContainer') wrap(l, '_isReady', 'ready');
+        }
         perf.reset();
         window.__still.frames.length = 0;
         for (let i = 0; i < frames; i++) {
           if (walk) pose.eye = { x: start.x + dir.x * 0.1 * (i + 1), y: start.y, z: start.z + dir.z * 0.1 * (i + 1) };
           await nextFrame();
         }
+        for (const u of undo) u();
         const f = perf.frames.slice(1);
         const rows = window.__still.frames.slice(1);
         pose.eye = start;
         perf.use('client-perf', false);
         const avg = (g) => (f.length ? f.reduce((n, x) => n + g(x), 0) / f.length : 0);
         const ravg = (j) => (rows.length ? rows.reduce((n, r) => n + r[j], 0) / rows.length : 0);
-        return { n: f.length, render: avg((x) => x.render), shadow: avg((x) => x.sys[7]), cull: avg((x) => x.sys[9]), post: avg((x) => x.sys[8]), js: avg((x) => x.js), draws: ravg(0), casters: ravg(4), shadowDraws: ravg(6), shadowMax: Math.max(0, ...rows.map((r) => r[6])), tris: ravg(3) };
+        return { n: f.length, render: avg((x) => x.render), shadow: avg((x) => x.sys[7]), cull: avg((x) => x.sys[9]), post: avg((x) => x.sys[8]), js: avg((x) => x.js), draws: ravg(0), casters: ravg(4), shadowDraws: ravg(6), shadowMax: Math.max(0, ...rows.map((r) => r[6])), tris: ravg(3), hot: Object.fromEntries(Object.entries(hot).map(([k, [ms, calls]]) => [k, [ms / Math.max(1, frames), calls / Math.max(1, frames)]])) };
       }, walk);
-      const say = (label, r) => console.log(`  ${label}: render ${r.render.toFixed(1)} ms (shadow ${r.shadow.toFixed(1)}, cull ${r.cull.toFixed(1)}, post ${r.post.toFixed(1)}) · game js ${r.js.toFixed(1)} ms · draws ${r.draws.toFixed(0)} · shadow draws ${r.shadowDraws.toFixed(1)} (max ${r.shadowMax}) · casters ${r.casters.toFixed(0)} · ${(r.tris / 1e6).toFixed(3)} M tris · ${r.n} frames`);
+      const say = (label, r) => console.log(`  ${label}: render ${r.render.toFixed(1)} ms (shadow ${r.shadow.toFixed(1)}, cull ${r.cull.toFixed(1)}, post ${r.post.toFixed(1)}) · game js ${r.js.toFixed(1)} ms · draws ${r.draws.toFixed(0)} · shadow draws ${r.shadowDraws.toFixed(1)} (max ${r.shadowMax}) · casters ${r.casters.toFixed(0)} · ${(r.tris / 1e6).toFixed(3)} M tris · ${r.n} frames · a frame: shadow list ${r.hot.list[0].toFixed(3)} ms, casters' box ${r.hot.box[0].toFixed(3)} ms, lights ready ${r.hot.ready[0].toFixed(3)} ms (${r.hot.ready[1].toFixed(0)} asks)`);
       say('still', await split(0));
       if (process.env.PERF_WALK) say(`walk ${process.env.PERF_WALK} m`, await split(Number(process.env.PERF_WALK)));
     }
