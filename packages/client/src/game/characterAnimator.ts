@@ -14,9 +14,11 @@ import { gripReport, skinHandFrame, type PalmCues } from './handProbe.ts';
 import { pairHold3p } from './pairView.ts';
 import { EVERY_FRAME, StepClock, blendAt, torsoMeasures, type AnimStep } from './animLod.ts';
 import { perfOn } from './perfSwitches.ts';
+import { SYS, perfProbe } from './perfProbe.ts';
 import { rigidAlike } from './poseCheck.ts';
 import { TorsoSurface, armReach, reachAlong } from './torsoSurface.ts';
 import { guardOf } from './guardUnderside.ts';
+import { freshWorld, gripFitOn } from './freshWorld.ts';
 import { GAIT, GAIT_CLIPS, clipCycleRate, clipGaitWeights, clipUpperWeights, gaitCycleRate, gaitWeights, matchClipPhase, matchPhase, strideWarp, type ClipLoop, type GaitClip } from './gait.ts';
 
 /** What the animator needs to know each frame (from interpolated snapshots). */
@@ -342,7 +344,7 @@ const turnAxis = new Vector3();
  * axis right in some joint frames and reversed in others (the spine's: a twist about up went the wrong way).
  */
 export function worldTurn(parent: TransformNode, axisWorld: Vector3, angle: number): Quaternion {
-  parent.computeWorldMatrix(true);
+  freshWorld(parent);
   const m = parent.getWorldMatrix();
   m.invertToRef(turnInv);
   Vector3.TransformNormalToRef(axisWorld, turnInv, turnAxis);
@@ -1154,8 +1156,8 @@ export class CharacterAnimator {
   private shoulderYaw(rootRot: Quaternion): number | null {
     const [l, r] = [this.arms?.l.upper, this.arms?.r.upper];
     if (!l || !r) return null;
-    l.computeWorldMatrix(true);
-    r.computeWorldMatrix(true);
+    freshWorld(l);
+    freshWorld(r);
     const d = r.getAbsolutePosition().subtract(l.getAbsolutePosition());
     const local = d.applyRotationQuaternion(Quaternion.Inverse(rootRot));
     return Math.atan2(local.x, local.z) - Math.PI / 2;
@@ -1534,7 +1536,7 @@ export class CharacterAnimator {
   private roll(dt: number, s: MotionState): void {
     const root = this.ch.root;
     const mover = (root.parent as TransformNode | null) ?? root;
-    mover.computeWorldMatrix(true);
+    freshWorld(mover);
     const at = mover.getAbsolutePosition().clone();
     const st = this.rollState;
     if (dt > 0 && st.at && Vector3.Distance(at, st.at) < ROLL_TELEPORT) {
@@ -1625,14 +1627,14 @@ export class CharacterAnimator {
     const root = this.ch.root;
     const parentScale = (root.parent as TransformNode | null)?.absoluteScaling.y || 1;
     if (this.hipHeight === null && this.prone === 0 && this.sit === 0 && thigh) {
-      root.computeWorldMatrix(true);
-      thigh.computeWorldMatrix(true);
+      freshWorld(root);
+      freshWorld(thigh);
       const h = (thigh.getAbsolutePosition().y - root.getAbsolutePosition().y) / parentScale;
       if (h > 0.2 && h < 3) this.hipHeight = h;
     }
     if (this.shin === null && calf && foot) {
-      calf.computeWorldMatrix(true);
-      foot.computeWorldMatrix(true);
+      freshWorld(calf);
+      freshWorld(foot);
       const l = Vector3.Distance(calf.getAbsolutePosition(), foot.getAbsolutePosition()) / parentScale;
       if (l > 0.1 && l < 2) this.shin = l;
     }
@@ -1803,7 +1805,7 @@ export class CharacterAnimator {
   /** The after-clip work of an evaluation: aim pitch and twist on the spine, the reactions, the weapon in the hands. */
   private pose(): void {
     const root = this.ch.root;
-    root.computeWorldMatrix(true);
+    freshWorld(root);
     const rootRot = Quaternion.FromRotationMatrix(root.getWorldMatrix().getRotationMatrix());
     const right = Vector3.TransformNormal(Vector3.Right(), Matrix.FromQuaternionToRef(rootRot, new Matrix()));
     const up = Vector3.Up();
@@ -1852,6 +1854,14 @@ export class CharacterAnimator {
       for (const arm of this.arms ? [this.arms.r, this.arms.l] : []) arm.hand.scaling.setAll(FP_HAND_SCALE);
       this.fp.place?.();
     }
+    // (The perf overlay's `hands`: the rest of the pose is the aim's spine and the reactions.)
+    const t0 = perfProbe.on ? performance.now() : 0;
+    this.placeHands(root, rootRot);
+    if (t0) perfProbe.add(SYS.hands, t0);
+  }
+
+  /** The gun placed and the hands closed on it (pose, after the spine's aim). */
+  private placeHands(root: TransformNode, rootRot: Quaternion): void {
     if (this.weapon && this.weapon2 && this.grip && this.grip.style !== 'melee' && this.arms && this.skelRoot) this.placePair(root, rootRot, this.weapon, this.weapon2, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.weapon && this.grip && this.arms && this.skelRoot) this.placeWeapon(root, rootRot, this.weapon, this.grip, this.arms, new SkeletonSpace(this.skelRoot));
     else if (this.external && this.arms && this.skelRoot && !this.external.node.isDisposed()) {
@@ -1888,7 +1898,7 @@ export class CharacterAnimator {
     if (last && q.equalsWithEpsilon(last.wrote, 1e-6)) q.copyFrom(last.before);
     const before = q.clone();
     const pos = (n: TransformNode) => {
-      n.computeWorldMatrix(true);
+      freshWorld(n);
       return n.getAbsolutePosition().clone();
     };
     const s0 = pos(arm.upper);
@@ -1907,7 +1917,7 @@ export class CharacterAnimator {
     const angle = weight * Math.min(SUPPORT_CLAVICLE_MAX, Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(v0.normalizeToNew(), v1.normalizeToNew())))));
     const turn = (a: number) => {
       this.turnJoint(clav, axis, a);
-      clav.computeWorldMatrix(true);
+      freshWorld(clav);
       refreshArm(arm);
     };
     turn(angle);
@@ -1969,7 +1979,7 @@ export class CharacterAnimator {
     const aim = this.aimFrame(rootRot);
     const point = (origin: Vector3, rot: Quaternion, p: ModelPoint) => origin.add(new Vector3(p[0], p[1], p[2]).scale(scale).applyRotationQuaternion(rot));
     const pos = (n: TransformNode) => {
-      n.computeWorldMatrix(true);
+      freshWorld(n);
       return n.getAbsolutePosition().clone();
     };
 
@@ -2164,7 +2174,7 @@ export class CharacterAnimator {
     const scale = root.absoluteScaling.x;
     const aim = this.aimFrame(rootRot);
     const pos = (n: TransformNode) => {
-      n.computeWorldMatrix(true);
+      freshWorld(n);
       return n.getAbsolutePosition().clone();
     };
     const toRoot = root.getWorldMatrix().clone().invert();
@@ -2191,7 +2201,7 @@ export class CharacterAnimator {
       const gripped = { rot, pos: at.subtract(new Vector3(grip.grip[0], grip.grip[1], grip.grip[2]).scale(scale).applyRotationQuaternion(rot)) };
       gun.position.copyFrom(Vector3.TransformCoordinates(gripped.pos, toRoot));
       gun.rotationQuaternion = invRoot.multiply(gripped.rot);
-      gun.computeWorldMatrix(true);
+      freshWorld(gun);
       if (w > 0) {
         const pole = shoulder.add(outward.scale(side * 0.35 * scale)).add(new Vector3(0, -0.3 * scale, 0));
         viewMirrored = side < 0;
@@ -2238,9 +2248,10 @@ export class CharacterAnimator {
     if (flatRight.lengthSquared() < 1e-8) return;
     flatRight.normalize();
     const refresh = () => {
-      top.computeWorldMatrix(true);
+      freshWorld(top);
       for (const arm of [arms.r, arms.l]) {
-        (arm.upper.parent as TransformNode | null)?.computeWorldMatrix(true);
+        const clav = arm.upper.parent as TransformNode | null;
+        if (clav) freshWorld(clav);
         refreshArm(arm);
       }
     };
@@ -2380,11 +2391,11 @@ export class CharacterAnimator {
   private gripPlaced(weapon: TransformNode, grip: WeaponHold, arms: { r: Arm; l: Arm }, space: SkeletonSpace, scale: number, solo = false): void {
     this.settleHand(arms.r);
     this.settleHand(arms.l);
-    weapon.computeWorldMatrix(true);
+    freshWorld(weapon);
     const world = weapon.getWorldMatrix();
     const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
     const pos = (n: TransformNode) => {
-      n.computeWorldMatrix(true);
+      freshWorld(n);
       return n.getAbsolutePosition().clone();
     };
     const w = this.ik;
@@ -2443,12 +2454,7 @@ export class CharacterAnimator {
       if (grip.support && supportAt) {
         const s = pos(arms.l.upper);
         const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY;
-        const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
-        let back = 0;
-        while (back < room && Vector3.Distance(s, supportAt) > reachL) {
-          back = Math.min(room, back + 0.01);
-          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
-        }
+        supportAt = slideSupport(arms.l, grip, grip.support, supportAt, s, reachL, point, scale);
       }
       // Shoulders come forward by rolling the collarbone first (a shrug toward the gun bends the skin as a body
       // does); only what is still out of reach moves the shoulder joint, which stretches the skin round it, and
@@ -2470,7 +2476,7 @@ export class CharacterAnimator {
         const angle = Math.min(FP_CLAVICLE_MAX, Math.acos(Math.max(-1, Math.min(1, Vector3.Dot(v0.normalizeToNew(), v1.normalizeToNew())))));
         const turn = (a: number) => {
           this.turnJoint(clav, axis, a);
-          clav.computeWorldMatrix(true);
+          freshWorld(clav);
           refreshArm(arm);
         };
         turn(angle);
@@ -2480,7 +2486,7 @@ export class CharacterAnimator {
       placeShoulder(arms.r, pos(arms.r.upper), gripAt, shift);
       if (supportAt) placeShoulder(arms.l, pos(arms.l.upper), supportAt, shift);
     } else if (view) {
-      view.computeWorldMatrix(true);
+      freshWorld(view);
       const vm = view.getWorldMatrix();
       // A free left hand (a knife) hangs out of view.
       const anchor = (side: 1 | -1) => Vector3.TransformCoordinates(new Vector3(side * FP_SHOULDER[0], side < 0 && !grip.support ? FP_SHOULDER_IDLE : FP_SHOULDER[1], FP_SHOULDER[2]), vm);
@@ -2490,12 +2496,7 @@ export class CharacterAnimator {
         // shoulder only comes forward a little, so the upper arm stays out of view), then the shoulder comes further.
         const s = anchor(-1);
         const reachL = armReach(arms.l.upper, arms.l.lower, arms.l.hand, arms.l.palm) * FP_BEND + FP_SHOULDER_EASY * view.absoluteScaling.x;
-        const room = Math.max(0, grip.support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
-        let back = 0;
-        while (back < room && Vector3.Distance(s, supportAt) > reachL) {
-          back = Math.min(room, back + 0.01);
-          supportAt = palmOnGrip(arms.l, point([grip.support[0], grip.support[1], grip.support[2] - back]), scale, grip.style === 'long');
-        }
+        supportAt = slideSupport(arms.l, grip, grip.support, supportAt, s, reachL, point, scale);
       }
       placeShoulder(arms.r, anchor(1), gripAt, shift);
       placeShoulder(arms.l, anchor(-1), supportAt, shift);
@@ -2564,7 +2565,7 @@ export class SkeletonSpace {
   private readonly toSpace: Matrix;
 
   constructor(private readonly rootJoint: TransformNode) {
-    rootJoint.computeWorldMatrix(true);
+    freshWorld(rootJoint);
     this.toSpace = rootJoint.getWorldMatrix().clone().invert();
   }
 
@@ -2573,13 +2574,13 @@ export class SkeletonSpace {
   }
 
   pos(n: TransformNode): Vector3 {
-    n.computeWorldMatrix(true);
+    freshWorld(n);
     return this.point(n.getAbsolutePosition());
   }
 
   rot(n: TransformNode): Quaternion {
     if (n === this.rootJoint) return Quaternion.Identity();
-    n.computeWorldMatrix(true);
+    freshWorld(n);
     const m = n.getWorldMatrix().multiply(this.toSpace);
     const q = new Quaternion();
     m.decompose(undefined, q);
@@ -2591,14 +2592,14 @@ export class SkeletonSpace {
     const parent = n.parent as TransformNode;
     const local = Quaternion.Inverse(this.rot(parent)).multiply(rot);
     n.rotationQuaternion = weight >= 1 ? local : Quaternion.Slerp(n.rotationQuaternion ?? Quaternion.Identity(), local, weight);
-    n.computeWorldMatrix(true);
+    freshWorld(n);
   }
 }
 
 const refreshArm = (arm: Arm) => {
-  arm.upper.computeWorldMatrix(true);
-  arm.lower.computeWorldMatrix(true);
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.upper);
+  freshWorld(arm.lower);
+  freshWorld(arm.hand);
 };
 
 /** Half the thickness of a gun's grip (m): the palm rests this far from the grip's centre line, so closed fingers wrap round it. */
@@ -2684,7 +2685,7 @@ function pointThumb(space: SkeletonSpace, arm: Arm, dir: Vector3, weight: number
   }
   const base = chain[0]!;
   const now = space.pos(chain[chain.length - 1]!).subtract(space.pos(base));
-  base.computeWorldMatrix(true);
+  freshWorld(base);
   const p = base.getAbsolutePosition();
   const want = space.point(p.add(dir)).subtract(space.point(p));
   if (now.lengthSquared() < 1e-12 || want.lengthSquared() < 1e-12) return;
@@ -2703,7 +2704,7 @@ export function setPistolTune(tune: Partial<typeof PISTOL>): typeof PISTOL {
 function handLength(arm: Arm): number {
   const k = knuckleCentre(arm);
   if (!k) return 0;
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   return Vector3.Distance(k, arm.hand.getAbsolutePosition());
 }
 
@@ -2714,7 +2715,7 @@ function knuckleCentre(arm: Arm): Vector3 | null {
   for (const chain of arm.fingers) {
     const root = chain[0];
     if (!root) continue;
-    root.computeWorldMatrix(true);
+    freshWorld(root);
     sum.addInPlace(root.getAbsolutePosition());
     n++;
   }
@@ -2753,7 +2754,7 @@ function alignKnuckles(space: SkeletonSpace, arm: Arm, line: Vector3, weight: nu
   const chains = arm.fingers.filter((c) => c.length > 0);
   const n = palmNormal(arm);
   if (chains.length < 2 || !n || weight <= 0 || line.lengthSquared() < 1e-8) return;
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   const o = arm.hand.getAbsolutePosition().clone();
   const toSpace = (v: Vector3) => space.point(o.add(v)).subtract(space.point(o));
   const ns = toSpace(n).normalize();
@@ -2766,8 +2767,42 @@ function alignKnuckles(space: SkeletonSpace, arm: Arm, line: Vector3, weight: nu
 
 /** Where to put a palm so the grip point sits inside the closed hand rather than in the palm itself (`cup`: a support hand under a handguard). */
 function palmOnGrip(arm: Arm, gripPoint: Vector3, scale: number, cup = false): Vector3 {
-  const at = gripPoint.subtract(palmSideWorld(arm).scale(arm.gripOffset * scale));
-  return cup ? at.subtract(handAxes(arm).along.scale(CUP_BACK * arm.span * scale)) : at;
+  return palmOnGripBy(arm, scale, cup)(gripPoint);
+}
+
+/**
+ * palmOnGrip for many grip points on one hand that doesn't move between them: the hand's offsets read once (each read
+ * forces the hand's world matrices: the support hand's slide along a handguard tried up to forty points a frame, and
+ * read them afresh for every one, 2026-11-23). The same numbers as palmOnGrip, point for point.
+ */
+function palmOnGripBy(arm: Arm, scale: number, cup = false): (gripPoint: Vector3) => Vector3 {
+  const side = palmSideWorld(arm).scale(arm.gripOffset * scale);
+  const back = cup ? handAxes(arm).along.scale(CUP_BACK * arm.span * scale) : null;
+  return (gripPoint) => {
+    const at = gripPoint.subtract(side);
+    return back ? at.subtract(back) : at;
+  };
+}
+
+/**
+ * First person: a support point out of the arm's reach (from the shoulder at `shoulder`) slides back along the handguard
+ * toward the grip, a centimetre at a time, until the arm reaches it or it is SUPPORT_MIN_AHEAD ahead of the grip.
+ * `at`: the palm's place for the support point itself; `point`: model to world. Returns the palm's place.
+ */
+export function slideSupport(arm: Arm, grip: WeaponHold, support: ModelPoint, at: Vector3, shoulder: Vector3, reach: number, point: (p: ModelPoint) => Vector3, scale: number): Vector3 {
+  const room = Math.max(0, support[2] - grip.grip[2] - SUPPORT_MIN_AHEAD);
+  const cup = grip.style === 'long';
+  // (Nothing moves while it slides: the hand's offsets are read once, at its first step.)
+  // (`?perfoff=gripfit`: read afresh at every step, as before 2026-11-23.)
+  const fast = gripFitOn();
+  let palmAt: ((p: Vector3) => Vector3) | null = null;
+  let back = 0;
+  while (back < room && Vector3.Distance(shoulder, at) > reach) {
+    back = Math.min(room, back + 0.01);
+    const p = point([support[0], support[1], support[2] - back]);
+    at = fast ? (palmAt ??= palmOnGripBy(arm, scale, cup))(p) : palmOnGrip(arm, p, scale, cup);
+  }
+  return at;
 }
 
 /**
@@ -2782,7 +2817,7 @@ function palmUnder(arm: Arm, under: Vector3, scale: number): Vector3 {
 /** Unit vector out of the palm (the side the fingers close toward), in world space. */
 function palmSideWorld(arm: Arm): Vector3 {
   if (arm.frame) return handAxes(arm).palm;
-  for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky, arm.thumb]) n.computeWorldMatrix(true);
+  for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky, arm.thumb]) freshWorld(n);
   const wrist = arm.hand.getAbsolutePosition();
   const forward = arm.knuckle.getAbsolutePosition().subtract(wrist).normalize();
   const across = arm.index.getAbsolutePosition().subtract(arm.pinky.getAbsolutePosition()).normalize();
@@ -2801,22 +2836,22 @@ function knuckleLine(arm: Arm): Vector3 {
   const across = Vector3.Cross(palm, along);
   if (across.lengthSquared() < 1e-10) return Vector3.Zero();
   across.normalize();
-  arm.hand.computeWorldMatrix(true);
-  arm.knuckle.computeWorldMatrix(true);
+  freshWorld(arm.hand);
+  freshWorld(arm.knuckle);
   const middle = arm.frame?.centre ? Vector3.TransformCoordinates(arm.frame.centre, arm.hand.getWorldMatrix()) : arm.knuckle.getAbsolutePosition();
   return across.scale(Vector3.Dot(middle.subtract(palmWorld(arm)), across));
 }
 
 /** World directions of a hand's fingers (wrist to tips) and palm: the measured frame, or the rig's knuckles. */
 function handAxes(arm: Arm): { along: Vector3; palm: Vector3 } {
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   if (arm.frame) {
     const m = arm.hand.getWorldMatrix();
     return { along: Vector3.TransformNormal(arm.frame.along, m).normalize(), palm: Vector3.TransformNormal(arm.frame.palm, m).normalize() };
   }
-  arm.knuckle.computeWorldMatrix(true);
+  freshWorld(arm.knuckle);
   const along = arm.knuckle.getAbsolutePosition().subtract(arm.hand.getAbsolutePosition()).normalize();
-  for (const n of [arm.index, arm.pinky, arm.thumb]) n.computeWorldMatrix(true);
+  for (const n of [arm.index, arm.pinky, arm.thumb]) freshWorld(n);
   const wrist = arm.hand.getAbsolutePosition();
   const across = arm.index.getAbsolutePosition().subtract(arm.pinky.getAbsolutePosition()).normalize();
   const towardThumb = arm.thumb.getAbsolutePosition().subtract(wrist);
@@ -2842,7 +2877,7 @@ function gunAxes(weapon: Matrix): { up: Vector3; ahead: Vector3; right: Vector3 
 function turnHand(space: SkeletonSpace, arm: Arm, fingers: Vector3, palm: Vector3, weight: number): void {
   const now = handAxes(arm);
   if (now.palm.lengthSquared() < 1e-8) return;
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   const wrist = arm.hand.getAbsolutePosition().clone();
   const dir = (world: Vector3) => space.point(wrist.add(world)).subtract(space.point(wrist));
   const frame = (f: Vector3, p: Vector3) => {
@@ -2875,7 +2910,7 @@ function gripHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, role: 'grip' |
 function rollHand(space: SkeletonSpace, arm: Arm, angle: number, weight: number): void {
   const along = handAxes(arm).along;
   if (along.lengthSquared() < 1e-8 || weight <= 0) return;
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   const wrist = arm.hand.getAbsolutePosition().clone();
   const axis = space.point(wrist.add(along)).subtract(space.point(wrist)).normalize();
   space.setRot(arm.hand, Quaternion.RotationAxis(axis, angle).multiply(space.rot(arm.hand)), weight);
@@ -2883,7 +2918,7 @@ function rollHand(space: SkeletonSpace, arm: Arm, angle: number, weight: number)
 
 /** World position of a hand's palm centre. */
 function palmWorld(arm: Arm): Vector3 {
-  arm.hand.computeWorldMatrix(true);
+  freshWorld(arm.hand);
   return Vector3.TransformCoordinates(arm.palm, arm.hand.getWorldMatrix());
 }
 
@@ -2900,7 +2935,7 @@ function placeShoulder(arm: Arm, at: Vector3, target: Vector3 | null, most: numb
   }
   const parent = arm.upper.parent as TransformNode | null;
   if (!parent) return;
-  parent.computeWorldMatrix(true);
+  freshWorld(parent);
   arm.upper.position.copyFrom(Vector3.TransformCoordinates(s, parent.getWorldMatrix().clone().invert()));
   refreshArm(arm);
 }
@@ -2910,7 +2945,7 @@ function placeShoulder(arm: Arm, at: Vector3, target: Vector3 | null, most: numb
  * its underside and a little forward (`weapon`: the gun's world matrix; blended by `weight`).
  */
 function cupHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, weight: number): void {
-  for (const n of [arm.hand, arm.knuckle]) n.computeWorldMatrix(true);
+  for (const n of [arm.hand, arm.knuckle]) freshWorld(n);
   const wrist = arm.hand.getAbsolutePosition().clone();
   const dir = (world: Vector3) => space.point(wrist.add(world)).subtract(space.point(wrist));
   const axis = (x: number, y: number, z: number) => Vector3.TransformNormal(new Vector3(x, y, z), weapon).normalize();
@@ -2933,7 +2968,7 @@ function cupHand(space: SkeletonSpace, arm: Arm, weapon: Matrix, weight: number)
 
 /** A proper (unmirrored) world frame for a hand, from its knuckles: +Z along the fingers. */
 function handFrame(arm: Arm): { pos: Vector3; rot: Quaternion } {
-  for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky]) n.computeWorldMatrix(true);
+  for (const n of [arm.hand, arm.knuckle, arm.index, arm.pinky]) freshWorld(n);
   const wrist = arm.hand.getAbsolutePosition().clone();
   const forward = arm.knuckle.getAbsolutePosition().subtract(wrist).normalize();
   const across = arm.index.getAbsolutePosition().subtract(arm.pinky.getAbsolutePosition());
@@ -3160,7 +3195,7 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
  */
 export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: TransformNode, grip: WeaponHold, scale: number, weight: number, tune?: GripTune): void {
   if (grip.style === 'melee' || weight <= 0) return;
-  weapon.computeWorldMatrix(true);
+  freshWorld(weapon);
   const world = weapon.getWorldMatrix();
   const point = (p: ModelPoint) => Vector3.TransformCoordinates(new Vector3(p[0], p[1], p[2]), world);
   const shift = (p: ModelPoint, by: readonly [number, number, number] | undefined): ModelPoint => (by ? [p[0] + by[0], p[1] + by[1], p[2] + by[2]] : p);
