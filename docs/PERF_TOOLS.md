@@ -41,7 +41,7 @@ fps        58  (frame 17.2 ms, slowest 5% 24.1 ms, worst 61 ms)
 hitches    2 over 50 ms in the last minute
 frame split sim on a worker · net 1.0 · game 7.7 · render 32.1 ms
 render     scene 22.0 (culling 3.1) · shadows 7.5 · post 1.4 ms
-systems    characters 6.2 (clips 2.9, skinning 0.8) · effects 0.6 · ragdolls 0.1 · flames 0.1 · hud 0.4 · other game 2.9 ms
+systems    characters 6.2 (clips 2.9, of which hands 0.6, skinning 0.8) · effects 0.6 · ragdolls 0.1 · flames 0.1 · hud 0.4 · other game 2.9 ms
 drawn      647 draws · 1,900 meshes · 184 shadow casters
            39 characters (14 animated, 18 skinned a frame) · 3 effects · 2 lasting · 0 ragdolls awake
 ```
@@ -58,7 +58,9 @@ Averages over the last 5 seconds, ms per frame, all on the page's main thread:
   - The characters' clips and skinning run inside `render` but are counted under `characters`.
 - **systems** splits `game` (and takes the character parts out of `render`):
   - `characters`: placing every character, the state machines and animation LOD, plus `clips` (Babylon
-    evaluating the animation clips, then the aim and grip after them) and `skinning` (bone matrices).
+    evaluating the animation clips, then the aim and grip after them; `hands`, part of it, the guns placed and
+    the hands fitted on them, your own first-person hands too) and `skinning` (bone matrices). A recording calls
+    it `charHands`, a trace `tt:characters (hands on guns)`.
   - `effects`: one-shot and lasting pack effects, hit sparks, blood, remote muzzle flashes.
   - `ragdolls`: the effects physics step (ragdolls, debris, falling bodies) and posing ragdolls.
   - `flames`: picking which prop flames draw.

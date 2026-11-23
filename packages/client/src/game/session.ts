@@ -215,7 +215,9 @@ import { myRegion } from '../profile.ts';
 import { currentAccount } from '../account.ts';
 import { sendPlayReport } from '../communityMaps.ts';
 import { statusColor } from './arsenalVisuals.ts';
-import { InputState, keyLabel, saveMousePrefs } from './input.ts';
+import { InputState, saveMousePrefs } from './input.ts';
+import { CATEGORY_ACTIONS, keyFor } from './keyBindings.ts';
+
 import { TouchControls } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
 import { WeaponRequest } from './weaponRequest.ts';
@@ -252,6 +254,12 @@ import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
+
+/** The four move keys as a hint reads them ("WASD"). */
+const moveKeys = (): string => {
+  const k = ['forward', 'left', 'back', 'right'].map((a) => keyFor(a));
+  return k.every((x) => x.length === 1) ? k.join('') : k.join('/');
+};
 
 /** Kills this close together escalate the kill marker (and its sound). */
 const MULTI_KILL_MS = 4000;
@@ -867,44 +875,51 @@ export class GameSession {
       opts.transport.botDebug((f) => v.update(f));
     }
     this.input = new InputState(opts.canvas);
-    this.hud.categoryKeys = this.input.categoryKeys.map(keyLabel);
+    this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => keyFor(a));
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
     this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
     this.input.onToggle.set('F3', () => this.setShowStats(!this.showStats));
-    // M: the whole map, larger, in the middle of the screen (again to put it away).
-    this.input.onToggle.set('KeyM', () => {
+    // The big map (M): the whole map, larger, in the middle of the screen (again to put it away).
+    this.input.onAction.set('bigMap', () => {
       if (!this.bigMap) return;
       this.bigMap.hidden = !this.bigMap.hidden;
-      if (!this.bigMap.hidden) this.hud.pickup('Map (M to put it away)');
+      if (!this.bigMap.hidden) this.hud.pickup(`Map (${keyFor('bigMap')} to put it away)`);
     });
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
-    // Watching: Space switches between following someone and the free camera (or skips the kill cam).
-    this.input.onToggle.set('Space', () => {
+    // Watching: the camera key (Space) switches between following someone and the free camera (or skips the kill cam).
+    this.input.onAction.set('specCamera', () => {
       if (this.outOfPlay || this.spectator || (this.local && !this.local.alive && this.phase === 'playing')) this.input.toggleSpectateCamera();
     });
-    // Spectating by choice: J joins the game again.
-    this.input.onToggle.set('KeyJ', () => {
+    // Spectating by choice: the join key (J) joins the game again.
+    this.input.onAction.set('joinGame', () => {
       if (this.spectator) this.setSpectating(false);
     });
-    // O: switch team at your next respawn (again: stay).
-    this.input.onToggle.set('KeyO', () => this.switchTeam());
-    this.input.onToggle.set('KeyH', () => {
-      // In a vehicle H switches the driver between the cockpit and the chase camera; on foot, first and third person.
-      const ride = this.seat && this.local?.alive ? this.mounts?.mounts.get(this.seat[0]) : undefined;
-      if (ride && ride.def.kind === 'vehicle' && !ride.def.airplane) {
-        if (VehicleCamera.drives(ride.def, this.seat![1])) {
-          const view = this.vehicleCam.toggle(ride.def);
-          this.hud.pickup(view === 'chase' ? 'Chase camera (H for the cockpit)' : 'Cockpit view (H for the chase camera)');
-        } else this.hud.pickup('Riders look out from their seat (the driver can use the chase camera)');
-        return;
-      }
-      this.thirdPerson = !this.thirdPerson;
-      this.hud.pickup(this.thirdPerson ? 'Third-person view (H to go back)' : 'First-person view');
+    // Switch team (O) at your next respawn (again: stay).
+    this.input.onAction.set('switchTeam', () => this.switchTeam());
+    // In a vehicle the camera key (H) switches the driver between the cockpit and the chase camera; on foot (and in a
+    // plane) the third-person key (H) switches first and third person.
+    const ride = () => {
+      const r = this.seat && this.local?.alive ? this.mounts?.mounts.get(this.seat[0]) : undefined;
+      return r && r.def.kind === 'vehicle' && !r.def.airplane ? r : undefined;
+    };
+    this.input.onAction.set('vehicleCamera', () => {
+      const r = ride();
+      if (!r) return;
+      const k = keyFor('vehicleCamera');
+      if (VehicleCamera.drives(r.def, this.seat![1])) {
+        const view = this.vehicleCam.toggle(r.def);
+        this.hud.pickup(view === 'chase' ? `Chase camera (${k} for the cockpit)` : `Cockpit view (${k} for the chase camera)`);
+      } else this.hud.pickup('Riders look out from their seat (the driver can use the chase camera)');
     });
-    this.input.onToggle.set('KeyQ', () => {
+    this.input.onAction.set('thirdPerson', () => {
+      if (ride()) return;
+      this.thirdPerson = !this.thirdPerson;
+      this.hud.pickup(this.thirdPerson ? `Third-person view (${keyFor('thirdPerson')} to go back)` : 'First-person view');
+    });
+    this.input.onAction.set('lastWeapon', () => {
       if (this.lastWeapon && this.local?.inventory.has(this.lastWeapon)) this.requestWeapon(this.lastWeapon);
     });
     // The wheel pointed or picked by a finger (it's drawn on top of everything else in play).
@@ -1458,7 +1473,7 @@ export class GameSession {
     btn.hidden = !this.canSpectate || !this.opts.transport.sendSpectate;
     btn.textContent = this.spectator ? 'Join game' : 'Spectate';
     this.drawTeamButton();
-    btn.title = this.spectator ? 'Back into the match (J)' : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
+    btn.title = this.spectator ? `Back into the match (${keyFor('joinGame')})` : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
     ($('respawn-now') as HTMLButtonElement).hidden = this.spectator;
   }
 
@@ -1488,7 +1503,7 @@ export class GameSession {
     const mine = this.hud.rosterTeam(this.slot);
     const label = waiting >= 0 ? `Stay on ${mine?.name ?? 'your team'}` : 'Switch team';
     if (btn.textContent !== label) btn.textContent = label;
-    btn.title = waiting >= 0 ? 'Call off your switch: stay on your team (O)' : 'Move to the other team at your next respawn; it is refused if it would leave the teams uneven (O)';
+    btn.title = waiting >= 0 ? `Call off your switch: stay on your team (${keyFor('switchTeam')})` : `Move to the other team at your next respawn; it is refused if it would leave the teams uneven (${keyFor('switchTeam')})`;
   }
 
   /** Ask the host to make you a spectator (on) or put you back in the game; the roster answers (`sp`). */
@@ -1502,7 +1517,7 @@ export class GameSession {
     this.spectator = on;
     this.specCam.reset();
     if (on && this.local) this.local.alive = false;
-    this.hud.showMessage(on ? 'Spectating · J to join the game' : 'Back in the game', 3);
+    this.hud.showMessage(on ? `Spectating · ${keyFor('joinGame')} to join the game` : 'Back in the game', 3);
     this.drawSpectateButton();
   }
 
@@ -3184,9 +3199,9 @@ export class GameSession {
     const pct = cl[2]!;
     const active = cl[3] === 1;
     let ability = '';
-    if (def.ability === 'sentry') ability = this.mounts?.mounts.get(BUILT_MOUNT_BASE + this.slot)?.alive ? 'SENTRY UP' : pct >= 100 ? 'SENTRY READY (G)' : `SENTRY ${pct}%`;
-    else if (def.ability === 'overcharge') ability = active ? 'OVERCHARGED' : pct >= 100 ? 'OVERCHARGE READY (G)' : `OVERCHARGE ${pct}%`;
-    else if (def.ability === 'cloak') ability = active ? `CLOAKED ${pct}%` : `CLOAK ${pct}% (G)`;
+    if (def.ability === 'sentry') ability = this.mounts?.mounts.get(BUILT_MOUNT_BASE + this.slot)?.alive ? 'SENTRY UP' : pct >= 100 ? `SENTRY READY (${keyFor('throw')})` : `SENTRY ${pct}%`;
+    else if (def.ability === 'overcharge') ability = active ? 'OVERCHARGED' : pct >= 100 ? `OVERCHARGE READY (${keyFor('throw')})` : `OVERCHARGE ${pct}%`;
+    else if (def.ability === 'cloak') ability = active ? `CLOAKED ${pct}%` : `CLOAK ${pct}% (${keyFor('throw')})`;
     const next = cl[1] !== cl[0] ? ` → ${CLASS_DEFS[CLASS_IDS[cl[1]!] ?? 'rocketeer'].name.toUpperCase()} NEXT` : '';
     out.push({ text: `${def.name.toUpperCase()}${ability ? ` · ${ability}` : ''}${next}`, color: active ? '#ffd24a' : '#cfe8ff' });
     return out;
@@ -3237,11 +3252,12 @@ export class GameSession {
       const m = this.mounts?.mounts.get(this.seat[0]);
       const drives = !!m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]);
       // A rigid vehicle on its side or roof: jump rolls it back onto its wheels (wheelPhysics.ts tippedOver).
-      const hint = drives && this.tipped(m) ? { key: 'Space', text: 'Flip back' } : drives ? { key: 'H', text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
-      this.hud.setPrompt(m?.def.airplane ? 'Jump out (E or Space), then Space to open your parachute' : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
+      const hint = drives && this.tipped(m) ? { key: keyFor('vehicleUp'), text: 'Flip back' } : drives ? { key: keyFor('vehicleCamera'), text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      this.hud.setPrompt(m?.def.airplane ? `Jump out (${keyFor('use')} or ${keyFor('vehicleUp')}), then ${keyFor('jump')} to open your parachute` : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (local.alive && local.state.zip !== undefined) {
       const two = local.weapon && !oneHanded(local.weapon);
-      this.hud.setPrompt(two ? 'Zipline: Space or E to let go (sidearm or blade to shoot)' : 'Zipline: Space or E to let go');
+      const off = `${keyFor('jump')} or ${keyFor('use')}`;
+      this.hud.setPrompt(two ? `Zipline: ${off} to let go (sidearm or blade to shoot)` : `Zipline: ${off} to let go`);
     } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
       this.hud.setPrompt('Grab the zipline');
     } else if (box) {
@@ -3255,11 +3271,11 @@ export class GameSession {
       const verb = seat.role === 'driver' ? (enter.mount.def.kind === 'vehicle' ? 'Drive' : 'Use') : seat.role === 'gunner' ? 'Man the gun on' : 'Ride in';
       this.hud.setPrompt(`${verb} the ${enter.mount.def.displayName}`);
     } else if (local.alive && !this.seat && (full = this.mounts?.fullInReach(local.state.pos) ?? null)) {
-      // In reach but every seat is taken: say so (E does nothing here).
+      // In reach but every seat is taken: say so (Use does nothing here).
       this.hud.setPrompt(`The ${full.def.displayName} is full`, true);
     } else if (local.alive && !local.state.grounded && !local.state.chute && local.state.velY < -CHUTE.armSpeed && local.jetFuel === null && heightAboveGround(local.physics, local.state.pos, CHUTE.minHeight) === null) {
-      this.hud.setPrompt(local.glider ? 'Open your glider (Space)' : 'Open your parachute (Space)');
-    } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? 'Gliding: W faster, S slower, crouch to let go' : 'Parachute: steer with WASD, crouch to cut away');
+      this.hud.setPrompt(local.glider ? `Open your glider (${keyFor('jump')})` : `Open your parachute (${keyFor('jump')})`);
+    } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? `Gliding: ${keyFor('forward')} faster, ${keyFor('back')} slower, crouch to let go` : `Parachute: steer with ${moveKeys()}, crouch to cut away`);
     else if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
     else if (e?.kind === 'door') {
       const [open, locked] = sc.state(target!) ?? [0, 0];
@@ -3321,7 +3337,7 @@ export class GameSession {
     this.hud.setKillCam(null);
     const list = followable(poses, this.slot, rule, (s) => this.hud.team(s)?.id, NPC_ID_BASE);
     const hint = (free: boolean) =>
-      [free ? 'WASD fly · E/Q up and down · Shift faster' : list.length > 1 ? 'Click or ←/→: next player' : '', rule.freeCam ? `Space: ${free ? 'follow players' : 'free camera'}` : '', this.spectator ? 'J: join the game' : ''].filter(Boolean).join(' · ');
+      [free ? `${moveKeys()} fly · ${keyFor('freeUp')}/${keyFor('freeDown')} up and down · ${keyFor('freeFast')} faster` : list.length > 1 ? `Click or ${keyFor('specPrev')}/${keyFor('specNext')}: next player` : '', rule.freeCam ? `${keyFor('specCamera')}: ${free ? 'follow players' : 'free camera'}` : '', this.spectator ? `${keyFor('joinGame')}: join the game` : ''].filter(Boolean).join(' · ');
     if (picks.toggle && rule.freeCam) {
       const from = this.view.cameraPosition();
       if (!this.specCam.free) {
@@ -3344,7 +3360,7 @@ export class GameSession {
     this.specCam.cycle(picks.step, list);
     const watch = this.specCam.target(list);
     if (!watch) {
-      this.hud.setSpectating(rule.teamOnly ? 'No teammates left to watch' : 'Nobody to watch', this.spectator ? 'J: join the game' : '');
+      this.hud.setSpectating(rule.teamOnly ? 'No teammates left to watch' : 'Nobody to watch', this.spectator ? `${keyFor('joinGame')}: join the game` : '');
       return null;
     }
     const pose = this.specCam.followPose(watch, cast);
@@ -3459,6 +3475,7 @@ export class GameSession {
   private updateWheel(local: LocalPlayer, building: boolean): void {
     const input = this.input;
     input.canOpenWheel = local.alive && !this.seat && !building && local.inventory.size > 0;
+    input.inVehicle = local.alive && !!this.seat;
     if (input.wheelOpen && input.wheelKind === 'weapon' && !input.canOpenWheel) input.closeWheel(false);
     if (input.wheelOpen && input.wheelKind === 'weapon') {
       const owned = local.ownedCodes();
@@ -3468,7 +3485,7 @@ export class GameSession {
         const p = this.categoryPicks.pick(cat, groups.get(cat)!);
         if (p !== null) picks.set(cat, p);
       }
-      this.wheel.keyLabels = this.hud.categoryKeys = this.input.categoryKeys.map(keyLabel);
+      this.wheel.keyLabels = this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => keyFor(a));
       this.wheel.show(wheelEntries(owned, local.inventory, this.switchingFrom(local)), picks);
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
@@ -3513,7 +3530,7 @@ export class GameSession {
         const first = this.squadLed === null;
         this.squadLed = ev.sq ?? null;
         this.squadOrder = 'follow';
-        if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold B for orders`, 4);
+        if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold ${keyFor('quickMessage')} for orders`, 4);
       } else if (ev.from === this.slot) this.squadLed = this.squadOrder = null;
     } else if (ev.a === 'order' && kind) {
       // (Spread out / Stay tight keeps the squad's order: only its spacing changes.)
@@ -3824,7 +3841,7 @@ export class GameSession {
         if (out) {
           // Watching: the keys fly the free camera (if it's up), and nothing goes to the body you don't have.
           const up = this.input.spectateVertical();
-          if (this.specCam.moveFree(TICK_DT, sample.forward, sample.right, up, this.input.yaw, this.input.pitch, this.input.held('ShiftLeft'), this.freeBounds)) watched = true;
+          if (this.specCam.moveFree(TICK_DT, sample.forward, sample.right, up, this.input.yaw, this.input.pitch, this.input.freeFast, this.freeBounds)) watched = true;
           if (sample.forward || sample.right || sample.buttons || up) watched = true;
           sample.forward = 0;
           sample.right = 0;
@@ -4227,7 +4244,7 @@ export class GameSession {
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
     }
     const tHud = perfProbe.on ? performance.now() : 0;
-    this.hud.renderScoreboard(this.input.held('Tab') || this.phase === 'intermission' || (this.stagedAt > 0 && (this.loadingUp || performance.now() < this.boardUntil)), this.scores, this.slot, this.phase === 'intermission');
+    this.hud.renderScoreboard(this.input.scoreboardShown || this.phase === 'intermission' || (this.stagedAt > 0 && (this.loadingUp || performance.now() < this.boardUntil)), this.scores, this.slot, this.phase === 'intermission');
     this.hud.setTeamScore(this.scores, this.slot, this.rules?.scoreLimit ?? 0, this.allied);
     if (local) {
       // Teammates on the minimap (co-op: every player is one).

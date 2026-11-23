@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Announcer, COOLDOWN, HYPE_LINES, STREAK_LINES, VOICE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
+import { ACTIVE_LINES, Announcer, COOLDOWN, DISABLED_LINES, HYPE_LINES, STREAK_LINES, VOICE_LINES, topScorer, type KillInfo } from '../src/audio/announcer.ts';
 import type { SoundId, VoiceLine } from '../src/audio/audio.ts';
 
 const ME = 1;
@@ -32,7 +32,11 @@ function run(a: Announcer, from: number, to: number): void {
 describe('announcer', () => {
   it('ships a file for every line', () => {
     const lock = JSON.parse(readFileSync(fileURLToPath(new URL('../../../content/owner-audio.lock.json', import.meta.url)), 'utf8')) as { files: { file: string }[] };
-    expect(VOICE_LINES.length).toBe(39);
+    expect(VOICE_LINES.length).toBe(40);
+    // Shipped but switched off (owner, 2026-11-23): never said, never loaded.
+    expect([...DISABLED_LINES].sort()).toEqual(['blew_up_a_dog', 'botta_boi']);
+    expect(ACTIVE_LINES.length).toBe(38);
+    for (const id of DISABLED_LINES) expect([...HYPE_LINES, ...STREAK_LINES.values()]).not.toContain(id);
     for (const id of VOICE_LINES) {
       expect(lock.files.some((f) => f.file === `voice/${id}.ogg`)).toBe(true);
       expect(existsSync(fileURLToPath(new URL(`../public/voice/${id}.ogg`, import.meta.url)))).toBe(true);
@@ -125,7 +129,7 @@ describe('announcer', () => {
     expect(heard.at(-1)).toBe('double_kill');
   });
 
-  it('special kills: headshots rotate, far ones are Dome shots; melee; a blown-up animal; Later gator', () => {
+  it('special kills: headshots rotate, far ones are Dome shots; melee; a blown-up animal (switched off: silent); Later gator', () => {
     const { a, heard } = make();
     const at = (t: number, k: Partial<KillInfo>) => {
       a.kill(kill({ victim: 50 + t, ...k }), t * 10);
@@ -136,7 +140,8 @@ describe('announcer', () => {
     at(3, { headshot: true, distance: 60 });
     at(4, { melee: true });
     at(5, { explosive: true, blast: 'x', victimAnimal: true });
-    expect(heard.filter((l) => !STREAK_LINES_SAID.includes(l))).toEqual(['headshot', 'brain_cave', 'dome_shot', 'twist_his_eggplant', 'blew_up_a_dog']);
+    expect(heard.filter((l) => !STREAK_LINES_SAID.includes(l))).toEqual(['headshot', 'brain_cave', 'dome_shot', 'twist_his_eggplant']);
+    expect(heard).not.toContain('blew_up_a_dog');
     // Someone on a streak of 5, ended by you.
     for (let i = 0; i < 5; i++) a.kill({ killer: 9, victim: 200 + i }, 100 + i * 10);
     a.kill(kill({ victim: 9 }), 160);

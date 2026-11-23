@@ -16,6 +16,7 @@
  * squad under a line with the squad's name and points (its MVP at the end).
  */
 import type { InsigniaId } from '@tiletrigger/shared';
+import { keyFor } from './keyBindings.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
 import { emblemSvg } from './emblemSvg.ts';
 
@@ -258,7 +259,7 @@ export class ScoreBoard {
         const label = g.join === 'pending' ? 'Joining' : 'Join';
         if (join.textContent !== label) join.textContent = label;
         join.classList.toggle('pending', g.join === 'pending');
-        join.title = g.join === 'pending' ? `You move to ${g.name} at your next respawn (O or click to stay)` : `Switch to ${g.name} at your next respawn (O)`;
+        join.title = g.join === 'pending' ? `You move to ${g.name} at your next respawn (${keyFor('switchTeam')} or click to stay)` : `Switch to ${g.name} at your next respawn (${keyFor('switchTeam')})`;
       });
     }
     // Rows: patch each, then put each list in order.

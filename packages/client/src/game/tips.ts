@@ -13,15 +13,15 @@ export const TIP_IDS: readonly TipId[] = ['reload', 'vehicle', 'pickup', 'armor'
 
 /**
  * Each tip's words, for keyboard and mouse and for the touch controls. `[X]` marks a key or a button: the HUD
- * draws it as a key cap.
+ * draws it as a key cap (`[@action]`: the key bound to it).
  */
 export const TIP_TEXT: Record<TipId, { kb: string; touch: string }> = {
-  reload: { kb: 'Low ammo: press [R] to reload', touch: 'Low ammo: tap [Reload]' },
-  vehicle: { kb: 'Press [E] to get in. [E] again gets out', touch: 'Tap [Use] to get in, and again to get out' },
+  reload: { kb: 'Low ammo: press [@reload] to reload', touch: 'Low ammo: tap [Reload]' },
+  vehicle: { kb: 'Press [@use] to get in. [@use] again gets out', touch: 'Tap [Use] to get in, and again to get out' },
   pickup: { kb: 'Walk over pickups to take them: weapons, ammo, health and armour', touch: 'Walk over pickups to take them: weapons, ammo, health and armour' },
   armor: { kb: 'Armour (the blue bar) takes most of the damage before your health does', touch: 'Armour (the blue bar) takes most of the damage before your health does' },
   shield: { kb: "Spawn protection: you can't be hurt for a few seconds. Firing ends it", touch: "Spawn protection: you can't be hurt for a few seconds. Firing ends it" },
-  death: { kb: 'You respawn in a moment. Meanwhile [←] [→] watch other players and [Space] switches the camera', touch: 'You respawn in a moment. Meanwhile [◀] [▶] watch other players and [Camera] switches the view' },
+  death: { kb: 'You respawn in a moment. Meanwhile [@specPrev] [@specNext] watch other players and [@specCamera] switches the camera', touch: 'You respawn in a moment. Meanwhile [◀] [▶] watch other players and [Camera] switches the view' },
 };
 
 /** How long a tip shows (s), the quiet gap before the next one (s), and how long a waiting tip stays worth showing (s). */
