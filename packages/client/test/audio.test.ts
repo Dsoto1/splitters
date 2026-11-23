@@ -51,4 +51,34 @@ describe('sound manifest', () => {
     for (const w of WEAPONS_BY_SLOT) if (w.view.altShot) expect(ids, `${w.id} alt`).toContain(w.view.altShot.sound);
     for (const item of CORE_ITEMS) expect(ids, item.id).toContain(`pickup.${item.effect.kind}`);
   });
+
+  it('picker-only sounds are lazy, and nothing in the code plays one by name', async () => {
+    const { readdirSync, readFileSync, statSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const lazy = Object.entries(SOUNDS).filter(([, d]) => d.lazy).map(([id]) => id);
+    expect(lazy.length).toBeGreaterThan(50);
+    // The weapons' defaults and the game's own sounds are never lazy (a weapon's pick of an alternate is wanted by SessionAudio).
+    for (const w of WEAPONS_BY_SLOT) expect(SOUNDS[w.view.sound ?? `fire.${w.id.replace(/^core\./, '')}`]?.lazy, w.id).not.toBe(true);
+    const src = fileURLToPath(new URL('../src/', import.meta.url));
+    const files: string[] = [];
+    const walk = (d: string) => readdirSync(d).forEach((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : /\.ts$/.test(f) && files.push(join(d, f))));
+    walk(src);
+    const code = files.map((f) => readFileSync(f, 'utf8')).join('\n');
+    for (const id of lazy) expect(code.includes(`'${id}'`), `${id} is played by name in the code but lazy`).toBe(false);
+  });
 });
+
+describe('lazy loading', () => {
+  it('want() adds weapons\' picks to what loads; total counts only what this page loads', async () => {
+    const { AudioSystem } = await import('../src/audio/audio.ts');
+    const { weaponSoundIds } = await import('../src/game/sessionAudio.ts');
+    const a = new AudioSystem();
+    const eager = Object.values(SOUNDS).filter((d) => !d.lazy).length;
+    expect(a.total).toBe(eager);
+    a.want(['fire.rifle.famas', 'fire.rifle', 'no.such.sound']);
+    expect(a.total).toBe(eager + 1);
+    expect(weaponSoundIds().has('fire.rifle')).toBe(true);
+    expect(weaponSoundIds().has('reload.start')).toBe(false);
+  });
+});
+
