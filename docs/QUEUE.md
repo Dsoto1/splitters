@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/sonniss-3` · bb0c75fc · 45202974438 (Sonniss pass 3: picker filled, 10 sci-fi/launcher sounds recorded, picker-only sounds lazy; full suite)
+- `wip/sonniss-3b` · 66fbb8c4 · 45224593312 (after wip/sonniss-3: Laser Blaster recorded; the owner's new announcer line; full suite)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
