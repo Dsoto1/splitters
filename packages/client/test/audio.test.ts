@@ -57,8 +57,10 @@ describe('sound manifest', () => {
     const { join } = await import('node:path');
     const lazy = Object.entries(SOUNDS).filter(([, d]) => d.lazy).map(([id]) => id);
     expect(lazy.length).toBeGreaterThan(50);
-    // The weapons' defaults and the game's own sounds are never lazy (a weapon's pick of an alternate is wanted by SessionAudio).
-    for (const w of WEAPONS_BY_SLOT) expect(SOUNDS[w.view.sound ?? `fire.${w.id.replace(/^core\./, '')}`]?.lazy, w.id).not.toBe(true);
+    // A weapon may use a lazy alternate (the Weapon Manager's picks): SessionAudio asks for every weapon's sounds.
+    const { weaponSoundIds } = await import('../src/game/sessionAudio.ts');
+    const wanted = weaponSoundIds();
+    for (const w of WEAPONS_BY_SLOT) expect(wanted.has(w.view.sound ?? `fire.${w.id.replace(/^core\./, '')}`), w.id).toBe(true);
     const src = fileURLToPath(new URL('../src/', import.meta.url));
     const files: string[] = [];
     const walk = (d: string) => readdirSync(d).forEach((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : /\.ts$/.test(f) && files.push(join(d, f))));
