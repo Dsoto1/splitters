@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "backwoods",
     "name": "Backwoods Lodge",
@@ -19,12 +19,26 @@
     ],
     "release": {
       "mapId": "m_k2k7gn3lnebdowxu",
-      "versionId": "v_5h7wzwhrxc5xikae",
-      "revision": 2,
-      "contentHash": "sha256:80c06b49b8e485408d19d1f702b4b71587e339c7fc2a44a44bc0f35170447764",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T13:26:40.718Z"
-    }
+      "versionId": "v_xiowxdfw6ud5icpv",
+      "revision": 3,
+      "contentHash": "sha256:0dd1b23bc98ab6c21d36bb1ac1ab0cdfe0b8b8e09a447fe02520eb5913f23385",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T15:45:28.282Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

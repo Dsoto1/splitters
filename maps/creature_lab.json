@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 50,
   "metadata": {
     "id": "creature_lab",
     "name": "Creature Lab",
@@ -15,7 +15,25 @@
     },
     "supportedModes": [
       "core.coop"
-    ]
+    ],
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "space"
+      }
+    ],
+    "release": {
+      "mapId": "m_ieun4svugrc6zhf3",
+      "versionId": "v_4nhtn545d4slkehy",
+      "revision": 1,
+      "contentHash": "sha256:1664d72947635cce4cf9d688724b3e1d037b62e9900bc21d0eb94be34ec15523",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:11:16.555Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

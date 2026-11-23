@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "atomic_court",
     "name": "Atomic Court",
@@ -19,12 +19,26 @@
     ],
     "release": {
       "mapId": "m_ug2hln4lgbbejjsi",
-      "versionId": "v_7shhrd4ezoogtjub",
-      "revision": 2,
-      "contentHash": "sha256:4a6d6add778cddea14a8a82bb89689c44c28113d718b97f285f9d2c18ffe4e8e",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T12:33:06.929Z"
-    }
+      "versionId": "v_vjkhksag5xfw4uwi",
+      "revision": 3,
+      "contentHash": "sha256:7f6bd7adff2b705a89bcbb5a4a360ef55bbd7f139048def609dfe120fccb88cd",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T15:38:04.564Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      },
+      {
+        "category": "fictional",
+        "tag": "game"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
