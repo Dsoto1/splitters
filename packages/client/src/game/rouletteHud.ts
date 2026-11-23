@@ -16,6 +16,7 @@ import {
   type RoulettePrivate,
 } from '@tiletrigger/shared';
 import type { Hud } from './hud.ts';
+import { keyFor } from './keyBindings.ts';
 import type { InputState } from './input.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
 import { CappedTimer } from './cappedTimer.ts';
@@ -156,7 +157,7 @@ export class RouletteHud {
       const key = `${look}|${tokens}|${chosen ? 1 : 0}`;
       if (this.next.dataset.key !== key) {
         this.next.dataset.key = key;
-        this.next.innerHTML = `<small>${chosen ? 'You chose' : 'Next up'}</small><b>${escapeHtml(d.name)}</b><span>${escapeHtml(d.line)}</span>${tokens > 0 && !chosen ? `<button type="button" class="rl-reroll" id="rl-reroll">R: reroll <small>(${tokens} ${tokens === 1 ? 'token' : 'tokens'})</small></button>` : ''}`;
+        this.next.innerHTML = `<small>${chosen ? 'You chose' : 'Next up'}</small><b>${escapeHtml(d.name)}</b><span>${escapeHtml(d.line)}</span>${tokens > 0 && !chosen ? `<button type="button" class="rl-reroll" id="rl-reroll">${escapeHtml(keyFor('reload'))}: reroll <small>(${tokens} ${tokens === 1 ? 'token' : 'tokens'})</small></button>` : ''}`;
         this.next.querySelector('button')?.addEventListener('click', () => this.input.chooseRoulette(ROULETTE_SAY_REROLL));
       }
       this.next.hidden = false;
@@ -185,7 +186,7 @@ export class RouletteHud {
       void this.portraitOf?.(look).then((src) => (img.src = src), () => undefined);
       row.append(b);
     });
-    this.pick.append(row, Object.assign(document.createElement('p'), { textContent: `Press 1, 2 or 3 (or click)${tokens > 0 ? ' · R: reroll the three' : ''}. The first if you don't choose.` }));
+    this.pick.append(row, Object.assign(document.createElement('p'), { textContent: `Press 1, 2 or 3 (or click)${tokens > 0 ? ` · ${keyFor('reload')}: reroll the three` : ''}. The first if you don't choose.` }));
     this.pick.hidden = false;
   }
 

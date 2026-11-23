@@ -1,6 +1,7 @@
 import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
+import { myKeys, onBindingsChange, replaceMyKeys } from './game/keyBindings.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
 /**
@@ -132,6 +133,7 @@ export async function syncCareer(): Promise<void> {
   }
   await sendPending(who.sub);
   syncOptics();
+  syncKeys();
 }
 
 /**
@@ -150,6 +152,23 @@ export function syncOptics(): void {
   });
 }
 let stopOpticSave: (() => void) | null = null;
+
+/**
+ * Key bindings on the account (owner, 2026-11-23: "saved with the profile"), as optic picks are: signed in, your
+ * account's keys are yours in this browser; an account with none takes this browser's. Every change after that
+ * (Options → Controls) is saved on the account too; an older hub keeps them in the browser only.
+ */
+export function syncKeys(): void {
+  const who = currentAccount();
+  const p = who ? cachedProfile() : null;
+  if (!p) return;
+  if (Object.keys(p.keys ?? {}).length) replaceMyKeys(p.keys, true);
+  else if (Object.keys(myKeys()).length) void saveProfile({ keys: myKeys() }).catch(() => undefined);
+  stopKeySave ??= onBindingsChange(() => {
+    if (currentAccount()) void saveProfile({ keys: myKeys() }).catch(() => undefined);
+  });
+}
+let stopKeySave: (() => void) | null = null;
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);

@@ -1,5 +1,6 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
 import { AimLatch, combatPrefs } from './combatPrefs.ts';
+import { CATEGORY_ACTIONS, bindAction, bindings as loadBindings, onBindingsChange, type Bindings } from './keyBindings.ts';
 import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
@@ -39,94 +40,16 @@ export function saveMousePrefs(p: MousePrefs): void {
   }
 }
 /**
- * The weapon wheel's key (Options → Controls rebinds it). Held, it opens a
- * radial pick of the weapons you carry; a quick tap still does the key's own
- * job (Q: back to your last weapon).
+ * The keys come from the bindings table (keyBindings.ts; Options → Controls rebinds every action). Fire mode's key,
+ * for the HUD's hints.
  */
-const WHEEL_KEY_PREF = 'tiletrigger.wheelKey';
-export const DEFAULT_WHEEL_KEY = 'KeyQ';
-/** Switches the held weapon's fire mode (spec §36). B is taken (quick messages, the order wheel), so U. */
-export const FIRE_MODE_KEY = 'KeyU';
-/** Keys the game already uses for something else (a wheel there would fight them). Q isn't here: a tap keeps its quick switch. */
-export const RESERVED_KEYS: ReadonlySet<string> = new Set([
-  'KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'KeyC', 'KeyZ', 'KeyF', 'KeyX', 'KeyV', 'KeyG', 'KeyY', 'KeyR', 'KeyE', 'KeyH', 'KeyK', 'KeyB', 'KeyN', 'KeyT', 'KeyL', 'Comma', 'KeyU', 'KeyO',
-  'Tab', 'Escape', 'Enter', 'F3', 'F5', 'F11', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'MetaLeft', 'MetaRight',
-  ...Array.from({ length: 10 }, (_, i) => `Digit${i}`),
-]);
-export function loadWheelKey(): string {
-  try {
-    const k = localStorage.getItem(WHEEL_KEY_PREF);
-    if (k && !RESERVED_KEYS.has(k)) return k;
-  } catch {
-    // Private windows: the default.
-  }
-  return DEFAULT_WHEEL_KEY;
-}
-export function saveWheelKey(code: string): void {
-  try {
-    localStorage.setItem(WHEEL_KEY_PREF, code);
-  } catch {
-    // Lasts for this page.
-  }
-}
-/**
- * The lean (peek) keys, held (Options → Controls rebinds them). Q and E, the usual pair, already go back to your last
- * weapon / open the wheel and use, so the defaults are two keys nothing else takes, one each side of the left hand:
- * the key left of 1 (` on most layouts) leans left, Left Alt (under the thumb) leans right.
- */
-const LEAN_KEYS_PREF = 'tiletrigger.leanKeys';
-export const DEFAULT_LEAN_KEYS: Readonly<{ left: string; right: string }> = { left: 'Backquote', right: 'AltLeft' };
-export function loadLeanKeys(): { left: string; right: string } {
-  try {
-    const k = JSON.parse(localStorage.getItem(LEAN_KEYS_PREF) ?? '{}') as { left?: unknown; right?: unknown };
-    const ok = (c: unknown): c is string => typeof c === 'string' && c.length > 0 && !RESERVED_KEYS.has(c);
-    const left = ok(k.left) ? k.left : DEFAULT_LEAN_KEYS.left;
-    const right = ok(k.right) && k.right !== left ? k.right : DEFAULT_LEAN_KEYS.right === left ? DEFAULT_LEAN_KEYS.left : DEFAULT_LEAN_KEYS.right;
-    return { left, right };
-  } catch {
-    return { ...DEFAULT_LEAN_KEYS };
-  }
-}
-export function saveLeanKeys(keys: { left: string; right: string }): void {
-  try {
-    localStorage.setItem(LEAN_KEYS_PREF, JSON.stringify(keys));
-  } catch {
-    // Lasts for this page.
-  }
-}
-/**
- * The weapon category keys (owner, 2026-11-22; Options → Controls rebinds them): key n picks the wheel's slice n
- * (wheelCategories.ts WHEEL_CATEGORIES: Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets),
- * again goes on to the next weapon you hold in it. Defaults 1-8 on the number row.
- */
-const CATEGORY_KEYS_PREF = 'tiletrigger.categoryKeys';
-export const CATEGORY_KEY_COUNT = 8;
-export const DEFAULT_CATEGORY_KEYS: readonly string[] = Array.from({ length: CATEGORY_KEY_COUNT }, (_, i) => `Digit${i + 1}`);
-/** A key a category can take: a number key, or any key the game doesn't use for something else. */
-export const categoryKeyAllowed = (code: string): boolean => /^(Digit|Numpad)\d$/.test(code) || (code.length > 0 && !RESERVED_KEYS.has(code));
-export function loadCategoryKeys(): string[] {
-  try {
-    const k = JSON.parse(localStorage.getItem(CATEGORY_KEYS_PREF) ?? 'null') as unknown;
-    if (Array.isArray(k) && k.length === CATEGORY_KEY_COUNT && k.every((c) => typeof c === 'string' && categoryKeyAllowed(c)) && new Set(k).size === k.length) return k as string[];
-  } catch {
-    // Private windows: the defaults.
-  }
-  return [...DEFAULT_CATEGORY_KEYS];
-}
-export function saveCategoryKeys(keys: readonly string[]): void {
-  try {
-    localStorage.setItem(CATEGORY_KEYS_PREF, JSON.stringify(keys));
-  } catch {
-    // Lasts for this page.
-  }
-}
-/** "KeyQ" → "Q", "Backquote" → "`": how a key code reads in the menus. */
-export function keyLabel(code: string): string {
-  const named: Record<string, string> = { Backquote: '`', CapsLock: 'Caps Lock', AltLeft: 'Left Alt', AltRight: 'Right Alt', ControlLeft: 'Left Ctrl', ControlRight: 'Right Ctrl', ShiftRight: 'Right Shift', Semicolon: ';', Quote: "'", BracketLeft: '[', BracketRight: ']', Backslash: '\\', Slash: '/', Period: '.', Minus: '-', Equal: '=' };
-  return named[code] ?? code.replace(/^Key/, '').replace(/^Digit/, '').replace(/^Numpad/, 'Num ');
-}
+export { keyLabel } from './keyBindings.ts';
 /** Held this long, the wheel key (or a controller's Y) opens the wheel; a shorter press is a tap. */
 export const WHEEL_HOLD_MS = 180;
+/** A press of the wheel's key shorter than this, where the wheel didn't open, is a tap. */
+const TAP_MS = 400;
+/** Mouse buttons (PointerEvent.buttons bits) as codes. */
+const MOUSE_BITS: readonly [string, number][] = [['Mouse0', 1], ['Mouse2', 2], ['Mouse1', 4], ['MouseSide', 24]];
 /** Touch look: radians per pixel dragged, at sensitivity 1. */
 const TOUCH_LOOK = 0.0055;
 
@@ -152,12 +75,19 @@ export class InputState {
   readonly look = new LookFilter(browserLookScale(navigator.userAgent, HAS_COALESCED));
   /** The player's own look settings (Options / pause menu). */
   mouse: MousePrefs = loadMousePrefs();
+  /** Keys and mouse buttons down now, by code (keyBindings.ts: `KeyQ`, `Mouse0`…). */
   private keys = new Set<string>();
+  /** Actions an on-screen control holds (touchControls.ts: virtualAction). */
+  private readonly virt = new Set<string>();
+  /** The bindings table, and code → the actions bound to it. */
+  private b: Bindings = loadBindings();
+  private byCode = new Map<string, string[]>();
+  /** Set by the session each frame: seated in a vehicle or turret (its own keys work, the on-foot moves don't). */
+  inVehicle = false;
+  /** The scoreboard pinned open by a tap of its key (shared with the wheel) or touch's Scores button. */
+  scoreboardPinned = false;
   /** Aim down the sights: held or toggled (Options → Accessibility, combatPrefs.ts). */
   private readonly aimLatch = new AimLatch();
-  private fireDown = false;
-  private keyFire = false;
-  private zoomDown = false;
   private jumpQueued = false;
   /** A jump for the tick after the next one sampled (jumpAfterStanding). */
   private jumpNext = false;
@@ -204,19 +134,16 @@ export class InputState {
   breathScope = false;
   /** The aim button went down since the last tick sampled (pairTrigger). */
   private altTap = false;
-  /** Middle mouse (or V): the held weapon's second trigger. */
-  private altDown = false;
-  /** A side mouse button (or Y): quick melee. */
-  private meleeDown = false;
   /** Weapon category requested with its key (1-based, in the wheel's order; 0 = none pending). */
   private slotRequest = 0;
-  /** The weapon category keys (Options → Controls), key n for the wheel's slice n. */
-  categoryKeys: string[] = loadCategoryKeys();
   /** The fire mode key was pressed (sim/fireModes.ts). */
   private fireModeQueued = false;
   /** Mouse wheel steps since last read (+ = next weapon). */
   private wheelSteps = 0;
+  /** Fixed keys' jobs by code (F3, F5). */
   readonly onToggle = new Map<string, () => void>();
+  /** Press actions' jobs by action id (keyBindings.ts: lastWeapon, bigMap, thirdPerson, vehicleCamera, specCamera, joinGame, switchTeam). */
+  readonly onAction = new Map<string, () => void>();
   /**
    * Out of play (dead, or spectating by choice), set by the session: clicks, the arrow keys (following) and
    * a controller's shoulder buttons pick whom to watch instead of playing (takeSpectate). `spectatingFree`:
@@ -232,10 +159,7 @@ export class InputState {
   private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, prev: [] as boolean[] };
   /** A controller has been used since the page loaded (its sticks and triggers count). */
   padActive = false;
-  /** Weapon wheel: its key, whether it's open, and where it points (x right, y down; length up to 1). */
-  wheelKey = loadWheelKey();
-  /** The lean keys (loadLeanKeys; read again when a match starts). */
-  leanKeys = loadLeanKeys();
+  /** Weapon wheel: whether it's open, and where it points (x right, y down; length up to 1). */
   wheelOpen = false;
   /** Which wheel is open: the weapon wheel or (Fireteams) the order wheel. Only one at a time. */
   wheelKind: 'weapon' | 'order' = 'weapon';
@@ -245,6 +169,8 @@ export class InputState {
   /** What opened the wheel (letting go of it picks), and when the wheel key / Y went down (0: not held). */
   private wheelBy: 'key' | 'pad' | 'touch' | null = null;
   private wheelKeyAt = 0;
+  /** The key that is holding the wheel open (or about to). */
+  private wheelCode = '';
   private padWheelAt = 0;
   /** How the wheel last closed, until the session reads it: true picks the highlighted weapon, false cancels. */
   private wheelClosed: boolean | null = null;
@@ -260,6 +186,9 @@ export class InputState {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const opts = { signal: this.abort.signal };
+    this.setBindings(this.b);
+    const off = onBindingsChange((b) => this.setBindings(b));
+    this.abort.signal.addEventListener?.('abort', off);
     window.addEventListener(
       'keydown',
       (e) => {
@@ -273,7 +202,7 @@ export class InputState {
     window.addEventListener(
       'keyup',
       (e) => {
-        // Alt let go on its own would bring up some browsers' menu bar (Left Alt leans right by default).
+        // Alt let go on its own would bring up some browsers' menu bar (Left Alt fires by default).
         if (this.locked && (e.code === 'AltLeft' || e.code === 'AltRight')) e.preventDefault();
         this.keyUp(e.code);
       },
@@ -283,7 +212,7 @@ export class InputState {
       'blur',
       () => {
         this.keys.clear();
-        this.fireDown = this.zoomDown = this.altDown = this.meleeDown = this.throwAiming = this.keyFire = false;
+        this.throwAiming = false;
         this.aimLatch.cancel();
         this.wheelKeyAt = this.padWheelAt = 0;
         this.closeWheel(false);
@@ -297,24 +226,16 @@ export class InputState {
       const press = this.locked || e.target === canvas;
       // Watching: a left click is the next player, a right click the previous one.
       if (this.spectating && this.locked && e.type === 'pointerdown') {
-        if (e.buttons & 1 && !this.fireDown) this.specStep++;
-        if (e.buttons & 2 && !this.zoomDown) this.specStep--;
+        if (e.buttons & 1 && !this.keys.has('Mouse0')) this.specStep++;
+        if (e.buttons & 2 && !this.keys.has('Mouse2')) this.specStep--;
         this.specUsed = true;
       }
-      const wasFire = this.fireDown;
-      const wasZoom = this.zoomDown;
-      this.fireDown = (e.buttons & 1) !== 0 && (press || this.fireDown);
-      this.zoomDown = (e.buttons & 2) !== 0 && (press || this.zoomDown);
-      this.altDown = (e.buttons & 4) !== 0 && (press || this.altDown);
-      this.meleeDown = (e.buttons & 24) !== 0 && (press || this.meleeDown);
-      if (this.zoomDown && !wasZoom) {
-        this.aimLatch.press();
-        this.altTap = true;
-      }
-      // A click with the wheel open picks the weapon it points at (and doesn't fire).
-      if (this.wheelOpen && this.fireDown && !wasFire) {
-        this.closeWheel(true);
-        this.fireLatch = true;
+      // Each button as a code (Mouse0 left, Mouse2 right, Mouse1 middle, MouseSide either side button): its actions.
+      for (const [code, bits] of MOUSE_BITS) {
+        const was = this.keys.has(code);
+        const now = (e.buttons & bits) !== 0 && (press || was);
+        if (now && !was) this.keyDown({ code, repeat: false });
+        else if (!now && was) this.keyUp(code);
       }
     };
     window.addEventListener('pointerdown', buttons, opts);
@@ -354,128 +275,222 @@ export class InputState {
     (window as unknown as { __lookStats?: unknown }).__lookStats = this.look.stats;
   }
 
+  /** Take a bindings table (keyBindings.ts): read when the match starts and whenever Options changes it. */
+  setBindings(b: Bindings): void {
+    this.b = b;
+    const by = new Map<string, string[]>();
+    for (const [action, keys] of Object.entries(b)) for (const k of keys) if (k) by.set(k, [...(by.get(k) ?? []), action]);
+    this.byCode = by;
+  }
+
+  /** Whether an action is held now: one of its keys (or mouse buttons), or an on-screen control. */
+  active(action: string): boolean {
+    if (this.virt.has(action)) return true;
+    const k = this.b[action];
+    return !!k && ((!!k[0] && this.keys.has(k[0])) || (!!k[1] && this.keys.has(k[1])));
+  }
+
   /**
-   * A key going down, from the keyboard or an on-screen control (virtualKey):
-   * every key's job lives here once, so touch plays through the same path.
+   * A key going down, from the keyboard, the mouse or an on-screen control: each code's actions (keyBindings.ts) do
+   * their job here once, so touch plays through the same path.
    */
   private keyDown(e: { code: string; repeat: boolean }): void {
-    // The wheel key: held, it opens the wheel; a tap does the key's own job when let go (keyUp).
-    if (e.code === this.wheelKey) {
-      if (!e.repeat) {
-        this.wheelKeyAt = performance.now();
-        // A key with no job of its own opens the wheel at once.
-        if (!this.onToggle.has(e.code)) this.openWheel('key');
+    const code = e.code;
+    const acts = this.byCode.get(code) ?? [];
+    if (!e.repeat) this.onToggle.get(code)?.();
+    this.keys.add(code);
+    // An open menu's numbers (fixed: 1-9): Roulette's death screen picks a card, the class screen a class, the
+    // quick-message menu a message. Then the key's own actions (a weapon category) wait.
+    const digit = /^Digit([1-9])$/.exec(code);
+    if (digit && !e.repeat) {
+      const n = Number(digit[1]);
+      if (this.roulettePick && n <= this.roulettePick) return this.chooseRoulette(ROULETTE_SAY_PICK + n - 1);
+      if (this.classMenu) {
+        if (n <= this.classCount) this.chooseClass(n - 1);
+        return;
       }
-      this.keys.add(e.code);
+      if (this.msgMenu) {
+        if (n <= QUICK_MESSAGES.length) this.sayQueued = n;
+        this.msgMenu = false;
+        return;
+      }
+    }
+    // The wheel's key: held, it opens the wheel; a tap does the jobs that share the key when let go (keyUp).
+    const wheelHere = acts.includes('weaponWheel');
+    if (wheelHere && !e.repeat) {
+      this.wheelKeyAt = performance.now();
+      this.wheelCode = code;
+      // A key with no tap job of its own opens the wheel at once.
+      if (!acts.some((a) => bindAction(a)?.tap)) this.openWheel('key');
+    }
+    // A click of the fire button with the wheel open picks the weapon it points at (and doesn't fire).
+    if (this.wheelOpen && !e.repeat && code.startsWith('Mouse') && acts.includes('fire')) {
+      this.closeWheel(true);
+      this.fireLatch = true;
+    }
+    for (const a of acts) if (a !== 'weaponWheel' && !(wheelHere && bindAction(a)?.tap)) this.press(a, e.repeat);
+  }
+
+  /** An action's key went down (`repeat`: the key's auto-repeat). */
+  private press(a: string, repeat: boolean): void {
+    const once = !repeat;
+    const foot = !this.inVehicle;
+    switch (a) {
+      case 'jump':
+        if (!foot) return;
+        this.jumpQueued = true;
+        if (once) this.crouchOn = this.proneOn = false;
+        return;
+      case 'vehicleUp':
+        if (!foot) this.jumpQueued = true;
+        return;
+      case 'sprint':
+        if (once && foot) {
+          this.crouchOn = this.proneOn = false;
+          this.sprintPressed();
+        }
+        return;
+      case 'reload':
+        // Roulette's death screen: the reload key spends a reroll token.
+        if (once && this.rouletteReroll) this.chooseRoulette(ROULETTE_SAY_REROLL);
+        else this.reloadQueued = true;
+        return;
+      case 'aim':
+        if (once) {
+          this.aimLatch.press();
+          this.altTap = true;
+        }
+        return;
+      case 'use':
+        if (once) this.useQueued = true;
+        return;
+      case 'respawn':
+        if (once) this.respawnQueued = true;
+        return;
+      // Crouch and prone are toggles; jumping or sprinting gets you up.
+      case 'crouch':
+        if (once && foot) {
+          this.crouchOn = !this.crouchOn;
+          this.proneOn = false;
+        }
+        return;
+      case 'prone':
+        if (once && foot) {
+          this.proneOn = !this.proneOn;
+          this.crouchOn = false;
+        }
+        return;
+      // Hold to aim a throw (the arc shows), let go to throw.
+      case 'throw':
+        if (once) this.throwAiming = true;
+        return;
+      // The quick-message menu (Fireteams: held, the order wheel instead: frame() opens it, keyUp tells a tap from a hold).
+      case 'quickMessage':
+        if (!once) return;
+        if (this.ordersOn) {
+          this.msgKeyAt = performance.now();
+          this.msgWheeled = false;
+        } else this.msgMenu = !this.msgMenu;
+        return;
+      case 'fireMode':
+        if (once) this.fireModeQueued = true;
+        return;
+      case 'dance':
+        if (once) this.sayQueued = EMOTE_DANCE;
+        return;
+      case 'ping':
+        if (once) this.sayQueued = PING;
+        return;
+      case 'classMenu':
+        if (once && this.classCount) {
+          this.classMenu = !this.classMenu;
+          this.msgMenu = false;
+        }
+        return;
+      case 'nextWeapon':
+      case 'prevWeapon':
+        if (once) this.wheelSteps += a === 'nextWeapon' ? 1 : -1;
+        return;
+      // Following someone: the previous or next player (the camera follows them, so turning does nothing).
+      case 'specNext':
+      case 'specPrev':
+        if (once && this.spectating && !this.spectatingFree) {
+          this.specStep += a === 'specNext' ? 1 : -1;
+          this.specUsed = true;
+        }
+        return;
+    }
+    // A weapon category's key (1-8 by default). Not on a key's repeat: holding it doesn't spin through the slice.
+    const n = (CATEGORY_ACTIONS as readonly string[]).indexOf(a);
+    if (n >= 0) {
+      if (once) this.slotRequest = n + 1;
       return;
     }
-    if (!e.repeat) this.onToggle.get(e.code)?.();
-    this.keys.add(e.code);
-    // Following someone: the arrow keys pick the previous or next player (the camera follows them, so turning does nothing).
-    if (this.spectating && !this.spectatingFree && !e.repeat && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-      this.specStep += e.code === 'ArrowRight' ? 1 : -1;
-      this.specUsed = true;
-    }
-    if (e.code === 'Space') this.jumpQueued = true;
-    if (e.code === 'KeyR') this.reloadQueued = true;
-    // F fires and X aims, for touchpads, where clicking while dragging a finger is awkward.
-    if (e.code === 'KeyF') this.keyFire = true;
-    if (e.code === 'KeyX' && !e.repeat) {
-      this.aimLatch.press();
-      this.altTap = true;
-    }
-    if (e.code === 'KeyE' && !e.repeat) this.useQueued = true;
-    if (e.code === 'KeyK' && !e.repeat) this.respawnQueued = true;
-    // C crouches and Z lies prone (toggles); jumping or sprinting gets you up.
-    if (e.code === 'KeyC' && !e.repeat) {
-      this.crouchOn = !this.crouchOn;
-      this.proneOn = false;
-    }
-    if (e.code === 'KeyZ' && !e.repeat) {
-      this.proneOn = !this.proneOn;
-      this.crouchOn = false;
-    }
-    if ((e.code === 'Space' || e.code === 'ShiftLeft') && !e.repeat) this.crouchOn = this.proneOn = false;
-    if (e.code === 'ShiftLeft' && !e.repeat) this.sprintPressed();
-    // Hold G to aim a throw (the arc shows), let go to throw.
-    if (e.code === 'KeyG' && !e.repeat) this.throwAiming = true;
-    // B opens the quick-message menu; N dances.
-    // (Fireteams: held, B opens the order wheel instead: frame() opens it, keyUp tells a tap from a hold.)
-    if (e.code === 'KeyB' && !e.repeat) {
-      if (this.ordersOn) {
-        this.msgKeyAt = performance.now();
-        this.msgWheeled = false;
-      } else this.msgMenu = !this.msgMenu;
-    }
-    // U switches the held weapon's fire mode (B, the usual key, is the quick-message and order key here).
-    if (e.code === FIRE_MODE_KEY && !e.repeat) this.fireModeQueued = true;
-    if (e.code === 'KeyN' && !e.repeat) this.sayQueued = EMOTE_DANCE;
-    if (e.code === 'KeyT' && !e.repeat) this.sayQueued = PING;
-    if ((e.code === 'KeyL' || e.code === 'Comma') && !e.repeat && this.classCount) {
-      this.classMenu = !this.classMenu;
-      this.msgMenu = false;
-    }
-    const digit = /^Digit([1-9])$/.exec(e.code);
-    // Roulette's death screen: 1-3 picks a card of a streak pick, R spends a reroll token.
-    if (this.roulettePick && digit && Number(digit[1]) <= this.roulettePick) {
-      this.chooseRoulette(ROULETTE_SAY_PICK + Number(digit[1]) - 1);
-      return;
-    }
-    if (this.rouletteReroll && e.code === 'KeyR' && !e.repeat) {
-      this.chooseRoulette(ROULETTE_SAY_REROLL);
-      return;
-    }
-    if (digit && this.classMenu) {
-      if (Number(digit[1]) <= this.classCount) this.chooseClass(Number(digit[1]) - 1);
-    } else if (digit && this.msgMenu) {
-      if (Number(digit[1]) <= QUICK_MESSAGES.length) this.sayQueued = Number(digit[1]);
-      this.msgMenu = false;
-    } else {
-      // A weapon category's key (1-8 by default). Not on a key's repeat: holding it doesn't spin through the slice.
-      const n = this.categoryKeys.indexOf(e.code);
-      if (n >= 0 && !e.repeat) this.slotRequest = n + 1;
-    }
+    if (once) this.onAction.get(a)?.();
   }
 
   private keyUp(code: string): void {
     this.keys.delete(code);
-    if (code === 'KeyB' && this.msgKeyAt) {
+    for (const a of this.byCode.get(code) ?? []) this.release(a, code);
+  }
+
+  /** An action's key (`code`) let go. */
+  private release(a: string, code: string): void {
+    if (a === 'quickMessage' && this.msgKeyAt && !this.active(a)) {
       const wheeled = this.msgWheeled;
       this.msgKeyAt = 0;
       this.msgWheeled = false;
-      // Let go of a held B: the order the wheel points at. A tap: the quick-message menu, as without Fireteams.
+      // Let go of a held key: the order the wheel points at. A tap: the quick-message menu, as without Fireteams.
       if (this.wheelOpen && this.wheelKind === 'order' && this.wheelBy === 'key') this.closeWheel(true);
       else if (!wheeled) this.msgMenu = !this.msgMenu;
-      return;
-    }
-    if (code === this.wheelKey) {
+    } else if (a === 'weaponWheel' && code === this.wheelCode) {
       const held = this.wheelKeyAt;
       this.wheelKeyAt = 0;
+      this.wheelCode = '';
       if (this.wheelOpen && this.wheelBy === 'key' && this.wheelKind === 'weapon') this.closeWheel(true);
-      // A tap: the key's own job (Q: back to your last weapon).
-      else if (held && !this.wheelOpen) this.onToggle.get(code)?.();
-      return;
-    }
-    if (code === 'KeyF') this.keyFire = false;
-    if (code === 'KeyG' && this.throwAiming) {
+      // A tap: the jobs that share the key (the scoreboard, the last weapon). A long hold where the wheel couldn't open isn't one.
+      else if (held && !this.wheelOpen && performance.now() - held < TAP_MS) for (const t of this.byCode.get(code) ?? []) if (bindAction(t)?.tap) this.tap(t);
+    } else if (a === 'throw' && this.throwAiming && !this.active(a)) {
       this.throwAiming = false;
       this.throwQueued = true;
     }
   }
 
-  /** An on-screen control pressing or letting go of a key (touchControls.ts): exactly what that key does. */
-  /**
-   * Touch: jump one tick from now, once the tick sampled next has stood you up. A tap on the pad's middle that a
-   * slow page first took for a hold has already crouched you, and a jump pressed while crouched only stands
-   * you up (movement.ts): the tap stood you up and never jumped.
+  /** A tap action on the wheel's key. */
+  private tap(a: string): void {
+    if (a === 'scoreboard') this.scoreboardPinned = !this.scoreboardPinned;
+    else this.onAction.get(a)?.();
+  }
+
+  /** Whether the scoreboard shows: pinned (a tap, touch's Scores), or its own key held (one it shares with the wheel only while the wheel can't open). */
+  get scoreboardShown(): boolean {
+    if (this.scoreboardPinned) return true;
+    if (!this.active('scoreboard')) return false;
+    const wheel = this.b.weaponWheel ?? ['', ''];
+    const shared = (this.b.scoreboard ?? ['', '']).every((k) => !k || !this.keys.has(k) || wheel.includes(k));
+    return !shared || !this.canOpenWheel;
+  }
+
+  /** Touch's Scores button: show or hide the board. */
+  toggleScoreboard(): void {
+    this.scoreboardPinned = !this.scoreboardPinned;
+  }
+
+  /** Touch: jump one tick from now, once the tick sampled next has stood you up. A tap on the pad's middle that a
+   * slow page first took for a hold has already crouched you, and a jump pressed while crouched only stands you up
+   * (movement.ts): the tap stood you up and never jumped.
    */
   jumpAfterStanding(): void {
     this.jumpNext = true;
   }
 
-  virtualKey(code: string, down: boolean): void {
-    if (down) this.keyDown({ code, repeat: this.keys.has(code) });
-    else if (this.keys.has(code)) this.keyUp(code);
+  /** An on-screen control pressing or letting go of an action (touchControls.ts): exactly what its key does. */
+  virtualAction(action: string, down: boolean): void {
+    if (down) {
+      const repeat = this.virt.has(action);
+      this.virt.add(action);
+      this.press(action, repeat);
+    } else if (this.virt.delete(action)) this.release(action, '');
   }
 
   /** Touch: the movement pad (x right, y forward; each −1..1). */
@@ -496,6 +511,7 @@ export class InputState {
     this.touchEngaged = on;
     if (!on) {
       for (const k of [...this.keys]) this.keyUp(k);
+      for (const a of [...this.virt]) this.virtualAction(a, false);
       this.setTouchMove(0, 0);
       this.touchLook.dx = this.touchLook.dy = 0;
       this.closeWheel(false);
@@ -571,12 +587,12 @@ export class InputState {
   }
 
   /**
-   * Whether you aim down the sights now: the aim button (right mouse, X, a controller's LT) held, or with Aim set to
-   * Toggle, pressed once to aim and again to stop (touch's Aim button too: it holds X while pressed). A melee
+   * Whether you aim down the sights now: the aim action (right mouse by default, a controller's LT) held, or with Aim
+   * set to Toggle, pressed once to aim and again to stop (touch's Aim button too: it holds the action while pressed). A melee
    * weapon's heavy swing (`altTrigger`) is always held.
    */
   private aiming(): boolean {
-    const down = this.zoomDown || this.keys.has('KeyX') || this.pad.zoom;
+    const down = this.active('aim') || this.pad.zoom;
     const mode = this.altTrigger ? 'hold' : combatPrefs().aim;
     return (this.aimShown = this.aimLatch.update(down, mode));
   }
@@ -599,13 +615,9 @@ export class InputState {
     this.aimLatch.cancel();
   }
 
-  held(code: string): boolean {
-    return this.keys.has(code);
-  }
-
-  /** Shift, or a controller's sprint button: through a scope it holds your breath (it sprints otherwise). */
+  /** The sprint key (Shift by default), or a controller's sprint button: through a scope it holds your breath (it sprints otherwise). */
   get holdingBreath(): boolean {
-    return this.keys.has('ShiftLeft') || this.pad.sprint;
+    return this.active('sprint') || this.pad.sprint;
   }
 
   /**
@@ -624,7 +636,7 @@ export class InputState {
     // The wheel key held past a tap opens the wheel; so does B (Fireteams), the order wheel.
     if (this.wheelKeyAt && !this.wheelOpen && performance.now() - this.wheelKeyAt >= WHEEL_HOLD_MS) this.openWheel('key');
     if (this.msgKeyAt && !this.msgWheeled && !this.wheelOpen && performance.now() - this.msgKeyAt >= WHEEL_HOLD_MS && this.openWheel('key', 'order')) this.msgWheeled = true;
-    if (!this.fireDown && !this.keyFire && !this.pad.fire) this.fireLatch = false;
+    if (!this.active('fire') && !this.pad.fire) this.fireLatch = false;
     const scale = this.sensitivityScale * this.mouse.sensitivity;
     const invert = this.mouse.invertY ? -1 : 1;
     if (this.wheelOpen) {
@@ -638,9 +650,12 @@ export class InputState {
     // A finger dragging on the right of the screen (touchControls.ts).
     this.yaw += touch.dx * TOUCH_LOOK * scale;
     this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch - touch.dy * TOUCH_LOOK * scale * invert));
-    const key = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
-    this.yaw += key('ArrowRight', 'ArrowLeft') * KEY_TURN * scale * dt;
-    this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch + key('ArrowUp', 'ArrowDown') * KEY_TURN * 0.7 * scale * invert * dt));
+    const key = (pos: string, neg: string) => (this.active(pos) ? 1 : 0) - (this.active(neg) ? 1 : 0);
+    // (Following someone, the look keys that also pick players don't turn: the camera follows them.)
+    if (!this.spectating || this.spectatingFree) {
+      this.yaw += key('lookRight', 'lookLeft') * KEY_TURN * scale * dt;
+      this.pitch = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, this.pitch + key('lookUp', 'lookDown') * KEY_TURN * 0.7 * scale * invert * dt));
+    }
     this.pollPad(dt, scale, invert);
   }
 
@@ -722,7 +737,11 @@ export class InputState {
       this.throwAiming = false;
       this.throwQueued = true;
     }
-    if (pressed(PAD.r3)) this.onToggle.get('KeyH')?.();
+    // R3: the view (third person on foot, the vehicle's camera in one; each job checks where you are).
+    if (pressed(PAD.r3)) {
+      this.onAction.get('thirdPerson')?.();
+      this.onAction.get('vehicleCamera')?.();
+    }
     p.prev = down;
   }
 
@@ -735,20 +754,25 @@ export class InputState {
     return out;
   }
 
-  /** Space (or Y on a controller) while watching: switch between following and the free camera. */
+  /** The camera key (Space by default; Y on a controller) while watching: switch between following and the free camera. */
   toggleSpectateCamera(): void {
     this.specToggle = true;
     this.specUsed = true;
   }
 
-  /** The free camera's climb: E (or the right trigger) up, Q or Ctrl (or the left trigger) down. */
+  /** The free camera's climb: its up key (E; or the right trigger), its down key (Q or Ctrl; or the left trigger). Free camera only. */
   spectateVertical(): number {
     const auto = (window as unknown as { __autoInput?: { up?: number } }).__autoInput;
     if (auto?.up) return auto.up;
-    return (this.keys.has('KeyE') || this.pad.fire ? 1 : 0) - (this.keys.has('KeyQ') || this.keys.has('ControlLeft') || this.pad.zoom ? 1 : 0);
+    return (this.active('freeUp') || this.pad.fire ? 1 : 0) - (this.active('freeDown') || this.pad.zoom ? 1 : 0);
   }
 
-  /** Consume a pending fire mode switch (U). */
+  /** The free camera's faster key (Shift) held. */
+  get freeFast(): boolean {
+    return this.active('freeFast');
+  }
+
+  /** Consume a pending fire mode switch (its key: U). */
   takeFireModeSwitch(): boolean {
     const s = this.fireModeQueued;
     this.fireModeQueued = false;
@@ -779,7 +803,9 @@ export class InputState {
     this.scrollAt = now;
     this.scrollAcc += px;
     if (Math.abs(this.scrollAcc) < 50 || now - this.scrollStepAt < 90) return;
-    this.wheelSteps += Math.sign(this.scrollAcc);
+    // A step is a press of WheelDown or WheelUp: the next / previous weapon by default (keyBindings.ts).
+    const code = this.scrollAcc > 0 ? 'WheelDown' : 'WheelUp';
+    for (const a of this.byCode.get(code) ?? []) this.press(a, false);
     this.scrollAcc = 0;
     this.scrollStepAt = now;
   }
@@ -825,36 +851,37 @@ export class InputState {
       }
       return { forward: 0, right: 0, buttons: 0 };
     }
-    const axis = (pos: string, neg: string) => (this.keys.has(pos) ? 1 : 0) - (this.keys.has(neg) ? 1 : 0);
+    const axis = (pos: string, neg: string) => (this.active(pos) ? 1 : 0) - (this.active(neg) ? 1 : 0);
     let buttons = 0;
-    if (this.jumpQueued || this.keys.has('Space') || this.pad.jump) buttons |= BUTTON_JUMP;
-    if (this.fireDown || this.keyFire || this.pad.fire) buttons |= BUTTON_FIRE;
+    if (this.jumpQueued || this.active(this.inVehicle ? 'vehicleUp' : 'jump') || this.pad.jump) buttons |= BUTTON_JUMP;
+    if (this.active('fire') || this.pad.fire) buttons |= BUTTON_FIRE;
     if (this.reloadQueued) buttons |= BUTTON_RELOAD;
     // Right mouse aims down the sights (or scopes); melee weapons swing heavy with it instead.
     const aim = this.aiming();
     if (aim) buttons |= this.altTrigger ? BUTTON_ALT : BUTTON_ZOOM;
     // A pair in hand (dual wielding): a tap of the second trigger between two ticks is not lost, and touch's Fire
-    // button (it holds F) pulls both triggers.
-    if (this.pairTrigger && (this.altTap || (this.touchEngaged && this.keyFire))) buttons |= BUTTON_ALT;
+    // button (it holds the fire action) pulls both triggers.
+    if (this.pairTrigger && (this.altTap || (this.touchEngaged && this.virt.has('fire')))) buttons |= BUTTON_ALT;
     this.altTap = false;
-    // Middle mouse or V: the second trigger (grenade launcher, alt fire…).
-    if (this.altDown || this.keys.has('KeyV')) buttons |= BUTTON_ALT;
+    // The second trigger (middle mouse or V: grenade launcher, alt fire…).
+    if (this.active('altFire')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
-    // Side mouse button or Y: quick melee (punch or kick, or a swing of a melee weapon in hand).
-    if (this.meleeDown || this.keys.has('KeyY')) buttons |= BUTTON_MELEE;
+    // Quick melee (a side mouse button or Y: a punch or kick, or a swing of a melee weapon in hand).
+    if (this.active('melee')) buttons |= BUTTON_MELEE;
     // The wheel is open (or the click that picked from it is still held): no shooting, aiming or swinging; moving goes on.
     if (this.wheelOpen) buttons &= ~(BUTTON_FIRE | BUTTON_ZOOM | BUTTON_ALT | BUTTON_MELEE | BUTTON_THROW);
     if (this.fireLatch) buttons &= ~BUTTON_FIRE;
     // Shift sprints, except through a scope, where it holds your breath.
-    if ((this.keys.has('ShiftLeft') || this.pad.sprint) && !aim) buttons |= BUTTON_SPRINT;
-    if (this.crouchOn) buttons |= BUTTON_CROUCH;
+    if ((this.active('sprint') || this.pad.sprint) && !aim) buttons |= BUTTON_SPRINT;
+    // In a vehicle the down key (C) is held, not a toggle: down in an aircraft, ducking where you stand.
+    if (this.inVehicle ? this.crouchOn || this.active('vehicleDown') : this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
-    // E (or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
-    if (this.keys.has('KeyE') || this.pad.use) buttons |= BUTTON_USE_HOLD;
-    // The lean keys, held (both: upright).
-    if (this.keys.has(this.leanKeys.left)) buttons |= BUTTON_LEAN_LEFT;
-    if (this.keys.has(this.leanKeys.right)) buttons |= BUTTON_LEAN_RIGHT;
+    // The use key (F; or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
+    if (this.active('use') || this.pad.use) buttons |= BUTTON_USE_HOLD;
+    // The lean keys (Q and E), held (both: upright).
+    if (this.active('leanLeft')) buttons |= BUTTON_LEAN_LEFT;
+    if (this.active('leanRight')) buttons |= BUTTON_LEAN_RIGHT;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
     this.jumpQueued = this.jumpNext;
@@ -865,6 +892,6 @@ export class InputState {
     const say = this.sayQueued;
     this.sayQueued = 0;
     const clamp = (v: number) => Math.max(-1, Math.min(1, v));
-    return { forward: clamp(axis('KeyW', 'KeyS') + this.pad.move.y + this.touchMove.y), right: clamp(axis('KeyD', 'KeyA') + this.pad.move.x + this.touchMove.x), buttons, ...(say ? { say } : {}) };
+    return { forward: clamp(axis('forward', 'back') + this.pad.move.y + this.touchMove.y), right: clamp(axis('right', 'left') + this.pad.move.x + this.touchMove.x), buttons, ...(say ? { say } : {}) };
   }
 }

@@ -10,7 +10,7 @@ import { angleDelta, fitBounds, lookAngles, viewDirection, type MapDocument, typ
  *   from.
  * - **Follow**: over the shoulder of a player you pick (next / previous).
  * - **Free**: a noclip camera inside the map's bounds (mouse looks, WASD
- *   moves, E/Q up and down, Shift faster).
+ *   moves, E/Q up and down, Shift faster: the free camera's own keys, keyBindings.ts).
  *
  * Who you may watch (spectateRule): a dead player in a team mode follows
  * only their own team (no ghosting for their side); pure spectators (who

@@ -14,6 +14,7 @@ import { LOW_HEALTH_LOOK } from './lowHealth.ts';
 const HOLD_RING_R = 26;
 const HOLD_RING_LEN = 2 * Math.PI * HOLD_RING_R;
 import { reduceFlashing } from './reduceFlashing.ts';
+import { keyFor } from './keyBindings.ts';
 import { EYE_BOX, eyeBoxShade, stepScopeFade } from './scopeFeel.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
@@ -634,7 +635,7 @@ export class Hud {
   setThrowable(t: { kind: string; count: number } | null, alive: boolean): void {
     const text = alive && t ? `${t.kind === 'mine' ? '◎' : '●'} ${t.count}` : '';
     if (this.throwEl.textContent !== text) this.throwEl.textContent = text;
-    this.throwEl.title = t ? (t.kind === 'mine' ? 'Proximity mines (hold G to aim, let go to throw)' : 'Grenades (hold G to aim, let go to throw)') : '';
+    this.throwEl.title = t ? `${t.kind === 'mine' ? 'Proximity mines' : 'Grenades'} (hold ${keyFor('throw')} to aim, let go to throw)` : '';
   }
 
   /** Riding as a passenger or gunner: the seat's gun (heat) instead of your own. */
@@ -1102,8 +1103,12 @@ export class Hud {
     if (!el) {
       el = document.createElement('div');
       el.id = 'msg-menu';
-      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>1 &amp; 7 also order your team's bots · T: ping · N: dance · B: close</small>`;
+      el.hidden = true;
       this.root.append(el);
+    }
+    // (Drawn again each time: the keys it names follow Options → Controls.)
+    if (open && el.hidden !== false) {
+      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>1 &amp; 7 also order your team's bots · ${escapeHtml(keyFor('ping'))}: ping · ${escapeHtml(keyFor('dance'))}: dance · ${escapeHtml(keyFor('quickMessage'))}: close</small>`;
     }
     el.hidden = !open;
   }
@@ -1124,14 +1129,14 @@ export class Hud {
   }
 
   /** "[E] Open the gate" under the crosshair; `denied` shows a refusal (locked). */
-  /** The use prompt (E), and optionally a second key to show beside it (H: the vehicle camera). */
+  /** The use prompt (its key: F by default), and optionally a second key to show beside it (H: the vehicle camera). */
   setPrompt(text: string | null, denied = false, hint?: { key: string; text: string }): void {
     const key = `${text}|${denied}|${hint?.key}|${hint?.text}`;
     if (key === this.lastPrompt) return;
     this.lastPrompt = key;
     this.prompt.classList.toggle('denied', denied);
     const extra = hint ? `<span class="prompt-hint"><kbd>${escapeHtml(hint.key)}</kbd>${escapeHtml(hint.text)}</span>` : '';
-    this.prompt.innerHTML = text === null ? '' : denied ? escapeHtml(text) : `<kbd>E</kbd>${escapeHtml(text)}${extra}`;
+    this.prompt.innerHTML = text === null ? '' : denied ? escapeHtml(text) : `<kbd>${escapeHtml(keyFor('use'))}</kbd>${escapeHtml(text)}${extra}`;
   }
 
   setTimers(lines: string[]): void {
