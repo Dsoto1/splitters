@@ -9,7 +9,7 @@ made only on a commit that passed CI on a check branch.
 ## Unreleased
 - **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Film…) narrow it further. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
-- **Match Setup: lighter map cards.** Each card's picture is a small copy of the map's in-game shot, fetched as the card comes into view: the map list loads about a third as much.
+- **Match Setup: lighter map cards.** Each card's picture is a small copy of the map's in-game shot, fetched as the card comes into view: opening Match Setup fetches 0.6 MB of pictures instead of 1.8 MB.
 - **Match Setup: one team size control.** The size chips and Teams / Per team set the teams; the team boxes show who plays (players and bots), and get their own sizes only with Even teams off.
 - **Match Setup: glow only on the map you picked and Start match**, steady, and dimmer with Reduce flashing on.
 - **Match Setup on phones: the map grid first**, the settings a sheet that slides up from a strip along the bottom (the map, the setup and Start).
