@@ -76,44 +76,51 @@
   "coverage": [
     {
       "op": "place",
-      "piece": "setpiece.library_faceted_end",
-      "x": -16,
-      "y": -65,
-      "rot": 0,
-      "options": {
-        "plan": "rounded",
-        "door": "east",
-        "bench": "east",
-        "annex": "north"
-      },
-      "what": "the coverage map: the rounded plan's pieces in a row south of step 8b's (x -16 to -10 of rows -65 and -64): the Faceted End with Rounded corners (the Hall Bay's porch variant, the Rounded Hall End, the Rounded Spire, the tall cases, the open windows, the bench)"
-    },
-    {
-      "op": "place",
-      "piece": "setpiece.library_end_bay_2",
-      "x": -13,
-      "y": -65,
-      "rot": 0,
-      "options": {
-        "plan": "rounded"
-      },
-      "what": "the End Bay with Rounded corners (the Rounded Hall End with its stair, the Rounded Hip End)"
-    },
-    {
-      "op": "tile",
-      "tile": "core.hall_bay_2",
-      "x": -11,
-      "y": -65,
-      "rot": 0,
-      "what": "the plain Hall Bay (two storeys) as a tile of its own"
-    },
-    {
-      "op": "place",
       "piece": "setpiece.gable_annex",
       "x": -16,
       "y": -63,
       "rot": 0,
-      "what": "the Gable Annex against that Faceted End's north end"
+      "what": "the coverage map (maps/test_coverage.json): the Gable Annex, in a row south of step 8b's pieces (x -16 to -9 of rows -65 to -63)"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_end_round_door",
+      "x": -16,
+      "y": -64,
+      "rot": 0,
+      "what": "the Rounded Hall End (doorway) under the annex, its doorway at the annex's back"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_bay_2",
+      "x": -16,
+      "y": -65,
+      "rot": 0,
+      "what": "a Hall Bay (two storeys) south of it"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_bay_2_porch",
+      "x": -13,
+      "y": -65,
+      "rot": 0,
+      "what": "the Hall Bay with its east side open below"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_end_round",
+      "x": -13,
+      "y": -64,
+      "rot": 0,
+      "what": "a Rounded Hall End north of it"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_end_round_stair",
+      "x": -10,
+      "y": -64,
+      "rot": 0,
+      "what": "the Rounded Hall End (spiral stair) (the rounded set pieces themselves are too heavy for the coverage map's browser here: their tiles stand in for them; the set pieces are walked in setPiecesCampus.test.ts)"
     }
   ]
 }
