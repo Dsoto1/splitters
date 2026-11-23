@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/draws-1123` · 69381198 · 45232566354 (fewer draws in big matches; both touch `game/perfSwitches.ts`'s switch list: keep both names)
+- `wip/guntails-1123` · 0237b238 · 45277090942 (longer rings for the slow guns; touches `content/sounds.json`, the Sonniss lock and `audio.ts`; once `wip/weapon-edits-1123b` lands, merge it: its picks are already allowed for in the cuts)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
