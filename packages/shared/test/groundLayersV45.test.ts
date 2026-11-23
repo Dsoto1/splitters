@@ -77,7 +77,8 @@ describe('groundLayersV45: an old map keeps its ground, cell by cell', () => {
 
 describe('groundLayersV45: a release stamp from before keeps its version', () => {
   it('Whiteout Station (stamped, with terrain) loads with its versionId and no "changed since it was exported"', () => {
-    const file = JSON.parse(readFileSync(new URL('../../../maps/whiteout_station.json', import.meta.url), 'utf8'));
+    // The file as it was before MapMaker saved it at v50 (fixtures/whiteout_station_v34.json: stamped at v34).
+    const file = JSON.parse(readFileSync(new URL('./fixtures/whiteout_station_v34.json', import.meta.url), 'utf8'));
     expect(file.metadata.release.schemaVersion).toBeLessThan(45);
     const r = loadMap(file, undefined, { forEditing: true });
     expect(r.ok).toBe(true);
