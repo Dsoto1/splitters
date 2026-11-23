@@ -38,7 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/draws-1123` · 69381198 · 45232566354 (fewer draws in big matches; both touch `game/perfSwitches.ts`'s switch list: keep both names)
+- `wip/draws-1123` · 52a73d5f · 45277434536 (fewer draws in big matches; origin/main 428c4e67 merged, gripfit's switch kept beside its own)
 - `wip/guntails-1123` · 0237b238 · 45277090942 (longer rings for the slow guns; touches `content/sounds.json`, the Sonniss lock and `audio.ts`; once `wip/weapon-edits-1123b` lands, merge it: its picks are already allowed for in the cuts)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
