@@ -96,6 +96,24 @@ const WALKS: Record<string, Walk[]> = {
   ],
   // In at the porch's south door, through it and out of its north door.
   'setpiece.library_porch': [{ chains: [[[0, 0, -7], [0, 0, -1.5], [0, 0, 1.5], [0, 0, 7]]] }],
+  // The two-storey library (step 8b). A bay: along the ground storey past the globe, along the upper storey down the
+  // runner; in under its arch, through the porch and its door, where it has one.
+  'setpiece.library_bay_2': [
+    { chains: [[[-7, 0, 6.5], [7, 0, 6.5]], [[-3, 4, 4], [3, 4, 4]]] },
+    { options: { door: 'south' }, chains: [[[0, 0, -7], [0, 0, -2], [0, 0, 1.5], [3, 0, 6.5]]] },
+    { options: { door: 'north' }, chains: [[[0, 0, 15], [0, 0, 10], [0, 0, 6.5], [3, 0, 6.5]]] },
+  ],
+  // The end bay: in from the hall, up the spiral stair from its door to the floor above, along the upper storey; down again.
+  'setpiece.library_end_bay_2': [{ chains: [[[7, 0, 7], [-1, 0, 7], [0, 0, 4.5], [0, 4, 4.5], [3.5, 4, 4.5], [0, 4, 4.5], [0, 0, 4.5]]] }],
+  // The faceted end: up the hall's bay to the stair's door, round the drum both ways, up the stair and back down the
+  // runner; in at the bay's door where it has one.
+  'setpiece.library_faceted_end': [
+    { chains: [[[4, 0, -7], [4, 0, 2.5], [-1.2, 0, 6.2], [4, 0, 2.5], [9.2, 0, 6.2]], [[4, 0, 3.5], [4, 4, 3.5], [4, 4, -3], [4, 4, 3.5], [4, 0, 3.5]]] },
+    { options: { door: 'east' }, chains: [[[15, 0, 0], [10, 0, 0], [6.5, 0, 0], [4, 0, 2.5]]] },
+    { options: { door: 'west' }, chains: [[[-7, 0, 0], [-2, 0, 0], [1.5, 0, 0], [4, 0, 2.5]]] },
+  ],
+  // Up the wing's steps and in at its door under the gable.
+  'setpiece.gable_wing': [{ chains: [[[-0.5, 0, 7], [-0.5, 0.6, -1]]] }],
   // The chapel (step 9): the centre aisle between the pews and both side aisles behind the arcades.
   'setpiece.chapel_bay': ['blue', 'amber'].map((glass): Walk => ({ options: { glass }, chains: [hall(), [[-7, 0, -2.45], [0, 0, -2.45], [7, 0, -2.45]], [[-7, 0, 10.45], [0, 0, 10.45], [7, 0, 10.45]]] })),
   // From the nave up the steps to the altar; along each aisle through its end door: the sacristy and out of the back

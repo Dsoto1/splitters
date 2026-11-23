@@ -281,6 +281,61 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.monument.bird",
+      "displayName": "Bronze Bird on a Pedestal",
+      "category": "Gothic",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's photo: a small bronze sculpture of a bird on a stone pedestal on the lawn by the library's walk): a bronze bird alighting with its wings raised, 0.85 m across them, on a stone pedestal 0.7 m square and 0.95 m high with a blank bronze plate; 1.9 m to the wingtips. Our own shape, no writing. Collides as the pedestal's box and one over the bird."
+      },
+      "size": [
+        0.9,
+        1.9,
+        1.0
+      ],
+      "bounds": "within",
+      "surface": "stone",
+      "detail": "stone",
+      "generator": {
+        "kind": "bird",
+        "pedestal": [
+          0.7,
+          0.95
+        ]
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 60
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "bronze",
+          "seed": 41601,
+          "look": {
+            "bronze": "#4a4a38",
+            "stone": "#8d8a80"
+          }
+        },
+        {
+          "index": 1,
+          "name": "verdigris",
+          "seed": 41602,
+          "look": {
+            "bronze": "#4f6b5c",
+            "stone": "#9a968a"
+          }
+        }
+      ]
     }
   ]
 }

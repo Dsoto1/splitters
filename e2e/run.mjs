@@ -376,7 +376,8 @@ async function editorFlow(browser) {
   d = await doc();
   check(d.entities.some((e) => e.kind === 'pickup' && e.item === 'core.health_small'), 'places a pickup');
   // A weapon pickup set to "Random from category: Snipers" in the inspector (it shows a sniper here).
-  const SNIPERS = ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_railgun'];
+  // Every weapon of the sniper category (content/weapons/*.json `category: sniper`; the 11-18 intake added the Crossbow and Lever-Action).
+  const SNIPERS = ['core.weapon_sniper', 'core.weapon_marksman', 'core.weapon_railgun', 'core.weapon_crossbow', 'core.weapon_lever_action'];
   await clickTool(page, '[data-tool="pickup:core.weapon_rifle"]');
   await clickWorld(-3, 1);
   await page.waitForSelector('#ed-pickup-weapon', { timeout: T(10000) });

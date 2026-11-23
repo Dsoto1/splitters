@@ -1,0 +1,176 @@
+{
+  "$comment": "A library's pieces (tools/content/kit/library.mjs; docs/map-briefs/st_johns, step 8b): a globe on its stand, rugs. Generated in code: the globe's map is nobody's, the rugs' patterns our own. Rugs lie flat and collide as nothing.",
+  "type": "library",
+  "props": [
+    {
+      "id": "kit.library.globe",
+      "displayName": "Globe on a Stand",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: a large globe on a turned wooden stand in the middle of the floor): a faded globe 0.96 m across in a four-legged wooden stand with a horizon ring, 1.5 m high; its map is a made-up pattern. Collides as one box."
+      },
+      "size": [
+        1.2,
+        1.5,
+        1.2
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "globe",
+        "globe": 0.96
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "faded",
+          "seed": 41501,
+          "look": {
+            "wood": "#4a3020",
+            "sea": "#8f9c88",
+            "land": "#b39a62",
+            "brass": "#b08d3c"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 41502,
+          "look": {
+            "wood": "#4a3020",
+            "sea": "#5f7f96",
+            "land": "#a9a06a",
+            "brass": "#b08d3c"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.library.rug",
+      "displayName": "Worn Rug",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: worn red patterned rugs on dark boards): a rug 2.6 by 3.8 m, a dark border round a red field of small lozenges with one large one in the middle, pale fringed ends, worn along the middle. Lies a hair over the floor. Collides as nothing."
+      },
+      "size": [
+        2.6,
+        0.03,
+        3.8
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": {
+        "kind": "rug",
+        "medallion": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 41511,
+          "look": {
+            "field": "#7a2a24",
+            "border": "#2b2530",
+            "motif": "#c2a56a",
+            "fringe": "#cfc4a8",
+            "wear": "0.45"
+          }
+        },
+        {
+          "index": 1,
+          "name": "blue",
+          "seed": 41512,
+          "look": {
+            "field": "#2c3a5a",
+            "border": "#5a2420",
+            "motif": "#c2a56a",
+            "fringe": "#cfc4a8",
+            "wear": "0.45"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.library.runner",
+      "displayName": "Carpet Runner",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's step 8b; the owner's interior photo: a red carpet runner down the centre aisle): a plain runner 2 m wide and 8 m long (a hall's bay; lay them end to end) with a gold stripe along each edge. Collides as nothing."
+      },
+      "size": [
+        2,
+        0.03,
+        8
+      ],
+      "collide": "none",
+      "bounds": "within",
+      "surface": "fabric",
+      "detail": "fabric",
+      "generator": {
+        "kind": "rug",
+        "plain": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 18
+        },
+        {
+          "distance": 50
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "red",
+          "seed": 41521,
+          "look": {
+            "field": "#8a2f28",
+            "motif": "#c2a56a",
+            "wear": "0.3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "green",
+          "seed": 41522,
+          "look": {
+            "field": "#2f4a38",
+            "motif": "#c2a56a",
+            "wear": "0.3"
+          }
+        }
+      ]
+    }
+  ]
+}

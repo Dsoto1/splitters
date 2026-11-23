@@ -1,0 +1,31 @@
+{
+  "$comment": "St. John's step 8b (Memorial Hall, the library, rebuilt to the owner's direction): the ordered MapMaker steps, as a driver replays them on the map (Import, the Outliner's search and a click on the row, Delete, the Set pieces tab with R, the set piece inspector's Options and Materials one a selection, the Paths tool's list and Style, the Props tab and the entity inspector's X / Z / Facing, Export). Cells are 8 m; a piece's x, y are its anchor cell, rot its quarter turns. A prop's height null: left on the ground where MapMaker puts it. Ids are the map's as it stood on main at 98184628; on a newer map check them first. `coverage`: the steps on the coverage map.",
+  "steps": [
+    {"group": "clear", "op": "delete", "id": "setpiece_gpou671dud", "what": "step 8's Library Bay (south)"},
+    {"group": "clear", "op": "delete", "id": "setpiece_xty73etsfn", "what": "step 8's Library Bay (middle)"},
+    {"group": "clear", "op": "delete", "id": "setpiece_6pftsqkqnk", "what": "step 8's Library Bay (north)"},
+    {"group": "clear", "op": "delete", "id": "setpiece_bhyn08o9jf", "what": "step 8's Library Porch"},
+    {"group": "clear", "op": "delete", "id": "block_1790", "what": "the old hall's gable roof, seven courses"},
+    {"group": "clear", "op": "delete", "id": "block_1791"},
+    {"group": "clear", "op": "delete", "id": "block_1792"},
+    {"group": "clear", "op": "delete", "id": "block_1793"},
+    {"group": "clear", "op": "delete", "id": "block_1794"},
+    {"group": "clear", "op": "delete", "id": "block_1795"},
+    {"group": "clear", "op": "delete", "id": "block_1796"},
+    {"group": "clear", "op": "delete", "id": "prop_2765", "what": "the oak that stood in front of the hall's north end, seen from the walk"},
+    {"group": "clear", "op": "move", "id": "prop_street_065", "to": [-56.2, null, -29.5], "what": "the oak north-west of the hall, 2.5 m west and 4 m north, clear of the wing's roof"},
+    {"group": "hall", "op": "place", "piece": "setpiece.library_end_bay_2", "x": -5, "y": -7, "rot": 3, "roles": {"stone": "core.pbr_collegiate_rubble"}, "what": "the hall's south end: its closed end south, its spiral stair in the east cell"},
+    {"group": "hall", "op": "place", "piece": "setpiece.library_faceted_end", "x": -6, "y": -6, "rot": 0, "options": {"door": "east"}, "roles": {"stone": "core.pbr_collegiate_rubble"}, "what": "the hall's bay with the arch in its east wall and the porch recessed behind it, and the faceted end under the spire, north"},
+    {"group": "hall", "op": "place", "piece": "setpiece.gable_wing", "x": -6, "y": -4, "rot": 0, "what": "the small stucco wing against the faceted end's north face, west of its windows; its gable, door and steps north"},
+    {"group": "walk", "op": "pathstyle", "id": "osm_992045162_17", "style": "brick", "what": "the walk that passes the arch (north-south, from the lawn to Stangeland / Cord) in brick, as the walk from the court"},
+    {"group": "lawn", "op": "prop", "prop": "kit.monument.bird", "near": [-18, 0, -34], "to": [-25.3, null, -41], "yaw": 20, "what": "the bronze bird on its pedestal on the lawn east of the walk"},
+    {"group": "lawn", "op": "prop", "prop": "kit.monument.marker", "near": [-18, 0, -30], "to": [-32.5, null, -31], "yaw": 30, "what": "a dark marker stone on the lawn west of the walk"}
+  ],
+  "coverage": [
+    {"op": "place", "piece": "setpiece.library_bay_2", "x": -14, "y": -60, "rot": 0, "options": {"door": "south"}, "what": "the coverage map (maps/test_coverage.json): one of each new piece, in a row south of the campus pieces (x -16 to -8 of row -60: main's step 7d kit took x -6 to 1)"},
+    {"op": "place", "piece": "setpiece.library_end_bay_2", "x": -12, "y": -60, "rot": 0},
+    {"op": "place", "piece": "setpiece.library_faceted_end", "x": -10, "y": -60, "rot": 0, "options": {"door": "east"}},
+    {"op": "place", "piece": "setpiece.gable_wing", "x": -8, "y": -60, "rot": 0},
+    {"op": "tile", "tile": "core.hall_end_faceted", "x": -16, "y": -60, "rot": 0}
+  ]
+}

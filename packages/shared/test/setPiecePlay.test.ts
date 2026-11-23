@@ -59,7 +59,7 @@ const OPEN_SIDED = [
   'setpiece.chapel_narthex',
   'setpiece.gym_bay',
   'setpiece.gym_entrance',
-  'setpiece.library_bay',
+  'setpiece.library_bay', 'setpiece.library_bay_2', 'setpiece.library_end_bay_2', 'setpiece.library_faceted_end',
   'setpiece.library_porch',
   'setpiece.arena_arcade',
   'setpiece.arena_attic',
@@ -102,7 +102,7 @@ const OPEN_SIDED = [
   // St. John's step 7c (setPiecesAcademy.test.ts walks them): both stand open against a hall's doorway on their north side.
   'setpiece.entrance_porch',
   'setpiece.gate_tower_front',
-  'setpiece.dorm_office_bay',
+  'setpiece.dorm_office_bay', 'setpiece.gable_wing',
   'setpiece.hall_centre',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',
