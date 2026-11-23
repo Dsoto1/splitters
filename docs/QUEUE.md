@@ -38,10 +38,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/sonniss-2` · 5e82ebfb · 45073892904 (Sonniss pass 2: louder guns, shotgun pump, footsteps by surface, every material's surface)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
+  - **Clock tower and Welles stair: owner's answers (2026-11-22, all recs):** the tower's winding stair stays and gets doors onto Welles's 2nd and 3rd floor halls (Welles's switchback goes); the tower moves one cell south onto Welles's stair lobby, its door still onto the court, the cell it leaves becomes court; the freed cell at (2, −11) continues Welles's hall as a dorm-bay end. St. John's 9's draw overages (library views from the lawn +11 %, mess hall and library upper floor over 250) accepted by the owner ("land as is").
   - **Clock tower and Welles stair** (owner, 2026-11-22): push the clock tower back; blend it with the Welles stairwell directly behind it into one shared stair, freeing the space to move the tower in and removing redundant verticality. With the lead's St. John's helper (`wip/stjohns-9`).
   - M · **Step 8b: place the rebuilt library** (`wip/stjohns-8b`, 3c516010b; kit, tests and coverage map done; the owner approved the mock-up; the content check needs `pnpm content:rebuild` after merging main; the oak move step is unverified). After 7c is on main: merge main, replay `docs/map-briefs/st_johns/steps-8b.json` through MapMaker, move the oak `prop_street_065` clear of the wing, validate, nav audit, draws, the `coverage` and `setpieces` flows, check, land. PLAN 4m.
   - M · **Step 7d: place the mess hall** with the landed kit, after 7c: `docs/map-briefs/st_johns/MESS_HALL_PLACEMENT.md` (4 m, sunk floor, Timber beams on piers, arcade south, rows, fireplace and drink stations at the west end, north door in cell 3 with Rows with a cross aisle, serving bay and kitchen at the DeKoven end).
@@ -236,6 +236,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-22** sound follow-ups (`wip/sonniss-2`, green 5e82ebfb; train check/train-20261122-222022 at 74f6b89, run 45077176768): louder, punchier recorded guns; the pump shotgun's pump; footsteps and tile impacts by surface (all 155 materials); the Sonniss licence note. Landed by the splitters lead.
 - **2026-11-22** sights for the intake guns (`wip/sights-intake`, green a2392894; train check/train-20261122-212322 at a79d998, run 45071852819): Woodland SMG irons fitted and a red dot default; Desert Carbine, Twin-Shot Rifle and Blaster X-42 aim through their own sights (red dot default); Flintlock Pistol hands off the aim; the Blaster X-42's orange bolt; checks for unfitted sights and hands over the aim. Landed by the splitters lead.
 - **2026-11-22** the weapon wheel by category and number keys 1-8 by category (`wip/weapon-wheel-cats`, green d2f37cbe; train check/train-20261122-203105 at 2fcb9cf, run 45066891588); the number-key switch bug fixed. Owner "1a 2a 3a": flare gun and gilded pistol in Pistols, railgun and Nova-6 in Energy, key 9 free. Landed by the splitters lead.
 - **2026-11-22** the quiet pose check (`wip/fix-tpose-2`, green faf6cf96, run 45062916146): third-person bodies drawn in the bind pose or never posed are recorded (`[pose-check]` in the console, the performance report, `tt.poseReports`); the owner's T-pose cause not yet found. Landed alone by the splitters lead.
