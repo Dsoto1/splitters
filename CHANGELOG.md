@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Hands on guns cost less.** Fitting your own first-person hands and other players' hands onto their guns takes a fraction of the time it did, and they look exactly as before (big matches: about 6% of a frame back).
 - **Station, industrial and bunker walls are real cover; lights no longer stop bullets.** White Orbital Station and Industrial panels shoot like sheet metal and Bunker Concrete like concrete (both were see-through as glass), light strips and glow trim let rounds through, neon tubes are glass, and temple, lighthouse and sandstone walls are stone (GUNPLAY_SPEC §8).
 - **St. John's: the clock tower is Welles's stair now.** It stands one cell back, in Welles's west end, where Welles's own switchback stair was; its winding stair lands on Welles's 2nd and 3rd floor halls, and the court is open where the tower stood. The halls end in a dorm room beside it, and the ground floor there has a side door onto the lane. The Carriageway is walled on the tower's side.
 - **MapMaker: the Clock Tower's Stair option "Hall floors"** (landings level with a building's 2nd and 3rd floors, the hall's way in at its corner), a **Dorm Bay End** (a dorm hall's last cell beside a tower), and a **Carriageway** that can be walled on its east side.
