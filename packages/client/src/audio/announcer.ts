@@ -5,6 +5,17 @@ import { versioned } from '../assetUrl.ts';
 /** Every announcer line (content/owner-audio.json). */
 export const VOICE_LINES = Object.keys(ownerAudio.announcer) as VoiceLine[];
 
+/**
+ * Lines shipped but switched off (`disabled: true` in content/owner-audio.json; owner, 2026-11-23: "We ain't no botta,
+ * boi" and "That guy just blew up a dog"): never said, never loaded. Delete the flag to switch one back on.
+ */
+export const DISABLED_LINES: ReadonlySet<VoiceLine> = new Set(
+  (Object.entries(ownerAudio.announcer) as [VoiceLine, { disabled?: boolean }][]).filter(([, v]) => v.disabled).map(([id]) => id),
+);
+
+/** The lines the announcer can say (and loads). */
+export const ACTIVE_LINES = VOICE_LINES.filter((id) => !DISABLED_LINES.has(id));
+
 let voiceAsked = false;
 
 /**
@@ -20,7 +31,7 @@ export function loadVoiceLines(audio: AudioSystem): void {
       const go = () => {
         const ctx = audio.context;
         if (!ctx) return;
-        for (const id of VOICE_LINES) {
+        for (const id of ACTIVE_LINES) {
           void fetch(versioned(`${import.meta.env.BASE_URL}voice/${id}.ogg`))
             .then((res) => (res.ok ? res.arrayBuffer() : Promise.reject(new Error(`${res.status}`))))
             .then((data) => ctx.decodeAudioData(data))
@@ -191,6 +202,7 @@ export class Announcer {
   }
 
   line(line: VoiceLine, prio: Priority, now: number, group: string = line): void {
+    if (DISABLED_LINES.has(line)) return;
     this.push({ line }, prio, group, now);
   }
 
@@ -373,8 +385,9 @@ export class Announcer {
       this.lifeLine(streak, 'streak', now, 'streak');
       said = true;
     }
+    // A switched-off line's moment goes silent (the blown-up animal, owner 2026-11-23).
     const special = victimStreak >= 5 ? 'later_gator' : k.explosive && k.victimAnimal ? 'blew_up_a_dog' : k.melee ? 'twist_his_eggplant' : k.headshot ? this.headshotLine(k.distance) : null;
-    if (special) {
+    if (special && !DISABLED_LINES.has(special)) {
       this.line(special, 'special', now, 'special');
       said = true;
     }

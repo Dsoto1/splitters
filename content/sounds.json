@@ -1210,7 +1210,7 @@
       "gain": 0.35,
       "range": "mid",
       "jitter": 0.04,
-      "label": "Laser: synthesised",
+      "label": "Laser: synthesised (the Laser Rifle)",
       "variants": 3
     },
     "fire.flak": {
@@ -2573,8 +2573,7 @@
       "gain": 0.69,
       "range": "mid",
       "jitter": 0.04,
-      "label": "Laser: laser blast",
-      "lazy": true,
+      "label": "Laser: laser blast (the Laser Blaster)",
       "variants": [
         {
           "pack": "sonniss-gdc-2020",

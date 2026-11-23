@@ -2423,7 +2423,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, -0.03, -0.08], support: [-0.02, -0.04, -0.07], rake: 25 },
       muzzleAt: [0, 0, 0.125],
       beam: true,
-      sound: 'fire.laser',
+      sound: 'fire.laser.b',
     },
   },
   // design: Stingers that find their mark: slow (32 m/s) darts that turn toward the nearest enemy ahead within 22 m, 16 a hit and a short poison. Easy to land, slow to kill (six hits); strafing players outrun them up close. A Chaos-set oddball.
