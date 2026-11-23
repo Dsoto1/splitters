@@ -9,7 +9,9 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { BoundingInfo } from '@babylonjs/core/Culling/boundingInfo';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
-import { instanceRigidParts, mergeRigidParts } from '../src/game/scenarioVisuals.ts';
+import { instanceRigidParts, instancesHash, mergeRigidParts } from '../src/game/scenarioVisuals.ts';
+import { stillable } from '../src/game/shadowCache.ts';
+import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
 import { readyOncePerRender } from '../src/game/clusteredLights.ts';
 import { keepStillCasterBounds, STILL_BOUNDS_FRAMES } from '../src/game/shadowBounds.ts';
 import type { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
@@ -92,6 +94,23 @@ describe('fewer draws (docs/PERF_DRAWS_2026-11-23.md)', () => {
       const local = Matrix.Compose(m.scaling, Quaternion.FromEulerVector(m.rotation), m.position);
       expect(m.computeWorldMatrix(true).equalsWithEpsilon(local.multiply(hingeWorld), 1e-6)).toBe(true);
     }
+    // The static shadow cache may keep a source while none of its copies moves: its hash says when one does.
+    for (const src of sources) expect(stillable(src)).toBe(true);
+    const plankSrc = sources.find((m) => (m.metadata as { instancesVersion?: () => number }).instancesVersion && m.instances.some((i) => i.parent === d.hinge))!;
+    const version = (plankSrc.metadata as { instancesVersion: () => number }).instancesVersion;
+    const still = version();
+    expect(version()).toBe(still);
+    d.hinge.rotation.y = 0.4;
+    for (const i of plankSrc.instances) i.computeWorldMatrix(true);
+    expect(version()).not.toBe(still);
+    const moved = version();
+    plankSrc.instances[0]!.isVisible = false;
+    expect(version()).not.toBe(moved);
+    expect(instancesHash([] as InstancedMesh[])).toBe(17);
+    // A plain instance source (no hash) is never cached: one draw stands for every copy.
+    const plain = CreateBox('plain', { size: 1 }, s);
+    plain.createInstance('plain_1');
+    expect(stillable(plain)).toBe(false);
     // A lone door has nothing to share.
     const lone = door(s, 'z', new Vector3(0, 0, 0), 0, { oak: new StandardMaterial('o2', s), dark: new StandardMaterial('d2', s), iron: new StandardMaterial('i2', s) });
     mergeRigidParts(lone.root);
@@ -158,7 +177,7 @@ describe('fewer draws (docs/PERF_DRAWS_2026-11-23.md)', () => {
       runner.position.set(x, 4, z);
       runner.computeWorldMatrix(true);
       g._computeShadowCastersBoundingInfo();
-      const [min, max] = babylon();
+      const [min, max] = babylon() as [Vector3, Vector3];
       expect(g._scbiMin.equalsWithEpsilon(min, 1e-6)).toBe(true);
       expect(g._scbiMax.equalsWithEpsilon(max, 1e-6)).toBe(true);
     }

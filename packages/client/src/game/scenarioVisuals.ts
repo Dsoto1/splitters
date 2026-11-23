@@ -3,6 +3,7 @@ import type { LastingFx } from './lastingFx.ts';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
+import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { perfOn } from './perfSwitches.ts';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
@@ -206,12 +207,14 @@ export class ScenarioVisuals {
     if (this.pads.length) this.makePadMotion();
     this.mergeFixtures(fixtures);
     this.mergeStill(still);
-    // Doors of one style are the same few merged parts at every doorway: each shape and material one GPU instance source.
+    // Doors of one style are the same few merged parts at every doorway, buttons the same post and plate: each shape and
+    // material one GPU instance source. (Only kinds whose updates move nodes, not these meshes: a button's cap, its own
+    // material, stays a mesh.)
     if (!this.opts.editor && perfOn('doorinst')) {
       const doors: TransformNode[] = [];
       entities.forEach((e, i) => {
         const v = this.visuals.get(i);
-        if (e.kind === 'door' && v) doors.push(v.root);
+        if ((e.kind === 'door' || e.kind === 'button') && v) doors.push(v.root);
       });
       this.partSources.push(...instanceRigidParts(doors, this.scene));
     }
@@ -2289,8 +2292,8 @@ export function mergeRigidParts(root: TransformNode): void {
 
 /**
  * Doors of one style are the same merged parts at every doorway (mergeRigidParts: an oak door's frame, its dark and light
- * planks and its iron; a portcullis's grille and stone): each was a draw of its own in the view and in the shadow map,
- * 40-odd draws for Flavius Rule's 28 gates. Parts with the same shape and material, wherever they hang, become GPU
+ * planks and its iron; a portcullis's grille and stone), and buttons the same post and plate: each was a draw of its own
+ * in the view and in the shadow map, 40-odd draws for Flavius Rule's 28 gates and 24 for its 8 buttons. Parts with the same shape and material, wherever they hang, become GPU
  * instances of one source (parked out of sight), placed where the part was under the same node, so they swing and slide
  * as before: one draw a shape and material for every door in view. Parts with their own material (a door's lamp) stay
  * as they are. Returns the sources (the caller disposes them with the map). The game only; MapMaker keeps the parts.
@@ -2321,8 +2324,13 @@ export function instanceRigidParts(roots: readonly TransformNode[], scene: Scene
     // Parked out of sight: only its instances draw.
     src.position.y = -10000;
     src.freezeWorldMatrix();
+    const copies: InstancedMesh[] = [];
+    // Where its instances are and whether they show, as a hash: the static shadow cache keeps the source (and so every
+    // copy) in its cached depth while none moves, as it kept each door's parts before (shadowCache.ts).
+    src.metadata = { instancesVersion: () => instancesHash(copies) };
     for (const m of list) {
       const inst = src.createInstance(m.name);
+      copies.push(inst);
       inst.parent = m.parent;
       inst.position.copyFrom(m.position);
       if (m.rotationQuaternion) inst.rotationQuaternion = m.rotationQuaternion.clone();
@@ -2336,6 +2344,18 @@ export function instanceRigidParts(roots: readonly TransformNode[], scene: Scene
     sources.push(src);
   }
   return sources;
+}
+
+/** A hash of instances' world matrices (to a tenth of a millimetre) and whether each is drawn. */
+export function instancesHash(copies: readonly InstancedMesh[]): number {
+  let h = 17;
+  for (const c of copies) {
+    if (c.isDisposed()) continue;
+    h = (Math.imul(h, 31) + (c.isEnabled() && c.isVisible ? 1 : 2)) | 0;
+    const w = c.getWorldMatrix().m;
+    for (let k = 0; k < 16; k++) h = (Math.imul(h, 31) + Math.round(w[k]! * 10000)) | 0;
+  }
+  return h;
 }
 
 /** A part's shape and material as a key: the same vertices, normals, UVs and triangles (hashed) and the same material. */
