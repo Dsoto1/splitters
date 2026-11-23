@@ -11,23 +11,24 @@
   "bio": "Very fast. Much aim. Wow.",
   "body": "male",
   "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: shiba dog.",
+  "notes": "Owner, 2026-11-22: the \"shiba inu 15k\" model replaces Shiba's (\"T Pose Shiba Inu\", Meshy Community CC0, built 2026-10-29); Shiba keeps its name, look ID, roster place and tier. Built from the Drive download \"shiba inu 15k\" (rigged and animated on Meshy: Mixamo joint names read as Meshy's, no finger joints, so the fingers are fitted; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\").",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76",
-    "community": {
-      "model": "T Pose Shiba Inu"
-    },
-    "file": "^Meshy_AI_T_Pose_Shiba_Inu_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-22",
+    "url": null,
+    "file": "^Meshy_AI_shiba_inu_15k_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }
