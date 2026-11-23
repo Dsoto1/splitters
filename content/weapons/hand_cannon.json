@@ -30,7 +30,7 @@
     "tracer": "#ffd08a",
     "hold": { "style": "pistol", "grip": [0, -0.03, -0.097], "support": [-0.02, -0.04, -0.087], "rake": 8 },
     "muzzleAt": [0, 0.06, 0.125],
-    "sound": "fire.heavy"
+    "sound": "fire.pistol.c"
   },
   "notes": {
     "range": "Best within 20 m: full damage, 2 body shots. Down to 40 % (5 shots) by 55 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.",

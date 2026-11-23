@@ -27,7 +27,7 @@
     "tracer": "#ffe070",
     "hold": { "style": "pistol", "grip": [0, -0.045, -0.13], "support": [-0.02, -0.055, -0.12], "rake": 28 },
     "muzzleAt": [0, 0.05, 0.165],
-    "sound": "fire.heavy"
+    "sound": "fire.heavy.b"
   },
   "notes": {
     "model": "The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.", "group": "The extended arsenal: every one fires differently. 2: sidearms." }
