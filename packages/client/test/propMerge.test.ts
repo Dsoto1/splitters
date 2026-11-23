@@ -85,7 +85,7 @@ function source(s: Scene, name: string, material: StandardMaterial, size = 1, lo
   a.material = material;
   a.position.y = -10000;
   if (lod) {
-    const low = CreateBox(`${name}_low`, { size, segments: 1 }, s);
+    const low = CreateBox(`${name}_low`, { size: size * 0.9 }, s);
     low.material = material;
     low.position.y = -10000;
     a.addLODLevel(30, low);
@@ -132,7 +132,7 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     expect(shadows.every((m) => m.layerMask === 0 && proxyable(m))).toBe(true);
   });
 
-  it('each copy keeps its own level of detail: a change rebuilds only the index lists', async () => {
+  it('each copy keeps its own level of detail: one mesh holds every level, a change rebuilds only its index list', async () => {
     const s = scene();
     const shared = new StandardMaterial('atlas', s);
     const batches = new PropBatches(s, async () => source(s, 'tree', shared, 1, true), 15, true, true);
@@ -141,16 +141,24 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     await Promise.all([batches.add('tree', a, false, null, false, false, 2), batches.add('tree', b, false, null, false, false, 2)]);
     batches.update(new Vector3(0, 0, 0));
     const meshes = merged(s);
-    // Both levels made for both copies; each draws one copy now.
-    expect(meshes.length).toBe(2);
-    const vertices = meshes.map((m) => m.getTotalVertices());
-    expect(meshes.map((m) => m.getTotalIndices())).toEqual([36, 36]);
+    // One mesh (one material) with both copies at both levels: 4 boxes of 24 vertices; it draws two of them.
+    expect(meshes.length).toBe(1);
+    const mesh = meshes[0]!;
+    expect(mesh.getTotalVertices()).toBe(96);
+    expect(mesh.getTotalIndices()).toBe(72);
+    const drawnY = () => {
+      // The near copy at full detail (size 1: x up to 5.5), the far one at its lighter level (size 0.9: up to 60.45).
+      const pos = mesh.getVerticesData(VertexBuffer.PositionKind)!;
+      const xs = new Set(Array.from(mesh.getIndices()!).map((i) => Math.round(pos[i * 3]! * 100) / 100));
+      return [...xs].sort((p, q) => p - q);
+    };
+    expect(drawnY()).toEqual([4.5, 5.5, 59.55, 60.45]);
     batches.update(new Vector3(36, 0, 0));
-    // Both near: the full-detail mesh draws both, the lighter one nothing; the vertices were not made again.
-    expect(merged(s)).toEqual(meshes);
-    expect(meshes.map((m) => m.getTotalVertices())).toEqual(vertices);
-    expect(meshes[0]!.isEnabled() && meshes[0]!.getTotalIndices()).toBe(72);
-    expect(meshes[1]!.isEnabled()).toBe(false);
+    // Both near: both at full detail; the vertices were not made again.
+    expect(merged(s)).toEqual([mesh]);
+    expect(mesh.getTotalVertices()).toBe(96);
+    expect(drawnY()).toEqual([4.5, 5.5, 59.5, 60.5]);
+    expect(batches.copyState(b)).toMatchObject({ drawn: 2, drawnHere: true });
   });
 
   it('breakable copies stay in batches; a model too heavy to merge is batched as before', async () => {

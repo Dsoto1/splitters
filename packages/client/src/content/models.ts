@@ -290,7 +290,8 @@ export class ModelLibrary {
       for (const l of levels) {
         const lod = new Mesh(`static_${path}_lod${++i}`, this.scene);
         l.data.applyToMesh(lod, false);
-        lod.material = l.material;
+        // Its level's material is its own copy of the full-detail one: the atlas shares it too.
+        lod.material = atlas ? this.atlasMaterial(l.material) : l.material;
         lod.sideOrientation = l.billboard ? out[0]!.sideOrientation : l.sideOrientation;
         if (l.billboard) lod.billboardMode = Mesh.BILLBOARDMODE_Y;
         lod.isPickable = false;

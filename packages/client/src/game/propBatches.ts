@@ -147,13 +147,11 @@ interface Cell {
 
 interface MergedMesh {
   mesh: Mesh;
-  level: number;
-  /** The copies in it, in order (their triangles, `ranges`, follow each other). */
-  copies: Copy[];
+  /** What it holds, in order (their triangles, `ranges`, follow each other): each copy at each of its levels. */
+  items: { copy: Copy; level: number }[];
   indices: Uint32Array;
   ranges: Int32Array;
   scratch: Uint32Array;
-  shown: number;
 }
 
 interface Batch {
@@ -380,32 +378,33 @@ export class PropBatches {
   }
 
   /**
-   * A cell's meshes made again: for each level of detail, a mesh per material (the atlas shares one between models) of
-   * every copy whose model has that level, placed and tinted; each draws the copies at its level.
+   * A cell's meshes made again: a mesh per material (the atlas shares one between models) holding every copy at every
+   * level of detail its model has, placed and tinted; its index list draws each copy at the level it is at now.
    */
   private buildCell(cell: Cell): void {
     cell.stale = false;
     cell.levels = false;
     for (const m of cell.meshes) m.mesh.dispose(false, false);
     cell.meshes = [];
-    const byPart = new Map<string, { level: number; part: Level['parts'][number]; copies: Copy[] }>();
+    type Part = Level['parts'][number];
+    const byPart = new Map<string, { part: Part; items: { copy: Copy; level: number; part: Part }[] }>();
     for (const k of cell.copies) {
       k.group.model.levels.forEach((lv, l) => {
         for (const part of lv.parts) {
-          const key = `${l}|${materialId(part.material)}|${part.sideOrientation}|${part.hasVertexAlpha ? 1 : 0}`;
+          const key = `${materialId(part.material)}|${part.sideOrientation}|${part.hasVertexAlpha ? 1 : 0}`;
           let e = byPart.get(key);
-          if (!e) byPart.set(key, (e = { level: l, part, copies: [] }));
-          e.copies.push(k);
+          if (!e) byPart.set(key, (e = { part, items: [] }));
+          e.items.push({ copy: k, level: l, part });
         }
       });
     }
-    for (const { level, part, copies } of byPart.values()) {
-      const items = copies.map((k) => {
-        const p = k.group.model.levels[level]!.parts.find((q) => materialId(q.material) === materialId(part.material) && q.sideOrientation === part.sideOrientation)!;
-        const d = p.data;
-        return { positions: d.positions!, normals: d.normals, tangents: d.tangents, uvs: d.uvs, uvs2: d.uvs2, colors: d.colors, indices: d.indices!, matrix: k.matrix, tint: k.color[0] === 1 && k.color[1] === 1 && k.color[2] === 1 ? null : k.color };
-      });
-      const merged = mergeItems(items);
+    for (const { part, items } of byPart.values()) {
+      const merged = mergeItems(
+        items.map(({ copy: k, part: p }) => {
+          const d = p.data;
+          return { positions: d.positions!, normals: d.normals, tangents: d.tangents, uvs: d.uvs, uvs2: d.uvs2, colors: d.colors, indices: d.indices!, matrix: k.matrix, tint: k.color[0] === 1 && k.color[1] === 1 && k.color[2] === 1 ? null : k.color };
+        }),
+      );
       const data = new VertexData();
       data.positions = merged.positions;
       data.normals = merged.normals;
@@ -414,7 +413,7 @@ export class PropBatches {
       data.uvs2 = merged.uvs2;
       data.colors = merged.colors;
       data.indices = merged.indices;
-      const mesh = new Mesh(`static_merged_${this.seq++}_l${level}_${materialName(part.material)}_${cell.key}`, this.scene);
+      const mesh = new Mesh(`static_merged_${this.seq++}_${materialName(part.material)}_${cell.key}`, this.scene);
       data.applyToMesh(mesh, false);
       mesh.material = part.material;
       mesh.sideOrientation = part.sideOrientation;
@@ -424,30 +423,18 @@ export class PropBatches {
       mesh.doNotSyncBoundingInfo = true;
       // They cast through their models' static shadow batches (shadowBatches), merged into the shadow proxies.
       mesh.metadata = { propBatch: true, propMerged: true, castsNoShadow: true };
-      cell.meshes.push({ mesh, level, copies, indices: merged.indices, ranges: merged.ranges, scratch: new Uint32Array(merged.indices.length), shown: -1 });
+      cell.meshes.push({ mesh, items: items.map(({ copy, level }) => ({ copy, level })), indices: merged.indices, ranges: merged.ranges, scratch: new Uint32Array(merged.indices.length) });
     }
     this.showLevels(cell);
   }
 
-  /** Each of a cell's meshes draws the copies now at its level: its index list made again where that changed. */
+  /** Each of a cell's meshes draws its copies at the level each is at now: their index lists made again. */
   private showLevels(cell: Cell): void {
     cell.levels = false;
     for (const m of cell.meshes) {
-      let shown = 0;
-      let mask = 0;
-      for (let i = 0; i < m.copies.length; i++) {
-        if (m.copies[i]!.level !== m.level) continue;
-        shown++;
-        mask = (mask * 31 + i + 1) | 0;
-      }
-      // The same copies as before (most changes are elsewhere in the cell): nothing to do.
-      const sig = shown === 0 ? 0 : shown * 1_000_003 + mask;
-      if (sig === m.shown) continue;
-      m.shown = sig;
-      m.mesh.setEnabled(shown > 0);
-      if (!shown) continue;
-      const sub = shownIndices(m.indices, m.ranges, (i) => m.copies[i]!.level === m.level, m.scratch);
-      m.mesh.setIndices(sub.slice(), m.mesh.getTotalVertices());
+      const sub = shownIndices(m.indices, m.ranges, (i) => m.items[i]!.copy.level === m.items[i]!.level, m.scratch);
+      m.mesh.setEnabled(sub.length > 0);
+      if (sub.length) m.mesh.setIndices(sub.slice(), m.mesh.getTotalVertices());
     }
   }
 
@@ -474,9 +461,9 @@ export class PropBatches {
     if (!at) return null;
     const { g, copy } = at;
     if (copy.merged) {
-      const m = copy.cell?.meshes.find((q) => q.level === copy.level && q.copies.includes(copy));
-      const drawn = m && m.mesh.isEnabled() ? m.copies.filter((k) => k.level === m.level).length : 0;
-      return { breakable: false, meshes: copy.cell?.meshes.filter((q) => q.level === copy.level && q.copies.includes(copy)).map((q) => q.mesh.name) ?? [], drawn, drawnHere: drawn > 0 };
+      const mine = copy.cell?.meshes.filter((q) => q.items.some((it) => it.copy === copy && it.level === copy.level)) ?? [];
+      const drawn = mine[0]?.mesh.isEnabled() ? mine[0].items.filter((it) => it.copy.level === it.level).length : 0;
+      return { breakable: false, meshes: mine.map((q) => q.mesh.name), drawn, drawnHere: drawn > 0 };
     }
     const b = !g.stale && copy.level >= 0 ? this.batch(g, copy.level, copy) : null;
     const mesh = b?.meshes[0];
