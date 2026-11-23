@@ -82,12 +82,53 @@ between runs of one build on this box. The same build each time, before = `?perf
 
 ## Before and after
 
-RESULTS
+### Flavius Rule, still cameras, High (the four standard views; nobody else in the map)
+
+| View | Draws before → after | Shadow draws a frame (max) before → after | Active meshes |
+|---|---|---|---|
+| overview SW | 283 → **187** | 3.8 (117) → 3.5 (98) | 559 → 559 |
+| overview NE | 277 → **184** | 5.3 (135) → 7.3 (108) | 409 → 409 |
+| eye, middle spawn | 177 → **148** | 52.9 (341) → 43.6 (233) | 305 → 305 |
+| eye, far spawn | 258 → **190** | 21.2 (229) → 19.0 (19) | 381 → 381 |
+| mean | 249 → **177 (−29 %)** | | 414 → 414 |
+
+Doors and buttons were 60-100 of a view's draws; now 6-8 (one per part shape and material) in the view and 4-6 in the
+shadows. Every saved draw is a mesh Babylon no longer binds and draws, in the view and in the shadow cascades. (A first
+version without the shadow cache's instance hash drew 207 a view but 17 more shadow draws every frame: the doors had left
+the static cache. Fixed before measuring the table.)
+
+### Flavius Rule, a crowd (64 bots, Medium; the camera's view of the crowd differs run to run)
+
+| Scenario | Doors and buttons' draws, main / shadow, before → after | All draws in that run, before → after |
+|---|---|---|
+| rows (56 held 5-65 m in front) | 63 / 11.6 → **6 / 4.4** | 391 → 141 (12 vs 6 characters in view) |
+| clump (everyone in one 40 m square) | 74 / 8.5 → **6.3 / 5.9** | 358 → 146 (19 vs 7 in view) |
+
+(A third run before the change, with 56-61 characters in view: doors and buttons 48-75 of 321-342 draws.)
+
+### St. John's, still cameras, High
+
+Draws 602 → 602 (mean of 4; 572 / 577 / 606 / 653 each, the same before and after): St. John's has no door entities
+(its doors are kit props, already batched), so its gain is the per-frame chores, timed in the page over 40 frames a view
+(`PERF_SPLIT=1`, both builds at once on the same box, ms a frame on SwiftShader):
+
+| Chore | Before (4 views) | After (4 views) |
+|---|---|---|
+| Light container's readiness (300-550 asks a frame) | 6.6 / 8.1 / 3.6 / 5.4 (mean **5.9**) | 0.59 / 0.45 / 0.29 / 0.53 (mean **0.47**, −92 %) |
+| Cascades' casters' box | 1.42 / 1.36 / 1.37 / 1.44 (mean **1.40**) | 0.72 / 0.59 / 0.76 / 0.60 (mean **0.67**, −52 %) |
+| Shadow list | 0.68 / 0.58 / 0.71 / 0.97 (mean 0.73) | 1.98 / 0.43 / 0.59 / 0.60 (mean 0.90; 0.54 without the first view, which sorted the list after loading) |
+
+The light check is the big one: on the owner's M1 it was 1.4 s of 43 (3 %, about 0.9 ms a frame); the box 0.65 s
+(about 0.4 ms). The shadow list's own gain is small and within this box's noise (the owner's profile had 1.0 s of 43 in
+it); it is kept, behind its switch, for the owner's next recording to say.
 
 ## The look
 
 Pictures of every still view, before and after, High: the scratchpad's `draws/shots/before/`, `after/` and `side/`
-(before | after | difference × 4). RESULTS_LOOK
+(before | after | difference × 4). Flavius Rule: mean difference 0.1-0.9 / 255, at most 0.4 % of pixels over 24, all of it a spinning pickup and its
+ring (they turn with time) and swaying plants; the doors, gates, buttons and every shadow are the same. St. John's: 0.1-2.7 /
+255, the trees' leaves and the grass swaying in the wind (the eye view at the middle spawn, under an oak); nothing else.
+Close-ups of an oak door, a portcullis and a button (near, from above, and on Medium too): `draws/shots2/`.
 
 ## What's left (would save more)
 
