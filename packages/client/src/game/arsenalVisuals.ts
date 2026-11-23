@@ -303,10 +303,38 @@ export function createArsenalProjectile(scene: Scene, id: number, look: Projecti
   return node;
 }
 
-/** Per-frame motion for arsenal projectiles (spin, wobble, point along flight). */
+/**
+ * The yaw and pitch (Babylon's rotation.y and rotation.x, +Z forward) that turn a node's forward along `d`. Straight up
+ * or down has no yaw of its own, so it keeps `prevYaw` and a bolt doesn't swing round as it passes the vertical.
+ */
+export function headingAngles(dx: number, dy: number, dz: number, prevYaw = 0): { yaw: number; pitch: number } {
+  const flat = Math.hypot(dx, dz);
+  return { yaw: flat > 1e-4 * Math.hypot(flat, dy) ? Math.atan2(dx, dz) : prevYaw, pitch: -Math.atan2(dy, flat) };
+}
+
+/** Turn `node` to face along `d`, as `headingAngles` says; false (untouched) when `d` is too small to mean a heading. */
+export function pointAlong(node: TransformNode, d: Vector3): boolean {
+  if (d.lengthSquared() <= 1e-6) return false;
+  const { yaw, pitch } = headingAngles(d.x, d.y, d.z, node.rotation.y);
+  node.rotationQuaternion = null;
+  node.rotation.set(pitch, yaw, 0);
+  return true;
+}
+
+/**
+ * Per-frame motion for arsenal projectiles (spin, wobble, point along flight). A projectile that points along its
+ * flight stays hidden until it has moved once: its first sample has no heading, and drawn then it showed sideways
+ * (mesh default, world +Z) for a snapshot.
+ */
 export function animateArsenalProjectile(node: TransformNode, look: ProjectileVisual, now: number, moved: Vector3, born: number): void {
   const along = () => {
-    if (moved.lengthSquared() > 1e-6) node.lookAt(node.position.add(moved));
+    const md = (node.metadata ??= {}) as { aimed?: boolean };
+    if (pointAlong(node, moved)) {
+      if (!md.aimed) {
+        md.aimed = true;
+        node.setEnabled(true);
+      }
+    } else if (!md.aimed) node.setEnabled(false);
   };
   switch (look) {
     case 'bubble':

@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/gripfit-1123` · 58affe34 · 45214083698 (attempt 2: shard 2's runner was shut down mid-flow and the editor's 3 s TEST budget, a known flake, both green on the re-run)
+- `wip/draws-1123` · 69381198 · 45232566354 (fewer draws in big matches; both touch `game/perfSwitches.ts`'s switch list: keep both names)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -247,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-23** train check/train-20261123-185910 (8b4a092, green; landed by the splitters lead with docs-only main merged in): the crossbow bolt and other along-flight shots point the right way from their first frame (`wip/fix-bolt-1123`); roof parapets (coping, merlons, pinnacles) are solid to bodies and bullets (`wip/fix-parapet-1123`).
 - **2026-11-23** train check/train-20261123-160453 (d985916, run 45212457895), landed by the splitters lead: the owner's Weapon Manager edits (11 weapons' sounds, Space Shield hidden; `wip/weapon-edits-1123`) and Sonniss pass 3 (56 picker alternates with names, 10 sci-fi/launcher guns recorded, alternates lazy-loaded; `wip/sonniss-3`). Follow-ups on `wip/sonniss-3b`: Laser Blaster and Arc Caster recorded, the owner's ~40 announcer lines.
 - **2026-11-23** material ballistics fixes (`wip/ballistics-1123`, green cd8d784e, run 45170921887): white station/industrial panels sheet metal, Bunker Concrete concrete, lights shoot-through plastic and neon glass, lighthouse/carved/hieroglyph/sandstone stone, small cleanups; barrier kept at 400 HP. Landed alone by the splitters lead.
 - St. John's step 10: the clock tower on Welles's west stair, the dorm-bay end, the Carriageway walled on the tower's side (`wip/stjohns-10`, green 15a7fa7e, run 45121247043)
