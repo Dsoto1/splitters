@@ -195,6 +195,8 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
   // the end room at one door, across it past the desks and out at the other.
   'setpiece.dorm_bay_end': {
     chains: [[[7, 0, 3.6], [0, 0, 2.7], [-2.6, 0, 2.7]], [[0, 0, 2.7], [-2, 0, -0.3], [0, 0, -1.3], [2, 0, -0.3], [0, 0, 2.7]]],
+    // (Its Room option, a washroom or closed, is walked below: "the Dorm Bay End's Room option".)
+    options: ['roomDoors', 'furniture', 'end'],
   },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
@@ -1471,3 +1473,72 @@ describe("a mess hall's kit: sunk floor, timber ceiling, arcade, rows, the line 
     expect([...tiles.map((t) => t.id), ...entities.map((e) => e.id)].map((id) => Number(id.split('_').at(-1))).sort((a, b) => a - b)).toEqual([0, 1, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]);
   });
 });
+
+/**
+ * The Memorial Hall pass (owner, 2026-11-23): the hall with Rounded corners (its north end closed but for the annex's
+ * doorway, its south end's spiral stair kept, a window bench along the upper storey's east wall), and the Gable
+ * Annex centred on the north end: in at the annex's red door and on into the library.
+ */
+function memorialHallRounded(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, rotation: Rotation, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z: 0, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
+  return [
+    at('south', 'setpiece.library_end_bay_2', 1, 0, 3, { plan: 'rounded' }),
+    at('north', 'setpiece.library_faceted_end', 0, 1, 0, { door: 'east', plan: 'rounded', annex: 'north', bench: 'east' }),
+    at('annex', 'setpiece.gable_annex', 0, 3, 0),
+  ];
+}
+
+describe("Memorial Hall with rounded corners and its annex (the Memorial Hall pass)", () => {
+  it('in at the annex\'s door, down its steps and through into the library; under the arch; up the south stair; onto the window bench', { timeout: 480_000 }, () => {
+    for (const spacing of [2, 2.5]) {
+      const map = mapOf(memorialHallRounded(), spacing);
+      const nav = navOf(map);
+      const grid = `ground grid ${spacing} m`;
+      const length = (path: Vec3[] | null) => (path ? path.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - path[i - 1]!.x, p.z - path[i - 1]!.z) : 0), 0) : Infinity);
+      const to = (a: P3, b: P3, what: string, far = 1.2) => expect(miss(nav, v(a), v(b)), `${grid}: ${what}`).toBeLessThan(far);
+      // The annex: from the lawn north of it, up its steps, in at its door, down inside and through its back into the hall.
+      to([4, 0, 31], [4, 0.6, 23.5], 'in at the annex\'s door');
+      to([4, 0.6, 23.5], [4, 0, 17], 'from the annex into the hall\'s north end');
+      const way = nav.findPath(v([4, 0, 31]), v([4, 0, 15]));
+      expect(length(way), `${grid}: the annex is the short way in`).toBeLessThan(20);
+      // Under the arch, along the ground storey to the south end, up the stair kept there (one turn) and down again.
+      to([20, 0, 8], [4, 0, 2], 'in under the arch');
+      expect(length(nav.findPath(v([3.5, 0, 0]), v([3.5, 4, 0]))), `${grid}: up the south stair`).toBeLessThan(26);
+      expect(length(nav.findPath(v([3.5, 4, 0]), v([3.5, 0, 0]))), `${grid}: down the south stair`).toBeLessThan(26);
+      // The upper storey end to end, and onto the bench's seat along the east wall (1 m up four steps).
+      to([3.5, 4, 0], [4, 4, 17], 'the upper storey end to end');
+      to([4, 4, 8], [10.9, 5, 8], 'onto the window bench');
+      to([10.9, 5, 5], [10.9, 5, 11], 'along the window bench');
+      nav.destroy();
+    }
+  });
+});
+
+describe("the Dorm Bay End's Room option (the lead's notes of 2026-11-23: Welles's end bay)", () => {
+  const welles = (rooms: Record<string, string>) => wellesWest().map((p) => (rooms[p.id] ? { ...p, overrides: { options: { ...(p.overrides?.options ?? {}), room: rooms[p.id]! } } } : p));
+  it('a washroom: in at either door, between the stalls, the showers and the sinks; closed: nobody gets into the ground floor, and nothing stands in it to walk on', { timeout: 300_000 }, () => {
+    const map = mapOf(welles({ end_0: 'closed', end_1: 'washroom', end_2: 'washroom' }));
+    const nav = navOf(map);
+    for (const y of [4, 8]) {
+      // The end bay is at (1, 0): its hall along its north side, its room south (piece frame + 8 on x).
+      to(nav, [8, y, 2.7], [6, y, -0.3], `the washroom's west door at ${y} m`);
+      to(nav, [8, y, 2.7], [10, y, -0.3], `the washroom's east door at ${y} m`);
+      to(nav, [6, y, -0.3], [8, y, -1.8], `the washroom's floor at ${y} m`);
+    }
+    // The ground floor's cell is shut: from the lane west of it nothing reaches inside.
+    expect(miss(nav, v([2, 0, 0]), v([8, 0, 0])), 'into the closed ground floor').toBeGreaterThan(2);
+    nav.destroy();
+    const def = builtInSetPieces().pieces.get('setpiece.dorm_bay_end')!;
+    const made = (room: string) => setPieceParts({ id: 'p', piece: 'setpiece.dorm_bay_end', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { room, roomDoors: 'slim', end: 'door' } } }, def, 'core.castle', builtInSetPieces());
+    const models = (room: string) => made(room).entities.flatMap((e) => (e.kind === 'prop' ? [e.model] : [])).sort();
+    expect(models('washroom').filter((m) => /toilet|shower|sink|mirror/.test(m))).toEqual(['prop.hh_cupboard_sink', 'prop.hh_cupboard_sink', 'prop.hh_mirror', 'prop.hh_mirror', 'prop.hh_toilet', 'prop.hh_toilet', 'prop.hm_shower', 'prop.hm_shower']);
+    expect(models('dorm')).toContain('prop.hh_mirror');
+    // Closed: no door out, no room: the walled tile and its fill alone.
+    expect(made('closed').entities.map((e) => e.kind)).toEqual(['block']);
+    expect(Object.values(made('closed').tiles[0]!.edges ?? {})).toEqual(['wall', 'wall', 'wall', 'wall']);
+  });
+});
+
+function to(nav: NavWorld, a: P3, b: P3, what: string, far = 1.2): void {
+  expect(miss(nav, v(a), v(b)), what).toBeLessThan(far);
+}

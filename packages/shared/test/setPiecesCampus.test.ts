@@ -119,11 +119,13 @@ const WALKS: Record<string, Walk[]> = {
     // Rounded corners (the Memorial Hall pass): up the bay into the end among its cases, along the upper storey from
     // the bay into the end; in at the arch either side; onto the window bench's seat, either side.
     { options: { plan: 'rounded' }, chains: [[[4, 0, -7], [4, 0, 2.5], [4, 0, 7], [1, 0, 9.5], [4, 0, 7], [7, 0, 9.5]], [[4, 4, -3], [4, 4, 3.5], [4, 4, 8]]] },
-    { options: { plan: 'rounded', door: 'east', bench: 'east' }, chains: [[[15, 0, 0], [10, 0, 0], [6.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [10.9, 5, 0], [10.9, 5, 6]]] },
-    { options: { plan: 'rounded', door: 'west', bench: 'west' }, chains: [[[-7, 0, 0], [-2, 0, 0], [1.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [-2.9, 5, 0], [-2.9, 5, 6]]] },
+    { options: { plan: 'rounded', door: 'east', bench: 'east' }, chains: [[[15, 0, 0], [10, 0, 0], [6.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [10.9, 5, -3], [10.9, 5, 3]]] },
+    { options: { plan: 'rounded', door: 'west', bench: 'west' }, chains: [[[-7, 0, 0], [-2, 0, 0], [1.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [-2.9, 5, -3], [-2.9, 5, 3]]] },
   ],
   // Up the wing's steps and in at its door under the gable.
   'setpiece.gable_wing': [{ chains: [[[-0.5, 0, 7], [-0.5, 0.6, -1]]] }],
+  // The annex (the Memorial Hall pass): up its steps, in at its door, down inside and out through its back.
+  'setpiece.gable_annex': [{ chains: [[[4, 0, 7], [4, 0.6, -0.5], [4, 0, -6]]] }],
   // The chapel (step 9): the centre aisle between the pews and both side aisles behind the arcades.
   'setpiece.chapel_bay': ['blue', 'amber'].map((glass): Walk => ({ options: { glass }, chains: [hall(), [[-7, 0, -2.45], [0, 0, -2.45], [7, 0, -2.45]], [[-7, 0, 10.45], [0, 0, 10.45], [7, 0, 10.45]]] })),
   // From the nave up the steps to the altar; along each aisle through its end door: the sacristy and out of the back

@@ -1,13 +1,119 @@
 {
-  "$comment": "St. John's step 11 (the Memorial Hall pass, owner 2026-11-23, screenshot from the lane; answers \"all recs\"): the ordered MapMaker steps, as a driver replays them on the map (Import; the Outliner's search and a click on the row; the set piece inspector's Options, one a selection; Export). Ids are the map's as it stood on main at 0cf8feeb. `coverage`: the steps on the coverage map (maps/test_coverage.json): the same options on its copies of the two pieces, so the rounded plan's tiles and props are on it too.",
+  "$comment": "St. John's step 11 (the Memorial Hall pass, owner 2026-11-23, screenshot from the lane; answers \"all recs\"): the ordered MapMaker steps, as a driver replays them on the map (Import; the Outliner's search and a click on the row; Delete; the Set pieces tab with R and a click on the cell; the set piece inspector's Options, one a selection; Export). Ids are the map's as it stood on main at 0cf8feeb. `coverage`: the steps on the coverage map (maps/test_coverage.json): the same options on its copies of the two pieces, so the rounded plan's tiles and props are on it too. Steps in group `annex` and `welles` are the lead's notes of 2026-11-23 (the owner after seeing the map in play).",
   "steps": [
-    {"group": "hall", "op": "option", "id": "setpiece_vfhl9ttdxg", "name": "plan", "value": "rounded", "what": "the Library Faceted End (the hall's middle bay with the arch, and its north end): Rounded corners: the north end's corners rounded under the Rounded Spire, no stair in it (the one on the left walking in from the court goes), more and taller bookcases, real windows of breakable glass"},
-    {"group": "hall", "op": "option", "id": "setpiece_vfhl9ttdxg", "name": "bench", "value": "east", "what": "the window bench along the upper storey's court (east) wall, under its windows"},
-    {"group": "hall", "op": "option", "id": "setpiece_xpokxcprvk", "name": "plan", "value": "rounded", "what": "the Library End Bay (the hall's south end): Rounded corners under a Rounded Hip End, its spiral stair (the one on the right walking in from the court) kept in a drum against the south-east corner, taller bookcases, real windows of breakable glass"}
+    {
+      "group": "hall",
+      "op": "option",
+      "id": "setpiece_vfhl9ttdxg",
+      "name": "plan",
+      "value": "rounded",
+      "what": "the Library Faceted End (the hall's middle bay with the arch, and its north end): Rounded corners: the north end's corners rounded under the Rounded Spire, no stair in it (the one on the left walking in from the court goes), more and taller bookcases, real windows of breakable glass"
+    },
+    {
+      "group": "hall",
+      "op": "option",
+      "id": "setpiece_vfhl9ttdxg",
+      "name": "bench",
+      "value": "east",
+      "what": "the window bench along the upper storey's court (east) wall, under its windows"
+    },
+    {
+      "group": "hall",
+      "op": "option",
+      "id": "setpiece_xpokxcprvk",
+      "name": "plan",
+      "value": "rounded",
+      "what": "the Library End Bay (the hall's south end): Rounded corners under a Rounded Hip End, its spiral stair (the one on the right walking in from the court) kept in a drum against the south-east corner, taller bookcases, real windows of breakable glass"
+    },
+    {
+      "group": "annex",
+      "op": "option",
+      "id": "setpiece_vfhl9ttdxg",
+      "name": "annex",
+      "value": "north",
+      "what": "a doorway in the middle of the hall's north end, into the annex"
+    },
+    {
+      "group": "annex",
+      "op": "delete",
+      "id": "setpiece_ablwo96cea",
+      "what": "the Small Stucco Wing, off to the west of the north end (shut from the hall)"
+    },
+    {
+      "group": "annex",
+      "op": "place",
+      "piece": "setpiece.gable_annex",
+      "x": -6,
+      "y": -4,
+      "rot": 0,
+      "what": "the same wing as the Gable Annex, moved over (4 m east) to stand on the middle of the hall's north end: in at its red door, down two steps and through its back into the library"
+    },
+    {
+      "group": "welles",
+      "op": "option",
+      "id": "setpiece_y3ydm1n5nx",
+      "name": "room",
+      "value": "closed",
+      "what": "Welles's Dorm Bay End at (2, -11), ground floor: closed (no room, no door to the lane by the Carriageway; walled and filled)"
+    },
+    {
+      "group": "welles",
+      "op": "option",
+      "id": "setpiece_ibntkot7vo",
+      "name": "room",
+      "value": "washroom",
+      "what": "its 2nd floor: a washroom (two toilet stalls, two showers, two sinks with mirrors)"
+    },
+    {
+      "group": "welles",
+      "op": "option",
+      "id": "setpiece_zw3189sk6p",
+      "name": "room",
+      "value": "washroom",
+      "what": "its 3rd floor: the same"
+    }
   ],
   "coverage": [
-    {"op": "place", "piece": "setpiece.library_faceted_end", "x": -16, "y": -65, "rot": 0, "options": {"plan": "rounded", "door": "east", "bench": "east"}, "what": "the coverage map: the rounded plan's pieces in a row south of step 8b's (x -16 to -10 of rows -65 and -64): the Faceted End with Rounded corners (the Hall Bay's porch variant, the Rounded Hall End, the Rounded Spire, the tall cases, the open windows, the bench)"},
-    {"op": "place", "piece": "setpiece.library_end_bay_2", "x": -13, "y": -65, "rot": 0, "options": {"plan": "rounded"}, "what": "the End Bay with Rounded corners (the Rounded Hall End with its stair, the Rounded Hip End)"},
-    {"op": "tile", "tile": "core.hall_bay_2", "x": -11, "y": -65, "rot": 0, "what": "the plain Hall Bay (two storeys) as a tile of its own"}
+    {
+      "op": "place",
+      "piece": "setpiece.library_faceted_end",
+      "x": -16,
+      "y": -65,
+      "rot": 0,
+      "options": {
+        "plan": "rounded",
+        "door": "east",
+        "bench": "east",
+        "annex": "north"
+      },
+      "what": "the coverage map: the rounded plan's pieces in a row south of step 8b's (x -16 to -10 of rows -65 and -64): the Faceted End with Rounded corners (the Hall Bay's porch variant, the Rounded Hall End, the Rounded Spire, the tall cases, the open windows, the bench)"
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.library_end_bay_2",
+      "x": -13,
+      "y": -65,
+      "rot": 0,
+      "options": {
+        "plan": "rounded"
+      },
+      "what": "the End Bay with Rounded corners (the Rounded Hall End with its stair, the Rounded Hip End)"
+    },
+    {
+      "op": "tile",
+      "tile": "core.hall_bay_2",
+      "x": -11,
+      "y": -65,
+      "rot": 0,
+      "what": "the plain Hall Bay (two storeys) as a tile of its own"
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.gable_annex",
+      "x": -16,
+      "y": -63,
+      "rot": 0,
+      "what": "the Gable Annex against that Faceted End's north end"
+    }
   ]
 }
