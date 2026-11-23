@@ -1017,7 +1017,8 @@ describe('what the bays are made of, and what they cost', () => {
     // a bunk is 12, a desk 2, the sink 1; the closets are the entry walls, the chairs are not solid), 130 trim boxes,
     // 4 panes. (2026-11-12, with free-standing closets and one desk a room: 110.) 2026-11-19: 114, with the four open
     // doors' leaves and the facade's plinth and buttresses colliding (doorLeaves.test.ts, facadeCover.test.ts).
-    expect(one.collision).toBeLessThanOrEqual(114);
+    // 2026-11-23: 134, with the roof parapet's coping, merlons and pinnacles colliding (facadeCover.test.ts).
+    expect(one.collision).toBeLessThanOrEqual(134);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
     expect(one.props).toBe(20);
