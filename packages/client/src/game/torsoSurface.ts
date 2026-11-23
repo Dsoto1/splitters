@@ -3,6 +3,7 @@ import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { CharacterInstance } from '../content/characters.ts';
+import { freshWorld } from './freshWorld.ts';
 
 /** Joints that carry the chest and shoulders (not the arms or head): their skin is what a rifle stock rests against. */
 const TORSO = new Set(['pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'clavicle_l', 'clavicle_r']);
@@ -154,7 +155,7 @@ function torsoWeights(mesh: AbstractMesh): Float32Array | 'all' | null {
 
 /** How far an arm reaches from its shoulder joint to the palm, nearly straight (world units). */
 export function armReach(upper: TransformNode, lower: TransformNode, hand: TransformNode, palm: Vector3): number {
-  for (const n of [upper, lower, hand]) n.computeWorldMatrix(true);
+  for (const n of [upper, lower, hand]) freshWorld(n);
   const [a, b, c] = [upper, lower, hand].map((n) => n.getAbsolutePosition());
   return (Vector3.Distance(a!, b!) + Vector3.Distance(b!, c!)) * 0.97 + Vector3.TransformNormal(palm, hand.getWorldMatrix()).length();
 }
