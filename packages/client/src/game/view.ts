@@ -29,7 +29,7 @@ import { FoliageVisuals } from '../foliage.ts';
 import { EnvironmentVisuals } from '../environment/environmentVisuals.ts';
 import { envBatchedOn } from '../environment/envFlag.ts';
 import type { ClientMount } from './mountState.ts';
-import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, setAura } from './arsenalVisuals.ts';
+import { ARSENAL_LOOKS, ZoneVisuals, animateArsenalProjectile, createArc, createArsenalProjectile, createAura, createBeam, layBeam, pointAlong, setAura } from './arsenalVisuals.ts';
 import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
 import { muzzlePoint } from './muzzlePoint.ts';
 import { streamPoint, streamStart, type StreamStart } from './streamBlend.ts';
@@ -3918,8 +3918,12 @@ export class GameView {
       }
       else if (look === 'rocket') {
         // Point the rocket along its flight.
-        const d = p.node.position.subtract(prev);
-        if (d.lengthSquared() > 1e-6) p.node.lookAt(p.node.position.add(d));
+        // (Hidden until it has a heading: its first sample has none.)
+        const md = (p.node.metadata ??= {}) as { aimed?: boolean };
+        if (pointAlong(p.node, p.node.position.subtract(prev))) {
+          md.aimed = true;
+          p.node.setEnabled(true);
+        } else if (!md.aimed) p.node.setEnabled(false);
       } else if (look === 'mine') {
         // Blink once armed (Reduce flashing: a gentle pulse, once a second at most).
         const light = p.node.getChildMeshes().find((m) => m.name.endsWith('_light'));
