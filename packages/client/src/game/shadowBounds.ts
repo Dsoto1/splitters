@@ -16,8 +16,14 @@ interface CasterBoxOwner {
   _computeShadowCastersBoundingInfo(): void;
 }
 
-/** A caster whose box never changes: a frozen world matrix on one mesh (thin instances' boxes follow their copies). */
+/**
+ * A caster whose box never changes: a frozen world matrix on one mesh (thin instances' boxes follow their copies), or a
+ * mesh made never to change (the shadow proxies, the trees' static shadow sets, never-changing batches: `shadowProxy`,
+ * `staticCaster`, `staticThin`). The every-STILL_BOUNDS_FRAMES refresh catches a batch that gains copies.
+ */
 export function stillCaster(m: AbstractMesh): boolean {
+  const meta = m.metadata as { shadowProxy?: boolean; staticCaster?: boolean; staticThin?: boolean } | null;
+  if (meta?.shadowProxy || meta?.staticCaster || meta?.staticThin) return true;
   return m.isWorldMatrixFrozen && !m.hasThinInstances && !m.skeleton;
 }
 

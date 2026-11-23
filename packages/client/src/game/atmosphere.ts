@@ -19,7 +19,7 @@ import { buildShadowProxies, proxyable } from './shadowProxy.ts';
 import { underSmall } from './shadowFlags.ts';
 import { BOX_SLACK, ShadowCache, isStaticCaster } from './shadowCache.ts';
 import { perfOn } from './perfSwitches.ts';
-import { keepStillCasterBounds } from './shadowBounds.ts';
+import { keepStillCasterBounds, stillCaster } from './shadowBounds.ts';
 import { SMALL_REACH_IN, castsInLayer, smallCasts } from './shadowCasters.ts';
 
 export * from './graphicsSettings.ts';
@@ -138,7 +138,7 @@ export class Atmosphere {
         nearMoving.length = 0;
         const c = this.camera.globalPosition;
         const off = this.shadowless;
-        // `casterlist`: casters that never move (a frozen world matrix, one mesh, not small clutter) are sorted out of the
+        // `casterlist`: casters that never move (shadowBounds.ts stillCaster, not small clutter) are sorted out of the
         // list once (again when it changes, and every STILL_LIST_FRAMES frames) and tested again only when the camera has
         // moved STILL_LIST_SLACK metres, with that much more reach; the rest are tested every frame as before.
         let to = length;
@@ -152,7 +152,7 @@ export class Atmosphere {
             split.moving.length = 0;
             for (let i = 0; i < length; i++) {
               const m = list[i]!;
-              if (m.isWorldMatrixFrozen && !m.hasThinInstances && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster) split.still.push(m);
+              if (stillCaster(m) && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster) split.still.push(m);
               else split.moving.push(m);
             }
             split.at.set(Number.NaN, 0, 0);
