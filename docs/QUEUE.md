@@ -39,7 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/draws-1123` · 69381198 · 45232566354 (fewer draws in big matches; both touch `game/perfSwitches.ts`'s switch list: keep both names)
-- `wip/controls-1123` · 5641792a · 45241532251 (attempt 1, full suite: input and session map to every flow; the hub needs a redeploy for keys on the account, the client keeps them in the browser without it)
+- `wip/controls-1123` · f65d703b · 45267275465 (attempt 1, full suite; origin/main merged 2026-11-23 evening; the hub needs a redeploy for keys on the account, the client keeps them in the browser without it)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
