@@ -273,6 +273,8 @@
        -0.43
       ]
      },
+     "sound": "fire.rifle.ak74",
+     "reloadSound": "reload.ak",
      "muzzleAt": [
       0,
       0.068,
@@ -664,7 +666,8 @@
        0.023,
        -0.43
       ]
-     }
+     },
+     "sound": "fire.launcher.synth"
     }
    },
    "gunplay": {
@@ -900,7 +903,8 @@
        -0.03,
        -0.25
       ]
-     }
+     },
+     "sound": "fire.launcher.c"
     }
    },
    "gunplay": {
@@ -1005,7 +1009,8 @@
        0.02,
        -0.41
       ]
-     }
+     },
+     "sound": "fire.plasma.c"
     }
    },
    "gunplay": {
@@ -1110,13 +1115,14 @@
       ],
       "rake": 34
      },
+     "reloadSound": "reload.start.c",
      "muzzleAt": [
       0,
       0.03,
       0.135
      ],
      "fallback": "weapons/pulse_pistol.glb",
-     "sound": "fire.pulse",
+     "sound": "fire.pulse.c",
      "beam": true
     }
    },
@@ -1578,7 +1584,7 @@
       0.085,
       0.245
      ],
-     "sound": "fire.smg"
+     "sound": "fire.heavy.l86"
     }
    },
    "gunplay": {
@@ -2058,7 +2064,7 @@
        -0.275
       ]
      },
-     "sound": "fire.shotgun",
+     "sound": "fire.shotgun.b",
      "reloadSound": "reload.end.b"
     }
    },
@@ -2710,7 +2716,7 @@
       ]
      },
      "fallback": "weapons/goo_gun.glb",
-     "sound": "fire.goo"
+     "sound": "fire.goo.b"
     }
    },
    "gunplay": {
@@ -2828,7 +2834,7 @@
        -0.38
       ]
      },
-     "sound": "fire.goo"
+     "sound": "fire.pulse.c"
     }
    },
    "gunplay": {
@@ -2912,7 +2918,8 @@
       ]
      },
      "fallback": "weapons/lmg.glb",
-     "sound": "fire.smg"
+     "sound": "fire.smg.ppsh",
+     "reloadSound": "reload.scifi"
     }
    },
    "gunplay": {
@@ -3047,7 +3054,7 @@
       0.1,
       0.34
      ],
-     "sound": "fire.nail"
+     "sound": "door.open"
     }
    },
    "gunplay": {
@@ -3143,7 +3150,7 @@
        -0.405
       ]
      },
-     "sound": "fire.swarm"
+     "sound": "fire.swarm.d"
     }
    },
    "gunplay": {
@@ -3221,7 +3228,7 @@
       0.5
      ],
      "tracer": "#ff4a3a",
-     "sound": "fire.rockets",
+     "sound": "fire.plasma",
      "hold": {
       "style": "long",
       "grip": [
@@ -3533,7 +3540,7 @@
        -0.455
       ]
      },
-     "sound": "fire.flame"
+     "sound": "fire.flame.c"
     }
    },
    "gunplay": {
@@ -3614,7 +3621,7 @@
       "rake": 20
      },
      "fallback": "weapons/freeze_ray.glb",
-     "sound": "fire.freeze",
+     "sound": "fire.freeze.b",
      "beam": true
     }
    },
@@ -3684,7 +3691,7 @@
        0
       ]
      },
-     "sound": "fire.rifle"
+     "sound": "fire.heavy"
     }
    },
    "gunplay": {
@@ -3765,7 +3772,7 @@
        0
       ]
      },
-     "sound": "fire.rockets"
+     "sound": "fire.swarm.e"
     }
    },
    "gunplay": {
@@ -3923,7 +3930,7 @@
        0
       ]
      },
-     "sound": "fire.plasma"
+     "sound": "fire.launcher.b"
     }
    },
    "gunplay": {
@@ -3988,7 +3995,7 @@
        0
       ]
      },
-     "sound": "fire.smg"
+     "sound": "fire.launcher"
     }
    },
    "gunplay": {
@@ -4058,7 +4065,7 @@
        0
       ]
      },
-     "sound": "fire.arc",
+     "sound": "fire.arc.c",
      "beam": true
     }
    },
@@ -4199,7 +4206,7 @@
       ],
       "rake": 34
      },
-     "sound": "fire.flare"
+     "sound": "fire.disc.c"
     }
    },
    "gunplay": {
@@ -4343,7 +4350,7 @@
       0.4
      ],
      "tracer": "#ffffff",
-     "sound": "weapon.raise",
+     "sound": "land",
      "hold": {
       "style": "melee",
       "grip": [
@@ -4424,7 +4431,7 @@
       0.52
      ],
      "tracer": "#7ad6ff",
-     "sound": "fire.disc",
+     "sound": "fire.disc.b",
      "hold": {
       "style": "long",
       "grip": [
@@ -4442,7 +4449,8 @@
        -0.076,
        -0.43
       ]
-     }
+     },
+     "reloadSound": "reload.scifi"
     }
    },
    "gunplay": {
@@ -4517,7 +4525,7 @@
       0.5
      ],
      "tracer": "#ffb347",
-     "sound": "fire.rockets",
+     "sound": "fire.swarm.d",
      "hold": {
       "style": "long",
       "grip": [
@@ -4847,7 +4855,7 @@
       0.4
      ],
      "altShot": {
-      "sound": "fire.flak",
+      "sound": "fire.shotgun.b",
       "rate": 0.78,
       "flash": {
        "effect": "wide_flash_02",
@@ -5178,12 +5186,13 @@
        -0.41
       ]
      },
+     "reloadSound": "reload.ak",
      "muzzleAt": [
       0,
       0.05,
       0.42
      ],
-     "sound": "fire.rifle"
+     "sound": "fire.rifle.c"
     }
    },
    "gunplay": {
@@ -5341,7 +5350,7 @@
       0.045,
       0.39
      ],
-     "sound": "fire.rifle"
+     "sound": "fire.rifle.suppressed"
     }
    },
    "gunplay": {
@@ -5660,7 +5669,7 @@
       0.04,
       0.37
      ],
-     "sound": "fire.smg"
+     "sound": "fire.heavy.b"
     }
    },
    "gunplay": {
@@ -5819,7 +5828,7 @@
       0.05,
       0.32
      ],
-     "sound": "fire.smg"
+     "sound": "fire.rifle.m4"
     }
    },
    "gunplay": {
@@ -6111,7 +6120,7 @@
       0.51
      ],
      "zoomFov": 0.6,
-     "sound": "fire.heavy.b"
+     "sound": "fire.heavy.c"
     }
    },
    "gunplay": {
@@ -6669,12 +6678,13 @@
        -0.35
       ]
      },
+     "reloadSound": "reload.ak",
      "muzzleAt": [
       0,
       0.04,
       0.36
      ],
-     "sound": "fire.plasma"
+     "sound": "fire.plasma.b"
     }
    },
    "gunplay": {
@@ -6787,13 +6797,14 @@
       ],
       "rake": 25
      },
+     "reloadSound": "reload.bolt",
      "muzzleAt": [
       0,
       0,
       0.125
      ],
      "beam": true,
-     "sound": "fire.laser"
+     "sound": "fire.laser.b"
     }
    },
    "gunplay": {
@@ -6927,7 +6938,7 @@
       0.014,
       0.14
      ],
-     "sound": "fire.swarm"
+     "sound": "fire.swarm.b"
     }
    },
    "gunplay": {
