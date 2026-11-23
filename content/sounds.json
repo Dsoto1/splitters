@@ -158,6 +158,7 @@
       "gain": 1.08,
       "range": "far",
       "jitter": 0.05,
+      "label": "Pistol: Glock 18 close",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -172,6 +173,7 @@
       "gain": 1.05,
       "range": "far",
       "jitter": 0.04,
+      "label": "Rifle: HK416 close",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -186,6 +188,7 @@
       "gain": 1.16,
       "range": "far",
       "jitter": 0.04,
+      "label": "Shotgun: 12 gauge slug",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -200,6 +203,7 @@
       "gain": 0.91,
       "range": "far",
       "jitter": 0.03,
+      "label": "Sniper: Barrett M98B .338",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -218,16 +222,25 @@
       ]
     },
     "fire.launcher": {
-      "synth": "launcher",
-      "variants": 2,
-      "gain": 0.9,
+      "gain": 1.3,
       "range": "far",
-      "jitter": 0.05
+      "jitter": 0.05,
+      "label": "Launcher: MK44 autocannon, one shot",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Fascinated Sound - The Gun Locker SFX Pack/Automatic Cannon - MK44 - 03 - Single Shot with Report 03.wav",
+          "start": 0.311,
+          "length": 0.804,
+          "punch": "gun"
+        }
+      ]
     },
     "fire.knife": {
       "gain": 0.98,
       "range": "mid",
       "jitter": 0.1,
+      "label": "Melee: swing whoosh",
       "variants": [
         {
           "pack": "sonniss-gdc-2015",
@@ -241,6 +254,7 @@
       "gain": 0.87,
       "range": "near",
       "jitter": 0.03,
+      "label": "Handling: M1911 dry fire",
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -667,6 +681,7 @@
       "gain": 0.4,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: G36C magazine out",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -680,6 +695,7 @@
       "gain": 1.04,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: G36C magazine in",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -694,6 +710,7 @@
       "gain": 0.31,
       "range": "near",
       "jitter": 0.06,
+      "label": "Handling: assault rifle pick-up",
       "variants": [
         {
           "pack": "sonniss-gdc-2017",
@@ -759,20 +776,20 @@
     "ui.hit": {
       "gain": 0.45,
       "synth": "hitmark",
-      "variants": 4,
-      "jitter": 0.02
+      "jitter": 0.02,
+      "variants": 4
     },
     "ui.hit.head": {
       "gain": 0.5,
       "synth": "hithead",
-      "variants": 3,
-      "jitter": 0.01
+      "jitter": 0.01,
+      "variants": 3
     },
     "ui.hit.armor": {
       "gain": 0.5,
       "synth": "hitarmor",
-      "variants": 3,
-      "jitter": 0.03
+      "jitter": 0.03,
+      "variants": 3
     },
     "ui.kill.confirm": {
       "gain": 0.6,
@@ -897,10 +914,10 @@
     },
     "trap.flames": {
       "synth": "flame",
-      "variants": 2,
       "gain": 0.7,
       "range": "mid",
-      "jitter": 0.06
+      "jitter": 0.06,
+      "variants": 2
     },
     "trap.crusher": {
       "gain": 1.0,
@@ -927,38 +944,38 @@
     },
     "trap.shock": {
       "synth": "arc",
-      "variants": 3,
       "gain": 0.75,
       "range": "mid",
-      "jitter": 0.1
+      "jitter": 0.1,
+      "variants": 3
     },
     "fence.hum": {
       "synth": "hum",
-      "variants": 1,
       "gain": 0.32,
       "range": "near",
-      "jitter": 0.03
+      "jitter": 0.03,
+      "variants": 1
     },
     "zip.whirr": {
       "synth": "hum",
-      "variants": 1,
       "gain": 0.42,
       "range": "mid",
       "jitter": 0.04,
-      "rate": 2.4
+      "rate": 2.4,
+      "variants": 1
     },
     "vehicle.engine": {
       "synth": "engine",
-      "variants": 2,
       "gain": 0.5,
       "range": "mid",
-      "jitter": 0.02
+      "jitter": 0.02,
+      "variants": 2
     },
     "trap.warn": {
       "synth": "beep",
-      "variants": 1,
       "gain": 0.5,
-      "range": "near"
+      "range": "near",
+      "variants": 1
     },
     "break.crate": {
       "gain": 1.3,
@@ -1064,6 +1081,7 @@
       "gain": 0.92,
       "range": "far",
       "jitter": 0.06,
+      "label": "SMG: HK MP7 close",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1075,25 +1093,40 @@
       ]
     },
     "fire.rockets": {
-      "synth": "launcher",
-      "variants": 2,
-      "gain": 1.0,
+      "gain": 1.21,
       "range": "far",
-      "jitter": 0.08
+      "jitter": 0.08,
+      "label": "Rockets: tank artillery cannon",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Tank - Explosion Sound Effects/Bluezone_BC0271_tank_artillery_cannon_shot_012.wav",
+          "start": 0.0,
+          "length": 0.904,
+          "punch": "gun"
+        }
+      ]
     },
     "fire.plasma": {
-      "synth": "plasma",
-      "variants": 3,
-      "gain": 0.55,
+      "gain": 0.82,
       "range": "far",
-      "jitter": 0.07
+      "jitter": 0.07,
+      "label": "Plasma: SmartSound plasma cannon",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "SmartSoundFX - Futuristic/CANNON Plasma Shot Tonal High 10.wav",
+          "start": 0.016,
+          "length": 0.404
+        }
+      ]
     },
     "throw": {
       "synth": "swing",
-      "variants": 2,
       "gain": 0.7,
       "range": "mid",
-      "jitter": 0.1
+      "jitter": 0.1,
+      "variants": 2
     },
     "pickup.throwable": {
       "gain": 0.6,
@@ -1120,17 +1153,24 @@
       ]
     },
     "fire.pulse": {
-      "synth": "plasma",
-      "variants": 3,
-      "gain": 0.45,
+      "gain": 0.44,
       "range": "far",
       "jitter": 0.05,
-      "rate": 1.6
+      "label": "Pulse: PMSFX abstract gun 20",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Abstract Guns/PM_AG_20_3_ABSTRACT_GUNS.wav",
+          "start": 0.001,
+          "length": 0.284
+        }
+      ]
     },
     "fire.revolver": {
       "gain": 1.23,
       "range": "far",
       "jitter": 0.03,
+      "label": "Revolver: hand gun 6",
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -1145,6 +1185,7 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.05,
+      "label": "Heavy: HK G3 close",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1157,109 +1198,159 @@
     },
     "fire.flare": {
       "synth": "launcher",
-      "variants": 2,
       "gain": 0.6,
       "range": "far",
       "jitter": 0.06,
-      "rate": 1.5
+      "rate": 1.5,
+      "label": "Flare: synthesised launcher, high",
+      "variants": 2
     },
     "fire.laser": {
       "synth": "laser",
-      "variants": 3,
       "gain": 0.35,
       "range": "mid",
-      "jitter": 0.04
+      "jitter": 0.04,
+      "label": "Laser: synthesised",
+      "variants": 3
     },
     "fire.flak": {
       "synth": "shotgun",
-      "variants": 2,
       "gain": 0.9,
       "range": "far",
       "jitter": 0.06,
-      "rate": 0.8
+      "rate": 0.8,
+      "label": "Flak: synthesised shotgun, low",
+      "variants": 2
     },
     "fire.railgun": {
-      "synth": "railgun",
-      "variants": 2,
-      "gain": 0.9,
+      "gain": 1.06,
       "range": "far",
-      "jitter": 0.03
+      "jitter": 0.03,
+      "label": "Railgun: electric tonal impact",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Epic Stock Media - Elemental Mutation Whooshes and Impacts/ELECMisc_Impact Electric Tonal Deep Movement Motion Hiss Glitch 01_ESM_EMWI.wav",
+          "start": 0.026,
+          "length": 1.104
+        }
+      ]
     },
     "fire.disc": {
-      "synth": "disc",
-      "variants": 2,
-      "gain": 0.8,
+      "gain": 0.97,
       "range": "far",
-      "jitter": 0.05
+      "jitter": 0.05,
+      "label": "Disc: cut sweep",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Cinematic Sound Design - Colossal Impacts/Impact Cut Sweep.wav",
+          "start": 0.916,
+          "length": 0.504
+        }
+      ]
     },
     "fire.bubble": {
       "synth": "bubble",
-      "variants": 3,
       "gain": 0.6,
       "range": "mid",
-      "jitter": 0.12
+      "jitter": 0.12,
+      "label": "Bubble: synthesised",
+      "variants": 3
     },
     "fire.goo": {
-      "synth": "splat",
-      "variants": 3,
-      "gain": 0.6,
+      "gain": 0.69,
       "range": "mid",
-      "jitter": 0.1
+      "jitter": 0.1,
+      "label": "Goo: deep water impact",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Epic Stock Media - Elemental Mutation Whooshes and Impacts/WATRImpt_Impact Water Deep Submerge Bubble Drown Ship Hit 05_ESM_EMWI.wav",
+          "start": 0.031,
+          "length": 0.454
+        }
+      ]
     },
     "fire.nail": {
-      "synth": "nail",
-      "variants": 3,
-      "gain": 0.45,
+      "gain": 0.7,
       "range": "mid",
-      "jitter": 0.08
+      "jitter": 0.08,
+      "label": "Nail: metallic auto gun, one shot",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "SoundMorph - MECHANISM/Mechanism - Source - Metallic Auto Gun.wav",
+          "start": 0.025,
+          "length": 0.1
+        }
+      ]
     },
     "fire.swarm": {
       "synth": "launcher",
-      "variants": 2,
       "gain": 0.75,
       "range": "far",
       "jitter": 0.08,
-      "rate": 1.7
+      "rate": 1.7,
+      "label": "Swarm: synthesised launcher, high",
+      "variants": 2
     },
     "fire.vortex": {
-      "synth": "vortex",
-      "variants": 1,
-      "gain": 0.9,
+      "gain": 1.08,
       "range": "far",
-      "jitter": 0.02
+      "jitter": 0.02,
+      "label": "Vortex: PMSFX warped low swell",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - SynthAssault/PM_SA_WARPED_1.wav",
+          "start": 1.36,
+          "length": 1.3,
+          "punch": true
+        }
+      ]
     },
     "fire.arc": {
-      "synth": "arc",
-      "variants": 3,
-      "gain": 0.55,
+      "gain": 0.6,
       "range": "mid",
-      "jitter": 0.08
+      "jitter": 0.08,
+      "label": "Arc: electricity cast, short",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Electricity Magic 1/Magic_Spells_CastShort_Electricity_General08.wav",
+          "start": 0.046,
+          "length": 0.354
+        }
+      ]
     },
     "fire.flame": {
       "synth": "flamelet",
-      "variants": 3,
       "gain": 0.4,
       "range": "mid",
-      "jitter": 0.1
+      "jitter": 0.1,
+      "label": "Flame: synthesised",
+      "variants": 3
     },
     "fire.freeze": {
       "synth": "freeze",
-      "variants": 3,
       "gain": 0.35,
       "range": "mid",
-      "jitter": 0.05
+      "jitter": 0.05,
+      "label": "Freeze: synthesised",
+      "variants": 3
     },
     "pickup.uav": {
       "synth": "beep",
-      "variants": 1,
       "gain": 0.45,
-      "range": "near"
+      "range": "near",
+      "variants": 1
     },
     "pickup.disc": {
       "synth": "beep",
-      "variants": 1,
       "gain": 0.45,
-      "range": "near"
+      "range": "near",
+      "variants": 1
     },
     "pickup.glider": {
       "gain": 0.55,
@@ -1341,10 +1432,10 @@
     },
     "glass.crack": {
       "synth": "crack",
-      "variants": 3,
       "gain": 0.55,
       "range": "mid",
-      "jitter": 0.08
+      "jitter": 0.08,
+      "variants": 3
     },
     "weather.rain": {
       "gain": 0.46,
@@ -1392,6 +1483,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.05,
+      "label": "Pistol: Beretta 93R close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1406,6 +1499,8 @@
       "gain": 1.23,
       "range": "far",
       "jitter": 0.05,
+      "label": "Pistol: HK VP70 close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1420,6 +1515,8 @@
       "gain": 0.95,
       "range": "far",
       "jitter": 0.04,
+      "label": "Rifle: G36C close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1434,6 +1531,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.04,
+      "label": "Rifle: AKM close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1448,6 +1547,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.06,
+      "label": "SMG: HK MP5 (2 m)",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1462,6 +1563,8 @@
       "gain": 1.05,
       "range": "far",
       "jitter": 0.06,
+      "label": "SMG: FN P90 close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1476,6 +1579,8 @@
       "gain": 1.23,
       "range": "far",
       "jitter": 0.04,
+      "label": "Shotgun: 12 gauge with eject",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1490,6 +1595,8 @@
       "gain": 0.81,
       "range": "far",
       "jitter": 0.04,
+      "label": "Shotgun: Browning BAR, close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1504,6 +1611,7 @@
       "gain": 1.0,
       "range": "mid",
       "jitter": 0.03,
+      "label": "Shotgun: quick pump",
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1517,6 +1625,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.03,
+      "label": "Sniper: Mauser K98k",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -1531,6 +1641,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.03,
+      "label": "Sniper: Mosin M38",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -1545,6 +1657,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.05,
+      "label": "Heavy: FN FAL",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1559,6 +1673,8 @@
       "gain": 0.81,
       "range": "far",
       "jitter": 0.05,
+      "label": "Heavy: Browning BAR, close",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2016",
@@ -1573,6 +1689,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.03,
+      "label": "Revolver: Walther P38",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2026",
@@ -1594,6 +1712,8 @@
       "gain": 1.3,
       "range": "far",
       "jitter": 0.03,
+      "label": "Revolver: TT-33 in a car",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2026",
@@ -1608,6 +1728,8 @@
       "gain": 1.04,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: P38 magazine out",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2026",
@@ -1622,6 +1744,8 @@
       "gain": 0.52,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: MP 40 cocking",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -1635,6 +1759,8 @@
       "gain": 0.92,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: semi-auto rifle cock",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2017",
@@ -1648,6 +1774,8 @@
       "gain": 1.08,
       "range": "near",
       "jitter": 0.04,
+      "label": "Handling: K98k bolt",
+      "lazy": true,
       "variants": [
         {
           "pack": "sonniss-gdc-2020",
@@ -1681,6 +1809,961 @@
           "file": "David Dumais Audio - Spells Magic 1/Magic_Spells_CastShort_Push14.wav",
           "start": 0.041,
           "length": 0.9
+        }
+      ]
+    },
+    "fire.plasma.synth": {
+      "synth": "plasma",
+      "gain": 0.55,
+      "range": "far",
+      "jitter": 0.07,
+      "label": "Plasma: synthesised (the old default)",
+      "lazy": true,
+      "variants": 3
+    },
+    "fire.pulse.synth": {
+      "synth": "plasma",
+      "gain": 0.45,
+      "range": "far",
+      "jitter": 0.05,
+      "rate": 1.6,
+      "label": "Pulse: synthesised (the old default)",
+      "lazy": true,
+      "variants": 3
+    },
+    "fire.railgun.synth": {
+      "synth": "railgun",
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.03,
+      "label": "Railgun: synthesised (the old default)",
+      "lazy": true,
+      "variants": 2
+    },
+    "fire.arc.synth": {
+      "synth": "arc",
+      "gain": 0.55,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Arc: synthesised (the old default)",
+      "lazy": true,
+      "variants": 3
+    },
+    "fire.vortex.synth": {
+      "synth": "vortex",
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.02,
+      "label": "Vortex: synthesised (the old default)",
+      "lazy": true,
+      "variants": 1
+    },
+    "fire.disc.synth": {
+      "synth": "disc",
+      "gain": 0.8,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Disc: synthesised (the old default)",
+      "lazy": true,
+      "variants": 2
+    },
+    "fire.goo.synth": {
+      "synth": "splat",
+      "gain": 0.6,
+      "range": "mid",
+      "jitter": 0.1,
+      "label": "Goo: synthesised (the old default)",
+      "lazy": true,
+      "variants": 3
+    },
+    "fire.nail.synth": {
+      "synth": "nail",
+      "gain": 0.45,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Nail: synthesised (the old default)",
+      "lazy": true,
+      "variants": 3
+    },
+    "fire.launcher.synth": {
+      "synth": "launcher",
+      "gain": 0.9,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Launcher: synthesised (the old default)",
+      "lazy": true,
+      "variants": 2
+    },
+    "fire.rockets.synth": {
+      "synth": "launcher",
+      "gain": 1.0,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Rockets: synthesised (the old default)",
+      "lazy": true,
+      "variants": 2
+    },
+    "fire.rifle.famas": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.04,
+      "label": "Rifle: FAMAS G2 close",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - FAMAS G2 5.56mm/FAMAS_G2_5.56mm_1m_left_on_ground_DPA4062_clean_Four_shots_x_1.wav",
+          "start": 0.641,
+          "length": 0.454,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.rifle.m4": {
+      "gain": 1.17,
+      "range": "far",
+      "jitter": 0.04,
+      "label": "Rifle: M4 burst, last shot",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Fascinated Sound - The Gun Locker SFX Pack/Assault Rifle - M4 - 03 - Burst 03.wav",
+          "start": 1.271,
+          "length": 0.429,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.rifle.ak74": {
+      "gain": 0.55,
+      "range": "far",
+      "jitter": 0.04,
+      "label": "Rifle: AK-74 close",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "FLYSOUND - AK-74/AKSD0813 AK-74 spot A close burst 03 rounds.wav",
+          "start": 0.0,
+          "length": 0.439,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.rifle.suppressed": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.04,
+      "label": "Rifle: De Lisle carbine, suppressed",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - De Lisle Carbine .45ACP suppressed/De_Lisle_Carbine_.45ACP_suppressed_1m_right_MKH8040_1_clean_Single_shots_x_14.wav",
+          "start": 51.995,
+          "length": 0.45,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.smg.mac10": {
+      "gain": 0.96,
+      "range": "far",
+      "jitter": 0.06,
+      "label": "SMG: Ingram MAC-10 close",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - Ingram M10 9mm/Ingram_M10_9mm_1m_right_CS3_clean_Double_shots_x_1.wav",
+          "start": 0.311,
+          "length": 0.324,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.smg.tommy": {
+      "gain": 1.03,
+      "range": "far",
+      "jitter": 0.06,
+      "label": "SMG: Thompson burst",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Fascinated Sound - The Gun Locker SFX Pack/Submachine Gun - Tommy Gun - 01 - Burst 01.wav",
+          "start": 0.5,
+          "length": 0.315,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.smg.mp40": {
+      "gain": 1.29,
+      "range": "far",
+      "jitter": 0.06,
+      "label": "SMG: MP 40 burst, last shot",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Fascinated Sound - The Gun Locker SFX Pack/Submachine Gun - MP 40 - 02 - Burst.wav",
+          "start": 2.09,
+          "length": 0.32,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.smg.ppsh": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.06,
+      "label": "SMG: PPSh-41 close",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Pole Position - Tokarev PPSh-41 submachine gun/PPSh41, Firing, t1, Burst, Long, MKH416.wav",
+          "start": 1.705,
+          "length": 0.16,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.heavy.l86": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Heavy: L86 light support weapon",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - Enfield L86 LSW 5.56mm/Enfield_L86_LSW_5.56mm_1m_right_MKH8040_2_clean_Triple_shots_x_1.wav",
+          "start": 0.661,
+          "length": 0.459,
+          "punch": "gun"
+        }
+      ]
+    },
+    "reload.saiga": {
+      "gain": 0.13,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: Saiga-12 shotgun cocking",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - Various Gun Foley & Handling/SAIGA-12_12g_solid_slug_foley_close_up_RSM191_R_cocking.wav",
+          "start": 0.0,
+          "length": 0.62
+        }
+      ]
+    },
+    "reload.revolver": {
+      "gain": 0.66,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: .44 Magnum cylinder",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - Various Gun Foley & Handling/Smith_&_Wesson_M29_.44_Magnum_foley_close_up_MKH416_cylinder_open_&_close.wav",
+          "start": 2.52,
+          "length": 0.15
+        }
+      ]
+    },
+    "reload.shell": {
+      "gain": 0.36,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: shotgun shell load",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shell Load_Round Eject.wav",
+          "start": 2.76,
+          "length": 0.315
+        }
+      ]
+    },
+    "reload.ak": {
+      "gain": 0.31,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: AK-74 assembly",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "FLYSOUND - AK-74/AK0709 AK-74 assemble disassemble.wav",
+          "start": 2.74,
+          "length": 0.85
+        }
+      ]
+    },
+    "reload.bolt": {
+      "gain": 0.73,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: Mosin M38 bolt",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Pole Position - Mosin-Nagant M38 bolt-action rifle/M38, Handling, Various, t2, 1m, Above, Right, MKH8060.wav",
+          "start": 0.03,
+          "length": 0.53
+        }
+      ]
+    },
+    "reload.tt33": {
+      "gain": 0.76,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: TT-33 slide",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Pole Position - Tokarev TT-33 semi-automatic pistol/TT33, Handling, Clearing, MK012.wav",
+          "start": 0.18,
+          "length": 0.25
+        }
+      ]
+    },
+    "reload.scifi": {
+      "gain": 0.27,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: sci-fi bio gun reload",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/SoundMorph - Future Weapons 2/Future Weapons 2 - Bio Gun - reload_4.wav",
+          "start": 0.06,
+          "length": 1.5
+        }
+      ]
+    },
+    "reload.charge": {
+      "gain": 0.18,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: futuristic gun cocking",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Futuristic Guns Sound FX Pack 3/Cocking_11.wav",
+          "start": 0.0,
+          "length": 0.96
+        }
+      ]
+    },
+    "reload.vent": {
+      "gain": 0.16,
+      "range": "near",
+      "jitter": 0.04,
+      "label": "Handling: overheat vent",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Futuristic Guns Sound FX Pack 3/OverHeating_23.wav",
+          "start": 0.0,
+          "length": 1.2
+        }
+      ]
+    },
+    "fire.plasma.b": {
+      "gain": 0.87,
+      "range": "far",
+      "jitter": 0.07,
+      "label": "Plasma: PMSFX futuristic gun 8",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL1_WEAPON_8_2_GUN_GUNSHOT_FUTURISTIC.wav",
+          "start": 0.036,
+          "length": 0.404
+        }
+      ]
+    },
+    "fire.plasma.c": {
+      "gain": 0.51,
+      "range": "far",
+      "jitter": 0.07,
+      "label": "Plasma: sci-fi assault rifle (Alliance)",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2015",
+          "file": "sci-fi weapons/Alliance-AssaultRifle_05-Single_Shot-04.wav",
+          "start": 0.0,
+          "length": 0.404
+        }
+      ]
+    },
+    "fire.plasma.d": {
+      "gain": 0.72,
+      "range": "far",
+      "jitter": 0.07,
+      "label": "Plasma: futuristic rifle 4",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Futuristic Guns Sound FX Pack 3/OtherGuns_Rifle_4.wav",
+          "start": 0.0,
+          "length": 0.404
+        }
+      ]
+    },
+    "fire.pulse.b": {
+      "gain": 0.39,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Pulse: sci-fi assault rifle (Resistance)",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2015",
+          "file": "sci-fi weapons/Resistance-AssaultRifle_03-Single_Shot-04.wav",
+          "start": 0.0,
+          "length": 0.354
+        }
+      ]
+    },
+    "fire.pulse.c": {
+      "gain": 0.54,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Pulse: PMSFX abstract gun 33",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Abstract Guns/PM_AG_33_3_ABSTRACT_GUNS.wav",
+          "start": 0.021,
+          "length": 0.354
+        }
+      ]
+    },
+    "fire.railgun.b": {
+      "gain": 1.24,
+      "range": "far",
+      "jitter": 0.03,
+      "label": "Railgun: experimental heavy gun",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Futuristic Guns Sound FX Pack 3/HeavyGun_Experimental_3.wav",
+          "start": 0.006,
+          "length": 1.004,
+          "punch": true
+        }
+      ]
+    },
+    "fire.railgun.c": {
+      "gain": 0.95,
+      "range": "far",
+      "jitter": 0.03,
+      "label": "Railgun: PMSFX futuristic gun 15",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL2_WEAPON_15_5_GUN_GUNSHOT_FUTURISTIC.wav",
+          "start": 0.466,
+          "length": 0.579
+        }
+      ]
+    },
+    "fire.railgun.d": {
+      "gain": 0.63,
+      "range": "far",
+      "jitter": 0.03,
+      "label": "Railgun: synth cinematic impact",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - SynthAssault/PM_SA_CINEMATIC_IMPACT_101.wav",
+          "start": 0.031,
+          "length": 1.004
+        }
+      ]
+    },
+    "fire.railgun.e": {
+      "gain": 1.04,
+      "range": "far",
+      "jitter": 0.03,
+      "label": "Railgun: big laser blast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Async Audio - Sci-Fi Blaster/Blast Laser 4.wav",
+          "start": 0.091,
+          "length": 0.904,
+          "punch": true
+        }
+      ]
+    },
+    "fire.arc.b": {
+      "gain": 0.37,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Arc: electric fuse",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "SoundMorph - ENERGY/Energy - electric_fuse-08.wav",
+          "start": 0.016,
+          "length": 0.354
+        }
+      ]
+    },
+    "fire.arc.c": {
+      "gain": 0.45,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Arc: electricity impact",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Electricity Magic 1/Magic_Spells_Impact_Electricity25.wav",
+          "start": 0.006,
+          "length": 0.354
+        }
+      ]
+    },
+    "fire.arc.d": {
+      "gain": 0.38,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Arc: large electric cast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "Rock The Speakerbox - Sorcery/SORCERY - DESIGNED - MAGIC ELECTRIC Cast Large.wav",
+          "start": 0.111,
+          "length": 0.404
+        }
+      ]
+    },
+    "fire.vortex.b": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.02,
+      "label": "Vortex: subspace transition",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2018",
+          "file": "Bluezone Corporation -  Subspace Distortion - Sci Fi Cinematic Samples/Bluezone_BC0233_transition_016.wav",
+          "start": 1.2,
+          "length": 1.03,
+          "punch": true
+        }
+      ]
+    },
+    "fire.vortex.c": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.02,
+      "label": "Vortex: lunar low impact",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Lunar - Cinematic Ambient Samples/Bluezone_BC0257_impact_005.wav",
+          "start": 0.0,
+          "length": 1.304,
+          "punch": true
+        }
+      ]
+    },
+    "fire.vortex.d": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.02,
+      "label": "Vortex: vacuum suck and hit",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "PMSFX - SynthAssault/PM_SA_DESIGNED_58_Vacum.wav",
+          "start": 2.55,
+          "length": 1.3,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.disc.b": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Disc: future blade layer",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Audio Summoners - Future Melee Weapons/FMW_Weapon_Layer_FX_24.wav",
+          "start": 0.126,
+          "length": 0.504,
+          "punch": true
+        }
+      ]
+    },
+    "fire.disc.c": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Disc: arrow shot and flight",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "2496SoundEffects - Super Heroes Sound Design/Hawk's Arrow Flies Bow and Arrow shoot 2.wav",
+          "start": 0.456,
+          "length": 0.504,
+          "punch": true
+        }
+      ]
+    },
+    "fire.goo.b": {
+      "gain": 0.81,
+      "range": "mid",
+      "jitter": 0.1,
+      "label": "Goo: web shot",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "2496SoundEffects - Super Heroes Sound Design/The Web Slinger Shoots 4.wav",
+          "start": 0.091,
+          "length": 0.454
+        }
+      ]
+    },
+    "fire.goo.c": {
+      "gain": 1.3,
+      "range": "mid",
+      "jitter": 0.1,
+      "label": "Goo: acid sizzle",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Articulated Sounds - Magic Elements vol.2/CHEMICAL ACID Sizzle, Burn, Short 02.wav",
+          "start": 0.08,
+          "length": 0.45,
+          "punch": true
+        }
+      ]
+    },
+    "fire.nail.b": {
+      "gain": 0.87,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Nail: nanotech servo click",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - NANOTECH/PM_NANOTECH_ONESHOT_109 Robotic, Robot, Cyber, Tech, Nano, Micro, Movement, Mechanical, Servo, O.wav",
+          "start": 0.006,
+          "length": 0.124
+        }
+      ]
+    },
+    "fire.nail.c": {
+      "gain": 0.56,
+      "range": "mid",
+      "jitter": 0.08,
+      "label": "Nail: shaker snap",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Cinematic Sound Design - Colossal Impacts/Transition Frantic Shaker Snap.wav",
+          "start": 0.216,
+          "length": 0.154
+        }
+      ]
+    },
+    "fire.launcher.b": {
+      "gain": 1.24,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Launcher: sci-fi big blast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Async Audio - Sci-Fi Blaster/Big Blast 4.wav",
+          "start": 0.256,
+          "length": 0.804,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.launcher.c": {
+      "gain": 1.17,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Launcher: short magic blast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Magic Sound FX Pack 1/Magic_Explosion_Short19.wav",
+          "start": 0.0,
+          "length": 0.804,
+          "punch": true
+        }
+      ]
+    },
+    "fire.rockets.b": {
+      "gain": 1.24,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Rockets: tank battle cannon",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "explosions&impacts/Double Trouble Audio - Tanks and Jet/TAJ - Tank Battle Cannon Fire [XY Stereo]-001.wav",
+          "start": 0.071,
+          "length": 0.904,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.rockets.c": {
+      "gain": 1.2,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Rockets: shell in flight",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Tank - Explosion Sound Effects/Bluezone_BC0271_shell_trajectory_004.wav",
+          "start": 0.0,
+          "length": 0.904,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.laser.b": {
+      "gain": 0.69,
+      "range": "mid",
+      "jitter": 0.04,
+      "label": "Laser: laser blast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Async Audio - Sci-Fi Blaster/Blast Laser 2.wav",
+          "start": 0.271,
+          "length": 0.404
+        }
+      ]
+    },
+    "fire.laser.c": {
+      "gain": 0.46,
+      "range": "mid",
+      "jitter": 0.04,
+      "label": "Laser: recoil blast",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Async Audio - Sci-Fi Blaster/Recoil Blast 2.wav",
+          "start": 0.061,
+          "length": 0.304
+        }
+      ]
+    },
+    "fire.freeze.b": {
+      "gain": 0.45,
+      "range": "mid",
+      "jitter": 0.05,
+      "label": "Freeze: ice cast, short",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Ice & Frost Magic 1/Magic_Spells_CastShort_Ice_General24.wav",
+          "start": 0.211,
+          "length": 0.504
+        }
+      ]
+    },
+    "fire.freeze.c": {
+      "gain": 0.46,
+      "range": "mid",
+      "jitter": 0.05,
+      "label": "Freeze: ice impact",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Ice & Frost Magic 1/Magic_Spells_Impact_Ice13.wav",
+          "start": 0.156,
+          "length": 0.504
+        }
+      ]
+    },
+    "fire.freeze.d": {
+      "gain": 0.53,
+      "range": "mid",
+      "jitter": 0.05,
+      "label": "Freeze: frost cast, long",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Ice & Frost Magic 1/Magic_Spells_CastLong_Frost03.wav",
+          "start": 0.091,
+          "length": 0.604
+        }
+      ]
+    },
+    "fire.flame.b": {
+      "gain": 0.33,
+      "range": "mid",
+      "jitter": 0.1,
+      "label": "Flame: fire whoosh",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Mountain Dweller - Orc Sound Effects/Bluezone_BC0261_mountain_dweller_texture_fire_whoosh_003.wav",
+          "start": 0.526,
+          "length": 0.504
+        }
+      ]
+    },
+    "fire.flame.c": {
+      "gain": 0.33,
+      "range": "mid",
+      "jitter": 0.1,
+      "label": "Flame: deep fire growl",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "Epic Stock Media - Elemental Mutation Whooshes and Impacts/FIREWhsh_Whoosh Fire Deep Growl Monster Saturated Crisp 03_ESM_EMWI.wav",
+          "start": 0.366,
+          "length": 0.604
+        }
+      ]
+    },
+    "fire.bubble.b": {
+      "gain": 1.3,
+      "range": "mid",
+      "jitter": 0.12,
+      "label": "Bubble: water drop",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "Bluezone - Splash/Bluezone_BC0256_water_splash_drop_006.wav",
+          "start": 0.06,
+          "length": 0.354,
+          "punch": true
+        }
+      ]
+    },
+    "fire.flare.b": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.06,
+      "label": "Flare: mine placing thunk",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "SmartSoundFX - Futuristic/MINE Placing 01.wav",
+          "start": 0.011,
+          "length": 0.454,
+          "punch": true
+        }
+      ]
+    },
+    "fire.swarm.b": {
+      "gain": 0.73,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Swarm: PMSFX abstract gun 2",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Abstract Guns/PM_AG_2_2_ABSTRACT_GUNS.wav",
+          "start": 0.011,
+          "length": 0.504
+        }
+      ]
+    },
+    "fire.swarm.c": {
+      "gain": 0.84,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Swarm: PMSFX abstract gun 9",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Abstract Guns/PM_AG_9_5_ABSTRACT_GUNS.wav",
+          "start": 0.281,
+          "length": 0.604
+        }
+      ]
+    },
+    "fire.swarm.d": {
+      "gain": 1.05,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Swarm: PMSFX futuristic gun 4",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL1_WEAPON_4_4_GUN_GUNSHOT_FUTURISTIC.wav",
+          "start": 0.001,
+          "length": 0.604
+        }
+      ]
+    },
+    "fire.swarm.e": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.08,
+      "label": "Swarm: PMSFX futuristic gun 41",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL2_WEAPON_41_6_GUN_GUNSHOT_FUTURISTIC.wav",
+          "start": 0.176,
+          "length": 0.529,
+          "punch": true
         }
       ]
     }

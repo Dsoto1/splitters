@@ -15264,6 +15264,13 @@ async function weaponmanagerFlow(browser) {
   await page.click('#wm-picker [data-play="fire.rifle"]');
   const played = await page.waitForFunction(() => window.__weaponManager.played() > 0, null, { timeout: T(20000) }).then(() => true, () => false);
   check(played, 'the sound picker plays a sound from the game\'s library');
+  // The picker's alternates are lazy (content/sounds.json): not loaded until their play button is pressed.
+  const lazyBefore = await page.evaluate(() => window.__weaponManager.loaded('fire.plasma.b'));
+  const n0 = await page.evaluate(() => window.__weaponManager.played());
+  await page.click('#wm-picker [data-play="fire.plasma.b"]');
+  const lazyPlayed = await page.waitForFunction((n) => window.__weaponManager.played() > n && window.__weaponManager.loaded('fire.plasma.b'), n0, { timeout: T(20000) }).then(() => true, () => false);
+  const label = await page.evaluate(() => document.querySelector('#wm-picker [data-sound="fire.plasma.b"] .grow')?.textContent ?? '');
+  check(!lazyBefore && lazyPlayed && /^Plasma: /.test(label), `a picker-only alternate loads on its first press and plays, shown by its name (before ${lazyBefore}, "${label}")`);
   await page.click('#wm-picker [data-use="fire.rifle"]');
   const picked = await page.waitForFunction(() => !document.getElementById('wm-picker') && window.__weaponManager.edits()['core.smg']?.sounds?.fire === 'fire.rifle', null, { timeout: T(5000) }).then(() => true, () => false);
   check(picked, 'Use picks it as the fire sound');

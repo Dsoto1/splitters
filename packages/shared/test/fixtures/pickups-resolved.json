@@ -1407,8 +1407,7 @@
    "core.weapon_battle_axe",
    "core.weapon_katana",
    "core.weapon_scimitar",
-   "core.weapon_baseball_bat",
-   "core.weapon_space_shield"
+   "core.weapon_baseball_bat"
   ],
   "special": [
    "core.weapon_gilded_pistol",

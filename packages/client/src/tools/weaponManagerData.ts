@@ -170,17 +170,30 @@ export function hideBlockers(id: string): string[] {
 
 export const SOUND_IDS = Object.keys(soundManifest.sounds).sort();
 
-/** The sound library as the picker groups it. */
+type SoundEntry = { label?: string; synth?: string; lazy?: boolean };
+const SOUND_DEFS = soundManifest.sounds as Record<string, SoundEntry>;
+
+/** The sci-fi and energy guns' sounds (their ids' second part). */
+const SCIFI = /^fire\.(plasma|pulse|laser|railgun|arc|freeze|vortex|disc|bubble|goo|flame|nail)(\.|$)/;
+const LAUNCH = /^fire\.(launcher|rockets|swarm|flare|flak)(\.|$)/;
+
+/** A sound's name in the picker: its manifest label ("Rifle: HK416 close"), else its id. */
+export const soundLabel = (id: string): string => SOUND_DEFS[id]?.label ?? id;
+
+/** The sound library as the picker groups it (each group in label order). */
 export function soundGroups(): { label: string; ids: string[] }[] {
   const groups: [string, (id: string) => boolean][] = [
-    ['Weapon fire', (id) => id.startsWith('fire.')],
+    ['Guns', (id) => id.startsWith('fire.') && !SCIFI.test(id) && !LAUNCH.test(id) && !SOUND_DEFS[id]?.synth],
+    ['Sci-fi and energy', (id) => SCIFI.test(id) && !SOUND_DEFS[id]?.synth],
+    ['Launchers and rockets', (id) => LAUNCH.test(id) && !SOUND_DEFS[id]?.synth],
+    ['Synthesised weapon sounds', (id) => id.startsWith('fire.') && !!SOUND_DEFS[id]?.synth],
     ['Reload and handling', (id) => /^(reload\.|weapon\.|dryfire$|throw$|knife\.)/.test(id)],
     ['Impacts and explosions', (id) => /^(impact\.|explosion|break\.|glass\.|blood\.)/.test(id)],
     ['Everything else', () => true],
   ];
   const left = new Set(SOUND_IDS);
   return groups.map(([label, test]) => {
-    const ids = [...left].filter(test);
+    const ids = [...left].filter(test).sort((a, b) => soundLabel(a).localeCompare(soundLabel(b)) || a.localeCompare(b));
     for (const id of ids) left.delete(id);
     return { label, ids };
   });
