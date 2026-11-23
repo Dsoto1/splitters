@@ -11,6 +11,7 @@
       "footprint": { "cells": [[0, 0]], "levels": [0, 1] },
       "mirror": "free",
       "roles": { "glass": "breakable" },
+      "options": [{ "name": "east", "label": "East side", "choices": [{ "value": "door", "label": "Door", "blurb": "A door into the building on the east side, as first built." }, { "value": "wall", "label": "Wall", "blurb": "A stone wall instead, where the east side's neighbour has no way in (St. John's clock tower)." }] }],
       "ports": [
         { "side": "N", "cell": [0, 0], "level": 0, "kind": "opening" },
         { "side": "S", "cell": [0, 0], "level": 0, "kind": "opening" },
@@ -24,7 +25,8 @@
           "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0,
           "edges": { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "door", "0,0,0:W": "door" },
           "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } },
-          "options": { "ceiling": "vault" }
+          "options": { "ceiling": "vault" },
+          "when": { "east": "door" }
         },
         {
           "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 1, "rotation": 0,
@@ -34,14 +36,21 @@
           "options": { "ceiling": "roof", "facade": { "role": "facade" } }
         },
         { "kind": "door", "name": "West door", "position": [-4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
-        { "kind": "door", "name": "East door", "position": [4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true },
+        { "kind": "door", "name": "East door", "position": [4, 0, 0], "yaw": 1.5707963267948966, "style": { "role": "door" }, "auto": true, "when": { "east": "door" } },
         { "kind": "light", "position": [-3.47, 2.3, 2.5], "yaw": 1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
         { "kind": "light", "position": [3.47, 2.3, -2.5], "yaw": -1.5707963267948966, "fixture": "wall", "color": "#ffd9a0", "intensity": 1.1, "range": 9 },
         { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
         { "kind": "block", "name": "Guard stone", "position": [2.3, 0, 3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
         { "kind": "block", "name": "Guard stone", "position": [-2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
         { "kind": "block", "name": "Guard stone", "position": [2.3, 0, -3.3], "size": [0.4, 0.7, 0.4], "material": { "role": "stone" } },
-        { "kind": "light", "position": [0, 7.3, 0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 }
+        { "kind": "light", "position": [0, 7.3, 0], "fixture": "ceiling", "color": "#fff1d6", "intensity": 1, "range": 10 },
+        {
+          "kind": "tile", "tile": "core.room", "x": 0, "y": 0, "z": 0, "rotation": 0,
+          "edges": { "0,0,0:N": "arch_segmental", "0,0,0:S": "arch_segmental", "0,0,0:E": "wall", "0,0,0:W": "door" },
+          "surfaces": { "floor": { "role": "paving" }, "walls": { "role": "stone" }, "solids": { "role": "stone" }, "trim": { "role": "trim" } },
+          "options": { "ceiling": "vault" },
+          "when": { "east": "wall" }
+        }
       ],
       "markers": [{ "name": "passage_doors", "kind": "doorPair", "parts": [2, 3] }]
     },

@@ -381,6 +381,7 @@ function gothicTiles(): TileDefinition[] {
       ],
     },
     clockTower(),
+    clockTower(true),
   ];
 }
 
@@ -426,6 +427,59 @@ function clockTowerStair(): Box[] {
   return out;
 }
 
+/** The floors of the Clock Tower with floors (gothic.clock_tower_floors): its north-west landings, a building's 4 m levels. */
+export const CLOCK_TOWER_GALLERIES = [4, 8] as const;
+/** The perch of the Clock Tower with floors: a quarter metre over the plain tower's, so the stair under it keeps 3.7 m. */
+export const CLOCK_TOWER_FLOORS_PERCH = 17.75;
+
+/**
+ * Steps in each of the Clock Tower with floors' flights, in order from its door: south, east, north (to the first
+ * floor's landing), then west, south, east, north a turn (to the second floor's, then the third's), the last turn,
+ * and the flight up the west wall to the perch.
+ */
+export const CLOCK_TOWER_FLOORS_FLIGHTS = [4, 4, 5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4, 5] as const;
+
+/**
+ * The Clock Tower with floors' stair (St. John's step 10: the tower stands in a hall's end and its stair is the
+ * hall's own, owner 2026-11-22). In at the door in the south wall's west end (2.8 m: a narrower one leaves the
+ * navmesh no way past the first step); the stair winds the other way from the plain tower's: east along the south
+ * wall, north up the east, west along the north to the north-west corner's landing at 4 m, level with a building's
+ * first floor (the hall's way in; a step there split the navmesh); then a turn of four 3-step flights to the same
+ * corner at 8 m (the second floor's), one more to 12 m, and the last turn up the west wall onto the perch along the
+ * south wall (the south-west corner to the core's east face, as the plain tower's) at 17.75 m, a quarter metre over
+ * the plain tower's so 3.7 m stays over the last south flight (its sills 0.75 m). Treads 0.48 to 0.8 m (the
+ * navmesh's cells are 0.2 m: shorter treads read as too steep), corners one step each, a turn 4 m: 3.7 m over every
+ * step. The first turn stands on solid masonry down to the floor (stooping room under it split the navmesh's narrow
+ * runs into pieces too small to keep); the turns over it are 0.3 m slabs.
+ */
+function clockTowerFloorsStair(): Box[] {
+  const H = 3.4;
+  const C = CLOCK_TOWER_CORE;
+  const out: Box[] = [];
+  let k = 0;
+  const slab = (x0: number, z0: number, x1: number, z1: number) => {
+    const top = ++k * 0.25;
+    out.push(b(x0, top <= 4 ? 0 : top - 0.3, z0, x1, top, z1));
+  };
+  CLOCK_TOWER_FLOORS_FLIGHTS.forEach((n, q) => {
+    const run = (2 * C) / n;
+    // South (east along it), east (north up it), north (west), west (south): the first flight is the south one.
+    for (let j = 0; j < n; j++) {
+      const a = -C + j * run;
+      if (q % 4 === 0) slab(a, -H, a + run, -C);
+      else if (q % 4 === 1) slab(C, a, H, a + run);
+      else if (q % 4 === 2) slab(-a - run, C, -a, H);
+      else slab(-H, -a - run, -C, -a);
+    }
+    if (q === CLOCK_TOWER_FLOORS_FLIGHTS.length - 1) slab(-H, -H, C, -C);
+    else if (q % 4 === 0) slab(C, -H, H, -C);
+    else if (q % 4 === 1) slab(C, C, H, H);
+    else if (q % 4 === 2) slab(-H, C, -C, H);
+    else slab(-H, -H, -C, -C);
+  });
+  return out;
+}
+
 /**
  * Clock Tower (St. John's step 6, docs/map-briefs/st_johns/PLAN_2026-11-12.md: "a climbable square tower with a belfry,
  * four clock faces, crenellated top"): 1 cell, 6 levels. A door 2.4 m wide in the south wall; a stair winding round a solid
@@ -436,12 +490,12 @@ function clockTowerStair(): Box[] {
  * crenellated parapet and corner pinnacles to 24 m. Lancet slits light the stair. Walls, trim, stair and floors
  * take the placement's surfaces (a set piece's stone, trim and paving), so it dresses as the hall it stands by.
  */
-function clockTower(): TileDefinition {
-  const TOP = 17.5;
-  const SILL = TOP + 1.0;
+function clockTower(floors = false): TileDefinition {
+  const TOP = floors ? CLOCK_TOWER_FLOORS_PERCH : 17.5;
+  const SILL = 18.5;
   const HEAD = 20.9;
   const ROOF = 21.5;
-  const steps = clockTowerStair();
+  const steps = floors ? clockTowerFloorsStair() : clockTowerStair();
   // Paired arched openings in each belfry wall (with the mullion between them), lancets lighting the stair.
   const belfry: Opening[] = [
     [-1.9, -0.45, SILL, HEAD],
@@ -449,11 +503,18 @@ function clockTower(): TileDefinition {
   ];
   const lancet = (y: number): Opening => win(0, 0.45, y, y + 1.4);
   const shaft = (axis: 'x' | 'z', at: number, a0: number, a1: number, open: Opening[]) => wall(axis, at, a0, a1, open, 0, ROOF, 0.5);
+  // With floors (a hall's end on its north and west sides to 12 m, a building's side on the east to 8 m): the hall's
+  // way in at the north-west corner on each landing (the corner itself open, from the north wall's west end round
+  // to the hall's width on the west wall); the door at the south wall's west end, 2.8 m; lancets only where they
+  // look out.
+  const hall = (y: number): Opening[] => [[-3.9, -1.2, y, y + 2.6]];
   const out: Box[] = [
-    ...shaft('x', -3.65, -3.9, 3.9, [[-1.2, 1.2, 0, 2.9], lancet(6.0), lancet(11.0), ...belfry]),
-    ...shaft('x', 3.65, -3.9, 3.9, [lancet(7.25), lancet(12.25), ...belfry]),
-    ...shaft('z', -3.65, -3.4, 3.4, [lancet(9.0), ...belfry]),
-    ...shaft('z', 3.65, -3.4, 3.4, [lancet(4.0), lancet(10.5), ...belfry]),
+    ...shaft('x', -3.65, -3.9, 3.9, [floors ? [-3.4, -0.6, 0, 2.9] : [-1.2, 1.2, 0, 2.9], lancet(6.0), lancet(11.0), ...belfry]),
+    ...shaft('x', 3.65, -3.9, 3.9, floors ? [...CLOCK_TOWER_GALLERIES.flatMap(hall), lancet(12.25), ...belfry] : [lancet(7.25), lancet(12.25), ...belfry]),
+    ...shaft('z', -3.65, -3.4, 3.4, floors ? [...CLOCK_TOWER_GALLERIES.map((y): Opening => [2.8, 3.4, y, y + 2.6]), ...belfry] : [lancet(9.0), ...belfry]),
+    ...shaft('z', 3.65, -3.4, 3.4, floors ? [lancet(10.5), ...belfry] : [lancet(4.0), lancet(10.5), ...belfry]),
+    // Thresholds over the walls' footing in the hall's way in, out to the cell's edge (the hall's floor meets them).
+    ...(floors ? CLOCK_TOWER_GALLERIES.flatMap((y) => [b(-4, y - 0.3, 3.4, -1.2, y, 4), b(-4, y - 0.3, 2.8, -3.4, y, 3.4)]) : []),
     // The stair round its core; the core's top is part of the belfry floor.
     ...steps,
     b(-CLOCK_TOWER_CORE, 0, -CLOCK_TOWER_CORE, CLOCK_TOWER_CORE, TOP, CLOCK_TOWER_CORE),
@@ -486,7 +547,8 @@ function clockTower(): TileDefinition {
     out.push(trim(-out0, y0, -3.9, -3.9, y1, 3.9), trim(3.9, y0, -3.9, out0, y1, 3.9));
   };
   // The plinth, left open at the door.
-  out.push(trim(-4.0, 0, -4.0, -1.2, 0.6, -3.9), trim(1.2, 0, -4.0, 4.0, 0.6, -3.9), trim(-4.0, 0, 3.9, 4.0, 0.6, 4.0));
+  const [d0, d1] = floors ? [-3.4, -1.2] : [-1.2, 1.2];
+  out.push(trim(-4.0, 0, -4.0, d0, 0.6, -3.9), trim(d1, 0, -4.0, 4.0, 0.6, -3.9), trim(-4.0, 0, 3.9, 4.0, 0.6, 4.0));
   out.push(trim(-4.0, 0, -3.9, -3.9, 0.6, 3.9), trim(3.9, 0, -3.9, 4.0, 0.6, 3.9));
   band(13.6, 13.8, 4.0);
   band(16.8, 17.0, 4.0);
@@ -504,6 +566,20 @@ function clockTower(): TileDefinition {
       piece(u0 - 0.12, u1 + 0.12, HEAD, HEAD + 0.12, s > 0 ? 0.25 : -0.35, s > 0 ? 0.35 : -0.25);
       piece(u0 - 0.06, u1 + 0.06, SILL - 0.1, SILL, s > 0 ? 0.25 : -0.33, s > 0 ? 0.33 : -0.25);
     }
+  }
+  if (floors) {
+    return {
+      id: 'gothic.clock_tower_floors',
+      category: 'Vertical',
+      displayName: 'Clock Tower (with floors)',
+      blurb: "The Clock Tower standing in a hall's end: its stair lands at the north-west corner at 4 and 8 m (a building's floors), the hall's way in there; the door at the south wall's west end; the perch along the south wall at 17.75 m",
+      cells: footprint(1, 1, 6),
+      floors: [0],
+      ports: [{ side: 'S', level: 0 }, { side: 'N', level: 1 }, { side: 'W', level: 1 }, { side: 'N', level: 2 }, { side: 'W', level: 2 }],
+      open: true,
+      edgeDefault: 'open',
+      solids: out,
+    };
   }
   return {
     id: 'gothic.clock_tower',

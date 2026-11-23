@@ -188,6 +188,13 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
   // The clock tower: in at its door and up the stair round its core to the belfry gallery along the south wall.
   'setpiece.clock_tower': {
     chains: [[[0, 0, -7], [0, 0, -2.2], [-2, 17.5, -2.2]]],
+    // (Its Stair "Hall floors" is walked in its place below: "the clock tower with floors".)
+    options: ['faces'],
+  },
+  // St. John's step 10: a dorm hall's end beside a tower. Along the hall from the next bay's mouth to the end; into
+  // the end room at one door, across it past the desks and out at the other.
+  'setpiece.dorm_bay_end': {
+    chains: [[[7, 0, 3.6], [0, 0, 2.7], [-2.6, 0, 2.7]], [[0, 0, 2.7], [-2, 0, -0.3], [0, 0, -1.3], [2, 0, -0.3], [0, 0, 2.7]]],
   },
   'setpiece.corner_turret_round': {
     // Round it on the ground (it is solid: nobody gets in).
@@ -414,9 +421,9 @@ describe("a three-floor mess hall with its clock tower (Welles Hall's shape)", (
     const map = mapOf([{ id: 'tower', piece: 'setpiece.clock_tower', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
     // Standing on the gallery (the stair's last landing, along the south wall), the opening's sill stops a walk south.
-    const s = walk(physics, { x: -1.2, y: 17.6, z: -2.2 }, Math.PI, 60);
+    const s = walk(physics, { x: -1.2, y: 17.85, z: -2.2 }, Math.PI, 60);
     expect(s.pos.z).toBeGreaterThan(-3.5);
-    expect(s.pos.y).toBeGreaterThan(17.3);
+    expect(s.pos.y).toBeGreaterThan(17.5);
     // Every box stays inside its cell and under 24 m.
     for (const b of buildMapGeometry(map).filter((b) => b.sourceId?.startsWith('sp_tower'))) {
       expect(b.min[0]).toBeGreaterThanOrEqual(-4.001);
@@ -438,7 +445,7 @@ describe('the clock tower has room to stand in (owner, 2026-11-19: the first bui
     for (const x of [-1, 0, 1, 2.6]) expect(over(x, 0, -2.6), `ground at x ${x}`).toBeGreaterThanOrEqual(3.7 - 1e-6);
     // Every step and landing (the stair's slabs: 0.3 m thick inside the walls, off the core): over its middle and corners.
     const treads = boxes.filter((b) => Math.abs(b.max[1] - b.min[1] - 0.3) < 1e-6 && b.max[0] <= 3.41 && b.min[0] >= -3.41 && b.max[2] <= 3.41 && b.min[2] >= -3.41);
-    expect(treads.length).toBe(70);
+    expect(treads.length).toBe(71);
     for (const t of treads) {
       if (t.max[1] >= 17.5 - 1e-6) continue; // the belfry's floor: below
       for (const [fx, fz] of [[0.5, 0.5], [0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]]) {
@@ -452,6 +459,98 @@ describe('the clock tower has room to stand in (owner, 2026-11-19: the first bui
     // A player stands up all the way round: from the door, every tread's middle has standing room for the capsule.
     const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
     for (const t of treads) expect(physics.headroom({ x: (t.min[0] + t.max[0]) / 2, y: t.max[1] + 0.3, z: (t.min[2] + t.max[2]) / 2 }, PLAYER.height), `standing on the step at ${t.max[1]} m`).toBe(true);
+  });
+});
+
+/**
+ * Welles's west end after St. John's step 10 (owner, 2026-11-22: the clock tower moved one cell south onto the west
+ * stair's lobby, its winding stair the hall's own): the Clock Tower with floors at (1, 1) turned half round (its door
+ * north on the court), the Carriageway at (0, 1) on its west side, a Dorm Bay End at (1, 0) on every floor (the
+ * ground's with its door out west), Dorm Bays east of them on the upper floors, a Refectory Bay on the ground; the
+ * Carriageway's east side walled (the tower's stair passes there).
+ */
+function wellesWest(): SetPiecePlacement[] {
+  const at = (id: string, piece: string, x: number, y: number, z: number, rotation: Rotation = 0, options?: Record<string, string>): SetPiecePlacement => ({ id, piece, x, y, z, rotation, mirror: false, pack: 'collegiate', ...(options ? { overrides: { options } } : {}) });
+  return [
+    at('tower', 'setpiece.clock_tower', 1, 1, 0, 2, { stair: 'floors' }),
+    at('bridge', 'setpiece.carriageway_1', 0, 1, 0, 0, { east: 'wall' }),
+    at('end_0', 'setpiece.dorm_bay_end', 1, 0, 0, 0, { roomDoors: 'slim', end: 'door' }),
+    at('end_1', 'setpiece.dorm_bay_end', 1, 0, 1, 0, { roomDoors: 'slim' }),
+    at('end_2', 'setpiece.dorm_bay_end', 1, 0, 2, 0, { roomDoors: 'slim' }),
+    at('mess', 'setpiece.refectory_bay', 2, 0, 0),
+    at('dorm_1', 'setpiece.dorm_bay', 2, 0, 1, 0, { roomDoors: 'slim' }),
+    at('dorm_2', 'setpiece.dorm_bay', 2, 0, 2, 0, { roomDoors: 'slim' }),
+    at('dorm_1b', 'setpiece.dorm_bay', 3, 0, 1, 0, { roomDoors: 'slim' }),
+    at('dorm_2b', 'setpiece.dorm_bay', 3, 0, 2, 0, { roomDoors: 'slim' }),
+  ];
+}
+
+describe('the clock tower with floors (St. John\'s step 10: one stair for the tower and the hall)', () => {
+  const alone = () => mapOf([{ id: 'tower', piece: 'setpiece.clock_tower', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { stair: 'floors' } } }]);
+
+  it("a room's height (3.7 m) inside the door and over every step and landing; the landings at 4 and 8 m; the perch 3.75 m under the roof; inside its cell", () => {
+    const boxes = buildMapGeometry(alone()).filter((b) => b.sourceId?.startsWith('sp_tower'));
+    const over = (x: number, y: number, z: number) => Math.min(...boxes.filter((b) => b.min[0] < x && b.max[0] > x && b.min[2] < z && b.max[2] > z && b.min[1] >= y - 1e-6).map((b) => b.min[1])) - y;
+    for (const x of [-3, -2.3, -1.6]) expect(over(x, 0, -2.6), `inside the door at x ${x}`).toBeGreaterThanOrEqual(3.7 - 1e-6);
+    // Every step and landing: the first turn's stand on solid masonry from the floor, the rest are 0.3 m slabs.
+    const treads = boxes.filter((b) => (Math.abs(b.max[1] - b.min[1] - 0.3) < 1e-6 || (b.min[1] === 0 && b.max[1] <= 4)) && b.max[0] <= 3.41 && b.min[0] >= -3.41 && b.max[2] <= 3.41 && b.min[2] >= -3.41 && !(b.max[0] - b.min[0] > 7));
+    expect(treads.length).toBe(71);
+    // The north-west corner's landing at each floor, where the hall comes in.
+    for (const g of [4, 8]) expect(treads.some((t) => Math.abs(t.max[1] - g) < 1e-6 && Math.abs(t.min[0] + 3.4) < 1e-6 && Math.abs(t.max[2] - 3.4) < 1e-6), `the landing at ${g} m`).toBe(true);
+    // No tread shorter than 0.48 m along its flight (the navmesh's 0.2 m cells read shorter ones as too steep).
+    for (const t of treads) expect(Math.min(t.max[0] - t.min[0], t.max[2] - t.min[2])).toBeGreaterThanOrEqual(0.48 - 1e-6);
+    for (const t of treads) {
+      if (t.max[1] >= 17.75 - 1e-6) continue; // the perch: below
+      for (const [fx, fz] of [[0.5, 0.5], [0.1, 0.1], [0.9, 0.1], [0.1, 0.9], [0.9, 0.9]]) {
+        const x = t.min[0] + (t.max[0] - t.min[0]) * fx!;
+        const z = t.min[2] + (t.max[2] - t.min[2]) * fz!;
+        expect(over(x, t.max[1], z), `over the step at ${t.max[1]} m (${x.toFixed(2)}, ${z.toFixed(2)})`).toBeGreaterThanOrEqual(3.7 - 1e-6);
+      }
+    }
+    expect(over(-1.2, 17.75, -2.3)).toBeGreaterThanOrEqual(3.75 - 1e-6);
+    for (const b of boxes) {
+      expect(Math.min(b.min[0], b.min[2])).toBeGreaterThanOrEqual(-4.001);
+      expect(Math.max(b.max[0], b.max[2])).toBeLessThanOrEqual(4.001);
+    }
+  });
+
+  it('bots climb from the door to the top landing and the perch; players climb the first flight; the perch sill stops a walk', { timeout: 120_000 }, () => {
+    const map = alone();
+    const nav = navOf(map);
+    expect(miss(nav, v([-2.3, 0, -7]), v([-2.3, 0, -2.4])), 'in at the door').toBeLessThan(1.2);
+    // (The 4 and 8 m landings open onto the hall's end, so alone they are cut short by the drop: walked in Welles's west end below.)
+    expect(miss(nav, v([-2.3, 0, -2.4]), v([-2.3, 12, 2.3])), 'to the landing at 12 m').toBeLessThan(1.2);
+    expect(miss(nav, v([-2.3, 0, -2.4]), v([-1.2, 17.75, -2.3])), 'to the perch').toBeLessThan(1.2);
+    nav.destroy();
+    const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+    const up = walk(physics, { x: -2.3, y: 0.3, z: -2.3 }, Math.PI / 2, 100);
+    expect(up.pos.y).toBeGreaterThan(0.9);
+    const s = walk(physics, { x: -1.2, y: 17.85, z: -2.2 }, Math.PI, 60);
+    expect(s.pos.z).toBeGreaterThan(-3.5);
+    expect(s.pos.y).toBeGreaterThan(17.5);
+  });
+
+  it("Welles's west end: the hall on both upper floors through the tower's corner to its stair, the perch; the hall's end and its rooms", { timeout: 240_000 }, () => {
+    const map = mapOf(wellesWest());
+    const nav = navOf(map);
+    // The tower (centre 8, 8; turned half round: its door north at z 11.65, x 9.2 to 11.4).
+    expect(miss(nav, v([10.3, 0, 14.5]), v([10.3, 0, 10.2])), 'in at the court door').toBeLessThan(1.2);
+    for (const y of [4, 8]) {
+      expect(miss(nav, v([10.3, 0, 10.2]), v([10.3, y, 5.7])), `up to the landing at ${y} m`).toBeLessThan(1.2);
+      // The hall (the Dorm Bays' middle, z 4) to the tower's landing through its corner, and on along the hall.
+      expect(miss(nav, v([20, y, 4]), v([10.3, y, 5.7])), `the hall at ${y} m to the landing`).toBeLessThan(1.2);
+      expect(miss(nav, v([10.3, y, 5.7]), v([26, y, 4])), `the landing at ${y} m to the hall's east`).toBeLessThan(1.2);
+      // The hall's end: along it and into its room at both doors.
+      expect(miss(nav, v([20, y, 4]), v([5.4, y, 2.7])), `the hall's end at ${y} m`).toBeLessThan(1.2);
+      for (const cx of [6, 10]) expect(miss(nav, v([8, y, 2.7]), v([cx, y, -1.0])), `the end room by its door at x ${cx}, ${y} m`).toBeLessThan(1.2);
+    }
+    expect(miss(nav, v([10.3, 0, 10.2]), v([8, 17.75, 10.3])), 'up to the perch').toBeLessThan(1.2);
+    // The ground floor's end: in at its door from the lane west, into its room.
+    expect(miss(nav, v([1.5, 0, 2.7]), v([8, 0, 2.7])), "in at the hall's end").toBeLessThan(1.2);
+    for (const cx of [6, 10]) expect(miss(nav, v([8, 0, 2.7]), v([cx, 0, -1.0])), `the ground end room by its door at x ${cx}`).toBeLessThan(1.2);
+    // The bridge's passage still runs through north to south (its east side walled against the tower).
+    expect(miss(nav, v([0, 0, 14]), v([0, 0, 2])), 'through the carriageway').toBeLessThan(1.2);
+    nav.destroy();
   });
 });
 
