@@ -8593,6 +8593,12 @@ async function setupLayoutFlow(browser) {
     await page.goto(`${CLIENT}/?test=1${touch ? '&touch=1' : ''}`);
     await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await page.evaluate(() => document.getElementById('nav-play').click());
+    // 900 px wide and under: the settings are a sheet along the bottom (owner, 2026-11-23), pulled up here.
+    if (opts.viewport.width <= 900) {
+      await page.waitForSelector('#setup-sheet-toggle', { state: 'attached', timeout: T(30000) });
+      await page.evaluate(() => document.getElementById('setup-sheet-toggle').click());
+      await page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top < 40, null, { timeout: T(10000) });
+    }
     await page.waitForSelector('#setup-essentials', { timeout: T(30000) });
     const essentials = await page.evaluate(() => {
       const body = document.querySelector('#match-setup .setup-body');
@@ -8770,6 +8776,12 @@ async function spectateStartFlow(browser) {
 async function customSetupFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
+  // A window this narrow shows the map grid first, the settings a sheet along the bottom (owner, 2026-11-23): pulled up.
+  const sheetUp = async () => {
+    await page.waitForSelector('#setup-sheet-toggle', { state: 'attached', timeout: T(30000) });
+    await page.evaluate(() => !document.querySelector('.screen.play.sheet-open') && document.getElementById('setup-sheet-toggle').click());
+    await page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('arcade-start').getBoundingClientRect().bottom <= innerHeight + 1 && document.getElementById('match-setup').getBoundingClientRect().top < 40, null, { timeout: T(10000) });
+  };
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(CLIENT);
   await page.evaluate(() => {
@@ -8781,6 +8793,7 @@ async function customSetupFlow(browser) {
   await page.click('#nav-play');
   // The teams are in the Match Setup tab (section 3), showing as it opens; Variants starts as a row.
   await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
+  await sheetUp();
   const closed = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#match-setup .fold-row.open')].length, tab: document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab, teams: !!document.getElementById('arcade-team-cards')?.offsetParent }));
   check(closed.rows === 0 && closed.tab === 'match' && closed.teams, `a small window starts on the Match Setup tab, the teams in it, Variants closed (${JSON.stringify(closed)})`);
   // Uneven teams: Even teams off first (on, every team changes alike).
@@ -8812,6 +8825,7 @@ async function customSetupFlow(browser) {
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
   await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
+  await sheetUp();
   const remembered = await total();
   check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);
   await page.evaluate(() => (document.getElementById('setup-saved').open = true));
