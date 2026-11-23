@@ -101,7 +101,7 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     const shared = new StandardMaterial('atlas', s);
     const other = new StandardMaterial('other', s);
     const models: Record<string, Mesh[]> = { sink: source(s, 'sink', shared), mirror: source(s, 'mirror', shared, 0.5), crate: source(s, 'crate', other) };
-    const batches = new PropBatches(s, async (p) => models[p] ?? null, 15, true, true);
+    const batches = new PropBatches(s, async (p) => models[p] ?? null, 15, true, true, true);
     const sink = placed(s, 'sink1', 4, 4);
     const mirror = placed(s, 'mirror1', 4, 4);
     mirror.position.y = 1.5;
@@ -135,7 +135,7 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
   it('each copy keeps its own level of detail: one mesh holds every level, a change rebuilds only its index list', async () => {
     const s = scene();
     const shared = new StandardMaterial('atlas', s);
-    const batches = new PropBatches(s, async () => source(s, 'tree', shared, 1, true), 15, true, true);
+    const batches = new PropBatches(s, async () => source(s, 'tree', shared, 1, true), 15, true, true, true);
     const a = placed(s, 'near', 5, 0);
     const b = placed(s, 'far', 60, 0);
     await Promise.all([batches.add('tree', a, false, null, false, false, 2), batches.add('tree', b, false, null, false, false, 2)]);
@@ -159,6 +159,22 @@ describe('merged prop batches (PropBatches with `merge`)', () => {
     expect(mesh.getTotalVertices()).toBe(96);
     expect(drawnY()).toEqual([4.5, 5.5, 59.5, 60.5]);
     expect(batches.copyState(b)).toMatchObject({ drawn: 2, drawnHere: true });
+  });
+
+  it('keeps no copy of the merged vertices in the page; levels still change through the index list', async () => {
+    const s = scene();
+    const shared = new StandardMaterial('atlas', s);
+    const batches = new PropBatches(s, async () => source(s, 'tree', shared, 1, true), 15, true, true);
+    await Promise.all([batches.add('tree', placed(s, 'a', 5, 0), false, null, false, false, 2), batches.add('tree', placed(s, 'b', 60, 0), false, null, false, false, 2)]);
+    batches.update(new Vector3(0, 0, 0));
+    const mesh = merged(s)[0]!;
+    expect(mesh.getVerticesData(VertexBuffer.PositionKind)).toBeNull();
+    expect(mesh.getTotalVertices()).toBe(96);
+    expect(mesh.getTotalIndices()).toBe(72);
+    batches.update(new Vector3(200, 0, 0));
+    // Both far: both at the lighter level, still two copies drawn.
+    expect([mesh.isEnabled(), mesh.getIndices()!.length, mesh.getTotalIndices()]).toEqual([true, 72, 72]);
+    expect(Math.max(...Array.from(mesh.getIndices()!))).toBeGreaterThanOrEqual(24);
   });
 
   it('breakable copies stay in batches; a model too heavy to merge is batched as before', async () => {

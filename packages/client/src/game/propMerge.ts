@@ -141,7 +141,9 @@ export function mergeItems(items: readonly MergeItem[]): Merged {
 
 /** The indices of the items `shown` says draw, in item order (into `out` when it is big enough; a view of it). */
 export function shownIndices(all: Uint32Array, ranges: Int32Array, shown: (item: number) => boolean, out?: Uint32Array): Uint32Array {
-  const buf = out && out.length >= all.length ? out : new Uint32Array(all.length);
+  let total = 0;
+  for (let k = 0; k < ranges.length / 2; k++) if (shown(k)) total += ranges[k * 2 + 1]!;
+  const buf = out && out.length >= total ? out : new Uint32Array(total);
   let n = 0;
   for (let k = 0; k < ranges.length / 2; k++) {
     if (!shown(k)) continue;

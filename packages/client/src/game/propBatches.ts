@@ -151,7 +151,6 @@ interface MergedMesh {
   items: { copy: Copy; level: number }[];
   indices: Uint32Array;
   ranges: Int32Array;
-  scratch: Uint32Array;
 }
 
 interface Batch {
@@ -240,6 +239,8 @@ export class PropBatches {
     private readonly shadowSets = false,
     /** Still copies merged per square and material (`?perfoff=propmerge` turns it off). */
     private readonly merge = false,
+    /** Keep the merged meshes' vertices in the page too (tests read them back; the game never does). */
+    private readonly keepMergedData = false,
   ) {}
 
   /**
@@ -415,6 +416,15 @@ export class PropBatches {
       data.indices = merged.indices;
       const mesh = new Mesh(`static_merged_${this.seq++}_${materialName(part.material)}_${cell.key}`, this.scene);
       data.applyToMesh(mesh, false);
+      // Its vertices are on the graphics card now and nothing reads them back (a rebuild starts again from the models'
+      // levels; only the index list changes): no copy kept in the page, as the shadow proxies do (St. John's: 1.1
+      // million merged vertices, about 85 MB of script heap kept otherwise).
+      if (!this.keepMergedData && mesh.geometry) {
+        mesh.geometry.clearCachedData();
+        // clearCachedData pins the index count it had (Babylon then reads it instead of the list's length), but this
+        // mesh's index list changes with its copies' levels: the count follows the list again.
+        (mesh.geometry as unknown as { _totalIndices?: number })._totalIndices = undefined;
+      }
       mesh.material = part.material;
       mesh.sideOrientation = part.sideOrientation;
       mesh.hasVertexAlpha = part.hasVertexAlpha;
@@ -423,7 +433,7 @@ export class PropBatches {
       mesh.doNotSyncBoundingInfo = true;
       // They cast through their models' static shadow batches (shadowBatches), merged into the shadow proxies.
       mesh.metadata = { propBatch: true, propMerged: true, castsNoShadow: true };
-      cell.meshes.push({ mesh, items: items.map(({ copy, level }) => ({ copy, level })), indices: merged.indices, ranges: merged.ranges, scratch: new Uint32Array(merged.indices.length) });
+      cell.meshes.push({ mesh, items: items.map(({ copy, level }) => ({ copy, level })), indices: merged.indices, ranges: merged.ranges });
     }
     this.showLevels(cell);
   }
@@ -432,9 +442,9 @@ export class PropBatches {
   private showLevels(cell: Cell): void {
     cell.levels = false;
     for (const m of cell.meshes) {
-      const sub = shownIndices(m.indices, m.ranges, (i) => m.items[i]!.copy.level === m.items[i]!.level, m.scratch);
+      const sub = shownIndices(m.indices, m.ranges, (i) => m.items[i]!.copy.level === m.items[i]!.level);
       m.mesh.setEnabled(sub.length > 0);
-      if (sub.length) m.mesh.setIndices(sub.slice(), m.mesh.getTotalVertices());
+      if (sub.length) m.mesh.setIndices(sub, m.mesh.getTotalVertices());
     }
   }
 
