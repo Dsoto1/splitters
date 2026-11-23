@@ -27,10 +27,11 @@
  * one source per shape and material (scenarioVisuals.ts instanceRigidParts); `lightready`, the clustered lights' readiness
  * checked once a render instead of for every lit draw (clusteredLights.ts); `casterlist`, the shadow list's still casters
  * sorted once and tested again only when the camera moves (atmosphere.ts); `casterbounds`, the cascades' casters' box
- * kept for the still casters (shadowBounds.ts).
+ * kept for the still casters (shadowBounds.ts); `fxlight`, the effects' sun and sky colours set on their materials only
+ * when they change (godotVfx.ts update).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight';
 
 let off: Set<string> | null = null;
 

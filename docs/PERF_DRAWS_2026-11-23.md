@@ -2,7 +2,7 @@
 
 QUEUE Features (owner, 2026-11-23: "make the game run better", step 2: fewer draw calls), lane B, branch
 `wip/draws-1123`. The goal: less CPU spent drawing a frame in big matches. Each saving has its own `?perfoff=` switch
-(game/perfSwitches.ts): `doorinst`, `lightready`, `casterlist`, `casterbounds`.
+(game/perfSwitches.ts): `doorinst`, `lightready`, `casterlist`, `casterbounds`, `fxlight`.
 
 ## Owner's M1 profile, 2026-11-23
 
@@ -79,6 +79,14 @@ between runs of one build on this box. The same build each time, before = `?perf
 4. **The cascades' casters' box** (`casterbounds`; `shadowBounds.ts`). High's cascades fit their depth range to a box round
    every caster, which Babylon worked out from every caster every frame. The still casters' part is kept (worked out again
    when the list changes and every 60 frames) and the moving casters are added each frame: the same box.
+
+5. **The effects' sun and sky set only when they change** (`fxlight`; `godotVfx.ts` `update`). Every frame, every effect
+   material made so far (playing or not) had five uniforms set: the time, the eye, the sun's direction and colour and the
+   sky's colour. Each set on a ShaderMaterial looks its name up in the material's uniform list (`_checkUniform`). In the
+   owner's profile the effects' `update` under `updateEffects` was 1.7 s of 43 (4 %), of it 0.6 s these sets (`setColor3`
+   0.23, `setVector3` 0.36, mostly `_checkUniform`). The sun's three now go to a material only when they changed since it
+   last had them (a new material gets them at once); the time and the eye still every frame. About three fifths of those
+   sets (roughly 0.35 s of 43, under 1 %); the rest of `update` is the effects' own particles and buffers.
 
 ## Before and after
 

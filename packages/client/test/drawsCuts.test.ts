@@ -9,6 +9,9 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { BoundingInfo } from '@babylonjs/core/Culling/boundingInfo';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
+import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { GodotVfx } from '../src/game/godotVfx.ts';
 import { instanceRigidParts, instancesHash, mergeRigidParts } from '../src/game/scenarioVisuals.ts';
 import { stillable } from '../src/game/shadowCache.ts';
 import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
@@ -193,5 +196,43 @@ describe('fewer draws (docs/PERF_DRAWS_2026-11-23.md)', () => {
     expect(g._scbiMax.y).toBeGreaterThan(50);
     expect(STILL_BOUNDS_FRAMES).toBeGreaterThan(0);
     expect(far instanceof Mesh).toBe(true);
+  });
+
+  it("sets the effects' sun and sky on a material only when they changed, the time and the eye every frame", () => {
+    const s = scene();
+    const fx = new GodotVfx(s);
+    const inner = fx as unknown as { materials: Map<string, ShaderMaterial>; playing: unknown[] };
+    const a = new ShaderMaterial('a', s, { vertex: 'x', fragment: 'x' }, { uniforms: ['u_time', 'u_sunDir', 'u_sunColor', 'u_ambient', 'eye'] });
+    inner.materials.set('a', a);
+    // update() does nothing with nothing playing: one stand-in effect that ends at once.
+    const sets: string[] = [];
+    for (const k of ['setColor3', 'setVector3', 'setFloat'] as const) {
+      const f = a[k].bind(a) as (n: string, v: unknown) => ShaderMaterial;
+      (a as unknown as Record<string, unknown>)[k] = (n: string, v: unknown) => (sets.push(n), f(n, v));
+    }
+    const frame = () => {
+      sets.length = 0;
+      inner.playing = [{ t: 0, age: 0, speed: 1, pieces: [], loop: false, emitters: new Map(), life: 0, level: 1, want: 1, stopAt: null, nodes: [], meshes: [], dispose: () => {} }];
+      try {
+        fx.update(16);
+      } catch {
+        // The stand-in effect may not run through; the materials were set before it.
+      }
+      return [...sets].sort();
+    };
+    expect(frame()).toEqual(['eye', 'u_ambient', 'u_sunColor', 'u_sunDir', 'u_time']);
+    expect(frame()).toEqual(['eye', 'u_time']);
+    fx.setLight(new Vector3(0.2, -1, 0.1), new Color3(1, 0.5, 0.4), new Color3(0.3, 0.3, 0.4));
+    expect(frame()).toEqual(['eye', 'u_ambient', 'u_sunColor', 'u_sunDir', 'u_time']);
+    expect(frame()).toEqual(['eye', 'u_time']);
+    // A material made later gets them at once.
+    const b = new ShaderMaterial('b', s, { vertex: 'x', fragment: 'x' }, { uniforms: ['u_sunDir'] });
+    inner.materials.set('b', b);
+    let bSun = 0;
+    const setV = b.setVector3.bind(b);
+    b.setVector3 = (n, v) => (n === 'u_sunDir' && bSun++, setV(n, v));
+    frame();
+    frame();
+    expect(bSun).toBe(1);
   });
 });
