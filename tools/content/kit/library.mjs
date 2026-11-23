@@ -270,7 +270,7 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     // the eave to the ridge, through which the room's panels and the sky showed against the roof's edge. A barge board
     // runs up each slope at the gable's face and closes it: 3 cm over the shingles, down past the gable wall's top
     // (never below the eave's soffit), its face the roof's end.
-    verge(m, dir, Z, X, s0, kx, ky, yTop, scale3(roof, 0.62), level);
+    verge(m, dir, Z, X, s0, kx, ky, yTop, scale3(roof, 0.62), level, 0.45, oh);
     if (g.timber && level < 2) {
       const stud = hex(look.stud ?? '#3a2a1e');
       const zs = zo + dir * 0.012;
@@ -302,7 +302,7 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
  * over it to `depth` under it (not below the soffit at the tip), 8 cm thick inside the end: its outer and inner faces,
  * its top and its underside (the far look: the outer face). Closes the slopes' skin where they end over a gable.
  */
-function verge(m, dir, Z, X, s0, kx, ky, yTop, colour, level, depth = 0.42) {
+function verge(m, dir, Z, X, s0, kx, ky, yTop, colour, level, depth = 0.45, oh = 0.6) {
   const zo = dir * Z;
   const zi = dir * (Z - 0.08);
   for (const s of [-1, 1]) {
@@ -318,6 +318,8 @@ function verge(m, dir, Z, X, s0, kx, ky, yTop, colour, level, depth = 0.42) {
       quadN(m, [top[i][0], top[i][1], zi], [top[i + 1][0], top[i + 1][1], zi], [top[i + 1][0], top[i + 1][1], zo], [top[i][0], top[i][1], zo], [s * 0.5, 1, 0], scale3(colour, 1.1));
       quadN(m, [bot[i][0], bot[i][1], zi], [bot[i + 1][0], bot[i + 1][1], zi], [bot[i + 1][0], bot[i + 1][1], zo], [bot[i][0], bot[i][1], zo], [-s * 0.5, -1, 0], scale3(colour, 0.7));
     }
+    // Under the flared eave, outside the wall: the end of the hollow between the flare and the soffit.
+    triN(m, [s * X, s0, zo], [s * (X - oh - 0.05), s0, zo], [s * kx, ky, zo], [0, 0, dir], colour);
     // The end at the eave's tip.
     if (level < 2) quadN(m, [top[0][0], top[0][1], zi], [top[0][0], top[0][1], zo], [bot[0][0], bot[0][1], zo], [bot[0][0], bot[0][1], zi], [s, 0, 0], scale3(colour, 0.9));
   }

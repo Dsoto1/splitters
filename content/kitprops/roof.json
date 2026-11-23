@@ -279,7 +279,7 @@
       "assetVersion": 2,
       "notes": {
         "1": "First version (St. John's step 8b; the owner's interior photo: an open timber roof on arch-braced trusses, close rafters against pale panels): one 8 m bay of a ridge roof over a hall 16 m across: brown-red shingle slopes with a flared eave 0.7 m outside the walls, the ridge 5.6 m over the eaves; underneath pale panels, twelve rafters a slope, purlins and a ridge beam, and two arch-braced trusses (wall posts on stone corbels 1.5 m down the wall, principals, a collar, curved braces, a king post). Its eaves are 1.8 m over its foot: place the foot 1.8 m under the walls' top. Variant `end` closes the gable on −z with a wall (the hall's end). Collides as nothing.",
-        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.42 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud."
+        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.45 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud."
       },
       "size": [
         17.4,
@@ -362,7 +362,7 @@
       "assetVersion": 2,
       "notes": {
         "1": "First version (St. John's step 8b; the owner's photo: the library's small stucco wing under a steep roof with a swept, kicked-out eave and a little half-timber in its gable): a ridge roof 6 m long over a wing 5 m across (6.2 m over its swept eaves), the ridge 3.5 m over the eaves, a half-timbered gable wall on +z; its −z end is open (it goes against a taller building's wall); panels inside, no trusses. Place its foot on the walls' top. Variant `plain`: a boarded gable. Collides as nothing.",
-        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.42 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud."
+        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.45 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud."
       },
       "size": [
         6.2,
@@ -475,7 +475,7 @@
         {
           "index": 0,
           "name": "shingle",
-          "seed": 41021,
+          "seed": 41041,
           "look": {
             "roof": "#6b4638",
             "trim": "#b0795a",
@@ -488,7 +488,7 @@
         {
           "index": 1,
           "name": "hall",
-          "seed": 41022,
+          "seed": 41042,
           "set": {
             "under": {
               "rise": 5.6,
@@ -512,11 +512,11 @@
       "category": "Gothic",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's Memorial Hall pass, owner 2026-11-23: \"round all four corners of the hall, with the roof following\"): a hall's hipped end over rounded corners: the −z half of a shingle pyramid whose point is a Ridge Roof Bay's ridge end at the +z face (same span, rise 5.6 m and flared eave, so the two meet in one line), its corners cones of 4.7 m radius at the eave, its end slope as steep as the sides; panels and rafters inside. 17.4 m across, 8.7 m out from the ridge's end. Its foot goes on the walls' top (a Ridge Roof Bay's foot is 1.8 m lower). Collides as nothing."
+        "1": "First version (St. John's Memorial Hall pass, owner 2026-11-23: \"round all four corners of the hall, with the roof following\"): a hall's hipped end over rounded corners: the −z half of a shingle pyramid whose point is a Ridge Roof Bay's ridge end at the +z face (same span, rise 5.6 m and flared eave, so the two meet in one line), its corners cones of 4.7 m radius at the eave, its end slope as steep as the sides; panels and rafters inside. 17.4 m across, 5.6 m high, 8.7 m out from the ridge's end. Its foot goes on the walls' top (a Ridge Roof Bay's foot is 1.8 m lower). Collides as nothing."
       },
       "size": [
         17.4,
-        5.65,
+        5.6,
         8.7
       ],
       "collide": "none",
@@ -547,7 +547,7 @@
         {
           "index": 0,
           "name": "shingle",
-          "seed": 41031,
+          "seed": 41051,
           "look": {
             "roof": "#6b4638",
             "trim": "#b0795a",
