@@ -8503,6 +8503,8 @@ async function teamKillCheck(page) {
     // Two kills this life already, on the page and in the match: one more would be the first burst.
     cs.lifeKills.set(cs.slot, 2);
   });
+  // The rounds before may have killed the teammate (a small look has less health: 85 for the small Animalia): back first.
+  await simWait(page, () => !!globalThis.__ffMate?.alive, null, T(30000));
   const shot = await sim(page, (m, me) => {
     const mate = globalThis.__ffMate;
     if (!mate?.alive) return null;
