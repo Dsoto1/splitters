@@ -149,6 +149,8 @@ if (args.match) {
     for (let e = x.firstEdge[i]; e < x.firstEdge[i + 1]; e += x.EF) {
       const et = x.edgeTypes[s.edges[e + x.o.etype]];
       if (isWeak(et)) continue;
+      // A WeakMap's entry holds its value only while its key lives: not a path on its own.
+      if (et === 'internal' && / part of key .* pair in WeakMap/.test(s.strings[s.edges[e + x.o.ename]] ?? '')) continue;
       const to = s.edges[e + x.o.eto] / x.NF;
       let r = retainers.get(to);
       if (!r) retainers.set(to, (r = []));
