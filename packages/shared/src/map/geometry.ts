@@ -1434,11 +1434,14 @@ const STREET_FACES = new Set<ResolvedEdge>(STREET_EDGE_STYLES);
  * How far a Style Pack facade's piece must stand proud of the cladding, and how tall it must be, to collide
  * (FACADE_COVER_*): a buttress, pilaster, plinth, talud, cornice or pinnacle you can stand against or hide behind
  * (owner, 2026-11-19: "same with some of the building trim"); thin dressing (courses, hood moulds, sills, corner boards,
- * the cladding itself) stays drawn only, and so does what stands over the roofline (parapets, cornices over the eaves,
- * pinnacles, merlons): the roofs bots and players reach stay as they were.
+ * the cladding itself) stays drawn only. What stands over the roofline (a parapet's coping, merlons and pinnacles, a
+ * cornice capping the wall) collides when it is FACADE_COVER_HEIGHT tall, however far it stands out (owner, 2026-11-23:
+ * a prone player on a roof walked and saw through the coping and merlons, and rounds passed through them).
  */
 export const FACADE_COVER_PROUD = 0.1;
 export const FACADE_COVER_HEIGHT = 0.25;
+/** A piece counts as roofline when it starts no more than this far under the storey's top and ends over it. */
+const FACADE_ROOFLINE_FROM = 0.12;
 
 /**
  * The boxes of every Style Pack facade (trim with its own material, drawn with the level's decor). With `cover`, the
@@ -1466,7 +1469,11 @@ function packFacadeBoxes(map: MapDocument, cells: Map<string, CellOccupant>, cov
     const add = (side: Side, u0: number, u1: number, y0: number, y1: number, v0: number, v1: number, material: string, tint: string | null = null) => {
       const b: WorldBox = { ...sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, v0, v1, id, 'trim'), surface: { material, tint } };
       out.push(b);
-      if (cover && !skin && face - v0 >= FACADE_COVER_PROUD - 1e-6 && y1 - y0 >= FACADE_COVER_HEIGHT - 1e-6 && y1 <= levelHeight + 1e-6) cover.push({ ...b, kind: 'prop' });
+      if (!cover || skin || y1 - y0 < FACADE_COVER_HEIGHT - 1e-6) return;
+      // Over the roofline (the parapet's coping, merlons and pinnacles, a cornice capping the wall) any piece that stands
+      // 25 cm tall collides, proud or not: it is what a prone player hides behind and what stops a round on the roof's edge.
+      const roofline = y1 > levelHeight + 1e-6 && y0 >= levelHeight - FACADE_ROOFLINE_FROM;
+      if (roofline || (face - v0 >= FACADE_COVER_PROUD - 1e-6 && y1 <= levelHeight + 1e-6)) cover.push({ ...b, kind: 'prop' });
     };
     const dressed = new Set<Side>();
     for (const side of SIDES) {

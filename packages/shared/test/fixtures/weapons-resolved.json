@@ -6793,7 +6793,7 @@
       0.125
      ],
      "beam": true,
-     "sound": "fire.laser"
+     "sound": "fire.laser.b"
     }
    },
    "gunplay": {

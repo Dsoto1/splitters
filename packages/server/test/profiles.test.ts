@@ -22,7 +22,7 @@ describe('profiles', () => {
   it('gives each account a unique username (whatever the case) and a region, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {} });
+    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {} });
     expect(store.update('a', { username: 'Toshi_92', region: 'na-east' })).toMatchObject({ username: 'Toshi_92', region: 'na-east' });
     // Taken, whatever the case; but the owner may change its own case.
     expect(store.problem('b', 'toshi_92')).toBe('that name is taken');
@@ -194,5 +194,17 @@ describe('profiles', () => {
     // Not on the public card.
     store.update('a', { username: 'Toshi_92', optics: { 'core.rifle': 'holo' } });
     expect(store.card('toshi_92')).not.toHaveProperty('optics');
+  });
+
+  it('keeps key bindings with the account (owner, 2026-11-23: "saved with the profile")', () => {
+    const store = new ProfileStore(temp());
+    expect(store.get('a').keys).toEqual({});
+    expect(store.update('a', { keys: { leanLeft: 'KeyP,', fire: 'Mouse0,KeyI' } }).keys).toEqual({ leanLeft: 'KeyP,', fire: 'Mouse0,KeyI' });
+    // Odd entries are dropped, a non-map refused.
+    expect(store.update('a', { keys: { leanLeft: '<img>', 'bad key': 'KeyQ,' } }).keys).toEqual({});
+    expect(() => store.update('a', { keys: ['KeyQ'] })).toThrow(/key bindings/);
+    store.update('a', { username: 'Toshi_92', keys: { leanLeft: 'KeyP,' } });
+    expect(store.get('a').keys).toEqual({ leanLeft: 'KeyP,' });
+    expect(store.card('toshi_92')).not.toHaveProperty('keys');
   });
 });

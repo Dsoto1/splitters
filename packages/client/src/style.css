@@ -2042,6 +2042,28 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 .key-bind-grid .key-bind { min-width: 56px; }
 .key-bind { min-width: 120px; font: 700 14px var(--font-display); }
 .key-bind-note { color: var(--warning); }
+/* Options → Controls, the keys (frontend/controlsPage.ts): a row per action, its two keys on the right. */
+.binds-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.binds-status { min-height: 1.2em; margin: 4px 0 0; color: var(--cyan); font: 500 13px var(--font-body); }
+.bind-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(360px, 100%), 1fr)); gap: 0 28px; }
+.bind-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--text); font-size: 14px; }
+.bind-name small { display: block; color: var(--muted); font-size: 12px; }
+.bind-keys { display: flex; gap: 6px; }
+.bind-keys .key-bind { min-width: 84px; padding: 6px 8px; }
+.bind-keys .key-bind.alt.none { min-width: 44px; }
+.bind-keys .key-bind.none { color: var(--muted); font-weight: 500; }
+.bind-keys .key-bind.listening { border-color: var(--cyan); color: var(--cyan); }
+.bind-fixed { color: var(--muted); font: 700 13px var(--font-display); }
+.bind-ask { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 6px 8px; border-radius: 6px; background: rgba(255, 196, 0, 0.1); color: var(--warning); font-size: 13px; }
+.bind-ask[hidden] { display: none; }
+.bind-ask-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 520px) {
+  .bind-keys .key-bind { min-width: 60px; padding: 6px 6px; }
+}
+@media (max-width: 340px) {
+  .bind-row { grid-template-columns: 1fr; }
+  .bind-keys .key-bind { flex: 1; min-width: 0; }
+}
 /* A phone sideways (and other short windows, ~412 px tall): the home screen's buttons all fit above the footer. */
 @media (max-height: 520px) {
   #menu .screen.home { padding: 14px 24px 56px; }

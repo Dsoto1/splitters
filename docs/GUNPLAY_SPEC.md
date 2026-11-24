@@ -1252,17 +1252,16 @@ explosives and the `lmg` family → Heavy; the other specials → Pistols if a s
 pickup `category`. A new weapon, or one whose category the Weapon Manager changes, lands in its slice with no code
 change. (`slot` stays in the data: pickups' auto-switch and bots still read it.)
 
-- **Category keys** (default 1-8; Options → Controls → Weapon categories rebinds them, a key another category has
-  swaps): away from the category, the key takes out the weapon you used last in it (its first, the first time);
+- **Category keys** (default 1-8; Options → Controls → Weapons rebinds them, docs/CONTROLS.md): away from the category, the key takes out the weapon you used last in it (its first, the first time);
   again, the next one you hold in it, round to the first. Holding the key doesn't spin through it.
-- **The wheel** (hold Q, hold a controller's Y, the Weapons button on a phone): the eight slices, each with its key,
+- **The wheel** (hold Tab since 2026-11-23, was Q; hold a controller's Y, the Weapons button on a phone): the eight slices, each with its key,
   the icon of its last pick and how many you hold; empty slices dimmed and not pickable. Pointing at a slice opens its
   weapons on an outer arc (icon and name; the middle shows the pointed one's ammo), laid out so the slice's last pick
   sits in line with the slice: a quick flick to a slice and letting go brings it back, and moving round the arc picks
   another. The mouse, the right stick and a finger point it the same way (`categoryAim`); letting go (a click, a lift)
   switches.
-- **Unchanged:** the mouse wheel steps through everything held (in category order, as on the wheel; through a scope it steps the zoom); a
-  tap of Q goes back to your last weapon; Fort Wars' builder takes keys 1-8 as its pieces.
+- **Unchanged:** the mouse wheel steps through everything held (in category order, as on the wheel; through a scope it steps the zoom); X
+  (a tap of Q until 2026-11-23) goes back to your last weapon; Fort Wars' builder takes keys 1-8 as its pieces.
 - **On the wire** nothing changed: a switch is still the weapon code in the next inputs (`PlayerInput.weapon`), sent
   until a snapshot both acknowledges an input that carried it and shows it in hand (`weaponRequest.ts`). Bots never
   used the keys or the wheel.
@@ -1563,9 +1562,9 @@ lurch. Shooting while sliding is allowed (hip fire's moving spread applies; resp
 they share (`MoveState.moveCd`, so a slide can't be chained into a dodge). The dodge-step and combat roll (the second
 step, later) are rows of it.
 
-**Peek (lean).** Held: Left / Right. Q and E already go back to your last weapon / open the weapon wheel and use, so
-the defaults are the key left of 1 (` on most layouts) for left and Left Alt for right; Options → Controls rebinds
-both (`loadLeanKeys`, `game/input.ts`). Ten ticks to lean all the way (0.17 s), back the same. The upper body rolls
+**Peek (lean).** Held: Q left, E right (owner, 2026-11-23: "Q and E need to be the peeks"; until then ` and Left Alt,
+with Q the last weapon and E use). Options → Controls rebinds both, like every key (`game/keyBindings.ts`,
+docs/CONTROLS.md); a player who had moved the old lean keys keeps them. Ten ticks to lean all the way (0.17 s), back the same. The upper body rolls
 about the hips by up to 0.3 rad (17°) and shifts 12 cm at the hips, so the eye moves about 0.33 m out standing
 (0.24 m crouched) and 3 cm down. No stamina. Not while sprinting or sliding, prone, in the air, swimming or seated.
 Never into a wall: a ray from the upright eye stops the lean 0.2 m short of anything to that side, and a wall that

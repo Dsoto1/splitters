@@ -124,8 +124,9 @@ import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, set
 import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
-import { DEFAULT_CATEGORY_KEYS, DEFAULT_LEAN_KEYS, DEFAULT_WHEEL_KEY, RESERVED_KEYS, categoryKeyAllowed, keyLabel, loadCategoryKeys, loadLeanKeys, loadMousePrefs, loadWheelKey, saveCategoryKeys, saveLeanKeys, saveMousePrefs, saveWheelKey } from '../game/input.ts';
-import { WHEEL_CATEGORIES, WHEEL_CATEGORY_LABELS } from '../game/wheelCategories.ts';
+import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
+import { isMenuKey, keyFor, keysFor } from '../game/keyBindings.ts';
+import { controlsPage } from './controlsPage.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
@@ -636,7 +637,10 @@ export class FrontEnd {
    */
   private hints(screen: ScreenId): HTMLElement[] {
     const back = () => hintButton('hint-back', glyphs('Esc', 'B', 'b'), 'Back', `Back to ${this.backTarget()} (Esc, controller B)`, () => this.back());
-    const cycle = (label: string) => hintButton('hint-cycle', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], label, `Previous / next ${label.toLowerCase()} (Q / E, controller LB / RB)`, () => this.cycle(1));
+    // (The tab keys and Filter maps' key read the bindings: Options → Controls → Menus.)
+    const prev = keyFor('menuPrev');
+    const next = keyFor('menuNext');
+    const cycle = (label: string) => hintButton('hint-cycle', [...glyphs(prev, 'LB'), ...glyphs(next, 'RB')], label, `Previous / next ${label.toLowerCase()} (${prev} / ${next}, controller LB / RB)`, () => this.cycle(1));
     const main = (label: string, title: string, act: () => void) => {
       const b = hintButton('hint-ok', glyphs('↵', 'A', 'a'), label, title, act);
       b.classList.add('main');
@@ -661,7 +665,7 @@ export class FrontEnd {
         moves.push(
           modeHint,
           only(hintButton('hint-category', glyphs('LB', 'LB').slice(1).concat(glyphs('RB', 'RB').slice(1)), 'Category', 'Previous / next category (controller LB / RB)', () => this.padPlay(PAD.rb)), 'pad'),
-          hintButton('hint-filter', glyphs('F', 'X'), 'Filters', 'Filter maps: choose which game modes to list maps for (F, controller X)', () => this.openMapFilter()),
+          hintButton('hint-filter', glyphs(keyFor('menuFilter'), 'X'), 'Filters', `Filter maps: choose which game modes to list maps for (${keyFor('menuFilter')}, controller X)`, () => this.openMapFilter()),
         );
         acts = [
           only(hintButton('hint-fav', glyphs('Y', 'Y', 'y').slice(1), 'Favourite', 'Star the focused map (controller Y)', () => this.padPlay(PAD.y)), 'pad'),
@@ -1407,7 +1411,7 @@ export class FrontEnd {
     // Filter maps: one button, a window of its own with a tick per game mode (the owner, 2026-11-11: "something I could
     // open in a larger window to check off only the game modes of maps I'm interested in seeing").
     const filterCount = el('b', { class: 'map-filter-n' });
-    const filterBtn = el('button', { type: 'button', class: 'map-filter', id: 'map-filter', title: 'Choose which game modes to list maps for (F)' }, el('span', { textContent: 'Filter maps' }), filterCount);
+    const filterBtn = el('button', { type: 'button', class: 'map-filter', id: 'map-filter', title: `Choose which game modes to list maps for (${keyFor('menuFilter')})` }, el('span', { textContent: 'Filter maps' }), filterCount);
     const drawFilter = () => {
       const n = this.browse.modes.length;
       filterBtn.classList.toggle('on', n > 0);
@@ -1965,7 +1969,7 @@ export class FrontEnd {
       { id: 'fall', label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: choice([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => this.change((x) => (x.fallDamage = v === 'map' ? undefined : v === 'on'))) },
       { id: 'lethality', label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => this.change((x) => (x.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical')))) },
       { id: 'ballistics', label: 'Ballistics', tip: "How much bullets behave like projectiles. Arcade: faster bullets that barely drop and don't pass through cover. Standard: the official default (lead and drop matter at long range). Advanced: slower bullets that drop more: lead and hold over further.", changed: !!s.ballistics, value: `${s.ballistics === 'arcade' ? 'Arcade' : 'Advanced'} ballistics`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['advanced', 'Advanced']], s.ballistics ?? 'standard', (v) => this.change((x) => (x.ballistics = v === 'standard' ? undefined : (v as 'arcade' | 'advanced')))) },
-      { id: 'emotes', label: 'Emotes & messages', tip: 'Quick messages (B, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team\'s bots), the dance emote (N). Pings (T) always work.', changed: s.emotes === false, value: 'No emotes', control: choice([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => this.change((x) => (x.emotes = v === 'on'))) },
+      { id: 'emotes', label: 'Emotes & messages', tip: `Quick messages (${keyFor('quickMessage')}, then 1-7; 1 "Follow me!" and 7 "Hold here!" also order your team's bots), the dance emote (${keyFor('dance')}). Pings (${keyFor('ping')}) always work.`, changed: s.emotes === false, value: 'No emotes', control: choice([['on', 'On'], ['off', 'Off']], s.emotes === false ? 'off' : 'on', (v) => this.change((x) => (x.emotes = v === 'on'))) },
     ];
     const restricted = s.spears ? 'Spears only' : s.discs ? 'Discs only' : null;
     // The weapon set: the setup's, else the map's default (Disc Arena and spears or discs only play none).
@@ -1980,7 +1984,7 @@ export class FrontEnd {
       { id: 'drops', label: 'Drop weapon on death', tip: "A fallen player's or bot's primary (the gun in hand, else their best one; never the starting pistol or knife) lies at the body for 30 s with the ammo it had left. Walk over it to take it, or its ammo if you have one. The rest of what they carried is recycled.", changed: s.dropWeapons === false && !restricted && s.mode !== 'core.discs', value: 'No weapon drops', control: choice([['on', 'On'], ['off', 'Off']], s.dropWeapons === false ? 'off' : 'on', (v) => this.change((x) => (x.dropWeapons = v === 'off' ? false : undefined)), 'arcade-drops'), disabled: restricted ? `${restricted}: no weapon drops.` : s.mode === 'core.discs' ? `Nothing drops in ${MODE_LABEL[s.mode]}.` : null },
       // Dual wielding: hidden until play reads the rule (shared AKIMBO_READY; step 2 of docs/GUNPLAY_SPEC.md "Akimbo / Dual Wield").
       ...(AKIMBO_READY ? [{ id: 'akimbo', label: 'Dual wielding', tip: 'Pick up a second of the same small gun to hold one in each hand.', changed: s.akimbo === false && !restricted && s.mode !== 'core.discs', value: 'No dual wielding', control: choice([['on', 'On'], ['off', 'Off']], s.akimbo === false ? 'off' : 'on', (v) => this.change((x) => (x.akimbo = v === 'off' ? false : undefined)), 'arcade-akimbo'), disabled: restricted ? `${restricted}: one weapon each.` : s.mode === 'core.discs' ? `No guns in ${MODE_LABEL[s.mode]}.` : null }] : []),
-      { id: 'classes', label: 'Classes', tip: 'Everyone picks one of nine classes (L or , in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (G: sentry that heals and restocks), Medic (medi-beam, G: overcharge), Marksman and Shade (G: cloak, backstabs). Limits cap how many on a team play the same class.', changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
+      { id: 'classes', label: 'Classes', tip: `Everyone picks one of nine classes (${keysFor('classMenu')} in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (${keyFor('throw')}: sentry that heals and restocks), Medic (medi-beam, ${keyFor('throw')}: overcharge), Marksman and Shade (${keyFor('throw')}: cloak, backstabs). Limits cap how many on a team play the same class.`, changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || (raceTrack(map)?.ambient ?? 0) > 0 ? null : 'This map has no vehicles.' },
     ];
     const botRules: typeof extras = [
@@ -2181,7 +2185,7 @@ export class FrontEnd {
     // Spectate: the same match with you watching (a bot plays your place); J joins the game.
     const nobody = players <= 1 ? 'Add bots first: there would be nobody to watch.' : playlist ? 'Playlists are played, not watched: pick "Just this map" to spectate.' : null;
     const spectate = el('button', { type: 'button', class: 'go spectate', id: 'arcade-spectate' }, el('span', { textContent: 'Spectate' }));
-    spectate.dataset.tip = `Start the match watching it: you follow players or fly a free camera while ${online ? 'friends and bots play' : 'the bots go at it'} (a bot takes your place). Press J to join the game.`;
+    spectate.dataset.tip = `Start the match watching it: you follow players or fly a free camera while ${online ? 'friends and bots play' : 'the bots go at it'} (a bot takes your place). Press ${keyFor('joinGame')} to join the game.`;
     inert(spectate, nobody);
     spectate.addEventListener('click', () => !nobody && this.start({ spectate: true }));
     const start = el('button', { type: 'button', class: 'primary go', id: 'arcade-start', title: online ? `Start the match and host it online: ${listed ? 'listed in the game browser, and ' : ''}friends join with a code, taking bots' places (Enter)` : 'Start the match offline: you and the bots (Enter)' }, glyph(GLYPHS.play, 'glyph solid'), el('span', { textContent: 'Start match' }));
@@ -2777,7 +2781,7 @@ export class FrontEnd {
         return el('span', { title: getWeapon(w).displayName }, ...(icon ? [icon] : []), getWeapon(w).displayName);
       }),
       ...(kitSet.randomGun ? [el('span', { title: `A random main gun of the ${kitSet.name} set, a new one each life` }, '＋ A random gun each life')] : []),
-      el('span', { title: `${grenade} (G)` }, `● ${grenades.length > 3 ? 'A grenade of the set each life' : grenade}`),
+      el('span', { title: `${grenade} (${keyFor('throw')})` }, `● ${grenades.length > 3 ? 'A grenade of the set each life' : grenade}`),
     );
     // Character stats (shown while the match setup plays with them): each against everyone's range.
     const stats = this.setup.stats === false ? null : statBars(id, this.setup.sizes !== false);
@@ -3495,38 +3499,18 @@ export class FrontEnd {
     const relayPass = el('input', { type: 'password', value: relay?.pass ?? '', placeholder: 'password', autocomplete: 'off' });
     const relayChanged = () => saveRelay({ url: relayUrl.value, user: relayUser.value.trim(), pass: relayPass.value });
     for (const f of [relayUrl, relayUser, relayPass]) f.addEventListener('change', relayChanged);
-    const bindings: [string, string][] = [
-      ['Move', 'WASD'],
-      ['Jump (stands you up)', 'Space'],
-      ['Sprint (uses stamina)', 'Shift'],
-      ['Crouch / prone (toggle)', 'C / Z'],
-      ['Slide (crouch while sprinting; uses stamina)', 'Shift, then C'],
-      ['Lean left / right (peek; hold)', `${keyLabel(loadLeanKeys().left)} / ${keyLabel(loadLeanKeys().right)}`],
-      ['Fire', 'Left mouse · F'],
-      ['Aim down sights / scope (wheel: scope zoom)', 'Right mouse · X'],
-      ['Look (touchpad / keyboard)', 'Arrow keys'],
-      ['Second trigger (alt fire)', 'Middle mouse · V'],
-      ['Throw grenade or mine', 'Hold G to aim, let go to throw'],
-      ['Quick melee (punch; kick on the move or after a punch)', 'Side mouse button · Y'],
-      ['Hold breath (scoped)', 'Shift'],
-      ['Reload', 'R'],
-      ['Fire mode (Battle Rifle: single or 3-round burst)', 'U'],
-      ['Use · get in or out of a vehicle', 'E'],
-      ['Third person · in a vehicle: cockpit or chase camera', 'H'],
-      ['Weapons by category (again: the next in it) · next / previous · last (Q tap)', `${keyLabel(loadCategoryKeys()[0]!)}–${keyLabel(loadCategoryKeys()[7]!)} · Wheel · Q`],
-      ['Scores', 'Tab'],
-      ['Fullscreen', 'F11 · Alt+Enter'],
-      ['Controller: move / look', 'Left stick / right stick'],
-      ['Controller: fire / aim', 'RT / LT'],
-      ['Controller: jump / crouch', 'A / B'],
-      ['Controller: reload / next weapon', 'X / Y'],
-      ['Controller: weapon wheel (right stick points, let go to switch)', 'Hold Y'],
-      ['Controller: use / throw', 'RB / hold LB'],
-      ['Controller: sprint / ping', 'L3 / D-pad up'],
-      ['Controller: third person / vehicle camera', 'R3'],
+    // A controller's buttons (fixed: game/input.ts pollPad). Every keyboard and mouse action is on the keys page below.
+    const padRows: [string, string][] = [
+      ['Move / look', 'Left stick / right stick'],
+      ['Fire / aim', 'RT / LT'],
+      ['Jump / crouch', 'A / B'],
+      ['Reload / next weapon', 'X / Y'],
+      ['Weapon wheel (right stick points, let go to switch)', 'Hold Y'],
+      ['Use / throw', 'RB / hold LB'],
+      ['Sprint / ping', 'L3 / D-pad up'],
+      ['Third person / vehicle camera', 'R3'],
     ];
     const bindingList = (rows: [string, string][]) => el('div', { class: 'controls' }, ...rows.map(([a, k]) => el('div', {}, el('span', { textContent: a }), kbd(k))));
-    const pad = 'Controller: ';
     // Phones and tablets (game/touchControls.ts).
     const touchList = bindingList([
       ['Move (push past the rim to sprint)', touchLayout().leftHanded ? 'Right pad' : 'Left pad'],
@@ -3538,104 +3522,7 @@ export class FrontEnd {
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
     ]);
-    const keyboard = bindingList(bindings.filter(([a]) => !a.startsWith(pad)));
-    const controller = bindingList(bindings.filter(([a]) => a.startsWith(pad)).map(([a, k]) => [a.slice(pad.length).replace(/^./, (c) => c.toUpperCase()), k]));
-    // Crosshair styles and colours (reference board: crosshair styles).
-    // The weapon wheel's key: press the button, then the key (Esc keeps the old one).
-    const wheelKey = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadWheelKey()) });
-    const wheelNote = el('small', { class: 'key-bind-note' });
-    wheelKey.addEventListener('click', () => {
-      wheelKey.textContent = 'Press a key…';
-      wheelNote.textContent = '';
-      const take = (e: KeyboardEvent) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        window.removeEventListener('keydown', take, true);
-        if (e.code !== 'Escape') {
-          const lean = loadLeanKeys();
-          if (RESERVED_KEYS.has(e.code) || e.code === lean.left || e.code === lean.right || loadCategoryKeys().includes(e.code)) wheelNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
-          else saveWheelKey(e.code);
-        }
-        wheelKey.textContent = keyLabel(loadWheelKey());
-      };
-      window.addEventListener('keydown', take, true);
-    });
-    const wheelReset = el('button', { type: 'button', class: 'link', textContent: 'Default (Q)' });
-    wheelReset.addEventListener('click', () => {
-      saveWheelKey(DEFAULT_WHEEL_KEY);
-      wheelKey.textContent = keyLabel(DEFAULT_WHEEL_KEY);
-      wheelNote.textContent = '';
-    });
-    // The lean (peek) keys: press the button, then the key (Esc keeps the old one). Not a key that does something else.
-    const leanNote = el('small', { class: 'key-bind-note' });
-    const leanButton = (side: 'left' | 'right') => {
-      const b = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadLeanKeys()[side]) });
-      b.dataset.lean = side;
-      b.addEventListener('click', () => {
-        b.textContent = 'Press a key…';
-        leanNote.textContent = '';
-        const take = (e: KeyboardEvent) => {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          window.removeEventListener('keydown', take, true);
-          const keys = loadLeanKeys();
-          const other = side === 'left' ? keys.right : keys.left;
-          if (e.code !== 'Escape') {
-            if (RESERVED_KEYS.has(e.code) || e.code === loadWheelKey() || e.code === other || loadCategoryKeys().includes(e.code)) leanNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
-            else saveLeanKeys({ ...keys, [side]: e.code });
-          }
-          b.textContent = keyLabel(loadLeanKeys()[side]);
-        };
-        window.addEventListener('keydown', take, true);
-      });
-      return b;
-    };
-    const leanLeft = leanButton('left');
-    const leanRight = leanButton('right');
-    const leanReset = el('button', { type: 'button', class: 'link', textContent: `Default (${keyLabel(DEFAULT_LEAN_KEYS.left)} / ${keyLabel(DEFAULT_LEAN_KEYS.right)})` });
-    leanReset.addEventListener('click', () => {
-      saveLeanKeys({ ...DEFAULT_LEAN_KEYS });
-      leanLeft.textContent = keyLabel(DEFAULT_LEAN_KEYS.left);
-      leanRight.textContent = keyLabel(DEFAULT_LEAN_KEYS.right);
-      leanNote.textContent = '';
-    });
-    // The weapon category keys (1-8: the wheel's slices in order): press a category's button, then its key. A key
-    // another category has swaps the two; one with another job in play is refused (Esc keeps the old one).
-    const catNote = el('small', { class: 'key-bind-note' });
-    const catButtons = WHEEL_CATEGORIES.map((cat, i) => {
-      const b = el('button', { type: 'button', class: 'key-bind', textContent: keyLabel(loadCategoryKeys()[i]!), title: WHEEL_CATEGORY_LABELS[cat] });
-      b.dataset.category = cat;
-      b.addEventListener('click', () => {
-        b.textContent = 'Press a key…';
-        catNote.textContent = '';
-        const take = (e: KeyboardEvent) => {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          window.removeEventListener('keydown', take, true);
-          const keys = loadCategoryKeys();
-          if (e.code !== 'Escape') {
-            const lean = loadLeanKeys();
-            if (!categoryKeyAllowed(e.code) || e.code === loadWheelKey() || e.code === lean.left || e.code === lean.right) catNote.textContent = `${keyLabel(e.code)} already does something else in play.`;
-            else {
-              const other = keys.indexOf(e.code);
-              if (other >= 0) keys[other] = keys[i]!;
-              keys[i] = e.code;
-              saveCategoryKeys(keys);
-            }
-          }
-          catButtons.forEach((x, j) => (x.textContent = keyLabel(loadCategoryKeys()[j]!)));
-        };
-        window.addEventListener('keydown', take, true);
-      });
-      return b;
-    });
-    const catReset = el('button', { type: 'button', class: 'link', textContent: 'Default (1–8)' });
-    catReset.addEventListener('click', () => {
-      saveCategoryKeys(DEFAULT_CATEGORY_KEYS);
-      catButtons.forEach((x, j) => (x.textContent = keyLabel(DEFAULT_CATEGORY_KEYS[j]!)));
-      catNote.textContent = '';
-    });
-    const catGrid = el('span', { class: 'key-bind-grid' }, ...WHEEL_CATEGORIES.flatMap((cat, i) => [el('span', { textContent: WHEEL_CATEGORY_LABELS[cat] }), catButtons[i]!]));
+    const controller = bindingList(padRows);
     const crosshairs = el('div', { class: 'crosshair-pick' });
     const colours = el('div', { class: 'crosshair-pick colours' });
     const renderPick = () => {
@@ -3706,10 +3593,7 @@ export class FrontEnd {
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
         row('Vehicle steering', steer, 'Look to steer: cars, buggies and hovercraft turn toward where you look (A / D still steer too), and the view stays where you point it. Classic: A and D steer and the view turns with the vehicle. Applies from your next match.'),
         row('Auto-reload', toggle(autoReload), 'On by default: an empty magazine reloads by itself once the gun is ready, without a trigger pull. Sprinting or a quick melee still break a reload.'),
-        row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : 'Helps on a touchpad: look with the arrow keys, fire with F and aim with X. Controllers work too (click into the game first).'),
-        row('Weapon wheel', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, wheelKey, wheelReset), wheelNote), 'Hold it to open the weapon wheel: eight category slices (Pistols, SMGs, Rifles, Shotguns, Snipers, Heavy, Energy, Melee & gadgets). Point at a slice and its weapons open on an outer arc; let go to switch (a click picks too). A quick flick to a slice brings back the one you used last in it. A quick tap of Q still goes back to your last weapon. On a controller hold Y; on a phone tap Weapons.'),
-        row('Weapon categories', el('span', { class: 'opt-stack' }, catGrid, el('span', { class: 'key-bind-row' }, catReset), catNote), 'One key per slice of the weapon wheel, in its order: it takes out the weapon you used last in that category, and again goes on to the next one you hold in it.'),
-        row('Lean (peek)', el('span', { class: 'opt-stack' }, el('span', { class: 'key-bind-row' }, el('span', { textContent: 'Left' }), leanLeft, el('span', { textContent: 'Right' }), leanRight, leanReset), leanNote), 'Hold to lean round a corner: your head and gun move out to that side (and so does where you can be hit). Q and E already have jobs (last weapon and the wheel, use), so the defaults are ` (left of 1) and Left Alt. Pick any free keys.'),
+        row('Aim assist', toggle(assist), isTouchDevice() ? 'Gently pulls your sights onto enemies near the crosshair: a help with touch controls.' : `Helps on a touchpad: look with the arrow keys, fire with ${keysFor('fire')} and aim with ${keysFor('aim')}. Controllers work too (click into the game first).`),
         ...(isTouchDevice()
           ? [
               el('h3', { class: 'opt-sub', textContent: 'Touch' }),
@@ -3721,7 +3605,7 @@ export class FrontEnd {
             ]
           : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
-        keyboard,
+        controlsPage(),
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
         controller,
       ]],
@@ -3738,7 +3622,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
-        row('Aim', aimMode, 'Hold: aim down the sights or through a scope while the aim button is held (right mouse, X, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.'),
+        row('Aim', aimMode, `Hold: aim down the sights or through a scope while the aim button is held (${keysFor('aim')}, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.`),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
           ? [
@@ -3823,14 +3707,13 @@ export class FrontEnd {
     } else if (this.screen === 'play' && e.key === 'Enter' && !(e.target instanceof HTMLButtonElement || e.target instanceof HTMLSelectElement || (e.target as HTMLElement | null)?.tagName === 'SUMMARY')) {
       e.preventDefault();
       this.start();
-    } else if (this.screen === 'play' && (e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement)) {
+    } else if (this.screen === 'play' && isMenuKey('menuFilter', e.code) && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement)) {
       // F: the Filter maps window (never while typing: a text box's keys returned above; nor with a window open).
       e.preventDefault();
       this.openMapFilter();
-    } else if ((this.screen === 'play' || this.screen === 'options') && (e.key === 'q' || e.key === 'e') && !(e.target instanceof HTMLSelectElement)) {
-      this.cycle(e.key === 'e' ? 1 : -1);
-    } else if (this.screen === 'characters' && (e.key === 'q' || e.key === 'e')) {
-      this.cycle(e.key === 'e' ? 1 : -1);
+    } else if ((this.screen === 'play' || this.screen === 'options' || this.screen === 'characters') && (isMenuKey('menuPrev', e.code) || isMenuKey('menuNext', e.code)) && !(this.screen !== 'characters' && e.target instanceof HTMLSelectElement) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      // The menus' tab keys (Q / E by default; Options → Controls → Menus).
+      this.cycle(isMenuKey('menuNext', e.code) ? 1 : -1);
     } else if (this.screen === 'characters' && e.key === 'd') {
       this.hooks.openDesigner(this.look);
     } else if (this.screen === 'characters' && e.key === 'c') {

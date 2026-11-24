@@ -1,4 +1,5 @@
 import './coach.css';
+import { keyFor } from './keyBindings.ts';
 import { TIP_TEXT, type TipId } from './tips.ts';
 import { TUTORIAL_STEPS, type Tutorial } from './tutorial.ts';
 
@@ -10,8 +11,8 @@ import { TUTORIAL_STEPS, type Tutorial } from './tutorial.ts';
  */
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-/** `[X]` → a key cap. */
-export const keyMarkup = (s: string): string => esc(s).replace(/\[([^\]]+)\]/g, '<kbd>$1</kbd>');
+/** `[X]` → a key cap; `[@action]` → the key bound to that action (keyBindings.ts), so the words follow a rebind. */
+export const keyMarkup = (s: string): string => esc(s).replace(/\[([^\]]+)\]/g, (_, k: string) => `<kbd>${k.startsWith('@') ? esc(keyFor(k.slice(1))) : k}</kbd>`);
 
 export class CoachHud {
   private readonly panel: HTMLDivElement | null = null;
