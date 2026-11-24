@@ -25,7 +25,7 @@ function readProfile(v: unknown): Profile {
     optics: opticShape(o.optics, true) ?? {},
     keys: keysShape(o.keys) ?? {},
     // (Checked by the hub; each reader checks its own value: captionPrefs.ts parseCaptionMode.)
-    prefs: o.prefs && typeof o.prefs === 'object' ? (o.prefs as Record<string, string>) : {},
+    prefs: (o.prefs ?? {}) as Record<string, string>,
   };
 }
 

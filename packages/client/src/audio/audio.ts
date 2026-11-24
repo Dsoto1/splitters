@@ -156,8 +156,9 @@ export class AudioSystem {
   /** Lazy sounds asked for (`want`), loaded with the rest; and each lazy sound's own load once started. */
   private readonly wanted = new Set<string>();
   private readonly loadingOne = new Map<string, Promise<void>>();
-  private listener: Vec3 = { x: 0, y: 0, z: 0 };
-  private listenerYaw = 0;
+  /** Where the listener is and which way it faces (setListener's yaw): Sound captions' directions. */
+  earAt: Readonly<Vec3> = { x: 0, y: 0, z: 0 };
+  earYaw = 0;
   /** Sound captions listen here (null: off; costs nothing). */
   onSound: SoundHook | null = null;
   private volume = 0.8;
@@ -370,8 +371,8 @@ export class AudioSystem {
 
   /** Move the listener (call once per frame with the camera). */
   setListener(eye: Vec3, yaw: number, pitch: number): void {
-    this.listener = eye;
-    this.listenerYaw = yaw;
+    this.earAt = eye;
+    this.earYaw = yaw;
     const ctx = this.ctx;
     if (!ctx) return;
     const l = ctx.listener;
@@ -396,20 +397,12 @@ export class AudioSystem {
     }
   }
 
-  /** Where the listener is and which way it faces (yaw, as setListener's): Sound captions' directions. */
-  get earAt(): Readonly<Vec3> {
-    return this.listener;
-  }
-  get earYaw(): number {
-    return this.listenerYaw;
-  }
-
   play(id: SoundId, opts: PlayOptions = {}): void {
     const def = SOUNDS[id];
     if (!def) return;
     const range = RANGES[def.range ?? 'mid'];
     const at = opts.at;
-    const dist = at ? Math.hypot(at.x - this.listener.x, at.y - this.listener.y, at.z - this.listener.z) : 0;
+    const dist = at ? Math.hypot(at.x - this.earAt.x, at.y - this.earAt.y, at.z - this.earAt.z) : 0;
     // Captions hear what you would: within range, before the mixer's checks (a muted or locked context still captions).
     if (this.onSound && dist <= range.cull) this.onSound(opts.caption ?? id, at, dist, range.cull, opts.by);
     const ctx = this.ctx;

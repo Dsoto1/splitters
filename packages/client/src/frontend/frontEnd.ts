@@ -3676,7 +3676,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
-        row('Sound captions', captions, 'Important sounds written on screen (gunfire, grenades, footsteps…) for playing with the sound low or off. With direction says where each came from.'),
+        row('Sound captions', captions, 'Gunfire, grenades, footsteps… shown on screen, for play with the sound off.'),
         row('Aim', aimMode, `Hold: aim down the sights or through a scope while the aim button is held (${keysFor('aim')}, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.`),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
