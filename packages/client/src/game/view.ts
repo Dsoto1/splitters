@@ -304,6 +304,8 @@ interface Avatar {
   jet?: Mesh;
   /** How see-through it is drawn now (Classes: a cloaked Shade; the Phantom power-up); 1 = solid. */
   shown?: number;
+  /** Whether a power-up's glow or the spawn shimmer is on the character's meshes now (setGlow on them). */
+  charGlow?: boolean;
   /** Phantom's fade, 0 (solid) to 1 (its shimmer). */
   phantom?: number;
   /** Parachute or glider over them, and which. */
@@ -2850,12 +2852,18 @@ export class GameView {
       a.shieldGlow = a.culled ? shieldGlow : ease(a.shieldGlow ?? 0, shieldGlow, dt, 4, 3);
       // In tenths, set only when it changes (setting a material's colour costs a shader check).
       const step = Math.round(a.shieldGlow * 10);
-      if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
+      // (A power-up's glow reaches the character's own meshes too, not only the stand-in capsule: Overdrive's gold on
+      // the body is how others see it.)
+      if (step !== (a.shieldStep ?? 0) || reglow) {
         a.shieldStep = step;
         const k = (step / 10) * SHIELD_GLOW_PEAK;
         const base = glowColor ? Color3.FromHexString(glowColor).scale(glowScale) : Color3.Black();
         setGlow(a.mat, base.add(SHIELD_GLOW.scale(k)));
-        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
+        // (Never touched while nothing glows on it: a character's own glow, eyes or a visor, stays as it was made.)
+        const lit = !!glowColor || step > 0;
+        const touch = lit || !!a.charGlow;
+        a.charGlow = lit;
+        if (touch && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(glowScale * 0.64) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
       }
       if (a.anim) {
         // Riders stand (or sit) still in their seats, however fast the vehicle goes.

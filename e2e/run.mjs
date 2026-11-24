@@ -12699,6 +12699,9 @@ const FLASHING_DAY = {
               const [a, b] = m.combatants().filter((c) => c.bot);
               if (a) a.power.overdrive = 60 * 30;
               if (b) b.power.phantom = 60 * 30;
+              // (The Phantom holds its knife, out of reach: its own shots would show it before the moment's one.)
+              clearInterval(self.__phantomKnife);
+              self.__phantomKnife = setInterval(() => b && (b.current = 1), 1000 / 60);
             }),
           // (A shot shows a Phantom for a second: the host clears FX_PHANTOM; the client eases it back in.)
           12: () => sim(page, (m) => { const b = m.combatants().filter((c) => c.bot)[1]; if (b) m.lastShot.set(b.slot, m.tick); }),
@@ -12709,7 +12712,7 @@ const FLASHING_DAY = {
             return { gold: av.some((a) => (a.glowKey ?? '').startsWith('#ffc83a')), phantom: av.some((a) => (a.phantom ?? 0) > 0) };
           }),
         sees: (_on, s) => s.gold && s.phantom,
-        after: () => sim(page, (m) => m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0))),
+        after: () => sim(page, (m) => (clearInterval(self.__phantomKnife), m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0)))),
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
