@@ -8,6 +8,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import { pickPropLevel, propLodEdges } from './propLod.ts';
 import { bySquare, smallCasts } from './shadowCasters.ts';
+import { mergeItems, shownIndices } from './propMerge.ts';
 
 /**
  * Static props drawn in batches (docs/PERF_96.md, "Performance round 3"). Every placed prop used to be a node of
@@ -37,7 +38,29 @@ import { bySquare, smallCasts } from './shadowCasters.ts';
  *
  * Models that can't be merged (animated, skinned, morphing) or carry a billboard level stay on the instance path, as do
  * props that ride movers (the caller keeps those out). `?perfoff=breakbatch` keeps breakable props out too (GameView).
+ *
+ * - **Merged** (`merge`, docs/PERF_PROPS_2026-11-23.md; `?perfoff=propmerge`): still copies that can't break, of models
+ *   whose parts are opaque and small enough (MERGE_MODEL_VERTICES over the map's copies), are not thin instances: every
+ *   such copy in a MERGE_CELL square is one mesh per material with the others, every level of detail in it
+ *   (game/propMerge.ts), whatever its model, so a sink and the mirror above it, drawn with their pack's shared atlas
+ *   material (content/models.ts, `?perfoff=propatlas`), are one draw. Each copy still picks its own level of detail; a
+ *   change rebuilds only the index list of its square's meshes. Their tints are in their vertex colours. They cast
+ *   through static shadow-only batches of their model at full detail, merged into the shadow proxies, as models with
+ *   levels of detail already did. Models that can't merge keep their batches, or (fewer than PROP_BATCH_MIN copies)
+ *   their GPU instances.
  */
+
+/** Merged copies are grouped by squares of this many metres (culled per square, a mesh per material), as wide as the batches'. */
+export const MERGE_CELL = 128;
+/**
+ * A model merges only when its full-detail vertices times its copies on the map stay under this: merging copies their
+ * geometry (thin instances share it), so many copies of a heavy model stay thin instances.
+ */
+export const MERGE_MODEL_VERTICES = 120_000;
+/** Whether a model with `vertices` at full detail and `copies` on the map is merged (its parts opaque: the caller's). */
+export function mergesModel(vertices: number, copies: number): boolean {
+  return vertices * copies <= MERGE_MODEL_VERTICES;
+}
 
 /** Batches are per model, material and square of this many metres (culled per square) at full detail. */
 export const PROP_SECTOR = 128;
@@ -73,6 +96,10 @@ interface Level {
 interface Model {
   path: string;
   levels: Level[];
+  /** Full-detail vertices (all parts). */
+  vertices: number;
+  /** Every part opaque, with triangles: it can be merged (`merge`). */
+  mergeable: boolean;
   /** Bounding-sphere centre (model space) and radius, for distances. */
   center: Vector3;
   radius: number;
@@ -99,6 +126,31 @@ interface Copy {
   quiet: boolean;
   /** It can break: in a batch of breakable copies, drawn only while its root is enabled. */
   breakable: boolean;
+  /** Drawn merged with the other copies of its square (`merge`), not in a batch. */
+  merged: boolean;
+  /** Its model's group. */
+  group: Group;
+  /** Its square of merged copies (null until placed in one). */
+  cell: Cell | null;
+}
+
+/** A square's merged copies and their meshes, one per material (each holding every level of detail). */
+interface Cell {
+  key: string;
+  copies: Copy[];
+  meshes: MergedMesh[];
+  /** Copies joined or left: the meshes are made again. */
+  stale: boolean;
+  /** A copy changed its level of detail: the meshes' index lists are made again. */
+  levels: boolean;
+}
+
+interface MergedMesh {
+  mesh: Mesh;
+  /** What it holds, in order (their triangles, `ranges`, follow each other): each copy at each of its levels. */
+  items: { copy: Copy; level: number }[];
+  indices: Uint32Array;
+  ranges: Int32Array;
 }
 
 interface Batch {
@@ -119,7 +171,7 @@ interface Group {
   /** Copies joined since the batches were made: they are made again (sizes change). */
   stale: boolean;
   batches: Map<string, Batch>;
-  /** Static shadow-only batches at full detail (`shadowSets`, models with levels of detail). */
+  /** Static shadow-only batches at full detail (`shadowSets`, models with levels of detail; merged copies always). */
   shadows: Mesh[];
 }
 
@@ -144,6 +196,9 @@ export interface PropBatchStats {
   hidden?: number;
   /** Static shadow-only batch meshes (`shadowSets`). */
   shadows?: number;
+  /** Copies drawn merged (`merge`), and the merged meshes. */
+  merged?: number;
+  mergedMeshes?: number;
 }
 
 /** Where a copy is drawn (tests and the e2e flows): its batch's meshes, how many copies they draw, whether it is one. */
@@ -169,6 +224,9 @@ export class PropBatches {
   private lastZ = Infinity;
   /** Each placed root's copy, for `shown` and `copyState`. */
   private readonly byRoot = new Map<TransformNode, { g: Group; copy: Copy }>();
+  private readonly cells = new Map<string, Cell>();
+  /** Copies still joining (their models loading): merged squares are made once none is. */
+  private joining = 0;
   private seq = 0;
   private disposed = false;
 
@@ -179,15 +237,24 @@ export class PropBatches {
     private readonly smallReach: number,
     /** Cheaper small casters (game/shadowCasters.ts): static full-detail shadow batches, the near band. */
     private readonly shadowSets = false,
+    /** Still copies merged per square and material (`?perfoff=propmerge` turns it off). */
+    private readonly merge = false,
+    /** Keep the merged meshes' vertices in the page too (tests read them back; the game never does). */
+    private readonly keepMergedData = false,
   ) {}
 
   /**
    * Draw the prop under `root` (placed and turned: its world matrix is the copy's) as a copy of model `path` in its
    * square's batch. Resolves false when the model can't be batched: the caller draws it as before. A `breakable` copy
-   * draws only while `root` is enabled (tell `shown` when that changes).
+   * draws only while `root` is enabled (tell `shown` when that changes). `copies`: the model's copies on the map; with
+   * fewer than PROP_BATCH_MIN a copy is taken only to be merged (otherwise it resolves false: GPU instances draw it).
    */
-  add(path: string, root: TransformNode, small: boolean, tint: string | null, indoor = false, breakable = false): Promise<boolean> {
-    const p = this.join(path, root, small, tint, indoor, breakable);
+  add(path: string, root: TransformNode, small: boolean, tint: string | null, indoor = false, breakable = false, copies = Infinity): Promise<boolean> {
+    this.joining++;
+    const p = this.join(path, root, small, tint, indoor, breakable, copies).finally(() => {
+      // The last copy in: the merged squares are made at the next update.
+      if (--this.joining === 0) this.lastX = Infinity;
+    });
     this.pending.push(p);
     return p;
   }
@@ -199,9 +266,12 @@ export class PropBatches {
     await Promise.allSettled(this.pending);
   }
 
-  private async join(path: string, root: TransformNode, small: boolean, tint: string | null, indoor: boolean, breakable: boolean): Promise<boolean> {
+  private async join(path: string, root: TransformNode, small: boolean, tint: string | null, indoor: boolean, breakable: boolean, copies: number): Promise<boolean> {
     const model = await this.model(path);
     if (!model || this.disposed || root.isDisposed()) return false;
+    const merged = this.merge && !breakable && model.mergeable && mergesModel(model.vertices, copies);
+    // Too few copies for a batch, and not merged: GPU instances draw it, as before.
+    if (copies < PROP_BATCH_MIN && !merged) return false;
     root.computeWorldMatrix(true);
     // It never moves (props that ride movers aren't batched): its matrix is the copy's for good.
     root.freezeWorldMatrix();
@@ -214,10 +284,10 @@ export class PropBatches {
     if (!g) this.groups.set(path, (g = { model, copies: [], tinted: false, stale: false, batches: new Map(), shadows: [] }));
     const r = model.radius * s;
     const edges = propLodEdges(model.levels.map((l) => l.distance), r);
-    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r, level: -1, edges, small, indoor, nearIn: false, quiet: small || indoor, breakable };
+    const copy: Copy = { root, matrix, color, x: c.x, y: c.y, z: c.z, r, level: -1, edges, small, indoor, nearIn: false, quiet: small || indoor, breakable, merged, group: g, cell: null };
     g.copies.push(copy);
     this.byRoot.set(root, { g, copy });
-    if (tint) g.tinted = true;
+    if (tint && !merged) g.tinted = true;
     g.stale = true;
     // Indoors (under a roof: shared map/indoors.ts) it casts nothing, near the camera or not: the sun never reaches it.
     if (small && !indoor) this.nearOf(model).copies.push(copy);
@@ -260,23 +330,122 @@ export class PropBatches {
         for (const k of g.copies) {
           k.level = -1;
           k.quiet = k.indoor || !loud.has(sectorKey(k, PROP_SECTOR));
+          // A merged copy goes to its square's cell (cast or quiet), which is made again.
+          if (k.merged) this.place(k);
         }
         // Every level's batches made now, not when a copy first needs one: no meshes come and go as you walk about
         // (a new mesh thaws its frozen material), and the loading gate builds every level's shaders.
-        for (let l = 0; l < g.model.levels.length; l++) for (const k of g.copies) this.batch(g, l, k);
+        for (let l = 0; l < g.model.levels.length; l++) for (const k of g.copies) if (!k.merged) this.batch(g, l, k);
         this.shadowBatches(g);
       }
       for (const c of g.copies) {
         const d = Math.hypot(c.x - camera.x, c.y - camera.y, c.z - camera.z);
         const level = pickPropLevel(d, c.edges, c.level);
         if (level === c.level) continue;
-        if (c.level >= 0) this.batch(g, c.level, c).dirty = true;
-        this.batch(g, level, c).dirty = true;
+        if (c.merged) {
+          if (c.cell) c.cell.levels = true;
+        } else {
+          if (c.level >= 0) this.batch(g, c.level, c).dirty = true;
+          this.batch(g, level, c).dirty = true;
+        }
         c.level = level;
       }
       for (const b of g.batches.values()) if (b.dirty) this.fill(b);
     }
+    // Merged squares: made once every copy is in (props load in a burst), then only their index lists as levels change.
+    for (const cell of this.cells.values()) {
+      if (cell.stale && this.joining === 0) this.buildCell(cell);
+      else if (cell.levels && !cell.stale) this.showLevels(cell);
+    }
     for (const n of this.near.values()) this.fillNear(n, camera);
+  }
+
+  /** A merged copy into the cell of its square, out of the one it was in (merged meshes cast nothing: cast or quiet alike). */
+  private place(k: Copy): void {
+    const key = sectorKey(k, MERGE_CELL);
+    if (k.cell?.key === key) {
+      k.cell.stale = true;
+      return;
+    }
+    if (k.cell) {
+      k.cell.copies.splice(k.cell.copies.indexOf(k), 1);
+      k.cell.stale = true;
+    }
+    let cell = this.cells.get(key);
+    if (!cell) this.cells.set(key, (cell = { key, copies: [], meshes: [], stale: true, levels: false }));
+    cell.copies.push(k);
+    cell.stale = true;
+    k.cell = cell;
+  }
+
+  /**
+   * A cell's meshes made again: a mesh per material (the atlas shares one between models) holding every copy at every
+   * level of detail its model has, placed and tinted; its index list draws each copy at the level it is at now.
+   */
+  private buildCell(cell: Cell): void {
+    cell.stale = false;
+    cell.levels = false;
+    for (const m of cell.meshes) m.mesh.dispose(false, false);
+    cell.meshes = [];
+    type Part = Level['parts'][number];
+    const byPart = new Map<string, { part: Part; items: { copy: Copy; level: number; part: Part }[] }>();
+    for (const k of cell.copies) {
+      k.group.model.levels.forEach((lv, l) => {
+        for (const part of lv.parts) {
+          const key = `${materialId(part.material)}|${part.sideOrientation}|${part.hasVertexAlpha ? 1 : 0}`;
+          let e = byPart.get(key);
+          if (!e) byPart.set(key, (e = { part, items: [] }));
+          e.items.push({ copy: k, level: l, part });
+        }
+      });
+    }
+    for (const { part, items } of byPart.values()) {
+      const merged = mergeItems(
+        items.map(({ copy: k, part: p }) => {
+          const d = p.data;
+          return { positions: d.positions!, normals: d.normals, tangents: d.tangents, uvs: d.uvs, uvs2: d.uvs2, colors: d.colors, indices: d.indices!, matrix: k.matrix, tint: k.color[0] === 1 && k.color[1] === 1 && k.color[2] === 1 ? null : k.color };
+        }),
+      );
+      const data = new VertexData();
+      data.positions = merged.positions;
+      data.normals = merged.normals;
+      data.tangents = merged.tangents;
+      data.uvs = merged.uvs;
+      data.uvs2 = merged.uvs2;
+      data.colors = merged.colors;
+      data.indices = merged.indices;
+      const mesh = new Mesh(`static_merged_${this.seq++}_${materialName(part.material)}_${cell.key}`, this.scene);
+      data.applyToMesh(mesh, false);
+      // Its vertices are on the graphics card now and nothing reads them back (a rebuild starts again from the models'
+      // levels; only the index list changes): no copy kept in the page, as the shadow proxies do (St. John's: 1.1
+      // million merged vertices, about 85 MB of script heap kept otherwise).
+      if (!this.keepMergedData && mesh.geometry) {
+        mesh.geometry.clearCachedData();
+        // clearCachedData pins the index count it had (Babylon then reads it instead of the list's length), but this
+        // mesh's index list changes with its copies' levels: the count follows the list again.
+        (mesh.geometry as unknown as { _totalIndices?: number })._totalIndices = undefined;
+      }
+      mesh.material = part.material;
+      mesh.sideOrientation = part.sideOrientation;
+      mesh.hasVertexAlpha = part.hasVertexAlpha;
+      mesh.isPickable = false;
+      mesh.freezeWorldMatrix();
+      mesh.doNotSyncBoundingInfo = true;
+      // They cast through their models' static shadow batches (shadowBatches), merged into the shadow proxies.
+      mesh.metadata = { propBatch: true, propMerged: true, castsNoShadow: true };
+      cell.meshes.push({ mesh, items: items.map(({ copy, level }) => ({ copy, level })), indices: merged.indices, ranges: merged.ranges });
+    }
+    this.showLevels(cell);
+  }
+
+  /** Each of a cell's meshes draws its copies at the level each is at now: their index lists made again. */
+  private showLevels(cell: Cell): void {
+    cell.levels = false;
+    for (const m of cell.meshes) {
+      const sub = shownIndices(m.indices, m.ranges, (i) => m.items[i]!.copy.level === m.items[i]!.level);
+      m.mesh.setEnabled(sub.length > 0);
+      if (sub.length) m.mesh.setIndices(sub, m.mesh.getTotalVertices());
+    }
   }
 
   /**
@@ -290,7 +459,7 @@ export class PropBatches {
     if (!at || this.disposed) return;
     const { g, copy } = at;
     // Batches still to be made (copies joined since the last update) are filled from the roots when they are.
-    if (g.stale || copy.level < 0) return;
+    if (g.stale || copy.level < 0 || copy.merged) return;
     this.fill(this.batch(g, copy.level, copy));
     const near = copy.small && !copy.indoor && Number.isFinite(this.lastX) ? this.near.get(g.model.path) : undefined;
     if (near) this.fillNear(near, new Vector3(this.lastX, this.lastY, this.lastZ));
@@ -301,6 +470,11 @@ export class PropBatches {
     const at = this.byRoot.get(root);
     if (!at) return null;
     const { g, copy } = at;
+    if (copy.merged) {
+      const mine = copy.cell?.meshes.filter((q) => q.items.some((it) => it.copy === copy && it.level === copy.level)) ?? [];
+      const drawn = mine[0]?.mesh.isEnabled() ? mine[0].items.filter((it) => it.copy.level === it.level).length : 0;
+      return { breakable: false, meshes: mine.map((q) => q.mesh.name), drawn, drawnHere: drawn > 0 };
+    }
     const b = !g.stale && copy.level >= 0 ? this.batch(g, copy.level, copy) : null;
     const mesh = b?.meshes[0];
     const drawn = mesh && mesh.isEnabled() ? mesh.thinInstanceCount : 0;
@@ -320,7 +494,7 @@ export class PropBatches {
     const key = `${level}|${sector}|${c.quiet ? 1 : 0}|${c.breakable ? 1 : 0}`;
     let b = g.batches.get(key);
     if (b) return b;
-    const copies = g.copies.filter((o) => o.quiet === c.quiet && o.breakable === c.breakable && sectorKey(o, size) === sector);
+    const copies = g.copies.filter((o) => !o.merged && o.quiet === c.quiet && o.breakable === c.breakable && sectorKey(o, size) === sector);
     const n = copies.length;
     const matrices = new Float32Array(n * 16);
     const colors = g.tinted ? new Float32Array(n * 4) : null;
@@ -352,8 +526,10 @@ export class PropBatches {
   private shadowBatches(g: Group): void {
     for (const m of g.shadows) m.dispose(false, false);
     g.shadows = [];
-    if (!this.shadowSets || g.model.levels.length < 2) return;
-    const casting = g.copies.filter((k) => !k.quiet && !k.breakable);
+    // Merged copies always cast this way (their merged meshes cast nothing); batched ones with `shadowSets` and levels.
+    const lodSets = this.shadowSets && g.model.levels.length >= 2;
+    const casting = g.copies.filter((k) => !k.quiet && !k.breakable && (k.merged || lodSets));
+    if (!casting.length) return;
     for (const [sector, copies] of bySquare(casting, PROP_SECTOR)) {
       const matrices = new Float32Array(copies.length * 16);
       copies.forEach((k, i) => matrices.set(k.matrix, 16 * i));
@@ -476,6 +652,10 @@ export class PropBatches {
     }
     const out: PropBatchStats = breakable ? { meshes, copies, models: models.size, breakable, hidden } : { meshes, copies, models: models.size };
     if (shadows) out.shadows = shadows;
+    if (this.cells.size) {
+      out.merged = [...this.cells.values()].reduce((n, c) => n + c.copies.length, 0);
+      out.mergedMeshes = [...this.cells.values()].reduce((n, c) => n + c.meshes.length, 0);
+    }
     return out;
   }
 
@@ -487,6 +667,8 @@ export class PropBatches {
     }
     this.groups.clear();
     this.byRoot.clear();
+    for (const c of this.cells.values()) for (const m of c.meshes) m.mesh.dispose(false, false);
+    this.cells.clear();
     for (const n of this.near.values()) for (const m of n.meshes) m.dispose(false, false);
     this.near.clear();
   }
@@ -514,7 +696,34 @@ function toModel(path: string, sources: readonly Mesh[]): Model | null {
     max = Vector3.Maximize(max, bb.maximum);
   }
   const center = min.add(max).scale(0.5);
-  return { path, levels, center, radius: max.subtract(min).length() / 2 };
+  const vertices = levels[0]!.parts.reduce((n, p) => n + (p.data.positions?.length ?? 0) / 3, 0);
+  // See-through parts (glass) are sorted by the distance of their mesh: merged, they'd draw in one order for the square.
+  const mergeable = levels.every((l) => l.parts.every((p) => !!p.data.indices?.length && !!p.data.positions?.length && !p.hasVertexAlpha && opaque(p.material)));
+  return { path, levels, center, radius: max.subtract(min).length() / 2, vertices, mergeable };
+}
+
+/** A material drawn opaque, without an alpha test (null: Babylon's default, opaque). */
+function opaque(m: Material | null): boolean {
+  if (!m) return true;
+  const a = m as Material & { needAlphaTesting?: () => boolean; opacityTexture?: unknown };
+  return m.alpha >= 0.99 && !m.needAlphaBlending() && !a.needAlphaTesting?.() && !a.opacityTexture;
+}
+
+const materialIds = new WeakMap<Material, number>();
+let nextMaterialId = 1;
+/** A material's identity as a key (the atlas shares one material object between models: content/models.ts). */
+function materialId(m: Material | null): number {
+  if (!m) return 0;
+  let id = materialIds.get(m);
+  if (id === undefined) materialIds.set(m, (id = nextMaterialId++));
+  return id;
+}
+
+/** A short name for a merged mesh (the perf tools group draws by name). */
+function materialName(m: Material | null): string {
+  if (!m) return 'none';
+  const atlas = (m.metadata as { gltf?: { extras?: { atlas?: string } } } | null)?.gltf?.extras?.atlas;
+  return (atlas ?? m.name).replace(/[^a-z_/.-]/gi, '').slice(0, 48);
 }
 
 /** A copy's square at a given size, as a key. */

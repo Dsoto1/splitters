@@ -28,10 +28,10 @@
  * checked once a render instead of for every lit draw (clusteredLights.ts); `casterlist`, the shadow list's still casters
  * sorted once and tested again only when the camera moves (atmosphere.ts); `casterbounds`, the cascades' casters' box
  * kept for the still casters (shadowBounds.ts); `fxlight`, the effects' sun and sky colours set on their materials only
- * when they change (godotVfx.ts update).
+ * when they change (godotVfx.ts update); fewer prop draws, docs/PERF_PROPS_2026-11-23.md, adds `propatlas`, a prop's materials of one atlas kind drawn as one material shared by its pack (content/models.ts, tools/content/prop-atlas.mjs), and `propmerge`, still props merged into one mesh per material and square (game/propBatches.ts, game/propMerge.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight' | 'propatlas' | 'propmerge';
 
 let off: Set<string> | null = null;
 
