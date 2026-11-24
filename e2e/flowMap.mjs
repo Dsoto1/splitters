@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -204,6 +204,8 @@ const RULES = [
   [/^packages\/client\/src\/(inputMode\.ts$|frontend\/padNav\.ts$)/, ['padsetup', 'offline', 'mobile', 'newplayer', 'visual', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/frontend\//, ['padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
+  // Crash and error reports (docs/CRASH_REPORTS.md): the panel, and the owner's list on Profile.
+  [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
@@ -250,6 +252,7 @@ const RULES = [
 
   // The server (dedicated server, hub, lobby).
   [/^packages\/server\/src\/tools\//, NONE, ['server']],
+  [/^packages\/server\/src\/reports\.ts$/, ['crashreport'], ['server']],
   [/^packages\/server\//, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage'], ['server', 'host']],
   // The Host Service (dedicated host); its packaging tool runs in CI's host-release job.
   [/^packages\/host\/tools\//, NONE, []],

@@ -90,8 +90,6 @@ export function communityPanel(kicker: (text: string) => HTMLElement): HTMLEleme
       list('Failed the hub check', s.failed, () => []);
       list('Most played', s.mostPlayed, (r) => [...(r.status === 'pick' ? [act(r, 'official', 'Make Official')] : []), act(r, 'takedown', 'Take down')]);
       sec.append(box);
-      // The owner's crash and error reports (crashReportsUi.ts, loaded only for the owner).
-      void import('../crashReportsUi.ts').then((m) => m.ownerCrashReports(sec)).catch(() => undefined);
     },
     () => undefined,
   );

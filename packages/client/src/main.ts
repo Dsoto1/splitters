@@ -31,7 +31,7 @@ import { initLocalMaps, listLocalMaps, readLocalMap } from './localMaps.ts';
 import { communityPicks, pickMapText } from './communityMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
-import { installCrashReports, noteFrameGap, setCrashContext, watchGlContext } from './crashReport.ts';
+import { crashContext, installCrashReports, watchGlContext } from './crashReport.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
@@ -330,7 +330,7 @@ class App {
   private set mode(m: Mode) {
     this.modeNow = m;
     // Crash reports (crashReport.ts) say where the break happened; the session adds the map and mode.
-    setCrashContext(m === 'game' ? { screen: m } : { screen: m, map: null, mode: null });
+    crashContext.screen = m;
     musicScene = MUSIC_SCENES[m];
     music?.setScene(musicScene);
   }
@@ -388,9 +388,6 @@ class App {
         playTutorial: () => void this.playTutorial(),
         playRange: () => void this.playRange(),
       }, this.menuScene, this.portraits, audio, params);
-      // A crash report never carries the player's own name (crashReport.ts).
-      setCrashContext({ privateWords: () => [this.front?.displayName ?? '', this.front?.name ?? ''] });
-      this.last = performance.now();
       this.engine.runRenderLoop(() => this.frame());
     })();
     return this.ready;
@@ -406,7 +403,6 @@ class App {
     const now = performance.now();
     // Frame cap: skip this display refresh if the next frame isn't due yet (ProMotion screens refresh at 120 Hz).
     if (!this.pacer.tick(now, currentFrameCap())) return;
-    noteFrameGap(now - this.last);
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
     if (this.mode === 'menu') this.menuScene?.frame(dt);

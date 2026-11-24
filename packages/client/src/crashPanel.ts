@@ -15,7 +15,15 @@ const MAX_OFFERS = 3;
 
 /** The report as it would be sent (scrubbed, capped), from a break and the page's context. */
 export function buildReport(b: { kind: CrashKind; message: string; stack: string }, now = new Date(), ua = navigator.userAgent): CrashReport {
-  const words = crashContext.privateWords();
+  // The player's own name (a signed-in username too) and clan tag, cut out wherever they appear.
+  const front = (globalThis as unknown as { __front?: { name?: string; displayName?: string } }).__front;
+  const words: string[] = [front?.name ?? '', front?.displayName ?? ''];
+  try {
+    for (const k of ['cs.name', 'cs.clan']) words.push(localStorage.getItem(k) ?? '');
+  } catch {
+    /* no storage */
+  }
+  const game = crashContext.screen === 'game';
   const message = scrubCrashText(b.message, words);
   const stack = scrubCrashText(b.stack, words);
   let quality: CrashReport['quality'] = null;
@@ -32,8 +40,8 @@ export function buildReport(b: { kind: CrashKind; message: string; stack: string
     stack,
     version: __APP_VERSION__,
     sha: /^[\w.-]{0,40}$/.test(__ASSET_VERSION__) ? __ASSET_VERSION__ : '',
-    map: crashContext.map,
-    mode: crashContext.mode,
+    map: game ? crashContext.map : null,
+    mode: game ? crashContext.mode : null,
     screen: crashContext.screen,
     quality,
     ...coarseAgent(ua),
@@ -51,6 +59,31 @@ export function takeOffer(sig: string): boolean {
   if (open || offered.has(sig) || offered.size >= MAX_OFFERS) return false;
   offered.add(sig);
   return (open = true);
+}
+
+/**
+ * What a break was, or null when it isn't one of ours to report: a resize observer's notice, an opaque "Script error",
+ * another origin's script (an extension), a fetch or sound the browser stopped (AbortError, NotAllowedError,
+ * TimeoutError).
+ */
+export function breakOf(kind: CrashKind, what: unknown, origin = location.origin): { kind: CrashKind; message: string; stack: string } | null {
+  if (kind === 'webgl') return { kind, message: `WebGL context lost and not restored after ${String(what)} s`, stack: '' };
+  if (kind === 'freeze') return { kind, message: `The game stopped drawing for ${String(what)} s`, stack: '' };
+  let err = what;
+  if (kind === 'error' && what && typeof what === 'object' && 'filename' in what) {
+    const e = what as ErrorEvent;
+    if (e.filename && !e.filename.startsWith(origin)) return null;
+    err = e.error ?? e.message;
+  }
+  const o = err as { name?: unknown; message?: unknown; stack?: unknown } | null | undefined;
+  const message = err instanceof Error ? `${err.name}: ${err.message}` : typeof o?.message === 'string' ? o.message : String(err);
+  if (/ResizeObserver loop|^Script error\.?$/.test(message) || ['AbortError', 'NotAllowedError', 'TimeoutError'].includes(String(o?.name))) return null;
+  return { kind, message, stack: typeof o?.stack === 'string' ? o.stack : '' };
+}
+
+export function offerBreak(kind: CrashKind, what: unknown): void {
+  const b = breakOf(kind, what);
+  if (b) offerReport(b);
 }
 
 export function offerReport(b: { kind: CrashKind; message: string; stack: string }): void {
