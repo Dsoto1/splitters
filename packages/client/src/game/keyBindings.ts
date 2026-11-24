@@ -1,4 +1,5 @@
 import { keysShape } from '@tiletrigger/shared';
+import { inputMode } from '../inputMode.ts';
 
 /**
  * Every keyboard and mouse action in one table (owner, 2026-11-23: "Q and E need to be the peeks. we need a way to
@@ -358,6 +359,17 @@ export function keyLabel(code: string): string {
 export function keyFor(action: string, b: Bindings = bindings()): string {
   const k = b[action];
   return keyLabel(k?.[0] || k?.[1] || '');
+}
+
+/** What a controller uses for an action (input.ts pollPad); an action not here has no button. */
+export const PAD_HINTS: Readonly<Record<string, string>> = {
+  use: 'RB', jump: 'A', vehicleUp: 'A', crouch: 'B', vehicleDown: 'B', reload: 'X', fire: 'RT', aim: 'LT', throw: 'LB', sprint: 'L3',
+  nextWeapon: 'Y', thirdPerson: 'R3', vehicleCamera: 'R3', ping: 'D-pad up', respawn: 'D-pad down', specNext: 'RB', specPrev: 'LB', specCamera: 'Y',
+};
+
+/** What an in-game hint shows for an action: the controller's button when the last input was a controller, else its key. */
+export function hintKey(action: string, b: Bindings = bindings()): string {
+  return (inputMode() === 'pad' && PAD_HINTS[action]) || keyFor(action, b);
 }
 
 /** Both keys of an action, "F · Left Alt". */
