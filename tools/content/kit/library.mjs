@@ -203,6 +203,11 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     quadN(m, [px0, py0, -Z], [px0, py0, Z], [px1, py1, Z], [px1, py1, -Z], nIn(s), panel);
     // (Between the wall's top and the panel's foot: the wall plate.)
     quadN(m, [s * wi, Math.max(0, s0 - 0.05), -Z], [s * wi, Math.max(0, s0 - 0.05), Z], [px0, py0, Z], [px0, py0, -Z], [-s, 0, 0], scale3(timber, 0.9));
+    // (Under the plate's foot, from it out to the soffit: the plate's underside. The soffit stops at the wall's outer
+    // face and the plate stands at the inner face of a 0.5 m wall, so over a thinner wall (the Gable Annex's 0.3 m)
+    // the hollow behind the flared eave was open from below: from the room, sky showed along both wall tops through
+    // the shingles' backs (owner, 2026-11-24, St. John's). Closed at any wall thickness.)
+    quadN(m, [s * wi, s0 + 0.002, -Z], [s * wi, s0 + 0.002, Z], [s * (X - oh - 0.05), s0 + 0.002, Z], [s * (X - oh - 0.05), s0 + 0.002, -Z], [0, -1, 0], scale3(timber, 0.8));
     if (level < 2) {
       const n = Math.max(2, Math.round((g.rafters ?? 12) / (level === 0 ? 1 : 2)));
       const [rx0, ry0] = along(s, tw, 0.17);
