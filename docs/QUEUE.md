@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/fastguns-1124` · e76729ba · 45375790844 (short fire cuts for the Mounted MG and the Machine Pistol: `fire.heavy.fast` 0.39 s, `fire.heavy.l86.fast` 0.29 s, so their reports fit the 6-voice cap; sounds, the two weapons' `view.sound`, the generated weapon table, provenance)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
