@@ -61,7 +61,8 @@ SwiftShader on a shared four-core box (load 10-14 from other sessions): the coun
 | dorm room, from the door | 316 → **296** | 39 → **23** | 314 → 281 | 33 → 30 |
 | bathroom (toilets, showers) | 465 → **373** | 146 → **59** | 499 → 338 | 32 → 29 |
 | mess kitchen | 380 → **357** | 27 → **19** | 246 → 232 | 58 → 55 |
-| dorm block from above, far | 585 → DBFAR | 150 → DBFARP | 657 → DBFARA | |
+| dorm block from above, far | 585 → **497** | | 657 → 440 | |
+| campus overview (from the south-west, high) | 575 → **454** | | 891 → 574 | |
 
 The props left in a view after: the merged meshes (one per atlas kind and 128 m square: `kit_wood`, `kit_stone`, the
 household pack's one, the Kenney kits' colour maps by surface), the batches of models too heavy to merge with as many
@@ -69,19 +70,84 @@ copies (the 124 sinks, 5 draws; the desk with hutch, 3; tall bookcases, 2), the 
 batches) and the three cars (glass: see-through parts are never merged). Shadow draws don't change: the shadow proxies
 already merged every still prop's shadow, and they still do.
 
-MED
+### St. John's, Medium
 
-MAPLE
+| View | Draws before → after | Active meshes |
+|---|---|---|
+| dorm room, at the sink | 246 → **215** | 350 → 304 |
+| mess kitchen | 166 → **158** | 234 → 221 |
+| campus overview | 468 → **345** (−26 %) | 879 → 562 |
+
+### Maple Court (390 props of 80 models: houses with kitchens, bathrooms, sitting rooms)
+
+| View | High: draws before → after (props in the main pass) | Medium: draws before → after |
+|---|---|---|
+| house kitchen (table and chairs, fridge, cooker) | 379 → **333** (69 → 31) | 243 → **203** |
+| house bathroom (bath, basin, washing machine) | 366 → **330** (56 → 27) | 230 → **198** |
+| hall stair, close | 299 → **247** (57 → 15) | 163 → **120** |
+| the town from above, far | 509 → **406** (143 → 48) | 368 → **270** (−27 %) |
+
+Shadow-map draws on Maple Court: 159-172 → 150-163 (the static shadow batches merge into the proxies a little better
+than the per-copy instances did). Triangles drawn go up a little (Maple Court far 0.69 → 0.73 M, the house kitchen
+0.81 → 0.90 M; St. John's 2.36 → 2.45 M at the middle spawn): a merged mesh is culled by its 128 m square, not copy by
+copy. The frame is bound by the main thread, not by the graphics card's triangles (docs/PERF_DRAWS_2026-11-23.md).
 
 ### Memory and size
 
-MEM
+Measured in the page after loading (High; `stats()` of the prop batches and the scene's geometry):
+
+| | St. John's off → on | Maple Court off → on |
+|---|---|---|
+| Scene meshes | 2,297 → **1,931** | 1,197 → **812** |
+| Copies merged / merged meshes | 0 → 1,101 / 60 | 0 → 280 / 19 |
+| Batch meshes left (thin instances) | 209 → 32 | 31 → 9 |
+| Vertices on the graphics card (all geometry) | 2.10 → 3.19 M | 0.61 → 0.88 M |
+| Vertex memory (estimated, 4 bytes a component) | 102 → **152 MB** (+50) | 30 → **40 MB** (+10) |
+| Script heap | 462 → 435 MB (no copy of the merged vertices kept) | 304 → 286 MB |
+| Loading to play | 10.9 → 10.2 s | 3.5 → 3.5 s |
+
+The cost of merging is the graphics card's vertex memory: thin instances share one copy of a model, a merged mesh holds
+each copy (at every level of detail its model has). `MERGE_MODEL_VERTICES` (120,000 a model over the map) keeps the
+heavy, often repeated models (the 124 sinks, the desks with hutches, tall bookcases) as thin instances. The merged
+vertices are not kept in the page (as the shadow proxies do): only the index lists are, which a level change rebuilds.
+
+- **Prop files**: `public/props` 74.7 → 80.3 MB (+5.6 MB, +7.5 %: the vertex colours; a map loads only its own props).
+  St. John's 30 prop files 1.83 → 1.94 MB (its kit props are untouched), Maple Court's 56 files 2.35 → 2.67 MB;
+  every file still under its budget (400 KB; the metro car, the largest, 334 → 365 KB).
+- **Menu bundle**: 2,779 kB of 2,800 (after merging main; this change adds about 3 kB of script).
+- **Palette pictures**: 1,760 KB in 77 atlases (index 107 KB), within their budgets.
 
 
 ## The look
 
-PICTURES
+Pictures of each view, before and after, at 1280 × 720: the scratchpad's `propatlas/shots/<map>-<graphics>-<set>-before|after/`
+and side by side (before | after | difference × 4) in `propatlas/side/`. St. John's, High: the dorm room at the sink, the
+bathroom, the mess kitchen, the dorm block from above and the campus overview: mean difference 0.16-0.52 / 255, at most
+0.8 % of pixels over 24, all of it trees and grass moving in the wind and a spinning pickup; the props, their colours,
+their shadows and the light on them are the same. Medium: 0.00-0.15 / 255. Maple Court, High and Medium (the house
+kitchen and bathroom, the hall stair, the town from above): 0.00-0.54 / 255, the trees outside a window and in the town.
+
+**Against main's own files** (flat colours still in the materials; the build of `wip/draws-1123`, which shares main's
+props): St. John's dorm room and bathroom, Maple Court's house kitchen and bathroom: mean 0.19-0.53 / 255, at most 13
+steps on any pixel off the moving trees: the colours moved into the vertices draw the same (16 bits where 8 would
+shift a near-black). Close up, the sink's white cabinet, black top and grey tap read the same.
+
+Watched for: texture bleeding at atlas seams and mip blur (none possible: textures aren't repacked, a flat colour is a
+vertex colour), wrong tiling (no coordinates change), lost normal or roughness maps (none: a material keeps all its
+maps and factors; only its flat base colour moves).
+
+MapMaker's palette pictures of the 1,362 changed props and set pieces were made again (`build-palette-atlas.mjs`); the
+household pack's sheet side by side with the old one shows the same colours (framed a little larger by today's
+thumbnail renderer).
 
 ## What's left
 
-LEFT
+- **Textured props with several pictures** stay a draw per picture (a car: paint and glass; the cannon). Repacking
+  pictures into one would break repeating coordinates and mix mip sizes; few of them stand on St. John's.
+- **The heavy repeated models** (the sinks, 5 draws; desks with hutches, 3) stay thin-instance batches. Levels of detail
+  for the household pack (generated at build time, as the nature props have) would let them merge cheaply.
+- **Culling**: a merged mesh is drawn whole when any of its 128 m square is in view (more triangles, fewer draws). A
+  smaller square would cull better and draw more; indoors, props behind walls are still drawn
+  (SCALING_STUDY_2026-11-15, item 3).
+- **The draws left on St. John's** are now mostly the trees and grass (110-120 a view), the level and paths (50-65), the
+  water's mirror pass (36) and the sun shafts' pass at eye level (100-118).
