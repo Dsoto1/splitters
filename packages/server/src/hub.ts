@@ -2,7 +2,7 @@ import { existsSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
-import { isRetiredMap, parseThresholds } from '@tiletrigger/shared';
+import { isUnlistedMap, parseThresholds } from '@tiletrigger/shared';
 import { JwksCache, accountHandler, authConfigScript, cognitoFromEnv, issuerOf, verifyCognitoToken } from './auth.ts';
 import { createBroker } from './broker.ts';
 import { CommunityStore, communityHandler } from './community.ts';
@@ -46,7 +46,7 @@ const suite = existsSync(mapsDir)
       readdirSync(mapsDir)
         .filter((f) => f.endsWith('.json'))
         .map((f) => f.slice(0, -5))
-        .filter((id) => !isRetiredMap(id)),
+        .filter((id) => !isUnlistedMap(id)),
     )
   : undefined;
 const builtIn = new Set(suite ?? []);
