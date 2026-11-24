@@ -40,7 +40,62 @@ function leaning(m, x0, x1, y0, y1, zb, bt, tt, colour) {
  * panel), `runner` (hex: a runner across the double bed's blanket), `jitter`, `grime`.
  */
 export function bedMesh(seed, size, g, look, level) {
+  if (g.style === 'bunk' && g.chest) return bunkChestMesh(seed, size, g, look, level);
   return g.style === 'bunk' ? bunkMesh(seed, size, g, look, level) : doubleMesh(seed, size, g, look, level);
+}
+
+/**
+ * A bunk bed with a footlocker at its foot (St. John's dorm rooms, owner 2026-11-21: "one black chest with grey edging at
+ * the foot of each bunk"; folded into the bunk so a room gains no prop). `chest`: [width, height, depth] of the trunk,
+ * `chestGap` (m between the bunk's foot and the trunk). The bunk is the plain bunk (`size` less the trunk and the gap
+ * along z) at the −z end; the trunk stands on the floor centred on x at +z, its back to the ladder. `look.chest`,
+ * `look.edge`, `look.latch`: the trunk's body, its edging along the lid seam and corners, its three latches. Collides as
+ * the bunk's boxes and the trunk's.
+ */
+function bunkChestMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const [cw, ch, cd] = g.chest;
+  const gap = g.chestGap ?? 0.04;
+  const db = d - cd - gap - 0.018;
+  const dz = -(d - db) / 2;
+  const bunk = bunkMesh(seed, [w, h, db], g, look, level);
+  const m = new Mesh();
+  const o = m.vertexCount;
+  for (let i = 0; i < bunk.P.length; i += 3) m.P.push(bunk.P[i], bunk.P[i + 1], bunk.P[i + 2] + dz);
+  m.N.push(...bunk.N);
+  m.UV.push(...bunk.UV);
+  m.C.push(...bunk.C);
+  m.W.push(...bunk.W);
+  for (const i of bunk.I) m.I.push(i + o);
+  // (The edging and latches stand 18 mm proud of the trunk's front: it is that far inside the prop's bounds.)
+  const z1 = d / 2 - 0.018;
+  const z0 = z1 - cd;
+  const X = cw / 2;
+  const body = hex(look.chest ?? '#1c1d20');
+  const edge = hex(look.edge ?? '#8d9096');
+  const latch = hex(look.latch ?? '#c9ccd1');
+  if (bunk.boxes) m.boxes = [...bunk.boxes.map((b) => [b[0], b[1], b[2] + dz, b[3], b[4], b[5] + dz]), [-X, 0, z0, X, ch, z1]];
+  // The trunk: its body, the lid a little proud over the seam.
+  const seam = ch * 0.72;
+  box(m, [-X, 0, z0], [X, seam, z1], (p, n) => scale3(body, n[1] > 0.5 ? 1.1 : 0.9 + 0.1 * groundShade(p[1], 0.15, 0.8)), ['ny']);
+  box(m, [-X, seam, z0], [X, ch, z1], scale3(body, 1.08), ['ny']);
+  if (level >= 2) return m;
+  // Edging: a band round the lid seam, the four upright corners and round the lid's top edge.
+  const e = 0.022;
+  const p = 0.006;
+  box(m, [-X - p, seam - e / 2, z0 - p], [X + p, seam + e / 2, z1 + p], edge, ['ny', 'py']);
+  if (level === 0) {
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      const x0 = sx < 0 ? -X - p : X - e;
+      const zz0 = sz < 0 ? z0 - p : z1 - e;
+      box(m, [x0, 0, zz0], [x0 + e + p, ch + p, zz0 + e + p], edge, ['ny']);
+    }
+    box(m, [-X - p, ch - e, z0 - p], [X + p, ch + p, z0 + e], edge, ['ny']);
+    box(m, [-X - p, ch - e, z1 - e], [X + p, ch + p, z1 + p], edge, ['ny']);
+    // Three latches on the front (+z): a plate over the seam each.
+    for (const k of [-0.6, 0, 0.6]) box(m, [k * X - 0.035, seam - 0.06, z1 + p], [k * X + 0.035, seam + 0.035, z1 + p + 0.012], latch, ['nz']);
+  }
+  return m;
 }
 
 /**

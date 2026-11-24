@@ -615,12 +615,13 @@
       "id": "kit.table.desk_hutch_pair",
       "displayName": "Desks with Hutches (pair)",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version (St. John's step 4): a dorm room's two Desks with Hutches side by side, 0.15 m apart, a Chair pushed in at each, as one prop: what were four props a room is one (a map as played holds at most 4,096 entities). Collides as the two desks' boxes (desk and hutch each, as a Desk with Hutch does); the chairs, pushed in, do not (as the separate ones, placed not solid, did not). Variant 'empty': the same desks without chairs (a shut room)."
+        "1": "First version (St. John's step 4): a dorm room's two Desks with Hutches side by side, 0.15 m apart, a Chair pushed in at each, as one prop: what were four props a room is one (a map as played holds at most 4,096 entities). Collides as the two desks' boxes (desk and hutch each, as a Desk with Hutch does); the chairs, pushed in, do not (as the separate ones, placed not solid, did not). Variant 'empty': the same desks without chairs (a shut room).",
+        "2": "The two desks flush (owner, 2026-11-21: \"the desks themselves do not need to be separated, they can be flush next to one another and moved back to the corner\"): no gap between them, 2.8 m long (was 2.95 with 0.15 m between); the dorm pieces put the run in the room's corner by the window."
       },
       "size": [
-        2.95,
+        2.8,
         1.7,
         0.8
       ],
