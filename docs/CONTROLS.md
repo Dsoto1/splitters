@@ -60,6 +60,7 @@ from it, and **Options → Controls** rebinds them.
 | Third person / vehicle camera | R3 |
 | **Pause menu** (Menu again, or B, resumes) | **Menu (Start)** |
 | **Scoreboard** (while held) | **View (Back)** |
+| **Next-map vote** (end of a match): move the highlight / vote (vote again to change it) | **D-pad or left stick left / right** / **A** |
 | Spectating | RB / LB next / previous player, Y camera (the d-pad is as before) |
 
 Lean and weapon switch share the d-pad, told apart by where the press began: pressed while aiming it leans for as long as
