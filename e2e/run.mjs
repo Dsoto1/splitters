@@ -5893,7 +5893,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (the Chrono Crew after Outer Space, owner 2026-11-22; experimental characters under their own, before yours) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (the Chrono Crew after Outer Space, owner 2026-11-22; an Experimental section only while someone is in it, none since 2026-11-24) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -5902,7 +5902,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -6841,7 +6841,7 @@ async function mobileHudChecks(page, touch, label) {
   const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
   check(!!box.ammo && box.ammo.l > box.w * 0.6 && box.ammo.b <= box.reload.t + 1 && hit.length === 0, `${label}: the ammo panel sits by the fire buttons, above Reload, over no button (${JSON.stringify({ ammo: box.ammo, reload: box.reload, hit })})`);
   // Five lines into the feed: it keeps 3, above the ammo panel.
-  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Salamander Warlord took over for Elder Tomo`); });
+  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Axel Newtman took over for Elder Tomo`); });
   const feed = await page.evaluate(() => document.getElementById('feed').children.length);
   const after = await touchHudBoxes(page);
   check(feed === 3 && !overlaps(after.feed, after.ammo) && !overlaps(after.feed, after.wheel), `${label}: the kill feed keeps 3 lines, clear of the ammo panel and Weapons (${feed} lines, ${JSON.stringify({ feed: after.feed, ammo: after.ammo })})`);

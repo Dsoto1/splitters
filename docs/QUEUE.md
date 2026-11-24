@@ -39,6 +39,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/retire-train-1124` · fb04969f · 45314218390 (Citadel retired; Training Range off every list, Profile → Test weapons)
+- `wip/chars-1124` · 57978bf1 · 45316069166 (every Experimental character promoted; Rufus Boomtown, Rascal McGraw, Axel Newtman; nine animals open Animalia; green; the first run's characters3 failure was the optic-fix flake, fixed by merging main)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**

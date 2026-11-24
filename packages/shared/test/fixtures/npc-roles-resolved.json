@@ -454,7 +454,7 @@
    "code": 13,
    "role": "warlord",
    "spec": {
-    "label": "Salamander Warlord",
+    "label": "Axel Newtman",
     "health": 260,
     "weapon": "core.launcher",
     "speed": 0.7,
@@ -477,7 +477,7 @@
     "rangePreference": 60,
     "weaponPreferences": [],
     "id": "core.npc_warlord",
-    "displayName": "Salamander Warlord",
+    "displayName": "Axel Newtman",
     "tags": [
      "NPC",
      "SUPPRESSOR"

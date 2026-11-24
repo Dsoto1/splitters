@@ -187,7 +187,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Dex Calloway, Doc Seraphine Vale, Flicker, Fuse Hollister, Gears Okafor, Lyra Vantis, Mags Petrov, Nova Kade, Sarge Tobias Crane, Vesper Quill, Wren Halloway (all Experimental for now; their group is Outer Space) |
 | Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Santa, Sun Warrior, The Purple Comet |
-| Animalia (`animals`) | Bandit, Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Salamander Warlord, Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Axel Newtman (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -222,6 +222,15 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   after the groups and before Yours (they leave their group's section); no section while there are none
   (`characterSections`). A person can still choose one, for themselves or for a bot in the bot manager (`BOT_LOOKS`),
   and a saved choice keeps working (`getLook` resolves any roster look by id).
+- **Promoted (owner, 2026-11-24: "the experimental characters are ok to move up").** Every experimental character is core
+  now (the 42 of the 2026-11-21/22 intake: `tier` left out of their manifests), so none is under Experimental and the section
+  is hidden (`characterSections` drops an empty one; the mechanism stays for the next batch), and all of them are in the
+  automatic picks (random bots, Random characters, Roulette). **Display names only** changed, ids kept (saved picks and
+  profiles work): Rufus Boomwell → **Rufus Boomtown**, Bandit → **Rascal McGraw** (the raccoon, Zero Ringtail's model),
+  Salamander Warlord → **Axel Newtman** (the tactical salamander; new bio; the NPC role `warlord` takes the name too).
+  **Order:** a section lists its characters by name, so the nine the owner wanted together carry `sortAs` `01`..`09`
+  (`"01 Pip Quickfoot"`) and open Animalia as its first tiles, in this order: Pip Quickfoot, Rocket Nutley, Rowdy
+  Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Chester Knuckleby, Axel Newtman.
 - **Left out of automatic picks.** `PICKABLE_LOOKS` (the core tier of `CORE_LOOKS`; "core" in `CORE_LOOKS` is the id
   prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
   `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and
@@ -243,11 +252,11 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
     Burrows (Agent Badger), Coach Hank Shelton (Coach Tortoise), Rio Neonwing (Cyber Flamingo), Juice (Box Duck,
     named by the owner), Chad Croakley (Gym Bro Frog), Dr. Hugo Hue (Doc Chameleon), Ollie Hootman (Owl Sniper),
     Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
-    rhino juggernaut), Zero Ringtail (raccoon hacker; Bandit's model since the evening, below), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
+    rhino juggernaut), Zero Ringtail (raccoon hacker; Rascal McGraw's (Bandit's) model since the evening, below), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
     samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
     eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Buster Haymaker (boxer bunny) and
     Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp"). From the owner's third batch of 2026-11-22 (the Drive uploads after 15:00):
-    Sterling Purrcival (tuxedo cat), Rufus Boomwell (baboon) and Chester Knuckleby (chimpanzee).
+    Sterling Purrcival (tuxedo cat), Rufus Boomtown (baboon; first named Boomwell) and Chester Knuckleby (chimpanzee).
   - Horrors & Creatures, from the third batch: Ignatius Slagg (the magma juggernaut; bleeds stone).
   Two of the batch became the models of characters already on the roster (owner, 2026-11-22) and left it: Tinker
   Goblina's GoblinaRigged is **Goblina**'s model, the Sunset Gunslinger's is **Dusty Ranger**'s (both keep their name,
@@ -315,7 +324,7 @@ white-grey; 133 characters on the roster):
 
 | Kind | How many | Who |
 |---|---|---|
-| **Red** (`red`) | 99 | Anoobys, Astronaut Explorer, Azure Sentinel, Bandit, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
+| **Red** (`red`) | 99 | Anoobys, Astronaut Explorer, Azure Sentinel, Rascal McGraw, Barnaby Bruin, Big Bab, Big Bogdan, Biker Gang Girl, Bill the Barbarian, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Rourke, Salamander Warlord, Santa, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Umpire, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
 | **Green** (`green`) | 5 | *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *The Visitor* |
 | **Blue** (`blue`) | 6 | *Alien Biker*, *Octo Buddy*, *Reef Wanderer*, *Ricochet*, *Space Marine*, *Spud Marshal* |
 | **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
