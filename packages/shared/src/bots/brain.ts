@@ -79,6 +79,8 @@ export interface CombatantView {
   sheltered?: boolean;
   /** Under spawn protection (Match.shielded; it drops when they fire): a target only when there's no one else near. */
   shielded?: boolean;
+  /** Held in a freeze blast's ice: can't move, dodge or shoot back, so bots go for them first (FROZEN_TARGET_SCALE). */
+  frozen?: boolean;
   /** The tick the spawn protection runs out (with `shielded`). */
   shieldUntil?: number;
   /** On the ground (not jumping or falling). */
@@ -124,6 +126,8 @@ export interface InventoryView {
   reserve: number;
   /** Rounds of a second trigger with its own ammo (the Battle Axe's barrel). */
   alt?: number;
+  /** Its second trigger is off its own cooldown (AltFire.cooldownTicks) and the gun isn't overheated. Absent: ready. */
+  altReady?: boolean;
 }
 
 /** Something heard: gunfire or an explosion, and who made it (actor ID, -1 for nobody). */
@@ -159,6 +163,8 @@ export interface BotWorldView {
   reloading?: boolean;
   /** Closed doors bots can't open and intact breakable walls: paths through them are treated as unreachable. */
   blockers?: readonly Aabb[];
+  /** Freeze blasts' blocks of ice standing (solid for a few seconds): bots step round them (separate). */
+  ice?: readonly { slot: number; pos: Vec3; half: Vec3 }[];
   /** The same as navmesh flags (NavWorld.markOpenings): a route asked for with them keeps out of those openings. */
   shut?: number;
   /** Traps that are dangerous right now: bots wait at the edge instead of walking in. */
@@ -364,6 +370,10 @@ const AMMO_LOW_DETOUR = 70;
 const SHELTERED_TARGET_SCALE = 3;
 /** Someone under spawn protection is this much less of a target (as if this many times further): shots at them do nothing until they fire. */
 const SHIELDED_TARGET_SCALE = 6;
+/** A target frozen in ice counts as this much nearer (owner, 2026-11-24: bots "shoot frozen ones"). */
+const FROZEN_TARGET_SCALE = 0.45;
+/** Bots fire the Freeze Ray's freeze blast at targets this close (m) (owner, 2026-11-24: "aim the alt at close targets"). */
+export const FREEZE_BLAST_REACH = 9;
 /** A bot under spawn protection holds its fire until this long before the shield runs out (s; content/match-play.json botFireBefore), unless an unshielded enemy is within SHIELD_HOLD_INSIDE m. */
 const SHIELD_FIRE_BEFORE: number = MATCH_PLAY.botFireBefore;
 const SHIELD_HOLD_INSIDE = 2;
@@ -2544,6 +2554,10 @@ export class BotBrain {
     // once every three seconds of the fight (its puddles last far longer, so there is always some to light).
     const igniter = held && held.def.projectile?.zone?.kind === 'oil' && held.def.alt?.projectile?.ignites ? held.def.alt : null;
     if (igniter && pull && held!.mag >= igniter.cost && (tick + this.slot * 23) % (TICK_RATE * 3) >= TICK_RATE * 2.2) buttons = (buttons & ~BUTTON_FIRE) | BUTTON_ALT;
+    // A freeze blast (the Freeze Ray's second trigger): at a target up close who isn't frozen yet, whenever it is ready
+    // (its own cooldown, the heat bar); then the beam on the one held in the ice.
+    const blast = held && held.def.alt?.ammo === 'heat' && held.def.alt.projectile?.status?.kind === 'freeze' ? held.def.alt : null;
+    if (blast && pull && target && !target.frozen && held!.altReady !== false && horizontalDistance(me.pos, target.pos) < FREEZE_BLAST_REACH) buttons = (buttons & ~BUTTON_FIRE) | BUTTON_ALT;
     // Dry up close: punch or kick (quick melee) rather than click an empty gun.
     if (target && held && held.def.kind !== 'melee' && !held.def.projectile?.disc && held.def.magazine > 0 && held.mag === 0 && held.reserve === 0 && horizontalDistance(me.pos, target.pos) < 2 && (tick + this.slot) % 12 === 0) {
       buttons |= BUTTON_MELEE;
@@ -4123,7 +4137,7 @@ export class BotBrain {
       c.dz = dz;
       // Stick with the current target unless another is much closer. Someone shut in a tank only when there's no one
       // else, unless it has something that hurts vehicles (bullets can't reach them).
-      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1) * (o.sheltered && !(armedVsTanks ??= this.armedVsTanks(view)) ? SHELTERED_TARGET_SCALE : 1) * (o.shielded ? SHIELDED_TARGET_SCALE : 1);
+      c.score = d * (o.slot === this.targetSlot ? 0.7 : 1) * (o.sheltered && !(armedVsTanks ??= this.armedVsTanks(view)) ? SHELTERED_TARGET_SCALE : 1) * (o.shielded ? SHIELDED_TARGET_SCALE : 1) * (o.frozen ? FROZEN_TARGET_SCALE : 1);
       c.checked = false;
       live.push(c);
     }
@@ -4286,6 +4300,7 @@ export class BotBrain {
    * each other off Shingle Point's seawall ladders for seconds on end).
    */
   private separate(view: BotWorldView, moveYaw: number | null, travelling = false): number | null {
+    if (view.ice?.length && moveYaw !== null) moveYaw = this.roundIce(view, moveYaw);
     if (!view.allies?.length) return moveYaw;
     // (Not waiting for or riding a lift: those keep their spacing round the shaft.)
     if (view.self.climbing || (!this.holdStill && this.atLadder(view.self.pos))) return moveYaw;
@@ -4343,6 +4358,32 @@ export class BotBrain {
       }
     }
     return Math.atan2(wx + px, wz + pz);
+  }
+
+  /**
+   * Round a block of ice ahead (a freeze blast's: solid for a few seconds, not in the navmesh): the way bends off to
+   * the side the block is less on, enough to pass it with a body's width to spare. A block across a doorway still
+   * blocks it; the stuck checks deal with that as with anything else in the way.
+   */
+  private roundIce(view: BotWorldView, moveYaw: number): number {
+    const me = view.self.pos;
+    const fx = Math.sin(moveYaw);
+    const fz = Math.cos(moveYaw);
+    let yaw = moveYaw;
+    for (const b of view.ice!) {
+      if (b.slot === view.self.slot || Math.abs(b.pos.y - me.y) > 1.5) continue;
+      const dx = b.pos.x - me.x;
+      const dz = b.pos.z - me.z;
+      const ahead = dx * fx + dz * fz;
+      const clear = b.half.x + PLAYER.radius * (view.self.size ?? 1) + 0.35;
+      if (ahead <= 0 || ahead > clear + 2.5) continue;
+      // How far the block's middle is off our line (+ to our right): pass on the side with more room.
+      const side = dx * fz - dz * fx;
+      if (Math.abs(side) >= clear) continue;
+      const pass = side >= 0 ? -1 : 1;
+      yaw = Math.atan2(dx + fz * pass * clear, dz - fx * pass * clear);
+    }
+    return yaw;
   }
 
   /**

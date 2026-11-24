@@ -556,6 +556,13 @@ export class SessionAudio {
         if (ev.m !== undefined) this.audio.play('vehicle.crash', { at, gain: 0.7 });
         break;
       }
+      case 'ice': {
+        // A freeze blast: the ice cracking shut round them; when they die in it, the block breaking. A melt is quiet.
+        const at = ev.s === me ? undefined : tuple(ev.p);
+        if (ev.on) this.audio.play('glass.crack', { at, gain: 0.8 });
+        else if (ev.x) this.audio.play('break.glass', { at, gain: 0.6 });
+        break;
+      }
       case 'crash': {
         this.audio.play('vehicle.crash', { at: tuple(ev.p), gain: 0.4 + ev.n * 0.8 });
         break;

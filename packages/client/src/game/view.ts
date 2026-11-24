@@ -4005,6 +4005,14 @@ export class GameView {
       light.material = glow(this.scene, 'mineLightMat', '#ff3b3b', 1);
       light.parent = node;
       light.setEnabled(false);
+    } else if (look === 'frost') {
+      // The Freeze Ray's freeze blast: a slow pale ball of cold with a faint shell round it (no glow to speak of: calm).
+      const ball = CreateSphere(`frost_${id}`, { diameter: 0.34, segments: 8 }, this.scene);
+      ball.material = solid(this.scene, 'frostCoreMat', '#e6f8ff');
+      ball.parent = node;
+      const shell = CreateSphere(`frost_${id}_shell`, { diameter: 0.56, segments: 8 }, this.scene);
+      shell.material = glow(this.scene, 'frostShellMat', '#9fe8ff', 0.35);
+      shell.parent = node;
     } else {
       // Plasma bolt or charged orb: a glowing ball.
       const ball = CreateSphere(`${look}_${id}`, { diameter: look === 'orb' ? 0.55 : 0.2, segments: 8 }, this.scene);

@@ -7,6 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Match Setup: one tab per map.** The categories are Modern, Historic, Future & Space, Weird and Custom (your own and community maps); every map is under exactly one, so the tabs' counts add up, and the row of sub-tags is gone. MapMaker's Map properties → Category is one pick (map format v51).
+- **Weapon Manager: Explosion and Impact sounds.** Beside Fire, Alt-fire and Reload, a weapon that blows something up can pick its own explosion and any weapon its own hit sound (layered on the surface's); throwables pick their explosion too. Both are none until picked, so nothing sounds different yet.
+- **Freeze Ray: freeze blast on the second trigger.** A slow cold ball that holds whoever it hits in a block of ice for about 3 s: they can't move or shoot, take slow damage and every other hit in full, and the block is solid to everyone else (bots go round it). A 6 s cooldown and a big share of the heat bar; the frozen player's view frosts gently from the edges. Bots use it up close and go for frozen targets.
 - **St. John's is now St. Jasper's Military Academy**, a fictional school: its name in every map list, Featured, Quick Play and MapMaker, and its description (the map's id stays `st_johns`).
 - **Roofs and windows: no light through the seams.** A sloped timber roof over thin walls no longer shows sky along the wall tops (St. John's library annex and every roof of that kind), and the library's glass windows no longer show a slit of light up their sides and along their heads.
 - **St. John's dorm rooms: a mirror cabinet over every sink, a black footlocker at the foot of every bunk, and the two desks side by side in the corner by the window** (in every dorm piece in MapMaker; no extra props a room).

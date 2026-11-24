@@ -2515,6 +2515,7 @@ export class Match {
         held: c.current,
         reloading: c.reloadTicks > 0,
         blockers: blockersFor(c.faction),
+        ...(this.ices.length ? { ice: this.ices } : {}),
         shut: shutFor(c.faction),
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
@@ -2828,7 +2829,8 @@ export class Match {
         v.mag = w.mag;
         v.reserve = w.reserve;
         v.alt = w.alt;
-      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve, alt: w.alt };
+        v.altReady = this.tick >= (w.altReadyAt ?? 0) && !w.overheated;
+      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve, alt: w.alt, altReady: this.tick >= (w.altReadyAt ?? 0) && !w.overheated };
       i++;
     }
     list.length = i;
@@ -8131,7 +8133,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}), ...(c.ice !== undefined ? { frozen: true } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -8160,6 +8162,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean, sheltered:
   v.lean = c.alive && !c.mount ? (c.move.lean ?? 0) : 0;
   v.stamina = c.move.stamina ?? 1;
   v.sprinting = !!c.move.sprint;
+  v.frozen = c.ice !== undefined;
 }
 
 /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */

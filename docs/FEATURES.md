@@ -46,7 +46,7 @@ MapMaker's pickup palette lists every item, so **anything below can be placed in
 | Flare Gun | sticky projectile | 2 | 2 pickups (cinder_foundry) | fire zone |
 | Goo Gun | projectile | 6 | 2 pickups (cinder_foundry) | slow zone |
 | Oil Slicker | projectile | 6 | 2 pickups; Torch | oil zone, alt: igniter |
-| Freeze Ray | beam | 9 | 2 pickups (cinder_foundry, serene_city) | chill, then freeze |
+| Freeze Ray | beam (alt: freeze blast) | 9 | 2 pickups (cinder_foundry, serene_city) | chill, then freeze; the blast holds them in ice 3 s |
 | Revolver | hitscan | 2 | 1 pickup (training_range) | |
 | Pulse Pistol | beam | 2 | 1 pickup (ironhold_prison) | |
 | Flak Cannon | bouncing shards | 4 | 1 pickup (reactor) | |

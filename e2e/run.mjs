@@ -12516,7 +12516,7 @@ const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
-  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
   flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick'] },
 };
 
@@ -12647,6 +12647,22 @@ const FLASHING_DAY = {
         seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // Frozen in a freeze blast's ice (the Freeze Ray's second trigger; hud.ts setFrost): as the recording starts you are
+      // held in a block of ice, by day over the white tiles: the frost creeps in from the edges, eased (slower and paler
+      // with the setting on), the middle clear: never a flash or a white-out. Before each run the ice is let go.
+      {
+        name: 'frozen',
+        label: 'frozen in a block of ice by day over white tiles: the frost creeping in over the view, then the block round you',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }).then(() => step(45)),
+        at: { 2: () => sim(page, (m, me) => m.freezeSolid(me, 60 * 6)) },
+        seen: () => page.evaluate(() => ({ frost: Number(getComputedStyle(document.getElementById('frost-view') ?? document.body).opacity), on: !!document.getElementById('frost-view')?.classList.contains('on'), iced: !!window.__cs.local.iced })),
+        sees: (_on, s) => s.on && s.iced && s.frost > 0.3,
+        after: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }),
       },
       // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
       // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up

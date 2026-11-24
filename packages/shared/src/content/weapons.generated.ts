@@ -1342,7 +1342,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
   // model: The owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback.
-  // alt: Freeze blast (owner, 2026-11-24): a slow cold ball (14 m/s, 35 m); whoever it hits is held in a block of ice where they stand for 3 s (can't move or act, 5 HP/s, full damage from anything else; the block solid to others). 45 % of the heat bar and its own 6 s cooldown; the beam fires on meanwhile.
+  // alt: Freeze blast (owner, 2026-11-24): a slow cold ball (14 m/s, 35 m); whoever it hits is held in a block of ice where they stand for 3 s (can't move or act, 5 HP/s, full damage from anything else; the block solid to others). 60 % of the heat bar and its own 6 s cooldown; the beam fires on meanwhile.
   'core.freeze_ray': {
     id: 'core.freeze_ray',
     displayName: 'Freeze Ray',
@@ -1362,7 +1362,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     alt: {
       label: 'Freeze blast',
       ammo: 'heat',
-      cost: 45,
+      cost: 60,
       fireIntervalTicks: 24,
       cooldownTicks: 360,
       kind: 'projectile',
