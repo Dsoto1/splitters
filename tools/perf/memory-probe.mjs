@@ -181,6 +181,7 @@ async function main() {
   }, BOTS);
   await sleep(5000);
   await read(page, cdp, 'MapMaker, map open');
+  await heapSnapshot(cdp, 'map-open');
 
   for (let i = 1; i <= ROUNDS; i++) {
     // A small edit: a prop moves 1 m (and back next round).

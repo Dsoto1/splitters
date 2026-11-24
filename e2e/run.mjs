@@ -5137,6 +5137,24 @@ async function editorWorkflowChecks(browser) {
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
+  // Back in MapMaker, the ended match is gone from memory: no disposed scene left in the heap after a collection
+  // (the hand fitting's chain and the scoreboards' rows each kept it, docs/PERF_EDITOR_IDLE_2026-11-24.md;
+  // tools/perf/memory-probe.mjs and heap-retainers.mjs find what holds one).
+  {
+    const cdp = await page.context().newCDPSession(page);
+    let left = -1;
+    // (A Test's loading waits may hold it a moment longer: capped races, docs/PERF_MAPMAKER_TRACE_2026-11-15.md §10.)
+    for (let i = 0; i < 14 && left !== 0; i++) {
+      if (i) await sleep(2000);
+      for (let k = 0; k < 2; k++) await cdp.send('HeapProfiler.collectGarbage');
+      const proto = (await cdp.send('Runtime.evaluate', { expression: 'Object.getPrototypeOf(window.__editor.view.scene)' })).result.objectId;
+      const { objects } = await cdp.send('Runtime.queryObjects', { prototypeObjectId: proto });
+      left = (await cdp.send('Runtime.callFunctionOn', { objectId: objects.objectId, functionDeclaration: 'function () { return this.filter((s) => s.isDisposed).length; }', returnByValue: true })).result.value;
+      await cdp.send('Runtime.releaseObject', { objectId: objects.objectId });
+    }
+    await cdp.detach().catch(() => {});
+    check(left === 0, `back in MapMaker, the Test's ended match is not kept in memory (disposed scenes still in the heap: ${left})`);
+  }
   const back = { cam: await camera(), rev: await page.evaluate(() => window.__editor.history.revision), sel: await page.evaluate(() => JSON.stringify(window.__editor.selection)) };
   check(JSON.stringify(back) === JSON.stringify(before), `Esc goes back to MapMaker at the same view, with the selection and history as they were (${JSON.stringify(back.cam)})`);
   await page.keyboard.press('Control+KeyZ');
