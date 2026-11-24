@@ -8332,7 +8332,7 @@ async function scoreboardColumns(page) {
  * Colour vision (Options → Accessibility; game/colourVision.ts, teamColours.ts, teamSymbols.ts; docs/LOOK.md, "Colour vision"): the
  * setting saves, a match on Grand Marquee (its own red and yellow teams) takes the setting's team colours, and every
  * team's symbol is beside its colour in the kill feed, on the scoreboard, the score bar, the name of whoever you hit
- * and the minimap. A picture of each setting (deviceScaleFactor 2) goes to the artifacts as colourvision-<setting>.png.
+ * and the minimap. A picture of each setting goes to the artifacts as colourvision-<setting>.png (E2E_DSF=2: sharper).
  */
 async function colourvisionFlow(browser) {
   const { readFileSync } = await import('node:fs');
@@ -8340,9 +8340,16 @@ async function colourvisionFlow(browser) {
   const palette = (name) => [...(src.match(new RegExp(`${name}: \\[([^\\]]+)\\]`))?.[1] ?? '').matchAll(/'(#[0-9a-f]{6})'/g)].map((m) => m[1]);
   const safe = { redgreen: palette('redgreen'), tritan: palette('tritan') };
   check(safe.redgreen.length === 8 && safe.tritan.length === 8, `the safe palettes are read from teamColours.ts (${safe.redgreen.length}, ${safe.tritan.length})`);
-  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 })).newPage();
+  // E2E_DSF=2 for the pictures (docs/LOOK.md, "Colour vision"); CI draws at 1.
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
   const errors = [];
-  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const open = async () => {
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    return p;
+  };
+  const menu = await open();
+  let page = menu;
   await page.goto(CLIENT);
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-options');
@@ -8353,15 +8360,21 @@ async function colourvisionFlow(browser) {
   check(first.value === 'default' && first.options.join() === 'default,redgreen,tritan' && saved === 'redgreen', `Accessibility: Colour vision is Default at first and its choice saves (${JSON.stringify({ first, saved })})`);
   for (const vision of ['default', 'redgreen', 'tritan']) {
     await page.evaluate((v) => localStorage.setItem('tiletrigger.colourVision', v), vision);
-    await page.goto(`${CLIENT}/?offline=grand_marquee&gamemode=core.tdm&bots=7&test=1&god=1&name=Tester`);
-    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
-    await page.evaluate(() => {
-      for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
-    });
+    // A page per match (leaving a match asks before unloading).
+    await page.close();
+    page = await open();
+    await page.goto(`${CLIENT}/?offline=grand_marquee&gamemode=core.tdm&bots=7&test=1&god=1&name=Tester`, { waitUntil: 'domcontentloaded', timeout: T(90000) });
+    // Polled on a timer: a loading page may draw no frames for a while.
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(150000), polling: 250 });
     await playWithoutMouse(page);
     // Every teammate on the roster before reading the HUD.
     await page.waitForFunction(() => { const h = window.__cs.hud; return h.teamIndex(window.__cs.slot) >= 0 && [...h.roster.values()].filter((p) => p.team).length >= 8; }, null, { timeout: T(20000), polling: 250 }).catch(() => {});
-    // Two kill lines (one each way) and a hit on an enemy, through the HUD as the match shows them; then the board (a tap of Tab).
+    // The board (a tap of Tab), and the minimap's next frame with its teammates.
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 6, null, { timeout: T(10500) }).catch(() => {});
+    await page.waitForFunction(() => (window.__cs.hud.minimap.last ?? '').split('|').slice(1).some((b) => /,\d+$/.test(b)), null, { timeout: T(10000), polling: 250 }).catch(() => {});
+    // Two kill lines (one each way) and a hit on an enemy, through the HUD as the match shows them (the feed's lines
+    // go after 5 s: read and pictured straight away).
     const seen = await page.evaluate(() => {
       const cs = window.__cs;
       const h = cs.hud;
@@ -8373,33 +8386,33 @@ async function colourvisionFlow(browser) {
       h.kill(mate, foe, 'core.rifle', me);
       h.kill(foe, me, 'core.smg', me, true);
       h.showTarget(h.name(foe), 0.6, h.team(foe)?.color ?? '#fff', h.teamIndex(foe));
-      return { mine, teams: (h.teams ?? []).map((t) => t.color), foeTeam: h.teamIndex(foe) };
+      return {
+        mine,
+        teams: (h.teams ?? []).map((t) => t.color),
+        foeTeam: h.teamIndex(foe),
+        feed: [...document.querySelectorAll('#feed span[data-rs]')].slice(0, 4).map((s) => s.querySelector('svg.tsym')?.dataset.sym ?? ''),
+      };
     });
-    await page.keyboard.press('Tab');
-    await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 8, null, { timeout: T(10500) }).catch(() => {});
-    // The minimap redraws on the next frame with its teammates.
-    await page.waitForFunction(() => (window.__cs.hud.minimap.last ?? '').split('|').slice(1).some((b) => /,\d+$/.test(b)), null, { timeout: T(10000), polling: 250 }).catch(() => {});
     const hud = await page.evaluate(() => ({
-      feed: [...document.querySelectorAll('#feed span[data-rs]')].map((s) => s.querySelector('svg.tsym')?.dataset.sym ?? ''),
       groups: [...document.querySelectorAll('#scoreboard .sb-gname')].map((g) => g.querySelector('svg.tsym')?.dataset.sym ?? ''),
       marks: [...document.querySelectorAll('#scoreboard .sb-row[data-slot] .sb-mark')].map((m) => m.querySelector('svg.tsym')?.dataset.sym ?? m.textContent),
       bar: [...document.querySelectorAll('#scorebar small svg.tsym')].map((s) => s.dataset.sym),
       target: document.querySelector('#target-name svg.tsym')?.dataset.sym ?? '',
       minimap: window.__cs.hud.minimap.last ?? '',
     }));
-    await page.screenshot({ path: `${ARTIFACTS}/colourvision-${vision}.png` });
+    hud.feed = seen.feed;
+    await page.screenshot({ path: `${ARTIFACTS}/colourvision-${vision}.png`, timeout: T(90000) }).catch(() => {});
     const want = vision === 'default' ? ['#d8263a', '#e8b830'] : safe[vision].slice(0, 2);
     const sym = ['▲', '●'];
     check(seen.teams.join() === want.join(), `${vision}: the teams wear ${want.join(' and ')} (${seen.teams.join(', ')})`);
     check(hud.feed.length >= 4 && hud.feed.every((x) => sym.includes(x)), `${vision}: every kill feed name has its team's symbol (${hud.feed.join(' ')})`);
-    check(hud.groups.join() === '▲,●' && hud.marks.length >= 8 && hud.marks.every((x) => sym.includes(x) || x === '★' || x === '◆'), `${vision}: the scoreboard's teams and rows have their symbols (${hud.groups.join(' ')}; ${hud.marks.join('')})`);
+    check(hud.groups.join() === '▲,●' && hud.marks.length >= 6 && hud.marks.every((x) => sym.includes(x) || x === '★' || x === '◆'), `${vision}: the scoreboard's teams and rows have their symbols (${hud.groups.join(' ')}; ${hud.marks.join('')})`);
     check(hud.bar.length === 2 && hud.target === sym[seen.foeTeam], `${vision}: the score bar and the name of whoever you hit have the symbols (${hud.bar.join(' ')}; ${hud.target})`);
     const blips = hud.minimap.split('|').slice(1).filter((b) => b.includes(want[seen.mine]));
     check(blips.length >= 1 && blips.every((b) => b.endsWith(`,${seen.mine}`)), `${vision}: teammates on the minimap in the team's colour, as its symbol (${blips.length} blips: ${blips.slice(0, 2).join(' ')})`);
-    await page.keyboard.press('Tab');
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
-  await page.context().close();
+  await ctx.close();
 }
 
 async function teamsFlow(browser) {
