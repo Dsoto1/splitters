@@ -31,9 +31,5 @@ Owner's notes, 2026-11-24. A direction to build toward, not yet a plan: the owne
 
 1. **Both:** solo against bots, and co-op with friends.
 2. **Saved on the device and on the profile.** The device keeps a copy, so play works signed out and offline. Signed in, the hub keeps it on the player's profile, next to their career stats (packages/server/src/profiles.ts, already per Cognito account on the hub box). On sign-in the two merge: unlocks are a union, and progress takes the furthest. It's a few KB per player on the existing box: no new AWS service or cost. The client reports its own progress; that's fine for a campaign (no rankings depend on it).
-3. (See the question below.)
+3. **Locked everywhere:** until a player unlocks a character, they can't pick it in any mode (campaign, Quick Play, Match Setup, online). Bots can still use it, so players meet the characters they're working toward. New players start with the Chrono Crew.
 4. **Bosses: keep it simple.** Better bot intelligence (the top skill and more), better stats (more HP, extra damage), and some bosses favour certain weapons or power-ups. The existing bot skill and character stats carry most of it.
-
-## Open
-
-3. Characters not yet unlocked in the campaign: are they also hidden in normal play (Quick Play, Match Setup, online), or only in the campaign? (Asked 2026-11-24.)
