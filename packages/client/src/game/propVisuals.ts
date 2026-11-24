@@ -18,9 +18,10 @@ import type { PropBatches } from './propBatches.ts';
  * maps stay cheap to draw; with `batches`, static ones are thin instances in their square's batch instead (the
  * root stays, with no meshes under it; the caller decides which props go there). `indoor` (shared `indoorProps`): under
  * a roof, so it stays out of the sun's shadow pass. `breakable`: it can break, so a batch draws it only while the root is
- * enabled (PropBatches.shown). Take one down with `disposePropNode`.
+ * enabled (PropBatches.shown). `copies`: its model's copies on the map (the batches merge a model with few, or hand it
+ * back). Take one down with `disposePropNode`.
  */
-export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null, indoor = false, breakable = false): TransformNode {
+export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity, name: string, frozen = true, instanced = false, terrain: TerrainData | null = null, batches: PropBatches | null = null, indoor = false, breakable = false, copies = Infinity): TransformNode {
   const root = new TransformNode(name, scene);
   root.position.set(e.position[0], e.position[1], e.position[2]);
   root.scaling.setAll(e.scale);
@@ -33,7 +34,7 @@ export function createPropNode(scene: Scene, models: ModelLibrary, e: PropEntity
   const file = kitModelFile(e.model, e.variant) ?? envModelFile(e.model, e.variant) ?? def.file;
   // The game's static props (not carried): copies in their square's batch (propBatches.ts), tint and all. A `breakable`
   // one (the caller's call: shared isBreakableProp) draws there only while `root` is enabled.
-  const batched = batches && frozen ? batches.add(file, root, small, e.tint ?? null, indoor, breakable) : Promise.resolve(false);
+  const batched = batches && frozen ? batches.add(file, root, small, e.tint ?? null, indoor, breakable, copies) : Promise.resolve(false);
   const model = batched.then((ok) => (ok ? null : instanced && !e.tint ? models.instantiateStatic(file, `${name}_model`) : models.instantiate(file, `${name}_model`, false)));
   void model.then((node) => {
     if (!node) return;

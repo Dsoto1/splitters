@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Fewer draws for furniture and props.** A prop's flat colours share one material per pack, and still props standing together are drawn as one where they share it (a dorm room's sink, desk, bunk and door): far fewer draw calls on St. John's and other furnished maps, the look unchanged.
 - **Big matches draw a little cheaper.** Doors and buttons of one kind are drawn together (Flavius Rule's views about 30 % fewer draw calls), and the lights and shadows check less every frame; nothing looks different (docs/PERF_DRAWS_2026-11-23.md).
 - **The Mounted MG and the Machine Pistol no longer stutter.** They fire short cuts of their reports (0.39 s and 0.29 s), so at 15 and 20 shots a second each shot rings out instead of the one before being cut off; the other guns on those sounds are unchanged.
 - **Slow guns ring out.** Snipers, shotguns, revolvers and the Hand Cannon, the lever and flintlock guns, launchers and rockets, the railgun, vortex and disc now let their report ring for up to 1.5 s instead of stopping short (and the tank cannon sound no longer has extra shots in it); full-auto guns are unchanged.

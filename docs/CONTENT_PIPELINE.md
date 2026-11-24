@@ -1502,6 +1502,34 @@ Survival and Train kits. Real-world sizes are the props' `height` in their pack 
 2026-11-04 pass shrank the chunkiest clutter: barrels, the powder keg, bottle, bucket, anvil, lantern,
 candles, shopping cart, fridge); collision follows the built size.
 
+### Prop material atlases
+
+`tools/content/prop-atlas.mjs`, run by `prepare-props.mjs` on every prop it builds (after its surfaces) and, once, in
+place on props kept as built (docs/PERF_PROPS_2026-11-23.md). Each pack is its own atlas:
+
+- **Flat colours move into the vertices.** A material without a picture (the household items paint a part per colour:
+  the cupboard sink had three) gives its colour to the vertices it paints (`COLOR_0`, three components, multiplied
+  into any vertex colour already there; 8-bit where that shows within half a step on screen, else 16-bit, so the
+  near-blacks keep their shade) and keeps white in its place. Alpha, roughness, metalness, emission, culling and the
+  surface stay on the material. A vertex list two parts of different colours shared is split first (each part keeps
+  only the vertices it uses).
+- **Every material gets its pack's atlas key**, `extras.atlas = "<pack>/<kind>"`, the kind a hash of everything it draws
+  with apart from that colour (alpha mode, both sides, roughness, metalness, emission, extensions, the surface extras
+  and, for a textured material, its pictures' pixels, sampler and coordinates). `extras.atlasColor` keeps the colour it
+  had and `extras.atlasVersion` the step's version (`ATLAS_VERSION`: a prop atlased by an older version is done again).
+- **The game shares one material per key** (`content/models.ts`; `?perfoff=propatlas` draws each material on its own,
+  exactly as before): a prop is a draw per kind, and props of a pack with the same kind can be merged into one draw
+  where they stand together (`game/propBatches.ts`, `?perfoff=propmerge`). The generated kit families already carry
+  their colours in their vertices; the game shares their materials by what they are (name, surface, factors).
+- **Textured materials keep their pictures and coordinates.** Packing several pictures into one would break
+  coordinates that repeat (a tiled plank or brick), so they only get the key: the Kenney kits' shared colour map is one
+  material for every prop of the pack that uses it with the same surface.
+- **Left alone:** nature props (the environment draws them) and a fire prop's own flame materials (the game hides them
+  by name: `flame.hide`).
+
+The lock records each prop's bytes as before; the step adds 5.6 MB (7.5 %) to `public/props` in all (the vertex
+colours). The palette pictures of the props it changed are made again by `pnpm content:rebuild` (they look the same).
+
 ### Prop collision
 
 What a placed prop collides with (shots, players, bots' navigation, cover) is its catalogue collision
