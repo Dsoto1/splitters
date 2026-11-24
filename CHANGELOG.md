@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Small characters on turrets and vehicle guns** see and fire from a full-size gunner's eye: a small bot on a turret now fires it.
 - **Blaster X-42: bolts leave the gun's muzzle**, first and third person (they came out of the middle of the screen).
 - **Bullet holes on breakable and moving blocks** (the Training Range's plank boards, a mover's platforms): rounds leave holes and splinters that ride with the block and go when it breaks and comes back.
 - **Menu music shuffles in the Map Maker tracks** with the Arena ones, for variety; MapMaker still plays its own.
