@@ -6052,7 +6052,8 @@ async function offlineFlow(browser) {
   await page.click('#map-cats [data-cat="all"]');
   const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
-  check(medieval.includes('citadel') && medieval.includes('market_town') && !medieval.includes('sandgate') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(medieval.includes('gallows_yard') && medieval.includes('market_town') && !medieval.includes('sandgate') && !medieval.includes('training_range') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
   check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));

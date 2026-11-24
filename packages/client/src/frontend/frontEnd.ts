@@ -1497,6 +1497,9 @@ export class FrontEnd {
     catBar.setAttribute('aria-label', 'Map categories');
     const tagRow = el('div', { class: 'map-subtags', id: 'map-subtags', role: 'group' });
     tagRow.setAttribute('aria-label', 'Sub-tags');
+    // TODO(training range move): the Training Range leaves the map list for the loadout screen's weapon test range
+    // (owner, 2026-11-24); filter by the map's training flag once the helper moving it adds one.
+    const offGrid = (m: ArcadeMap) => m.key === 'training_range' || (m.metadata as { training?: boolean }).training === true;
     const catOf = (m: ArcadeMap) => ({ categories: m.metadata.categories, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
     const drawCards = () => {
       const current = this.currentMap();
@@ -1511,7 +1514,7 @@ export class FrontEnd {
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
       // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under All maps.
       const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
-      const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
+      const base = built.filter(({ m }) => !offGrid(m) && (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
       const plain = base.filter(({ m }) => inTab(m));
       drawCategoryTabs(catBar, tagRow, {
         filter: cat,
