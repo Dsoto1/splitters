@@ -978,11 +978,11 @@ describe('what the bays are made of, and what they cost', () => {
   };
   it('each is made of the kit tiles, blocks, props and lights it says', () => {
     // Room furniture paired (the default since St. John's step 4): a room's desks and chairs one prop, its closet
-    // fronts another, so a room is 5 props, not 9; and a mirror over each room's sink (St. John's 11): 6.
-    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 24, doors: 0, lights: 1, tileIds: ['core.room'] });
-    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front_pair', 'kit.door.oak_open', 'kit.table.desk_hutch_pair', 'prop.hh_cupboard_sink', 'prop.hh_mirror']);
-    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 20, doors: 0, lights: 1 });
-    expect(made('setpiece.hall_centre')).toMatchObject({ props: 77 }); // 65, and 12 sink mirrors since St. John's 11
+    // fronts another, so a room is 5 props, not 9.
+    expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 20, doors: 0, lights: 1, tileIds: ['core.room'] });
+    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front_pair', 'kit.door.oak_open', 'kit.table.desk_hutch_pair', 'prop.hh_cupboard_sink']);
+    expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 18, doors: 0, lights: 1 });
+    expect(made('setpiece.hall_centre')).toMatchObject({ props: 65 });
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
@@ -1023,7 +1023,7 @@ describe('what the bays are made of, and what they cost', () => {
     expect(one.collision).toBeLessThanOrEqual(134);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
-    expect(one.props).toBe(24); // 20, and a mirror over each room's sink since St. John's 11
+    expect(one.props).toBe(20);
   });
 
   it('paired furniture collides exactly as the separate pieces did, in every dorm piece and turn', () => {
@@ -1533,7 +1533,7 @@ describe("the Dorm Bay End's Room option (the lead's notes of 2026-11-23: Welles
     const made = (room: string) => setPieceParts({ id: 'p', piece: 'setpiece.dorm_bay_end', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { room, roomDoors: 'slim', end: 'door' } } }, def, 'core.castle', builtInSetPieces());
     const models = (room: string) => made(room).entities.flatMap((e) => (e.kind === 'prop' ? [e.model] : [])).sort();
     expect(models('washroom').filter((m) => /toilet|shower|sink|mirror/.test(m))).toEqual(['prop.hh_cupboard_sink', 'prop.hh_cupboard_sink', 'prop.hh_mirror', 'prop.hh_mirror', 'prop.hh_toilet', 'prop.hh_toilet', 'prop.hm_shower', 'prop.hm_shower']);
-    expect(models('dorm')).toContain('prop.hh_mirror');
+    expect(models('dorm')).not.toContain('prop.hh_mirror'); // a dorm room's sink: no mirror prop (the budget; QUEUE, mirror folded into the sink)
     // Closed: no door out, no room: the walled tile and its fill alone.
     expect(made('closed').entities.map((e) => e.kind)).toEqual(['block']);
     expect(Object.values(made('closed').tiles[0]!.edges ?? {})).toEqual(['wall', 'wall', 'wall', 'wall']);

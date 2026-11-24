@@ -1164,8 +1164,7 @@ glass windows, taller and more bookcases; the Faceted End without its stair), th
 doorway end) and **Window bench** (a seat 1.2 m deep, 1 m up three steps of 0.25 m on 0.5 m treads, along a side's
 upper wall under its windows); **Gable Annex (into the building behind)**: the Small Stucco Wing centred on two cells,
 its back open in a doorway, two steps down inside. Academy: the **Dorm Bay End**'s **Room** option (Dorm room /
-Washroom: two toilet stalls, two showers, two sinks with mirrors / Closed: walled and filled), and a wall mirror over
-every dorm room's sink. Walked: `setPiecesCampus.test.ts` (each new option, every turn; every pane fills a clear
+Washroom: two toilet stalls, two showers, two sinks with mirrors / Closed: walled and filled). Walked: `setPiecesCampus.test.ts` (each new option, every turn; every pane fills a clear
 opening) and `setPiecesAcademy.test.ts` ("Memorial Hall with rounded corners and its annex", "the Dorm Bay End's Room
 option"); the verge and the hip's join in `tools/content/test/kitprops.test.mjs`. No map format change.
 
