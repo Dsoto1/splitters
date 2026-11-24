@@ -740,11 +740,13 @@ export function leadedMesh(seed, size, g, look, level) {
     const zf = (dir * d) / 2;
     const zg = zf - dir * 0.025;
     const q = (x0, y0, x1, y1, z, c) => quadN(m, [x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], [0, 0, dir], c);
-    // Frame: four bars round, mullions between the lights; a sill.
-    q(-X, sill, X, sill + fw, zf, frame);
-    q(-X, h - fw, X, h, zf, frame);
-    q(-X, sill + fw, -X + fw, h - fw, zf, frame);
-    q(X - fw, sill + fw, X, h - fw, zf, frame);
+    // Frame: four bars round, mullions between the lights; a sill. (Open: the bars are boxes through the wall, below.)
+    if (!open) {
+      q(-X, sill, X, sill + fw, zf, frame);
+      q(-X, h - fw, X, h, zf, frame);
+      q(-X, sill + fw, -X + fw, h - fw, zf, frame);
+      q(X - fw, sill + fw, X, h - fw, zf, frame);
+    }
     if (sill) q(-X, 0, X, sill, zf, scale3(frame, 0.85));
     const lw = (w - 2 * fw - (lights - 1) * fw * 0.7) / lights;
     if (!open) q(-X + fw, sill + fw, X - fw, h - fw, zg, lead);
@@ -776,10 +778,16 @@ export function leadedMesh(seed, size, g, look, level) {
     const Z = d / 2;
     const yb = sill + fw;
     const yt = h - fw;
-    quadN(m, [-X + fw, yb, -Z], [X - fw, yb, -Z], [X - fw, yb, Z], [-X + fw, yb, Z], [0, 1, 0], scale3(frame, 0.9));
-    quadN(m, [-X + fw, yt, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [-X + fw, yt, Z], [0, -1, 0], scale3(frame, 0.75));
-    quadN(m, [-X + fw, yb, -Z], [-X + fw, yt, -Z], [-X + fw, yt, Z], [-X + fw, yb, Z], [1, 0, 0], scale3(frame, 0.82));
-    quadN(m, [X - fw, yb, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [X - fw, yb, Z], [-1, 0, 0], scale3(frame, 0.82));
+    // The four bars are boxes through the wall's depth, both faces and the reveal's lining one solid. (They were the
+    // two faces' bars and a lining quad set 2 cm inside the wall's cut: the 2 cm channel between the lining and the
+    // wall's reveal was closed at the outer end only by the outer bar, drawn facing out, so from the room a slit of
+    // sky ran up both jambs and along the head: owner, 2026-11-24, St. John's Memorial Hall.) A bar's faces against
+    // the wall (its outer side) are left out.
+    const tone = (k) => (p, n) => (Math.abs(n[2]) > 0.5 ? frame : scale3(frame, k));
+    box(m, [-X, sill, -Z], [X, yb, Z], tone(0.9), ['ny']);
+    box(m, [-X, yt, -Z], [X, h, Z], tone(0.75), ['py']);
+    box(m, [-X, yb, -Z], [-X + fw, yt, Z], tone(0.82), ['nx', 'ny', 'py']);
+    box(m, [X - fw, yb, -Z], [X, yt, Z], tone(0.82), ['px', 'ny', 'py']);
     for (let i = 1; i < lights; i++) {
       const x1 = -X + fw + i * (lw + fw * 0.7);
       box(m, [x1 - fw * 0.7, yb, -Z + 0.01], [x1, yt, Z - 0.01], scale3(frame, 0.88), ['ny', 'py', 'nz', 'pz']);
