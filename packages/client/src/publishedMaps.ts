@@ -33,8 +33,16 @@ export interface PublishedEntry {
 
 /** The built-in maps' records (only maps with a release block have one). */
 let records: Promise<Map<string, BuiltInRecord | undefined>> | undefined;
-/** Read from the map index when first needed (imported here lazily: unit tests that reach this module have no Vite). */
-const builtInRecords = () => (records ??= import('virtual:map-index').then((m) => new Map((m.default as { key: string; builtIn?: BuiltInRecord }[]).map((e) => [e.key, e.builtIn]))));
+/**
+ * Read when first needed, from the built-in maps' release records (mapIndexPlugin.ts `virtual:map-releases`, out of the
+ * menu's first download; imported here lazily: unit tests that reach this module have no Vite). Every built-in map is
+ * in the map, its record or undefined (a map with no release block).
+ */
+const builtInRecords = () =>
+  (records ??= Promise.all([import('virtual:map-index'), import('virtual:map-releases')]).then(([m, r]) => {
+    const recs = r.default as Record<string, BuiltInRecord>;
+    return new Map((m.default as { key: string }[]).map((e) => [e.key, recs[e.key]]));
+  }));
 
 /** A hub API address (`maps`, `maps/<id>`, `owner`), or null when there is no hub. */
 export function hubApi(path: string): string | null {

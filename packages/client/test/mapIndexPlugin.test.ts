@@ -17,9 +17,15 @@ describe('map index', () => {
     expect(entries.find((e) => e.key === 'iron_coast')?.modes).toContain('core.breakthrough');
     // A map with a release block carries its record for choosing it over a published copy (publishedChoice.ts):
     // Flavius Rule as exported at revision 32 (its block describes it).
-    const flavius = entries.find((e) => e.key === 'sandfall_colosseum')?.builtIn;
+    // The records live apart (`virtual:map-releases`, loaded on demand: the menu's first download is on a budget).
+    expect(entries.some((e) => e.builtIn)).toBe(false);
+    const rid = (plugin.resolveId as (id: string) => string | undefined)('virtual:map-releases')!;
+    const rcode = await (plugin.load as (this: unknown, id: string) => Promise<string>).call({ addWatchFile: () => {} }, rid);
+    const records = JSON.parse(rcode.replace(/^export default /, '').replace(/;$/, '')) as Record<string, { hash: string; release?: { contentHash: string; revision: number } }>;
+    const flavius = records.sandfall_colosseum;
     expect(flavius?.release?.revision).toBeGreaterThanOrEqual(32);
     expect(flavius?.hash).toMatch(/^sha256:[0-9a-f]{64}$/);
-    expect(entries.filter((e) => e.builtIn).length).toBeGreaterThan(20);
+    expect(Object.keys(records).length).toBeGreaterThan(20);
+    expect(Object.keys(records).every((k) => entries.some((e) => e.key === k))).toBe(true);
   });
 });

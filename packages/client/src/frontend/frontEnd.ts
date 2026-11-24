@@ -162,7 +162,6 @@ import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscr
 import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
 import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
-import { botManager } from './botManager.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
@@ -2257,7 +2256,12 @@ export class FrontEnd {
   private botSetRow(map: MapDocument, sizes: readonly number[], players: number): HTMLElement {
     const s = this.setup;
     const edit = el('button', { type: 'button', id: 'arcade-botset', textContent: s.botSet ? 'Edit bots…' : 'Name your bots…', title: 'Your own bots: names, looks, skill, style, team and squad' });
-    edit.addEventListener('click', () => {
+    // The Bots window loads on first open (botManager.ts; the menu's first download is on a budget).
+    let opening = false;
+    edit.addEventListener('click', async () => {
+      if (document.getElementById('bot-manager') || opening) return;
+      opening = true;
+      const { botManager } = await import('./botManager.ts').finally(() => (opening = false));
       if (document.getElementById('bot-manager')) return;
       const sides = sizes.length ? mapTeams(map, sizes.length) : [];
       const win = botManager({
