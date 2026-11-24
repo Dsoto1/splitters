@@ -279,7 +279,7 @@
       "assetVersion": 2,
       "notes": {
         "1": "First version (St. John's step 8b; the owner's interior photo: an open timber roof on arch-braced trusses, close rafters against pale panels): one 8 m bay of a ridge roof over a hall 16 m across: brown-red shingle slopes with a flared eave 0.7 m outside the walls, the ridge 5.6 m over the eaves; underneath pale panels, twelve rafters a slope, purlins and a ridge beam, and two arch-braced trusses (wall posts on stone corbels 1.5 m down the wall, principals, a collar, curved braces, a king post). Its eaves are 1.8 m over its foot: place the foot 1.8 m under the walls' top. Variant `end` closes the gable on −z with a wall (the hall's end). Collides as nothing.",
-        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.45 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud."
+        "2": "The gable's verge closed (St. John's Memorial Hall pass, owner 2026-11-23: \"the roofline edges look strange; you can almost see through them\"): the slopes were a skin with open ends and the gable wall stopped 6 cm under the shingles, so a slit ran from eave to ridge along every gable; a dark barge board 0.45 m deep now runs up each slope at the gable's face, 3 cm over the shingles and 2 cm proud. Variant `one_truss`: a single truss in the bay's middle, so a hall's upper windows can stand either side of it, clear of its post and corbel (St. John's Memorial Hall, Rounded corners)."
       },
       "size": [
         17.4,
@@ -351,6 +351,26 @@
             "stone": "#c9c2b0",
             "gable": "#5a3d32",
             "gableIn": "#d8d0bc"
+          }
+        },
+        {
+          "index": 2,
+          "name": "one_truss",
+          "seed": 41013,
+          "set": {
+            "trusses": [
+              0
+            ]
+          },
+          "look": {
+            "roof": "#6b4638",
+            "trim": "#b0795a",
+            "panel": "#d8d0bc",
+            "rafter": "#3a2a1e",
+            "jitter": 0.08,
+            "grime": 0.25,
+            "timber": "#3e2c1f",
+            "stone": "#c9c2b0"
           }
         }
       ]
