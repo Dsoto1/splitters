@@ -75,7 +75,7 @@ function behindWall(wallHeight: number, opts: { look?: string; seeds?: number[] 
 }
 
 describe('bots shoot only along a clear line', () => {
-  it.each(['core.ranger', 'core.knight'])('a player whose head and shoulders show over low cover: the bot (%s) aims at what shows, not into the wall', (look) => {
+  it.each(['core.dale', 'core.knight'])('a player whose head and shoulders show over low cover: the bot (%s) aims at what shows, not into the wall', (look) => {
     // A standard build, and a large one (its crouched eye is level with the wall: a flat line just over the top
     // put spread rounds into it until the check ran a little under the aim and stood the bot up).
     const r = behindWall(1.3, { look });
@@ -90,7 +90,7 @@ describe('bots shoot only along a clear line', () => {
 
   it('a wall well below the line (0.4 m) holds nothing up: the bot keeps firing and hitting', () => {
     // Before: 47 rounds, 29 hits, 18 short (the wandering aim dipped into the wall and the ground before it).
-    const r = behindWall(0.4, { look: 'core.ranger' });
+    const r = behindWall(0.4, { look: 'core.dale' });
     expect(r.rounds, JSON.stringify(r)).toBeGreaterThan(20);
     expect(r.hits / r.rounds, JSON.stringify(r)).toBeGreaterThan(0.6);
   }, 120_000);

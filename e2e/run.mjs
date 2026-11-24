@@ -7863,7 +7863,7 @@ async function beamsFlow(browser) {
 }
 
 async function tracersFlow(browser) {
-  await tracerMuzzleChecks(browser, ['core.ranger']);
+  await tracerMuzzleChecks(browser, ['core.dale']);
 }
 
 async function tracers2Flow(browser) {
@@ -7974,7 +7974,7 @@ async function tracerMuzzleChecks(browser, looks) {
     }
     await page.keyboard.press('KeyH');
     const fpOn = await step(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
-    if (look === 'core.ranger') for (const weapon of ['core.rifle', 'core.pistol']) {
+    if (look === 'core.dale') for (const weapon of ['core.rifle', 'core.pistol']) {
       await page.evaluate((w) => window.__give(w), weapon);
       await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.localMuzzle(), weapon);
       cases.push({ look, weapon, third: false, strafe: true, crouch: false, aim: false, r: await run({ third: false, frames: 48, strafe: true, crouch: false, aim: false }) });
@@ -7990,7 +7990,7 @@ async function tracerMuzzleChecks(browser, looks) {
     await ctx.close();
   }
   const who = looks.map((l) => l.replace('core.', '')).join(', ');
-  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.dale') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
 }
 
 /**

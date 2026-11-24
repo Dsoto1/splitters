@@ -31,6 +31,7 @@ import {
   lookGroup,
   validLookId,
   DEFAULT_LOOK,
+  randomFirstLook,
   DEFAULT_RULES,
   GAME_MODES,
   raceTrack,
@@ -532,7 +533,9 @@ export class FrontEnd {
     this.clan = storage('cs.clan') ?? '';
     installTooltips();
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
-    this.look = validLookId(params.get('look') ?? storage('cs.look') ?? DEFAULT_LOOK);
+    // A new player with no saved pick gets a random pickable character, kept like any pick (browser tests keep the fixed default).
+    this.look = validLookId(params.get('look') ?? storage('cs.look') ?? (testMode() || navigator.webdriver ? DEFAULT_LOOK : randomFirstLook(Math.random())));
+    if (!params.get('look') && !storage('cs.look') && !testMode() && !navigator.webdriver) storage('cs.look', this.look);
     // The setup used last (this version's or an older one's), if its map is still here.
     let raw: unknown = null;
     try {

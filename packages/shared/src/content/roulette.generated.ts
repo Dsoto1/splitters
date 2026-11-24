@@ -4,8 +4,6 @@
 /** Roulette's data (content/roulette.json; what each field means: its $comment, and sim/roulette.ts). */
 export const ROULETTE_DATA = {
   characters: {
-    'core.ranger': 'core.spear',
-    'core.sprout': 'core.sawed_off',
     'core.knight': 'core.spear',
     'core.dapper': 'core.smg',
     'core.boglurker': 'core.goo_gun',

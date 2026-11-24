@@ -244,26 +244,32 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
  * Looks that were retired, and the kept look each one now resolves to, so a saved profile, setup, bot set or map
  * that still names one keeps working. A retired look stays defined (below) but leaves CORE_LOOKS: Character
  * Select, the bot rotation and the Designer's presets no longer offer it. 2026-11-01: the owner's Roster Board
- * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stay).
+ * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stayed until 2026-11-24).
  */
 export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
+  // Owner, 2026-11-24 ("Let's just retire linktifa and sprout"): both off the roster (files, manifests and portraits kept;
+  // the Designer keeps Linktifa's modular body as its base: DESIGNER_BASE_LOOK). A saved pick plays Honest Abe (Legends)
+  // and Lancer Mei (Everyday Folk), kept looks of the same group; every older retirement that led to either now leads
+  // straight to the kept look, in one step.
+  'core.ranger': 'core.abe',
+  'core.sprout': 'core.mei',
   'core.champion': 'core.dale',
   'core.desperado': 'core.dale',
-  'core.miller': 'core.sprout',
-  'core.raider': 'core.ranger',
-  'core.sprinter': 'core.sprout',
-  'core.striker': 'core.ranger',
-  'core.huntress': 'core.ranger',
-  'core.tracker': 'core.ranger',
+  'core.miller': 'core.mei',
+  'core.raider': 'core.abe',
+  'core.sprinter': 'core.mei',
+  'core.striker': 'core.abe',
+  'core.huntress': 'core.abe',
+  'core.tracker': 'core.abe',
   'core.bulwark': 'core.grunt68',
   'core.commando': 'core.grunt68',
   'core.operative': 'core.grunt68',
-  'core.scout': 'core.sprout',
-  'core.pathfinder': 'core.sprout',
-  'core.wayfarer': 'core.sprout',
-  'core.frost': 'core.sprout',
-  'core.medic': 'core.sprout',
-  'core.sentinel': 'core.sprout',
+  'core.scout': 'core.mei',
+  'core.pathfinder': 'core.mei',
+  'core.wayfarer': 'core.mei',
+  'core.frost': 'core.mei',
+  'core.medic': 'core.mei',
+  'core.sentinel': 'core.mei',
   'core.farmhand': 'core.dale',
   'core.drifter': 'core.dale',
   'core.brawler': 'core.dale',
@@ -318,7 +324,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter']);
+/** Linktifa's id: the sim's fixed default look and the Designer's base body (retired from play, kept drawable). */
+const DEFAULT_LOOK_ID = 'core.ranger';
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DEFAULT_LOOK_ID]);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -421,7 +429,18 @@ export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.
 /** The looks an automatic pick draws from (the default look, random bots, random characters, Roulette): the core tier of the roster. */
 export const PICKABLE_LOOKS: readonly CharacterLook[] = pickableLooks(CORE_LOOKS);
 
-export const DEFAULT_LOOK = PICKABLE_LOOKS[0]!.id;
+/**
+ * The sim's fixed default look (a combatant before it picks, the tests' standard body): Linktifa's modular body, off the
+ * roster since 2026-11-24 but kept drawable (NPC_KEPT_LOOKS). A new player's first look is random instead
+ * (`randomFirstLook`, drawn by the front end); an unknown id still falls back to the roster's first pickable look.
+ */
+export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
+
+/** A random pickable look for a new player with no saved pick (`roll` in [0, 1): Math.random(), or a fixed value). */
+export const randomFirstLook = (roll: number): string => PICKABLE_LOOKS[Math.min(PICKABLE_LOOKS.length - 1, Math.floor(roll * PICKABLE_LOOKS.length))]!.id;
+
+/** The Designer's modular base body (Linktifa's parts): off the roster, but "Design new" and whole-body starts use it. */
+export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === 'core.ranger')!;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
@@ -596,16 +615,16 @@ export function decodeLook(id: string): CharacterLook | null {
 export const getLook = (id: string | undefined): CharacterLook => {
   const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
   if (npc) return npc;
-  return lookIn(CORE_LOOKS, id);
+  return lookIn(CORE_LOOKS, id, DESIGNER_BASE_LOOK);
 };
 
 /**
  * getLook over a roster. By id a look resolves whatever its tier (a saved choice of an experimental character keeps
  * working, and a bot set's hand pick); only the fallback is a pick: the roster's first core look.
  */
-export function lookIn(roster: readonly CharacterLook[], id: string | undefined): CharacterLook {
+export function lookIn(roster: readonly CharacterLook[], id: string | undefined, fallback?: CharacterLook): CharacterLook {
   const key = (id && RETIRED_LOOKS[id]) || id;
-  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? roster.find((l) => characterTier(l) === 'core')!;
+  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? fallback ?? roster.find((l) => characterTier(l) === 'core')!;
 }
 
 /** A stable look for the `index`-th bot, spread across a roster's core tier (never an experimental character). */

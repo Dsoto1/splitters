@@ -5,6 +5,7 @@ import {
   CLIP_SET_CLIPS,
   CORE_LOOKS,
   DEFAULT_LOOK,
+  DESIGNER_BASE_LOOK,
   EXPERIMENTAL_SECTION,
   PICKABLE_LOOKS,
   REPORT_ONLY_CHARACTER_GATES,
@@ -46,7 +47,8 @@ describe('character tiers', () => {
     expect(CORE_TIER.length + EXPERIMENTAL.length).toBe(CORE_LOOKS.length);
     expect(CORE_TIER.length).toBeGreaterThan(100);
     expect(PICKABLE_LOOKS).toEqual(CORE_TIER);
-    expect(DEFAULT_LOOK).toBe(CORE_TIER[0]!.id);
+    // (The sim's fixed default is Linktifa's body, off the roster since 2026-11-24; a new player's first look is random.)
+    expect(PICKABLE_LOOKS.map((l) => l.id)).not.toContain(DEFAULT_LOOK);
   });
 
   it('no automatic pick draws an experimental character', () => {
@@ -135,7 +137,7 @@ describe("characters' quality gates", () => {
   });
 
   it('a look built from the shared parts is judged on its clips, hit shape and portrait', () => {
-    const preset = CORE_LOOKS.find((l) => !l.whole)!;
+    const preset = DESIGNER_BASE_LOOK;
     expect(characterGates(preset, { clips: [...CLIP_SET_CLIPS], hitbox: true, portrait: true }).map((g) => g.id)).toEqual(['clips', 'hitbox', 'portrait']);
   });
 

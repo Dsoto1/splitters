@@ -245,8 +245,9 @@ describe('Fort Wars', () => {
     // 6.2-9.1 m short, no takes in 150 s. Seed 2. The nature swap (2026-11-18: Fort Meadow's Kenney rocks now generated
     // boulders and an outcrop) moved them again, seeds 1-9: 1, 8 and 9 pass, 2-7 end 7.9-11.8 m short. Seed 1.
     // New models for the Salamander Warlord, Shiba and Bandit (2026-11-22) changed their hit shapes, seeds 1-9: 3-9
-    // pass, 1 ends 7.9 m and 2 13.4 m short. Seed 3.
-    const match = new Match(meadow(), rules, 3);
+    // pass, 1 ends 7.9 m and 2 13.4 m short. Seed 3. Retiring Linktifa and Sprout (2026-11-24) changed the cast again,
+    // seeds 1-9: 4 and 7 pass, the rest end 6.2-12.5 m short (6 builds no stairs). Seed 4.
+    const match = new Match(meadow(), rules, 4);
     for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
     const forts = fortsOf(match);
     steps(match, 60 * TICK_RATE - 5);

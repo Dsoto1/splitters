@@ -183,10 +183,10 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Group (`id`) | Who |
 |---|---|
 | Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry |
-| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, Sprout, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
+| Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver, Umpire, Velvet Vance |
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Dex Calloway, Doc Seraphine Vale, Flicker, Fuse Hollister, Gears Okafor, Lyra Vantis, Mags Petrov, Nova Kade, Sarge Tobias Crane, Vesper Quill, Wren Halloway (all Experimental for now; their group is Outer Space) |
-| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Santa, Sun Warrior, The Purple Comet |
+| Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Santa, Sun Warrior, The Purple Comet |
 | Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
@@ -1504,7 +1504,7 @@ each plays their own choice from their next life. It works with Character stats 
 
 Every look is small, standard or large (`size` on the look; custom looks add
 `-s` / `-l` to their ID, and the Character Designer has a Size choice on the
-Body tab). Presets: Sprout is small, Bulwark is large, everyone else standard.
+Body tab). Presets: Sprout (retired) was small, Bulwark is large, everyone else standard.
 
 | Size | Body (height, width, eyes) | Speed | Health |
 |---|---|---|---|
@@ -1538,3 +1538,14 @@ workflow (`tools/content/capture-portraits.mjs`, the same renderer), which
 commits them to `check/portraits`; run it after adding characters or changing
 the framing. A look without a shipped portrait (new since the last capture,
 or a player's own design) is rendered live in the browser, as before.
+
+## Linktifa and Sprout retired (owner, 2026-11-24)
+
+"Let's just retire linktifa and sprout." Both leave Character Select, random bots, Random characters, Roulette and the bot
+themes (`RETIRED_LOOKS`; files, manifests and portraits kept). A saved pick, setup or bot set that names one plays a kept
+look of the same group: Linktifa (`core.ranger`) is **Honest Abe** (`core.abe`, Legends), Sprout (`core.sprout`) is
+**Lancer Mei** (`core.mei`, Everyday Folk). Every older retirement that led to either now leads straight to Abe or Mei
+(one step). The Character Designer keeps Linktifa's modular body as its base (`DESIGNER_BASE_LOOK`, used by "Design new"
+from a whole-body character), so custom characters keep working. `DEFAULT_LOOK` is now only the sim's fixed fallback (the
+first pickable look); a new player with no saved pick gets a random pickable one (`randomFirstLook`), saved like any pick so
+it stays; browser tests (`?test=1` or any automated browser) keep the fixed default.

@@ -7,7 +7,7 @@ import { BODY_SIZES, HITBOX_MARGIN } from '../../../packages/shared/src/sim/cons
 import { rayBody, lastHit } from '../../../packages/shared/src/sim/hitbox.ts';
 import { lookHitbox } from '../../../packages/shared/src/sim/lookHitbox.ts';
 import { hitZone } from '../../../packages/shared/src/sim/weapons.ts';
-import { getLook } from '../../../packages/shared/src/content/looks.ts';
+import { DESIGNER_BASE_LOOK, encodeLook, getLook } from '../../../packages/shared/src/content/looks.ts';
 import { outsideShapes, pointsOf, subjects } from '../hitboxes.mjs';
 
 const subjectList = await subjects();
@@ -61,8 +61,9 @@ describe('head spheres where the heads are drawn', () => {
   }
 
   it('a small look: its shoulders are body, where the old fixed 0.32 m head band called them head', async () => {
-    const look = 'core.sprout';
-    const { reg } = await pointsOf(subject(look));
+    // (A small design from the Designer's base body: no small outfit-parts preset is left on the roster.)
+    const look = encodeLook({ body: 'male', parts: DESIGNER_BASE_LOOK.parts, hair: [], colorways: [], skin: null, hairColor: null, size: 'small' });
+    const { reg } = await pointsOf({ ...subject(DESIGNER_BASE_LOOK.id), key: look });
     const headLow = Math.min(...reg.head.map((p) => p[1]));
     // The top of the torso (shoulder line), just below the head.
     const shoulder = reg.torso.filter((p) => p[1] < headLow && p[1] > headLow - 0.12);
