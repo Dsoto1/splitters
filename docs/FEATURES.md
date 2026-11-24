@@ -146,6 +146,11 @@ Bots go for power-ups like any pickup (Regen most when hurt) and back away from 
 (`game/powerupGlow.ts`); Regen, Moon Boots and Bottomless don't show. Prediction runs them all as the host does (speed,
 gravity, jump, the faster cooldowns and reloads, the full magazine).
 
+A power-up's glow now reaches the character's own meshes (it only lit the stand-in capsule, so Double Damage and Speed
+showed only as the flame at the feet). A see-through body (Phantom, and the Shade's cloak) wears a blended copy of an
+opaque character material while see-through: the characters' PBR materials are OPAQUE, which ignores a mesh's
+`visibility`, so a cloaked Shade had been drawn solid (`view.ts` `seeThrough`).
+
 ### Classes (match setting "Classes")
 
 Not available in Co-op, Zombies, Forts, or with Spears/Discs only.
