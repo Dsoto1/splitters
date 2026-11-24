@@ -23,7 +23,7 @@ import { CharacterAnimator, type MotionState } from '../game/characterAnimator.t
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
-import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
+import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, offAxis, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
 import { eyepieceOf, glassCentre, glassHalf, hasGlass, opticNone, opticOf, type CarriedOptic } from '../game/optics.ts';
 import { CLIP_NAME, attachOptic, markAudit } from '../game/opticHousing.ts';
 import { opticFrame } from '../game/opticView.ts';
@@ -69,6 +69,12 @@ export interface SightAudit {
    * it changes when switched off), a scope's or an optic's from where its centre is laid out. null: no reticle.
    */
   reticle: number | null;
+  /**
+   * The lens against the aim (degrees): the middle of a glass as drawn (its mesh's centre, wherever the housing, the
+   * placement and the sight picture put it), or of a 2x optic's eyepiece as placed. Off the aim, the mark sits off the
+   * glass's middle and the view through it reads as aimed elsewhere (owner, 2026-11-23, "that scope tho"). null: neither.
+   */
+  lens: number | null;
   /** A glass's window: its half-height as a share of the screen's, and how much larger the gun is drawn for it. */
   window: number | null;
   /**
@@ -386,15 +392,23 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     const scoped = !scopeEl.hidden ? scopeEl : !opticEl.hidden ? opticEl : null;
     const reticle = glass ? await markOffset() : scoped ? reticleOffset(scoped) : null;
     const window = glass ? (glassHalf(glass)[1] * picture) / (glassCentre(glass)[2] + aim.z) / Math.tan(eye.fov / 2) : null;
+    // The lens as drawn: the glass mesh's centre seen from the eye (world space, the camera looking down +z).
+    const drawnGlass = glass ? shown.node.getChildMeshes(false).find((m) => m.name === 'opticGlass') : undefined;
+    let lens: number | null = null;
+    if (drawnGlass) {
+      drawnGlass.computeWorldMatrix(true);
+      const c = drawnGlass.getBoundingInfo().boundingSphere.centerWorld.subtract(eye.position);
+      lens = offAxis([c.x, c.y, c.z]);
+    } else if (eyepieceOf(def, shown.optic)) lens = offAxis(placed(eyepieceOf(def, shown.optic)!.eye, aim).map((v, i) => (i === 2 ? v || 1e-9 : v)) as [number, number, number]);
     const sightsPass = !!fit && placedError! <= SIGHT_TOLERANCE_DEG && drawn !== null && Math.abs(drawn) <= SIGHT_TOLERANCE_DEG && Math.abs(drawnAcross ?? 0) <= SIGHT_TOLERANCE_DEG;
     // A glass: its mark on the aim, and nothing of the gun on the aim through it. A scope: its reticle on the aim.
     // (Through a model's own sight window, what lies behind the window is clipped: its lens does not count.)
     const onAim = castAt(meshes, 0, 0);
     const clipAt = glass?.window ? placed(glass.window.at, aim)[2] : Infinity;
-    const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (!glass || onAim === null || onAim >= clipAt - 0.002);
+    const opticPass = reticle !== null && reticle <= SIGHT_TOLERANCE_DEG && (lens === null || lens <= SIGHT_TOLERANCE_DEG) && (!glass || onAim === null || onAim >= clipAt - 0.002);
     const armsPass = arms === null || arms >= ARMS_CLEAR_DEG || !!scoped;
     const pass = (fit ? sightsPass : glass || scoped ? opticPass : true) && armsPass && (scoped === scopeEl || nearest > eye.minZ || !!eyepieceOf(def, shown.optic));
-    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), window: round(window), arms, picture: Math.round(picture * 100) / 100, pass };
+    return { id: def.id, fitted: !!fit, placed: round(placedError), drawn: fit ? round(drawn) : null, drawnAcross: fit ? round(drawnAcross) : null, nearest: Math.round(nearest * 1000) / 1000, reticle: round(reticle), lens: round(lens), window: round(window), arms, picture: Math.round(picture * 100) / 100, pass };
   }
 
   /**

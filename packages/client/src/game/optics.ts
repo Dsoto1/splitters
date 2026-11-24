@@ -36,8 +36,8 @@ export interface CarriedOptic {
   kind: OpticKind;
   /** Its own magnification over the hip view (magnified optics). */
   mag?: number;
-  /** Where a housing built in code stands (model space) and its size. */
-  mount?: { at: readonly [number, number, number]; scale: number };
+  /** Where a housing built in code stands (model space) and its size; `eye`: the eye's model z behind a 1x glass on a long gun. */
+  mount?: { at: readonly [number, number, number]; scale: number; eye?: number };
   /** The model's own open sight instead: its window's middle and half width and height (no housing is built). */
   window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
@@ -130,6 +130,17 @@ export function glassCentre(o: CarriedOptic): [number, number, number] {
   return [m.at[0], m.at[1] + o.kind.glass!.rise * m.scale, m.at[2]];
 }
 
+/**
+ * Where the glass mesh itself goes on the gun (model space): the window's middle, a little ahead of a built housing's
+ * (a red dot's round glass 0.3 of its length, a holographic window 0.22, both on the glass's line). opticHousing.ts puts
+ * it here; the checks hold it on the aim.
+ */
+export function glassAt(o: CarriedOptic): [number, number, number] {
+  const c = glassCentre(o);
+  if (o.window || !o.mount) return c;
+  return [c[0], c[1], c[2] + o.kind.glass!.length * o.mount.scale * (o.kind.housing === 'tube' ? 0.3 : 0.22)];
+}
+
 /** The window's half width and height (metres). */
 export function glassHalf(o: CarriedOptic): [number, number] {
   if (o.window) return [o.window.half[0], o.window.half[1]];
@@ -152,8 +163,8 @@ export function aimedFov(o: CarriedOptic | null): number | null {
  * unchanged: nothing comes nearer the near plane). The scale brings the window's half-height to GLASS_SHARE of the
  * screen's, never smaller than drawn plainly, never over PICTURE_MAX.
  */
-export const GLASS_SHARE = 0.2;
-export const PICTURE_MAX = 3;
+export const GLASS_SHARE = 0.13;
+export const PICTURE_MAX = 2;
 
 /** How much larger the aimed gun is drawn: `depth` the glass's distance ahead of the eye (m), `fov` the aimed field of view. */
 export function pictureScale(o: CarriedOptic | null, depth: number, fov: number): number {
