@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1124` · 57978bf1 · 45316069166 (every Experimental character promoted; Rufus Boomtown, Rascal McGraw, Axel Newtman; nine animals open Animalia; green; the first run's characters3 failure was the optic-fix flake, fixed by merging main)
 - `wip/propatlas-1123` · 3b0380b0 · 45303972933 (fewer prop draws: per-pack material atlases and merged still props; St. John's still views at High 600 → 489 draws, its props 188 → 77; switches `propatlas`, `propmerge`; touches 1,332 prop GLBs, the props lock, provenance and palette pictures: after a merge run `pnpm content:rebuild`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
