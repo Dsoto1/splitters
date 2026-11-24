@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 35,
+  "formatVersion": 50,
   "metadata": {
     "id": "express_lobby",
     "name": "Express Lobby",
@@ -19,12 +19,26 @@
     ],
     "release": {
       "mapId": "m_h7c6ifkxig5oxqr6",
-      "versionId": "v_h2zplpt57db6sjp6",
-      "revision": 2,
-      "contentHash": "sha256:57dd2eef5b919b2706eec99892c9766277a0be80c7384bb53589cd00b157ea56",
-      "schemaVersion": 35,
-      "releasedAt": "2026-11-11T15:01:38.453Z"
-    }
+      "versionId": "v_b4nw7h5mxd4yn2ir",
+      "revision": 3,
+      "contentHash": "sha256:84366128bb3ced9bdb39b3d155d39d37f072e242e24fbd120537dd4580c588a2",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:21:18.677Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      },
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

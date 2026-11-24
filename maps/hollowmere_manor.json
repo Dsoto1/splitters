@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "hollowmere_manor",
     "name": "Hollowmere Manor",
@@ -20,12 +20,18 @@
     ],
     "release": {
       "mapId": "m_wpy2pu3o6jy63qji",
-      "versionId": "v_xnhfywx2ke5lg4cw",
-      "revision": 1,
-      "contentHash": "sha256:e069d82631a2afe27a385810979302fb3bc4c1bb5085fbb19f2d5cc6a69b26ce",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:44:29.493Z"
-    }
+      "versionId": "v_4xzd22ub6xczager",
+      "revision": 2,
+      "contentHash": "sha256:c525bc69c085927f83df8681438d9274b96991e37df1ca337a2c6e9246db2bbc",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:32:00.477Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "industrial"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

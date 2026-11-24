@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "market_town",
     "name": "Market Town",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_d3ml2watxrhzzmt6",
-      "versionId": "v_qsodcjdvr662mann",
-      "revision": 9,
-      "contentHash": "sha256:1a1142a73aeef255669360043a2cb7f8fa52141abb78551b773f37aaaa1991d0",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:10:37.625Z"
-    }
+      "versionId": "v_a23tzyaajh6avoue",
+      "revision": 10,
+      "contentHash": "sha256:4450478122bf045b7d4b8eb23188f4f8d417992158d749026f87fc2d41a7875e",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:41:11.608Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "medieval"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

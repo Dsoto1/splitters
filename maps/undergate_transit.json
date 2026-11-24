@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "undergate_transit",
     "name": "Undergate Transit",
@@ -20,12 +20,26 @@
     ],
     "release": {
       "mapId": "m_5lhttjun3ohakisn",
-      "versionId": "v_s7ase2nmkh53stgy",
-      "revision": 8,
-      "contentHash": "sha256:e34f9760f005563c2f0e905792156d2de0d28efa63ac2c49744a5528543da27f",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T13:25:06.670Z"
-    }
+      "versionId": "v_7eijaltmy6p57mzw",
+      "revision": 10,
+      "contentHash": "sha256:8e6dd9b7f6460a70837f71ce02b2411c40fc9a2c9dac19f3202516019840472b",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:18:10.724Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "underground"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -23839,10 +23853,6 @@
       "style": "asphalt",
       "lay": false,
       "race": {
-        "laps": 3,
-        "grid": 14,
-        "vehicle": "speeder",
-        "combat": false,
         "curbs": false,
         "ambient": 2,
         "ambientVehicle": "speeder",

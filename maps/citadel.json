@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "citadel",
     "name": "Citadel",
@@ -18,12 +18,18 @@
     ],
     "release": {
       "mapId": "m_7zr2vuly4aalvval",
-      "versionId": "v_vza2iuwhvepl4oec",
-      "revision": 1,
-      "contentHash": "sha256:d882257d968dbc0a06f228263690665eee63a13d07779fc203a00b622159aa27",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:16:16.551Z"
-    }
+      "versionId": "v_jexcdkccilrhcqm6",
+      "revision": 2,
+      "contentHash": "sha256:54a0fae5b59bb6e46be08a658624ce85b6f794bf9a5d434d5c9b75dd6a52ca3d",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:06:39.324Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "medieval"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2955,8 +2961,8 @@
       "yaw": 2.38,
       "scale": 0.808,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_225",
@@ -2970,8 +2976,8 @@
       "yaw": 4.84,
       "scale": 0.937,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_226",
@@ -3055,8 +3061,8 @@
       "yaw": 3.28,
       "scale": 0.937,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_232",
@@ -3126,8 +3132,8 @@
       "yaw": 1.18,
       "scale": 0.972,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_237",
@@ -3267,8 +3273,8 @@
       "yaw": 2.47,
       "scale": 0.929,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_247",
@@ -3296,8 +3302,8 @@
       "yaw": 2.48,
       "scale": 0.826,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_249",
@@ -3437,8 +3443,8 @@
       "yaw": 3.77,
       "scale": 0.783,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_259",
@@ -3480,8 +3486,8 @@
       "yaw": 2.67,
       "scale": 0.851,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_262",
@@ -3551,8 +3557,8 @@
       "yaw": 0.66,
       "scale": 0.903,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_267",
@@ -3594,8 +3600,8 @@
       "yaw": 0.42,
       "scale": 0.86,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_270",
@@ -3735,8 +3741,8 @@
       "yaw": 2.32,
       "scale": 0.912,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_280",
@@ -3792,8 +3798,8 @@
       "yaw": 3.09,
       "scale": 0.912,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_284",
@@ -3849,8 +3855,8 @@
       "yaw": 1.71,
       "scale": 0.817,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_288",
@@ -3878,8 +3884,8 @@
       "yaw": 3.67,
       "scale": 1.109,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_290",

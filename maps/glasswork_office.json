@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "glasswork_office",
     "name": "Glasswork Office",
@@ -21,12 +21,26 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_pnjeraxxx7fnwb75",
-      "revision": 10,
-      "contentHash": "sha256:c92430bcb558685ab2497670c04494d8c8ccdb8d6678d9d62ef2e42e2e16a307",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:02:25.538Z"
-    }
+      "versionId": "v_hm35t7ve3m3lalq3",
+      "revision": 12,
+      "contentHash": "sha256:ededc7d2b82356c6ba440367111c8bab340e576d4469031e430cd3b5879908e1",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:09:36.176Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -5302,8 +5316,8 @@
       "yaw": -1,
       "scale": 0.656,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_241",
@@ -5317,8 +5331,8 @@
       "yaw": 0,
       "scale": 0.656,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_242",
@@ -5332,8 +5346,8 @@
       "yaw": 2,
       "scale": 0.656,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_243",
@@ -5347,8 +5361,8 @@
       "yaw": -1,
       "scale": 0.656,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_244",
@@ -5362,8 +5376,8 @@
       "yaw": 2,
       "scale": 0.656,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_245",

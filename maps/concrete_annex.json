@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "concrete_annex",
     "name": "Concrete Annex",
@@ -17,6 +17,32 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
+    ],
+    "release": {
+      "mapId": "m_x2x3h6bbgdmapeoa",
+      "versionId": "v_asdn3imbxmhor4e3",
+      "revision": 2,
+      "contentHash": "sha256:47d07f13ec61ea079bfec41fb31e55c52b789ec44ce28d7330c35df8db198519",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:06:57.344Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "environmental",
+        "tag": "underground"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
     ]
   },
   "classicStructure": {

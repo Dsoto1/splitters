@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "breakyard",
     "name": "Breakyard",
@@ -19,14 +19,28 @@
     ],
     "release": {
       "mapId": "m_cy6mo7tdgrj4ihqi",
-      "versionId": "v_z32n7yvrofrvt24j",
-      "revision": 6,
-      "contentHash": "sha256:cae89e57654a3969f2d17a46898df4587b313a95289f81d28817b6f52d70dd01",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T01:45:49.286Z"
+      "versionId": "v_bdtvztyvgvftxzms",
+      "revision": 7,
+      "contentHash": "sha256:6bbed7aa3e36944a3a5772e02a6e864a6fdfa013f572820662c8c390e7dea109",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T15:48:11.458Z"
     },
     "tier": "experimental",
-    "destruction": true
+    "destruction": true,
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "anomalous",
+        "tag": "experimental"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1033,27 +1047,27 @@
     },
     {
       "id": "prop_9flbct0mi6",
-      "kind": "prop",
       "position": [
         -10,
         0,
         3
       ],
+      "kind": "prop",
       "model": "env.deadwood.log",
       "yaw": 0,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "health": 60
+      "health": 60,
+      "tint": null
     },
     {
       "id": "prop_uvzxr5oh01",
-      "kind": "prop",
       "position": [
         10,
         0,
         -3
       ],
+      "kind": "prop",
       "model": "env.deadwood.log",
       "yaw": 0,
       "scale": 1,
@@ -1241,6 +1255,17 @@
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "groundTheme": "ground.meadow",
+    "grounds": [
+      "core.pbr_grass",
+      "core.pbr_forest",
+      "core.pbr_rock",
+      "core.pbr_sand",
+      "core.pbr_gravel",
+      "core.pbr_snow",
+      "core.pbr_moss",
+      "core.pbr_hex_paving"
     ],
     "boundary": true,
     "foliage": []

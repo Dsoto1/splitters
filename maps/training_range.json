@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 37,
+  "formatVersion": 50,
   "metadata": {
     "id": "training_range",
     "name": "Training Range",
@@ -18,12 +18,18 @@
     ],
     "release": {
       "mapId": "m_pdfp7ts5t32gemes",
-      "versionId": "v_lvkuovsd4kcndsgc",
-      "revision": 6,
-      "contentHash": "sha256:e0d9676a352ec2a7f09b82137aa6a5cb2be99e92da4918afdabf5f1e2cc3bda4",
-      "schemaVersion": 37,
-      "releasedAt": "2026-11-13T18:00:59.885Z"
-    }
+      "versionId": "v_iit6cjyentmwh7pg",
+      "revision": 7,
+      "contentHash": "sha256:c914d2ce4976513a8cddbf18d4bc0ceb8dc80f701f4ec9a01ceace631f44f8bf",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:08:28.667Z"
+    },
+    "categories": [
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

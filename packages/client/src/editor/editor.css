@@ -187,6 +187,9 @@ dialog { border-top: 3px solid var(--cyan); }
 #editor > #ed-plan-bar { position: fixed; bottom: 48px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 8px; padding: 5px 8px; background: rgba(8, 12, 22, 0.8); border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 4px; }
 #ed-plan-bar b { color: var(--cyan); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; padding: 0 4px; }
 .ed-layers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin: 4px 0; }
+.ed-cats { margin: 8px 0; }
+.ed-cats-head { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.ed-cat-title { grid-column: 1 / -1; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
 .ed-layers label { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 12px; }
 #ed-theme-chip-name, #ed-ground-chip-name { display: inline-block; max-width: 140px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; color: var(--text); font: 600 12px var(--font-body); text-transform: none; letter-spacing: 0; }
 .ed-pal-tabs .tab { padding: 6px 2px; font-size: 10px; letter-spacing: 0.04em; min-width: 0; }

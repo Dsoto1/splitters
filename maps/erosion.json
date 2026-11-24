@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 50,
   "metadata": {
     "id": "erosion",
     "name": "Erosion",
@@ -20,12 +20,26 @@
     ],
     "release": {
       "mapId": "m_nclrtgwlthwc4jdd",
-      "versionId": "v_ahsdrtibvlryfe63",
-      "revision": 2,
-      "contentHash": "sha256:b8758df5b383372f6ce3ab43d0c7ff6501678b776fc0dcde02538feff9856549",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T20:55:35.918Z"
-    }
+      "versionId": "v_hw3drcekhpzsvax5",
+      "revision": 3,
+      "contentHash": "sha256:24f5e1a8439bb5f5353039de98eebae30b3478421b7fbcf104311cfd30110e48",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:20:12.215Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      },
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

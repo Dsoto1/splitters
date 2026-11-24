@@ -235,10 +235,10 @@ describe('map format v38', () => {
       expect(old.map.entities).toEqual(plain.entities);
       expect(buildMapGeometry(old.map)).toEqual(buildMapGeometry(plain));
     }
-    // Shipped files (v36 and v37 among them): opened for editing, the tiles, their sides and their glass are the file's own.
+    // Shipped files (v36 and v37 when this was written; MapMaker has saved them at v50 since): opened for editing, the
+    // tiles, their sides and their glass are the file's own.
     for (const id of ['riot_junction', 'bunker_cross', 'neon_galleria']) {
       const raw = JSON.parse(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8')) as { formatVersion: number; classicStructure: { tiles: { id: string; edges?: Record<string, string>; glass?: Record<string, string> }[] } };
-      expect(raw.formatVersion, id).toBeLessThan(38);
       const r = loadMap(raw, undefined, { forEditing: true, openWithErrors: true });
       expect(r.ok, id).toBe(true);
       if (!r.ok) continue;

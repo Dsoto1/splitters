@@ -41,7 +41,7 @@ import { seededRng, testMode } from './testMode.ts';
 import { hideLoadingScreen, showLoadingScreen } from './loadingScreen.ts';
 import { bootStep, finishBoot, preloadImage } from './boot.ts';
 import { SHIPPED_PORTRAITS } from './frontend/portraitIndex.ts';
-import { shippedPicture } from './frontend/mapThumbs.ts';
+import { shippedCardPicture, shippedPicture } from './frontend/mapThumbs.ts';
 import { joinParty, myParty, rememberJoin } from './game/party.ts';
 import { FOLLOW_TRAVEL_MS, RECONNECT_FOR_MS, afterLinkEnds } from './game/rejoinPolicy.ts';
 
@@ -418,7 +418,8 @@ class App {
         bootStep('the menu', this.init().then(() => capped(this.menuScene!.ready(), 8000))),
         bootStep('your character', this.init().then(() => capped(this.portraits!.get(this.front!.look).then(preloadImage), 8000))),
         bootStep('characters', capped(Promise.all(Object.values(SHIPPED_PORTRAITS).map((f) => preloadImage(`${import.meta.env.BASE_URL}portraits/${f}`))), 8000)),
-        bootStep('maps', capped(Promise.all(['sandgate', 'canyon', ...MAP_INDEX.slice(0, 12).map((e) => e.key)].map((id) => preloadImage(shippedPicture(id)))), 6000)),
+        // The home screen's featured map shows its full picture; Match Setup's first cards their small ones.
+        bootStep('maps', capped(Promise.all([...['sandgate', 'canyon', 'st_johns'].map((id) => preloadImage(shippedPicture(id))), ...MAP_INDEX.filter((e) => !isUnlistedMap(e.key)).slice(0, 12).map((e) => preloadImage(shippedCardPicture(e.key)))]), 6000)),
       ];
       void Promise.allSettled(steps).then(() => requestAnimationFrame(() => finishBoot()));
       // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).

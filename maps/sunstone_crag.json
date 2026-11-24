@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "sunstone_crag",
     "name": "Sunstone Crag",
@@ -22,12 +22,22 @@
     ],
     "release": {
       "mapId": "m_d7xyzfbdralwsq6a",
-      "versionId": "v_2rvjpyxt66jn5uix",
-      "revision": 3,
-      "contentHash": "sha256:3bf9c6faa789f292b5ab09a77e9f940c4daf87baf2599751d73b520322472f97",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:14:11.155Z"
-    }
+      "versionId": "v_toe4wltzd4ww4chn",
+      "revision": 4,
+      "contentHash": "sha256:3aab5b3c2dc87e2fc4a4582f9d08a8b4400472d7a189678fcec949465c18f775",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:02:50.565Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

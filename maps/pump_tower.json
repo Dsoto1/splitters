@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "pump_tower",
     "name": "Pump Tower",
@@ -17,6 +17,28 @@
       "core.deathmatch",
       "core.tdm",
       "core.koth"
+    ],
+    "release": {
+      "mapId": "m_5gsbxvlfl5i2txmj",
+      "versionId": "v_dsip4z6mbjrbfni7",
+      "revision": 2,
+      "contentHash": "sha256:8261ffebc14cc9662e75f433e88b9603ba4ca09585f075ff1df65dad7ebc5a10",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:11:49.561Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
     ]
   },
   "classicStructure": {

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "fort_meadow",
     "name": "Fort Meadow",
@@ -20,12 +20,22 @@
     ],
     "release": {
       "mapId": "m_l4zdogkl5cva7pf7",
-      "versionId": "v_dhgek755jqwj2vpx",
-      "revision": 1,
-      "contentHash": "sha256:6edc328da00bd9b304485b15a30cb9d19a295531f564c2775c228bc860913420",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:48:07.644Z"
-    }
+      "versionId": "v_ylgq5nnczplpwsm4",
+      "revision": 2,
+      "contentHash": "sha256:8547cd0e3db52a86d1aa09c02508294320b93ccf36592f5814a5a7b12e2efaa4",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:24:45.547Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

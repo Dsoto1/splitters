@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 29,
+  "formatVersion": 50,
   "metadata": {
     "id": "m4_outpost",
     "name": "Outpost Siege",
@@ -18,12 +18,18 @@
     ],
     "release": {
       "mapId": "m_sdum2n4t3d4kld5f",
-      "versionId": "v_wy7wwdsev6j5oli3",
-      "revision": 4,
-      "contentHash": "sha256:20b793e75015855f4566cb433f227dbd0aaae1f24b61a4a2abe72e279fa40e44",
-      "schemaVersion": 29,
-      "releasedAt": "2026-11-08T21:54:21.838Z"
-    }
+      "versionId": "v_r2tghyvcspfw2wli",
+      "revision": 5,
+      "contentHash": "sha256:e46f0ca3644c65178115d0de6524b5813381003583223aabd20f986013e9022f",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:40:11.256Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

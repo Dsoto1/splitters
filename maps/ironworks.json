@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "ironworks",
     "name": "Ironworks",
@@ -19,13 +19,27 @@
     ],
     "release": {
       "mapId": "m_ypw6qi42yyzn54eg",
-      "versionId": "v_h5iavq3c7dfxdbwa",
-      "revision": 8,
-      "contentHash": "sha256:9d834bb27f2bc25c8450b079a79d8a2c6fe2fc4a8c75e49ec42f4aef795c49a5",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T11:05:18.058Z"
+      "versionId": "v_ivaz6a6szf2ng2z6",
+      "revision": 9,
+      "contentHash": "sha256:65507cba722d9984745d4b0c491ce65ea876e8d3986341bbe7cbf19c960e147a",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:38:04.235Z"
     },
-    "tier": "experimental"
+    "tier": "experimental",
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "anomalous",
+        "tag": "experimental"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1317,6 +1331,17 @@
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    ],
+    "groundTheme": "ground.meadow",
+    "grounds": [
+      "core.pbr_grass",
+      "core.pbr_forest",
+      "core.pbr_rock",
+      "core.pbr_sand",
+      "core.pbr_gravel",
+      "core.pbr_snow",
+      "core.pbr_moss",
+      "core.pbr_hex_paving"
     ],
     "boundary": true,
     "foliage": []

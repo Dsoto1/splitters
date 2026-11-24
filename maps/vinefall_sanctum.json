@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "vinefall_sanctum",
     "name": "Vinefall Sanctum",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_cpceivtk65fhl5yg",
-      "versionId": "v_cbwgamhwavfi5mpv",
-      "revision": 1,
-      "contentHash": "sha256:f90b0cfe862509d66e178355cd4a0b1e53df864c318e1290cce83791cc533a11",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:12:00.902Z"
-    }
+      "versionId": "v_cbton4kpzqz4lf3b",
+      "revision": 2,
+      "contentHash": "sha256:3032e52b455afc7494e72bdedb48a418c8bf527d86d9eca2835c60bf65ab84c6",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T17:19:27.640Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

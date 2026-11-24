@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "ravenscroft_hall",
     "name": "Ravenscroft Hall",
@@ -19,12 +19,18 @@
     ],
     "release": {
       "mapId": "m_h4iqy7wdte3s52lb",
-      "versionId": "v_jbvq6naqt7uxyksp",
-      "revision": 4,
-      "contentHash": "sha256:2632f2cde88d408533be0905e80fa5f29796112a34c1af042f2a638cebc2142b",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:23:11.495Z"
-    }
+      "versionId": "v_3zqvajiazaivlo7r",
+      "revision": 5,
+      "contentHash": "sha256:87a9ebd5e27b11d1fc5f15d2a05e1d9bf28939358c2713d67b18f6ccb674a900",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:51:17.111Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "industrial"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

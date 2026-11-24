@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "iron_maw",
     "name": "Iron Maw",
@@ -23,13 +23,31 @@
     ],
     "release": {
       "mapId": "m_d4rmbclsjhi5yyvs",
-      "versionId": "v_atvoicm3qmc6usuj",
-      "revision": 16,
-      "contentHash": "sha256:4a249211fb021b8c2e961ed774daaa9b58482973278d62a606967b5714b25ea0",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:22:52.434Z"
+      "versionId": "v_ru7ny56hw3kcmse4",
+      "revision": 17,
+      "contentHash": "sha256:b9247c28fdc70c1a272372e1d429dd9471b66a84ecaaa0c2d95a64a1e84ff3a5",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:35:23.322Z"
     },
-    "tier": "experimental"
+    "tier": "experimental",
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "environmental",
+        "tag": "mountain"
+      },
+      {
+        "category": "anomalous",
+        "tag": "experimental"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -13233,8 +13251,8 @@
       "yaw": -4,
       "scale": 4,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_343",

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 28,
+  "formatVersion": 50,
   "metadata": {
     "id": "void_yard",
     "name": "Void Yard",
@@ -31,12 +31,30 @@
     },
     "release": {
       "mapId": "m_m7ytbrtuti7dovwf",
-      "versionId": "v_2evd64d2mcp3ibq7",
-      "revision": 1,
-      "contentHash": "sha256:d30a3c32a842420a884307c4ea9984a1f8003952f16132dbdab0f7a0a6e1d93c",
-      "schemaVersion": 28,
-      "releasedAt": "2026-11-07T11:09:42.810Z"
-    }
+      "versionId": "v_ucmits33ejaue22k",
+      "revision": 3,
+      "contentHash": "sha256:48a05e5ecd1cb9c82495c93b08de641df67a61b5d4f4b074e25c711d0bcedb9a",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:18:25.839Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "space"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      },
+      {
+        "category": "anomalous",
+        "tag": "impossible"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1396,6 +1414,6 @@
       4
     ]
   },
-  "dependencies": [],
-  "weaponSet": "scifi"
+  "weaponSet": "scifi",
+  "dependencies": []
 }

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "primeval_park",
     "name": "Primeval Park",
@@ -22,12 +22,30 @@
     ],
     "release": {
       "mapId": "m_324klxyhao5aov6f",
-      "versionId": "v_frit2axocim775ri",
-      "revision": 2,
-      "contentHash": "sha256:7b8711eb37cf1bba050e507c6dcaa4dd781ecacf778f8741b3de5b7ef653b76a",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T13:29:44.994Z"
-    }
+      "versionId": "v_p5woolwvyakrmpht",
+      "revision": 3,
+      "contentHash": "sha256:2ae2f3e2c2934ed8941f1a5fd0c2526c5c300baf8e287376c0a36ca3759e38ed",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:48:30.115Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "prehistoric"
+      },
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

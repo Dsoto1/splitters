@@ -5991,13 +5991,25 @@ async function offlineFlow(browser) {
     page.$$eval('.map-card', (cs) =>
       cs.map((c) => ({ map: c.dataset.map, pic: c.querySelector('.map-thumb.pic'), plan: c.querySelector('.map-thumb.plan canvas') })).map((x) => ({ map: x.map, img: !!x.pic?.querySelector('img'), loaded: !!x.pic?.querySelector('img')?.naturalWidth, plan: !!x.plan, inPic: !!x.pic?.querySelector('canvas, .map-thumb') })),
     );
-  await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].every((i) => i.complete), null, { timeout: T(20000) }).catch(() => {});
+  // Card pictures are small WebPs (maps/cards/<id>.webp) fetched lazily, as a card nears the view: the first row's
+  // load at once; every built-in map's is on the server and decodes.
+  await page.waitForFunction(() => [...document.querySelectorAll('.map-card .map-thumb.pic img')].slice(0, 3).every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
   const all = await cards();
   // Built-in maps (maps/*.json; retired ones aren't listed) ship a picture.
   const { readdirSync } = await import('node:fs');
   const builtIn = new Set(readdirSync(new URL('../maps/', import.meta.url)).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)));
-  const missing = all.filter((c) => builtIn.has(c.map) && !c.loaded).map((c) => c.map);
-  check(all.length > 20 && missing.length === 0, `every map card shows its picture (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
+  const pics = await page.evaluate(async () => {
+    const imgs = [...document.querySelectorAll('.map-card')].map((c) => ({ map: c.dataset.map, img: c.querySelector('.map-thumb.pic img') }));
+    const decodes = async (src) => {
+      const i = new Image();
+      i.src = src;
+      return i.decode().then(() => i.naturalWidth, () => 0);
+    };
+    return Promise.all(imgs.map(async ({ map, img }) => ({ map, lazy: img?.loading === 'lazy', src: img?.getAttribute('src') ?? '', width: img ? await decodes(img.src) : 0 })));
+  });
+  const missing = pics.filter((c) => builtIn.has(c.map) && !(c.width >= 480 && /maps\/cards\/[a-z0-9_]+\.webp$/.test(c.src) && c.lazy)).map((c) => c.map);
+  const firstShown = all.slice(0, 3).every((c) => c.loaded);
+  check(all.length > 20 && missing.length === 0 && firstShown, `every map card shows its picture: a small lazy WebP, the first ones in at once (${all.length} cards; missing: ${missing.join(', ') || 'none'})`);
   check(all.every((c) => c.plan && !c.inPic) && !(await page.$('.shot-top')), 'and its plan as a separate box, nothing composited into the picture');
   await page.evaluate(() => document.querySelector('.map-card')?.scrollIntoView());
   await until(() => planDrawn(page, '.map-card .map-thumb.plan canvas'), T(5000));
@@ -6028,6 +6040,21 @@ async function offlineFlow(browser) {
   const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
   await page.click('#map-tabs [data-tab="all"]');
+  // The category tabs (the owner's six; shared map/categories.ts, the tags in each map's file): a category lists its
+  // maps and shows its sub-tags; a sub-tag narrows to its own; Custom (your own and community maps) holds no built-in map.
+  const catTabs = await page.$$eval('#map-cats .map-cat', (b) => b.map((x) => x.dataset.cat));
+  await page.click('#map-cats [data-cat="temporal"]');
+  const temporal = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, count: Number(document.querySelector('#map-cats [data-cat="temporal"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, tags: [...document.querySelectorAll('#map-subtags .map-subtag')].map((b) => b.dataset.tag), shown: !document.getElementById('map-subtags').hidden }));
+  await page.click('#map-subtags [data-tag="medieval"]');
+  const medieval = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  await page.click('#map-cats [data-cat="custom"]');
+  const custom = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, empty: document.querySelector('#map-cards .map-empty')?.textContent ?? '' }));
+  await page.click('#map-cats [data-cat="all"]');
+  const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
+  check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
+  check(medieval.includes('gallows_yard') && medieval.includes('market_town') && !medieval.includes('sandgate') && !medieval.includes('training_range') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
+  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -6689,7 +6716,7 @@ async function mobileTouchLayout(browser) {
 
 /**
  * The menus on phones upright and sideways (docs/MOBILE_AUDIT.md, proposals 2 and 4): Quick Play's Pick a map opens
- * Match Setup's full-screen map picker (on a narrow screen), a card picks the map and closes it; Character Select keeps
+ * Match Setup on a narrow screen: the map grid first, the settings a sheet a card or the strip pulls up; Character Select keeps
  * the grid tall with the details as a sheet a tap pulls up, a search and Favourites only; nothing spills sideways.
  */
 async function mobileMenus(browser) {
@@ -6723,24 +6750,31 @@ async function mobileMenus(browser) {
       await page.waitForSelector('#match-setup', { timeout: T(10000) });
       const narrow = w <= 900;
       if (narrow) {
-        await page.waitForFunction(() => document.querySelector('.screen.play.picking') && document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
-        const pick = await page.evaluate(() => {
-          const b = document.getElementById('map-browse').getBoundingClientRect();
+        // A phone (owner, 2026-11-23): the map grid first, the settings a sheet along the bottom; down, a strip names the
+        // map and the setup beside Start.
+        await page.waitForFunction(() => document.querySelectorAll('#map-cards .map-card').length > 4, null, { timeout: T(10000) }).catch(() => {});
+        const grid = await page.evaluate(() => {
           const cards = [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.getBoundingClientRect());
           const cols = cards.filter((r) => Math.abs(r.top - cards[0].top) < 2).length;
-          return { full: b.left <= 1 && b.top <= 1 && b.right >= innerWidth - 1 && b.bottom >= innerHeight - 1, cols, cardW: Math.round(cards[0]?.width ?? 0), spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, rowsSeen: cards.filter((r) => r.top < innerHeight).length };
+          const strip = document.getElementById('setup-sheet-toggle').getBoundingClientRect();
+          const start = document.getElementById('setup-peek-start').getBoundingClientRect();
+          const inView = (r) => r.height > 0 && r.top >= 0 && r.bottom <= innerHeight + 1 && r.left >= 0 && r.right <= innerWidth + 1;
+          return { open: !!document.querySelector('.screen.play.sheet-open'), cols, rowsSeen: cards.filter((r) => r.top < innerHeight - 70).length, spill: document.getElementById('map-browse').scrollWidth > document.getElementById('map-browse').clientWidth + 1, strip: inView(strip) && strip.top > innerHeight - 100, start: inView(start), cats: !!document.getElementById('map-cats')?.offsetParent };
         });
-        check(pick.full && pick.cols >= 2 && !pick.spill && pick.rowsSeen > pick.cols, `${label}: Pick a map opens the map picker full screen, two or more cards a row, more than a row in view, nothing spilling (${JSON.stringify(pick)})`);
+        check(!grid.open && grid.cols >= 2 && !grid.spill && grid.rowsSeen > grid.cols && grid.strip && grid.start && grid.cats, `${label}: Pick a map shows the map grid first (two or more cards a row, the category tabs), the settings a strip along the bottom with Start (${JSON.stringify(grid)})`);
         const other = await page.$$eval('#map-cards .map-card:not(.on)', (cs) => cs[0]?.dataset.map);
         await page.tap(`#map-cards .map-card[data-map="${other}"]`);
-        const picked = await page.waitForFunction((k) => !document.querySelector('.screen.play.picking') && document.getElementById('arcade-map')?.value === k, other, { timeout: T(10000) }).then(() => true, () => false);
-        const button = await page.evaluate(() => ({ shown: !!document.getElementById('arcade-map-pick')?.offsetParent, text: document.querySelector('#arcade-map-pick b')?.textContent }));
-        check(picked && button.shown && !!button.text, `${label}: a card picks the map and closes the picker; the setup's map button names it (${other}, ${JSON.stringify(button)})`);
+        const up = () => page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top < innerHeight * 0.3 && document.getElementById('arcade-start').getBoundingClientRect().bottom <= innerHeight + 1, null, { timeout: T(5000) }).then(() => true, () => false);
+        const down = () => page.waitForFunction(() => !document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top > innerHeight - 100, null, { timeout: T(5000) }).then(() => true, () => false);
+        const picked = (await up()) && (await page.evaluate((k) => document.getElementById('arcade-map')?.value === k && document.getElementById('setup-sheet-toggle').getAttribute('aria-expanded') === 'true', other));
+        check(picked, `${label}: a card picks the map and pulls the settings sheet up, Start match in view (${other})`);
+        await page.tap('#setup-sheet-toggle');
+        const putAway = await down();
+        await page.tap('#setup-sheet-toggle');
+        const again = await up();
         await page.tap('#arcade-map-pick');
-        const reopened = await page.waitForFunction(() => !!document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
-        await page.tap('#map-pick-close');
-        const closed = await page.waitForFunction(() => !document.querySelector('.screen.play.picking'), null, { timeout: T(5000) }).then(() => true, () => false);
-        check(reopened && closed, `${label}: the map button opens the picker again and Close shuts it (${reopened}, ${closed})`);
+        const toGrid = await down();
+        check(putAway && again && toGrid, `${label}: the strip puts the sheet away and pulls it up again; Change map goes back to the grid (${putAway}, ${again}, ${toGrid})`);
       } else {
         check(await page.isVisible('#map-cards .map-card'), `${label}: Pick a map opens Match Setup with the map cards beside it`);
       }
@@ -8652,6 +8686,12 @@ async function setupLayoutFlow(browser) {
     await page.goto(`${CLIENT}/?test=1${touch ? '&touch=1' : ''}`);
     await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
     await page.evaluate(() => document.getElementById('nav-play').click());
+    // 900 px wide and under: the settings are a sheet along the bottom (owner, 2026-11-23), pulled up here.
+    if (opts.viewport.width <= 900) {
+      await page.waitForSelector('#setup-sheet-toggle', { state: 'attached', timeout: T(30000) });
+      await page.evaluate(() => document.getElementById('setup-sheet-toggle').click());
+      await page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('match-setup').getBoundingClientRect().top < 40, null, { timeout: T(10000) });
+    }
     await page.waitForSelector('#setup-essentials', { timeout: T(30000) });
     const essentials = await page.evaluate(() => {
       const body = document.querySelector('#match-setup .setup-body');
@@ -8734,10 +8774,13 @@ async function setupLayoutFlow(browser) {
   check(fixed.teams?.join() === '12,12' && fixed.fit === 'fits' && fixed.preset === 'pick' && fixed.who === 'You + 23 bots · 12v12', `"Use 12v12" sets the map's pick, and it fits (${JSON.stringify(fixed)})`);
   // Adding bots grows the teams (Even teams: both); past the limit it says whose limit it is.
   await page.evaluate(() => document.querySelector('#setup-sizes [data-preset="32v32"]').click());
-  await page.evaluate(() => document.getElementById('arcade-team-size-1-plus').click());
+  // One size control (owner, 2026-11-23): the chips and Per team; with Even teams on the team boxes show who plays only.
+  const boxes = await page.evaluate(() => ({ steppers: document.querySelectorAll('#arcade-team-cards .stepper').length, who: [...document.querySelectorAll('#arcade-team-cards .team-who')].map((w) => w.textContent) }));
+  check(boxes.steppers === 0 && boxes.who.length === 2 && boxes.who.every((w) => /players?.*bots?/.test(w)), `with Even teams the team boxes show players and bots only, no size stepper of their own (${JSON.stringify(boxes)})`);
+  await page.evaluate(() => document.getElementById('arcade-per-team-plus').click());
   const capped = { teams: (await setup()).teams, note: await page.evaluate(() => document.getElementById('arcade-team-stopped')?.textContent) };
   check(capped.teams?.join() === '32,32' && capped.note === "32 per team is this computer's limit.", `a bot past the limit says whose limit it is (${JSON.stringify(capped)})`);
-  await page.evaluate(() => document.getElementById('arcade-team-size-0-minus').click());
+  await page.evaluate(() => document.getElementById('arcade-per-team-minus').click());
   check((await setup()).teams?.join() === '31,31', 'a bot fewer shrinks every team alike (Even teams)');
   // A party preset: Lunar Roulette (the Roulette mode, Lunar on, its standard features on), from the Presets tab.
   await setupTab(page, 'presets');
@@ -8826,6 +8869,12 @@ async function spectateStartFlow(browser) {
 async function customSetupFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 640, height: 360 } })).newPage();
   const errors = [];
+  // A window this narrow shows the map grid first, the settings a sheet along the bottom (owner, 2026-11-23): pulled up.
+  const sheetUp = async () => {
+    await page.waitForSelector('#setup-sheet-toggle', { state: 'attached', timeout: T(30000) });
+    await page.evaluate(() => !document.querySelector('.screen.play.sheet-open') && document.getElementById('setup-sheet-toggle').click());
+    await page.waitForFunction(() => document.querySelector('.screen.play.sheet-open') && document.getElementById('arcade-start').getBoundingClientRect().bottom <= innerHeight + 1 && document.getElementById('match-setup').getBoundingClientRect().top < 40, null, { timeout: T(10000) });
+  };
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await page.goto(CLIENT);
   await page.evaluate(() => {
@@ -8837,6 +8886,7 @@ async function customSetupFlow(browser) {
   await page.click('#nav-play');
   // The teams are in the Match Setup tab (section 3), showing as it opens; Variants starts as a row.
   await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
+  await sheetUp();
   const closed = await page.evaluate(() => ({ rows: [...document.querySelectorAll('#match-setup .fold-row.open')].length, tab: document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab, teams: !!document.getElementById('arcade-team-cards')?.offsetParent }));
   check(closed.rows === 0 && closed.tab === 'match' && closed.teams, `a small window starts on the Match Setup tab, the teams in it, Variants closed (${JSON.stringify(closed)})`);
   // Uneven teams: Even teams off first (on, every team changes alike).
@@ -8868,6 +8918,7 @@ async function customSetupFlow(browser) {
   await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
   await page.click('#nav-play');
   await page.waitForSelector('#arcade-team-cards', { state: 'attached', timeout: T(30000) });
+  await sheetUp();
   const remembered = await total();
   check(changed.startsWith('1v1') && remembered.startsWith('1v1'), `the last setup is remembered across a reload (${changed} → ${remembered})`);
   await page.evaluate(() => (document.getElementById('setup-saved').open = true));
@@ -14281,6 +14332,124 @@ async function impGrips(browser) {
  * (a folder): the pictures are kept there too.
  */
 /**
+ * Match Setup with only a controller (owner, 2026-11-23: "unable to really navigate or select a map easily … i also
+ * cannot start the match easily"): a stubbed standard gamepad (navigator.getGamepads) drives the d-pad, the sticks
+ * and the buttons. Play from the main menu; the focus ring moves over the cards in two dimensions (a held direction
+ * repeats); A picks a map; Y stars it; RB / LB step the categories; RT the settings' tabs; right off the grid into the
+ * settings, a stepper takes left and right; the right stick scrolls; the hints show the controller's glyphs; Menu starts.
+ */
+async function padsetupFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1500, height: 844 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => {
+    const pad = { id: 'e2e pad', index: 0, connected: true, mapping: 'standard', timestamp: 0, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })) };
+    window.__pad = pad;
+    navigator.getGamepads = () => [pad, null, null, null];
+    addEventListener('load', () => dispatchEvent(Object.assign(new Event('gamepadconnected'), { gamepad: pad })));
+  });
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  const frames = (n = 3) => page.evaluate((k) => new Promise((r) => { let i = 0; const f = () => (++i >= k ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); }), n);
+  const hold = (b, on) => page.evaluate(([i, v]) => { window.__pad.buttons[i].pressed = v; window.__pad.buttons[i].value = v ? 1 : 0; }, [b, on]);
+  // One frame down (the pad is read each frame: one press, never held long enough to repeat), then up.
+  const press = async (b) => {
+    await hold(b, true);
+    await frames(1);
+    await hold(b, false);
+    await frames(2);
+  };
+  const B = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, start: 9, up: 12, down: 13, left: 14, right: 15 };
+  const focus = () => page.evaluate(() => { const f = document.activeElement; return { id: f?.id ?? '', map: f?.closest('.map-card')?.dataset.map ?? null, cls: f?.className ?? '' }; });
+  // Main menu → Play, with the pad alone.
+  const navAt = () => page.evaluate(() => document.querySelector('.nav .on')?.id);
+  for (let i = 0; i < 6 && (await navAt()) !== 'nav-play'; i++) await press(B.down);
+  await press(B.a);
+  const opened = await page.waitForFunction(() => document.querySelectorAll('#map-cards .map-card').length > 20, null, { timeout: T(30000) }).then(() => true, () => false);
+  const input = await page.evaluate(() => document.documentElement.dataset.input);
+  check(opened && input === 'pad', `the pad's d-pad and A open Match Setup from the main menu (input: ${input})`);
+  // The first move puts the ring on the map picked; right and down move over the grid.
+  await page.evaluate(() => document.activeElement?.blur());
+  await press(B.down);
+  const home = await focus();
+  const picked = await page.evaluate(() => document.querySelector('#map-cards .map-card.on')?.dataset.map);
+  await press(B.right);
+  const right = await focus();
+  await press(B.down);
+  const down = await focus();
+  const geo = await page.evaluate(([a, b, c]) => {
+    const r = (k) => document.querySelector(`#map-cards .map-card[data-map="${k}"]`).getBoundingClientRect();
+    return { rowSame: Math.abs(r(a).top - r(b).top) < 2 && r(b).left > r(a).left, colSame: Math.abs(r(c).left - r(b).left) < 2 && r(c).top > r(b).top };
+  }, [home.map, right.map, down.map]);
+  const ring = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+  check(home.map === picked && geo.rowSame && geo.colSame && ring === 'solid', `the ring starts on the map picked (${picked}), right moves along the row, down to the card under it, drawn as a ring (${JSON.stringify({ home, right, down, ring })})`);
+  // Held, a direction repeats (a short delay, then a steady rate), and the focused card scrolls into view.
+  const before = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  await hold(B.down, true);
+  await page.waitForFunction(() => document.getElementById('map-cards').scrollTop > 0, null, { timeout: T(5000) }).catch(() => {});
+  await frames(30);
+  await hold(B.down, false);
+  await frames(3);
+  const held = await focus();
+  const inView = await page.evaluate(() => { const g = document.getElementById('map-cards').getBoundingClientRect(); const r = document.activeElement.getBoundingClientRect(); return r.top >= g.top - 2 && r.bottom <= g.bottom + 2; });
+  const after = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  check(held.map && held.map !== down.map && after > before && inView, `holding down repeats, and the focused card scrolls into view (${down.map} → ${held.map}, scroll ${before} → ${after})`);
+  // A picks the focused map; Y stars it.
+  await press(B.a);
+  const chosen = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').map);
+  await press(B.y);
+  const fav = await page.evaluate(() => document.activeElement.closest('.map-card')?.querySelector('.card-fav')?.getAttribute('aria-pressed'));
+  check(chosen === held.map && fav === 'true', `A picks the focused map and Y stars it (${chosen}, star ${fav})`);
+  // RB / LB step the categories; RT the settings' tabs.
+  await press(B.rb);
+  const cat1 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.rb);
+  const cat2 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.lb);
+  await press(B.lb);
+  const cat0 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.rt);
+  const tab = await page.evaluate(() => document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab);
+  await press(B.lt);
+  check(cat1 === 'temporal' && cat2 === 'dimensional' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
+  // Right off the grid's edge into the settings; a stepper takes left and right; left off the settings back to the grid.
+  await press(B.down);
+  for (let i = 0; i < 6 && !(await focus()).id.startsWith('setup') && !(await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.right);
+  const inPanel = await page.evaluate(() => !!document.activeElement.closest('#match-setup'));
+  const score = () => page.evaluate(() => Number(document.getElementById('arcade-score')?.value));
+  await page.evaluate(() => document.getElementById('arcade-score').focus());
+  const s0 = await score();
+  await press(B.right);
+  const s1 = await score();
+  await press(B.left);
+  const s2 = await score();
+  const stayed = (await focus()).id;
+  // (The stepper keeps left and right; from the tabs, the panel's left edge, left goes back to the grid.)
+  await page.evaluate(() => document.getElementById('setup-tab-match').focus());
+  for (let i = 0; i < 8 && (await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.left);
+  const back = await focus();
+  check(inPanel && s1 > s0 && s2 === s0 && stayed === 'arcade-score' && !!back.map, `right off the grid goes into the settings; a stepper takes right and left (${s0} → ${s1} → ${s2}, the ring on ${stayed}); left goes back to the grid (${back.map ?? JSON.stringify(back)})`);
+  // The right stick scrolls the grid.
+  const sc0 = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  await page.evaluate(() => (window.__pad.axes[3] = 1));
+  await frames(20);
+  await page.evaluate(() => (window.__pad.axes[3] = 0));
+  const sc1 = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  check(sc1 > sc0 + 100, `the right stick scrolls the map grid (${sc0} → ${sc1})`);
+  // The hints show the controller's glyphs.
+  const hints = await page.evaluate(() => [...document.querySelectorAll('.hintbar .hint-btn')].filter((h) => h.offsetParent).map((h) => [...h.querySelectorAll('kbd')].filter((k) => k.offsetParent).map((k) => k.textContent).join('/') + ' ' + h.querySelector('span:last-child')?.textContent));
+  check(['A Select', 'Y Favourite', 'LB/RB Category', '☰ Start'].every((h) => hints.includes(h)) && hints.some((h) => /^B Back$/.test(h)), `the hints show the controller's glyphs (${hints.join(' · ')})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/padsetup.png` });
+  // Menu starts the match from anywhere.
+  await press(B.start);
+  const started = await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(90000) }).then(() => true, () => false);
+  const map = await page.evaluate(() => window.__cs?.map?.metadata?.id ?? window.__cs?.match?.map?.metadata?.id ?? null).catch(() => null);
+  check(started, `Menu starts the match (${map ?? chosen})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
  * Test weapons (owner, 2026-11-24): Citadel and the Training Range are on no map list; Profile → Favourite loadout →
  * Test weapons opens the range alone, offline, with your favourite class's loadout and no scorebar or clock; Esc there
  * opens the pause menu and Esc again (its Back, "Loadout") comes back to the loadout, Test weapons focused. Desktop,
@@ -16546,7 +16715,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, testrange: testrangeFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

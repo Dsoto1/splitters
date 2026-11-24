@@ -1440,6 +1440,19 @@ count what it stores (a placement is one entry, at most 1024).
     the card camera in MapMaker: Map properties → **Card shot** (eye level by default, seen in the card's
     frame; stored as `metadata.cardCamera`, format v30), export the map, and the tool renders from it as is.
     (An older fixed camera, `metadata.thumbnailCamera`, is used when there is no card camera.)
+  - **Card picture:** Match Setup's map cards show a small copy of the shot,
+    `packages/client/public/maps/cards/<id>.webp` (480 × 270 WebP, about 10 KB; 674 KB for all 70 against 1.9 MB of
+    shots), loaded lazily as a card nears the view. `node tools/content/map-cards.mjs` makes the missing or stale ones
+    (`cards.lock.json` records each card's shot) and drops cards of maps no longer shipped; `pnpm content:check`
+    fails when a shipped map has no shot or no up-to-date card. **A new map:** capture its shot (above), then run
+    `map-cards.mjs`.
+- **Map categories** (map format v50; QUEUE "Match Setup redesign"): MapMaker → Map properties → **Categories**,
+  a tick per sub-tag of the owner's five tagged categories (Temporal, Dimensional, Environmental, Fictional,
+  Anomalous; shared `map/categories.ts`), stored as `metadata.categories` (`{ category, tag }` pairs, several
+  allowed). Match Setup's category tabs filter by them; Custom (your own and community maps) is worked out. The
+  shipped maps' tags are in `docs/map-briefs/categories/steps.json`, ticked in MapMaker by
+  `tools/maps/mapmaker-categories.mjs` (Playwright: Import, tick, Export); a unit test holds each map's file to it.
+  The maps inspired by other games sit under Fictional → Classic remake until their rework, never naming the game.
   - **Plan:** the flat top-down MapMaker schematic, drawn live from the map (`frontend/mapPlan.ts`): tile
     floors, walls, blocks and props as outlines, terrain as height contours, and dots for spawns (team
     colours), pickups, flags, hills, bomb sites, hostages, NPC squads and vehicles.

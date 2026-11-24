@@ -37,7 +37,7 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
     resolveId: (id) => (id === ID ? RESOLVED : undefined),
     async load(id) {
       if (id !== RESOLVED) return undefined;
-      const { loadMap, playableModes, mapPlayerCaps, builtInRecord } = await loadShared();
+      const { loadMap, playableModes, mapPlayerCaps, builtInRecord, isRetiredMap } = await loadShared();
       const entries = [];
       for (const file of readdirSync(mapsDir).filter((f) => f.endsWith('.json')).sort()) {
         const path = join(mapsDir, file);
@@ -50,7 +50,10 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
         const modes = playableModes(r.map);
         entries.push({
           key: file.slice(0, -'.json'.length),
-          metadata: { id: md.id, name: md.name, description: md.description, author: md.author, recommendedPlayers: md.recommendedPlayers, ...(md.thumbnail ? { thumbnail: md.thumbnail } : {}), ...(md.tier === 'experimental' ? { tier: md.tier } : {}) },
+          // A retired map's description is left out (the menu's first download is on a budget, tools/ci/bundle-budget.mjs):
+          // no card, template or list shows one (RETIRED_MAPS); the map's own file still carries it.
+          metadata: { id: md.id, name: md.name, description: isRetiredMap(md.id) ? '' : md.description, author: md.author, recommendedPlayers: md.recommendedPlayers, ...(md.thumbnail ? { thumbnail: md.thumbnail } : {}), ...(md.tier === 'experimental' ? { tier: md.tier } : {}), // Categories as "t:modern" (the category's initial: mapIndex.ts reads them back); none for retired maps, which no list shows.
+          ...(md.categories?.length && !isRetiredMap(md.id) ? { categories: md.categories.map((c) => `${c.category[0]}:${c.tag}`) } : {}) },
           modes,
           // The most players each mode takes (the next-map vote leaves out maps too small for the people in a match).
           caps: modes.map((mode) => mapPlayerCaps(r.map, mode).max),
