@@ -26,8 +26,8 @@ export const COLOUR_VISION_LABELS: Readonly<Record<ColourVision, string>> = {
  * the rest are as far apart as could be found, and lean on the team symbols.
  */
 export const TEAM_SAFE_COLOURS: Readonly<Record<Exclude<ColourVision, 'default'>, readonly string[]>> = {
-  redgreen: ['#f0901e', '#2f7fe8', '#c6eef2', '#9a6a4a', '#9a9a9a', '#7c8aa0', '#ffd8a0', '#8fd0ff'],
-  tritan: ['#e8306a', '#20b0c8', '#f0e442', '#7c8aa0', '#c6eef2', '#9a9a9a', '#c879c8', '#7a4aa8'],
+  redgreen: ['#f0901e', '#2f7fe8', '#c6eef2', '#9a6a4a', '#9a9a9a', '#6a7488', '#ffd8a0', '#8fd0ff'],
+  tritan: ['#e8306a', '#20b0c8', '#f0e442', '#6a7488', '#c6eef2', '#9a9a9a', '#c879c8', '#7a4aa8'],
 };
 
 const KEY = 'tiletrigger.colourVision';
