@@ -1146,6 +1146,28 @@ reach 0.75 m past it (`map/setPieceCheck.ts`, `EAVE`). The roofs collide as noth
 thrown high leaves through them). Walked: `setPiecesCampus.test.ts` (every piece, every turn, each Arch porch) and
 `setPiecesAcademy.test.ts`, "Memorial Hall's shape" (on a 2 m and a 2.5 m ground grid). No map format change.
 
+**The library kit, rounded (the Memorial Hall pass, owner 2026-11-23; PLAN 4q).** Tiles (`content/tiles/core.json`,
+made by a script from their dimensions): **Hall Bay (two storeys)** and **Hall Bay (two storeys, east side open
+below)** (a bay 16 m across: side walls with real openings, a square one below at sill 1.23 m and two wide ones above at
+sill 5.97 m), **Rounded Hall End**, **Rounded Hall End (doorway)** (2 m in the end's middle) and **Rounded Hall End
+(spiral stair)** (the end's corners quarter circles of 4 m; the stair turned so its doors face the hall's middle, its
+drum against the corner). The openings are bare: a set piece puts a breakable glass block (6 cm, the opening's size)
+and the window's frame in each. Props: `kit.window.leaded` and `kit.window.leaded_band` variant `open` (the frame and
+mullions alone, lined through the wall's depth), `kit.roof.spire_round` (the Faceted Spire over a square plan with
+corners rounded 4.7 m at the eave: each corner a cone between two flat faces; variant `hall` cut under a ridge roof)
+and `kit.roof.hip_round` (the −z half of such a pyramid with a Ridge Roof Bay's span, rise and flare: a hall's hipped
+end that meets the bay in one line; generator `roundroof`), `kit.bookcase.press_tall` (3.15 m) and
+`kit.bookcase.double_tall` (3.2 m), six rows of books a face. Ridge roofs (`ridgeroof`) close a gable's verge with a
+barge board 0.45 m deep (the slopes were a skin with open ends; a slit showed along every gable). Set pieces: the
+Library Faceted End and Library End Bay take **Plan** (Faceted or Square as built / Rounded corners: the tiles above,
+glass windows, taller and more bookcases; the Faceted End without its stair), the Faceted End **Annex door** (the
+doorway end) and **Window bench** (a seat 1.2 m deep, 1 m up three steps of 0.25 m on 0.5 m treads, along a side's
+upper wall under its windows); **Gable Annex (into the building behind)**: the Small Stucco Wing centred on two cells,
+its back open in a doorway, two steps down inside. Academy: the **Dorm Bay End**'s **Room** option (Dorm room /
+Washroom: two toilet stalls, two showers, two sinks with mirrors / Closed: walled and filled). Walked: `setPiecesCampus.test.ts` (each new option, every turn; every pane fills a clear
+opening) and `setPiecesAcademy.test.ts` ("Memorial Hall with rounded corners and its annex", "the Dorm Bay End's Room
+option"); the verge and the hip's join in `tools/content/test/kitprops.test.mjs`. No map format change.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
