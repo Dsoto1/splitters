@@ -2,7 +2,6 @@ import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, rea
 import { currentAccount } from './account.ts';
 import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
 import { myKeys, onBindingsChange, replaceMyKeys } from './game/keyBindings.ts';
-import { captionMode, onCaptionModeChange, parseCaptionMode, saveCaptionMode } from './game/captionPrefs.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
 /**
@@ -172,23 +171,10 @@ export function syncKeys(): void {
 }
 let stopKeySave: (() => void) | null = null;
 
-/**
- * Small settings on the account (the profile's `prefs`; today Sound captions, game/captionPrefs.ts), as key bindings
- * are: signed in, the account's value is yours in this browser; an account with none takes this browser's (when it
- * isn't the default). Every change after that is saved on the account too; an older hub keeps it in the browser only.
- */
+/** Small settings on the account (the profile's `prefs`: Sound captions), loaded on demand to keep the menu's first load small (game/prefSync.ts). */
 export function syncPrefs(): void {
-  const who = currentAccount();
-  const p = who ? cachedProfile() : null;
-  if (!p) return;
-  const prefs = p.prefs ?? {};
-  if (prefs.captions !== undefined) saveCaptionMode(parseCaptionMode(prefs.captions), true);
-  else if (captionMode() !== 'off') void saveProfile({ prefs: { ...prefs, captions: captionMode() } }).catch(() => undefined);
-  stopPrefSave ??= onCaptionModeChange((m) => {
-    if (currentAccount()) void saveProfile({ prefs: { ...(cachedProfile()?.prefs ?? {}), captions: m } }).catch(() => undefined);
-  });
+  if (currentAccount() && cachedProfile()) void import('./game/prefSync.ts').then((m) => m.syncPrefs()).catch(() => undefined);
 }
-let stopPrefSave: (() => void) | null = null;
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);

@@ -1,4 +1,4 @@
-import { keysShape, prefsShape, readVouched, opticShape, cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region, type VouchReport } from '@tiletrigger/shared';
+import { keysShape, readVouched, opticShape, cleanEmblemCode, emptyCareer, isRegion, isTitleId, readCareer, readPublicCard, regionForTimeZone, type Profile, type PublicCard, type Region, type VouchReport } from '@tiletrigger/shared';
 import { accessToken, currentAccount } from './account.ts';
 import { hubApi } from './publishedMaps.ts';
 
@@ -24,7 +24,8 @@ function readProfile(v: unknown): Profile {
     vouched: readVouched(o.vouched),
     optics: opticShape(o.optics, true) ?? {},
     keys: keysShape(o.keys) ?? {},
-    prefs: prefsShape(o.prefs) ?? {},
+    // (Checked by the hub; each reader checks its own value: captionPrefs.ts parseCaptionMode.)
+    prefs: o.prefs && typeof o.prefs === 'object' ? (o.prefs as Record<string, string>) : {},
   };
 }
 

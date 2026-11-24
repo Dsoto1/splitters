@@ -225,6 +225,8 @@ export class SoundCaptions {
   private readonly onMode = () => this.setMode(captionMode());
   /** Counts for the tests and the perf report: sounds heard, captions kept. */
   readonly stats = { heard: 0, kept: 0, renders: 0 };
+  /** Browser tests (?test=1): the last captions made, with where they came from and where you were facing. */
+  log: { id: string; by: number | null; at: Vec3; ear: Vec3; yaw: number; dir: string; text: string }[] | null = null;
 
   constructor(
     private readonly audio: AudioSystem,
@@ -258,8 +260,21 @@ export class SoundCaptions {
     this.stats.heard++;
     const friend = by !== undefined && this.relation(by) === 'friend';
     const dir = at && this.mode === 'dir' ? directionOf(this.audio.earAt, this.audio.earYaw, at) : NO_DIR;
-    if (this.stack.push(rule, friend, dir, this.mode === 'dir' && !!at && dist > cull * FAR_SHARE, this.clock())) this.stats.kept++;
+    if (!this.stack.push(rule, friend, dir, this.mode === 'dir' && !!at && dist > cull * FAR_SHARE, this.clock())) return;
+    this.stats.kept++;
+    if (this.log && at) {
+      const ear = this.audio.earAt;
+      const line = this.stack.lines[this.stack.lines.length - 1];
+      this.log.push({ id, by: by ?? null, at: { ...at }, ear: { x: ear.x, y: ear.y, z: ear.z }, yaw: this.audio.earYaw, dir: dir === NO_DIR ? '' : DIRS[dir]!, text: line ? captionText(line) : '' });
+      if (this.log.length > 50) this.log.shift();
+    }
   };
+
+  /** Browser tests: the mode, the lines shown (as drawn), the log and the counts. */
+  debug(): { mode: CaptionMode; shown: string[]; lines: string[]; log: NonNullable<SoundCaptions['log']>; stats: SoundCaptions['stats'] } {
+    const shown = this.el && !this.el.hidden ? [...this.el.querySelectorAll<HTMLElement>('.cap:not([hidden]) .cap-text')].map((e) => e.textContent ?? '') : [];
+    return { mode: this.mode, shown, lines: this.stack.lines.map((l) => captionText(l)), log: this.log ?? [], stats: { ...this.stats } };
+  }
 
   /** Once a frame: redraws when something changed, at most every RENDER_MS. */
   update(now: number): void {
