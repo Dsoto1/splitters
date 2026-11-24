@@ -123,7 +123,7 @@ import {
   type CategoryFilter,
 } from '@tiletrigger/shared';
 import { drawCategoryTabs } from './mapCategoriesUi.ts';
-import { chooseColourVision, myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
+import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
 import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
@@ -139,7 +139,6 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
-import { COLOUR_VISIONS, COLOUR_VISION_LABELS, colourVision, type ColourVision } from '../game/colourVision.ts';
 import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
 import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
@@ -3442,9 +3441,10 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
-    // Colour vision (game/colourVision.ts): team colours that stay apart; read as a match starts.
-    const colourVisionSel = el('select', { id: 'opt-colour-vision' }, ...COLOUR_VISIONS.map((v) => el('option', { value: v, textContent: COLOUR_VISION_LABELS[v], selected: v === colourVision() })));
-    colourVisionSel.addEventListener('change', () => chooseColourVision(colourVisionSel.value as ColourVision));
+    // Colour vision (game/colourVision.ts, its key written out here to keep that file out of the menu): read as a match starts.
+    const cvNow = storage('tiletrigger.colourVision');
+    const colourVisionSel = el('select', { id: 'opt-colour-vision' }, ...['default', 'redgreen', 'tritan'].map((v, i) => el('option', { value: v, textContent: ['Default', 'Red-green (deuteranopia, protanopia)', 'Tritanopia (blue-yellow)'][i], selected: v === cvNow })));
+    colourVisionSel.addEventListener('change', () => storage('tiletrigger.colourVision', colourVisionSel.value));
     // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));

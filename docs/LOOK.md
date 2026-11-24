@@ -223,9 +223,9 @@ Default, **Red-green** (deuteranopia, protanopia) or **Tritanopia** (blue-yellow
 teams, in team order, colours chosen for that colour vision, in place of the map's or host's (Grand Marquee's red and
 yellow, an outpost's red and green). The match reads it as it starts (`visionTeams` where session.ts makes the
 match's teams, and the vehicles' team paint in mountState.ts), so the HUD, minimap, kill feed, scoreboard, flags,
-hills, forts and vehicles all take the same colours. Saved in this browser (`tiletrigger.colourVision`) and, signed
-in, on the profile (`Profile.colourVision`, kept like key bindings: careerStats.ts `syncColourVision`,
-`chooseColourVision`). Changes apply from the next match.
+hills, forts and vehicles all take the same colours. Saved in this browser (`tiletrigger.colourVision`; Options writes
+the key itself, so the menu's first load carries none of this code). Changes apply from the next match. (Kept with the
+account next: the profile's `prefs` map that Sound captions brings, once it lands.)
 
 | Setting | Team 1 | Team 2 | Teams 3-8 |
 |---|---|---|---|

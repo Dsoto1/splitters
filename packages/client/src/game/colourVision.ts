@@ -7,24 +7,16 @@
  *   colours picked to stay as far apart as they can (teamColours.ts, TEAM_SAFE_COLOURS; their gaps are checked by
  *   simulation in colourVision.test.ts, colourSim.ts). A map's or host's own team colours give way to them.
  * Whatever the setting, every team also has its symbol beside its colour (teamSymbols.ts).
- * Saved in this browser, and with your profile when signed in (careerStats.ts, chooseColourVision). The game reads it as
- * a match starts (the HUD, minimap, kill feed, scoreboard, flags, vehicles and forts take teamColours.ts's colours).
- * The menu loads only this file (the setting); the colours are the game's (teamColours.ts).
+ * Saved in this browser (`tiletrigger.colourVision`; Options → Accessibility writes the key itself, so none of this is
+ * in the menu's first load). The game reads it as a match starts (the HUD, minimap, kill feed, scoreboard, flags,
+ * vehicles and forts take teamColours.ts's colours).
  */
-import { COLOUR_VISION_IDS, isColourVisionId, type ColourVisionId } from '@tiletrigger/shared';
-
-export const COLOUR_VISIONS = COLOUR_VISION_IDS;
-export type ColourVision = ColourVisionId;
-
-export const COLOUR_VISION_LABELS: Readonly<Record<ColourVision, string>> = {
-  default: 'Default',
-  redgreen: 'Red-green (deuteranopia, protanopia)',
-  tritan: 'Tritanopia (blue-yellow)',
-};
+export const COLOUR_VISIONS = ['default', 'redgreen', 'tritan'] as const;
+export type ColourVision = (typeof COLOUR_VISIONS)[number];
 
 const KEY = 'tiletrigger.colourVision';
 
-export const isColourVision = isColourVisionId;
+export const isColourVision = (v: unknown): v is ColourVision => (COLOUR_VISIONS as readonly unknown[]).includes(v);
 
 /** The saved setting: Default unless chosen. */
 export function loadColourVision(): ColourVision {
@@ -44,7 +36,7 @@ export function colourVision(): ColourVision {
   return (current ??= loadColourVision());
 }
 
-/** Keep a setting in this browser (Options goes through careerStats.ts chooseColourVision, which keeps it on your profile too). */
+/** Keep a setting in this browser (Options writes the same key itself). */
 export function saveColourVision(v: ColourVision): void {
   current = v;
   try {

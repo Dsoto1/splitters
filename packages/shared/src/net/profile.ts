@@ -87,14 +87,7 @@ export interface Profile {
   optics: Record<string, string>;
   /** Your key bindings (client game/keyBindings.ts: action → "key,alt", only actions changed from the defaults): kept with the account so every browser you sign in on uses them. An older hub sends none. */
   keys: Record<string, string>;
-  /** Options → Accessibility → Colour vision (COLOUR_VISION_IDS), kept with the account; null or none (an older hub): not chosen there. */
-  colourVision?: ColourVisionId | null;
 }
-
-/** Colour vision settings (client game/colourVision.ts): team colours that stay apart with that colour vision. */
-export const COLOUR_VISION_IDS = ['default', 'redgreen', 'tritan'] as const;
-export type ColourVisionId = (typeof COLOUR_VISION_IDS)[number];
-export const isColourVisionId = (v: unknown): v is ColourVisionId => (COLOUR_VISION_IDS as readonly unknown[]).includes(v);
 
 /** A profile's key bindings, checked: at most 128 actions, each "key,alt" of short letter-and-digit codes; null when it isn't a map. */
 export function keysShape(raw: unknown): Record<string, string> | null {

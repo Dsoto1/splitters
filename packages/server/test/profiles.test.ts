@@ -22,7 +22,7 @@ describe('profiles', () => {
   it('gives each account a unique username (whatever the case) and a region, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {}, colourVision: null });
+    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {} });
     expect(store.update('a', { username: 'Toshi_92', region: 'na-east' })).toMatchObject({ username: 'Toshi_92', region: 'na-east' });
     // Taken, whatever the case; but the owner may change its own case.
     expect(store.problem('b', 'toshi_92')).toBe('that name is taken');
@@ -206,16 +206,5 @@ describe('profiles', () => {
     store.update('a', { username: 'Toshi_92', keys: { leanLeft: 'KeyP,' } });
     expect(store.get('a').keys).toEqual({ leanLeft: 'KeyP,' });
     expect(store.card('toshi_92')).not.toHaveProperty('keys');
-  });
-
-  it('keeps the Colour vision setting with the account, never on the public card', () => {
-    const store = new ProfileStore(temp());
-    expect(store.get('a').colourVision).toBeNull();
-    expect(store.update('a', { colourVision: 'tritan' }).colourVision).toBe('tritan');
-    expect(() => store.update('a', { colourVision: 'sepia' })).toThrow(/colour vision/);
-    expect(store.get('a').colourVision).toBe('tritan');
-    expect(store.update('a', { colourVision: null }).colourVision).toBeNull();
-    store.update('a', { username: 'Toshi_92', colourVision: 'redgreen' });
-    expect(store.card('toshi_92')).not.toHaveProperty('colourVision');
   });
 });

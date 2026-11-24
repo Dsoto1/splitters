@@ -1,7 +1,6 @@
 import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
-import { colourVision, saveColourVision, type ColourVision } from './game/colourVision.ts';
 import { myKeys, onBindingsChange, replaceMyKeys } from './game/keyBindings.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
@@ -135,7 +134,6 @@ export async function syncCareer(): Promise<void> {
   await sendPending(who.sub);
   syncOptics();
   syncKeys();
-  syncColourVision();
 }
 
 /**
@@ -171,22 +169,6 @@ export function syncKeys(): void {
   });
 }
 let stopKeySave: (() => void) | null = null;
-
-/**
- * Colour vision (Options → Accessibility; game/colourVision.ts) on the account, as key bindings are: signed in, your
- * account's choice is this browser's; an account with none takes this browser's (when not Default).
- */
-export function syncColourVision(): void {
-  const p = currentAccount() ? cachedProfile() : null;
-  if (p?.colourVision) saveColourVision(p.colourVision);
-  else if (p && colourVision() !== 'default') void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
-}
-
-/** Options chose a Colour vision: kept here, and on the account when signed in (an older hub: here only). */
-export function chooseColourVision(v: ColourVision): void {
-  saveColourVision(v);
-  if (currentAccount()) void saveProfile({ colourVision: v }).catch(() => undefined);
-}
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);
