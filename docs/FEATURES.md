@@ -113,13 +113,38 @@ An owner and team tool on the weapon tuning page (`?mode=weapons&view=manage`; c
 | Typed ammo: light, rifle, shells, sniper, explosive, cells, fuel, chem | various (chem only on cinder_foundry) |
 | Double Damage (×2, 15 s) | 33 pickups |
 | Speed Boost (×1.35, 15 s) | grand_marquee, void_yard |
+| **Overdrive, Regen, Rapid Fire, Phantom, Moon Boots, Vampire, Bottomless Mag** (below) | **MapMaker only** (and the coverage map) |
 | Jetpack | pantry_raid only |
 | Glider | eagle_spires, fernwood_moon, frost_basin |
 | Disc powers: fast, triple, split, freeze (3 throws each) | the 3 Disc Arena maps |
 | **UAV Uplink** | **MapMaker only** (the UAV itself is the 3-kill streak) |
 
 - **Kill streaks** (on/off in the menu): 3 kills UAV, 5 Supply Pulse, 7 Counter-UAV, 9 Airstrike.
-- **No invisibility pickup.** The only cloak is the Shade class.
+- **Phantom** is the one invisibility pickup, and only partly (a shimmer); the Shade class's cloak is the other.
+
+### Power-ups (owner, 2026-11-24; `content/pickups.json`, `sim/powerups.ts`)
+
+Nine, each with its own pickup model, HUD line (icon, seconds, a bar of the time left), sound, bot value and a host
+switch (Match setup → Power-ups, one chip each; a dedicated server's rules `speedboost`, `doubledamage`, `overdrive`,
+`regen`, `rapidfire`, `phantom`, `moonboots`, `vampire`, `bottomless`; all on by default, off: its pickups aren't on
+the map). The numbers are starting points (`rules.powerup` in the pickups file), to tune in play:
+
+| Power-up | Lasts | Respawn | Bot value | Does |
+|---|---|---|---|---|
+| Speed Boost | 15 s | 60 s | 0.6 | ×1.35 speed |
+| Double Damage | 15 s | 60 s | 0.85 | ×2 damage |
+| **Overdrive** (rare) | 8 s | 120 s | 0.95 | nothing hurts you (a fall out of the map still kills); ×1.15 speed; running into an enemy knocks them 9 m/s back and 4.5 m/s up for 10 damage, once a second each (a fall soon after is your kill: "Overdrive" in the kill feed). A steady gold glow on you that swells and settles at 0.8 Hz (held still with Reduce flashing); no rainbow, no flicker |
+| **Regen** | 20 s | 45 s | 0.55 (more when hurt) | 5 health a second, up to full |
+| **Rapid Fire** | 15 s | 60 s | 0.75 | fire cooldown ×1.5 faster, reloads ×1.5; with Double Damage on too the fire rate is ×1.2, so the two make 2.4× the damage a second, not 3× (GUNPLAY_SPEC §10: moderate TTK; one systemic multiple, every gun keeps its shape) |
+| **Phantom** | 12 s | 60 s | 0.6 | enemies see 12 % of you (a slow shimmer, steady with Reduce flashing), no name tag; teammates a ghost (40 %); firing shows you for 1 s; bots only spot you up close (as in a bush) |
+| **Moon Boots** | 15 s | 45 s | 0.4 | gravity ×0.45, jump ×1.35 (about four times as high), no fall damage |
+| **Vampire** | 15 s | 60 s | 0.65 | 25 % of the damage your hits deal (never more than they had) comes back as health, up to full |
+| **Bottomless Mag** | 12 s | 60 s | 0.7 | the gun in hand stays full: no ammo used, no reloads (a reload under way stops); heat guns still heat |
+
+Bots go for power-ups like any pickup (Regen most when hurt) and back away from an enemy in Overdrive within 16 m
+(`OVERDRIVE_KEEP_AWAY`). Others see Overdrive, Double Damage, Speed, Vampire and Rapid Fire as a glow on the body
+(`game/powerupGlow.ts`); Regen, Moon Boots and Bottomless don't show. Prediction runs them all as the host does (speed,
+gravity, jump, the faster cooldowns and reloads, the full magazine).
 
 ### Classes (match setting "Classes")
 

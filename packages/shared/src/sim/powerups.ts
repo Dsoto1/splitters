@@ -2,7 +2,7 @@
  * The power-ups beyond Speed Boost and Double Damage (owner, 2026-11-24): Overdrive, Regen, Rapid Fire, Phantom,
  * Moon Boots, Vampire and Bottomless Mag. Their numbers are data (content/pickups.json `rules.powerup`); what each
  * does lives here (the pure parts both the match and client prediction run) and in sim/match.ts (the rest).
- * docs/PICKUPS.md, "Power-ups", has the starting balance.
+ * docs/FEATURES.md, "Power-ups", has the starting balance.
  */
 import { CORE_ITEMS, PICKUP_RULES } from '../content/pickups.generated.ts';
 import { TICK_RATE } from './constants.ts';

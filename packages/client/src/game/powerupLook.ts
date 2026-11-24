@@ -1,7 +1,7 @@
 import type { PowerupKind } from '@tiletrigger/shared';
 
 /**
- * How each power-up looks (docs/PICKUPS.md, "Power-ups"): its colour (the pickup, the HUD line, the glow on someone
+ * How each power-up looks (docs/FEATURES.md, "Power-ups"): its colour (the pickup, the HUD line, the glow on someone
  * who has it), its HUD name and a small icon (an SVG path in a 14 × 14 box; `stroke` drawn as a line, else filled).
  * Kept apart from the pickup models so the HUD doesn't load Babylon for it.
  */

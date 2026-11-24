@@ -143,6 +143,7 @@ What flickered, and what the setting does to each:
 | Blood by character's sparks and wisps (`bloodVisuals.ts`; Binbun's Electric FX off a robot, Hit FX tinted white-grey off a ghost) | at the pack's size and strength (the wisp 0.45 of it, eased in), at most one of each every 60 ms | 0.8 of the size, 0.55 of the strength, eased in over 0.12 s, at most one of each a second (a machine gun on a robot no longer crackles ten times a second); the `flashing` flow's `blood` moment |
 | A rank-up's badge (`rankGlow.ts`; Options → Ranks & badges, the kill feed and over the head) | swells to 1.45 × and a soft halo in its colour rises and fades over a second | swells to 1.2 ×, the halo at most 0.3, eased in and out over the second |
 | A scope's surround and shadow (`scopeFeel.ts`; the Sniper Rifle, Railgun, Marksman and Battle Rifle) | the black round the glass comes in at once with the zoom and fades out over 0.1 s; the shadow at the glass's edge slides up to half the glass's radius with a turn or a kick, at 0.94 darkness | it fades out over 0.22 s; the shadow moves at most 0.3 of the radius, at 0.6 darkness, through a quarter-second filter (hard turns left and right barely move it). Its moment: `scope` |
+| Power-ups on a body (`powerupGlow.ts`: Overdrive's gold, Phantom's shimmer) | Overdrive's glow swells and settles at 0.8 Hz between 0.5 and 0.8 of its colour (in twentieths, never a jump); Phantom drifts ±4 % round 12 % seen at 0.6 Hz; no colour cycling | Overdrive held at 0.65, Phantom held at 12 %. Its moment: `powerups` |
 | The sniper glint (`scopeGlint.ts`: a sniper scope aimed your way, seen from 18 m) | a small soft point at 0.85, up over 0.15 s; steady, under the bloom threshold | 0.5, up over half a second. Its moment: `glint` |
 
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
@@ -161,7 +162,7 @@ the scenes its moments need:
 | `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
 | `flashing3` | rain, snow, loot, fixtures, status | |
 | `flashing4` | blood, alarm | lowhealth, scope |
-| `flashing5` | | shelves, tunnel, lootlight, hitkick |
+| `flashing5` | | shelves, tunnel, lootlight, hitkick, powerups |
 
 **A new moment goes in the shortest flow** (`e2e/timings.json`): add it to the scene, then its name to that flow's
 list in `FLASHING_PARTS` (a moment in no flow fails the check). All five are mapped wherever the check is

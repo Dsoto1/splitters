@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Seven new power-ups:** Overdrive (rare: a few seconds nothing hurts you and you knock enemies flying, a steady gold glow), Regen, Rapid Fire, Phantom (nearly invisible until you fire), Moon Boots, Vampire and Bottomless Mag, each with its own pickup, sound and HUD timer, in MapMaker's palette and switchable one by one in Match setup and a server's rules.
 - **MapMaker: New map asks theme, modes, players and boundary on its one screen**, all pre-filled (Create straight away as before) and changeable later in Map properties; players suggest a size, and a boundary picked there is fitted round the new map from the start. A Start from layout keeps its own settings and shows them.
 - **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
