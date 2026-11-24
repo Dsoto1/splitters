@@ -2063,6 +2063,39 @@
         }
       ]
     },
+    "fire.heavy.fast": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Heavy: HK G3 close, short (fast fire)",
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch G3 7.62x51mm/HK_G3_7.62x51mm_1m_left_off_axis_MKH418_clean_Triple_Shots_x_1.wav",
+          "start": 0.485,
+          "length": 0.39,
+          "fade": 0.12,
+          "punch": "gun"
+        }
+      ]
+    },
+    "fire.heavy.l86.fast": {
+      "gain": 1.3,
+      "range": "far",
+      "jitter": 0.05,
+      "label": "Heavy: L86 light support weapon, short (fast fire)",
+      "lazy": true,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2016",
+          "file": "Gunshots and bullets/Pole Position Production - Enfield L86 LSW 5.56mm/Enfield_L86_LSW_5.56mm_1m_right_MKH8040_2_clean_Triple_shots_x_1.wav",
+          "start": 0.663,
+          "length": 0.29,
+          "fade": 0.08,
+          "punch": "gun"
+        }
+      ]
+    },
     "reload.saiga": {
       "gain": 0.13,
       "range": "near",

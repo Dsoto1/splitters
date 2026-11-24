@@ -27,7 +27,7 @@
     "tracer": "#ffe9a8",
     "hold": { "style": "long", "grip": [0, 0.015, -0.175], "support": [0, 0.05, 0.0], "shoulder": [0, 0.03, -0.245] },
     "muzzleAt": [0, 0.085, 0.245],
-    "sound": "fire.heavy.l86"
+    "sound": "fire.heavy.l86.fast"
   },
   "notes": {
     "range": "Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.",

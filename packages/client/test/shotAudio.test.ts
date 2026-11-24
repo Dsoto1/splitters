@@ -8,9 +8,11 @@
  *   shotDelay).
  */
 import { describe, expect, it } from 'vitest';
-import { TICK_DT } from '@tiletrigger/shared';
+import { TICK_DT, getWeapon } from '@tiletrigger/shared';
 import { WORLD_TAIL_FROM, voiceToSteal, worldTail, type VoiceSlot } from '../src/audio/audio.ts';
 import { SHOT_SPREAD_MAX, shotDelay } from '../src/game/triggerLatch.ts';
+import manifest from '../../../content/sounds.json';
+import lock from '../../../content/sonniss.lock.json';
 
 const MAX_PER_SOUND = 6;
 const MAX_ALL = 40;
@@ -127,5 +129,31 @@ describe('long gun reports in a crowd', () => {
     let sum = 0;
     for (let i = 0; i < n; i++) sum += worldTail(1.5, 10 + (240 * (i + 0.5)) / n, 250);
     expect(sum / n).toBeLessThanOrEqual(0.9);
+  });
+});
+
+describe('the fastest guns fire short cuts (docs/AUDIO.md, "Short cuts for the fastest guns")', () => {
+  // A gun firing r shots a second keeps ceil(length × r) voices of its sound ringing; past the cap the oldest of your
+  // own is cut (a stutter on every shot). The Mounted MG (15/s) and the Machine Pistol (20/s) had long reports.
+  const duration = (id: string) => {
+    const files = lock.files.filter((f) => f.file.startsWith(`sounds/${id}_`));
+    expect(files.length).toBeGreaterThan(0);
+    return Math.max(...files.map((f) => f.duration));
+  };
+  const fast = [
+    { weapon: 'core.mount_mg', sound: 'fire.heavy.fast', long: 'fire.heavy' },
+    { weapon: 'core.machine_pistol', sound: 'fire.heavy.l86.fast', long: 'fire.heavy.l86' },
+  ];
+
+  it.each(fast)('$weapon fires $sound, whose voices at its fire rate fit under the cap', ({ weapon, sound, long }) => {
+    const w = getWeapon(weapon);
+    expect(w.view.sound).toBe(sound);
+    expect(sound in manifest.sounds).toBe(true);
+    const rate = 1 / (w.fireIntervalTicks * TICK_DT);
+    expect(rate).toBeGreaterThanOrEqual(15);
+    expect(duration(sound) * rate).toBeLessThanOrEqual(MAX_PER_SOUND);
+    // The long cut it came from stays for the slower guns, and would not have fit.
+    expect(long in manifest.sounds).toBe(true);
+    expect(duration(long) * rate).toBeGreaterThan(MAX_PER_SOUND);
   });
 });

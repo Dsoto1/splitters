@@ -1584,7 +1584,7 @@
       0.085,
       0.245
      ],
-     "sound": "fire.heavy.l86"
+     "sound": "fire.heavy.l86.fast"
     }
    },
    "gunplay": {
@@ -3691,7 +3691,7 @@
        0
       ]
      },
-     "sound": "fire.heavy"
+     "sound": "fire.heavy.fast"
     }
    },
    "gunplay": {
