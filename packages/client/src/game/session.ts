@@ -169,6 +169,7 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { SoundCaptions } from './soundCaptions.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
 import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
 import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake } from './cameraShake.ts';
@@ -396,6 +397,8 @@ export class GameSession {
   private touch: TouchControls | null = null;
   private readonly interp = new Interpolator();
   private readonly sfx: SessionAudio;
+  /** Sound captions (Options → Accessibility; soundCaptions.ts): idle while the setting is off. */
+  private readonly captions: SoundCaptions;
   /** The weather's rain and wind (weatherAudio.ts), and the weather last shown. */
   private readonly weatherSound: WeatherAudio;
   private weatherKey = '';
@@ -884,6 +887,12 @@ export class GameSession {
     this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => hintKey(a));
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
+    // A teammate's sounds caption as friendly (co-op: every player); free-for-all and NPCs are anyone else's.
+    this.captions = new SoundCaptions(opts.audio, (slot) => {
+      if (this.allied) return slot < NPC_ID_BASE ? 'friend' : 'enemy';
+      const mine = this.hud.team(this.slot);
+      return mine && mine.id === this.hud.team(slot)?.id ? 'friend' : 'enemy';
+    });
     this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();
@@ -2261,6 +2270,7 @@ export class GameSession {
     // The standings as they were (before the HUD goes), for a screen after the match (the host left).
     const end: SessionEnd | undefined = this.welcomed && this.welcomeMap && this.rules ? { board: this.hud.boardData(this.scores, this.slot, true), map: this.welcomeMap, rules: this.rules, fill: Math.max(2, this.lastRoster?.length ?? 2) } : undefined;
     this.hostPanel.remove();
+    this.captions.dispose();
     this.playerCard?.dispose();
     this.wheel.dispose();
     this.orderWheel.dispose();
@@ -4259,6 +4269,7 @@ export class GameSession {
     this.updateGlints(dt, poses);
     this.sfx.remoteSteps(poses, this.riderPlacement.placed);
     this.sfx.tick(performance.now());
+    this.captions.update(performance.now());
     if (this.fxWatch) {
       const me = this.local;
       this.fxWatch.update(me ? [...poses.filter((p) => p.slot !== this.slot), { slot: this.slot, x: me.state.pos.x, y: me.state.pos.y, z: me.state.pos.z, alive: me.alive, grounded: me.state.grounded, ...(me.state.zip !== undefined ? { zip: me.state.zip } : {}) }] : poses);
