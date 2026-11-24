@@ -27,9 +27,13 @@ Owner's notes, 2026-11-24. A direction to build toward, not yet a plan: the owne
 - Map-by-map rework (docs/QUEUE.md, Maps): the game-inspired maps get reimagined to be funny and distinct, and fitted to this story.
 - Character tiers and collections (docs/CHARACTERS.md): unlocks would sit on top of them.
 
-## Questions for when the story is ready
+## Owner's answers (2026-11-24)
 
-1. **Solo, co-op, or both?** Is the campaign played against bots (with friends in co-op), and does it change what's unlocked in multiplayer?
-2. **Where progress lives:** on the player's profile (signed in, through the hub) or on the device?
-3. **Characters still locked in campaign:** are they also locked in Quick Play and the character select, or only in the campaign?
-4. **Bosses:** a boss mode (one strong character with more health and its own abilities) on top of the existing modes?
+1. **Both:** solo against bots, and co-op with friends.
+2. **Saved on the device and on the profile.** The device keeps a copy, so play works signed out and offline. Signed in, the hub keeps it on the player's profile, next to their career stats (packages/server/src/profiles.ts, already per Cognito account on the hub box). On sign-in the two merge: unlocks are a union, and progress takes the furthest. It's a few KB per player on the existing box: no new AWS service or cost. The client reports its own progress; that's fine for a campaign (no rankings depend on it).
+3. (See the question below.)
+4. **Bosses: keep it simple.** Better bot intelligence (the top skill and more), better stats (more HP, extra damage), and some bosses favour certain weapons or power-ups. The existing bot skill and character stats carry most of it.
+
+## Open
+
+3. Characters not yet unlocked in the campaign: are they also hidden in normal play (Quick Play, Match Setup, online), or only in the campaign? (Asked 2026-11-24.)
