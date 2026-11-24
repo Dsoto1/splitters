@@ -32,7 +32,7 @@ export const PROJECTILE_VISUALS = [
   'grenade', 'rocket', 'plasma', 'orb', 'frag', 'mine',
   'bubble', 'goo', 'oil', 'flame', 'disc', 'nail', 'flare', 'swarm', 'vortex', 'shard', 'sticky', 'molotov', 'gas', 'bolt',
   'holy', 'banana', 'sheep', 'bomblet', 'bomb', 'sandbag', 'spear', 'dynamite', 'vortexNade', 'smoke', 'flareShot',
-  'ammoBox', 'arrow', 'blasterBolt', 'stinger', 'slime',
+  'ammoBox', 'arrow', 'blasterBolt', 'stinger', 'slime', 'frost',
 ] as const;
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
@@ -49,11 +49,14 @@ export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', '
  * time, `slow` cuts speed, `chill` builds up (freeze ray) until the target
  * freezes solid for a moment.
  */
-export const STATUS_KINDS = ['burn', 'poison', 'slow', 'chill'] as const;
+export const STATUS_KINDS = ['burn', 'poison', 'slow', 'chill', 'freeze'] as const;
 export type StatusKind = (typeof STATUS_KINDS)[number];
 export interface StatusHit {
   kind: StatusKind;
-  /** How long it lasts after the last hit (burn, poison, slow). */
+  /**
+   * How long it lasts after the last hit (burn, poison, slow); a `freeze` (the Freeze Ray's freeze blast) holds its
+   * victim in a block of ice this long (Match.freezeSolid: can't move or act, slow damage, the block solid to others).
+   */
   seconds: number;
   /** Chill added per hit (1 = frozen). */
   amount?: number;
@@ -237,8 +240,14 @@ export interface ProjectileSpec {
  */
 export interface AltFire {
   label: string;
-  ammo: 'shared' | 'own';
+  /** What a shot spends: the magazine (`shared`), its own rounds (`own`), or the heat bar (`heat`: `cost` hundredths of it, a heat weapon's). */
+  ammo: 'shared' | 'own' | 'heat';
   cost: number;
+  /**
+   * Its own cooldown (ticks) after a shot, apart from the weapon's: the primary fires again after `fireIntervalTicks`
+   * while this trigger waits (the Freeze Ray's freeze blast, 6 s). Absent: none.
+   */
+  cooldownTicks?: number;
   /** Own-reserve size and the rounds a weapon pickup gives. */
   max?: number;
   pickup?: number;

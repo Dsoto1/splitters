@@ -759,6 +759,25 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
+  /**
+   * The frost over your view while a freeze blast holds you in ice (owner, 2026-11-24: "the frozen player's view
+   * frosts gently"): pale frost creeping in from the edges, the middle clear, eased in and out (more slowly with
+   * Reduce flashing on, and paler). Never a flash or a white-out: at most a soft rim, its brightest corner well under
+   * the picture's own. Returns whether it is on.
+   */
+  setFrost(on: boolean, calm: boolean): boolean {
+    let el = document.getElementById('frost-view');
+    if (!el && !on) return false;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'frost-view';
+      this.root.append(el);
+    }
+    el.classList.toggle('calm', calm);
+    el.classList.toggle('on', on);
+    return on;
+  }
+
   setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0, jamSeconds = 0, streak = ''): void {
     const parts: string[] = [];
     if (streak) parts.push(`<span style="color:#ffd24a">${escapeHtml(streak)}</span>`);

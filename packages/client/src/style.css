@@ -1359,6 +1359,11 @@ img.wicon { height: 18px; width: auto; vertical-align: middle; margin: 0 4px; fi
 img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .loadout span { display: flex; align-items: center; }
 #status-tint { position: absolute; inset: 0; pointer-events: none; transition: box-shadow 0.25s; }
+/* The frost over a frozen player's view (hud.ts setFrost): from the edges, the middle clear, eased in and out; paler and slower with Reduce flashing. */
+#frost-view { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.7s ease-in-out; background: radial-gradient(ellipse at center, transparent 48%, rgba(214, 238, 252, 0.22) 72%, rgba(226, 244, 255, 0.5) 100%); }
+#frost-view.on { opacity: 1; }
+#frost-view.calm { transition-duration: 1.4s; }
+#frost-view.calm.on { opacity: 0.7; }
 #weapon-bar span i { display: block; font-style: normal; font-size: 8px; line-height: 6px; color: var(--cyan); letter-spacing: 1px; }
 
 /* Vehicle damage: your vehicle's panel, and bars over damaged vehicles nearby. */

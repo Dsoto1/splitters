@@ -88,7 +88,7 @@ export function schemas(root = ROOT, families = []) {
   });
   const fireModeSpec = obj({ mode: en(['auto', 'semi', 'burst']), label: str, 'fireIntervalTicks?': int, 'burst?': obj({ count: int, intervalTicks: int }), 'kick?': partial(kick) });
   const alt = obj({
-    label: str, ammo: en(['shared', 'own']), cost: int, 'max?': int, 'pickup?': int, fireIntervalTicks: int, kind: en(['hitscan', 'projectile']),
+    label: str, ammo: en(['shared', 'own', 'heat']), cost: int, 'max?': int, 'pickup?': int, fireIntervalTicks: int, 'cooldownTicks?': int, kind: en(['hitscan', 'projectile']),
     'damage?': num, 'pellets?': int, 'spread?': num, 'range?': num, 'projectile?': projectile,
     'reload?': obj({ start: int, each: int, end: int }), 'kick?': obj(kick), 'falloff?': falloff, 'headshot?': num,
   });

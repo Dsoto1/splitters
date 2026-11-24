@@ -199,6 +199,7 @@ import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
+import { IceBlocks } from './iceBlocks.ts';
 import { AmmoBoxState } from './ammoBoxState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
@@ -555,6 +556,8 @@ export class GameSession {
   private readonly riderPlacement = new RiderPlacement();
   private covers?: CoverState;
   private ammoBoxes?: AmmoBoxState;
+  /** Freeze blasts' blocks of ice (snapshot `ic`): drawn, and solid in the prediction physics. */
+  private ice?: IceBlocks;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
@@ -2462,6 +2465,7 @@ export class GameSession {
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7), this.view.models);
         this.ammoBoxes = new AmmoBoxState(this.view.scene, physics, this.view.models);
+        this.ice = new IceBlocks(this.view.scene, physics, (at, size) => this.view.debris(at, '#d6f1ff', size, 12, 0.8));
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();
@@ -2540,6 +2544,10 @@ export class GameSession {
         for (const at of this.mounts?.takeCharges() ?? []) this.sfx.sentryCharge(at);
         this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
+        // Blocks of ice: one whose prisoner died breaks into shards (the event in this message says so); the rest melt.
+        for (const ev of msg.ev ?? []) if (ev.e === 'ice' && !ev.on && ev.x) this.ice?.shatter(ev.s);
+        this.ice?.apply(msg.ic);
+        if (this.local) this.local.iced = !!this.ice?.heldSlots().has(this.slot);
         this.ammoBoxes?.apply(msg.ab);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
@@ -4189,6 +4197,7 @@ export class GameSession {
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
+    this.hud.setFrost(!!this.local?.alive && !!this.local.iced, reduceFlashing());
     this.hud.tickHurt();
     this.hud.tickHeavy();
     const poses = this.interp.sample(now);
