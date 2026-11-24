@@ -602,7 +602,7 @@ export class FrontEnd {
   openLoadout(): void {
     this.go('profile');
     const btn = this.body.querySelector<HTMLButtonElement>('#profile-test-weapons');
-    btn?.closest('section')?.scrollIntoView({ block: 'center' });
+    btn?.scrollIntoView({ block: 'center' });
     btn?.focus({ preventScroll: true });
   }
 
