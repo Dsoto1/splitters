@@ -73,6 +73,7 @@ import {
   STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
+  FX_PHANTOM,
   FX_PROTECTED,
   FX_JET,
   CHUTE_GLIDER,
@@ -133,6 +134,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { bodyGlowColor, bodyGlowScale, easePhantom, phantomShown } from './powerupGlow.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
 import { addShake, shakeLeft } from './cameraShake.ts';
@@ -300,8 +302,10 @@ interface Avatar {
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
   jet?: Mesh;
-  /** How see-through it is drawn now (Classes: a cloaked Shade); 1 = solid. */
+  /** How see-through it is drawn now (Classes: a cloaked Shade; the Phantom power-up); 1 = solid. */
   shown?: number;
+  /** Phantom's fade, 0 (solid) to 1 (its shimmer). */
+  phantom?: number;
   /** Parachute or glider over them, and which. */
   canopy?: { node: TransformNode; kind: number; harness?: CanopyHarness };
   /** The zipline trolley over a rider's head (made on first ride). */
@@ -2823,12 +2827,15 @@ export class GameView {
         if (a.anim instanceof CharacterAnimator) a.anim.setDormant(out);
       }
       a.placeholder.setEnabled(p.alive && !a.anim);
-      const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
+      // A power-up's glow (powerupGlow.ts): Overdrive's gold swells and settles slower than once a second (held still
+      // with Reduce flashing), never a flicker.
+      const glowColor = p.alive ? bodyGlowColor(p.powerups) : null;
+      const glowScale = bodyGlowScale(p.powerups, now / 1000, reduceFlashing());
       // Only when it changes: setting a PBR colour marks every mesh using the material for a shader check.
-      const glowKey = `${glowColor}|${a.anim ? 1 : 0}`;
+      const glowKey = `${glowColor}|${glowScale}|${a.anim ? 1 : 0}`;
       const reglow = a.glowKey !== glowKey;
       a.glowKey = glowKey;
-      if (reglow) setGlow(a.mat, glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black());
+      if (reglow) setGlow(a.mat, glowColor ? Color3.FromHexString(glowColor).scale(glowScale) : Color3.Black());
       // Spawn protection: a faint shimmer round them until it drops (content/vfx.json map.lasting shield.spawn; Reduce
       // flashing: the steady glow below instead of the pack's crackling ball). A powerup: a low flame at the feet.
       const size = a.root.scaling.y || 1;
@@ -2845,7 +2852,7 @@ export class GameView {
       if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
         a.shieldStep = step;
         const k = (step / 10) * SHIELD_GLOW_PEAK;
-        const base = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+        const base = glowColor ? Color3.FromHexString(glowColor).scale(glowScale) : Color3.Black();
         setGlow(a.mat, base.add(SHIELD_GLOW.scale(k)));
         if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
       }
@@ -2961,10 +2968,15 @@ export class GameView {
       const tag = p.alive ? allyColor(p.slot) : null;
       const cloaked = p.alive && (p.status & FX_CLOAK) !== 0;
       const enemy = !tag || tag.toLowerCase() === '#ff3b3b';
-      const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
+      // Phantom (a power-up): a faint shimmer to enemies, a ghost to teammates; a shot shows them for a moment (the
+      // host clears FX_PHANTOM), eased in and out (powerupGlow.ts).
+      a.phantom = easePhantom(a.phantom ?? 0, p.alive && (p.status & FX_PHANTOM) !== 0 ? 1 : 0, dt);
+      const ghost = a.phantom > 0 ? 1 + (phantomShown(now / 1000, enemy, reduceFlashing()) - 1) * a.phantom : 1;
+      const phantom = a.phantom > 0.5;
+      const shown = Math.min(cloaked ? (enemy ? 0.06 : 0.35) : 1, Math.round(ghost * 100) / 100);
       // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
       const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
-      this.setTag(a, (cloaked || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
+      this.setTag(a, (cloaked || phantom || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
       // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
       if (a.tag?.ins) {
         const c = this.camera.position, r = a.root.position;

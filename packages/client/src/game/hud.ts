@@ -1,9 +1,10 @@
 import { WHEEL_CATEGORIES, WHEEL_CATEGORY_LABELS, type WheelCategory, wheelCategoryOf } from './wheelCategories.ts';
-import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, NPC_ID_BASE, lookBranch, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
+import { CLASS_DEFS, CLASS_IDS, CORE_WEAPONS, EXTRA_POWERUPS, NPC_ID_BASE, TICK_RATE, powerupSeconds, type PowerTicks, lookBranch, nameWithoutRank, shownRank, weaponByCode, type ShownRank, type Faction, type InsigniaId, type MatchAward, type MatchPhase, type RosterEntry, type ScoreEntry, type ServerStats } from '@tiletrigger/shared';
 import { slotColor } from './view.ts';
 import { PARTY_COLOR, ffaPartyMate } from './ffaParty.ts';
 import { applyCrosshair, applyHitmarker } from './crosshair.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
+import { powerupLine } from './powerupLook.ts';
 import { Minimap } from './minimap.ts';
 import { ScoreBoard, type BoardData, type BoardRow } from './scoreBoard.ts';
 import { readSquads, squadGroups, squadHonours, type SquadHonours } from './squadBoard.ts';
@@ -48,7 +49,7 @@ const HAZARD_DEATHS: Record<string, string> = {
   'core.roadkill': 'was run over',
 };
 /** Kill-feed labels for things that aren't weapons (no model to draw an icon from). */
-const OTHER_LABELS: Record<string, string> = { 'core.barrel': 'Barrel', 'core.wreck': '✹ Wreck', 'core.roadkill': 'Roadkill', 'core.punch': 'Punch', 'core.kick': 'Kick' };
+const OTHER_LABELS: Record<string, string> = { 'core.overdrive': 'Overdrive', 'core.barrel': 'Barrel', 'core.wreck': '✹ Wreck', 'core.roadkill': 'Roadkill', 'core.punch': 'Punch', 'core.kick': 'Kick' };
 const weaponLabel = (id: string) => CORE_WEAPONS[id]?.displayName ?? OTHER_LABELS[id] ?? '✕';
 
 export class Hud {
@@ -759,7 +760,7 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
-  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0, jamSeconds = 0, streak = ''): void {
+  setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0, jamSeconds = 0, streak = '', power: PowerTicks | null = null): void {
     const parts: string[] = [];
     if (streak) parts.push(`<span style="color:#ffd24a">${escapeHtml(streak)}</span>`);
     if (jamSeconds > 0) parts.push(`<span style="color:#ff5a5a">MINIMAP JAMMED ${Math.ceil(jamSeconds)}</span>`);
@@ -769,8 +770,10 @@ export class Hud {
       const n = Math.round(jetFuel * 10);
       parts.push(`<span style="color:#ffa040">JETPACK ${'▮'.repeat(n)}<span style="opacity:.3">${'▮'.repeat(10 - n)}</span></span>`);
     }
-    if (damageSeconds > 0) parts.push(`<span style="color:#d77bff">DOUBLE DAMAGE ${Math.ceil(damageSeconds)}</span>`);
-    if (speedSeconds > 0) parts.push(`<span style="color:#5fe0ff">SPEED ${Math.ceil(speedSeconds)}</span>`);
+    // Power-ups: icon, name, seconds and a bar of the time left (game/powerupLook.ts).
+    if (damageSeconds > 0) parts.push(powerupLine('damage', damageSeconds, powerupSeconds('damage')));
+    if (speedSeconds > 0) parts.push(powerupLine('speed', speedSeconds, powerupSeconds('speed')));
+    if (power) for (const k of EXTRA_POWERUPS) if (power[k] > 0) parts.push(powerupLine(k, power[k] / TICK_RATE, powerupSeconds(k)));
     for (const l of this.statusLines) parts.push(`<span style="color:${l.color}">${escapeHtml(l.text)}</span>`);
     const html = parts.join('');
     if (html !== this.powerups.innerHTML) this.powerups.innerHTML = html;

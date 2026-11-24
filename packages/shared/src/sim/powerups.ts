@@ -4,7 +4,7 @@
  * does lives here (the pure parts both the match and client prediction run) and in sim/match.ts (the rest).
  * docs/PICKUPS.md, "Power-ups", has the starting balance.
  */
-import { PICKUP_RULES } from '../content/pickups.generated.ts';
+import { CORE_ITEMS, PICKUP_RULES } from '../content/pickups.generated.ts';
 import { TICK_RATE } from './constants.ts';
 import type { ItemDefinition, PowerupKind } from './items.ts';
 
@@ -58,6 +58,12 @@ export const rapidFireRate = (damageBoosted: boolean): number => (damageBoosted 
 /** Moving: the speed multiple, the gravity and jump multiples Overdrive and Moon Boots add. */
 export function powerMove(p: PowerTicks): { speed: number; gravity: number; jump: number } {
   return { speed: p.overdrive > 0 ? OVERDRIVE_SPEED : 1, gravity: p.moon > 0 ? MOON_GRAVITY : 1, jump: p.moon > 0 ? MOON_JUMP : 1 };
+}
+
+/** How long a power-up's pickup lasts (s): the first pickup that gives it (the HUD's bar). */
+export function powerupSeconds(kind: PowerupKind): number {
+  for (const i of CORE_ITEMS) if (i.effect.kind === 'powerup' && i.effect.powerup === kind) return i.effect.seconds;
+  return 15;
 }
 
 /** The power-up a pickup item gives, if it is one. */

@@ -1,4 +1,4 @@
-import { WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_TYPES, botTypesOf, castOfTypes, foldBotCast, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
+import { POWERUP_RULES, WEATHER_CHOICES, WEATHER_PRESETS, isWeatherChoice, BOT_TYPES, botTypesOf, castOfTypes, foldBotCast, DEFAULT_TEAMS, MAX_PLAYER_SLOTS, MAX_TEAMS, MAX_TEAM_SIZE, botCastLabel, changeTeamCount, evenTeams, getWeaponSet, isWeaponSetId, peopleAndBots, setTeamSize, weaponSetList, type FitItem, type FitTopic, type GameMode, type MatchLimits, type PlayerCap, type SetupFit, type SizePreset, type TeamChange } from '@tiletrigger/shared';
 
 /**
  * Match setup controls shared by Play → match setup and the host's pause
@@ -125,6 +125,31 @@ export function choice<T extends string>(options: readonly ChoiceOption<T>[], va
   );
   why(box, disabled);
   return box;
+}
+
+/**
+ * Match setup's power-up switches (MatchSetup.powerupsOff): one chip per power-up, lit while it is on; a click turns
+ * it off or back on. `onChange` gets the ones now off.
+ */
+export function powerupSwitches(off: readonly string[] | undefined, onChange: (off: string[]) => void, id = 'arcade-powerups'): HTMLElement {
+  const now = new Set(off ?? []);
+  return el(
+    'div',
+    { class: 'tabs wrap', id },
+    ...POWERUP_RULES.map((p) => {
+      const on = !now.has(p.kind);
+      const b = el('button', { type: 'button', class: `tab${on ? ' on' : ''}`, textContent: p.label, title: p.help });
+      b.dataset.value = p.kind;
+      b.setAttribute('aria-pressed', String(on));
+      b.addEventListener('click', () => {
+        const next = new Set(now);
+        if (on) next.add(p.kind);
+        else next.delete(p.kind);
+        onChange(POWERUP_RULES.map((r) => r.kind).filter((k) => next.has(k)));
+      });
+      return b;
+    }),
+  );
 }
 
 /**
