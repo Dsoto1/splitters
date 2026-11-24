@@ -13950,7 +13950,7 @@ async function farBodies(browser) {
   // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
   // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
   // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
-  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
   await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
     const c = m.combatants().find((x) => x.slot === s);
     if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
@@ -14747,7 +14747,8 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     const p = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     livePages.add(p);
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
-    await p.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${port}`);
+    // (A fixed, kept character for both: the roster's size doesn't move the match's random stream, which deals the spawns.)
+    await p.goto(`${CLIENT}/?autojoin&name=${name}&look=core.dale&server=ws://127.0.0.1:${port}`);
     await p.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     await playWithoutMouse(p);
     await p.addStyleTag({ content: '#pause, #message { display: none !important; }' });
@@ -14803,7 +14804,7 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
   await faceEachOther();
   // Alice turns away from Bob, or as near away as leaves her 9 m of clear, floored run (the yard's blocks and edges and
   // its neighbours' gaps are near wherever she spawned): a ray at knee height and the floor under it every 1.5 m.
-  await alice.evaluate(() => {
+  const runFound = await alice.evaluate(() => {
     const l = window.__cs.local;
     const p = l.state.pos;
     const away = window.__cs.input.yaw + Math.PI;
@@ -14818,10 +14819,15 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     };
     for (let i = 0; i <= 16; i++) {
       const yaw = away + Math.ceil(i / 2) * (i % 2 ? 1 : -1) * (Math.PI / 8);
-      if (clear(yaw)) return void (window.__cs.input.yaw = yaw);
+      if (clear(yaw)) {
+        window.__cs.input.yaw = yaw;
+        return true;
+      }
     }
-    window.__cs.input.yaw = away;
+    return false;
   });
+  // (No clear run: fail here, with where she stands, rather than sprint blindly off an edge.)
+  check(runFound, `online: Alice has a 9 m clear, floored run to slide on ${runFound ? '' : JSON.stringify(await alice.evaluate(() => window.__cs.local.state.pos))}`);
   // (A 0.4 s sprint, then the crouch, in Alice's own input ticks: she slides within a few metres of Bob.)
   await bob.evaluate((s) => {
     const v = window.__cs.view;

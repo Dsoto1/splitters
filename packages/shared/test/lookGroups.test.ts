@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS } from '../../../tools/content/character-manifests.mjs';
 
@@ -75,12 +75,23 @@ describe("Character Select's groups", () => {
     for (const n of ['Teddy', 'The Hollow Pilgrim', 'Scary Larry']) expect(group(n), n).toBe('horror');
   });
 
-  it('Character Select lists the astronauts together (Spud Marshal and Astronaut Explorer swapped)', () => {
+  it('Character Select keeps Spud Marshal with the astronauts; Astronaut Explorer is retired (2026-11-24)', () => {
     const roster = CORE_LOOKS.map((l) => ({ name: l.name, group: l.group ?? 'mine', sortAs: l.sortAs }));
     const space = characterSections(roster).find((s) => s.id === 'space')!.looks.map((l) => l.name);
     const at = (n: string) => space.indexOf(n);
-    expect(at('Astronaut Explorer')).toBe(at('Spacewalker') + 1);
+    expect(at('Astronaut Explorer')).toBe(-1);
     expect(at('Spud Marshal')).toBeLessThan(at('Beanie Alien'));
+  });
+
+  it('Character Select lists the owner\'s neighbours side by side, in one list (CHARACTER_NEIGHBOURS)', () => {
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: l.group ?? 'mine', sortAs: l.sortAs }));
+    const sections = characterSections(roster);
+    for (const list of CHARACTER_NEIGHBOURS) {
+      const section = sections.find((s) => s.looks.some((l) => l.id === list[0]))!;
+      const ids = section.looks.map((l) => l.id);
+      const at = ids.indexOf(list[0]!);
+      expect(ids.slice(at, at + list.length), list.join(' ')).toEqual([...list]);
+    }
   });
 
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {

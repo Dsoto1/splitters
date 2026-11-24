@@ -1549,3 +1549,14 @@ look of the same group: Linktifa (`core.ranger`) is **Honest Abe** (`core.abe`, 
 from a whole-body character), so custom characters keep working. `DEFAULT_LOOK` is now only the sim's fixed fallback (the
 first pickable look); a new player with no saved pick gets a random pickable one (`randomFirstLook`), saved like any pick so
 it stays; browser tests (`?test=1` or any automated browser) keep the fixed default.
+
+## More retirements and neighbours (owner, 2026-11-24)
+
+Retired the same way (`RETIRED_LOOKS`; files, manifests and portraits kept), each resolving to a kept look of its group:
+Astronaut Explorer -> Spacewalker, Neon Shadow Ninja -> Shadow Enforcer, Neon Guardian -> Star Voyager, Bill the Barbarian
+(`core.hector`) -> Cal, Brass Hare -> Biscuit (and the Wealthy Otter's old retirement now leads there too), Big Bab ->
+Gorilla G, Shellback -> Coach Hank Shelton (Bamboo's retirement too), Giggles -> Teddy. No character named "Dummy" exists
+in the roster (nothing retired for it). Character Select's neighbours are one list, `CHARACTER_NEIGHBOURS` in
+`looks.ts`: each list sits together where its first member falls in the section's order (Freaky Frida and Scary Larry;
+Dog Tag Doyle, Grinning Gus, Zombie Soldier A; Groaner, Shambler, Fearsome Undead; Rattles, Count Bonesworth; Mummy Bot,
+Pharaoh Mummy Warrior; King Aldric, Old King Halvard; Imperial Guard, Lancer Mei). Browser tests use Cal as the fixed look.

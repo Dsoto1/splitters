@@ -170,13 +170,40 @@ export const isCharacterCollection = (x: unknown): x is CharacterCollection => C
 export const EXPERIMENTAL_SECTION = 'experimental';
 export const MINE_SECTION = 'mine';
 /**
+ * Characters Character Select lists side by side (owner, 2026-11-24): each list sits together, in this order, where its
+ * first member in the section's order falls. One list to change (they can become one tile with variants later); a list
+ * works within one section, so its members share a group.
+ */
+export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
+  ['core.frida', 'core.larry'], // Freaky Frida, Scary Larry
+  ['core.undeadsoldier', 'core.zombiesoldier2', 'core.zombiesoldier1'], // Dog Tag Doyle, Grinning Gus, Zombie Soldier A
+  ['core.groaner', 'core.shambler', 'core.fearsomeundead'], // Groaner, Shambler, Fearsome Undead
+  ['core.rattles', 'core.bonesworth'], // Rattles, Count Bonesworth
+  ['core.mummybot', 'core.pharaoh'], // Mummy Bot, Pharaoh Mummy Warrior
+  ['core.aldric', 'core.halvard'], // King Aldric, Old King Halvard
+  ['core.imperialguard', 'core.mei'], // Imperial Guard, Lancer Mei
+];
+
+function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {
+  let out = sorted;
+  for (const list of CHARACTER_NEIGHBOURS) {
+    const members = list.map((id) => out.find((c) => c.id === id)).filter((c): c is T => !!c);
+    if (members.length < 2) continue;
+    const at = Math.min(...members.map((m) => out.indexOf(m)));
+    const rest = out.filter((c) => !members.includes(c));
+    out = [...rest.slice(0, at), ...members, ...rest.slice(at)];
+  }
+  return out;
+}
+
+/**
  * Character Select's sections for a roster whose entries say which section they sit in (`group`: a CHARACTER_GROUPS
  * id, EXPERIMENTAL_SECTION or MINE_SECTION): each group anyone is in (listed by name), then Experimental when there
  * is anyone in it, then Yours (always, in the order given: it holds "Design new"). An entry with `sortAs` sits where that
  * name would.
  */
-export function characterSections<T extends { name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
-  const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name));
+export function characterSections<T extends { id?: string; name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
+  const byName = (id: string) => withNeighbours(roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name)));
   const after = (g: string) => CHARACTER_COLLECTIONS.filter((c) => c.after === g).map((c) => ({ id: c.id as string, label: c.label as string, looks: byName(c.id) }));
   const groups = [...CHARACTER_GROUPS.flatMap((g) => [{ id: g.id as string, label: g.label as string, looks: byName(g.id) }, ...after(g.id)]), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
   return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
@@ -253,6 +280,16 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // straight to the kept look, in one step.
   'core.ranger': 'core.abe',
   'core.sprout': 'core.mei',
+  // Owner, 2026-11-24: nine more off the roster (files, manifests and portraits kept); a saved pick plays a kept look of
+  // the same group. (The Dummy asked for was not found by that name.)
+  'core.astroexplorer': 'core.astronaut', // Astronaut Explorer -> Spacewalker
+  'core.neonninja': 'core.shadowenforcer', // Neon Shadow Ninja -> Shadow Enforcer
+  'core.neonguardian': 'core.starvoyager', // Neon Guardian -> Star Voyager
+  'core.hector': 'core.dale', // Bill the Barbarian -> Cal
+  'core.brasshare': 'core.biscuit', // Brass Hare -> Biscuit
+  'core.bigbab': 'core.gorillag', // Big Bab -> Gorilla G
+  'core.tortoise': 'core.coachtortoise', // Shellback -> Coach Hank Shelton
+  'core.giggles': 'core.teddy', // Giggles -> Teddy
   'core.champion': 'core.dale',
   'core.desperado': 'core.dale',
   'core.miller': 'core.mei',
@@ -288,7 +325,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.rotter': 'core.shambler',
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
   // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
-  'core.otter': 'core.brasshare',
+  'core.otter': 'core.biscuit',
   'core.shade': 'core.mei',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.
@@ -299,7 +336,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.bill': 'core.dale',
   // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
   // kept); saved choices and bot sets play the tortoise, the animal that came in with it.
-  'core.panda': 'core.tortoise',
+  'core.panda': 'core.coachtortoise',
   // Owner, 2026-11-06 (after the intake that gave it the light-blue astronaut): Capt. Nova off the roster (files,
   // manifest and portrait kept); saved choices and bot sets play Spacewalker, the nearest astronaut.
   'core.nova': 'core.astronaut',
