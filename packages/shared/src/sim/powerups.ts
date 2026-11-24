@@ -4,7 +4,7 @@
  * does lives here (the pure parts both the match and client prediction run) and in sim/match.ts (the rest).
  * docs/FEATURES.md, "Power-ups", has the starting balance.
  */
-import { CORE_ITEMS, PICKUP_RULES } from '../content/pickups.generated.ts';
+import { CORE_ITEMS, POWERUP_TUNING } from '../content/pickups.generated.ts';
 import { TICK_RATE } from './constants.ts';
 import type { ItemDefinition, PowerupKind } from './items.ts';
 
@@ -16,7 +16,7 @@ export type ExtraPowerup = (typeof EXTRA_POWERUPS)[number];
 export type PowerTicks = Record<ExtraPowerup, number>;
 export const noPowers = (): PowerTicks => ({ overdrive: 0, regen: 0, rapid: 0, phantom: 0, moon: 0, vampire: 0, bottomless: 0 });
 
-const R = PICKUP_RULES.powerup;
+const R = POWERUP_TUNING;
 export const OVERDRIVE_SPEED: number = R.overdriveSpeed;
 export const OVERDRIVE_PUSH: number = R.overdrivePush;
 export const OVERDRIVE_LIFT: number = R.overdriveLift;
