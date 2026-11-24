@@ -2,15 +2,14 @@ import {
   emptySelection,
   isRetiredMap,
   newId,
-  DEFAULT_GROUND_THEME,
-  groundThemes,
   type MapDocument,
 } from '@tiletrigger/shared';
 import { loadBuiltInMap, MAP_INDEX } from '../mapIndex.ts';
 import { builtInNewerThanPublished, publishedMaps } from '../publishedMaps.ts';
 import type { EditorApp } from './editorApp.ts';
 import { $, button, escapeHtml } from './editorDom.ts';
-import { NEW_MAP_SIZES, SHIPPED_IDS, STARTER_TERRAIN, groundThemeLabel, starterMap } from './editorParts.ts';
+import { NEW_MAP_SIZES, SHIPPED_IDS, STARTER_TERRAIN } from './editorParts.ts';
+import { layoutWithSetup, newMapFromSetup, padDialog, radioArrows, setupFields } from './newMapSetup.ts';
 import { libraryThumb } from './libraryThumbs.ts';
 import {
   clearDraft,
@@ -166,7 +165,11 @@ export class MapSaving {
     this.remember();
   }
 
-  /** New: pick a size of open ground (or the sky, with no terrain) and its Ground theme. */
+  /**
+   * New: one short setup screen (owner, 2026-11-24; newMapSetup.ts): a size of open ground (or the sky) or a "Start
+   * from" layout, and the theme, modes, players and boundary, every one pre-filled (Create straight away makes the blank
+   * map New always made) and changeable later in Map properties. A layout keeps what it sets itself, shown on the screen.
+   */
   newMapDialog(): void {
     const dialog = $<HTMLDialogElement>('ed-new-dialog');
     const sizes = $('ed-new-sizes');
@@ -176,36 +179,56 @@ export class MapSaving {
       for (const b of sizes.querySelectorAll('button')) b.classList.toggle('on', Number((b as HTMLElement).dataset.size) === v);
       $<HTMLSelectElement>('ed-new-ground').disabled = v === 0;
     };
+    const suggest = (v: number) => {
+      for (const b of sizes.querySelectorAll<HTMLElement>('button')) b.classList.toggle('suggested', Number(b.dataset.size) === v);
+    };
+    const fields = setupFields(dialog, { size: () => size, pickSize: pick, suggest });
     sizes.replaceChildren(
       ...NEW_MAP_SIZES.map(([v, label, note]) => {
         const b = document.createElement('button');
+        b.type = 'button';
         b.dataset.size = String(v);
         b.setAttribute('role', 'radio');
-        b.innerHTML = `<b>${label}</b><small>${note}</small>`;
-        b.addEventListener('click', () => pick(v));
+        b.innerHTML = `<b>${label}</b><small>${note}</small><em class="ed-new-sug">Suggested</em>`;
+        b.addEventListener('click', () => {
+          fields.touchSize();
+          pick(v);
+        });
         b.addEventListener('dblclick', () => $('ed-new-create').click());
         return b;
       }),
     );
-    const ground = $<HTMLSelectElement>('ed-new-ground');
-    // The new terrain's Ground theme (painting Phase 4): every cell starts as its base.
-    if (!ground.options.length) for (const g of groundThemes.all()) ground.append(new Option(groundThemeLabel(g), g.id, g.id === DEFAULT_GROUND_THEME, g.id === DEFAULT_GROUND_THEME));
+    if (!sizes.dataset.arrows) {
+      sizes.dataset.arrows = '1';
+      radioArrows(sizes);
+    }
     pick(STARTER_TERRAIN);
-    // Start from a template (MapMaker overhaul Phase 3 item 5; templatePicker.ts), or open ground in a size.
-    const template = templatePicker(dialog, sizes);
+    fields.showLayout(null);
+    // Start from a template (MapMaker overhaul Phase 3 item 5; templatePicker.ts), or open ground in a size. A layout
+    // picked is loaded at once, so the screen shows what it sets (its own wins there).
+    const layouts = new Map<string, Promise<MapDocument | null>>();
+    const template = templatePicker(dialog, sizes, (id) => {
+      if (!id) return fields.showLayout(null);
+      if (!layouts.has(id)) layouts.set(id, template.load(id));
+      void layouts.get(id)!.then((doc) => template.chosen() === id && fields.showLayout(doc));
+    });
+    const close = () => dialog.close();
+    const offPad = padDialog(dialog, close);
+    dialog.addEventListener('close', offPad, { once: true });
     $('ed-new-create').onclick = () => {
+      const setup = fields.read();
       dialog.close();
       this.keepDraft();
       const from = template.chosen();
       if (from)
-        return void template.load(from).then((doc) => {
+        return void (layouts.get(from) ?? template.load(from)).then((doc) => {
           if (!doc) return this.app.toast(`Couldn't load the ${from} template`, true);
-          this.replaceDocument(doc);
+          this.replaceDocument(layoutWithSetup(doc, setup));
           this.app.toast(`New map from the ${template.label(from)} template: make it your own`);
         });
-      this.replaceDocument(starterMap(size || null, ground.value));
+      this.replaceDocument(newMapFromSetup(setup));
     };
-    $('ed-new-cancel').onclick = () => dialog.close();
+    $('ed-new-cancel').onclick = close;
     dialog.showModal();
     (sizes.querySelector('button.on') as HTMLButtonElement | null)?.focus();
   }
