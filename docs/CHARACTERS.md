@@ -1555,8 +1555,13 @@ it stays; browser tests (`?test=1` or any automated browser) keep the fixed defa
 Retired the same way (`RETIRED_LOOKS`; files, manifests and portraits kept), each resolving to a kept look of its group:
 Astronaut Explorer -> Spacewalker, Neon Shadow Ninja -> Shadow Enforcer, Neon Guardian -> Star Voyager, Bill the Barbarian
 (`core.hector`) -> Cal, Brass Hare -> Biscuit (and the Wealthy Otter's old retirement now leads there too), Big Bab ->
-Gorilla G, Shellback -> Coach Hank Shelton (Bamboo's retirement too), Giggles -> Teddy. No character named "Dummy" exists
-in the roster (nothing retired for it). Character Select's neighbours are one list, `CHARACTER_NEIGHBOURS` in
+Gorilla G, Shellback -> Coach Hank Shelton (Bamboo's retirement too), Giggles -> Teddy. The Dummy is the trooper NPC
+skin (`npc:trooper`): off Character Select (`PLAYER_NPC_LOOKS`), a saved pick plays Stealth Operative (`RETIRED_LOOKS`,
+read by `validLookId` before the NPC-skin check); the trooper NPC role, training targets included, keeps its mannequin.
+`DEFAULT_LOOK` (the sim's fixed default and `getLook`'s fallback) is Cal, a kept look; the Designer's base stays Linktifa's
+body (`DESIGNER_BASE_LOOK`). Character Select's neighbours are one list, `CHARACTER_NEIGHBOURS` in
 `looks.ts`: each list sits together where its first member falls in the section's order (Freaky Frida and Scary Larry;
 Dog Tag Doyle, Grinning Gus, Zombie Soldier A; Groaner, Shambler, Fearsome Undead; Rattles, Count Bonesworth; Mummy Bot,
 Pharaoh Mummy Warrior; King Aldric, Old King Halvard; Imperial Guard, Lancer Mei). Browser tests use Cal as the fixed look.
+The e2e flow `slidepeek`'s online part starts Alice and Bob at fixed spots on void_yard's open floor (the dedicated
+server's `E2E_START_AT`, tests only) instead of wherever the clock-seeded match spawned them.
