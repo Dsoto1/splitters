@@ -69,6 +69,9 @@ at once. In a vehicle B ducks at once.
 A connected pad whose browser mapping isn't `standard` (some third-party, wired Xbox 360 or Switch Pro pads) is ignored; with no
 standard pad connected, a message says so once per pad (`InputState.checkPadMapping`, also on `gamepadconnected`).
 
+**Hints follow the last input**: after a controller press, the HUD's use prompt ("RB Drive the Troop Buggy"), vehicle hints, tips and
+tutorial read the pad's button (`hintKey`, `PAD_HINTS` in `keyBindings.ts`; actions without a button show their key).
+
 Free buttons for the actions the pad lacks (not built; the owner picks): Back / View (melee), LB + RB together (alt
 fire), hold R3 (fire mode). Start is the pause menu.
 
@@ -102,6 +105,6 @@ fire), hold R3 (fire mode). Start is the pause menu.
 ## Tests
 
 `packages/client/test/keyBindings.test.ts` (defaults, clashes, swap, the stored diff, the migration),
-`padInput.test.ts` (the d-pad lean and its edges, B crouch and prone), `inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, vehicle keys, a live rebind); e2e `offline`
+`hintKey.test.ts`, `padInput.test.ts` (the d-pad lean and its edges, B crouch and prone), `inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, vehicle keys, a live rebind); e2e `offline`
 (`weaponKeysChecks`: X, Tab, Q/E lean; `controlsPageChecks`: the page, keyboard-only rebind, clash and swap, Reset, a
 mouse button, phone width; `CONTROLS_PICS=<dir>` takes its pictures).

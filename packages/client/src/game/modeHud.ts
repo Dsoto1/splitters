@@ -27,7 +27,7 @@ import {
 } from '@tiletrigger/shared';
 import { BT_COLORS, ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
-import { keyFor } from './keyBindings.ts';
+import { hintKey } from './keyBindings.ts';
 import type { RemotePose } from './interpolation.ts';
 import type { MinimapBlip } from './minimap.ts';
 import type { GameView } from './view.ts';
@@ -303,7 +303,7 @@ export class ModeHud {
       md.hg.forEach((h, i) => {
         if (h[4] === HOSTAGE_RESCUED) return;
         const at = { x: h[0], y: h[1], z: h[2] };
-        if (h[4] === HOSTAGE_WAITING) mark(`hostage_${i}`, at, '#e8d8a0', 'H', rescuer ? `Rescue (${keyFor('use')})` : 'Guard');
+        if (h[4] === HOSTAGE_WAITING) mark(`hostage_${i}`, at, '#e8d8a0', 'H', rescuer ? `Rescue (${hintKey('use')})` : 'Guard');
         else if (!rescuer) mark(`hostage_${i}`, at, '#ff4a3a', 'H', 'Stop them');
       });
       if (rescuer && mineLed) for (const [i, e] of this.map.entities.entries()) if (e.kind === 'rescue') mark(`rescue_${i}`, { x: e.position[0], y: e.position[1], z: e.position[2] }, '#3ddc84', '✚', 'Rescue zone');
