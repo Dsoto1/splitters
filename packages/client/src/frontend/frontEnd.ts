@@ -3279,16 +3279,26 @@ export class FrontEnd {
     const sensVal = el('output', { textContent: `${mouse.sensitivity.toFixed(1)}×` });
     const zoomSens = el('input', { type: 'range', min: '0.2', max: '3', step: '0.05', value: String(mouse.zoomSensitivity) });
     const zoomSensVal = el('output', { textContent: `${mouse.zoomSensitivity.toFixed(2)}×` });
+    const padLook = el('input', { type: 'range', min: '0.2', max: '3', step: '0.05', value: String(mouse.padLook) });
+    const padLookVal = el('output', { textContent: `${mouse.padLook.toFixed(2)}×` });
+    const padZoom = el('input', { type: 'range', min: '0.2', max: '3', step: '0.05', value: String(mouse.padZoom) });
+    const padZoomVal = el('output', { textContent: `${mouse.padZoom.toFixed(2)}×` });
+    const padDead = el('input', { type: 'range', min: '0.05', max: '0.3', step: '0.01', value: String(mouse.padDeadzone) });
+    const padDeadVal = el('output', { textContent: mouse.padDeadzone.toFixed(2) });
     const invert = el('input', { type: 'checkbox', checked: mouse.invertY });
     const assist = el('input', { type: 'checkbox', checked: mouse.aimAssist });
     const mouseChanged = () => {
-      saveMousePrefs({ sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, invertY: invert.checked, aimAssist: assist.checked });
+      saveMousePrefs({ sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, padLook: Number(padLook.value) || 1, padZoom: Number(padZoom.value) || 1, padDeadzone: Number(padDead.value) || 0.15, invertY: invert.checked, aimAssist: assist.checked });
       sensVal.textContent = `${(Number(sens.value) || 1).toFixed(1)}×`;
       zoomSensVal.textContent = `${(Number(zoomSens.value) || 1).toFixed(2)}×`;
+      padLookVal.textContent = `${(Number(padLook.value) || 1).toFixed(2)}×`;
+      padZoomVal.textContent = `${(Number(padZoom.value) || 1).toFixed(2)}×`;
+      padDeadVal.textContent = (Number(padDead.value) || 0.15).toFixed(2);
     };
     const steer = el('select', {}, el('option', { value: 'classic', textContent: 'Classic: A / D steer', selected: loadSteerMode() === 'classic' }), el('option', { value: 'look', textContent: 'Look to steer (Warthog style)', selected: loadSteerMode() === 'look' }));
     steer.addEventListener('change', () => saveSteerMode(steer.value as SteerMode));
     sens.addEventListener('input', mouseChanged);
+    for (const r of [padLook, padZoom, padDead]) r.addEventListener('input', mouseChanged);
     zoomSens.addEventListener('input', mouseChanged);
     invert.addEventListener('change', mouseChanged);
     assist.addEventListener('change', mouseChanged);
@@ -3303,11 +3313,15 @@ export class FrontEnd {
     const padRows: [string, string][] = [
       ['Move / look', 'Left stick / right stick'],
       ['Fire / aim', 'RT / LT'],
-      ['Jump / crouch', 'A / B'],
+      ['Jump / crouch (tap) / prone (hold)', 'A / B / hold B'],
       ['Reload / next weapon', 'X / Y'],
+      ['Previous / next weapon', 'D-pad left / right'],
+      ['Lean (while aiming)', 'Hold LT + D-pad left / right'],
       ['Weapon wheel (right stick points, let go to switch)', 'Hold Y'],
       ['Use / throw', 'RB / hold LB'],
       ['Sprint / ping', 'L3 / D-pad up'],
+      ['Pause menu (Menu again, or B, resumes)', 'Menu'],
+      ['Scoreboard (while held)', 'View'],
       ['Third person / vehicle camera', 'R3'],
     ];
     const bindingList = (rows: [string, string][]) => el('div', { class: 'controls' }, ...rows.map(([a, k]) => el('div', {}, el('span', { textContent: a }), kbd(k))));
@@ -3389,6 +3403,9 @@ export class FrontEnd {
       ]],
       ['controls', 'Controls', [
         row('Mouse sensitivity', el('span', { class: 'opt-range' }, sens, sensVal)),
+        row('Stick look', el('span', { class: 'opt-range' }, padLook, padLookVal), "The controller's right stick, apart from the mouse slider. 1.00× is the standard turn speed."),
+        row('Stick aim', el('span', { class: 'opt-range' }, padZoom, padZoomVal), 'The right stick while aiming down the sights or through a scope; as Zoom sensitivity is for the mouse.'),
+        row('Stick dead zone', el('span', { class: 'opt-range' }, padDead, padDeadVal), 'How far a stick must move before it counts. Raise it if the view drifts on its own.'),
         row('Zoom sensitivity', el('span', { class: 'opt-range' }, zoomSens, zoomSensVal), 'Look speed when aiming down the sights or through a scope. At 1.00× the view moves on screen just as it does in hip fire; lower is steadier, higher is quicker.'),
         row('Invert look', toggle(invert), 'Mouse up looks down.'),
         row('Vehicle steering', steer, 'Look to steer: cars, buggies and hovercraft turn toward where you look (A / D still steer too), and the view stays where you point it. Classic: A and D steer and the view turns with the vehicle. Applies from your next match.'),
