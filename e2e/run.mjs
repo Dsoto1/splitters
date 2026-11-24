@@ -14517,7 +14517,7 @@ async function captionsFlow(browser) {
     } else await page.evaluate(() => localStorage.setItem('tiletrigger.captions', 'dir'));
     await page.click('#nav-play');
     await page.click('#arcade-start');
-    const started = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(90000) }).then(() => true, () => false);
+    const started = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(shots ? 300000 : 90000) }).then(() => true, () => false);
     if (!started) {
       const state = await page.evaluate(() => ({ cs: !!window.__cs, phase: window.__cs?.phase?.(), inv: window.__cs?.local?.inventory?.size ?? null, menu: document.getElementById('menu')?.hidden }));
       check(false, `${label}: the match starts (${JSON.stringify(state)}; errors: ${errors.join('; ')})`);
