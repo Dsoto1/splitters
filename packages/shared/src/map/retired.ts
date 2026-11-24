@@ -25,6 +25,8 @@ export const RETIRED_MAPS: ReadonlySet<string> = new Set([
   'iron_compound',
   // Owner, 2026-11-24: "i think we can retire citadel". `?offline=citadel` and its e2e flow still play it.
   'citadel',
+  // Owner, 2026-11-24: too close to Vinefall Sanctum.
+  'verdant_ziggurat',
 ]);
 
 export const isRetiredMap = (id: string): boolean => RETIRED_MAPS.has(id);
