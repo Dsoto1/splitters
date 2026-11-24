@@ -58,6 +58,8 @@ from it, and **Options → Controls** rebinds them.
 | Ping (Fireteams lead: hold for orders) | D-pad up |
 | Respawn / class screen | D-pad down |
 | Third person / vehicle camera | R3 |
+| **Pause menu** (Menu again, or B, resumes) | **Menu (Start)** |
+| **Scoreboard** (while held) | **View (Back)** |
 | Spectating | RB / LB next / previous player, Y camera (the d-pad is as before) |
 
 Lean and weapon switch share the d-pad, told apart by where the press began: pressed while aiming it leans for as long as
@@ -69,11 +71,16 @@ at once. In a vehicle B ducks at once.
 A connected pad whose browser mapping isn't `standard` (some third-party, wired Xbox 360 or Switch Pro pads) is ignored; with no
 standard pad connected, a message says so once per pad (`InputState.checkPadMapping`, also on `gamepadconnected`).
 
+**Stick settings** (Options → Controls and the pause menu's Controls, kept with the mouse's in `tiletrigger.mouse`, this
+browser only like them): **Stick look** 0.2-3× (default 1), **Stick aim** 0.2-3× (default 1; the stick's version of Zoom
+sensitivity, through the same zoom scaling) and **Stick dead zone** 0.05-0.3 (default 0.15). They are apart from Mouse
+sensitivity, which no longer moves the stick. Invert look applies to the stick too.
+
 **Hints follow the last input**: after a controller press, the HUD's use prompt ("RB Drive the Troop Buggy"), vehicle hints, tips and
 tutorial read the pad's button (`hintKey`, `PAD_HINTS` in `keyBindings.ts`; actions without a button show their key).
 
 Free buttons for the actions the pad lacks (not built; the owner picks): Back / View (melee), LB + RB together (alt
-fire), hold R3 (fire mode). Start is the pause menu.
+fire), hold R3 (fire mode). Menu and View are taken (above).
 
 ## How it works
 

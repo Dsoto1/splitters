@@ -13,6 +13,12 @@ export interface MousePrefs {
   sensitivity: number;
   /** Multiplier on look speed while aiming down the sights or scoped (0.2–3), on top of the zoom's own 1:1 scaling. */
   zoomSensitivity: number;
+  /** The right stick's look speed (0.2–3), apart from the mouse's: it does not follow `sensitivity`. */
+  padLook: number;
+  /** The right stick's look speed while aiming (0.2–3), as `zoomSensitivity` is the mouse's. */
+  padZoom: number;
+  /** How far a stick must move before it counts (0.05–0.3). */
+  padDeadzone: number;
   invertY: boolean;
   /** Gently pulls the sights onto enemies near the crosshair (touchpads, controllers). */
   aimAssist: boolean;
@@ -24,11 +30,14 @@ export function loadMousePrefs(): MousePrefs {
     return {
       sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)),
       zoomSensitivity: Math.min(3, Math.max(0.2, Number(p.zoomSensitivity) || 1)),
+      padLook: Math.min(3, Math.max(0.2, Number(p.padLook) || 1)),
+      padZoom: Math.min(3, Math.max(0.2, Number(p.padZoom) || 1)),
+      padDeadzone: Math.min(0.3, Math.max(0.05, Number(p.padDeadzone) || STICK_DEADZONE)),
       invertY: p.invertY === true,
       aimAssist: p.aimAssist === true,
     };
   } catch {
-    return { sensitivity: 1, zoomSensitivity: 1, invertY: false, aimAssist: false };
+    return { sensitivity: 1, zoomSensitivity: 1, padLook: 1, padZoom: 1, padDeadzone: STICK_DEADZONE, invertY: false, aimAssist: false };
   }
 }
 
@@ -64,9 +73,9 @@ const STICK_DEADZONE = 0.15;
 const PAD_PRONE_MS = 400;
 
 /** Standard-mapping gamepad buttons. */
-const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, back: 8, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15 } as const;
+const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, back: 8, start: 9, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15 } as const;
 
-const deadzone = (v: number) => (Math.abs(v) < STICK_DEADZONE ? 0 : Math.sign(v) * ((Math.abs(v) - STICK_DEADZONE) / (1 - STICK_DEADZONE)));
+const deadzone = (v: number, dz = STICK_DEADZONE) => (Math.abs(v) < dz ? 0 : Math.sign(v) * ((Math.abs(v) - dz) / (1 - dz)));
 
 /** Keyboard + pointer-lock mouse. View angles accumulate here; movement is sampled once per tick. */
 export class InputState {
@@ -74,6 +83,8 @@ export class InputState {
   pitch = 0;
   /** Zoomed aim lowers look speed by this factor (set by the session each frame: zoomLookScale). */
   sensitivityScale = 1;
+  /** The same for the right stick (set by the session each frame: zoomLookScale with the stick's own aim sensitivity). */
+  padSensitivityScale = 1;
   /** Locked-pointer deltas, cleaned and summed until the next frame (see lookFilter.ts). */
   readonly look = new LookFilter(browserLookScale(navigator.userAgent, HAS_COALESCED));
   /** The player's own look settings (Options / pause menu). */
@@ -159,7 +170,7 @@ export class InputState {
   /** A spectator control was used (a pick, the camera toggle, Y): the session sends it as activity. */
   private specUsed = false;
   /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
-  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, leanL: false, leanR: false, prev: [] as boolean[] };
+  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, leanL: false, leanR: false, back: false, prev: [] as boolean[] };
   /**
    * The d-pad's left and right, each press told apart where it began: pressed while aiming it is a lean (held, until let
    * go or the aim ends; never a weapon switch); pressed otherwise it is a weapon switch, made when let go, unless the
@@ -477,7 +488,7 @@ export class InputState {
 
   /** Whether the scoreboard shows: pinned (a tap, touch's Scores), or its own key held (one it shares with the wheel only while the wheel can't open). */
   get scoreboardShown(): boolean {
-    if (this.scoreboardPinned) return true;
+    if (this.scoreboardPinned || this.pad.back) return true;
     if (!this.active('scoreboard')) return false;
     const wheel = this.b.weaponWheel ?? ['', ''];
     const shared = (this.b.scoreboard ?? ['', '']).every((k) => !k || !this.keys.has(k) || wheel.includes(k));
@@ -693,13 +704,16 @@ export class InputState {
     const p = this.pad;
     if (!pad) {
       p.move = { x: 0, y: 0 };
-      p.fire = p.zoom = p.sprint = p.jump = p.use = p.leanL = p.leanR = false;
+      p.fire = p.zoom = p.sprint = p.jump = p.use = p.leanL = p.leanR = p.back = false;
       this.dpad.l.at = this.dpad.r.at = this.padBAt = 0;
       return;
     }
     const down = pad.buttons.map((b) => b.pressed || b.value > 0.4);
     const pressed = (i: number) => !!down[i] && !p.prev[i];
-    const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes.map(deadzone);
+    const dz = this.mouse.padDeadzone;
+    const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes.map((v) => deadzone(v, dz));
+    // The stick has its own look and aim speeds, apart from the mouse's.
+    scale = this.padSensitivityScale * this.mouse.padLook;
     if (down.some(Boolean) || lx || ly || rx || ry) this.padActive = true;
     p.move = { x: lx, y: -ly };
     // Squared response: fine aim near the centre, fast turns at full tilt. With the wheel open the right stick points it.
@@ -711,6 +725,9 @@ export class InputState {
     }
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
+    // View / Back shows the scoreboard while held; Menu opens the pause menu (the page lets the mouse go).
+    p.back = !!down[PAD.back];
+    if (pressed(PAD.start)) document.exitPointerLock?.();
     if (pressed(PAD.lt) && !this.spectating) this.aimLatch.press();
     p.jump = !!down[PAD.a];
     p.use = !!down[PAD.rb];

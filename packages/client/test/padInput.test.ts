@@ -130,3 +130,65 @@ describe('controller: d-pad lean while aiming, B for crouch and prone', () => {
     input.dispose();
   });
 });
+
+describe('controller: Menu pauses, View shows the scores, the stick has its own sensitivity', () => {
+  let now = 1000;
+  const held = new Set<number>();
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    held.clear();
+  });
+  async function make(axes: number[] = [0, 0, 0, 0]) {
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    vi.stubGlobal('navigator', {
+      getGamepads: () => [{ connected: true, mapping: 'standard', axes, buttons: Array.from({ length: 17 }, (_, i) => ({ pressed: held.has(i), value: held.has(i) ? 1 : 0 })) }],
+    });
+    const { InputState } = await import('../src/game/input.ts');
+    const input = new InputState(new EventTarget() as unknown as HTMLCanvasElement);
+    input.setTouchEngaged(true);
+    return input;
+  }
+  const tick = (input: Awaited<ReturnType<typeof make>>, ...down: number[]) => {
+    now += 16;
+    held.clear();
+    for (const d of down) held.add(d);
+    input.frame(0.016);
+  };
+
+  it('Menu lets the pointer go (the pause menu opens), once per press; View shows the scoreboard while held', async () => {
+    const exit = vi.fn();
+    (document as unknown as { exitPointerLock: () => void }).exitPointerLock = exit;
+    const input = await make();
+    tick(input);
+    tick(input, 9);
+    tick(input, 9);
+    expect(exit).toHaveBeenCalledTimes(1);
+    expect(input.scoreboardShown).toBe(false);
+    tick(input, 8);
+    expect(input.scoreboardShown).toBe(true);
+    tick(input);
+    expect(input.scoreboardShown).toBe(false);
+    input.dispose();
+  });
+
+  it('the stick turns at its own speed, not the mouse slider; the dead zone is its own', async () => {
+    const { loadMousePrefs } = await import('../src/game/input.ts');
+    expect(loadMousePrefs()).toMatchObject({ padLook: 1, padZoom: 1, padDeadzone: 0.15 });
+    const turn = async (mouse: Partial<{ sensitivity: number; padLook: number; padDeadzone: number }>, axes: number[]) => {
+      const input = await make(axes);
+      input.mouse = { ...input.mouse, ...mouse };
+      input.yaw = 0;
+      tick(input);
+      const y = input.yaw;
+      input.dispose();
+      return y;
+    };
+    const base = await turn({}, [0, 0, 1, 0]);
+    expect(base).toBeGreaterThan(0);
+    expect(await turn({ sensitivity: 3 }, [0, 0, 1, 0])).toBeCloseTo(base, 9);
+    expect(await turn({ padLook: 2 }, [0, 0, 1, 0])).toBeCloseTo(base * 2, 9);
+    expect(await turn({}, [0, 0, 0.2, 0])).toBeGreaterThan(0);
+    expect(await turn({ padDeadzone: 0.3 }, [0, 0, 0.2, 0])).toBe(0);
+  });
+});

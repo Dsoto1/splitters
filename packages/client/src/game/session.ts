@@ -1062,6 +1062,12 @@ export class GameSession {
     const sensVal = $('mouse-sens-val');
     const zoomSens = $('zoom-sens') as HTMLInputElement;
     const zoomSensVal = $('zoom-sens-val');
+    const padLook = $('pad-look') as HTMLInputElement;
+    const padLookVal = $('pad-look-val');
+    const padZoom = $('pad-zoom') as HTMLInputElement;
+    const padZoomVal = $('pad-zoom-val');
+    const padDead = $('pad-dead') as HTMLInputElement;
+    const padDeadVal = $('pad-dead-val');
     const invert = $('mouse-invert') as HTMLInputElement;
     const assist = $('aim-assist') as HTMLInputElement;
     const showMouse = () => {
@@ -1070,16 +1076,23 @@ export class GameSession {
       sensVal.textContent = `${this.input.mouse.sensitivity.toFixed(1)}×`;
       zoomSens.value = String(this.input.mouse.zoomSensitivity);
       zoomSensVal.textContent = `${this.input.mouse.zoomSensitivity.toFixed(2)}×`;
+      padLook.value = String(this.input.mouse.padLook);
+      padLookVal.textContent = `${this.input.mouse.padLook.toFixed(2)}×`;
+      padZoom.value = String(this.input.mouse.padZoom);
+      padZoomVal.textContent = `${this.input.mouse.padZoom.toFixed(2)}×`;
+      padDead.value = String(this.input.mouse.padDeadzone);
+      padDeadVal.textContent = this.input.mouse.padDeadzone.toFixed(2);
       invert.checked = this.input.mouse.invertY;
     };
     showMouse();
     const mouseChanged = () => {
-      this.input.mouse = { sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, invertY: invert.checked, aimAssist: assist.checked };
+      this.input.mouse = { sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, padLook: Number(padLook.value) || 1, padZoom: Number(padZoom.value) || 1, padDeadzone: Number(padDead.value) || 0.15, invertY: invert.checked, aimAssist: assist.checked };
       saveMousePrefs(this.input.mouse);
       showMouse();
     };
     sens.addEventListener('input', mouseChanged, { signal });
     zoomSens.addEventListener('input', mouseChanged, { signal });
+    for (const r of [padLook, padZoom, padDead]) r.addEventListener('input', mouseChanged, { signal });
     invert.addEventListener('change', mouseChanged, { signal });
     assist.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
@@ -3967,6 +3980,7 @@ export class GameSession {
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
+      this.input.padSensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.padZoom);
       // Full-body first person stands your character under the camera only while the camera is your own eyes.
       this.view.firstPersonEye = false;
       if (ride && seatDef) {
