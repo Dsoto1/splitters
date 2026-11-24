@@ -6,6 +6,7 @@ import { MAX_TEAMS } from './npc.ts';
 import { BOT_CAST_CHOICES, CAST_ID_ALIASES, THEME_BOT_TYPES, validBotCast } from '../content/botThemes.ts';
 import { DEFAULT_FIRETEAM_SIZE, fireteamMode, fireteamSize } from './fireteams.ts';
 import { WEAPON_SET_DEFS, WEAPON_SET_IDS, isWeaponSetId } from './weaponSets.ts';
+import { POWERUP_RULES } from './powerupRules.ts';
 import { AKIMBO_READY, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, rulesForMode, type GameMode, type MatchRules } from './rules.ts';
 
 /**
@@ -144,6 +145,17 @@ const ALL_RULES: readonly RuleSpec[] = [
     key: 'streaks', label: 'Kill streaks', help: 'Rewards for kills without dying: UAV, Supply Pulse, Counter-UAV, Airstrike.', type: onOff, apply: 'next',
     read: (r) => r.killstreaks !== false, write: (r, v) => (v ? delete r.killstreaks : (r.killstreaks = false)),
   },
+  // One switch per power-up (owner, 2026-11-24): off, its pickups don't lie on the map.
+  ...POWERUP_RULES.map(({ kind, key, label, help }): RuleSpec => ({
+    key, label, help, type: onOff, apply: 'next',
+    read: (r) => !r.powerupsOff?.includes(kind),
+    write: (r, v) => {
+      const off = (r.powerupsOff ?? []).filter((k) => k !== kind);
+      if (!v) off.push(kind);
+      if (off.length) r.powerupsOff = off;
+      else delete r.powerupsOff;
+    },
+  })),
   {
     key: 'sizes', label: 'Character sizes', help: 'Matter: small characters are quicker targets with less health, large ones slower and tougher. Equal: everyone at standard size.', type: { kind: 'bool', on: 'Matter', off: 'All equal' }, apply: 'next',
     read: (r) => r.bodySizes !== false, write: (r, v) => (v ? delete r.bodySizes : (r.bodySizes = false)),
@@ -397,6 +409,9 @@ const FIELDS: Record<string, (keyof MatchRules)[]> = {
 };
 
 function restoreFrom(out: MatchRules, base: MatchRules, spec: RuleSpec): void {
+  // A power-up's switch: back to the mode's own (every power-up on unless the base says otherwise).
+  const pu = POWERUP_RULES.find((p) => p.key === spec.key);
+  if (pu) return spec.write(out, !base.powerupsOff?.includes(pu.kind));
   for (const f of FIELDS[spec.key] ?? []) {
     if (base[f] === undefined) delete out[f];
     else (out as unknown as Record<string, unknown>)[f] = base[f];

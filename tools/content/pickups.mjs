@@ -90,7 +90,10 @@ export function build(content, root = ROOT) {
   const rules = obj({
     pickup: obj({ radius: num, 'notes?': notes }),
     armor: obj({ max: num, absorb: num, 'notes?': notes }),
-    powerup: obj({ speedBoost: num, damageBoost: num, 'notes?': notes }),
+    powerup: obj({
+      speedBoost: num, damageBoost: num, overdriveSpeed: num, overdrivePush: num, overdriveLift: num, overdriveDamage: num, regenPerSecond: num,
+      rapidFire: num, rapidReload: num, rapidWithDamage: num, phantomShown: num, phantomRevealSeconds: num, moonGravity: num, moonJump: num, vampireShare: num, 'notes?': notes,
+    }),
   });
 
   // The file's own shape first (rules strict; each pickup checked on its own below so one bad entry names itself).
@@ -103,7 +106,13 @@ export function build(content, root = ROOT) {
     if (!(r.pickup.radius > 0)) problems.push(`${FILE}: rules.pickup.radius must be above 0`);
     if (!(r.armor.max > 0)) problems.push(`${FILE}: rules.armor.max must be above 0`);
     if (!(r.armor.absorb >= 0 && r.armor.absorb <= 1)) problems.push(`${FILE}: rules.armor.absorb must be 0-1 (a share of the damage)`);
-    if (!(r.powerup.speedBoost > 0 && r.powerup.damageBoost > 0)) problems.push(`${FILE}: rules.powerup multiples must be above 0`);
+    const pu = r.powerup;
+    for (const k of ['speedBoost', 'damageBoost', 'overdriveSpeed', 'rapidFire', 'rapidReload', 'rapidWithDamage', 'moonGravity', 'moonJump']) if (!(pu[k] > 0)) problems.push(`${FILE}: rules.powerup.${k} must be above 0`);
+    // The extra cooldown and reload steps (sim/powerups.ts rapidSteps) take at most one more a tick.
+    for (const k of ['rapidFire', 'rapidReload', 'rapidWithDamage']) if (!(pu[k] >= 1 && pu[k] <= 2)) problems.push(`${FILE}: rules.powerup.${k} must be 1-2 (a rate)`);
+    if (!(pu.phantomShown >= 0 && pu.phantomShown <= 1)) problems.push(`${FILE}: rules.powerup.phantomShown must be 0-1 (how much of you shows)`);
+    if (!(pu.vampireShare >= 0 && pu.vampireShare <= 1)) problems.push(`${FILE}: rules.powerup.vampireShare must be 0-1 (a share of the damage)`);
+    for (const k of ['overdrivePush', 'overdriveLift', 'overdriveDamage', 'regenPerSecond', 'phantomRevealSeconds']) if (!(pu[k] >= 0)) problems.push(`${FILE}: rules.powerup.${k} must be 0 or more`);
   }
 
   const items = [];

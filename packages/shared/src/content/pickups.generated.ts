@@ -8,7 +8,13 @@ export const PICKUP_RULES = {
   pickup: { radius: 1.1 },
   // absorb: two thirds
   armor: { max: 100, absorb: 0.6666666666666666 },
-  powerup: { speedBoost: 1.35, damageBoost: 2 },
+  // overdrive: Overdrive: can't be hurt, overdriveSpeed times as fast; touching an enemy knocks them back and up (overdrivePush, overdriveLift m/s) for overdriveDamage, once a second per enemy (a fall soon after is your kill).
+  // regen: Regen: regenPerSecond health a second, up to full.
+  // rapid: Rapid Fire: the fire cooldown and reload run rapidFire / rapidReload times as fast; with Double Damage on too, the fire rate is rapidWithDamage (2 x 1.2 = 2.4 times the damage a second at most, not 3: spec section 10, moderate TTK).
+  // phantom: Phantom: enemies see phantomShown of you (a shimmer); firing shows you for phantomRevealSeconds.
+  // moon: Moon Boots: moonGravity times the gravity, moonJump times the jump, no fall damage.
+  // vampire: Vampire: vampireShare of the damage your hits deal comes back to you as health, up to full.
+  powerup: { speedBoost: 1.35, damageBoost: 2, overdriveSpeed: 1.15, overdrivePush: 9, overdriveLift: 4.5, overdriveDamage: 10, regenPerSecond: 5, rapidFire: 1.5, rapidReload: 1.5, rapidWithDamage: 1.2, phantomShown: 0.12, phantomRevealSeconds: 1, moonGravity: 0.45, moonJump: 1.35, vampireShare: 0.25 },
 } as const;
 
 /** Every pickup item, in palette order (also the order random weapon pickups roll from: sim/pickupRoll.ts). */
@@ -108,4 +114,11 @@ export const CORE_ITEMS: readonly ItemDefinition[] = [
   { id: 'core.weapon_baseball_bat', displayName: 'Baseball Bat', effect: { kind: 'weapon', weapon: 'core.baseball_bat' }, respawnSeconds: 20, botValue: 0.7166666666666667 },
   { id: 'core.weapon_space_shield', displayName: 'Space Shield', effect: { kind: 'weapon', weapon: 'core.space_shield' }, respawnSeconds: 25, botValue: 0.7583333333333334 },
   { id: 'core.weapon_heart_taser', displayName: 'Heart Taser', effect: { kind: 'weapon', weapon: 'core.heart_taser' }, respawnSeconds: 25, botValue: 0.7583333333333334 },
+  { id: 'core.powerup_overdrive', displayName: 'Overdrive', effect: { kind: 'powerup', powerup: 'overdrive', seconds: 8 }, respawnSeconds: 120, botValue: 0.95 },
+  { id: 'core.powerup_regen', displayName: 'Regen', effect: { kind: 'powerup', powerup: 'regen', seconds: 20 }, respawnSeconds: 45, botValue: 0.55 },
+  { id: 'core.powerup_rapid', displayName: 'Rapid Fire', effect: { kind: 'powerup', powerup: 'rapid', seconds: 15 }, respawnSeconds: 60, botValue: 0.75 },
+  { id: 'core.powerup_phantom', displayName: 'Phantom', effect: { kind: 'powerup', powerup: 'phantom', seconds: 12 }, respawnSeconds: 60, botValue: 0.6 },
+  { id: 'core.powerup_moon', displayName: 'Moon Boots', effect: { kind: 'powerup', powerup: 'moon', seconds: 15 }, respawnSeconds: 45, botValue: 0.4 },
+  { id: 'core.powerup_vampire', displayName: 'Vampire', effect: { kind: 'powerup', powerup: 'vampire', seconds: 15 }, respawnSeconds: 60, botValue: 0.65 },
+  { id: 'core.powerup_bottomless', displayName: 'Bottomless Mag', effect: { kind: 'powerup', powerup: 'bottomless', seconds: 12 }, respawnSeconds: 60, botValue: 0.7 },
 ];
