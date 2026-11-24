@@ -14595,9 +14595,9 @@ async function captionsFlow(browser) {
   await run('desktop', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: shots ? 2 : 1 }, true);
   await run('phone', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false);
   if (shots) {
-    // The same over a dark scene (Blackout's night).
-    await run('desktop-dark', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 }, false, 'blackout');
-    await run('phone-dark', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false, 'blackout');
+    // The same over a dark scene (Gallows Yard's night).
+    await run('desktop-dark', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 }, false, 'gallows_yard');
+    await run('phone-dark', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false, 'gallows_yard');
   }
 }
 
