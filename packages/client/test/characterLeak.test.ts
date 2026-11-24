@@ -5,7 +5,7 @@ import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
-import { CORE_LOOKS, type CharacterLook } from '@tiletrigger/shared';
+import { CORE_LOOKS, DESIGNER_BASE_LOOK, encodeLook, type CharacterLook } from '@tiletrigger/shared';
 import type { CharacterLibrary, CharacterSpec } from '../src/content/characters.ts';
 
 // The library's files come from public/ on disk (the loader is handed their bytes).
@@ -28,13 +28,21 @@ describe('character bodies free what they cloned', () => {
   let engine: NullEngine;
   let scene: Scene;
   let lib: CharacterLibrary;
-  const pick = (p: (l: CharacterLook) => boolean, n: number) => CORE_LOOKS.filter(p).slice(0, n).map((l) => l.id);
+  const pick = (p: (l: CharacterLook) => boolean, n: number) => [...CORE_LOOKS, DESIGNER_BASE_LOOK].filter(p).slice(0, n).map((l) => l.id);
   // Several kinds of look: whole-body (Meshy) characters, outfit parts with gear, dyed outfits, a beard.
   const looks = [
     ...pick((l) => !!l.whole, 3),
     ...pick((l) => !l.whole && !!l.gear?.length, 2),
     ...pick((l) => !l.whole && !!(l.cloth || l.trim), 2),
     ...pick((l) => !l.whole && l.hair.includes('beard'), 1),
+    // Designs of yours, made from the Designer's base body (Linktifa's parts: no outfit preset is left on the roster):
+    // a beard, a dyed outfit, another hairstyle, each with its skin and hair tints (the atlas's work).
+    ...[
+      { hair: ['hair_beard'], colorways: ['ranger_moss'], skin: '#c68e6a', hairColor: '#2a2422' },
+      { hair: ['hair_long'], colorways: [] as string[], skin: '#8d5a3c', hairColor: '#b08850' },
+      { hair: ['hair_buzzed'], colorways: ['ranger_moss'], skin: '#f1c9a5', hairColor: '#3a3030' },
+      { hair: ['hair_simpleparted'], colorways: [] as string[], skin: '#6b4430', hairColor: '#8a6a50' },
+    ].map((d) => encodeLook({ body: 'male', parts: DESIGNER_BASE_LOOK.parts, ...d })),
   ];
   const specs: CharacterSpec[] = [
     ...looks.map((look) => ({ look })),

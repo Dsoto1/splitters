@@ -21,7 +21,7 @@ import {
   gearInfo,
   BODY_SIZES,
   CORE_LOOKS,
-  DEFAULT_LOOK,
+  DESIGNER_BASE_LOOK,
   HAIR_COLORS,
   HAIR_STYLES,
   PART_SLOTS,
@@ -112,7 +112,7 @@ export class CharacterDesigner {
 
     const saved = listCustomLooks().find((s) => s.id === startLook);
     // Whole-body characters can't be taken apart: start those from the default look.
-    const l = getLook(getLook(startLook).whole ? DEFAULT_LOOK : startLook);
+    const l = getLook(startLook).whole ? DESIGNER_BASE_LOOK : getLook(startLook);
     this.draft = { name: saved?.name ?? (l.name === 'Custom' ? 'My character' : `My ${l.name}`), body: l.body, parts: [...l.parts], hair: [...l.hair], colorways: [...l.colorways], skin: l.skin, hairColor: l.hairColor, size: l.size, cloth: l.cloth ?? null, trim: l.trim ?? null, gear: [...(l.gear ?? [])] };
 
     this.root.id = 'designer';

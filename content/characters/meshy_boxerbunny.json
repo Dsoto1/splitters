@@ -6,7 +6,6 @@
   "name": "Buster Haymaker",
   "look": "core.boxerbunny",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "critter",
   "bio": "Floats like a butterfly, hops like a bunny, hits like a truck.",

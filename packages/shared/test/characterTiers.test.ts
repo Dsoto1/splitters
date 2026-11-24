@@ -5,6 +5,7 @@ import {
   CLIP_SET_CLIPS,
   CORE_LOOKS,
   DEFAULT_LOOK,
+  DESIGNER_BASE_LOOK,
   EXPERIMENTAL_SECTION,
   PICKABLE_LOOKS,
   REPORT_ONLY_CHARACTER_GATES,
@@ -32,7 +33,7 @@ import { CLIP_SET_CLIPS as TOOL_CLIPS, TIERS } from '../../../tools/content/char
 const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'male', head: '', parts: ['meshy_trialbot'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'meshy_trialbot_fparms' }, group: 'machines', nameTheme: 'robot', tier: 'experimental' };
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
 // The roster's own tiers (experimental characters of its own come and go: the ten of 2026-11-11 until 2026-11-12, the twelve
-// of 2026-11-13 until 2026-11-14, the twelve of 2026-11-14 the same day; the owner's batch of 2026-11-21/22 until the owner looks it over).
+// of 2026-11-13 until 2026-11-14, the twelve of 2026-11-14 the same day; the owner's batch of 2026-11-21/22 until 2026-11-24, when the owner moved them all up).
 const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
 const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 
@@ -46,7 +47,8 @@ describe('character tiers', () => {
     expect(CORE_TIER.length + EXPERIMENTAL.length).toBe(CORE_LOOKS.length);
     expect(CORE_TIER.length).toBeGreaterThan(100);
     expect(PICKABLE_LOOKS).toEqual(CORE_TIER);
-    expect(DEFAULT_LOOK).toBe(CORE_TIER[0]!.id);
+    // (The sim's fixed default is a kept look, never a retired one; a new player's first look is random.)
+    expect(PICKABLE_LOOKS.map((l) => l.id)).toContain(DEFAULT_LOOK);
   });
 
   it('no automatic pick draws an experimental character', () => {
@@ -135,7 +137,7 @@ describe("characters' quality gates", () => {
   });
 
   it('a look built from the shared parts is judged on its clips, hit shape and portrait', () => {
-    const preset = CORE_LOOKS.find((l) => !l.whole)!;
+    const preset = DESIGNER_BASE_LOOK;
     expect(characterGates(preset, { clips: [...CLIP_SET_CLIPS], hitbox: true, portrait: true }).map((g) => g.id)).toEqual(['clips', 'hitbox', 'portrait']);
   });
 
