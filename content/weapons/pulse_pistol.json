@@ -28,9 +28,10 @@
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#c69bff",
     "hold": { "style": "pistol", "grip": [0, -0.04, -0.1], "support": [-0.02, -0.05, -0.09], "rake": 34 },
+    "reloadSound": "reload.start.c",
     "muzzleAt": [0, 0.03, 0.135],
     "fallback": "weapons/pulse_pistol.glb",
-    "sound": "fire.pulse",
+    "sound": "fire.pulse.c",
     "beam": true
   },
   "notes": {

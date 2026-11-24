@@ -33,7 +33,7 @@
     "tracer": "#ff6ad0",
     "hold": { "style": "pistol", "grip": [0, -0.05, -0.11], "support": [-0.02, -0.06, -0.1] },
     "fallback": "weapons/goo_gun.glb",
-    "sound": "fire.goo"
+    "sound": "fire.goo.b"
   },
   "notes": {
     "group": "The extended arsenal: every one fires differently. 6: lobbers.",

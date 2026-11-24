@@ -41,6 +41,20 @@ const MAX_VOICES = 40;
 /** Seconds a voice cut to make room fades over. */
 const STEAL_FADE = 0.015;
 
+/** A world copy of a gun's report longer than this (s) is let ring less the farther it is (worldTail). */
+export const WORLD_TAIL_FROM = 0.6;
+/**
+ * How long (s) a world copy of a weapon report rings, given its length `seconds` and its distance against its range's
+ * cull distance (owner, 2026-11-23: the slow guns' reports ring 1-1.5 s now, docs/AUDIO.md "Slow guns ring out"). Your
+ * own shots and anything up to WORLD_TAIL_FROM ring whole; past it a far copy is let go sooner, `seconds × (1 - dist /
+ * cull)` but never under WORLD_TAIL_FROM, fading out over its last quarter. A far report's tail is quiet and muffled
+ * anyway, and in a 64-bot match on slow guns the long tails held the world's voices: the far ones now give them back.
+ */
+export function worldTail(seconds: number, dist: number, cull: number): number {
+  if (seconds <= WORLD_TAIL_FROM) return seconds;
+  return Math.min(seconds, Math.max(WORLD_TAIL_FROM, seconds * (1 - dist / cull)));
+}
+
 interface Voice {
   id: string;
   src: AudioBufferSourceNode;
@@ -379,7 +393,8 @@ export class AudioSystem {
     }
 
     const src = ctx.createBufferSource();
-    src.buffer = list[Math.floor(Math.random() * list.length)]!;
+    const buffer = list[Math.floor(Math.random() * list.length)]!;
+    src.buffer = buffer;
     src.playbackRate.value = (def.rate ?? 1) * (opts.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (def.jitter ?? 0));
     const gain = ctx.createGain();
     gain.gain.value = (def.gain ?? 1) * (opts.gain ?? 1);
@@ -431,6 +446,18 @@ export class AudioSystem {
       tail.disconnect();
     };
     src.start(when);
+    // A far world copy of a long gun report rings shorter (worldTail): faded over its last quarter, then stopped,
+    // which frees its voice.
+    if (at && id.startsWith('fire.')) {
+      const full = buffer.duration / src.playbackRate.value;
+      const keep = worldTail(full, dist, range.cull);
+      if (keep < full) {
+        const g = gain.gain.value;
+        gain.gain.setValueAtTime(g, when + keep * 0.75);
+        gain.gain.linearRampToValueAtTime(0, when + keep);
+        src.stop(when + keep);
+      }
+    }
     this.stats.played++;
   }
 

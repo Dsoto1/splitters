@@ -27,7 +27,7 @@ export const WEAPON_SET_DEFS: Readonly<Record<(typeof WEAPON_SET_IDS)[number], W
     blurb: 'Energy weapons: everyone spawns with a knife, a pulse pistol and a plasma rifle; sniper-role bots carry the railgun.',
     spawn: ['core.knife', 'core.pulse_pistol', 'core.plasma'],
     sniper: 'core.railgun',
-    weapons: ['core.plasma', 'core.laser_rifle', 'core.blaster_x42', 'core.nova6', 'core.railgun', 'core.pulse_pistol', 'core.laser_blaster', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided', 'core.space_shield'],
+    weapons: ['core.plasma', 'core.laser_rifle', 'core.blaster_x42', 'core.nova6', 'core.railgun', 'core.pulse_pistol', 'core.laser_blaster', 'core.arc_caster', 'core.disc_launcher', 'core.swarm', 'core.guided', 'core.space_shield', 'core.singularity'],
     throwables: ['sticky', 'vortex', 'smoke'],
   },
   medieval: {

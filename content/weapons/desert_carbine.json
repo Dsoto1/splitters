@@ -28,8 +28,9 @@
     "viewOffset": [0.2, -0.2, 0.53],
     "tracer": "#ffd36b",
     "hold": { "style": "long", "grip": [0, -0.045, -0.16], "support": [0, 0.045, 0.12], "shoulder": [0, 0.02, -0.41] },
+    "reloadSound": "reload.ak",
     "muzzleAt": [0, 0.05, 0.42],
-    "sound": "fire.rifle"
+    "sound": "fire.rifle.c"
   },
   "notes": {
     "design": "The run-and-gun rifle: moves and comes out of a sprint like an SMG (full speed, 5 ticks), fires faster than the Assault Rifle (720 rpm) and climbs more, but loses its punch past 15 m (half by 45 m). Body kill up close 6 rounds, 0.42 s.",
