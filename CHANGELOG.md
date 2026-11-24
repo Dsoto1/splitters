@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Bullet holes on breakable and moving blocks** (the Training Range's plank boards, a mover's platforms): rounds leave holes and splinters that ride with the block and go when it breaks and comes back.
 - **Menu music shuffles in the Map Maker tracks** with the Arena ones, for variety; MapMaker still plays its own.
 - **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
