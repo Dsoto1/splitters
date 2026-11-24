@@ -36,4 +36,14 @@ describe('stream projectiles in the snapshot', () => {
     for (const p of flame) expect(p[5]).toBe(me.slot);
     for (const p of other) expect(p.length).toBe(5);
   });
+
+  it("carry the shooter for the Blaster X-42's bolts (they leave the gun's muzzle, not the eye)", () => {
+    const match = new Match(yard(), { ...DEFAULT_RULES['core.tdm'], teamSizes: [1, 1], scoreLimit: 0 }, 3);
+    const me = match.addHuman('me')!;
+    for (let i = 0; i < 5; i++) match.step();
+    (match as unknown as Internals).fireNow(me, { ...getWeapon('core.blaster_x42'), alt: undefined }, 0);
+    const bolts = match.snapshot([]).pr.filter((p) => PROJECTILE_VISUALS[p[4]] === 'blasterBolt');
+    expect(bolts.length).toBe(1);
+    expect(bolts[0]![5]).toBe(me.slot);
+  });
 });
