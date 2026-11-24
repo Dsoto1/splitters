@@ -5,6 +5,9 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 History (older Landed notes, finished claims, old owner answers and the earlier sessions' "Start here" sections) lives in `docs/history/handoff-2026-11.md`; nothing was dropped. Keep this file to the current state, live claims, "Checking" lines and the last ~2 days of notes (docs/PROCESS.md, "HANDOFF stays short").
 
+## Fix batch 2026-11-24, `wip/fixes-20261124` (helper of the splitters lead)
+- **Claimed: bullet holes on breakable and moving blocks** (owner: "in training range, the wood doesn't leave bullet marks"). Files: `packages/client/src/game/impactVisuals.ts`, `scenarioVisuals.ts`, `view.ts` (`landRound`, `surfaceStruck`), a new `game/blockHoles.ts` and its test, CHANGELOG. No map or format change.
+
 ## Fast-gun sound cuts, `wip/fastguns-1124` (helper of lane B's splitters22, 2026-11-24; owner's pick "1")
 Claim: `content/sounds.json` (new `fire.heavy.fast`, `fire.heavy.l86.fast`), `content/weapons/mount_mg.json` and `machine_pistol.json` (`view.sound` only), `content/sonniss.lock.json`, provenance, the generated weapon table, the two new `.ogg` files, `packages/shared/test/fixtures/weapons-resolved.json` (sound fields), `packages/client/test/shotAudio.test.ts`, docs/AUDIO.md ("Short cuts for the fastest guns"), CHANGELOG. No map or format change. **Status (2026-11-24): green on `check/fastguns-1124` at e76729ba, run 45375790844 (attempt 2: attempt 1 red only on the known `perf (budget)` flake, frost_basin loot effect start); on QUEUE's Ready to land.** `fire.heavy.fast` 0.39 s (2.5 KB), `fire.heavy.l86.fast` 0.29 s (1.9 KB): 5.96 and 5.94 voices at 15 and 20 shots a second.
 
