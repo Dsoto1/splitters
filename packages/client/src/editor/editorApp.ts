@@ -631,7 +631,8 @@ export class EditorApp {
     this.minimap.frame();
     this.tileView.frame();
     this.statusBar.memoryTick();
-    this.view.render();
+    // Every frame while something moves or changes; at rest a few a second (renderGate.ts).
+    this.view.renderIfNeeded(!!this.terrain.stroke || !!this.input.drag || !!this.looking || this.keys.size > 0, [this.history.revision, this.selectionRev, this.level, this.showAll ? 1 : 0, this.outliner.flagsRev]);
   }
 
   /** Bring meshes and panels up to date with the document and view settings. */

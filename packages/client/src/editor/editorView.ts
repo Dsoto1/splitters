@@ -41,6 +41,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { BuildAreaVisuals } from './buildAreaVisuals.ts';
 import { GroundGlass } from './groundGlass.ts';
 import { SmallIcons } from './smallIcons.ts';
+import { RenderGate } from './renderGate.ts';
 import { isSmallThing } from './editorParts.ts';
 
 /** A picture laid over the ground while editing (MapMaker → Terrain, owner): never part of the map. */
@@ -222,7 +223,11 @@ export class EditorView {
     };
     this.applyCamera();
     this.watchCanvasRect();
+    this.gate = new RenderGate(this.scene, engine.getRenderingCanvas());
   }
+
+  /** MapMaker draws only when it needs to (renderGate.ts; `?perfoff=editoridle`: every frame). */
+  readonly gate: RenderGate;
 
   // ---------- camera ----------
 
@@ -1379,6 +1384,11 @@ export class EditorView {
     this.scene.render();
     // The frame's own look at where the canvas is (see `canvasRect`).
     this.readCanvasRect();
+  }
+
+  /** Draw this frame only if the view needs it (renderGate.ts); `busy` and `key` as RenderGate.frame takes them. */
+  renderIfNeeded(busy: boolean, key: readonly number[]): void {
+    if (this.gate.frame(performance.now(), busy, key)) this.render();
   }
 }
 
