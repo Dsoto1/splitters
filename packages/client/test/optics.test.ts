@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { CORE_WEAPONS, getWeapon, gunplayOf, holdoverMarks, flightTo } from '@tiletrigger/shared';
 import { OPTIC_KINDS, OPTIC_NONE, WEAPON_OPTICS, type OpticKindId } from '@tiletrigger/shared/optics';
 import { SIGHT_FITS } from '@tiletrigger/shared/sightFit';
-import { GLASS_SHARE, HIP_FOV, IRONS_DEPTH, IRONS_MAX, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, builtHousing, eyepieceOf, glassCentre, glassHalf, hasGlass, onMark, opticChoices, opticFor, opticNone, opticOf, opticsVersion, pictureScale, setRosterOptics } from '../src/game/optics.ts';
+import { GLASS_SHARE, HIP_FOV, IRONS_DEPTH, IRONS_MAX, MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, PICTURE_MAX, RING_TICK, aimedFov, builtHousing, eyepieceOf, glassAt, glassCentre, glassHalf, hasGlass, onMark, opticChoices, opticFor, opticNone, opticOf, opticsVersion, pictureScale, setRosterOptics } from '../src/game/optics.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, offAxis, placed, sightPicture } from '../src/game/sightPose.ts';
 import { LENS_SHARE, opticFrame } from '../src/game/opticView.ts';
 import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
@@ -178,7 +178,69 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
         expect((Math.min(hw, hh) * picture) / c[2], `${id} ${k}: the mark fits its window`).toBeGreaterThan(reach * 1.3);
         const share = (hh * picture) / c[2] / Math.tan((HIP_FOV * ADS_FOV) / 2);
         expect(share, `${id} ${k}: the window's half-height as a share of the screen's`).toBeGreaterThan(0.1);
-        expect(share, `${id} ${k}`).toBeLessThanOrEqual(GLASS_SHARE + 1e-9);
+        // (Drawn larger only up to GLASS_SHARE; a model's own wide eyepiece, near the eye, is larger drawn plainly.)
+        if (picture > 1) expect(share, `${id} ${k}`).toBeLessThanOrEqual(GLASS_SHARE + 1e-9);
+      }
+    }
+  });
+
+  it('the lens lines up with the aim: every glass and eyepiece a gun offers, as drawn, its housing level along the view', () => {
+    // (Owner, 2026-11-23, "that scope tho": the view through a glass must be the view along the aim, the mark on the
+    // glass's middle.) The glass mesh where opticHousing.ts puts it, the housing's tube ends, the 2x optic's eyepiece.
+    let checked = 0;
+    for (const id of Object.keys(WEAPON_OPTICS)) {
+      const def = getWeapon(id);
+      for (const k of WEAPON_OPTICS[id]!.allowed) {
+        const o = opticOf(def, k)!;
+        if (!builtHousing(o)) continue;
+        const at = aimPlacement(def, BOUNDS, true, o);
+        const eye = eyepieceOf(def, o);
+        const points: [string, readonly [number, number, number]][] = eye ? [['eyepiece', eye.eye]] : [['glass as drawn', glassAt(o)], ['window', glassCentre(o)]];
+        if (o.mount && !o.window) {
+          const g = o.kind.glass!;
+          const y = o.mount.at[1] + g.rise * o.mount.scale;
+          for (const end of [-0.5, 0.5]) points.push([`housing's ${end < 0 ? 'rear' : 'front'} end`, [o.mount.at[0], y, o.mount.at[2] + g.length * o.mount.scale * end]]);
+        }
+        for (const [what, p] of points) {
+          const c = placed(p, at);
+          expect(c[2], `${id} ${k}: the ${what} is ahead of the eye`).toBeGreaterThan(0.1);
+          expect(offAxis(c), `${id} ${k}: the ${what} off the aim (degrees)`).toBeLessThan(SIGHT_TOLERANCE_DEG);
+        }
+        // Drawn larger about the view axis (the sight picture) keeps a point on the axis on it.
+        const picture = sightPicture(def, at, o);
+        const g = placed(eye ? eye.eye : glassAt(o), at);
+        expect(offAxis([g[0] * picture, g[1] * picture, g[2]]), `${id} ${k}: in the sight picture`).toBeLessThan(SIGHT_TOLERANCE_DEG);
+        checked++;
+      }
+    }
+    expect(checked).toBeGreaterThan(40);
+  });
+
+  it('the eye comes to a long gun\'s glass: the housing a sensible size, the gun drawn at most twice as large', () => {
+    // (Owner, 2026-11-23: a red dot drawn three times its size, the receiver behind it a big black shape.) A long gun
+    // carrying a red dot or a holographic sight on its top has its eye measured from its model (tools/content/optics.mjs
+    // fitEye): the glass 0.3-0.45 m off, nothing of the gun near the eye in the view; a handgun is held out as before.
+    for (const id of Object.keys(WEAPON_OPTICS)) {
+      const def = getWeapon(id);
+      const w = WEAPON_OPTICS[id]!;
+      const ones = w.allowed.filter((k) => OPTIC_KINDS[k].housing === 'tube' || OPTIC_KINDS[k].housing === 'frame');
+      if (!ones.length || w.window) continue;
+      const long = def.view.hold?.style === 'long';
+      expect(w.mount?.eye !== undefined, `${id}: ${long ? 'a long gun gets an eye fitted' : 'a handgun is held out at arm\'s length'}`).toBe(long);
+      for (const k of ones) {
+        const o = opticOf(def, k)!;
+        const at = aimPlacement(def, BOUNDS, true, o);
+        const depth = placed(glassCentre(o), at)[2];
+        if (long) {
+          expect(depth, `${id} ${k}: the glass's distance from the eye (m)`).toBeGreaterThanOrEqual(0.3 - 1e-6);
+          expect(depth, `${id} ${k}`).toBeLessThan(0.45);
+        }
+        const picture = sightPicture(def, at, o);
+        expect(picture, `${id} ${k}: how much larger the gun is drawn`).toBeLessThanOrEqual(PICTURE_MAX);
+        expect(PICTURE_MAX).toBeLessThanOrEqual(2);
+        const share = (glassHalf(o)[1] * picture) / depth / Math.tan((HIP_FOV * ADS_FOV) / 2);
+        expect(share, `${id} ${k}: the window's half-height as a share of the screen's`).toBeLessThanOrEqual(GLASS_SHARE + 1e-9);
+        expect(GLASS_SHARE).toBeLessThanOrEqual(0.15);
       }
     }
   });

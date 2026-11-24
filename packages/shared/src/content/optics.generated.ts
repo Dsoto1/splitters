@@ -49,7 +49,8 @@ export interface WeaponOptics {
   mag?: number;
   /** Its own zoom steps, where they differ from its kind's. */
   steps?: readonly number[];
-  mount?: { at: readonly [number, number, number]; scale: number };
+  /** `eye`: on a long gun carrying a red dot or a holographic sight, the eye's model z behind the glass (the glass's line is the view's axis). */
+  mount?: { at: readonly [number, number, number]; scale: number; eye?: number };
   /** The model's own open sight instead (no housing is built): its window's middle and half width and height. */
   window?: { at: readonly [number, number, number]; half: readonly [number, number]; round?: boolean };
 }
@@ -57,42 +58,42 @@ export interface WeaponOptics {
 /** Per hand-held gun that carries an optic (iron sights included). */
 export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.amarillo': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.0914, 0.126], scale: 0.85 } },
-  'core.arc_caster': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.22251, -0.034], scale: 0.85 } },
-  'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
-  'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2 } },
+  'core.arc_caster': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.22251, -0.034], scale: 0.85, eye: -0.334 } },
+  'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2, eye: -0.234 } },
+  'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2, eye: -0.398 } },
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
   'core.blaster_x42': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.149, -0.192], half: [0.026, 0.026], round: true } },
-  'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85 } },
+  'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85, eye: -0.283 } },
   'core.burst_rifle': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.09648, -0.119], scale: 1.15 } },
-  'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88 } },
+  'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88, eye: -0.36 } },
   'core.crossbow': { default: 'scope', allowed: ['scope'], mag: 2.19 },
   'core.desert_carbine': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [-0.003, 0.124, -0.126], half: [0.016, 0.013] } },
-  'core.disc_launcher': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2 } },
-  'core.flak': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.15935, -0.088], scale: 0.85 } },
+  'core.disc_launcher': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2, eye: -0.234 } },
+  'core.flak': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.15935, -0.088], scale: 0.85, eye: -0.388 } },
   'core.flintlock_pistol': { default: 'irons', allowed: ['irons'] },
   'core.freeze_ray': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.10203, -0.085], scale: 0.85 } },
   'core.goo_gun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09629, -0.11], scale: 0.85 } },
   'core.hand_cannon': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.0857, -0.069], scale: 0.85 } },
   'core.laser_blaster': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.09152, -0.028], scale: 0.85 } },
-  'core.laser_rifle': { default: 'reddot', allowed: ['reddot', 'holo', 'x2'], mount: { at: [0, 0.13375, -0.08], scale: 1.2 } },
+  'core.laser_rifle': { default: 'reddot', allowed: ['reddot', 'holo', 'x2'], mount: { at: [0, 0.13375, -0.08], scale: 1.2, eye: -0.39 } },
   'core.lever_action': { default: 'scope', allowed: ['scope'], mag: 2.59 },
-  'core.machine_pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.1144, -0.129], scale: 0.85 } },
+  'core.machine_pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.1144, -0.129], scale: 0.85, eye: -0.429 } },
   'core.marksman': { default: 'scope', allowed: ['scope'], mag: 2.19, steps: [1, 0.45] },
-  'core.nailgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.17032, -0.118], scale: 0.93 } },
+  'core.nailgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.17032, -0.118], scale: 0.93, eye: -0.418 } },
   'core.nova6': { default: 'scope', allowed: ['scope'], mag: 2.38 },
   'core.pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07574, -0.05335], scale: 0.85 } },
   'core.plasma': { default: 'holo', allowed: ['holo'], window: { at: [0, 0.157, -0.058], half: [0.0222, 0.0138] } },
   'core.pulse_pistol': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07068, -0.016], scale: 0.85 } },
   'core.railgun': { default: 'sniper', allowed: ['sniper'], mag: 3.13 },
   'core.revolver': { default: 'irons', allowed: ['irons', 'reddot'], mount: { at: [0, 0.07897, -0.049], scale: 0.85 } },
-  'core.rifle': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.10786, -0.149], scale: 1.17 } },
-  'core.runebreaker': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.14223, -0.07], scale: 1.2 } },
-  'core.sawed_off': { default: 'reddot', allowed: ['reddot'], mount: { at: [0, 0.0716, -0.087], scale: 0.85 } },
-  'core.shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09878, -0.127], scale: 1.2 } },
-  'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16 } },
+  'core.rifle': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.10786, -0.149], scale: 1.17, eye: -0.474 } },
+  'core.runebreaker': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.14223, -0.07], scale: 1.2, eye: -0.37 } },
+  'core.sawed_off': { default: 'reddot', allowed: ['reddot'], mount: { at: [0, 0.0716, -0.087], scale: 0.85, eye: -0.387 } },
+  'core.shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09878, -0.127], scale: 1.2, eye: -0.432 } },
+  'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16, eye: -0.428 } },
   'core.sniper': { default: 'sniper', allowed: ['sniper'], mag: 3.95 },
   'core.twin_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.127, -0.108], half: [0.015, 0.015], round: true } },
-  'core.woodland_smg': { default: 'reddot', allowed: ['reddot', 'irons', 'holo', 'x2'], mount: { at: [0, 0.10268, -0.032], scale: 0.99 } },
+  'core.woodland_smg': { default: 'reddot', allowed: ['reddot', 'irons', 'holo', 'x2'], mount: { at: [0, 0.10268, -0.032], scale: 0.99, eye: -0.422 } },
 };
 
 /** The weapons without one, and why: they keep the aim they had (or never aim: mounted, melee, tools). */
