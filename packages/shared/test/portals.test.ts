@@ -136,7 +136,7 @@ describe('portals', () => {
     // A bot in the first room goes for the gun in the second, through the portals, and on to it (it used to walk
     // straight back in: the portal leg's end was out of a corner's reach, so it kept heading for the first portal).
     // Every body size: a small one's catch used to stop short of the wall the portal is set on.
-    for (const look of ['core.sprout', 'core.ranger', 'core.knight']) {
+    for (const look of ['core.bandit', 'core.dale', 'core.knight']) {
       const match = new Match(doc, undefined, 7);
       const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 100 }, undefined, false, { look })!;
       bot.move = { pos: { x: -2, y: 0, z: 1 }, velY: 0, grounded: true };
@@ -152,7 +152,7 @@ describe('portals', () => {
 
   it('every body size walks through a portal set against a wall', () => {
     const doc = loaded(rooms());
-    for (const [look, size] of [['core.sprout', 0.78], ['core.ranger', 1], ['core.knight', 1.18]] as const) {
+    for (const [look, size] of [['core.bandit', 0.78], ['core.dale', 1], ['core.knight', 1.18]] as const) {
       const match = new Match(doc, undefined, 7);
       const me = match.addHuman('me', look)!;
       expect(me.size, look).toBe(size);

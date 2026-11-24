@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS } from '../../../tools/content/character-manifests.mjs';
 
@@ -75,12 +75,23 @@ describe("Character Select's groups", () => {
     for (const n of ['Teddy', 'The Hollow Pilgrim', 'Scary Larry']) expect(group(n), n).toBe('horror');
   });
 
-  it('Character Select lists the astronauts together (Spud Marshal and Astronaut Explorer swapped)', () => {
+  it('Character Select keeps Spud Marshal with the astronauts; Astronaut Explorer is retired (2026-11-24)', () => {
     const roster = CORE_LOOKS.map((l) => ({ name: l.name, group: l.group ?? 'mine', sortAs: l.sortAs }));
     const space = characterSections(roster).find((s) => s.id === 'space')!.looks.map((l) => l.name);
     const at = (n: string) => space.indexOf(n);
-    expect(at('Astronaut Explorer')).toBe(at('Spacewalker') + 1);
+    expect(at('Astronaut Explorer')).toBe(-1);
     expect(at('Spud Marshal')).toBeLessThan(at('Beanie Alien'));
+  });
+
+  it('Character Select lists the owner\'s neighbours side by side, in one list (CHARACTER_NEIGHBOURS)', () => {
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: l.group ?? 'mine', sortAs: l.sortAs }));
+    const sections = characterSections(roster);
+    for (const list of CHARACTER_NEIGHBOURS) {
+      const section = sections.find((s) => s.looks.some((l) => l.id === list[0]))!;
+      const ids = section.looks.map((l) => l.id);
+      const at = ids.indexOf(list[0]!);
+      expect(ids.slice(at, at + list.length), list.join(' ')).toEqual([...list]);
+    }
   });
 
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {
@@ -112,8 +123,8 @@ describe("Character Select's groups", () => {
     expect(ids.indexOf('chrono')).toBe(ids.indexOf('space') + 1);
     expect(sections.find((s) => s.id === 'chrono')!.label).toBe('Chrono Crew');
     expect(sections.find((s) => s.id === 'chrono')!.looks.map((l) => l.name).sort()).toEqual([...crew].sort());
-    // The Time Traveler stays with Outer Space (experimental for now, so under Experimental).
-    expect(characterSectionOf(getLook('core.timetraveler'))).toBe(EXPERIMENTAL_SECTION);
+    // The Time Traveler stays with Outer Space (core since the owner's 2026-11-24 promotion of the experimental ones).
+    expect(characterSectionOf(getLook('core.timetraveler'))).toBe('space');
     expect(getLook('core.timetraveler').group).toBe('space');
   });
 
@@ -132,11 +143,22 @@ describe("Character Select's groups", () => {
     expect(getLook('core.dustycolt').name).toBe('Dusty Ranger');
   });
 
-  it('Zero Ringtail is gone (owner, 2026-11-22): its model is Bandit\'s', () => {
+  it('Zero Ringtail is gone (owner, 2026-11-22): its model is Rascal McGraw\'s (Bandit\'s id)', () => {
     expect(CORE_LOOKS.some((l) => l.id === 'core.raccoonhacker')).toBe(false);
     expect(RETIRED_LOOKS['core.raccoonhacker']).toBe('core.bandit');
     expect(validLookId('core.raccoonhacker')).toBe('core.bandit');
-    expect(getLook('core.bandit').name).toBe('Bandit');
+    expect(getLook('core.bandit').name).toBe('Rascal McGraw');
     expect(characterTier(getLook('core.bandit'))).toBe('core');
+  });
+
+  it('nothing is Experimental now, and nine animals open Animalia in the owner\'s order (owner, 2026-11-24)', () => {
+    expect(CORE_LOOKS.filter((l) => characterTier(l) === 'experimental').map((l) => l.id)).toEqual([]);
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) }));
+    const sections = characterSections(roster);
+    expect(sections.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
+    expect(sections.find((s) => s.id === 'animals')!.looks.slice(0, 9).map((l) => l.name)).toEqual(['Pip Quickfoot', 'Rocket Nutley', 'Rowdy Gnashwell', 'Rufus Boomtown', 'Ollie Hootman', 'Barnaby Burrows', 'Rascal McGraw', 'Chester Knuckleby', 'Newt Calloway']);
+    // Display names only: the ids are unchanged.
+    expect(getLook('core.baboon').name).toBe('Rufus Boomtown');
+    expect(getLook('core.warlord').name).toBe('Newt Calloway');
   });
 });

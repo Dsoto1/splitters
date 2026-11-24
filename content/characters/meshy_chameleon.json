@@ -6,7 +6,6 @@
   "name": "Dr. Hugo Hue",
   "look": "core.chameleon",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "critter",
   "bio": "Blends in until the experiment goes off.",

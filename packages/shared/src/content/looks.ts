@@ -170,13 +170,40 @@ export const isCharacterCollection = (x: unknown): x is CharacterCollection => C
 export const EXPERIMENTAL_SECTION = 'experimental';
 export const MINE_SECTION = 'mine';
 /**
+ * Characters Character Select lists side by side (owner, 2026-11-24): each list sits together, in this order, where its
+ * first member in the section's order falls. One list to change (they can become one tile with variants later); a list
+ * works within one section, so its members share a group.
+ */
+export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
+  ['core.frida', 'core.larry'], // Freaky Frida, Scary Larry
+  ['core.undeadsoldier', 'core.zombiesoldier2', 'core.zombiesoldier1'], // Dog Tag Doyle, Grinning Gus, Zombie Soldier A
+  ['core.groaner', 'core.shambler', 'core.fearsomeundead'], // Groaner, Shambler, Fearsome Undead
+  ['core.rattles', 'core.bonesworth'], // Rattles, Count Bonesworth
+  ['core.mummybot', 'core.pharaoh'], // Mummy Bot, Pharaoh Mummy Warrior
+  ['core.aldric', 'core.halvard'], // King Aldric, Old King Halvard
+  ['core.imperialguard', 'core.mei'], // Imperial Guard, Lancer Mei
+];
+
+function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {
+  let out = sorted;
+  for (const list of CHARACTER_NEIGHBOURS) {
+    const members = list.map((id) => out.find((c) => c.id === id)).filter((c): c is T => !!c);
+    if (members.length < 2) continue;
+    const at = Math.min(...members.map((m) => out.indexOf(m)));
+    const rest = out.filter((c) => !members.includes(c));
+    out = [...rest.slice(0, at), ...members, ...rest.slice(at)];
+  }
+  return out;
+}
+
+/**
  * Character Select's sections for a roster whose entries say which section they sit in (`group`: a CHARACTER_GROUPS
  * id, EXPERIMENTAL_SECTION or MINE_SECTION): each group anyone is in (listed by name), then Experimental when there
  * is anyone in it, then Yours (always, in the order given: it holds "Design new"). An entry with `sortAs` sits where that
  * name would.
  */
-export function characterSections<T extends { name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
-  const byName = (id: string) => roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name));
+export function characterSections<T extends { id?: string; name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
+  const byName = (id: string) => withNeighbours(roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name)));
   const after = (g: string) => CHARACTER_COLLECTIONS.filter((c) => c.after === g).map((c) => ({ id: c.id as string, label: c.label as string, looks: byName(c.id) }));
   const groups = [...CHARACTER_GROUPS.flatMap((g) => [{ id: g.id as string, label: g.label as string, looks: byName(g.id) }, ...after(g.id)]), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
   return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
@@ -244,26 +271,45 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
  * Looks that were retired, and the kept look each one now resolves to, so a saved profile, setup, bot set or map
  * that still names one keeps working. A retired look stays defined (below) but leaves CORE_LOOKS: Character
  * Select, the bot rotation and the Designer's presets no longer offer it. 2026-11-01: the owner's Roster Board
- * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stay).
+ * retired 14 original modular looks and Ivory Rustwalker, then Engineer and Warden (Linktifa and Sprout stayed until 2026-11-24).
  */
 export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
+  // Owner, 2026-11-24 ("Let's just retire linktifa and sprout"): both off the roster (files, manifests and portraits kept;
+  // the Designer keeps Linktifa's modular body as its base: DESIGNER_BASE_LOOK). A saved pick plays Honest Abe (Legends)
+  // and Lancer Mei (Everyday Folk), kept looks of the same group; every older retirement that led to either now leads
+  // straight to the kept look, in one step.
+  'core.ranger': 'core.abe',
+  'core.sprout': 'core.mei',
+  // Owner, 2026-11-24: nine more off the roster (files, manifests and portraits kept); a saved pick plays a kept look of
+  // the same group. (The Dummy is the trooper NPC skin, off Character Select in PLAYER_NPC_LOOKS; see npc.ts.)
+  'core.astroexplorer': 'core.astronaut', // Astronaut Explorer -> Spacewalker
+  'core.neonninja': 'core.shadowenforcer', // Neon Shadow Ninja -> Shadow Enforcer
+  'core.neonguardian': 'core.starvoyager', // Neon Guardian -> Star Voyager
+  'core.hector': 'core.dale', // Bill the Barbarian -> Cal
+  'core.brasshare': 'core.biscuit', // Brass Hare -> Biscuit
+  'core.bigbab': 'core.gorillag', // Big Bab -> Gorilla G
+  'core.tortoise': 'core.coachtortoise', // Shellback -> Coach Hank Shelton
+  'core.giggles': 'core.teddy', // Giggles -> Teddy
+  // The Dummy (the trooper mannequin NPC skin): off Character Select (PLAYER_NPC_LOOKS); a saved pick plays Stealth
+  // Operative, a kept Agency soldier. The trooper NPC role (training targets, soldiers) keeps its mannequin.
+  'npc:trooper': 'core.stealthop',
   'core.champion': 'core.dale',
   'core.desperado': 'core.dale',
-  'core.miller': 'core.sprout',
-  'core.raider': 'core.ranger',
-  'core.sprinter': 'core.sprout',
-  'core.striker': 'core.ranger',
-  'core.huntress': 'core.ranger',
-  'core.tracker': 'core.ranger',
+  'core.miller': 'core.mei',
+  'core.raider': 'core.abe',
+  'core.sprinter': 'core.mei',
+  'core.striker': 'core.abe',
+  'core.huntress': 'core.abe',
+  'core.tracker': 'core.abe',
   'core.bulwark': 'core.grunt68',
   'core.commando': 'core.grunt68',
   'core.operative': 'core.grunt68',
-  'core.scout': 'core.sprout',
-  'core.pathfinder': 'core.sprout',
-  'core.wayfarer': 'core.sprout',
-  'core.frost': 'core.sprout',
-  'core.medic': 'core.sprout',
-  'core.sentinel': 'core.sprout',
+  'core.scout': 'core.mei',
+  'core.pathfinder': 'core.mei',
+  'core.wayfarer': 'core.mei',
+  'core.frost': 'core.mei',
+  'core.medic': 'core.mei',
+  'core.sentinel': 'core.mei',
   'core.farmhand': 'core.dale',
   'core.drifter': 'core.dale',
   'core.brawler': 'core.dale',
@@ -282,7 +328,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.rotter': 'core.shambler',
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
   // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
-  'core.otter': 'core.brasshare',
+  'core.otter': 'core.biscuit',
   'core.shade': 'core.mei',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.
@@ -293,7 +339,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.bill': 'core.dale',
   // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
   // kept); saved choices and bot sets play the tortoise, the animal that came in with it.
-  'core.panda': 'core.tortoise',
+  'core.panda': 'core.coachtortoise',
   // Owner, 2026-11-06 (after the intake that gave it the light-blue astronaut): Capt. Nova off the roster (files,
   // manifest and portrait kept); saved choices and bot sets play Spacewalker, the nearest astronaut.
   'core.nova': 'core.astronaut',
@@ -318,7 +364,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter']);
+/** Linktifa's id: the Designer's base body (retired from play, kept drawable). */
+const DESIGNER_BASE_ID = 'core.ranger';
+/** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
+const DEFAULT_LOOK_ID = 'core.dale';
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DESIGNER_BASE_ID]);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -421,7 +471,18 @@ export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.
 /** The looks an automatic pick draws from (the default look, random bots, random characters, Roulette): the core tier of the roster. */
 export const PICKABLE_LOOKS: readonly CharacterLook[] = pickableLooks(CORE_LOOKS);
 
-export const DEFAULT_LOOK = PICKABLE_LOOKS[0]!.id;
+/**
+ * The sim's fixed default look (a combatant before it picks, the tests' standard body): Cal, a kept look (Linktifa's
+ * body was the default until it retired, 2026-11-24). A new player's first look is random instead
+ * (`randomFirstLook`, drawn by the front end); an unknown id still falls back to the roster's first pickable look.
+ */
+export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
+
+/** A random pickable look for a new player with no saved pick (`roll` in [0, 1): Math.random(), or a fixed value). */
+export const randomFirstLook = (roll: number): string => PICKABLE_LOOKS[Math.min(PICKABLE_LOOKS.length - 1, Math.floor(roll * PICKABLE_LOOKS.length))]!.id;
+
+/** The Designer's modular base body (Linktifa's parts): off the roster, but "Design new" and whole-body starts use it. */
+export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === DESIGNER_BASE_ID)!;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
@@ -596,16 +657,16 @@ export function decodeLook(id: string): CharacterLook | null {
 export const getLook = (id: string | undefined): CharacterLook => {
   const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
   if (npc) return npc;
-  return lookIn(CORE_LOOKS, id);
+  return lookIn(CORE_LOOKS, id, CORE_LOOKS.find((l) => l.id === DEFAULT_LOOK_ID));
 };
 
 /**
  * getLook over a roster. By id a look resolves whatever its tier (a saved choice of an experimental character keeps
  * working, and a bot set's hand pick); only the fallback is a pick: the roster's first core look.
  */
-export function lookIn(roster: readonly CharacterLook[], id: string | undefined): CharacterLook {
+export function lookIn(roster: readonly CharacterLook[], id: string | undefined, fallback?: CharacterLook): CharacterLook {
   const key = (id && RETIRED_LOOKS[id]) || id;
-  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? roster.find((l) => characterTier(l) === 'core')!;
+  return roster.find((l) => l.id === key) ?? (key ? decodeLook(key) : null) ?? fallback ?? roster.find((l) => characterTier(l) === 'core')!;
 }
 
 /** A stable look for the `index`-th bot, spread across a roster's core tier (never an experimental character). */
