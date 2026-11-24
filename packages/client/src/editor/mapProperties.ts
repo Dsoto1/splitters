@@ -68,6 +68,7 @@ import type { EditorApp } from './editorApp.ts';
 import { button, escapeHtml, numberInput, row, small, text } from './editorDom.ts';
 import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
+import { ALSO_MODES, BOUNDARY_CHOICES, BOUNDARY_HEIGHT, BOUNDARY_MARGIN, MAIN_MODES } from './newMapSetup.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
 import { changeGroundTheme, changeStructureTheme } from './themeChangeDialog.ts';
@@ -381,18 +382,18 @@ export class MapProperties {
     const b = doc.bounds;
     const style = document.createElement('select');
     style.id = 'ed-bounds-style';
-    for (const [v, label] of [['', 'None'], ['invisible', 'Invisible walls'], ['wall', 'Solid walls'], ['fence', 'Tall fence']] as const) style.append(new Option(label, v, false, (b?.style ?? '') === v));
+    for (const [v, label] of BOUNDARY_CHOICES) style.append(new Option(label, v, false, (b?.style ?? '') === v));
     const set = (label: string, after: MapDocument['bounds']) => this.app.run(label, { kind: 'setBounds', before: this.app.doc.bounds, after });
     style.addEventListener('change', () => {
       if (!style.value) return set('Remove boundary', null);
-      const fit = b ?? fitBounds(this.app.doc, 4);
+      const fit = b ?? fitBounds(this.app.doc, BOUNDARY_MARGIN);
       if (!fit) return this.app.toast('Build something first: the boundary fits round the map', true);
-      set('Set boundary', { min: fit.min, max: fit.max, style: style.value as BoundaryStyle, height: b?.height ?? 8 });
+      set('Set boundary', { min: fit.min, max: fit.max, style: style.value as BoundaryStyle, height: b?.height ?? BOUNDARY_HEIGHT });
     });
     el.append(row('Walls', style));
     if (b) {
       const fitBtn = button('Fit to map', () => {
-        const fit = fitBounds(this.app.doc, 4);
+        const fit = fitBounds(this.app.doc, BOUNDARY_MARGIN);
         if (fit) set('Fit boundary', { ...b, ...fit });
       });
       fitBtn.id = 'ed-bounds-fit';
@@ -602,7 +603,7 @@ export class MapProperties {
     group('gameplay', 'Gameplay');
     const mode = document.createElement('select');
     const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-    for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.ctf', 'Capture the Flag'], ['core.koth', 'King of the Hill'], ['core.elim', 'Elimination'], ['core.breakthrough', 'Breakthrough'], ['core.coop', 'Co-op mission'], ['core.zombies', 'Zombies'], ['core.discs', 'Disc Arena']] as const) mode.append(new Option(label, id, false, id === current));
+    for (const [id, label] of MAIN_MODES) mode.append(new Option(label, id, false, id === current));
     // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
     mode.addEventListener('change', () => this.app.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
     const teams = mapTeams(doc);
@@ -628,7 +629,7 @@ export class MapProperties {
     const also = document.createElement('div');
     also.id = 'ed-prop-also';
     also.className = 'ed-layers';
-    for (const [id, label] of [['core.deathmatch', 'Deathmatch'], ['core.tdm', 'Team Deathmatch'], ['core.coop', 'Co-op mission']] as const) {
+    for (const [id, label] of ALSO_MODES) {
       if (id === current) continue;
       const box = document.createElement('input');
       box.type = 'checkbox';
