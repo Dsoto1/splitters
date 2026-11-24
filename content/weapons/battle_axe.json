@@ -53,7 +53,7 @@
     "reloadSound": "reload.end.b",
     "muzzleAt": [0, 0.062, 0.4],
     "altShot": {
-      "sound": "fire.flak",
+      "sound": "fire.shotgun.b",
       "rate": 0.78,
       "flash": { "effect": "wide_flash_02", "scale": 0.32 },
       "smoke": 1.2

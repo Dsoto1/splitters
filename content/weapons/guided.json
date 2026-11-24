@@ -33,7 +33,7 @@
     "model": "weapons/rockets.glb",
     "viewOffset": [0.24, -0.26, 0.5],
     "tracer": "#ff4a3a",
-    "sound": "fire.rockets",
+    "sound": "fire.plasma",
     "hold": { "style": "long", "grip": [0, -0.1, 0], "support": [0, -0.101, 0.24], "shoulder": [0, 0.034, -0.48] }
   },
   "notes": {

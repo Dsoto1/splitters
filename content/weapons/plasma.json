@@ -49,7 +49,8 @@
     "fallback": "weapons/plasma.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#7dffb0",
-    "hold": { "style": "long", "grip": [0, -0.08, -0.08], "support": [0, -0.05, 0.28], "shoulder": [0, 0.02, -0.41] }
+    "hold": { "style": "long", "grip": [0, -0.08, -0.08], "support": [0, -0.05, 0.28], "shoulder": [0, 0.02, -0.41] },
+    "sound": "fire.plasma.c"
   },
   "notes": {
     "model": "The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback."
