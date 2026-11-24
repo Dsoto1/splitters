@@ -120,7 +120,7 @@ import {
   categoryCounts,
   inMapCategory,
   isListedMap,
-  type CategoryFilter,
+  type MapCategoryTab,
 } from '@tiletrigger/shared';
 import { drawCategoryTabs } from './mapCategoriesUi.ts';
 import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
@@ -841,7 +841,7 @@ export class FrontEnd {
 
   /** What a controller can reach in one of Match Setup's zones (shown, enabled, not in a closed part). */
   private padZone(zone: 'cards' | 'bars' | 'panel'): HTMLElement[] {
-    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat, #map-subtags .map-subtag' : '#match-setup :is(button, input, select, summary)';
+    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat' : '#match-setup :is(button, input, select, summary)';
     return [...this.body.querySelectorAll<HTMLElement>(sel)].filter((e) => {
       if ((e as HTMLButtonElement).disabled || e.closest('[hidden]') || !e.getClientRects().length) return false;
       // (A phone's sheet, down: its settings are there but hidden; the strip along the bottom stays in reach.)
@@ -855,7 +855,7 @@ export class FrontEnd {
   private padMove(dir: Dir): void {
     const f = document.activeElement as HTMLElement | null;
     const zoneOf = (e: HTMLElement | null): 'cards' | 'bars' | 'panel' | null =>
-      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats, #map-subtags') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
+      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
     const zone = zoneOf(f);
     if (!zone || !f) return this.padFocus(this.padHome());
     const from = zone === 'cards' ? f.closest<HTMLElement>('.map-card')! : f;
@@ -1222,8 +1222,8 @@ export class FrontEnd {
   /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
   /** The map list's tab: all maps, your own, the featured, the ones played last, your favourites, or the Community Picks (docs/COMMUNITY_MAPS.md). */
   private mapTab: MapTab = 'all';
-  /** The category tab and sub-tag picked (null: All dimensions; shared map/categories.ts), kept while the page is. */
-  private mapCat: CategoryFilter | null = null;
+  /** The category tab picked (null: All maps; shared map/categories.ts), kept while the page is. */
+  private mapCat: MapCategoryTab | null = null;
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
@@ -1517,12 +1517,10 @@ export class FrontEnd {
     };
     const tools = el('div', { class: 'map-tools' }, filterBtn, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
 
-    // The category tabs (the owner's six, shared map/categories.ts) and the picked one's sub-tags, over the cards.
+    // The category tabs (one tab per map: shared map/categories.ts), over the cards.
     const catBar = el('div', { class: 'map-cats', id: 'map-cats', role: 'tablist' });
     catBar.setAttribute('aria-label', 'Map categories');
-    const tagRow = el('div', { class: 'map-subtags', id: 'map-subtags', role: 'group' });
-    tagRow.setAttribute('aria-label', 'Sub-tags');
-    const catOf = (m: ArcadeMap) => ({ categories: m.metadata.categories, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
+    const catOf = (m: ArcadeMap) => ({ category: m.metadata.category, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
     const drawCards = () => {
       const current = this.currentMap();
       const lazy = lazyPlans(cards);
@@ -1534,14 +1532,14 @@ export class FrontEnd {
       const cat = this.mapCat;
       const inTab = (m: (typeof this.maps)[number]) =>
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
-      // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under All maps.
+      // The maps the tab, the mode filter and the search leave; under All maps that takes the community maps (Community Picks,
+      // under their heading) too, so the category tabs' counts (Custom holds them) add up to All maps'.
       const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
       const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
-      const plain = base.filter(({ m }) => inTab(m));
-      drawCategoryTabs(catBar, tagRow, {
+      drawCategoryTabs(catBar, {
         filter: cat,
         counts: categoryCounts(base.map(({ m }) => catOf(m))),
-        total: plain.length,
+        total: base.length,
         onPick: (f) => {
           this.mapCat = f;
           this.mapScroll = 0;
@@ -1549,7 +1547,7 @@ export class FrontEnd {
           drawCards();
         },
       });
-      const shown = cat ? base.filter(({ m }) => inMapCategory(catOf(m), cat)) : plain;
+      const shown = cat ? base.filter(({ m }) => inMapCategory(catOf(m), cat)) : base;
       const rank = (key: string) => {
         const f = FEATURED_MAPS.indexOf(key);
         return f < 0 ? FEATURED_MAPS.length : f;
@@ -1601,7 +1599,7 @@ export class FrontEnd {
       }
       const none = q
         ? `No maps match "${this.mapQuery.trim()}".`
-        : cat?.category === 'custom'
+        : cat === 'custom'
           ? 'No maps here yet: your own MapMaker maps and the community maps on the server show here.'
           : cat
             ? 'No maps here under this category.'
@@ -1629,7 +1627,7 @@ export class FrontEnd {
       'div',
       { class: `screen play${this.sheetOpen ? ' sheet-open' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, tagRow, cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, cards), panel),
     );
   }
 

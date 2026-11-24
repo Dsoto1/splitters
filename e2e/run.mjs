@@ -6040,21 +6040,20 @@ async function offlineFlow(browser) {
   const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
   await page.click('#map-tabs [data-tab="all"]');
-  // The category tabs (the owner's six; shared map/categories.ts, the tags in each map's file): a category lists its
-  // maps and shows its sub-tags; a sub-tag narrows to its own; Custom (your own and community maps) holds no built-in map.
+  // The category tabs (one tab per map; shared map/categories.ts, each map's one category): a tab lists its maps, its
+  // count on it; the five counts add up to All maps'; no sub-tag row; Custom (your own and community maps) holds no built-in map.
   const catTabs = await page.$$eval('#map-cats .map-cat', (b) => b.map((x) => x.dataset.cat));
-  await page.click('#map-cats [data-cat="temporal"]');
-  const temporal = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, count: Number(document.querySelector('#map-cats [data-cat="temporal"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, tags: [...document.querySelectorAll('#map-subtags .map-subtag')].map((b) => b.dataset.tag), shown: !document.getElementById('map-subtags').hidden }));
-  await page.click('#map-subtags [data-tag="medieval"]');
-  const medieval = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  const counts = await page.$$eval('#map-cats .map-cat:not(.all) .cat-n', (b) => b.map((x) => Number(x.textContent)));
+  await page.click('#map-cats [data-cat="historic"]');
+  const historic = await page.evaluate(() => ({ cards: [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.dataset.map), count: Number(document.querySelector('#map-cats [data-cat="historic"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, subtags: !!document.getElementById('map-subtags') }));
   await page.click('#map-cats [data-cat="custom"]');
   const custom = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, empty: document.querySelector('#map-cards .map-empty')?.textContent ?? '' }));
   await page.click('#map-cats [data-cat="all"]');
   const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
-  check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
-  check(medieval.includes('gallows_yard') && medieval.includes('market_town') && !medieval.includes('sandgate') && !medieval.includes('training_range') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(catTabs.join() === 'all,modern,historic,future,weird,custom' && counts.reduce((x, y) => x + y, 0) === all.length && !historic.subtags, `the category tabs: one a map, their counts add up to All maps' (${JSON.stringify({ catTabs, counts, all: all.length })}), no sub-tag row`);
+  check(historic.on === 'historic' && historic.cards.length === historic.count && historic.cards.includes('gallows_yard') && historic.cards.includes('market_town') && !historic.cards.includes('sandgate') && !historic.cards.includes('training_range'), `Historic lists its maps only, its count on the tab (${historic.cards.join(', ')})`);
   check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
-  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
+  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All maps lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -14441,7 +14440,7 @@ async function padsetupFlow(browser) {
   await press(B.rt);
   const tab = await page.evaluate(() => document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab);
   await press(B.lt);
-  check(cat1 === 'temporal' && cat2 === 'dimensional' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
+  check(cat1 === 'modern' && cat2 === 'historic' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
   // Right off the grid's edge into the settings; a stepper takes left and right; left off the settings back to the grid.
   await press(B.down);
   for (let i = 0; i < 6 && !(await focus()).id.startsWith('setup') && !(await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.right);

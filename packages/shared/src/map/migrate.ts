@@ -2,6 +2,7 @@ import { LEGACY_MAP_FORMAT, MAP_FORMAT, MAP_FORMAT_VERSION, type MapDocument } f
 import { mapContentHash, releaseCurrent } from './identity.ts';
 import { DEFAULT_GROUND_THEME, TERRAIN_MATERIALS, TERRAIN_SURFACES } from './terrain.ts';
 import { GROUND_THEMES } from './materials.ts';
+import { categoryFromV50Tags } from './categories.ts';
 
 /** Upgrades a raw document from `from` to `from + 1`. Must not mutate its input. */
 export type Migration = (doc: Record<string, unknown>) => Record<string, unknown>;
@@ -148,7 +149,19 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // category tabs). Absent = none: v49 data is valid as is. The bump is for the other direction: an older build would
   // drop the tags without a word.
   [49, (doc) => ({ ...doc })],
+  // v50 -> v51: one category a map (`metadata.category`, map/categories.ts; owner, 2026-11-24: one tab per map) in
+  // place of v50's `categories` pairs, which go: the pick is the lead's first assignment from them (categoryFromV50Tags).
+  [50, categoryV51],
 ]);
+
+/** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */
+export function categoryV51(doc: Record<string, unknown>): Record<string, unknown> {
+  const md = doc.metadata as Record<string, unknown> | undefined;
+  if (!md || typeof md !== 'object' || !('categories' in md)) return { ...doc };
+  const { categories, ...rest } = md;
+  const pick = categoryFromV50Tags(categories as { category?: unknown; tag?: unknown }[] | undefined);
+  return { ...doc, metadata: { ...rest, ...(pick && md.category === undefined ? { category: pick } : {}) } };
+}
 
 /**
  * v44 -> v45: a terrain cell is 0 (the base: it follows the map's Ground theme) or k (painted with the terrain's own

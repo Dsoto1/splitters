@@ -1,6 +1,7 @@
 import {
   MAP_CATEGORIES,
-  normalizeMapCategories,
+  DEFAULT_MAP_CATEGORY,
+  type MapCategoryId,
   MAP_TIERS,
   MAP_TIER_LABELS,
   mapGates,
@@ -472,52 +473,22 @@ export class MapProperties {
   }
 
   /**
-   * The map's categories (map format v50; map/categories.ts): a tick per sub-tag under each of the five categories a
-   * file names (Custom is worked out, never ticked). Match Setup's category tabs filter by them. One undo step a tick.
+   * The map's category (map format v51; map/categories.ts): one pick of the four a file names (Custom is worked out,
+   * never picked). Match Setup lists the map under that tab only. One undo step a pick.
    */
   private categoriesSection(): HTMLElement {
     const doc = this.app.doc;
-    const box = document.createElement('div');
-    box.id = 'ed-prop-categories';
-    box.className = 'ed-cats';
-    const now = normalizeMapCategories(doc.metadata.categories);
-    const has = (c: string, t: string) => now.some((p) => p.category === c && p.tag === t);
-    const head = document.createElement('div');
-    head.className = 'ed-cats-head';
-    head.textContent = 'Categories';
-    head.title = "Where Match Setup lists the map: tick every tag that fits (several categories and tags are fine). Custom (players' own and community maps) is worked out, not ticked.";
-    box.append(head);
-    for (const c of MAP_CATEGORIES) {
-      if (c.id === 'custom') continue;
-      const cat = c.id;
-      const group = document.createElement('div');
-      group.className = 'ed-layers ed-cat';
-      group.dataset.category = cat;
-      const title = document.createElement('b');
-      title.className = 'ed-cat-title';
-      title.textContent = c.label;
-      title.title = c.blurb;
-      group.append(title);
-      for (const [tag, label] of c.tags) {
-        const tick = document.createElement('input');
-        tick.type = 'checkbox';
-        tick.id = `ed-prop-cat-${cat}-${tag}`;
-        tick.dataset.category = cat;
-        tick.dataset.tag = tag;
-        tick.checked = has(cat, tag);
-        tick.addEventListener('change', () => {
-          const before = this.app.doc.metadata.categories;
-          const rest = (before ?? []).filter((p) => !(p.category === cat && p.tag === tag));
-          const next = normalizeMapCategories(tick.checked ? [...rest, { category: cat, tag }] : rest);
-          this.app.run(`${tick.checked ? 'Tag' : 'Untag'} ${c.label}: ${label}`, { kind: 'setMetadata', before: { categories: before }, after: { categories: next.length ? next : undefined } });
-        });
-        const lab = document.createElement('label');
-        lab.append(tick, document.createTextNode(label));
-        group.append(lab);
-      }
-      box.append(group);
-    }
-    return box;
+    const pick = document.createElement('select');
+    pick.id = 'ed-prop-category';
+    for (const c of MAP_CATEGORIES) if (c.id !== 'custom') pick.append(new Option(c.label, c.id, false, (doc.metadata.category ?? DEFAULT_MAP_CATEGORY) === c.id));
+    pick.addEventListener('change', () => {
+      const to = pick.value as MapCategoryId;
+      const label = MAP_CATEGORIES.find((c) => c.id === to)?.label ?? to;
+      this.app.run(`Category: ${label}`, { kind: 'setMetadata', before: { category: this.app.doc.metadata.category }, after: { category: to } });
+    });
+    const r = row('Category', pick);
+    r.title = `Where Match Setup lists the map: one tab. ${MAP_CATEGORIES.filter((c) => c.id !== 'custom').map((c) => `${c.label}: ${c.blurb}`).join(' ')} Custom (players' own and community maps) is worked out, not picked.`;
+    return r;
   }
 
   /**

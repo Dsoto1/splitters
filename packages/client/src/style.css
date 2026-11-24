@@ -299,11 +299,6 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
 .map-cat.all .cat-icon { color: var(--warning); }
 .map-cat.all.on { border-color: var(--warning); background: rgba(241, 196, 15, 0.12); box-shadow: inset 0 0 0 1px var(--warning); }
 .map-cat.all.on .cat-n { color: var(--text); }
-.map-subtags { flex: none; display: flex; flex-wrap: wrap; gap: 6px; }
-.map-subtags[hidden] { display: none; }
-.map-subtag { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 10px; font: 700 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border-radius: 14px; }
-.map-subtag .cat-n { color: var(--muted); font-size: 10px; }
-.map-subtag.on { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 209, 255, 0.12); }
 .card-note.community { background: var(--orange); }
 .map-group { grid-column: 1 / -1; margin: 10px 0 0; font: 700 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; }
 .map-credit { margin: 0; color: var(--muted); font: 500 13px var(--font-body); }

@@ -44,12 +44,11 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
     settings on the right.
     - **Over the grid:** the tabs All maps / My maps (when you have some) / Featured / Recent / Favorites (and
       Community Picks when the hub has any), Filter maps (F: a window with a tick per game mode), search, the sort
-      (Featured, A–Z, Size, Favourites) and grid / list. Under them the **category tabs**: All dimensions, then the
-      owner's six, each with its count (shared `map/categories.ts`): Temporal, Dimensional, Environmental,
-      Fictional, Anomalous, Custom. A category picked shows its sub-tags as chips (All, then each tag that has
-      maps). The tags live in each map's file (`metadata.categories`, map format v50), ticked in MapMaker's Map
-      properties → Categories; a map can sit in several. **Custom** is worked out, never ticked: your own
-      MapMaker maps and the community maps on the server (labelled "Community map").
+      (Featured, A–Z, Size, Favourites) and grid / list. Under them the **category tabs** (one tab per map; owner, 2026-11-24): All maps, then Modern, Historic,
+      Future & Space, Weird and Custom, each with its count (shared `map/categories.ts`); every map is under exactly one,
+      so the counts add up to All maps'. The pick lives in each map's file (`metadata.category`, map format v51; v50's
+      tag pairs become it on load), picked in MapMaker's Map properties → Category; a map with none is Modern.
+      **Custom** is worked out, never picked: your own MapMaker maps and the community maps on the server (labelled "Community map").
     - **Cards:** the map's picture (a 480 × 270 WebP, `public/maps/cards/<id>.webp`, made from its in-game shot by
       `tools/content/map-cards.mjs` and loaded lazily) on top, then the name, the mode badges and the top-down
       plan (two separate boxes, `mapThumbs.ts`); a favourite star, a Featured or Community map tag. Favourites and

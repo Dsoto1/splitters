@@ -1,17 +1,17 @@
 /**
- * Map categories (map format v50; the owner's definitions of 2026-11-23, QUEUE "Match Setup redesign"). A map carries
- * a list of `{ category, tag }` pairs in `metadata.categories`, set in MapMaker's Map properties; it can sit in several
- * categories and under several tags of one. Match Setup's category tabs filter the map list by them.
+ * Map categories (map format v51; owner, 2026-11-24, QUEUE "Match Setup: one tab per map": the six overlapping
+ * categories of v50 were busy). A map names one category in `metadata.category`, picked in MapMaker's Map properties;
+ * Match Setup shows a tab per category and every map is under exactly one, so the tabs' counts add up to the total.
  *
- * Five categories are tagged in the map's file. The sixth, Custom, is never tagged: it is worked out (the player's own
- * MapMaker maps and the community maps on the server, labelled "Community map"; no uploads).
+ * Four are picked in the map's file. The fifth, Custom, is never picked: it is worked out (the player's own MapMaker
+ * maps and the community maps on the server, labelled "Community map"; no uploads). A built-in map with no pick is Modern.
  *
- * Plain data, no zod: the menu imports it (docs/LOADING.md); schema.ts builds its enums from these lists.
+ * Plain data, no zod: the menu imports it (docs/LOADING.md); schema.ts builds its enum from MAP_CATEGORY_IDS.
  */
 import { isUnlistedMap } from './retired.ts';
 
 /** The categories a map's file can name. */
-export const MAP_CATEGORY_IDS = ['temporal', 'dimensional', 'environmental', 'fictional', 'anomalous'] as const;
+export const MAP_CATEGORY_IDS = ['modern', 'historic', 'future', 'weird'] as const;
 export type MapCategoryId = (typeof MAP_CATEGORY_IDS)[number];
 /** Every category tab Match Setup shows (Custom last: worked out, never in a file). */
 export type MapCategoryTab = MapCategoryId | 'custom';
@@ -19,63 +19,21 @@ export type MapCategoryTab = MapCategoryId | 'custom';
 export interface MapCategoryDef {
   id: MapCategoryTab;
   label: string;
-  /** The owner's definition, shown as the tab's tooltip and in MapMaker. */
+  /** What belongs there, shown as the tab's tooltip and in MapMaker. */
   blurb: string;
-  /** Its sub-tags: [id, label]. */
-  tags: readonly (readonly [string, string])[];
 }
 
-/**
- * The owner's six categories and their sub-tags, in the order the tabs show them. Environmental's `arctic` and
- * `mountain` are the lead's additions (snow maps and mountain valleys fit none of the owner's seven), kept (owner, 2026-11-24).
- */
+/** The owner's five tabs, in the order Match Setup shows them. */
 export const MAP_CATEGORIES: readonly MapCategoryDef[] = [
-  {
-    id: 'temporal',
-    label: 'Temporal',
-    blurb: 'A recognisable period: when does this place belong?',
-    tags: [['prehistoric', 'Prehistoric'], ['ancient', 'Ancient'], ['medieval', 'Medieval'], ['industrial', 'Industrial'], ['modern', 'Modern'], ['future', 'Future']],
-  },
-  {
-    id: 'dimensional',
-    label: 'Dimensional',
-    blurb: 'Alternate realities, alien worlds, parallel or fictional dimensions.',
-    tags: [['alternate', 'Alternate reality'], ['alien', 'Alien world'], ['parallel', 'Parallel dimension']],
-  },
-  {
-    id: 'environmental',
-    label: 'Environmental',
-    blurb: 'The physical surroundings.',
-    tags: [['urban', 'Urban'], ['desert', 'Desert'], ['forest', 'Forest'], ['industrial', 'Industrial'], ['coastal', 'Coastal'], ['underground', 'Underground'], ['space', 'Space'], ['arctic', 'Arctic'], ['mountain', 'Mountain']],
-  },
-  {
-    id: 'fictional',
-    label: 'Fictional',
-    blurb: 'Films and fiction, and the classic remakes: maps inspired by other games (until their rework).',
-    tags: [['film', 'Film'], ['fiction', 'Fiction'], ['classic', 'Classic remake']],
-  },
-  {
-    id: 'anomalous',
-    label: 'Anomalous',
-    blurb: 'Abstract arenas, impossible geometry, experimental maps.',
-    tags: [['abstract', 'Abstract arena'], ['impossible', 'Impossible geometry'], ['experimental', 'Experimental']],
-  },
-  {
-    id: 'custom',
-    label: 'Custom',
-    blurb: 'Your own MapMaker maps and the community maps on the server.',
-    tags: [['mine', 'My maps'], ['community', 'Community maps']],
-  },
+  { id: 'modern', label: 'Modern', blurb: 'Today: cities, bases, towns and the wild as it is now.' },
+  { id: 'historic', label: 'Historic', blurb: 'The past: prehistoric, ancient, medieval and the industrial era.' },
+  { id: 'future', label: 'Future & Space', blurb: 'Tomorrow, space and alien worlds.' },
+  { id: 'weird', label: 'Weird', blurb: 'Abstract arenas, impossible geometry, experiments and alternate realities.' },
+  { id: 'custom', label: 'Custom', blurb: 'Your own MapMaker maps and the community maps on the server.' },
 ];
 
-/** One of a map's category tags. */
-export interface MapCategoryTag {
-  category: MapCategoryId;
-  tag: string;
-}
-
-/** The most pairs a map carries (the schema's cap). */
-export const MAX_MAP_CATEGORY_TAGS = 16;
+/** A built-in map's tab when its file names none. */
+export const DEFAULT_MAP_CATEGORY: MapCategoryId = 'modern';
 
 const DEFS = new Map(MAP_CATEGORIES.map((c) => [c.id, c]));
 
@@ -83,78 +41,66 @@ export function mapCategory(id: MapCategoryTab): MapCategoryDef {
   return DEFS.get(id)!;
 }
 
-/** Whether `tag` is one of `category`'s sub-tags (Custom's are never in a file). */
-export function isMapCategoryTag(category: string, tag: string): category is MapCategoryId {
-  return (MAP_CATEGORY_IDS as readonly string[]).includes(category) && !!DEFS.get(category as MapCategoryId)?.tags.some(([t]) => t === tag);
-}
-
-/** A sub-tag's label ("Medieval"), or the tag itself when unknown. */
-export function mapTagLabel(category: MapCategoryTab, tag: string): string {
-  return DEFS.get(category)?.tags.find(([t]) => t === tag)?.[1] ?? tag;
-}
+/** Whether `id` is a category a map's file can name (never Custom). */
+export const isMapCategoryId = (id: unknown): id is MapCategoryId => (MAP_CATEGORY_IDS as readonly unknown[]).includes(id);
 
 /**
- * A map's pairs, cleaned: known pairs only, no repeats, in the definitions' order (categories, then tags). MapMaker
- * writes them this way, so a file's list never depends on the order they were ticked.
+ * The v50 → v51 assignment (the lead's, from the old tags; the owner may move any map): an abstract, impossible,
+ * experimental or alternate-reality tag makes it Weird; else future, space or alien makes it Future & Space; else a
+ * prehistoric period, or an ancient, medieval or industrial-era one without modern, makes it Historic; else Modern.
+ * Undefined for a map with no tags (it stays unpicked: Modern on the tab).
  */
-export function normalizeMapCategories(list: readonly { category: string; tag: string }[] | undefined): MapCategoryTag[] {
-  if (!list?.length) return [];
-  const want = new Set(list.filter((p) => isMapCategoryTag(p.category, p.tag)).map((p) => `${p.category}:${p.tag}`));
-  const out: MapCategoryTag[] = [];
-  for (const c of MAP_CATEGORIES) {
-    if (c.id === 'custom') continue;
-    for (const [t] of c.tags) if (want.has(`${c.id}:${t}`)) out.push({ category: c.id, tag: t });
-  }
-  return out.slice(0, MAX_MAP_CATEGORY_TAGS);
+export function categoryFromV50Tags(list: readonly { category?: unknown; tag?: unknown }[] | undefined): MapCategoryId | undefined {
+  if (!Array.isArray(list) || !list.length) return undefined;
+  const tags = new Set(list.map((p) => p?.tag));
+  const eras = new Set(list.filter((p) => p?.category === 'temporal').map((p) => p.tag));
+  if (['abstract', 'impossible', 'experimental', 'alternate'].some((t) => tags.has(t))) return 'weird';
+  if (['future', 'space', 'alien'].some((t) => tags.has(t))) return 'future';
+  if (eras.has('prehistoric') || (['ancient', 'medieval', 'industrial'].some((t) => eras.has(t)) && !eras.has('modern'))) return 'historic';
+  return 'modern';
 }
 
-/** What a map list entry needs for the category filter. */
+/** What a map list entry needs for the category tabs. */
 export interface CategorizedMap {
-  categories?: readonly { category: string; tag: string }[];
-  /** The player's own MapMaker map (Custom → My maps). */
+  category?: string;
+  /** The player's own MapMaker map (Custom). */
   own?: boolean;
-  /** A community map from the server (Custom → Community maps; labelled "Community map"). */
+  /** A community map from the server (Custom; labelled "Community map"). */
   community?: boolean;
 }
 
 /**
- * Whether Match Setup lists the map at all: never a retired or a training map (isUnlistedMap), on any tab, category,
- * count or search. A player's own and the community maps are theirs, whatever their id.
+ * Whether Match Setup lists the map at all: never a retired or a training map (isUnlistedMap), on any tab, count or
+ * search. A player's own and the community maps are theirs, whatever their id.
  */
 export function isListedMap(m: CategorizedMap & { key: string }): boolean {
   return !!m.own || !!m.community || !isUnlistedMap(m.key);
 }
 
-/** The category filter: every map (`null`), a category, or one of its tags. */
-export interface CategoryFilter {
-  category: MapCategoryTab;
-  tag?: string | null;
+/** The one tab a map is under: Custom for own and community maps, else its file's pick (Modern when none). */
+export function mapTabOf(m: CategorizedMap): MapCategoryTab {
+  if (m.own || m.community) return 'custom';
+  return isMapCategoryId(m.category) ? m.category : DEFAULT_MAP_CATEGORY;
 }
 
-/** Whether a map shows under the filter. Custom holds own and community maps only; the others read the map's pairs. */
-export function inMapCategory(m: CategorizedMap, f: CategoryFilter | null): boolean {
-  if (!f) return true;
-  if (f.category === 'custom') return f.tag === 'mine' ? !!m.own : f.tag === 'community' ? !!m.community : !!m.own || !!m.community;
-  return !!m.categories?.some((p) => p.category === f.category && (!f.tag || p.tag === f.tag));
+/** Whether a map shows under the tab (`null`: All maps). */
+export function inMapCategory(m: CategorizedMap, tab: MapCategoryTab | null): boolean {
+  return !tab || mapTabOf(m) === tab;
 }
 
-/** How many maps each tab and tag would show (`category` and `category:tag` keys), for the tabs' counts. */
-export function categoryCounts(maps: readonly CategorizedMap[]): Map<string, number> {
-  const n = new Map<string, number>();
-  const add = (k: string) => n.set(k, (n.get(k) ?? 0) + 1);
+/** How many maps each tab shows; they add up to the number of maps. */
+export function categoryCounts(maps: readonly CategorizedMap[]): Map<MapCategoryTab, number> {
+  const n = new Map<MapCategoryTab, number>(MAP_CATEGORIES.map((c) => [c.id, 0]));
   for (const m of maps) {
-    for (const c of MAP_CATEGORIES) {
-      if (!inMapCategory(m, { category: c.id })) continue;
-      add(c.id);
-      for (const [t] of c.tags) if (inMapCategory(m, { category: c.id, tag: t })) add(`${c.id}:${t}`);
-    }
+    const t = mapTabOf(m);
+    n.set(t, n.get(t)! + 1);
   }
   return n;
 }
 
-/** The short line a card or the setup header shows: "Medieval · Urban" (the first few tags, Custom's label for own/community maps). */
-export function categoryLine(m: CategorizedMap, max = 3): string {
+/** The short line a card or the setup header shows: the map's tab ("Historic"), or "Community map" / "My map". */
+export function categoryLine(m: CategorizedMap): string {
   if (m.community) return 'Community map';
   if (m.own) return 'My map';
-  return normalizeMapCategories(m.categories).slice(0, max).map((p) => mapTagLabel(p.category, p.tag)).join(' · ');
+  return mapCategory(mapTabOf(m)).label;
 }
