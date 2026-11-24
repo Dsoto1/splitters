@@ -47,8 +47,8 @@ describe('character tiers', () => {
     expect(CORE_TIER.length + EXPERIMENTAL.length).toBe(CORE_LOOKS.length);
     expect(CORE_TIER.length).toBeGreaterThan(100);
     expect(PICKABLE_LOOKS).toEqual(CORE_TIER);
-    // (The sim's fixed default is Linktifa's body, off the roster since 2026-11-24; a new player's first look is random.)
-    expect(PICKABLE_LOOKS.map((l) => l.id)).not.toContain(DEFAULT_LOOK);
+    // (The sim's fixed default is a kept look, never a retired one; a new player's first look is random.)
+    expect(PICKABLE_LOOKS.map((l) => l.id)).toContain(DEFAULT_LOOK);
   });
 
   it('no automatic pick draws an experimental character', () => {

@@ -680,9 +680,7 @@
    "role": "zombie"
   }
  ],
- "playerLooks": [
-  "npc:trooper"
- ],
+ "playerLooks": [],
  "lookGroups": {
   "npc:trooper": "soldiers",
   "npc:gunner": "soldiers",

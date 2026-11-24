@@ -281,7 +281,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.ranger': 'core.abe',
   'core.sprout': 'core.mei',
   // Owner, 2026-11-24: nine more off the roster (files, manifests and portraits kept); a saved pick plays a kept look of
-  // the same group. (The Dummy asked for was not found by that name.)
+  // the same group. (The Dummy is the trooper NPC skin, off Character Select in PLAYER_NPC_LOOKS; see npc.ts.)
   'core.astroexplorer': 'core.astronaut', // Astronaut Explorer -> Spacewalker
   'core.neonninja': 'core.shadowenforcer', // Neon Shadow Ninja -> Shadow Enforcer
   'core.neonguardian': 'core.starvoyager', // Neon Guardian -> Star Voyager
@@ -290,6 +290,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.bigbab': 'core.gorillag', // Big Bab -> Gorilla G
   'core.tortoise': 'core.coachtortoise', // Shellback -> Coach Hank Shelton
   'core.giggles': 'core.teddy', // Giggles -> Teddy
+  // The Dummy (the trooper mannequin NPC skin): off Character Select (PLAYER_NPC_LOOKS); a saved pick plays Stealth
+  // Operative, a kept Agency soldier. The trooper NPC role (training targets, soldiers) keeps its mannequin.
+  'npc:trooper': 'core.stealthop',
   'core.champion': 'core.dale',
   'core.desperado': 'core.dale',
   'core.miller': 'core.mei',
@@ -361,9 +364,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-/** Linktifa's id: the sim's fixed default look and the Designer's base body (retired from play, kept drawable). */
-const DEFAULT_LOOK_ID = 'core.ranger';
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DEFAULT_LOOK_ID]);
+/** Linktifa's id: the Designer's base body (retired from play, kept drawable). */
+const DESIGNER_BASE_ID = 'core.ranger';
+/** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
+const DEFAULT_LOOK_ID = 'core.dale';
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DESIGNER_BASE_ID]);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -467,8 +472,8 @@ export const CORE_LOOKS: readonly CharacterLook[] = ALL_LOOKS.filter((l) => !(l.
 export const PICKABLE_LOOKS: readonly CharacterLook[] = pickableLooks(CORE_LOOKS);
 
 /**
- * The sim's fixed default look (a combatant before it picks, the tests' standard body): Linktifa's modular body, off the
- * roster since 2026-11-24 but kept drawable (NPC_KEPT_LOOKS). A new player's first look is random instead
+ * The sim's fixed default look (a combatant before it picks, the tests' standard body): Cal, a kept look (Linktifa's
+ * body was the default until it retired, 2026-11-24). A new player's first look is random instead
  * (`randomFirstLook`, drawn by the front end); an unknown id still falls back to the roster's first pickable look.
  */
 export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
@@ -477,7 +482,7 @@ export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
 export const randomFirstLook = (roll: number): string => PICKABLE_LOOKS[Math.min(PICKABLE_LOOKS.length - 1, Math.floor(roll * PICKABLE_LOOKS.length))]!.id;
 
 /** The Designer's modular base body (Linktifa's parts): off the roster, but "Design new" and whole-body starts use it. */
-export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === 'core.ranger')!;
+export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === DESIGNER_BASE_ID)!;
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
@@ -652,7 +657,7 @@ export function decodeLook(id: string): CharacterLook | null {
 export const getLook = (id: string | undefined): CharacterLook => {
   const npc = id && NPC_KEPT_LOOKS.has(id) ? ALL_LOOKS.find((l) => l.id === id) : undefined;
   if (npc) return npc;
-  return lookIn(CORE_LOOKS, id, DESIGNER_BASE_LOOK);
+  return lookIn(CORE_LOOKS, id, CORE_LOOKS.find((l) => l.id === DEFAULT_LOOK_ID));
 };
 
 /**
