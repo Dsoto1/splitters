@@ -94,7 +94,7 @@ export function offerReport(b: { kind: CrashKind; message: string; stack: string
   if (!document.getElementById('crash-style')) {
     const style = document.createElement('style');
     style.id = 'crash-style';
-    style.textContent = `#crash-panel{position:fixed;right:16px;bottom:16px;z-index:2147483000;width:min(360px,calc(100vw - 32px));box-sizing:border-box;padding:14px 16px;border-radius:10px;background:#1e2838;color:#e6f0ff;border:1px solid rgba(142,162,192,.35);box-shadow:0 6px 24px rgba(0,0,0,.45);font:14px/1.4 Barlow,system-ui,sans-serif}
+    style.textContent = `#crash-panel{position:fixed;right:16px;bottom:64px;z-index:2147483000;width:min(360px,calc(100vw - 32px));box-sizing:border-box;padding:14px 16px;border-radius:10px;background:#1e2838;color:#e6f0ff;border:1px solid rgba(142,162,192,.35);box-shadow:0 6px 24px rgba(0,0,0,.45);font:14px/1.4 Barlow,system-ui,sans-serif}
 #crash-panel h4{margin:0 0 4px;font:600 16px/1.3 'Chakra Petch',system-ui,sans-serif}
 #crash-panel p{margin:0 0 10px;color:#b8c6dc}
 #crash-panel details{margin:0 0 10px;color:#8ea2c0}

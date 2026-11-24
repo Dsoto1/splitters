@@ -14403,7 +14403,7 @@ async function crashreportFlow(browser) {
     return { bg: cs.backgroundColor, anim: cs.animationName, buttons: [...p.querySelectorAll('button')].map((b) => [b.textContent, getComputedStyle(b).backgroundColor]), sent };
   });
   const text = await panelText();
-  check(shown && /Something went wrong/.test(text ?? '') && /Send report/.test(text ?? '') && /Dismiss/.test(text ?? ''), `a break shows "Something went wrong" with Send report and Dismiss (${JSON.stringify(text)})`);
+  check(shown && /Something went wrong/.test(text ?? '') && /Send report/i.test(text ?? '') && /Dismiss/i.test(text ?? ''), `a break shows "Something went wrong" with Send report and Dismiss (${JSON.stringify(text)})`);
   // Calm (Reduce flashing): no animation and nothing red ([r, g, b] with red well above the others).
   const red = (c) => ((m) => !!m && +m[1] > 150 && +m[1] > 2 * +m[2] && +m[1] > 2 * +m[3])(/rgba?\((\d+), (\d+), (\d+)/.exec(c ?? ''));
   check(!!look && (look.anim === 'none' || !look.anim) && !red(look.bg) && look.buttons.every(([, c]) => !red(c)), `the panel is calm: no animation, nothing red (${JSON.stringify(look && { bg: look.bg, anim: look.anim, buttons: look.buttons })})`);

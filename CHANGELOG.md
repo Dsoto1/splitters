@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **"Something went wrong": send a crash report.** When the game breaks, a small calm panel offers Send report or Dismiss; a report holds the error, the game version, the map and mode, the graphics quality and the browser type, never your name, account or address, and is sent only if you press Send (docs/CRASH_REPORTS.md).
 - **MapMaker: New map asks theme, modes, players and boundary on its one screen**, all pre-filled (Create straight away as before) and changeable later in Map properties; players suggest a size, and a boundary picked there is fitted round the new map from the start. A Start from layout keeps its own settings and shows them.
 - **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).

@@ -885,6 +885,20 @@ the play thresholds and its own check). All of it: docs/COMMUNITY_MAPS.md, "What
 `COMMUNITY_BLOCKED_WORDS`. The owner's weekly summary: Profile → Community maps, or
 `pnpm --filter @tiletrigger/server community-summary /var/lib/tiletrigger/community` on the box.
 
+## Crash and error reports
+
+When a player's game breaks, a small calm panel offers **Send report / Dismiss**; Send posts the error (scrubbed:
+file names, no addresses or names), the build, the map and mode, the graphics quality and the browser family to
+`POST /api/v1/reports` (docs/CRASH_REPORTS.md). On the hub (`packages/server/src/reports.ts`): `REPORTS_DIR` (default:
+`reports` beside `PROFILES_DIR`, so `/var/lib/tiletrigger/reports` on the box with no new setting); 8 KB a report,
+3 a minute per address (in memory, no address kept), 300 a day, 30 days kept. No AWS change and no new cost.
+
+- **Deploy:** after it lands and CI publishes the build, Lightsail console → **Connect** → `sudo tiletrigger-update`
+  (the hub restarts once: its code changed).
+- **Read them** (Connect): `cd /opt/tiletrigger/packages/server && sudo -u tiletrigger node --import tsx
+  src/tools/crash-reports.ts /var/lib/tiletrigger/reports` (`--days=30`, `--json`); or `GET /api/v1/reports?days=7&format=text`
+  signed in as the owner.
+
 ## Profiles
 
 Signed-in players pick a **username** (Profile: the Profile entry top right
