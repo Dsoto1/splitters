@@ -2146,6 +2146,7 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #map-vote .mv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
 #map-vote .mv-card { display: grid; grid-template-rows: auto auto auto auto; text-align: left; padding: 0 0 8px; background: var(--surface-2); border: 2px solid transparent; color: var(--text); cursor: pointer; font: inherit; min-width: 0; touch-action: manipulation; transition: border-color 0.12s, background 0.12s; }
 #map-vote .mv-card:hover:not(:disabled), #map-vote .mv-card:focus-visible { border-color: rgba(0, 209, 255, 0.55); outline: none; }
+#map-vote .mv-card.cursor { border-color: rgba(0, 209, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 209, 255, 0.3); }
 #map-vote .mv-card.mine { border-color: var(--cyan); background: #18324a; }
 #map-vote .mv-card.won { border-color: var(--orange); background: #2f2a1c; }
 #map-vote .mv-card.lost { opacity: 0.45; }

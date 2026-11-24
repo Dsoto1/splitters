@@ -72,6 +72,7 @@ export class PauseMenu {
     };
     bar.replaceChildren();
     this.backLabels.push(hint('pause-hint-back', glyphs('Esc', 'B', 'b'), 'Back', 'Back one level (Esc, controller B)', () => this.back()));
+    hint('pause-hint-resume', glyphs('Esc', 'Menu', 'menu'), 'Resume', 'Back into the match (Esc, controller Menu)', () => this.hooks.resume());
     const [prev, next] = [keyFor('menuPrev'), keyFor('menuNext')];
     hint('pause-hint-tabs', [...glyphs(prev, 'LB'), ...glyphs(next, 'RB')], 'Tabs', `Next tab (${prev} / ${next}, controller LB / RB)`, () => this.cycle(1));
     if (fullscreenSupported()) this.fullscreenLabel = hint('pause-hint-fullscreen', glyphs('F11'), 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
@@ -176,10 +177,15 @@ export class PauseMenu {
   }
 
   /** Once a frame while paused: a controller drives the menu. */
+  private lastPadPoll = 0;
   pollPad(): void {
     const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
     if (!pad) return;
     const down = pad.buttons.map((b) => b.pressed);
+    // The first frame after a gap: what is held now (Menu, which opened this menu) is not a new press.
+    const now = performance.now();
+    if (now - this.lastPadPoll > 250) this.prevPad = down;
+    this.lastPadPoll = now;
     const pressed = (i: number) => !!down[i] && !this.prevPad[i];
     if (pressed(PAD.up)) this.moveFocus(-1);
     if (pressed(PAD.down)) this.moveFocus(1);

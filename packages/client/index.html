@@ -169,6 +169,9 @@
                 <h4 class="pause-h">Controls</h4>
                 <label class="pause-row"><span>Mouse</span> <input id="mouse-sens" type="range" min="0.2" max="4" step="0.1" /> <output id="mouse-sens-val"></output></label>
                 <label class="pause-row" title="Look speed when aiming down the sights or scoped. 1.00×: the view moves on screen as in hip fire"><span>Zoom sensitivity</span> <input id="zoom-sens" type="range" min="0.2" max="3" step="0.05" /> <output id="zoom-sens-val"></output></label>
+                <label class="pause-row" title="The controller's right stick; separate from the mouse"><span>Stick look</span> <input id="pad-look" type="range" min="0.2" max="3" step="0.05" /> <output id="pad-look-val"></output></label>
+                <label class="pause-row" title="The right stick's look speed while aiming down the sights or scoped"><span>Stick aim</span> <input id="pad-zoom" type="range" min="0.2" max="3" step="0.05" /> <output id="pad-zoom-val"></output></label>
+                <label class="pause-row" title="How far a stick must move before it counts: raise it if the view drifts"><span>Stick dead zone</span> <input id="pad-dead" type="range" min="0.05" max="0.3" step="0.01" /> <output id="pad-dead-val"></output></label>
                 <label class="pause-row"><span>Invert look</span> <input id="mouse-invert" type="checkbox" /></label>
                 <label class="pause-row"><span>Aim assist</span> <input id="aim-assist" type="checkbox" /></label>
                 <label class="pause-row" id="optic-row" hidden title="The optic on the gun in your hands, kept for that gun (Profile → Favourite loadout → Optics sets every gun's)"><span>Optic</span> <select id="optic-pick"></select></label>

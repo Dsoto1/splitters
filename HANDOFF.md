@@ -5,6 +5,9 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 History (older Landed notes, finished claims, old owner answers and the earlier sessions' "Start here" sections) lives in `docs/history/handoff-2026-11.md`; nothing was dropped. Keep this file to the current state, live claims, "Checking" lines and the last ~2 days of notes (docs/PROCESS.md, "HANDOFF stays short").
 
+## Controller lean and prone, `wip/pad-lean-1123` (helper of the splitters lead, 2026-11-23)
+Claim: `packages/client/src/game/input.ts` (`pollPad`, d-pad and B), `frontend/frontEnd.ts` (controller rows), `test/padInput.test.ts`, docs/CONTROLS.md, GUNPLAY_SPEC peek note. No maps.
+
 ## Bolt fix, `wip/fix-bolt-1123` (helper of the splitters lead, 2026-11-23)
 Claim: `packages/client/src/game/arsenalVisuals.ts` (`animateArsenalProjectile`, new `pointAlong`), `view.ts` (`updateProjectiles`, rocket heading), `packages/client/test/projectileHeading.test.ts`. No map or format change. Cause: a projectile's first sample has no movement, so it was drawn in the mesh's default orientation (world +Z, sideways to the shot) for a snapshot, since the interpolator holds a new projectile still until its second frame. Now every projectile that points along its flight (nail, arrow, stinger, swarm, spear, blasterBolt, rocket) stays hidden until it has a heading, and the heading is set by yaw and pitch (steady at straight up or down). Pictures: scratchpad `bolt/`. Check: `check/fix-bolt-1123`.
 
