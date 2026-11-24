@@ -570,9 +570,10 @@
       "id": "kit.cabinet.sink_mirror",
       "displayName": "Sink with Mirror Cabinet",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"every dorm room had a small mirror cabinet above their sinks\", folded into the sink, 2026-11-22, so a room gains no prop): a vanity unit 0.95 m wide and 0.9 m high (the Sink Unit's footprint) under a grey counter with a white basin and a tap, two doors; on the wall over it a small cabinet 0.6 m wide from 1.25 to 1.95 m with a mirror door. The mirror is a plain pale colour: it reflects nothing. Collides as the vanity's box (the cabinet over the counter, out of reach, collides as nothing: a room's collision boxes stay within the dorm bay's budget)."
+        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"every dorm room had a small mirror cabinet above their sinks\", folded into the sink, 2026-11-22, so a room gains no prop): a vanity unit 0.95 m wide and 0.9 m high (the Sink Unit's footprint) under a grey counter with a white basin and a tap, two doors; on the wall over it a small cabinet 0.6 m wide from 1.25 to 1.95 m with a mirror door. The mirror is a plain pale colour: it reflects nothing. Collides as the vanity's box (the cabinet over the counter, out of reach, collides as nothing: a room's collision boxes stay within the dorm bay's budget).",
+        "2": "Plain glass and a plain white body (owner, 2026-11-24: the mirror and the white body showed wood grain): the family's detail is `glazed` (content/surfaces.json: no picture, a soft sheen) instead of `wood`; the mirror a pale silver, lighter at the top, with two soft slanting highlights across it (level 0), so it reads as a mirror; the white body's grime 0.2 → 0.08 (no blotches). The oak variant keeps its colour, smooth (varnished)."
       },
       "size": [
         0.95,
@@ -580,7 +581,7 @@
         0.652
       ],
       "surface": "wood",
-      "detail": "wood",
+      "detail": "glazed",
       "generator": {
         "kind": "sinkmirror",
         "vanity": 0.9,
@@ -617,9 +618,9 @@
             "basin": "#ecebe6",
             "metal": "#b8bcc2",
             "frame": "#e4e0d6",
-            "glass": "#aebfc6",
-            "jitter": 0.05,
-            "grime": 0.2
+            "glass": "#c4ced3",
+            "jitter": 0.03,
+            "grime": 0.08
           }
         },
         {
@@ -632,7 +633,7 @@
             "basin": "#ecebe6",
             "metal": "#b8bcc2",
             "frame": "#8a6540",
-            "glass": "#aebfc6",
+            "glass": "#c4ced3",
             "jitter": 0.07,
             "grime": 0.25
           }

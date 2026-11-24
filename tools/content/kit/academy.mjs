@@ -563,7 +563,7 @@ export function closetPairMesh(seed, size, g, look, level) {
  * under a counter with a white basin let into it and a tap, two doors with pulls; on the wall over it, `mirror`
  * ([width, from, to, depth] m) a small cabinet with a mirror door in a thin frame. Settings `g`: `vanity`, `mirror`,
  * `basin` ([width, depth] m). `look`: `wood` (the carcass), `top` (the counter), `basin`, `metal` (tap and pulls),
- * `frame` (the cabinet), `glass` (the mirror: a pale grey-blue, plain vertex colour; it reflects nothing, nothing glows),
+ * `frame` (the cabinet), `glass` (the mirror: a pale silver, plain vertex colour with two soft highlights at full detail; it reflects nothing, nothing glows; the family's detail is `glazed`, smooth: no grain on it or the body),
  * `jitter`, `grime`. Collides as the vanity's box (the cabinet, over the counter and out of reach, as nothing).
  */
 export function sinkMirrorMesh(seed, size, g, look, level) {
@@ -595,8 +595,33 @@ export function sinkMirrorMesh(seed, size, g, look, level) {
     return m;
   }
   const zf = -Z + md + 0.004;
-  // The mirror: a lighter band across its top (a hint of the room in it).
-  quadN(m, [-MX + 0.035, my0 + 0.035, zf], [MX - 0.035, my0 + 0.035, zf], [MX - 0.035, my1 - 0.035, zf], [-MX + 0.035, my1 - 0.035, zf], [0, 0, 1], (p) => scale3(glass, 0.92 + 0.16 * ((p[1] - my0) / (my1 - my0))));
+  // The mirror: pale silver, lighter towards the top (a hint of the room in it). At full detail two soft highlights
+  // slant across it, lower left to upper right: the glass is cut into strips along them (no layer over another), each
+  // highlight's middle line brighter and its edges the glass's own shade, so they fade out on both sides.
+  const gx0 = -MX + 0.035;
+  const gx1 = MX - 0.035;
+  const gy0 = my0 + 0.035;
+  const gh = my1 - 0.035 - gy0;
+  const shade = (y) => scale3(glass, 0.9 + 0.16 * ((y - gy0) / gh));
+  // Lines across the glass, bottom to top: [height at the left edge, at the right edge (shares of its height), gain].
+  const lines = level === 0
+    ? [[0, 0, 1], [0.08, 0.43, 1], [0.13, 0.48, 1.16], [0.18, 0.53, 1], [0.3, 0.65, 1], [0.32, 0.67, 1.1], [0.34, 0.69, 1], [1, 1, 1]]
+    : [[0, 0, 1], [1, 1, 1]];
+  for (let k = 0; k + 1 < lines.length; k++) {
+    const [al, ar, ag] = lines[k];
+    const [bl, br, bg] = lines[k + 1];
+    const yal = gy0 + al * gh;
+    const yar = gy0 + ar * gh;
+    const ybl = gy0 + bl * gh;
+    const ybr = gy0 + br * gh;
+    const at = (p) => {
+      // Each corner's colour: the glass's shade there, times its line's gain.
+      const left = p[0] < 0;
+      const onA = Math.abs(p[1] - (left ? yal : yar)) < 1e-6;
+      return scale3(shade(p[1]), Math.min(onA ? ag : bg, 1.25));
+    };
+    quadN(m, [gx0, yal, zf], [gx1, yar, zf], [gx1, ybr, zf], [gx0, ybl, zf], [0, 0, 1], at);
+  }
   // The basin let into the counter: its rim, its bowl (a darker inside), the drain; the tap behind it.
   const [bw, bd] = g.basin ?? [0.5, 0.36];
   const bz = -Z + 0.12 + bd / 2;
