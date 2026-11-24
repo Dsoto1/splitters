@@ -14910,39 +14910,34 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
 async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R }) {
   // Two players on a dedicated server: Alice leans and slides, Bob sees it (drawn from the network's snapshots).
   const port = await pickPort('E2E_SLIDEPEEK_PORT', 7797);
-  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/void_yard.json', import.meta.url)) });
+  // Known ground, not the match's draw (spawns come from the server's clock-seeded random stream): both start on the
+  // yard's open floor south of the centre (E2E_START_AT, the server's Play-from-here hook for tests), Bob 6 m west of
+  // Alice, and east of Alice 20 m of flat, empty floor with no jump pad (checked again below before she runs).
+  const ALICE_AT = { pos: [-4, 0, -5], yaw: -Math.PI / 2 };
+  const BOB_AT = { pos: [-10, 0, -5], yaw: Math.PI / 2 };
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/void_yard.json', import.meta.url)), E2E_START_AT: JSON.stringify({ Alice: ALICE_AT, Bob: BOB_AT }) });
   await sleep(4000);
   const join = async (name) => {
     const p = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     livePages.add(p);
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
-    // (A fixed, kept character for both: the roster's size doesn't move the match's random stream, which deals the spawns.)
+    // (A fixed, kept character for both: the roster's changes don't change the run.)
     await p.goto(`${CLIENT}/?autojoin&name=${name}&look=core.dale&server=ws://127.0.0.1:${port}`);
     await p.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     await playWithoutMouse(p);
     await p.addStyleTag({ content: '#pause, #message { display: none !important; }' });
     return p;
   };
-  let alice = await join('Alice');
-  let bob = await join('Bob');
+  const alice = await join('Alice');
+  const bob = await join('Bob');
   // (A countdown first: both in play and alive.)
   for (const p of [alice, bob]) await p.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
-  // The yard's spawns are picked by the match (far from the other player, from its random stream), and a few stand on
-  // islands (a perch at y 4 to 10) with no floor to walk to the other player or to slide on. Whoever spawned on one
-  // leaves and joins again for another spawn: the scripted run needs the yard's floor, whoever the match deals.
-  const onYardFloor = (p) => p.evaluate(() => window.__cs.local.state.pos.y < 1);
-  for (let tries = 0; tries < 8; tries++) {
-    const [aOn, bOn] = [await onYardFloor(alice), await onYardFloor(bob)];
-    if (aOn && bOn) break;
-    const [name, page] = aOn ? ['Bob', bob] : ['Alice', alice];
-    await page.context().close();
-    livePages.delete(page);
-    const again = await join(name);
-    await again.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
-    if (aOn) bob = again;
-    else alice = again;
-  }
-  check((await onYardFloor(alice)) && (await onYardFloor(bob)), 'online: both players spawned on the yard floor');
+  const at = async (p, want) => {
+    const q = await p.evaluate(() => window.__cs.local.state.pos);
+    return Math.hypot(q.x - want.pos[0], q.z - want.pos[2]) < 0.75 && Math.abs(q.y - want.pos[1]) < 0.5 ? '' : JSON.stringify(q);
+  };
+  const [aOff, bOff] = [await at(alice, ALICE_AT), await at(bob, BOB_AT)];
+  check(!aOff && !bOff, `online: Alice and Bob stand where the test put them ${aOff || bOff ? `(Alice ${aOff || 'ok'}, Bob ${bOff || 'ok'})` : ''}`);
   const aliceSlot = await alice.evaluate(() => window.__cs.slot);
   // Each faces the other (Bob from where he sees Alice drawn).
   const faceEachOther = async () => {
@@ -14953,13 +14948,6 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     await bob.evaluate((y) => Object.assign(window.__cs.input, { yaw: y, pitch: -0.05 }), yawAB + Math.PI);
     return Math.hypot(b.x - a.x, b.z - a.z);
   };
-  // Walk toward each other until close (the yard's blocks may stand between their spawns).
-  for (let i = 0; i < 40 && (await faceEachOther()) > 7; i++) {
-    for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
-    await sleep(250);
-  }
-  for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
-  await sleep(300);
   await faceEachOther();
   await alice.evaluate((b) => (window.__autoInput = { forward: 0, buttons: b }), LEAN_R);
   const seenLean = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.leanNow ?? 0) > 0.9, aliceSlot, { timeout: T(15000) }).then(() => true, () => false);
@@ -14971,8 +14959,8 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
   await alice.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
   // Alice sprints a moment, then slides; Bob sees the slide.
   await faceEachOther();
-  // Alice turns away from Bob, or as near away as leaves her 9 m of clear, floored run (the yard's blocks and edges and
-  // its neighbours' gaps are near wherever she spawned): a ray at knee height and the floor under it every 1.5 m.
+  // Alice turns away from Bob (east, onto the open floor), or as near away as leaves her 9 m of clear, floored run: a
+  // ray at knee height and the floor under it every 1.5 m. None (the yard changed under the test's spot): fail below.
   const runFound = await alice.evaluate(() => {
     const l = window.__cs.local;
     const p = l.state.pos;

@@ -51,6 +51,8 @@ const server = await startServer({
   lanDiscovery: env.LAN_DISCOVERY !== '0',
   // ADMIN_TOKEN=…: players who join with ?admin=… (or enter it in the pause menu) change bots and map, restart and end the match.
   adminToken: env.ADMIN_TOKEN || undefined,
+  // E2E_START_AT={"Alice":{"pos":[x,y,z],"yaw":0}}: tests only; a player of that name starts there before play begins.
+  ...(env.E2E_START_AT ? { startAt: JSON.parse(env.E2E_START_AT) } : {}),
   onStats: env.QUIET_STATS ? undefined : (line) => console.log(`[stats] ${line}`),
 });
 console.log(`Tile Trigger server listening on ws://localhost:${server.port}`);
