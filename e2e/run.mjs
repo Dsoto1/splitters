@@ -11722,10 +11722,40 @@ async function editorPartBChecks(browser) {
   await frames(page, 2);
   check((await doc()).editorNotes?.length === 1, 'undo brings it back');
 
+  // ---- New map's setup screen (owner, 2026-11-24): every choice pre-filled, players suggest a size, a boundary fitted
+  // round the new map from the start (the orange outline), a layout's own settings shown and locked.
+  await page.click('#ed-new');
+  await page.waitForSelector('#ed-new-dialog[open]', { timeout: T(5000) });
+  const setupNow = () => page.evaluate(() => {
+    const v = (id) => document.getElementById(id);
+    return { size: document.querySelector('#ed-new-sizes .on')?.dataset.size, theme: v('ed-new-theme').value, ground: v('ed-new-ground').value, mode: v('ed-new-mode').value, best: v('ed-new-best').value, upTo: v('ed-new-upto').value, boundary: v('ed-new-boundary').value, locked: v('ed-new-mode').disabled };
+  });
+  const setup0 = await setupNow();
+  check(setup0.size === '160' && setup0.theme === 'core.prototype' && setup0.mode === 'core.deathmatch' && setup0.best === '8' && setup0.upTo === '' && setup0.boundary === '' && !setup0.locked, `New map's setup opens pre-filled: Medium, Prototype, Deathmatch, 8 players, most automatic, no boundary (${JSON.stringify(setup0)})`);
+  await page.fill('#ed-new-best', '16');
+  await page.press('#ed-new-best', 'Tab');
+  await page.selectOption('#ed-new-theme', 'core.military');
+  await page.selectOption('#ed-new-mode', 'core.tdm');
+  await page.selectOption('#ed-new-boundary', 'wall');
+  const setup1 = await setupNow();
+  check(setup1.size === '240' && setup1.ground !== setup0.ground, `16 players suggest Large, and the theme brings its Ground theme (${JSON.stringify(setup1)})`);
+  await shot('newmap-setup');
+  await page.click('#ed-new-create');
+  await page.waitForFunction(() => window.__editor.doc.bounds && window.__editor.doc.terrain, null, { timeout: T(5000) }).catch(() => {});
+  d = await doc();
+  const tSpan = d.terrain ? (d.terrain.cols - 1) * d.terrain.spacing : 0;
+  check(d.bounds?.style === 'wall' && d.bounds.min[0] <= d.terrain?.origin[0] && d.bounds.max[0] >= d.terrain.origin[0] + tSpan && d.classicStructure.theme === 'core.military' && d.metadata.supportedModes[0] === 'core.tdm' && d.metadata.recommendedPlayers.max === 16 && tSpan === 240, `the new map starts with its boundary fitted round the ground, the theme, mode and players picked (${JSON.stringify({ bounds: d.bounds, span: tSpan, theme: d.classicStructure.theme, modes: d.metadata.supportedModes })})`);
+  await page.evaluate(() => window.__editor.view.focus({ x: 0, y: 0, z: 0 }));
+  await frames(page, 4);
+  await shot('newmap-boundary');
+
   // ---- Templates: New map → Start from → Symmetric CTF.
   await page.click('#ed-new');
   await page.waitForSelector('#ed-new-templates [data-template="ctf"]', { timeout: T(5000) });
   await page.click('#ed-new-templates [data-template="ctf"]');
+  await page.waitForFunction(() => document.getElementById('ed-new-mode').disabled, null, { timeout: T(15000) }).catch(() => {});
+  const setupT = await setupNow();
+  check(setupT.locked && setupT.mode === 'core.ctf' && setupT.boundary === 'wall', `a picked layout shows its own mode and boundary on the setup screen, locked (${JSON.stringify(setupT)})`);
   await shot('templates');
   await page.click('#ed-new-create');
   await page.waitForFunction(() => window.__editor.doc.entities.filter((e) => e.kind === 'flag').length === 2, null, { timeout: T(15000) }).catch(() => {});
