@@ -28,7 +28,7 @@ export const NPC_ROLE_SPECS: Record<(typeof NPC_ROLES)[number], NpcRoleSpec> = {
   // design: A creature original on the soldiers' rig: soaks up fire.
   boglurker: { label: 'Boglurker', health: 200, weapon: 'core.shotgun', speed: 0.72, scale: 1.1, look: 'core.boglurker' },
   // design: A creature original on the soldiers' rig: shells you.
-  warlord: { label: 'Salamander Warlord', health: 260, weapon: 'core.launcher', speed: 0.7, scale: 1.15, look: 'core.warlord' },
+  warlord: { label: 'Axel Newtman', health: 260, weapon: 'core.launcher', speed: 0.7, scale: 1.15, look: 'core.warlord' },
   // design: A creature original on the soldiers' rig: hyenas run you down in packs.
   hyena: { label: 'Hyena Warrior', health: 85, weapon: 'core.smg', speed: 1.05, scale: 1, look: 'core.hyena' },
   // design: A Meshy community original: grey visitors pick you off with lasers from mid range.
@@ -54,7 +54,7 @@ export const NPC_ROLE_BOTS: Readonly<Record<(typeof NPC_ROLES)[number], Partial<
   goblin: { id: 'core.npc_goblin', displayName: 'Goblin', aggression: 95, selfPreservation: 20, tacticalAwareness: 20, rangePreference: 5, tags: ['NPC', 'BERSERKER', 'RECKLESS'] },
   otter: { id: 'core.npc_otter', displayName: 'Wealthy Otter', accuracy: 45, aggression: 25, tacticalAwareness: 60, pursuitPersistence: 15, rangePreference: 90, tags: ['NPC', 'SNIPER'] },
   boglurker: { id: 'core.npc_boglurker', displayName: 'Boglurker', aggression: 80, selfPreservation: 10, rangePreference: 15, tags: ['NPC', 'GRUNT'] },
-  warlord: { id: 'core.npc_warlord', displayName: 'Salamander Warlord', aggression: 50, pursuitPersistence: 30, rangePreference: 60, tags: ['NPC', 'SUPPRESSOR'] },
+  warlord: { id: 'core.npc_warlord', displayName: 'Axel Newtman', aggression: 50, pursuitPersistence: 30, rangePreference: 60, tags: ['NPC', 'SUPPRESSOR'] },
   hyena: { id: 'core.npc_hyena', displayName: 'Hyena Warrior', aggression: 85, pursuitPersistence: 80, rangePreference: 25, tags: ['NPC', 'GRUNT'] },
   alien: { id: 'core.npc_alien', displayName: 'Visitor', accuracy: 40, aggression: 45, tacticalAwareness: 55, rangePreference: 65, tags: ['NPC'] },
   pirate: { id: 'core.npc_pirate', displayName: 'Pirate', aggression: 85, selfPreservation: 20, rangePreference: 10, tags: ['NPC', 'GRUNT', 'RECKLESS'] },

@@ -112,8 +112,8 @@ describe("Character Select's groups", () => {
     expect(ids.indexOf('chrono')).toBe(ids.indexOf('space') + 1);
     expect(sections.find((s) => s.id === 'chrono')!.label).toBe('Chrono Crew');
     expect(sections.find((s) => s.id === 'chrono')!.looks.map((l) => l.name).sort()).toEqual([...crew].sort());
-    // The Time Traveler stays with Outer Space (experimental for now, so under Experimental).
-    expect(characterSectionOf(getLook('core.timetraveler'))).toBe(EXPERIMENTAL_SECTION);
+    // The Time Traveler stays with Outer Space (core since the owner's 2026-11-24 promotion of the experimental ones).
+    expect(characterSectionOf(getLook('core.timetraveler'))).toBe('space');
     expect(getLook('core.timetraveler').group).toBe('space');
   });
 
@@ -132,11 +132,22 @@ describe("Character Select's groups", () => {
     expect(getLook('core.dustycolt').name).toBe('Dusty Ranger');
   });
 
-  it('Zero Ringtail is gone (owner, 2026-11-22): its model is Bandit\'s', () => {
+  it('Zero Ringtail is gone (owner, 2026-11-22): its model is Rascal McGraw\'s (Bandit\'s id)', () => {
     expect(CORE_LOOKS.some((l) => l.id === 'core.raccoonhacker')).toBe(false);
     expect(RETIRED_LOOKS['core.raccoonhacker']).toBe('core.bandit');
     expect(validLookId('core.raccoonhacker')).toBe('core.bandit');
-    expect(getLook('core.bandit').name).toBe('Bandit');
+    expect(getLook('core.bandit').name).toBe('Rascal McGraw');
     expect(characterTier(getLook('core.bandit'))).toBe('core');
+  });
+
+  it('nothing is Experimental now, and nine animals open Animalia in the owner\'s order (owner, 2026-11-24)', () => {
+    expect(CORE_LOOKS.filter((l) => characterTier(l) === 'experimental').map((l) => l.id)).toEqual([]);
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) }));
+    const sections = characterSections(roster);
+    expect(sections.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
+    expect(sections.find((s) => s.id === 'animals')!.looks.slice(0, 9).map((l) => l.name)).toEqual(['Pip Quickfoot', 'Rocket Nutley', 'Rowdy Gnashwell', 'Rufus Boomtown', 'Ollie Hootman', 'Barnaby Burrows', 'Rascal McGraw', 'Chester Knuckleby', 'Axel Newtman']);
+    // Display names only: the ids are unchanged.
+    expect(getLook('core.baboon').name).toBe('Rufus Boomtown');
+    expect(getLook('core.warlord').name).toBe('Axel Newtman');
   });
 });

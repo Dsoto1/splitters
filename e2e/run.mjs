@@ -6841,7 +6841,7 @@ async function mobileHudChecks(page, touch, label) {
   const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
   check(!!box.ammo && box.ammo.l > box.w * 0.6 && box.ammo.b <= box.reload.t + 1 && hit.length === 0, `${label}: the ammo panel sits by the fire buttons, above Reload, over no button (${JSON.stringify({ ammo: box.ammo, reload: box.reload, hit })})`);
   // Five lines into the feed: it keeps 3, above the ammo panel.
-  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Salamander Warlord took over for Elder Tomo`); });
+  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Axel Newtman took over for Elder Tomo`); });
   const feed = await page.evaluate(() => document.getElementById('feed').children.length);
   const after = await touchHudBoxes(page);
   check(feed === 3 && !overlaps(after.feed, after.ammo) && !overlaps(after.feed, after.wheel), `${label}: the kill feed keeps 3 lines, clear of the ammo panel and Weapons (${feed} lines, ${JSON.stringify({ feed: after.feed, ammo: after.ammo })})`);
