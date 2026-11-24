@@ -1137,6 +1137,10 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #feed .hs { color: #ff4b4b; margin-left: 4px; }
 /* A soldier's rank badge before their name (game/insigniaSvg.ts), in the name's colour. */
 #feed svg.ins { width: 1.15em; height: 1.15em; margin-right: 4px; vertical-align: -0.22em; }
+/* Team symbols beside team colours (Colour vision; game/teamSymbols.ts): small, in the name's colour. */
+svg.tsym { display: inline-block; width: 0.72em; height: 0.72em; margin-right: 0.32em; vertical-align: -0.04em; flex: none; overflow: visible; }
+.sb-mark svg.tsym { width: 0.95em; height: 0.95em; margin: 0; vertical-align: -0.1em; }
+.sb-gname svg.tsym { width: 0.8em; height: 0.8em; }
 /* A rank-up (Ranks & badges; game/rankGlow.ts has the same curve): the badge swells and glows in the name's colour, then settles over a second. Calm (Reduce flashing): smaller, dimmer, eased in and out; never a flash. */
 #feed svg.ins.rank-up { animation: rank-up 1s ease-out; transform-origin: 50% 60%; }
 #feed svg.ins.rank-up.calm { animation: rank-up-calm 1s ease-in-out; }

@@ -1,6 +1,7 @@
 import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
+import { COLOUR_VISION_EVENT, colourVision, saveColourVision } from './game/colourVision.ts';
 import { myKeys, onBindingsChange, replaceMyKeys } from './game/keyBindings.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
@@ -134,6 +135,7 @@ export async function syncCareer(): Promise<void> {
   await sendPending(who.sub);
   syncOptics();
   syncKeys();
+  syncColourVision();
 }
 
 /**
@@ -169,6 +171,27 @@ export function syncKeys(): void {
   });
 }
 let stopKeySave: (() => void) | null = null;
+
+/**
+ * Colour vision (Options → Accessibility; game/colourVision.ts) on the account, as key bindings are: signed in, your
+ * account's choice is this browser's; an account with none takes this browser's (when not Default). Every change after
+ * that is saved on the account too; an older hub keeps it in the browser only.
+ */
+export function syncColourVision(): void {
+  const who = currentAccount();
+  const p = who ? cachedProfile() : null;
+  if (!p) return;
+  if (p.colourVision) {
+    if (p.colourVision !== colourVision()) saveColourVision(p.colourVision, true);
+  } else if (colourVision() !== 'default') void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
+  if (stopVisionSave || typeof window === 'undefined') return;
+  const onChange = (e: Event) => {
+    if (!(e as CustomEvent<{ quiet?: boolean }>).detail?.quiet && currentAccount()) void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
+  };
+  window.addEventListener(COLOUR_VISION_EVENT, onChange);
+  stopVisionSave = () => window.removeEventListener(COLOUR_VISION_EVENT, onChange);
+}
+let stopVisionSave: (() => void) | null = null;
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);

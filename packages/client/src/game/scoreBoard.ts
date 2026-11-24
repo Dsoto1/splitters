@@ -19,6 +19,7 @@ import type { InsigniaId } from '@tiletrigger/shared';
 import { keyFor } from './keyBindings.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
 import { emblemSvg } from './emblemSvg.ts';
+import { teamSymbolSvg } from './teamSymbols.ts';
 
 /** One player's line. Strings are shown as they are (already formatted). */
 export interface BoardRow {
@@ -35,6 +36,8 @@ export interface BoardRow {
   party?: boolean;
   /** Team colour (or the player's own colour in free-for-all). */
   color: string;
+  /** Their team's place in the match's order, for its symbol beside the colour (teamSymbols.ts); -1 or none: no team. */
+  sym?: number;
   /** Class name (Classes), else ''. */
   cls: string;
   k: number;
@@ -56,6 +59,8 @@ export interface BoardGroup {
   id: string;
   name: string;
   color: string;
+  /** The team's place in the match's order: its symbol before its name (teamSymbols.ts). */
+  sym?: number;
   /** The team's score in the mode's terms (captures, rounds, kills). */
   score: number;
   /** Top score among the teams (ties included). */
@@ -250,7 +255,13 @@ export class ScoreBoard {
     if (data.kind === 'teams') {
       data.groups.forEach((g, i) => {
         const ge = this.groups[i]!;
-        if (ge.name!.textContent !== g.name) ge.name!.textContent = g.name;
+        // The team's symbol before its name (Colour vision: teamSymbols.ts).
+        const nameKey = `${g.sym ?? -1}|${g.name}`;
+        if (ge.name!.dataset.key !== nameKey) {
+          ge.name!.dataset.key = nameKey;
+          ge.name!.innerHTML = teamSymbolSvg(g.sym ?? -1);
+          ge.name!.append(g.name);
+        }
         const score = String(g.score);
         if (ge.score!.textContent !== score) ge.score!.textContent = score;
         ge.score!.classList.toggle('lead', g.lead && data.groups.length > 1);
@@ -432,7 +443,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.ins ?? ''}|${r.em ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
+    const key = `${rank}|${r.ins ?? ''}|${r.em ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.sym ?? -1}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -445,7 +456,17 @@ export class ScoreBoard {
     e.name.classList.toggle('guest', r.who === 'guest');
     e.name.classList.toggle('party', !!r.party);
     e.name.title = [r.party ? 'In your party' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
-    set(e.mark, r.leader ? '★' : r.squadLead ? '◆' : '●');
+    // Leaders' marks, else the team's symbol (Colour vision: teamSymbols.ts), else a dot.
+    const sym = !r.leader && !r.squadLead && (r.sym ?? -1) >= 0 ? r.sym! : -1;
+    if (sym >= 0) {
+      if (e.mark.dataset.sym !== String(sym)) {
+        e.mark.dataset.sym = String(sym);
+        e.mark.innerHTML = teamSymbolSvg(sym);
+      }
+    } else {
+      delete e.mark.dataset.sym;
+      set(e.mark, r.leader ? '★' : r.squadLead ? '◆' : '●');
+    }
     // A soldier's rank badge, in the row's colour (insignia.ts).
     if ((e.ins.dataset.ins ?? '') !== (r.ins ?? '')) {
       e.ins.dataset.ins = r.ins ?? '';

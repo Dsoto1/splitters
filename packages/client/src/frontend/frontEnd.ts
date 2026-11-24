@@ -138,6 +138,7 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { COLOUR_VISIONS, COLOUR_VISION_LABELS, colourVision, saveColourVision, type ColourVision } from '../game/colourVision.ts';
 import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
 import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
@@ -3438,6 +3439,9 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
+    // Colour vision (game/colourVision.ts): team colours that stay apart; read as a match starts.
+    const colourVisionSel = el('select', { id: 'opt-colour-vision' }, ...COLOUR_VISIONS.map((v) => el('option', { value: v, textContent: COLOUR_VISION_LABELS[v], selected: v === colourVision() })));
+    colourVisionSel.addEventListener('change', () => saveColourVision(colourVisionSel.value as ColourVision));
     // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
@@ -3668,6 +3672,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+        row('Colour vision', colourVisionSel, 'Default keeps each team\'s own colours. Red-green (deuteranopia, protanopia) gives the teams orange and blue, Tritanopia (blue-yellow) raspberry and teal, then colours picked to stay apart, in place of the map\'s or host\'s. Every team also has its symbol beside its colour, whatever this says: ▲ ● ■ ✚ in the kill feed, on the scoreboard, the minimap and the objectives. From the next match.'),
         row('Aim', aimMode, `Hold: aim down the sights or through a scope while the aim button is held (${keysFor('aim')}, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.`),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()
