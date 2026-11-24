@@ -3013,7 +3013,12 @@ export class GameView {
         // A crowd's held guns are GPU instances, which can't fade on their own: hidden while see-through.
         for (const m of a.root.getChildMeshes()) {
           if (m.isAnInstance) m.isVisible = shown === 1;
-          else m.visibility = shown;
+          else {
+            m.visibility = shown;
+            // An opaque material (the characters' PBR: transparencyMode OPAQUE) ignores `visibility`: while see-through
+            // the mesh wears a blended copy of it (one per material, kept), its own again once solid.
+            seeThrough(m, shown < 1);
+          }
         }
       }
     }
@@ -5306,4 +5311,29 @@ function glassShardMaterial(scene: Scene, tint: string): StandardMaterial {
   m.alpha = 0.55;
   m.backFaceCulling = false;
   return m;
+}
+
+/** Blended copies of opaque materials, for bodies drawn see-through (a cloaked Shade, the Phantom power-up). */
+const ghostMaterials = new WeakMap<Material, Material>();
+const ghostOf = new WeakMap<Material, Material>();
+
+/** Put a mesh in or out of its material's blended copy (only for an opaque one: `transparencyMode` 0). */
+function seeThrough(m: { material: Material | null }, on: boolean): void {
+  const mat = m.material;
+  if (!mat) return;
+  if (on) {
+    if (ghostOf.has(mat) || (mat as Material & { transparencyMode?: number | null }).transparencyMode !== 0) return;
+    let g = ghostMaterials.get(mat);
+    if (!g) {
+      g = mat.clone(`${mat.name}_ghost`) ?? undefined;
+      if (!g) return;
+      (g as Material & { transparencyMode?: number | null }).transparencyMode = 2;
+      ghostMaterials.set(mat, g);
+      ghostOf.set(g, mat);
+    }
+    m.material = g;
+  } else {
+    const own = ghostOf.get(mat);
+    if (own) m.material = own;
+  }
 }
