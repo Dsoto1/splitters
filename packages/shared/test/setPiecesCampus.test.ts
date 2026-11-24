@@ -223,6 +223,21 @@ describe("Memorial Hall's rounded plan: real windows of breakable glass", () => 
   }
 });
 
+describe("Memorial Hall's rounded plan: the upper windows clear of the trusses", () => {
+  // The bay's Ridge Roof Bay is the one_truss variant (a single truss in the bay's middle), so each truss post and its
+  // corbel stand between the two wide upper windows of a wall, not in front of one (the bench's view out).
+  it('setpiece.library_faceted_end rounded: one truss, between the upper panes', () => {
+    const map = withPiece('setpiece.library_faceted_end', 0, false, { plan: 'rounded', door: 'east', bench: 'east' });
+    const roofs = map.entities.filter((e): e is Extract<MapDocument['entities'][number], { kind: 'prop' }> => e.kind === 'prop' && e.model === 'kit.roof.ridge_bay');
+    expect(roofs.map((r) => r.variant)).toEqual([2]);
+    const trussZ = roofs[0]!.position[2];
+    const upper = map.entities.filter((e): e is Extract<MapDocument['entities'][number], { kind: 'block' }> => e.kind === 'block' && e.glass === 'breakable' && e.position[1] > 5 && e.size[2] > 2);
+    expect(upper.length).toBeGreaterThanOrEqual(4);
+    // A post 0.3 m wide each side of the truss line and its corbel: no upper pane reaches within 0.3 m of it.
+    for (const b of upper) expect(Math.abs(b.position[2] - trussZ) - b.size[2] / 2, `the pane at ${b.position}`).toBeGreaterThan(0.3);
+  });
+});
+
 describe('the spiral stair (core.stair_spiral)', () => {
   /** A player steered round the stair: each tick, toward a point a little further round (clockwise seen from above). */
   function climb(physics: PhysicsWorld, centre: Vec3, from: Vec3, ticks: number, r = 1.7): number {
