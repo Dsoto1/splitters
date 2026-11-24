@@ -1,6 +1,6 @@
 /**
- * Colour-vision simulation and colour difference, for checking team colours (colourVision.ts, its tests and
- * tools/look/colourblind-sim.mjs). Not used while a match plays.
+ * Colour-vision simulation and colour difference, for checking team colours (teamColours.ts and its tests; the
+ * pictures' simulated copies). Not used while a match plays.
  * - Protanopia and deuteranopia: Viénot, Brettel & Mollon (1999), one projection in linear sRGB.
  * - Tritanopia: Brettel, Viénot & Mollon (1997), two half-planes split by the neutral axis and the 485 nm / 660 nm
  *   anchors, in linear sRGB.

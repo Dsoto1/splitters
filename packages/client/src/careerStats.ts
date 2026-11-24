@@ -1,7 +1,7 @@
 import { addMatch, careerRankPoints, cleanEmblemCode, emptyCareer, hasTitle, readCareer, type Career, type MatchSummary } from '@tiletrigger/shared';
 import { currentAccount } from './account.ts';
 import { myOptics, onOpticsChange, replaceMyOptics } from './opticPrefs.ts';
-import { COLOUR_VISION_EVENT, colourVision, saveColourVision } from './game/colourVision.ts';
+import { colourVision, saveColourVision, type ColourVision } from './game/colourVision.ts';
 import { myKeys, onBindingsChange, replaceMyKeys } from './game/keyBindings.ts';
 import { cachedProfile, call, loadProfile, saveProfile, setCachedCareer } from './profile.ts';
 
@@ -174,24 +174,19 @@ let stopKeySave: (() => void) | null = null;
 
 /**
  * Colour vision (Options → Accessibility; game/colourVision.ts) on the account, as key bindings are: signed in, your
- * account's choice is this browser's; an account with none takes this browser's (when not Default). Every change after
- * that is saved on the account too; an older hub keeps it in the browser only.
+ * account's choice is this browser's; an account with none takes this browser's (when not Default).
  */
 export function syncColourVision(): void {
-  const who = currentAccount();
-  const p = who ? cachedProfile() : null;
-  if (!p) return;
-  if (p.colourVision) {
-    if (p.colourVision !== colourVision()) saveColourVision(p.colourVision, true);
-  } else if (colourVision() !== 'default') void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
-  if (stopVisionSave || typeof window === 'undefined') return;
-  const onChange = (e: Event) => {
-    if (!(e as CustomEvent<{ quiet?: boolean }>).detail?.quiet && currentAccount()) void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
-  };
-  window.addEventListener(COLOUR_VISION_EVENT, onChange);
-  stopVisionSave = () => window.removeEventListener(COLOUR_VISION_EVENT, onChange);
+  const p = currentAccount() ? cachedProfile() : null;
+  if (p?.colourVision) saveColourVision(p.colourVision);
+  else if (p && colourVision() !== 'default') void saveProfile({ colourVision: colourVision() }).catch(() => undefined);
 }
-let stopVisionSave: (() => void) | null = null;
+
+/** Options chose a Colour vision: kept here, and on the account when signed in (an older hub: here only). */
+export function chooseColourVision(v: ColourVision): void {
+  saveColourVision(v);
+  if (currentAccount()) void saveProfile({ colourVision: v }).catch(() => undefined);
+}
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);

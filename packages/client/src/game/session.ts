@@ -169,7 +169,7 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
-import { visionTeams } from './colourVision.ts';
+import { visionTeams } from './teamColours.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
 import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
 import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake } from './cameraShake.ts';

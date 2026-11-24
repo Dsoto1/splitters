@@ -1,35 +1,27 @@
-// Colour vision (game/colourVision.ts, teamSymbols.ts, colourSim.ts; docs/LOOK.md, "Colour vision"): the safe team
+// Colour vision (game/colourVision.ts, teamColours.ts, teamSymbols.ts, colourSim.ts; docs/LOOK.md, "Colour vision"): the safe team
 // colours stay apart under simulated colour vision, the setting is saved and applied to a match's teams, and every
 // team's symbol is in the kill feed's names and the scoreboard's model.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DEFAULT_TEAMS, type Faction } from '@tiletrigger/shared';
 import { deltaE2000, hexRgb, seenDelta, simulate, type Deficiency } from '../src/game/colourSim.ts';
-import { COLOUR_VISION_EVENT, TEAM_SAFE_COLOURS, colourVision, loadColourVision, resetColourVisionCache, saveColourVision, teamColourFor, visionTeams } from '../src/game/colourVision.ts';
+import { colourVision, loadColourVision, resetColourVisionCache, saveColourVision } from '../src/game/colourVision.ts';
+import { TEAM_SAFE_COLOURS, teamColourFor, visionTeams } from '../src/game/teamColours.ts';
 import { TEAM_SYMBOLS, teamSymbol, teamSymbolSvg } from '../src/game/teamSymbols.ts';
 import { Hud } from '../src/game/hud.ts';
 
 const store = new Map<string, string>();
 const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
-const events: { quiet?: boolean }[] = [];
 beforeEach(() => {
   store.clear();
-  events.length = 0;
   resetColourVisionCache();
   Object.defineProperty(globalThis, 'localStorage', {
     configurable: true,
     value: { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) },
   });
-  Object.defineProperty(globalThis, 'window', {
-    configurable: true,
-    value: { dispatchEvent: (e: Event) => (e.type === COLOUR_VISION_EVENT && events.push((e as CustomEvent<{ quiet?: boolean }>).detail), true) },
-  });
 });
 afterEach(() => {
   if (original) Object.defineProperty(globalThis, 'localStorage', original);
   else delete (globalThis as { localStorage?: unknown }).localStorage;
-  if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
-  else delete (globalThis as { window?: unknown }).window;
   resetColourVisionCache();
 });
 
@@ -80,17 +72,13 @@ describe('safe team colours', () => {
 });
 
 describe('the Colour vision setting', () => {
-  it('is Default until chosen, and a choice is saved and announced', () => {
+  it('is Default until chosen, and a choice is saved', () => {
     expect(colourVision()).toBe('default');
     saveColourVision('redgreen');
     expect(colourVision()).toBe('redgreen');
     expect(store.get('tiletrigger.colourVision')).toBe('redgreen');
-    expect(events).toEqual([{ quiet: false }]);
     resetColourVisionCache();
     expect(loadColourVision()).toBe('redgreen');
-    // Taken from the profile: saved here, marked quiet so it isn't sent back.
-    saveColourVision('tritan', true);
-    expect(events.at(-1)).toEqual({ quiet: true });
     store.set('tiletrigger.colourVision', 'nonsense');
     resetColourVisionCache();
     expect(colourVision()).toBe('default');

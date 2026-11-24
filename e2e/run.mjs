@@ -8328,6 +8328,80 @@ async function scoreboardColumns(page) {
   }));
 }
 
+/**
+ * Colour vision (Options → Accessibility; game/colourVision.ts, teamColours.ts, teamSymbols.ts; docs/LOOK.md, "Colour vision"): the
+ * setting saves, a match on Grand Marquee (its own red and yellow teams) takes the setting's team colours, and every
+ * team's symbol is beside its colour in the kill feed, on the scoreboard, the score bar, the name of whoever you hit
+ * and the minimap. A picture of each setting (deviceScaleFactor 2) goes to the artifacts as colourvision-<setting>.png.
+ */
+async function colourvisionFlow(browser) {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../packages/client/src/game/teamColours.ts', import.meta.url), 'utf8');
+  const palette = (name) => [...(src.match(new RegExp(`${name}: \\[([^\\]]+)\\]`))?.[1] ?? '').matchAll(/'(#[0-9a-f]{6})'/g)].map((m) => m[1]);
+  const safe = { redgreen: palette('redgreen'), tritan: palette('tritan') };
+  check(safe.redgreen.length === 8 && safe.tritan.length === 8, `the safe palettes are read from teamColours.ts (${safe.redgreen.length}, ${safe.tritan.length})`);
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-options');
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const first = await page.$eval('#opt-colour-vision', (s) => ({ value: s.value, options: [...s.options].map((o) => o.value) }));
+  await page.selectOption('#opt-colour-vision', 'redgreen');
+  const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.colourVision'));
+  check(first.value === 'default' && first.options.join() === 'default,redgreen,tritan' && saved === 'redgreen', `Accessibility: Colour vision is Default at first and its choice saves (${JSON.stringify({ first, saved })})`);
+  for (const vision of ['default', 'redgreen', 'tritan']) {
+    await page.evaluate((v) => localStorage.setItem('tiletrigger.colourVision', v), vision);
+    await page.goto(`${CLIENT}/?offline=grand_marquee&gamemode=core.tdm&bots=7&test=1&god=1&name=Tester`);
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && ['countdown', 'playing'].includes(window.__match?.phase), null, { timeout: T(120000), polling: 250 });
+    await page.evaluate(() => {
+      for (let i = 0; i < 60 * 10 && window.__match.phase !== 'playing'; i++) window.__match.step();
+    });
+    await playWithoutMouse(page);
+    // Every teammate on the roster before reading the HUD.
+    await page.waitForFunction(() => { const h = window.__cs.hud; return h.teamIndex(window.__cs.slot) >= 0 && [...h.roster.values()].filter((p) => p.team).length >= 8; }, null, { timeout: T(20000), polling: 250 }).catch(() => {});
+    // Two kill lines (one each way) and a hit on an enemy, through the HUD as the match shows them; then the board (a tap of Tab).
+    const seen = await page.evaluate(() => {
+      const cs = window.__cs;
+      const h = cs.hud;
+      const me = cs.slot;
+      const mine = h.teamIndex(me);
+      const slots = [...h.roster.values()].map((p) => p.slot);
+      const mate = slots.find((s) => s !== me && h.teamIndex(s) === mine) ?? me;
+      const foe = slots.find((s) => h.teamIndex(s) >= 0 && h.teamIndex(s) !== mine);
+      h.kill(mate, foe, 'core.rifle', me);
+      h.kill(foe, me, 'core.smg', me, true);
+      h.showTarget(h.name(foe), 0.6, h.team(foe)?.color ?? '#fff', h.teamIndex(foe));
+      return { mine, teams: (h.teams ?? []).map((t) => t.color), foeTeam: h.teamIndex(foe) };
+    });
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 8, null, { timeout: T(10500) }).catch(() => {});
+    // The minimap redraws on the next frame with its teammates.
+    await page.waitForFunction(() => (window.__cs.hud.minimap.last ?? '').split('|').slice(1).some((b) => /,\d+$/.test(b)), null, { timeout: T(10000), polling: 250 }).catch(() => {});
+    const hud = await page.evaluate(() => ({
+      feed: [...document.querySelectorAll('#feed span[data-rs]')].map((s) => s.querySelector('svg.tsym')?.dataset.sym ?? ''),
+      groups: [...document.querySelectorAll('#scoreboard .sb-gname')].map((g) => g.querySelector('svg.tsym')?.dataset.sym ?? ''),
+      marks: [...document.querySelectorAll('#scoreboard .sb-row[data-slot] .sb-mark')].map((m) => m.querySelector('svg.tsym')?.dataset.sym ?? m.textContent),
+      bar: [...document.querySelectorAll('#scorebar small svg.tsym')].map((s) => s.dataset.sym),
+      target: document.querySelector('#target-name svg.tsym')?.dataset.sym ?? '',
+      minimap: window.__cs.hud.minimap.last ?? '',
+    }));
+    await page.screenshot({ path: `${ARTIFACTS}/colourvision-${vision}.png` });
+    const want = vision === 'default' ? ['#d8263a', '#e8b830'] : safe[vision].slice(0, 2);
+    const sym = ['▲', '●'];
+    check(seen.teams.join() === want.join(), `${vision}: the teams wear ${want.join(' and ')} (${seen.teams.join(', ')})`);
+    check(hud.feed.length >= 4 && hud.feed.every((x) => sym.includes(x)), `${vision}: every kill feed name has its team's symbol (${hud.feed.join(' ')})`);
+    check(hud.groups.join() === '▲,●' && hud.marks.length >= 8 && hud.marks.every((x) => sym.includes(x) || x === '★' || x === '◆'), `${vision}: the scoreboard's teams and rows have their symbols (${hud.groups.join(' ')}; ${hud.marks.join('')})`);
+    check(hud.bar.length === 2 && hud.target === sym[seen.foeTeam], `${vision}: the score bar and the name of whoever you hit have the symbols (${hud.bar.join(' ')}; ${hud.target})`);
+    const blips = hud.minimap.split('|').slice(1).filter((b) => b.includes(want[seen.mine]));
+    check(blips.length >= 1 && blips.every((b) => b.endsWith(`,${seen.mine}`)), `${vision}: teammates on the minimap in the team's colour, as its symbol (${blips.length} blips: ${blips.slice(0, 2).join(' ')})`);
+    await page.keyboard.press('Tab');
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
 async function teamsFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
   const errors = [];
@@ -16723,7 +16797,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
