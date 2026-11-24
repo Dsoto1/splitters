@@ -71,6 +71,19 @@ export const castRuleValue = (cast: readonly string[] | undefined): string => (c
 /** A rule's word back as a bot-characters setting (undefined: the map's own). */
 export const castFromRuleValue = (v: string | undefined): string[] | undefined => (v === undefined || v === 'map' ? undefined : v === 'all' ? [] : [v]);
 
+/** What each power-up does, for its server rule's help. */
+const POWERUP_HELP: Record<string, string> = {
+  speed: 'run faster for a while.',
+  damage: 'your hits do twice the damage for a while.',
+  overdrive: '(rare) a few seconds nothing hurts you, and running into an enemy knocks them flying.',
+  regen: 'health comes back by itself for a while.',
+  rapid: 'fire and reload faster for a while.',
+  phantom: 'nearly invisible for a while; firing shows you briefly.',
+  moon: 'low gravity, higher jumps and no fall damage for a while.',
+  vampire: 'your hits heal you a little for a while.',
+  bottomless: 'no ammo used and no reloads for a while.',
+};
+
 /** Every rule there is, in the order the console and the launcher list them (SERVER_RULES: the ones on offer). */
 const ALL_RULES: readonly RuleSpec[] = [
   {
@@ -146,8 +159,8 @@ const ALL_RULES: readonly RuleSpec[] = [
     read: (r) => r.killstreaks !== false, write: (r, v) => (v ? delete r.killstreaks : (r.killstreaks = false)),
   },
   // One switch per power-up (owner, 2026-11-24): off, its pickups don't lie on the map.
-  ...POWERUP_RULES.map(({ kind, key, label, help }): RuleSpec => ({
-    key, label, help, type: onOff, apply: 'next',
+  ...POWERUP_RULES.map(({ kind, key, label }): RuleSpec => ({
+    key, label, help: `${label} pickups: ${POWERUP_HELP[kind]}`, type: onOff, apply: 'next',
     read: (r) => !r.powerupsOff?.includes(kind),
     write: (r, v) => {
       const off = (r.powerupsOff ?? []).filter((k) => k !== kind);

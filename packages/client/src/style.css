@@ -1150,7 +1150,7 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #weapon-bar span { min-width: 30px; padding: 3px 10px; background: rgba(18, 24, 39, 0.8); color: #56647c; font: 600 12px var(--font-display); text-align: center; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); }
 #weapon-bar span.owned { color: var(--fg); }
 #weapon-bar span.held { background: var(--cyan); color: #06121b; font-weight: 700; }
-#powerups { position: absolute; left: 24px; bottom: 74px; display: flex; flex-direction: column; gap: 4px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+#powerups { position: absolute; left: 24px; bottom: 112px; display: flex; flex-direction: column; gap: 2px; font-weight: 700; text-shadow: 0 1px 3px #000; }
 /* A power-up's line (game/powerupLook.ts): its icon, name and seconds, and a thin bar of the time left under it. */
 #powerups .pu-line { position: relative; display: inline-flex; align-items: center; gap: 5px; padding-bottom: 3px; align-self: flex-start; }
 #powerups .pu-icon { flex: none; filter: drop-shadow(0 1px 2px #000); }

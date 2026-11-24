@@ -9,7 +9,8 @@ import { validBotCast } from '../content/botThemes.ts';
 import { isWeaponSetId } from './weaponSets.ts';
 import { isWeatherChoice } from '../map/weather.ts';
 import { fireteamMode, fireteamSize } from './fireteams.ts';
-import { POWERUP_KINDS } from './items.ts';
+// (The power-up list from the host's switches, not sim/items.ts: that pulls the pickup table into the menu's first JS.)
+import { POWERUP_RULES } from './powerupRules.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -856,7 +857,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (Array.isArray(s.botCast)) rules.botCast = validBotCast(s.botCast);
   if (s.themedNames === false) rules.themedNames = false;
   if (s.killstreaks === false) rules.killstreaks = false;
-  const off = Array.isArray(s.powerupsOff) ? POWERUP_KINDS.filter((k) => s.powerupsOff!.includes(k)) : [];
+  const off = Array.isArray(s.powerupsOff) ? POWERUP_RULES.map((p) => p.kind).filter((k) => s.powerupsOff!.includes(k)) : [];
   if (off.length) rules.powerupsOff = off;
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;

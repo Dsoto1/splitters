@@ -104,7 +104,6 @@ import {
   lookStats,
   type StatKey,
   CLASS_DEFS,
-  POWERUP_RULES,
   CLASS_IDS,
   careerAccuracy,
   careerKd,
@@ -2012,7 +2011,7 @@ export class FrontEnd {
       ...(AKIMBO_READY ? [{ id: 'akimbo', label: 'Dual wielding', tip: 'Pick up a second of the same small gun to hold one in each hand.', changed: s.akimbo === false && !restricted && s.mode !== 'core.discs', value: 'No dual wielding', control: choice([['on', 'On'], ['off', 'Off']], s.akimbo === false ? 'off' : 'on', (v) => this.change((x) => (x.akimbo = v === 'off' ? false : undefined)), 'arcade-akimbo'), disabled: restricted ? `${restricted}: one weapon each.` : s.mode === 'core.discs' ? `No guns in ${MODE_LABEL[s.mode]}.` : null }] : []),
       { id: 'classes', label: 'Classes', tip: `Everyone picks one of nine classes (${keysFor('classMenu')} in play; it opens when you join and when you are down): Runner, Rocketeer, Torch, Breacher, Bulwark, Mechanic (${keyFor('throw')}: sentry that heals and restocks), Medic (medi-beam, ${keyFor('throw')}: overcharge), Marksman and Shade (${keyFor('throw')}: cloak, backstabs). Limits cap how many on a team play the same class.`, changed: !!s.classes && !restricted, value: `Classes${s.classLimit ? ` (max ${s.classLimit})` : ''}`, control: choice([['off', 'Off'], ['on', 'On'], ['1', 'Max 1'], ['2', 'Max 2']], !s.classes ? 'off' : s.classLimit ? String(s.classLimit) : 'on', (v) => this.change((x) => ((x.classes = v !== 'off' || undefined), (x.classLimit = v === '1' || v === '2' ? Number(v) : undefined)))), disabled: restricted ? `Classes don't mix with ${restricted.toLowerCase()}.` : null },
       // One switch per power-up (owner, 2026-11-24): lit is on; off, its pickups don't lie on the map.
-      { id: 'powerups', label: 'Power-ups', tip: `Which power-ups lie on the map (all on as standard): ${POWERUP_RULES.map((p) => p.label).join(', ')}. Off: that power-up's pickups aren't there.`, changed: !!s.powerupsOff?.length, value: `${s.powerupsOff?.length ?? 0} power-up${s.powerupsOff?.length === 1 ? '' : 's'} off`, control: powerupSwitches(s.powerupsOff, (off) => this.change((x) => (x.powerupsOff = off.length ? off : undefined))) },
+      { id: 'powerups', label: 'Power-ups', tip: "Which power-ups lie on the map. Lit: on (the standard); off: its pickups aren't there.", changed: !!s.powerupsOff?.length, value: `${s.powerupsOff?.length ?? 0} power-up${s.powerupsOff?.length === 1 ? '' : 's'} off`, control: powerupSwitches(s.powerupsOff, (off) => this.change((x) => (x.powerupsOff = off.length ? off : undefined))) },
       { id: 'vehicles', label: 'Vehicle damage', tip: "Normal: vehicles smoke, catch fire and blow up. Tough: they take half damage. Off: they can't be destroyed (except by falling off the map). Turrets and sentries always take full damage.", changed: !!s.vehicleDamage, value: `${s.vehicleDamage === 'off' ? 'Indestructible' : 'Tough'} vehicles`, control: choice([['normal', 'Normal'], ['tough', 'Tough'], ['off', 'Off']], s.vehicleDamage ?? 'normal', (v) => this.change((x) => (x.vehicleDamage = v === 'normal' ? undefined : (v as 'tough' | 'off')))), disabled: map.entities.some((e) => e.kind === 'mount') || (raceTrack(map)?.ambient ?? 0) > 0 ? null : 'This map has no vehicles.' },
     ];
     const botRules: typeof extras = [

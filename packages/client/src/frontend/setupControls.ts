@@ -138,7 +138,7 @@ export function powerupSwitches(off: readonly string[] | undefined, onChange: (o
     { class: 'tabs wrap', id },
     ...POWERUP_RULES.map((p) => {
       const on = !now.has(p.kind);
-      const b = el('button', { type: 'button', class: `tab${on ? ' on' : ''}`, textContent: p.label, title: p.help });
+      const b = el('button', { type: 'button', class: `tab${on ? ' on' : ''}`, textContent: p.label });
       b.dataset.value = p.kind;
       b.setAttribute('aria-pressed', String(on));
       b.addEventListener('click', () => {
