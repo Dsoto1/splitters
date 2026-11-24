@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chars-1124` · 57978bf1 · 45316069166 (every Experimental character promoted; Rufus Boomtown, Rascal McGraw, Axel Newtman; nine animals open Animalia; green; the first run's characters3 failure was the optic-fix flake, fixed by merging main)
-- `wip/propatlas-1123` · 3b0380b0 · 45303972933 (fewer prop draws: per-pack material atlases and merged still props; St. John's still views at High 600 → 489 draws, its props 188 → 77; switches `propatlas`, `propmerge`; touches 1,332 prop GLBs, the props lock, provenance and palette pictures: after a merge run `pnpm content:rebuild`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -250,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-24** lane B's prop atlases and merged still props (`wip/propatlas-1123`; train 5d2fee8 green, landed by the splitters lead with docs-only main merged in).
 - **2026-11-24** landed by the splitters lead: the long guns' red dot and holo sights (eye at the glass, a smaller sight picture, the lens checked on the aim; `wip/fix-optic-1123`, train ed06e89) and the controller pass (d-pad lean while aiming, hold B prone, Menu pauses, View scoreboard, separate stick sensitivity and dead zone, map vote by pad, pad buttons in prompts, a notice for a non-standard pad; `wip/pad-lean-1123`, train b9a6a99 run 45305725683, with docs-only main merged in).
 - **2026-11-24** train check/train-20261124-001451 (8ce539e, run 45295604542; landed by the splitters lead with docs-only main merged in): lane B's `wip/draws-1123` (fewer draw calls in big matches), `wip/guntails-1123` (longer rings for the slow guns) and `wip/weapon-edits-1123b` (the owner's second Weapon Manager change set).
 - **2026-11-23** controls remap (`wip/controls-1123`, green f65d703b, run 45267275465; landed alone by the splitters lead): one bindings table, Options → Controls (every action, clash/swap, reset), Q/E lean, F use, X last weapon, hold Tab wheel, tap Tab scoreboard; owner kept the recs (Left Alt / ` touchpad keys, menu shortcuts fixed). The hub needs `sudo tiletrigger-update` for keys to save on the account.

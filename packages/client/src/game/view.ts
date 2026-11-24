@@ -859,7 +859,9 @@ export class GameView {
     // Static props as thin instances per model, material and square (propBatches.ts), not a node of instances each.
     // A batch reads a prop's matrix once its model is in (never in this loop), so the hung and flush lifts below are in it.
     this.propBatches?.dispose();
-    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH, perfOn('smallcasters') && loadGraphicsQuality() !== 'low') : null;
+    // With `propmerge` (docs/PERF_PROPS_2026-11-23.md) still props that can't break are merged per square and material.
+    const merge = perfOn('propmerge');
+    this.propBatches = perfOn('propbatch') ? new PropBatches(this.scene, (path) => this.models.staticSources(path), SMALL_CASTER_REACH, perfOn('smallcasters') && loadGraphicsQuality() !== 'low', merge) : null;
     const batches = this.propBatches;
     // Only models with enough copies on the map (PROP_BATCH_MIN) are batched.
     const copies = new Map<string, number>();
@@ -873,8 +875,10 @@ export class GameView {
     doc.entities.forEach((e, i) => {
       if (e.kind !== 'prop' || drawnAsEnv.has(e.id)) return;
       const breakable = isBreakableProp(e, !!doc.metadata.destruction);
-      const batch = batches && joinsPropBatch(copies.get(modelKey(e)) ?? 0, breakable, !!getProp(e.model)?.breakable, breakBatched) ? batches : null;
-      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch, !carried.has(e.id) && indoor(e), breakable);
+      const n = copies.get(modelKey(e)) ?? 0;
+      // A model with fewer copies goes to the batches only to be merged (they hand it back to GPU instances otherwise).
+      const batch = batches && (joinsPropBatch(n, breakable, !!getProp(e.model)?.breakable, breakBatched) || (merge && !breakable)) ? batches : null;
+      const node = createPropNode(this.scene, this.models, e, `prop_${e.id}`, !carried.has(e.id), true, doc.terrain, batch, !carried.has(e.id) && indoor(e), breakable, n);
       // A chandelier (and other hung props) is drawn with its top against the ceiling over it.
       if (!carried.has(e.id)) node.position.y += hungPropLift(boxes, e);
       const lift = flush.get(e.id);
