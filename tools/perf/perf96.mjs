@@ -19,6 +19,10 @@
 //   effects physics and posing the ragdolls, timed in the page; CPU rendering doesn't inflate it),
 //   PERF_MAX_MASS_DRAWS=n (exit 1 when frames after the blast average more draws), PERF_MAX_MASS_BODIES=n
 //   (exit 1 when more ragdoll bodies are awake at once than n).
+//   PERF_QUERY=perfoff=heldmerge (more URL parameters: measure against the code without a saving, game/perfSwitches.ts),
+//   PERF_SIZE=960x540 (the page's size: SwiftShader draws every pixel on the CPU), PERF_MIN_FRAMES=1 (frames each
+//   scenario's counts average at least), PERF_BREAKDOWN=1 (each scenario's draws by pass and by what drew them, sorted into kinds: characters, held guns,
+//   props, map, environment, effects, the first-person view; the biggest meshes by name, PERF_BREAKDOWN_TOP=30).
 // A map may name its own scenarios and players: `pantry_raid:fixtures:1` plays Pantry Raid with you alone (no bots:
 //   a fight in view would rightly outrank the fixtures and make the check hang on where it happened) and
 //   runs only `fixtures`: you held where a portal, two jump pads and pickups are in view (FIXTURE_VIEWS), so the
@@ -63,7 +67,7 @@ for (let i = 0; i < 100; i++) {
 }
 
 const args = process.env.PERF_GPU ? [] : ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
-const browser = await chromium.launch({ args });
+const browser = await chromium.launch({ args, ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}) });
 
 /** Runs inside the match (page or worker): keep the player alive. */
 const GOD = `(m, me) => { setInterval(() => { me.health = Math.max(me.health, 100); }, 50); return m.combatants().length; }`;
@@ -166,6 +170,21 @@ const FIXTURE_FRAMES = Number(process.env.PERF_FIXTURE_FRAMES ?? 16);
 /** How long each of those waits may take (a CPU-rendered CI page draws under one frame a second here). */
 const FIXTURE_WAIT_MS = 150000;
 
+/** PERF_BREAKDOWN=1: a scenario's draws a frame by pass, by kind in each pass, and the biggest meshes by name. */
+function printBreakdown(label, rows) {
+  const top = Number(process.env.PERF_BREAKDOWN_TOP ?? 30);
+  const by = (f) => {
+    const m = new Map();
+    for (const [k, v] of rows) m.set(f(k.split('|')), (m.get(f(k.split('|'))) ?? 0) + v);
+    return [...m].sort((a, b) => b[1] - a[1]);
+  };
+  const fmt = (list) => list.map(([k, v]) => `${k} ${Math.round(v)}`).join(', ');
+  console.log(`  draws by pass (${label}): ${fmt(by(([p]) => p))}`);
+  for (const [p] of by(([p]) => p)) {
+    console.log(`    ${p} by kind: ${fmt(by(([q, k]) => (q === p ? k : '-')).filter(([k]) => k !== '-'))}`);
+    console.log(`    ${p} by mesh: ${fmt(by(([q, k, n]) => (q === p ? `${k}: ${n}` : '-')).filter(([k]) => k !== '-').slice(0, top))}`);
+  }
+}
 /** Waits until the page has drawn `n` more frames, or `ms` has passed; returns how many it drew. */
 async function waitFrames(page, n, ms) {
   return page.evaluate(
@@ -325,7 +344,8 @@ for (const spec of specs) {
   const id = spec.id;
   const scenarios = spec.scenarios ?? SCENARIOS;
   for (const graphics of GRAPHICS) {
-    const ctx = await browser.newContext({ viewport: { width: 960, height: 540 } });
+    const [vw, vh] = (process.env.PERF_SIZE ?? '960x540').split('x').map(Number);
+    const ctx = await browser.newContext({ viewport: { width: vw, height: vh } });
     await ctx.addInitScript(
       ([g, sim]) => {
         try {
@@ -341,7 +361,7 @@ for (const spec of specs) {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=${spec.bots ?? BOTS}`);
+    await page.goto(`${CLIENT}/?offline=${id}&gamemode=core.tdm&bots=${spec.bots ?? BOTS}${process.env.PERF_QUERY ? `&${process.env.PERF_QUERY}` : ''}`);
     const ok = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && window.__sim, null, { timeout: 600000 }).then(() => true, () => false);
     if (!ok) {
       console.log(`${id}/${graphics}: match did not start ${errors.join('; ')}`);
@@ -427,15 +447,78 @@ for (const spec of specs) {
             // What rendering draws now (2 s of frames, and at least `minFrames`): draw calls, active meshes, triangles,
             // skinned characters, particles. The fixtures view judges shares of frames, so it waits for FIXTURE_FRAMES of
             // them (held where it stands until then).
-            const minFrames = scenario === 'fixtures' ? FIXTURE_FRAMES : 1;
-            const scene = await page.evaluate(async ([minFrames, waitMs]) => {
+            const minFrames = scenario === 'fixtures' ? FIXTURE_FRAMES : Number(process.env.PERF_MIN_FRAMES ?? 1);
+            const scene = await page.evaluate(async ([minFrames, waitMs, breakdown]) => {
               const sc = window.__cs.view.scene;
               const engine = sc.getEngine();
               const counter = engine._drawCalls;
               const add = counter?.addCount;
               let frameDraws = 0;
               const s = { draws: [], meshes: [], tris: [], skinned: [], casters: [], posed: [], animated: [], kinds: {}, lasting: [] };
-              if (counter && add) counter.addCount = (n, f) => ((frameDraws += n), add.call(counter, n, f));
+              // PERF_BREAKDOWN=1: each draw put down to its pass and the mesh drawing it (as client-perf.mjs does).
+              const bd = breakdown ? { pass: '', mesh: null, sum: new Map(), frames: 0 } : null;
+              const own = (o, key) => {
+                for (let p = Object.getPrototypeOf(o); p; p = Object.getPrototypeOf(p)) if (Object.prototype.hasOwnProperty.call(p, key)) return p;
+                return null;
+              };
+              const restore = [];
+              if (bd) {
+                const meshProto = own(sc.meshes.find((m) => typeof m._processRendering === 'function' && !m.isAnInstance), '_processRendering');
+                const draw = meshProto._processRendering;
+                meshProto._processRendering = function (...a) {
+                  const was = bd.mesh;
+                  bd.mesh = a[0]?.getClassName ? a[0] : this;
+                  try {
+                    return draw.apply(this, a);
+                  } finally {
+                    bd.mesh = was;
+                  }
+                };
+                restore.push(() => (meshProto._processRendering = draw));
+                const rtts = [];
+                for (const l of sc.lights) { const sm = l.getShadowGenerator?.()?.getShadowMap(); if (sm) rtts.push(sm); }
+                for (const t of sc.customRenderTargets ?? []) rtts.push(t);
+                const rttProto = rtts.length ? own(rtts[0], 'render') : null;
+                if (rttProto) {
+                  const render = rttProto.render;
+                  rttProto.render = function (...a) {
+                    const was = bd.pass;
+                    bd.pass = this.name.replace(/[0-9]+/g, '#').slice(0, 32);
+                    try {
+                      return render.apply(this, a);
+                    } finally {
+                      bd.pass = was;
+                    }
+                  };
+                  restore.push(() => (rttProto.render = render));
+                }
+              }
+              const drawKind = (m) => {
+                if (!m) return 'no mesh (post, sprites, layers)';
+                if (m.renderingGroupId === 1) return 'first-person view';
+                let n = m;
+                while (n.parent) n = n.parent;
+                const root = n.name ?? '';
+                const nm = m.name ?? '';
+                if (/gun|weapon|held|whole_weapons|static_weapons/i.test(nm) && /^(avatar|char|creature)_/.test(root)) return 'held guns';
+                if (/^whole_weapons|^static_weapons|weapons\//.test(nm)) return 'held guns';
+                if (/^(avatar|char|creature)_/.test(root)) return 'characters';
+                if (/^env_/.test(nm)) return 'environment';
+                if (/^(prop_|static_|propBatch|pb_)/.test(root) || /^(propBatch|pb_|static_)/.test(nm)) return 'props';
+                if (/^foliage/.test(root) || /^foliage/.test(nm)) return 'foliage';
+                if (/^gv_|^fx|flash|^sc_flame/.test(root) || /^gv_|^fx|flash/.test(nm)) return 'effects';
+                if (/^(map|block|terrain|ground|city|road|path|backdrop|border|shadowProxy)/i.test(root) || /^(map_|shadowProxy)/.test(nm)) return 'map';
+                return 'other';
+              };
+              if (counter && add) counter.addCount = (n, f) => {
+                frameDraws += n;
+                if (bd) {
+                  const name = bd.mesh ? bd.mesh.name.replace(/[0-9]+/g, '#').slice(0, 48) : '';
+                  const k = `${bd.pass || 'main'}|${drawKind(bd.mesh)}|${name}`;
+                  bd.sum.set(k, (bd.sum.get(k) ?? 0) + n);
+                }
+                return add.call(counter, n, f);
+              };
               // Timing-free counts that work on any build: skeletons posed this frame (Babylon stamps each with the
               // render id it was prepared in) and characters whose clips were evaluated (their animation gate open).
               let rid = 0;
@@ -484,6 +567,7 @@ for (const spec of specs) {
               sc.onAfterRenderObservable.remove(after);
               sc.onAfterAnimationsObservable.remove(anim);
               if (counter && add) counter.addCount = add;
+              for (const r of restore) r();
               const avg = (a) => Math.round(a.reduce((x, v) => x + v, 0) / Math.max(1, a.length));
               // Characters drawn (in view) now, for draws per character.
               const shown = [...window.__cs.view.avatars.values()].filter((a) => a.anim && !a.culled).length;
@@ -529,8 +613,9 @@ for (const spec of specs) {
               const lastingShare = {};
               for (const f of s.lasting) for (const k of new Set(f)) lastingShare[k] = (lastingShare[k] ?? 0) + 1 / Math.max(1, s.lasting.length);
               for (const k of Object.keys(lastingShare)) lastingShare[k] = +lastingShare[k].toFixed(2);
-              return { lasting: Math.max(0, ...s.lasting.map((f) => f.length)), lastingShare, frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length };
-            }, [minFrames, scenario === 'fixtures' ? FIXTURE_WAIT_MS : 30000]);
+              return { lasting: Math.max(0, ...s.lasting.map((f) => f.length)), lastingShare, frames: s.draws.length, draws: avg(s.draws), meshes: avg(s.meshes), tris: avg(s.tris), skinned: avg(s.skinned), casters: avg(s.casters), effectCasters, shown, skeletons: sc.skeletons.length, particles: sc.particleSystems.length, lights: sc.lights.length, posed: avg(s.posed), animated: avg(s.animated), bands, activeByKind: kinds, casterKinds, castingCharacters, otherCasters: Object.entries(otherNames).sort((a, b) => b[1] - a[1]).slice(0, 6), shaders: window.__cs.view.shaderCount?.() ?? Object.keys(engine._compiledEffects ?? {}).length, breakdown: bd ? [...bd.sum].map(([k, v]) => [k, +(v / n).toFixed(1)]) : null };
+            }, [minFrames, scenario === 'fixtures' ? FIXTURE_WAIT_MS : 30000, process.env.PERF_BREAKDOWN === '1']);
+            if (scene.breakdown) printBreakdown(`${id} ${graphics} ${scenario}`, scene.breakdown);
             if (scenario === 'fixtures') await sim(FIXTURES_END);
             const prof = await sim(PROFILE, false);
             const wall = (Date.now() - t0) / 1000;

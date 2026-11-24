@@ -23,9 +23,15 @@
  * `smallcasters`: trees and rocks cast through static shadow-only batches by cascade, props with levels of detail through
  * the shadow proxies at full detail, small clutter's near shadows with a band (game/shadowCasters.ts); the body pool to
  * about 32 adds `bodypool`, a big match keeping up to 32 spare character bodies instead of 16, bodyPool.ts; `pickupbatch`, the pickups as GPU instances instead of thin instances (pickupBatch.ts); `glowinplace`, a glow change set through the material's property every time (view.ts setGlow); `reconcileframe`, the local player reconciled at every snapshot instead of once a frame (session.ts); `snapbin`, the local match's snapshots from its worker as binary messages read into reused objects instead of structured-cloned objects (localTransport.ts, shared net/snapshotBinary.ts); `gripfit`, first person's support hand read afresh at every step of its slide along the handguard (characterAnimator.ts slideSupport).
+ * Fewer draws in big matches (docs/PERF_DRAWS_2026-11-23.md) adds `doorinst`, doors' merged parts drawn as GPU instances of
+ * one source per shape and material (scenarioVisuals.ts instanceRigidParts); `lightready`, the clustered lights' readiness
+ * checked once a render instead of for every lit draw (clusteredLights.ts); `casterlist`, the shadow list's still casters
+ * sorted once and tested again only when the camera moves (atmosphere.ts); `casterbounds`, the cascades' casters' box
+ * kept for the still casters (shadowBounds.ts); `fxlight`, the effects' sun and sky colours set on their materials only
+ * when they change (godotVfx.ts update).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight';
 
 let off: Set<string> | null = null;
 

@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Big matches draw a little cheaper.** Doors and buttons of one kind are drawn together (Flavius Rule's views about 30 % fewer draw calls), and the lights and shadows check less every frame; nothing looks different (docs/PERF_DRAWS_2026-11-23.md).
 - **Remap every control; Q and E lean.** Options → Controls lists every keyboard and mouse action by group (click, press a key or mouse button; clash warning with Swap; Reset to defaults), saved with your account when signed in. New defaults: Q / E lean, F use and doors, X last weapon, hold Tab the weapon wheel, a tap of Tab the scoreboard; keys you had moved stay yours, and every hint shows your keys (docs/CONTROLS.md).
 - **Roof parapets are solid.** The coping, merlons and pinnacles along a roof edge (St. John's halls and every other stone, concrete or adobe building) stop players and bullets; you can lie behind a merlon, and nobody walks or shoots through the battlement.
 - **The Laser Blaster fires a recorded laser blast** (the Laser Rifle keeps its synthesised beam); the announcer no longer says "That guy just blew up a dog".

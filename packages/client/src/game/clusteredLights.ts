@@ -1,6 +1,7 @@
 import { ClusteredLightContainer } from '@babylonjs/core/Lights/Clustered/clusteredLightContainer';
 import type { Scene } from '@babylonjs/core/scene';
 import { isTouchDevice } from '../touchDevice.ts';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Map lights' tile mask, sized to the map (docs/MOBILE_AUDIT.md, "Dark blocks on lit walls", proposal 1).
@@ -109,5 +110,26 @@ export function makeLightContainer(scene: Scene, lamps: number): { container: Cl
     return null;
   }
   c.verticalTiles = plan.verticalTiles;
+  if (perfOn('lightready')) readyOncePerRender(c, scene);
   return { container: c, plan, maxTexture };
+}
+
+/**
+ * Babylon asks every lit material, for every mesh it draws, whether the container is ready, and the container answers by
+ * checking its light proxy mesh in full (its material, every shadow generator of every light) each time: about 3 % of a
+ * 63-player St. John's frame on the owner's M1 (docs/PERF_DRAWS_2026-11-23.md). Once it has said yes, the answer holds
+ * for the rest of that render (Babylon's render id: each frame and each render target pass has its own); the first ask
+ * of every render still does the full check, so nothing it would catch (a light added, the batches grown) is missed.
+ */
+export function readyOncePerRender(c: ClusteredLightContainer, scene: Scene): void {
+  const inner = c as unknown as { _isReady: () => boolean };
+  const full = inner._isReady.bind(c);
+  let readyAt = -1;
+  inner._isReady = () => {
+    const id = scene.getRenderId();
+    if (readyAt === id) return true;
+    const ok = full();
+    readyAt = ok ? id : -1;
+    return ok;
+  };
 }
