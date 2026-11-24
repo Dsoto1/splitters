@@ -343,3 +343,30 @@ the two staircases into one shared stair, so that space frees up and the tower c
 removes redundant verticality". To be done through MapMaker with a step list, before steps 9-11, with pictures before
 and after (top-down, and from inside the merged stair) and inside the performance rules. Which stair survives, where
 the tower stands and how far it moves are asked of the owner first (they change routes): see PLAN 4o.
+
+## Memorial Hall pass (2026-11-23): the owner's screenshot from the lane, and notes after seeing the map in play
+
+From the lane (the road west of the library), the owner's screenshot of the building with the stone ground floor, the
+dark shingled upper floor with long bands of windows and the steep pyramid roof behind a gabled roof: Memorial Hall
+(the library of step 8b). Relayed by the splitters lead; answers "all recs":
+
+1. Memorial Hall needs only **one spiral staircase**, the one on the right walking in from the main courtyard; remove
+   the other.
+2. **More bookshelves, taller**, closer to the ceiling.
+3. The windows **breakable glass**: clear, so players see in and out; a shot breaks the pane, which is then open.
+4. A **bench along the inside of the upper floor's court-facing wall**, under the upper windows, to stand on and look
+   and shoot out into the court; bots to use it if practical.
+5. **Round all four corners** of the hall, the roof following; right from the lane and the court.
+6. **The roofline edges look strange; you can almost see through them**: find the cause and fix it at the piece.
+
+Later the same day, after seeing the map in play (relayed by the lead):
+
+7. **The annex** (the small gabled wing with the red door): move it over one cell so it is part of the hall's
+   building; the player can go in, and it opens into the library. Keep one spiral stair, at the end away from the
+   annex.
+8. **Welles's dorm-bay end at (2, −11)**: the ground floor removed (it is shut off, reachable only from the lane by
+   the Carriageway: close or remove that door and the room; the cell's use is the lead's call, nav kept clean); the
+   2nd and 3rd floors **showers and bathrooms** instead of dorm rooms ("the dorms look odd"): stalls, sinks with
+   mirrors, showers; a mirror over the dorm rooms' sinks too (the corner's answer 6) if it fits.
+
+Built in step 11 (PLAN 4q, `steps-11.json`).

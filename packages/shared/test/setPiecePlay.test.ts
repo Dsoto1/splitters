@@ -103,7 +103,7 @@ const OPEN_SIDED = [
   // St. John's step 7c (setPiecesAcademy.test.ts walks them): both stand open against a hall's doorway on their north side.
   'setpiece.entrance_porch',
   'setpiece.gate_tower_front',
-  'setpiece.dorm_office_bay', 'setpiece.gable_wing',
+  'setpiece.dorm_office_bay', 'setpiece.gable_wing', 'setpiece.gable_annex',
   'setpiece.hall_centre',
   'setpiece.landing_craft_beached',
   'setpiece.loading_dock',

@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_3d5vzjh7xjsjbptv",
-      "revision": 68,
-      "contentHash": "sha256:2a6e8bb81759f241ba71f41994fd959809958acb7d65112309d68b0889c8ed2c",
+      "versionId": "v_rurdf6vdzx4fegew",
+      "revision": 71,
+      "contentHash": "sha256:1f9da8504ac13e20bdda1e224cee550d3566f8a261ecbaacb7f7e69cda45147c",
       "schemaVersion": 49,
-      "releasedAt": "2026-11-23T03:41:56.800Z"
+      "releasedAt": "2026-11-23T16:29:05.898Z"
     }
   },
   "classicStructure": {
@@ -30688,6 +30688,9 @@
             "material": "core.pbr_collegiate_rubble",
             "tint": null
           }
+        },
+        "options": {
+          "plan": "rounded"
         }
       }
     },
@@ -30707,18 +30710,12 @@
           }
         },
         "options": {
-          "door": "east"
+          "door": "east",
+          "plan": "rounded",
+          "bench": "east",
+          "annex": "north"
         }
       }
-    },
-    {
-      "id": "setpiece_ablwo96cea",
-      "piece": "setpiece.gable_wing",
-      "x": -6,
-      "y": -4,
-      "z": 0,
-      "rotation": 0,
-      "mirror": false
     },
     {
       "id": "setpiece_opnil3iust",
@@ -30803,7 +30800,8 @@
       "overrides": {
         "options": {
           "roomDoors": "slim",
-          "end": "door"
+          "end": "door",
+          "room": "closed"
         }
       }
     },
@@ -30817,7 +30815,8 @@
       "mirror": false,
       "overrides": {
         "options": {
-          "roomDoors": "slim"
+          "roomDoors": "slim",
+          "room": "washroom"
         }
       }
     },
@@ -30831,9 +30830,19 @@
       "mirror": false,
       "overrides": {
         "options": {
-          "roomDoors": "slim"
+          "roomDoors": "slim",
+          "room": "washroom"
         }
       }
+    },
+    {
+      "id": "setpiece_hgx183rbia",
+      "piece": "setpiece.gable_annex",
+      "x": -6,
+      "y": -4,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
     }
   ]
 }

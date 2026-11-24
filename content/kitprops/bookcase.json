@@ -344,6 +344,123 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.bookcase.press_tall",
+      "displayName": "Tall Bookcase Press with Bench",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's Memorial Hall pass, owner 2026-11-23: \"more bookshelves, and make them taller, closer to the ceiling\"): the Bookcase Press with Bench at 3.15 m, its cornice 5 cm under a 3.2 m beam (a library's ground storey under a floor at 3.5 m), six rows of books a face instead of five. Its −x end goes to the wall. Collides as the case's box and the bench's."
+      },
+      "size": [
+        3,
+        3.15,
+        2.1
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "press",
+        "case": 0.7,
+        "shelves": 6,
+        "ledge": "front",
+        "bench": true,
+        "finial": 0.16
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "dark_oak",
+          "seed": 41121,
+          "look": {
+            "wood": "#3d2a1c",
+            "books": "0.25",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "walnut",
+          "seed": 41122,
+          "look": {
+            "wood": "#4a3024",
+            "books": "0.4",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.bookcase.double_tall",
+      "displayName": "Tall Double-sided Bookcase",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. John's Memorial Hall pass, owner 2026-11-23: \"more bookshelves, and make them taller\"): the Double-sided Bookcase at 3.2 m (a room open to its roof: a library's upper storey), six rows of books a face. Collides as its box."
+      },
+      "size": [
+        3.2,
+        3.2,
+        0.8
+      ],
+      "bounds": "within",
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "press",
+        "shelves": 6,
+        "finial": 0.12
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 41131,
+          "look": {
+            "wood": "#6a4a2c",
+            "books": "0.7",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "dark_oak",
+          "seed": 41132,
+          "look": {
+            "wood": "#3d2a1c",
+            "books": "0.5",
+            "jitter": "0.08",
+            "grime": "0.3"
+          }
+        }
+      ]
     }
   ]
 }

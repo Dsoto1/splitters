@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/fastguns-1124` · e76729ba · 45375790844 (short fire cuts for the Mounted MG and the Machine Pistol: `fire.heavy.fast` 0.39 s, `fire.heavy.l86.fast` 0.29 s, so their reports fit the 6-voice cap; sounds, the two weapons' `view.sound`, the generated weapon table, provenance)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -248,6 +249,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-24** train check/train-20261124-120921 (a2ce9d3, run 45390862343), landed by the splitters lead: Citadel retired and the Training Range moved to Profile → Favourite loadout → Test weapons (`wip/retire-train-1124`); St. John's 11, Memorial Hall rounded with one stair, taller shelves, a window bench, breakable glass, the annex joined, and Welles's end-bay washrooms (`wip/stjohns-11`). Owner 11-24: retire Linktifa and Sprout (hidden, Designer keeps them; random first character) and Newt Calloway on `wip/chars-1124`; St. John's into Featured and Quick Play DM, "Classic remake" on `wip/match-setup-1123`.
 - **2026-11-24** lane B's prop atlases and merged still props (`wip/propatlas-1123`; train 5d2fee8 green, landed by the splitters lead with docs-only main merged in).
 - **2026-11-24** landed by the splitters lead: the long guns' red dot and holo sights (eye at the glass, a smaller sight picture, the lens checked on the aim; `wip/fix-optic-1123`, train ed06e89) and the controller pass (d-pad lean while aiming, hold B prone, Menu pauses, View scoreboard, separate stick sensitivity and dead zone, map vote by pad, pad buttons in prompts, a notice for a non-standard pad; `wip/pad-lean-1123`, train b9a6a99 run 45305725683, with docs-only main merged in).
 - **2026-11-24** train check/train-20261124-001451 (8ce539e, run 45295604542; landed by the splitters lead with docs-only main merged in): lane B's `wip/draws-1123` (fewer draw calls in big matches), `wip/guntails-1123` (longer rings for the slow guns) and `wip/weapon-edits-1123b` (the owner's second Weapon Manager change set).
