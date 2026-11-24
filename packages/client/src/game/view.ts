@@ -114,6 +114,7 @@ import {
   AMMO_BOX_MODEL,
   indoorProps,
   TICK_RATE,
+  materialSurface,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -714,6 +715,7 @@ export class GameView {
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
+    this.scenario.onBlockReset = (body) => this.impacts.clearHolesOn(body);
     this.throwArc = new ThrowArc(this.scene);
     this.blood.enabled = bloodPreference();
     this.blood.onFx = (key, at) => this.bloodFx(key, at);
@@ -1497,6 +1499,16 @@ export class GameView {
       this.impacts.sparkBurst(pane.point, 3, 1.2);
       return;
     }
+    // A block the scenario drives (a breakable target board, a mover's platform): its hole goes on the block (blockHoles.ts).
+    const block = this.scenario.strikeBlock(o.eye, o.to);
+    if (block) {
+      const style = impactStyle(materialSurface(block.material ?? ''));
+      const size = Math.min(1.6, 0.7 + o.strength * 0.4);
+      this.impacts.wallImpact(block.point, block.normal, size, { ...style, hole: false });
+      if (style.hole !== false) this.impacts.holeOn(block.body, block.local.point, block.local.normal, size);
+      this.accent(style.accent, block.point, block.normal);
+      return;
+    }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
     if (wall) {
       // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
@@ -1509,6 +1521,8 @@ export class GameView {
 
   /** The surface type a round from `from` landing at `to` struck in the level (null: nothing there, or a body). */
   surfaceStruck(from: Vec3, to: Vec3): Surface | null {
+    const block = this.scenario.strikeBlock(from, to);
+    if (block) return materialSurface(block.material ?? '');
     const wall = this.impacts.surfaceHit(from, to);
     return wall ? (wall.surface ?? surfaceOfFace(wall.box, wall.normal, wall.point, this.surfaces)) : null;
   }

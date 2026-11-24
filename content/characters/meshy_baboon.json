@@ -5,6 +5,7 @@
   "order": 197,
   "name": "Rufus Boomtown",
   "sortAs": "04 Rufus Boomtown",
+  "size": "small",
   "look": "core.baboon",
   "group": "animals",
   "blood": "red",

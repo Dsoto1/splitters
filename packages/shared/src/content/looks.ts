@@ -290,6 +290,8 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.bigbab': 'core.gorillag', // Big Bab -> Gorilla G
   'core.tortoise': 'core.coachtortoise', // Shellback -> Coach Hank Shelton
   'core.giggles': 'core.teddy', // Giggles -> Teddy
+  // Owner, 2026-11-24: Brutus Hornbeck off the roster too (files kept); a saved pick plays Gorilla G, a kept large Animalia.
+  'core.rhinojuggernaut': 'core.gorillag', // Brutus Hornbeck -> Gorilla G
   // The Dummy (the trooper mannequin NPC skin): off Character Select (PLAYER_NPC_LOOKS); a saved pick plays Stealth
   // Operative, a kept Agency soldier. The trooper NPC role (training targets, soldiers) keeps its mannequin.
   'npc:trooper': 'core.stealthop',
