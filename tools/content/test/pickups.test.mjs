@@ -73,8 +73,9 @@ describe('pickups generator (tools/content/pickups.mjs)', () => {
   it('takes `rolls: false` on a weapon pickup only (the Pistol), and writes it into the table', () => {
     const { out } = pickups.build(content);
     expect(out.items.filter((i) => i.rolls === false).map((i) => i.id)).toEqual(['core.weapon_pistol']);
-    expect(pickups.render(out)).toMatch(/id: 'core\.weapon_pistol', displayName: 'Pistol', .* rolls: false \},/);
-    expect(pickups.render(out)).not.toMatch(/weapon_rifle'.*rolls/);
+    // (Weapon pickups are written short: `weapon(id, respawn, botValue, false)`, the id and name the weapon's.)
+    expect(pickups.render(out)).toMatch(/weapon\('core\.pistol', [\d.]+, [\d.]+, false\),/);
+    expect(pickups.render(out)).not.toMatch(/weapon\('core\.rifle'.*false/);
     const c = clone(content);
     find(c, 'core.health_small').rolls = false;
     find(c, 'core.weapon_rifle').rolls = true;

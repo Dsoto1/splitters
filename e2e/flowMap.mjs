@@ -241,6 +241,9 @@ const RULES = [
   [/^packages\/client\/src\/game\/lowHealth\.ts$/, ['arsenal', ...FLASHING_FLOWS], ['client']],
   [/^packages\/client\/src\/game\/(reduceFlashing|steadyArcs|hurtVignette)\.ts$/, ['offline', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'visual', ...FLASHING_FLOWS], ['client']],
   // Pickups' floor glows (Binbun's Loot VFX): the flicker check records them; the flows that walk over pickups.
+  // Power-ups' looks (the HUD line, the glow and shimmer on bodies, MapMaker's palette icons): the flicker check's
+  // `powerups` moment, the coverage map's pickups, MapMaker's palette.
+  [/^packages\/client\/src\/game\/(powerupGlow|powerupLook)\.ts$/, ['offline', 'coverage', 'editor', ...FLASHING_FLOWS], ['client']],
   [/^packages\/client\/src\/game\/lootGlow\.ts$/, ['offline', 'physicsfx', 'visual', ...FLASHING_FLOWS], ['client']],
   // Portals' swirls and jump pads' lifts (Binbun's Portal and Magic Area VFX): the flicker check records them; the
   // flows that walk through portals and over pads (the coverage map has both), and the pictures.

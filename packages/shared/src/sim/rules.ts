@@ -130,6 +130,11 @@ export interface MatchRules {
   spawnProtection?: number;
   /** Kill-streak rewards (UAV, supply pulse, Counter-UAV, airstrike). Default true. */
   killstreaks?: boolean;
+  /**
+   * Power-ups the host switched off (sim/items.ts POWERUP_KINDS: 'speed', 'overdrive'…): their pickups don't lie on
+   * the map. Absent or empty: every power-up is on (the default).
+   */
+  powerupsOff?: string[];
   /** Team modes: respawn beside a teammate who isn't in a fight, when one is free. Default true. */
   squadSpawn?: boolean;
   /** Gravity multiple (1 normal); absent: the map's own (MapMaker), else normal. */
@@ -216,6 +221,9 @@ export const SCORE_LIMIT_MAX = 5000;
 
 /** Weapons-only rules (spears, discs) take away weapon, ammo and grenade pickups. */
 export const restrictedWeapons = (rules: MatchRules): boolean => !!rules.weapons && rules.weapons !== 'normal';
+
+/** Whether the host switched this power-up off (MatchRules.powerupsOff). */
+export const powerupOff = (rules: Pick<MatchRules, 'powerupsOff'>, kind: string): boolean => !!rules.powerupsOff?.includes(kind);
 
 /**
  * Dual wielding is built in steps (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): play since step 2, the second gun
