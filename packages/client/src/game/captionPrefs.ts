@@ -18,29 +18,24 @@ export const CAPTIONS_EVENT = 'tiletrigger:captions';
 
 export const parseCaptionMode = (v: unknown): CaptionMode => CAPTION_MODES.find((m) => m === v) ?? 'off';
 
-let current: CaptionMode | null = null;
-
-/** The setting now (read from storage once). */
+/**
+ * The setting now, read from storage each time (it is read only when a match starts or the setting changes; Options
+ * writes the key itself: frontend/frontEnd.ts).
+ */
 export function captionMode(): CaptionMode {
   try {
-    return (current ??= parseCaptionMode(localStorage.getItem(KEY)));
+    return parseCaptionMode(localStorage.getItem(KEY));
   } catch {
-    return (current = 'off');
+    return 'off';
   }
 }
 
-/** Save the setting here; `fromAccount` when it came from the account. */
+/** Save the setting here; `fromAccount` when it came from the account (game/prefSync.ts doesn't send it back). */
 export function saveCaptionMode(m: CaptionMode, fromAccount = false): void {
-  current = parseCaptionMode(m);
   try {
-    localStorage.setItem(KEY, current);
+    localStorage.setItem(KEY, parseCaptionMode(m));
   } catch {
-    // Lasts for this page.
+    // Private windows: not kept.
   }
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(CAPTIONS_EVENT, { detail: fromAccount }));
-}
-
-/** Tests: forget the value read. */
-export function resetCaptionModeCache(): void {
-  current = null;
 }

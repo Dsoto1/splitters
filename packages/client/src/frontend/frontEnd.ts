@@ -138,7 +138,6 @@ import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
-import { CAPTION_MODES, captionMode, saveCaptionMode, type CaptionMode } from '../game/captionPrefs.ts';
 import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
 import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
@@ -3439,9 +3438,11 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
-    // Sound captions (game/captionPrefs.ts): off by default; saved on the account when signed in.
-    const captions = el('select', { id: 'opt-captions' }, ...CAPTION_MODES.map((m, i) => el('option', { value: m, textContent: ['Off', 'On', 'On, with direction'][i], selected: m === captionMode() })));
-    captions.addEventListener('change', () => saveCaptionMode(captions.value as CaptionMode));
+    // Sound captions (game/captionPrefs.ts, its key and event written out here to keep that file out of the menu's
+    // first load): off by default; saved on the account when signed in (game/prefSync.ts hears the event).
+    const capKey = 'tiletrigger.captions';
+    const captions = el('select', { id: 'opt-captions' }, ...['off', 'on', 'dir'].map((m, i) => el('option', { value: m, textContent: ['Off', 'On', 'On, with direction'][i], selected: m === storage(capKey) })));
+    captions.addEventListener('change', () => (storage(capKey, captions.value), window.dispatchEvent(new Event('tiletrigger:captions'))));
     // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));

@@ -17,13 +17,12 @@ vi.mock('../src/profile.ts', () => ({
   },
 }));
 const { syncPrefs } = await import('../src/game/prefSync.ts');
-const { captionMode, resetCaptionModeCache, saveCaptionMode } = await import('../src/game/captionPrefs.ts');
+const { captionMode, saveCaptionMode } = await import('../src/game/captionPrefs.ts');
 
 describe('Sound captions on the account (the profile\'s prefs)', () => {
   beforeEach(() => {
     store.clear();
     saved.length = 0;
-    resetCaptionModeCache();
   });
 
   it("signed in, the account's setting is yours here, and a change goes to the account", () => {
@@ -42,7 +41,6 @@ describe('Sound captions on the account (the profile\'s prefs)', () => {
     syncPrefs();
     expect(saved).toEqual([]);
     store.set('tiletrigger.captions', 'on');
-    resetCaptionModeCache();
     syncPrefs();
     expect(saved).toEqual([{ prefs: { captions: 'on' } }]);
   });

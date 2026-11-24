@@ -14493,16 +14493,16 @@ async function padsetupFlow(browser) {
  */
 async function captionsFlow(browser) {
   const shots = process.env.E2E_SHOTS;
-  const run = async (label, ctxOpts, useOptions) => {
+  const run = async (label, ctxOpts, useOptions, map = 'sandgate') => {
     const context = await browser.newContext(ctxOpts);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
-    await page.addInitScript(() => {
+    await page.addInitScript((m) => {
       if (sessionStorage.getItem('seeded')) return;
       sessionStorage.setItem('seeded', '1');
-      localStorage.setItem('cs.arcade', JSON.stringify({ map: 'sandgate', mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 200, minutes: 20 }));
-    });
+      localStorage.setItem('cs.arcade', JSON.stringify({ map: m, mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 200, minutes: 20 }));
+    }, map);
     await page.goto(`${CLIENT}/?test=1&god=1`);
     if (useOptions) {
       // The Options row: Off at first, three choices, the pick saved.
@@ -14562,14 +14562,37 @@ async function captionsFlow(browser) {
     check(!!drawn && drawn.rows >= 1 && drawn.rows <= 4 && drawn.inside && /rgba\(6, 9, 16, 0\.7/.test(drawn.backing) && drawn.text.some((t) => /Gunfire|Explosion|Grenade|Near miss|Footsteps/.test(t)), `${label}: the captions show (1-4 lines on a dark backing, inside the screen: ${JSON.stringify(drawn)})`);
     check(d.stats.renders <= Math.max(10, d.stats.kept), `${label}: drawn only when something changes, a few times a second (${JSON.stringify(d.stats)})`);
     if (shots) {
-      await page.waitForFunction(() => window.__cs.captions().shown.length >= 2, null, { timeout: T(30000) }).catch(() => {});
+      // A picture takes seconds at deviceScaleFactor 2, longer than a caption lasts: a few of the real kinds of sound
+      // keep coming through the captions' own hook while it is taken (where you'd hear them, around you).
+      await page.evaluate(() => {
+        const c = window.__cs.captionsHud;
+        const ear = window.__cs.view.camera.position;
+        const yaw = window.__cs.view.camera.rotation.y;
+        const around = (deg, d) => ({ x: ear.x + Math.sin(yaw + (deg * Math.PI) / 180) * d, y: ear.y, z: ear.z + Math.cos(yaw + (deg * Math.PI) / 180) * d });
+        const feed = () => {
+          c.hear('fire.shot', around(-80, 25), 25, 250, 1);
+          c.hear('throw', around(170, 8), 8, 60, 2);
+          c.hear('footstep', around(90, 6), 6, 30, 3);
+          c.hear('explosion', around(10, 140), 140, 250, 2);
+          c.update(performance.now());
+        };
+        feed();
+        window.__capFeed = setInterval(feed, 400);
+      });
+      await sleep(600);
       await page.screenshot({ path: `${shots}/captions-${label}.png`, timeout: T(120000) }).catch((e) => console.log(`captions: no picture (${e.message.split('\n')[0]})`));
+      await page.evaluate(() => clearInterval(window.__capFeed));
     }
     check(errors.length === 0, `${label}: no page errors (${errors.join('; ')})`);
     await context.close();
   };
   await run('desktop', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: shots ? 2 : 1 }, true);
   await run('phone', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false);
+  if (shots) {
+    // The same over a dark scene (Blackout's night).
+    await run('desktop-dark', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 }, false, 'blackout');
+    await run('phone-dark', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false, 'blackout');
+  }
 }
 
 async function testrangeFlow(browser) {
