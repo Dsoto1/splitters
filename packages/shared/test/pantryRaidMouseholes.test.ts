@@ -22,7 +22,7 @@ describe("Pantry Raid's mouse holes", () => {
   it('a Standard and a Large body walk straight through both holes', () => {
     const d = doc();
     for (const h of holes) {
-      for (const look of ['core.ranger', 'core.knight']) {
+      for (const look of ['core.dale', 'core.knight']) {
         const match = new Match(d, undefined, 7);
         const me = match.addHuman('me', look)!;
         me.move = { pos: { ...h.start }, velY: 0, grounded: true };
@@ -57,7 +57,7 @@ describe("Pantry Raid's mouse holes", () => {
     dd.entities = dd.entities.filter((e) => e.kind !== 'pickup');
     dd.entities.push({ id: 'zz_gun', kind: 'pickup', position: [70, 0, 3], item: 'core.weapon_shotgun', respawnSeconds: null } as MapDocument['entities'][number]);
     const match = new Match(loaded(dd), undefined, 7);
-    const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 100 }, undefined, false, { look: 'core.ranger' })!;
+    const bot = match.addBot('b', { ...CORE_BOT_PROFILES[0]!, exploration: 100 }, undefined, false, { look: 'core.dale' })!;
     bot.move = { pos: { x: 3, y: 0, z: 28 }, velY: 0, grounded: true };
     let through = false;
     for (let t = 0; t < TICK_RATE * 30 && !through && bot.alive; t++) {

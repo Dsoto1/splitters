@@ -222,7 +222,7 @@ describe('peek in the match: rounds, lag compensation and the shooter\'s own eye
   const duel = () => {
     const match = new Match(yardMap([[0, 0, 4], [4, 0, 4]]), rules);
     const a = match.addHuman('a')!;
-    const b = match.addHuman('b', 'core.ranger')!;
+    const b = match.addHuman('b', 'core.dale')!;
     a.move = { pos: { x: 0, y: 0, z: 4 }, velY: 0, grounded: true };
     b.move = { pos: { x: 4, y: 0, z: 4 }, velY: 0, grounded: true };
     a.yaw = Math.PI / 2;
