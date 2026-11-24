@@ -47,6 +47,8 @@ export class RenderGate {
   private last: number[] = [];
   private frozen = false;
   private frozenAt = 0;
+  /** When a freeze was last tried (a scene not ready waits for the next try). */
+  private triedAt = -Infinity;
   /** Bumped by every thaw: a freeze that completes after it undoes itself. */
   private token = 0;
   private overCanvas = false;
@@ -95,13 +97,21 @@ export class RenderGate {
       this.thaw();
       return true;
     }
-    if (this.frozen && now - this.frozenAt >= REFREEZE_MS) this.thaw();
+    if (this.frozen && now - this.frozenAt >= REFREEZE_MS) {
+      this.thaw();
+      this.triedAt = -Infinity;
+    }
     if (!this.frozen) this.freeze(now);
     return true;
   }
 
   /** At rest: what is in view is kept as it is until the next sign of activity (or REFREEZE_MS). */
   private freeze(now: number): void {
+    // Only a ready scene (Babylon would otherwise poll its readiness ten times a second until it is): a shader still
+    // compiling, a texture still loading, tried again in REFREEZE_MS.
+    if (now - this.triedAt < REFREEZE_MS) return;
+    this.triedAt = now;
+    if (!this.scene.isReady()) return;
     const token = ++this.token;
     this.frozen = true;
     this.frozenAt = now;

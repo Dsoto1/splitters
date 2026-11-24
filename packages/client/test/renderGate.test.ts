@@ -40,6 +40,7 @@ describe('RenderGate', () => {
     const gate = new RenderGate(scene, null);
     // (A NullEngine scene never reports ready, so Babylon's own freeze would wait: count the calls instead.)
     const frozen = { on: false, freezes: 0, thaws: 0 };
+    vi.spyOn(scene, 'isReady').mockReturnValue(true);
     vi.spyOn(scene, 'freezeActiveMeshes').mockImplementation(() => {
       frozen.on = true;
       frozen.freezes++;

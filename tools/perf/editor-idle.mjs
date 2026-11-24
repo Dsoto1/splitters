@@ -168,18 +168,40 @@ async function main() {
   await shot('open');
   // Move the camera: fly forward and turn with the right button.
   await page.mouse.move(canvas.x, canvas.y);
+  const start = await page.evaluate(() => window.__editor.view.camera.position.asArray());
   await page.keyboard.down('KeyW');
   await sleep(600);
   await page.keyboard.up('KeyW');
+  // (How far a held key flies depends on the frame rate: the same pose afterwards, so pictures of two runs compare.)
+  await page.evaluate((p) => {
+    const v = window.__editor.view;
+    v.camera.position.set(p[0] + Math.sin(v.yaw) * 8, p[1], p[2] + Math.cos(v.yaw) * 8);
+  }, start);
   await shot('camera');
   // Select what is under the middle of the view.
   await page.keyboard.press('KeyV');
-  await page.mouse.click(canvas.x, canvas.y);
+  // The thing (a prop, else anything) drawn nearest the middle of the view.
+  const target = await page.evaluate((c) => {
+    const ed = window.__editor;
+    let best = null;
+    for (const e of ed.doc.entities) {
+      if (!e.position) continue;
+      const p = ed.view.project({ x: e.position[0], y: e.position[1], z: e.position[2] });
+      if (!p) continue;
+      const d = Math.hypot(p.x - c.x, p.y - c.y) - (e.kind === 'prop' ? 60 : 0);
+      if (!best || d < best.d) best = { d, x: p.x, y: p.y, id: e.id };
+    }
+    return best;
+  }, canvas);
+  const at = target ?? canvas;
+  await page.mouse.move(at.x, at.y);
+  await page.mouse.click(at.x, at.y);
   await shot('select');
-  // Drag it (the selection's handle, or the thing itself).
-  await page.mouse.move(canvas.x, canvas.y);
+  console.log(`  selected ${JSON.stringify(await page.evaluate(() => window.__editor.selection))}`);
+  // Drag it.
+  await page.mouse.move(at.x, at.y);
   await page.mouse.down();
-  for (let i = 1; i <= 6; i++) await page.mouse.move(canvas.x + i * 12, canvas.y + i * 4);
+  for (let i = 1; i <= 6; i++) await page.mouse.move(at.x + i * 12, at.y + i * 4);
   await page.mouse.up();
   await shot('drag');
   await page.keyboard.press('Escape');
