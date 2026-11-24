@@ -5,6 +5,11 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 History (older Landed notes, finished claims, old owner answers and the earlier sessions' "Start here" sections) lives in `docs/history/handoff-2026-11.md`; nothing was dropped. Keep this file to the current state, live claims, "Checking" lines and the last ~2 days of notes (docs/PROCESS.md, "HANDOFF stays short").
 
+## Speed-up rules (owner, 2026-11-24: "do all three"; both lanes)
+1. **Batch small items:** small changes go into one branch with one check and one landing (fixes in the daily `wip/fixes-<date>`; small features together in one `wip/small-<date>` branch), not one branch each.
+2. **Locally, test only what the change touches:** typecheck, the content check when content changed, vitest on the named test files, at most one short e2e flow. No full `pnpm test`, no `pnpm prepush` to its end, no full e2e on the shared box: GitHub runs the full set. A local timeout is slowness, not a finding.
+3. **At most two helpers on heavy work (builds, atlases, browsers) at a time per lane**, one heavy job each at a time; each finishes sooner.
+
 ## MapMaker at rest and the leak question, `wip/editor-idle-1124` (helper of lane B's splitters22, 2026-11-24; owner "yes start 1 and 2")
 Claim (the owner's M1 trace of 2026-11-24, 58.7 s: MapMaker 40 fps and 100% of the main thread at rest; heap, DOM nodes and listeners rising in a Test): (1) MapMaker draws only when something changes, a few frames a second at rest with the active meshes frozen, `?perfoff=editoridle` for the old way; (2) a repeatable leak probe (Test → play → Back → edit, N cycles, collected between) and fixes for what grows. Files: new `packages/client/src/editor/renderGate.ts`, `editor/editorView.ts` (the gate, `renderIfNeeded`), `editor/editorApp.ts` (`frame`), `game/perfSwitches.ts` (`editoridle`), new `test/renderGate.test.ts`, new `tools/perf/editor-idle.mjs`, `tools/perf/memory-probe.mjs`, docs/PERF_EDITOR_IDLE_2026-11-24.md, docs/PERF_TOOLS.md, CHANGELOG; leak fixes where the probe points (if `game/hud.ts`, `game/session.ts` or `audio/audio.ts`: minimal, said here first; the captions and colour-blind helpers are in those). No map or format change.
 
