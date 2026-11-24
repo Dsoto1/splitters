@@ -36,7 +36,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fixes-20261124` · 206cb81e · 45477052475 (fix batch 11-24: menu music, bullet holes on breakable and moving blocks, Blaster X-42 bolts from the muzzle)
+- `wip/captions-1124` · 4f5e5ad5 · 45480779970 (sound captions; frees 37.1 kB of the menu's first JS, 2799.9 → 2762.8 kB: map release records out of the map index, the Bots window loaded on first open; ahead of `wip/crash-reports-1124`, which needs the room)
+- `wip/crash-reports-1124` · 273c40a5 · 45464588015 (crash and error reports; adds 0.6 kB to the menu, 2799.6 of 2800 kB alone: land it after `wip/captions-1124` frees room, merging main and re-checking; the hub restarts on the owner's `sudo tiletrigger-update`, docs/CRASH_REPORTS.md)
+- `wip/colourblind-1124` · 52af939a · 45476320445 (colour vision: attempt 1, full suite; menu JS 2795.9 kB, 3.1-3.4 kB under main, as steer mode leaves vehicleCamera.ts; the account copy of the setting waits for captions' `prefs`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -164,6 +166,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-24** train check/train-20261124-190819 (cef97a4, run 45467075483; e2e 3/12 timed out on a slow runner, passed on its one re-run), landed by the splitters lead: Verdant Ziggurat retired (owner: too close to Vinefall Sanctum), its menu picture and card removed (`wip/retire-ziggurat`).
 - **2026-11-24** train check/train-20261124-182145 (44d15ac, run 45458734185), landed by the splitters lead: `wip/chars-1124`: the experimental characters promoted, Newt Calloway, ten retired as playable (Linktifa, Sprout, Astronaut Explorer, Neon Shadow Ninja, Neon Guardian, Bill the Barbarian, Brass Hare, Big Bab, Shellback, Giggles) plus the Dummy mannequin skin off the picker (owner: kept, saved picks play Stealth Operative), DEFAULT_LOOK Cal, Frida beside Larry and the look-alike groups side by side (`CHARACTER_NEIGHBOURS`); slidepeek deterministic (root cause: clock-seeded spawns; fixed start spots via `E2E_START_AT`).
 - **2026-11-24** `wip/newmap-setup` (green 00ecbad9, run 45438023091), landed alone by the splitters lead: MapMaker's New map is one short screen, every choice pre-filled: size or layout, theme (note: costly to change later) and its ground, mode and also-offered modes, players (suggesting a size), boundary (None, Invisible walls, Solid walls, Tall fence; fitted 4 m out). Owner 11-24: 4 m out kept, Sky maps keep the choice, layouts take the picked theme.
 - **2026-11-24** train check/train-20261124-144609 (23f63d2, run 45417834941), landed by the splitters lead: short fire cuts for the Mounted MG and the Machine Pistol (`wip/fastguns-1124`, lane B); the Match Setup redesign: six categories with sub-tags, map format v50, Classic remake, St. John's in Featured and Quick Play DM, unlisted maps kept out of the grid (`wip/match-setup-1123`). Owner 11-24 on `wip/chars-1124`: retire nine more characters as playable, Frida beside Larry, look-alike groups side by side; slidepeek made deterministic.
