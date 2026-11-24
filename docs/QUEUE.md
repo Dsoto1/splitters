@@ -38,8 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fastguns-1124` · e76729ba · 45375790844 (short fire cuts for the Mounted MG and the Machine Pistol: `fire.heavy.fast` 0.39 s, `fire.heavy.l86.fast` 0.29 s, so their reports fit the 6-voice cap; sounds, the two weapons' `view.sound`, the generated weapon table, provenance)
-- `wip/match-setup-1123` · 976abd7c · 45408854049 (Match Setup redesign: categories, map format v50, every map re-saved by MapMaker, St. John's tagged; Classic remake; St. John's Featured and in Quick Play DM; controller navigation; pictures to the owner before landing)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -250,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-24** train check/train-20261124-144609 (23f63d2, run 45417834941), landed by the splitters lead: short fire cuts for the Mounted MG and the Machine Pistol (`wip/fastguns-1124`, lane B); the Match Setup redesign: six categories with sub-tags, map format v50, Classic remake, St. John's in Featured and Quick Play DM, unlisted maps kept out of the grid (`wip/match-setup-1123`). Owner 11-24 on `wip/chars-1124`: retire nine more characters as playable, Frida beside Larry, look-alike groups side by side; slidepeek made deterministic.
 - **2026-11-24** train check/train-20261124-120921 (a2ce9d3, run 45390862343), landed by the splitters lead: Citadel retired and the Training Range moved to Profile → Favourite loadout → Test weapons (`wip/retire-train-1124`); St. John's 11, Memorial Hall rounded with one stair, taller shelves, a window bench, breakable glass, the annex joined, and Welles's end-bay washrooms (`wip/stjohns-11`). Owner 11-24: retire Linktifa and Sprout (hidden, Designer keeps them; random first character) and Newt Calloway on `wip/chars-1124`; St. John's into Featured and Quick Play DM, "Classic remake" on `wip/match-setup-1123`.
 - **2026-11-24** lane B's prop atlases and merged still props (`wip/propatlas-1123`; train 5d2fee8 green, landed by the splitters lead with docs-only main merged in).
 - **2026-11-24** landed by the splitters lead: the long guns' red dot and holo sights (eye at the glass, a smaller sight picture, the lens checked on the aim; `wip/fix-optic-1123`, train ed06e89) and the controller pass (d-pad lean while aiming, hold B prone, Menu pauses, View scoreboard, separate stick sensitivity and dead zone, map vote by pad, pad buttons in prompts, a notice for a non-standard pad; `wip/pad-lean-1123`, train b9a6a99 run 45305725683, with docs-only main merged in).
