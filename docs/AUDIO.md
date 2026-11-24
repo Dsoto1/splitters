@@ -181,6 +181,36 @@ The owner's pick ("1") on the gap left above: the Mounted MG (`fire.heavy`, 15 s
 - **A pair of Machine Pistols** fires up to twice as often, so its reports are still cut (at about 0.15 s), as a pair of Sawed-offs' are.
 - `test/shotAudio.test.ts` holds that each of the two guns fires its fast cut and that its file's length times its fire rate is at most 6.
 
+## Sound captions (2026-11-24)
+
+The owner's ask (2026-11-19, "A"): important sounds shown on screen for hard-of-hearing players and phone play with the sound off. **Options → Accessibility → Sound captions**: **Off** (the default), **On** ("Gunfire ×3"), or **On, with direction** ("Gunfire, left ×3", "Grenade! behind", "Footsteps, far right"). Kept in the browser (`tiletrigger.captions`) and, signed in, on the account (the profile's new `prefs` map, `game/prefSync.ts`, loaded on demand; an older hub keeps it in the browser only, the hub needs a redeploy for it).
+
+- **Where they come from.** `AudioSystem.play` calls `onSound` for every sound within its range's cull distance, before its own checks (so a muted phone, or audio not started yet, still captions; a voice the mixer drops for its caps still captions). Your own sounds are never positioned, so they never caption; a player's sound within 1.5 m of the ear is the one you are or are watching, and doesn't either. `SessionAudio` tells it who made a sound (`by`: shots, steps, throws) and what a shot is (`caption: 'fire.shot'`, whatever sound a gun borrows: the Nailgun's report is a door's), so a teammate's shots read "Friendly gunfire" and a teammate's steps aren't captioned.
+- **Which sounds** (`game/soundCaptions.ts`, `CAPTION_RULES`, first prefix that matches; rank decides which lines a full stack keeps):
+
+| Sound id prefix | Caption | Teammate's | Notes |
+|---|---|---|---|
+| `fire.` (and `fire.shot`) | Gunfire | Friendly gunfire | not `fire.knife` (melee swings) or a gun's pump or bolt |
+| `throw` | Grenade! | Friendly grenade | someone else's throw |
+| `explosion` | Explosion | | not its debris or the vehicle layer |
+| `bullet.flyby` | Near miss | | |
+| `footstep` | Footsteps | none | steady (kept up, not counted); within the steps' 30 m |
+| `reload.` | Reloading | none | others' reloads aren't heard yet (snapshots don't carry them) |
+| `vehicle.engine`, `vehicle.crash` | Vehicle, Crash | | the engine steady |
+| `door.` | Door | | |
+| `break.glass`, `break.wall` | Glass breaks, Wall breaks | | |
+| `trap.warn`, `trap.` | Warning beep, Trap | | |
+| `water.splash` | Splash | | |
+| `objective.new`, `objective.complete`, `cue.alarm`, `cue.buzzer`, `cue.chime` | Objective updated, Objective complete, Alarm, Objective lost, Objective chime | | unpositioned: no direction |
+| `ui.heartbeat` | Heartbeat (low health) | | your own warning, steady |
+
+- **Direction**: from the listener's facing (the camera's yaw, as the audio listener has it), a quarter turn each: ahead, right, behind, left, with an arrow; past 40 % of the sound's cull distance it is "far" and drawn dimmer.
+- **The stack**: at most 4 lines, bottom centre (above the weapon bar; on phones and short screens a little below the middle, clear of the touch controls); a repeat of the same caption, side and distance bumps its line's count; a line fades out 2 s after its last sound (0.5 s ease, 0.8 s with Reduce flashing). Light text on a dark translucent backing, legible over bright and dark scenes.
+- **Cheap**: no hook at all while the setting is Off; a sound is a map lookup and a bump of a pooled line; the screen is redrawn at most every 250 ms and only when a line changes or starts to fade (200 shots a second make one "Gunfire ×99" line and a few redraws).
+- **Flashing**: the captions are steady text that fades out eased; nothing blinks, brightens or covers the screen, so they add no bright moment to the flicker check (docs/LOOK.md, "Reduce flashing").
+- **Not captioned yet**: pickups appearing (they make no sound), grenade bounces (no sound or event yet), others' reloads (above).
+- **Tests**: `packages/client/test/soundCaptions.test.ts` (the table against `content/sounds.json` and every weapon, the direction maths, merging, the line cap, fading, throttling, culling through a real `AudioSystem`), `prefSync.test.ts` (the account), and the e2e flow `captions` (the Options row; in a `?test=1` match with it on, bots' shots caption on the side the camera has them, none for your own, desktop and phone).
+
 ## How it fits together
 
 - **`content/sounds.json`** is the single list of game sounds. Each sound has variants (files or a synth recipe) and mix settings: `gain`, `range` (`near` / `mid` / `far`: how far it carries), `jitter` (random pitch spread so repeats don't sound identical) and `rate`.
