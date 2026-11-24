@@ -418,7 +418,7 @@ class App {
         bootStep('the menu', this.init().then(() => capped(this.menuScene!.ready(), 8000))),
         bootStep('your character', this.init().then(() => capped(this.portraits!.get(this.front!.look).then(preloadImage), 8000))),
         bootStep('characters', capped(Promise.all(Object.values(SHIPPED_PORTRAITS).map((f) => preloadImage(`${import.meta.env.BASE_URL}portraits/${f}`))), 8000)),
-        bootStep('maps', capped(Promise.all(['sandgate', 'canyon', 'citadel', ...MAP_INDEX.slice(0, 12).map((e) => e.key)].map((id) => preloadImage(shippedPicture(id)))), 6000)),
+        bootStep('maps', capped(Promise.all(['sandgate', 'canyon', ...MAP_INDEX.slice(0, 12).map((e) => e.key)].map((id) => preloadImage(shippedPicture(id)))), 6000)),
       ];
       void Promise.allSettled(steps).then(() => requestAnimationFrame(() => finishBoot()));
       // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).

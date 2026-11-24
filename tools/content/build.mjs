@@ -667,7 +667,9 @@ function jpegSize(buf) {
   return null;
 }
 const retiredSrc = readFileSync(join(ROOT, 'packages/shared/src/map/retired.ts'), 'utf8');
-const retiredMaps = new Set([...retiredSrc.slice(retiredSrc.indexOf('new Set([')).matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]));
+// (RETIRED_MAPS only: the training maps after it keep their picture, which the loading screen shows.)
+const retiredBlock = retiredSrc.slice(retiredSrc.indexOf('new Set(['), retiredSrc.indexOf(']);', retiredSrc.indexOf('new Set([')));
+const retiredMaps = new Set([...retiredBlock.matchAll(/'([a-z0-9_]+)'/g)].map((m) => m[1]));
 /** Test maps (metadata.testOnly: maps/test_coverage.json) have no map card, so no picture either. */
 const isTestMap = (f) => {
   try {
